@@ -7,8 +7,12 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <module name="DPWS Model" />
+        <module name="DPWS" />
+        <module name="Common" />
       </profile>
     </annotationProcessing>
-    <bytecodeTargetLevel target="11" />
+    <bytecodeTargetLevel target="11">
+      <module name="DPWS" target="1.8" />
+    </bytecodeTargetLevel>
   </component>
 </project>
