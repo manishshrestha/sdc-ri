@@ -6,13 +6,10 @@
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
-        <module name="DPWS Model" />
-        <module name="DPWS" />
-        <module name="Common" />
+        <module name="dpws-model" />
+        <module name="common" />
+        <module name="dpws" />
       </profile>
     </annotationProcessing>
-    <bytecodeTargetLevel target="11">
-      <module name="DPWS" target="1.8" />
-    </bytecodeTargetLevel>
   </component>
 </project>

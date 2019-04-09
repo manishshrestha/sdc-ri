@@ -1,0 +1,85 @@
+package org.ieee11073.sdc.helper;
+
+import com.google.inject.Guice;
+import com.google.inject.Injector;
+import org.apache.log4j.BasicConfigurator;
+import org.ieee11073.sdc.common.guice.DefaultHelperModule;
+import org.ieee11073.sdc.common.helper.ObjectUtil;
+import org.junit.Test;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.*;
+
+public class ObjectUtilImplTest {
+
+    @Test
+    public void copy() throws Exception {
+        BasicConfigurator.configure();
+        Injector inj = Guice.createInjector(new DefaultHelperModule());
+        ObjectUtil objectUtil = inj.getInstance(ObjectUtil.class);
+
+        PojoClass obj = new PojoClass("test", 13, Arrays.asList("entry1", "entry2"));
+        PojoClass objCopy = objectUtil.deepCopy(obj);
+
+        assertThat(objCopy.getStr(), is("test"));
+        assertThat(objCopy.getNum(), is(13));
+        assertThat(objCopy.getStrList(), is(Arrays.asList("entry1", "entry2")));
+
+        obj.setStr("test2");
+
+        assertThat(objCopy.getStr(), is("test"));
+
+        List<PojoClass> list = Arrays.asList(new PojoClass("test", 1, new ArrayList<>()),
+                new PojoClass("test2", 2, new ArrayList<>()));
+
+        List<PojoClass> listCpy = objectUtil.deepCopy(list);
+
+        assertThat(listCpy.size(), is(2));
+        assertThat(listCpy.get(1).getStr(), is("test2"));
+
+        list.get(1).setStr("test3");
+
+        assertThat(listCpy.get(1).getStr(), is("test2"));
+    }
+
+    private class PojoClass {
+        public PojoClass(String str, int num, List<String> strList) {
+            this.str = str;
+            this.num = num;
+            this.strList = strList;
+        }
+
+        private String str;
+        private int num;
+        private List<String> strList;
+
+        public String getStr() {
+            return str;
+        }
+
+        public void setStr(String str) {
+            this.str = str;
+        }
+
+        public int getNum() {
+            return num;
+        }
+
+        public void setNum(int num) {
+            this.num = num;
+        }
+
+        public List<String> getStrList() {
+            return strList;
+        }
+
+        public void setStrList(List<String> strList) {
+            this.strList = strList;
+        }
+    }
+
+}
