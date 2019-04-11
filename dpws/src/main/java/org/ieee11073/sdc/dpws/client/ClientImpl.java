@@ -19,7 +19,6 @@ import org.ieee11073.sdc.dpws.soap.wsdiscovery.HelloByeAndProbeMatchesObserver;
 import org.ieee11073.sdc.dpws.soap.wsdiscovery.WsDiscoveryClient;
 import org.ieee11073.sdc.dpws.soap.wsdiscovery.factory.WsDiscoveryClientFactory;
 import org.ieee11073.sdc.dpws.udp.UdpMessageQueueService;
-import org.ieee11073.sdc.dpws.client.helper.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

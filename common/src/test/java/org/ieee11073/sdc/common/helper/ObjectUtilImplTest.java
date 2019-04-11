@@ -1,10 +1,13 @@
-package org.ieee11073.sdc.helper;
+package org.ieee11073.sdc.common.helper;
 
+import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import org.apache.log4j.BasicConfigurator;
-import org.ieee11073.sdc.common.guice.DefaultHelperModule;
+import org.ieee11073.sdc.common.helper.JaxbUtil;
+import org.ieee11073.sdc.common.helper.JaxbUtilImpl;
 import org.ieee11073.sdc.common.helper.ObjectUtil;
+import org.ieee11073.sdc.common.helper.ObjectUtilImpl;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -12,14 +15,20 @@ import java.util.Arrays;
 import java.util.List;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.is;
 
 public class ObjectUtilImplTest {
 
     @Test
-    public void copy() throws Exception {
+    public void copy() {
         BasicConfigurator.configure();
-        Injector inj = Guice.createInjector(new DefaultHelperModule());
+        Injector inj = Guice.createInjector(
+                new AbstractModule() {
+                    @Override
+                    protected void configure() {
+                        bind(ObjectUtil.class).to(ObjectUtilImpl.class).asEagerSingleton();
+                    }
+                });
         ObjectUtil objectUtil = inj.getInstance(ObjectUtil.class);
 
         PojoClass obj = new PojoClass("test", 13, Arrays.asList("entry1", "entry2"));
@@ -81,5 +90,4 @@ public class ObjectUtilImplTest {
             this.strList = strList;
         }
     }
-
 }

@@ -268,10 +268,10 @@ public class WsDiscoveryClientInterceptor implements WsDiscoveryClient {
 
         @Override
         public ResolveMatchesType call() throws Exception {
-            while (maxWaitInMillis > 0) {
-                try {
-                    lock.lock();
-
+            try {
+                lock.lock();
+                long wait = maxWaitInMillis;
+                while (wait > 0) {
                     long tStartInMillis = System.currentTimeMillis();
                     Optional<SoapMessage> msg = popMatches(messageQueue, wsaRelatesTo);
                     if (msg.isPresent()) {
@@ -279,7 +279,7 @@ public class WsDiscoveryClientInterceptor implements WsDiscoveryClient {
                                 new RuntimeException("SOAP message body malformed."));
                     }
 
-                    condition.await(maxWaitInMillis, TimeUnit.MILLISECONDS);
+                    condition.await(wait, TimeUnit.MILLISECONDS);
 
                     msg = popMatches(messageQueue, wsaRelatesTo);
                     maxWaitInMillis -= System.currentTimeMillis() - tStartInMillis;
@@ -287,9 +287,10 @@ public class WsDiscoveryClientInterceptor implements WsDiscoveryClient {
                         return soapUtil.getBody(msg.get(), ResolveMatchesType.class).orElseThrow(() ->
                                 new RuntimeException("SOAP message body malformed."));
                     }
-                } finally {
-                    lock.unlock();
+
                 }
+            } finally {
+                lock.unlock();
             }
 
             throw new RuntimeException(String.format("No ResolveMatches message received in %s milliseconds.",
@@ -330,48 +331,42 @@ public class WsDiscoveryClientInterceptor implements WsDiscoveryClient {
         }
 
         @Override
-        public Integer call() {
+        public Integer call() throws Exception {
             Integer probeMatchesCount = 0;
-            while (maxWaitInMillis > 0) {
-                try {
-                    lock.lock();
-
+            long wait = maxWaitInMillis;
+            try {
+                lock.lock();
+                while (wait > 0) {
                     long tStartInMillis = System.currentTimeMillis();
-                    Optional<SoapMessage> msg = popMatches(messageQueue, wsaRelatesTo);
-                    if (msg.isPresent()) {
-                        ProbeMatchesType pMatches = soapUtil.getBody(msg.get(), ProbeMatchesType.class)
-                                .orElseThrow(() -> new RuntimeException("SOAP message body malformed."));
-                        helloByeProbeEvents.post(new ProbeMatchesMessage(probeId, pMatches));
-                        probeMatchesCount++;
-                        if (probeMatchesCount == maxResults) {
-                            break;
-                        }
+                    probeMatchesCount = fetchData(probeMatchesCount);
+                    if (probeMatchesCount == maxResults) {
+                        break;
                     }
 
-                    try {
-                        condition.await(maxWaitInMillis, TimeUnit.MILLISECONDS);
-                    } catch (InterruptedException e) {
-                        return 0;
-                    }
+                    condition.await(wait, TimeUnit.MILLISECONDS);
 
-                    msg = popMatches(messageQueue, wsaRelatesTo);
-                    maxWaitInMillis -= System.currentTimeMillis() - tStartInMillis;
-                    if (msg.isPresent()) {
-                        ProbeMatchesType pMatches = soapUtil.getBody(msg.get(), ProbeMatchesType.class)
-                                .orElseThrow(() -> new RuntimeException("SOAP message body malformed."));
-                        helloByeProbeEvents.post(new ProbeMatchesMessage(probeId, pMatches));
-                        probeMatchesCount++;
-
-                        if (probeMatchesCount == maxResults) {
-                            break;
-                        }
+                    wait -= System.currentTimeMillis() - tStartInMillis;
+                    probeMatchesCount = fetchData(probeMatchesCount);
+                    if (probeMatchesCount == maxResults) {
+                        break;
                     }
-                } finally {
-                    lock.unlock();
                 }
+            } finally {
+                lock.unlock();
             }
 
             helloByeProbeEvents.post(new ProbeTimeoutMessage(probeMatchesCount, probeId));
+            return probeMatchesCount;
+        }
+
+        private Integer fetchData(Integer probeMatchesCount) {
+            Optional<SoapMessage> msg = popMatches(messageQueue, wsaRelatesTo);
+            if (msg.isPresent()) {
+                ProbeMatchesType pMatches = soapUtil.getBody(msg.get(), ProbeMatchesType.class)
+                        .orElseThrow(() -> new RuntimeException("SOAP message body malformed."));
+                helloByeProbeEvents.post(new ProbeMatchesMessage(probeId, pMatches));
+                probeMatchesCount++;
+            }
             return probeMatchesCount;
         }
     }
