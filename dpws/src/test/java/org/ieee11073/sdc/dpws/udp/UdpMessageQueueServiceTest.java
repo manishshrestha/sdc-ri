@@ -24,7 +24,7 @@ public class UdpMessageQueueServiceTest extends DpwsTest {
     public void setUp() throws Exception {
         super.setUp();
         udpMsgQueue = getInjector().getInstance(UdpMessageQueueServiceImpl.class);
-        udpMsgQueue.setUdpBinding(new MockUdpBindingService());
+        udpMsgQueue.setUdpBinding(new UdpBindingServiceMock());
         lock = new ReentrantLock();
         condition = lock.newCondition();
         actualMessage = null;

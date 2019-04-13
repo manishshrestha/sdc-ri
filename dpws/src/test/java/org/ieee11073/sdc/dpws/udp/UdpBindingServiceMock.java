@@ -4,7 +4,7 @@ import com.google.common.util.concurrent.AbstractIdleService;
 
 import java.io.IOException;
 
-public class MockUdpBindingService extends AbstractIdleService implements UdpBindingService{
+public class UdpBindingServiceMock extends AbstractIdleService implements UdpBindingService{
     private UdpMessageReceiverCallback receiver;
 
     @Override

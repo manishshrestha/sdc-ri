@@ -18,7 +18,7 @@ public class UdpBindingServiceImpl extends AbstractIdleService implements UdpBin
     private final Random random = new Random();
     private final InetAddress socketAddress;
     private final Integer socketPort;
-    private final Thread socketRunner;
+    private Thread socketRunner;
 
     private DatagramSocket incomingSocket;
     private DatagramSocket outgoingSocket;
@@ -33,25 +33,6 @@ public class UdpBindingServiceImpl extends AbstractIdleService implements UdpBin
         this.socketAddress = socketAddress;
         this.socketPort = socketPort;
         this.maxMessageSize = maxMessageSize;
-
-        this.socketRunner = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                while (!socketRunner.isInterrupted()) {
-                    DatagramPacket packet = new DatagramPacket(new byte[maxMessageSize], maxMessageSize);
-                    try {
-                        incomingSocket.receive(packet);
-                    } catch (IOException e) {
-                        LOG.trace("Could not process UDP packet. Discard.");
-                        continue;
-                    }
-
-                    UdpMessage message = new UdpMessage(packet.getData(), packet.getLength(),
-                            packet.getAddress().getHostAddress(), packet.getPort());
-                    receiver.receive(message);
-                }
-            }
-        });
     }
 
     @Override
@@ -74,7 +55,28 @@ public class UdpBindingServiceImpl extends AbstractIdleService implements UdpBin
 
         outgoingSocket = new DatagramSocket();
 
-        socketRunner.start();
+        if (receiver == null) {
+            LOG.info("No data receiver configured; ignore incoming UDP messages.");
+        } else {
+            LOG.info("Data receiver configured; process incoming UDP messages.");
+            this.socketRunner = new Thread(() -> {
+                while (!socketRunner.isInterrupted()) {
+                    DatagramPacket packet = new DatagramPacket(new byte[maxMessageSize], maxMessageSize);
+                    try {
+                        incomingSocket.receive(packet);
+                    } catch (IOException e) {
+                        LOG.trace("Could not process UDP packet. Discard.");
+                        continue;
+                    }
+
+                    UdpMessage message = new UdpMessage(packet.getData(), packet.getLength(),
+                            packet.getAddress().getHostAddress(), packet.getPort());
+                    receiver.receive(message);
+                }
+            });
+
+            socketRunner.start();
+        }
 
         LOG.info("UDP binding {} is running.", this);
     }

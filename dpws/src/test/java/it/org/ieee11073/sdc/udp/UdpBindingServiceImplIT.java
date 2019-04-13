@@ -1,10 +1,13 @@
-package org.ieee11073.sdc.dpws.udp;
+package it.org.ieee11073.sdc.udp;
 
 import org.ieee11073.sdc.dpws.DpwsConstants;
 import org.ieee11073.sdc.dpws.DpwsTest;
 import org.ieee11073.sdc.dpws.soap.wsdiscovery.WsDiscoveryConstants;
+import org.ieee11073.sdc.dpws.udp.UdpBindingService;
+import org.ieee11073.sdc.dpws.udp.UdpMessage;
 import org.ieee11073.sdc.dpws.udp.factory.UdpBindingServiceFactory;
 import org.junit.Before;
+import org.junit.Test;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -16,7 +19,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import static org.junit.Assert.*;
 
-public class UdpBindingServiceImplTest extends DpwsTest {
+public class UdpBindingServiceImplIT extends DpwsTest {
     private Lock lock;
     private Condition condition;
     private UdpMessage actualMessage;
@@ -31,7 +34,7 @@ public class UdpBindingServiceImplTest extends DpwsTest {
         condition = lock.newCondition();
     }
 
-    //@Test
+    @Test
     public void testSendMulticastMessage() throws Exception {
         final byte[] expectedMessage = "SAMPLE".getBytes();
         actualMessage = null;
@@ -52,7 +55,6 @@ public class UdpBindingServiceImplTest extends DpwsTest {
             }
         });
 
-        receiver.startAsync().awaitRunning();
         receiver.setMessageReceiver(msg -> {
             try {
                 lock.lock();
@@ -62,12 +64,19 @@ public class UdpBindingServiceImplTest extends DpwsTest {
                 lock.unlock();
             }
         });
+        receiver.startAsync().awaitRunning();
 
         t.start();
         try {
             lock.lock();
-            if (actualMessage == null) {
-                condition.await(10, TimeUnit.SECONDS);
+            long wait = 10000;
+            long tStart = System.currentTimeMillis();
+            while (wait > 0) {
+                if (actualMessage != null) {
+                    break;
+                }
+                condition.await(wait, TimeUnit.MILLISECONDS);
+                wait -= System.currentTimeMillis() - tStart;
             }
 
             assertNotNull(actualMessage);
