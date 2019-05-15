@@ -62,7 +62,7 @@ import java.util.concurrent.ScheduledExecutorService;
 /**
  * Guice module to bind all interfaces and factories led by the DPWS implementation of easySDC.
  */
-public class DpwsModule extends AbstractModule {
+public class DefaultDpwsModule extends AbstractModule {
     @Override
     protected void configure() {
         configureMarshalling();

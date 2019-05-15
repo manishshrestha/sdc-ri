@@ -7,7 +7,7 @@ import com.google.inject.name.Names;
 import org.apache.log4j.BasicConfigurator;
 import org.ieee11073.sdc.dpws.DpwsFramework;
 import org.ieee11073.sdc.dpws.DpwsUtil;
-import org.ieee11073.sdc.dpws.guice.DpwsModule;
+import org.ieee11073.sdc.dpws.guice.DefaultDpwsModule;
 import org.ieee11073.sdc.dpws.service.factory.HostedServiceFactory;
 import org.ieee11073.sdc.dpws.soap.wsaddressing.WsAddressingConfig;
 import org.ieee11073.sdc.dpws.soap.wsaddressing.WsAddressingUtil;
@@ -28,7 +28,7 @@ public class DeviceImplTest implements Runnable {
 
     @Override
     public void run() {
-        Injector inj = Guice.createInjector(new DpwsModule(), new DefaultHelperModule(), new DpwsConfig());
+        Injector inj = Guice.createInjector(new DefaultDpwsModule(), new DefaultHelperModule(), new DpwsConfig());
 
         WsAddressingUtil wsaUtil = inj.getInstance(WsAddressingUtil.class);
         DeviceConfiguration devConf = new DeviceConfiguration() {

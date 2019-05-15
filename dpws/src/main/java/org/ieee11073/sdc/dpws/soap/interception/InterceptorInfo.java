@@ -9,11 +9,11 @@ import java.util.Optional;
  */
 class InterceptorInfo implements Comparable<InterceptorInfo> {
     private final Integer sequenceNumber;
-    private final WeakReference<Object> callbackObject;
+    private final Object callbackObject;
     private final Method callbackMethod;
 
     InterceptorInfo(Object callbackObject, Method callbackMethod, Integer sequenceNumber) {
-        this.callbackObject = new WeakReference<>(callbackObject);
+        this.callbackObject = callbackObject;
         this.callbackMethod = callbackMethod;
         this.sequenceNumber = sequenceNumber;
     }
@@ -23,7 +23,7 @@ class InterceptorInfo implements Comparable<InterceptorInfo> {
     }
 
     Optional<Object> getCallbackObject() {
-        return Optional.ofNullable(callbackObject.get());
+        return Optional.ofNullable(callbackObject);
     }
 
     int getSequenceNumber() {

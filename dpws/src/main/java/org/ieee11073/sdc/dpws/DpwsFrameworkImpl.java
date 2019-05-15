@@ -43,7 +43,7 @@ public class DpwsFrameworkImpl extends AbstractIdleService implements DpwsFramew
 
     @Override
     protected void startUp() throws Exception {
-        LOG.info("Start easySDC DPWS framework.");
+        LOG.info("Start SDC reference implementation DPWS framework.");
         configureDiscovery();
         serviceManager = new ServiceManager(Arrays.asList(udpBindingService, udpMessageQueueService,
                 httpServerRegistry, soapMarshalling));

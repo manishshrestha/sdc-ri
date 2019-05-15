@@ -48,6 +48,7 @@ public class NotificationWorker implements Runnable {
     @Override
     public void run() {
         while (!Thread.interrupted()) {
+            lock.lock();
             try {
                 // If not woken up before, go waiting to be signaled
                 if (!wakeUp) {

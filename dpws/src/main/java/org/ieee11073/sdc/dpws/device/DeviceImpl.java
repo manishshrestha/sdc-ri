@@ -321,6 +321,8 @@ public class DeviceImpl extends AbstractIdleService implements Device, Service, 
 
         // Add hosted service to hosting service to get metadata descriptions updated
         hostingService.addHostedService(hostedService);
+
+        // @todo Send out Hello with metadata version increment
     }
 
     private String buildContextPathPart(String serviceId) {

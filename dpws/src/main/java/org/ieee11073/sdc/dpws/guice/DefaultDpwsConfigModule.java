@@ -13,14 +13,21 @@ import org.slf4j.LoggerFactory;
 
 import java.time.Duration;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.TreeMap;
 
 /**
- * Default configuration module to configure {@link DpwsModule}.
+ * Default configuration module to configure {@link DefaultDpwsModule}.
+ *
+ * Derive from this class to override default configuration values. Use {@link #bind(String, Class, Object)}
+ * to set your custom values.
+ *
+ * You can either configure values on construction or by overriding {@link #customConfigure()}.
  */
-public class DpwsConfigModule extends AbstractModule {
-    private static final Logger LOG = LoggerFactory.getLogger(DpwsConfigModule.class);
-    private Map<String, ConfigurationValue> boundedValues = new HashMap<>();
+public class DefaultDpwsConfigModule extends AbstractModule {
+    private static final Logger LOG = LoggerFactory.getLogger(DefaultDpwsConfigModule.class);
+    private Map<String, ConfigurationValue> boundedValues = new TreeMap<>();
     private boolean configureStarted = false;
 
     /**
@@ -45,8 +52,13 @@ public class DpwsConfigModule extends AbstractModule {
         }
     }
 
+    /**
+     * Perform default configuration.
+     */
     @Override
-    protected void configure() {
+    final protected void configure() {
+        customConfigure();
+
         configureStarted = true;
 
         configureWsAddressingConfig();
@@ -58,8 +70,14 @@ public class DpwsConfigModule extends AbstractModule {
         logConfiguredValues();
     }
 
+    /**
+     * Override this method in derived class for custom configuration.
+     */
+    protected void customConfigure() {
+        // nothing to do here - override on derived class to add custom configuration
+    }
+
     private void logConfiguredValues() {
-        // todo sort by key
         boundedValues.entrySet().stream().forEach(value ->
                 LOG.debug("Configure {} key: {} := {}",
                         value.getValue().getValueOrigin(),

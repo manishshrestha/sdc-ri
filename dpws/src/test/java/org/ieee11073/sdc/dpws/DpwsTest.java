@@ -5,8 +5,8 @@ import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.util.Modules;
 import org.apache.log4j.BasicConfigurator;
-import org.ieee11073.sdc.dpws.guice.DpwsConfigModule;
-import org.ieee11073.sdc.dpws.guice.DpwsModule;
+import org.ieee11073.sdc.dpws.guice.DefaultDpwsConfigModule;
+import org.ieee11073.sdc.dpws.guice.DefaultDpwsModule;
 import org.ieee11073.sdc.common.guice.DefaultHelperModule;
 
 /**
@@ -23,10 +23,10 @@ public class DpwsTest {
     protected void setUp() throws Exception {
         BasicConfigurator.configure();
         if (overridingModule != null) {
-            injector = Guice.createInjector(Modules.override(new DpwsModule(), new DefaultHelperModule(),
-                    new DpwsConfigModule()).with(overridingModule));
+            injector = Guice.createInjector(Modules.override(new DefaultDpwsModule(), new DefaultHelperModule(),
+                    new DefaultDpwsConfigModule()).with(overridingModule));
         } else {
-            injector = Guice.createInjector(new DpwsModule(), new DefaultHelperModule(), new DpwsConfigModule());
+            injector = Guice.createInjector(new DefaultDpwsModule(), new DefaultHelperModule(), new DefaultDpwsConfigModule());
         }
     }
 

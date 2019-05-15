@@ -39,7 +39,7 @@ public interface HostedServiceFactory {
      * This constructor can be used if EPR addresses shall be assigned automatically based on, e.g., a hosting service.
      *
      * @param serviceId The service id. Please use a relative URL part (e.g., "SampleService")
-     * @param types QName type list that matches at least the QName of the WSDL port type.
+     * @param types QName type list that matches at least the QName(s) of the WSDL port type(s).
      * @param webService Web Service interceptor.
      */
     HostedService createHostedService(@Assisted String serviceId,

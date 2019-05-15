@@ -33,7 +33,7 @@ public class JaxbSoapMarshalling extends AbstractIdleService implements SoapMars
 
     @Inject
     JaxbSoapMarshalling(@Named(SoapConfig.JAXB_CONTEXT_PATH) String contextPackages,
-            ObjectFactory soapFactory) {
+                        ObjectFactory soapFactory) {
         this.contextPackages = contextPackages;
         this.soapFactory = soapFactory;
     }
@@ -86,6 +86,8 @@ public class JaxbSoapMarshalling extends AbstractIdleService implements SoapMars
                 WsEventingConstants.JAXB_CONTEXT_PACKAGE + pkgDelim +
                 WsTransferConstants.JAXB_CONTEXT_PACKAGE + pkgDelim +
                 WsMetadataExchangeConstants.JAXB_CONTEXT_PACKAGE;
+
+        LOG.info("Configure JAXB with contexts: {}", contextPackages);
 
         try {
             JAXBContext jaxbContext = JAXBContext.newInstance(contextPackages);

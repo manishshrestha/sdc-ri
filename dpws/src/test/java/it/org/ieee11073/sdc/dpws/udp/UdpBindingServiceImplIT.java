@@ -1,4 +1,4 @@
-package it.org.ieee11073.sdc.udp;
+package it.org.ieee11073.sdc.dpws.udp;
 
 import org.ieee11073.sdc.dpws.DpwsConstants;
 import org.ieee11073.sdc.dpws.DpwsTest;
