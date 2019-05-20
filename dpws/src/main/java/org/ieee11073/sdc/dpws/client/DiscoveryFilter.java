@@ -1,6 +1,7 @@
 package org.ieee11073.sdc.dpws.client;
 
 import javax.xml.namespace.QName;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 

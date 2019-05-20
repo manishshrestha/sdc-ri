@@ -22,7 +22,7 @@ public class DiscoveryFilterBuilder {
     /**
      * Add a single type.
      */
-    DiscoveryFilterBuilder addType(QName type) {
+    public DiscoveryFilterBuilder addType(QName type) {
         types.add(type);
         return this;
     }
@@ -30,7 +30,7 @@ public class DiscoveryFilterBuilder {
     /**
      * Add a single scope.
      */
-    DiscoveryFilterBuilder addScope(String scope) {
+    public DiscoveryFilterBuilder addScope(String scope) {
         scopes.add(scope);
         return this;
     }
@@ -39,7 +39,7 @@ public class DiscoveryFilterBuilder {
      * Get discovery filter with all types and scopes added through {@link #addType(QName)} and
      * {@link #addScope(String)}.
      */
-    DiscoveryFilter get() {
+    public DiscoveryFilter get() {
         return new DiscoveryFilter(types, scopes);
     }
 }

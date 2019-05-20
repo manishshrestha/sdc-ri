@@ -113,7 +113,7 @@ public class EventSourceInterceptor extends AbstractIdleService implements Event
     }
 
     @Override
-    public void sendNotification(String operation, String messageAction, Object payload) {
+    public void sendNotification(String action, Object payload) {
         // Remove stale subscriptions, i.e., duration expired or subscription was invalidated
         removeStaleSubscriptions();
 
@@ -121,7 +121,7 @@ public class EventSourceInterceptor extends AbstractIdleService implements Event
         subscribedActionsLock.lock();
         Collection<String> affectedSubscriptionIds;
         try {
-            affectedSubscriptionIds = subscribedActionsToSubManIds.get(URI.create(operation));
+            affectedSubscriptionIds = subscribedActionsToSubManIds.get(URI.create(action));
             if (affectedSubscriptionIds.isEmpty()) {
                 return;
             }
@@ -133,7 +133,7 @@ public class EventSourceInterceptor extends AbstractIdleService implements Event
         // subscription manager's notification queue
         affectedSubscriptionIds.parallelStream().forEach(subId ->
                 subscriptionRegistry.getSubscription(subId).ifPresent(subscriptionManager -> {
-                    SoapMessage notifyTo = createForNotifyTo(messageAction, payload, subscriptionManager);
+                    SoapMessage notifyTo = createForNotifyTo(action, payload, subscriptionManager);
                     subscriptionManager.getNotificationQueue().offer(new Notification(notifyTo));
                 }));
 

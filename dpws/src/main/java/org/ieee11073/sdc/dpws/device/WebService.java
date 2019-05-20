@@ -76,7 +76,7 @@ public abstract class WebService implements Interceptor {
             }
 
             @Override
-            public void sendNotification(String operationAction, String messageAction, Object payload) {
+            public void sendNotification(String action, Object payload) {
                 LOG.warn("No handler for notifications set yet. WebService has to be populated.");
             }
 

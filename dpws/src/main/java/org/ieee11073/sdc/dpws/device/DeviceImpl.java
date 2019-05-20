@@ -302,6 +302,9 @@ public class DeviceImpl extends AbstractIdleService implements Device, Service, 
         // Make WSDL document bytes available as HTTP resource
         final byte[] wsdlDocBytes = tmpWsdlDocBytes;
         for (EndpointReferenceType epr : hostedService.getType().getEndpointReference()) {
+            if (wsdlDocBytes.length == 0) {
+                throw new RuntimeException("Empty WSDL document detected.");
+            }
             URI uri = wsaUtil.getAddressUri(epr).orElseThrow(() ->
                     new RuntimeException("Invalid EPR detected when trying to add hosted service."));
             httpServerRegistry.registerContext(uri.getHost(), uri.getPort(), contextPath, reqResHandler);

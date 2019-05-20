@@ -11,11 +11,10 @@ public interface EventSource extends Interceptor, Service {
     /**
      * Send a notification to all event sinks.
      *
-     * @param operation The notification operation.
-     * @param messageAction The action URI that identifies the payload.
+     * @param action The action URI used for dispatching to event sinks.
      * @param payload A JAXB element or JAXB generated class object to transport.
      */
-    void sendNotification(String operation, String messageAction, Object payload);
+    void sendNotification(String action, Object payload);
 
     /**
      * Send a subscription end to all event sinks.

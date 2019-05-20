@@ -1,10 +1,12 @@
 <!--
     Service to test general DPWS hosted service functions.
+
+    Default action pattern: [target namespace][delimiter][port type name][delimiter][input|output name]
+    https://www.w3.org/TR/2006/CR-ws-addr-wsdl-20060529/#defactionwsdl11
 -->
 <wsdl:definitions xmlns:xsd="http://www.w3.org/2001/XMLSchema"
                   xmlns:msg="http://dpws-test-service/messages/2017/05/10"
                   xmlns:s12="http://schemas.xmlsoap.org/wsdl/soap12/"
-                  xmlns:wsam="http://www.w3.org/2007/05/addressing/metadata"
                   xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
                   xmlns:wsp="http://www.w3.org/ns/ws-policy"
                   xmlns:wse="http://schemas.xmlsoap.org/ws/2004/08/eventing"
@@ -49,22 +51,19 @@
     <wsdl:message name="TestNotification">
         <wsdl:part name="parameters" element="msg:TestNotification"/>
     </wsdl:message>
-    <wsdl:portType name="TestPortType" wse:EventSource="true" dpws:DiscoveryType="tns:DpwsTest">
+    <wsdl:portType name="TestPortType3" wse:EventSource="true" dpws:DiscoveryType="tns:DpwsTest">
         <wsdl:operation name="TestOperation">
-            <wsdl:input message="tns:TestOperationRequest"
-                        wsam:Action="http://dpws-test-service/messages/2017/05/10/TestOperationRequest"/>
-            <wsdl:output message="tns:TestOperationResponse"
-                         wsam:Action="http://dpws-test-service/messages/2017/05/10/TestOperationResponse"/>
+            <wsdl:input message="tns:TestOperationRequest"/>
+            <wsdl:output message="tns:TestOperationResponse"/>
         </wsdl:operation>
         <wsdl:operation name="TestNotification">
-            <wsdl:output message="tns:TestNotification"
-                         wsam:Action="http://dpws-test-service/messages/2017/05/10/TestNotification"/>
+            <wsdl:output message="tns:TestNotification"/>
         </wsdl:operation>
     </wsdl:portType>
-    <wsdl:binding name="TestBinding" type="tns:TestPortType">
+    <wsdl:binding name="TestBinding3" type="tns:TestPortType3">
         <s12:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
         <wsdl:operation name="TestOperation">
-            <s12:operation soapAction="http://dpws-test-service/2017/05/10/TestOperation"/>
+            <s12:operation soapAction="http://dpws-test-service/2017/05/10/TestPortType3/TestOperation"/>
             <wsdl:input>
                 <s12:body use="literal"/>
             </wsdl:input>
@@ -73,12 +72,13 @@
             </wsdl:output>
         </wsdl:operation>
         <wsdl:operation name="TestNotification">
-            <s12:operation soapAction="http://dpws-test-service/2017/05/10/TestNotification"/>
+            <s12:operation soapAction="http://dpws-test-service/2017/05/10/TestPortType3/TestNotification"/>
             <wsdl:output>
                 <s12:body use="literal"/>
             </wsdl:output>
         </wsdl:operation>
     </wsdl:binding>
+
     <wsp:Policy>
         <dpws:Profile wsp:Optional="true"/>
     </wsp:Policy>
