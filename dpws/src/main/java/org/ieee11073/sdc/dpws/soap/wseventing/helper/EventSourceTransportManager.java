@@ -89,6 +89,7 @@ public class EventSourceTransportManager {
                 try {
                     return notifSrc.sendNotification(message);
                 } catch (Exception e) {
+                    e.printStackTrace();
                     LOG.debug("Deliver notification to {} failed. Try {} of {}. Reason: {}",
                             subMan.getSubscriptionId(), i, maxRetriesOnDeliveryFailure,
                             e.getMessage());

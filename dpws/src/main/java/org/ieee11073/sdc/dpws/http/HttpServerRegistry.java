@@ -21,7 +21,7 @@ public interface HttpServerRegistry extends Service {
      *
      * @param host        Local address on where to expose an HTTP server. The server is created and started on demand.
      * @param port        The port where to bind the context (if none given, random port is chosen).
-     * @param contextPath A context path where the given hosts shall listen on.
+     * @param contextPath A context path where the given host shall listen to.
      * @param handler     Whenever a request to the given context path is done,
      *                    {@link HttpHandler#process(InputStream, OutputStream, TransportInfo)} is called. Default
      *                    response media type is {@link SoapConstants#MEDIA_TYPE_SOAP}.

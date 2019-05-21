@@ -51,7 +51,7 @@ public class MarshallingService {
         try {
             Envelope env = soapMarshalling.unmarshal(is);
             return soapUtil.createMessage(env);
-        } catch (JAXBException e) {
+        } catch (Exception e) {
             throw new MarshallingException(e);
         }
     }

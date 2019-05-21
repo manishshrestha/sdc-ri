@@ -42,6 +42,7 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.Supplier;
 
 /**
  * Interceptor to handle event source's incoming subscriptions and send notifications.
@@ -151,8 +152,9 @@ public class EventSourceInterceptor extends AbstractIdleService implements Event
 
     @MessageInterceptor(value = WsEventingConstants.WSA_ACTION_SUBSCRIBE, direction = Direction.REQUEST)
     InterceptorResult processSubscribe(RequestResponseObject rrObj) throws SoapFaultException {
-        Subscribe subscribe = soapUtil.getBody(rrObj.getRequest(), Subscribe.class).orElseThrow(() ->
-                new SoapFaultException(createInvalidMsg(rrObj)));
+        final Supplier<SoapFaultException> soapFaultExceptionSupplier = () ->
+                new SoapFaultException(createInvalidMsg(rrObj));
+        Subscribe subscribe = soapUtil.getBody(rrObj.getRequest(), Subscribe.class).orElseThrow(soapFaultExceptionSupplier);
 
         // Validate delivery mode
         String deliveryMode = Optional.ofNullable(subscribe.getDelivery().getMode())
@@ -167,10 +169,9 @@ public class EventSourceInterceptor extends AbstractIdleService implements Event
         }
 
         EndpointReferenceType notifyTo = jaxbUtil.extractElement(subscribe.getDelivery().getContent().get(0),
-                WsEventingConstants.NOTIFY_TO, EndpointReferenceType.class).orElseThrow(() ->
-                new SoapFaultException(createInvalidMsg(rrObj)));
+                WsEventingConstants.NOTIFY_TO, EndpointReferenceType.class).orElseThrow(soapFaultExceptionSupplier);
 
-        wsaUtil.getAddressUriAsString(notifyTo).orElseThrow(() -> new SoapFaultException(createInvalidMsg(rrObj)));
+        wsaUtil.getAddressUriAsString(notifyTo).orElseThrow(soapFaultExceptionSupplier);
 
         // Validate expires
         Duration grantedExpires = grantExpires(validateExpires(subscribe.getExpires()));

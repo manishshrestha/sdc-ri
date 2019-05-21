@@ -57,7 +57,7 @@ public class DeviceImpl extends AbstractIdleService implements Device, Service, 
     private final SoapUtil soapUtil;
     private final RequestResponseServer wsdRequestResponseInterceptorChain;
     private final UdpMessageQueueService discoveryMessageQueue;
-    private final RequestResponseServerHttpHandler reqResHandler;
+    private final Provider<RequestResponseServerHttpHandler> reqResHandlerProvider;
     private final Provider<EventSource> eventSourceProvider;
     private final HostedServiceFactory hostedServiceFactory;
     private final HostedServiceInterceptorFactory hostedServiceInterceptorFactory;
@@ -84,7 +84,7 @@ public class DeviceImpl extends AbstractIdleService implements Device, Service, 
                HostingServiceFactory hostingServiceFactory,
                HttpServerRegistry httpServerRegistry,
                SoapUtil soapUtil,
-               RequestResponseServerHttpHandler reqResHandler,
+               Provider<RequestResponseServerHttpHandler> reqResHandlerProvider,
                @DiscoveryUdpQueue UdpMessageQueueService discoveryMessageQueue,
                Provider<EventSource> eventSourceProvider,
                HostedServiceFactory hostedServiceFactory,
@@ -101,7 +101,7 @@ public class DeviceImpl extends AbstractIdleService implements Device, Service, 
         this.soapUtil = soapUtil;
         this.wsdRequestResponseInterceptorChain = wsdRequestResponseInterceptorChain;
         this.discoveryMessageQueue = discoveryMessageQueue;
-        this.reqResHandler = reqResHandler;
+        this.reqResHandlerProvider = reqResHandlerProvider;
         this.eventSourceProvider = eventSourceProvider;
         this.hostedServiceFactory = hostedServiceFactory;
         this.hostedServiceInterceptorFactory = hostedServiceInterceptorFactory;
@@ -150,6 +150,8 @@ public class DeviceImpl extends AbstractIdleService implements Device, Service, 
         /*
          * Configure Hosting Service
          */
+
+        RequestResponseServerHttpHandler reqResHandler = reqResHandlerProvider.get();
 
         // Register HTTP bindings to HTTP context registry; append EPR UUID from host as context path
         config.getHostingServiceBindings().forEach(uri -> httpServerRegistry.registerContext(uri.getHost(),
@@ -269,8 +271,10 @@ public class DeviceImpl extends AbstractIdleService implements Device, Service, 
         EventSource eventSource = eventSourceProvider.get();
         // Inject event source to Web Service
         hostedService.getWebService().setEventSource(eventSource);
+        // Create request response handler interceptor specific to the added hosted service
+        RequestResponseServerHttpHandler hsReqResHandler = reqResHandlerProvider.get();
         // Add event source to HTTP req-res-server for event source management
-        reqResHandler.register(eventSource);
+        hsReqResHandler.register(eventSource);
 
         // Create Web Service access path
         String contextPathPart = buildContextPathPart(hostedService.getType().getServiceId());
@@ -307,7 +311,8 @@ public class DeviceImpl extends AbstractIdleService implements Device, Service, 
             }
             URI uri = wsaUtil.getAddressUri(epr).orElseThrow(() ->
                     new RuntimeException("Invalid EPR detected when trying to add hosted service."));
-            httpServerRegistry.registerContext(uri.getHost(), uri.getPort(), contextPath, reqResHandler);
+
+            httpServerRegistry.registerContext(uri.getHost(), uri.getPort(), contextPath, hsReqResHandler);
             URI wsdlLocation = httpServerRegistry.registerContext(uri.getHost(), uri.getPort(), wsdlContextPath,
                     SoapConstants.MEDIA_TYPE_WSDL, new ByteResourceHandler(wsdlDocBytes));
             hostedService.getWsdlLocations().add(wsdlLocation);
@@ -317,10 +322,10 @@ public class DeviceImpl extends AbstractIdleService implements Device, Service, 
         HostedServiceInterceptor hsInterceptor = hostedServiceInterceptorFactory.createHostedServiceInterceptor(
                 hostedService, wsdTargetService);
         // Register interceptor at HTTP req-res-handler
-        reqResHandler.register(hsInterceptor);
+        hsReqResHandler.register(hsInterceptor);
 
         // Register Web Service interceptor at HTTP req-res-handler
-        reqResHandler.register(hostedService.getWebService());
+        hsReqResHandler.register(hostedService.getWebService());
 
         // Add hosted service to hosting service to get metadata descriptions updated
         hostingService.addHostedService(hostedService);
