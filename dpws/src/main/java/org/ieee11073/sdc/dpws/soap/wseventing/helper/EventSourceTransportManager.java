@@ -96,7 +96,7 @@ public class EventSourceTransportManager {
                 }
             }
 
-            subMan.invalidate();
+            subMan.stopAsync().awaitTerminated();
             return InterceptorResult.CANCEL;
         });
     }

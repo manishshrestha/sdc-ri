@@ -1,6 +1,7 @@
 package org.ieee11073.sdc.dpws.soap.wseventing;
 
 import com.google.common.util.concurrent.AbstractExecutionThreadService;
+import com.google.common.util.concurrent.AbstractIdleService;
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
 import org.ieee11073.sdc.dpws.soap.wsaddressing.model.EndpointReferenceType;
@@ -22,7 +23,7 @@ import java.util.concurrent.locks.ReentrantLock;
 /**
  * Default implementation of {@link SourceSubscriptionManager}.
  */
-public class SourceSubscriptionManagerImpl extends AbstractExecutionThreadService implements SourceSubscriptionManager {
+public class SourceSubscriptionManagerImpl extends AbstractIdleService implements SourceSubscriptionManager {
     private static final Logger LOG = LoggerFactory.getLogger(SourceSubscriptionManagerImpl.class);
 
     private final EndpointReferenceType notifyTo;
@@ -32,7 +33,6 @@ public class SourceSubscriptionManagerImpl extends AbstractExecutionThreadServic
     private Duration expires;
     private final EndpointReferenceType subscriptionManagerEpr;
     private final Lock expiresLock;
-    private final AtomicBoolean invalidated;
     private final BlockingQueue<Notification> notificationQueue;
 
     @AssistedInject
@@ -56,7 +56,6 @@ public class SourceSubscriptionManagerImpl extends AbstractExecutionThreadServic
         this.notifyTo = notifyTo;
         this.subscriptionManagerEpr = subscriptionManagerEpr;
         this.expiresLock = new ReentrantLock();
-        this.invalidated = new AtomicBoolean(false);
         this.notificationQueue = new ArrayBlockingQueue<>(500); // todo make queue size configurable
     }
 
@@ -117,23 +116,18 @@ public class SourceSubscriptionManagerImpl extends AbstractExecutionThreadServic
         return notificationQueue;
     }
 
-    @Override
-    public void invalidate() {
-        invalidated.set(true);
-    }
-
-    @Override
-    public boolean isValid() {
-        return !invalidated.get();
-    }
-
     private LocalDateTime calculateTimeout(Duration expires) {
         LocalDateTime t = LocalDateTime.now();
         return t.plus(expires);
     }
 
     @Override
-    protected void run() throws Exception {
+    protected void startUp() throws Exception {
+        // void
+    }
 
+    @Override
+    protected void shutDown() throws Exception {
+        // void
     }
 }

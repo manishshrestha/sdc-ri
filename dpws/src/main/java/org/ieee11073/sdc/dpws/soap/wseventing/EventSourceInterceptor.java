@@ -224,6 +224,8 @@ public class EventSourceInterceptor extends AbstractIdleService implements Event
                 wsaUtil.getAddressUriAsString(subMan.getNotifyTo()).orElse("<unknown>"),
                 grantedExpires.getSeconds());
 
+        subMan.startAsync().awaitRunning();
+
         return InterceptorResult.PROCEED;
     }
 
@@ -286,7 +288,7 @@ public class EventSourceInterceptor extends AbstractIdleService implements Event
         validateRequestBody(rrObj, Unsubscribe.class);
 
         SourceSubscriptionManager subMan = validateSubscriptionEpr(rrObj);
-        subMan.invalidate();
+        subMan.stopAsync().awaitTerminated();
 
         // No response body required
         soapUtil.setWsaAction(rrObj.getResponse(), WsEventingConstants.WSA_ACTION_UNSUBSCRIBE_RESPONSE);
@@ -299,7 +301,7 @@ public class EventSourceInterceptor extends AbstractIdleService implements Event
     private void removeStaleSubscriptions() {
         subscriptionRegistry.getSubscriptions().entrySet().parallelStream().forEach(entry -> {
             SourceSubscriptionManager subMan = entry.getValue();
-            if (!subMan.isValid() || isSubscriptionExpired(subMan)) {
+            if (!subMan.isRunning() || isSubscriptionExpired(subMan)) {
                 subscriptionRegistry.removeSubscription(entry.getKey());
                 unregisterHttpHandler(subMan);
                 subscribedActionsLock.lock();
