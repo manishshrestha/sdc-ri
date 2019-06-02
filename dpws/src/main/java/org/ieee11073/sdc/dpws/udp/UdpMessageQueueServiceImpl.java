@@ -10,9 +10,10 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.util.concurrent.LinkedBlockingDeque;
 
-public class UdpMessageQueueServiceImpl extends AbstractIdleService implements UdpMessageReceiverCallback, Service, UdpMessageQueueService {
+public class UdpMessageQueueServiceImpl extends AbstractIdleService implements Service, UdpMessageQueueService {
     private final static Logger LOG = LoggerFactory.getLogger(UdpMessageQueueServiceImpl.class);
-
+    private static int instanceIdCounter = 0;
+    private final int instanceId;
     private final LinkedBlockingDeque<UdpMessage> incomingMessageQueue;
     private final LinkedBlockingDeque<UdpMessage> outgoingMessageQueue;
     private final EventBus eventBus;
@@ -23,6 +24,7 @@ public class UdpMessageQueueServiceImpl extends AbstractIdleService implements U
 
     @Inject
     UdpMessageQueueServiceImpl(EventBus eventBus) {
+        this.instanceId = instanceIdCounter++;
         this.incomingMessageQueue = new LinkedBlockingDeque<>();
         this.outgoingMessageQueue = new LinkedBlockingDeque<>();
         this.eventBus = eventBus;
@@ -58,8 +60,6 @@ public class UdpMessageQueueServiceImpl extends AbstractIdleService implements U
             throw new Exception(msg);
         }
 
-        udpBinding.setMessageReceiver(this);
-
         startProcessingOfIncomingMessages();
         startProcessingOfOutgoingMessages();
 
@@ -80,7 +80,7 @@ public class UdpMessageQueueServiceImpl extends AbstractIdleService implements U
                 }
             } while (isRunning());
         });
-        outgoingThread.setName("Outgoing UdpMessageQueueService");
+        outgoingThread.setName(String.format("[%s] Outgoing UdpMessageQueueService", Integer.toString(instanceId)));
         outgoingThread.start();
     }
 
@@ -98,13 +98,14 @@ public class UdpMessageQueueServiceImpl extends AbstractIdleService implements U
 
             } while (isRunning());
         });
-        incomingThread.setName("Incoming UdpMessageQueueService");
+        incomingThread.setName(String.format("[%s] Incoming UdpMessageQueueService", Integer.toString(instanceId)));
         incomingThread.start();
     }
 
     @Override
     protected void shutDown() throws Exception {
         LOG.info("Shut down UDP message queue for binding {}.", udpBinding);
+        incomingMessageQueue.clear();
         outgoingMessageQueue.clear();
         incomingThread.interrupt();
         outgoingThread.interrupt();

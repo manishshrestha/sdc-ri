@@ -70,5 +70,6 @@ public class DpwsFrameworkImpl extends AbstractIdleService implements DpwsFramew
         udpBindingService = udpBindingServiceFactory.createUdpBindingService(wsdMulticastAddress,
                 DpwsConstants.DISCOVERY_PORT, DpwsConstants.MAX_UDP_ENVELOPE_SIZE);
         udpMessageQueueService.setUdpBinding(udpBindingService);
+        udpBindingService.setMessageReceiver(udpMessageQueueService);
     }
 }

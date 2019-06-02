@@ -11,7 +11,7 @@ import com.google.common.util.concurrent.Service;
  * Use {@link #registerUdpMessageQueueObserver(UdpMessageQueueObserver)} to add recipients that receive incoming UDP messages caught
  * by UDP binding set with {@link #setUdpBinding(UdpBindingService)}.
  */
-public interface UdpMessageQueueService extends Service {
+public interface UdpMessageQueueService extends Service, UdpMessageReceiverCallback {
     /**
      * Inject UDP binding service.
      *

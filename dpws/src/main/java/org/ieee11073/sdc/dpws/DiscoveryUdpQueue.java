@@ -12,7 +12,7 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 /**
  * Annotation to let a device know which UDP queue to be used as a discovery port. Since there can be only one UDP
- * queue per process, this object has to be injected as a singleton via Guice.
+ * queue per injector, this object has to be injected as a singleton via Guice.
  */
 @Target({PARAMETER, FIELD, METHOD})
 @Retention(RUNTIME)
