@@ -53,6 +53,7 @@ public class HostedServiceInterceptor implements Interceptor {
         Metadata metadata = mexFactory.createMetadata();
         List<MetadataSection> metadataSection = metadata.getMetadataSection();
 
+        // \todo Is host relationship required here? - probably not
         metadataSection.add(metadataSectionUtil.createRelationship(targetService.getEndpointReference(),
                 targetService.getTypes(), Arrays.asList(hostedService)));
 

@@ -36,15 +36,15 @@ public interface HostingServiceFactory {
      * @param hostedServices Map of service ids to hosted service proxies.
      * @param metadataVersion
      * @param requestResponseClient
-     * @param peerInformation
+     * @param activeXAddr Physical address where to reach the hosting service proxy
      * @return
      */
-    WritableHostingServiceProxy createHostingServiceProxy(@Assisted URI endpointReferenceAddress,
+    WritableHostingServiceProxy createHostingServiceProxy(@Assisted("eprAddress") URI endpointReferenceAddress,
                                                           @Assisted List<QName> types,
                                                           @Assisted @Nullable ThisDeviceType thisDevice,
                                                           @Assisted @Nullable ThisModelType thisModel,
                                                           @Assisted Map<URI, WritableHostedServiceProxy> hostedServices,
                                                           @Assisted long metadataVersion,
                                                           @Assisted RequestResponseClient requestResponseClient,
-                                                          @Assisted PeerInformation peerInformation);
+                                                          @Assisted("activeXAddr") URI activeXAddr);
 }

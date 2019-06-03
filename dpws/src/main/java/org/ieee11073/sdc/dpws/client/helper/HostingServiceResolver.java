@@ -4,6 +4,8 @@ import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
+import org.checkerframework.checker.nullness.Opt;
+import org.ieee11073.sdc.common.helper.JaxbUtil;
 import org.ieee11073.sdc.dpws.DpwsConstants;
 import org.ieee11073.sdc.dpws.TransportBinding;
 import org.ieee11073.sdc.dpws.client.DeviceProxy;
@@ -13,7 +15,6 @@ import org.ieee11073.sdc.dpws.helper.PeerInformation;
 import org.ieee11073.sdc.dpws.model.*;
 import org.ieee11073.sdc.dpws.service.HostingServiceProxy;
 import org.ieee11073.sdc.dpws.service.WritableHostedServiceProxy;
-import org.ieee11073.sdc.dpws.service.WritableHostingServiceProxy;
 import org.ieee11073.sdc.dpws.service.factory.HostedServiceFactory;
 import org.ieee11073.sdc.dpws.service.factory.HostingServiceFactory;
 import org.ieee11073.sdc.dpws.service.helper.HostResolver;
@@ -24,17 +25,20 @@ import org.ieee11073.sdc.dpws.soap.exception.MalformedSoapMessageException;
 import org.ieee11073.sdc.dpws.soap.exception.TransportException;
 import org.ieee11073.sdc.dpws.soap.factory.RequestResponseClientFactory;
 import org.ieee11073.sdc.dpws.soap.wsaddressing.WsAddressingUtil;
+import org.ieee11073.sdc.dpws.soap.wsaddressing.model.EndpointReferenceType;
+import org.ieee11073.sdc.dpws.soap.wsmetadataexchange.GetMetadataClient;
 import org.ieee11073.sdc.dpws.soap.wsmetadataexchange.model.Metadata;
 import org.ieee11073.sdc.dpws.soap.wsmetadataexchange.model.MetadataSection;
 import org.ieee11073.sdc.dpws.soap.wstransfer.TransferGetClient;
-import org.ieee11073.sdc.common.helper.JaxbUtil;
-import org.ieee11073.sdc.dpws.model.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.xml.namespace.QName;
 import java.net.URI;
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 /**
  * Helper class to resolve hosting service and hosted service information from {@link DeviceProxy} objects.
@@ -53,6 +57,7 @@ public class HostingServiceResolver {
     private final WsAddressingUtil wsaUtil;
     private final HostingServiceFactory hostingServiceFactory;
     private final HostedServiceFactory hostedServiceFactory;
+    private final GetMetadataClient getMetadataClient;
 
     @AssistedInject
     HostingServiceResolver(@Assisted HostingServiceRegistry hostingServiceRegistry,
@@ -61,6 +66,7 @@ public class HostingServiceResolver {
                            TransportBindingFactory transportBindingFactory,
                            RequestResponseClientFactory requestResponseClientFactory,
                            TransferGetClient transferGetClient,
+                           GetMetadataClient getMetadataClient,
                            JaxbUtil jaxbUtil,
                            SoapUtil soapUtil,
                            WsAddressingUtil wsaUtil,
@@ -72,6 +78,7 @@ public class HostingServiceResolver {
         this.transportBindingFactory = transportBindingFactory;
         this.requestResponseClientFactory = requestResponseClientFactory;
         this.transferGetClient = transferGetClient;
+        this.getMetadataClient = getMetadataClient;
         this.jaxbUtil = jaxbUtil;
         this.soapUtil = soapUtil;
         this.wsaUtil = wsaUtil;
@@ -81,10 +88,10 @@ public class HostingServiceResolver {
 
     /**
      * Resolve hosting service and hosted service information.
-     *
+     * <p>
      * Use given {@link DeviceProxy} object to retrieve device UUID and metadata version of a device. If the device
      * exists in the registry already and there is no new metadata version, the method returns with cached information.
-     *
+     * <p>
      * If the device is not registered in the registry, or the stored metadata version is out-dated, then the method
      * requests hosting service and hosted service information by using WS-Transfer Get, stores the information in the
      * registry, and returns it.
@@ -94,49 +101,51 @@ public class HostingServiceResolver {
      */
     public ListenableFuture<HostingServiceProxy> resolveHostingService(DeviceProxy deviceProxy) {
         return networkJobExecutor.submit(() -> {
-            URI deviceEprAddress = deviceProxy.getEprAddress();
-            long metadataVersion = deviceProxy.getMetadataVersion();
+            if (deviceProxy.getXAddrs().isEmpty()) {
+                throw new IllegalArgumentException("Given device proxy has no XAddrs. Connection aborted.");
+            }
 
-            // Check if hosting service was already seen
-            Optional<WritableHostingServiceProxy> hostingService = hostingServiceRegistry.get(deviceEprAddress);
-            if (hostingService.isPresent()) {
-                // If metadata has not changed, return from registry directly
-                if (metadataVersion <= hostingService.get().getMetadataVersion()) {
-                    return hostingService.get();
+            RequestResponseClient rrClient = null;
+            SoapMessage transferGetResponse = null;
+            URI activeXAddr = null;
+            for (String xAddr : deviceProxy.getXAddrs()) {
+                try {
+                    activeXAddr = URI.create(xAddr);
+                    rrClient = createRequestResponseClient(activeXAddr);
+                    // \todo add timeout for get
+                    transferGetResponse = transferGetClient.sendTransferGet(rrClient, xAddr).get();
+                    break;
+                } catch (Exception e) {
+                    LOG.debug("TransferGet to {} failed.", xAddr, e);
                 }
             }
 
-            // Hosting service not seen before, or metadata changed. Hence, resolve from device
-            PeerInformation peerInfo = hostResolver.deriveFirstResolvable(deviceProxy.getXAddrs())
-                    .orElseThrow(() -> new TransportException(
-                            String.format("Host not found: %s", Arrays.toString(deviceProxy.getXAddrs().toArray()))));
+            if (transferGetResponse == null) {
+                throw new TransportException(String.format("None of the %s XAddr URL(s) responded with a valid TransferGet response.",
+                        deviceProxy.getXAddrs().size()));
+            }
 
-            RequestResponseClient rrClient = createRequestResponseClient(peerInfo.getRemoteAddress());
-
-            ListenableFuture<SoapMessage> transferGetFuture = transferGetClient.sendTransferGet(rrClient, peerInfo
-                    .getRemoteAddress().toString());
-
-            Metadata deviceMetadata = soapUtil.getBody(transferGetFuture.get(), Metadata.class).orElseThrow(() ->
+            Metadata deviceMetadata = soapUtil.getBody(transferGetResponse, Metadata.class).orElseThrow(() ->
                     new MalformedSoapMessageException("Could not get metadata element from TransferGet response."));
 
             if (deviceMetadata.getMetadataSection().isEmpty()) {
                 throw new MalformedSoapMessageException("No metadata sections in TransferGet response.");
             }
 
-            WritableHostingServiceProxy resolvedProxy = extractHostingServiceProxy(deviceMetadata, rrClient, peerInfo,
-                    deviceEprAddress, metadataVersion).orElseThrow(() -> new MalformedSoapMessageException(
+            URI deviceEprAddress = deviceProxy.getEprAddress();
+            long metadataVersion = deviceProxy.getMetadataVersion();
+            return extractHostingServiceProxy(deviceMetadata, rrClient,
+                    deviceEprAddress, metadataVersion, activeXAddr).orElseThrow(() -> new MalformedSoapMessageException(
                     String.format("Could not resolve hosting service proxy information for {}",
                             deviceEprAddress)));
-
-            return hostingServiceRegistry.registerOrUpdate(resolvedProxy);
         });
     }
 
-    private Optional<WritableHostingServiceProxy> extractHostingServiceProxy(Metadata deviceMetadata,
-                                                                             RequestResponseClient rrClient,
-                                                                             PeerInformation peerInformation,
-                                                                             URI deviceUuid,
-                                                                             long metadataVersion) {
+    private Optional<HostingServiceProxy> extractHostingServiceProxy(Metadata deviceMetadata,
+                                                                     RequestResponseClient rrClient,
+                                                                     URI eprAddress,
+                                                                     long metadataVersion,
+                                                                     URI xAddr) {
         Optional<ThisDeviceType> thisDevice = Optional.empty();
         Optional<ThisModelType> thisModel = Optional.empty();
         Optional<RelationshipData> relationshipData = Optional.empty();
@@ -155,7 +164,7 @@ public class HostingServiceResolver {
                     thisDevice = jaxbUtil.extractElement(metadataSection.getAny(), ThisDeviceType.class);
                     continue;
                 } catch (Exception e) {
-                    LOG.info("Resolve dpws:ThisDevice from {} failed.", deviceUuid);
+                    LOG.info("Resolve dpws:ThisDevice from {} failed.", eprAddress);
                     continue;
                 }
             }
@@ -165,7 +174,7 @@ public class HostingServiceResolver {
                     thisModel = jaxbUtil.extractElement(metadataSection.getAny(), ThisModelType.class);
                     continue;
                 } catch (Exception e) {
-                    LOG.info("Resolve dpws:ThisModel from {} failed.", deviceUuid);
+                    LOG.info("Resolve dpws:ThisModel from {} failed.", eprAddress);
                     continue;
                 }
             }
@@ -176,78 +185,89 @@ public class HostingServiceResolver {
                             .orElseThrow(Exception::new);
 
                     if (!rs.getType().equals(DpwsConstants.RELATIONSHIP_TYPE_HOST)) {
-                        LOG.info("Incompatible dpws:Relationship type found for {}: {}.", deviceUuid, rs.getType());
+                        LOG.debug("Incompatible dpws:Relationship type found for {}: {}.", eprAddress, rs.getType());
                         continue;
                     }
 
-                    relationshipData = extractRelationshipData(rs, deviceUuid);
+                    relationshipData = extractRelationshipData(rs, eprAddress);
                 } catch (Exception e) {
-                    LOG.info("Resolve dpws:Relationship from {} failed.", deviceUuid);
+                    LOG.info("Resolve dpws:Relationship from {} failed.", eprAddress);
                 }
             }
         }
 
         if (!thisDevice.isPresent()) {
-            LOG.info("No dpws:ThisDevice found for {}.", deviceUuid);
+            LOG.info("No dpws:ThisDevice found for {}.", eprAddress);
         }
 
         if (!thisModel.isPresent()) {
-            LOG.info("No dpws:ThisModel found for {}.", deviceUuid);
+            LOG.info("No dpws:ThisModel found for {}.", eprAddress);
         }
 
         RelationshipData rsDataFromOptional = relationshipData.orElseThrow(() ->
                 new MalformedSoapMessageException(String.format("No dpws:Relationship found for %s, but required",
-                        deviceUuid)));
+                        eprAddress)));
 
-        WritableHostingServiceProxy hsp = hostingServiceFactory.createHostingServiceProxy(
-                rsDataFromOptional.getDeviceUuid(),
+        return Optional.of(hostingServiceFactory.createHostingServiceProxy(
+                rsDataFromOptional.getEprAddress(),
                 rsDataFromOptional.getTypes(),
                 thisDevice.orElse(null),
                 thisModel.orElse(null),
                 rsDataFromOptional.getHostedServices(),
                 metadataVersion,
                 rrClient,
-                peerInformation);
-        return Optional.of(hsp);
+                xAddr));
     }
 
-    private Optional<RelationshipData> extractRelationshipData(Relationship relationship, URI deviceUuid) {
+    private Optional<RelationshipData> extractRelationshipData(Relationship relationship, URI eprAddress) throws TransportException {
         RelationshipData result = new RelationshipData();
 
         for (Object potentialRelationship : relationship.getAny()) {
             jaxbUtil.extractElement(potentialRelationship, HostServiceType.class).ifPresent(host -> {
-                result.setDeviceUuid(wsaUtil.getAddressUri(host.getEndpointReference()).orElse(null));
+                result.setEprAddress(wsaUtil.getAddressUri(host.getEndpointReference()).orElse(null));
                 result.setTypes(host.getTypes());
             });
 
             jaxbUtil.extractElement(potentialRelationship, HostedServiceType.class).ifPresent(hsType ->
-                    extractHostedServiceProxy(hsType, deviceUuid)
+                    extractHostedServiceProxy(hsType)
                             .ifPresent(hsProxy -> result.getHostedServices()
                                     .put(URI.create(hsProxy.getType().getServiceId()), hsProxy)));
         }
 
-        if (result.getDeviceUuid() == null) {
-            LOG.info("Found no valid dpws:Host for {}", deviceUuid);
+        if (result.getEprAddress() == null) {
+            LOG.info("Found no valid dpws:Host for {}", eprAddress);
             return Optional.empty();
         }
 
         if (result.getHostedServices().isEmpty()) {
-            LOG.info("Found no dpws:Hosted for {}", deviceUuid);
+            LOG.info("Found no dpws:Hosted for {}", eprAddress);
         }
 
         return Optional.of(result);
     }
 
-    private Optional<WritableHostedServiceProxy> extractHostedServiceProxy(HostedServiceType host, URI deviceUuid) {
-        Optional<PeerInformation> peerInformation = hostResolver.deriveFirstResolvable(host);
-        if (!peerInformation.isPresent()) {
-            LOG.info("Failed to resolve hosted service with ServiceId {} for {}", host.getServiceId(), deviceUuid);
+    private Optional<WritableHostedServiceProxy> extractHostedServiceProxy(HostedServiceType host) {
+        URI activeHostedServiceEprAddress = null;
+        RequestResponseClient rrClient = null;
+        SoapMessage getMetadatResponse = null;
+        for (EndpointReferenceType eprType : host.getEndpointReference()) {
+            try {
+                activeHostedServiceEprAddress = URI.create(eprType.getAddress().getValue());
+                rrClient = createRequestResponseClient(activeHostedServiceEprAddress);
+                getMetadatResponse = getMetadataClient.sendGetMetadata(rrClient).get();
+                break;
+            } catch (Exception e) {
+                LOG.debug("GetMetadata to {} failed.", eprType.getAddress().getValue(), e);
+            }
+        }
+
+        if (getMetadatResponse == null) {
+            LOG.info("None of the {} hosted service EPR addresses responded with a valid GetMetadata response.",
+                    host.getEndpointReference().size());
             return Optional.empty();
         }
 
-        RequestResponseClient rrClient = createRequestResponseClient(peerInformation.get().getRemoteAddress());
-
-        return Optional.of(hostedServiceFactory.createHostedServiceProxy(host, rrClient, peerInformation.get()));
+        return Optional.of(hostedServiceFactory.createHostedServiceProxy(host, rrClient, activeHostedServiceEprAddress));
     }
 
     private RequestResponseClient createRequestResponseClient(URI endpointAddress) {
@@ -256,16 +276,16 @@ public class HostingServiceResolver {
     }
 
     private class RelationshipData {
-        private URI deviceUuid = null;
+        private URI eprAddress = null;
         private List<QName> types = null;
         private Map<URI, WritableHostedServiceProxy> hostedServices = new HashMap<>();
 
-        public URI getDeviceUuid() {
-            return deviceUuid;
+        public URI getEprAddress() {
+            return eprAddress;
         }
 
-        public void setDeviceUuid(URI deviceUuid) {
-            this.deviceUuid = deviceUuid;
+        public void setEprAddress(URI eprAddress) {
+            this.eprAddress = eprAddress;
         }
 
         public List<QName> getTypes() {

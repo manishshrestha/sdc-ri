@@ -74,7 +74,7 @@ public class WsEventingTest extends DpwsTest {
                 tbFactory.createTransportBinding(hostedServiceUri));
 
         HostedServiceProxy mockHostedServiceProxy = hostedServiceFactory.createHostedServiceProxy(hst, rrc,
-                new PeerInformation(hostedServiceUri, "localhost"));
+                hostedServiceUri);
 
         wseSink = getInjector().getInstance(WsEventingEventSinkFactory.class)
                 .createWsEventingEventSink(rrc, "localhost");

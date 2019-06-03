@@ -37,5 +37,5 @@ public interface WritableHostingServiceProxy extends HostingServiceProxy {
                                 Map<URI, WritableHostedServiceProxy> hostedServices,
                                 long metadataVersion,
                                 RequestResponseClient requestResponseClient,
-                                PeerInformation peerInformation);
+                                URI activeXAddr);
 }

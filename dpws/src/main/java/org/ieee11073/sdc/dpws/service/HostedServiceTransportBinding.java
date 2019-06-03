@@ -82,9 +82,8 @@ public class HostedServiceTransportBinding implements TransportBinding, HostedSe
         transportBindingLock.lock();
         try {
             transportBinding = null;
-            PeerInformation addrInfo = hostedServiceProxy.getPeerInformation();
-            URI remoteAddr = addrInfo.getRemoteAddress();
-            transportBinding = transportBindingFactory.createTransportBinding(remoteAddr);
+            URI activeEprAddress = hostedServiceProxy.getActiveEprAddress();
+            transportBinding = transportBindingFactory.createTransportBinding(activeEprAddress);
         } finally {
             transportBindingLock.unlock();
         }

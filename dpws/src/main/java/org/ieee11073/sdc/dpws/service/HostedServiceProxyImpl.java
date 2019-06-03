@@ -14,6 +14,7 @@ import org.ieee11073.sdc.dpws.soap.interception.Interceptor;
 import org.ieee11073.sdc.common.helper.ObjectUtil;
 
 import javax.annotation.Nullable;
+import java.net.URI;
 
 /**
  * Default implementation of {@link WritableHostedServiceProxy}.
@@ -25,41 +26,35 @@ public class HostedServiceProxyImpl implements WritableHostedServiceProxy {
 
     private HostedServiceType hostedServiceType;
     private RequestResponseClient requestResponseClient;
-    private PeerInformation peerInformation;
+    private URI activeEprAddress;
 
     @AssistedInject
     HostedServiceProxyImpl(@Assisted HostedServiceType hostedServiceType,
                            @Assisted RequestResponseClient requestResponseClient,
-                           @Assisted PeerInformation peerInformation,
+                           @Assisted URI activeEprAddress,
                            EventBus metadataChangedBus,
                            ObjectUtil objectUtil) {
         this.metadataChangedBus = metadataChangedBus;
         this.objectUtil = objectUtil;
 
-        updateProxyInformation(hostedServiceType, requestResponseClient, peerInformation);
-    }
-
-    private synchronized void setPeerInformation(@Nullable PeerInformation peerInformation) {
-        this.peerInformation = peerInformation;
+        updateProxyInformation(hostedServiceType, requestResponseClient, activeEprAddress);
     }
 
     @Override
     public synchronized void updateProxyInformation(HostedServiceType type,
                                                     RequestResponseClient requestResponseClient,
-                                                    PeerInformation peerInformation) {
+                                                    URI activeEprAddress) {
         HostedServiceType typeBefore = getType();
         this.hostedServiceType = objectUtil.deepCopy(type);
         this.requestResponseClient = requestResponseClient;
-        this.peerInformation = peerInformation;
+        this.activeEprAddress = activeEprAddress;
 
         metadataChangedBus.post(new HostedServiceMetadataChangeMessage(
                 typeBefore,
                 getType(),
                 getRequestResponseClient(),
-                getPeerInformation()));
+                getActiveEprAddress()));
     }
-
-
 
     @Override
     public synchronized HostedServiceType getType() {
@@ -82,8 +77,8 @@ public class HostedServiceProxyImpl implements WritableHostedServiceProxy {
     }
 
     @Override
-    public synchronized PeerInformation getPeerInformation() {
-        return peerInformation;
+    public synchronized URI getActiveEprAddress() {
+        return activeEprAddress;
     }
 
     @Override

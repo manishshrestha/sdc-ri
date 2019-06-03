@@ -1,6 +1,7 @@
 package org.ieee11073.sdc.dpws.udp;
 
 import com.google.common.util.concurrent.AbstractIdleService;
+import com.google.common.util.concurrent.SettableFuture;
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
 import org.ieee11073.sdc.dpws.DpwsConstants;
@@ -10,6 +11,9 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.net.*;
 import java.util.Random;
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class UdpBindingServiceImpl extends AbstractIdleService implements UdpBindingService {
     private static final Logger LOG = LoggerFactory.getLogger(UdpBindingServiceImpl.class);
@@ -18,9 +22,11 @@ public class UdpBindingServiceImpl extends AbstractIdleService implements UdpBin
     private final Random random = new Random();
     private final InetAddress socketAddress;
     private final Integer socketPort;
-    private Thread socketRunner;
+    private Thread multicastSocketRunner;
+    private Thread unicastSocketRunner;
 
     private DatagramSocket incomingSocket;
+    private MulticastSocket incomingMulticastSocket;
     private DatagramSocket outgoingSocket;
 
     private final int maxMessageSize;
@@ -33,18 +39,19 @@ public class UdpBindingServiceImpl extends AbstractIdleService implements UdpBin
         this.socketAddress = socketAddress;
         this.socketPort = socketPort;
         this.maxMessageSize = maxMessageSize;
+        this.incomingMulticastSocket = null;
     }
 
     @Override
     protected void startUp() throws Exception {
-        LOG.info("Start UDP binding {}.", this);
         InetSocketAddress address = new InetSocketAddress(socketAddress, socketPort);
+        LOG.info("Start UDP binding {}.", this);
 
         try {
             if (socketAddress.isMulticastAddress()) {
-                MulticastSocket multicastSocket = new MulticastSocket(socketPort);
-                multicastSocket.joinGroup(socketAddress);
-                incomingSocket = multicastSocket;
+                incomingMulticastSocket = new MulticastSocket(socketPort);
+                incomingMulticastSocket.joinGroup(socketAddress);
+                incomingSocket = incomingMulticastSocket;
             } else {
                 incomingSocket = new DatagramSocket(address);
             }
@@ -59,8 +66,10 @@ public class UdpBindingServiceImpl extends AbstractIdleService implements UdpBin
             LOG.info("No data receiver configured; ignore incoming UDP messages.");
         } else {
             LOG.info("Data receiver configured; process incoming UDP messages.");
-            this.socketRunner = new Thread(() -> {
-                while (!socketRunner.isInterrupted()) {
+
+            // Socket to receive any incoming multicast traffic
+            this.multicastSocketRunner = new Thread(() -> {
+                while (!multicastSocketRunner.isInterrupted()) {
                     DatagramPacket packet = new DatagramPacket(new byte[maxMessageSize], maxMessageSize);
                     try {
                         incomingSocket.receive(packet);
@@ -75,7 +84,25 @@ public class UdpBindingServiceImpl extends AbstractIdleService implements UdpBin
                 }
             });
 
-            socketRunner.start();
+            // Socket to receive unicast-replied messages like ProbeMatches and ResolveMatches
+            this.unicastSocketRunner = new Thread(() -> {
+                while (!unicastSocketRunner.isInterrupted()) {
+                    DatagramPacket packet = new DatagramPacket(new byte[maxMessageSize], maxMessageSize);
+                    try {
+                        outgoingSocket.receive(packet);
+                    } catch (IOException e) {
+                        LOG.trace("Could not process UDP packet. Discard.");
+                        continue;
+                    }
+
+                    UdpMessage message = new UdpMessage(packet.getData(), packet.getLength(),
+                            packet.getAddress().getHostAddress(), packet.getPort());
+                    receiver.receive(message);
+                }
+            });
+
+            multicastSocketRunner.start();
+            unicastSocketRunner.start();
         }
 
         LOG.info("UDP binding {} is running.", this);
@@ -84,7 +111,11 @@ public class UdpBindingServiceImpl extends AbstractIdleService implements UdpBin
     @Override
     protected void shutDown() throws Exception {
         LOG.info("Shut down UDP binding {}.", this);
-        socketRunner.interrupt();
+        multicastSocketRunner.interrupt();
+        unicastSocketRunner.interrupt();
+        if (incomingMulticastSocket != null) {
+            incomingMulticastSocket.leaveGroup(socketAddress);
+        }
         incomingSocket.close();
         outgoingSocket.close();
         LOG.info("UDP binding {} shut down.", this);
@@ -134,7 +165,8 @@ public class UdpBindingServiceImpl extends AbstractIdleService implements UdpBin
             try {
                 Thread.sleep(t);
             } catch (InterruptedException e) {
-                LOG.warn("Thread interrupted.", e);
+                LOG.debug("Thread interrupted.", e);
+                break;
             }
 
             outgoingSocket.send(packet);
@@ -148,6 +180,7 @@ public class UdpBindingServiceImpl extends AbstractIdleService implements UdpBin
 
     @Override
     public String toString() {
-        return String.format("udp://%s:%s", socketAddress.getHostName(), socketPort);
+        String type = socketAddress.isMulticastAddress() ? "multicast" : "unicast";
+        return String.format("udp-%s://%s:%s", type, socketAddress.getHostName(), socketPort);
     }
 }

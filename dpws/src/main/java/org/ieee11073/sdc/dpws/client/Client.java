@@ -3,6 +3,9 @@ package org.ieee11073.sdc.dpws.client;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.Service;
 import org.ieee11073.sdc.dpws.service.HostingServiceProxy;
+import org.ieee11073.sdc.dpws.soap.exception.TransportException;
+import org.ieee11073.sdc.dpws.soap.wsdiscovery.model.ProbeMatchesType;
+import org.ieee11073.sdc.dpws.soap.wsdiscovery.model.ResolveMatchesType;
 
 import java.net.URI;
 
@@ -34,7 +37,27 @@ public interface Client extends Service {
      *
      * @param discoveryFilter Types and scopes the discovery process shall filter against.
      */
-    void probe(DiscoveryFilter discoveryFilter);
+    void probe(DiscoveryFilter discoveryFilter) throws TransportException;;
+
+    /**
+     *
+     * Send a directed probe to a speecific physical address.
+     * This method is an asynchronous call; the result will not be notified to subscribed parties.
+     *
+     * @param xAddr Physical device's address.
+     */
+    ListenableFuture<ProbeMatchesType> directedProbe(URI xAddr) throws TransportException;
+
+
+    /**
+     * Resolve physical addresses (XAddrs) of a device.
+     *
+     * This method is an asynchronous call. All parties that subscribed to event messages by using
+     * {@link #registerDiscoveryObserver(DiscoveryObserver)}, will be notified on resolved devices and resolve ending.
+     *
+     * @param eprAddress Endpoint reference address of the device to resolve.
+     */
+    ListenableFuture<DeviceProxy> resolve(URI eprAddress) throws TransportException;
 
     /**
      * Connect to a hosting service.
@@ -42,10 +65,6 @@ public interface Client extends Service {
      * By saying connect, this method resolves hosting service and hosted service information,
      * which is afterwards available for usage. The hosting service and hosted service information is stored in an
      * internal registry and is updated automatically when a new metadata version is detected.
-     *
-     * Devices have to be disconnected manually by calling {@link #disconnectHostingService(URI)}. By doing so, no
-     * metadata changes are tracked anymore, plus the hosting service and hosted service information is removed from
-     * the internal registry.
      *
      * If configured, connecting to a device also starts a watchdog. The watchdog sends a {@link DeviceLeftMessage}
      * with {@link DeviceLeftMessage.TriggerType#WATCHDOG}. Configure with
@@ -57,15 +76,5 @@ public interface Client extends Service {
      * @param deviceProxy
      * @return
      */
-    ListenableFuture<HostingServiceProxy> connectHostingService(DeviceProxy deviceProxy);
-
-    /**
-     * Use this function to disconnect a device with a specific device UUID.
-     *
-     * By saying disconnect, the hosting service and hosted service information is removed from the internal registry
-     * and metadata updates as well as the watchdog is not considered anymore.
-     *
-     * @param deviceUuid UUID of the device to remove.
-     */
-    void disconnectHostingService(URI deviceUuid);
+    ListenableFuture<HostingServiceProxy> connect(DeviceProxy deviceProxy);
 }

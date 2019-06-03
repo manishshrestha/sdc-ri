@@ -2,37 +2,41 @@ package it.org.ieee11073.sdc.dpws.soap;
 
 
 import com.google.common.eventbus.Subscribe;
+import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.SettableFuture;
-import org.ieee11073.sdc.dpws.DpwsTest;
+import org.apache.log4j.BasicConfigurator;
 import org.ieee11073.sdc.dpws.client.*;
 import org.ieee11073.sdc.dpws.guice.DefaultDpwsConfigModule;
+import org.ieee11073.sdc.dpws.service.HostingServiceProxy;
 import org.ieee11073.sdc.dpws.soap.wsdiscovery.WsDiscoveryConfig;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.net.URI;
 import java.time.Duration;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertFalse;
 
-public class CommunicationIT extends DpwsTest {
-    private static final Duration MAX_WAIT_TIME = Duration.ofSeconds(20);
+public class DiscoveryIT {
+    private static final Duration MAX_WAIT_TIME = Duration.ofSeconds(10);
 
     private DevicePeer devicePeer;
     private ClientPeer clientPeer;
 
-    @Override
     @Before
     public void setUp() throws Exception {
-        super.setUp();
+        BasicConfigurator.configure();
         this.devicePeer = new DevicePeer();
         this.clientPeer = new ClientPeer(new DefaultDpwsConfigModule() {
             @Override
             protected void customConfigure() {
                 // shorten the test time by only waiting 1 second for the probe response
-                bind(WsDiscoveryConfig.MAX_WAIT_FOR_PROBE_MATCHES, Duration.class, Duration.ofSeconds((long)MAX_WAIT_TIME.getSeconds() / 2));
+                bind(WsDiscoveryConfig.MAX_WAIT_FOR_PROBE_MATCHES, Duration.class,
+                        Duration.ofSeconds(MAX_WAIT_TIME.getSeconds() / 2));
             }
         });
     }
@@ -45,8 +49,11 @@ public class CommunicationIT extends DpwsTest {
 
     @Test
     public void explicitDeviceDiscovery() throws Exception {
+        // Given a device under test (DUT) and a client up and running
         devicePeer.startAsync().awaitRunning();
         clientPeer.startAsync().awaitRunning();
+
+        // Given a discovery observer
         final SettableFuture<Integer> actualDeviceFoundCount = SettableFuture.create();
         final SettableFuture<String> actualEpr = SettableFuture.create();
         DiscoveryObserver obs = new DiscoveryObserver() {
@@ -71,23 +78,32 @@ public class CommunicationIT extends DpwsTest {
             }
         };
 
+        // When explicit discovery is triggered (filter set to none)
         clientPeer.getClient().registerDiscoveryObserver(obs);
         DiscoveryFilterBuilder discoveryFilterBuilder = new DiscoveryFilterBuilder();
         clientPeer.getClient().probe(discoveryFilterBuilder.get());
 
-        assertEquals(1, actualDeviceFoundCount.get(MAX_WAIT_TIME.getSeconds(), TimeUnit.SECONDS).intValue());
-        assertEquals(devicePeer.getEprAddress().toString(), actualEpr.get(MAX_WAIT_TIME.getSeconds(), TimeUnit.SECONDS));
+        // Then expect to find one device
+        final int expectedDeviceFoundCount = 1;
+        assertEquals(expectedDeviceFoundCount, actualDeviceFoundCount
+                .get(MAX_WAIT_TIME.getSeconds(), TimeUnit.SECONDS).intValue());
 
-        assertEquals(devicePeer.getEprAddress().toString(),
-                clientPeer.getClient().resolve(devicePeer.getEprAddress()).get(5, TimeUnit.SECONDS)
-                        .getResolveMatch().getEndpointReference().getAddress().getValue());
+        // Then expect the found EPR address to be the DUT's EPR address
+        final String expectedEprAddress = devicePeer.getEprAddress().toString();
+        assertEquals(expectedEprAddress, actualEpr.get(MAX_WAIT_TIME.getSeconds(), TimeUnit.SECONDS));
+
+        // Resolve and verify EPR address against the DUT's EPR address
+        assertEquals(expectedEprAddress,
+                clientPeer.getClient().resolve(devicePeer.getEprAddress()).get(MAX_WAIT_TIME.getSeconds(), TimeUnit.SECONDS)
+                        .getEprAddress().toString());
     }
 
     @Test
     public void implicitDeviceDiscovery() throws Exception {
+        // Given a running client that listens to discovered devices
         clientPeer.startAsync().awaitRunning();
         final SettableFuture<String> actualEpr = SettableFuture.create();
-        DiscoveryObserver obs = new DiscoveryObserver() {
+        final DiscoveryObserver obs = new DiscoveryObserver() {
             @Subscribe
             void deviceFound(DeviceEnteredMessage message) {
                 if (devicePeer.getEprAddress().equals(message.getPayload().getEprAddress())) {
@@ -96,12 +112,63 @@ public class CommunicationIT extends DpwsTest {
             }
         };
         clientPeer.getClient().registerDiscoveryObserver(obs);
+
+        // When a device under test (DUT) joins the network
         devicePeer.startAsync().awaitRunning();
 
-        assertEquals(devicePeer.getEprAddress().toString(), actualEpr.get(MAX_WAIT_TIME.getSeconds(), TimeUnit.SECONDS));
+        // Then expect the found EPR address to be the DUT's EPR address
+        final String expectedEprAddress = devicePeer.getEprAddress().toString();
+        assertEquals(expectedEprAddress, actualEpr.get(MAX_WAIT_TIME.getSeconds(), TimeUnit.SECONDS));
 
-        assertEquals(devicePeer.getEprAddress().toString(),
+        // Resolve and verify EPR address against the DUT's EPR address
+        assertEquals(expectedEprAddress,
                 clientPeer.getClient().resolve(devicePeer.getEprAddress()).get(MAX_WAIT_TIME.getSeconds(), TimeUnit.SECONDS)
-                        .getResolveMatch().getEndpointReference().getAddress().getValue());
+                        .getEprAddress().toString());
+    }
+
+    @Test
+    public void directedProbe() throws Exception {
+        // Given a device under test (DUT) and a client up and running
+        devicePeer.startAsync().awaitRunning();
+        clientPeer.startAsync().awaitRunning();
+
+        // When the DUT's physical addresses are resolved
+        final DeviceProxy deviceProxy = clientPeer.getClient().resolve(devicePeer.getEprAddress())
+                .get(MAX_WAIT_TIME.getSeconds(), TimeUnit.SECONDS);
+        final List<String> xAddrs = deviceProxy.getXAddrs();
+        assertFalse(xAddrs.isEmpty());
+        final URI uri = URI.create(xAddrs.get(0));
+
+        // Then expect the EPR address returned by a directed probe to be the DUT's EPR address
+        final String expectedEprAddress = devicePeer.getEprAddress().toString();
+
+        assertEquals(expectedEprAddress, clientPeer.getClient().directedProbe(uri)
+                .get(MAX_WAIT_TIME.getSeconds(), TimeUnit.SECONDS)
+                .getProbeMatch().get(0).getEndpointReference().getAddress().getValue());
+    }
+
+    @Test
+    public void connect() throws Exception {
+        // Given a device under test (DUT) and a client up and running
+        devicePeer.startAsync().awaitRunning();
+        clientPeer.startAsync().awaitRunning();
+
+        // When the client connects to the DUT
+        final DeviceProxy deviceProxy = clientPeer.getClient().resolve(devicePeer.getEprAddress())
+                .get(MAX_WAIT_TIME.getSeconds(), TimeUnit.SECONDS);
+        final ListenableFuture<HostingServiceProxy> hostingServiceProxyFuture = clientPeer.getClient().connect(deviceProxy);
+
+        // Then expect a hosting service to be resolved that matches the DUT EPR address
+        final String expectedEprAddress = devicePeer.getEprAddress().toString();
+        final HostingServiceProxy hostingServiceProxy = hostingServiceProxyFuture.get(MAX_WAIT_TIME.getSeconds(), TimeUnit.SECONDS);
+        final String actualEprAddress = hostingServiceProxy.getEndpointReferenceAddress().toString();
+        assertEquals(expectedEprAddress, actualEprAddress);
+    }
+
+    // @Test
+    public void sample() throws Exception {
+        // Given a device under test (DUT) and a client up and running
+        devicePeer.startAsync().awaitRunning();
+        Thread.sleep(100000000);
     }
 }

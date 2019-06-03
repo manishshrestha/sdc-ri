@@ -3,7 +3,6 @@ package org.ieee11073.sdc.dpws.service;
 import com.google.common.eventbus.EventBus;
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
-import org.ieee11073.sdc.dpws.helper.PeerInformation;
 import org.ieee11073.sdc.dpws.model.ThisDeviceType;
 import org.ieee11073.sdc.dpws.model.ThisModelType;
 import org.ieee11073.sdc.dpws.soap.RequestResponseClient;
@@ -30,7 +29,7 @@ public class HostingServiceProxyImpl implements WritableHostingServiceProxy {
     private final EventBus eventBus;
 
     private RequestResponseClient requestResponseClient;
-    private PeerInformation peerInformation;
+    private URI activeXAddr;
     private URI endpointReferenceAddress;
     private List<QName> types;
     private ThisDeviceType thisDevice;
@@ -47,24 +46,24 @@ public class HostingServiceProxyImpl implements WritableHostingServiceProxy {
      * @param hostedServices Map of service ids to hosted service proxies
      * @param metadataVersion
      * @param requestResponseClient
-     * @param peerInformation
+     * @param activeXAddr
      * @param objectUtil
      * @param eventBus
      */
     @AssistedInject
-    HostingServiceProxyImpl(@Assisted URI endpointReferenceAddress,
+    HostingServiceProxyImpl(@Assisted("eprAddress") URI endpointReferenceAddress,
                             @Assisted List<QName> types,
                             @Assisted ThisDeviceType thisDevice,
                             @Assisted ThisModelType thisModel,
                             @Assisted Map<URI, WritableHostedServiceProxy> hostedServices,
                             @Assisted long metadataVersion,
                             @Assisted RequestResponseClient requestResponseClient,
-                            @Assisted PeerInformation peerInformation,
+                            @Assisted("activeXAddr") URI activeXAddr,
                             ObjectUtil objectUtil,
                             EventBus eventBus) {
         this.metadataVersion = metadataVersion;
         this.requestResponseClient = requestResponseClient;
-        this.peerInformation = peerInformation;
+        this.activeXAddr = activeXAddr;
         this.objectUtil = objectUtil;
         this.eventBus = eventBus;
         this.hostedServices = new HashMap<>();
@@ -77,7 +76,7 @@ public class HostingServiceProxyImpl implements WritableHostingServiceProxy {
                 hostedServices,
                 metadataVersion,
                 requestResponseClient,
-                peerInformation);
+                activeXAddr);
     }
 
     @Override
@@ -111,8 +110,8 @@ public class HostingServiceProxyImpl implements WritableHostingServiceProxy {
     }
 
     @Override
-    public synchronized PeerInformation getPeerInformation() {
-        return peerInformation;
+    public synchronized URI getActiveXAddr() {
+        return activeXAddr;
     }
 
     @Override
@@ -135,7 +134,7 @@ public class HostingServiceProxyImpl implements WritableHostingServiceProxy {
                 hsProxy.getWritableHostedServices(),
                 hsProxy.getMetadataVersion(),
                 hsProxy.getRequestResponseClient(),
-                hsProxy.getPeerInformation());
+                hsProxy.getActiveXAddr());
     }
 
     @Override
@@ -146,7 +145,7 @@ public class HostingServiceProxyImpl implements WritableHostingServiceProxy {
                                                     Map<URI, WritableHostedServiceProxy> hostedServices,
                                                     long metadataVersion,
                                                     RequestResponseClient requestResponseClient,
-                                                    PeerInformation peerInformation) {
+                                                    URI activeXAddr) {
         URI endpointReferenceAddressBefore = getEndpointReferenceAddress();
         this.endpointReferenceAddress = objectUtil.deepCopy(endpointReferenceAddress);
         List<QName> typesBefore = getTypes();
@@ -158,7 +157,7 @@ public class HostingServiceProxyImpl implements WritableHostingServiceProxy {
         long metadataVersionBefore = getMetadataVersion();
         this.metadataVersion = metadataVersion;
         this.requestResponseClient = requestResponseClient;
-        this.peerInformation = peerInformation;
+        this.activeXAddr = activeXAddr;
 
         Map<URI, HostedServiceProxy> hostedServicesBefore = getHostedServices();
         updateHostedServices(hostedServices);
@@ -177,7 +176,7 @@ public class HostingServiceProxyImpl implements WritableHostingServiceProxy {
                 hostedServicesBefore,
                 getHostedServices(),
                 requestResponseClient,
-                peerInformation
+                activeXAddr
         ));
     }
 
@@ -192,7 +191,7 @@ public class HostingServiceProxyImpl implements WritableHostingServiceProxy {
                 hostedServices.remove(serviceId);
             } else {
                 hostedService.getValue().updateProxyInformation(updatedHostedService.getType(), requestResponseClient,
-                        peerInformation);
+                        activeXAddr);
                 updatedHostedServicesCpy.remove(serviceId);
             }
         }

@@ -1,7 +1,6 @@
 package org.ieee11073.sdc.dpws.service;
 
 import org.ieee11073.sdc.common.event.EventMessage;
-import org.ieee11073.sdc.dpws.helper.PeerInformation;
 import org.ieee11073.sdc.dpws.model.ThisDeviceType;
 import org.ieee11073.sdc.dpws.model.ThisModelType;
 import org.ieee11073.sdc.dpws.soap.RequestResponseClient;
@@ -29,7 +28,7 @@ public class HostingServiceMetadataChangeMessage implements EventMessage {
     private final Map<URI, HostedServiceProxy> hostedServicesBefore;
     private final Map<URI, HostedServiceProxy> hostedServicesAfter;
     private final RequestResponseClient requestResponseClient;
-    private final PeerInformation peerInformation;
+    private final URI activeXAddr;
 
     public HostingServiceMetadataChangeMessage(URI endpointReferenceAddressBefore,
                                                URI endpointReferenceAddressAfter,
@@ -44,7 +43,7 @@ public class HostingServiceMetadataChangeMessage implements EventMessage {
                                                Map<URI, HostedServiceProxy> hostedServicesBefore,
                                                Map<URI, HostedServiceProxy> hostedServicesAfter,
                                                RequestResponseClient requestResponseClient,
-                                               PeerInformation peerInformation) {
+                                               URI activeXAddr) {
         this.endpointReferenceAddressBefore = endpointReferenceAddressBefore;
         this.endpointReferenceAddressAfter = endpointReferenceAddressAfter;
         this.typesBefore = typesBefore;
@@ -58,7 +57,7 @@ public class HostingServiceMetadataChangeMessage implements EventMessage {
         this.hostedServicesBefore = hostedServicesBefore;
         this.hostedServicesAfter = hostedServicesAfter;
         this.requestResponseClient = requestResponseClient;
-        this.peerInformation = peerInformation;
+        this.activeXAddr = activeXAddr;
     }
 
     public URI getEndpointReferenceAddressBefore() {
@@ -114,7 +113,7 @@ public class HostingServiceMetadataChangeMessage implements EventMessage {
         return requestResponseClient;
     }
 
-    public PeerInformation getPeerInformation() {
-        return peerInformation;
+    public URI getActiveXAddr() {
+        return activeXAddr;
     }
 }

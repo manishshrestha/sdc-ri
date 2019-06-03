@@ -106,6 +106,10 @@ public class DefaultDpwsConfigModule extends AbstractModule {
         bind(ClientConfig.WATCHDOG_PERIOD,
                 Duration.class,
                 Duration.ofSeconds(10));
+
+        bind(ClientConfig.AUTO_RESOLVE,
+                Boolean.class,
+                false);
     }
 
     private void configureWsDiscoveryConfig() {

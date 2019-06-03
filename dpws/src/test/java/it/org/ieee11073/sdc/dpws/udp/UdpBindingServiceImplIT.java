@@ -8,6 +8,7 @@ import org.ieee11073.sdc.dpws.udp.UdpMessage;
 import org.ieee11073.sdc.dpws.udp.factory.UdpBindingServiceFactory;
 import org.junit.Before;
 import org.junit.Test;
+import test.org.ieee11073.common.FutureCondition;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -50,7 +51,7 @@ public class UdpBindingServiceImplIT extends DpwsTest {
                         DpwsConstants.DISCOVERY_PORT, DpwsConstants.MAX_UDP_ENVELOPE_SIZE);
                 sender.startAsync().awaitRunning();
                 sender.sendMessage(new UdpMessage(expectedMessage, expectedMessage.length));
-            } catch (IOException e) {
+            } catch (Exception e) {
                 assertTrue(false);
             }
         });
@@ -85,5 +86,56 @@ public class UdpBindingServiceImplIT extends DpwsTest {
         } finally {
             lock.unlock();
         }
+    }
+
+    @Test
+    public void testSendMulticastMessageWithReply() throws Exception {
+        final String expectedRequestStr = "REQUEST";
+        final String expectedResponseStr = "RESPONSE";
+        final byte[] expectedRequestBytes = expectedRequestStr.getBytes();
+        final byte[] expectedResponseBytes = expectedResponseStr.getBytes();
+
+        FutureCondition<String> futureCondition = new FutureCondition<>();
+
+        final UdpBindingService senderReceiver1 = factory.createUdpBindingService(
+                InetAddress.getByName(WsDiscoveryConstants.IPV4_MULTICAST_ADDRESS),
+                DpwsConstants.DISCOVERY_PORT,
+                DpwsConstants.MAX_UDP_ENVELOPE_SIZE);
+        senderReceiver1.setMessageReceiver(udpMessage -> {
+            if (udpMessage.toString().equals(expectedResponseStr)) {
+                futureCondition.setResult(udpMessage.toString());
+            }
+        });
+
+        final UdpBindingService senderReceiver2 = factory.createUdpBindingService(
+                InetAddress.getByName(WsDiscoveryConstants.IPV4_MULTICAST_ADDRESS),
+                DpwsConstants.DISCOVERY_PORT,
+                DpwsConstants.MAX_UDP_ENVELOPE_SIZE);
+        senderReceiver2.setMessageReceiver(udpMessage -> {
+            if (udpMessage.toString().equals(expectedRequestStr)) {
+                Thread t = new Thread(() -> {
+                    try {
+                        senderReceiver2.sendMessage(new UdpMessage(expectedResponseBytes, expectedResponseBytes.length, udpMessage.getHost(), udpMessage.getPort()));
+                    } catch (IOException e) {
+                        assertTrue(false);
+                    }
+                });
+                t.start();
+            }
+        });
+
+        senderReceiver1.startAsync().awaitRunning();
+        senderReceiver2.startAsync().awaitRunning();
+
+        Thread t = new Thread(() -> {
+            try {
+                senderReceiver1.sendMessage(new UdpMessage(expectedRequestBytes, expectedRequestBytes.length));
+            } catch (IOException e) {
+                assertTrue(false);
+            }
+        });
+        t.start();
+
+        assertEquals(expectedResponseStr, futureCondition.get(10, TimeUnit.SECONDS).substring(0, expectedResponseStr.length() ));
     }
 }

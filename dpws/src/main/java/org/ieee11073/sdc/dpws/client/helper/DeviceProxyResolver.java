@@ -36,6 +36,7 @@ public class DeviceProxyResolver {
     private final WsDiscoveryClient wsDiscoveryClient;
     private final Duration maxWaitForResolveMatches;
     private final WsAddressingUtil wsaUtil;
+    private final Boolean autoResolve;
 
     /**
      * Assisted constructor.
@@ -45,9 +46,11 @@ public class DeviceProxyResolver {
     @AssistedInject
     DeviceProxyResolver(@Assisted WsDiscoveryClient wsDiscoveryClient,
                         @Named(ClientConfig.MAX_WAIT_FOR_RESOLVE_MATCHES) Duration maxWaitForResolveMatches,
+                        @Named(ClientConfig.AUTO_RESOLVE) Boolean autoResolve,
                         WsAddressingUtil wsaUtil) {
         this.wsDiscoveryClient = wsDiscoveryClient;
         this.maxWaitForResolveMatches = maxWaitForResolveMatches;
+        this.autoResolve = autoResolve;
         this.wsaUtil = wsaUtil;
     }
 
@@ -90,7 +93,7 @@ public class DeviceProxyResolver {
             return Optional.empty();
         }
 
-        if (xAddrs.isEmpty()) {
+        if (xAddrs.isEmpty() && autoResolve) {
             return sendResolve(epr).map(rms ->
                     Optional.ofNullable(rms.getResolveMatch()).map(rm ->
                             wsaUtil.getAddressUri(rm.getEndpointReference()).map(uri ->

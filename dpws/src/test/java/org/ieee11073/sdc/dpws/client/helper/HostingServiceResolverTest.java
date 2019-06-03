@@ -4,7 +4,6 @@ import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.inject.AbstractModule;
 import org.ieee11073.sdc.dpws.*;
-import org.ieee11073.sdc.dpws.*;
 import org.ieee11073.sdc.dpws.client.DeviceProxy;
 import org.ieee11073.sdc.dpws.client.helper.factory.ClientHelperFactory;
 import org.ieee11073.sdc.dpws.helper.PeerInformation;
@@ -12,7 +11,6 @@ import org.ieee11073.sdc.dpws.model.HostedServiceType;
 import org.ieee11073.sdc.dpws.model.ThisDeviceType;
 import org.ieee11073.sdc.dpws.model.ThisModelType;
 import org.ieee11073.sdc.dpws.ni.LocalAddressResolver;
-import org.ieee11073.sdc.dpws.service.*;
 import org.ieee11073.sdc.dpws.service.*;
 import org.ieee11073.sdc.dpws.service.factory.HostedServiceFactory;
 import org.ieee11073.sdc.dpws.service.factory.HostingServiceFactory;
@@ -24,6 +22,8 @@ import org.ieee11073.sdc.dpws.soap.exception.TransportException;
 import org.ieee11073.sdc.dpws.soap.factory.RequestResponseClientFactory;
 import org.ieee11073.sdc.dpws.soap.wsaddressing.WsAddressingUtil;
 import org.ieee11073.sdc.dpws.soap.wsaddressing.model.EndpointReferenceType;
+import org.ieee11073.sdc.dpws.soap.wsmetadataexchange.GetMetadataClient;
+import org.ieee11073.sdc.dpws.soap.wsmetadataexchange.WsMetadataExchangeConstants;
 import org.ieee11073.sdc.dpws.soap.wsmetadataexchange.model.Metadata;
 import org.ieee11073.sdc.dpws.soap.wsmetadataexchange.model.MetadataSection;
 import org.ieee11073.sdc.dpws.soap.wstransfer.TransferGetClient;
@@ -41,6 +41,7 @@ import static org.mockito.Mockito.when;
 public class HostingServiceResolverTest extends DpwsTest {
     private HostingServiceRegistry hostingServiceRegistry;
     private MockTransferGetClient mockTransferGetClient;
+    private MockGetMetadataClient mockGetMetadataClient;
 
     private PeerInformation expectedDevicePeerInfo;
 
@@ -69,11 +70,13 @@ public class HostingServiceResolverTest extends DpwsTest {
     public void setUp() throws Exception {
         expectedDevicePeerInfo = new PeerInformation(URI.create("http://remotehost"), "localhost");
         mockTransferGetClient = new MockTransferGetClient();
+        mockGetMetadataClient = new MockGetMetadataClient();
         overrideBindings(new AbstractModule() {
             @Override
             protected void configure() {
                 bind(RequestResponseClientFactory.class).toInstance(callback -> mock(RequestResponseClient.class));
                 bind(TransferGetClient.class).toInstance(mockTransferGetClient);
+                bind(GetMetadataClient.class).toInstance(mockGetMetadataClient);
                 bind(LocalAddressResolver.class).to(LocalAddressResolverMock.class);
             }
         });
@@ -112,7 +115,7 @@ public class HostingServiceResolverTest extends DpwsTest {
     }
 
     @Test
-    public void resolveHostingServiceWithoutExistingHostingService() throws Exception {
+    public void resolveHostingService() throws Exception {
         // Given a hosted service registry mock and a hosted service
         ClientHelperFactory chf = getInjector().getInstance(ClientHelperFactory.class);
 
@@ -120,7 +123,7 @@ public class HostingServiceResolverTest extends DpwsTest {
         hostedServiceProxies.put(expectedServiceId, hostedServiceFactory.createHostedServiceProxy(
                 expectedHostedServiceType,
                 mock(RequestResponseClient.class),
-                mock(PeerInformation.class)));
+                URI.create("http://mock-apr-address")));
 
         // When no existing service is found in registry on resolving
         // Then expect the resolver to resolve the service according to the following message
@@ -133,6 +136,9 @@ public class HostingServiceResolverTest extends DpwsTest {
                         expectedHostedServiceQNameTypes,
                         expectedHostedServiceEprs))
         )));
+
+        mockGetMetadataClient.setGetMetadataMessages(
+                Arrays.asList(createGetMetadataMessage(), createGetMetadataMessage()));
 
         HostingServiceResolver hostingServiceResolver = chf.createHostingServiceResolver(hostingServiceRegistry);
         long expectedMetadataVersion = 100;
@@ -154,64 +160,6 @@ public class HostingServiceResolverTest extends DpwsTest {
                     actualHostedServiceProxy.getType().getTypes().toString());
         } catch (Exception e) {
             assertTrue(false);
-        }
-    }
-
-    @Test
-    public void resolveHostingServiceWithExistingHostingService() throws Exception {
-        // Given a hosted service registry mock and a hosted service
-        ClientHelperFactory chf = getInjector().getInstance(ClientHelperFactory.class);
-        Map<URI, WritableHostedServiceProxy> hostedServiceProxies = new HashMap<>();
-        hostedServiceProxies.put(expectedServiceId, hostedServiceFactory.createHostedServiceProxy(
-                expectedHostedServiceType,
-                mock(RequestResponseClient.class),
-                mock(PeerInformation.class)));
-
-        long expectedMetadataVersion = 3;
-        WritableHostingServiceProxy hsProxy = hostingServiceFactory.createHostingServiceProxy(
-                expectedDeviceEprAddress,
-                expectedHostingServiceQNameTypes,
-                expectedDeviceType,
-                expectedModelType,
-                hostedServiceProxies,
-                expectedMetadataVersion,
-                mock(RequestResponseClient.class),
-                mock(PeerInformation.class));
-
-        // When no existing service is found on resolving
-        HostingServiceResolver hostingServiceResolver = chf.createHostingServiceResolver(hostingServiceRegistry);
-        DeviceProxy expectedDeviceProxy = createDeviceProxy(expectedDeviceEprAddress, Arrays.asList("http://xAddr"), 1);
-        ListenableFuture<HostingServiceProxy> hsF = hostingServiceResolver.resolveHostingService(expectedDeviceProxy);
-        try {
-            // Then expect the future to throw an exception
-            HostingServiceProxy actualHsp = hsF.get();
-            assertTrue(false);
-        } catch (Exception e) {
-            assertTrue(true);
-        }
-
-        // When an existing service is found with a metadata greater than this one from device proxy
-        hostingServiceRegistry.registerOrUpdate(hsProxy);
-        hostingServiceResolver = chf.createHostingServiceResolver(hostingServiceRegistry);
-        expectedDeviceProxy = createDeviceProxy(expectedDeviceEprAddress, Arrays.asList("http://xAddr"), 1);
-        hsF = hostingServiceResolver.resolveHostingService(expectedDeviceProxy);
-        try {
-            // Then expect the future to retrieve that service from cache
-            HostingServiceProxy actualHsp = hsF.get();
-            assertEquals(expectedDeviceEprAddress, actualHsp.getEndpointReferenceAddress());
-        } catch (Exception e) {
-            assertTrue(false);
-        }
-
-        // When an existing service is found with a metadata lesser than this one from device proxy
-        expectedDeviceProxy = createDeviceProxy(expectedDeviceEprAddress, Arrays.asList("http://xAddr"), 4);
-        hsF = hostingServiceResolver.resolveHostingService(expectedDeviceProxy);
-        try {
-            // Then expect the future to throw an exception because the service from the registry is stale
-            HostingServiceProxy actualHsp = hsF.get();
-            assertTrue(false);
-        } catch (Exception e) {
-            assertTrue(true);
         }
     }
 
@@ -243,6 +191,13 @@ public class HostingServiceResolverTest extends DpwsTest {
 
         metadata.setMetadataSection(metadataSection);
 
+        SoapMessage msg = soapUtil.createMessage();
+        soapUtil.setBody(metadata, msg);
+        return msg;
+    }
+
+    private SoapMessage createGetMetadataMessage() {
+        Metadata metadata = mexFactory.createMetadata();
         SoapMessage msg = soapUtil.createMessage();
         soapUtil.setBody(metadata, msg);
         return msg;
@@ -280,7 +235,7 @@ public class HostingServiceResolverTest extends DpwsTest {
                 mock(Map.class),
                 version,
                 mock(RequestResponseClient.class),
-                expectedDevicePeerInfo);
+                mock(URI.class));
     }
 
     class MockTransferGetClient implements TransferGetClient {
@@ -295,7 +250,24 @@ public class HostingServiceResolverTest extends DpwsTest {
             try {
                 return Futures.immediateFuture(transferGetMessages.pop());
             } catch (EmptyStackException e) {
-                return Futures.immediateFailedCheckedFuture(new TransportException());
+                throw new RuntimeException("TransferGet message stack empty");
+            }
+        }
+    }
+
+    class MockGetMetadataClient implements GetMetadataClient {
+        private Stack<SoapMessage> getMetadataMessages = new Stack<>();
+
+        public void setGetMetadataMessages(Collection<SoapMessage> getMetadataMessages) {
+            this.getMetadataMessages.addAll(getMetadataMessages);
+        }
+
+        @Override
+        public ListenableFuture<SoapMessage> sendGetMetadata(RequestResponseClient requestResponseClient) {
+            try {
+                return Futures.immediateFuture(getMetadataMessages.pop());
+            } catch (EmptyStackException e) {
+                throw new RuntimeException("GetMetadata message stack empty");
             }
         }
     }

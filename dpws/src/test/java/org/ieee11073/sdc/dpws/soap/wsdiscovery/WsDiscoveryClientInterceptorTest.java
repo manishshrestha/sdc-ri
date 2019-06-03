@@ -9,6 +9,7 @@ import org.ieee11073.sdc.dpws.DpwsTest;
 import org.ieee11073.sdc.dpws.soap.NotificationSink;
 import org.ieee11073.sdc.dpws.soap.NotificationSource;
 import org.ieee11073.sdc.dpws.soap.SoapMessage;
+import org.ieee11073.sdc.dpws.soap.SoapUtil;
 import org.ieee11073.sdc.dpws.soap.factory.EnvelopeFactory;
 import org.ieee11073.sdc.dpws.soap.factory.NotificationSourceFactory;
 import org.ieee11073.sdc.dpws.soap.factory.SoapMessageFactory;
@@ -28,6 +29,7 @@ import org.junit.Test;
 
 import javax.annotation.Nullable;
 import javax.xml.namespace.QName;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -194,6 +196,10 @@ public class WsDiscoveryClientInterceptorTest extends DpwsTest {
         SoapMessage pMatches = soapMessageFactory.createSoapMessage(env);
 
         pMatches.getWsAddressingHeader().setRelatesTo(msg.getWsAddressingHeader().getMessageId().orElse(null));
+        URI msgId = getInjector().getInstance(SoapUtil.class).createRandomUuidUri();
+        AttributedURIType uriType = getInjector().getInstance(WsAddressingUtil.class).createAttributedURIType(msgId);
+        pMatches.getWsAddressingHeader().setMessageId(uriType);
+
         return pMatches;
     }
 }

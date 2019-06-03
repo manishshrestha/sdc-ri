@@ -50,6 +50,6 @@ public class UdpMessage {
 
     @Override
     public String toString() {
-        return new String(data);
+        return new String(data, 0, length);
     }
 }

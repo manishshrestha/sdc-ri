@@ -27,4 +27,12 @@ public class ClientConfig {
      * - Use: optional
      */
     public static final String WATCHDOG_PERIOD = "Dpws.Client.WatchdogPeriod";
+
+    /**
+     * Configure auto-resolve for probes and hellos without XAddrs.
+     *
+     * - Data type: {@linkplain Boolean}
+     * - Use: optional
+     */
+    public static final String AUTO_RESOLVE = "Dpws.Client.AutoResolve";
 }

@@ -103,7 +103,13 @@ public class WsAddressingServerInterceptor implements Interceptor {
                 .filter(s -> messageId.get().getValue().equals(s))
                 .findFirst();
         if (foundMessageId.isPresent()) {
-            String faultMsg = String.format("Found message duplicate: %s. Skip processing.", foundMessageId.get());
+            String actionUri = "unknown action";
+            if (msg.getWsAddressingHeader().getAction().isPresent()) {
+                actionUri = msg.getWsAddressingHeader().getAction().get().getValue();
+            }
+
+            String faultMsg = String.format("Found message duplicate: %s (message: %s). Skip processing.",
+                    foundMessageId.get(), actionUri);
             LOG.debug(faultMsg);
             return InterceptorResult.CANCEL;
         }

@@ -42,7 +42,7 @@ public interface HostingServiceProxy extends RequestResponseClient {
      */
     Map<URI, HostedServiceProxy> getHostedServices();
 
-    PeerInformation getPeerInformation();
+    URI getActiveXAddr();
 
     long getMetadataVersion();
 

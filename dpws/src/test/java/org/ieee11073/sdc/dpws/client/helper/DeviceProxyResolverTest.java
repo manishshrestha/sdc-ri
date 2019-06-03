@@ -61,7 +61,7 @@ public class DeviceProxyResolverTest extends DpwsTest {
         WsDiscoveryClient wsdClient = mock(WsDiscoveryClient.class);
         when(wsdClient.sendResolve(epr)).thenReturn(Futures.immediateFuture(rmType));
 
-        DeviceProxyResolver dpr = new DeviceProxyResolver(wsdClient, Duration.ofSeconds(1), wsaUtil);
+        DeviceProxyResolver dpr = new DeviceProxyResolver(wsdClient, Duration.ofSeconds(1), true, wsaUtil);
 
         Optional<DeviceProxy> actualWithResolveMatches = dpr.resolve(hMsg);
         assertTrue(actualWithResolveMatches.isPresent());

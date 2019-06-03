@@ -43,6 +43,8 @@ import org.ieee11073.sdc.dpws.soap.wseventing.factory.NotificationWorkerFactory;
 import org.ieee11073.sdc.dpws.soap.wseventing.factory.SubscriptionManagerFactory;
 import org.ieee11073.sdc.dpws.soap.wseventing.factory.WsEventingEventSinkFactory;
 import org.ieee11073.sdc.dpws.soap.wseventing.helper.NotificationWorker;
+import org.ieee11073.sdc.dpws.soap.wsmetadataexchange.GetMetadataClient;
+import org.ieee11073.sdc.dpws.soap.wsmetadataexchange.GetMetadataClientImpl;
 import org.ieee11073.sdc.dpws.soap.wstransfer.TransferGetClient;
 import org.ieee11073.sdc.dpws.soap.wstransfer.TransferGetClientImpl;
 import org.ieee11073.sdc.dpws.udp.UdpBindingService;
@@ -151,6 +153,7 @@ public class DefaultDpwsModule extends AbstractModule {
     }
 
     private void configureWsMetadataExchange() {
+        bind(GetMetadataClient.class).to(GetMetadataClientImpl.class);
     }
 
     private void configureWsTransfer() {

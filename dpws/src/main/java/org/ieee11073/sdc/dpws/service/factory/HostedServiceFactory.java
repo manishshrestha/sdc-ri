@@ -52,5 +52,5 @@ public interface HostedServiceFactory {
      */
     WritableHostedServiceProxy createHostedServiceProxy(@Assisted HostedServiceType hostedServiceType,
                                                         @Assisted RequestResponseClient rrClient,
-                                                        @Assisted PeerInformation peerInformation);
+                                                        @Assisted URI activeEprAddress);
 }

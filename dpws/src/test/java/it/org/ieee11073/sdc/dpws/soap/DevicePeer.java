@@ -3,11 +3,15 @@ package it.org.ieee11073.sdc.dpws.soap;
 import dpws_test_service.messages._2017._05._10.ObjectFactory;
 import dpws_test_service.messages._2017._05._10.TestNotification;
 import it.org.ieee11073.sdc.dpws.IntegrationTestPeer;
+import it.org.ieee11073.sdc.dpws.TestServiceMetadata;
 import org.ieee11073.sdc.dpws.DpwsFramework;
 import org.ieee11073.sdc.dpws.DpwsUtil;
 import org.ieee11073.sdc.dpws.device.Device;
 import org.ieee11073.sdc.dpws.device.DeviceConfiguration;
+import org.ieee11073.sdc.dpws.guice.DefaultDpwsConfigModule;
 import org.ieee11073.sdc.dpws.service.factory.HostedServiceFactory;
+import org.ieee11073.sdc.dpws.soap.SoapConfig;
+import org.ieee11073.sdc.dpws.soap.SoapUtil;
 import org.ieee11073.sdc.dpws.soap.wsaddressing.WsAddressingUtil;
 import org.ieee11073.sdc.dpws.soap.wsaddressing.model.EndpointReferenceType;
 
@@ -16,14 +20,33 @@ import java.io.InputStream;
 import java.net.URI;
 import java.util.Arrays;
 import java.util.List;
+import java.util.UUID;
 
 public class DevicePeer extends IntegrationTestPeer {
+    private UUID deviceUuid;
     private Device device;
+    private SoapUtil soapUtil;
 
     public DevicePeer() {
-        this.device = getInjector().getInstance(Device.class);
+        this(new DefaultDpwsConfigModule() {
+            @Override
+            protected void customConfigure() {
+                bind(SoapConfig.JAXB_CONTEXT_PATH, String.class,
+                        TestServiceMetadata.JAXB_CONTEXT_PATH);
+            }
+        });
     }
 
+    public DevicePeer(DefaultDpwsConfigModule configModule) {
+        super(configModule);
+        this.deviceUuid = UUID.randomUUID();
+        this.device = getInjector().getInstance(Device.class);
+        this.soapUtil = getInjector().getInstance(SoapUtil.class);
+    }
+
+    public URI getEprAddress() {
+        return soapUtil.createUriFromUuid(deviceUuid);
+    }
     public Device getDevice() {
         return device;
     }
@@ -34,7 +57,7 @@ public class DevicePeer extends IntegrationTestPeer {
             @Override
             public EndpointReferenceType getEndpointReference() {
                 return getInjector().getInstance(WsAddressingUtil.class)
-                        .createEprWithAddress("urn:uuid:cd4cb146-a587-4450-b5e6-e563a0158794");
+                        .createEprWithAddress(soapUtil.createUriFromUuid(deviceUuid));
             }
 
             @Override
@@ -117,13 +140,6 @@ public class DevicePeer extends IntegrationTestPeer {
         Runtime.getRuntime().addShutdownHook(new Thread(() -> dpwsFramework.stopAsync().awaitTerminated()));
 
         device.startAsync().awaitRunning();
-    }
-
-    @Override
-    protected void run() throws Exception {
-        while (!Thread.interrupted()) {
-            Thread.sleep(1000);
-        }
     }
 
     @Override
