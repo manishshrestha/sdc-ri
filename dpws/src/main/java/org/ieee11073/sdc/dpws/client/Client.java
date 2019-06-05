@@ -5,7 +5,6 @@ import com.google.common.util.concurrent.Service;
 import org.ieee11073.sdc.dpws.service.HostingServiceProxy;
 import org.ieee11073.sdc.dpws.soap.exception.TransportException;
 import org.ieee11073.sdc.dpws.soap.wsdiscovery.model.ProbeMatchesType;
-import org.ieee11073.sdc.dpws.soap.wsdiscovery.model.ResolveMatchesType;
 
 import java.net.URI;
 
@@ -57,7 +56,7 @@ public interface Client extends Service {
      *
      * @param eprAddress Endpoint reference address of the device to resolve.
      */
-    ListenableFuture<DeviceProxy> resolve(URI eprAddress) throws TransportException;
+    ListenableFuture<DiscoveredDevice> resolve(URI eprAddress) throws TransportException;
 
     /**
      * Connect to a hosting service.
@@ -73,8 +72,8 @@ public interface Client extends Service {
      * - {@link ClientConfig#WATCHDOG_PERIOD}
      *
      * \todo implement automatic update on device metadata changes
-     * @param deviceProxy
+     * @param discoveredDevice
      * @return
      */
-    ListenableFuture<HostingServiceProxy> connect(DeviceProxy deviceProxy);
+    ListenableFuture<HostingServiceProxy> connect(DiscoveredDevice discoveredDevice);
 }

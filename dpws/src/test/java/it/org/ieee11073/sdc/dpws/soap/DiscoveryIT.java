@@ -133,9 +133,9 @@ public class DiscoveryIT {
         clientPeer.startAsync().awaitRunning();
 
         // When the DUT's physical addresses are resolved
-        final DeviceProxy deviceProxy = clientPeer.getClient().resolve(devicePeer.getEprAddress())
+        final DiscoveredDevice discoveredDevice = clientPeer.getClient().resolve(devicePeer.getEprAddress())
                 .get(MAX_WAIT_TIME.getSeconds(), TimeUnit.SECONDS);
-        final List<String> xAddrs = deviceProxy.getXAddrs();
+        final List<String> xAddrs = discoveredDevice.getXAddrs();
         assertFalse(xAddrs.isEmpty());
         final URI uri = URI.create(xAddrs.get(0));
 
@@ -154,9 +154,9 @@ public class DiscoveryIT {
         clientPeer.startAsync().awaitRunning();
 
         // When the client connects to the DUT
-        final DeviceProxy deviceProxy = clientPeer.getClient().resolve(devicePeer.getEprAddress())
+        final DiscoveredDevice discoveredDevice = clientPeer.getClient().resolve(devicePeer.getEprAddress())
                 .get(MAX_WAIT_TIME.getSeconds(), TimeUnit.SECONDS);
-        final ListenableFuture<HostingServiceProxy> hostingServiceProxyFuture = clientPeer.getClient().connect(deviceProxy);
+        final ListenableFuture<HostingServiceProxy> hostingServiceProxyFuture = clientPeer.getClient().connect(discoveredDevice);
 
         // Then expect a hosting service to be resolved that matches the DUT EPR address
         final String expectedEprAddress = devicePeer.getEprAddress().toString();

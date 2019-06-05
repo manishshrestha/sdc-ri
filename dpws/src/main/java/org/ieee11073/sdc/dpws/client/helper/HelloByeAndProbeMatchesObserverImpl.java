@@ -22,29 +22,29 @@ import java.util.Optional;
 /**
  * Helper class to forward Hello, Bye, ProbeMatches, and ProbeTimeout events.
  */
-public class DeviceProxyObserver implements HelloByeAndProbeMatchesObserver {
-    private static final Logger LOG = LoggerFactory.getLogger(DeviceProxyObserver.class);
+public class DiscoveryObserver implements HelloByeAndProbeMatchesObserver {
+    private static final Logger LOG = LoggerFactory.getLogger(DiscoveryObserver.class);
 
-    private final DeviceProxyResolver deviceProxyResolver;
+    private final DiscoveredDeviceResolver discoveredDeviceResolver;
     private final ListeningExecutorService networkJobExecutor;
     private final WsAddressingUtil wsaUtil;
     private final EventBus discoveryBus;
 
     @Inject
-    DeviceProxyObserver(@Assisted DeviceProxyResolver deviceProxyResolver,
-                        @NetworkJobThreadPool ListeningExecutorService networkJobExecutor,
-                        WsAddressingUtil wsaUtil) {
-        this.deviceProxyResolver = deviceProxyResolver;
+    DiscoveryObserver(@Assisted DiscoveredDeviceResolver discoveredDeviceResolver,
+                      @NetworkJobThreadPool ListeningExecutorService networkJobExecutor,
+                      WsAddressingUtil wsaUtil) {
+        this.discoveredDeviceResolver = discoveredDeviceResolver;
         this.networkJobExecutor = networkJobExecutor;
         this.wsaUtil = wsaUtil;
         this.discoveryBus = new EventBus();
     }
 
-    public void registerDiscoveryObserver(DiscoveryObserver observer) {
+    public void registerDiscoveryObserver(org.ieee11073.sdc.dpws.client.DiscoveryObserver observer) {
         discoveryBus.register(observer);
     }
 
-    public void unregisterDiscoveryObserver(DiscoveryObserver observer) {
+    public void unregisterDiscoveryObserver(org.ieee11073.sdc.dpws.client.DiscoveryObserver observer) {
         discoveryBus.unregister(observer);
     }
 
@@ -54,22 +54,22 @@ public class DeviceProxyObserver implements HelloByeAndProbeMatchesObserver {
 
     @Subscribe
     void onHello(HelloMessage helloMessage) {
-        ListenableFuture<Optional<DeviceProxy>> future = networkJobExecutor.submit(() ->
-                deviceProxyResolver.resolve(helloMessage));
-        Futures.addCallback(future, new FutureCallback<Optional<DeviceProxy>>() {
+        ListenableFuture<Optional<DiscoveredDevice>> future = networkJobExecutor.submit(() ->
+                discoveredDeviceResolver.resolve(helloMessage));
+        Futures.addCallback(future, new FutureCallback<Optional<DiscoveredDevice>>() {
             @Override
-            public void onSuccess(@Nullable Optional<DeviceProxy> deviceProxy) {
-                if (deviceProxy == null) {
-                    LOG.warn("{} delivered null pointer", DeviceProxyResolver.class);
+            public void onSuccess(@Nullable Optional<DiscoveredDevice> discoveredDevice) {
+                if (discoveredDevice == null) {
+                    LOG.warn("{} delivered null pointer", DiscoveredDeviceResolver.class);
                     return;
                 }
 
-                deviceProxy.ifPresent(dp -> discoveryBus.post(new DeviceEnteredMessage(dp)));
+                discoveredDevice.ifPresent(dp -> discoveryBus.post(new DeviceEnteredMessage(dp)));
             }
 
             @Override
             public void onFailure(Throwable throwable) {
-                // nothing to do here - log messages were created by DeviceProxyResolver helper
+                // nothing to do here - log messages were created by DiscoveredDeviceResolver helper
             }
         }, networkJobExecutor);
     }
@@ -85,23 +85,23 @@ public class DeviceProxyObserver implements HelloByeAndProbeMatchesObserver {
      */
     @Subscribe
     void onProbeMatches(ProbeMatchesMessage probeMatchesMessage) {
-        ListenableFuture<Optional<DeviceProxy>> future = networkJobExecutor.submit(() ->
-                deviceProxyResolver.resolve(probeMatchesMessage));
-        Futures.addCallback(future, new FutureCallback<Optional<DeviceProxy>>() {
+        ListenableFuture<Optional<DiscoveredDevice>> future = networkJobExecutor.submit(() ->
+                discoveredDeviceResolver.resolve(probeMatchesMessage));
+        Futures.addCallback(future, new FutureCallback<Optional<DiscoveredDevice>>() {
             @Override
-            public void onSuccess(@Nullable Optional<DeviceProxy> deviceProxy) {
-                if (deviceProxy == null) {
-                    LOG.warn("{} delivered null pointer", DeviceProxyResolver.class);
+            public void onSuccess(@Nullable Optional<DiscoveredDevice> discoveredDevice) {
+                if (discoveredDevice == null) {
+                    LOG.warn("{} delivered null pointer", DiscoveredDeviceResolver.class);
                     return;
                 }
 
-                deviceProxy.ifPresent(dp -> discoveryBus.post(new ProbedDeviceFoundMessage(dp,
+                discoveredDevice.ifPresent(dp -> discoveryBus.post(new ProbedDeviceFoundMessage(dp,
                         probeMatchesMessage.getProbeRequestId())));
             }
 
             @Override
             public void onFailure(Throwable throwable) {
-                // nothing to do here - log messages were created by DeviceProxyResolver helper
+                // nothing to do here - log messages were created by DiscoveredDeviceResolver helper
             }
         }, networkJobExecutor);
     }

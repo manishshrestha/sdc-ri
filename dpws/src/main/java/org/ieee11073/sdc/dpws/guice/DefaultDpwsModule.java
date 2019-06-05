@@ -35,7 +35,6 @@ import org.ieee11073.sdc.dpws.soap.factory.SoapMessageFactory;
 import org.ieee11073.sdc.dpws.soap.wsaddressing.WsAddressingClientInterceptor;
 import org.ieee11073.sdc.dpws.soap.wsaddressing.WsAddressingServerInterceptor;
 import org.ieee11073.sdc.dpws.soap.wsdiscovery.*;
-import org.ieee11073.sdc.dpws.soap.wsdiscovery.*;
 import org.ieee11073.sdc.dpws.soap.wsdiscovery.factory.WsDiscoveryClientFactory;
 import org.ieee11073.sdc.dpws.soap.wsdiscovery.factory.WsDiscoveryTargetServiceFactory;
 import org.ieee11073.sdc.dpws.soap.wseventing.*;
@@ -52,10 +51,6 @@ import org.ieee11073.sdc.dpws.udp.UdpBindingServiceImpl;
 import org.ieee11073.sdc.dpws.udp.UdpMessageQueueService;
 import org.ieee11073.sdc.dpws.udp.UdpMessageQueueServiceImpl;
 import org.ieee11073.sdc.dpws.udp.factory.UdpBindingServiceFactory;
-import org.ieee11073.sdc.dpws.client.helper.*;
-import org.ieee11073.sdc.dpws.service.*;
-import org.ieee11073.sdc.dpws.soap.*;
-import org.ieee11073.sdc.dpws.soap.wseventing.*;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -132,9 +127,9 @@ public class DefaultDpwsModule extends AbstractModule {
 
         install(new FactoryModuleBuilder()
                 .implement(DiscoveryClientUdpProcessor.class, DiscoveryClientUdpProcessor.class)
-                .implement(DeviceProxyResolver.class, DeviceProxyResolver.class)
+                .implement(DiscoveredDeviceResolver.class, DiscoveredDeviceResolver.class)
                 .implement(HostingServiceResolver.class, HostingServiceResolver.class)
-                .implement(DeviceProxyObserver.class, DeviceProxyObserver.class)
+                .implement(HelloByeAndProbeMatchesObserverImpl.class, HelloByeAndProbeMatchesObserverImpl.class)
                 .implement(WatchDog.class, WatchDogImpl.class)
                 .build(ClientHelperFactory.class));
     }

@@ -2,7 +2,7 @@ package org.ieee11073.sdc.dpws.client.helper;
 
 import com.google.common.util.concurrent.Futures;
 import org.ieee11073.sdc.dpws.DpwsTest;
-import org.ieee11073.sdc.dpws.client.DeviceProxy;
+import org.ieee11073.sdc.dpws.client.DiscoveredDevice;
 import org.ieee11073.sdc.dpws.soap.wsaddressing.WsAddressingUtil;
 import org.ieee11073.sdc.dpws.soap.wsaddressing.model.EndpointReferenceType;
 import org.ieee11073.sdc.dpws.soap.wsdiscovery.HelloMessage;
@@ -27,7 +27,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 
-public class DeviceProxyResolverTest extends DpwsTest {
+public class DiscoveredDeviceResolverTest extends DpwsTest {
     private WsAddressingUtil wsaUtil;
     private ObjectFactory objFactory;
 
@@ -61,15 +61,15 @@ public class DeviceProxyResolverTest extends DpwsTest {
         WsDiscoveryClient wsdClient = mock(WsDiscoveryClient.class);
         when(wsdClient.sendResolve(epr)).thenReturn(Futures.immediateFuture(rmType));
 
-        DeviceProxyResolver dpr = new DeviceProxyResolver(wsdClient, Duration.ofSeconds(1), true, wsaUtil);
+        DiscoveredDeviceResolver dpr = new DiscoveredDeviceResolver(wsdClient, Duration.ofSeconds(1), true, wsaUtil);
 
-        Optional<DeviceProxy> actualWithResolveMatches = dpr.resolve(hMsg);
+        Optional<DiscoveredDevice> actualWithResolveMatches = dpr.resolve(hMsg);
         assertTrue(actualWithResolveMatches.isPresent());
         assertEquals(expectedUri, actualWithResolveMatches.get().getEprAddress());
         assertEquals(xAddrsInHello, actualWithResolveMatches.get().getXAddrs());
 
         hType.setXAddrs(new ArrayList<>());
-        Optional<DeviceProxy> actualWithoutResolveMatches = dpr.resolve(hMsg);
+        Optional<DiscoveredDevice> actualWithoutResolveMatches = dpr.resolve(hMsg);
         assertTrue(actualWithoutResolveMatches.isPresent());
         assertEquals(expectedUri, actualWithoutResolveMatches.get().getEprAddress());
         assertEquals(xAddrsInResolveMatches, actualWithoutResolveMatches.get().getXAddrs());

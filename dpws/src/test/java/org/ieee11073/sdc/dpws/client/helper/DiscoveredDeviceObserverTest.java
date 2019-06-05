@@ -5,7 +5,6 @@ import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.common.util.concurrent.MoreExecutors;
 import org.ieee11073.sdc.dpws.DpwsTest;
 import org.ieee11073.sdc.dpws.client.*;
-import org.ieee11073.sdc.dpws.client.*;
 import org.ieee11073.sdc.dpws.soap.wsaddressing.WsAddressingUtil;
 import org.ieee11073.sdc.dpws.soap.wsaddressing.model.EndpointReferenceType;
 import org.ieee11073.sdc.dpws.soap.wsdiscovery.ByeMessage;
@@ -25,12 +24,12 @@ import static org.junit.Assert.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class DeviceProxyObserverTest extends DpwsTest {
+public class DiscoveredDeviceObserverTest extends DpwsTest {
 
-    private DeviceProxyResolver deviceProxyResolver;
+    private DiscoveredDeviceResolver discoveredDeviceResolver;
     private URI expectedUri;
     private EndpointReferenceType expectedEpr;
-    private DeviceProxyObserver deviceProxyObserver;
+    private HelloByeAndProbeMatchesObserverImpl helloByeAndProbeMatchesObserverImpl;
     private ObjectFactory objFactory;
     private int callbackVisitCount;
 
@@ -40,17 +39,17 @@ public class DeviceProxyObserverTest extends DpwsTest {
         super.setUp();
         WsAddressingUtil wsaUtil = getInjector().getInstance(WsAddressingUtil.class);
         ListeningExecutorService execService = MoreExecutors.newDirectExecutorService();
-        deviceProxyResolver = mock(DeviceProxyResolver.class);
+        discoveredDeviceResolver = mock(DiscoveredDeviceResolver.class);
         expectedUri = URI.create("http://expectedUri");
         expectedEpr = wsaUtil.createEprWithAddress(expectedUri);
-        deviceProxyObserver = new DeviceProxyObserver(deviceProxyResolver, execService, wsaUtil);
+        helloByeAndProbeMatchesObserverImpl = new HelloByeAndProbeMatchesObserverImpl(discoveredDeviceResolver, execService, wsaUtil);
         objFactory = new ObjectFactory();
         callbackVisitCount = 0;
     }
 
     @Test
     public void publishDeviceLeft() throws Exception {
-        deviceProxyObserver.registerDiscoveryObserver(new DiscoveryObserver() {
+        helloByeAndProbeMatchesObserverImpl.registerDiscoveryObserver(new org.ieee11073.sdc.dpws.client.DiscoveryObserver() {
             @Subscribe
             void onDeviceLeft(DeviceLeftMessage deviceLeftMessage) {
                 assertEquals(expectedUri, deviceLeftMessage.getPayload());
@@ -58,7 +57,7 @@ public class DeviceProxyObserverTest extends DpwsTest {
             }
         });
 
-        deviceProxyObserver.publishDeviceLeft(expectedUri, DeviceLeftMessage.TriggerType.BYE);
+        helloByeAndProbeMatchesObserverImpl.publishDeviceLeft(expectedUri, DeviceLeftMessage.TriggerType.BYE);
         assertEquals(1, callbackVisitCount);
     }
 
@@ -68,15 +67,15 @@ public class DeviceProxyObserverTest extends DpwsTest {
         hType.setEndpointReference(expectedEpr);
         HelloMessage hMsg = new HelloMessage(hType);
 
-        when(deviceProxyResolver.resolve(hMsg))
-                .thenReturn(Optional.of(new DeviceProxy(
+        when(discoveredDeviceResolver.resolve(hMsg))
+                .thenReturn(Optional.of(new DiscoveredDevice(
                         expectedUri,
                         new ArrayList<>(),
                         new ArrayList<>(),
                         new ArrayList<>(),
                         1)));
 
-        deviceProxyObserver.registerDiscoveryObserver(new DiscoveryObserver() {
+        helloByeAndProbeMatchesObserverImpl.registerDiscoveryObserver(new org.ieee11073.sdc.dpws.client.DiscoveryObserver() {
             @Subscribe
             void onDeviceEntered(DeviceEnteredMessage deviceEntered) {
                 assertEquals(expectedUri, deviceEntered.getPayload().getEprAddress());
@@ -84,7 +83,7 @@ public class DeviceProxyObserverTest extends DpwsTest {
             }
         });
 
-        deviceProxyObserver.onHello(hMsg);
+        helloByeAndProbeMatchesObserverImpl.onHello(hMsg);
         assertEquals(1, callbackVisitCount);
     }
 
@@ -94,7 +93,7 @@ public class DeviceProxyObserverTest extends DpwsTest {
         bType.setEndpointReference(expectedEpr);
         ByeMessage bMsg = new ByeMessage(bType);
 
-        deviceProxyObserver.registerDiscoveryObserver(new DiscoveryObserver() {
+        helloByeAndProbeMatchesObserverImpl.registerDiscoveryObserver(new org.ieee11073.sdc.dpws.client.DiscoveryObserver() {
             @Subscribe
             void onDeviceLeft(DeviceLeftMessage deviceLeftMessage) {
                 assertEquals(expectedUri, deviceLeftMessage.getPayload());
@@ -102,7 +101,7 @@ public class DeviceProxyObserverTest extends DpwsTest {
             }
         });
 
-        deviceProxyObserver.onBye(bMsg);
+        helloByeAndProbeMatchesObserverImpl.onBye(bMsg);
         assertEquals(1, callbackVisitCount);
     }
 
@@ -116,15 +115,15 @@ public class DeviceProxyObserverTest extends DpwsTest {
         String expectedId = "expectedId";
         ProbeMatchesMessage pmMsg = new ProbeMatchesMessage(expectedId, pmsType);
 
-        when(deviceProxyResolver.resolve(pmMsg))
-                .thenReturn(Optional.of(new DeviceProxy(
+        when(discoveredDeviceResolver.resolve(pmMsg))
+                .thenReturn(Optional.of(new DiscoveredDevice(
                         expectedUri,
                         new ArrayList<>(),
                         new ArrayList<>(),
                         new ArrayList<>(),
                         1)));
 
-        deviceProxyObserver.registerDiscoveryObserver(new DiscoveryObserver() {
+        helloByeAndProbeMatchesObserverImpl.registerDiscoveryObserver(new org.ieee11073.sdc.dpws.client.DiscoveryObserver() {
             @Subscribe
             void onProbedDevice(ProbedDeviceFoundMessage probedDeviceFound) {
                 assertEquals(expectedId, probedDeviceFound.getDiscoveryId());
@@ -133,7 +132,7 @@ public class DeviceProxyObserverTest extends DpwsTest {
             }
         });
 
-        deviceProxyObserver.onProbeMatches(pmMsg);
+        helloByeAndProbeMatchesObserverImpl.onProbeMatches(pmMsg);
         assertEquals(1, callbackVisitCount);
     }
 
@@ -143,7 +142,7 @@ public class DeviceProxyObserverTest extends DpwsTest {
         String expectedId = "expectedId";
         ProbeTimeoutMessage ptMsg = new ProbeTimeoutMessage(expectedDevicesCount, expectedId);
 
-        deviceProxyObserver.registerDiscoveryObserver(new DiscoveryObserver() {
+        helloByeAndProbeMatchesObserverImpl.registerDiscoveryObserver(new org.ieee11073.sdc.dpws.client.DiscoveryObserver() {
             @Subscribe
             void onTimeout(DeviceProbeTimeoutMessage deviceProbeTimeout) {
                 assertEquals(expectedDevicesCount, deviceProbeTimeout.getFoundDevicesCount());
@@ -152,7 +151,7 @@ public class DeviceProxyObserverTest extends DpwsTest {
             }
         });
 
-        deviceProxyObserver.onProbeTimeout(ptMsg);
+        helloByeAndProbeMatchesObserverImpl.onProbeTimeout(ptMsg);
         assertEquals(1, callbackVisitCount);
     }
 }

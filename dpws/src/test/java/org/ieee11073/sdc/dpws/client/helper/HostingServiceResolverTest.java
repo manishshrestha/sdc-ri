@@ -4,7 +4,7 @@ import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.inject.AbstractModule;
 import org.ieee11073.sdc.dpws.*;
-import org.ieee11073.sdc.dpws.client.DeviceProxy;
+import org.ieee11073.sdc.dpws.client.DiscoveredDevice;
 import org.ieee11073.sdc.dpws.client.helper.factory.ClientHelperFactory;
 import org.ieee11073.sdc.dpws.helper.PeerInformation;
 import org.ieee11073.sdc.dpws.model.HostedServiceType;
@@ -18,12 +18,10 @@ import org.ieee11073.sdc.dpws.service.helper.MetadataSectionUtil;
 import org.ieee11073.sdc.dpws.soap.RequestResponseClient;
 import org.ieee11073.sdc.dpws.soap.SoapMessage;
 import org.ieee11073.sdc.dpws.soap.SoapUtil;
-import org.ieee11073.sdc.dpws.soap.exception.TransportException;
 import org.ieee11073.sdc.dpws.soap.factory.RequestResponseClientFactory;
 import org.ieee11073.sdc.dpws.soap.wsaddressing.WsAddressingUtil;
 import org.ieee11073.sdc.dpws.soap.wsaddressing.model.EndpointReferenceType;
 import org.ieee11073.sdc.dpws.soap.wsmetadataexchange.GetMetadataClient;
-import org.ieee11073.sdc.dpws.soap.wsmetadataexchange.WsMetadataExchangeConstants;
 import org.ieee11073.sdc.dpws.soap.wsmetadataexchange.model.Metadata;
 import org.ieee11073.sdc.dpws.soap.wsmetadataexchange.model.MetadataSection;
 import org.ieee11073.sdc.dpws.soap.wstransfer.TransferGetClient;
@@ -142,9 +140,9 @@ public class HostingServiceResolverTest extends DpwsTest {
 
         HostingServiceResolver hostingServiceResolver = chf.createHostingServiceResolver(hostingServiceRegistry);
         long expectedMetadataVersion = 100;
-        DeviceProxy expectedDeviceProxy = createDeviceProxy(expectedDeviceEprAddress, Arrays.asList("http://xAddr"),
+        DiscoveredDevice expectedDiscoveredDevice = createDiscoveredDevice(expectedDeviceEprAddress, Arrays.asList("http://xAddr"),
                 expectedMetadataVersion);
-        ListenableFuture<HostingServiceProxy> hsF = hostingServiceResolver.resolveHostingService(expectedDeviceProxy);
+        ListenableFuture<HostingServiceProxy> hsF = hostingServiceResolver.resolveHostingService(expectedDiscoveredDevice);
         try {
             HostingServiceProxy actualHsp = hsF.get();
             assertEquals(expectedDeviceEprAddress, actualHsp.getEndpointReferenceAddress());
@@ -217,8 +215,8 @@ public class HostingServiceResolverTest extends DpwsTest {
         return metadataSection;
     }
 
-    private DeviceProxy createDeviceProxy(URI deviceUuid, List<String> xAddrs, long version) {
-        return new DeviceProxy(
+    private DiscoveredDevice createDiscoveredDevice(URI deviceUuid, List<String> xAddrs, long version) {
+        return new DiscoveredDevice(
                 deviceUuid,
                 mock(List.class),
                 mock(List.class),

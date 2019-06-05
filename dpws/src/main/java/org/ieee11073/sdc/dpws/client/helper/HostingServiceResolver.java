@@ -4,14 +4,12 @@ import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
-import org.checkerframework.checker.nullness.Opt;
 import org.ieee11073.sdc.common.helper.JaxbUtil;
 import org.ieee11073.sdc.dpws.DpwsConstants;
 import org.ieee11073.sdc.dpws.TransportBinding;
-import org.ieee11073.sdc.dpws.client.DeviceProxy;
+import org.ieee11073.sdc.dpws.client.DiscoveredDevice;
 import org.ieee11073.sdc.dpws.factory.TransportBindingFactory;
 import org.ieee11073.sdc.dpws.guice.NetworkJobThreadPool;
-import org.ieee11073.sdc.dpws.helper.PeerInformation;
 import org.ieee11073.sdc.dpws.model.*;
 import org.ieee11073.sdc.dpws.service.HostingServiceProxy;
 import org.ieee11073.sdc.dpws.service.WritableHostedServiceProxy;
@@ -41,7 +39,7 @@ import java.util.Map;
 import java.util.Optional;
 
 /**
- * Helper class to resolve hosting service and hosted service information from {@link DeviceProxy} objects.
+ * Helper class to resolve hosting service and hosted service information from {@link DiscoveredDevice} objects.
  */
 public class HostingServiceResolver {
     private static final Logger LOG = LoggerFactory.getLogger(HostingServiceResolver.class);
@@ -89,26 +87,26 @@ public class HostingServiceResolver {
     /**
      * Resolve hosting service and hosted service information.
      * <p>
-     * Use given {@link DeviceProxy} object to retrieve device UUID and metadata version of a device. If the device
+     * Use given {@link DiscoveredDevice} object to retrieve device UUID and metadata version of a device. If the device
      * exists in the registry already and there is no new metadata version, the method returns with cached information.
      * <p>
      * If the device is not registered in the registry, or the stored metadata version is out-dated, then the method
      * requests hosting service and hosted service information by using WS-Transfer Get, stores the information in the
      * registry, and returns it.
      *
-     * @param deviceProxy A well-populated {@link DeviceProxy} object.
+     * @param discoveredDevice A well-populated {@link DiscoveredDevice} object.
      * @return Future with resolved hosting service and hosted service information.
      */
-    public ListenableFuture<HostingServiceProxy> resolveHostingService(DeviceProxy deviceProxy) {
+    public ListenableFuture<HostingServiceProxy> resolveHostingService(DiscoveredDevice discoveredDevice) {
         return networkJobExecutor.submit(() -> {
-            if (deviceProxy.getXAddrs().isEmpty()) {
+            if (discoveredDevice.getXAddrs().isEmpty()) {
                 throw new IllegalArgumentException("Given device proxy has no XAddrs. Connection aborted.");
             }
 
             RequestResponseClient rrClient = null;
             SoapMessage transferGetResponse = null;
             URI activeXAddr = null;
-            for (String xAddr : deviceProxy.getXAddrs()) {
+            for (String xAddr : discoveredDevice.getXAddrs()) {
                 try {
                     activeXAddr = URI.create(xAddr);
                     rrClient = createRequestResponseClient(activeXAddr);
@@ -122,7 +120,7 @@ public class HostingServiceResolver {
 
             if (transferGetResponse == null) {
                 throw new TransportException(String.format("None of the %s XAddr URL(s) responded with a valid TransferGet response.",
-                        deviceProxy.getXAddrs().size()));
+                        discoveredDevice.getXAddrs().size()));
             }
 
             Metadata deviceMetadata = soapUtil.getBody(transferGetResponse, Metadata.class).orElseThrow(() ->
@@ -132,8 +130,8 @@ public class HostingServiceResolver {
                 throw new MalformedSoapMessageException("No metadata sections in TransferGet response.");
             }
 
-            URI deviceEprAddress = deviceProxy.getEprAddress();
-            long metadataVersion = deviceProxy.getMetadataVersion();
+            URI deviceEprAddress = discoveredDevice.getEprAddress();
+            long metadataVersion = discoveredDevice.getMetadataVersion();
             return extractHostingServiceProxy(deviceMetadata, rrClient,
                     deviceEprAddress, metadataVersion, activeXAddr).orElseThrow(() -> new MalformedSoapMessageException(
                     String.format("Could not resolve hosting service proxy information for {}",

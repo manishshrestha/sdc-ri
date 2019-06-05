@@ -45,7 +45,7 @@ public class ClientImpl extends AbstractIdleService implements Client, Service, 
     private final HostingServiceResolver hostingServiceResolver;
     private final HostingServiceRegistry hostingServiceRegistry;
     private final DiscoveryClientUdpProcessor msgProcessor;
-    private final DeviceProxyObserver deviceProxyObserver;
+    private final HelloByeAndProbeMatchesObserverImpl helloByeAndProbeMatchesObserverImpl;
     private final WatchDog watchdog;
     private final WsDiscoveryClient wsDiscoveryClient;
     private final ListeningExecutorService executorService;
@@ -91,14 +91,14 @@ public class ClientImpl extends AbstractIdleService implements Client, Service, 
         notificationSink.register(wsDiscoveryClient);
 
         // Create device resolver proxy helper object
-        DeviceProxyResolver deviceProxyResolver = clientHelperFactory.createDeviceProxyResolver(wsDiscoveryClient);
+        DiscoveredDeviceResolver discoveredDeviceResolver = clientHelperFactory.createDiscoveredDeviceResolver(wsDiscoveryClient);
 
         // Create observer for WS-Discovery messages
-        deviceProxyObserver = clientHelperFactory.createDeviceProxyObserver(deviceProxyResolver);
+        helloByeAndProbeMatchesObserverImpl = clientHelperFactory.createDiscoveryObserver(discoveredDeviceResolver);
 
         watchdog = clientHelperFactory.createWatchdog(wsDiscoveryClient, hostingServiceProxy -> {
             URI endpointReferenceAddress = hostingServiceProxy.getEndpointReferenceAddress();
-            deviceProxyObserver.publishDeviceLeft(endpointReferenceAddress, DeviceLeftMessage.TriggerType.WATCHDOG);
+            helloByeAndProbeMatchesObserverImpl.publishDeviceLeft(endpointReferenceAddress, DeviceLeftMessage.TriggerType.WATCHDOG);
         });
     }
 
@@ -126,11 +126,11 @@ public class ClientImpl extends AbstractIdleService implements Client, Service, 
     }
 
     @Override
-    public ListenableFuture<DeviceProxy> resolve(URI eprAddress) throws TransportException {
+    public ListenableFuture<DiscoveredDevice> resolve(URI eprAddress) throws TransportException {
         checkRunning();
 
         try {
-            final SettableFuture<DeviceProxy> deviceProxyFuture = SettableFuture.create();
+            final SettableFuture<DiscoveredDevice> deviceSettableFuture = SettableFuture.create();
             final ListenableFuture<ResolveMatchesType> resolveMatchesFuture = wsDiscoveryClient
                     .sendResolve(wsAddressingUtil.createEprWithAddress(eprAddress));
             Futures.addCallback(resolveMatchesFuture, new FutureCallback<ResolveMatchesType>() {
@@ -140,7 +140,7 @@ public class ClientImpl extends AbstractIdleService implements Client, Service, 
                         LOG.warn("Received ResolveMatches with empty payload.");
                     } else {
                         final ResolveMatchType rm = resolveMatchesType.getResolveMatch();
-                        deviceProxyFuture.set(new DeviceProxy(
+                        deviceSettableFuture.set(new DiscoveredDevice(
                                 URI.create(rm.getEndpointReference().getAddress().getValue()),
                                 rm.getTypes(),
                                 rm.getScopes().getValue(),
@@ -151,14 +151,14 @@ public class ClientImpl extends AbstractIdleService implements Client, Service, 
 
                 @Override
                 public void onFailure(Throwable throwable) {
-                    deviceProxyFuture.setException(throwable);
+                    deviceSettableFuture.setException(throwable);
                 }
             }, executorService);
 
-            return deviceProxyFuture;
+            return deviceSettableFuture;
         } catch (MarshallingException e) {
             LOG.warn("Marshalling failed while probing for devices", e.getCause());
-            final SettableFuture<DeviceProxy> errorFuture = SettableFuture.create();
+            final SettableFuture<DiscoveredDevice> errorFuture = SettableFuture.create();
             errorFuture.setException(e);
             return errorFuture;
         } catch (TransportException e) {
@@ -168,9 +168,9 @@ public class ClientImpl extends AbstractIdleService implements Client, Service, 
     }
 
     @Override
-    public ListenableFuture<HostingServiceProxy> connect(DeviceProxy deviceProxy) {
+    public ListenableFuture<HostingServiceProxy> connect(DiscoveredDevice discoveredDevice) {
         checkRunning();
-        ListenableFuture<HostingServiceProxy> future = hostingServiceResolver.resolveHostingService(deviceProxy);
+        ListenableFuture<HostingServiceProxy> future = hostingServiceResolver.resolveHostingService(discoveredDevice);
 
 //        if (enableWatchdog) {
 //            Futures.addCallback(future, new FutureCallback<HostingServiceProxy>() {
@@ -194,24 +194,24 @@ public class ClientImpl extends AbstractIdleService implements Client, Service, 
     @Override
     protected void startUp() throws Exception {
         discoveryMessageQueue.registerUdpMessageQueueObserver(msgProcessor);
-        wsDiscoveryClient.registerHelloByeAndProbeMatchesObserver(deviceProxyObserver);
+        wsDiscoveryClient.registerHelloByeAndProbeMatchesObserver(helloByeAndProbeMatchesObserverImpl);
     }
 
     @Override
     protected void shutDown() throws Exception {
-        wsDiscoveryClient.unregisterHelloByeAndProbeMatchesObserver(deviceProxyObserver);
+        wsDiscoveryClient.unregisterHelloByeAndProbeMatchesObserver(helloByeAndProbeMatchesObserverImpl);
         discoveryMessageQueue.unregisterUdpMessageQueueObserver(msgProcessor);
     }
 
 
     @Override
     public void registerDiscoveryObserver(DiscoveryObserver observer) {
-        deviceProxyObserver.registerDiscoveryObserver(observer);
+        helloByeAndProbeMatchesObserverImpl.registerDiscoveryObserver(observer);
     }
 
     @Override
     public void unregisterDiscoveryObserver(DiscoveryObserver observer) {
-        deviceProxyObserver.unregisterDiscoveryObserver(observer);
+        helloByeAndProbeMatchesObserverImpl.unregisterDiscoveryObserver(observer);
     }
 
     private void checkRunning() {
