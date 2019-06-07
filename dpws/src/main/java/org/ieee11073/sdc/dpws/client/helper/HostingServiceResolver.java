@@ -4,7 +4,9 @@ import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
+import com.google.inject.name.Named;
 import org.ieee11073.sdc.common.helper.JaxbUtil;
+import org.ieee11073.sdc.dpws.DpwsConfig;
 import org.ieee11073.sdc.dpws.DpwsConstants;
 import org.ieee11073.sdc.dpws.TransportBinding;
 import org.ieee11073.sdc.dpws.client.DiscoveredDevice;
@@ -33,10 +35,12 @@ import org.slf4j.LoggerFactory;
 
 import javax.xml.namespace.QName;
 import java.net.URI;
+import java.time.Duration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Helper class to resolve hosting service and hosted service information from {@link DiscoveredDevice} objects.
@@ -56,9 +60,11 @@ public class HostingServiceResolver {
     private final HostingServiceFactory hostingServiceFactory;
     private final HostedServiceFactory hostedServiceFactory;
     private final GetMetadataClient getMetadataClient;
+    private final Duration maxWaitForFutures;
 
     @AssistedInject
     HostingServiceResolver(@Assisted HostingServiceRegistry hostingServiceRegistry,
+                           @Named(DpwsConfig.MAX_WAIT_FOR_FUTURES) Duration maxWaitForFutures,
                            @NetworkJobThreadPool ListeningExecutorService networkJobExecutor,
                            HostResolver hostResolver,
                            TransportBindingFactory transportBindingFactory,
@@ -71,6 +77,7 @@ public class HostingServiceResolver {
                            HostingServiceFactory hostingServiceFactory,
                            HostedServiceFactory hostedServiceFactory) {
         this.hostingServiceRegistry = hostingServiceRegistry;
+        this.maxWaitForFutures = maxWaitForFutures;
         this.networkJobExecutor = networkJobExecutor;
         this.hostResolver = hostResolver;
         this.transportBindingFactory = transportBindingFactory;
@@ -110,8 +117,8 @@ public class HostingServiceResolver {
                 try {
                     activeXAddr = URI.create(xAddr);
                     rrClient = createRequestResponseClient(activeXAddr);
-                    // \todo add timeout for get
-                    transferGetResponse = transferGetClient.sendTransferGet(rrClient, xAddr).get();
+                    transferGetResponse = transferGetClient.sendTransferGet(rrClient, xAddr)
+                            .get(maxWaitForFutures.toMillis(), TimeUnit.MILLISECONDS);
                     break;
                 } catch (Exception e) {
                     LOG.debug("TransferGet to {} failed.", xAddr, e);
@@ -229,7 +236,7 @@ public class HostingServiceResolver {
             jaxbUtil.extractElement(potentialRelationship, HostedServiceType.class).ifPresent(hsType ->
                     extractHostedServiceProxy(hsType)
                             .ifPresent(hsProxy -> result.getHostedServices()
-                                    .put(URI.create(hsProxy.getType().getServiceId()), hsProxy)));
+                                    .put(hsProxy.getType().getServiceId(), hsProxy)));
         }
 
         if (result.getEprAddress() == null) {
@@ -252,7 +259,8 @@ public class HostingServiceResolver {
             try {
                 activeHostedServiceEprAddress = URI.create(eprType.getAddress().getValue());
                 rrClient = createRequestResponseClient(activeHostedServiceEprAddress);
-                getMetadatResponse = getMetadataClient.sendGetMetadata(rrClient).get();
+                getMetadatResponse = getMetadataClient.sendGetMetadata(rrClient)
+                        .get(maxWaitForFutures.toMillis(), TimeUnit.MILLISECONDS);
                 break;
             } catch (Exception e) {
                 LOG.debug("GetMetadata to {} failed.", eprType.getAddress().getValue(), e);
@@ -276,7 +284,7 @@ public class HostingServiceResolver {
     private class RelationshipData {
         private URI eprAddress = null;
         private List<QName> types = null;
-        private Map<URI, WritableHostedServiceProxy> hostedServices = new HashMap<>();
+        private Map<String, WritableHostedServiceProxy> hostedServices = new HashMap<>();
 
         public URI getEprAddress() {
             return eprAddress;
@@ -294,7 +302,7 @@ public class HostingServiceResolver {
             this.types = types;
         }
 
-        public Map<URI, WritableHostedServiceProxy> getHostedServices() {
+        public Map<String, WritableHostedServiceProxy> getHostedServices() {
             return hostedServices;
         }
     }

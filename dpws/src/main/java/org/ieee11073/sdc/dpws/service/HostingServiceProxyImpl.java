@@ -34,7 +34,7 @@ public class HostingServiceProxyImpl implements WritableHostingServiceProxy {
     private List<QName> types;
     private ThisDeviceType thisDevice;
     private ThisModelType thisModel;
-    private Map<URI, WritableHostedServiceProxy> hostedServices;
+    private Map<String, WritableHostedServiceProxy> hostedServices;
     private long metadataVersion;
 
     /**
@@ -55,7 +55,7 @@ public class HostingServiceProxyImpl implements WritableHostingServiceProxy {
                             @Assisted List<QName> types,
                             @Assisted ThisDeviceType thisDevice,
                             @Assisted ThisModelType thisModel,
-                            @Assisted Map<URI, WritableHostedServiceProxy> hostedServices,
+                            @Assisted Map<String, WritableHostedServiceProxy> hostedServices,
                             @Assisted long metadataVersion,
                             @Assisted RequestResponseClient requestResponseClient,
                             @Assisted("activeXAddr") URI activeXAddr,
@@ -66,7 +66,7 @@ public class HostingServiceProxyImpl implements WritableHostingServiceProxy {
         this.activeXAddr = activeXAddr;
         this.objectUtil = objectUtil;
         this.eventBus = eventBus;
-        this.hostedServices = new HashMap<>();
+        this.hostedServices = new HashMap<String, WritableHostedServiceProxy>();
 
         updateProxyInformation(
                 endpointReferenceAddress,
@@ -100,13 +100,13 @@ public class HostingServiceProxyImpl implements WritableHostingServiceProxy {
     }
 
     @Override
-    public synchronized Map<URI, HostedServiceProxy> getHostedServices() {
+    public synchronized Map<String, HostedServiceProxy> getHostedServices() {
         return new HashMap<>(hostedServices);
     }
 
     @Override
-    public synchronized Map<URI, WritableHostedServiceProxy> getWritableHostedServices() {
-        return new HashMap<>(hostedServices);
+    public synchronized Map<String, WritableHostedServiceProxy> getWritableHostedServices() {
+        return new HashMap<String, WritableHostedServiceProxy>(hostedServices);
     }
 
     @Override
@@ -142,7 +142,7 @@ public class HostingServiceProxyImpl implements WritableHostingServiceProxy {
                                                     List<QName> types,
                                                     @Nullable ThisDeviceType thisDevice,
                                                     @Nullable ThisModelType thisModel,
-                                                    Map<URI, WritableHostedServiceProxy> hostedServices,
+                                                    Map<String, WritableHostedServiceProxy> hostedServices,
                                                     long metadataVersion,
                                                     RequestResponseClient requestResponseClient,
                                                     URI activeXAddr) {
@@ -159,7 +159,7 @@ public class HostingServiceProxyImpl implements WritableHostingServiceProxy {
         this.requestResponseClient = requestResponseClient;
         this.activeXAddr = activeXAddr;
 
-        Map<URI, HostedServiceProxy> hostedServicesBefore = getHostedServices();
+        Map<String, HostedServiceProxy> hostedServicesBefore = getHostedServices();
         updateHostedServices(hostedServices);
 
         eventBus.post(new HostingServiceMetadataChangeMessage(
@@ -180,12 +180,12 @@ public class HostingServiceProxyImpl implements WritableHostingServiceProxy {
         ));
     }
 
-    private synchronized void updateHostedServices(Map<URI, WritableHostedServiceProxy> updatedHostedServices) {
-        Map<URI, WritableHostedServiceProxy> updatedHostedServicesCpy = new HashMap<>(updatedHostedServices);
-        Map<URI, WritableHostedServiceProxy> currentHostedServicesCpy = getWritableHostedServices();
+    private synchronized void updateHostedServices(Map<String, WritableHostedServiceProxy> updatedHostedServices) {
+        Map<String, WritableHostedServiceProxy> updatedHostedServicesCpy = new HashMap<>(updatedHostedServices);
+        Map<String, WritableHostedServiceProxy> currentHostedServicesCpy = getWritableHostedServices();
 
-        for (Map.Entry<URI, WritableHostedServiceProxy> hostedService : currentHostedServicesCpy.entrySet()) {
-            URI serviceId = hostedService.getKey();
+        for (Map.Entry<String, WritableHostedServiceProxy> hostedService : currentHostedServicesCpy.entrySet()) {
+            String serviceId = hostedService.getKey();
             WritableHostedServiceProxy updatedHostedService = updatedHostedServicesCpy.get(serviceId);
             if (updatedHostedService == null) {
                 hostedServices.remove(serviceId);

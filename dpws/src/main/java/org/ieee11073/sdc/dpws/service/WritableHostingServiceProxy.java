@@ -1,6 +1,5 @@
 package org.ieee11073.sdc.dpws.service;
 
-import org.ieee11073.sdc.dpws.helper.PeerInformation;
 import org.ieee11073.sdc.dpws.model.ThisDeviceType;
 import org.ieee11073.sdc.dpws.model.ThisModelType;
 import org.ieee11073.sdc.dpws.soap.RequestResponseClient;
@@ -19,7 +18,7 @@ public interface WritableHostingServiceProxy extends HostingServiceProxy {
     /**
      * Get hosted service map as {@link WritableHostedServiceProxy} instances.
      */
-    Map<URI, WritableHostedServiceProxy> getWritableHostedServices();
+    Map<String, WritableHostedServiceProxy> getWritableHostedServices();
 
     /**
      * Update all fields from given {@link WritableHostedServiceProxy} instance.
@@ -34,7 +33,7 @@ public interface WritableHostingServiceProxy extends HostingServiceProxy {
                                 List<QName> types,
                                 @Nullable ThisDeviceType thisDevice,
                                 @Nullable ThisModelType thisModel,
-                                Map<URI, WritableHostedServiceProxy> hostedServices,
+                                Map<String, WritableHostedServiceProxy> hostedServices,
                                 long metadataVersion,
                                 RequestResponseClient requestResponseClient,
                                 URI activeXAddr);

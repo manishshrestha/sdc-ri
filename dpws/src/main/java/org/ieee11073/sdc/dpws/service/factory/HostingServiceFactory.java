@@ -43,7 +43,7 @@ public interface HostingServiceFactory {
                                                           @Assisted List<QName> types,
                                                           @Assisted @Nullable ThisDeviceType thisDevice,
                                                           @Assisted @Nullable ThisModelType thisModel,
-                                                          @Assisted Map<URI, WritableHostedServiceProxy> hostedServices,
+                                                          @Assisted Map<String, WritableHostedServiceProxy> hostedServices,
                                                           @Assisted long metadataVersion,
                                                           @Assisted RequestResponseClient requestResponseClient,
                                                           @Assisted("activeXAddr") URI activeXAddr);

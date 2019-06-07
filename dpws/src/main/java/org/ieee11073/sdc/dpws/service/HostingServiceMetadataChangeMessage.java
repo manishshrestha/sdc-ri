@@ -25,8 +25,8 @@ public class HostingServiceMetadataChangeMessage implements EventMessage {
     private final Optional<ThisModelType> thisModelAfter;
     private final long metadataVersionBefore;
     private final long metadataVersionAfter;
-    private final Map<URI, HostedServiceProxy> hostedServicesBefore;
-    private final Map<URI, HostedServiceProxy> hostedServicesAfter;
+    private final Map<String, HostedServiceProxy> hostedServicesBefore;
+    private final Map<String, HostedServiceProxy> hostedServicesAfter;
     private final RequestResponseClient requestResponseClient;
     private final URI activeXAddr;
 
@@ -40,8 +40,8 @@ public class HostingServiceMetadataChangeMessage implements EventMessage {
                                                Optional<ThisModelType> thisModelAfter,
                                                long metadataVersionBefore,
                                                long metadataVersionAfter,
-                                               Map<URI, HostedServiceProxy> hostedServicesBefore,
-                                               Map<URI, HostedServiceProxy> hostedServicesAfter,
+                                               Map<String, HostedServiceProxy> hostedServicesBefore,
+                                               Map<String, HostedServiceProxy> hostedServicesAfter,
                                                RequestResponseClient requestResponseClient,
                                                URI activeXAddr) {
         this.endpointReferenceAddressBefore = endpointReferenceAddressBefore;
@@ -101,11 +101,11 @@ public class HostingServiceMetadataChangeMessage implements EventMessage {
         return metadataVersionAfter;
     }
 
-    public Map<URI, HostedServiceProxy> getHostedServicesBefore() {
+    public Map<String, HostedServiceProxy> getHostedServicesBefore() {
         return hostedServicesBefore;
     }
 
-    public Map<URI, HostedServiceProxy> getHostedServicesAfter() {
+    public Map<String, HostedServiceProxy> getHostedServicesAfter() {
         return hostedServicesAfter;
     }
 

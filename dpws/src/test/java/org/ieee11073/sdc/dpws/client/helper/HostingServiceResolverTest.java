@@ -50,7 +50,7 @@ public class HostingServiceResolverTest extends DpwsTest {
     private String expectedModelNumber;
     private ThisModelType expectedModelType;
 
-    private URI expectedServiceId;
+    private String expectedServiceId;
     private List<EndpointReferenceType> expectedHostedServiceEprs;
     private List<QName> expectedHostedServiceQNameTypes;
 
@@ -101,7 +101,7 @@ public class HostingServiceResolverTest extends DpwsTest {
         ThisModelBuilder tmBuilder = getInjector().getInstance(ThisModelBuilder.class);
         expectedModelType = tmBuilder.setModelNumber(expectedModelNumber).get();
 
-        expectedServiceId = URI.create("Service1");
+        expectedServiceId = "Service1";
         expectedHostedServiceEprs = Arrays.asList(wsaUtil.createEprWithAddress("http://hosted-service-epr1"),
                 wsaUtil.createEprWithAddress("http://hosted-service-epr2"));
         expectedHostedServiceQNameTypes = Arrays.asList(new QName("http://service", "Type1"),
@@ -117,7 +117,7 @@ public class HostingServiceResolverTest extends DpwsTest {
         // Given a hosted service registry mock and a hosted service
         ClientHelperFactory chf = getInjector().getInstance(ClientHelperFactory.class);
 
-        Map<URI, WritableHostedServiceProxy> hostedServiceProxies = new HashMap<>();
+        Map<String, WritableHostedServiceProxy> hostedServiceProxies = new HashMap<>();
         hostedServiceProxies.put(expectedServiceId, hostedServiceFactory.createHostedServiceProxy(
                 expectedHostedServiceType,
                 mock(RequestResponseClient.class),
@@ -161,7 +161,7 @@ public class HostingServiceResolverTest extends DpwsTest {
         }
     }
 
-    private HostedService createHostedService(URI serviceId, List<QName> types, List<EndpointReferenceType> eprs) {
+    private HostedService createHostedService(String serviceId, List<QName> types, List<EndpointReferenceType> eprs) {
         HostedServiceType hst = dpwsFactory.createHostedServiceType();
         hst.setTypes(types);
         hst.setServiceId(serviceId.toString());

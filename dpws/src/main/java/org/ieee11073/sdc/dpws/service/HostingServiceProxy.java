@@ -1,6 +1,5 @@
 package org.ieee11073.sdc.dpws.service;
 
-import org.ieee11073.sdc.dpws.helper.PeerInformation;
 import org.ieee11073.sdc.dpws.model.ThisDeviceType;
 import org.ieee11073.sdc.dpws.model.ThisModelType;
 import org.ieee11073.sdc.dpws.soap.RequestResponseClient;
@@ -39,8 +38,9 @@ public interface HostingServiceProxy extends RequestResponseClient {
 
     /**
      * Get a list of all known hosted services.
+     * @return
      */
-    Map<URI, HostedServiceProxy> getHostedServices();
+    Map<String, HostedServiceProxy> getHostedServices();
 
     URI getActiveXAddr();
 

@@ -4,6 +4,7 @@ import com.google.common.util.concurrent.*;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import org.ieee11073.sdc.dpws.DiscoveryUdpQueue;
+import org.ieee11073.sdc.dpws.DpwsConfig;
 import org.ieee11073.sdc.dpws.TransportBinding;
 import org.ieee11073.sdc.dpws.client.helper.*;
 import org.ieee11073.sdc.dpws.client.helper.factory.ClientHelperFactory;
@@ -32,7 +33,10 @@ import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
 import java.net.URI;
+import java.time.Duration;
+import java.time.temporal.TemporalUnit;
 import java.util.ArrayList;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Default implementation of {@link Client}.
@@ -51,9 +55,11 @@ public class ClientImpl extends AbstractIdleService implements Client, Service, 
     private final WsAddressingUtil wsAddressingUtil;
     private final TransportBindingFactory transportBindingFactory;
     private final RequestResponseClientFactory requestResponseClientFactory;
+    private final Duration maxWaitForFutures;
 
     @Inject
     ClientImpl(@Named(ClientConfig.ENABLE_WATCHDOG) Boolean enableWatchdog,
+               @Named(DpwsConfig.MAX_WAIT_FOR_FUTURES) Duration maxWaitForFutures,
                WsDiscoveryClientFactory discoveryClientFactory,
                NotificationSourceFactory notificationSourceFactory,
                DpwsHelperFactory dpwsHelperFactory,
@@ -66,6 +72,7 @@ public class ClientImpl extends AbstractIdleService implements Client, Service, 
                TransportBindingFactory transportBindingFactory,
                RequestResponseClientFactory requestResponseClientFactory) {
         this.enableWatchdog = enableWatchdog;
+        this.maxWaitForFutures = maxWaitForFutures;
         this.discoveryMessageQueue = discoveryMessageQueue;
         this.hostingServiceRegistry = hostingServiceRegistry;
         this.hostingServiceResolver = clientHelperFactory.createHostingServiceResolver(hostingServiceRegistry);
@@ -205,7 +212,7 @@ public class ClientImpl extends AbstractIdleService implements Client, Service, 
                 }
 
                 try {
-                    hspFuture.set(connect(discoveredDevice).get());
+                    hspFuture.set(connect(discoveredDevice).get(maxWaitForFutures.toMillis(), TimeUnit.MILLISECONDS));
                 } catch (Exception e) {
                     throw new RuntimeException(String.format("Connect of %s failed.", eprAddress));
                 }

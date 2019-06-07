@@ -2,6 +2,7 @@ package org.ieee11073.sdc.dpws.guice;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.name.Names;
+import org.ieee11073.sdc.dpws.DpwsConfig;
 import org.ieee11073.sdc.dpws.client.ClientConfig;
 import org.ieee11073.sdc.dpws.http.HttpConfig;
 import org.ieee11073.sdc.dpws.soap.SoapConfig;
@@ -66,9 +67,11 @@ public class DefaultDpwsConfigModule extends AbstractModule {
         configureWsEventingConfig();
         configureClientConfig();
         configureHttpConfig();
-
+        configureDpws();
         logConfiguredValues();
     }
+
+
 
     /**
      * Override this method in derived class for custom configuration.
@@ -83,6 +86,12 @@ public class DefaultDpwsConfigModule extends AbstractModule {
                         value.getValue().getValueOrigin(),
                         value.getKey(),
                         value.getValue().getValue()));
+    }
+
+    private void configureDpws() {
+        bind(DpwsConfig.MAX_WAIT_FOR_FUTURES,
+                Duration.class,
+                Duration.ofSeconds(10));
     }
 
     private void configureHttpConfig() {

@@ -5,6 +5,7 @@ import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
 import com.google.inject.name.Named;
+import org.ieee11073.sdc.dpws.DpwsConfig;
 import org.ieee11073.sdc.dpws.DpwsConstants;
 import org.ieee11073.sdc.dpws.guice.NetworkJobThreadPool;
 import org.ieee11073.sdc.dpws.http.HttpServerRegistry;
@@ -36,6 +37,7 @@ import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -64,12 +66,14 @@ public class EventSinkImpl implements EventSink {
     private final Map<String, SinkSubscriptionManager> subscriptionManagers;
     private final ScheduledExecutorService autoRenewExecutor;
     private final Lock subscriptionsLock;
+    private final Duration maxWaitForFutures;
 
     @AssistedInject
     EventSinkImpl(@Assisted RequestResponseClient requestResponseClient,
                   @Assisted String localHostAddress,
                   @Named(WsEventingConfig.SINK_DEFAULT_REQUESTED_EXPIRES) Duration defaultRequestExpires,
                   @Named(WsEventingConfig.AUTO_RENEW_BEFORE_EXPIRES) Duration autoRenewBeforeExpires,
+                  @Named(DpwsConfig.MAX_WAIT_FOR_FUTURES) Duration maxWaitForFutures,
                   HttpServerRegistry httpServerRegistry,
                   ObjectFactory wseFactory,
                   WsAddressingUtil wsaUtil,
@@ -84,6 +88,7 @@ public class EventSinkImpl implements EventSink {
         this.localHostAddress = localHostAddress;
         this.defaultRequestExpires = defaultRequestExpires;
         this.autoRenewBeforeExpires = autoRenewBeforeExpires;
+        this.maxWaitForFutures = maxWaitForFutures;
         this.httpServerRegistry = httpServerRegistry;
         this.wseFactory = wseFactory;
         this.wsaUtil = wsaUtil;
@@ -325,7 +330,7 @@ public class EventSinkImpl implements EventSink {
                 Duration expiresFromRenew;
                 try {
                     ListenableFuture<Duration> fut = renew(subscriptionManager.getSubscriptionId(), defaultRequestExpires);
-                    expiresFromRenew = fut.get();
+                    expiresFromRenew = fut.get(maxWaitForFutures.toMillis(), TimeUnit.MILLISECONDS);
                 } catch (InterruptedException e) {
                     LOG.info("Auto-renew failed, because a message could not be properly delivered.", e);
                     return;
@@ -344,6 +349,9 @@ public class EventSinkImpl implements EventSink {
                     } else {
                         LOG.info("Unexpected exception on unsubscribe.", e.getCause());
                     }
+                    return;
+                } catch (TimeoutException e) {
+                    LOG.info("Auto-renew failed, because the renew future did not responded in time", e);
                     return;
                 }
 
