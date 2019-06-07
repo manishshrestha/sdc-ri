@@ -22,8 +22,8 @@ import java.util.Optional;
 /**
  * Helper class to forward Hello, Bye, ProbeMatches, and ProbeTimeout events.
  */
-public class DiscoveryObserver implements HelloByeAndProbeMatchesObserver {
-    private static final Logger LOG = LoggerFactory.getLogger(DiscoveryObserver.class);
+public class HelloByeAndProbeMatchesObserverImpl implements HelloByeAndProbeMatchesObserver {
+    private static final Logger LOG = LoggerFactory.getLogger(HelloByeAndProbeMatchesObserverImpl.class);
 
     private final DiscoveredDeviceResolver discoveredDeviceResolver;
     private final ListeningExecutorService networkJobExecutor;
@@ -31,9 +31,9 @@ public class DiscoveryObserver implements HelloByeAndProbeMatchesObserver {
     private final EventBus discoveryBus;
 
     @Inject
-    DiscoveryObserver(@Assisted DiscoveredDeviceResolver discoveredDeviceResolver,
-                      @NetworkJobThreadPool ListeningExecutorService networkJobExecutor,
-                      WsAddressingUtil wsaUtil) {
+    HelloByeAndProbeMatchesObserverImpl(@Assisted DiscoveredDeviceResolver discoveredDeviceResolver,
+                                        @NetworkJobThreadPool ListeningExecutorService networkJobExecutor,
+                                        WsAddressingUtil wsaUtil) {
         this.discoveredDeviceResolver = discoveredDeviceResolver;
         this.networkJobExecutor = networkJobExecutor;
         this.wsaUtil = wsaUtil;

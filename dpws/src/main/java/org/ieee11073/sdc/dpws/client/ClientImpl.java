@@ -46,7 +46,6 @@ public class ClientImpl extends AbstractIdleService implements Client, Service, 
     private final HostingServiceRegistry hostingServiceRegistry;
     private final DiscoveryClientUdpProcessor msgProcessor;
     private final HelloByeAndProbeMatchesObserverImpl helloByeAndProbeMatchesObserverImpl;
-    private final WatchDog watchdog;
     private final WsDiscoveryClient wsDiscoveryClient;
     private final ListeningExecutorService executorService;
     private final WsAddressingUtil wsAddressingUtil;
@@ -96,10 +95,10 @@ public class ClientImpl extends AbstractIdleService implements Client, Service, 
         // Create observer for WS-Discovery messages
         helloByeAndProbeMatchesObserverImpl = clientHelperFactory.createDiscoveryObserver(discoveredDeviceResolver);
 
-        watchdog = clientHelperFactory.createWatchdog(wsDiscoveryClient, hostingServiceProxy -> {
-            URI endpointReferenceAddress = hostingServiceProxy.getEndpointReferenceAddress();
-            helloByeAndProbeMatchesObserverImpl.publishDeviceLeft(endpointReferenceAddress, DeviceLeftMessage.TriggerType.WATCHDOG);
-        });
+//        watchdog = clientHelperFactory.createWatchdog(wsDiscoveryClient, hostingServiceProxy -> {
+//            URI endpointReferenceAddress = hostingServiceProxy.getEndpointReferenceAddress();
+//            helloByeAndProbeMatchesObserverImpl.publishDeviceLeft(endpointReferenceAddress, DeviceLeftMessage.TriggerType.WATCHDOG);
+//        });
     }
 
     @Override
@@ -111,8 +110,6 @@ public class ClientImpl extends AbstractIdleService implements Client, Service, 
                     discoveryFilter.getScopes());
         } catch (MarshallingException e) {
             LOG.warn("Marshalling failed while probing for devices", e.getCause());
-        } catch (TransportException e) {
-            LOG.info("Message transmission failed while probing for devices", e.getCause());
         }
     }
 
@@ -126,7 +123,7 @@ public class ClientImpl extends AbstractIdleService implements Client, Service, 
     }
 
     @Override
-    public ListenableFuture<DiscoveredDevice> resolve(URI eprAddress) throws TransportException {
+    public ListenableFuture<DiscoveredDevice> resolve(URI eprAddress) {
         checkRunning();
 
         try {
@@ -162,15 +159,17 @@ public class ClientImpl extends AbstractIdleService implements Client, Service, 
             errorFuture.setException(e);
             return errorFuture;
         } catch (TransportException e) {
-            LOG.info("Message transmission failed while probing for devices", e.getCause());
-            throw e;
+            LOG.warn("Sending failed on transport layer", e.getCause());
+            final SettableFuture<DiscoveredDevice> errorFuture = SettableFuture.create();
+            errorFuture.setException(e);
+            return errorFuture;
         }
     }
 
     @Override
     public ListenableFuture<HostingServiceProxy> connect(DiscoveredDevice discoveredDevice) {
         checkRunning();
-        ListenableFuture<HostingServiceProxy> future = hostingServiceResolver.resolveHostingService(discoveredDevice);
+        final ListenableFuture<HostingServiceProxy> future = hostingServiceResolver.resolveHostingService(discoveredDevice);
 
 //        if (enableWatchdog) {
 //            Futures.addCallback(future, new FutureCallback<HostingServiceProxy>() {
@@ -192,13 +191,43 @@ public class ClientImpl extends AbstractIdleService implements Client, Service, 
     }
 
     @Override
-    protected void startUp() throws Exception {
+    public ListenableFuture<HostingServiceProxy> connect(URI eprAddress) {
+        checkRunning();
+
+        final ListenableFuture<DiscoveredDevice> resolveFuture = resolve(eprAddress);
+        final SettableFuture<HostingServiceProxy> hspFuture = SettableFuture.create();
+
+        Futures.addCallback(resolveFuture, new FutureCallback<DiscoveredDevice>() {
+            @Override
+            public void onSuccess(@Nullable DiscoveredDevice discoveredDevice) {
+                if (discoveredDevice == null) {
+                    throw new RuntimeException(String.format("Resolve of %s failed.", eprAddress));
+                }
+
+                try {
+                    hspFuture.set(connect(discoveredDevice).get());
+                } catch (Exception e) {
+                    throw new RuntimeException(String.format("Connect of %s failed.", eprAddress));
+                }
+            }
+
+            @Override
+            public void onFailure(Throwable throwable) {
+                hspFuture.setException(throwable);
+            }
+        }, executorService);
+
+        return hspFuture;
+    }
+
+    @Override
+    protected void startUp() {
         discoveryMessageQueue.registerUdpMessageQueueObserver(msgProcessor);
         wsDiscoveryClient.registerHelloByeAndProbeMatchesObserver(helloByeAndProbeMatchesObserverImpl);
     }
 
     @Override
-    protected void shutDown() throws Exception {
+    protected void shutDown() {
         wsDiscoveryClient.unregisterHelloByeAndProbeMatchesObserver(helloByeAndProbeMatchesObserverImpl);
         discoveryMessageQueue.unregisterUdpMessageQueueObserver(msgProcessor);
     }

@@ -4,6 +4,7 @@ import com.google.common.eventbus.Subscribe;
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
 import org.ieee11073.sdc.dpws.TransportBinding;
+import org.ieee11073.sdc.dpws.TransportBindingException;
 import org.ieee11073.sdc.dpws.factory.TransportBindingFactory;
 import org.ieee11073.sdc.dpws.helper.PeerInformation;
 import org.ieee11073.sdc.dpws.soap.SoapMessage;
@@ -42,7 +43,8 @@ public class HostedServiceTransportBinding implements TransportBinding, HostedSe
     }
 
     @Override
-    public void onNotification(SoapMessage notification) throws TransportException, MarshallingException {
+    public void onNotification(SoapMessage notification) throws MarshallingException, TransportException,
+            TransportBindingException {
         TransportBinding localTransportBinding;
         transportBindingLock.lock();
         try {
@@ -57,7 +59,7 @@ public class HostedServiceTransportBinding implements TransportBinding, HostedSe
 
     @Override
     public SoapMessage onRequestResponse(SoapMessage request) throws SoapFaultException, TransportException,
-            MarshallingException {
+            TransportBindingException, MarshallingException {
         TransportBinding localTransportBinding;
         transportBindingLock.lock();
         try {
@@ -70,9 +72,9 @@ public class HostedServiceTransportBinding implements TransportBinding, HostedSe
         return localTransportBinding.onRequestResponse(request);
     }
 
-    private void verifyTransportBindingAvailability() throws TransportException {
+    private void verifyTransportBindingAvailability() throws TransportBindingException {
         if (transportBinding == null) {
-            throw new TransportException(String.format("No transport binding could be established for {}",
+            throw new TransportBindingException(String.format("No transport binding could be established for {}",
                     Arrays.toString(hostedServiceProxy.getType().getEndpointReference().toArray())));
         }
     }

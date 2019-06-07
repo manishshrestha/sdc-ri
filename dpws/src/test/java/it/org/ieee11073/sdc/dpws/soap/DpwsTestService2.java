@@ -55,7 +55,7 @@ public class DpwsTestService2 extends WebService {
 
         TestOperationResponse res = objectFactory.createTestOperationResponse();
         res.setResult1(new StringBuilder(req.getParam1()).append(req.getParam1()).reverse().toString());
-        res.setResult2(req.getParam2() * 6);
+        res.setResult2(req.getParam2() * 8);
 
         soapUtil.setBody(res, rrObj.getResponse());
     }

@@ -20,8 +20,10 @@ import java.util.List;
  * \todo Create observable for receiving Hello and Bye messages
  */
 public interface WsDiscoveryClient extends Interceptor {
-    ListenableFuture<Integer> sendProbe(String probeId, List<QName> types, List<String> scopes) throws MarshallingException, TransportException;
-    ListenableFuture<Integer> sendProbe(String probeId, List<QName> types, List<String> scopes, Integer maxResults) throws MarshallingException, TransportException;
+    ListenableFuture<Integer> sendProbe(String probeId, List<QName> types, List<String> scopes)
+            throws MarshallingException, TransportException;
+    ListenableFuture<Integer> sendProbe(String probeId, List<QName> types, List<String> scopes, Integer maxResults)
+            throws MarshallingException, TransportException;
     ListenableFuture<ProbeMatchesType> sendDirectedProbe(RequestResponseClient rrClient, List<QName> types, List<String> scopes);
     ListenableFuture<ResolveMatchesType> sendResolve(EndpointReferenceType epr) throws MarshallingException, TransportException;
     void registerHelloByeAndProbeMatchesObserver(HelloByeAndProbeMatchesObserver observer);

@@ -36,7 +36,7 @@ public class NotificationSourceUdpCallback implements NotificationCallback {
     }
 
     @Override
-    public void onNotification(SoapMessage notification) throws TransportException, MarshallingException {
+    public void onNotification(SoapMessage notification) throws MarshallingException {
         if (LOG.isDebugEnabled()) {
             LOG.debug("Outgoing SOAP/UDP message: {}", SoapDebug.get(notification));
         }

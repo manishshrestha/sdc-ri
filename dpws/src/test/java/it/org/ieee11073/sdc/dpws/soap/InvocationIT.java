@@ -1,6 +1,5 @@
 package it.org.ieee11073.sdc.dpws.soap;
 
-
 import com.google.common.eventbus.Subscribe;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.SettableFuture;
@@ -21,7 +20,7 @@ import java.util.concurrent.TimeUnit;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
-public class DiscoveryIT {
+public class InvocationIT {
     private static final Duration MAX_WAIT_TIME = Duration.ofSeconds(10);
 
     private DevicePeer devicePeer;
@@ -31,14 +30,9 @@ public class DiscoveryIT {
     public void setUp() throws Exception {
         BasicConfigurator.configure();
         this.devicePeer = new BasicPopulatedDevice();
-        this.clientPeer = new ClientPeer(new DefaultDpwsConfigModule() {
-            @Override
-            protected void customConfigure() {
-                // shorten the test time by only waiting 1 second for the probe response
-                bind(WsDiscoveryConfig.MAX_WAIT_FOR_PROBE_MATCHES, Duration.class,
-                        Duration.ofSeconds(MAX_WAIT_TIME.getSeconds() / 2));
-            }
-        });
+        this.clientPeer = new ClientPeer();
+        devicePeer.startAsync().awaitRunning();
+        clientPeer.startAsync().awaitRunning();
     }
 
     @After
@@ -48,7 +42,7 @@ public class DiscoveryIT {
     }
 
     @Test
-    public void explicitDeviceDiscovery() throws Exception {
+    public void requestResponse() throws Exception {
         // Given a device under test (DUT) and a client up and running
         devicePeer.startAsync().awaitRunning();
         clientPeer.startAsync().awaitRunning();
@@ -148,7 +142,7 @@ public class DiscoveryIT {
     }
 
     @Test
-    public void connectWithDiscoveredDevice() throws Exception {
+    public void connect() throws Exception {
         // Given a device under test (DUT) and a client up and running
         devicePeer.startAsync().awaitRunning();
         clientPeer.startAsync().awaitRunning();
@@ -161,24 +155,6 @@ public class DiscoveryIT {
         // Then expect a hosting service to be resolved that matches the DUT EPR address
         final String expectedEprAddress = devicePeer.getEprAddress().toString();
         final HostingServiceProxy hostingServiceProxy = hostingServiceProxyFuture.get(MAX_WAIT_TIME.getSeconds(), TimeUnit.SECONDS);
-        final String actualEprAddress = hostingServiceProxy.getEndpointReferenceAddress().toString();
-        assertEquals(expectedEprAddress, actualEprAddress);
-    }
-
-    @Test
-    public void connectWithEprAddress() throws Exception {
-        // Given a device under test (DUT) and a client up and running
-        devicePeer.startAsync().awaitRunning();
-        clientPeer.startAsync().awaitRunning();
-
-        // When the client connects to the DUT
-        final ListenableFuture<HostingServiceProxy> hostingServiceProxyFuture = clientPeer.getClient()
-                .connect(devicePeer.getEprAddress());
-
-        // Then expect a hosting service to be resolved that matches the DUT EPR address
-        final String expectedEprAddress = devicePeer.getEprAddress().toString();
-        final HostingServiceProxy hostingServiceProxy = hostingServiceProxyFuture.get(MAX_WAIT_TIME.getSeconds(),
-                TimeUnit.SECONDS);
         final String actualEprAddress = hostingServiceProxy.getEndpointReferenceAddress().toString();
         assertEquals(expectedEprAddress, actualEprAddress);
     }

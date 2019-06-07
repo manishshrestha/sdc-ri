@@ -13,5 +13,5 @@ public interface NotificationCallback {
      *
      * @param notification The notification to push.
      */
-    void onNotification(SoapMessage notification) throws TransportException, MarshallingException;
+    void onNotification(SoapMessage notification) throws MarshallingException, TransportException;
 }

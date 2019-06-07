@@ -36,7 +36,7 @@ public interface Client extends Service {
      *
      * @param discoveryFilter Types and scopes the discovery process shall filter against.
      */
-    void probe(DiscoveryFilter discoveryFilter) throws TransportException;;
+    void probe(DiscoveryFilter discoveryFilter) throws TransportException;
 
     /**
      *
@@ -45,7 +45,7 @@ public interface Client extends Service {
      *
      * @param xAddr Physical device's address.
      */
-    ListenableFuture<ProbeMatchesType> directedProbe(URI xAddr) throws TransportException;
+    ListenableFuture<ProbeMatchesType> directedProbe(URI xAddr);
 
 
     /**
@@ -56,14 +56,15 @@ public interface Client extends Service {
      *
      * @param eprAddress Endpoint reference address of the device to resolve.
      */
-    ListenableFuture<DiscoveredDevice> resolve(URI eprAddress) throws TransportException;
+    ListenableFuture<DiscoveredDevice> resolve(URI eprAddress);
 
     /**
-     * Connect to a hosting service.
+     * Connect to a hosting service by using {@link DiscoveredDevice}.
+     *
+     * This function requires a fully populated {@link DiscoveredDevice} including XAddrs.
      *
      * By saying connect, this method resolves hosting service and hosted service information,
-     * which is afterwards available for usage. The hosting service and hosted service information is stored in an
-     * internal registry and is updated automatically when a new metadata version is detected.
+     * which is afterwards available for usage.
      *
      * If configured, connecting to a device also starts a watchdog. The watchdog sends a {@link DeviceLeftMessage}
      * with {@link DeviceLeftMessage.TriggerType#WATCHDOG}. Configure with
@@ -72,8 +73,17 @@ public interface Client extends Service {
      * - {@link ClientConfig#WATCHDOG_PERIOD}
      *
      * \todo implement automatic update on device metadata changes
-     * @param discoveredDevice
-     * @return
+     * @param discoveredDevice A fully populated {@link DiscoveredDevice}.
      */
     ListenableFuture<HostingServiceProxy> connect(DiscoveredDevice discoveredDevice);
+
+    /**
+     * Connect to a hosting service by using an EPR address.
+     *
+     * Internally, {@linkplain #connect(URI)} resolves the device and invoked {@link #connect(DiscoveredDevice)}
+     * to get hosting service data.
+     *
+     * @param eprAddress EPR address of a device.
+     */
+    ListenableFuture<HostingServiceProxy> connect(URI eprAddress);
 }

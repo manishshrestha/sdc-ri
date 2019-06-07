@@ -182,7 +182,7 @@ public class WsDiscoveryClientInterceptor implements WsDiscoveryClient {
 
     @Override
     public ListenableFuture<Integer> sendProbe(String probeId, List<QName> types, List<String> scopes)
-            throws MarshallingException, TransportException {
+            throws MarshallingException, TransportException{
         return sendProbe(probeId, types, scopes, Integer.MAX_VALUE);
     }
 

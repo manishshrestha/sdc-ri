@@ -51,7 +51,7 @@ public class TransportBindingFactoryMock implements TransportBindingFactory {
             }
 
             @Override
-            public void onNotification(SoapMessage notification) throws MarshallingException, TransportException {
+            public void onNotification(SoapMessage notification) throws MarshallingException {
                 ByteArrayOutputStream bos = new ByteArrayOutputStream();
                 try {
                     soapMarshalling.marshal(notification.getEnvelopeWithMappedHeaders(), bos);

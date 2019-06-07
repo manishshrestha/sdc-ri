@@ -15,7 +15,7 @@ public interface ClientHelperFactory {
     DiscoveredDeviceResolver createDiscoveredDeviceResolver(@Assisted WsDiscoveryClient wsDiscoveryClient);
     DiscoveryClientUdpProcessor createDiscoveryClientUdpProcessor(@Assisted NotificationSink notificationSink);
     HostingServiceResolver createHostingServiceResolver(@Assisted HostingServiceRegistry hostingServiceRegistry);
-    DiscoveryObserver createDiscoveryObserver(@Assisted DiscoveredDeviceResolver discoveredDeviceResolver);
+    HelloByeAndProbeMatchesObserverImpl createDiscoveryObserver(@Assisted DiscoveredDeviceResolver discoveredDeviceResolver);
     WatchDog createWatchdog(@Assisted WsDiscoveryClient wsDiscoveryClient,
                             @Assisted Consumer<HostingServiceProxy> watchdogTriggerCallback);
 }
