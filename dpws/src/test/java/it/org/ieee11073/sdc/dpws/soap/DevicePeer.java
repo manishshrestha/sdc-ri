@@ -15,13 +15,7 @@ public abstract class DevicePeer extends IntegrationTestPeer {
     private Device device;
 
     public DevicePeer() {
-        this(new DefaultDpwsConfigModule() {
-            @Override
-            protected void customConfigure() {
-                bind(SoapConfig.JAXB_CONTEXT_PATH, String.class,
-                        TestServiceMetadata.JAXB_CONTEXT_PATH);
-            }
-        });
+        this(new DefaultDpwsConfigModule());
     }
 
     public DevicePeer(URI eprAddress, DefaultDpwsConfigModule configModule) {

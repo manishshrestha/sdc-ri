@@ -4,6 +4,7 @@ package it.org.ieee11073.sdc.dpws.soap;
 import com.google.common.eventbus.Subscribe;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.SettableFuture;
+import it.org.ieee11073.sdc.dpws.IntegrationTestUtil;
 import org.apache.log4j.BasicConfigurator;
 import org.ieee11073.sdc.dpws.client.*;
 import org.ieee11073.sdc.dpws.guice.DefaultDpwsConfigModule;
@@ -22,7 +23,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
 public class DiscoveryIT {
-    private static final Duration MAX_WAIT_TIME = Duration.ofSeconds(10);
+    private static final Duration MAX_WAIT_TIME = IntegrationTestUtil.MAX_WAIT_TIME;
 
     private DevicePeer devicePeer;
     private ClientPeer clientPeer;

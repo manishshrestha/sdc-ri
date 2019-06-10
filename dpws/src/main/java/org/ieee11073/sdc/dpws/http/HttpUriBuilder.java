@@ -36,17 +36,26 @@ public class HttpUriBuilder {
     }
 
     /**
-     * Create a URI with a randomized port in accordance to the configured minimum and maximum.
+     * Create an HTTP URI with a randomized port in accordance to the configured minimum and maximum.
      *
      * The implied port range is [8000,8079]
-     *
-     * Note: for now only HTTP is supported.
-     * TODO: 22.09.2016 Support for HTTPS
      *
      * @param host The host to insert into the URI.
      * @param port The port to insert into the URI.
      */
     public URI buildUri(String host, int port) {
         return URI.create("http://" + host + ":" + port);
+    }
+
+    /**
+     * Create an HTTPS URI with a randomized port in accordance to the configured minimum and maximum.
+     *
+     * The implied port range is [8000,8079]
+     *
+     * @param host The host to insert into the URI.
+     * @param port The port to insert into the URI.
+     */
+    public URI buildSecuredUri(String host, int port) {
+        return URI.create("https://" + host + ":" + port);
     }
 }

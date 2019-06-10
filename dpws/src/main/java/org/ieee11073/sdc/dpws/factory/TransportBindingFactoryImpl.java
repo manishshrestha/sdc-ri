@@ -43,7 +43,7 @@ public class TransportBindingFactoryImpl implements TransportBindingFactory {
     }
 
     @Override
-    public TransportBinding createTransportBinding(URI endpointUri) throws UnsupportedOperationException{
+    public TransportBinding createTransportBinding(URI endpointUri) throws UnsupportedOperationException {
         // To keep things simple, this method directly checks if there is a SOAP-UDP or HTTP(S) binding
         // No plug-and-play feature is implemented, that dispatches, based on the URI scheme, to endpoint processor
         // factories
@@ -86,12 +86,12 @@ public class TransportBindingFactoryImpl implements TransportBindingFactory {
 
         @Override
         public void onNotification(SoapMessage notification) throws TransportBindingException {
-            // Ignore the result, even if there is one
+            // Ignore the result even if there is one
             try {
                 onRequestResponse(notification);
             } catch (SoapFaultException e) {
-                // Notifications have no response and therefore no soap exception that could be thrown
-                // (this should never happen ;-) )
+                // Swallow exception, rationale:
+                // we assume that notifications have no response and therefore no soap exception that could be thrown
             }
         }
 
@@ -102,6 +102,7 @@ public class TransportBindingFactoryImpl implements TransportBindingFactory {
                 marshalling.marshal(request.getEnvelopeWithMappedHeaders(), os);
             } catch (JAXBException e) {
                 LOG.warn("Marshalling of a message failed: {}", e.getMessage());
+                e.printStackTrace();
                 throw new TransportBindingException(
                         String.format("Sending of a request failed due to marshalling problem: %s", e.getMessage()));
             }

@@ -1,38 +1,62 @@
 package it.org.ieee11073.sdc.dpws.soap;
 
-import com.google.common.eventbus.Subscribe;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.SettableFuture;
+import dpws_test_service.messages._2017._05._10.ObjectFactory;
+import dpws_test_service.messages._2017._05._10.TestNotification;
+import dpws_test_service.messages._2017._05._10.TestOperationRequest;
+import dpws_test_service.messages._2017._05._10.TestOperationResponse;
+import it.org.ieee11073.sdc.dpws.IntegrationTestUtil;
+import it.org.ieee11073.sdc.dpws.TestServiceMetadata;
 import org.apache.log4j.BasicConfigurator;
-import org.ieee11073.sdc.dpws.client.*;
-import org.ieee11073.sdc.dpws.guice.DefaultDpwsConfigModule;
+import org.ieee11073.sdc.dpws.service.HostedServiceProxy;
 import org.ieee11073.sdc.dpws.service.HostingServiceProxy;
-import org.ieee11073.sdc.dpws.soap.wsdiscovery.WsDiscoveryConfig;
+import org.ieee11073.sdc.dpws.soap.SoapMessage;
+import org.ieee11073.sdc.dpws.soap.SoapUtil;
+import org.ieee11073.sdc.dpws.soap.interception.Interceptor;
+import org.ieee11073.sdc.dpws.soap.interception.MessageInterceptor;
+import org.ieee11073.sdc.dpws.soap.interception.NotificationObject;
+import org.ieee11073.sdc.dpws.soap.wseventing.SubscribeResult;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.net.URI;
+import java.sql.JDBCType;
 import java.time.Duration;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.*;
 
 public class InvocationIT {
-    private static final Duration MAX_WAIT_TIME = Duration.ofSeconds(10);
+    private static final Duration MAX_WAIT_TIME = IntegrationTestUtil.MAX_WAIT_TIME;
 
-    private DevicePeer devicePeer;
+    private final IntegrationTestUtil IT = new IntegrationTestUtil();
+
+    private BasicPopulatedDevice devicePeer;
     private ClientPeer clientPeer;
+
+    private HostingServiceProxy hostingServiceProxy;
+    private ObjectFactory factory;
+    private SoapUtil soapUtil = IT.getInjector().getInstance(SoapUtil.class);
 
     @Before
     public void setUp() throws Exception {
         BasicConfigurator.configure();
-        this.devicePeer = new BasicPopulatedDevice();
-        this.clientPeer = new ClientPeer();
+
+        factory = new ObjectFactory();
+
+        devicePeer = new BasicPopulatedDevice();
+        clientPeer = new ClientPeer();
         devicePeer.startAsync().awaitRunning();
         clientPeer.startAsync().awaitRunning();
+
+        hostingServiceProxy = clientPeer.getClient().connect(devicePeer.getEprAddress())
+                .get(MAX_WAIT_TIME.getSeconds(), TimeUnit.SECONDS);
     }
 
     @After
@@ -43,126 +67,78 @@ public class InvocationIT {
 
     @Test
     public void requestResponse() throws Exception {
-        // Given a device under test (DUT) and a client up and running
-        devicePeer.startAsync().awaitRunning();
-        clientPeer.startAsync().awaitRunning();
+        final int COUNT = 100;
 
-        // Given a discovery observer
-        final SettableFuture<Integer> actualDeviceFoundCount = SettableFuture.create();
-        final SettableFuture<String> actualEpr = SettableFuture.create();
-        DiscoveryObserver obs = new DiscoveryObserver() {
-            private String discoveryId = "";
-            private int deviceFoundCount = 0;
+        final HostedServiceProxy srv1 = hostingServiceProxy.getHostedServices().get(BasicPopulatedDevice.SERVICE_ID_1);
+        assertNotNull(srv1);
 
-            @Subscribe
-            void deviceFound(ProbedDeviceFoundMessage message) {
-                if (devicePeer.getEprAddress().equals(message.getPayload().getEprAddress())) {
-                    deviceFoundCount++;
-                    discoveryId = message.getDiscoveryId();
-                    actualEpr.set(message.getPayload().getEprAddress().toString());
-                }
-            }
+        final String testString = "test";
+        final Integer testInt = 10;
 
-            @Subscribe
-            void timeout(DeviceProbeTimeoutMessage message) {
-                if (discoveryId != "" && message.getDiscoveryId() == discoveryId) {
-                    assertEquals(deviceFoundCount, message.getFoundDevicesCount().intValue());
-                    actualDeviceFoundCount.set(deviceFoundCount);
-                }
-            }
-        };
+        final String expectedString = new StringBuilder(testString).reverse().toString();
+        final Integer expectedInt = testInt * 2;
 
-        // When explicit discovery is triggered (filter set to none)
-        clientPeer.getClient().registerDiscoveryObserver(obs);
-        DiscoveryFilterBuilder discoveryFilterBuilder = new DiscoveryFilterBuilder();
-        clientPeer.getClient().probe(discoveryFilterBuilder.get());
+        final TestOperationRequest request = factory.createTestOperationRequest();
+        request.setParam1(testString);
+        request.setParam2(testInt);
 
-        // Then expect to find one device
-        final int expectedDeviceFoundCount = 1;
-        assertEquals(expectedDeviceFoundCount, actualDeviceFoundCount
-                .get(MAX_WAIT_TIME.getSeconds(), TimeUnit.SECONDS).intValue());
-
-        // Then expect the found EPR address to be the DUT's EPR address
-        final String expectedEprAddress = devicePeer.getEprAddress().toString();
-        assertEquals(expectedEprAddress, actualEpr.get(MAX_WAIT_TIME.getSeconds(), TimeUnit.SECONDS));
-
-        // Resolve and verify EPR address against the DUT's EPR address
-        assertEquals(expectedEprAddress,
-                clientPeer.getClient().resolve(devicePeer.getEprAddress()).get(MAX_WAIT_TIME.getSeconds(), TimeUnit.SECONDS)
-                        .getEprAddress().toString());
+        // test multiple iterations
+        for (int i = 0; i < COUNT; ++i) {
+            final SoapMessage reqMsg = soapUtil.createMessage(TestServiceMetadata.ACTION_OPERATION_REQUEST_1, request);
+            final SoapMessage resMsg = srv1.sendRequestResponse(reqMsg);
+            final Optional<TestOperationResponse> resBody = soapUtil.getBody(resMsg, TestOperationResponse.class);
+            assertTrue(resBody.isPresent());
+            final TestOperationResponse testOperationResponse = resBody.get();
+            assertEquals(expectedString, testOperationResponse.getResult1());
+            assertEquals(expectedInt.intValue(), testOperationResponse.getResult2());
+        }
     }
 
     @Test
-    public void implicitDeviceDiscovery() throws Exception {
-        // Given a running client that listens to discovered devices
-        clientPeer.startAsync().awaitRunning();
-        final SettableFuture<String> actualEpr = SettableFuture.create();
-        final DiscoveryObserver obs = new DiscoveryObserver() {
-            @Subscribe
-            void deviceFound(DeviceEnteredMessage message) {
-                if (devicePeer.getEprAddress().equals(message.getPayload().getEprAddress())) {
-                    actualEpr.set(message.getPayload().getEprAddress().toString());
-                }
-            }
-        };
-        clientPeer.getClient().registerDiscoveryObserver(obs);
+    public void notification() throws Exception {
+        final int COUNT = 100;
+        final SettableFuture<List<TestNotification>> notificationFuture = SettableFuture.create();
+        final HostedServiceProxy srv1 = hostingServiceProxy.getHostedServices().get(BasicPopulatedDevice.SERVICE_ID_1);
+        final ListenableFuture<SubscribeResult> subscribe = srv1.getEventSinkAccess()
+                .subscribe(Arrays.asList(TestServiceMetadata.ACTION_NOTIFICATION_1), Duration.ofMinutes(1),
+                        new Interceptor() {
+                            private List<TestNotification> receivedNotifications = new ArrayList<>();
+                            @MessageInterceptor
+                            void onNotification(NotificationObject message) {
+                                receivedNotifications.add(
+                                        soapUtil.getBody(message.getNotification(), TestNotification.class)
+                                                .orElseThrow(() -> new RuntimeException("TestNotification could not be converted")));
+                                if (receivedNotifications.size() == COUNT) {
+                                    notificationFuture.set(receivedNotifications);
+                                }
+                            }
+                        });
 
-        // When a device under test (DUT) joins the network
-        devicePeer.startAsync().awaitRunning();
+        subscribe.get(MAX_WAIT_TIME.getSeconds(), TimeUnit.SECONDS);
 
-        // Then expect the found EPR address to be the DUT's EPR address
-        final String expectedEprAddress = devicePeer.getEprAddress().toString();
-        assertEquals(expectedEprAddress, actualEpr.get(MAX_WAIT_TIME.getSeconds(), TimeUnit.SECONDS));
+        for (int i = 0; i < COUNT; ++i) {
+            final TestNotification testNotification = factory.createTestNotification();
+            testNotification.setParam1(Integer.toString(i));
+            testNotification.setParam2(i);
+            devicePeer.getService1().sendNotifications(Arrays.asList(testNotification));
+        }
 
-        // Resolve and verify EPR address against the DUT's EPR address
-        assertEquals(expectedEprAddress,
-                clientPeer.getClient().resolve(devicePeer.getEprAddress()).get(MAX_WAIT_TIME.getSeconds(), TimeUnit.SECONDS)
-                        .getEprAddress().toString());
+        final List<TestNotification> notifications = notificationFuture.get(MAX_WAIT_TIME.getSeconds(), TimeUnit.SECONDS);
+        assertEquals(COUNT, notifications.size());
+        for (int i = 0; i < COUNT; ++i) {
+            TestNotification notification = notifications.get(i);
+            assertEquals(Integer.toString(i), notification.getParam1());
+            assertEquals(i, notification.getParam2());
+        }
     }
 
     @Test
-    public void directedProbe() throws Exception {
-        // Given a device under test (DUT) and a client up and running
-        devicePeer.startAsync().awaitRunning();
-        clientPeer.startAsync().awaitRunning();
+    public void notificationWithMultipleSubscriptions() throws Exception {
 
-        // When the DUT's physical addresses are resolved
-        final DiscoveredDevice discoveredDevice = clientPeer.getClient().resolve(devicePeer.getEprAddress())
-                .get(MAX_WAIT_TIME.getSeconds(), TimeUnit.SECONDS);
-        final List<String> xAddrs = discoveredDevice.getXAddrs();
-        assertFalse(xAddrs.isEmpty());
-        final URI uri = URI.create(xAddrs.get(0));
-
-        // Then expect the EPR address returned by a directed probe to be the DUT's EPR address
-        final String expectedEprAddress = devicePeer.getEprAddress().toString();
-
-        assertEquals(expectedEprAddress, clientPeer.getClient().directedProbe(uri)
-                .get(MAX_WAIT_TIME.getSeconds(), TimeUnit.SECONDS)
-                .getProbeMatch().get(0).getEndpointReference().getAddress().getValue());
     }
 
     @Test
-    public void connect() throws Exception {
-        // Given a device under test (DUT) and a client up and running
-        devicePeer.startAsync().awaitRunning();
-        clientPeer.startAsync().awaitRunning();
+    public void notificationSubscribeMultipleActions() throws Exception {
 
-        // When the client connects to the DUT
-        final DiscoveredDevice discoveredDevice = clientPeer.getClient().resolve(devicePeer.getEprAddress())
-                .get(MAX_WAIT_TIME.getSeconds(), TimeUnit.SECONDS);
-        final ListenableFuture<HostingServiceProxy> hostingServiceProxyFuture = clientPeer.getClient().connect(discoveredDevice);
-
-        // Then expect a hosting service to be resolved that matches the DUT EPR address
-        final String expectedEprAddress = devicePeer.getEprAddress().toString();
-        final HostingServiceProxy hostingServiceProxy = hostingServiceProxyFuture.get(MAX_WAIT_TIME.getSeconds(), TimeUnit.SECONDS);
-        final String actualEprAddress = hostingServiceProxy.getEndpointReferenceAddress().toString();
-        assertEquals(expectedEprAddress, actualEprAddress);
-    }
-
-    // @Test
-    public void sample() throws Exception {
-        // Given a device under test (DUT) and a client up and running
-        devicePeer.startAsync().awaitRunning();
-        Thread.sleep(100000000);
     }
 }

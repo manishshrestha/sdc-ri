@@ -6,9 +6,9 @@ import java.net.URI;
 import java.util.List;
 
 /**
- * \todo Define and implement DeviceConfiguration
+ * \todo Define and implement DeviceSettings
  */
-public interface DeviceConfiguration {
+public interface DeviceSettings {
     EndpointReferenceType getEndpointReference();
     List<URI> getHostingServiceBindings();
 }

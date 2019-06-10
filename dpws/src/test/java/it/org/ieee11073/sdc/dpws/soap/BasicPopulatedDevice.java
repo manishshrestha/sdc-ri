@@ -1,11 +1,13 @@
 package it.org.ieee11073.sdc.dpws.soap;
 
 
+import it.org.ieee11073.sdc.dpws.TestServiceMetadata;
 import org.ieee11073.sdc.dpws.DpwsFramework;
 import org.ieee11073.sdc.dpws.DpwsUtil;
-import org.ieee11073.sdc.dpws.device.DeviceConfiguration;
+import org.ieee11073.sdc.dpws.device.DeviceSettings;
 import org.ieee11073.sdc.dpws.guice.DefaultDpwsConfigModule;
 import org.ieee11073.sdc.dpws.service.factory.HostedServiceFactory;
+import org.ieee11073.sdc.dpws.soap.SoapConfig;
 import org.ieee11073.sdc.dpws.soap.wsaddressing.WsAddressingUtil;
 import org.ieee11073.sdc.dpws.soap.wsaddressing.model.EndpointReferenceType;
 
@@ -16,7 +18,26 @@ import java.util.Arrays;
 import java.util.List;
 
 public class BasicPopulatedDevice extends DevicePeer {
+    public static final String SERVICE_ID_1 = "TestServiceId1";
+    public static final String SERVICE_ID_2 = "TestServiceId2";
+
+    public static final URI SCOPE_1 = URI.create("http://integration-test-scope1");
+    public static final URI SCOPE_2 = URI.create("http://integration-test-scope2");
+
+    public static final QName QNAME_1 = new QName("http://type-ns", "integration-test-type1");
+    public static final QName QNAME_2 = new QName("http://type-ns", "integration-test-type2");
+
+    private DpwsTestService1 service1;
+    private DpwsTestService2 service2;
+
     public BasicPopulatedDevice() {
+        super(new DefaultDpwsConfigModule() {
+            @Override
+            protected void customConfigure() {
+                bind(SoapConfig.JAXB_CONTEXT_PATH, String.class,
+                        TestServiceMetadata.JAXB_CONTEXT_PATH);
+            }
+        });
     }
 
     public BasicPopulatedDevice(URI eprAddress, DefaultDpwsConfigModule configModule) {
@@ -31,9 +52,16 @@ public class BasicPopulatedDevice extends DevicePeer {
         super(configModule);
     }
 
+    public DpwsTestService1 getService1() {
+        return service1;
+    }
+    public DpwsTestService2 getService2() {
+        return service2;
+    }
+
     @Override
     protected void startUp() {
-        getDevice().setConfiguration(new DeviceConfiguration() {
+        getDevice().setConfiguration(new DeviceSettings() {
             @Override
             public EndpointReferenceType getEndpointReference() {
                 return getInjector().getInstance(WsAddressingUtil.class)
@@ -46,23 +74,17 @@ public class BasicPopulatedDevice extends DevicePeer {
             }
         });
 
-        getDevice().getDiscoveryAccess().setScopes(Arrays.asList(
-                URI.create("http://integration-test-scope1"),
-                URI.create("http://integration-test-scope2")
-        ));
-        getDevice().getDiscoveryAccess().setTypes(Arrays.asList(
-                new QName("http://type-ns", "integration-test-type1"),
-                new QName("http://type-ns", "integration-test-type2")
-        ));
+        getDevice().getDiscoveryAccess().setScopes(Arrays.asList(SCOPE_1, SCOPE_2));
+        getDevice().getDiscoveryAccess().setTypes(Arrays.asList(QNAME_1, QNAME_2));
 
         DpwsUtil dpwsUtil = getInjector().getInstance(DpwsUtil.class);
 
         getDevice().getHostingServiceAccess().setThisDevice(dpwsUtil.createThisDevice(
-                dpwsUtil.createLocalizedStrings("en", "TestDevice peer").get(), null, null));
+                dpwsUtil.createLocalizedStrings("en", "BasicPopulatedDevice peer").get(), null, null));
 
         HostedServiceFactory hostedServiceFactory = getInjector().getInstance(HostedServiceFactory.class);
-        DpwsTestService1 service1 = getInjector().getInstance(DpwsTestService1.class);
-        DpwsTestService2 service2 = getInjector().getInstance(DpwsTestService2.class);
+        service1 = getInjector().getInstance(DpwsTestService1.class);
+        service2 = getInjector().getInstance(DpwsTestService2.class);
 
 //        ObjectFactory factory = new ObjectFactory();
 //
@@ -98,9 +120,9 @@ public class BasicPopulatedDevice extends DevicePeer {
 //            }
 //        });
 //        t2.start();
-
-        InputStream wsdlResource1 = getClass().getClassLoader().getResourceAsStream("it/org/ieee11073/sdc/dpws/TestService1.wsdl");
-        InputStream wsdlResource2 = getClass().getClassLoader().getResourceAsStream("it/org/ieee11073/sdc/dpws/TestService2.wsdl");
+        final ClassLoader classLoader = getClass().getClassLoader();
+        InputStream wsdlResource1 = classLoader.getResourceAsStream("it/org/ieee11073/sdc/dpws/TestService1.wsdl");
+        InputStream wsdlResource2 = classLoader.getResourceAsStream("it/org/ieee11073/sdc/dpws/TestService2.wsdl");
         getDevice().getHostingServiceAccess().addHostedService(hostedServiceFactory.createHostedService(
                 DevicePeerMetadata.SERVICE_ID_1,
                 Arrays.asList(

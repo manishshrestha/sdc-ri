@@ -1,13 +1,14 @@
 package org.ieee11073.sdc.dpws.service.factory;
 
 import com.google.inject.assistedinject.Assisted;
+import org.ieee11073.sdc.dpws.service.EventSinkAccess;
 import org.ieee11073.sdc.dpws.device.WebService;
-import org.ieee11073.sdc.dpws.helper.PeerInformation;
 import org.ieee11073.sdc.dpws.model.HostedServiceType;
 import org.ieee11073.sdc.dpws.service.HostedService;
 import org.ieee11073.sdc.dpws.service.HostedServiceProxy;
 import org.ieee11073.sdc.dpws.service.WritableHostedServiceProxy;
 import org.ieee11073.sdc.dpws.soap.RequestResponseClient;
+import org.ieee11073.sdc.dpws.soap.wseventing.EventSink;
 
 import javax.xml.namespace.QName;
 import java.io.InputStream;
@@ -52,5 +53,6 @@ public interface HostedServiceFactory {
      */
     WritableHostedServiceProxy createHostedServiceProxy(@Assisted HostedServiceType hostedServiceType,
                                                         @Assisted RequestResponseClient rrClient,
-                                                        @Assisted URI activeEprAddress);
+                                                        @Assisted URI activeEprAddress,
+                                                        @Assisted EventSink eventSink);
 }

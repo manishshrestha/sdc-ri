@@ -23,6 +23,7 @@ import org.ieee11073.sdc.dpws.soap.model.Envelope;
 import org.ieee11073.sdc.dpws.soap.wsaddressing.WsAddressingUtil;
 import org.ieee11073.sdc.dpws.soap.wsaddressing.model.AttributedURIType;
 import org.ieee11073.sdc.dpws.soap.wsaddressing.model.EndpointReferenceType;
+import org.ieee11073.sdc.dpws.soap.wsaddressing.model.ReferenceParametersType;
 import org.ieee11073.sdc.dpws.soap.wseventing.factory.NotificationWorkerFactory;
 import org.ieee11073.sdc.dpws.soap.wseventing.factory.SubscriptionManagerFactory;
 import org.ieee11073.sdc.dpws.soap.wseventing.factory.WsEventingFaultFactory;
@@ -412,7 +413,10 @@ public class EventSourceInterceptor extends AbstractIdleService implements Event
         EndpointReferenceType notifyTo = subMan.getNotifyTo();
         String wsaTo = wsaUtil.getAddressUriAsString(notifyTo).orElse(null);
         Envelope envelope = envelopeFactory.createEnvelope(wsaAction, wsaTo, payload);
-        notifyTo.getReferenceParameters().getAny().forEach(refParam -> envelope.getHeader().getAny().add(refParam));
+        final ReferenceParametersType referenceParameters = notifyTo.getReferenceParameters();
+        if (referenceParameters != null) {
+            referenceParameters.getAny().forEach(refParam -> envelope.getHeader().getAny().add(refParam));
+        }
         return soapMessageFactory.createSoapMessage(envelope);
     }
 

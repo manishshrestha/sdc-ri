@@ -13,13 +13,13 @@ import java.util.UUID;
 /**
  * If no device configuration is given, this class will be used as a default.
  */
-public class DefaultDeviceConfiguration implements DeviceConfiguration {
+public class DefaultDeviceSettings implements DeviceSettings {
     private final WsAddressingUtil wsaUtil;
     private final SoapUtil soapUtil;
 
     @Inject
-    DefaultDeviceConfiguration(WsAddressingUtil wsaUtil,
-                               SoapUtil soapUtil) {
+    DefaultDeviceSettings(WsAddressingUtil wsaUtil,
+                          SoapUtil soapUtil) {
         this.wsaUtil = wsaUtil;
         this.soapUtil = soapUtil;
     }

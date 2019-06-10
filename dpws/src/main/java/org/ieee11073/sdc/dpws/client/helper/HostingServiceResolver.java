@@ -10,14 +10,16 @@ import org.ieee11073.sdc.dpws.DpwsConfig;
 import org.ieee11073.sdc.dpws.DpwsConstants;
 import org.ieee11073.sdc.dpws.TransportBinding;
 import org.ieee11073.sdc.dpws.client.DiscoveredDevice;
+import org.ieee11073.sdc.dpws.service.EventSinkAccess;
+import org.ieee11073.sdc.dpws.client.factory.EventSinkAccessFactory;
 import org.ieee11073.sdc.dpws.factory.TransportBindingFactory;
 import org.ieee11073.sdc.dpws.guice.NetworkJobThreadPool;
 import org.ieee11073.sdc.dpws.model.*;
+import org.ieee11073.sdc.dpws.ni.LocalAddressResolver;
 import org.ieee11073.sdc.dpws.service.HostingServiceProxy;
 import org.ieee11073.sdc.dpws.service.WritableHostedServiceProxy;
 import org.ieee11073.sdc.dpws.service.factory.HostedServiceFactory;
 import org.ieee11073.sdc.dpws.service.factory.HostingServiceFactory;
-import org.ieee11073.sdc.dpws.service.helper.HostResolver;
 import org.ieee11073.sdc.dpws.soap.RequestResponseClient;
 import org.ieee11073.sdc.dpws.soap.SoapMessage;
 import org.ieee11073.sdc.dpws.soap.SoapUtil;
@@ -26,6 +28,8 @@ import org.ieee11073.sdc.dpws.soap.exception.TransportException;
 import org.ieee11073.sdc.dpws.soap.factory.RequestResponseClientFactory;
 import org.ieee11073.sdc.dpws.soap.wsaddressing.WsAddressingUtil;
 import org.ieee11073.sdc.dpws.soap.wsaddressing.model.EndpointReferenceType;
+import org.ieee11073.sdc.dpws.soap.wseventing.EventSink;
+import org.ieee11073.sdc.dpws.soap.wseventing.factory.WsEventingEventSinkFactory;
 import org.ieee11073.sdc.dpws.soap.wsmetadataexchange.GetMetadataClient;
 import org.ieee11073.sdc.dpws.soap.wsmetadataexchange.model.Metadata;
 import org.ieee11073.sdc.dpws.soap.wsmetadataexchange.model.MetadataSection;
@@ -50,7 +54,7 @@ public class HostingServiceResolver {
 
     private final HostingServiceRegistry hostingServiceRegistry;
     private final ListeningExecutorService networkJobExecutor;
-    private final HostResolver hostResolver;
+    private final LocalAddressResolver localAddressResolver;
     private final TransportBindingFactory transportBindingFactory;
     private final RequestResponseClientFactory requestResponseClientFactory;
     private final TransferGetClient transferGetClient;
@@ -59,6 +63,7 @@ public class HostingServiceResolver {
     private final WsAddressingUtil wsaUtil;
     private final HostingServiceFactory hostingServiceFactory;
     private final HostedServiceFactory hostedServiceFactory;
+    private final WsEventingEventSinkFactory eventSinkFactory;
     private final GetMetadataClient getMetadataClient;
     private final Duration maxWaitForFutures;
 
@@ -66,7 +71,7 @@ public class HostingServiceResolver {
     HostingServiceResolver(@Assisted HostingServiceRegistry hostingServiceRegistry,
                            @Named(DpwsConfig.MAX_WAIT_FOR_FUTURES) Duration maxWaitForFutures,
                            @NetworkJobThreadPool ListeningExecutorService networkJobExecutor,
-                           HostResolver hostResolver,
+                           LocalAddressResolver localAddressResolver,
                            TransportBindingFactory transportBindingFactory,
                            RequestResponseClientFactory requestResponseClientFactory,
                            TransferGetClient transferGetClient,
@@ -75,11 +80,12 @@ public class HostingServiceResolver {
                            SoapUtil soapUtil,
                            WsAddressingUtil wsaUtil,
                            HostingServiceFactory hostingServiceFactory,
-                           HostedServiceFactory hostedServiceFactory) {
+                           HostedServiceFactory hostedServiceFactory,
+                           WsEventingEventSinkFactory eventSinkFactory) {
         this.hostingServiceRegistry = hostingServiceRegistry;
         this.maxWaitForFutures = maxWaitForFutures;
         this.networkJobExecutor = networkJobExecutor;
-        this.hostResolver = hostResolver;
+        this.localAddressResolver = localAddressResolver;
         this.transportBindingFactory = transportBindingFactory;
         this.requestResponseClientFactory = requestResponseClientFactory;
         this.transferGetClient = transferGetClient;
@@ -89,6 +95,7 @@ public class HostingServiceResolver {
         this.wsaUtil = wsaUtil;
         this.hostingServiceFactory = hostingServiceFactory;
         this.hostedServiceFactory = hostedServiceFactory;
+        this.eventSinkFactory = eventSinkFactory;
     }
 
     /**
@@ -273,7 +280,14 @@ public class HostingServiceResolver {
             return Optional.empty();
         }
 
-        return Optional.of(hostedServiceFactory.createHostedServiceProxy(host, rrClient, activeHostedServiceEprAddress));
+        final Optional<String> localAddress = localAddressResolver.getLocalAddress(activeHostedServiceEprAddress);
+        if (!localAddress.isPresent()) {
+            return Optional.empty();
+        }
+
+        final EventSink eventSink = eventSinkFactory.createWsEventingEventSink(rrClient, localAddress.get());
+        return Optional.of(hostedServiceFactory.createHostedServiceProxy(host, rrClient,
+                activeHostedServiceEprAddress, eventSink));
     }
 
     private RequestResponseClient createRequestResponseClient(URI endpointAddress) {

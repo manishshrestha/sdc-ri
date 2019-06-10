@@ -47,7 +47,7 @@ public class DeviceImpl extends AbstractIdleService implements Device, Service, 
     private static final Logger LOG = LoggerFactory.getLogger(DeviceImpl.class);
 
     private final WsDiscoveryTargetServiceFactory targetServiceFactory;
-    private final Provider<DefaultDeviceConfiguration> defaultConfigProvider;
+    private final Provider<DefaultDeviceSettings> defaultConfigProvider;
     private final WsAddressingUtil wsaUtil;
     private final NotificationSourceFactory notificationSourceFactory;
     private final DeviceHelperFactory deviceHelperFactory;
@@ -63,7 +63,7 @@ public class DeviceImpl extends AbstractIdleService implements Device, Service, 
     private final HostedServiceInterceptorFactory hostedServiceInterceptorFactory;
     private final StreamUtil streamUtil;
 
-    private DeviceConfiguration config;
+    private DeviceSettings config;
     private WsDiscoveryTargetService wsdTargetService;
     private HostingService hostingService;
     private final List<HostedService> hostedServicesOnStartup;
@@ -75,7 +75,7 @@ public class DeviceImpl extends AbstractIdleService implements Device, Service, 
 
     @Inject
     DeviceImpl(WsDiscoveryTargetServiceFactory targetServiceFactory,
-               Provider<DefaultDeviceConfiguration> defaultConfigProvider,
+               Provider<DefaultDeviceSettings> defaultConfigProvider,
                WsAddressingUtil wsaUtil,
                NotificationSourceFactory notificationSourceFactory,
                DeviceHelperFactory deviceHelperFactory,
@@ -193,8 +193,8 @@ public class DeviceImpl extends AbstractIdleService implements Device, Service, 
     }
 
     @Override
-    public void setConfiguration(DeviceConfiguration deviceConfiguration) {
-        this.config = deviceConfiguration;
+    public void setConfiguration(DeviceSettings deviceSettings) {
+        this.config = deviceSettings;
     }
 
     @Override

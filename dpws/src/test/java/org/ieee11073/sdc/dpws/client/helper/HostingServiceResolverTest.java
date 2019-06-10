@@ -5,6 +5,7 @@ import com.google.common.util.concurrent.ListenableFuture;
 import com.google.inject.AbstractModule;
 import org.ieee11073.sdc.dpws.*;
 import org.ieee11073.sdc.dpws.client.DiscoveredDevice;
+import org.ieee11073.sdc.dpws.service.EventSinkAccess;
 import org.ieee11073.sdc.dpws.client.helper.factory.ClientHelperFactory;
 import org.ieee11073.sdc.dpws.helper.PeerInformation;
 import org.ieee11073.sdc.dpws.model.HostedServiceType;
@@ -21,6 +22,7 @@ import org.ieee11073.sdc.dpws.soap.SoapUtil;
 import org.ieee11073.sdc.dpws.soap.factory.RequestResponseClientFactory;
 import org.ieee11073.sdc.dpws.soap.wsaddressing.WsAddressingUtil;
 import org.ieee11073.sdc.dpws.soap.wsaddressing.model.EndpointReferenceType;
+import org.ieee11073.sdc.dpws.soap.wseventing.EventSink;
 import org.ieee11073.sdc.dpws.soap.wsmetadataexchange.GetMetadataClient;
 import org.ieee11073.sdc.dpws.soap.wsmetadataexchange.model.Metadata;
 import org.ieee11073.sdc.dpws.soap.wsmetadataexchange.model.MetadataSection;
@@ -121,7 +123,8 @@ public class HostingServiceResolverTest extends DpwsTest {
         hostedServiceProxies.put(expectedServiceId, hostedServiceFactory.createHostedServiceProxy(
                 expectedHostedServiceType,
                 mock(RequestResponseClient.class),
-                URI.create("http://mock-apr-address")));
+                URI.create("http://mock-apr-address"),
+                mock(EventSink.class)));
 
         // When no existing service is found in registry on resolving
         // Then expect the resolver to resolve the service according to the following message

@@ -1,5 +1,6 @@
 package it.org.ieee11073.sdc.dpws.udp;
 
+import com.google.common.util.concurrent.SettableFuture;
 import org.ieee11073.sdc.dpws.DpwsConstants;
 import org.ieee11073.sdc.dpws.DpwsTest;
 import org.ieee11073.sdc.dpws.soap.wsdiscovery.WsDiscoveryConstants;
@@ -8,7 +9,6 @@ import org.ieee11073.sdc.dpws.udp.UdpMessage;
 import org.ieee11073.sdc.dpws.udp.factory.UdpBindingServiceFactory;
 import org.junit.Before;
 import org.junit.Test;
-import test.org.ieee11073.common.FutureCondition;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -95,7 +95,7 @@ public class UdpBindingServiceImplIT extends DpwsTest {
         final byte[] expectedRequestBytes = expectedRequestStr.getBytes();
         final byte[] expectedResponseBytes = expectedResponseStr.getBytes();
 
-        FutureCondition<String> futureCondition = new FutureCondition<>();
+        SettableFuture<String> settableFuture = SettableFuture.create();
 
         final UdpBindingService senderReceiver1 = factory.createUdpBindingService(
                 InetAddress.getByName(WsDiscoveryConstants.IPV4_MULTICAST_ADDRESS),
@@ -103,7 +103,7 @@ public class UdpBindingServiceImplIT extends DpwsTest {
                 DpwsConstants.MAX_UDP_ENVELOPE_SIZE);
         senderReceiver1.setMessageReceiver(udpMessage -> {
             if (udpMessage.toString().equals(expectedResponseStr)) {
-                futureCondition.setResult(udpMessage.toString());
+                settableFuture.set(udpMessage.toString());
             }
         });
 
@@ -136,6 +136,6 @@ public class UdpBindingServiceImplIT extends DpwsTest {
         });
         t.start();
 
-        assertEquals(expectedResponseStr, futureCondition.get(10, TimeUnit.SECONDS).substring(0, expectedResponseStr.length() ));
+        assertEquals(expectedResponseStr, settableFuture.get(10, TimeUnit.SECONDS).substring(0, expectedResponseStr.length() ));
     }
 }

@@ -82,7 +82,8 @@ public class InterceptorRegistry {
     }
 
     private List<Method> getCallbackMethods(Object obj) {
-        return Arrays.asList(obj.getClass().getDeclaredMethods())
+        final Method[] declaredMethods = obj.getClass().getDeclaredMethods();
+        return Arrays.asList(declaredMethods)
                 .parallelStream()
                 .filter(m -> Arrays.asList(m.getAnnotations())
                         .parallelStream()

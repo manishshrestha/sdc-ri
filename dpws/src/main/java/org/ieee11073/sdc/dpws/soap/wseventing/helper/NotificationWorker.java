@@ -162,11 +162,11 @@ public class NotificationWorker implements Runnable {
             return subscriptionManager;
         }
 
-        public Optional<ListenableFuture<InterceptorResult>> getProcessedItem() {
+        public synchronized Optional<ListenableFuture<InterceptorResult>> getProcessedItem() {
             return Optional.ofNullable(processedItem);
         }
 
-        public void setProcessedItem(ListenableFuture<InterceptorResult> processedNotification) {
+        public synchronized void setProcessedItem(ListenableFuture<InterceptorResult> processedNotification) {
             this.processedItem = processedNotification;
         }
     }

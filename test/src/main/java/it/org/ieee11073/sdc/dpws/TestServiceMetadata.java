@@ -27,6 +27,5 @@ public class TestServiceMetadata {
     public static final String ACTION_OPERATION_RESPONSE_3 = PORT_TYPE_3 + "/TestOperationResponse";
     public static final String ACTION_NOTIFICATION_3 = PORT_TYPE_3 + "/TestNotification";
 
-
     public static final String JAXB_CONTEXT_PATH = "dpws_test_service.messages._2017._05._10";
 }
