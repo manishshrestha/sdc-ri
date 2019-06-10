@@ -8,18 +8,18 @@ import java.net.URI;
  * Provide device proxy information that is delivered through a Bye message or a watchdog timeout.
  */
 public class DeviceLeftMessage extends AbstractEventMessage<URI> {
-    private final TriggerType triggerType;
+    private final TriggeredBy triggeredBy;
 
-    public DeviceLeftMessage(URI payload, TriggerType triggerType) {
+    public DeviceLeftMessage(URI payload, TriggeredBy triggeredBy) {
         super(payload);
-        this.triggerType = triggerType;
+        this.triggeredBy = triggeredBy;
     }
 
-    public TriggerType getTriggerType() {
-        return triggerType;
+    public TriggeredBy getTriggeredBy() {
+        return triggeredBy;
     }
 
-    public enum TriggerType {
+    public enum TriggeredBy {
         BYE,
         WATCHDOG
     }

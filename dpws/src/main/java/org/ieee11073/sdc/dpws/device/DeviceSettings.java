@@ -6,9 +6,16 @@ import java.net.URI;
 import java.util.List;
 
 /**
- * \todo Define and implement DeviceSettings
+ * Settings used in the setup process of a device.
  */
 public interface DeviceSettings {
+    /**
+     * The unique and persisted endpoint reference (EPR) of the device.
+     */
     EndpointReferenceType getEndpointReference();
+
+    /**
+     * Bindings that are used to make the device accessible from network.
+     */
     List<URI> getHostingServiceBindings();
 }

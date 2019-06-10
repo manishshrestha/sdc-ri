@@ -104,7 +104,7 @@ public class ClientImpl extends AbstractIdleService implements Client, Service, 
 
 //        watchdog = clientHelperFactory.createWatchdog(wsDiscoveryClient, hostingServiceProxy -> {
 //            URI endpointReferenceAddress = hostingServiceProxy.getEndpointReferenceAddress();
-//            helloByeAndProbeMatchesObserverImpl.publishDeviceLeft(endpointReferenceAddress, DeviceLeftMessage.TriggerType.WATCHDOG);
+//            helloByeAndProbeMatchesObserverImpl.publishDeviceLeft(endpointReferenceAddress, DeviceLeftMessage.TriggeredBy.WATCHDOG);
 //        });
     }
 

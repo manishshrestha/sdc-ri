@@ -10,8 +10,6 @@ import org.ieee11073.sdc.dpws.DpwsConfig;
 import org.ieee11073.sdc.dpws.DpwsConstants;
 import org.ieee11073.sdc.dpws.TransportBinding;
 import org.ieee11073.sdc.dpws.client.DiscoveredDevice;
-import org.ieee11073.sdc.dpws.service.EventSinkAccess;
-import org.ieee11073.sdc.dpws.client.factory.EventSinkAccessFactory;
 import org.ieee11073.sdc.dpws.factory.TransportBindingFactory;
 import org.ieee11073.sdc.dpws.guice.NetworkJobThreadPool;
 import org.ieee11073.sdc.dpws.model.*;
@@ -108,7 +106,7 @@ public class HostingServiceResolver {
      * requests hosting service and hosted service information by using WS-Transfer Get, stores the information in the
      * registry, and returns it.
      *
-     * @param discoveredDevice A well-populated {@link DiscoveredDevice} object.
+     * @param discoveredDevice A well-populated {@link DiscoveredDevice} object, i.e., including XAddrs.
      * @return Future with resolved hosting service and hosted service information.
      */
     public ListenableFuture<HostingServiceProxy> resolveHostingService(DiscoveredDevice discoveredDevice) {

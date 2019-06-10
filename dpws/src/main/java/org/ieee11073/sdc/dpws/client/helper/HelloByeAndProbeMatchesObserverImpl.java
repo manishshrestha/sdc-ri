@@ -48,8 +48,8 @@ public class HelloByeAndProbeMatchesObserverImpl implements HelloByeAndProbeMatc
         discoveryBus.unregister(observer);
     }
 
-    public void publishDeviceLeft(URI deviceUuid, DeviceLeftMessage.TriggerType triggerType) {
-        discoveryBus.post(new DeviceLeftMessage(deviceUuid, triggerType));
+    public void publishDeviceLeft(URI deviceUuid, DeviceLeftMessage.TriggeredBy triggeredBy) {
+        discoveryBus.post(new DeviceLeftMessage(deviceUuid, triggeredBy));
     }
 
     @Subscribe
@@ -77,7 +77,7 @@ public class HelloByeAndProbeMatchesObserverImpl implements HelloByeAndProbeMatc
     @Subscribe
     void onBye(ByeMessage byeMessage) {
         wsaUtil.getAddressUri(byeMessage.getPayload().getEndpointReference()).ifPresent(uri ->
-                discoveryBus.post(new DeviceLeftMessage(uri, DeviceLeftMessage.TriggerType.BYE)));
+                discoveryBus.post(new DeviceLeftMessage(uri, DeviceLeftMessage.TriggeredBy.BYE)));
     }
 
     /**

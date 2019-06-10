@@ -20,14 +20,17 @@ public class DpwsConstants {
      * Unit: octets.
      */
     public static final int MAX_ENVELOPE_SIZE = 32_767;
+
     /**
      * Unit: octets
      */
     public static final int MAX_UDP_ENVELOPE_SIZE = 4_096;
+
     /**
      * Unit: Unicode characters
      */
     public static final int MAX_FIELD_SIZE = 256;
+
     /**
      * Unit: octets
      */

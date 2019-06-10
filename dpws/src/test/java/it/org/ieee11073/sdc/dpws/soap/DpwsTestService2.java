@@ -8,14 +8,13 @@ import dpws_test_service.messages._2017._05._10.TestOperationResponse;
 import it.org.ieee11073.sdc.dpws.TestServiceMetadata;
 import org.ieee11073.sdc.dpws.device.WebService;
 import org.ieee11073.sdc.dpws.soap.SoapUtil;
+import org.ieee11073.sdc.dpws.soap.exception.MarshallingException;
 import org.ieee11073.sdc.dpws.soap.exception.SoapFaultException;
+import org.ieee11073.sdc.dpws.soap.exception.TransportException;
 import org.ieee11073.sdc.dpws.soap.factory.SoapFaultFactory;
 import org.ieee11073.sdc.dpws.soap.interception.MessageInterceptor;
 import org.ieee11073.sdc.dpws.soap.interception.RequestResponseObject;
 import org.ieee11073.sdc.dpws.soap.wsaddressing.WsAddressingUtil;
-import org.ieee11073.sdc.dpws.soap.wseventing.EventSource;
-
-import java.util.List;
 
 
 public class DpwsTestService2 extends WebService {
@@ -37,12 +36,9 @@ public class DpwsTestService2 extends WebService {
         this.objectFactory = objectFactory;
     }
 
-    public void sendNotifications(List<TestNotification> notificationsToSend) {
-        EventSource evtSrc = getEventSource();
-        notificationsToSend.stream().forEach(testNotification ->
-                evtSrc.sendNotification(
-                        TestServiceMetadata.ACTION_NOTIFICATION_3,
-                        testNotification));
+    public void sendNotification(TestNotification notificationToSend) throws MarshallingException, TransportException {
+        sendNotification(TestServiceMetadata.ACTION_NOTIFICATION_1, notificationToSend);
+        sendNotification(TestServiceMetadata.ACTION_NOTIFICATION_2, notificationToSend);
     }
 
     @MessageInterceptor(TestServiceMetadata.ACTION_OPERATION_REQUEST_3)

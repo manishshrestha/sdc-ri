@@ -1,7 +1,6 @@
 package org.ieee11073.sdc.dpws.service.factory;
 
 import com.google.inject.assistedinject.Assisted;
-import org.ieee11073.sdc.dpws.service.EventSinkAccess;
 import org.ieee11073.sdc.dpws.device.WebService;
 import org.ieee11073.sdc.dpws.model.HostedServiceType;
 import org.ieee11073.sdc.dpws.service.HostedService;

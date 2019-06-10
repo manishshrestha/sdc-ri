@@ -166,7 +166,7 @@ public class DeviceImpl extends AbstractIdleService implements Device, Service, 
 
         hostedServicesOnStartup.forEach(this::addHostedServiceToHostingService);
         hostingService.getHostedServices().forEach(hostedService ->
-                hostedService.getWebService().getEventSource().startAsync().awaitRunning());
+                hostedService.getWebService().startAsync().awaitRunning());
         Optional.ofNullable(thisDeviceOnStartup).ifPresent(thisDeviceType ->
                 hostingService.setThisDevice(thisDeviceType));
         Optional.ofNullable(thisModelOnStartup).ifPresent(thisModelType ->
@@ -186,7 +186,7 @@ public class DeviceImpl extends AbstractIdleService implements Device, Service, 
         LOG.info("Shut down device {}.", hostingService);
         wsdTargetService.sendBye();
         hostingService.getHostedServices().forEach(hostedService ->
-                hostedService.getWebService().getEventSource().stopAsync().awaitTerminated());
+                hostedService.getWebService().stopAsync().awaitTerminated());
         httpServerRegistry.stopAsync().awaitTerminated();
         discoveryMessageQueue.unregisterUdpMessageQueueObserver(udpMsgProcessor);
         LOG.info("Device {} shut down.", hostingService);

@@ -1,7 +1,10 @@
 package org.ieee11073.sdc.dpws.device;
 
+import com.google.common.util.concurrent.AbstractIdleService;
 import com.google.common.util.concurrent.Service;
 import org.ieee11073.sdc.dpws.service.HostedService;
+import org.ieee11073.sdc.dpws.soap.exception.MarshallingException;
+import org.ieee11073.sdc.dpws.soap.exception.TransportException;
 import org.ieee11073.sdc.dpws.soap.interception.Interceptor;
 import org.ieee11073.sdc.dpws.soap.wseventing.EventSource;
 import org.ieee11073.sdc.dpws.soap.wseventing.model.WsEventingStatus;
@@ -24,7 +27,7 @@ import java.util.concurrent.TimeoutException;
  * {@link RequestResponseServer} instance within a {@link Device} instance when using
  * {@link HostingServiceAccess#addHostedService(HostedService)}.
  */
-public abstract class WebService implements Interceptor {
+public abstract class WebService extends AbstractIdleService implements EventSourceAccess, Interceptor {
     private static final Logger LOG = LoggerFactory.getLogger(WebService.class);
     private EventSource eventSource;
 
@@ -87,11 +90,25 @@ public abstract class WebService implements Interceptor {
         };
     }
 
-    protected EventSource getEventSource() {
-        return eventSource;
+    @Override
+    public void sendNotification(String action, Object payload) throws MarshallingException, TransportException {
+        eventSource.sendNotification(action, payload);
+    }
+
+    @Override
+    public void subscriptionEndToAll(WsEventingStatus status) throws TransportException {
+        eventSource.subscriptionEndToAll(status);
     }
 
     void setEventSource(EventSource eventSource) {
         this.eventSource = eventSource;
+    }
+
+    protected void startUp() {
+        eventSource.startAsync().awaitRunning();
+    }
+
+    protected void shutDown()  {
+        eventSource.stopAsync().awaitTerminated();
     }
 }

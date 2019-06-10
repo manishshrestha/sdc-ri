@@ -21,13 +21,11 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.sql.JDBCType;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.*;
@@ -103,6 +101,7 @@ public class InvocationIT {
                 .subscribe(Arrays.asList(TestServiceMetadata.ACTION_NOTIFICATION_1), Duration.ofMinutes(1),
                         new Interceptor() {
                             private List<TestNotification> receivedNotifications = new ArrayList<>();
+
                             @MessageInterceptor
                             void onNotification(NotificationObject message) {
                                 receivedNotifications.add(
@@ -120,13 +119,13 @@ public class InvocationIT {
             final TestNotification testNotification = factory.createTestNotification();
             testNotification.setParam1(Integer.toString(i));
             testNotification.setParam2(i);
-            devicePeer.getService1().sendNotifications(Arrays.asList(testNotification));
+            devicePeer.getService1().sendNotification(testNotification);
         }
 
         final List<TestNotification> notifications = notificationFuture.get(MAX_WAIT_TIME.getSeconds(), TimeUnit.SECONDS);
         assertEquals(COUNT, notifications.size());
         for (int i = 0; i < COUNT; ++i) {
-            TestNotification notification = notifications.get(i);
+            final TestNotification notification = notifications.get(i);
             assertEquals(Integer.toString(i), notification.getParam1());
             assertEquals(i, notification.getParam2());
         }
