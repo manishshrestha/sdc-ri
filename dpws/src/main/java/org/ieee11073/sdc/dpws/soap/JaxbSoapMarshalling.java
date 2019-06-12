@@ -28,6 +28,7 @@ public class JaxbSoapMarshalling extends AbstractIdleService implements SoapMars
     private final ObjectFactory soapFactory;
 
     private String contextPackages;
+    private JAXBContext jaxbContext;
     private Marshaller marshaller;
     private Unmarshaller unmarshaller;
 
@@ -56,7 +57,7 @@ public class JaxbSoapMarshalling extends AbstractIdleService implements SoapMars
     @Override
     public void marshal(Envelope envelope, OutputStream outputStream) throws JAXBException {
         checkRunning();
-        marshaller.marshal(soapFactory.createEnvelope(envelope), outputStream);
+        jaxbContext.createMarshaller().marshal(soapFactory.createEnvelope(envelope), outputStream);
     }
 
     private void checkRunning() {
@@ -72,7 +73,7 @@ public class JaxbSoapMarshalling extends AbstractIdleService implements SoapMars
     @SuppressWarnings("unchecked")
     public Envelope unmarshal(InputStream inputStream) throws JAXBException, ClassCastException {
         checkRunning();
-        return ((JAXBElement<Envelope>) (unmarshaller.unmarshal(inputStream))).getValue();
+        return ((JAXBElement<Envelope>) (jaxbContext.createUnmarshaller().unmarshal(inputStream))).getValue();
     }
 
     private void initializeJaxb() {
@@ -90,9 +91,7 @@ public class JaxbSoapMarshalling extends AbstractIdleService implements SoapMars
         LOG.info("Configure JAXB with contexts: {}", contextPackages);
 
         try {
-            JAXBContext jaxbContext = JAXBContext.newInstance(contextPackages);
-            marshaller = jaxbContext.createMarshaller();
-            unmarshaller = jaxbContext.createUnmarshaller();
+             jaxbContext = JAXBContext.newInstance(contextPackages);
         } catch (JAXBException e) {
             throw new RuntimeException("JAXB context for SOAP model(s) could not be created");
         }
