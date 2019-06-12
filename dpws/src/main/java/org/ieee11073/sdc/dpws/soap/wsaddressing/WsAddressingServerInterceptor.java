@@ -88,7 +88,7 @@ public class WsAddressingServerInterceptor implements Interceptor {
         }
     }
 
-    private InterceptorResult processMessageId(SoapMessage msg) throws SoapFaultException {
+    private synchronized InterceptorResult processMessageId(SoapMessage msg) throws SoapFaultException {
         if (ignoreMessageIds) {
             return InterceptorResult.PROCEED;
         }
