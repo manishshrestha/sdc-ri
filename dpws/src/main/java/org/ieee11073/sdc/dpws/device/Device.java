@@ -3,7 +3,7 @@ package org.ieee11073.sdc.dpws.device;
 import com.google.common.util.concurrent.Service;
 
 /**
- * Core class to create a device that represents itself to the network.
+ * Core class to create a device that exposes itself to the network.
  *
  * First, configure the device appropriately by using {@link #setConfiguration(DeviceSettings)},
  * {@link #getDiscoveryAccess()}, and {@link #getHostingServiceAccess()}. Afterwards, use {@link #startAsync()} to

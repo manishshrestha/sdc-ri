@@ -37,8 +37,7 @@ public class DpwsTestService2 extends WebService {
     }
 
     public void sendNotification(TestNotification notificationToSend) throws MarshallingException, TransportException {
-        sendNotification(TestServiceMetadata.ACTION_NOTIFICATION_1, notificationToSend);
-        sendNotification(TestServiceMetadata.ACTION_NOTIFICATION_2, notificationToSend);
+        sendNotification(TestServiceMetadata.ACTION_NOTIFICATION_3, notificationToSend);
     }
 
     @MessageInterceptor(TestServiceMetadata.ACTION_OPERATION_REQUEST_3)

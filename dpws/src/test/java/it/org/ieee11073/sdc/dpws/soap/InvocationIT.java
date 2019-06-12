@@ -1,6 +1,8 @@
 package it.org.ieee11073.sdc.dpws.soap;
 
 import com.google.common.util.concurrent.ListenableFuture;
+import com.google.common.util.concurrent.ListeningExecutorService;
+import com.google.common.util.concurrent.MoreExecutors;
 import com.google.common.util.concurrent.SettableFuture;
 import dpws_test_service.messages._2017._05._10.ObjectFactory;
 import dpws_test_service.messages._2017._05._10.TestNotification;
@@ -26,6 +28,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.*;
@@ -90,6 +93,27 @@ public class InvocationIT {
             assertEquals(expectedString, testOperationResponse.getResult1());
             assertEquals(expectedInt.intValue(), testOperationResponse.getResult2());
         }
+        
+        // test multiple iterations concurrently (in order to increase probability of concurrency issues)
+        ArrayList<ListenableFuture<Boolean>> futures = new ArrayList<>();
+        final ListeningExecutorService les = MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(COUNT));
+        for (int i = 0; i < COUNT; ++i) {
+            final ListenableFuture<Boolean> future = les.submit(() -> {
+                final SoapMessage reqMsg = soapUtil.createMessage(TestServiceMetadata.ACTION_OPERATION_REQUEST_1, request);
+                final SoapMessage resMsg = srv1.sendRequestResponse(reqMsg);
+                final Optional<TestOperationResponse> resBody = soapUtil.getBody(resMsg, TestOperationResponse.class);
+                assertTrue(resBody.isPresent());
+                final TestOperationResponse testOperationResponse = resBody.get();
+                assertEquals(expectedString, testOperationResponse.getResult1());
+                assertEquals(expectedInt.intValue(), testOperationResponse.getResult2());
+                return true;
+            });
+            futures.add(future);
+        }
+
+        for (int i = 0; i < COUNT; ++i) {
+            futures.get(i).get(MAX_WAIT_TIME.getSeconds(), TimeUnit.SECONDS);
+        }
     }
 
     @Test
@@ -133,11 +157,129 @@ public class InvocationIT {
 
     @Test
     public void notificationWithMultipleSubscriptions() throws Exception {
+        final int COUNT = 100;
+        final SettableFuture<List<TestNotification>> notificationFuture1 = SettableFuture.create();
+        final SettableFuture<List<TestNotification>> notificationFuture2 = SettableFuture.create();
+        final SettableFuture<List<TestNotification>> notificationFuture3 = SettableFuture.create();
+        final HostedServiceProxy srv1 = hostingServiceProxy.getHostedServices().get(BasicPopulatedDevice.SERVICE_ID_1);
+        final HostedServiceProxy srv2 = hostingServiceProxy.getHostedServices().get(BasicPopulatedDevice.SERVICE_ID_2);
+        final ListenableFuture<SubscribeResult> subscribe1 = srv1.getEventSinkAccess()
+                .subscribe(Arrays.asList(TestServiceMetadata.ACTION_NOTIFICATION_1), Duration.ofMinutes(1),
+                        new Interceptor() {
+                            private List<TestNotification> receivedNotifications = new ArrayList<>();
 
+                            @MessageInterceptor
+                            void onNotification(NotificationObject message) {
+                                receivedNotifications.add(
+                                        soapUtil.getBody(message.getNotification(), TestNotification.class)
+                                                .orElseThrow(() -> new RuntimeException("TestNotification could not be converted")));
+                                if (receivedNotifications.size() == COUNT) {
+                                    notificationFuture1.set(receivedNotifications);
+                                }
+                            }
+                        });
+
+        final ListenableFuture<SubscribeResult> subscribe2 = srv1.getEventSinkAccess()
+                .subscribe(Arrays.asList(TestServiceMetadata.ACTION_NOTIFICATION_2), Duration.ofMinutes(1),
+                        new Interceptor() {
+                            private List<TestNotification> receivedNotifications = new ArrayList<>();
+
+                            @MessageInterceptor
+                            void onNotification(NotificationObject message) {
+                                receivedNotifications.add(
+                                        soapUtil.getBody(message.getNotification(), TestNotification.class)
+                                                .orElseThrow(() -> new RuntimeException("TestNotification could not be converted")));
+                                if (receivedNotifications.size() == COUNT) {
+                                    notificationFuture2.set(receivedNotifications);
+                                }
+                            }
+                        });
+        final ListenableFuture<SubscribeResult> subscribe3 = srv2.getEventSinkAccess()
+                .subscribe(Arrays.asList(TestServiceMetadata.ACTION_NOTIFICATION_3), Duration.ofMinutes(1),
+                        new Interceptor() {
+                            private List<TestNotification> receivedNotifications = new ArrayList<>();
+
+                            @MessageInterceptor
+                            void onNotification(NotificationObject message) {
+                                receivedNotifications.add(
+                                        soapUtil.getBody(message.getNotification(), TestNotification.class)
+                                                .orElseThrow(() -> new RuntimeException("TestNotification could not be converted")));
+                                if (receivedNotifications.size() == COUNT) {
+                                    notificationFuture3.set(receivedNotifications);
+                                }
+                            }
+                        });
+
+        subscribe1.get(MAX_WAIT_TIME.getSeconds(), TimeUnit.SECONDS);
+        subscribe2.get(MAX_WAIT_TIME.getSeconds(), TimeUnit.SECONDS);
+        subscribe3.get(MAX_WAIT_TIME.getSeconds(), TimeUnit.SECONDS);
+
+        for (int i = 0; i < COUNT; ++i) {
+            final TestNotification testNotification = factory.createTestNotification();
+            testNotification.setParam1(Integer.toString(i));
+            testNotification.setParam2(i);
+            devicePeer.getService1().sendNotification(testNotification);
+            devicePeer.getService2().sendNotification(testNotification);
+        }
+
+        final List<TestNotification> notifications1 = notificationFuture1.get(MAX_WAIT_TIME.getSeconds(), TimeUnit.SECONDS);
+        final List<TestNotification> notifications2 = notificationFuture2.get(MAX_WAIT_TIME.getSeconds(), TimeUnit.SECONDS);
+        final List<TestNotification> notifications3 = notificationFuture3.get(MAX_WAIT_TIME.getSeconds(), TimeUnit.SECONDS);
+        assertEquals(COUNT, notifications1.size());
+        assertEquals(COUNT, notifications2.size());
+        assertEquals(COUNT, notifications3.size());
+        for (int i = 0; i < COUNT; ++i) {
+            final TestNotification notification1 = notifications1.get(i);
+            assertEquals(Integer.toString(i), notification1.getParam1());
+            assertEquals(i, notification1.getParam2());
+            final TestNotification notification2 = notifications2.get(i);
+            assertEquals(Integer.toString(i), notification2.getParam1());
+            assertEquals(i, notification2.getParam2());
+            final TestNotification notification3 = notifications3.get(i);
+            assertEquals(Integer.toString(i), notification3.getParam1());
+            assertEquals(i, notification3.getParam2());
+        }
     }
 
     @Test
     public void notificationSubscribeMultipleActions() throws Exception {
+        final int COUNT = 100;
+        final SettableFuture<List<TestNotification>> notificationFuture = SettableFuture.create();
+        final HostedServiceProxy srv1 = hostingServiceProxy.getHostedServices().get(BasicPopulatedDevice.SERVICE_ID_1);
+        final ListenableFuture<SubscribeResult> subscribe = srv1.getEventSinkAccess()
+                .subscribe(Arrays.asList(TestServiceMetadata.ACTION_NOTIFICATION_1, TestServiceMetadata.ACTION_NOTIFICATION_2), Duration.ofMinutes(1),
+                        new Interceptor() {
+                            private List<TestNotification> receivedNotifications = new ArrayList<>();
 
+                            @MessageInterceptor
+                            void onNotification(NotificationObject message) {
+                                receivedNotifications.add(
+                                        soapUtil.getBody(message.getNotification(), TestNotification.class)
+                                                .orElseThrow(() -> new RuntimeException("TestNotification could not be converted")));
+                                if (receivedNotifications.size() == COUNT*2) {
+                                    notificationFuture.set(receivedNotifications);
+                                }
+                            }
+                        });
+
+        subscribe.get(MAX_WAIT_TIME.getSeconds(), TimeUnit.SECONDS);
+
+        for (int i = 0; i < COUNT; ++i) {
+            final TestNotification testNotification = factory.createTestNotification();
+            testNotification.setParam1(Integer.toString(i));
+            testNotification.setParam2(i);
+            devicePeer.getService1().sendNotification(testNotification);
+        }
+
+        final List<TestNotification> notifications = notificationFuture.get(MAX_WAIT_TIME.getSeconds(), TimeUnit.SECONDS);
+        assertEquals(COUNT*2, notifications.size());
+        for (int i = 0; i < COUNT; ++i) {
+            final TestNotification notificationEven = notifications.get(i*2);
+            assertEquals(Integer.toString(i), notificationEven.getParam1());
+            assertEquals(i, notificationEven.getParam2());
+            final TestNotification notificationOdd = notifications.get(i*2+1);
+            assertEquals(Integer.toString(i), notificationOdd.getParam1());
+            assertEquals(i, notificationOdd.getParam2());
+        }
     }
 }
