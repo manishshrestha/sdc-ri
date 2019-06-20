@@ -17,8 +17,8 @@ public interface EventSink {
     /**
      * @param actions          List of operation actions. Operation actions have the following format:
      *                         #WSDL-TARGET-NAMESPACE/#WSDL-PORT-TYPE-NAME/#OPERATION-NAME
-     * @param expires          Desired expiration time (the hosted service may decide to grant lesser thatn this). If
-     *                         known is given, the hosting service will tage decision.
+     * @param expires          Desired expiration time (the hosted service may decide to grant lesser than this). If
+     *                         known is given, the hosting service will take decision.
      * @param notificationSink Sink where to deliver notifications.
      * @return A future object that can throw
      *

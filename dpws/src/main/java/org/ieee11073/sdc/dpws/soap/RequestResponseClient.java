@@ -12,7 +12,7 @@ public interface RequestResponseClient extends InterceptorHandler {
     /**
      * Send a SOAP request message and wait for response to be received from recipient.
      *
-     * @param request Outgoint request message.
+     * @param request Outgoing request message.
      * @return Incoming response message.
      * @throws SoapFaultException SOAP fault that may be thrown on processing.
      */

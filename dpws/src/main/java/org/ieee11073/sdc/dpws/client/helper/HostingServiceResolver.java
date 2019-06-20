@@ -256,12 +256,12 @@ public class HostingServiceResolver {
     private Optional<HostedServiceProxy> extractHostedServiceProxy(HostedServiceType host) {
         URI activeHostedServiceEprAddress = null;
         RequestResponseClient rrClient = null;
-        SoapMessage getMetadatResponse = null;
+        SoapMessage getMetadataResponse = null;
         for (EndpointReferenceType eprType : host.getEndpointReference()) {
             try {
                 activeHostedServiceEprAddress = URI.create(eprType.getAddress().getValue());
                 rrClient = createRequestResponseClient(activeHostedServiceEprAddress);
-                getMetadatResponse = getMetadataClient.sendGetMetadata(rrClient)
+                getMetadataResponse = getMetadataClient.sendGetMetadata(rrClient)
                         .get(maxWaitForFutures.toMillis(), TimeUnit.MILLISECONDS);
                 break;
             } catch (Exception e) {
@@ -269,7 +269,7 @@ public class HostingServiceResolver {
             }
         }
 
-        if (getMetadatResponse == null) {
+        if (getMetadataResponse == null) {
             LOG.info("None of the {} hosted service EPR addresses responded with a valid GetMetadata response.",
                     host.getEndpointReference().size());
             return Optional.empty();

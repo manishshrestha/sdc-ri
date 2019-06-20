@@ -10,7 +10,7 @@ import java.util.concurrent.BlockingQueue;
  */
 public interface SourceSubscriptionManager extends SubscriptionManager, Service {
     /**
-     * Get notfication queue where notifications are temporarily saved until ready to send over network.
+     * Get notification queue where notifications are temporarily saved until ready to send over network.
      */
     BlockingQueue<Notification> getNotificationQueue();
 }

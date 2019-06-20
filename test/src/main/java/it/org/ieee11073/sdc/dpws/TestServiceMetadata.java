@@ -1,10 +1,6 @@
 package it.org.ieee11073.sdc.dpws;
 
-/**
- * Created by gregorcd on 10.05.2017.
- */
 public class TestServiceMetadata {
-    public static final String NAMESPACE_MSG = "http://dpws-test-service/messages/2017/05/10";
     public static final String NAMESPACE_SRV = "http://dpws-test-service/2017/05/10";
 
     public static final String PORT_TYPE_NAME_1 = "TestPortType1";
