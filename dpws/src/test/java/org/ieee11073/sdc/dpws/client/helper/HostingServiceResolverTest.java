@@ -105,7 +105,7 @@ public class HostingServiceResolverTest extends DpwsTest {
                 new QName("http://service", "Type2"));
         expectedHostedServiceType = dpwsFactory.createHostedServiceType();
         expectedHostedServiceType.setEndpointReference(expectedHostedServiceEprs);
-        expectedHostedServiceType.setServiceId(expectedServiceId.toString());
+        expectedHostedServiceType.setServiceId(expectedServiceId);
         expectedHostedServiceType.setTypes(expectedHostedServiceQNameTypes);
     }
 
@@ -159,7 +159,7 @@ public class HostingServiceResolverTest extends DpwsTest {
     private HostedService createHostedService(String serviceId, List<QName> types, List<EndpointReferenceType> eprs) {
         HostedServiceType hst = dpwsFactory.createHostedServiceType();
         hst.setTypes(types);
-        hst.setServiceId(serviceId.toString());
+        hst.setServiceId(serviceId);
         hst.setEndpointReference(eprs);
         HostedService hs = mock(HostedService.class);
         when(hs.getType()).thenReturn(hst);
