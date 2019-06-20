@@ -2,7 +2,7 @@ package org.ieee11073.sdc.dpws.client.helper;
 
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListeningExecutorService;
-import com.google.inject.assistedinject.Assisted;
+import com.google.inject.Inject;
 import com.google.inject.assistedinject.AssistedInject;
 import com.google.inject.name.Named;
 import org.ieee11073.sdc.common.helper.JaxbUtil;
@@ -14,8 +14,8 @@ import org.ieee11073.sdc.dpws.factory.TransportBindingFactory;
 import org.ieee11073.sdc.dpws.guice.NetworkJobThreadPool;
 import org.ieee11073.sdc.dpws.model.*;
 import org.ieee11073.sdc.dpws.ni.LocalAddressResolver;
+import org.ieee11073.sdc.dpws.service.HostedServiceProxy;
 import org.ieee11073.sdc.dpws.service.HostingServiceProxy;
-import org.ieee11073.sdc.dpws.service.WritableHostedServiceProxy;
 import org.ieee11073.sdc.dpws.service.factory.HostedServiceFactory;
 import org.ieee11073.sdc.dpws.service.factory.HostingServiceFactory;
 import org.ieee11073.sdc.dpws.soap.RequestResponseClient;
@@ -50,7 +50,6 @@ import java.util.concurrent.TimeUnit;
 public class HostingServiceResolver {
     private static final Logger LOG = LoggerFactory.getLogger(HostingServiceResolver.class);
 
-    private final HostingServiceRegistry hostingServiceRegistry;
     private final ListeningExecutorService networkJobExecutor;
     private final LocalAddressResolver localAddressResolver;
     private final TransportBindingFactory transportBindingFactory;
@@ -65,9 +64,8 @@ public class HostingServiceResolver {
     private final GetMetadataClient getMetadataClient;
     private final Duration maxWaitForFutures;
 
-    @AssistedInject
-    HostingServiceResolver(@Assisted HostingServiceRegistry hostingServiceRegistry,
-                           @Named(DpwsConfig.MAX_WAIT_FOR_FUTURES) Duration maxWaitForFutures,
+    @Inject
+    HostingServiceResolver(@Named(DpwsConfig.MAX_WAIT_FOR_FUTURES) Duration maxWaitForFutures,
                            @NetworkJobThreadPool ListeningExecutorService networkJobExecutor,
                            LocalAddressResolver localAddressResolver,
                            TransportBindingFactory transportBindingFactory,
@@ -80,7 +78,6 @@ public class HostingServiceResolver {
                            HostingServiceFactory hostingServiceFactory,
                            HostedServiceFactory hostedServiceFactory,
                            WsEventingEventSinkFactory eventSinkFactory) {
-        this.hostingServiceRegistry = hostingServiceRegistry;
         this.maxWaitForFutures = maxWaitForFutures;
         this.networkJobExecutor = networkJobExecutor;
         this.localAddressResolver = localAddressResolver;
@@ -256,7 +253,7 @@ public class HostingServiceResolver {
         return Optional.of(result);
     }
 
-    private Optional<WritableHostedServiceProxy> extractHostedServiceProxy(HostedServiceType host) {
+    private Optional<HostedServiceProxy> extractHostedServiceProxy(HostedServiceType host) {
         URI activeHostedServiceEprAddress = null;
         RequestResponseClient rrClient = null;
         SoapMessage getMetadatResponse = null;
@@ -296,7 +293,7 @@ public class HostingServiceResolver {
     private class RelationshipData {
         private URI eprAddress = null;
         private List<QName> types = null;
-        private Map<String, WritableHostedServiceProxy> hostedServices = new HashMap<>();
+        private Map<String, HostedServiceProxy> hostedServices = new HashMap<>();
 
         public URI getEprAddress() {
             return eprAddress;
@@ -314,7 +311,7 @@ public class HostingServiceResolver {
             this.types = types;
         }
 
-        public Map<String, WritableHostedServiceProxy> getHostedServices() {
+        public Map<String, HostedServiceProxy> getHostedServices() {
             return hostedServices;
         }
     }

@@ -39,11 +39,8 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 public class HostingServiceResolverTest extends DpwsTest {
-    private HostingServiceRegistry hostingServiceRegistry;
     private MockTransferGetClient mockTransferGetClient;
     private MockGetMetadataClient mockGetMetadataClient;
-
-    private PeerInformation expectedDevicePeerInfo;
 
     private URI expectedDeviceEprAddress;
     private List<QName> expectedHostingServiceQNameTypes;
@@ -68,7 +65,6 @@ public class HostingServiceResolverTest extends DpwsTest {
     @Override
     @Before
     public void setUp() throws Exception {
-        expectedDevicePeerInfo = new PeerInformation(URI.create("http://remotehost"), "localhost");
         mockTransferGetClient = new MockTransferGetClient();
         mockGetMetadataClient = new MockGetMetadataClient();
         overrideBindings(new AbstractModule() {
@@ -88,7 +84,6 @@ public class HostingServiceResolverTest extends DpwsTest {
         dpwsFactory = getInjector().getInstance(org.ieee11073.sdc.dpws.model.ObjectFactory.class);
         mexFactory = getInjector().getInstance(org.ieee11073.sdc.dpws.soap.wsmetadataexchange.model.ObjectFactory.class);
 
-        hostingServiceRegistry = getInjector().getInstance(HostingServiceRegistry.class);
         hostingServiceFactory = getInjector().getInstance(HostingServiceFactory.class);
         hostedServiceFactory = getInjector().getInstance(HostedServiceFactory.class);
 
@@ -116,10 +111,7 @@ public class HostingServiceResolverTest extends DpwsTest {
 
     @Test
     public void resolveHostingService() throws Exception {
-        // Given a hosted service registry mock and a hosted service
-        ClientHelperFactory chf = getInjector().getInstance(ClientHelperFactory.class);
-
-        Map<String, WritableHostedServiceProxy> hostedServiceProxies = new HashMap<>();
+        Map<String, HostedServiceProxy> hostedServiceProxies = new HashMap<>();
         hostedServiceProxies.put(expectedServiceId, hostedServiceFactory.createHostedServiceProxy(
                 expectedHostedServiceType,
                 mock(RequestResponseClient.class),
@@ -141,7 +133,7 @@ public class HostingServiceResolverTest extends DpwsTest {
         mockGetMetadataClient.setGetMetadataMessages(
                 Arrays.asList(createGetMetadataMessage(), createGetMetadataMessage()));
 
-        HostingServiceResolver hostingServiceResolver = chf.createHostingServiceResolver(hostingServiceRegistry);
+        HostingServiceResolver hostingServiceResolver = getInjector().getInstance(HostingServiceResolver.class);
         long expectedMetadataVersion = 100;
         DiscoveredDevice expectedDiscoveredDevice = createDiscoveredDevice(expectedDeviceEprAddress, Arrays.asList("http://xAddr"),
                 expectedMetadataVersion);
@@ -227,7 +219,7 @@ public class HostingServiceResolverTest extends DpwsTest {
                 version);
     }
 
-    private WritableHostingServiceProxy createHostingServiceProxy(URI deviceUuid, long version) {
+    private HostingServiceProxy createHostingServiceProxy(URI deviceUuid, long version) {
         return hostingServiceFactory.createHostingServiceProxy(
                 deviceUuid,
                 mock(List.class),

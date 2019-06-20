@@ -16,15 +16,12 @@ import org.ieee11073.sdc.common.helper.ObjectUtil;
 import javax.annotation.Nullable;
 import javax.xml.namespace.QName;
 import java.net.URI;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 /**
  * Default implementation of {@link HostingServiceProxy}.
  */
-public class HostingServiceProxyImpl implements WritableHostingServiceProxy {
+public class HostingServiceProxyImpl implements HostingServiceProxy {
     private final ObjectUtil objectUtil;
     private final EventBus eventBus;
 
@@ -34,16 +31,15 @@ public class HostingServiceProxyImpl implements WritableHostingServiceProxy {
     private List<QName> types;
     private ThisDeviceType thisDevice;
     private ThisModelType thisModel;
-    private Map<String, WritableHostedServiceProxy> hostedServices;
+    private Map<String, HostedServiceProxy> hostedServices;
     private long metadataVersion;
 
     /**
-     *
      * @param endpointReferenceAddress
      * @param types
      * @param thisDevice
      * @param thisModel
-     * @param hostedServices Map of service ids to hosted service proxies
+     * @param hostedServices           Map of service ids to hosted service proxies
      * @param metadataVersion
      * @param requestResponseClient
      * @param activeXAddr
@@ -55,7 +51,7 @@ public class HostingServiceProxyImpl implements WritableHostingServiceProxy {
                             @Assisted List<QName> types,
                             @Assisted ThisDeviceType thisDevice,
                             @Assisted ThisModelType thisModel,
-                            @Assisted Map<String, WritableHostedServiceProxy> hostedServices,
+                            @Assisted Map<String, HostedServiceProxy> hostedServices,
                             @Assisted long metadataVersion,
                             @Assisted RequestResponseClient requestResponseClient,
                             @Assisted("activeXAddr") URI activeXAddr,
@@ -66,17 +62,14 @@ public class HostingServiceProxyImpl implements WritableHostingServiceProxy {
         this.activeXAddr = activeXAddr;
         this.objectUtil = objectUtil;
         this.eventBus = eventBus;
-        this.hostedServices = new HashMap<String, WritableHostedServiceProxy>();
-
-        updateProxyInformation(
-                endpointReferenceAddress,
-                types,
-                thisDevice,
-                thisModel,
-                hostedServices,
-                metadataVersion,
-                requestResponseClient,
-                activeXAddr);
+        this.hostedServices = new HashMap<>(hostedServices);
+        this.endpointReferenceAddress = objectUtil.deepCopy(endpointReferenceAddress);
+        this.types = objectUtil.deepCopy(types);
+        this.thisDevice = objectUtil.deepCopy(thisDevice);
+        this.thisModel = objectUtil.deepCopy(thisModel);
+        this.metadataVersion = metadataVersion;
+        this.requestResponseClient = requestResponseClient;
+        this.activeXAddr = activeXAddr;
     }
 
     @Override
@@ -100,103 +93,23 @@ public class HostingServiceProxyImpl implements WritableHostingServiceProxy {
     }
 
     @Override
-    public synchronized Map<String, HostedServiceProxy> getHostedServices() {
-        return new HashMap<>(hostedServices);
+    public Map<String, HostedServiceProxy> getHostedServices() {
+        return Collections.unmodifiableMap(hostedServices);
     }
 
     @Override
-    public synchronized Map<String, WritableHostedServiceProxy> getWritableHostedServices() {
-        return new HashMap<String, WritableHostedServiceProxy>(hostedServices);
-    }
-
-    @Override
-    public synchronized URI getActiveXAddr() {
+    public URI getActiveXAddr() {
         return activeXAddr;
     }
 
     @Override
-    public synchronized long getMetadataVersion() {
+    public long getMetadataVersion() {
         return metadataVersion;
     }
 
     @Override
-    public synchronized RequestResponseClient getRequestResponseClient() {
+    public RequestResponseClient getRequestResponseClient() {
         return requestResponseClient;
-    }
-
-    @Override
-    public synchronized void updateProxyInformation(WritableHostingServiceProxy hsProxy) {
-        updateProxyInformation(
-                hsProxy.getEndpointReferenceAddress(),
-                hsProxy.getTypes(),
-                hsProxy.getThisDevice().orElse(null),
-                hsProxy.getThisModel().orElse(null),
-                hsProxy.getWritableHostedServices(),
-                hsProxy.getMetadataVersion(),
-                hsProxy.getRequestResponseClient(),
-                hsProxy.getActiveXAddr());
-    }
-
-    @Override
-    public synchronized void updateProxyInformation(URI endpointReferenceAddress,
-                                                    List<QName> types,
-                                                    @Nullable ThisDeviceType thisDevice,
-                                                    @Nullable ThisModelType thisModel,
-                                                    Map<String, WritableHostedServiceProxy> hostedServices,
-                                                    long metadataVersion,
-                                                    RequestResponseClient requestResponseClient,
-                                                    URI activeXAddr) {
-        URI endpointReferenceAddressBefore = getEndpointReferenceAddress();
-        this.endpointReferenceAddress = objectUtil.deepCopy(endpointReferenceAddress);
-        List<QName> typesBefore = getTypes();
-        this.types = objectUtil.deepCopy(types);
-        ThisDeviceType thisDeviceBefore = getThisDevice().orElse(null);
-        this.thisDevice = objectUtil.deepCopy(thisDevice);
-        ThisModelType thisModelBefore = getThisModel().orElse(null);
-        this.thisModel = objectUtil.deepCopy(thisModel);
-        long metadataVersionBefore = getMetadataVersion();
-        this.metadataVersion = metadataVersion;
-        this.requestResponseClient = requestResponseClient;
-        this.activeXAddr = activeXAddr;
-
-        Map<String, HostedServiceProxy> hostedServicesBefore = getHostedServices();
-        updateHostedServices(hostedServices);
-
-        eventBus.post(new HostingServiceMetadataChangeMessage(
-                endpointReferenceAddressBefore,
-                getEndpointReferenceAddress(),
-                typesBefore,
-                getTypes(),
-                Optional.ofNullable(thisDeviceBefore),
-                getThisDevice(),
-                Optional.ofNullable(thisModelBefore),
-                getThisModel(),
-                metadataVersionBefore,
-                getMetadataVersion(),
-                hostedServicesBefore,
-                getHostedServices(),
-                requestResponseClient,
-                activeXAddr
-        ));
-    }
-
-    private synchronized void updateHostedServices(Map<String, WritableHostedServiceProxy> updatedHostedServices) {
-        Map<String, WritableHostedServiceProxy> updatedHostedServicesCpy = new HashMap<>(updatedHostedServices);
-        Map<String, WritableHostedServiceProxy> currentHostedServicesCpy = getWritableHostedServices();
-
-        for (Map.Entry<String, WritableHostedServiceProxy> hostedService : currentHostedServicesCpy.entrySet()) {
-            String serviceId = hostedService.getKey();
-            WritableHostedServiceProxy updatedHostedService = updatedHostedServicesCpy.get(serviceId);
-            if (updatedHostedService == null) {
-                hostedServices.remove(serviceId);
-            } else {
-                hostedService.getValue().updateProxyInformation(updatedHostedService.getType(), requestResponseClient,
-                        activeXAddr);
-                updatedHostedServicesCpy.remove(serviceId);
-            }
-        }
-
-        hostedServices.putAll(updatedHostedServicesCpy);
     }
 
     @Override
