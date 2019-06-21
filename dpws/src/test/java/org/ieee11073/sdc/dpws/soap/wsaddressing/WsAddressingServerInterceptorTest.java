@@ -4,21 +4,15 @@ import org.ieee11073.sdc.dpws.DpwsTest;
 import org.ieee11073.sdc.dpws.soap.*;
 import org.ieee11073.sdc.dpws.soap.exception.SoapFaultException;
 import org.ieee11073.sdc.dpws.soap.factory.SoapMessageFactory;
-import org.ieee11073.sdc.dpws.soap.interception.*;
 import org.ieee11073.sdc.dpws.soap.model.Envelope;
 import org.ieee11073.sdc.dpws.soap.wsaddressing.model.AttributedURIType;
-import org.ieee11073.sdc.dpws.soap.RequestResponseServer;
-import org.ieee11073.sdc.dpws.soap.SoapMarshalling;
-import org.ieee11073.sdc.dpws.soap.SoapMessage;
-import org.ieee11073.sdc.dpws.soap.TransportInfo;
 import org.ieee11073.sdc.dpws.soap.interception.*;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.io.InputStream;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 public class WsAddressingServerInterceptorTest extends DpwsTest {
 
@@ -61,12 +55,12 @@ public class WsAddressingServerInterceptorTest extends DpwsTest {
             server.receiveRequestResponse(request, response, mockTransportInfo);
             assertTrue(true);
         } catch (Exception e) {
-            assertTrue(false);
+            fail();
         }
         try {
             assertEquals(InterceptorResult.CANCEL, server.receiveRequestResponse(request, response, mockTransportInfo));
         } catch (SoapFaultException e) {
-            assertTrue(false);
+            fail();
         }
     }
 
@@ -76,7 +70,7 @@ public class WsAddressingServerInterceptorTest extends DpwsTest {
 
         try {
             server.receiveRequestResponse(request, response, mockTransportInfo);
-            assertTrue(false);
+            fail();
         } catch (SoapFaultException e) {
             assertEquals(WsAddressingConstants.MESSAGE_ADDRESSING_HEADER_REQUIRED,
                     e.getFault().getCode().getSubcode().getValue());

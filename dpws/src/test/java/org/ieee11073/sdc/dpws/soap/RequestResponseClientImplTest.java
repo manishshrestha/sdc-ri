@@ -1,7 +1,6 @@
 package org.ieee11073.sdc.dpws.soap;
 
 import org.ieee11073.sdc.dpws.DpwsTest;
-import org.ieee11073.sdc.dpws.soap.interception.*;
 import org.ieee11073.sdc.dpws.soap.factory.RequestResponseClientFactory;
 import org.ieee11073.sdc.dpws.soap.model.Envelope;
 import org.ieee11073.sdc.dpws.soap.interception.*;
@@ -13,8 +12,7 @@ import org.junit.Test;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 public class RequestResponseClientImplTest extends DpwsTest {
     private List<String> dispatchedSequence;
@@ -112,7 +110,7 @@ public class RequestResponseClientImplTest extends DpwsTest {
             }
         });
 
-        assertTrue(response == rrClient.sendRequestResponse(request));
+        assertSame(response, rrClient.sendRequestResponse(request));
 
         assertEquals(6, dispatchedSequence.size());
         assertEquals("REQUEST(5)", dispatchedSequence.get(0));

@@ -13,8 +13,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.time.Duration;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -28,7 +26,7 @@ import java.util.TreeMap;
  */
 public class DefaultDpwsConfigModule extends AbstractModule {
     private static final Logger LOG = LoggerFactory.getLogger(DefaultDpwsConfigModule.class);
-    private Map<String, ConfigurationValue> boundedValues = new TreeMap<>();
+    private final Map<String, ConfigurationValue> boundedValues = new TreeMap<>();
     private boolean configureStarted = false;
 
     /**
@@ -182,23 +180,23 @@ public class DefaultDpwsConfigModule extends AbstractModule {
             return caption;
         }
 
-        private String caption;
+        private final String caption;
     }
 
     private class ConfigurationValue {
-        private ValueOrigin valueOrigin;
-        private Object value;
+        private final ValueOrigin valueOrigin;
+        private final Object value;
 
-        public ConfigurationValue(ValueOrigin valueOrigin, Object value) {
+        ConfigurationValue(ValueOrigin valueOrigin, Object value) {
             this.valueOrigin = valueOrigin;
             this.value = value;
         }
 
-        public ValueOrigin getValueOrigin() {
+        ValueOrigin getValueOrigin() {
             return valueOrigin;
         }
 
-        public Object getValue() {
+        Object getValue() {
             return value;
         }
     }

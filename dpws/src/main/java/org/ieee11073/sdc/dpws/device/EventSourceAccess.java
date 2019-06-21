@@ -13,14 +13,11 @@ public interface EventSourceAccess {
      *
      * @param action The action the notification complies with.
      * @param payload The message payload that is tried to be marshalled.
-     * @throws MarshallingException
-     * @throws TransportException
      */
     void sendNotification(String action, Object payload) throws MarshallingException, TransportException;
 
     /**
      * Send a subscription end message to all subscribers and shut down connected subscriptions.
-     * @throws TransportException
      */
     void subscriptionEndToAll(WsEventingStatus status) throws TransportException;
 }

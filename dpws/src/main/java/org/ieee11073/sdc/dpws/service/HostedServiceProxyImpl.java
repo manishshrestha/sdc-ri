@@ -1,6 +1,5 @@
 package org.ieee11073.sdc.dpws.service;
 
-import com.google.common.eventbus.EventBus;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.inject.Provider;
 import com.google.inject.assistedinject.Assisted;
@@ -31,9 +30,9 @@ public class HostedServiceProxyImpl implements HostedServiceProxy, EventSinkAcce
     private final ObjectUtil objectUtil;
     private final Provider<NotificationSink> notificationSinkProvider;
 
-    private HostedServiceType hostedServiceType;
-    private RequestResponseClient requestResponseClient;
-    private URI activeEprAddress;
+    private final HostedServiceType hostedServiceType;
+    private final RequestResponseClient requestResponseClient;
+    private final URI activeEprAddress;
 
     @AssistedInject
     HostedServiceProxyImpl(@Assisted HostedServiceType hostedServiceType,

@@ -1,6 +1,5 @@
 package org.ieee11073.sdc.dpws.soap.wseventing;
 
-import com.google.common.util.concurrent.AbstractExecutionThreadService;
 import com.google.common.util.concurrent.AbstractIdleService;
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
@@ -16,7 +15,6 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 

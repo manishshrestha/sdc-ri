@@ -2,7 +2,6 @@ package org.ieee11073.sdc.dpws.device.helper;
 
 import com.google.inject.Inject;
 import org.ieee11073.sdc.dpws.http.HttpHandler;
-import org.ieee11073.sdc.dpws.soap.*;
 import org.ieee11073.sdc.dpws.soap.exception.MarshallingException;
 import org.ieee11073.sdc.dpws.soap.exception.SoapFaultException;
 import org.ieee11073.sdc.dpws.soap.exception.TransportException;

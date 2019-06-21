@@ -1,8 +1,8 @@
 package org.ieee11073.sdc.dpws.service;
 
-import com.google.common.eventbus.EventBus;
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
+import org.ieee11073.sdc.common.helper.ObjectUtil;
 import org.ieee11073.sdc.dpws.model.ThisDeviceType;
 import org.ieee11073.sdc.dpws.model.ThisModelType;
 import org.ieee11073.sdc.dpws.soap.RequestResponseClient;
@@ -11,9 +11,7 @@ import org.ieee11073.sdc.dpws.soap.exception.MarshallingException;
 import org.ieee11073.sdc.dpws.soap.exception.SoapFaultException;
 import org.ieee11073.sdc.dpws.soap.exception.TransportException;
 import org.ieee11073.sdc.dpws.soap.interception.Interceptor;
-import org.ieee11073.sdc.common.helper.ObjectUtil;
 
-import javax.annotation.Nullable;
 import javax.xml.namespace.QName;
 import java.net.URI;
 import java.util.*;
@@ -23,15 +21,14 @@ import java.util.*;
  */
 public class HostingServiceProxyImpl implements HostingServiceProxy {
     private final ObjectUtil objectUtil;
-    private final EventBus eventBus;
 
     private RequestResponseClient requestResponseClient;
     private URI activeXAddr;
-    private URI endpointReferenceAddress;
-    private List<QName> types;
-    private ThisDeviceType thisDevice;
-    private ThisModelType thisModel;
-    private Map<String, HostedServiceProxy> hostedServices;
+    private final URI endpointReferenceAddress;
+    private final List<QName> types;
+    private final ThisDeviceType thisDevice;
+    private final ThisModelType thisModel;
+    private final Map<String, HostedServiceProxy> hostedServices;
     private long metadataVersion;
 
     /**
@@ -44,7 +41,6 @@ public class HostingServiceProxyImpl implements HostingServiceProxy {
      * @param requestResponseClient
      * @param activeXAddr
      * @param objectUtil
-     * @param eventBus
      */
     @AssistedInject
     HostingServiceProxyImpl(@Assisted("eprAddress") URI endpointReferenceAddress,
@@ -55,21 +51,16 @@ public class HostingServiceProxyImpl implements HostingServiceProxy {
                             @Assisted long metadataVersion,
                             @Assisted RequestResponseClient requestResponseClient,
                             @Assisted("activeXAddr") URI activeXAddr,
-                            ObjectUtil objectUtil,
-                            EventBus eventBus) {
+                            ObjectUtil objectUtil) {
         this.metadataVersion = metadataVersion;
         this.requestResponseClient = requestResponseClient;
         this.activeXAddr = activeXAddr;
         this.objectUtil = objectUtil;
-        this.eventBus = eventBus;
         this.hostedServices = new HashMap<>(hostedServices);
         this.endpointReferenceAddress = objectUtil.deepCopy(endpointReferenceAddress);
         this.types = objectUtil.deepCopy(types);
         this.thisDevice = objectUtil.deepCopy(thisDevice);
         this.thisModel = objectUtil.deepCopy(thisModel);
-        this.metadataVersion = metadataVersion;
-        this.requestResponseClient = requestResponseClient;
-        this.activeXAddr = activeXAddr;
     }
 
     @Override

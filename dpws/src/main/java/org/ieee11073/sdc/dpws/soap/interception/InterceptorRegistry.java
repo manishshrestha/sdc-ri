@@ -102,7 +102,6 @@ public class InterceptorRegistry {
 
     private List<InterceptorInfo> getInterceptorInfoList(Direction direction, String action) {
         Map<String, List<InterceptorInfo>> actionMap = interceptorChains.get(direction);
-        List<InterceptorInfo> interceptorInfoList = actionMap.computeIfAbsent(action, k -> new ArrayList<>());
-        return interceptorInfoList;
+        return actionMap.computeIfAbsent(action, k -> new ArrayList<>());
     }
 }

@@ -23,7 +23,6 @@ public interface Device extends Service {
 
     /**
      * Get access to Hosting Service metadata and Hosted Services.
-     * @return
      */
     HostingServiceAccess getHostingServiceAccess();
 }

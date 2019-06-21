@@ -1,7 +1,6 @@
 package org.ieee11073.sdc.dpws.udp;
 
 import com.google.common.util.concurrent.AbstractIdleService;
-import com.google.common.util.concurrent.SettableFuture;
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
 import org.ieee11073.sdc.dpws.DpwsConstants;
@@ -11,9 +10,6 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.net.*;
 import java.util.Random;
-import java.util.UUID;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 public class UdpBindingServiceImpl extends AbstractIdleService implements UdpBindingService {
     private static final Logger LOG = LoggerFactory.getLogger(UdpBindingServiceImpl.class);

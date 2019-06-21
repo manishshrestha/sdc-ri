@@ -1,6 +1,5 @@
 package org.ieee11073.sdc.dpws.soap.interception;
 
-import java.lang.ref.WeakReference;
 import java.lang.reflect.Method;
 import java.util.Optional;
 

@@ -7,7 +7,6 @@ import org.ieee11073.sdc.dpws.DpwsTest;
 import org.ieee11073.sdc.dpws.HttpServerRegistryMock;
 import org.ieee11073.sdc.dpws.LocalAddressResolverMock;
 import org.ieee11073.sdc.dpws.TransportBindingFactoryMock;
-import org.ieee11073.sdc.dpws.service.EventSinkAccess;
 import org.ieee11073.sdc.dpws.factory.TransportBindingFactory;
 import org.ieee11073.sdc.dpws.http.HttpServerRegistry;
 import org.ieee11073.sdc.dpws.model.HostedServiceType;
@@ -134,7 +133,7 @@ public class WsEventingTest extends DpwsTest {
 
         try {
             wseSink.getStatus(resInfo.get().getSubscriptionId()).get();
-            Assert.assertTrue(false);
+            Assert.fail();
         } catch (Exception e) {
             Assert.assertTrue(true);
         }
@@ -151,7 +150,7 @@ public class WsEventingTest extends DpwsTest {
 
         try {
             wseSink.getStatus(resInfo.get().getSubscriptionId()).get();
-            Assert.assertTrue(false);
+            Assert.fail();
         } catch (Exception e) {
             Assert.assertTrue(true);
         }
@@ -171,7 +170,7 @@ public class WsEventingTest extends DpwsTest {
             wseSink.getStatus(resInfo.get().getSubscriptionId());
             Assert.assertTrue(true);
         } catch (Exception e) {
-            Assert.assertTrue(false);
+            Assert.fail();
         }
     }
 

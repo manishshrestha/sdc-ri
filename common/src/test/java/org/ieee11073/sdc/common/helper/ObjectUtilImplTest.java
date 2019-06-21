@@ -4,8 +4,6 @@ import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import org.apache.log4j.BasicConfigurator;
-import org.ieee11073.sdc.common.helper.JaxbUtil;
-import org.ieee11073.sdc.common.helper.JaxbUtilImpl;
 import org.ieee11073.sdc.common.helper.ObjectUtil;
 import org.ieee11073.sdc.common.helper.ObjectUtilImpl;
 import org.junit.Test;

@@ -28,6 +28,5 @@ public interface SoapMarshalling extends Service {
      * @throws JAXBException If unmarshalling fails.
      * @throws ClassCastException If the cast to {@link Envelope} fails.
      */
-    @SuppressWarnings("unchecked")
     Envelope unmarshal(InputStream inputStream) throws JAXBException, ClassCastException;
 }

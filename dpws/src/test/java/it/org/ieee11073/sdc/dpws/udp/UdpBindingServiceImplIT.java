@@ -52,7 +52,7 @@ public class UdpBindingServiceImplIT extends DpwsTest {
                 sender.startAsync().awaitRunning();
                 sender.sendMessage(new UdpMessage(expectedMessage, expectedMessage.length));
             } catch (Exception e) {
-                assertTrue(false);
+                fail();
             }
         });
 
@@ -117,7 +117,7 @@ public class UdpBindingServiceImplIT extends DpwsTest {
                     try {
                         senderReceiver2.sendMessage(new UdpMessage(expectedResponseBytes, expectedResponseBytes.length, udpMessage.getHost(), udpMessage.getPort()));
                     } catch (IOException e) {
-                        assertTrue(false);
+                        fail();
                     }
                 });
                 t.start();
@@ -131,7 +131,7 @@ public class UdpBindingServiceImplIT extends DpwsTest {
             try {
                 senderReceiver1.sendMessage(new UdpMessage(expectedRequestBytes, expectedRequestBytes.length));
             } catch (IOException e) {
-                assertTrue(false);
+                fail();
             }
         });
         t.start();

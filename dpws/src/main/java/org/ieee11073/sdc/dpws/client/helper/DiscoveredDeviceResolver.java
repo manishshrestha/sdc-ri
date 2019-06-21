@@ -116,13 +116,13 @@ public class DiscoveredDeviceResolver {
             ListenableFuture<ResolveMatchesType> resolveMatches = wsDiscoveryClient.sendResolve(epr);
             return Optional.ofNullable(resolveMatches.get(maxWaitForResolveMatches.toMillis(), TimeUnit.MILLISECONDS));
         } catch (MarshallingException e) {
-            LOG.info("Resolve of '{}' failed due to marshalling exception", e.getCause());
+            LOG.info("Resolve of '{}' failed due to marshalling exception", epr, e.getCause());
         } catch (TransportException e) {
-            LOG.info("Transmission of resolve request to '{}' failed", e.getCause());
+            LOG.info("Transmission of resolve request to '{}' failed", epr, e.getCause());
         } catch (InterruptedException e) {
-            LOG.info("Resolve of '{}' failed due to thread interruption", e.getCause());
+            LOG.info("Resolve of '{}' failed due to thread interruption", epr, e.getCause());
         } catch (ExecutionException e) {
-            LOG.info("Resolve of '{}' failed", e.getCause());
+            LOG.info("Resolve of '{}' failed", epr, e.getCause());
         } catch (TimeoutException e) {
             LOG.debug("Did not get resolve answer from '{}' within {} ms", wsaUtil.getAddressUriAsString(epr),
                     maxWaitForResolveMatches.toMillis());

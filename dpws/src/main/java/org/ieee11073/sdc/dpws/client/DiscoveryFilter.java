@@ -1,7 +1,6 @@
 package org.ieee11073.sdc.dpws.client;
 
 import javax.xml.namespace.QName;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -13,7 +12,7 @@ public class DiscoveryFilter {
     private final List<String> scopes;
     private final String discoveryId;
 
-    private static AtomicInteger discoveryIdCounter = new AtomicInteger(0);
+    private static final AtomicInteger discoveryIdCounter = new AtomicInteger(0);
 
     /**
      * Create a new discovery filter with a discovery id that is unique across one application instance.

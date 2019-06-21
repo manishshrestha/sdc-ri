@@ -30,7 +30,7 @@ public class WsAddressingServerInterceptor implements Interceptor {
     private final WsAddressingFaultFactory addressingFaultFactory;
     private final WsAddressingUtil wsaUtil;
     private final SoapUtil soapUtil;
-    private EvictingQueue<String> messageIdCache;
+    private final EvictingQueue<String> messageIdCache;
     private final SoapFaultFactory soapFaultFactory;
 
     @Inject

@@ -1,10 +1,11 @@
 package org.ieee11073.sdc.dpws.client.helper;
 
-import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.SettableFuture;
 import org.apache.log4j.BasicConfigurator;
 import org.ieee11073.sdc.dpws.service.HostingServiceProxy;
 import org.ieee11073.sdc.dpws.soap.exception.TransportException;
 import org.ieee11073.sdc.dpws.soap.wsdiscovery.WsDiscoveryClient;
+import org.ieee11073.sdc.dpws.soap.wsdiscovery.model.ProbeMatchesType;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -35,8 +36,10 @@ public class WatchDogImplTest {
         hasFailed = false;
         hostingServiceProxyMock = mock(HostingServiceProxy.class);
         discoveryClientMock = mock(WsDiscoveryClient.class);
+        SettableFuture<ProbeMatchesType> future = SettableFuture.create();
+        future.setException(new TransportException("Request failed."));
         when(discoveryClientMock.sendDirectedProbe(null, null, null))
-                .thenReturn(Futures.immediateFailedCheckedFuture(new TransportException("Request failed.")));
+                .thenReturn(future);
     }
 
     @Test

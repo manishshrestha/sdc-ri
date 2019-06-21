@@ -8,8 +8,8 @@ import java.util.List;
  * {@link DiscoveryFilter} convenience builder with method chaining.
  */
 public class DiscoveryFilterBuilder {
-    private List<QName> types;
-    private List<String> scopes;
+    private final List<QName> types;
+    private final List<String> scopes;
 
     /**
      * Construct a new object with empty types and scopes.

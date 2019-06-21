@@ -34,7 +34,6 @@ import org.slf4j.LoggerFactory;
 import javax.annotation.Nullable;
 import java.net.URI;
 import java.time.Duration;
-import java.time.temporal.TemporalUnit;
 import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
 
@@ -166,25 +165,7 @@ public class ClientImpl extends AbstractIdleService implements Client, Service, 
     @Override
     public ListenableFuture<HostingServiceProxy> connect(DiscoveredDevice discoveredDevice) {
         checkRunning();
-        final ListenableFuture<HostingServiceProxy> future = hostingServiceResolver.resolveHostingService(discoveredDevice);
-
-//        if (enableWatchdog) {
-//            Futures.addCallback(future, new FutureCallback<HostingServiceProxy>() {
-//                @Override
-//                public void onSuccess(@Nullable HostingServiceProxy hostingServiceProxy) {
-//                    if (hostingServiceProxy != null) {
-//                        watchdog.inspect(hostingServiceProxy);
-//                    }
-//                }
-//
-//                @Override
-//                public void onFailure(Throwable throwable) {
-//                    // Ignore failures
-//                }
-//            }, executorService);
-//        }
-
-        return future;
+        return hostingServiceResolver.resolveHostingService(discoveredDevice);
     }
 
     @Override

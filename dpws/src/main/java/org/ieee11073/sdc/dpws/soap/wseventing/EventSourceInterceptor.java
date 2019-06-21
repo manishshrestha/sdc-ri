@@ -31,7 +31,6 @@ import org.ieee11073.sdc.dpws.soap.wseventing.helper.EventSourceTransportManager
 import org.ieee11073.sdc.dpws.soap.wseventing.helper.NotificationWorker;
 import org.ieee11073.sdc.dpws.soap.wseventing.helper.SubscriptionRegistry;
 import org.ieee11073.sdc.dpws.soap.wseventing.model.*;
-import org.ieee11073.sdc.dpws.soap.wseventing.model.*;
 import org.ieee11073.sdc.common.helper.JaxbUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -428,13 +427,13 @@ public class EventSourceInterceptor extends AbstractIdleService implements Event
     }
 
     @Override
-    protected void startUp() throws Exception {
+    protected void startUp() {
         subscriptionRegistry.registerObserver(eventSourceTransportManager);
         notificationWorkerThread.start();
     }
 
     @Override
-    protected void shutDown() throws Exception {
+    protected void shutDown() {
         notificationWorkerThread.interrupt();
         subscriptionEndToAll(WsEventingStatus.STATUS_SOURCE_SHUTTING_DOWN);
         subscriptionRegistry.unregisterObserver(eventSourceTransportManager);

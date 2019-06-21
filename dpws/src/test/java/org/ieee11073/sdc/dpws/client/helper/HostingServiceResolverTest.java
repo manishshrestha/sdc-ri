@@ -5,9 +5,6 @@ import com.google.common.util.concurrent.ListenableFuture;
 import com.google.inject.AbstractModule;
 import org.ieee11073.sdc.dpws.*;
 import org.ieee11073.sdc.dpws.client.DiscoveredDevice;
-import org.ieee11073.sdc.dpws.service.EventSinkAccess;
-import org.ieee11073.sdc.dpws.client.helper.factory.ClientHelperFactory;
-import org.ieee11073.sdc.dpws.helper.PeerInformation;
 import org.ieee11073.sdc.dpws.model.HostedServiceType;
 import org.ieee11073.sdc.dpws.model.ThisDeviceType;
 import org.ieee11073.sdc.dpws.model.ThisModelType;
@@ -110,22 +107,15 @@ public class HostingServiceResolverTest extends DpwsTest {
     }
 
     @Test
-    public void resolveHostingService() throws Exception {
-        Map<String, HostedServiceProxy> hostedServiceProxies = new HashMap<>();
-        hostedServiceProxies.put(expectedServiceId, hostedServiceFactory.createHostedServiceProxy(
-                expectedHostedServiceType,
-                mock(RequestResponseClient.class),
-                URI.create("http://mock-apr-address"),
-                mock(EventSink.class)));
-
+    public void resolveHostingService() {
         // When no existing service is found in registry on resolving
         // Then expect the resolver to resolve the service according to the following message
-        mockTransferGetClient.setTransferGetMessages(Arrays.asList(createTransferGetMessage(
+        mockTransferGetClient.setTransferGetMessages(Collections.singletonList(createTransferGetMessage(
                 expectedDeviceEprAddress,
                 expectedHostingServiceQNameTypes,
                 expectedModelType,
                 expectedDeviceType,
-                Arrays.asList(createHostedService(expectedServiceId,
+                Collections.singletonList(createHostedService(expectedServiceId,
                         expectedHostedServiceQNameTypes,
                         expectedHostedServiceEprs))
         )));
@@ -135,7 +125,7 @@ public class HostingServiceResolverTest extends DpwsTest {
 
         HostingServiceResolver hostingServiceResolver = getInjector().getInstance(HostingServiceResolver.class);
         long expectedMetadataVersion = 100;
-        DiscoveredDevice expectedDiscoveredDevice = createDiscoveredDevice(expectedDeviceEprAddress, Arrays.asList("http://xAddr"),
+        DiscoveredDevice expectedDiscoveredDevice = createDiscoveredDevice(expectedDeviceEprAddress, Collections.singletonList("http://xAddr"),
                 expectedMetadataVersion);
         ListenableFuture<HostingServiceProxy> hsF = hostingServiceResolver.resolveHostingService(expectedDiscoveredDevice);
         try {
@@ -152,7 +142,7 @@ public class HostingServiceResolverTest extends DpwsTest {
             assertEquals(expectedHostedServiceQNameTypes.toString(),
                     actualHostedServiceProxy.getType().getTypes().toString());
         } catch (Exception e) {
-            assertTrue(false);
+            fail(e.getMessage());
         }
     }
 
@@ -232,7 +222,7 @@ public class HostingServiceResolverTest extends DpwsTest {
     }
 
     class MockTransferGetClient implements TransferGetClient {
-        private Stack<SoapMessage> transferGetMessages = new Stack<>();
+        private final Stack<SoapMessage> transferGetMessages = new Stack<>();
 
         public void setTransferGetMessages(Collection<SoapMessage> transferGetMessages) {
             this.transferGetMessages.addAll(transferGetMessages);
@@ -249,7 +239,7 @@ public class HostingServiceResolverTest extends DpwsTest {
     }
 
     class MockGetMetadataClient implements GetMetadataClient {
-        private Stack<SoapMessage> getMetadataMessages = new Stack<>();
+        private final Stack<SoapMessage> getMetadataMessages = new Stack<>();
 
         public void setGetMetadataMessages(Collection<SoapMessage> getMetadataMessages) {
             this.getMetadataMessages.addAll(getMetadataMessages);

@@ -154,8 +154,10 @@ public class DeviceImpl extends AbstractIdleService implements Device, Service, 
         RequestResponseServerHttpHandler reqResHandler = reqResHandlerProvider.get();
 
         // Register HTTP bindings to HTTP context registry; append EPR UUID from host as context path
+        URI eprUri = wsaUtil.getAddressUri(deviceEpr).orElseThrow(
+                () -> new RuntimeException(String.format("Malformed EPR: %s", deviceEpr.getAddress().getValue())));
         config.getHostingServiceBindings().forEach(uri -> httpServerRegistry.registerContext(uri.getHost(),
-                uri.getPort(), "/" + soapUtil.createUuidFromUri(wsaUtil.getAddressUri(deviceEpr).get()).toString(),
+                uri.getPort(), "/" + soapUtil.createUuidFromUri(eprUri).toString(),
                 reqResHandler));
         // Create hosting service
         hostingService = hostingServiceFactory.createHostingService(wsdTargetService);

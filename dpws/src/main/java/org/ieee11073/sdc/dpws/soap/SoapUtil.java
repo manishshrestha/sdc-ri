@@ -47,7 +47,6 @@ public class SoapUtil {
      * @param <T> The type to convert to.
      * @return An instance of T, or {@linkplain Optional#empty} if conversion fails.
      */
-    @SuppressWarnings("unchecked")
     public <T> Optional<T> getBody(SoapMessage src, Class<T> destType) {
         return jaxbUtil.extractFirstElementFromAny(src.getOriginalEnvelope().getBody().getAny(), destType);
     }

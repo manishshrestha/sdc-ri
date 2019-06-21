@@ -8,7 +8,7 @@ import org.ieee11073.sdc.dpws.guice.DefaultDpwsConfigModule;
 import org.ieee11073.sdc.dpws.soap.SoapConfig;
 
 public class ClientPeer extends IntegrationTestPeer {
-    Client client;
+    private final Client client;
 
     public ClientPeer() {
         this(new DefaultDpwsConfigModule() {

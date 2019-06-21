@@ -17,7 +17,7 @@ import java.net.URI;
  * Static transport binding for hosted services.
  */
 public class HostedServiceTransportBinding implements TransportBinding {
-    private TransportBinding transportBinding;
+    private final TransportBinding transportBinding;
 
     @AssistedInject
     HostedServiceTransportBinding(@Assisted HostedServiceProxy hostedServiceProxy,

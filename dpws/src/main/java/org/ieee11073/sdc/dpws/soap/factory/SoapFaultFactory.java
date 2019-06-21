@@ -5,7 +5,6 @@ import org.ieee11073.sdc.dpws.soap.SoapConstants;
 import org.ieee11073.sdc.dpws.soap.SoapMessage;
 import org.ieee11073.sdc.dpws.soap.SoapUtil;
 import org.ieee11073.sdc.dpws.soap.model.*;
-import org.ieee11073.sdc.dpws.soap.model.*;
 import org.ieee11073.sdc.dpws.soap.wsaddressing.WsAddressingConstants;
 
 import javax.xml.namespace.QName;

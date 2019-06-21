@@ -164,7 +164,7 @@ public class GrizzlyHttpServerRegistry extends AbstractIdleService implements Ht
         private final HttpHandler handler;
         private final AtomicBoolean active;
 
-        public HandlerWrapper(HttpHandler handler) {
+        HandlerWrapper(HttpHandler handler) {
             this.handler = handler;
             this.active = new AtomicBoolean(true);
         }
@@ -175,11 +175,11 @@ public class GrizzlyHttpServerRegistry extends AbstractIdleService implements Ht
             handler.process(inStream, outStream, transportInfo);
         }
 
-        public void deactivate() {
+        void deactivate() {
             active.set(false);
         }
 
-        public boolean isActive() {
+        boolean isActive() {
             return active.get();
         }
     }

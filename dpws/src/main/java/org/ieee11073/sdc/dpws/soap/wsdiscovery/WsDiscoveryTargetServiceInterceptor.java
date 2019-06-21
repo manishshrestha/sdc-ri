@@ -15,12 +15,7 @@ import org.ieee11073.sdc.dpws.soap.wsaddressing.WsAddressingHeader;
 import org.ieee11073.sdc.dpws.soap.wsaddressing.WsAddressingUtil;
 import org.ieee11073.sdc.dpws.soap.wsaddressing.model.EndpointReferenceType;
 import org.ieee11073.sdc.dpws.soap.wsdiscovery.factory.WsDiscoveryFaultFactory;
-import org.ieee11073.sdc.dpws.soap.wsdiscovery.model.*;
 import org.ieee11073.sdc.common.helper.ObjectUtilImpl;
-import org.ieee11073.sdc.dpws.soap.interception.Direction;
-import org.ieee11073.sdc.dpws.soap.interception.InterceptorResult;
-import org.ieee11073.sdc.dpws.soap.interception.MessageInterceptor;
-import org.ieee11073.sdc.dpws.soap.interception.RequestResponseObject;
 import org.ieee11073.sdc.dpws.soap.wsdiscovery.model.*;
 
 import javax.annotation.Nullable;

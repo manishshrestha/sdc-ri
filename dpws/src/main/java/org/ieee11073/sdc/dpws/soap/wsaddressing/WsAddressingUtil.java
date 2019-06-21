@@ -37,21 +37,12 @@ public class WsAddressingUtil {
             return Optional.empty();
         }
 
-        Optional<AttributedURIType> uriType = Optional.ofNullable(epr.getAddress());
-        if (uriType.isPresent()) {
-            return Optional.of(uriType.get().getValue());
-        } else {
-            return Optional.empty();
-        }
+        return Optional.ofNullable(epr.getAddress()).map(AttributedURIType::getValue);
     }
 
     public Optional<URI> getAddressUri(EndpointReferenceType epr) {
         Optional<String> addressUriAsString = getAddressUriAsString(epr);
-        if (addressUriAsString.isPresent()) {
-            return Optional.of(URI.create(addressUriAsString.get()));
-        } else {
-            return Optional.empty();
-        }
+        return addressUriAsString.map(URI::create);
 
     }
 

@@ -3,7 +3,6 @@ package org.ieee11073.sdc.dpws.client.helper;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.inject.Inject;
-import com.google.inject.assistedinject.AssistedInject;
 import com.google.inject.name.Named;
 import org.ieee11073.sdc.common.helper.JaxbUtil;
 import org.ieee11073.sdc.dpws.DpwsConfig;
@@ -143,7 +142,7 @@ public class HostingServiceResolver {
             long metadataVersion = discoveredDevice.getMetadataVersion();
             return extractHostingServiceProxy(deviceMetadata, rrClient,
                     deviceEprAddress, metadataVersion, activeXAddr).orElseThrow(() -> new MalformedSoapMessageException(
-                    String.format("Could not resolve hosting service proxy information for {}",
+                    String.format("Could not resolve hosting service proxy information for %s",
                             deviceEprAddress)));
         });
     }
@@ -293,25 +292,25 @@ public class HostingServiceResolver {
     private class RelationshipData {
         private URI eprAddress = null;
         private List<QName> types = null;
-        private Map<String, HostedServiceProxy> hostedServices = new HashMap<>();
+        private final Map<String, HostedServiceProxy> hostedServices = new HashMap<>();
 
-        public URI getEprAddress() {
+        URI getEprAddress() {
             return eprAddress;
         }
 
-        public void setEprAddress(URI eprAddress) {
+        void setEprAddress(URI eprAddress) {
             this.eprAddress = eprAddress;
         }
 
-        public List<QName> getTypes() {
+        List<QName> getTypes() {
             return types;
         }
 
-        public void setTypes(List<QName> types) {
+        void setTypes(List<QName> types) {
             this.types = types;
         }
 
-        public Map<String, HostedServiceProxy> getHostedServices() {
+        Map<String, HostedServiceProxy> getHostedServices() {
             return hostedServices;
         }
     }

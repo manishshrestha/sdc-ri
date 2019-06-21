@@ -11,8 +11,8 @@ import java.net.URI;
 import java.util.UUID;
 
 public abstract class DevicePeer extends IntegrationTestPeer {
-    private URI eprAddress;
-    private Device device;
+    private final URI eprAddress;
+    private final Device device;
 
     public DevicePeer() {
         this(new DefaultDpwsConfigModule());

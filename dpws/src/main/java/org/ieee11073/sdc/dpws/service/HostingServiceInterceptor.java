@@ -19,9 +19,6 @@ import org.ieee11073.sdc.dpws.soap.wsmetadataexchange.model.Metadata;
 import org.ieee11073.sdc.dpws.soap.wsmetadataexchange.model.MetadataSection;
 import org.ieee11073.sdc.dpws.soap.wsmetadataexchange.model.ObjectFactory;
 import org.ieee11073.sdc.dpws.soap.wstransfer.WsTransferConstants;
-import org.ieee11073.sdc.dpws.model.LocalizedStringType;
-import org.ieee11073.sdc.dpws.model.ThisDeviceType;
-import org.ieee11073.sdc.dpws.model.ThisModelType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -65,7 +65,7 @@ public class DpwsTestService1 extends WebService {
                 new SoapFaultException(soapFaultFactory.createSenderFault("SOAP body is malformed.")));
 
         TestOperationResponse res = objectFactory.createTestOperationResponse();
-        res.setResult1(new StringBuilder(req.getParam1()).append(req.getParam1()).toString());
+        res.setResult1(req.getParam1() + req.getParam1());
         res.setResult2(req.getParam2() * 4);
 
         soapUtil.setBody(res, rrObj.getResponse());

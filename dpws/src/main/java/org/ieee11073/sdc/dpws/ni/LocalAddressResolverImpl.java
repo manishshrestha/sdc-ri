@@ -1,15 +1,10 @@
 package org.ieee11073.sdc.dpws.ni;
 
 import com.google.inject.Inject;
-import org.checkerframework.checker.nullness.Opt;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
 import java.net.*;
-import java.nio.channels.SocketChannel;
-import java.util.Collections;
-import java.util.Enumeration;
 import java.util.Optional;
 
 /**

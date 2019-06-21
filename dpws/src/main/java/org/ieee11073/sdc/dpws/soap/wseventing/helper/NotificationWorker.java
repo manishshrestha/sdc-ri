@@ -132,7 +132,7 @@ public class NotificationWorker implements Runnable {
         // - if current polled element is not stale, start processing it and return
         while (!workerItem.getSubscriptionManager().getNotificationQueue().isEmpty()) {
             Notification notification = workerItem.getSubscriptionManager().getNotificationQueue().poll();
-            if (!isNotificationStale(notification)) {
+            if (!isNotificationStale(notification) && notification.getPayload() != null) {
                 workerItem.setProcessedItem(evtSrcTransportManager.sendNotifyTo(workerItem.getSubscriptionManager(),
                         notification.getPayload()));
                 return;
@@ -153,20 +153,20 @@ public class NotificationWorker implements Runnable {
         private final SourceSubscriptionManager subscriptionManager;
         private ListenableFuture<InterceptorResult> processedItem;
 
-        public WorkerItem(SourceSubscriptionManager subscriptionManager) {
+        WorkerItem(SourceSubscriptionManager subscriptionManager) {
             this.subscriptionManager = subscriptionManager;
             this.processedItem = null;
         }
 
-        public SourceSubscriptionManager getSubscriptionManager() {
+        SourceSubscriptionManager getSubscriptionManager() {
             return subscriptionManager;
         }
 
-        public synchronized Optional<ListenableFuture<InterceptorResult>> getProcessedItem() {
+        synchronized Optional<ListenableFuture<InterceptorResult>> getProcessedItem() {
             return Optional.ofNullable(processedItem);
         }
 
-        public synchronized void setProcessedItem(ListenableFuture<InterceptorResult> processedNotification) {
+        synchronized void setProcessedItem(ListenableFuture<InterceptorResult> processedNotification) {
             this.processedItem = processedNotification;
         }
     }

@@ -15,6 +15,7 @@ import javax.xml.namespace.QName;
 import java.io.InputStream;
 import java.net.URI;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 public class BasicPopulatedDevice extends DevicePeer {
@@ -70,7 +71,7 @@ public class BasicPopulatedDevice extends DevicePeer {
 
             @Override
             public List<URI> getHostingServiceBindings() {
-                return Arrays.asList(URI.create("http://localhost:8080"));
+                return Collections.singletonList(URI.create("http://localhost:8080"));
             }
         });
 
@@ -133,7 +134,7 @@ public class BasicPopulatedDevice extends DevicePeer {
 
         getDevice().getHostingServiceAccess().addHostedService(hostedServiceFactory.createHostedService(
                 DevicePeerMetadata.SERVICE_ID_2,
-                Arrays.asList(new QName(DevicePeerMetadata.NAMESPACE_SRV, DevicePeerMetadata.PORT_TYPE_NAME_3)),
+                Collections.singletonList(new QName(DevicePeerMetadata.NAMESPACE_SRV, DevicePeerMetadata.PORT_TYPE_NAME_3)),
                 service2,
                 wsdlResource2));
 

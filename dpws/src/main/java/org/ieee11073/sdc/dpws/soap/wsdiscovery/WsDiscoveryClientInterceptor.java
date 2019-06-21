@@ -20,10 +20,7 @@ import org.ieee11073.sdc.dpws.soap.interception.MessageInterceptor;
 import org.ieee11073.sdc.dpws.soap.interception.NotificationObject;
 import org.ieee11073.sdc.dpws.soap.wsaddressing.WsAddressingUtil;
 import org.ieee11073.sdc.dpws.soap.wsaddressing.model.*;
-import org.ieee11073.sdc.dpws.soap.wsdiscovery.model.*;
 import org.ieee11073.sdc.dpws.soap.wsdiscovery.model.ObjectFactory;
-import org.ieee11073.sdc.dpws.soap.wsaddressing.model.AttributedURIType;
-import org.ieee11073.sdc.dpws.soap.wsaddressing.model.EndpointReferenceType;
 import org.ieee11073.sdc.dpws.soap.wsdiscovery.model.*;
 
 import javax.xml.namespace.QName;
@@ -248,7 +245,7 @@ public class WsDiscoveryClientInterceptor implements WsDiscoveryClient {
         private final String wsaRelatesTo;
         private final SoapUtil soapUtil;
         private final Lock lock;
-        private long maxWaitInMillis;
+        private final long maxWaitInMillis;
         private final Condition condition;
         private final EvictingQueue<SoapMessage> messageQueue;
 
@@ -282,12 +279,11 @@ public class WsDiscoveryClientInterceptor implements WsDiscoveryClient {
                     condition.await(wait, TimeUnit.MILLISECONDS);
 
                     msg = popMatches(messageQueue, wsaRelatesTo);
-                    maxWaitInMillis -= System.currentTimeMillis() - tStartInMillis;
+                    wait -= System.currentTimeMillis() - tStartInMillis;
                     if (msg.isPresent()) {
                         return soapUtil.getBody(msg.get(), ResolveMatchesType.class).orElseThrow(() ->
                                 new RuntimeException("SOAP message body malformed."));
                     }
-
                 }
             } finally {
                 lock.unlock();
@@ -305,7 +301,7 @@ public class WsDiscoveryClientInterceptor implements WsDiscoveryClient {
         private final Lock lock;
         private final String probeId;
         private final Integer maxResults;
-        private long maxWaitInMillis;
+        private final long maxWaitInMillis;
         private final Condition condition;
         private final EvictingQueue<SoapMessage> messageQueue;
 
@@ -339,7 +335,7 @@ public class WsDiscoveryClientInterceptor implements WsDiscoveryClient {
                 while (wait > 0) {
                     long tStartInMillis = System.currentTimeMillis();
                     probeMatchesCount = fetchData(probeMatchesCount);
-                    if (probeMatchesCount == maxResults) {
+                    if (probeMatchesCount.equals(maxResults)) {
                         break;
                     }
 
@@ -347,7 +343,7 @@ public class WsDiscoveryClientInterceptor implements WsDiscoveryClient {
 
                     wait -= System.currentTimeMillis() - tStartInMillis;
                     probeMatchesCount = fetchData(probeMatchesCount);
-                    if (probeMatchesCount == maxResults) {
+                    if (probeMatchesCount.equals(maxResults)) {
                         break;
                     }
                 }

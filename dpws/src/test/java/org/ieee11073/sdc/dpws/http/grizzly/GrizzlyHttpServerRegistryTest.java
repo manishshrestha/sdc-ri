@@ -100,7 +100,7 @@ public class GrizzlyHttpServerRegistryTest extends DpwsTest {
         srvReg.unregisterContext(HOST, PORT, ctxtPath);
         try {
             httpBinding.onNotification(request);
-            assertFalse(true);
+            fail();
         } catch (Exception e) {
             assertTrue(true);
         }

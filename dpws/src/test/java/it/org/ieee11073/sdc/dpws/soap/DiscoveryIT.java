@@ -72,7 +72,7 @@ public class DiscoveryIT {
 
             @Subscribe
             void timeout(DeviceProbeTimeoutMessage message) {
-                if (discoveryId != "" && message.getDiscoveryId() == discoveryId) {
+                if (!discoveryId.isEmpty() && message.getDiscoveryId().equals(discoveryId)) {
                     assertEquals(deviceFoundCount, message.getFoundDevicesCount().intValue());
                     actualDeviceFoundCount.set(deviceFoundCount);
                 }
