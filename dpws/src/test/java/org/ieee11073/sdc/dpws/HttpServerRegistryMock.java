@@ -25,21 +25,21 @@ public class HttpServerRegistryMock extends AbstractIdleService implements HttpS
     }
 
     @Override
-    public URI registerContext(String host, @Nullable Integer port, String contextPath, HttpHandler handler) {
-        URI uri = URI.create("http://" + host + ":" + port + contextPath);
+    public URI registerContext(URI host, @Nullable String contextPath, HttpHandler handler) {
+        URI uri = URI.create(host + contextPath);
         handlerRegistry.put(uri, handler);
         return uri;
     }
 
     @Override
-    public URI registerContext(String host, Integer port, String contextPath, String mediaType, HttpHandler handler) {
-        URI uri = URI.create("http://" + host + ":" + port + contextPath);
+    public URI registerContext(URI host, String contextPath, String mediaType, HttpHandler handler) {
+        URI uri = URI.create(host + contextPath);
         handlerRegistry.put(uri, handler);
         return uri;
     }
 
     @Override
-    public void unregisterContext(String host, Integer port, String contextPath) {
-        handlerRegistry.remove(URI.create("http://" + host + ":" + port + contextPath));
+    public void unregisterContext(URI host, String contextPath) {
+        handlerRegistry.remove(host + contextPath);
     }
 }

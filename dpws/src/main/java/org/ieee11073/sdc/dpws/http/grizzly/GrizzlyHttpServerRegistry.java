@@ -2,6 +2,10 @@ package org.ieee11073.sdc.dpws.http.grizzly;
 
 import com.google.common.util.concurrent.AbstractIdleService;
 import com.google.inject.Inject;
+import org.glassfish.grizzly.ssl.SSLContextConfigurator;
+import org.glassfish.grizzly.ssl.SSLEngineConfigurator;
+import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpContainer;
+import org.glassfish.jersey.server.ContainerFactory;
 import org.ieee11073.sdc.dpws.http.HttpHandler;
 import org.ieee11073.sdc.dpws.http.HttpServerRegistry;
 import org.ieee11073.sdc.dpws.http.HttpUriBuilder;
@@ -40,6 +44,7 @@ public class GrizzlyHttpServerRegistry extends AbstractIdleService implements Ht
     private final Map<String, HandlerWrapper> handlerRegistry;
     private final Lock registryLock;
     private final HttpUriBuilder uriBuilder;
+    private final SSLContextConfigurator sslContextConfigurator;
 
     @Inject
     GrizzlyHttpServerRegistry(HttpUriBuilder uriBuilder) {
@@ -48,6 +53,7 @@ public class GrizzlyHttpServerRegistry extends AbstractIdleService implements Ht
         serverRegistry = new HashMap<>();
         handlerRegistry = new HashMap<>();
         registryLock = new ReentrantLock();
+        sslContextConfigurator = new SSLContextConfigurator();
     }
 
     @Override
@@ -76,27 +82,27 @@ public class GrizzlyHttpServerRegistry extends AbstractIdleService implements Ht
     }
 
     @Override
-    public URI registerContext(String host, Integer port, String contextPath, String mediaType, HttpHandler handler) {
+    public URI registerContext(URI schemeAndAuthority, String contextPath, String mediaType, HttpHandler handler) {
         registryLock.lock();
         try {
-            String mapKey = concatHostAndPort(host, port);
-            URI baseAddress = Optional.ofNullable(addressRegistry.get(mapKey)).orElseGet(() -> {
-                URI uri = uriBuilder.buildUri(host, port);
+            final String mapKey = calculateMapKey(schemeAndAuthority);
+            final URI registeredBaseAddress = Optional.ofNullable(addressRegistry.get(mapKey)).orElseGet(() -> {
+                URI uri = uriBuilder.buildUri(
+                        schemeAndAuthority.getScheme(), schemeAndAuthority.getHost(), schemeAndAuthority.getPort());
                 addressRegistry.put(mapKey, uri);
                 return uri;
             });
 
-            HttpServer httpServer = Optional.ofNullable(serverRegistry.get(mapKey))
+            final HttpServer httpServer = Optional.ofNullable(serverRegistry.get(mapKey))
                     .orElseGet(() -> {
-                        LOG.info("Setup HTTP server for address '{}'.", baseAddress);
-                        HttpServer result = GrizzlyHttpServerFactory.createHttpServer(baseAddress, true);
-                        serverRegistry.put(mapKey, result);
-                        return result;
+                        HttpServer srv = createHttpServer(registeredBaseAddress);
+                        serverRegistry.put(mapKey, srv);
+                        return srv;
                     });
 
             HandlerWrapper hw = new HandlerWrapper(handler);
             handlerRegistry.put(contextPath, hw);
-            LOG.info("Register context path '{}' at HTTP server '{}'", contextPath, baseAddress);
+            LOG.info("Register context path '{}' at HTTP server '{}'", contextPath, registeredBaseAddress);
             org.glassfish.grizzly.http.server.HttpHandler hdlr = new org.glassfish.grizzly.http.server.HttpHandler(contextPath) {
                 @Override
                 public void service(Request request, Response response) throws Exception {
@@ -120,7 +126,7 @@ public class GrizzlyHttpServerRegistry extends AbstractIdleService implements Ht
             };
             httpServer.getServerConfiguration().addHttpHandler(hdlr, contextPath);
 
-            return URI.create(baseAddress.toString() + contextPath);
+            return URI.create(registeredBaseAddress.toString() + contextPath);
         } catch (UnknownHostException e) {
             LOG.warn("Cannot resolve host name.", e);
             throw new RuntimeException(e);
@@ -130,15 +136,15 @@ public class GrizzlyHttpServerRegistry extends AbstractIdleService implements Ht
     }
 
     @Override
-    public URI registerContext(String host, Integer port, String contextPath, HttpHandler handler) {
-        return registerContext(host, port, contextPath, SoapConstants.MEDIA_TYPE_SOAP, handler);
+    public URI registerContext(URI schemeAndAuthority, String contextPath, HttpHandler handler) {
+        return registerContext(schemeAndAuthority, contextPath, SoapConstants.MEDIA_TYPE_SOAP, handler);
     }
 
     @Override
-    public void unregisterContext(String host, Integer port, String contextPath) {
+    public void unregisterContext(URI schemeAndAuthority, String contextPath) {
         registryLock.lock();
         try {
-            String hostWithPort = concatHostAndPort(host, port);
+            String hostWithPort = calculateMapKey(schemeAndAuthority);
             Optional.ofNullable(serverRegistry.get(hostWithPort)).ifPresent(httpServer ->
             {
                 Optional.ofNullable(handlerRegistry.get(contextPath)).ifPresent(handlerWrapper -> {
@@ -148,7 +154,7 @@ public class GrizzlyHttpServerRegistry extends AbstractIdleService implements Ht
                 });
 
                 if (handlerRegistry.isEmpty()) {
-                    LOG.info("No further HTTP handlers active. Shutdown HTTP server at '{}:{}'", host, port);
+                    LOG.info("No further HTTP handlers active. Shutdown HTTP server at '{}'", schemeAndAuthority);
                     httpServer.shutdown();
                     serverRegistry.remove(hostWithPort);
                 }
@@ -158,6 +164,25 @@ public class GrizzlyHttpServerRegistry extends AbstractIdleService implements Ht
         } finally {
             registryLock.unlock();
         }
+    }
+
+    private HttpServer createHttpServer(URI uri) {
+        LOG.info("Setup HTTP server for address '{}'", uri);
+        if (uri.getScheme().equalsIgnoreCase("http")) {
+            return GrizzlyHttpServerFactory.createHttpServer(uri, true);
+        }
+        if (uri.getScheme().equalsIgnoreCase("https")) {
+            final SSLEngineConfigurator sslEngineConfigurator = new SSLEngineConfigurator(sslContextConfigurator);
+            sslEngineConfigurator.setNeedClientAuth(false).setClientMode(false); //.setWantClientAuth(false);
+            return GrizzlyHttpServerFactory.createHttpServer(
+                    uri,
+                    (GrizzlyHttpContainer)null,
+                    true,
+                    sslEngineConfigurator,
+                    true);
+        }
+
+        throw new RuntimeException(String.format("HTTP server setup failed. Unknown scheme: %s", uri.getScheme()));
     }
 
     private class HandlerWrapper implements HttpHandler {
@@ -185,12 +210,12 @@ public class GrizzlyHttpServerRegistry extends AbstractIdleService implements Ht
     }
 
     /**
-     * Concat host and port, whereby host address is always used instead of DNS name.
+     * Calculate http server map key, whereby host address is always used instead of DNS name.
      *
      * @throws UnknownHostException if host address cannot be resolved.
      */
-    private String concatHostAndPort(String host, Integer port) throws UnknownHostException {
-        InetAddress address = InetAddress.getByName(host);
-        return address.getHostAddress() + ":" + port;
+    private String calculateMapKey(URI uri) throws UnknownHostException {
+        InetAddress address = InetAddress.getByName(uri.getHost());
+        return uri.getScheme().toLowerCase() + "://" + address.getHostAddress() + ":" + uri.getPort();
     }
 }

@@ -58,7 +58,7 @@ public class InvocationIT {
     }
 
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
         this.devicePeer.stopAsync().awaitTerminated();
         this.clientPeer.stopAsync().awaitTerminated();
     }

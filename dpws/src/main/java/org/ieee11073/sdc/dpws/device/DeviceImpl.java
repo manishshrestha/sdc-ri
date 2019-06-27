@@ -120,6 +120,10 @@ public class DeviceImpl extends AbstractIdleService implements Device, Service, 
         EndpointReferenceType deviceEpr = config.getEndpointReference();
         LOG.info("Start device with URN '{}'.", deviceEpr.getAddress().getValue());
 
+        URI eprAddress = wsaUtil.getAddressUri(config.getEndpointReference()).orElseThrow(() ->
+                new RuntimeException("No valid endpoint reference found in device config."));
+        String hostingServerCtxtPath = buildContextPathBase(eprAddress);
+
         /*
          * Configure WS-Discovery
          */
@@ -128,9 +132,6 @@ public class DeviceImpl extends AbstractIdleService implements Device, Service, 
         NotificationSource wsdNotificationSource = notificationSourceFactory.createNotificationSource(
                 dpwsHelperFactory.createNotificationSourceUdpCallback(discoveryMessageQueue));
 
-        URI uniqueEprAddress = wsaUtil.getAddressUri(config.getEndpointReference()).orElseThrow(() ->
-                new RuntimeException("No valid endpoint reference found in device config."));
-        String hostingServerCtxtPath = buildContextPathBase(uniqueEprAddress);
         // Create WS-Discovery target service
         wsdTargetService = targetServiceFactory.createWsDiscoveryTargetService(deviceEpr, wsdNotificationSource);
         wsdTargetService.setXAddrs(config.getHostingServiceBindings().parallelStream()
@@ -155,11 +156,8 @@ public class DeviceImpl extends AbstractIdleService implements Device, Service, 
         RequestResponseServerHttpHandler reqResHandler = reqResHandlerProvider.get();
 
         // Register HTTP bindings to HTTP context registry; append EPR UUID from host as context path
-        URI eprUri = wsaUtil.getAddressUri(deviceEpr).orElseThrow(
-                () -> new RuntimeException(String.format("Malformed EPR: %s", deviceEpr.getAddress().getValue())));
-        config.getHostingServiceBindings().forEach(uri -> httpServerRegistry.registerContext(uri.getHost(),
-                uri.getPort(), "/" + soapUtil.createUuidFromUri(eprUri).toString(),
-                reqResHandler));
+        config.getHostingServiceBindings().forEach(uri -> httpServerRegistry.registerContext(uri,
+                hostingServerCtxtPath, reqResHandler));
         // Create hosting service
         hostingService = hostingServiceFactory.createHostingService(wsdTargetService);
         // Register request-response hosting service interceptor to receive incoming request-response messages
@@ -315,8 +313,8 @@ public class DeviceImpl extends AbstractIdleService implements Device, Service, 
             URI uri = wsaUtil.getAddressUri(epr).orElseThrow(() ->
                     new RuntimeException("Invalid EPR detected when trying to add hosted service."));
 
-            httpServerRegistry.registerContext(uri.getHost(), uri.getPort(), contextPath, hsReqResHandler);
-            URI wsdlLocation = httpServerRegistry.registerContext(uri.getHost(), uri.getPort(), wsdlContextPath,
+            httpServerRegistry.registerContext(uri, contextPath, hsReqResHandler);
+            URI wsdlLocation = httpServerRegistry.registerContext(uri, wsdlContextPath,
                     SoapConstants.MEDIA_TYPE_WSDL, new ByteResourceHandler(wsdlDocBytes));
             hostedService.getWsdlLocations().add(wsdlLocation);
         }

@@ -60,8 +60,9 @@ public class WsEventingTest extends DpwsTest {
 
         HttpServerRegistry httpSrvRegisty = getInjector().getInstance(HttpServerRegistry.class);
 
+        URI uri = URI.create("http://" + HOST + ":" + PORT);
         MarshallingService marshallingService = getInjector().getInstance(MarshallingService.class);
-        URI hostedServiceUri = httpSrvRegisty.registerContext(HOST, PORT, HOSTED_SERVICE_PATH, (inStream, outStream, ti) ->
+        URI hostedServiceUri = httpSrvRegisty.registerContext(uri, HOSTED_SERVICE_PATH, (inStream, outStream, ti) ->
                 marshallingService.handleRequestResponse(reqResSrv, inStream, outStream, ti));
 
         HostedServiceType hst = dpwsFactory.createHostedServiceType();
@@ -72,11 +73,8 @@ public class WsEventingTest extends DpwsTest {
         RequestResponseClient rrc = rrcFactory.createRequestResponseClient(
                 tbFactory.createTransportBinding(hostedServiceUri));
 
-        HostedServiceProxy mockHostedServiceProxy = hostedServiceFactory.createHostedServiceProxy(hst, rrc,
-                hostedServiceUri, mock(EventSink.class));
-
         wseSink = getInjector().getInstance(WsEventingEventSinkFactory.class)
-                .createWsEventingEventSink(rrc, "localhost");
+                .createWsEventingEventSink(rrc, URI.create("http://localhost:1234"));
     }
 
     @Test

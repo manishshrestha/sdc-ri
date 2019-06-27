@@ -9,6 +9,7 @@ import com.google.inject.name.Named;
 import org.ieee11073.sdc.dpws.DpwsConstants;
 import org.ieee11073.sdc.dpws.device.helper.RequestResponseServerHttpHandler;
 import org.ieee11073.sdc.dpws.http.HttpServerRegistry;
+import org.ieee11073.sdc.dpws.http.HttpUriBuilder;
 import org.ieee11073.sdc.dpws.soap.SoapMessage;
 import org.ieee11073.sdc.dpws.soap.SoapUtil;
 import org.ieee11073.sdc.dpws.soap.TransportInfo;
@@ -58,6 +59,7 @@ public class EventSourceInterceptor extends AbstractIdleService implements Event
     private final Provider<RequestResponseServerHttpHandler> rrServerHttpHandlerProvider;
     private final SubscriptionRegistry subscriptionRegistry;
     private final SubscriptionManagerFactory subscriptionManagerFactory;
+    private final HttpUriBuilder httpUriBuilder;
     private final Multimap<URI, String> subscribedActionsToSubManIds;
     private final Lock subscribedActionsLock;
 
@@ -87,7 +89,8 @@ public class EventSourceInterceptor extends AbstractIdleService implements Event
                            Provider<RequestResponseServerHttpHandler> rrServerHttpHandlerProvider,
                            SubscriptionRegistry subscriptionRegistry,
                            NotificationWorkerFactory notificationWorkerFactory,
-                           SubscriptionManagerFactory subscriptionManagerFactory) {
+                           SubscriptionManagerFactory subscriptionManagerFactory,
+                           HttpUriBuilder httpUriBuilder) {
         this.maxExpires = maxExpires;
         this.subscriptionManagerPath = subscriptionManagerPath;
         this.soapUtil = soapUtil;
@@ -96,6 +99,7 @@ public class EventSourceInterceptor extends AbstractIdleService implements Event
         this.rrServerHttpHandlerProvider = rrServerHttpHandlerProvider;
         this.subscriptionRegistry = subscriptionRegistry;
         this.subscriptionManagerFactory = subscriptionManagerFactory;
+        this.httpUriBuilder = httpUriBuilder;
         this.subscribedActionsToSubManIds = LinkedListMultimap.create();
         this.jaxbUtil = jaxbUtil;
         this.wsaUtil = wsaUtil;
@@ -318,22 +322,22 @@ public class EventSourceInterceptor extends AbstractIdleService implements Event
     }
 
     private EndpointReferenceType createSubscriptionManagerEprAndRegisterHttpHandler(TransportInfo transportInfo) {
-        String hostPart = transportInfo.getScheme() + "://" + transportInfo.getLocalAddress() + ":" +
-                transportInfo.getLocalPort();
+        final URI hostPart = httpUriBuilder.buildUri(
+                transportInfo.getScheme(), transportInfo.getLocalAddress(), transportInfo.getLocalPort());
         String contextPath = "/" + subscriptionManagerPath + "/" + UUID.randomUUID().toString();
         String eprAddress = hostPart + contextPath;
 
         RequestResponseServerHttpHandler handler = rrServerHttpHandlerProvider.get();
         handler.register(this);
-        httpServerRegistry.registerContext(transportInfo.getLocalAddress(), transportInfo.getLocalPort(), contextPath,
-                handler);
+        httpServerRegistry.registerContext(hostPart, contextPath, handler);
 
         return wsaUtil.createEprWithAddress(eprAddress);
     }
 
     private void unregisterHttpHandler(SourceSubscriptionManager subMan) {
-        URI uri = URI.create(subMan.getSubscriptionManagerEpr().getAddress().getValue());
-        httpServerRegistry.unregisterContext(uri.getHost(), uri.getPort(), uri.getPath());
+        URI fullUri = URI.create(subMan.getSubscriptionManagerEpr().getAddress().getValue());
+        URI uriWithoutPath = httpUriBuilder.buildUri(fullUri.getScheme(), fullUri.getHost(), fullUri.getPort());
+        httpServerRegistry.unregisterContext(uriWithoutPath, fullUri.getPath());
     }
 
     private boolean isSubscriptionExpired(SourceSubscriptionManager subMan) {
