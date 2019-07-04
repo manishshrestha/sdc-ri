@@ -1,30 +1,31 @@
 package it.org.ieee11073.sdc.dpws.soap;
 
 import it.org.ieee11073.sdc.dpws.IntegrationTestPeer;
-import it.org.ieee11073.sdc.dpws.TestServiceMetadata;
-import org.ieee11073.sdc.dpws.device.DefaultDeviceSettings;
 import org.ieee11073.sdc.dpws.device.Device;
 import org.ieee11073.sdc.dpws.device.DeviceSettings;
 import org.ieee11073.sdc.dpws.guice.DefaultDpwsConfigModule;
 import org.ieee11073.sdc.dpws.http.HttpUriBuilder;
-import org.ieee11073.sdc.dpws.soap.SoapConfig;
 import org.ieee11073.sdc.dpws.soap.SoapUtil;
 import org.ieee11073.sdc.dpws.soap.wsaddressing.WsAddressingUtil;
 import org.ieee11073.sdc.dpws.soap.wsaddressing.model.EndpointReferenceType;
 
 import javax.annotation.Nullable;
-import javax.validation.constraints.Null;
 import java.net.URI;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
 public abstract class DevicePeer extends IntegrationTestPeer {
-    private final URI eprAddress;
-    private final Device device;
+    private URI eprAddress;
+    private Device device;
+    private boolean isSetup;
 
-    public DevicePeer(@Nullable DeviceSettings deviceSettings, DefaultDpwsConfigModule configModule) {
-        super(configModule);
+    public DevicePeer() {
+        isSetup = false;
+    }
+
+    void setup(DefaultDpwsConfigModule configModule, @Nullable DeviceSettings deviceSettings) {
+        setupInjector(configModule);
         this.device = getInjector().getInstance(Device.class);
         if (deviceSettings == null) {
             this.eprAddress = getInjector().getInstance(SoapUtil.class).createUriFromUuid(UUID.randomUUID());
@@ -49,18 +50,24 @@ public abstract class DevicePeer extends IntegrationTestPeer {
             this.eprAddress = URI.create(deviceSettings.getEndpointReference().getAddress().getValue());
             this.device.setConfiguration(deviceSettings);
         }
-    }
 
-    public DevicePeer(DefaultDpwsConfigModule configModule) {
-        this(null, configModule);
+        isSetup = true;
     }
 
     public URI getEprAddress() {
+        checkSetup();
         return eprAddress;
     }
 
     public Device getDevice() {
+        checkSetup();
         return device;
+    }
+
+    private void checkSetup() {
+        if (!isSetup) {
+            throw new RuntimeException("Call setup() before access getter method.");
+        }
     }
 
 }

@@ -90,8 +90,6 @@ public class DefaultDpwsModule extends AbstractModule {
                 .to(TransportBindingFactoryImpl.class);
 
 
-
-
         install(new FactoryModuleBuilder()
                 .implement(UdpBindingService.class, UdpBindingServiceImpl.class)
                 .build(UdpBindingServiceFactory.class));
@@ -123,7 +121,7 @@ public class DefaultDpwsModule extends AbstractModule {
 
         bind(ScheduledExecutorService.class)
                 .annotatedWith(WatchDogScheduler.class)
-                .toProvider(() -> Executors.newScheduledThreadPool( 20 ));
+                .toProvider(() -> Executors.newScheduledThreadPool(20));
 
         install(new FactoryModuleBuilder()
                 .implement(DiscoveryClientUdpProcessor.class, DiscoveryClientUdpProcessor.class)

@@ -34,7 +34,7 @@ public class DiscoveryIT {
         this.devicePeer = new BasicPopulatedDevice();
         this.clientPeer = new ClientPeer(new DefaultDpwsConfigModule() {
             @Override
-            protected void customConfigure() {
+            public void customConfigure() {
                 // shorten the test time by only waiting 1 second for the probe response
                 bind(WsDiscoveryConfig.MAX_WAIT_FOR_PROBE_MATCHES, Duration.class,
                         Duration.ofSeconds(MAX_WAIT_TIME.getSeconds() / 2));

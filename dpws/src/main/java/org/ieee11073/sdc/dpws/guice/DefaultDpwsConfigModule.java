@@ -1,89 +1,35 @@
 package org.ieee11073.sdc.dpws.guice;
 
-import com.google.inject.AbstractModule;
-import com.google.inject.name.Names;
+import org.ieee11073.sdc.common.guice.AbstractConfigurationModule;
 import org.ieee11073.sdc.dpws.DpwsConfig;
 import org.ieee11073.sdc.dpws.client.ClientConfig;
+import org.ieee11073.sdc.dpws.crypto.CryptoSettings;
+import org.ieee11073.sdc.dpws.device.Device;
+import org.ieee11073.sdc.dpws.device.DeviceConfig;
 import org.ieee11073.sdc.dpws.http.HttpConfig;
 import org.ieee11073.sdc.dpws.soap.SoapConfig;
 import org.ieee11073.sdc.dpws.soap.wsaddressing.WsAddressingConfig;
 import org.ieee11073.sdc.dpws.soap.wsdiscovery.WsDiscoveryConfig;
 import org.ieee11073.sdc.dpws.soap.wseventing.WsEventingConfig;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.time.Duration;
-import java.util.Map;
-import java.util.TreeMap;
 
 /**
  * Default configuration module to configure {@link DefaultDpwsModule}.
- *
+ * <p>
  * Derive from this class to override default configuration values. Use {@link #bind(String, Class, Object)}
- * to set your custom values.
- *
- * You can either configure values on construction or by overriding {@link #customConfigure()}.
+ * to set your default values.
  */
-public class DefaultDpwsConfigModule extends AbstractModule {
-    private static final Logger LOG = LoggerFactory.getLogger(DefaultDpwsConfigModule.class);
-    private final Map<String, ConfigurationValue> boundedValues = new TreeMap<>();
-    private boolean configureStarted = false;
-
-    /**
-     * Bind a configuration key to a value.
-     *
-     * This operation can only be performed once per key. All unpopulated keys will be settled with a default value
-     * once {@link #configure()} is called by Guice.
-     *
-     * @param name     Configuration key.
-     * @param dataType Data type bounded by that key (should be defined in configuration class).
-     * @param value    The configuration value to set.
-     */
-    protected <T> void bind(String name, Class<T> dataType, T value) {
-        if (!boundedValues.containsKey(name)) {
-            ValueOrigin valueOrigin = configureStarted ? ValueOrigin.INHERITED : ValueOrigin.OVERRIDDEN;
-            boundedValues.put(name, new ConfigurationValue(valueOrigin, value));
-            bind(dataType).annotatedWith(Names.named(name)).toInstance(value);
-        } else {
-            if (!configureStarted) {
-                LOG.warn("Try to populate configuration key '{}' again. Skipped.", name);
-            }
-        }
-    }
-
-    /**
-     * Perform default configuration.
-     */
+public class DefaultDpwsConfigModule extends AbstractConfigurationModule {
     @Override
-    final protected void configure() {
-        customConfigure();
-
-        configureStarted = true;
-
+    public void defaultConfigure() {
         configureWsAddressingConfig();
         configureWsDiscoveryConfig();
         configureWsEventingConfig();
         configureClientConfig();
+        configureDeviceConfig();
         configureHttpConfig();
         configureDpws();
-        logConfiguredValues();
-    }
-
-
-
-    /**
-     * Override this method in derived class for custom configuration.
-     */
-    protected void customConfigure() {
-        // nothing to do here - override on derived class to add custom configuration
-    }
-
-    private void logConfiguredValues() {
-        boundedValues.entrySet().stream().forEach(value ->
-                LOG.debug("Configure {} key: {} := {}",
-                        value.getValue().getValueOrigin(),
-                        value.getKey(),
-                        value.getValue().getValue()));
     }
 
     private void configureDpws() {
@@ -101,7 +47,17 @@ public class DefaultDpwsConfigModule extends AbstractModule {
                 65535);
     }
 
+    private void configureDeviceConfig() {
+        bind(DeviceConfig.CRYPTO_SETTINGS,
+                CryptoSettings.class,
+                null);
+    }
+
     private void configureClientConfig() {
+        bind(ClientConfig.CRYPTO_SETTINGS,
+                CryptoSettings.class,
+                null);
+
         bind(ClientConfig.MAX_WAIT_FOR_RESOLVE_MATCHES,
                 Duration.class,
                 Duration.ofSeconds(10));
@@ -117,6 +73,10 @@ public class DefaultDpwsConfigModule extends AbstractModule {
         bind(ClientConfig.AUTO_RESOLVE,
                 Boolean.class,
                 false);
+
+        bind(ClientConfig.CRYPTO_SETTINGS,
+                CryptoSettings.class,
+                null);
     }
 
     private void configureWsDiscoveryConfig() {
@@ -165,39 +125,5 @@ public class DefaultDpwsConfigModule extends AbstractModule {
         bind(SoapConfig.JAXB_CONTEXT_PATH,
                 String.class,
                 "");
-    }
-
-    private enum ValueOrigin {
-        INHERITED("inherited"),
-        OVERRIDDEN("overridden");
-
-        ValueOrigin(String value) {
-            caption = value;
-        }
-
-        @Override
-        public String toString() {
-            return caption;
-        }
-
-        private final String caption;
-    }
-
-    private class ConfigurationValue {
-        private final ValueOrigin valueOrigin;
-        private final Object value;
-
-        ConfigurationValue(ValueOrigin valueOrigin, Object value) {
-            this.valueOrigin = valueOrigin;
-            this.value = value;
-        }
-
-        ValueOrigin getValueOrigin() {
-            return valueOrigin;
-        }
-
-        Object getValue() {
-            return value;
-        }
     }
 }

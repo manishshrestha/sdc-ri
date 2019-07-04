@@ -1,9 +1,13 @@
 package org.ieee11073.sdc.dpws.factory;
 
 import com.google.inject.Inject;
+import com.google.inject.name.Named;
 import org.glassfish.jersey.SslConfigurator;
 import org.ieee11073.sdc.dpws.TransportBinding;
 import org.ieee11073.sdc.dpws.TransportBindingException;
+import org.ieee11073.sdc.dpws.client.ClientConfig;
+import org.ieee11073.sdc.dpws.crypto.CryptoSettings;
+import org.ieee11073.sdc.dpws.crypto.CryptoConfigurator;
 import org.ieee11073.sdc.dpws.soap.SoapConstants;
 import org.ieee11073.sdc.dpws.soap.SoapMarshalling;
 import org.ieee11073.sdc.dpws.soap.SoapMessage;
@@ -12,7 +16,7 @@ import org.ieee11073.sdc.dpws.soap.exception.SoapFaultException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.net.ssl.SSLContext;
+import javax.annotation.Nullable;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
@@ -23,7 +27,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
-import java.security.NoSuchAlgorithmException;
 
 /**
  * Default implementation of {@link TransportBindingFactory}.
@@ -39,28 +42,38 @@ public class TransportBindingFactoryImpl implements TransportBindingFactory {
     private final SoapUtil soapUtil;
 
     private final Client client;
-    private final Client securedClient;
+    private Client securedClient; // if null => no cryptography configured/enabled
 
     @Inject
     TransportBindingFactoryImpl(SoapMarshalling marshalling,
-                                SoapUtil soapUtil) {
+                                SoapUtil soapUtil,
+                                CryptoConfigurator cryptoConfigurator,
+                                @Nullable @Named(ClientConfig.CRYPTO_SETTINGS) CryptoSettings cryptoSettings) {
         this.marshalling = marshalling;
         this.soapUtil = soapUtil;
         this.client = ClientBuilder.newClient();
 
-        SslConfigurator sslConfig = SslConfigurator.newInstance(true);
+        configureSecuredClient(cryptoConfigurator, cryptoSettings);
+    }
 
-        SSLContext sslContext = sslConfig.createSSLContext();
-        try {
-            SSLContext sslContext2 = SSLContext.getDefault();
-            this.securedClient = ClientBuilder.newBuilder()
-                    .sslContext(sslContext2)
-                    .build();
-        } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
-            throw new RuntimeException(e.getCause());
+    private void configureSecuredClient(CryptoConfigurator cryptoConfigurator,
+                                        @Nullable CryptoSettings cryptoSettings) {
+        if (cryptoSettings == null) {
+            securedClient = null;
+            return;
         }
 
+        SslConfigurator sslConfigurator = null;
+        try {
+            sslConfigurator = cryptoConfigurator.createSslConfiguratorFromCryptoConfig(cryptoSettings);
+        } catch (IllegalArgumentException e) {
+            LOG.warn("Could not read crypto config, fallback to system properties.");
+            sslConfigurator = cryptoConfigurator.createSslConfiguratorFromSystemProperties();
+        }
+
+        this.securedClient = ClientBuilder.newBuilder()
+                .sslContext(sslConfigurator.createSSLContext())
+                .build();
     }
 
     @Override
@@ -84,10 +97,10 @@ public class TransportBindingFactoryImpl implements TransportBindingFactory {
 
     @Override
     public TransportBinding createHttpBinding(URI endpointUri) throws UnsupportedOperationException {
-        if (endpointUri.getScheme().equalsIgnoreCase("http")) {
+        if (client != null && endpointUri.getScheme().equalsIgnoreCase("http")) {
             return new HttpClientTransportBinding(client, endpointUri, marshalling, soapUtil);
         }
-        if (endpointUri.getScheme().equalsIgnoreCase("https")) {
+        if (securedClient != null && endpointUri.getScheme().equalsIgnoreCase("https")) {
             return new HttpClientTransportBinding(securedClient, endpointUri, marshalling, soapUtil);
         }
 

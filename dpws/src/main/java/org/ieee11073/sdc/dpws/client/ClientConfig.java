@@ -1,5 +1,7 @@
 package org.ieee11073.sdc.dpws.client;
 
+import org.ieee11073.sdc.dpws.crypto.CryptoSettings;
+
 /**
  * General configuration of client functionality.
  */
@@ -10,7 +12,7 @@ public class ClientConfig {
      * - Data type: {@linkplain java.time.Duration}
      * - Use: optional
      */
-    public static final String MAX_WAIT_FOR_RESOLVE_MATCHES = "Client.MaxWaitForResolveMatches";
+    public static final String MAX_WAIT_FOR_RESOLVE_MATCHES = "Dpws.Client.MaxWaitForResolveMatches";
 
     /**
      * Enable (true) or disable (false) watchdog for hosting services.
@@ -35,4 +37,12 @@ public class ClientConfig {
      * - Use: optional
      */
     public static final String AUTO_RESOLVE = "Dpws.Client.AutoResolve";
+
+    /**
+     * Used to retrieve SSL configuration.
+     *
+     * - Data type: {@link CryptoSettings}
+     * - Use: optional
+     */
+    public static final String CRYPTO_SETTINGS = "Dpws.Client.CryptoSettings";
 }

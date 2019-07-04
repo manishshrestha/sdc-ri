@@ -8,8 +8,6 @@ import org.ieee11073.sdc.dpws.device.DeviceSettings;
 import org.ieee11073.sdc.dpws.guice.DefaultDpwsConfigModule;
 import org.ieee11073.sdc.dpws.service.factory.HostedServiceFactory;
 import org.ieee11073.sdc.dpws.soap.SoapConfig;
-import org.ieee11073.sdc.dpws.soap.wsaddressing.WsAddressingUtil;
-import org.ieee11073.sdc.dpws.soap.wsaddressing.model.EndpointReferenceType;
 
 import javax.annotation.Nullable;
 import javax.xml.namespace.QName;
@@ -17,7 +15,6 @@ import java.io.InputStream;
 import java.net.URI;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.List;
 
 public class BasicPopulatedDevice extends DevicePeer {
     public static final String SERVICE_ID_1 = "TestServiceId1";
@@ -36,14 +33,21 @@ public class BasicPopulatedDevice extends DevicePeer {
         this(null);
     }
 
+
     public BasicPopulatedDevice(@Nullable DeviceSettings deviceSettings) {
-        super(deviceSettings, new DefaultDpwsConfigModule() {
+        setup(new DefaultDpwsConfigModule() {
             @Override
-            protected void customConfigure() {
+            public void customConfigure() {
                 bind(SoapConfig.JAXB_CONTEXT_PATH, String.class,
                         TestServiceMetadata.JAXB_CONTEXT_PATH);
             }
-        });
+        }, deviceSettings);
+    }
+
+    public BasicPopulatedDevice(@Nullable DeviceSettings deviceSettings, DefaultDpwsConfigModule configModule) {
+        configModule.bind(SoapConfig.JAXB_CONTEXT_PATH, String.class,
+                TestServiceMetadata.JAXB_CONTEXT_PATH);
+        setup(configModule, deviceSettings);
     }
 
     public DpwsTestService1 getService1() {

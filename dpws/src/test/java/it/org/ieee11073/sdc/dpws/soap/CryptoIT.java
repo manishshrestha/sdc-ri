@@ -1,15 +1,13 @@
 package it.org.ieee11073.sdc.dpws.soap;
 
-import com.google.common.eventbus.Subscribe;
-import com.google.common.util.concurrent.ListenableFuture;
-import com.google.common.util.concurrent.SettableFuture;
 import it.org.ieee11073.sdc.dpws.IntegrationTestUtil;
 import org.apache.log4j.BasicConfigurator;
-import org.ieee11073.sdc.dpws.client.*;
+import org.ieee11073.sdc.dpws.client.ClientConfig;
+import org.ieee11073.sdc.dpws.client.DiscoveredDevice;
+import org.ieee11073.sdc.dpws.crypto.CryptoSettings;
+import org.ieee11073.sdc.dpws.device.DeviceConfig;
 import org.ieee11073.sdc.dpws.device.DeviceSettings;
 import org.ieee11073.sdc.dpws.guice.DefaultDpwsConfigModule;
-import org.ieee11073.sdc.dpws.service.HostingServiceProxy;
-import org.ieee11073.sdc.dpws.soap.SoapConstants;
 import org.ieee11073.sdc.dpws.soap.SoapUtil;
 import org.ieee11073.sdc.dpws.soap.wsaddressing.WsAddressingUtil;
 import org.ieee11073.sdc.dpws.soap.wsaddressing.model.EndpointReferenceType;
@@ -21,7 +19,6 @@ import org.junit.Test;
 import javax.net.ssl.SSLContext;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
-import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import java.net.URI;
@@ -34,7 +31,7 @@ import java.util.concurrent.TimeUnit;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
-public class SecurityIT {
+public class CryptoIT {
     private static final Duration MAX_WAIT_TIME = Duration.ofMinutes(3);
 
     private final IntegrationTestUtil IT = new IntegrationTestUtil();
@@ -47,7 +44,8 @@ public class SecurityIT {
     @Before
     public void setUp() throws Exception {
         BasicConfigurator.configure();
-        new SslSetup();
+        final CryptoSettings cryptoSettings = Ssl.setup();
+
         this.devicePeer = new BasicPopulatedDevice(new DeviceSettings() {
             final EndpointReferenceType epr = wsaUtil.createEprWithAddress(soapUtil.createUriFromUuid(UUID.randomUUID()));
 
@@ -60,16 +58,25 @@ public class SecurityIT {
             public List<URI> getHostingServiceBindings() {
                 return Collections.singletonList(URI.create("https://localhost:6464"));
             }
-        });
-
-        this.clientPeer = new ClientPeer(new DefaultDpwsConfigModule() {
+        }, new DefaultDpwsConfigModule() {
             @Override
-            protected void customConfigure() {
-                // shorten the test time by only waiting 1 second for the probe response
-                bind(WsDiscoveryConfig.MAX_WAIT_FOR_PROBE_MATCHES, Duration.class,
-                        Duration.ofSeconds(MAX_WAIT_TIME.getSeconds() / 2));
+            public void customConfigure() {
+                bind(DeviceConfig.CRYPTO_SETTINGS, CryptoSettings.class, cryptoSettings);
             }
         });
+
+        try {
+            this.clientPeer = new ClientPeer(new DefaultDpwsConfigModule() {
+                @Override
+                public void customConfigure() {
+                    bind(WsDiscoveryConfig.MAX_WAIT_FOR_PROBE_MATCHES, Duration.class,
+                            Duration.ofSeconds(MAX_WAIT_TIME.getSeconds() / 2));
+                    bind(ClientConfig.CRYPTO_SETTINGS, CryptoSettings.class, cryptoSettings);
+                }
+            });
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @After
@@ -97,16 +104,5 @@ public class SecurityIT {
         assertEquals(expectedEprAddress, clientPeer.getClient().directedProbe(uri)
                 .get(MAX_WAIT_TIME.getSeconds(), TimeUnit.SECONDS)
                 .getProbeMatch().get(0).getEndpointReference().getAddress().getValue());
-    }
-
-    @Test
-    public void httpsClient() throws Exception {
-
-        Client client = ClientBuilder.newBuilder()
-                .sslContext(SSLContext.getDefault())
-                .build();
-        WebTarget target = client.target("https://www.google.com");
-        target.request(MediaType.TEXT_HTML_TYPE)
-                .get();
     }
 }

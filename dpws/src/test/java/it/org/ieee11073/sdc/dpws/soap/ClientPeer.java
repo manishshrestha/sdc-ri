@@ -13,7 +13,7 @@ public class ClientPeer extends IntegrationTestPeer {
     public ClientPeer() {
         this(new DefaultDpwsConfigModule() {
             @Override
-            protected void customConfigure() {
+            public void customConfigure() {
                 bind(SoapConfig.JAXB_CONTEXT_PATH, String.class,
                         TestServiceMetadata.JAXB_CONTEXT_PATH);
             }
@@ -21,7 +21,7 @@ public class ClientPeer extends IntegrationTestPeer {
     }
 
     public ClientPeer(DefaultDpwsConfigModule configModule) {
-        super(configModule);
+        setupInjector(configModule);
         this.client = getInjector().getInstance(Client.class);
     }
 

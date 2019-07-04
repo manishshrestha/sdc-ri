@@ -2,10 +2,18 @@ package org.ieee11073.sdc.dpws.http.grizzly;
 
 import com.google.common.util.concurrent.AbstractIdleService;
 import com.google.inject.Inject;
+import com.google.inject.name.Named;
+import org.glassfish.grizzly.http.server.HttpServer;
+import org.glassfish.grizzly.http.server.Request;
+import org.glassfish.grizzly.http.server.Response;
+import org.glassfish.grizzly.http.util.HttpStatus;
 import org.glassfish.grizzly.ssl.SSLContextConfigurator;
 import org.glassfish.grizzly.ssl.SSLEngineConfigurator;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpContainer;
-import org.glassfish.jersey.server.ContainerFactory;
+import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
+import org.ieee11073.sdc.dpws.crypto.CryptoConfigurator;
+import org.ieee11073.sdc.dpws.crypto.CryptoSettings;
+import org.ieee11073.sdc.dpws.device.DeviceConfig;
 import org.ieee11073.sdc.dpws.http.HttpHandler;
 import org.ieee11073.sdc.dpws.http.HttpServerRegistry;
 import org.ieee11073.sdc.dpws.http.HttpUriBuilder;
@@ -13,14 +21,11 @@ import org.ieee11073.sdc.dpws.soap.SoapConstants;
 import org.ieee11073.sdc.dpws.soap.TransportInfo;
 import org.ieee11073.sdc.dpws.soap.exception.MarshallingException;
 import org.ieee11073.sdc.dpws.soap.exception.TransportException;
-import org.glassfish.grizzly.http.server.HttpServer;
-import org.glassfish.grizzly.http.server.Request;
-import org.glassfish.grizzly.http.server.Response;
-import org.glassfish.grizzly.http.util.HttpStatus;
-import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nullable;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.InetAddress;
@@ -44,16 +49,34 @@ public class GrizzlyHttpServerRegistry extends AbstractIdleService implements Ht
     private final Map<String, HandlerWrapper> handlerRegistry;
     private final Lock registryLock;
     private final HttpUriBuilder uriBuilder;
-    private final SSLContextConfigurator sslContextConfigurator;
+    private SSLContextConfigurator sslContextConfigurator; // null => no support for SSL enabled/configured
 
     @Inject
-    GrizzlyHttpServerRegistry(HttpUriBuilder uriBuilder) {
+    GrizzlyHttpServerRegistry(HttpUriBuilder uriBuilder,
+                              CryptoConfigurator cryptoConfigurator,
+                              @Nullable @Named(DeviceConfig.CRYPTO_SETTINGS) CryptoSettings cryptoSettings) {
         this.uriBuilder = uriBuilder;
         addressRegistry = new HashMap<>();
         serverRegistry = new HashMap<>();
         handlerRegistry = new HashMap<>();
         registryLock = new ReentrantLock();
-        sslContextConfigurator = new SSLContextConfigurator();
+        configureSsl(cryptoConfigurator, cryptoSettings);
+
+    }
+
+    private void configureSsl(CryptoConfigurator cryptoConfigurator,
+                              @Nullable CryptoSettings cryptoSettings) {
+        if (cryptoSettings == null) {
+            sslContextConfigurator = null;
+            return;
+        }
+
+        try {
+            sslContextConfigurator = cryptoConfigurator.createSslContextConfiguratorFromCryptoConfig(cryptoSettings);
+        } catch (IllegalArgumentException e) {
+            LOG.warn("Could not read crypto config, fallback to system properties.");
+            sslContextConfigurator = cryptoConfigurator.createSslContextConfiguratorSystemProperties();
+        }
     }
 
     @Override
@@ -171,12 +194,12 @@ public class GrizzlyHttpServerRegistry extends AbstractIdleService implements Ht
         if (uri.getScheme().equalsIgnoreCase("http")) {
             return GrizzlyHttpServerFactory.createHttpServer(uri, true);
         }
-        if (uri.getScheme().equalsIgnoreCase("https")) {
+        if (sslContextConfigurator != null && uri.getScheme().equalsIgnoreCase("https")) {
             final SSLEngineConfigurator sslEngineConfigurator = new SSLEngineConfigurator(sslContextConfigurator);
-            sslEngineConfigurator.setNeedClientAuth(false).setClientMode(false); //.setWantClientAuth(false);
+            sslEngineConfigurator.setWantClientAuth(true).setClientMode(false); //.setWantClientAuth(false);
             return GrizzlyHttpServerFactory.createHttpServer(
                     uri,
-                    (GrizzlyHttpContainer)null,
+                    (GrizzlyHttpContainer) null,
                     true,
                     sslEngineConfigurator,
                     true);
