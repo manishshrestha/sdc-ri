@@ -38,24 +38,31 @@ public class HttpUriBuilder {
     /**
      * Create an HTTP URI with a randomized port in accordance to the configured minimum and maximum.
      *
-     * The implied port range is [8000,8079]
+     * @param scheme The scheme to insert into the URI.
+     * @param host The host to insert into the URI.
+     * @param port The port to insert into the URI.
+     */
+    public URI buildUri(String scheme, String host, int port) {
+        return URI.create(scheme + "://" + host + ":" + port);
+    }
+
+    /**
+     * Create an HTTP URI with given host and port.
      *
      * @param host The host to insert into the URI.
      * @param port The port to insert into the URI.
      */
     public URI buildUri(String host, int port) {
-        return URI.create("http://" + host + ":" + port);
+        return buildUri("http", host,  port);
     }
 
     /**
-     * Create an HTTPS URI with a randomized port in accordance to the configured minimum and maximum.
-     *
-     * The implied port range is [8000,8079]
+     * Create an HTTPS URI with given host an port.
      *
      * @param host The host to insert into the URI.
      * @param port The port to insert into the URI.
      */
     public URI buildSecuredUri(String host, int port) {
-        return URI.create("https://" + host + ":" + port);
+        return buildUri("https", host,  port);
     }
 }

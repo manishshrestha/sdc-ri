@@ -1,5 +1,8 @@
 package it.org.ieee11073.sdc.dpws;
 
+/**
+ * Metadata describing the test services.
+ */
 public class TestServiceMetadata {
     public static final String NAMESPACE_SRV = "http://dpws-test-service/2017/05/10";
 

@@ -11,6 +11,7 @@ import org.ieee11073.sdc.dpws.TransportBinding;
 import org.ieee11073.sdc.dpws.client.DiscoveredDevice;
 import org.ieee11073.sdc.dpws.factory.TransportBindingFactory;
 import org.ieee11073.sdc.dpws.guice.NetworkJobThreadPool;
+import org.ieee11073.sdc.dpws.http.HttpUriBuilder;
 import org.ieee11073.sdc.dpws.model.*;
 import org.ieee11073.sdc.dpws.ni.LocalAddressResolver;
 import org.ieee11073.sdc.dpws.service.HostedServiceProxy;
@@ -60,6 +61,7 @@ public class HostingServiceResolver {
     private final HostingServiceFactory hostingServiceFactory;
     private final HostedServiceFactory hostedServiceFactory;
     private final WsEventingEventSinkFactory eventSinkFactory;
+    private final HttpUriBuilder uriBuilder;
     private final GetMetadataClient getMetadataClient;
     private final Duration maxWaitForFutures;
 
@@ -76,7 +78,8 @@ public class HostingServiceResolver {
                            WsAddressingUtil wsaUtil,
                            HostingServiceFactory hostingServiceFactory,
                            HostedServiceFactory hostedServiceFactory,
-                           WsEventingEventSinkFactory eventSinkFactory) {
+                           WsEventingEventSinkFactory eventSinkFactory,
+                           HttpUriBuilder uriBuilder) {
         this.maxWaitForFutures = maxWaitForFutures;
         this.networkJobExecutor = networkJobExecutor;
         this.localAddressResolver = localAddressResolver;
@@ -90,6 +93,7 @@ public class HostingServiceResolver {
         this.hostingServiceFactory = hostingServiceFactory;
         this.hostedServiceFactory = hostedServiceFactory;
         this.eventSinkFactory = eventSinkFactory;
+        this.uriBuilder = uriBuilder;
     }
 
     /**
@@ -279,7 +283,10 @@ public class HostingServiceResolver {
             return Optional.empty();
         }
 
-        final EventSink eventSink = eventSinkFactory.createWsEventingEventSink(rrClient, localAddress.get());
+        URI httpBinding = uriBuilder.buildUri(activeHostedServiceEprAddress.getScheme(), localAddress.get(),
+                uriBuilder.buildRandomPort());
+
+        final EventSink eventSink = eventSinkFactory.createWsEventingEventSink(rrClient, httpBinding);
         return Optional.of(hostedServiceFactory.createHostedServiceProxy(host, rrClient,
                 activeHostedServiceEprAddress, eventSink));
     }

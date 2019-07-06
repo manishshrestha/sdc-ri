@@ -36,7 +36,6 @@ public interface HostingServiceFactory {
      * @param metadataVersion
      * @param requestResponseClient
      * @param activeXAddr Physical address where to reach the hosting service proxy
-     * @return
      */
     HostingServiceProxy createHostingServiceProxy(@Assisted("eprAddress") URI endpointReferenceAddress,
                                                   @Assisted List<QName> types,
