@@ -19,8 +19,10 @@ import java.util.List;
 
 /**
  * SSL metadata used for crypto related tests.
- *
+ * <p>
  * Provides key stores and trust stores for client and device side in-memory.
+ *
+ * Code derived from http://www.bouncycastle.org/documentation.html and https://www.baeldung.com/java-keystore
  */
 public class SslMetadata extends AbstractIdleService implements Service {
     @Nullable
@@ -118,7 +120,7 @@ public class SslMetadata extends AbstractIdleService implements Service {
 
         /*
          * DGr 2019-07-06
-         * At the time implementing the certificate generation, there was no reasonable implentation found online that
+         * At the time implementing the certificate generation, there was no reasonable implementation found online that
          * didn't use deprecated functionality.
          */
 
