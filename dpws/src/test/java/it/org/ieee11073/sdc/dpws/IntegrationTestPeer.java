@@ -10,7 +10,7 @@ import org.ieee11073.sdc.dpws.guice.DefaultDpwsModule;
 public abstract class IntegrationTestPeer extends AbstractIdleService {
     private Injector injector;
 
-    public void setupInjector(DefaultDpwsConfigModule configModule) {
+    protected void setupInjector(DefaultDpwsConfigModule configModule) {
         this.injector = Guice.createInjector(
                 new DefaultDpwsModule(),
                 new DefaultHelperModule(),

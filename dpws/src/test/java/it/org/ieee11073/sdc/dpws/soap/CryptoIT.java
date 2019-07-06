@@ -16,6 +16,7 @@ import org.ieee11073.sdc.dpws.device.DeviceSettings;
 import org.ieee11073.sdc.dpws.guice.DefaultDpwsConfigModule;
 import org.ieee11073.sdc.dpws.service.HostedServiceProxy;
 import org.ieee11073.sdc.dpws.service.HostingServiceProxy;
+import org.ieee11073.sdc.dpws.soap.SoapConfig;
 import org.ieee11073.sdc.dpws.soap.SoapUtil;
 import org.ieee11073.sdc.dpws.soap.interception.Interceptor;
 import org.ieee11073.sdc.dpws.soap.interception.MessageInterceptor;
@@ -86,6 +87,8 @@ public class CryptoIT {
                     bind(WsDiscoveryConfig.MAX_WAIT_FOR_PROBE_MATCHES, Duration.class,
                             Duration.ofSeconds(MAX_WAIT_TIME.getSeconds() / 2));
                     bind(CryptoConfig.CRYPTO_SETTINGS, CryptoSettings.class, clientCryptoSettings);
+                    bind(SoapConfig.JAXB_CONTEXT_PATH, String.class,
+                            TestServiceMetadata.JAXB_CONTEXT_PATH);
                 }
             });
         } catch (Exception e) {

@@ -11,13 +11,16 @@ import dpws_test_service.messages._2017._05._10.TestOperationResponse;
 import it.org.ieee11073.sdc.dpws.IntegrationTestUtil;
 import it.org.ieee11073.sdc.dpws.TestServiceMetadata;
 import org.apache.log4j.BasicConfigurator;
+import org.ieee11073.sdc.dpws.guice.DefaultDpwsConfigModule;
 import org.ieee11073.sdc.dpws.service.HostedServiceProxy;
 import org.ieee11073.sdc.dpws.service.HostingServiceProxy;
+import org.ieee11073.sdc.dpws.soap.SoapConfig;
 import org.ieee11073.sdc.dpws.soap.SoapMessage;
 import org.ieee11073.sdc.dpws.soap.SoapUtil;
 import org.ieee11073.sdc.dpws.soap.interception.Interceptor;
 import org.ieee11073.sdc.dpws.soap.interception.MessageInterceptor;
 import org.ieee11073.sdc.dpws.soap.interception.NotificationObject;
+import org.ieee11073.sdc.dpws.soap.wsdiscovery.WsDiscoveryConfig;
 import org.ieee11073.sdc.dpws.soap.wseventing.SubscribeResult;
 import org.junit.After;
 import org.junit.Before;
@@ -49,7 +52,13 @@ public class InvocationIT {
         factory = new ObjectFactory();
 
         devicePeer = new BasicPopulatedDevice();
-        clientPeer = new ClientPeer();
+        clientPeer = new ClientPeer(new DefaultDpwsConfigModule() {
+            @Override
+            public void customConfigure() {
+                bind(SoapConfig.JAXB_CONTEXT_PATH, String.class,
+                        TestServiceMetadata.JAXB_CONTEXT_PATH);
+            }
+        });
         devicePeer.startAsync().awaitRunning();
         clientPeer.startAsync().awaitRunning();
 
