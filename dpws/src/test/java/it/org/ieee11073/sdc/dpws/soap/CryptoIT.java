@@ -44,7 +44,7 @@ public class CryptoIT {
     @Before
     public void setUp() throws Exception {
         BasicConfigurator.configure();
-        final CryptoSettings cryptoSettings = Ssl.setup();
+        final CryptoSettings serverCryptoSettings = Ssl.setupServer();
 
         this.devicePeer = new BasicPopulatedDevice(new DeviceSettings() {
             final EndpointReferenceType epr = wsaUtil.createEprWithAddress(soapUtil.createUriFromUuid(UUID.randomUUID()));
@@ -61,17 +61,18 @@ public class CryptoIT {
         }, new DefaultDpwsConfigModule() {
             @Override
             public void customConfigure() {
-                bind(DeviceConfig.CRYPTO_SETTINGS, CryptoSettings.class, cryptoSettings);
+                bind(DeviceConfig.CRYPTO_SETTINGS, CryptoSettings.class, serverCryptoSettings);
             }
         });
 
+        final CryptoSettings clientCryptoSettings = Ssl.setupClient();
         try {
             this.clientPeer = new ClientPeer(new DefaultDpwsConfigModule() {
                 @Override
                 public void customConfigure() {
                     bind(WsDiscoveryConfig.MAX_WAIT_FOR_PROBE_MATCHES, Duration.class,
                             Duration.ofSeconds(MAX_WAIT_TIME.getSeconds() / 2));
-                    bind(ClientConfig.CRYPTO_SETTINGS, CryptoSettings.class, cryptoSettings);
+                    bind(ClientConfig.CRYPTO_SETTINGS, CryptoSettings.class, clientCryptoSettings);
                 }
             });
         } catch (Exception e) {

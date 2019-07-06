@@ -67,7 +67,7 @@ public class TransportBindingFactoryImpl implements TransportBindingFactory {
         try {
             sslConfigurator = cryptoConfigurator.createSslConfiguratorFromCryptoConfig(cryptoSettings);
         } catch (IllegalArgumentException e) {
-            LOG.warn("Could not read crypto config, fallback to system properties.");
+            LOG.warn("Could not read client crypto config, fallback to system properties.");
             sslConfigurator = cryptoConfigurator.createSslConfiguratorFromSystemProperties();
         }
 

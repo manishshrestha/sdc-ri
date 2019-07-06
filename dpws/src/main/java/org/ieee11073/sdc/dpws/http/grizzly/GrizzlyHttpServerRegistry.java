@@ -74,7 +74,7 @@ public class GrizzlyHttpServerRegistry extends AbstractIdleService implements Ht
         try {
             sslContextConfigurator = cryptoConfigurator.createSslContextConfiguratorFromCryptoConfig(cryptoSettings);
         } catch (IllegalArgumentException e) {
-            LOG.warn("Could not read crypto config, fallback to system properties.");
+            LOG.warn("Could not read server crypto config, fallback to system properties.");
             sslContextConfigurator = cryptoConfigurator.createSslContextConfiguratorSystemProperties();
         }
     }
