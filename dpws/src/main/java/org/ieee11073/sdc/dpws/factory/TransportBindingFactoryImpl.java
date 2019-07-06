@@ -6,6 +6,7 @@ import org.glassfish.jersey.SslConfigurator;
 import org.ieee11073.sdc.dpws.TransportBinding;
 import org.ieee11073.sdc.dpws.TransportBindingException;
 import org.ieee11073.sdc.dpws.client.ClientConfig;
+import org.ieee11073.sdc.dpws.crypto.CryptoConfig;
 import org.ieee11073.sdc.dpws.crypto.CryptoSettings;
 import org.ieee11073.sdc.dpws.crypto.CryptoConfigurator;
 import org.ieee11073.sdc.dpws.soap.SoapConstants;
@@ -48,7 +49,7 @@ public class TransportBindingFactoryImpl implements TransportBindingFactory {
     TransportBindingFactoryImpl(SoapMarshalling marshalling,
                                 SoapUtil soapUtil,
                                 CryptoConfigurator cryptoConfigurator,
-                                @Nullable @Named(ClientConfig.CRYPTO_SETTINGS) CryptoSettings cryptoSettings) {
+                                @Nullable @Named(CryptoConfig.CRYPTO_SETTINGS) CryptoSettings cryptoSettings) {
         this.marshalling = marshalling;
         this.soapUtil = soapUtil;
         this.client = ClientBuilder.newClient();

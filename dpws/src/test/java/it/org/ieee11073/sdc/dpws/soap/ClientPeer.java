@@ -21,6 +21,8 @@ public class ClientPeer extends IntegrationTestPeer {
     }
 
     public ClientPeer(DefaultDpwsConfigModule configModule) {
+        configModule.bind(SoapConfig.JAXB_CONTEXT_PATH, String.class,
+                TestServiceMetadata.JAXB_CONTEXT_PATH);
         setupInjector(configModule);
         this.client = getInjector().getInstance(Client.class);
     }

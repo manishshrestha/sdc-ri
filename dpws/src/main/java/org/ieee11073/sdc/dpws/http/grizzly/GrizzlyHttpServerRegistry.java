@@ -11,6 +11,7 @@ import org.glassfish.grizzly.ssl.SSLContextConfigurator;
 import org.glassfish.grizzly.ssl.SSLEngineConfigurator;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpContainer;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
+import org.ieee11073.sdc.dpws.crypto.CryptoConfig;
 import org.ieee11073.sdc.dpws.crypto.CryptoConfigurator;
 import org.ieee11073.sdc.dpws.crypto.CryptoSettings;
 import org.ieee11073.sdc.dpws.device.DeviceConfig;
@@ -54,7 +55,7 @@ public class GrizzlyHttpServerRegistry extends AbstractIdleService implements Ht
     @Inject
     GrizzlyHttpServerRegistry(HttpUriBuilder uriBuilder,
                               CryptoConfigurator cryptoConfigurator,
-                              @Nullable @Named(DeviceConfig.CRYPTO_SETTINGS) CryptoSettings cryptoSettings) {
+                              @Nullable @Named(CryptoConfig.CRYPTO_SETTINGS) CryptoSettings cryptoSettings) {
         this.uriBuilder = uriBuilder;
         addressRegistry = new HashMap<>();
         serverRegistry = new HashMap<>();
@@ -196,7 +197,7 @@ public class GrizzlyHttpServerRegistry extends AbstractIdleService implements Ht
         }
         if (sslContextConfigurator != null && uri.getScheme().equalsIgnoreCase("https")) {
             final SSLEngineConfigurator sslEngineConfigurator = new SSLEngineConfigurator(sslContextConfigurator);
-            sslEngineConfigurator.setWantClientAuth(true).setClientMode(false); //.setWantClientAuth(false);
+            sslEngineConfigurator.setNeedClientAuth(true).setClientMode(false); //.setWantClientAuth(false);
             return GrizzlyHttpServerFactory.createHttpServer(
                     uri,
                     (GrizzlyHttpContainer) null,

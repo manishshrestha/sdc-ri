@@ -3,6 +3,7 @@ package org.ieee11073.sdc.dpws.guice;
 import org.ieee11073.sdc.common.guice.AbstractConfigurationModule;
 import org.ieee11073.sdc.dpws.DpwsConfig;
 import org.ieee11073.sdc.dpws.client.ClientConfig;
+import org.ieee11073.sdc.dpws.crypto.CryptoConfig;
 import org.ieee11073.sdc.dpws.crypto.CryptoSettings;
 import org.ieee11073.sdc.dpws.device.Device;
 import org.ieee11073.sdc.dpws.device.DeviceConfig;
@@ -27,7 +28,7 @@ public class DefaultDpwsConfigModule extends AbstractConfigurationModule {
         configureWsDiscoveryConfig();
         configureWsEventingConfig();
         configureClientConfig();
-        configureDeviceConfig();
+        configureCryptoConfig();
         configureHttpConfig();
         configureDpws();
     }
@@ -47,17 +48,13 @@ public class DefaultDpwsConfigModule extends AbstractConfigurationModule {
                 65535);
     }
 
-    private void configureDeviceConfig() {
-        bind(DeviceConfig.CRYPTO_SETTINGS,
+    private void configureCryptoConfig() {
+        bind(CryptoConfig.CRYPTO_SETTINGS,
                 CryptoSettings.class,
                 null);
     }
 
     private void configureClientConfig() {
-        bind(ClientConfig.CRYPTO_SETTINGS,
-                CryptoSettings.class,
-                null);
-
         bind(ClientConfig.MAX_WAIT_FOR_RESOLVE_MATCHES,
                 Duration.class,
                 Duration.ofSeconds(10));
@@ -73,10 +70,6 @@ public class DefaultDpwsConfigModule extends AbstractConfigurationModule {
         bind(ClientConfig.AUTO_RESOLVE,
                 Boolean.class,
                 false);
-
-        bind(ClientConfig.CRYPTO_SETTINGS,
-                CryptoSettings.class,
-                null);
     }
 
     private void configureWsDiscoveryConfig() {
