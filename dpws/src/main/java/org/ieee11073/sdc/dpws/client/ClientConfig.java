@@ -6,15 +6,15 @@ package org.ieee11073.sdc.dpws.client;
 public class ClientConfig {
     /**
      * Control maximum waiting time to get ResolveMatches information fetched from WS-Discovery
-     *
+     * <p>
      * - Data type: {@linkplain java.time.Duration}
      * - Use: optional
      */
-    public static final String MAX_WAIT_FOR_RESOLVE_MATCHES = "Client.MaxWaitForResolveMatches";
+    public static final String MAX_WAIT_FOR_RESOLVE_MATCHES = "Dpws.Client.MaxWaitForResolveMatches";
 
     /**
      * Enable (true) or disable (false) watchdog for hosting services.
-     *
+     * <p>
      * - Data type: {@linkplain Boolean}
      * - Use: optional
      */
@@ -22,7 +22,7 @@ public class ClientConfig {
 
     /**
      * Configure period for watchdog jobs.
-     *
+     * <p>
      * - Data type: {@linkplain java.time.Duration}
      * - Use: optional
      */
@@ -30,7 +30,7 @@ public class ClientConfig {
 
     /**
      * Configure auto-resolve for probes and hellos without XAddrs.
-     *
+     * <p>
      * - Data type: {@linkplain Boolean}
      * - Use: optional
      */

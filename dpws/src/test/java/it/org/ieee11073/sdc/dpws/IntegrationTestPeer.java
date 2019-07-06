@@ -6,12 +6,11 @@ import com.google.inject.Injector;
 import org.ieee11073.sdc.common.guice.DefaultHelperModule;
 import org.ieee11073.sdc.dpws.guice.DefaultDpwsConfigModule;
 import org.ieee11073.sdc.dpws.guice.DefaultDpwsModule;
-import org.ieee11073.sdc.dpws.soap.SoapConfig;
 
 public abstract class IntegrationTestPeer extends AbstractIdleService {
     private Injector injector;
 
-    public IntegrationTestPeer(DefaultDpwsConfigModule configModule) {
+    protected void setupInjector(DefaultDpwsConfigModule configModule) {
         this.injector = Guice.createInjector(
                 new DefaultDpwsModule(),
                 new DefaultHelperModule(),
@@ -19,6 +18,9 @@ public abstract class IntegrationTestPeer extends AbstractIdleService {
     }
 
     public Injector getInjector() {
+        if (injector == null) {
+            throw new RuntimeException("Call setupInjector() before getting injector.");
+        }
         return injector;
     }
 }

@@ -31,7 +31,7 @@ public abstract class WebService extends AbstractIdleService implements EventSou
     private static final Logger LOG = LoggerFactory.getLogger(WebService.class);
     private EventSource eventSource;
 
-    public WebService() {
+    protected WebService() {
         eventSource = new EventSource() {
             @Override
             public Service startAsync() {

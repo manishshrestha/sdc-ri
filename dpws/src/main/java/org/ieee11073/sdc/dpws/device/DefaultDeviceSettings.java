@@ -16,17 +16,19 @@ import java.util.UUID;
 public class DefaultDeviceSettings implements DeviceSettings {
     private final WsAddressingUtil wsaUtil;
     private final SoapUtil soapUtil;
+    private final EndpointReferenceType endpointReference;
 
     @Inject
     DefaultDeviceSettings(WsAddressingUtil wsaUtil,
                           SoapUtil soapUtil) {
         this.wsaUtil = wsaUtil;
         this.soapUtil = soapUtil;
+        this.endpointReference = wsaUtil.createEprWithAddress(soapUtil.createUriFromUuid(UUID.randomUUID()));
     }
 
     @Override
     public EndpointReferenceType getEndpointReference() {
-        return wsaUtil.createEprWithAddress(soapUtil.createUriFromUuid(UUID.randomUUID()));
+        return endpointReference;
     }
 
     @Override

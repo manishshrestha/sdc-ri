@@ -2,8 +2,6 @@
         targetNamespace="http://schemas.xmlsoap.org/ws/2004/09/transfer"
         xmlns:tns="http://schemas.xmlsoap.org/ws/2004/09/transfer"
         xmlns:xs="http://www.w3.org/2001/XMLSchema"
-        xmlns:wsa04="http://schemas.xmlsoap.org/ws/2004/08/addressing"
-        xmlns:wsa10="http://www.w3.org/2005/08/addressing"
         elementFormDefault="qualified"
         blockDefault="#all">
 

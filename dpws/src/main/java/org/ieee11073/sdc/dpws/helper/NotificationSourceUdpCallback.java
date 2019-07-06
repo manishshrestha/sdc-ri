@@ -6,7 +6,6 @@ import org.ieee11073.sdc.dpws.soap.MarshallingService;
 import org.ieee11073.sdc.dpws.soap.SoapDebug;
 import org.ieee11073.sdc.dpws.soap.SoapMessage;
 import org.ieee11073.sdc.dpws.soap.exception.MarshallingException;
-import org.ieee11073.sdc.dpws.soap.exception.TransportException;
 import org.ieee11073.sdc.dpws.soap.interception.NotificationCallback;
 import org.ieee11073.sdc.dpws.udp.UdpMessage;
 import org.ieee11073.sdc.dpws.udp.UdpMessageQueueService;

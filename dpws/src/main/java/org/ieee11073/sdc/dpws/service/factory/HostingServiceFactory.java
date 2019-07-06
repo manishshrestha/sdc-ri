@@ -1,12 +1,11 @@
 package org.ieee11073.sdc.dpws.service.factory;
 
 import com.google.inject.assistedinject.Assisted;
-import org.ieee11073.sdc.dpws.helper.PeerInformation;
 import org.ieee11073.sdc.dpws.model.ThisDeviceType;
 import org.ieee11073.sdc.dpws.model.ThisModelType;
+import org.ieee11073.sdc.dpws.service.HostedServiceProxy;
 import org.ieee11073.sdc.dpws.service.HostingService;
-import org.ieee11073.sdc.dpws.service.WritableHostedServiceProxy;
-import org.ieee11073.sdc.dpws.service.WritableHostingServiceProxy;
+import org.ieee11073.sdc.dpws.service.HostingServiceProxy;
 import org.ieee11073.sdc.dpws.soap.RequestResponseClient;
 import org.ieee11073.sdc.dpws.soap.wsdiscovery.WsDiscoveryTargetService;
 
@@ -37,14 +36,13 @@ public interface HostingServiceFactory {
      * @param metadataVersion
      * @param requestResponseClient
      * @param activeXAddr Physical address where to reach the hosting service proxy
-     * @return
      */
-    WritableHostingServiceProxy createHostingServiceProxy(@Assisted("eprAddress") URI endpointReferenceAddress,
-                                                          @Assisted List<QName> types,
-                                                          @Assisted @Nullable ThisDeviceType thisDevice,
-                                                          @Assisted @Nullable ThisModelType thisModel,
-                                                          @Assisted Map<String, WritableHostedServiceProxy> hostedServices,
-                                                          @Assisted long metadataVersion,
-                                                          @Assisted RequestResponseClient requestResponseClient,
-                                                          @Assisted("activeXAddr") URI activeXAddr);
+    HostingServiceProxy createHostingServiceProxy(@Assisted("eprAddress") URI endpointReferenceAddress,
+                                                  @Assisted List<QName> types,
+                                                  @Assisted @Nullable ThisDeviceType thisDevice,
+                                                  @Assisted @Nullable ThisModelType thisModel,
+                                                  @Assisted Map<String, HostedServiceProxy> hostedServices,
+                                                  @Assisted long metadataVersion,
+                                                  @Assisted RequestResponseClient requestResponseClient,
+                                                  @Assisted("activeXAddr") URI activeXAddr);
 }

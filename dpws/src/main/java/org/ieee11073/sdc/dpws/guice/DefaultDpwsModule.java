@@ -90,8 +90,6 @@ public class DefaultDpwsModule extends AbstractModule {
                 .to(TransportBindingFactoryImpl.class);
 
 
-
-
         install(new FactoryModuleBuilder()
                 .implement(UdpBindingService.class, UdpBindingServiceImpl.class)
                 .build(UdpBindingServiceFactory.class));
@@ -100,12 +98,12 @@ public class DefaultDpwsModule extends AbstractModule {
     private void configureService() {
         install(new FactoryModuleBuilder()
                 .implement(HostingService.class, HostingServiceInterceptor.class)
-                .implement(WritableHostingServiceProxy.class, HostingServiceProxyImpl.class)
+                .implement(HostingServiceProxy.class, HostingServiceProxyImpl.class)
                 .build(HostingServiceFactory.class));
 
         install(new FactoryModuleBuilder()
                 .implement(HostedService.class, HostedServiceImpl.class)
-                .implement(WritableHostedServiceProxy.class, HostedServiceProxyImpl.class)
+                .implement(HostedServiceProxy.class, HostedServiceProxyImpl.class)
                 .build(HostedServiceFactory.class));
 
         install(new FactoryModuleBuilder()
@@ -123,12 +121,11 @@ public class DefaultDpwsModule extends AbstractModule {
 
         bind(ScheduledExecutorService.class)
                 .annotatedWith(WatchDogScheduler.class)
-                .toProvider(() -> Executors.newScheduledThreadPool( 20 ));
+                .toProvider(() -> Executors.newScheduledThreadPool(20));
 
         install(new FactoryModuleBuilder()
                 .implement(DiscoveryClientUdpProcessor.class, DiscoveryClientUdpProcessor.class)
                 .implement(DiscoveredDeviceResolver.class, DiscoveredDeviceResolver.class)
-                .implement(HostingServiceResolver.class, HostingServiceResolver.class)
                 .implement(HelloByeAndProbeMatchesObserverImpl.class, HelloByeAndProbeMatchesObserverImpl.class)
                 .implement(WatchDog.class, WatchDogImpl.class)
                 .build(ClientHelperFactory.class));

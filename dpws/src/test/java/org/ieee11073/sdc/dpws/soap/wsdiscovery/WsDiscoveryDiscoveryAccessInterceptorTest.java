@@ -2,7 +2,6 @@ package org.ieee11073.sdc.dpws.soap.wsdiscovery;
 
 import com.google.common.primitives.UnsignedInteger;
 import org.ieee11073.sdc.dpws.DpwsTest;
-import org.ieee11073.sdc.dpws.soap.*;
 import org.ieee11073.sdc.dpws.soap.factory.SoapMessageFactory;
 import org.ieee11073.sdc.dpws.soap.factory.NotificationSourceFactory;
 import org.ieee11073.sdc.dpws.soap.model.Envelope;

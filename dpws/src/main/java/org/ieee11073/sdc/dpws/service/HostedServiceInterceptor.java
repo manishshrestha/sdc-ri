@@ -6,7 +6,6 @@ import org.ieee11073.sdc.dpws.service.helper.MetadataSectionUtil;
 import org.ieee11073.sdc.dpws.soap.SoapUtil;
 import org.ieee11073.sdc.dpws.soap.exception.SoapFaultException;
 import org.ieee11073.sdc.dpws.soap.interception.*;
-import org.ieee11073.sdc.dpws.soap.interception.*;
 import org.ieee11073.sdc.dpws.soap.wsaddressing.WsAddressingUtil;
 import org.ieee11073.sdc.dpws.soap.wsdiscovery.WsDiscoveryTargetService;
 import org.ieee11073.sdc.dpws.soap.wsmetadataexchange.WsMetadataExchangeConstants;
@@ -17,6 +16,7 @@ import org.ieee11073.sdc.dpws.soap.wsmetadataexchange.model.ObjectFactory;
 
 import java.net.URI;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -55,7 +55,7 @@ public class HostedServiceInterceptor implements Interceptor {
 
         // \todo Is host relationship required here? - probably not
         metadataSection.add(metadataSectionUtil.createRelationship(targetService.getEndpointReference(),
-                targetService.getTypes(), Arrays.asList(hostedService)));
+                targetService.getTypes(), Collections.singletonList(hostedService)));
 
         if (body == null || body.getDialect() == null || body.getDialect().isEmpty() ||
                 body.getDialect().equals(WsMetadataExchangeConstants.DIALECT_WSDL)) {

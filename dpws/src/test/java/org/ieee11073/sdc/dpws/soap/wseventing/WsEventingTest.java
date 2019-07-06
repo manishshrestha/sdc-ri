@@ -7,7 +7,6 @@ import org.ieee11073.sdc.dpws.DpwsTest;
 import org.ieee11073.sdc.dpws.HttpServerRegistryMock;
 import org.ieee11073.sdc.dpws.LocalAddressResolverMock;
 import org.ieee11073.sdc.dpws.TransportBindingFactoryMock;
-import org.ieee11073.sdc.dpws.service.EventSinkAccess;
 import org.ieee11073.sdc.dpws.factory.TransportBindingFactory;
 import org.ieee11073.sdc.dpws.http.HttpServerRegistry;
 import org.ieee11073.sdc.dpws.model.HostedServiceType;
@@ -61,8 +60,9 @@ public class WsEventingTest extends DpwsTest {
 
         HttpServerRegistry httpSrvRegisty = getInjector().getInstance(HttpServerRegistry.class);
 
+        URI uri = URI.create("http://" + HOST + ":" + PORT);
         MarshallingService marshallingService = getInjector().getInstance(MarshallingService.class);
-        URI hostedServiceUri = httpSrvRegisty.registerContext(HOST, PORT, HOSTED_SERVICE_PATH, (inStream, outStream, ti) ->
+        URI hostedServiceUri = httpSrvRegisty.registerContext(uri, HOSTED_SERVICE_PATH, (inStream, outStream, ti) ->
                 marshallingService.handleRequestResponse(reqResSrv, inStream, outStream, ti));
 
         HostedServiceType hst = dpwsFactory.createHostedServiceType();
@@ -73,11 +73,8 @@ public class WsEventingTest extends DpwsTest {
         RequestResponseClient rrc = rrcFactory.createRequestResponseClient(
                 tbFactory.createTransportBinding(hostedServiceUri));
 
-        HostedServiceProxy mockHostedServiceProxy = hostedServiceFactory.createHostedServiceProxy(hst, rrc,
-                hostedServiceUri, mock(EventSink.class));
-
         wseSink = getInjector().getInstance(WsEventingEventSinkFactory.class)
-                .createWsEventingEventSink(rrc, "localhost");
+                .createWsEventingEventSink(rrc, URI.create("http://localhost:1234"));
     }
 
     @Test
@@ -134,7 +131,7 @@ public class WsEventingTest extends DpwsTest {
 
         try {
             wseSink.getStatus(resInfo.get().getSubscriptionId()).get();
-            Assert.assertTrue(false);
+            Assert.fail();
         } catch (Exception e) {
             Assert.assertTrue(true);
         }
@@ -151,7 +148,7 @@ public class WsEventingTest extends DpwsTest {
 
         try {
             wseSink.getStatus(resInfo.get().getSubscriptionId()).get();
-            Assert.assertTrue(false);
+            Assert.fail();
         } catch (Exception e) {
             Assert.assertTrue(true);
         }
@@ -171,7 +168,7 @@ public class WsEventingTest extends DpwsTest {
             wseSink.getStatus(resInfo.get().getSubscriptionId());
             Assert.assertTrue(true);
         } catch (Exception e) {
-            Assert.assertTrue(false);
+            Assert.fail();
         }
     }
 

@@ -4,12 +4,14 @@ import com.google.common.util.concurrent.AbstractIdleService;
 import com.google.common.util.concurrent.Service;
 import com.google.inject.Inject;
 import com.google.inject.Provider;
+import org.ieee11073.sdc.common.helper.StreamUtil;
 import org.ieee11073.sdc.dpws.DiscoveryUdpQueue;
 import org.ieee11073.sdc.dpws.DpwsConstants;
-import org.ieee11073.sdc.dpws.device.helper.factory.DeviceHelperFactory;
 import org.ieee11073.sdc.dpws.device.helper.ByteResourceHandler;
-import org.ieee11073.sdc.dpws.device.helper.RequestResponseServerHttpHandler;
 import org.ieee11073.sdc.dpws.device.helper.DiscoveryDeviceUdpMessageProcessor;
+import org.ieee11073.sdc.dpws.device.helper.RequestResponseServerHttpHandler;
+import org.ieee11073.sdc.dpws.device.helper.UriBaseContextPath;
+import org.ieee11073.sdc.dpws.device.helper.factory.DeviceHelperFactory;
 import org.ieee11073.sdc.dpws.helper.factory.DpwsHelperFactory;
 import org.ieee11073.sdc.dpws.http.HttpServerRegistry;
 import org.ieee11073.sdc.dpws.model.ThisDeviceType;
@@ -31,7 +33,6 @@ import org.ieee11073.sdc.dpws.soap.wsdiscovery.WsDiscoveryTargetService;
 import org.ieee11073.sdc.dpws.soap.wsdiscovery.factory.WsDiscoveryTargetServiceFactory;
 import org.ieee11073.sdc.dpws.soap.wseventing.EventSource;
 import org.ieee11073.sdc.dpws.udp.UdpMessageQueueService;
-import org.ieee11073.sdc.common.helper.StreamUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -119,6 +120,10 @@ public class DeviceImpl extends AbstractIdleService implements Device, Service, 
         EndpointReferenceType deviceEpr = config.getEndpointReference();
         LOG.info("Start device with URN '{}'.", deviceEpr.getAddress().getValue());
 
+        URI eprAddress = wsaUtil.getAddressUri(config.getEndpointReference()).orElseThrow(() ->
+                new RuntimeException("No valid endpoint reference found in device config."));
+        String hostingServerCtxtPath = buildContextPathBase(eprAddress);
+
         /*
          * Configure WS-Discovery
          */
@@ -127,9 +132,6 @@ public class DeviceImpl extends AbstractIdleService implements Device, Service, 
         NotificationSource wsdNotificationSource = notificationSourceFactory.createNotificationSource(
                 dpwsHelperFactory.createNotificationSourceUdpCallback(discoveryMessageQueue));
 
-        URI uniqueEprAddress = wsaUtil.getAddressUri(config.getEndpointReference()).orElseThrow(() ->
-                new RuntimeException("No valid endpoint reference found in device config."));
-        String hostingServerCtxtPath = buildContextPathBase(uniqueEprAddress);
         // Create WS-Discovery target service
         wsdTargetService = targetServiceFactory.createWsDiscoveryTargetService(deviceEpr, wsdNotificationSource);
         wsdTargetService.setXAddrs(config.getHostingServiceBindings().parallelStream()
@@ -154,9 +156,8 @@ public class DeviceImpl extends AbstractIdleService implements Device, Service, 
         RequestResponseServerHttpHandler reqResHandler = reqResHandlerProvider.get();
 
         // Register HTTP bindings to HTTP context registry; append EPR UUID from host as context path
-        config.getHostingServiceBindings().forEach(uri -> httpServerRegistry.registerContext(uri.getHost(),
-                uri.getPort(), "/" + soapUtil.createUuidFromUri(wsaUtil.getAddressUri(deviceEpr).get()).toString(),
-                reqResHandler));
+        config.getHostingServiceBindings().forEach(uri -> httpServerRegistry.registerContext(uri,
+                hostingServerCtxtPath, reqResHandler));
         // Create hosting service
         hostingService = hostingServiceFactory.createHostingService(wsdTargetService);
         // Register request-response hosting service interceptor to receive incoming request-response messages
@@ -312,8 +313,8 @@ public class DeviceImpl extends AbstractIdleService implements Device, Service, 
             URI uri = wsaUtil.getAddressUri(epr).orElseThrow(() ->
                     new RuntimeException("Invalid EPR detected when trying to add hosted service."));
 
-            httpServerRegistry.registerContext(uri.getHost(), uri.getPort(), contextPath, hsReqResHandler);
-            URI wsdlLocation = httpServerRegistry.registerContext(uri.getHost(), uri.getPort(), wsdlContextPath,
+            httpServerRegistry.registerContext(uri, contextPath, hsReqResHandler);
+            URI wsdlLocation = httpServerRegistry.registerContext(uri, wsdlContextPath,
                     SoapConstants.MEDIA_TYPE_WSDL, new ByteResourceHandler(wsdlDocBytes));
             hostedService.getWsdlLocations().add(wsdlLocation);
         }
@@ -337,7 +338,8 @@ public class DeviceImpl extends AbstractIdleService implements Device, Service, 
         return "/" + serviceId;
     }
 
-    private String buildContextPathBase(URI uuidUri) {
-        return "/" + soapUtil.createUuidFromUri(uuidUri).toString();
+    private String buildContextPathBase(URI uri) {
+        final String basePath = new UriBaseContextPath(uri).get();
+        return basePath.isEmpty() ? "" : "/" + basePath;
     }
 }

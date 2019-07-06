@@ -18,6 +18,7 @@ import org.junit.Test;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Optional;
 
 import static org.junit.Assert.*;
@@ -110,7 +111,7 @@ public class DiscoveredDeviceObserverTest extends DpwsTest {
         ProbeMatchType pmType = objFactory.createProbeMatchType();
         pmType.setEndpointReference(expectedEpr);
         ProbeMatchesType pmsType = objFactory.createProbeMatchesType();
-        pmsType.setProbeMatch(Arrays.asList(pmType));
+        pmsType.setProbeMatch(Collections.singletonList(pmType));
 
         String expectedId = "expectedId";
         ProbeMatchesMessage pmMsg = new ProbeMatchesMessage(expectedId, pmsType);

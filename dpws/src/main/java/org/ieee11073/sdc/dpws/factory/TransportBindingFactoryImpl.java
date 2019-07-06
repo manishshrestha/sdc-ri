@@ -1,8 +1,14 @@
 package org.ieee11073.sdc.dpws.factory;
 
 import com.google.inject.Inject;
+import com.google.inject.name.Named;
+import org.glassfish.jersey.SslConfigurator;
 import org.ieee11073.sdc.dpws.TransportBinding;
 import org.ieee11073.sdc.dpws.TransportBindingException;
+import org.ieee11073.sdc.dpws.client.ClientConfig;
+import org.ieee11073.sdc.dpws.crypto.CryptoConfig;
+import org.ieee11073.sdc.dpws.crypto.CryptoSettings;
+import org.ieee11073.sdc.dpws.crypto.CryptoConfigurator;
 import org.ieee11073.sdc.dpws.soap.SoapConstants;
 import org.ieee11073.sdc.dpws.soap.SoapMarshalling;
 import org.ieee11073.sdc.dpws.soap.SoapMessage;
@@ -11,6 +17,7 @@ import org.ieee11073.sdc.dpws.soap.exception.SoapFaultException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nullable;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
@@ -35,17 +42,45 @@ public class TransportBindingFactoryImpl implements TransportBindingFactory {
     private final SoapMarshalling marshalling;
     private final SoapUtil soapUtil;
 
+    private final Client client;
+    private Client securedClient; // if null => no cryptography configured/enabled
+
     @Inject
     TransportBindingFactoryImpl(SoapMarshalling marshalling,
-                                SoapUtil soapUtil) {
+                                SoapUtil soapUtil,
+                                CryptoConfigurator cryptoConfigurator,
+                                @Nullable @Named(CryptoConfig.CRYPTO_SETTINGS) CryptoSettings cryptoSettings) {
         this.marshalling = marshalling;
         this.soapUtil = soapUtil;
+        this.client = ClientBuilder.newClient();
+
+        configureSecuredClient(cryptoConfigurator, cryptoSettings);
+    }
+
+    private void configureSecuredClient(CryptoConfigurator cryptoConfigurator,
+                                        @Nullable CryptoSettings cryptoSettings) {
+        if (cryptoSettings == null) {
+            securedClient = null;
+            return;
+        }
+
+        SslConfigurator sslConfigurator = null;
+        try {
+            sslConfigurator = cryptoConfigurator.createSslConfiguratorFromCryptoConfig(cryptoSettings);
+        } catch (IllegalArgumentException e) {
+            LOG.warn("Could not read client crypto config, fallback to system properties.");
+            sslConfigurator = cryptoConfigurator.createSslConfiguratorFromSystemProperties();
+        }
+
+        this.securedClient = ClientBuilder.newBuilder()
+                .sslContext(sslConfigurator.createSSLContext())
+                .build();
     }
 
     @Override
     public TransportBinding createTransportBinding(URI endpointUri) throws UnsupportedOperationException {
         // To keep things simple, this method directly checks if there is a SOAP-UDP or HTTP(S) binding
-        // No plug-and-play feature is implemented, that dispatches, based on the URI scheme, to endpoint processor
+        // No plug-and-play feature is implemented that dispatches, based on the URI scheme, to endpoint processor
         // factories
 
         String scheme = endpointUri.getScheme();
@@ -54,7 +89,7 @@ public class TransportBindingFactoryImpl implements TransportBindingFactory {
         } else if (scheme.equalsIgnoreCase(SCHEME_HTTP)) {
             return createHttpBinding(endpointUri);
         } else if (scheme.equalsIgnoreCase(SCHEME_HTTPS)) {
-            throw new UnsupportedOperationException("HTTPS is currently not supported by the TransportBindingFactory.");
+            return createHttpBinding(endpointUri);
         } else {
             throw new UnsupportedOperationException(String.format("Unsupported transport binding requested: %s.", scheme));
         }
@@ -63,22 +98,26 @@ public class TransportBindingFactoryImpl implements TransportBindingFactory {
 
     @Override
     public TransportBinding createHttpBinding(URI endpointUri) throws UnsupportedOperationException {
-        if (endpointUri.getScheme().equalsIgnoreCase("https")) {
-            throw new UnsupportedOperationException("HTTPS bindings are currently not supported");
+        if (client != null && endpointUri.getScheme().equalsIgnoreCase("http")) {
+            return new HttpClientTransportBinding(client, endpointUri, marshalling, soapUtil);
+        }
+        if (securedClient != null && endpointUri.getScheme().equalsIgnoreCase("https")) {
+            return new HttpClientTransportBinding(securedClient, endpointUri, marshalling, soapUtil);
         }
 
-        return new HttpClientTransportBinding(endpointUri, marshalling, soapUtil);
+        throw new UnsupportedOperationException(String.format("Binding with scheme %s is currently not supported", endpointUri.getScheme()));
     }
 
-    public class HttpClientTransportBinding implements TransportBinding {
+    private class HttpClientTransportBinding implements TransportBinding {
         private final WebTarget remoteEndpoint;
         private final SoapMarshalling marshalling;
         private final SoapUtil soapUtil;
 
-        HttpClientTransportBinding(URI clientUri,
+        HttpClientTransportBinding(Client client,
+                                   URI clientUri,
                                    SoapMarshalling marshalling,
                                    SoapUtil soapUtil) {
-            Client client = ClientBuilder.newClient();
+            //Client client = ClientBuilder.newClient();
             this.remoteEndpoint = client.target(clientUri);
             this.marshalling = marshalling;
             this.soapUtil = soapUtil;

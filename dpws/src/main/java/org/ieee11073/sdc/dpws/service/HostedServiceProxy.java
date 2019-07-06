@@ -39,17 +39,4 @@ public interface HostedServiceProxy extends RequestResponseClient {
      * with this function is the one that was used to initially resolve metadata (GetMetadata request).
      */
     URI getActiveEprAddress();
-
-    /**
-     * Register for metadata updates.
-     *
-     * This function susbcribes for any metadata updates on the hosted service. This does only work if automatic
-     * updates on metadata changes are activated.
-     */
-    void registerMetadataChangeObserver(HostedServiceMetadataObserver observer);
-
-    /**
-     * Unregister from being notified about updated hosted service metadata.
-     */
-    void unregisterMetadataChangeObserver(HostedServiceMetadataObserver observer);
 }

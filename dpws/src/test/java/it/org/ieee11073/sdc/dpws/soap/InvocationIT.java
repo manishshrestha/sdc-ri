@@ -11,23 +11,23 @@ import dpws_test_service.messages._2017._05._10.TestOperationResponse;
 import it.org.ieee11073.sdc.dpws.IntegrationTestUtil;
 import it.org.ieee11073.sdc.dpws.TestServiceMetadata;
 import org.apache.log4j.BasicConfigurator;
+import org.ieee11073.sdc.dpws.guice.DefaultDpwsConfigModule;
 import org.ieee11073.sdc.dpws.service.HostedServiceProxy;
 import org.ieee11073.sdc.dpws.service.HostingServiceProxy;
+import org.ieee11073.sdc.dpws.soap.SoapConfig;
 import org.ieee11073.sdc.dpws.soap.SoapMessage;
 import org.ieee11073.sdc.dpws.soap.SoapUtil;
 import org.ieee11073.sdc.dpws.soap.interception.Interceptor;
 import org.ieee11073.sdc.dpws.soap.interception.MessageInterceptor;
 import org.ieee11073.sdc.dpws.soap.interception.NotificationObject;
+import org.ieee11073.sdc.dpws.soap.wsdiscovery.WsDiscoveryConfig;
 import org.ieee11073.sdc.dpws.soap.wseventing.SubscribeResult;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.time.Duration;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
@@ -43,7 +43,7 @@ public class InvocationIT {
 
     private HostingServiceProxy hostingServiceProxy;
     private ObjectFactory factory;
-    private SoapUtil soapUtil = IT.getInjector().getInstance(SoapUtil.class);
+    private final SoapUtil soapUtil = IT.getInjector().getInstance(SoapUtil.class);
 
     @Before
     public void setUp() throws Exception {
@@ -52,7 +52,13 @@ public class InvocationIT {
         factory = new ObjectFactory();
 
         devicePeer = new BasicPopulatedDevice();
-        clientPeer = new ClientPeer();
+        clientPeer = new ClientPeer(new DefaultDpwsConfigModule() {
+            @Override
+            public void customConfigure() {
+                bind(SoapConfig.JAXB_CONTEXT_PATH, String.class,
+                        TestServiceMetadata.JAXB_CONTEXT_PATH);
+            }
+        });
         devicePeer.startAsync().awaitRunning();
         clientPeer.startAsync().awaitRunning();
 
@@ -61,7 +67,7 @@ public class InvocationIT {
     }
 
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
         this.devicePeer.stopAsync().awaitTerminated();
         this.clientPeer.stopAsync().awaitTerminated();
     }
@@ -122,9 +128,9 @@ public class InvocationIT {
         final SettableFuture<List<TestNotification>> notificationFuture = SettableFuture.create();
         final HostedServiceProxy srv1 = hostingServiceProxy.getHostedServices().get(BasicPopulatedDevice.SERVICE_ID_1);
         final ListenableFuture<SubscribeResult> subscribe = srv1.getEventSinkAccess()
-                .subscribe(Arrays.asList(TestServiceMetadata.ACTION_NOTIFICATION_1), Duration.ofMinutes(1),
+                .subscribe(Collections.singletonList(TestServiceMetadata.ACTION_NOTIFICATION_1), Duration.ofMinutes(1),
                         new Interceptor() {
-                            private List<TestNotification> receivedNotifications = new ArrayList<>();
+                            private final List<TestNotification> receivedNotifications = new ArrayList<>();
 
                             @MessageInterceptor
                             void onNotification(NotificationObject message) {
@@ -164,9 +170,9 @@ public class InvocationIT {
         final HostedServiceProxy srv1 = hostingServiceProxy.getHostedServices().get(BasicPopulatedDevice.SERVICE_ID_1);
         final HostedServiceProxy srv2 = hostingServiceProxy.getHostedServices().get(BasicPopulatedDevice.SERVICE_ID_2);
         final ListenableFuture<SubscribeResult> subscribe1 = srv1.getEventSinkAccess()
-                .subscribe(Arrays.asList(TestServiceMetadata.ACTION_NOTIFICATION_1), Duration.ofMinutes(1),
+                .subscribe(Collections.singletonList(TestServiceMetadata.ACTION_NOTIFICATION_1), Duration.ofMinutes(1),
                         new Interceptor() {
-                            private List<TestNotification> receivedNotifications = new ArrayList<>();
+                            private final List<TestNotification> receivedNotifications = new ArrayList<>();
 
                             @MessageInterceptor
                             void onNotification(NotificationObject message) {
@@ -180,9 +186,9 @@ public class InvocationIT {
                         });
 
         final ListenableFuture<SubscribeResult> subscribe2 = srv1.getEventSinkAccess()
-                .subscribe(Arrays.asList(TestServiceMetadata.ACTION_NOTIFICATION_2), Duration.ofMinutes(1),
+                .subscribe(Collections.singletonList(TestServiceMetadata.ACTION_NOTIFICATION_2), Duration.ofMinutes(1),
                         new Interceptor() {
-                            private List<TestNotification> receivedNotifications = new ArrayList<>();
+                            private final List<TestNotification> receivedNotifications = new ArrayList<>();
 
                             @MessageInterceptor
                             void onNotification(NotificationObject message) {
@@ -195,9 +201,9 @@ public class InvocationIT {
                             }
                         });
         final ListenableFuture<SubscribeResult> subscribe3 = srv2.getEventSinkAccess()
-                .subscribe(Arrays.asList(TestServiceMetadata.ACTION_NOTIFICATION_3), Duration.ofMinutes(1),
+                .subscribe(Collections.singletonList(TestServiceMetadata.ACTION_NOTIFICATION_3), Duration.ofMinutes(1),
                         new Interceptor() {
-                            private List<TestNotification> receivedNotifications = new ArrayList<>();
+                            private final List<TestNotification> receivedNotifications = new ArrayList<>();
 
                             @MessageInterceptor
                             void onNotification(NotificationObject message) {
@@ -249,7 +255,7 @@ public class InvocationIT {
         final ListenableFuture<SubscribeResult> subscribe = srv1.getEventSinkAccess()
                 .subscribe(Arrays.asList(TestServiceMetadata.ACTION_NOTIFICATION_1, TestServiceMetadata.ACTION_NOTIFICATION_2), Duration.ofMinutes(1),
                         new Interceptor() {
-                            private List<TestNotification> receivedNotifications = new ArrayList<>();
+                            private final List<TestNotification> receivedNotifications = new ArrayList<>();
 
                             @MessageInterceptor
                             void onNotification(NotificationObject message) {

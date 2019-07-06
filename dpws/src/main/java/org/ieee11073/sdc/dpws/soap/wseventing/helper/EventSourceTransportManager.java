@@ -63,14 +63,11 @@ public class EventSourceTransportManager {
     public ListenableFuture<InterceptorResult> sendEndTo(SourceSubscriptionManager subMan, SoapMessage message) {
         String subId = subMan.getSubscriptionId();
         Optional<NotificationSource> notificationSource = Optional.ofNullable(endToSources.get(subId));
-        if (notificationSource.isPresent()) {
-            return networkJobExecutor.submit(() -> notificationSource.get().sendNotification(message));
-        } else {
-            return networkJobExecutor.submit(() -> {
-                LOG.info("No sink for end-to messages available. Abort sending an end-to event.");
-                return InterceptorResult.NONE_INVOKED;
-            });
-        }
+        return notificationSource.map(source -> networkJobExecutor.submit(() -> source.sendNotification(message)))
+                .orElseGet(() -> networkJobExecutor.submit(() -> {
+                    LOG.info("No sink for end-to messages available. Abort sending an end-to event.");
+                    return InterceptorResult.NONE_INVOKED;
+                }));
     }
 
     /**
@@ -115,7 +112,7 @@ public class EventSourceTransportManager {
         endToSources.remove(subMan.getSubscriptionId());
     }
 
-    void addSubscriptionManager(SourceSubscriptionManager subMan) {
+    private void addSubscriptionManager(SourceSubscriptionManager subMan) {
         String subId = subMan.getSubscriptionId();
 
         EndpointReferenceType notifyTo = subMan.getNotifyTo();

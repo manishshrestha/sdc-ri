@@ -45,11 +45,12 @@ public class GrizzlyHttpServerRegistryTest extends DpwsTest {
 
     @Test
     public void registerContext() throws Exception {
-        String expectedActionUri = "http://test-uri";
-        String ctxtPath = "/test";
+        final String expectedActionUri = "http://test-uri";
+        final String ctxtPath = "/test";
+        final URI baseUri = URI.create("http://127.0.0.1:8080");
 
         srvReg.startAsync().awaitRunning();
-        URI srvUri = srvReg.registerContext(HOST, PORT, ctxtPath, (requestMessage, responseMessage, ti) -> {
+        URI srvUri = srvReg.registerContext(baseUri, ctxtPath, (requestMessage, responseMessage, ti) -> {
             try {
                 int next = requestMessage.read();
                 while (next != -1) {
@@ -76,12 +77,12 @@ public class GrizzlyHttpServerRegistryTest extends DpwsTest {
 
     @Test
     public void unregisterContext() throws Exception {
-        String ctxtPath = "/test";
-
-        AtomicBoolean isRequested = new AtomicBoolean(false);
+        final String ctxtPath = "/test";
+        final URI baseUri = URI.create("http://127.0.0.1:8080");
+        final AtomicBoolean isRequested = new AtomicBoolean(false);
 
         srvReg.startAsync().awaitRunning();
-        URI srvUri = srvReg.registerContext(HOST, PORT, ctxtPath, (requestMessage, responseMessage, ti) -> {
+        URI srvUri = srvReg.registerContext(baseUri, ctxtPath, (requestMessage, responseMessage, ti) -> {
             try {
                 requestMessage.close();
                 responseMessage.close();
@@ -97,10 +98,10 @@ public class GrizzlyHttpServerRegistryTest extends DpwsTest {
         assertThat(isRequested.get(), is(true));
 
         isRequested.set(false);
-        srvReg.unregisterContext(HOST, PORT, ctxtPath);
+        srvReg.unregisterContext(baseUri, ctxtPath);
         try {
             httpBinding.onNotification(request);
-            assertFalse(true);
+            fail();
         } catch (Exception e) {
             assertTrue(true);
         }

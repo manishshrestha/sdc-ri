@@ -8,20 +8,10 @@ import org.ieee11073.sdc.dpws.guice.DefaultDpwsConfigModule;
 import org.ieee11073.sdc.dpws.soap.SoapConfig;
 
 public class ClientPeer extends IntegrationTestPeer {
-    Client client;
-
-    public ClientPeer() {
-        this(new DefaultDpwsConfigModule() {
-            @Override
-            protected void customConfigure() {
-                bind(SoapConfig.JAXB_CONTEXT_PATH, String.class,
-                        TestServiceMetadata.JAXB_CONTEXT_PATH);
-            }
-        });
-    }
+    private final Client client;
 
     public ClientPeer(DefaultDpwsConfigModule configModule) {
-        super(configModule);
+        setupInjector(configModule);
         this.client = getInjector().getInstance(Client.class);
     }
 

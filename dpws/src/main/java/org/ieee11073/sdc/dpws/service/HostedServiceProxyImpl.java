@@ -1,6 +1,5 @@
 package org.ieee11073.sdc.dpws.service;
 
-import com.google.common.eventbus.EventBus;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.inject.Provider;
 import com.google.inject.assistedinject.Assisted;
@@ -23,57 +22,40 @@ import java.time.Duration;
 import java.util.List;
 
 /**
- * Default implementation of {@link WritableHostedServiceProxy}.
+ * Default implementation of {@link HostedServiceProxy}.
  */
-public class HostedServiceProxyImpl implements WritableHostedServiceProxy, EventSinkAccess {
+public class HostedServiceProxyImpl implements HostedServiceProxy, EventSinkAccess {
 
     private final EventSink eventSink;
-    private final EventBus metadataChangedBus;
     private final ObjectUtil objectUtil;
     private final Provider<NotificationSink> notificationSinkProvider;
 
-    private HostedServiceType hostedServiceType;
-    private RequestResponseClient requestResponseClient;
-    private URI activeEprAddress;
+    private final HostedServiceType hostedServiceType;
+    private final RequestResponseClient requestResponseClient;
+    private final URI activeEprAddress;
 
     @AssistedInject
     HostedServiceProxyImpl(@Assisted HostedServiceType hostedServiceType,
                            @Assisted RequestResponseClient requestResponseClient,
                            @Assisted URI activeEprAddress,
                            @Assisted EventSink eventSink,
-                           EventBus metadataChangedBus,
                            ObjectUtil objectUtil,
                            Provider<NotificationSink> notificationSinkProvider) {
         this.eventSink = eventSink;
-        this.metadataChangedBus = metadataChangedBus;
         this.objectUtil = objectUtil;
         this.notificationSinkProvider = notificationSinkProvider;
-
-        updateProxyInformation(hostedServiceType, requestResponseClient, activeEprAddress);
-    }
-
-    @Override
-    public synchronized void updateProxyInformation(HostedServiceType type,
-                                                    RequestResponseClient requestResponseClient,
-                                                    URI activeEprAddress) {
-        HostedServiceType typeBefore = getType();
-        this.hostedServiceType = objectUtil.deepCopy(type);
+        this.hostedServiceType = objectUtil.deepCopy(hostedServiceType);
         this.requestResponseClient = requestResponseClient;
         this.activeEprAddress = activeEprAddress;
-        metadataChangedBus.post(new HostedServiceMetadataChangeMessage(
-                typeBefore,
-                getType(),
-                getRequestResponseClient(),
-                getActiveEprAddress()));
     }
 
     @Override
-    public synchronized HostedServiceType getType() {
+    public HostedServiceType getType() {
         return objectUtil.deepCopy(hostedServiceType);
     }
 
     @Override
-    public synchronized RequestResponseClient getRequestResponseClient() {
+    public RequestResponseClient getRequestResponseClient() {
         return requestResponseClient;
     }
 
@@ -83,17 +65,7 @@ public class HostedServiceProxyImpl implements WritableHostedServiceProxy, Event
     }
 
     @Override
-    public void registerMetadataChangeObserver(HostedServiceMetadataObserver observer) {
-        metadataChangedBus.register(observer);
-    }
-
-    @Override
-    public void unregisterMetadataChangeObserver(HostedServiceMetadataObserver observer) {
-        metadataChangedBus.unregister(observer);
-    }
-
-    @Override
-    public synchronized URI getActiveEprAddress() {
+    public URI getActiveEprAddress() {
         return activeEprAddress;
     }
 

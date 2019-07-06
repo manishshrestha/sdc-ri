@@ -5,10 +5,12 @@ import com.google.common.eventbus.Subscribe;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.SettableFuture;
 import it.org.ieee11073.sdc.dpws.IntegrationTestUtil;
+import it.org.ieee11073.sdc.dpws.TestServiceMetadata;
 import org.apache.log4j.BasicConfigurator;
 import org.ieee11073.sdc.dpws.client.*;
 import org.ieee11073.sdc.dpws.guice.DefaultDpwsConfigModule;
 import org.ieee11073.sdc.dpws.service.HostingServiceProxy;
+import org.ieee11073.sdc.dpws.soap.SoapConfig;
 import org.ieee11073.sdc.dpws.soap.wsdiscovery.WsDiscoveryConfig;
 import org.junit.After;
 import org.junit.Before;
@@ -34,16 +36,17 @@ public class DiscoveryIT {
         this.devicePeer = new BasicPopulatedDevice();
         this.clientPeer = new ClientPeer(new DefaultDpwsConfigModule() {
             @Override
-            protected void customConfigure() {
-                // shorten the test time by only waiting 1 second for the probe response
+            public void customConfigure() {
                 bind(WsDiscoveryConfig.MAX_WAIT_FOR_PROBE_MATCHES, Duration.class,
                         Duration.ofSeconds(MAX_WAIT_TIME.getSeconds() / 2));
+                bind(SoapConfig.JAXB_CONTEXT_PATH, String.class,
+                        TestServiceMetadata.JAXB_CONTEXT_PATH);
             }
         });
     }
 
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
         this.devicePeer.stopAsync().awaitTerminated();
         this.clientPeer.stopAsync().awaitTerminated();
     }
@@ -72,7 +75,7 @@ public class DiscoveryIT {
 
             @Subscribe
             void timeout(DeviceProbeTimeoutMessage message) {
-                if (discoveryId != "" && message.getDiscoveryId() == discoveryId) {
+                if (!discoveryId.isEmpty() && message.getDiscoveryId().equals(discoveryId)) {
                     assertEquals(deviceFoundCount, message.getFoundDevicesCount().intValue());
                     actualDeviceFoundCount.set(deviceFoundCount);
                 }

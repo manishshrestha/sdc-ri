@@ -38,7 +38,6 @@ public interface HostingServiceProxy extends RequestResponseClient {
 
     /**
      * Get a list of all known hosted services.
-     * @return
      */
     Map<String, HostedServiceProxy> getHostedServices();
 

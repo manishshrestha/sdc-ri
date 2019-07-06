@@ -34,7 +34,6 @@ import org.slf4j.LoggerFactory;
 import javax.annotation.Nullable;
 import java.net.URI;
 import java.time.Duration;
-import java.time.temporal.TemporalUnit;
 import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
 
@@ -44,10 +43,8 @@ import java.util.concurrent.TimeUnit;
 public class ClientImpl extends AbstractIdleService implements Client, Service, HelloByeAndProbeMatchesObserver {
     private static final Logger LOG = LoggerFactory.getLogger(ClientImpl.class);
 
-    private final Boolean enableWatchdog;
     private final UdpMessageQueueService discoveryMessageQueue;
     private final HostingServiceResolver hostingServiceResolver;
-    private final HostingServiceRegistry hostingServiceRegistry;
     private final DiscoveryClientUdpProcessor msgProcessor;
     private final HelloByeAndProbeMatchesObserverImpl helloByeAndProbeMatchesObserverImpl;
     private final WsDiscoveryClient wsDiscoveryClient;
@@ -58,24 +55,21 @@ public class ClientImpl extends AbstractIdleService implements Client, Service, 
     private final Duration maxWaitForFutures;
 
     @Inject
-    ClientImpl(@Named(ClientConfig.ENABLE_WATCHDOG) Boolean enableWatchdog,
-               @Named(DpwsConfig.MAX_WAIT_FOR_FUTURES) Duration maxWaitForFutures,
+    ClientImpl(@Named(DpwsConfig.MAX_WAIT_FOR_FUTURES) Duration maxWaitForFutures,
                WsDiscoveryClientFactory discoveryClientFactory,
                NotificationSourceFactory notificationSourceFactory,
                DpwsHelperFactory dpwsHelperFactory,
                @DiscoveryUdpQueue UdpMessageQueueService discoveryMessageQueue,
                NotificationSink notificationSink,
                ClientHelperFactory clientHelperFactory,
-               HostingServiceRegistry hostingServiceRegistry,
                @NetworkJobThreadPool ListeningExecutorService executorService,
                WsAddressingUtil wsAddressingUtil,
                TransportBindingFactory transportBindingFactory,
-               RequestResponseClientFactory requestResponseClientFactory) {
-        this.enableWatchdog = enableWatchdog;
+               RequestResponseClientFactory requestResponseClientFactory,
+               HostingServiceResolver hostingServiceResolver) {
         this.maxWaitForFutures = maxWaitForFutures;
         this.discoveryMessageQueue = discoveryMessageQueue;
-        this.hostingServiceRegistry = hostingServiceRegistry;
-        this.hostingServiceResolver = clientHelperFactory.createHostingServiceResolver(hostingServiceRegistry);
+        this.hostingServiceResolver = hostingServiceResolver;
         this.executorService = executorService;
         this.wsAddressingUtil = wsAddressingUtil;
         this.transportBindingFactory = transportBindingFactory;
@@ -101,11 +95,6 @@ public class ClientImpl extends AbstractIdleService implements Client, Service, 
 
         // Create observer for WS-Discovery messages
         helloByeAndProbeMatchesObserverImpl = clientHelperFactory.createDiscoveryObserver(discoveredDeviceResolver);
-
-//        watchdog = clientHelperFactory.createWatchdog(wsDiscoveryClient, hostingServiceProxy -> {
-//            URI endpointReferenceAddress = hostingServiceProxy.getEndpointReferenceAddress();
-//            helloByeAndProbeMatchesObserverImpl.publishDeviceLeft(endpointReferenceAddress, DeviceLeftMessage.TriggeredBy.WATCHDOG);
-//        });
     }
 
     @Override
@@ -176,25 +165,7 @@ public class ClientImpl extends AbstractIdleService implements Client, Service, 
     @Override
     public ListenableFuture<HostingServiceProxy> connect(DiscoveredDevice discoveredDevice) {
         checkRunning();
-        final ListenableFuture<HostingServiceProxy> future = hostingServiceResolver.resolveHostingService(discoveredDevice);
-
-//        if (enableWatchdog) {
-//            Futures.addCallback(future, new FutureCallback<HostingServiceProxy>() {
-//                @Override
-//                public void onSuccess(@Nullable HostingServiceProxy hostingServiceProxy) {
-//                    if (hostingServiceProxy != null) {
-//                        watchdog.inspect(hostingServiceProxy);
-//                    }
-//                }
-//
-//                @Override
-//                public void onFailure(Throwable throwable) {
-//                    // Ignore failures
-//                }
-//            }, executorService);
-//        }
-
-        return future;
+        return hostingServiceResolver.resolveHostingService(discoveredDevice);
     }
 
     @Override

@@ -77,9 +77,6 @@ public class WsDiscoveryClientInterceptorTest extends DpwsTest {
         expectedScopes = new ArrayList<>();
         expectedScopes.add(expectedScope);
 
-        List<String> expectedXAddrs = new ArrayList<>();
-        expectedXAddrs.add(expectedXAddr);
-
         ObjectFactory wsaFactory = getInjector().getInstance(ObjectFactory.class);
         expectedEpr = wsaFactory.createEndpointReferenceType();
         AttributedURIType eprUri = wsaFactory.createAttributedURIType();
@@ -166,7 +163,7 @@ public class WsDiscoveryClientInterceptorTest extends DpwsTest {
 
             @Override
             public void onFailure(Throwable throwable) {
-                assertTrue(false);
+                fail();
             }
         }, MoreExecutors.directExecutor());
     }

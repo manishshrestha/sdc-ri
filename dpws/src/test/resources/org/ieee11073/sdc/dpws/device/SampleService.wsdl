@@ -6,9 +6,10 @@ Description: Auto-generated WSDL file of SDC's Get Service
 Copyright 2015-2016 Draeger and Licensors. All Rights Reserved. Company Confidential.
 -->
 <wsdl:definitions xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msg="http://messages/2016-11-11"
-                  xmlns:s12="http://schemas.xmlsoap.org/wsdl/soap12/" xmlns:wsa="http://www.w3.org/2005/08/addressing"
+                  xmlns:s12="http://schemas.xmlsoap.org/wsdl/soap12/"
                   xmlns:wsam="http://www.w3.org/2007/05/addressing/metadata"
                   xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:wsp="http://www.w3.org/ns/ws-policy"
+                  xmlns:srv="http://service/2016-11-11"
                   targetNamespace="http://service/2016-11-11">
     <wsdl:types>
         <xsd:schema targetNamespace="http://messages/2016-11-11" elementFormDefault="qualified"
@@ -56,15 +57,12 @@ Copyright 2015-2016 Draeger and Licensors. All Rights Reserved. Company Confiden
                    xmlns:srv="http://service/2016-11-11" name="SamplePortType" dpws:DiscoveryType="srv:Sample">
         <wsdl:operation name="SampleRequestResponseOperation">
             <wsdl:input message="msg:SampleRequestResponse"
-                        wsa:Action="http://messages/2016-11-11/SampleRequestResponseOperation"
                         wsam:Action="http://messages/2016-11-11/SampleRequestResponseOperation"/>
             <wsdl:output message="msg:SampleRequestResponseResponse"
-                         wsa:Action="http://messages/2016-11-11/SampleRequestResponseResponse"
                          wsam:Action="http://messages/2016-11-11/SampleRequestResponseResponse"/>
         </wsdl:operation>
         <wsdl:operation name="SampleNotification">
             <wsdl:output message="msg:SampleNotification"
-                         wsa:Action="http://messages/2016-11-11/SampleNotification"
                          wsam:Action="http://messages/2016-11-11/SampleNotification"/>
         </wsdl:operation>
     </wsdl:portType>

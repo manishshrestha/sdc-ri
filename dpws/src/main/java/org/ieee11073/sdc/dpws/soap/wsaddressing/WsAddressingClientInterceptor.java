@@ -4,7 +4,6 @@ import com.google.inject.Inject;
 import org.ieee11073.sdc.dpws.soap.SoapMessage;
 import org.ieee11073.sdc.dpws.soap.SoapUtil;
 import org.ieee11073.sdc.dpws.soap.interception.*;
-import org.ieee11073.sdc.dpws.soap.interception.*;
 
 /**
  * WS-Addressing server client interceptor.

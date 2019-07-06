@@ -11,7 +11,6 @@ import org.ieee11073.sdc.dpws.guice.NetworkJobThreadPool;
 import org.ieee11073.sdc.dpws.http.HttpServerRegistry;
 import org.ieee11073.sdc.dpws.http.HttpUriBuilder;
 import org.ieee11073.sdc.dpws.soap.*;
-import org.ieee11073.sdc.dpws.soap.*;
 import org.ieee11073.sdc.dpws.soap.exception.MalformedSoapMessageException;
 import org.ieee11073.sdc.dpws.soap.exception.MarshallingException;
 import org.ieee11073.sdc.dpws.soap.exception.SoapFaultException;
@@ -20,7 +19,6 @@ import org.ieee11073.sdc.dpws.soap.wsaddressing.WsAddressingUtil;
 import org.ieee11073.sdc.dpws.soap.wsaddressing.model.EndpointReferenceType;
 import org.ieee11073.sdc.dpws.soap.wseventing.exception.SubscriptionNotFoundException;
 import org.ieee11073.sdc.dpws.soap.wseventing.factory.SubscriptionManagerFactory;
-import org.ieee11073.sdc.dpws.soap.wseventing.model.*;
 import org.ieee11073.sdc.dpws.soap.wseventing.model.*;
 import org.ieee11073.sdc.common.helper.JaxbUtil;
 import org.slf4j.Logger;
@@ -51,7 +49,7 @@ public class EventSinkImpl implements EventSink {
     private static final String EVENT_SINK_NOTIFY_TO_CONTEXT_PREFIX = EVENT_SINK_CONTEXT_PREFIX + "NotifyTo/";
     private static final String EVENT_SINK_END_TO_CONTEXT_PREFIX = EVENT_SINK_CONTEXT_PREFIX + "EndTo/";
     private final RequestResponseClient requestResponseClient;
-    private final String localHostAddress;
+    private final URI hostAddress;
     private final Duration defaultRequestExpires;
     private final Duration autoRenewBeforeExpires;
     private final HttpServerRegistry httpServerRegistry;
@@ -62,7 +60,6 @@ public class EventSinkImpl implements EventSink {
     private final JaxbUtil jaxbUtil;
     private final ListeningExecutorService executorService;
     private final SubscriptionManagerFactory subscriptionManagerFactory;
-    private final Integer port;
     private final Map<String, SinkSubscriptionManager> subscriptionManagers;
     private final ScheduledExecutorService autoRenewExecutor;
     private final Lock subscriptionsLock;
@@ -70,7 +67,7 @@ public class EventSinkImpl implements EventSink {
 
     @AssistedInject
     EventSinkImpl(@Assisted RequestResponseClient requestResponseClient,
-                  @Assisted String localHostAddress,
+                  @Assisted URI hostAddress,
                   @Named(WsEventingConfig.SINK_DEFAULT_REQUESTED_EXPIRES) Duration defaultRequestExpires,
                   @Named(WsEventingConfig.AUTO_RENEW_BEFORE_EXPIRES) Duration autoRenewBeforeExpires,
                   @Named(DpwsConfig.MAX_WAIT_FOR_FUTURES) Duration maxWaitForFutures,
@@ -85,7 +82,7 @@ public class EventSinkImpl implements EventSink {
                   @AutoRenewExecutor ScheduledExecutorService autoRenewExecutor,
                   SubscriptionManagerFactory subscriptionManagerFactory) {
         this.requestResponseClient = requestResponseClient;
-        this.localHostAddress = localHostAddress;
+        this.hostAddress = hostAddress;
         this.defaultRequestExpires = defaultRequestExpires;
         this.autoRenewBeforeExpires = autoRenewBeforeExpires;
         this.maxWaitForFutures = maxWaitForFutures;
@@ -100,7 +97,6 @@ public class EventSinkImpl implements EventSink {
         this.subscriptionManagers = new HashMap<>();
         this.autoRenewExecutor = autoRenewExecutor;
         this.subscriptionsLock = new ReentrantLock();
-        this.port = uriBuilder.buildRandomPort();
     }
 
     @Override
@@ -108,17 +104,18 @@ public class EventSinkImpl implements EventSink {
                                                        Duration expires,
                                                        NotificationSink notificationSink) {
         return executorService.submit(() -> {
+            //final URI httpServerBase = URI.create()
             // Create unique context path suffix
             String contextSuffix = UUID.randomUUID().toString();
 
             // Create unique end-to context path and create proper handler
             String endToContext = EVENT_SINK_END_TO_CONTEXT_PREFIX + contextSuffix;
-            URI endToUri = httpServerRegistry.registerContext(localHostAddress, port, endToContext,
+            URI endToUri = httpServerRegistry.registerContext(hostAddress, endToContext,
                     (req, res, ti) -> processIncomingNotification(notificationSink, req, res));
 
             // Create unique notify-to context path and create proper handler
             String notifyToContext = EVENT_SINK_NOTIFY_TO_CONTEXT_PREFIX + contextSuffix;
-            URI notifyToUri = httpServerRegistry.registerContext(localHostAddress, port, notifyToContext,
+            URI notifyToUri = httpServerRegistry.registerContext(hostAddress, notifyToContext,
                     (req, res, ti) -> processIncomingNotification(notificationSink, req, res));
 
             // Create subscribe body, include formerly created end-to and notify-to endpoint addresses

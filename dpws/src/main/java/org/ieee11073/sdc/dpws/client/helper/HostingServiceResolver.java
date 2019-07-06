@@ -2,8 +2,7 @@ package org.ieee11073.sdc.dpws.client.helper;
 
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListeningExecutorService;
-import com.google.inject.assistedinject.Assisted;
-import com.google.inject.assistedinject.AssistedInject;
+import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import org.ieee11073.sdc.common.helper.JaxbUtil;
 import org.ieee11073.sdc.dpws.DpwsConfig;
@@ -12,10 +11,11 @@ import org.ieee11073.sdc.dpws.TransportBinding;
 import org.ieee11073.sdc.dpws.client.DiscoveredDevice;
 import org.ieee11073.sdc.dpws.factory.TransportBindingFactory;
 import org.ieee11073.sdc.dpws.guice.NetworkJobThreadPool;
+import org.ieee11073.sdc.dpws.http.HttpUriBuilder;
 import org.ieee11073.sdc.dpws.model.*;
 import org.ieee11073.sdc.dpws.ni.LocalAddressResolver;
+import org.ieee11073.sdc.dpws.service.HostedServiceProxy;
 import org.ieee11073.sdc.dpws.service.HostingServiceProxy;
-import org.ieee11073.sdc.dpws.service.WritableHostedServiceProxy;
 import org.ieee11073.sdc.dpws.service.factory.HostedServiceFactory;
 import org.ieee11073.sdc.dpws.service.factory.HostingServiceFactory;
 import org.ieee11073.sdc.dpws.soap.RequestResponseClient;
@@ -50,7 +50,6 @@ import java.util.concurrent.TimeUnit;
 public class HostingServiceResolver {
     private static final Logger LOG = LoggerFactory.getLogger(HostingServiceResolver.class);
 
-    private final HostingServiceRegistry hostingServiceRegistry;
     private final ListeningExecutorService networkJobExecutor;
     private final LocalAddressResolver localAddressResolver;
     private final TransportBindingFactory transportBindingFactory;
@@ -62,12 +61,12 @@ public class HostingServiceResolver {
     private final HostingServiceFactory hostingServiceFactory;
     private final HostedServiceFactory hostedServiceFactory;
     private final WsEventingEventSinkFactory eventSinkFactory;
+    private final HttpUriBuilder uriBuilder;
     private final GetMetadataClient getMetadataClient;
     private final Duration maxWaitForFutures;
 
-    @AssistedInject
-    HostingServiceResolver(@Assisted HostingServiceRegistry hostingServiceRegistry,
-                           @Named(DpwsConfig.MAX_WAIT_FOR_FUTURES) Duration maxWaitForFutures,
+    @Inject
+    HostingServiceResolver(@Named(DpwsConfig.MAX_WAIT_FOR_FUTURES) Duration maxWaitForFutures,
                            @NetworkJobThreadPool ListeningExecutorService networkJobExecutor,
                            LocalAddressResolver localAddressResolver,
                            TransportBindingFactory transportBindingFactory,
@@ -79,8 +78,8 @@ public class HostingServiceResolver {
                            WsAddressingUtil wsaUtil,
                            HostingServiceFactory hostingServiceFactory,
                            HostedServiceFactory hostedServiceFactory,
-                           WsEventingEventSinkFactory eventSinkFactory) {
-        this.hostingServiceRegistry = hostingServiceRegistry;
+                           WsEventingEventSinkFactory eventSinkFactory,
+                           HttpUriBuilder uriBuilder) {
         this.maxWaitForFutures = maxWaitForFutures;
         this.networkJobExecutor = networkJobExecutor;
         this.localAddressResolver = localAddressResolver;
@@ -94,6 +93,7 @@ public class HostingServiceResolver {
         this.hostingServiceFactory = hostingServiceFactory;
         this.hostedServiceFactory = hostedServiceFactory;
         this.eventSinkFactory = eventSinkFactory;
+        this.uriBuilder = uriBuilder;
     }
 
     /**
@@ -146,7 +146,7 @@ public class HostingServiceResolver {
             long metadataVersion = discoveredDevice.getMetadataVersion();
             return extractHostingServiceProxy(deviceMetadata, rrClient,
                     deviceEprAddress, metadataVersion, activeXAddr).orElseThrow(() -> new MalformedSoapMessageException(
-                    String.format("Could not resolve hosting service proxy information for {}",
+                    String.format("Could not resolve hosting service proxy information for %s",
                             deviceEprAddress)));
         });
     }
@@ -256,15 +256,15 @@ public class HostingServiceResolver {
         return Optional.of(result);
     }
 
-    private Optional<WritableHostedServiceProxy> extractHostedServiceProxy(HostedServiceType host) {
+    private Optional<HostedServiceProxy> extractHostedServiceProxy(HostedServiceType host) {
         URI activeHostedServiceEprAddress = null;
         RequestResponseClient rrClient = null;
-        SoapMessage getMetadatResponse = null;
+        SoapMessage getMetadataResponse = null;
         for (EndpointReferenceType eprType : host.getEndpointReference()) {
             try {
                 activeHostedServiceEprAddress = URI.create(eprType.getAddress().getValue());
                 rrClient = createRequestResponseClient(activeHostedServiceEprAddress);
-                getMetadatResponse = getMetadataClient.sendGetMetadata(rrClient)
+                getMetadataResponse = getMetadataClient.sendGetMetadata(rrClient)
                         .get(maxWaitForFutures.toMillis(), TimeUnit.MILLISECONDS);
                 break;
             } catch (Exception e) {
@@ -272,7 +272,7 @@ public class HostingServiceResolver {
             }
         }
 
-        if (getMetadatResponse == null) {
+        if (getMetadataResponse == null) {
             LOG.info("None of the {} hosted service EPR addresses responded with a valid GetMetadata response.",
                     host.getEndpointReference().size());
             return Optional.empty();
@@ -283,7 +283,10 @@ public class HostingServiceResolver {
             return Optional.empty();
         }
 
-        final EventSink eventSink = eventSinkFactory.createWsEventingEventSink(rrClient, localAddress.get());
+        URI httpBinding = uriBuilder.buildUri(activeHostedServiceEprAddress.getScheme(), localAddress.get(),
+                uriBuilder.buildRandomPort());
+
+        final EventSink eventSink = eventSinkFactory.createWsEventingEventSink(rrClient, httpBinding);
         return Optional.of(hostedServiceFactory.createHostedServiceProxy(host, rrClient,
                 activeHostedServiceEprAddress, eventSink));
     }
@@ -296,25 +299,25 @@ public class HostingServiceResolver {
     private class RelationshipData {
         private URI eprAddress = null;
         private List<QName> types = null;
-        private Map<String, WritableHostedServiceProxy> hostedServices = new HashMap<>();
+        private final Map<String, HostedServiceProxy> hostedServices = new HashMap<>();
 
-        public URI getEprAddress() {
+        URI getEprAddress() {
             return eprAddress;
         }
 
-        public void setEprAddress(URI eprAddress) {
+        void setEprAddress(URI eprAddress) {
             this.eprAddress = eprAddress;
         }
 
-        public List<QName> getTypes() {
+        List<QName> getTypes() {
             return types;
         }
 
-        public void setTypes(List<QName> types) {
+        void setTypes(List<QName> types) {
             this.types = types;
         }
 
-        public Map<String, WritableHostedServiceProxy> getHostedServices() {
+        Map<String, HostedServiceProxy> getHostedServices() {
             return hostedServices;
         }
     }
