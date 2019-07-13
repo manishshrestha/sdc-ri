@@ -11,5 +11,17 @@
 
     <artifactId>biceps</artifactId>
 
+    <dependencies>
+        <dependency>
+            <groupId>org.ieee11073.sdc</groupId>
+            <artifactId>common</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
 
+        <dependency>
+            <groupId>org.ieee11073.sdc</groupId>
+            <artifactId>biceps-model</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+    </dependencies>
 </project>
