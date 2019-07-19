@@ -39,7 +39,7 @@ public class MdibStateModifications {
     }
 
     /**
-     * Add a multiple elements to the change set.
+     * Add multiple elements to the change set.
      *
      * @throws ClassCastException Is thrown if one of the elements does not match the change type set on {@link #create(Type)}.
      */
