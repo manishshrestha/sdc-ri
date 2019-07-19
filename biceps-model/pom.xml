@@ -44,8 +44,8 @@
                                 <arg>-no-header</arg>
                                 <arg>-Xsetters</arg>
                                 <arg>-Xsetters-mode=accessor</arg>
-                                <!--<arg>-Xcopyable</arg>
-                                <arg>-Xequals</arg>-->
+                                <arg>-Xcopyable</arg>
+                                <!--<arg>-Xequals</arg>-->
                                 <arg>-XtoString</arg>
                             </args>
                             <plugins>
