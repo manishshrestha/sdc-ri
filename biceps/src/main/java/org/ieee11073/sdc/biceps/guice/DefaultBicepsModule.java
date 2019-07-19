@@ -7,7 +7,7 @@ import org.ieee11073.sdc.biceps.common.factory.MdibEntityFactory;
 import org.ieee11073.sdc.biceps.common.factory.MdibQueueFactory;
 
 /**
- * Guice module that determines default values for BICEPS package configuration.
+ * Default BICEPS module.
  */
 public class DefaultBicepsModule extends AbstractModule {
     @Override
