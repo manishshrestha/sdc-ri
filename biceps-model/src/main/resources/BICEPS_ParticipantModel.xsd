@@ -1503,7 +1503,7 @@ NOTE—If this ATTRIBUTE is present in an pm:AlertConditonState ELEMENT, the rel
 				</xsd:attribute>
 				<xsd:attribute name="Rank" type="xsd:int">
 					<xsd:annotation>
-						<xsd:documentation>The rank is an optional ATTRIBUTE allowing finer distinction of ALERT CONDITION priorities. A ranking is a relationship between a set of items such that, for any two items, the first is either "ranked higher than", "ranked lower than" or "ranked equal to" the second.</xsd:documentation>
+						<xsd:documentation>The rank is an optional ATTRIBUTE allowing finer distinction of ALERT CONDITION priorities. A ranking is a relationship between a set of chainSegments such that, for any two chainSegments, the first is either "ranked higher than", "ranked lower than" or "ranked equal to" the second.</xsd:documentation>
 					</xsd:annotation>
 				</xsd:attribute>
 				<xsd:attribute name="Presence" type="xsd:boolean">

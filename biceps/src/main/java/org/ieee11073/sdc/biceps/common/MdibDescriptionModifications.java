@@ -1,10 +1,8 @@
 package org.ieee11073.sdc.biceps.common;
 
-import org.ieee11073.sdc.biceps.model.participant.AbstractContextDescriptor;
-import org.ieee11073.sdc.biceps.model.participant.AbstractContextState;
-import org.ieee11073.sdc.biceps.model.participant.AbstractDescriptor;
-import org.ieee11073.sdc.biceps.model.participant.AbstractState;
+import org.ieee11073.sdc.biceps.model.participant.*;
 
+import javax.annotation.Nullable;
 import java.util.*;
 
 /**
@@ -13,6 +11,7 @@ import java.util.*;
  * The {@linkplain MdibDescriptionModifications} is a fluent interface.
  */
 public class MdibDescriptionModifications {
+    private final MdibVersion mdibVersion;
     private List<MdibDescriptionModification> modifications;
     private Set<String> insertedHandles;
     private Set<String> updatedHandles;
@@ -21,8 +20,40 @@ public class MdibDescriptionModifications {
     /**
      * Create set.
      */
-    static MdibDescriptionModifications create() {
-        return new MdibDescriptionModifications();
+    public static MdibDescriptionModifications create() {
+        return new MdibDescriptionModifications(null);
+    }
+
+    /**
+     * Create set with version number.
+     */
+    public static MdibDescriptionModifications create(MdibVersion mdibVersion) {
+        return new MdibDescriptionModifications(mdibVersion);
+    }
+
+    /**
+     * Create set with version number form existing base.
+     */
+    public static MdibDescriptionModifications create(MdibVersion mdibVersion, MdibDescriptionModifications existingModifications) {
+        MdibDescriptionModifications newModifications = new MdibDescriptionModifications(mdibVersion);
+        newModifications.modifications = existingModifications.modifications;
+        newModifications.insertedHandles = existingModifications.insertedHandles;
+        newModifications.updatedHandles = existingModifications.updatedHandles;
+        newModifications.deletedHandles = existingModifications.deletedHandles;
+
+        return newModifications;
+    }
+
+
+    /**
+     * Add single or multi state descriptor to change set without state information.
+     *
+     * It's up to the change set processor to align state information.
+     */
+    public MdibDescriptionModifications add(MdibDescriptionModification.Type modType,
+                                            AbstractDescriptor descriptor,
+                                            @Nullable String parentHandle) {
+        return addMdibModification(modType, descriptor, null, parentHandle);
     }
 
     /**
@@ -30,8 +61,9 @@ public class MdibDescriptionModifications {
      *
      * It's up to the change set processor to align state information.
      */
-    public MdibDescriptionModifications addItem(MdibDescriptionModification.Type modType, AbstractDescriptor descriptor) {
-        return addMdibModification(modType, descriptor, null);
+    public MdibDescriptionModifications add(MdibDescriptionModification.Type modType,
+                                            AbstractDescriptor descriptor) {
+        return addMdibModification(modType, descriptor, null, null);
     }
 
     /**
@@ -39,8 +71,34 @@ public class MdibDescriptionModifications {
      *
      * Caveat: the change set processor might check descriptor state consistency.
      */
-    public MdibDescriptionModifications addItem(MdibDescriptionModification.Type modType, AbstractDescriptor descriptor, AbstractState state) {
+    public MdibDescriptionModifications add(MdibDescriptionModification.Type modType,
+                                            AbstractDescriptor descriptor,
+                                            AbstractState state) {
         return addMdibModification(modType, descriptor, Collections.singletonList(state));
+    }
+
+    /**
+     * Add single state descriptor to change set with state information.
+     *
+     * Caveat: the change set processor might check descriptor state consistency.
+     */
+    public MdibDescriptionModifications add(MdibDescriptionModification.Type modType,
+                                            AbstractDescriptor descriptor,
+                                            AbstractState state,
+                                            @Nullable String parentHandle) {
+        return addMdibModification(modType, descriptor, Collections.singletonList(state), parentHandle);
+    }
+
+    /**
+     * Add context state descriptor to change set with state information.
+     *
+     * Caveat: the change set processor might check descriptor state consistency.
+     */
+    public MdibDescriptionModifications add(MdibDescriptionModification.Type modType,
+                                            AbstractContextDescriptor context,
+                                            List<? extends AbstractContextState> contextStates) {
+        contextStates.stream().forEach(state -> duplicateDetection(modType, state.getHandle()));
+        return addMdibModification(modType, context, contextStates);
     }
 
     /**
@@ -48,69 +106,159 @@ public class MdibDescriptionModifications {
      *
      * Caveat: the change set processor might check descriptor state consistency.
      */
-    public MdibDescriptionModifications addItem(MdibDescriptionModification.Type modType,
-                                                AbstractContextDescriptor context,
-                                                List<? extends AbstractContextState> contextStates) {
+    public MdibDescriptionModifications add(MdibDescriptionModification.Type modType,
+                                            AbstractDescriptor descriptor,
+                                            List<? extends AbstractMultiState> multiStates) {
+        multiStates.stream().forEach(state -> duplicateDetection(modType, state.getHandle()));
+        return addMdibModification(modType, descriptor, multiStates);
+    }
+
+    /**
+     * Add context state descriptor to change set with state information.
+     *
+     * Caveat: the change set processor might check descriptor state consistency.
+     */
+    public MdibDescriptionModifications add(MdibDescriptionModification.Type modType,
+                                            AbstractContextDescriptor context,
+                                            List<? extends AbstractContextState> contextStates,
+                                            @Nullable String parentHandle) {
         contextStates.stream().forEach(state -> duplicateDetection(modType, state.getHandle()));
-        return addMdibModification(modType, context, contextStates);
+        return addMdibModification(modType, context, contextStates, parentHandle);
+    }
+
+    /**
+     * Add multi state descriptor to change set with state information.
+     *
+     * Caveat: the change set processor might check descriptor state consistency.
+     */
+    public MdibDescriptionModifications add(MdibDescriptionModification.Type modType,
+                                            AbstractDescriptor descriptor,
+                                            List<? extends AbstractMultiState> multiStates,
+                                            @Nullable String parentHandle) {
+        multiStates.stream().forEach(state -> duplicateDetection(modType, state.getHandle()));
+        return addMdibModification(modType, descriptor, multiStates, parentHandle);
+    }
+
+
+    /**
+     * Convenient function to insert a descriptor.
+     * @see #add(MdibDescriptionModification.Type, AbstractDescriptor)
+     */
+    public MdibDescriptionModifications insert(AbstractDescriptor descriptor) {
+        return add(MdibDescriptionModification.Type.INSERT, descriptor);
     }
 
     /**
      * Convenient function to insert a descriptor.
-     * @see #addItem(MdibDescriptionModification.Type, AbstractDescriptor)
+     * @see #add(MdibDescriptionModification.Type, AbstractDescriptor, AbstractState, String)
      */
-    public MdibDescriptionModifications insert(AbstractDescriptor descriptor) {
-        return addItem(MdibDescriptionModification.Type.INSERT, descriptor);
+    public MdibDescriptionModifications insert(AbstractDescriptor descriptor, @Nullable String parentHandle) {
+        return add(MdibDescriptionModification.Type.INSERT, descriptor, parentHandle);
     }
 
     /**
      * Convenient function to insert a single state descriptor with state information.
-     * @see #addItem(MdibDescriptionModification.Type, AbstractDescriptor, AbstractState)
+     * @see #add(MdibDescriptionModification.Type, AbstractDescriptor, AbstractState)
      */
     public MdibDescriptionModifications insert(AbstractDescriptor descriptor, AbstractState state) {
-        return addItem(MdibDescriptionModification.Type.INSERT, descriptor, state);
+        return add(MdibDescriptionModification.Type.INSERT, descriptor, state);
+    }
+
+    /**
+     * Convenient function to insert a single state descriptor with state information.
+     * @see #add(MdibDescriptionModification.Type, AbstractDescriptor, AbstractState)
+     */
+    public MdibDescriptionModifications insert(AbstractDescriptor descriptor,
+                                               AbstractState state,
+                                               @Nullable String parentHandle) {
+        return add(MdibDescriptionModification.Type.INSERT, descriptor, state, parentHandle);
     }
 
     /**
      * Convenient function to insert a multi state descriptor with state information.
-     * @see #addItem(MdibDescriptionModification.Type, AbstractContextDescriptor, List)
+     * @see #add(MdibDescriptionModification.Type, AbstractContextDescriptor, List)
      */
     public MdibDescriptionModifications insert(AbstractContextDescriptor context,
                                                List<? extends AbstractContextState> contextStates) {
-        return addItem(MdibDescriptionModification.Type.INSERT, context, contextStates);
+        return add(MdibDescriptionModification.Type.INSERT, context, contextStates);
+    }
+
+    /**
+     * Convenient function to insert a multi state descriptor with state information.
+     * @see #add(MdibDescriptionModification.Type, AbstractContextDescriptor, List)
+     */
+    public MdibDescriptionModifications insert(AbstractDescriptor descriptor,
+                                               List<? extends AbstractMultiState> multiStates) {
+        return add(MdibDescriptionModification.Type.INSERT, descriptor, multiStates);
+    }
+
+    /**
+     * Convenient function to insert a multi state descriptor with state information.
+     * @see #add(MdibDescriptionModification.Type, AbstractContextDescriptor, List)
+     */
+    public MdibDescriptionModifications insert(AbstractContextDescriptor context,
+                                               List<? extends AbstractContextState> contextStates,
+                                               @Nullable String parentHandle) {
+        return add(MdibDescriptionModification.Type.INSERT, context, contextStates, parentHandle);
+    }
+
+    /**
+     * Convenient function to insert a multi state descriptor with state information.
+     * @see #add(MdibDescriptionModification.Type, AbstractContextDescriptor, List)
+     */
+    public MdibDescriptionModifications insert(AbstractDescriptor descriptor,
+                                               List<? extends AbstractMultiState> multiStates,
+                                               @Nullable String parentHandle) {
+        return add(MdibDescriptionModification.Type.INSERT, descriptor, multiStates, parentHandle);
     }
 
     /**
      * Convenient function to update a descriptor.
-     * @see #addItem(MdibDescriptionModification.Type, AbstractDescriptor)
+     * @see #add(MdibDescriptionModification.Type, AbstractDescriptor)
      */
     public MdibDescriptionModifications update(AbstractDescriptor descriptor) {
-        return addItem(MdibDescriptionModification.Type.UPDATE, descriptor);
+        return add(MdibDescriptionModification.Type.UPDATE, descriptor);
     }
 
     /**
      * Convenient function to update a single state descriptor with state information.
-     * @see #addItem(MdibDescriptionModification.Type, AbstractDescriptor, AbstractState)
+     * @see #add(MdibDescriptionModification.Type, AbstractDescriptor, AbstractState)
      */
     public MdibDescriptionModifications update(AbstractDescriptor descriptor, AbstractState state) {
-        return addItem(MdibDescriptionModification.Type.UPDATE, descriptor, state);
+        return add(MdibDescriptionModification.Type.UPDATE, descriptor, state);
     }
 
     /**
      * Convenient function to update a multi state descriptor with state information.
-     * @see #addItem(MdibDescriptionModification.Type, AbstractContextDescriptor, List)
+     * @see #add(MdibDescriptionModification.Type, AbstractContextDescriptor, List)
      */
     public MdibDescriptionModifications update(AbstractContextDescriptor context,
                                                List<AbstractContextState> contextStates) {
-        return addItem(MdibDescriptionModification.Type.UPDATE, context, contextStates);
+        return add(MdibDescriptionModification.Type.UPDATE, context, contextStates);
+    }
+
+    /**
+     * Convenient function to update a multi state descriptor with state information.
+     * @see #add(MdibDescriptionModification.Type, AbstractContextDescriptor, List)
+     */
+    public MdibDescriptionModifications update(AbstractDescriptor descriptor,
+                                               List<AbstractMultiState> multiStates) {
+        return add(MdibDescriptionModification.Type.UPDATE, descriptor, multiStates);
     }
 
     /**
      * Convenient function to delete a descriptor.
-     * @see #addItem(MdibDescriptionModification.Type, AbstractDescriptor)
+     * @see #add(MdibDescriptionModification.Type, AbstractDescriptor)
      */
     public MdibDescriptionModifications delete(AbstractDescriptor descriptor) {
-        return addItem(MdibDescriptionModification.Type.DELETE, descriptor);
+        return add(MdibDescriptionModification.Type.DELETE, descriptor);
+    }
+
+    /**
+     * MDIB version that comes with this change set.
+     */
+    public Optional<MdibVersion> getMdibVersion() {
+        return Optional.ofNullable(mdibVersion);
     }
 
     /**
@@ -120,7 +268,8 @@ public class MdibDescriptionModifications {
         return modifications;
     }
 
-    private MdibDescriptionModifications() {
+    private MdibDescriptionModifications(@Nullable MdibVersion mdibVersion) {
+        this.mdibVersion = mdibVersion;
         this.modifications = new ArrayList<>();
         this.insertedHandles = new HashSet<>();
         this.updatedHandles = new HashSet<>();
@@ -130,8 +279,15 @@ public class MdibDescriptionModifications {
     private MdibDescriptionModifications addMdibModification(MdibDescriptionModification.Type modType,
                                                              AbstractDescriptor descriptor,
                                                              List<? extends AbstractState> states) {
+        return addMdibModification(modType, descriptor, states, null);
+    }
+
+    private MdibDescriptionModifications addMdibModification(MdibDescriptionModification.Type modType,
+                                                             AbstractDescriptor descriptor,
+                                                             List<? extends AbstractState> states,
+                                                             @Nullable String parentHandle) {
         duplicateDetection(modType, descriptor.getHandle());
-        modifications.add(new MdibDescriptionModification(modType, descriptor, states));
+        modifications.add(new MdibDescriptionModification(modType, descriptor, states, parentHandle));
         return this;
     }
 
@@ -147,7 +303,7 @@ public class MdibDescriptionModifications {
         }
 
         if (handleSet.contains(handle)) {
-            throw new RuntimeException(
+            throw new DuplicateHandleException(
                     String.format("Handle %s has already been inserted into description change set.", handle));
         }
 

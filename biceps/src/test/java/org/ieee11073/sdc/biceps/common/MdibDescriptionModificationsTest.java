@@ -35,7 +35,7 @@ public class MdibDescriptionModificationsTest {
             mdibDescriptionModifications.update(descriptors.get(i), states.get(i));
         }
         for (int i = 0; i < descriptors.size(); ++i) {
-            mdibDescriptionModifications.addItem(MdibDescriptionModification.Type.DELETE, descriptors.get(i),
+            mdibDescriptionModifications.add(MdibDescriptionModification.Type.DELETE, descriptors.get(i),
                     states.get(i));
         }
 
@@ -84,7 +84,7 @@ public class MdibDescriptionModificationsTest {
             mdibDescriptionModifications.update(descriptors.get(i), states.get(descriptors.get(i).getHandle()));
         }
         for (int i = 0; i < descriptors.size(); ++i) {
-            mdibDescriptionModifications.addItem(MdibDescriptionModification.Type.DELETE, descriptors.get(i),
+            mdibDescriptionModifications.add(MdibDescriptionModification.Type.DELETE, descriptors.get(i),
                     states.get(descriptors.get(i).getHandle()));
         }
 

@@ -1,13 +1,11 @@
 package org.ieee11073.sdc.biceps.common;
 
 import com.google.inject.Inject;
-import org.ieee11073.sdc.biceps.model.participant.AbstractContextDescriptor;
-import org.ieee11073.sdc.biceps.model.participant.AbstractContextState;
-import org.ieee11073.sdc.biceps.model.participant.AbstractDescriptor;
-import org.ieee11073.sdc.biceps.model.participant.AbstractState;
+import org.ieee11073.sdc.biceps.model.participant.*;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Utility class to validate MDIB instances.
@@ -96,6 +94,13 @@ public class MdibTypeValidator {
      * Checks if a descriptor is a multi state (true) or not (false).
      */
     public <T extends AbstractState> boolean isMultiState(T state) {
-        return state instanceof AbstractContextState;
+        return state instanceof AbstractMultiState;
+    }
+
+    public <T extends AbstractState> Optional<AbstractMultiState> toMultiState(T state) {
+        if (isMultiState(state)) {
+            return Optional.of((AbstractMultiState)state);
+        }
+        return Optional.empty();
     }
 }
