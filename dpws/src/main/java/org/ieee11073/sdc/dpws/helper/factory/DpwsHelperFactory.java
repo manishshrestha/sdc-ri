@@ -12,6 +12,7 @@ public interface DpwsHelperFactory {
      * Create {@linkplain NotificationSourceUdpCallback} instance.
      *
      * @param msgQueue UDP message queue to send SOAP messages to network.
+     * @return a configured {@link NotificationSourceUdpCallback} instance
      */
     NotificationSourceUdpCallback createNotificationSourceUdpCallback(@Assisted UdpMessageQueueService msgQueue);
 }

@@ -15,6 +15,9 @@ public interface RequestResponseClient extends InterceptorHandler {
      * @param request Outgoing request message.
      * @return Incoming response message.
      * @throws SoapFaultException SOAP fault that may be thrown on processing.
+     * @throws TransportException   Any transport-related exception during processing. This will hinder the response from
+     *                              being sent.
+     * @throws MarshallingException Any exception that occurs during marshalling or unmarshalling of SOAP messages.
      */
     SoapMessage sendRequestResponse(SoapMessage request) throws SoapFaultException, MarshallingException, TransportException;
 }

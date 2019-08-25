@@ -26,7 +26,7 @@ public interface HttpHandler {
      * @param transportInfo Information from transport layer.
      * @throws TransportException   Any transport-related exception during processing. This will hinder the response from
      *                              being sent.
-     * @throws MarshallingException Any exception that occurs during mashalling or unmarshalling of SOAP messages.
+     * @throws MarshallingException Any exception that occurs during marshalling or unmarshalling of SOAP messages.
      */
     void process(InputStream inStream, OutputStream outStream, TransportInfo transportInfo)
             throws TransportException, MarshallingException;

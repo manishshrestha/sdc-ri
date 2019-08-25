@@ -13,11 +13,17 @@ public interface EventSourceAccess {
      *
      * @param action The action the notification complies with.
      * @param payload The message payload that is tried to be marshalled.
+     * @throws TransportException   Any transport-related exception during processing. This will hinder the response from
+     *                              being sent.
+     * @throws MarshallingException Any exception that occurs during marshalling or unmarshalling of SOAP messages.
      */
     void sendNotification(String action, Object payload) throws MarshallingException, TransportException;
 
     /**
      * Send a subscription end message to all subscribers and shut down connected subscriptions.
+     * @param status reason for ending the subscription
+     * @throws TransportException   Any transport-related exception during processing. This will hinder the response from
+     *                              being sent.
      */
     void subscriptionEndToAll(WsEventingStatus status) throws TransportException;
 }

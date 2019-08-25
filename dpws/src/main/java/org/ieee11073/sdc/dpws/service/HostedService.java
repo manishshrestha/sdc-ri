@@ -14,12 +14,12 @@ public interface HostedService {
     /**
      * HostedServiceType definition.
      *
-     * Method returns a copy of the internal information.
+     * @return a copy of the internal information.
      */
     HostedServiceType getType();
 
     /**
-     * Web Service interceptor where service logic is stored.
+     * @return Web Service interceptor where service logic is stored.
      */
     WebService getWebService();
 

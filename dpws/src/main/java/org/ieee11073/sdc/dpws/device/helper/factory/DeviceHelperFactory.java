@@ -18,6 +18,7 @@ public interface DeviceHelperFactory {
      *                           {@link SoapMessage} instances.
      * @param udpMsgQueueService UDP message queue where to receive incoming UDP messages from and send outgoing UDP
      *                           messages to.
+     * @return a configured {@link DiscoveryDeviceUdpMessageProcessor} instance
      */
     DiscoveryDeviceUdpMessageProcessor createDiscoveryDeviceUdpMessageProcessor(@Assisted RequestResponseServer rrServer,
                                                                                 @Assisted UdpMessageQueueService udpMsgQueueService);
