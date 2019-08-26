@@ -37,6 +37,7 @@ public class MdibStoragePreprocessingChain {
                             modificationList.get(i).getHandle(), chainSegment.toString());
                 }
             }
+            sizeToIterate = modificationList.size();
         }
     }
 

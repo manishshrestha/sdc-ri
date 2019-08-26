@@ -261,6 +261,18 @@ public class MdibDescriptionModifications {
         return Optional.ofNullable(mdibVersion);
     }
 
+    public boolean isAddedAsUpdated(String handle) {
+        return updatedHandles.contains(handle);
+    }
+
+    public boolean isAddedAsInserted(String handle) {
+        return insertedHandles.contains(handle);
+    }
+
+    public boolean isAddedAsDeleted(String handle) {
+        return deletedHandles.contains(handle);
+    }
+
     /**
      * Function to get changes. Only visible to classes from the same package.
      */

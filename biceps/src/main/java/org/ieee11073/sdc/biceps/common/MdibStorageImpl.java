@@ -3,10 +3,7 @@ package org.ieee11073.sdc.biceps.common;
 import com.google.inject.Inject;
 import org.ieee11073.sdc.biceps.common.factory.MdibEntityFactory;
 import org.ieee11073.sdc.biceps.common.helper.MdibStorageUtil;
-import org.ieee11073.sdc.biceps.model.participant.AbstractContextDescriptor;
-import org.ieee11073.sdc.biceps.model.participant.AbstractContextState;
-import org.ieee11073.sdc.biceps.model.participant.AbstractDescriptor;
-import org.ieee11073.sdc.biceps.model.participant.AbstractState;
+import org.ieee11073.sdc.biceps.model.participant.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -84,6 +81,24 @@ public class MdibStorageImpl implements MdibStorage {
             return Collections.emptyList();
         }
         return util.exposeListOfType(entity.getStates(), AbstractContextState.class);
+    }
+
+    @Override
+    public <T extends AbstractMultiState> List<T> getMultiStates(String descriptorHandle, Class<T> stateClass) {
+        final MdibEntity entity = entities.get(descriptorHandle);
+        if (entity == null || entity.getStates().isEmpty()) {
+            return Collections.emptyList();
+        }
+        return util.exposeListOfType(entity.getStates(), stateClass);
+    }
+
+    @Override
+    public List<AbstractMultiState> getMultiStates(String descriptorHandle) {
+        final MdibEntity entity = entities.get(descriptorHandle);
+        if (entity == null || entity.getStates().isEmpty()) {
+            return Collections.emptyList();
+        }
+        return util.exposeListOfType(entity.getStates(), AbstractMultiState.class);
     }
 
     @Override

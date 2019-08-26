@@ -2,6 +2,7 @@ package org.ieee11073.sdc.biceps.common;
 
 import org.ieee11073.sdc.biceps.model.participant.AbstractContextState;
 import org.ieee11073.sdc.biceps.model.participant.AbstractDescriptor;
+import org.ieee11073.sdc.biceps.model.participant.AbstractMultiState;
 import org.ieee11073.sdc.biceps.model.participant.AbstractState;
 
 import java.util.List;
@@ -69,6 +70,20 @@ public interface MdibStorage {
      * Collections may be created on function call, hence be careful with performance issues.
      */
     <T extends AbstractContextState> List<T> getContextStates(String descriptorHandle, Class<T> stateClass);
+
+    /**
+     * Get set of all states of the hosted {@link org.ieee11073.sdc.biceps.model.participant.Mdib}.
+     *
+     * Collections may be created on function call, hence be careful with performance issues.
+     */
+    <T extends AbstractMultiState> List<T> getMultiStates(String descriptorHandle, Class<T> stateClass);
+
+    /**
+     * Get set of all states of the hosted {@link org.ieee11073.sdc.biceps.model.participant.Mdib}.
+     *
+     * Collections may be created on function call, hence be careful with performance issues.
+     */
+    <T extends AbstractMultiState> List<T> getMultiStates(String descriptorHandle);
 
     /**
      * Get set of all states of the hosted {@link org.ieee11073.sdc.biceps.model.participant.Mdib}.
