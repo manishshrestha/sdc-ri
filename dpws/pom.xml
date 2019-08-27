@@ -104,6 +104,7 @@
 						<configuration>
 							<readOnly>true</readOnly>
 							<episode>true</episode>
+							<strict>false</strict>
 							<schemaDirectory>${it.ieee11073.sdc.dpws.xmlSchemaDirectory}</schemaDirectory>
 							<schemaIncludes>
 								<include>${it.ieee11073.sdc.dpws.serviceSchema}</include>
