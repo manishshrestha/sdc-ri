@@ -49,6 +49,7 @@ public class DiscoveryIT {
     public void tearDown() {
         this.devicePeer.stopAsync().awaitTerminated();
         this.clientPeer.stopAsync().awaitTerminated();
+        BasicConfigurator.resetConfiguration();
     }
 
     @Test
