@@ -100,6 +100,7 @@ public class CryptoIT {
     public void tearDown() {
         this.devicePeer.stopAsync().awaitTerminated();
         this.clientPeer.stopAsync().awaitTerminated();
+        BasicConfigurator.resetConfiguration();
     }
 
     @Test
@@ -138,7 +139,7 @@ public class CryptoIT {
                         new Interceptor() {
                             private final List<TestNotification> receivedNotifications = new ArrayList<>();
 
-                            @MessageInterceptor
+                            @MessageInterceptor(value = TestServiceMetadata.ACTION_NOTIFICATION_1)
                             void onNotification(NotificationObject message) {
                                 receivedNotifications.add(
                                         soapUtil.getBody(message.getNotification(), TestNotification.class)
