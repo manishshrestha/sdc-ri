@@ -83,7 +83,7 @@ public class LocalizedStringsBuilder {
     /**
      * Reset current localized string buffer.
      *
-     * @return current localized string buffer
+     * @return reset localized string buffer
      */
     public LocalizedStringsBuilder clear() {
         localizedStringTypes.clear();
