@@ -96,7 +96,7 @@ public class SslMetadata extends AbstractIdleService implements Service {
                                            List<X509Certificate> certificateChain)
             throws KeyStoreException, IOException, CertificateException, NoSuchAlgorithmException {
 
-        final KeyStore keyStore = KeyStore.getInstance(KeyStore.getDefaultType());
+        final KeyStore keyStore = KeyStore.getInstance("jks");
         keyStore.load(null, password.toCharArray());
 
         final X509Certificate[] certificates = certificateChain.toArray(new X509Certificate[0]);
