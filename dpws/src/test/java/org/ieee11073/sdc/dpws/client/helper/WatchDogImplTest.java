@@ -1,7 +1,9 @@
 package org.ieee11073.sdc.dpws.client.helper;
 
 import com.google.common.util.concurrent.SettableFuture;
-import org.apache.log4j.BasicConfigurator;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.core.config.Configurator;
+import org.apache.logging.log4j.core.config.DefaultConfiguration;
 import org.ieee11073.sdc.dpws.service.HostingServiceProxy;
 import org.ieee11073.sdc.dpws.soap.exception.TransportException;
 import org.ieee11073.sdc.dpws.soap.wsdiscovery.WsDiscoveryClient;
@@ -29,7 +31,8 @@ public class WatchDogImplTest {
 
     @Before
     public void setUp() throws Exception {
-        BasicConfigurator.configure();
+        Configurator.initialize(new DefaultConfiguration());
+        Configurator.setRootLevel(Level.DEBUG);
 
         lock = new ReentrantLock();
         condition = lock.newCondition();

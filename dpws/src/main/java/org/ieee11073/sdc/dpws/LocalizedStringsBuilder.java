@@ -74,7 +74,7 @@ public class LocalizedStringsBuilder {
     }
 
     /**
-     * Get copy of the current localized string list.
+     * @return copy of the current localized string list.
      */
     public List<LocalizedStringType> get() {
         return new ArrayList<>(localizedStringTypes);
@@ -82,6 +82,8 @@ public class LocalizedStringsBuilder {
 
     /**
      * Reset current localized string buffer.
+     *
+     * @return current localized string buffer
      */
     public LocalizedStringsBuilder clear() {
         localizedStringTypes.clear();
