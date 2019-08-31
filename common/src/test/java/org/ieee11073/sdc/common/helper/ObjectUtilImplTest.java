@@ -9,6 +9,7 @@ import org.apache.logging.log4j.core.config.DefaultConfiguration;
 import org.ieee11073.sdc.common.helper.ObjectUtil;
 import org.ieee11073.sdc.common.helper.ObjectUtilImpl;
 import org.junit.Test;
+import test.org.ieee11073.common.TestLogging;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -21,8 +22,8 @@ public class ObjectUtilImplTest {
 
     @Test
     public void copy() {
-        Configurator.initialize(new DefaultConfiguration());
-        Configurator.setRootLevel(Level.DEBUG);
+        TestLogging.configure();
+
         Injector inj = Guice.createInjector(
                 new AbstractModule() {
                     @Override
