@@ -74,6 +74,7 @@ public class CryptoConfigurator {
      * with Grizzly servers.
      *
      * @param cryptoSettings Key store file takes precedence over key store stream.
+     * @return configured SSLContextConfigurator instance
      */
     public SSLContextConfigurator createSslContextConfiguratorFromCryptoConfig(CryptoSettings cryptoSettings) {
         final SSLContextConfigurator sslConfig = new SSLContextConfigurator(false);

@@ -14,6 +14,7 @@ public interface RequestResponseServer extends InterceptorHandler {
      * @param request Incoming request message.
      * @param response Outgoing response message.
      * @param transportInfo Transport information from transport layer (scheme, host, port).
+     * @return current progress of interceptor chain processing
      * @throws SoapFaultException SOAP fault that may be thrown on processing.
      */
     InterceptorResult receiveRequestResponse(SoapMessage request, SoapMessage response, TransportInfo transportInfo)

@@ -11,6 +11,7 @@ public interface NotificationSourceFactory {
     /**
      * @param callback Callback that shall be invoked after all interceptors on are visited and the notification shall
      *                 be transmitted to AbstractEventMessage sink.
+     * @return a new {@link NotificationSource}
      */
     NotificationSource createNotificationSource(@Assisted NotificationCallback callback);
 }

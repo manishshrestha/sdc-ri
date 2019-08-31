@@ -34,6 +34,10 @@ public class SoapUtil {
 
     /**
      * Store element in destined SOAP body.
+     *
+     * @param <T> The type of element {@code element}
+     * @param element Element to store in {@code dest}
+     * @param dest SoapMessage to store {@code element} in
      */
     public <T> void setBody(T element, SoapMessage dest) {
         dest.getOriginalEnvelope().getBody().getAny().clear();
@@ -45,6 +49,7 @@ public class SoapUtil {
      *
      * @param src The source message.
      * @param <T> The type to convert to.
+     * @param destType type of first element in body
      * @return An instance of T, or {@linkplain Optional#empty} if conversion fails.
      */
     public <T> Optional<T> getBody(SoapMessage src, Class<T> destType) {

@@ -54,28 +54,28 @@ public class InterceptorRegistry {
     }
 
     /**
-     * Retrieve all interceptors of any direction and action.
+     * @return all interceptors of any direction and action.
      */
     public List<InterceptorInfo> getDefaultInterceptors() {
         return getInterceptors("");
     }
 
     /**
-     * Retrieve all interceptors with given direction.
+     * @return all interceptors with given direction.
      */
     public List<InterceptorInfo> getDefaultInterceptors(Direction direction) {
         return getInterceptors(direction, "");
     }
 
     /**
-     * Retrieve all interceptors with given direction and action.
+     * @return all interceptors with given direction and action.
      */
     public List<InterceptorInfo> getInterceptors(Direction direction, String action) {
         return getInterceptorInfoList(direction, action);
     }
 
     /**
-     * Retrieve all interceptors of any direction with given action.
+     * @return all interceptors of any direction with given action.
      */
     public List<InterceptorInfo> getInterceptors(String action) {
         return getInterceptorInfoList(Direction.ANY, action);

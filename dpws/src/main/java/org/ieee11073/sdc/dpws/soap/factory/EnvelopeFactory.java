@@ -31,6 +31,10 @@ public class EnvelopeFactory {
 
     /**
      * Create envelope with given wsa:Action attribute and body.
+     *
+     * @param wsaAction Action to use for Envelope
+     * @param firstBodyChild message body
+     * @return an {@link Envelope}
      */
     public Envelope createEnvelope(String wsaAction, @Nullable Object firstBodyChild) {
         Envelope envelope = createEnvelope(firstBodyChild);
@@ -40,6 +44,11 @@ public class EnvelopeFactory {
 
     /**
      * Create envelope with given wsa:Action attribute, wsa:To attribute, and body.
+     *
+     * @param wsaAction Action to use for Envelope
+     * @param firstBodyChild message body
+     * @param wsaTo wsa:To element content
+     * @return an {@link Envelope}
      */
     public Envelope createEnvelope(String wsaAction, String wsaTo, Object firstBodyChild) {
         Envelope envelope = createEnvelope(firstBodyChild);
@@ -52,6 +61,9 @@ public class EnvelopeFactory {
      * Create envelope with given JAXB body element.
      *
      * Any header fields will be left empty.
+     *
+     * @param firstBodyChild element to store in body
+     * @return an {@link Envelope}
      */
     public Envelope createEnvelope(@Nullable Object firstBodyChild) {
         Envelope envelope = soapFactory.createEnvelope();
@@ -63,6 +75,7 @@ public class EnvelopeFactory {
 
     /**
      * Create an empty SOAP envelope with existing empty body and header.
+     * @return an empty {@link Envelope}
      */
     public Envelope createEnvelope() {
         return createEnvelope(null);

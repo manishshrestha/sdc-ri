@@ -11,7 +11,8 @@ public interface HostedServiceTransportBindingFactory {
     /**
      * Create instance.
      *
-     * @param hostedServiceProxy The hosted service where to bind to.
+     * @param hostedServiceProxy The hosted service to bind to.
+     * @return transport binding for hosted service
      */
     HostedServiceTransportBinding createHostedServiceTransportBinding(@Assisted HostedServiceProxy hostedServiceProxy);
 }

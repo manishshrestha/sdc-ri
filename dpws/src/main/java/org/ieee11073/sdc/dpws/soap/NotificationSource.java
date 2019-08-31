@@ -15,6 +15,10 @@ public interface NotificationSource extends InterceptorHandler {
      * This method returns as soon as the message left the application process.
      *
      * @param notification Outgoing notification message.
+     * @return current progress of interceptor chain processing
+     * @throws TransportException   Any transport-related exception during processing. This will hinder the response from
+     *                              being sent.
+     * @throws MarshallingException Any exception that occurs during marshalling or unmarshalling of SOAP messages.
      */
     InterceptorResult sendNotification(SoapMessage notification) throws MarshallingException, TransportException;
 }

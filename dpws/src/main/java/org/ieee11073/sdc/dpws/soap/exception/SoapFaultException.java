@@ -32,7 +32,7 @@ public class SoapFaultException extends Exception {
     }
 
     /**
-     * Retrieve {@link Fault} that is encapsulated in the {@link SoapMessage} wrapped by the exception.
+     * @return {@link Fault} that is encapsulated in the {@link SoapMessage} wrapped by the exception.
      */
     public Fault getFault() {
         return fault;
