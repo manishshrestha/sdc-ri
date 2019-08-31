@@ -27,17 +27,17 @@ public interface HostingServiceProxy extends RequestResponseClient {
     List<QName> getTypes();
 
     /**
-     * Get DPWS ThisModel information of the remote hosting service.
+     * @return DPWS ThisModel information of the remote hosting service.
      */
     Optional<ThisModelType> getThisModel();
 
     /**
-     * Get DPWS ThisDevice information of the remote hosting service.
+     * @return DPWS ThisDevice information of the remote hosting service.
      */
     Optional<ThisDeviceType> getThisDevice();
 
     /**
-     * Get a list of all known hosted services.
+     * @return a list of all known hosted services.
      */
     Map<String, HostedServiceProxy> getHostedServices();
 

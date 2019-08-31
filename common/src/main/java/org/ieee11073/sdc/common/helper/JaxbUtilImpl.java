@@ -1,6 +1,6 @@
 package org.ieee11073.sdc.common.helper;
 
-import com.sun.org.apache.xerces.internal.dom.ElementNSImpl;
+import org.w3c.dom.Element;
 
 import javax.xml.bind.JAXBElement;
 import javax.xml.namespace.QName;
@@ -42,7 +42,7 @@ public class JaxbUtilImpl implements JaxbUtil {
                 return Optional.ofNullable(elementAsJaxb.getValue());
             }
         } catch (Exception e) {
-            if (element instanceof ElementNSImpl) {
+            if (element instanceof Element) {
                 throw new RuntimeException("JAXB object conversion failed. Make sure the expected class is known to JAXB via context path.");
             }
             // ignore, empty optional will be returned

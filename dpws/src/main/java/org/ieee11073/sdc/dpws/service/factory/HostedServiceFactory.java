@@ -24,7 +24,8 @@ public interface HostedServiceFactory {
      * @param types        QName type list that matches at least the QName of the WSDL port type.
      * @param eprAddresses URLs the hosted service is requestable from, e.g. HTTP address with IPv4 and IPv6 host.
      * @param webService   Web Service interceptor.
-     * @param wsdlDocument Input stream to expose as WSDL description.
+     * @param wsdlDocument Input stream to expose as WSDL
+     * @return hosted service metadata instance.
      */
     HostedService createHostedService(@Assisted String serviceId,
                                       @Assisted List<QName> types,
@@ -40,15 +41,15 @@ public interface HostedServiceFactory {
      * @param serviceId  The service id. Please use a relative URL part (e.g., "SampleService")
      * @param types      QName type list that matches at least the QName(s) of the WSDL port type(s).
      * @param webService Web Service interceptor.
+     * @param wsdlDocument Input stream to expose as WSDL
+     * @return hosted service metadata instance without available EPR addresses.
      */
     HostedService createHostedService(@Assisted String serviceId,
                                       @Assisted List<QName> types,
                                       @Assisted WebService webService,
                                       @Assisted InputStream wsdlDocument);
 
-    /**
-     * \todo documentation and implementation
-     */
+    // TODO: Documentation and implementation
     HostedServiceProxy createHostedServiceProxy(@Assisted HostedServiceType hostedServiceType,
                                                 @Assisted RequestResponseClient rrClient,
                                                 @Assisted URI activeEprAddress,

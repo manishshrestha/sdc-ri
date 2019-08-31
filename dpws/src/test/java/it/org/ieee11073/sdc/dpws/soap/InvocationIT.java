@@ -10,7 +10,9 @@ import dpws_test_service.messages._2017._05._10.TestOperationRequest;
 import dpws_test_service.messages._2017._05._10.TestOperationResponse;
 import it.org.ieee11073.sdc.dpws.IntegrationTestUtil;
 import it.org.ieee11073.sdc.dpws.TestServiceMetadata;
-import org.apache.log4j.BasicConfigurator;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.core.config.Configurator;
+import org.apache.logging.log4j.core.config.DefaultConfiguration;
 import org.ieee11073.sdc.dpws.guice.DefaultDpwsConfigModule;
 import org.ieee11073.sdc.dpws.service.HostedServiceProxy;
 import org.ieee11073.sdc.dpws.service.HostingServiceProxy;
@@ -46,7 +48,8 @@ public class InvocationIT {
 
     @Before
     public void setUp() throws Exception {
-        BasicConfigurator.configure();
+        Configurator.initialize(new DefaultConfiguration());
+        Configurator.setRootLevel(Level.DEBUG);
 
         factory = new ObjectFactory();
 
@@ -69,7 +72,6 @@ public class InvocationIT {
     public void tearDown() {
         this.devicePeer.stopAsync().awaitTerminated();
         this.clientPeer.stopAsync().awaitTerminated();
-        BasicConfigurator.resetConfiguration();
     }
 
     @Test

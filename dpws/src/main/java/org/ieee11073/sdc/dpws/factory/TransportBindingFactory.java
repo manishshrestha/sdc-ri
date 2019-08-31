@@ -13,7 +13,7 @@ public interface TransportBindingFactory {
      * Generic factory method to create a binding on the basis of a URI.
      *
      * Please note that, depending on the implementation, some bindings are not supported. In this case an
-     * @link UnsupportedOperationException} is thrown.
+     * {@link UnsupportedOperationException} is thrown.
      *
      * @param endpointUri The URI to create a binding to.
      * @return A transport binding bound to endpointUri.

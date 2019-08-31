@@ -33,6 +33,11 @@ public class SoapFaultFactory {
 
     /**
      * @param actionUri wsa:Action to put into resulting {@link SoapMessage} header.
+     * @param code Soap fault code
+     * @param subcode Soap fault subcode
+     * @param reasonText reason for fault
+     * @param detail fault details
+     * @return a {@link SoapMessage} containing the fault
      */
     public SoapMessage createFault(String actionUri, QName code, QName subcode, String reasonText, Object detail) {
 
@@ -67,6 +72,10 @@ public class SoapFaultFactory {
 
     /**
      * @param actionUri wsa:Action to put into resulting {@link SoapMessage} header.
+     * @param code Soap fault code
+     * @param subcode Soap fault subcode
+     * @param reasonText reason for fault
+     * @return a {@link SoapMessage} containing the fault
      */
     public SoapMessage createFault(String actionUri, QName code, QName subcode, String reasonText) {
         return createFault(actionUri, code, subcode, reasonText, null);
@@ -74,6 +83,9 @@ public class SoapFaultFactory {
 
     /**
      * @param actionUri wsa:Action to put into resulting {@link SoapMessage} header.
+     * @param code Soap fault code
+     * @param subcode Soap fault subcode
+     * @return a {@link SoapMessage} containing the fault
      */
     public SoapMessage createFault(String actionUri, QName code, QName subcode) {
         return createFault(actionUri, code, subcode, "", null);
@@ -81,6 +93,8 @@ public class SoapFaultFactory {
 
     /**
      * Create soap:Receiver fault with given text.
+     * @param reasonText reason for fault
+     * @return a {@link SoapMessage} containing the fault
      */
     public SoapMessage createReceiverFault(String reasonText) {
         return createFault(WsAddressingConstants.FAULT_ACTION, SoapConstants.RECEIVER, SoapConstants.DEFAULT_SUBCODE, reasonText);
@@ -88,6 +102,8 @@ public class SoapFaultFactory {
 
     /**
      * Create soap:Sender fault with given text.
+     * @param reasonText reason for fault
+     * @return a {@link SoapMessage} containing the fault
      */
     public SoapMessage createSenderFault(String reasonText) {
         return createFault(WsAddressingConstants.FAULT_ACTION, SoapConstants.SENDER, SoapConstants.DEFAULT_SUBCODE, reasonText);

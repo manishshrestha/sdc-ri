@@ -6,7 +6,9 @@ import dpws_test_service.messages._2017._05._10.ObjectFactory;
 import dpws_test_service.messages._2017._05._10.TestNotification;
 import it.org.ieee11073.sdc.dpws.IntegrationTestUtil;
 import it.org.ieee11073.sdc.dpws.TestServiceMetadata;
-import org.apache.log4j.BasicConfigurator;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.core.config.Configurator;
+import org.apache.logging.log4j.core.config.DefaultConfiguration;
 import org.ieee11073.sdc.dpws.client.ClientConfig;
 import org.ieee11073.sdc.dpws.client.DiscoveredDevice;
 import org.ieee11073.sdc.dpws.crypto.CryptoConfig;
@@ -57,7 +59,8 @@ public class CryptoIT {
 
     @Before
     public void setUp() throws Exception {
-        BasicConfigurator.configure();
+        Configurator.initialize(new DefaultConfiguration());
+        Configurator.setRootLevel(Level.DEBUG);
         final CryptoSettings serverCryptoSettings = Ssl.setupServer();
 
         this.devicePeer = new BasicPopulatedDevice(new DeviceSettings() {
@@ -100,7 +103,6 @@ public class CryptoIT {
     public void tearDown() {
         this.devicePeer.stopAsync().awaitTerminated();
         this.clientPeer.stopAsync().awaitTerminated();
-        BasicConfigurator.resetConfiguration();
     }
 
     @Test

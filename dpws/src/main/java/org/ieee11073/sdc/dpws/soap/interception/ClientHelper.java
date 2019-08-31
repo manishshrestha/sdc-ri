@@ -28,6 +28,11 @@ public class ClientHelper {
      * {@link InterceptorResult#CANCEL}, {@linkplain ClientHelper} throws an {@link InterceptorException} on
      * {@link InterceptorResult#CANCEL} and {@link InterceptorResult#SKIP_RESPONSE}.
      *
+     * @param direction direction to match
+     * @param registry registry to retrieve interceptors from
+     * @param msg message to match action from
+     * @param param parameter to dispatch
+     * @return result of dispatch
      */
     public InterceptorResult invokeDispatcher(Direction direction,
                                               InterceptorRegistry registry,

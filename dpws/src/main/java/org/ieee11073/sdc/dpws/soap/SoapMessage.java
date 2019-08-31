@@ -76,14 +76,14 @@ public class SoapMessage {
     }
 
     /**
-     * Return envelope as passed to constructor.
+     * @return envelope as passed to constructor.
      */
     public Envelope getOriginalEnvelope() {
         return envelope;
     }
 
     /**
-     * Return new envelope with mapped convenience headers and body reference from {@link #getOriginalEnvelope()}.
+     * @return new envelope with mapped convenience headers and body reference from {@link #getOriginalEnvelope()}.
      */
     public Envelope getEnvelopeWithMappedHeaders() {
         Envelope mappedEnv = envelopeFactory.createEnvelopeFromBody(envelope.getBody());

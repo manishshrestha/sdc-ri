@@ -12,7 +12,7 @@ public interface HostedServiceProxy extends RequestResponseClient {
     /**
      * HostedServiceType definition.
      *
-     * Method returns a copy of the data received from the network.
+     * @return a copy of the data received from the network.
      */
     HostedServiceType getType();
 
@@ -21,6 +21,8 @@ public interface HostedServiceProxy extends RequestResponseClient {
      *
      * Hint: the {@linkplain HostingServiceProxy} itself implements {@link RequestResponseClient}, which is the same
      * as using the return value of this function.
+     *
+     * @return the {@link RequestResponseClient} instance
      */
     RequestResponseClient getRequestResponseClient();
 
@@ -29,6 +31,8 @@ public interface HostedServiceProxy extends RequestResponseClient {
      *
      * Attention: the event sink does only work if the underlying hosted service acts as an event source. This has to
      * be verified by the user in advance, otherwise calls on the return value will end up in SOAP faults.
+
+     * @return the {@link EventSinkAccess} instance
      */
     EventSinkAccess getEventSinkAccess();
 
@@ -37,6 +41,8 @@ public interface HostedServiceProxy extends RequestResponseClient {
      *
      * A hosted service can have different physical addresses in order to be accessible. The one that is returned
      * with this function is the one that was used to initially resolve metadata (GetMetadata request).
+     *
+     * @return the currently active EPR address
      */
     URI getActiveEprAddress();
 }

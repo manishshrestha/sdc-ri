@@ -11,6 +11,7 @@ public interface RequestResponseClientFactory {
     /**
      * @param callback Callback that shall be invoked after all interceptors on request-direction are visited and a
      *                 response is required from requested server.
+     * @return a new {@link RequestResponseClient}
      */
     RequestResponseClient createRequestResponseClient(@Assisted RequestResponseCallback callback);
 }

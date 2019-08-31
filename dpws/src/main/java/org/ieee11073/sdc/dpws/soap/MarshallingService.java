@@ -32,6 +32,7 @@ public class MarshallingService {
      *
      * @param msg The message to marshal.
      * @param os  The output stream where to write the XML message to.
+     * @throws MarshallingException Any exception that occurs during marshalling or unmarshalling of SOAP messages.
      */
     public void marshal(SoapMessage msg, OutputStream os) throws MarshallingException {
         try {
@@ -46,6 +47,7 @@ public class MarshallingService {
      *
      * @param is The input stream where to unmarshal from.
      * @return The unmarshalled object.
+     * @throws MarshallingException Any exception that occurs during marshalling or unmarshalling of SOAP messages.
      */
     public SoapMessage unmarshal(InputStream is) throws MarshallingException {
         try {
@@ -64,6 +66,7 @@ public class MarshallingService {
      * @param is            Input stream that provides SOAP request message.
      * @param os            Output stream where to write SOAP response message to.
      * @param transportInfo Transport layer information.
+     * @throws MarshallingException Any exception that occurs during marshalling or unmarshalling of SOAP messages.
      */
     public void handleRequestResponse(RequestResponseServer srv,
                                       InputStream is,
