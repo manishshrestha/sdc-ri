@@ -15,6 +15,7 @@ import org.ieee11073.sdc.dpws.soap.wsaddressing.WsAddressingConfig;
 import org.ieee11073.sdc.dpws.soap.wsaddressing.WsAddressingUtil;
 import org.ieee11073.sdc.dpws.soap.wsaddressing.model.EndpointReferenceType;
 import org.ieee11073.sdc.common.guice.DefaultHelperModule;
+import test.org.ieee11073.common.TestLogging;
 
 import javax.xml.namespace.QName;
 import java.io.IOException;
@@ -24,8 +25,7 @@ import java.util.List;
 
 public class DeviceImplTest implements Runnable {
     public static void main(String[] args) {
-        Configurator.initialize(new DefaultConfiguration());
-        Configurator.setRootLevel(Level.DEBUG);
+        TestLogging.configure();
         new DeviceImplTest().run();
     }
 

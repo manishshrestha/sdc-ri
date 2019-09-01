@@ -7,6 +7,7 @@ import test.org.ieee11073.common.TestLogging;
 import org.ieee11073.sdc.common.helper.ObjectUtil;
 import org.ieee11073.sdc.common.helper.ObjectUtilImpl;
 import org.junit.Test;
+import test.org.ieee11073.common.TestLogging;
 
 import java.util.ArrayList;
 import java.util.Arrays;

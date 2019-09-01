@@ -11,6 +11,7 @@ import org.ieee11073.sdc.dpws.soap.wsdiscovery.model.ProbeMatchesType;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import test.org.ieee11073.common.TestLogging;
 
 import java.time.Duration;
 import java.util.concurrent.Executors;
@@ -31,8 +32,7 @@ public class WatchDogImplTest {
 
     @Before
     public void setUp() throws Exception {
-        Configurator.initialize(new DefaultConfiguration());
-        Configurator.setRootLevel(Level.DEBUG);
+        TestLogging.configure();
 
         lock = new ReentrantLock();
         condition = lock.newCondition();

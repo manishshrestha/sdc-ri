@@ -27,6 +27,7 @@ import org.ieee11073.sdc.dpws.soap.wseventing.SubscribeResult;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import test.org.ieee11073.common.TestLogging;
 
 import java.net.URI;
 import java.time.Duration;
