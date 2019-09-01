@@ -77,7 +77,6 @@ public class EventSinkImpl implements EventSink {
                   SoapMarshalling marshalling,
                   SoapUtil soapUtil,
                   JaxbUtil jaxbUtil,
-                  HttpUriBuilder uriBuilder,
                   @NetworkJobThreadPool ListeningExecutorService executorService,
                   @AutoRenewExecutor ScheduledExecutorService autoRenewExecutor,
                   SubscriptionManagerFactory subscriptionManagerFactory) {
