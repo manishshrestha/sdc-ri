@@ -180,7 +180,8 @@ public class GrizzlyHttpServerRegistry extends AbstractIdleService implements Ht
             HttpServer newHttpServer = createHttpServer(URI.create(mapKey));
 
             NetworkListener netListener = Iterables.get(newHttpServer.getListeners(), 0);
-            // schemeAndAuthority is picked on purpose; netListener is always null
+            // schemeAndAuthority.getScheme() is picked on purpose; netListener.getScheme() is always null for unknown
+            // reasons. As getScheme() from schemeAndAuthority also does the job, further investigation is neglected
             URI uri = uriBuilder.buildUri(schemeAndAuthority.getScheme(), netListener.getHost(), netListener.getPort());
 
             serverRegistry.put(makeMapKey(uri), newHttpServer);
