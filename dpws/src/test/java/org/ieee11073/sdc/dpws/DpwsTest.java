@@ -10,6 +10,7 @@ import org.apache.logging.log4j.core.config.DefaultConfiguration;
 import org.ieee11073.sdc.dpws.guice.DefaultDpwsConfigModule;
 import org.ieee11073.sdc.dpws.guice.DefaultDpwsModule;
 import org.ieee11073.sdc.common.guice.DefaultHelperModule;
+import test.org.ieee11073.common.TestLogging;
 
 /**
  * Test base class to provide common test functionality.
@@ -23,8 +24,7 @@ public class DpwsTest {
     }
 
     protected void setUp() throws Exception {
-        Configurator.initialize(new DefaultConfiguration());
-        Configurator.setRootLevel(Level.DEBUG);
+        TestLogging.configure();
         if (overridingModule != null) {
             injector = Guice.createInjector(Modules.override(new DefaultDpwsModule(), new DefaultHelperModule(),
                     new DefaultDpwsConfigModule()).with(overridingModule));

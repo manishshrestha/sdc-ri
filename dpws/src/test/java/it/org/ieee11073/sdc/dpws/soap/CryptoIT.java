@@ -30,6 +30,7 @@ import org.ieee11073.sdc.dpws.soap.wseventing.SubscribeResult;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import test.org.ieee11073.common.TestLogging;
 
 import javax.net.ssl.SSLContext;
 import javax.ws.rs.client.Client;
@@ -59,8 +60,7 @@ public class CryptoIT {
 
     @Before
     public void setUp() throws Exception {
-        Configurator.initialize(new DefaultConfiguration());
-        Configurator.setRootLevel(Level.DEBUG);
+        TestLogging.configure();
         final CryptoSettings serverCryptoSettings = Ssl.setupServer();
 
         this.devicePeer = new BasicPopulatedDevice(new DeviceSettings() {

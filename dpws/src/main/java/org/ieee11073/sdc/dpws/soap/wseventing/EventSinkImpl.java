@@ -295,6 +295,10 @@ public class EventSinkImpl implements EventSink {
             SoapMessage soapMsg = soapUtil.createMessage(marshalling.unmarshal(in));
             in.close();
             notificationSink.receiveNotification(soapMsg);
+            
+            // Only close the output stream when the notification has been processed
+            // as closing allows the server do dispatch the next request, which will cause concurrency problems
+            // for the ultimate receiver of the notifications
             out.close();
         } catch (IOException e) {
             throw new TransportException(e);

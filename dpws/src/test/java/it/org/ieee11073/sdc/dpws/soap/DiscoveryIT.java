@@ -17,6 +17,7 @@ import org.ieee11073.sdc.dpws.soap.wsdiscovery.WsDiscoveryConfig;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import test.org.ieee11073.common.TestLogging;
 
 import java.net.URI;
 import java.time.Duration;
@@ -34,8 +35,7 @@ public class DiscoveryIT {
 
     @Before
     public void setUp() throws Exception {
-        Configurator.initialize(new DefaultConfiguration());
-        Configurator.setRootLevel(Level.DEBUG);
+        TestLogging.configure();
         this.devicePeer = new BasicPopulatedDevice();
         this.clientPeer = new ClientPeer(new DefaultDpwsConfigModule() {
             @Override
