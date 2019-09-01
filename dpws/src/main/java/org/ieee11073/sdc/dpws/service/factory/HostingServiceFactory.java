@@ -23,19 +23,21 @@ public interface HostingServiceFactory {
      * Create a hosting service.
      *
      * @param targetService WS-Discovery target service information used by the hosting service.
+     * @return a {@link HostingService} instance for the {@code targetService}
      */
     HostingService createHostingService(@Assisted WsDiscoveryTargetService targetService);
 
     /**
      *
-     * @param endpointReferenceAddress
-     * @param types
-     * @param thisDevice
-     * @param thisModel
+     * @param endpointReferenceAddress endpoint reference address for hosting service
+     * @param types List of types for hosting service
+     * @param thisDevice {@link ThisDeviceType} for hosting service
+     * @param thisModel {@link ThisModelType} for hosting service
      * @param hostedServices Map of service ids to hosted service proxies.
-     * @param metadataVersion
-     * @param requestResponseClient
+     * @param metadataVersion metadata version used for hosting service
+     * @param requestResponseClient {@link RequestResponseClient} to use for hosting service
      * @param activeXAddr Physical address where to reach the hosting service proxy
+     * @return a {@link HostingServiceProxy} instance
      */
     HostingServiceProxy createHostingServiceProxy(@Assisted("eprAddress") URI endpointReferenceAddress,
                                                   @Assisted List<QName> types,

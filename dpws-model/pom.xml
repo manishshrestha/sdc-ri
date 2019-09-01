@@ -23,6 +23,24 @@
             <artifactId>jaxb2-basics</artifactId>
             <version>1.11.1</version>
         </dependency>
+        <!-- https://mvnrepository.com/artifact/javax.xml.bind/jaxb-api -->
+        <dependency>
+            <groupId>javax.xml.bind</groupId>
+            <artifactId>jaxb-api</artifactId>
+            <version>2.3.1</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/com.sun.xml.bind/jaxb-core -->
+        <dependency>
+            <groupId>com.sun.xml.bind</groupId>
+            <artifactId>jaxb-core</artifactId>
+            <version>2.3.0.1</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/com.sun.xml.bind/jaxb-impl -->
+        <dependency>
+            <groupId>com.sun.xml.bind</groupId>
+            <artifactId>jaxb-impl</artifactId>
+            <version>2.3.2</version>
+        </dependency>
     </dependencies>
     <build>
         <plugins>
@@ -38,6 +56,7 @@
                             <!-- <forceRegenerate>${jaxb-plugin.forceRegenerate}</forceRegenerate> -->
                             <readOnly>true</readOnly>
                             <episode>true</episode>
+                            <strict>false</strict>
                             <generateDirectory>${directories.generatedSources}/java</generateDirectory>
                             <args>
                                 <arg>-npa</arg>

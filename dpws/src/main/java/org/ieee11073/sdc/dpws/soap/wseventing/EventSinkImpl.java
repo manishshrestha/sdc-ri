@@ -294,8 +294,8 @@ public class EventSinkImpl implements EventSink {
         try {
             SoapMessage soapMsg = soapUtil.createMessage(marshalling.unmarshal(in));
             in.close();
-            out.close();
             notificationSink.receiveNotification(soapMsg);
+            out.close();
         } catch (IOException e) {
             throw new TransportException(e);
         } catch (JAXBException e) {

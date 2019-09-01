@@ -11,6 +11,20 @@
 
 	<artifactId>common</artifactId>
 
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>3.8.1</version>
+				<configuration>
+					<release>11</release>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+
+
 	<dependencies>
 		<!-- Deep copy utility -->
 		<!-- https://mvnrepository.com/artifact/uk.com.robust-it/cloning -->
@@ -23,10 +37,28 @@
 		<!-- Immutable facade utility -->
 		<!-- https://mvnrepository.com/artifact/com.javax0/immutator -->
 		<dependency>
-			<groupId>com.javax0</groupId>
 			<artifactId>immutator</artifactId>
+			<groupId>com.javax0</groupId>
 			<version>1.0.1</version>
 		</dependency>
 
+		<!-- https://mvnrepository.com/artifact/javax.xml.bind/jaxb-api -->
+		<dependency>
+			<artifactId>jaxb-api</artifactId>
+			<groupId>javax.xml.bind</groupId>
+			<version>2.3.1</version>
+		</dependency>
+		<dependency>
+		<!-- https://mvnrepository.com/artifact/com.sun.xml.bind/jaxb-core -->
+			<artifactId>jaxb-core</artifactId>
+			<groupId>com.sun.xml.bind</groupId>
+			<version>2.3.0.1</version>
+		<!-- https://mvnrepository.com/artifact/com.sun.xml.bind/jaxb-impl -->
+		</dependency>
+		<dependency>
+			<groupId>com.sun.xml.bind</groupId>
+			<artifactId>jaxb-impl</artifactId>
+			<version>2.3.2</version>
+		</dependency>
 	</dependencies>
 </project>

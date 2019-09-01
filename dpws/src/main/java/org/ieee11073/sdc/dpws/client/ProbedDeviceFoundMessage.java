@@ -15,7 +15,7 @@ public class ProbedDeviceFoundMessage extends AbstractEventMessage<DiscoveredDev
     }
 
     /**
-     * Get discovery identifier of the discovery process that the discovered device relates to.
+     * @return discovery identifier of the discovery process that the discovered device relates to.
      */
     public String getDiscoveryId() {
         return discoveryId;

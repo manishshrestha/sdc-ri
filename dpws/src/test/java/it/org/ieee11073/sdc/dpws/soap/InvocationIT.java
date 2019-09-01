@@ -10,7 +10,9 @@ import dpws_test_service.messages._2017._05._10.TestOperationRequest;
 import dpws_test_service.messages._2017._05._10.TestOperationResponse;
 import it.org.ieee11073.sdc.dpws.IntegrationTestUtil;
 import it.org.ieee11073.sdc.dpws.TestServiceMetadata;
-import org.apache.log4j.BasicConfigurator;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.core.config.Configurator;
+import org.apache.logging.log4j.core.config.DefaultConfiguration;
 import org.ieee11073.sdc.dpws.guice.DefaultDpwsConfigModule;
 import org.ieee11073.sdc.dpws.service.HostedServiceProxy;
 import org.ieee11073.sdc.dpws.service.HostingServiceProxy;
@@ -20,7 +22,6 @@ import org.ieee11073.sdc.dpws.soap.SoapUtil;
 import org.ieee11073.sdc.dpws.soap.interception.Interceptor;
 import org.ieee11073.sdc.dpws.soap.interception.MessageInterceptor;
 import org.ieee11073.sdc.dpws.soap.interception.NotificationObject;
-import org.ieee11073.sdc.dpws.soap.wsdiscovery.WsDiscoveryConfig;
 import org.ieee11073.sdc.dpws.soap.wseventing.SubscribeResult;
 import org.junit.After;
 import org.junit.Before;
@@ -47,7 +48,8 @@ public class InvocationIT {
 
     @Before
     public void setUp() throws Exception {
-        BasicConfigurator.configure();
+        Configurator.initialize(new DefaultConfiguration());
+        Configurator.setRootLevel(Level.DEBUG);
 
         factory = new ObjectFactory();
 
@@ -99,7 +101,7 @@ public class InvocationIT {
             assertEquals(expectedString, testOperationResponse.getResult1());
             assertEquals(expectedInt.intValue(), testOperationResponse.getResult2());
         }
-        
+
         // test multiple iterations concurrently (in order to increase probability of concurrency issues)
         ArrayList<ListenableFuture<Boolean>> futures = new ArrayList<>();
         final ListeningExecutorService les = MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(COUNT));
@@ -174,11 +176,10 @@ public class InvocationIT {
                         new Interceptor() {
                             private final List<TestNotification> receivedNotifications = new ArrayList<>();
 
-                            @MessageInterceptor
+                            @MessageInterceptor(value = TestServiceMetadata.ACTION_NOTIFICATION_1)
                             void onNotification(NotificationObject message) {
-                                receivedNotifications.add(
-                                        soapUtil.getBody(message.getNotification(), TestNotification.class)
-                                                .orElseThrow(() -> new RuntimeException("TestNotification could not be converted")));
+                                receivedNotifications.add(soapUtil.getBody(message.getNotification(), TestNotification.class)
+                                        .orElseThrow(() -> new RuntimeException("TestNotification could not be converted")));
                                 if (receivedNotifications.size() == COUNT) {
                                     notificationFuture1.set(receivedNotifications);
                                 }
@@ -190,7 +191,7 @@ public class InvocationIT {
                         new Interceptor() {
                             private final List<TestNotification> receivedNotifications = new ArrayList<>();
 
-                            @MessageInterceptor
+                            @MessageInterceptor(value = TestServiceMetadata.ACTION_NOTIFICATION_2)
                             void onNotification(NotificationObject message) {
                                 receivedNotifications.add(
                                         soapUtil.getBody(message.getNotification(), TestNotification.class)
@@ -205,7 +206,7 @@ public class InvocationIT {
                         new Interceptor() {
                             private final List<TestNotification> receivedNotifications = new ArrayList<>();
 
-                            @MessageInterceptor
+                            @MessageInterceptor(value = TestServiceMetadata.ACTION_NOTIFICATION_3)
                             void onNotification(NotificationObject message) {
                                 receivedNotifications.add(
                                         soapUtil.getBody(message.getNotification(), TestNotification.class)
@@ -257,12 +258,21 @@ public class InvocationIT {
                         new Interceptor() {
                             private final List<TestNotification> receivedNotifications = new ArrayList<>();
 
-                            @MessageInterceptor
-                            void onNotification(NotificationObject message) {
+                            @MessageInterceptor(value = TestServiceMetadata.ACTION_NOTIFICATION_1)
+                            void onNotification1(NotificationObject message) {
+                                onNotification(message);
+                            }
+
+                            @MessageInterceptor(value = TestServiceMetadata.ACTION_NOTIFICATION_2)
+                            void onNotification2(NotificationObject message) {
+                                onNotification(message);
+                            }
+
+                            private void onNotification(NotificationObject message) {
                                 receivedNotifications.add(
                                         soapUtil.getBody(message.getNotification(), TestNotification.class)
                                                 .orElseThrow(() -> new RuntimeException("TestNotification could not be converted")));
-                                if (receivedNotifications.size() == COUNT*2) {
+                                if (receivedNotifications.size() == COUNT * 2) {
                                     notificationFuture.set(receivedNotifications);
                                 }
                             }
@@ -278,12 +288,12 @@ public class InvocationIT {
         }
 
         final List<TestNotification> notifications = notificationFuture.get(MAX_WAIT_TIME.getSeconds(), TimeUnit.SECONDS);
-        assertEquals(COUNT*2, notifications.size());
+        assertEquals(COUNT * 2, notifications.size());
         for (int i = 0; i < COUNT; ++i) {
-            final TestNotification notificationEven = notifications.get(i*2);
+            final TestNotification notificationEven = notifications.get(i * 2);
             assertEquals(Integer.toString(i), notificationEven.getParam1());
             assertEquals(i, notificationEven.getParam2());
-            final TestNotification notificationOdd = notifications.get(i*2+1);
+            final TestNotification notificationOdd = notifications.get(i * 2 + 1);
             assertEquals(Integer.toString(i), notificationOdd.getParam1());
             assertEquals(i, notificationOdd.getParam2());
         }

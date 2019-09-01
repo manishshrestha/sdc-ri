@@ -30,6 +30,7 @@ public class HttpUriBuilder {
      *
      * @see HttpConfig#PORT_MIN
      * @see HttpConfig#PORT_MAX
+     * @return random port
      */
     public Integer buildRandomPort() {
         return random.nextInt(portMax - portMin + 1) + portMin;
@@ -41,6 +42,7 @@ public class HttpUriBuilder {
      * @param scheme The scheme to insert into the URI.
      * @param host The host to insert into the URI.
      * @param port The port to insert into the URI.
+     * @return an {@link URI} instance
      */
     public URI buildUri(String scheme, String host, int port) {
         return URI.create(scheme + "://" + host + ":" + port);
@@ -51,6 +53,7 @@ public class HttpUriBuilder {
      *
      * @param host The host to insert into the URI.
      * @param port The port to insert into the URI.
+     * @return an {@link URI} instance
      */
     public URI buildUri(String host, int port) {
         return buildUri("http", host,  port);
@@ -61,6 +64,7 @@ public class HttpUriBuilder {
      *
      * @param host The host to insert into the URI.
      * @param port The port to insert into the URI.
+     * @return an {@link URI} instance
      */
     public URI buildSecuredUri(String host, int port) {
         return buildUri("https", host,  port);

@@ -20,14 +20,14 @@ public class PeerInformation {
     }
 
     /**
-     * Get remote address of peer connection.
+     * @return remote address of peer connection.
      */
     public URI getRemoteAddress() {
         return remoteAddress;
     }
 
     /**
-     * Get local hostname/address of peer connection.
+     * @return local hostname/address of peer connection.
      */
     public String getLocalHost() {
         return localHost;

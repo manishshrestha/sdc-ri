@@ -6,7 +6,9 @@ import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.SettableFuture;
 import it.org.ieee11073.sdc.dpws.IntegrationTestUtil;
 import it.org.ieee11073.sdc.dpws.TestServiceMetadata;
-import org.apache.log4j.BasicConfigurator;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.core.config.Configurator;
+import org.apache.logging.log4j.core.config.DefaultConfiguration;
 import org.ieee11073.sdc.dpws.client.*;
 import org.ieee11073.sdc.dpws.guice.DefaultDpwsConfigModule;
 import org.ieee11073.sdc.dpws.service.HostingServiceProxy;
@@ -32,7 +34,8 @@ public class DiscoveryIT {
 
     @Before
     public void setUp() throws Exception {
-        BasicConfigurator.configure();
+        Configurator.initialize(new DefaultConfiguration());
+        Configurator.setRootLevel(Level.DEBUG);
         this.devicePeer = new BasicPopulatedDevice();
         this.clientPeer = new ClientPeer(new DefaultDpwsConfigModule() {
             @Override

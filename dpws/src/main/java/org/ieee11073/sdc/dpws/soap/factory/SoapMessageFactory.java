@@ -11,6 +11,7 @@ public interface SoapMessageFactory {
     /**
      * @param envelope The envelope that is encapsulated within the {@link SoapMessage}. All known headers will be
      *                 added to the convenience header access.
+     * @return a new {@link SoapMessage} instance containing the {@code envelope}
      */
     SoapMessage createSoapMessage(@Assisted Envelope envelope);
 }

@@ -15,6 +15,9 @@ public interface RequestResponseCallback {
      * @param request The request to send.
      * @return A SOAP message with the received response.
      * @throws SoapFaultException Any SOAP fault a server answers.
+     * @throws TransportException   Any transport-related exception during processing. This will hinder the response from
+     *                              being sent.
+     * @throws MarshallingException Any exception that occurs during marshalling or unmarshalling of SOAP messages.
      */
     SoapMessage onRequestResponse(SoapMessage request) throws SoapFaultException, MarshallingException, TransportException;
 }

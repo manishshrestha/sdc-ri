@@ -6,7 +6,8 @@ import dpws_test_service.messages._2017._05._10.ObjectFactory;
 import dpws_test_service.messages._2017._05._10.TestNotification;
 import it.org.ieee11073.sdc.dpws.IntegrationTestUtil;
 import it.org.ieee11073.sdc.dpws.TestServiceMetadata;
-import org.apache.log4j.BasicConfigurator;
+import test.org.ieee11073.common.TestLogging;
+import org.ieee11073.sdc.dpws.client.ClientConfig;
 import org.ieee11073.sdc.dpws.client.DiscoveredDevice;
 import org.ieee11073.sdc.dpws.crypto.CryptoConfig;
 import org.ieee11073.sdc.dpws.crypto.CryptoSettings;
@@ -50,7 +51,7 @@ public class CryptoIT {
 
     @Before
     public void setUp() throws Exception {
-        BasicConfigurator.configure();
+        TestLogging.configure();
         final CryptoSettings serverCryptoSettings = Ssl.setupServer();
 
         this.devicePeer = new BasicPopulatedDevice(new DeviceSettings() {
@@ -131,7 +132,7 @@ public class CryptoIT {
                         new Interceptor() {
                             private final List<TestNotification> receivedNotifications = new ArrayList<>();
 
-                            @MessageInterceptor
+                            @MessageInterceptor(value = TestServiceMetadata.ACTION_NOTIFICATION_1)
                             void onNotification(NotificationObject message) {
                                 receivedNotifications.add(
                                         soapUtil.getBody(message.getNotification(), TestNotification.class)

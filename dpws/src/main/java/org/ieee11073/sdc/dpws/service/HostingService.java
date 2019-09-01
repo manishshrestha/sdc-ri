@@ -20,18 +20,20 @@ public interface HostingService extends Interceptor {
      * As defined in dpws:R0004, the URI is a UUID IRI.
      *
      * @see <a href="http://docs.oasis-open.org/ws-dd/dpws/1.1/os/wsdd-dpws-1.1-spec-os.html#_Toc228672089">WS-Addressing</a>
+     *
+     * @return EPR {@link URI}
      */
     URI getEndpointReferenceAddress();
 
     /**
-     * Physical addresses the hosting service is reachable from. Forwards addresses from WS-Discovery XAddr field.
+     * @return Physical addresses the hosting service is reachable from. Forwards addresses from WS-Discovery XAddr field.
      *
      * @see <a href="http://docs.oasis-open.org/ws-dd/discovery/1.1/os/wsdd-discovery-1.1-spec-os.html#_Toc234231821">Hello</a>
      */
     List<URI> getXAddrs();
 
     /**
-     * Retrieve ThisModel information as defined in DPWS.
+     * @return ThisModel information as defined in DPWS.
      *
      * @see <a href="http://docs.oasis-open.org/ws-dd/dpws/1.1/os/wsdd-dpws-1.1-spec-os.html#_Toc228672093">Characteristics</a>
      */
@@ -45,7 +47,7 @@ public interface HostingService extends Interceptor {
     void setThisModel(ThisModelType thisModel);
 
     /**
-     * Retrieve ThisDevice information as defined in DPWS.
+     * @return ThisDevice information as defined in DPWS.
      *
      * @see <a href="http://docs.oasis-open.org/ws-dd/dpws/1.1/os/wsdd-dpws-1.1-spec-os.html#_Toc228672093">Characteristics</a>
      */
@@ -69,7 +71,7 @@ public interface HostingService extends Interceptor {
     void addHostedService(HostedService hostedService);
 
     /**
-     * Return a list of all registered hosted services.
+     * @return a list of all registered hosted services.
      *
      * @see <a href="http://docs.oasis-open.org/ws-dd/dpws/1.1/os/wsdd-dpws-1.1-spec-os.html#_Toc228672094">Hosting</a>
      */
