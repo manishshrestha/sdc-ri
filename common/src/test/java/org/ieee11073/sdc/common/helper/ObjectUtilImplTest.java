@@ -3,6 +3,8 @@ package org.ieee11073.sdc.common.helper;
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
+import org.junit.Assert;
+import org.junit.Before;
 import test.org.ieee11073.common.TestLogging;
 import org.ieee11073.sdc.common.helper.ObjectUtil;
 import org.ieee11073.sdc.common.helper.ObjectUtilImpl;
