@@ -124,6 +124,11 @@ public class DeviceImpl extends AbstractIdleService implements Device, Service, 
                 new RuntimeException("No valid endpoint reference found in device config."));
         String hostingServerCtxtPath = buildContextPathBase(eprAddress);
 
+        // Initialize HTTP servers
+        List<URI> actualHostingServiceBindings = config.getHostingServiceBindings().stream()
+                .map(uri -> httpServerRegistry.initHttpServer(uri))
+                .collect(Collectors.toList());
+
         /*
          * Configure WS-Discovery
          */
@@ -134,7 +139,7 @@ public class DeviceImpl extends AbstractIdleService implements Device, Service, 
 
         // Create WS-Discovery target service
         wsdTargetService = targetServiceFactory.createWsDiscoveryTargetService(deviceEpr, wsdNotificationSource);
-        wsdTargetService.setXAddrs(config.getHostingServiceBindings().parallelStream()
+        wsdTargetService.setXAddrs(actualHostingServiceBindings.stream()
                 .map(uri -> uri.toString() + hostingServerCtxtPath)
                 .collect(Collectors.toList()));
 
@@ -156,7 +161,7 @@ public class DeviceImpl extends AbstractIdleService implements Device, Service, 
         RequestResponseServerHttpHandler reqResHandler = reqResHandlerProvider.get();
 
         // Register HTTP bindings to HTTP context registry; append EPR UUID from host as context path
-        config.getHostingServiceBindings().forEach(uri -> httpServerRegistry.registerContext(uri,
+        actualHostingServiceBindings.forEach(uri -> httpServerRegistry.registerContext(uri,
                 hostingServerCtxtPath, reqResHandler));
         // Create hosting service
         hostingService = hostingServiceFactory.createHostingService(wsdTargetService);
