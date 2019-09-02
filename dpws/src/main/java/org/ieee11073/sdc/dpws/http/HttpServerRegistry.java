@@ -16,28 +16,37 @@ import java.net.URI;
  * For proper shutdown of all servers, {@link Service#stopAsync()} should be called.
  */
 public interface HttpServerRegistry extends Service {
+
+    /**
+     * Create HTTP server at given URI if not existing, start and return.
+     * @param schemeAndAuthority The scheme and authority where to access the HTTP server. If port number is
+     *                           0, a random open port is selected and part of the returned URI.
+     * @return The actual assigned URI of the HTTP server.
+     */
+    URI initHttpServer(URI schemeAndAuthority);
+
     /**
      * Register handlers for SOAP messsages on context paths for dedicated hosts.
      *
      * @param schemeAndAuthority Base address where to deploy the context path.
      * @param contextPath A context path where the given host shall listen to.
+     *                    The context path needs to start with a slash.
      * @param handler     Whenever a request to the given context path is done,
      *                    {@link HttpHandler#process(InputStream, OutputStream, TransportInfo)} is called. Default
      *                    response media type is {@link SoapConstants#MEDIA_TYPE_SOAP}.
      * @return Full path of the HTTP server address including host name, port and context path.
      */
-    //URI registerContext(String host, Integer port, String contextPath, HttpHandler handler);
     URI registerContext(URI schemeAndAuthority, String contextPath, HttpHandler handler);
+
     /**
      * @param schemeAndAuthority Base address where to deploy the context path.
      * @param contextPath A context path where the given hosts shall listen on.
+     *                    The context path needs to start with a slash.
      * @param mediaType   Media type of the response the handler will produce.
      * @param handler     Whenever a request to the given context path is done,
      *                    {@link HttpHandler#process(InputStream, OutputStream, TransportInfo)}  is called.
      * @return Full path of the HTTP server address including host name, port and context path.
      */
-    //URI registerContext(String host, Integer port, String contextPath, String mediaType, HttpHandler handler);
-
     URI registerContext(URI schemeAndAuthority, String contextPath, String mediaType, HttpHandler handler);
 
     /**

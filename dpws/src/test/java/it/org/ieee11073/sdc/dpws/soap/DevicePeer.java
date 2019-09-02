@@ -32,8 +32,7 @@ public abstract class DevicePeer extends IntegrationTestPeer {
             final WsAddressingUtil wsaUtil = getInjector().getInstance(WsAddressingUtil.class);
             final HttpUriBuilder uriBuilder = getInjector().getInstance(HttpUriBuilder.class);
             final EndpointReferenceType epr = wsaUtil.createEprWithAddress(this.eprAddress);
-            final List<URI> hostingServiceBinding = Collections.singletonList(uriBuilder.buildUri("localhost",
-                    uriBuilder.buildRandomPort()));
+            final List<URI> hostingServiceBinding = Collections.singletonList(uriBuilder.buildUri("localhost", 0));
             this.device.setConfiguration(new DeviceSettings() {
                 @Override
                 public EndpointReferenceType getEndpointReference() {
@@ -45,8 +44,7 @@ public abstract class DevicePeer extends IntegrationTestPeer {
                     return hostingServiceBinding;
                 }
             });
-        }
-        else {
+        } else {
             this.eprAddress = URI.create(deviceSettings.getEndpointReference().getAddress().getValue());
             this.device.setConfiguration(deviceSettings);
         }

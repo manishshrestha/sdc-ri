@@ -283,8 +283,7 @@ public class HostingServiceResolver {
             return Optional.empty();
         }
 
-        URI httpBinding = uriBuilder.buildUri(activeHostedServiceEprAddress.getScheme(), localAddress.get(),
-                uriBuilder.buildRandomPort());
+        URI httpBinding = uriBuilder.buildUri(activeHostedServiceEprAddress.getScheme(), localAddress.get(), 0);
 
         final EventSink eventSink = eventSinkFactory.createWsEventingEventSink(rrClient, httpBinding);
         return Optional.of(hostedServiceFactory.createHostedServiceProxy(host, rrClient,
