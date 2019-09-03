@@ -14,7 +14,7 @@ Always write Javadoc to be best read on source code level. Only a minority of de
 
  - All public and protected methods **shall** be fully defined with Javadoc.
  - Package and private methods **may** be defined with Javadoc.
- - If a method is overridden in a subclass, Javadoc **shall** only be present if it says something distinct to the original definition of the method.
+ - If a method is overridden in a subclass, Javadoc **shall** only be present if it says something distinct from the original definition of the method.
 
 ## Use simple HTML tags, not valid XHTML
 
@@ -67,7 +67,7 @@ When referring to an instance of the class being documented, the term *this* **s
 
 ## Aim for short single line sentences
 
-Wherever possible, make Javadoc sentences fit on a single line. Allow flexibility in the line length, favouring 120 characters to make this work.
+Wherever possible, make Javadoc sentences fit on a single line. Allow flexibility in the line length, favoring 120 characters to make this work.
 
 In most cases, each new sentence **should** start on a new line. This aids readability as source code, and simplifies refactoring re-writes of complex Javadoc.
 
