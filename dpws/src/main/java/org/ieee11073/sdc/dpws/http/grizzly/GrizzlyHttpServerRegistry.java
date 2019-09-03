@@ -107,10 +107,11 @@ public class GrizzlyHttpServerRegistry extends AbstractIdleService implements Ht
 
         registryLock.lock();
         try {
+
             HttpServerInfo httpServerInfo = makeHttpServerIfNotExistingFor(schemeAndAuthority);
-            GrizzlyHttpHandlerBroker handlerBroker = new GrizzlyHttpHandlerBroker(mediaType, handler);
             String mapKeyString = makeMapKey(httpServerInfo.getUri(), contextPath);
             URI mapKeyUri = URI.create(mapKeyString);
+            GrizzlyHttpHandlerBroker handlerBroker = new GrizzlyHttpHandlerBroker(mediaType, handler, mapKeyUri.toString());
             handlerRegistry.put(mapKeyString, handlerBroker);
 
             LOG.info("Register context path '{}' at HTTP server '{}'", contextPath, httpServerInfo.getUri());
@@ -244,17 +245,20 @@ public class GrizzlyHttpServerRegistry extends AbstractIdleService implements Ht
     private class GrizzlyHttpHandlerBroker extends org.glassfish.grizzly.http.server.HttpHandler {
         private final String mediaType;
         private final HttpHandler handler;
+        private final String requestedUri;
 
         GrizzlyHttpHandlerBroker(String mediaType,
-                                 HttpHandler handler) {
+                                 HttpHandler handler,
+                                 String requestedUri) {
             this.mediaType = mediaType;
             this.handler = handler;
+            this.requestedUri = requestedUri;
         }
 
         @Override
         public void service(Request request, Response response) throws Exception {
             if (LOG.isDebugEnabled()) {
-                LOG.debug("Request to {}", getName());
+                LOG.debug("Request to {}", requestedUri);
             }
 
             response.setStatus(HttpStatus.OK_200);
