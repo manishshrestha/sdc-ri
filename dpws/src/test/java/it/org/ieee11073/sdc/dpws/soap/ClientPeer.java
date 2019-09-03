@@ -24,15 +24,13 @@ public class ClientPeer extends IntegrationTestPeer {
 
     @Override
     protected void startUp() {
-        DpwsFramework dpwsFramework = getInjector().getInstance(DpwsFramework.class);
-        dpwsFramework.startAsync().awaitRunning();
-        Runtime.getRuntime().addShutdownHook(new Thread(() -> dpwsFramework.stopAsync().awaitTerminated()));
-
+        getInjector().getInstance(DpwsFramework.class).startAsync().awaitRunning();
         client.startAsync().awaitRunning();
     }
 
     @Override
     protected void shutDown() {
         client.stopAsync().awaitTerminated();
+        getInjector().getInstance(DpwsFramework.class).stopAsync().awaitTerminated();
     }
 }

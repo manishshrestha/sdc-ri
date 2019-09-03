@@ -88,15 +88,13 @@ public class BasicPopulatedDevice extends DevicePeer {
                 service2,
                 wsdlResource2));
 
-        DpwsFramework dpwsFramework = getInjector().getInstance(DpwsFramework.class);
-        dpwsFramework.startAsync().awaitRunning();
-        Runtime.getRuntime().addShutdownHook(new Thread(() -> dpwsFramework.stopAsync().awaitTerminated()));
-
+        getInjector().getInstance(DpwsFramework.class).startAsync().awaitRunning();
         getDevice().startAsync().awaitRunning();
     }
 
     @Override
     protected void shutDown() {
         getDevice().stopAsync().awaitTerminated();
+        getInjector().getInstance(DpwsFramework.class).stopAsync().awaitTerminated();
     }
 }
