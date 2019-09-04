@@ -22,14 +22,14 @@ Immutability allows stricter control over data, hence immutable objects **should
 
 ## Dependency injection
 
-Scry utilizes Google Guice for dependency injection.
+SDCri utilizes Google Guice for dependency injection.
 
 - In general, every class that exhibits logic **shall** be injected by using Google Guise.
 - Simple data containers or local helper classes **may** be used without dependency injection.
 
 ### Class bindings with default modules
 
-For each module there **shall** be a package `guide` that includes a default Guice module and other Guice related classes and annotations.
+For each module there **shall** be a package `guice` that includes a default Guice module and other Guice related classes and annotations.
 
 Example: the dpws module encloses a package named `org.ieee11073.sdc.dpws.guice` with the default module named `DefaultDpwsModule`.
 
