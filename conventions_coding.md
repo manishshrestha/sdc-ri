@@ -63,7 +63,7 @@ public class SoapConfig {
 
 ### Dynamic configuration
 
-Sometimes it’s helpful to inject dynamic configuration parameters to certain components of a module during runtime (which may either be generated or change during runtime). In Scry that type of configuration is called *Settings*. Settings are typically interfaces that are supposed to be implemented by a module's user.
+Sometimes it’s helpful to inject dynamic configuration parameters to certain components of a module during runtime (which may either be generated or change during runtime). In SDCri that type of configuration is called *Settings*. Settings are typically interfaces that are supposed to be implemented by a module's user.
 
 Any dynamic configuration class/interface **shall** be appended with `Settings`.
 
