@@ -10,6 +10,8 @@ import org.slf4j.LoggerFactory;
 import javax.annotation.Nullable;
 import java.io.IOException;
 import java.net.*;
+import java.util.Enumeration;
+import java.util.Iterator;
 import java.util.Random;
 
 public class UdpBindingServiceImpl extends AbstractIdleService implements UdpBindingService {
@@ -49,10 +51,21 @@ public class UdpBindingServiceImpl extends AbstractIdleService implements UdpBin
         InetSocketAddress address = new InetSocketAddress(multicastGroup, socketPort);
 
         // try to get first available address from network interface
-        if (!networkInterface.getInetAddresses().hasMoreElements()) {
+        final Iterator<InetAddress> inetAddressIterator = networkInterface.getInetAddresses().asIterator();
+        while (inetAddressIterator.hasNext()) {
+            final InetAddress nextAddress = inetAddressIterator.next();
+            if (nextAddress instanceof Inet6Address) {
+                LOG.info("Found IPv6 interface: {}. Skip as there is IPv4 support only", nextAddress);
+                continue;
+            } else if (nextAddress instanceof Inet4Address) {
+                networkInterfaceAddress = nextAddress;
+            }
+        }
+
+        if (networkInterfaceAddress == null) {
             throw new SocketException(String.format("Could not retrieve network interface address from: {}", networkInterface));
         }
-        networkInterfaceAddress = networkInterface.getInetAddresses().nextElement();
+
 
         LOG.info("Start UDP binding to {}.", networkInterfaceAddress);
 
