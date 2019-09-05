@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.net.*;
 import java.util.Enumeration;
 import java.util.Iterator;
+import java.util.Optional;
 import java.util.Random;
 
 public class UdpBindingServiceImpl extends AbstractIdleService implements UdpBindingService {
@@ -51,21 +52,8 @@ public class UdpBindingServiceImpl extends AbstractIdleService implements UdpBin
         InetSocketAddress address = new InetSocketAddress(multicastGroup, socketPort);
 
         // try to get first available address from network interface
-        final Iterator<InetAddress> inetAddressIterator = networkInterface.getInetAddresses().asIterator();
-        while (inetAddressIterator.hasNext()) {
-            final InetAddress nextAddress = inetAddressIterator.next();
-            if (nextAddress instanceof Inet6Address) {
-                LOG.info("Found IPv6 interface: {}. Skip as there is IPv4 support only", nextAddress);
-                continue;
-            } else if (nextAddress instanceof Inet4Address) {
-                networkInterfaceAddress = nextAddress;
-            }
-        }
-
-        if (networkInterfaceAddress == null) {
-            throw new SocketException(String.format("Could not retrieve network interface address from: {}", networkInterface));
-        }
-
+        networkInterfaceAddress = getFirstIpV4Address(networkInterface).orElseThrow(() ->
+                new SocketException(String.format("Could not retrieve network interface address from: {}", networkInterface)));
 
         LOG.info("Start UDP binding to {}.", networkInterfaceAddress);
 
@@ -208,6 +196,20 @@ public class UdpBindingServiceImpl extends AbstractIdleService implements UdpBin
         } else {
             return String.format("[%s]", networkInterface);
         }
+    }
+
+    private Optional<InetAddress> getFirstIpV4Address(NetworkInterface networkInterface) {
+        final Iterator<InetAddress> inetAddressIterator = networkInterface.getInetAddresses().asIterator();
+        while (inetAddressIterator.hasNext()) {
+            final InetAddress nextAddress = inetAddressIterator.next();
+            if (nextAddress instanceof Inet6Address) {
+                LOG.debug("Found IPv6 interface: {}. Skip as there is IPv4 support only", nextAddress);
+                continue;
+            } else if (nextAddress instanceof Inet4Address) {
+                return Optional.of(nextAddress);
+            }
+        }
+        return Optional.empty();
     }
 
     private String makeStringRepresentation() {
