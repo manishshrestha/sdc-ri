@@ -20,6 +20,7 @@ import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.Arrays;
+import java.util.Iterator;
 
 /**
  * Default implementation of {@link DpwsFramework}.
@@ -65,11 +66,34 @@ public class DpwsFrameworkImpl extends AbstractIdleService implements DpwsFramew
             networkInterface = NetworkInterface.getByInetAddress(InetAddress.getLocalHost());
         }
 
+        printNetworkInterfaceInformation();
+
         configureDiscovery();
         serviceManager = new ServiceManager(Arrays.asList(udpBindingService, udpMessageQueueService,
                 httpServerRegistry, soapMarshalling));
         serviceManager.startAsync().awaitHealthy();
         LOG.info("SDCri DPWS framework is ready for use.");
+    }
+
+    private void printNetworkInterfaceInformation() throws SocketException {
+        Iterator<NetworkInterface> networkInterfaceIterator = NetworkInterface.getNetworkInterfaces().asIterator();
+        while (networkInterfaceIterator.hasNext())
+        {
+            NetworkInterface networkInterface = networkInterfaceIterator.next();
+            LOG.info("Found network interface: [{};isUp={};isLoopBack={},supportsMulticast={},MTU={},isVirtual={}]",
+                    networkInterface,
+                    networkInterface.isUp(),
+                    networkInterface.isLoopback(),
+                    networkInterface.supportsMulticast(),
+                    networkInterface.getMTU(),
+                    networkInterface.isVirtual());
+            Iterator<InetAddress> inetAddressIterator = networkInterface.getInetAddresses().asIterator();
+            int i = 0;
+            while (inetAddressIterator.hasNext())
+            {
+                LOG.info("{}.address[{}]: {}", networkInterface.getName(), i++, inetAddressIterator.next());
+            }
+        }
     }
 
     @Override
