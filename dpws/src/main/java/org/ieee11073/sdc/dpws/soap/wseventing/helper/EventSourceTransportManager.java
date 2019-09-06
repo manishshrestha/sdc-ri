@@ -15,6 +15,8 @@ import org.ieee11073.sdc.dpws.soap.wsaddressing.WsAddressingUtil;
 import org.ieee11073.sdc.dpws.soap.wsaddressing.model.EndpointReferenceType;
 import org.ieee11073.sdc.dpws.soap.wseventing.SourceSubscriptionManager;
 import org.ieee11073.sdc.dpws.soap.wseventing.WsEventingConfig;
+import org.ieee11073.sdc.dpws.soap.wseventing.event.SubscriptionAddedMessage;
+import org.ieee11073.sdc.dpws.soap.wseventing.event.SubscriptionRemovedMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

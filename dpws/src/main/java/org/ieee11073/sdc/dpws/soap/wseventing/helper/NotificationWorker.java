@@ -8,6 +8,8 @@ import com.google.inject.name.Named;
 import org.ieee11073.sdc.dpws.soap.interception.InterceptorResult;
 import org.ieee11073.sdc.dpws.soap.wseventing.SourceSubscriptionManager;
 import org.ieee11073.sdc.dpws.soap.wseventing.WsEventingConfig;
+import org.ieee11073.sdc.dpws.soap.wseventing.event.SubscriptionAddedMessage;
+import org.ieee11073.sdc.dpws.soap.wseventing.event.SubscriptionRemovedMessage;
 import org.ieee11073.sdc.dpws.soap.wseventing.model.Notification;
 
 import javax.annotation.Nullable;
