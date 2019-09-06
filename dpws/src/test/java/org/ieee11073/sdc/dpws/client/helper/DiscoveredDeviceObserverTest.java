@@ -5,6 +5,10 @@ import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.common.util.concurrent.MoreExecutors;
 import org.ieee11073.sdc.dpws.DpwsTest;
 import org.ieee11073.sdc.dpws.client.*;
+import org.ieee11073.sdc.dpws.client.event.DeviceEnteredMessage;
+import org.ieee11073.sdc.dpws.client.event.DeviceLeftMessage;
+import org.ieee11073.sdc.dpws.client.event.DeviceProbeTimeoutMessage;
+import org.ieee11073.sdc.dpws.client.event.ProbedDeviceFoundMessage;
 import org.ieee11073.sdc.dpws.soap.wsaddressing.WsAddressingUtil;
 import org.ieee11073.sdc.dpws.soap.wsaddressing.model.EndpointReferenceType;
 import org.ieee11073.sdc.dpws.soap.wsdiscovery.ByeMessage;
@@ -17,7 +21,6 @@ import org.junit.Test;
 
 import java.net.URI;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Optional;
 

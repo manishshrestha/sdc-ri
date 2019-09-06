@@ -1,4 +1,4 @@
-package org.ieee11073.sdc.dpws.client;
+package org.ieee11073.sdc.dpws.client.event;
 
 import org.ieee11073.sdc.common.event.EventMessage;
 
