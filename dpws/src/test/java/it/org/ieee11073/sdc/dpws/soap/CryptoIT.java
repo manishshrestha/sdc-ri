@@ -37,6 +37,8 @@ import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
+import java.net.InetAddress;
+import java.net.NetworkInterface;
 import java.net.URI;
 import java.time.Duration;
 import java.util.ArrayList;
@@ -72,13 +74,20 @@ public class CryptoIT {
             }
 
             @Override
-            public List<URI> getHostingServiceBindings() {
-                return Collections.singletonList(URI.create("https://localhost:6464"));
+            public NetworkInterface getNetworkInterface() {
+                try {
+                    return NetworkInterface.getByInetAddress(InetAddress.getLocalHost());
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
             }
+
         }, new DefaultDpwsConfigModule() {
             @Override
             public void customConfigure() {
                 bind(CryptoConfig.CRYPTO_SETTINGS, CryptoSettings.class, serverCryptoSettings);
+                bind(DeviceConfig.UNSECURED_ENDPOINT, Boolean.class, false);
+                bind(DeviceConfig.SECURED_ENDPOINT, Boolean.class, true);
             }
         });
 

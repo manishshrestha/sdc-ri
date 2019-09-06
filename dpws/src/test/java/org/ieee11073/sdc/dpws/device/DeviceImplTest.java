@@ -19,6 +19,8 @@ import test.org.ieee11073.common.TestLogging;
 
 import javax.xml.namespace.QName;
 import java.io.IOException;
+import java.net.InetAddress;
+import java.net.NetworkInterface;
 import java.net.URI;
 import java.util.Collections;
 import java.util.List;
@@ -41,8 +43,12 @@ public class DeviceImplTest implements Runnable {
             }
 
             @Override
-            public synchronized List<URI> getHostingServiceBindings() {
-                return Collections.singletonList(URI.create("http://localhost:8080"));
+            public NetworkInterface getNetworkInterface() {
+                try {
+                    return NetworkInterface.getByInetAddress(InetAddress.getLocalHost());
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
             }
         };
 

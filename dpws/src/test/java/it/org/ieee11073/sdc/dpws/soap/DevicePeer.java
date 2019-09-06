@@ -10,6 +10,8 @@ import org.ieee11073.sdc.dpws.soap.wsaddressing.WsAddressingUtil;
 import org.ieee11073.sdc.dpws.soap.wsaddressing.model.EndpointReferenceType;
 
 import javax.annotation.Nullable;
+import java.net.InetAddress;
+import java.net.NetworkInterface;
 import java.net.URI;
 import java.util.Collections;
 import java.util.List;
@@ -30,9 +32,7 @@ public abstract class DevicePeer extends IntegrationTestPeer {
         if (deviceSettings == null) {
             this.eprAddress = getInjector().getInstance(SoapUtil.class).createUriFromUuid(UUID.randomUUID());
             final WsAddressingUtil wsaUtil = getInjector().getInstance(WsAddressingUtil.class);
-            final HttpUriBuilder uriBuilder = getInjector().getInstance(HttpUriBuilder.class);
             final EndpointReferenceType epr = wsaUtil.createEprWithAddress(this.eprAddress);
-            final List<URI> hostingServiceBinding = Collections.singletonList(uriBuilder.buildUri("localhost", 0));
             this.device.setConfiguration(new DeviceSettings() {
                 @Override
                 public EndpointReferenceType getEndpointReference() {
@@ -40,8 +40,12 @@ public abstract class DevicePeer extends IntegrationTestPeer {
                 }
 
                 @Override
-                public List<URI> getHostingServiceBindings() {
-                    return hostingServiceBinding;
+                public NetworkInterface getNetworkInterface() {
+                    try {
+                        return NetworkInterface.getByInetAddress(InetAddress.getLocalHost());
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
                 }
             });
         } else {

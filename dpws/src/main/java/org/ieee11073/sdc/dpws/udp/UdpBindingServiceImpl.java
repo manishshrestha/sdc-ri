@@ -4,6 +4,7 @@ import com.google.common.util.concurrent.AbstractIdleService;
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
 import org.ieee11073.sdc.dpws.DpwsConstants;
+import org.ieee11073.sdc.dpws.ni.NetworkInterfaceUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,6 +32,7 @@ public class UdpBindingServiceImpl extends AbstractIdleService implements UdpBin
     private DatagramSocket outgoingSocket;
 
     private final int maxMessageSize;
+    private NetworkInterfaceUtil networkInterfaceUtil;
     private UdpMessageReceiverCallback receiver;
     private InetAddress networkInterfaceAddress;
 
@@ -38,11 +40,13 @@ public class UdpBindingServiceImpl extends AbstractIdleService implements UdpBin
     UdpBindingServiceImpl(@Assisted NetworkInterface networkInterface,
                           @Assisted @Nullable InetAddress multicastGroup,
                           @Assisted("multicastPort") Integer multicastPort,
-                          @Assisted("maxMessageSize") Integer maxMessageSize) {
+                          @Assisted("maxMessageSize") Integer maxMessageSize,
+                          NetworkInterfaceUtil networkInterfaceUtil) {
         this.networkInterface = networkInterface;
         this.multicastGroup = multicastGroup;
         this.socketPort = multicastPort;
         this.maxMessageSize = maxMessageSize;
+        this.networkInterfaceUtil = networkInterfaceUtil;
         this.multicastSocket = null;
         this.networkInterfaceAddress = null;
     }
@@ -52,7 +56,7 @@ public class UdpBindingServiceImpl extends AbstractIdleService implements UdpBin
         InetSocketAddress address = new InetSocketAddress(multicastGroup, socketPort);
 
         // try to get first available address from network interface
-        networkInterfaceAddress = getFirstIpV4Address(networkInterface).orElseThrow(() ->
+        networkInterfaceAddress = networkInterfaceUtil.getFirstIpV4Address(networkInterface).orElseThrow(() ->
                 new SocketException(String.format("Could not retrieve network interface address from: {}", networkInterface)));
 
         LOG.info("Start UDP binding to {}.", networkInterfaceAddress);
@@ -196,20 +200,6 @@ public class UdpBindingServiceImpl extends AbstractIdleService implements UdpBin
         } else {
             return String.format("[%s]", networkInterface);
         }
-    }
-
-    private Optional<InetAddress> getFirstIpV4Address(NetworkInterface networkInterface) {
-        final Iterator<InetAddress> inetAddressIterator = networkInterface.getInetAddresses().asIterator();
-        while (inetAddressIterator.hasNext()) {
-            final InetAddress nextAddress = inetAddressIterator.next();
-            if (nextAddress instanceof Inet6Address) {
-                LOG.debug("Found IPv6 interface: {}. Skip as there is IPv4 support only", nextAddress);
-                continue;
-            } else if (nextAddress instanceof Inet4Address) {
-                return Optional.of(nextAddress);
-            }
-        }
-        return Optional.empty();
     }
 
     private String makeStringRepresentation() {
