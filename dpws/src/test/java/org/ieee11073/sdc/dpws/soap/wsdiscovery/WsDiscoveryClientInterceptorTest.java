@@ -19,6 +19,7 @@ import org.ieee11073.sdc.dpws.soap.wsaddressing.WsAddressingUtil;
 import org.ieee11073.sdc.dpws.soap.wsaddressing.model.AttributedURIType;
 import org.ieee11073.sdc.dpws.soap.wsaddressing.model.EndpointReferenceType;
 import org.ieee11073.sdc.dpws.soap.wsaddressing.model.ObjectFactory;
+import org.ieee11073.sdc.dpws.soap.wsdiscovery.event.ProbeMatchesMessage;
 import org.ieee11073.sdc.dpws.soap.wsdiscovery.factory.WsDiscoveryClientFactory;
 import org.ieee11073.sdc.dpws.soap.wsdiscovery.model.ProbeMatchType;
 import org.ieee11073.sdc.dpws.soap.wsdiscovery.model.ProbeMatchesType;

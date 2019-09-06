@@ -20,6 +20,10 @@ import org.ieee11073.sdc.dpws.soap.interception.MessageInterceptor;
 import org.ieee11073.sdc.dpws.soap.interception.NotificationObject;
 import org.ieee11073.sdc.dpws.soap.wsaddressing.WsAddressingUtil;
 import org.ieee11073.sdc.dpws.soap.wsaddressing.model.*;
+import org.ieee11073.sdc.dpws.soap.wsdiscovery.event.ByeMessage;
+import org.ieee11073.sdc.dpws.soap.wsdiscovery.event.HelloMessage;
+import org.ieee11073.sdc.dpws.soap.wsdiscovery.event.ProbeMatchesMessage;
+import org.ieee11073.sdc.dpws.soap.wsdiscovery.event.ProbeTimeoutMessage;
 import org.ieee11073.sdc.dpws.soap.wsdiscovery.model.ObjectFactory;
 import org.ieee11073.sdc.dpws.soap.wsdiscovery.model.*;
 

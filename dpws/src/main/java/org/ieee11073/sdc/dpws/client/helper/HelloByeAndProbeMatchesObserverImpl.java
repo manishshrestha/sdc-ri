@@ -16,6 +16,10 @@ import org.ieee11073.sdc.dpws.client.event.ProbedDeviceFoundMessage;
 import org.ieee11073.sdc.dpws.guice.NetworkJobThreadPool;
 import org.ieee11073.sdc.dpws.soap.wsaddressing.WsAddressingUtil;
 import org.ieee11073.sdc.dpws.soap.wsdiscovery.*;
+import org.ieee11073.sdc.dpws.soap.wsdiscovery.event.ByeMessage;
+import org.ieee11073.sdc.dpws.soap.wsdiscovery.event.HelloMessage;
+import org.ieee11073.sdc.dpws.soap.wsdiscovery.event.ProbeMatchesMessage;
+import org.ieee11073.sdc.dpws.soap.wsdiscovery.event.ProbeTimeoutMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

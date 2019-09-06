@@ -5,7 +5,7 @@ import org.ieee11073.sdc.dpws.DpwsTest;
 import org.ieee11073.sdc.dpws.client.DiscoveredDevice;
 import org.ieee11073.sdc.dpws.soap.wsaddressing.WsAddressingUtil;
 import org.ieee11073.sdc.dpws.soap.wsaddressing.model.EndpointReferenceType;
-import org.ieee11073.sdc.dpws.soap.wsdiscovery.HelloMessage;
+import org.ieee11073.sdc.dpws.soap.wsdiscovery.event.HelloMessage;
 import org.ieee11073.sdc.dpws.soap.wsdiscovery.WsDiscoveryClient;
 import org.ieee11073.sdc.dpws.soap.wsdiscovery.model.HelloType;
 import org.ieee11073.sdc.dpws.soap.wsdiscovery.model.ObjectFactory;
