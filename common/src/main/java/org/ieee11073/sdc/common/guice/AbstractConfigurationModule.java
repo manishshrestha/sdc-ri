@@ -45,7 +45,7 @@ public abstract class AbstractConfigurationModule extends AbstractModule {
                             .toInstance(value);
                 }
             };
-            ValueOrigin valueOrigin = configureStarted ? ValueOrigin.INHERITED : ValueOrigin.OVERRIDDEN;
+            ValueOrigin valueOrigin = configureStarted ? ValueOrigin.DEFAULTED : ValueOrigin.CUSTOMIZED;
             boundedValues.put(name, new ConfigurationValue(valueOrigin, runBind, value));
 
         } else {
@@ -85,15 +85,15 @@ public abstract class AbstractConfigurationModule extends AbstractModule {
 
     private void logConfiguredValues() {
         boundedValues.entrySet().stream().forEach(value ->
-                LOG.debug("Configure {} key: {} := {}",
+                LOG.info("{} {} := {}",
                         value.getValue().getValueOrigin(),
                         value.getKey(),
                         value.getValue().getValue()));
     }
 
     private enum ValueOrigin {
-        INHERITED("inherited"),
-        OVERRIDDEN("overridden");
+        DEFAULTED("[defaulted ]"),
+        CUSTOMIZED("[customized]");
 
         ValueOrigin(String value) {
             caption = value;
