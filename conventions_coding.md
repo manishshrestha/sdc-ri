@@ -13,12 +13,29 @@ This document describes coding conventions when writing Java code for the SDCri 
 
 Immutability allows stricter control over data, hence immutable objects **should** be used where applicable. 
 
+## Error handling
+
+- Errors *shall* be expressed using checked exceptions.
+- Errors **should not** be expressed by return values.
+- The format of exception messages **shall** be in compliance with the format for log messages (see below).
+
 ## Logging
+
+### Log levels
 
 - The DEBUG log level **shall** be used generously in order to ease debugging.
 - The INFO log level **shall** be used sparingly for important log information that is not repeated at high frequency. INFO **may** also express uncritical failures.
 - The WARN log level **shall** be used only in case of a failure that hinders the application from continuing its processing for a specific function call. A WARN is always a sign of malfunction and should be investigated when observed.
 - The ERROR log level **shall** be used only in case the application detects a systematic or incurable failure.
+
+### Format
+
+For any line in the log output,
+
+- any variable portion **should** be placed at the end if reasonable,
+- the line **should not** comprise more than three sentences, preferably one,
+- a sentence stop **shall not** be placed if the line comprises one sentence only,
+- sentence stops **shall** be placed if the line comprises more than one sentence. 
 
 ## Dependency injection
 
@@ -143,7 +160,7 @@ Integration test class names **shall** end with an IT and go to a package that c
 
 Example: `it.org.ieee11073.sdc.dpws. soap` where `it` is the integration test prefix package, `org.ieee11073.sdc.dpws` is the modules base package and `soap` is a meaningful sub-package name.
  
- #### Unit test scaffold
+#### Unit test scaffold
 
 Any test **should** outline the following points:
 
