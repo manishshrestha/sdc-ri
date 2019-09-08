@@ -40,12 +40,12 @@ public class WatchDogImpl extends AbstractIdleService implements Service, WatchD
     }
 
     @Override
-    protected void startUp() throws Exception {
+    protected void startUp() {
         LOG.info("Watchdog started");
     }
 
     @Override
-    protected void shutDown() throws Exception {
+    protected void shutDown() {
         scheduler.shutdownNow();
         LOG.info("Watchdog stopped");
     }

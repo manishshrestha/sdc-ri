@@ -175,7 +175,7 @@ public class ClientImpl extends AbstractIdleService implements Client, Service, 
         final ListenableFuture<DiscoveredDevice> resolveFuture = resolve(eprAddress);
         final SettableFuture<HostingServiceProxy> hspFuture = SettableFuture.create();
 
-        Futures.addCallback(resolveFuture, new FutureCallback<DiscoveredDevice>() {
+        Futures.addCallback(resolveFuture, new FutureCallback<>() {
             @Override
             public void onSuccess(@Nullable DiscoveredDevice discoveredDevice) {
                 if (discoveredDevice == null) {

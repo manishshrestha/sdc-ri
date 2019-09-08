@@ -18,7 +18,7 @@ import java.util.TreeMap;
  */
 public abstract class AbstractConfigurationModule extends AbstractModule {
     private static final Logger LOG = LoggerFactory.getLogger(AbstractConfigurationModule.class);
-    private final Map<String, ConfigurationValue> boundedValues = new TreeMap<>();
+    private final Map<String, ConfigurationValue> boundValues = new TreeMap<>();
     private boolean configureStarted = false;
 
     /**
@@ -32,7 +32,7 @@ public abstract class AbstractConfigurationModule extends AbstractModule {
      * @param value    The configuration value to set.
      */
     public <T> void bind(String name, Class<T> dataType, @Nullable T value) {
-        if (!boundedValues.containsKey(name)) {
+        if (!boundValues.containsKey(name)) {
             // Wrap binding into closure and call later as Guice's bind() is only available during configure()
             Runnable runBind = () -> {
                 if (value == null) {
@@ -46,7 +46,7 @@ public abstract class AbstractConfigurationModule extends AbstractModule {
                 }
             };
             ValueOrigin valueOrigin = configureStarted ? ValueOrigin.DEFAULTED : ValueOrigin.CUSTOMIZED;
-            boundedValues.put(name, new ConfigurationValue(valueOrigin, runBind, value));
+            boundValues.put(name, new ConfigurationValue(valueOrigin, runBind, value));
 
         } else {
             if (!configureStarted) {
@@ -66,7 +66,7 @@ public abstract class AbstractConfigurationModule extends AbstractModule {
         defaultConfigure();
         logConfiguredValues();
 
-        boundedValues.entrySet().stream().forEach(configValue -> configValue.getValue().getBinder().run());
+        boundValues.entrySet().forEach(configValue -> configValue.getValue().getBinder().run());
     }
 
     /**
@@ -84,7 +84,7 @@ public abstract class AbstractConfigurationModule extends AbstractModule {
     }
 
     private void logConfiguredValues() {
-        boundedValues.entrySet().stream().forEach(value ->
+        boundValues.entrySet().forEach(value ->
                 LOG.info("{} {} := {}",
                         value.getValue().getValueOrigin(),
                         value.getKey(),

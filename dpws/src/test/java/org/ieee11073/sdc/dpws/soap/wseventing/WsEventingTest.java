@@ -12,7 +12,6 @@ import org.ieee11073.sdc.dpws.http.HttpServerRegistry;
 import org.ieee11073.sdc.dpws.model.HostedServiceType;
 import org.ieee11073.sdc.dpws.model.ObjectFactory;
 import org.ieee11073.sdc.dpws.ni.LocalAddressResolver;
-import org.ieee11073.sdc.dpws.service.HostedServiceProxy;
 import org.ieee11073.sdc.dpws.service.factory.HostedServiceFactory;
 import org.ieee11073.sdc.dpws.soap.*;
 import org.ieee11073.sdc.dpws.soap.factory.RequestResponseClientFactory;
@@ -28,7 +27,6 @@ import java.util.Collections;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
-import static org.mockito.Mockito.mock;
 
 /**
  * Round trip test for WS-Eventing (Source+Sink).

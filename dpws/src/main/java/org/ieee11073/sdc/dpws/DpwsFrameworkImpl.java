@@ -42,7 +42,7 @@ public class DpwsFrameworkImpl extends AbstractIdleService implements DpwsFramew
     }
 
     @Override
-    protected void startUp() throws Exception {
+    protected void startUp() {
         LOG.info("Start SDCri DPWS framework");
         configureDiscovery();
         serviceManager = new ServiceManager(Arrays.asList(udpBindingService, udpMessageQueueService,
@@ -52,7 +52,7 @@ public class DpwsFrameworkImpl extends AbstractIdleService implements DpwsFramew
     }
 
     @Override
-    protected void shutDown() throws Exception {
+    protected void shutDown() {
         LOG.info("Shut down SDCri DPWS framework");
         serviceManager.stopAsync().awaitStopped();
         LOG.info("SDCri DPWS framework shut down");

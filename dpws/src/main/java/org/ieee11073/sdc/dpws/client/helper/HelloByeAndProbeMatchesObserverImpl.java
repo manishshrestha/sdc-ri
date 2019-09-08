@@ -64,7 +64,8 @@ public class HelloByeAndProbeMatchesObserverImpl implements HelloByeAndProbeMatc
     void onHello(HelloMessage helloMessage) {
         ListenableFuture<Optional<DiscoveredDevice>> future = networkJobExecutor.submit(() ->
                 discoveredDeviceResolver.resolve(helloMessage));
-        Futures.addCallback(future, new FutureCallback<Optional<DiscoveredDevice>>() {
+        Futures.addCallback(future, new FutureCallback<>() {
+            @SuppressWarnings("OptionalAssignedToNull")
             @Override
             public void onSuccess(@Nullable Optional<DiscoveredDevice> discoveredDevice) {
                 if (discoveredDevice == null) {
@@ -95,7 +96,8 @@ public class HelloByeAndProbeMatchesObserverImpl implements HelloByeAndProbeMatc
     void onProbeMatches(ProbeMatchesMessage probeMatchesMessage) {
         ListenableFuture<Optional<DiscoveredDevice>> future = networkJobExecutor.submit(() ->
                 discoveredDeviceResolver.resolve(probeMatchesMessage));
-        Futures.addCallback(future, new FutureCallback<Optional<DiscoveredDevice>>() {
+        Futures.addCallback(future, new FutureCallback<>() {
+            @SuppressWarnings("OptionalAssignedToNull")
             @Override
             public void onSuccess(@Nullable Optional<DiscoveredDevice> discoveredDevice) {
                 if (discoveredDevice == null) {

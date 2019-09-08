@@ -20,7 +20,7 @@ public class NetworkSinkMock {
     public synchronized OutputStream createOutputStream() {
         return new ByteArrayOutputStream() {
             @Override
-            public void close() throws IOException {
+            public void close() {
                 writtenMessages.add(new ByteArrayInputStream(toByteArray()));
             }
         };

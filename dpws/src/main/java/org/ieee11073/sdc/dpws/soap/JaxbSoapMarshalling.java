@@ -40,14 +40,14 @@ public class JaxbSoapMarshalling extends AbstractIdleService implements SoapMars
     }
 
     @Override
-    protected void startUp() throws Exception {
+    protected void startUp() {
         LOG.info("Start SOAP marshalling. Initialize JAXB.");
         initializeJaxb();
         LOG.info("JAXB initialization finished");
     }
 
     @Override
-    protected void shutDown() throws Exception {
+    protected void shutDown() {
         LOG.info("SOAP marshalling stopped");
     }
 

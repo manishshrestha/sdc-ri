@@ -27,7 +27,7 @@ public class HostedServiceTransportBinding implements TransportBinding {
     }
 
     @Override
-    public void close() throws IOException {
+    public void close() {
         // nothing to do here
     }
 

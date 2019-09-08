@@ -276,8 +276,8 @@ public class GrizzlyHttpServerRegistry extends AbstractIdleService implements Ht
     }
 
     private class HttpServerInfo {
-        private HttpServer httpServer;
-        private URI uri;
+        private final HttpServer httpServer;
+        private final URI uri;
 
         public HttpServerInfo(HttpServer httpServer, URI uri) {
             this.httpServer = httpServer;

@@ -75,9 +75,6 @@ public class WsDiscoveryUtil {
     private boolean isMatching(List<?> superset, List<?> subset, Comparator<Object> comp) {
         return superset.size() >= subset.size() && superset.parallelStream()
                 .filter(qName1 -> subset.parallelStream()
-                        .filter(qName2 -> comp.compare(qName1, qName2) == 0)
-                        .findAny().isPresent())
-                .collect(Collectors.toList())
-                .size() == subset.size();
+                        .anyMatch(qName2 -> comp.compare(qName1, qName2) == 0)).count() == subset.size();
     }
 }

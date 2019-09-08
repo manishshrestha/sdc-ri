@@ -37,7 +37,7 @@ public class WsAddressingClientInterceptor implements Interceptor {
     }
 
     private void processMessageId(SoapMessage msg) {
-        if (!msg.getWsAddressingHeader().getMessageId().isPresent()) {
+        if (msg.getWsAddressingHeader().getMessageId().isEmpty()) {
             msg.getWsAddressingHeader().setMessageId(wsaUtil.createAttributedURIType(soapUtil.createRandomUuidUri()));
         }
     }

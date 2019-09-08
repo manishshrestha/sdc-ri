@@ -88,24 +88,22 @@ public class DiscoveredDeviceResolver {
                                                List<String> scopes,
                                                List<String> xAddrs,
                                                long metadataVersion) {
-        if (!wsaUtil.getAddressUriAsString(epr).isPresent()) {
+        if (wsaUtil.getAddressUriAsString(epr).isEmpty()) {
             LOG.info("Empty device endpoint reference found. Skip resolve");
             return Optional.empty();
         }
 
         if (xAddrs.isEmpty() && autoResolve) {
-            return sendResolve(epr).map(rms ->
-                    Optional.ofNullable(rms.getResolveMatch()).map(rm ->
-                            wsaUtil.getAddressUri(rm.getEndpointReference()).map(uri ->
-                                    Optional.of(new DiscoveredDevice(
-                                            uri,
-                                            rm.getTypes(),
-                                            rm.getScopes().getValue(),
-                                            rm.getXAddrs(),
-                                            rm.getMetadataVersion())))
-                                    .orElse(Optional.empty()))
+            return sendResolve(epr).flatMap(rms -> Optional.ofNullable(rms.getResolveMatch()).map(rm ->
+                    wsaUtil.getAddressUri(rm.getEndpointReference()).map(uri ->
+                            Optional.of(new DiscoveredDevice(
+                                    uri,
+                                    rm.getTypes(),
+                                    rm.getScopes().getValue(),
+                                    rm.getXAddrs(),
+                                    rm.getMetadataVersion())))
                             .orElse(Optional.empty()))
-                    .orElse(Optional.empty());
+                    .orElse(Optional.empty()));
         }
 
         return wsaUtil.getAddressUri(epr).map(uri -> new DiscoveredDevice(uri, types, scopes, xAddrs, metadataVersion));

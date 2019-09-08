@@ -40,8 +40,8 @@ public enum SupportedEprUriScheme {
      */
     URN_OID("urn", "oid");
 
-    private String schemeName;
-    private String specificPart;
+    private final String schemeName;
+    private final String specificPart;
 
     SupportedEprUriScheme(String schemeName, String specificPart) {
         this.schemeName = schemeName;

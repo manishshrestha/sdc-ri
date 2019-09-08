@@ -61,17 +61,14 @@ class InterceptorInvoker {
                     }
                 }
 
-                Optional<Object> callbackObject = interceptorInfo.getCallbackObject();
-                if (callbackObject.isPresent()) {
-                    if (!callbackMethod.getReturnType().equals(Void.TYPE)) {
-                        InterceptorResult iResult = (InterceptorResult) callbackMethod.invoke(
-                                callbackObject.get(), callbackParam);
-                        if (iResult == InterceptorResult.CANCEL) {
-                            return InterceptorResult.CANCEL;
-                        }
-                    } else {
-                        callbackMethod.invoke(callbackObject.get(), callbackParam);
+                if (!callbackMethod.getReturnType().equals(Void.TYPE)) {
+                    InterceptorResult iResult = (InterceptorResult) callbackMethod.invoke(
+                            interceptorInfo.getCallbackObject(), callbackParam);
+                    if (iResult == InterceptorResult.CANCEL) {
+                        return InterceptorResult.CANCEL;
                     }
+                } else {
+                    callbackMethod.invoke(interceptorInfo.getCallbackObject(), callbackParam);
                 }
             } catch (IllegalAccessException e) {
                 LOG.warn(e.getMessage());

@@ -71,8 +71,7 @@ public class HostResolver {
         try {
             URI remoteAddress = URI.create(uri);
             Optional<String> locAddr = localAddressResolver.getLocalAddress(remoteAddress);
-            return locAddr.map(s -> Optional.of(new PeerInformation(remoteAddress, locAddr.get())))
-                    .orElse(Optional.empty());
+            return locAddr.map(s -> new PeerInformation(remoteAddress, locAddr.get()));
         } catch (IllegalArgumentException e) {
             return Optional.empty();
         }

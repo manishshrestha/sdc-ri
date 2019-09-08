@@ -38,7 +38,7 @@ public class DiscoveryClientUdpProcessor implements UdpMessageQueueObserver {
     }
 
     @Subscribe
-    private void receiveUdpMessage(UdpMessage msg) throws TransportException {
+    private void receiveUdpMessage(UdpMessage msg) {
         SoapMessage notification;
         // Unmarshal SOAP request message
         try {

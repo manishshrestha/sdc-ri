@@ -29,7 +29,7 @@ public class WsDiscoveryMapper {
         src.forEach(o -> {
             Optional<AppSequenceType> appSeq;
             appSeq = jaxbUtil.extractElement(o, WsDiscoveryConstants.APP_SEQUENCE);
-            if (appSeq.isPresent() && !dest.getAppSequence().isPresent()) {
+            if (appSeq.isPresent() && dest.getAppSequence().isEmpty()) {
                 dest.setAppSequence(appSeq.get());
             }
         });

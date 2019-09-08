@@ -25,7 +25,6 @@ import org.ieee11073.sdc.dpws.service.factory.HostingServiceFactory;
 import org.ieee11073.sdc.dpws.soap.NotificationSource;
 import org.ieee11073.sdc.dpws.soap.RequestResponseServer;
 import org.ieee11073.sdc.dpws.soap.SoapConstants;
-import org.ieee11073.sdc.dpws.soap.SoapUtil;
 import org.ieee11073.sdc.dpws.soap.factory.NotificationSourceFactory;
 import org.ieee11073.sdc.dpws.soap.wsaddressing.WsAddressingUtil;
 import org.ieee11073.sdc.dpws.soap.wsaddressing.model.EndpointReferenceType;
@@ -36,6 +35,7 @@ import org.ieee11073.sdc.dpws.udp.UdpMessageQueueService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nullable;
 import javax.xml.namespace.QName;
 import java.io.IOException;
 import java.net.URI;
@@ -55,7 +55,6 @@ public class DeviceImpl extends AbstractIdleService implements Device, Service, 
     private final DpwsHelperFactory dpwsHelperFactory;
     private final HostingServiceFactory hostingServiceFactory;
     private final HttpServerRegistry httpServerRegistry;
-    private final SoapUtil soapUtil;
     private final RequestResponseServer wsdRequestResponseInterceptorChain;
     private final UdpMessageQueueService discoveryMessageQueue;
     private final Provider<RequestResponseServerHttpHandler> reqResHandlerProvider;
@@ -64,7 +63,7 @@ public class DeviceImpl extends AbstractIdleService implements Device, Service, 
     private final HostedServiceInterceptorFactory hostedServiceInterceptorFactory;
     private final StreamUtil streamUtil;
 
-    private DeviceSettings config;
+    private DeviceSettings deviceSettings;
     private WsDiscoveryTargetService wsdTargetService;
     private HostingService hostingService;
     private final List<HostedService> hostedServicesOnStartup;
@@ -84,7 +83,6 @@ public class DeviceImpl extends AbstractIdleService implements Device, Service, 
                RequestResponseServer wsdRequestResponseInterceptorChain,
                HostingServiceFactory hostingServiceFactory,
                HttpServerRegistry httpServerRegistry,
-               SoapUtil soapUtil,
                Provider<RequestResponseServerHttpHandler> reqResHandlerProvider,
                @DiscoveryUdpQueue UdpMessageQueueService discoveryMessageQueue,
                Provider<EventSource> eventSourceProvider,
@@ -99,7 +97,6 @@ public class DeviceImpl extends AbstractIdleService implements Device, Service, 
         this.dpwsHelperFactory = dpwsHelperFactory;
         this.hostingServiceFactory = hostingServiceFactory;
         this.httpServerRegistry = httpServerRegistry;
-        this.soapUtil = soapUtil;
         this.wsdRequestResponseInterceptorChain = wsdRequestResponseInterceptorChain;
         this.discoveryMessageQueue = discoveryMessageQueue;
         this.reqResHandlerProvider = reqResHandlerProvider;
@@ -112,21 +109,21 @@ public class DeviceImpl extends AbstractIdleService implements Device, Service, 
 
     @Override
     protected void startUp() throws Exception {
-        if (config == null) {
+        if (deviceSettings == null) {
             LOG.warn("No device configuration found. Use default.");
-            config = defaultConfigProvider.get();
+            deviceSettings = defaultConfigProvider.get();
         }
 
-        EndpointReferenceType deviceEpr = config.getEndpointReference();
+        EndpointReferenceType deviceEpr = deviceSettings.getEndpointReference();
         LOG.info("Start device with URN '{}'", deviceEpr.getAddress().getValue());
 
-        URI eprAddress = wsaUtil.getAddressUri(config.getEndpointReference()).orElseThrow(() ->
-                new RuntimeException("No valid endpoint reference found in device config"));
+        URI eprAddress = wsaUtil.getAddressUri(deviceSettings.getEndpointReference()).orElseThrow(() ->
+                new RuntimeException("No valid endpoint reference found in device deviceSettings"));
         String hostingServerCtxtPath = buildContextPathBase(eprAddress);
 
         // Initialize HTTP servers
-        List<URI> actualHostingServiceBindings = config.getHostingServiceBindings().stream()
-                .map(uri -> httpServerRegistry.initHttpServer(uri))
+        List<URI> actualHostingServiceBindings = deviceSettings.getHostingServiceBindings().stream()
+                .map(httpServerRegistry::initHttpServer)
                 .collect(Collectors.toList());
 
         /*
@@ -199,8 +196,8 @@ public class DeviceImpl extends AbstractIdleService implements Device, Service, 
     }
 
     @Override
-    public void setConfiguration(DeviceSettings deviceSettings) {
-        this.config = deviceSettings;
+    public void setConfiguration(@Nullable DeviceSettings deviceSettings) {
+        this.deviceSettings = deviceSettings;
     }
 
     @Override

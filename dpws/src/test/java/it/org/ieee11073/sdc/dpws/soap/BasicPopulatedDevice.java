@@ -74,6 +74,7 @@ public class BasicPopulatedDevice extends DevicePeer {
         final ClassLoader classLoader = getClass().getClassLoader();
         InputStream wsdlResource1 = classLoader.getResourceAsStream("it/org/ieee11073/sdc/dpws/TestService1.wsdl");
         InputStream wsdlResource2 = classLoader.getResourceAsStream("it/org/ieee11073/sdc/dpws/TestService2.wsdl");
+        assert wsdlResource1 != null;
         getDevice().getHostingServiceAccess().addHostedService(hostedServiceFactory.createHostedService(
                 DevicePeerMetadata.SERVICE_ID_1,
                 Arrays.asList(
@@ -82,6 +83,7 @@ public class BasicPopulatedDevice extends DevicePeer {
                 service1,
                 wsdlResource1));
 
+        assert wsdlResource2 != null;
         getDevice().getHostingServiceAccess().addHostedService(hostedServiceFactory.createHostedService(
                 DevicePeerMetadata.SERVICE_ID_2,
                 Collections.singletonList(new QName(DevicePeerMetadata.NAMESPACE_SRV, DevicePeerMetadata.PORT_TYPE_NAME_3)),

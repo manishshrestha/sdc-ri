@@ -17,7 +17,7 @@ public class InterceptorRegistryTest extends DpwsTest{
     }
 
     @Test
-    public void testAddInterceptor() throws Exception {
+    public void testAddInterceptor() {
         final String action = "http://action";
         InterceptorRegistry registry = getInjector().getInstance(InterceptorRegistry.class);
         registry.addInterceptor(new Object() {

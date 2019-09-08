@@ -35,13 +35,11 @@ import org.ieee11073.sdc.dpws.soap.wstransfer.TransferGetClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nullable;
 import javax.xml.namespace.QName;
 import java.net.URI;
 import java.time.Duration;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -206,11 +204,11 @@ public class HostingServiceResolver {
             }
         }
 
-        if (!thisDevice.isPresent()) {
+        if (thisDevice.isEmpty()) {
             LOG.info("No dpws:ThisDevice found for {}", eprAddress);
         }
 
-        if (!thisModel.isPresent()) {
+        if (thisModel.isEmpty()) {
             LOG.info("No dpws:ThisModel found for {}", eprAddress);
         }
 
@@ -218,8 +216,11 @@ public class HostingServiceResolver {
                 new MalformedSoapMessageException(String.format("No dpws:Relationship found for %s, but required",
                         eprAddress)));
 
+        final URI epr = rsDataFromOptional.getEprAddress().orElseThrow(() ->
+                new MalformedSoapMessageException(String.format("Malformed relationship data. Missing expected EPR: %s",
+                        eprAddress)));
         return Optional.of(hostingServiceFactory.createHostingServiceProxy(
-                rsDataFromOptional.getEprAddress(),
+                epr,
                 rsDataFromOptional.getTypes(),
                 thisDevice.orElse(null),
                 thisModel.orElse(null),
@@ -229,7 +230,7 @@ public class HostingServiceResolver {
                 xAddr));
     }
 
-    private Optional<RelationshipData> extractRelationshipData(Relationship relationship, URI eprAddress) throws TransportException {
+    private Optional<RelationshipData> extractRelationshipData(Relationship relationship, URI eprAddress) {
         RelationshipData result = new RelationshipData();
 
         for (Object potentialRelationship : relationship.getAny()) {
@@ -279,7 +280,7 @@ public class HostingServiceResolver {
         }
 
         final Optional<String> localAddress = localAddressResolver.getLocalAddress(activeHostedServiceEprAddress);
-        if (!localAddress.isPresent()) {
+        if (localAddress.isEmpty()) {
             return Optional.empty();
         }
 
@@ -300,19 +301,19 @@ public class HostingServiceResolver {
         private List<QName> types = null;
         private final Map<String, HostedServiceProxy> hostedServices = new HashMap<>();
 
-        URI getEprAddress() {
-            return eprAddress;
+        Optional<URI> getEprAddress() {
+            return Optional.ofNullable(eprAddress);
         }
 
-        void setEprAddress(URI eprAddress) {
+        void setEprAddress(@Nullable URI eprAddress) {
             this.eprAddress = eprAddress;
         }
 
         List<QName> getTypes() {
-            return types;
+            return types == null ? Collections.emptyList() : types;
         }
 
-        void setTypes(List<QName> types) {
+        void setTypes(@Nullable List<QName> types) {
             this.types = types;
         }
 

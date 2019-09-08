@@ -120,12 +120,12 @@ public class SourceSubscriptionManagerImpl extends AbstractIdleService implement
     }
 
     @Override
-    protected void startUp() throws Exception {
+    protected void startUp() {
         // void
     }
 
     @Override
-    protected void shutDown() throws Exception {
+    protected void shutDown() {
         // void
     }
 }

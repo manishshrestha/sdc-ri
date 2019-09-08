@@ -72,7 +72,7 @@ public class SslMetadata extends AbstractIdleService implements Service {
     }
 
     @Override
-    protected void shutDown() throws Exception {
+    protected void shutDown() {
 
     }
 

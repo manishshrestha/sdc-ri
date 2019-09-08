@@ -22,14 +22,14 @@ import java.util.*;
 public class HostingServiceProxyImpl implements HostingServiceProxy {
     private final ObjectUtil objectUtil;
 
-    private RequestResponseClient requestResponseClient;
-    private URI activeXAddr;
+    private final RequestResponseClient requestResponseClient;
+    private final URI activeXAddr;
     private final URI endpointReferenceAddress;
     private final List<QName> types;
     private final ThisDeviceType thisDevice;
     private final ThisModelType thisModel;
     private final Map<String, HostedServiceProxy> hostedServices;
-    private long metadataVersion;
+    private final long metadataVersion;
 
     /**
      * @param endpointReferenceAddress

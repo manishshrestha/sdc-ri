@@ -55,7 +55,7 @@ public class DiscoveryDeviceUdpMessageProcessor implements UdpMessageQueueObserv
     }
 
     @Subscribe
-    private void receiveUdpMessage(UdpMessage msg) throws TransportException {
+    private void receiveUdpMessage(UdpMessage msg) {
         SoapMessage response = soapUtil.createMessage();
         SoapMessage request;
 

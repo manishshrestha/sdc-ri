@@ -9,7 +9,6 @@ import org.ieee11073.sdc.dpws.DpwsConfig;
 import org.ieee11073.sdc.dpws.DpwsConstants;
 import org.ieee11073.sdc.dpws.guice.NetworkJobThreadPool;
 import org.ieee11073.sdc.dpws.http.HttpServerRegistry;
-import org.ieee11073.sdc.dpws.http.HttpUriBuilder;
 import org.ieee11073.sdc.dpws.soap.*;
 import org.ieee11073.sdc.dpws.soap.exception.MalformedSoapMessageException;
 import org.ieee11073.sdc.dpws.soap.exception.MarshallingException;
@@ -24,6 +23,7 @@ import org.ieee11073.sdc.common.helper.JaxbUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nullable;
 import javax.xml.bind.JAXBException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -100,7 +100,7 @@ public class EventSinkImpl implements EventSink {
 
     @Override
     public ListenableFuture<SubscribeResult> subscribe(List<String> actions,
-                                                       Duration expires,
+                                                       @Nullable Duration expires,
                                                        NotificationSink notificationSink) {
         return executorService.submit(() -> {
             //final URI httpServerBase = URI.create()

@@ -103,7 +103,7 @@ public class UdpMessageQueueServiceImpl extends AbstractIdleService implements S
     }
 
     @Override
-    protected void shutDown() throws Exception {
+    protected void shutDown() {
         LOG.info("Shut down UDP message queue for binding {}", udpBinding);
         incomingMessageQueue.clear();
         outgoingMessageQueue.clear();

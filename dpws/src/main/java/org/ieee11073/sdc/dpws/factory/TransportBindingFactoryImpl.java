@@ -5,7 +5,6 @@ import com.google.inject.name.Named;
 import org.glassfish.jersey.SslConfigurator;
 import org.ieee11073.sdc.dpws.TransportBinding;
 import org.ieee11073.sdc.dpws.TransportBindingException;
-import org.ieee11073.sdc.dpws.client.ClientConfig;
 import org.ieee11073.sdc.dpws.crypto.CryptoConfig;
 import org.ieee11073.sdc.dpws.crypto.CryptoSettings;
 import org.ieee11073.sdc.dpws.crypto.CryptoConfigurator;
@@ -64,7 +63,7 @@ public class TransportBindingFactoryImpl implements TransportBindingFactory {
             return;
         }
 
-        SslConfigurator sslConfigurator = null;
+        SslConfigurator sslConfigurator;
         try {
             sslConfigurator = cryptoConfigurator.createSslConfiguratorFromCryptoConfig(cryptoSettings);
         } catch (IllegalArgumentException e) {
@@ -180,7 +179,7 @@ public class TransportBindingFactoryImpl implements TransportBindingFactory {
         }
 
         @Override
-        public void close() throws IOException {
+        public void close() {
             // no action on HTTP
         }
     }

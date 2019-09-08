@@ -1,11 +1,9 @@
 package it.org.ieee11073.sdc.dpws.soap;
 
 import it.org.ieee11073.sdc.dpws.IntegrationTestPeer;
-import it.org.ieee11073.sdc.dpws.TestServiceMetadata;
 import org.ieee11073.sdc.dpws.DpwsFramework;
 import org.ieee11073.sdc.dpws.client.Client;
 import org.ieee11073.sdc.dpws.guice.DefaultDpwsConfigModule;
-import org.ieee11073.sdc.dpws.soap.SoapConfig;
 
 public class ClientPeer extends IntegrationTestPeer {
     private final Client client;

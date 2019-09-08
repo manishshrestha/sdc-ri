@@ -34,7 +34,7 @@ public class DiscoveryIT {
     private ClientPeer clientPeer;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         TestLogging.configure();
         this.devicePeer = new BasicPopulatedDevice();
         this.clientPeer = new ClientPeer(new DefaultDpwsConfigModule() {

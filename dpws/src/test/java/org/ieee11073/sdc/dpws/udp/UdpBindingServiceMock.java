@@ -8,11 +8,11 @@ public class UdpBindingServiceMock extends AbstractIdleService implements UdpBin
     private UdpMessageReceiverCallback receiver;
 
     @Override
-    protected void startUp() throws Exception {
+    protected void startUp() {
     }
 
     @Override
-    protected void shutDown() throws Exception {
+    protected void shutDown() {
     }
 
     @Override
@@ -21,7 +21,7 @@ public class UdpBindingServiceMock extends AbstractIdleService implements UdpBin
     }
 
     @Override
-    public void sendMessage(UdpMessage message) throws IOException {
+    public void sendMessage(UdpMessage message) {
         if (receiver != null) {
             receiver.receive(message);
         } else {
