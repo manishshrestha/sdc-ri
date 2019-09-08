@@ -40,7 +40,7 @@ public class WatchDogImplTest {
         hostingServiceProxyMock = mock(HostingServiceProxy.class);
         discoveryClientMock = mock(WsDiscoveryClient.class);
         SettableFuture<ProbeMatchesType> future = SettableFuture.create();
-        future.setException(new TransportException("Request failed."));
+        future.setException(new TransportException("Request failed"));
         when(discoveryClientMock.sendDirectedProbe(null, null, null))
                 .thenReturn(future);
     }
@@ -65,7 +65,7 @@ public class WatchDogImplTest {
             condition.await(2, TimeUnit.SECONDS);
             Assert.assertTrue(hasFailed);
         } catch (InterruptedException e) {
-            throw new RuntimeException("Thread unexpectedly interrupted.");
+            throw new RuntimeException("Thread unexpectedly interrupted");
         } finally {
             lock.unlock();
         }

@@ -42,7 +42,7 @@ class InterceptorInvoker {
     private InterceptorResult invokeInterceptors(Direction direction,
                                                  InterceptorCallbackType callbackParam,
                                                  Collection<InterceptorInfo> interceptors)
-            throws SoapFaultException, InterceptorException {
+            throws SoapFaultException {
 
         InterceptorResult ir = InterceptorResult.NONE_INVOKED;
         for (InterceptorInfo interceptorInfo : interceptors) {
@@ -79,7 +79,7 @@ class InterceptorInvoker {
                 if (e.getTargetException() instanceof SoapFaultException) {
                     throw (SoapFaultException) e.getTargetException();
                 } else {
-                    LOG.warn("Unexpected exception thrown.", e.getTargetException());
+                    LOG.warn("Unexpected exception thrown", e.getTargetException());
                 }
             }
             ir = InterceptorResult.PROCEED;

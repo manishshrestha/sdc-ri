@@ -149,7 +149,7 @@ public class EventSinkImpl implements EventSink {
 
             SoapMessage soapResponse = requestResponseClient.sendRequestResponse(subscribeRequest);
             SubscribeResponse responseBody = soapUtil.getBody(soapResponse, SubscribeResponse.class).orElseThrow(() ->
-                    new MalformedSoapMessageException("Cannot read WS-Eventing Subscribe response."));
+                    new MalformedSoapMessageException("Cannot read WS-Eventing Subscribe response"));
 
             // Create subscription manager from response
             SubscriptionManager subMan = subscriptionManagerFactory.createSourceSubscriptionManager(
@@ -186,7 +186,7 @@ public class EventSinkImpl implements EventSink {
             Renew renew = wseFactory.createRenew();
             renew.setExpires(expires.toString());
             String subManAddress = wsaUtil.getAddressUriAsString(subMan.getSubscriptionManagerEpr()).orElseThrow(() ->
-                    new RuntimeException("No subscription manager EPR found."));
+                    new RuntimeException("No subscription manager EPR found"));
 
             // Create new message, put subscription manager EPR address as wsa:To
             SoapMessage renewMsg = soapUtil.createMessage(WsEventingConstants.WSA_ACTION_RENEW, subManAddress, renew);
@@ -199,7 +199,7 @@ public class EventSinkImpl implements EventSink {
             // Invoke request-response
             SoapMessage renewResMsg = requestResponseClient.sendRequestResponse(renewMsg);
             RenewResponse renewResponse = soapUtil.getBody(renewResMsg, RenewResponse.class).orElseThrow(() ->
-                    new MalformedSoapMessageException("WS-Eventing RenewResponse message is malformed."));
+                    new MalformedSoapMessageException("WS-Eventing RenewResponse message is malformed"));
 
             // Parse expires in response message, renew at subscription manager and return
             Duration newExpires = Duration.parse(renewResponse.getExpires());
@@ -217,7 +217,7 @@ public class EventSinkImpl implements EventSink {
 
             GetStatus getStatus = wseFactory.createGetStatus();
             String subManAddress = wsaUtil.getAddressUriAsString(subMan.getSubscriptionManagerEpr()).orElseThrow(() ->
-                    new RuntimeException("No subscription manager EPR found."));
+                    new RuntimeException("No subscription manager EPR found"));
 
             // Create new message, put subscription manager EPR address as wsa:To
             SoapMessage getStatusMsg = soapUtil.createMessage(WsEventingConstants.WSA_ACTION_GET_STATUS, subManAddress,
@@ -232,7 +232,7 @@ public class EventSinkImpl implements EventSink {
             SoapMessage getStatusResMsg = requestResponseClient.sendRequestResponse(getStatusMsg);
             GetStatusResponse getStatusResponse = soapUtil.getBody(getStatusResMsg, GetStatusResponse.class)
                     .orElseThrow(() ->
-                            new MalformedSoapMessageException("WS-Eventing GetStatusResponse message is malformed."));
+                            new MalformedSoapMessageException("WS-Eventing GetStatusResponse message is malformed"));
 
             // Parse expires in response message and return
             return Duration.parse(getStatusResponse.getExpires());
@@ -246,7 +246,7 @@ public class EventSinkImpl implements EventSink {
         return executorService.submit(() -> {
             Unsubscribe unsubscribe = wseFactory.createUnsubscribe();
             String subManAddress = wsaUtil.getAddressUriAsString(subMan.getSubscriptionManagerEpr()).orElseThrow(() ->
-                    new RuntimeException("No subscription manager EPR found."));
+                    new RuntimeException("No subscription manager EPR found"));
 
             // Create new message, put subscription manager EPR address as wsa:To
             SoapMessage unsubscribeMsg = soapUtil.createMessage(WsEventingConstants.WSA_ACTION_UNSUBSCRIBE, subManAddress,
@@ -332,22 +332,22 @@ public class EventSinkImpl implements EventSink {
                     ListenableFuture<Duration> fut = renew(subscriptionManager.getSubscriptionId(), defaultRequestExpires);
                     expiresFromRenew = fut.get(maxWaitForFutures.toMillis(), TimeUnit.MILLISECONDS);
                 } catch (InterruptedException e) {
-                    LOG.info("Auto-renew failed, because a message could not be properly delivered.", e);
+                    LOG.info("Auto-renew failed, because a message could not be properly delivered", e);
                     return;
                 } catch (ExecutionException e) {
                     if (e.getCause() instanceof SoapFaultException) {
                         LOG.warn("Request of renew in {} failed. Subscription id: {}.", this.getClass().getSimpleName(),
                                 subscriptionManager.getSubscriptionId());
                     } else if (e.getCause() instanceof SubscriptionNotFoundException) {
-                        LOG.info("Auto-renew failed, because subscription with id '{}' does not exist anymore.",
+                        LOG.info("Auto-renew failed, because subscription with id '{}' does not exist anymore",
                                 subscriptionManager.getSubscriptionId());
                     } else if (e.getCause() instanceof MarshallingException) {
-                        LOG.info("Auto-renew failed, because a message could not be marshalled or unmarshalled.",
+                        LOG.info("Auto-renew failed, because a message could not be marshalled or unmarshalled",
                                 e.getCause());
                     } else if (e.getCause() instanceof TransportException) {
-                        LOG.info("Auto-renew failed, because a message could not be properly delivered.", e.getCause());
+                        LOG.info("Auto-renew failed, because a message could not be properly delivered", e.getCause());
                     } else {
-                        LOG.info("Unexpected exception on unsubscribe.", e.getCause());
+                        LOG.info("Unexpected exception on unsubscribe", e.getCause());
                     }
                     return;
                 } catch (TimeoutException e) {

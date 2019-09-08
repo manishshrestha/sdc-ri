@@ -89,7 +89,7 @@ public class HostingServiceInterceptor implements HostingService {
     InterceptorResult processGet(RequestResponseObject rrObj) throws SoapFaultException {
         if (!rrObj.getRequest().getOriginalEnvelope().getBody().getAny().isEmpty()) {
             throw new SoapFaultException(soapFaultFactory
-                    .createSenderFault(String.format("SOAP envelope body for action %s shall be empty.",
+                    .createSenderFault(String.format("SOAP envelope body for action %s shall be empty",
                             WsTransferConstants.WSA_ACTION_GET)));
         }
 

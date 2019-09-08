@@ -43,19 +43,19 @@ public class DpwsFrameworkImpl extends AbstractIdleService implements DpwsFramew
 
     @Override
     protected void startUp() throws Exception {
-        LOG.info("Start SDCri DPWS framework.");
+        LOG.info("Start SDCri DPWS framework");
         configureDiscovery();
         serviceManager = new ServiceManager(Arrays.asList(udpBindingService, udpMessageQueueService,
                 httpServerRegistry, soapMarshalling));
         serviceManager.startAsync().awaitHealthy();
-        LOG.info("SDCri DPWS framework is ready for use.");
+        LOG.info("SDCri DPWS framework is ready for use");
     }
 
     @Override
     protected void shutDown() throws Exception {
-        LOG.info("Shut down SDCri DPWS framework.");
+        LOG.info("Shut down SDCri DPWS framework");
         serviceManager.stopAsync().awaitStopped();
-        LOG.info("SDCri DPWS framework shut down.");
+        LOG.info("SDCri DPWS framework shut down");
     }
 
     private void configureDiscovery() {

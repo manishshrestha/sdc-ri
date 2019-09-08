@@ -25,7 +25,7 @@ public class UdpBindingServiceMock extends AbstractIdleService implements UdpBin
         if (receiver != null) {
             receiver.receive(message);
         } else {
-            throw new RuntimeException("No UDP message receiver set.");
+            throw new RuntimeException("No UDP message receiver set");
         }
     }
 }

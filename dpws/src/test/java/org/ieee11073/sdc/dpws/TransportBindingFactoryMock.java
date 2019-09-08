@@ -75,7 +75,7 @@ public class TransportBindingFactoryMock implements TransportBindingFactory {
                 }
 
                 ByteArrayOutputStream bosResponse = new ByteArrayOutputStream();
-                HttpHandler theHttpHandler = httpHandler.orElseThrow(() -> new TransportException("HTTP handler not set."));
+                HttpHandler theHttpHandler = httpHandler.orElseThrow(() -> new TransportException("HTTP handler not set"));
                 theHttpHandler.process(new ByteArrayInputStream(bosRequest.toByteArray()), bosResponse, mockTransportInfo);
 
                 try {

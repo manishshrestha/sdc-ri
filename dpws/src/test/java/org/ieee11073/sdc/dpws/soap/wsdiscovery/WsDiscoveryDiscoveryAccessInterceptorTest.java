@@ -104,7 +104,7 @@ public class WsDiscoveryDiscoveryAccessInterceptorTest extends DpwsTest {
 
         sentSoapMessages.forEach(message -> {
             Optional<HelloType> body = soapUtil.getBody(message, HelloType.class);
-            HelloType actualHello = body.orElseThrow(() -> new RuntimeException("SOAP message body malformed."));
+            HelloType actualHello = body.orElseThrow(() -> new RuntimeException("SOAP message body malformed"));
             assertEquals(expectedTypes.size(), actualHello.getTypes().size());
             assertEquals(expectedType, actualHello.getTypes().get(0));
             assertEquals(expectedScopes.size(), actualHello.getScopes().getValue().size());
@@ -119,7 +119,7 @@ public class WsDiscoveryDiscoveryAccessInterceptorTest extends DpwsTest {
         wsDiscoveryTargetService.sendBye();
         assertEquals(1, sentSoapMessages.size());
         Optional<ByeType> body = soapUtil.getBody(sentSoapMessages.get(0), ByeType.class);
-        ByeType actualBye = body.orElseThrow(() -> new RuntimeException("SOAP message body malformed."));
+        ByeType actualBye = body.orElseThrow(() -> new RuntimeException("SOAP message body malformed"));
         assertEquals(expectedTypes.size(), actualBye.getTypes().size());
         assertEquals(expectedType, actualBye.getTypes().get(0));
         assertEquals(expectedScopes.size(), actualBye.getScopes().getValue().size());

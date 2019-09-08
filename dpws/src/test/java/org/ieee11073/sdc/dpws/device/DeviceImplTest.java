@@ -81,7 +81,7 @@ public class DeviceImplTest implements Runnable {
 
         device.startAsync().awaitRunning();
 
-        System.out.println("Device started.");
+        System.out.println("Device started");
         try {
             int value;
             while ((value = System.in.read()) != -1) {
@@ -94,10 +94,10 @@ public class DeviceImplTest implements Runnable {
             e.printStackTrace();
         }
 
-        System.out.println("Stop device.");
+        System.out.println("Stop device");
         device.stopAsync().awaitTerminated();
         dpwsFramework.stopAsync().awaitTerminated();
-        System.out.println("Device stopped.");
+        System.out.println("Device stopped");
     }
 
     private class DpwsConfig extends AbstractModule {

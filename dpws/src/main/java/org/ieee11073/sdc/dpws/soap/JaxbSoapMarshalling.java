@@ -43,12 +43,12 @@ public class JaxbSoapMarshalling extends AbstractIdleService implements SoapMars
     protected void startUp() throws Exception {
         LOG.info("Start SOAP marshalling. Initialize JAXB.");
         initializeJaxb();
-        LOG.info("JAXB initialization finished.");
+        LOG.info("JAXB initialization finished");
     }
 
     @Override
     protected void shutDown() throws Exception {
-        LOG.info("SOAP marshalling stopped.");
+        LOG.info("SOAP marshalling stopped");
     }
 
     /**
@@ -62,7 +62,7 @@ public class JaxbSoapMarshalling extends AbstractIdleService implements SoapMars
 
     private void checkRunning() {
         if (!isRunning()) {
-            throw new RuntimeException("Try to marshal, but marshalling service is not running.");
+            throw new RuntimeException("Try to marshal, but marshalling service is not running");
         }
     }
 

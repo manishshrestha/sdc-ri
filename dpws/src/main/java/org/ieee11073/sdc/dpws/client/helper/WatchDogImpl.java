@@ -41,19 +41,19 @@ public class WatchDogImpl extends AbstractIdleService implements Service, WatchD
 
     @Override
     protected void startUp() throws Exception {
-        LOG.info("Watchdog started.");
+        LOG.info("Watchdog started");
     }
 
     @Override
     protected void shutDown() throws Exception {
         scheduler.shutdownNow();
-        LOG.info("Watchdog stopped.");
+        LOG.info("Watchdog stopped");
     }
 
     @Override
     public void inspect(HostingServiceProxy hostingServiceProxy) {
         if (!isRunning()) {
-            LOG.info("WatchDog is not running. Inspection skipped.");
+            LOG.info("WatchDog is not running. Inspection skipped");
             return;
         }
 
@@ -68,11 +68,11 @@ public class WatchDogImpl extends AbstractIdleService implements Service, WatchD
                 // Assume device lost on any error
                 watchdogTriggerCallback.accept(hostingServiceProxy);
 
-                LOG.info("Watchdog failed to request {}.",
+                LOG.info("Watchdog failed to request {}",
                         hostingServiceProxy.getEndpointReferenceAddress());
 
                 // Stop job by throwing an exception
-                throw new RuntimeException("Watchdog timeout; stop schedule.");
+                throw new RuntimeException("Watchdog timeout; stop schedule");
             }
         }, watchdogPeriod.getSeconds(), watchdogPeriod.getSeconds(), TimeUnit.SECONDS);
     }

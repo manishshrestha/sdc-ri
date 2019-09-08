@@ -118,10 +118,10 @@ public class DeviceImpl extends AbstractIdleService implements Device, Service, 
         }
 
         EndpointReferenceType deviceEpr = config.getEndpointReference();
-        LOG.info("Start device with URN '{}'.", deviceEpr.getAddress().getValue());
+        LOG.info("Start device with URN '{}'", deviceEpr.getAddress().getValue());
 
         URI eprAddress = wsaUtil.getAddressUri(config.getEndpointReference()).orElseThrow(() ->
-                new RuntimeException("No valid endpoint reference found in device config."));
+                new RuntimeException("No valid endpoint reference found in device config"));
         String hostingServerCtxtPath = buildContextPathBase(eprAddress);
 
         // Initialize HTTP servers
@@ -182,20 +182,20 @@ public class DeviceImpl extends AbstractIdleService implements Device, Service, 
         Optional.ofNullable(scopesOnStartup).ifPresent(uris ->
                 wsdTargetService.setScopes(scopesAsStrs(uris)));
 
-        LOG.info("Device {} is running.", hostingService);
+        LOG.info("Device {} is running", hostingService);
 
         wsdTargetService.sendHello();
     }
 
     @Override
     protected void shutDown() throws Exception {
-        LOG.info("Shut down device {}.", hostingService);
+        LOG.info("Shut down device {}", hostingService);
         wsdTargetService.sendBye();
         hostingService.getHostedServices().forEach(hostedService ->
                 hostedService.getWebService().stopAsync().awaitTerminated());
         httpServerRegistry.stopAsync().awaitTerminated();
         discoveryMessageQueue.unregisterUdpMessageQueueObserver(udpMsgProcessor);
-        LOG.info("Device {} shut down.", hostingService);
+        LOG.info("Device {} shut down", hostingService);
     }
 
     @Override
@@ -215,7 +215,7 @@ public class DeviceImpl extends AbstractIdleService implements Device, Service, 
 
     private void checkRunning() {
         if (!isRunning()) {
-            throw new IllegalStateException("Device is not running.");
+            throw new IllegalStateException("Device is not running");
         }
     }
 
@@ -313,10 +313,10 @@ public class DeviceImpl extends AbstractIdleService implements Device, Service, 
         final byte[] wsdlDocBytes = tmpWsdlDocBytes;
         for (EndpointReferenceType epr : hostedService.getType().getEndpointReference()) {
             if (wsdlDocBytes.length == 0) {
-                throw new RuntimeException("Empty WSDL document detected.");
+                throw new RuntimeException("Empty WSDL document detected");
             }
             URI uri = wsaUtil.getAddressUri(epr).orElseThrow(() ->
-                    new RuntimeException("Invalid EPR detected when trying to add hosted service."));
+                    new RuntimeException("Invalid EPR detected when trying to add hosted service"));
 
             httpServerRegistry.registerContext(uri, contextPath, hsReqResHandler);
             URI wsdlLocation = httpServerRegistry.registerContext(uri, wsdlContextPath,

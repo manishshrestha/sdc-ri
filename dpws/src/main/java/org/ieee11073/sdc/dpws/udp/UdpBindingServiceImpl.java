@@ -41,7 +41,7 @@ public class UdpBindingServiceImpl extends AbstractIdleService implements UdpBin
     @Override
     protected void startUp() throws Exception {
         InetSocketAddress address = new InetSocketAddress(socketAddress, socketPort);
-        LOG.info("Start UDP binding {}.", this);
+        LOG.info("Start UDP binding {}", this);
 
         try {
             if (socketAddress.isMulticastAddress()) {
@@ -52,16 +52,16 @@ public class UdpBindingServiceImpl extends AbstractIdleService implements UdpBin
                 incomingSocket = new DatagramSocket(address);
             }
         } catch (SocketException e) {
-            LOG.warn(String.format("Error while connecting to %s:%s.", socketAddress.toString(), socketPort),
+            LOG.warn(String.format("Error while connecting to %s:%s", socketAddress.toString(), socketPort),
                     e.getMessage());
         }
 
         outgoingSocket = new DatagramSocket();
 
         if (receiver == null) {
-            LOG.info("No data receiver configured; ignore incoming UDP messages.");
+            LOG.info("No data receiver configured; ignore incoming UDP messages");
         } else {
-            LOG.info("Data receiver configured; process incoming UDP messages.");
+            LOG.info("Data receiver configured; process incoming UDP messages");
 
             // Socket to receive any incoming multicast traffic
             this.multicastSocketRunner = new Thread(() -> {
@@ -101,12 +101,12 @@ public class UdpBindingServiceImpl extends AbstractIdleService implements UdpBin
             unicastSocketRunner.start();
         }
 
-        LOG.info("UDP binding {} is running.", this);
+        LOG.info("UDP binding {} is running", this);
     }
 
     @Override
     protected void shutDown() throws Exception {
-        LOG.info("Shut down UDP binding {}.", this);
+        LOG.info("Shut down UDP binding {}", this);
         multicastSocketRunner.interrupt();
         unicastSocketRunner.interrupt();
         if (incomingMulticastSocket != null) {
@@ -114,7 +114,7 @@ public class UdpBindingServiceImpl extends AbstractIdleService implements UdpBin
         }
         incomingSocket.close();
         outgoingSocket.close();
-        LOG.info("UDP binding {} shut down.", this);
+        LOG.info("UDP binding {} shut down", this);
     }
 
     @Override
@@ -161,7 +161,7 @@ public class UdpBindingServiceImpl extends AbstractIdleService implements UdpBin
             try {
                 Thread.sleep(t);
             } catch (InterruptedException e) {
-                LOG.debug("Thread interrupted.", e);
+                LOG.info("Thread interrupted");
                 break;
             }
 

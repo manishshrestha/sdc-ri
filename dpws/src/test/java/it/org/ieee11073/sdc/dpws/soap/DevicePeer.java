@@ -64,7 +64,7 @@ public abstract class DevicePeer extends IntegrationTestPeer {
 
     private void checkSetup() {
         if (!isSetup) {
-            throw new RuntimeException("Call setup() before access getter method.");
+            throw new RuntimeException("Call setup() before access getter method");
         }
     }
 

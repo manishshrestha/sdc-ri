@@ -79,7 +79,7 @@ public class DiscoveryDeviceUdpMessageProcessor implements UdpMessageQueueObserv
                 return;
             }
         } catch (SoapFaultException e) {
-            LOG.info("SOAP fault thrown [{}].", e.getMessage());
+            LOG.info("SOAP fault thrown [{}]", e.getMessage());
         }
 
         if (LOG.isDebugEnabled()) {

@@ -126,20 +126,20 @@ public class HostingServiceResolver {
                             .get(maxWaitForFutures.toMillis(), TimeUnit.MILLISECONDS);
                     break;
                 } catch (Exception e) {
-                    LOG.debug("TransferGet to {} failed.", xAddr, e);
+                    LOG.debug("TransferGet to {} failed", xAddr, e);
                 }
             }
 
             if (transferGetResponse == null) {
-                throw new TransportException(String.format("None of the %s XAddr URL(s) responded with a valid TransferGet response.",
+                throw new TransportException(String.format("None of the %s XAddr URL(s) responded with a valid TransferGet response",
                         discoveredDevice.getXAddrs().size()));
             }
 
             Metadata deviceMetadata = soapUtil.getBody(transferGetResponse, Metadata.class).orElseThrow(() ->
-                    new MalformedSoapMessageException("Could not get metadata element from TransferGet response."));
+                    new MalformedSoapMessageException("Could not get metadata element from TransferGet response"));
 
             if (deviceMetadata.getMetadataSection().isEmpty()) {
-                throw new MalformedSoapMessageException("No metadata sections in TransferGet response.");
+                throw new MalformedSoapMessageException("No metadata sections in TransferGet response");
             }
 
             URI deviceEprAddress = discoveredDevice.getEprAddress();
@@ -174,7 +174,7 @@ public class HostingServiceResolver {
                     thisDevice = jaxbUtil.extractElement(metadataSection.getAny(), ThisDeviceType.class);
                     continue;
                 } catch (Exception e) {
-                    LOG.info("Resolve dpws:ThisDevice from {} failed.", eprAddress);
+                    LOG.info("Resolve dpws:ThisDevice from {} failed", eprAddress);
                     continue;
                 }
             }
@@ -184,7 +184,7 @@ public class HostingServiceResolver {
                     thisModel = jaxbUtil.extractElement(metadataSection.getAny(), ThisModelType.class);
                     continue;
                 } catch (Exception e) {
-                    LOG.info("Resolve dpws:ThisModel from {} failed.", eprAddress);
+                    LOG.info("Resolve dpws:ThisModel from {} failed", eprAddress);
                     continue;
                 }
             }
@@ -195,23 +195,23 @@ public class HostingServiceResolver {
                             .orElseThrow(Exception::new);
 
                     if (!rs.getType().equals(DpwsConstants.RELATIONSHIP_TYPE_HOST)) {
-                        LOG.debug("Incompatible dpws:Relationship type found for {}: {}.", eprAddress, rs.getType());
+                        LOG.debug("Incompatible dpws:Relationship type found for {}: {}", eprAddress, rs.getType());
                         continue;
                     }
 
                     relationshipData = extractRelationshipData(rs, eprAddress);
                 } catch (Exception e) {
-                    LOG.info("Resolve dpws:Relationship from {} failed.", eprAddress);
+                    LOG.info("Resolve dpws:Relationship from {} failed", eprAddress);
                 }
             }
         }
 
         if (!thisDevice.isPresent()) {
-            LOG.info("No dpws:ThisDevice found for {}.", eprAddress);
+            LOG.info("No dpws:ThisDevice found for {}", eprAddress);
         }
 
         if (!thisModel.isPresent()) {
-            LOG.info("No dpws:ThisModel found for {}.", eprAddress);
+            LOG.info("No dpws:ThisModel found for {}", eprAddress);
         }
 
         RelationshipData rsDataFromOptional = relationshipData.orElseThrow(() ->
@@ -268,12 +268,12 @@ public class HostingServiceResolver {
                         .get(maxWaitForFutures.toMillis(), TimeUnit.MILLISECONDS);
                 break;
             } catch (Exception e) {
-                LOG.debug("GetMetadata to {} failed.", eprType.getAddress().getValue(), e);
+                LOG.debug("GetMetadata to {} failed", eprType.getAddress().getValue(), e);
             }
         }
 
         if (getMetadataResponse == null) {
-            LOG.info("None of the {} hosted service EPR addresses responded with a valid GetMetadata response.",
+            LOG.info("None of the {} hosted service EPR addresses responded with a valid GetMetadata response",
                     host.getEndpointReference().size());
             return Optional.empty();
         }
