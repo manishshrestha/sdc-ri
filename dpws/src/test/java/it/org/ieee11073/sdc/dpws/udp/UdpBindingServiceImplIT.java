@@ -35,7 +35,7 @@ public class UdpBindingServiceImplIT extends DpwsTest {
         factory = getInjector().getInstance(UdpBindingServiceFactory.class);
         lock = new ReentrantLock();
         condition = lock.newCondition();
-        localhostInterface = NetworkInterface.getByInetAddress(InetAddress.getLocalHost());
+        localhostInterface = NetworkInterface.getByInetAddress(InetAddress.getLoopbackAddress());
     }
 
     @Test

@@ -63,7 +63,7 @@ public class DpwsFrameworkImpl extends AbstractIdleService implements DpwsFramew
         LOG.info("Start SDCri DPWS framework.");
 
         if (networkInterface == null) {
-            networkInterface = NetworkInterface.getByInetAddress(InetAddress.getLocalHost());
+            networkInterface = NetworkInterface.getByInetAddress(InetAddress.getLoopbackAddress());
         }
 
         printNetworkInterfaceInformation();

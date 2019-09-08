@@ -76,7 +76,7 @@ public class CryptoIT {
             @Override
             public NetworkInterface getNetworkInterface() {
                 try {
-                    return NetworkInterface.getByInetAddress(InetAddress.getLocalHost());
+                    return NetworkInterface.getByInetAddress(InetAddress.getLoopbackAddress());
                 } catch (Exception e) {
                     throw new RuntimeException(e);
                 }

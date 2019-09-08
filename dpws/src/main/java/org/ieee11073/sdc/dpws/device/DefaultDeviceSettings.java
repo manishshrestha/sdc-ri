@@ -38,7 +38,7 @@ public class DefaultDeviceSettings implements DeviceSettings {
     @Override
     public NetworkInterface getNetworkInterface() {
         try {
-            return NetworkInterface.getByInetAddress(InetAddress.getLocalHost());
+            return NetworkInterface.getByInetAddress(InetAddress.getLoopbackAddress());
         } catch (Exception e) {
             LOG.warn("No default network interface was resolvable:", e.getMessage());
             throw new RuntimeException(e);
