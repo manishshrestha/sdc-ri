@@ -1,7 +1,5 @@
 package org.ieee11073.sdc.dpws.device.helper;
 
-import com.google.inject.Inject;
-
 import java.net.URI;
 import java.util.Optional;
 
@@ -30,7 +28,7 @@ public class UriBaseContextPath {
     private String deriveFrom(URI uri) {
         final Optional<SupportedEprUriScheme> supportedUriScheme =
                 getSupportedScheme(uri.getScheme(), uri.getSchemeSpecificPart());
-        if (!supportedUriScheme.isPresent()) {
+        if (supportedUriScheme.isEmpty()) {
             return "";
         }
         switch (supportedUriScheme.get()) {

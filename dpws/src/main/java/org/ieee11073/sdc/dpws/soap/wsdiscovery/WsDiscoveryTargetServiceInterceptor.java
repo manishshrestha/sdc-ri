@@ -83,7 +83,7 @@ public class WsDiscoveryTargetServiceInterceptor implements WsDiscoveryTargetSer
 
     @MessageInterceptor(value = WsDiscoveryConstants.WSA_ACTION_PROBE, direction = Direction.REQUEST)
     InterceptorResult processProbe(RequestResponseObject rrObj)
-            throws SoapFaultException, MarshallingException, TransportException {
+            throws SoapFaultException {
         SoapMessage inMsg = rrObj.getRequest();
         ProbeType probe = validateIncomingMessage(inMsg, ProbeType.class);
         ScopesType scopesFromProbe = Optional.ofNullable(probe.getScopes()).orElse(wsdFactory.createScopesType());
@@ -130,7 +130,7 @@ public class WsDiscoveryTargetServiceInterceptor implements WsDiscoveryTargetSer
 
     @MessageInterceptor(value = WsDiscoveryConstants.WSA_ACTION_RESOLVE, direction = Direction.REQUEST)
     InterceptorResult processResolve(RequestResponseObject rrObj)
-            throws SoapFaultException, MarshallingException, TransportException {
+            throws SoapFaultException {
         SoapMessage inMsg = rrObj.getRequest();
         ResolveType resolveType = validateIncomingMessage(inMsg, ResolveType.class);
 

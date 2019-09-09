@@ -50,7 +50,7 @@ public class EnvelopeFactory {
      * @param wsaTo wsa:To element content
      * @return an {@link Envelope}
      */
-    public Envelope createEnvelope(String wsaAction, String wsaTo, Object firstBodyChild) {
+    public Envelope createEnvelope(String wsaAction, String wsaTo, @Nullable Object firstBodyChild) {
         Envelope envelope = createEnvelope(firstBodyChild);
         envelope.getHeader().getAny().add(wsaFactory.createAction(createUri(wsaAction)));
         envelope.getHeader().getAny().add(wsaFactory.createTo(createUri(wsaTo)));

@@ -5,19 +5,22 @@ import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.common.util.concurrent.MoreExecutors;
 import org.ieee11073.sdc.dpws.DpwsTest;
 import org.ieee11073.sdc.dpws.client.*;
+import org.ieee11073.sdc.dpws.client.event.DeviceEnteredMessage;
+import org.ieee11073.sdc.dpws.client.event.DeviceLeftMessage;
+import org.ieee11073.sdc.dpws.client.event.DeviceProbeTimeoutMessage;
+import org.ieee11073.sdc.dpws.client.event.ProbedDeviceFoundMessage;
 import org.ieee11073.sdc.dpws.soap.wsaddressing.WsAddressingUtil;
 import org.ieee11073.sdc.dpws.soap.wsaddressing.model.EndpointReferenceType;
-import org.ieee11073.sdc.dpws.soap.wsdiscovery.ByeMessage;
-import org.ieee11073.sdc.dpws.soap.wsdiscovery.HelloMessage;
-import org.ieee11073.sdc.dpws.soap.wsdiscovery.ProbeMatchesMessage;
-import org.ieee11073.sdc.dpws.soap.wsdiscovery.ProbeTimeoutMessage;
+import org.ieee11073.sdc.dpws.soap.wsdiscovery.event.ByeMessage;
+import org.ieee11073.sdc.dpws.soap.wsdiscovery.event.HelloMessage;
+import org.ieee11073.sdc.dpws.soap.wsdiscovery.event.ProbeMatchesMessage;
+import org.ieee11073.sdc.dpws.soap.wsdiscovery.event.ProbeTimeoutMessage;
 import org.ieee11073.sdc.dpws.soap.wsdiscovery.model.*;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.net.URI;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Optional;
 
@@ -49,7 +52,7 @@ public class DiscoveredDeviceObserverTest extends DpwsTest {
     }
 
     @Test
-    public void publishDeviceLeft() throws Exception {
+    public void publishDeviceLeft() {
         helloByeAndProbeMatchesObserverImpl.registerDiscoveryObserver(new org.ieee11073.sdc.dpws.client.DiscoveryObserver() {
             @Subscribe
             void onDeviceLeft(DeviceLeftMessage deviceLeftMessage) {
@@ -63,7 +66,7 @@ public class DiscoveredDeviceObserverTest extends DpwsTest {
     }
 
     @Test
-    public void onHello() throws Exception {
+    public void onHello() {
         HelloType hType = objFactory.createHelloType();
         hType.setEndpointReference(expectedEpr);
         HelloMessage hMsg = new HelloMessage(hType);
@@ -89,7 +92,7 @@ public class DiscoveredDeviceObserverTest extends DpwsTest {
     }
 
     @Test
-    public void onBye() throws Exception {
+    public void onBye() {
         ByeType bType = objFactory.createByeType();
         bType.setEndpointReference(expectedEpr);
         ByeMessage bMsg = new ByeMessage(bType);
@@ -107,7 +110,7 @@ public class DiscoveredDeviceObserverTest extends DpwsTest {
     }
 
     @Test
-    public void onProbeMatches() throws Exception {
+    public void onProbeMatches() {
         ProbeMatchType pmType = objFactory.createProbeMatchType();
         pmType.setEndpointReference(expectedEpr);
         ProbeMatchesType pmsType = objFactory.createProbeMatchesType();
@@ -138,7 +141,7 @@ public class DiscoveredDeviceObserverTest extends DpwsTest {
     }
 
     @Test
-    public void onProbeTimeout() throws Exception {
+    public void onProbeTimeout() {
         Integer expectedDevicesCount = 10;
         String expectedId = "expectedId";
         ProbeTimeoutMessage ptMsg = new ProbeTimeoutMessage(expectedDevicesCount, expectedId);

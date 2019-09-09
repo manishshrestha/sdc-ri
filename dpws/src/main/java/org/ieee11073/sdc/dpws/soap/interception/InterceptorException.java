@@ -3,7 +3,7 @@ package org.ieee11073.sdc.dpws.soap.interception;
 /**
  * Wrapped interceptor interceptorResult that is obtained in interceptor handling.
  */
-public class InterceptorException extends RuntimeException {
+public class InterceptorException extends Exception {
     private InterceptorResult interceptorResult;
     public InterceptorException(InterceptorResult interceptorResult) {
         super(String.format("Interceptor interceptorResult: %s", interceptorResult.toString()));

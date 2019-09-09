@@ -9,8 +9,9 @@ import org.ieee11073.sdc.dpws.model.HostedServiceType;
 import org.ieee11073.sdc.dpws.model.ThisDeviceType;
 import org.ieee11073.sdc.dpws.model.ThisModelType;
 import org.ieee11073.sdc.dpws.ni.LocalAddressResolver;
-import org.ieee11073.sdc.dpws.service.*;
-import org.ieee11073.sdc.dpws.service.factory.HostedServiceFactory;
+import org.ieee11073.sdc.dpws.service.HostedService;
+import org.ieee11073.sdc.dpws.service.HostedServiceProxy;
+import org.ieee11073.sdc.dpws.service.HostingServiceProxy;
 import org.ieee11073.sdc.dpws.service.factory.HostingServiceFactory;
 import org.ieee11073.sdc.dpws.service.helper.MetadataSectionUtil;
 import org.ieee11073.sdc.dpws.soap.RequestResponseClient;
@@ -19,7 +20,6 @@ import org.ieee11073.sdc.dpws.soap.SoapUtil;
 import org.ieee11073.sdc.dpws.soap.factory.RequestResponseClientFactory;
 import org.ieee11073.sdc.dpws.soap.wsaddressing.WsAddressingUtil;
 import org.ieee11073.sdc.dpws.soap.wsaddressing.model.EndpointReferenceType;
-import org.ieee11073.sdc.dpws.soap.wseventing.EventSink;
 import org.ieee11073.sdc.dpws.soap.wsmetadataexchange.GetMetadataClient;
 import org.ieee11073.sdc.dpws.soap.wsmetadataexchange.model.Metadata;
 import org.ieee11073.sdc.dpws.soap.wsmetadataexchange.model.MetadataSection;
@@ -56,8 +56,6 @@ public class HostingServiceResolverTest extends DpwsTest {
     private MetadataSectionUtil metadataSectionUtil;
     private WsAddressingUtil wsaUtil;
     private SoapUtil soapUtil;
-    private HostedServiceFactory hostedServiceFactory;
-    private HostedServiceType expectedHostedServiceType;
 
     @Override
     @Before
@@ -82,7 +80,6 @@ public class HostingServiceResolverTest extends DpwsTest {
         mexFactory = getInjector().getInstance(org.ieee11073.sdc.dpws.soap.wsmetadataexchange.model.ObjectFactory.class);
 
         hostingServiceFactory = getInjector().getInstance(HostingServiceFactory.class);
-        hostedServiceFactory = getInjector().getInstance(HostedServiceFactory.class);
 
         expectedDeviceEprAddress = URI.create("urn:uuid:71c219ae-3b55-404f-803b-1e72390f73ba");
         expectedHostingServiceQNameTypes = Arrays.asList(new QName("http://device", "Type1"),
@@ -100,7 +97,7 @@ public class HostingServiceResolverTest extends DpwsTest {
                 wsaUtil.createEprWithAddress("http://hosted-service-epr2"));
         expectedHostedServiceQNameTypes = Arrays.asList(new QName("http://service", "Type1"),
                 new QName("http://service", "Type2"));
-        expectedHostedServiceType = dpwsFactory.createHostedServiceType();
+        HostedServiceType expectedHostedServiceType = dpwsFactory.createHostedServiceType();
         expectedHostedServiceType.setEndpointReference(expectedHostedServiceEprs);
         expectedHostedServiceType.setServiceId(expectedServiceId);
         expectedHostedServiceType.setTypes(expectedHostedServiceQNameTypes);

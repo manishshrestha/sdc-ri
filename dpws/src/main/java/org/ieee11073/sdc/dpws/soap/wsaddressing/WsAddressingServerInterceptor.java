@@ -77,7 +77,7 @@ public class WsAddressingServerInterceptor implements Interceptor {
     private void processAction(SoapMessage msg) throws SoapFaultException {
         Optional<AttributedURIType> action = msg.getWsAddressingHeader().getAction();
 
-        if (!action.isPresent() || !Optional.ofNullable(action.get().getValue()).isPresent()) {
+        if (action.isEmpty() || Optional.ofNullable(action.get().getValue()).isEmpty()) {
             throw new SoapFaultException(soapFaultFactory.createSenderFault(
                     "WS-Addressing header 'Action' required, but not given"));
         }
@@ -94,7 +94,7 @@ public class WsAddressingServerInterceptor implements Interceptor {
         }
 
         Optional<AttributedURIType> messageId = msg.getWsAddressingHeader().getMessageId();
-        if (!messageId.isPresent()) {
+        if (messageId.isEmpty()) {
             throw new SoapFaultException(
                     addressingFaultFactory.createMessageInformationHeaderRequired(WsAddressingConstants.MESSAGE_ID));
         }

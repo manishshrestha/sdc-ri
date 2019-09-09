@@ -32,7 +32,7 @@ public class WsEventingMapper {
             Optional<String> uri;
 
             uri = jaxbUtil.extractElement(o, WsEventingConstants.IDENTIFIER);
-            if (uri.isPresent() && !dest.getIdentifier().isPresent()) {
+            if (uri.isPresent() && dest.getIdentifier().isEmpty()) {
                 dest.setIdentifier(URI.create(uri.get()));
             }
         });

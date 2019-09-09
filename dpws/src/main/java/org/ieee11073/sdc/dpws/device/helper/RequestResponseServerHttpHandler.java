@@ -48,7 +48,7 @@ public class RequestResponseServerHttpHandler implements HttpHandler, Intercepto
         try {
             inStream.close();
         } catch (IOException e) {
-            throw new TransportException("IO error closing HTTP input stream.", e);
+            throw new TransportException("IO error closing HTTP input stream", e);
         }
 
         if (LOG.isDebugEnabled()) {
@@ -59,9 +59,9 @@ public class RequestResponseServerHttpHandler implements HttpHandler, Intercepto
         try {
             InterceptorResult ir = reqResServer.receiveRequestResponse(requestMsg, responseMsg, transportInfo);
             if (ir == InterceptorResult.CANCEL) {
-                responseMsg = soapFaultFactory.createReceiverFault("Message processing aborted.");
+                responseMsg = soapFaultFactory.createReceiverFault("Message processing aborted");
             } else if (ir == InterceptorResult.NONE_INVOKED) {
-                responseMsg = soapFaultFactory.createReceiverFault("Message was not processed at the server.");
+                responseMsg = soapFaultFactory.createReceiverFault("Message was not processed at the server");
             }
         } catch (SoapFaultException e) {
             responseMsg = e.getFaultMessage();
@@ -80,7 +80,7 @@ public class RequestResponseServerHttpHandler implements HttpHandler, Intercepto
         try {
             outStream.close();
         } catch (IOException e) {
-            throw new TransportException("IO error closing HTTP output stream.", e);
+            throw new TransportException("IO error closing HTTP output stream", e);
         }
     }
 

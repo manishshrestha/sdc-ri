@@ -33,7 +33,7 @@ public class NotificationSinkImpl implements NotificationSink {
         try {
             serverHelper.invokeDispatcher(Direction.NOTIFICATION, interceptorRegistry, notification, nObj);
         } catch (SoapFaultException e) {
-            LOG.warn("SoapFaultException shall not be thrown by notifications.");
+            LOG.warn("SoapFaultException shall not be thrown by notifications");
         }
     }
 }

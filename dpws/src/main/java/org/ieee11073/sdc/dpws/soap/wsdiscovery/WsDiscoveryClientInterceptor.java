@@ -20,6 +20,10 @@ import org.ieee11073.sdc.dpws.soap.interception.MessageInterceptor;
 import org.ieee11073.sdc.dpws.soap.interception.NotificationObject;
 import org.ieee11073.sdc.dpws.soap.wsaddressing.WsAddressingUtil;
 import org.ieee11073.sdc.dpws.soap.wsaddressing.model.*;
+import org.ieee11073.sdc.dpws.soap.wsdiscovery.event.ByeMessage;
+import org.ieee11073.sdc.dpws.soap.wsdiscovery.event.HelloMessage;
+import org.ieee11073.sdc.dpws.soap.wsdiscovery.event.ProbeMatchesMessage;
+import org.ieee11073.sdc.dpws.soap.wsdiscovery.event.ProbeTimeoutMessage;
 import org.ieee11073.sdc.dpws.soap.wsdiscovery.model.ObjectFactory;
 import org.ieee11073.sdc.dpws.soap.wsdiscovery.model.*;
 
@@ -155,7 +159,7 @@ public class WsDiscoveryClientInterceptor implements WsDiscoveryClient {
         return executorService.submit(() -> {
             SoapMessage response = rrClient.sendRequestResponse(createProbeMessage(types, scopes));
             return soapUtil.getBody(response, ProbeMatchesType.class)
-                    .orElseThrow(() -> new RuntimeException("SOAP message body malformed."));
+                    .orElseThrow(() -> new RuntimeException("SOAP message body malformed"));
         });
     }
 
@@ -273,7 +277,7 @@ public class WsDiscoveryClientInterceptor implements WsDiscoveryClient {
                     Optional<SoapMessage> msg = popMatches(messageQueue, wsaRelatesTo);
                     if (msg.isPresent()) {
                         return soapUtil.getBody(msg.get(), ResolveMatchesType.class).orElseThrow(() ->
-                                new RuntimeException("SOAP message body malformed."));
+                                new RuntimeException("SOAP message body malformed"));
                     }
 
                     condition.await(wait, TimeUnit.MILLISECONDS);
@@ -282,14 +286,14 @@ public class WsDiscoveryClientInterceptor implements WsDiscoveryClient {
                     wait -= System.currentTimeMillis() - tStartInMillis;
                     if (msg.isPresent()) {
                         return soapUtil.getBody(msg.get(), ResolveMatchesType.class).orElseThrow(() ->
-                                new RuntimeException("SOAP message body malformed."));
+                                new RuntimeException("SOAP message body malformed"));
                     }
                 }
             } finally {
                 lock.unlock();
             }
 
-            throw new RuntimeException(String.format("No ResolveMatches message received in %s milliseconds.",
+            throw new RuntimeException(String.format("No ResolveMatches message received in %s milliseconds",
                     Long.valueOf(maxWaitInMillis).toString()));
         }
     }
@@ -359,7 +363,7 @@ public class WsDiscoveryClientInterceptor implements WsDiscoveryClient {
             Optional<SoapMessage> msg = popMatches(messageQueue, wsaRelatesTo);
             if (msg.isPresent()) {
                 ProbeMatchesType pMatches = soapUtil.getBody(msg.get(), ProbeMatchesType.class)
-                        .orElseThrow(() -> new RuntimeException("SOAP message body malformed."));
+                        .orElseThrow(() -> new RuntimeException("SOAP message body malformed"));
                 helloByeProbeEvents.post(new ProbeMatchesMessage(probeId, pMatches));
                 probeMatchesCount++;
             }

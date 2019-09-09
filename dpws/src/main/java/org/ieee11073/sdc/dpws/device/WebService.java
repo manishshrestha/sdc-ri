@@ -58,7 +58,7 @@ public abstract class WebService extends AbstractIdleService implements EventSou
             }
 
             @Override
-            public void awaitRunning(long l, TimeUnit timeUnit) throws TimeoutException {
+            public void awaitRunning(long l, TimeUnit timeUnit) {
             }
 
             @Override
@@ -66,7 +66,7 @@ public abstract class WebService extends AbstractIdleService implements EventSou
             }
 
             @Override
-            public void awaitTerminated(long l, TimeUnit timeUnit) throws TimeoutException {
+            public void awaitTerminated(long l, TimeUnit timeUnit) {
             }
 
             @Override
@@ -91,12 +91,12 @@ public abstract class WebService extends AbstractIdleService implements EventSou
     }
 
     @Override
-    public void sendNotification(String action, Object payload) throws MarshallingException, TransportException {
+    public void sendNotification(String action, Object payload) {
         eventSource.sendNotification(action, payload);
     }
 
     @Override
-    public void subscriptionEndToAll(WsEventingStatus status) throws TransportException {
+    public void subscriptionEndToAll(WsEventingStatus status) {
         eventSource.subscriptionEndToAll(status);
     }
 

@@ -21,7 +21,7 @@ public class ByteResourceHandler implements HttpHandler {
 
     @Override
     public void process(InputStream inStream, OutputStream outStream, TransportInfo transportInfo)
-            throws TransportException, MarshallingException {
+            throws TransportException {
         try {
             outStream.write(resourceBytes);
         } catch (IOException e) {

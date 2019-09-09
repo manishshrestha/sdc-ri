@@ -19,6 +19,7 @@ import org.ieee11073.sdc.dpws.soap.wsaddressing.WsAddressingUtil;
 import org.ieee11073.sdc.dpws.soap.wsaddressing.model.AttributedURIType;
 import org.ieee11073.sdc.dpws.soap.wsaddressing.model.EndpointReferenceType;
 import org.ieee11073.sdc.dpws.soap.wsaddressing.model.ObjectFactory;
+import org.ieee11073.sdc.dpws.soap.wsdiscovery.event.ProbeMatchesMessage;
 import org.ieee11073.sdc.dpws.soap.wsdiscovery.factory.WsDiscoveryClientFactory;
 import org.ieee11073.sdc.dpws.soap.wsdiscovery.model.ProbeMatchType;
 import org.ieee11073.sdc.dpws.soap.wsdiscovery.model.ProbeMatchesType;
@@ -88,7 +89,7 @@ public class WsDiscoveryClientInterceptorTest extends DpwsTest {
     }
 
     @Test
-    public void processProbe() throws Exception {
+    public void processProbe() {
         processProbeOrResolveRequestWithCallback(() -> {
             try {
                 wsDiscoveryClient.sendProbe(UUID.randomUUID().toString(), expectedTypes, expectedScopes);
@@ -99,7 +100,7 @@ public class WsDiscoveryClientInterceptorTest extends DpwsTest {
     }
 
     @Test
-    public void processResolve() throws Exception {
+    public void processResolve() {
         processProbeOrResolveRequestWithCallback(() -> {
             try {
                 wsDiscoveryClient.sendResolve(expectedEpr);
@@ -155,7 +156,7 @@ public class WsDiscoveryClientInterceptorTest extends DpwsTest {
         assertEquals(1, sentSoapMessages.size());
         notificationSink.receiveNotification(createResolveMatches(sentSoapMessages.get(0)));
 
-        Futures.addCallback(result, new FutureCallback<ResolveMatchesType>() {
+        Futures.addCallback(result, new FutureCallback<>() {
             @Override
             public void onSuccess(@Nullable ResolveMatchesType resolveMatchesType) {
                 assertTrue(true);

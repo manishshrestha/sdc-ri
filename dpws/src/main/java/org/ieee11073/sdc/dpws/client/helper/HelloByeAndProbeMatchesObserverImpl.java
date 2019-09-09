@@ -9,9 +9,17 @@ import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.inject.Inject;
 import com.google.inject.assistedinject.Assisted;
 import org.ieee11073.sdc.dpws.client.*;
+import org.ieee11073.sdc.dpws.client.event.DeviceEnteredMessage;
+import org.ieee11073.sdc.dpws.client.event.DeviceLeftMessage;
+import org.ieee11073.sdc.dpws.client.event.DeviceProbeTimeoutMessage;
+import org.ieee11073.sdc.dpws.client.event.ProbedDeviceFoundMessage;
 import org.ieee11073.sdc.dpws.guice.NetworkJobThreadPool;
 import org.ieee11073.sdc.dpws.soap.wsaddressing.WsAddressingUtil;
 import org.ieee11073.sdc.dpws.soap.wsdiscovery.*;
+import org.ieee11073.sdc.dpws.soap.wsdiscovery.event.ByeMessage;
+import org.ieee11073.sdc.dpws.soap.wsdiscovery.event.HelloMessage;
+import org.ieee11073.sdc.dpws.soap.wsdiscovery.event.ProbeMatchesMessage;
+import org.ieee11073.sdc.dpws.soap.wsdiscovery.event.ProbeTimeoutMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -56,7 +64,8 @@ public class HelloByeAndProbeMatchesObserverImpl implements HelloByeAndProbeMatc
     void onHello(HelloMessage helloMessage) {
         ListenableFuture<Optional<DiscoveredDevice>> future = networkJobExecutor.submit(() ->
                 discoveredDeviceResolver.resolve(helloMessage));
-        Futures.addCallback(future, new FutureCallback<Optional<DiscoveredDevice>>() {
+        Futures.addCallback(future, new FutureCallback<>() {
+            @SuppressWarnings("OptionalAssignedToNull")
             @Override
             public void onSuccess(@Nullable Optional<DiscoveredDevice> discoveredDevice) {
                 if (discoveredDevice == null) {
@@ -87,7 +96,8 @@ public class HelloByeAndProbeMatchesObserverImpl implements HelloByeAndProbeMatc
     void onProbeMatches(ProbeMatchesMessage probeMatchesMessage) {
         ListenableFuture<Optional<DiscoveredDevice>> future = networkJobExecutor.submit(() ->
                 discoveredDeviceResolver.resolve(probeMatchesMessage));
-        Futures.addCallback(future, new FutureCallback<Optional<DiscoveredDevice>>() {
+        Futures.addCallback(future, new FutureCallback<>() {
+            @SuppressWarnings("OptionalAssignedToNull")
             @Override
             public void onSuccess(@Nullable Optional<DiscoveredDevice> discoveredDevice) {
                 if (discoveredDevice == null) {

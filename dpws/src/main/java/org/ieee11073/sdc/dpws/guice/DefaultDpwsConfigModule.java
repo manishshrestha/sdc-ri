@@ -6,7 +6,6 @@ import org.ieee11073.sdc.dpws.client.ClientConfig;
 import org.ieee11073.sdc.dpws.crypto.CryptoConfig;
 import org.ieee11073.sdc.dpws.crypto.CryptoSettings;
 import org.ieee11073.sdc.dpws.device.DeviceConfig;
-import org.ieee11073.sdc.dpws.http.HttpConfig;
 import org.ieee11073.sdc.dpws.soap.SoapConfig;
 import org.ieee11073.sdc.dpws.soap.wsaddressing.WsAddressingConfig;
 import org.ieee11073.sdc.dpws.soap.wsdiscovery.WsDiscoveryConfig;
@@ -29,7 +28,6 @@ public class DefaultDpwsConfigModule extends AbstractConfigurationModule {
         configureClientConfig();
         configureDeviceConfig();
         configureCryptoConfig();
-        configureHttpConfig();
         configureDpws();
     }
 
@@ -47,15 +45,6 @@ public class DefaultDpwsConfigModule extends AbstractConfigurationModule {
         bind(DpwsConfig.MAX_WAIT_FOR_FUTURES,
                 Duration.class,
                 Duration.ofSeconds(10));
-    }
-
-    private void configureHttpConfig() {
-        bind(HttpConfig.PORT_MIN,
-                Integer.class,
-                49152);
-        bind(HttpConfig.PORT_MAX,
-                Integer.class,
-                65535);
     }
 
     private void configureCryptoConfig() {

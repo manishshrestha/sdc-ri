@@ -15,6 +15,8 @@ import org.ieee11073.sdc.dpws.soap.wsaddressing.WsAddressingUtil;
 import org.ieee11073.sdc.dpws.soap.wsaddressing.model.EndpointReferenceType;
 import org.ieee11073.sdc.dpws.soap.wseventing.SourceSubscriptionManager;
 import org.ieee11073.sdc.dpws.soap.wseventing.WsEventingConfig;
+import org.ieee11073.sdc.dpws.soap.wseventing.event.SubscriptionAddedMessage;
+import org.ieee11073.sdc.dpws.soap.wseventing.event.SubscriptionRemovedMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -65,7 +67,7 @@ public class EventSourceTransportManager {
         Optional<NotificationSource> notificationSource = Optional.ofNullable(endToSources.get(subId));
         return notificationSource.map(source -> networkJobExecutor.submit(() -> source.sendNotification(message)))
                 .orElseGet(() -> networkJobExecutor.submit(() -> {
-                    LOG.info("No sink for end-to messages available. Abort sending an end-to event.");
+                    LOG.info("No sink for end-to messages available. Abort sending an end-to event");
                     return InterceptorResult.NONE_INVOKED;
                 }));
     }
@@ -80,7 +82,7 @@ public class EventSourceTransportManager {
      */
     public ListenableFuture<InterceptorResult> sendNotifyTo(SourceSubscriptionManager subMan, SoapMessage message) {
         NotificationSource notifSrc = Optional.ofNullable(notifyToSources.get(subMan.getSubscriptionId()))
-                .orElseThrow(() -> new RuntimeException("Notification source is missing, but still required."));
+                .orElseThrow(() -> new RuntimeException("Notification source is missing, but still required"));
         return networkJobExecutor.submit(() -> {
             for (int i = 1; i <= maxRetriesOnDeliveryFailure; ++i) {
                 try {

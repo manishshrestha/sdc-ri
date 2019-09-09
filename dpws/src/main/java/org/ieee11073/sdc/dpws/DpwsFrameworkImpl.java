@@ -59,8 +59,8 @@ public class DpwsFrameworkImpl extends AbstractIdleService implements DpwsFramew
     }
 
     @Override
-    protected void startUp() throws Exception {
-        LOG.info("Start SDCri DPWS framework.");
+    protected void startUp() throws SocketException, UnknownHostException {
+        LOG.info("Start SDCri DPWS framework");
 
         if (networkInterface == null) {
             networkInterface = NetworkInterface.getByInetAddress(InetAddress.getLoopbackAddress());
@@ -72,7 +72,7 @@ public class DpwsFrameworkImpl extends AbstractIdleService implements DpwsFramew
         serviceManager = new ServiceManager(Arrays.asList(udpBindingService, udpMessageQueueService,
                 httpServerRegistry, soapMarshalling));
         serviceManager.startAsync().awaitHealthy();
-        LOG.info("SDCri DPWS framework is ready for use.");
+        LOG.info("SDCri DPWS framework is ready for use");
     }
 
     private void printNetworkInterfaceInformation() throws SocketException {
@@ -97,10 +97,10 @@ public class DpwsFrameworkImpl extends AbstractIdleService implements DpwsFramew
     }
 
     @Override
-    protected void shutDown() throws Exception {
-        LOG.info("Shut down SDCri DPWS framework.");
+    protected void shutDown() {
+        LOG.info("Shut down SDCri DPWS framework");
         serviceManager.stopAsync().awaitStopped();
-        LOG.info("SDCri DPWS framework shut down.");
+        LOG.info("SDCri DPWS framework shut down");
     }
 
     private void configureDiscovery() throws UnknownHostException, SocketException {

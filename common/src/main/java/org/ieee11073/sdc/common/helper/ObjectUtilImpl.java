@@ -19,10 +19,6 @@ public class ObjectUtilImpl implements ObjectUtil {
 
     @Override
     public <T> T deepCopy(T obj) {
-        if (obj == null) {
-            return null;
-        }
-
         try {
             return cloner.deepClone(obj);
         } catch (Exception e) {

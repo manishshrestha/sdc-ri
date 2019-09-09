@@ -7,6 +7,7 @@ import org.ieee11073.sdc.dpws.soap.SoapUtil;
 import org.ieee11073.sdc.dpws.soap.model.*;
 import org.ieee11073.sdc.dpws.soap.wsaddressing.WsAddressingConstants;
 
+import javax.annotation.Nullable;
 import javax.xml.namespace.QName;
 import java.util.ArrayList;
 import java.util.List;
@@ -39,7 +40,7 @@ public class SoapFaultFactory {
      * @param detail fault details
      * @return a {@link SoapMessage} containing the fault
      */
-    public SoapMessage createFault(String actionUri, QName code, QName subcode, String reasonText, Object detail) {
+    public SoapMessage createFault(String actionUri, QName code, QName subcode, String reasonText, @Nullable Object detail) {
 
         Subcode scObj = new Subcode();
         scObj.setValue(subcode);
@@ -57,15 +58,17 @@ public class SoapFaultFactory {
         Faultreason frObj = new Faultreason();
         frObj.setText(rtListObj);
 
-        List<Object> anyObjList = new ArrayList<>();
-        anyObjList.add(detail);
-        Detail dObj = new Detail();
-        dObj.setAny(anyObjList);
-
         Fault f = new Fault();
         f.setCode(fcObj);
         f.setReason(frObj);
-        f.setDetail(dObj);
+
+        if (detail != null) {
+            List<Object> anyObjList = new ArrayList<>();
+            anyObjList.add(detail);
+            Detail dObj = new Detail();
+            dObj.setAny(anyObjList);
+            f.setDetail(dObj);
+        }
 
         return soapUtil.createMessage(actionUri, soapFactory.createFault(f));
     }

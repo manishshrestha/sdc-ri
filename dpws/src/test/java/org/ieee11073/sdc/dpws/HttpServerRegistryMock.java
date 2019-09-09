@@ -45,6 +45,6 @@ public class HttpServerRegistryMock extends AbstractIdleService implements HttpS
 
     @Override
     public void unregisterContext(URI host, String contextPath) {
-        handlerRegistry.remove(host + contextPath);
+        handlerRegistry.remove(URI.create(host + contextPath));
     }
 }

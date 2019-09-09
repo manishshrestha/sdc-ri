@@ -42,22 +42,22 @@ public class WsAddressingMapper {
             Optional<AttributedURIType> uri;
 
             uri = jaxbUtil.extractElement(o, WsAddressingConstants.ACTION);
-            if (uri.isPresent() && !dest.getAction().isPresent()) {
+            if (uri.isPresent() && dest.getAction().isEmpty()) {
                 dest.setAction(uri.get());
             }
 
             uri = jaxbUtil.extractElement(o, WsAddressingConstants.MESSAGE_ID);
-            if (uri.isPresent() && !dest.getMessageId().isPresent()) {
+            if (uri.isPresent() && dest.getMessageId().isEmpty()) {
                 dest.setMessageId(uri.get());
             }
 
             uri = jaxbUtil.extractElement(o, WsAddressingConstants.TO);
-            if (uri.isPresent() && !dest.getTo().isPresent()) {
+            if (uri.isPresent() && dest.getTo().isEmpty()) {
                 dest.setTo(uri.get());
             }
 
             Optional<RelatesToType> rt = jaxbUtil.extractElement(o, WsAddressingConstants.RELATES_TO);
-            if (rt.isPresent() && !dest.getRelatesTo().isPresent()) {
+            if (rt.isPresent() && dest.getRelatesTo().isEmpty()) {
                 dest.setRelatesTo(wsaUtil.createAttributedURIType(rt.get().getValue()));
             }
         });

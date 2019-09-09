@@ -7,7 +7,7 @@ import java.time.Duration;
 public class DurationAdapter extends XmlAdapter<javax.xml.datatype.Duration, Duration>
 {
     @Override
-    public Duration unmarshal(javax.xml.datatype.Duration v) throws Exception {
+    public Duration unmarshal(javax.xml.datatype.Duration v) {
         return Duration.parse(v.toString());
     }
 

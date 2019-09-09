@@ -87,16 +87,12 @@ public class InterceptorRegistry {
                 .parallelStream()
                 .filter(m -> Arrays.asList(m.getAnnotations())
                         .parallelStream()
-                        .filter(a -> a.annotationType().equals(MessageInterceptor.class))
-                        .findFirst().isPresent())
+                        .anyMatch(a -> a.annotationType().equals(MessageInterceptor.class)))
                 .filter(m -> m.getParameterCount() == 1 &&
                         InterceptorCallbackType.class.isAssignableFrom(m.getParameterTypes()[0]))
                 .filter(m -> m.getReturnType().equals(InterceptorResult.class) ||
                         m.getReturnType().equals(Void.TYPE))
-                .map(method -> {
-                    method.setAccessible(true);
-                    return method;
-                })
+                .peek(method -> method.setAccessible(true))
                 .collect(Collectors.toList());
     }
 

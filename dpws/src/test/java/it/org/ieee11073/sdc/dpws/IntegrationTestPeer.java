@@ -19,7 +19,7 @@ public abstract class IntegrationTestPeer extends AbstractIdleService {
 
     public Injector getInjector() {
         if (injector == null) {
-            throw new RuntimeException("Call setupInjector() before getting injector.");
+            throw new RuntimeException("Call setupInjector() before getting injector");
         }
         return injector;
     }

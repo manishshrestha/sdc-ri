@@ -1,4 +1,4 @@
-package org.ieee11073.sdc.dpws.soap.wsdiscovery;
+package org.ieee11073.sdc.dpws.soap.wsdiscovery.event;
 
 import org.ieee11073.sdc.common.event.AbstractEventMessage;
 import org.ieee11073.sdc.dpws.soap.wsdiscovery.model.ByeType;

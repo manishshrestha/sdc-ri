@@ -48,7 +48,7 @@ public class ClientHelper {
             return interceptorInvoker.dispatch(direction, registry, actionUri, param);
         } catch (Exception e) {
             LOG.warn("Exception thrown during dispatcher invocation routine: {}", e.getMessage());
-            throw new RuntimeException("An interception quit with an exception.", e);
+            throw new RuntimeException("An interceptor quit with an exception", e);
         }
     }
 }

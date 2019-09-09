@@ -19,6 +19,7 @@ public class JaxbUtilImpl implements JaxbUtil {
         return Optional.empty();
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public <T> Optional<T> extractElement(Object element, Class<T> typeClass) {
         try {

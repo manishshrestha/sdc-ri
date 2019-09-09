@@ -35,7 +35,7 @@ public interface UdpMessageQueueService extends Service, UdpMessageReceiverCallb
     void registerUdpMessageQueueObserver(UdpMessageQueueObserver observer);
 
     /**
-     * Unegister observer to stop receiving incoming UDP messages.
+     * Unregister observer to stop receiving incoming UDP messages.
      *
      * @param observer The observer to unregister.
      */

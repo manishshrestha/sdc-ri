@@ -68,7 +68,7 @@ public class GrizzlyHttpServerRegistry extends AbstractIdleService implements Ht
         try {
             sslContextConfigurator = cryptoConfigurator.createSslContextConfiguratorFromCryptoConfig(cryptoSettings);
         } catch (IllegalArgumentException e) {
-            LOG.warn("Could not read server crypto config, fallback to system properties.");
+            LOG.warn("Could not read server crypto config, fallback to system properties");
             sslContextConfigurator = cryptoConfigurator.createSslContextConfiguratorSystemProperties();
         }
     }
@@ -76,18 +76,18 @@ public class GrizzlyHttpServerRegistry extends AbstractIdleService implements Ht
     @Override
     protected void startUp() {
         // nothing to do here - servers will be started on demand
-        LOG.info("{} is running.", getClass().getSimpleName());
+        LOG.info("{} is running", getClass().getSimpleName());
     }
 
     @Override
     protected void shutDown() {
-        LOG.info("Shut down running HTTP servers.");
+        LOG.info("Shut down running HTTP servers");
         registryLock.lock();
         try {
             serverRegistry.forEach((uri, httpServer) -> {
                 try {
                     httpServer.shutdown().get();
-                    LOG.info("Shut down HTTP server at {}.", uri);
+                    LOG.info("Shut down HTTP server at {}", uri);
                 } catch (Exception e) {
                     LOG.warn("HTTP server could not be stopped properly: {}", e.getMessage());
                 }
@@ -95,7 +95,7 @@ public class GrizzlyHttpServerRegistry extends AbstractIdleService implements Ht
         } finally {
             registryLock.unlock();
         }
-        LOG.info("HTTP servers shut down.");
+        LOG.info("HTTP servers shut down");
     }
 
     @Override
@@ -118,7 +118,7 @@ public class GrizzlyHttpServerRegistry extends AbstractIdleService implements Ht
             httpServerInfo.getHttpServer().getServerConfiguration().addHttpHandler(handlerBroker, contextPath);
             return mapKeyUri;
         } catch (UnknownHostException e) {
-            LOG.warn("Unexpected URI conversion error.");
+            LOG.warn("Unexpected URI conversion error");
             throw new RuntimeException(e);
         } finally {
             registryLock.unlock();
@@ -161,7 +161,7 @@ public class GrizzlyHttpServerRegistry extends AbstractIdleService implements Ht
                 }
             });
         } catch (UnknownHostException e) {
-            LOG.warn("Cannot resolve host name.", e);
+            LOG.warn("Cannot resolve host name", e);
             throw new RuntimeException(e);
         } finally {
             registryLock.unlock();
@@ -189,7 +189,7 @@ public class GrizzlyHttpServerRegistry extends AbstractIdleService implements Ht
             LOG.debug("New HTTP server initialized: {}", uri);
             return new HttpServerInfo(newHttpServer, uri);
         } catch (UnknownHostException e) {
-            LOG.warn("Cannot resolve host name.", e);
+            LOG.warn("Cannot resolve host name", e);
             throw new RuntimeException(e);
         } catch (IndexOutOfBoundsException e) {
             LOG.warn("No network listener found for requested HTTP server: {}", schemeAndAuthority);
@@ -276,8 +276,8 @@ public class GrizzlyHttpServerRegistry extends AbstractIdleService implements Ht
     }
 
     private class HttpServerInfo {
-        private HttpServer httpServer;
-        private URI uri;
+        private final HttpServer httpServer;
+        private final URI uri;
 
         public HttpServerInfo(HttpServer httpServer, URI uri) {
             this.httpServer = httpServer;

@@ -5,6 +5,7 @@ import org.ieee11073.sdc.dpws.soap.wsaddressing.model.AttributedURIType;
 import org.ieee11073.sdc.dpws.soap.wsaddressing.model.EndpointReferenceType;
 import org.ieee11073.sdc.dpws.soap.wsaddressing.model.ObjectFactory;
 
+import javax.annotation.Nullable;
 import java.net.URI;
 import java.util.Optional;
 
@@ -32,7 +33,7 @@ public class WsAddressingUtil {
         return createAttributedURIType(uri.toString());
     }
 
-    public Optional<String> getAddressUriAsString(EndpointReferenceType epr) {
+    public Optional<String> getAddressUriAsString(@Nullable EndpointReferenceType epr) {
         if (epr == null) {
             return Optional.empty();
         }

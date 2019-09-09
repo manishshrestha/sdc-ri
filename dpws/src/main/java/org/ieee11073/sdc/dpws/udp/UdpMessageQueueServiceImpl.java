@@ -53,9 +53,9 @@ public class UdpMessageQueueServiceImpl extends AbstractIdleService implements S
 
     @Override
     protected void startUp() throws Exception {
-        LOG.info("Start UDP message queue for binding {}.", udpBinding);
+        LOG.info("Start UDP message queue for binding {}", udpBinding);
         if (udpBinding == null) {
-            String msg = "Cannot startup without UDP binding.";
+            String msg = "Cannot startup without UDP binding";
             LOG.warn(msg);
             throw new Exception(msg);
         }
@@ -63,7 +63,7 @@ public class UdpMessageQueueServiceImpl extends AbstractIdleService implements S
         startProcessingOfIncomingMessages();
         startProcessingOfOutgoingMessages();
 
-        LOG.info("UDP message queue for binding {} is running.", udpBinding);
+        LOG.info("UDP message queue for binding {} is running", udpBinding);
     }
 
     private void startProcessingOfOutgoingMessages() {
@@ -93,7 +93,7 @@ public class UdpMessageQueueServiceImpl extends AbstractIdleService implements S
                 } catch (InterruptedException e) {
                     break;
                 } catch (Exception e) {
-                    LOG.info("Error on event dissemination.", e);
+                    LOG.info("Error on event dissemination", e);
                 }
 
             } while (isRunning());
@@ -103,19 +103,19 @@ public class UdpMessageQueueServiceImpl extends AbstractIdleService implements S
     }
 
     @Override
-    protected void shutDown() throws Exception {
-        LOG.info("Shut down UDP message queue for binding {}.", udpBinding);
+    protected void shutDown() {
+        LOG.info("Shut down UDP message queue for binding {}", udpBinding);
         incomingMessageQueue.clear();
         outgoingMessageQueue.clear();
         incomingThread.interrupt();
         outgoingThread.interrupt();
-        LOG.info("UDP message queue for binding {} shut down.", udpBinding);
+        LOG.info("UDP message queue for binding {} shut down", udpBinding);
     }
 
     @Override
     public void receive(UdpMessage udpMessage) {
         if (!incomingMessageQueue.offer(udpMessage)) {
-            LOG.info("Lost incoming UDP message in message queue.");
+            LOG.info("Lost incoming UDP message in message queue");
         }
     }
 }

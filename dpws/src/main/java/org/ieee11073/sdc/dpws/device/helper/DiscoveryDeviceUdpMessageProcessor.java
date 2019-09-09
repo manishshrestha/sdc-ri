@@ -55,7 +55,7 @@ public class DiscoveryDeviceUdpMessageProcessor implements UdpMessageQueueObserv
     }
 
     @Subscribe
-    private void receiveUdpMessage(UdpMessage msg) throws TransportException {
+    private void receiveUdpMessage(UdpMessage msg) {
         SoapMessage response = soapUtil.createMessage();
         SoapMessage request;
 
@@ -79,7 +79,7 @@ public class DiscoveryDeviceUdpMessageProcessor implements UdpMessageQueueObserv
                 return;
             }
         } catch (SoapFaultException e) {
-            LOG.info("SOAP fault thrown [{}].", e.getMessage());
+            LOG.info("SOAP fault thrown [{}]", e.getMessage());
         }
 
         if (LOG.isDebugEnabled()) {
