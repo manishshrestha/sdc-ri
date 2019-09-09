@@ -4,11 +4,16 @@ import com.google.common.util.concurrent.AbstractIdleService;
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
 import org.ieee11073.sdc.dpws.DpwsConstants;
+import org.ieee11073.sdc.dpws.ni.NetworkInterfaceUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nullable;
 import java.io.IOException;
 import java.net.*;
+import java.util.Enumeration;
+import java.util.Iterator;
+import java.util.Optional;
 import java.util.Random;
 
 public class UdpBindingServiceImpl extends AbstractIdleService implements UdpBindingService {
@@ -16,47 +21,61 @@ public class UdpBindingServiceImpl extends AbstractIdleService implements UdpBin
 
 
     private final Random random = new Random();
-    private final InetAddress socketAddress;
+    private final NetworkInterface networkInterface;
+    private final InetAddress multicastGroup;
     private final Integer socketPort;
     private Thread multicastSocketRunner;
     private Thread unicastSocketRunner;
 
     private DatagramSocket incomingSocket;
-    private MulticastSocket incomingMulticastSocket;
+    private MulticastSocket multicastSocket;
     private DatagramSocket outgoingSocket;
 
     private final int maxMessageSize;
+    private NetworkInterfaceUtil networkInterfaceUtil;
     private UdpMessageReceiverCallback receiver;
+    private InetAddress networkInterfaceAddress;
 
     @AssistedInject
-    UdpBindingServiceImpl(@Assisted InetAddress socketAddress,
-                          @Assisted("socketPort") Integer socketPort,
-                          @Assisted("maxMessageSize") Integer maxMessageSize) {
-        this.socketAddress = socketAddress;
-        this.socketPort = socketPort;
+    UdpBindingServiceImpl(@Assisted NetworkInterface networkInterface,
+                          @Assisted @Nullable InetAddress multicastGroup,
+                          @Assisted("multicastPort") Integer multicastPort,
+                          @Assisted("maxMessageSize") Integer maxMessageSize,
+                          NetworkInterfaceUtil networkInterfaceUtil) {
+        this.networkInterface = networkInterface;
+        this.multicastGroup = multicastGroup;
+        this.socketPort = multicastPort;
         this.maxMessageSize = maxMessageSize;
-        this.incomingMulticastSocket = null;
+        this.networkInterfaceUtil = networkInterfaceUtil;
+        this.multicastSocket = null;
+        this.networkInterfaceAddress = null;
     }
 
     @Override
     protected void startUp() throws Exception {
-        InetSocketAddress address = new InetSocketAddress(socketAddress, socketPort);
+        InetSocketAddress address = new InetSocketAddress(multicastGroup, socketPort);
         LOG.info("Start UDP binding {}", this);
+        // try to get first available address from network interface
+        networkInterfaceAddress = networkInterfaceUtil.getFirstIpV4Address(networkInterface).orElseThrow(() ->
+                new SocketException(String.format("Could not retrieve network interface address from: {}", networkInterface)));
 
-        try {
-            if (socketAddress.isMulticastAddress()) {
-                incomingMulticastSocket = new MulticastSocket(socketPort);
-                incomingMulticastSocket.joinGroup(socketAddress);
-                incomingSocket = incomingMulticastSocket;
-            } else {
-                incomingSocket = new DatagramSocket(address);
+        LOG.info("Start UDP binding to {}.", networkInterfaceAddress);
+
+        outgoingSocket = new DatagramSocket(0, networkInterfaceAddress);
+        LOG.info("Outgoing socket at {} is open.", outgoingSocket.getLocalSocketAddress());
+        if (multicastGroup != null) {
+            if (!multicastGroup.isMulticastAddress()) {
+                throw new Exception(String.format("Given address is not a multicast address: {}.", multicastGroup));
             }
-        } catch (SocketException e) {
-            LOG.warn(String.format("Error while connecting to %s:%s", socketAddress.toString(), socketPort),
-                    e.getMessage());
-        }
 
-        outgoingSocket = new DatagramSocket();
+            multicastSocket = new MulticastSocket(socketPort);
+            LOG.info("Join to UDP multicast address group {}.", address);
+            multicastSocket.joinGroup(address, networkInterface);
+            incomingSocket = multicastSocket;
+        } else {
+            incomingSocket = new DatagramSocket(0, networkInterfaceAddress);
+            LOG.info("Incoming socket is open: {}", incomingSocket.getLocalSocketAddress());
+        }
 
         if (receiver == null) {
             LOG.info("No data receiver configured; ignore incoming UDP messages");
@@ -109,8 +128,8 @@ public class UdpBindingServiceImpl extends AbstractIdleService implements UdpBin
         LOG.info("Shut down UDP binding {}", this);
         multicastSocketRunner.interrupt();
         unicastSocketRunner.interrupt();
-        if (incomingMulticastSocket != null) {
-            incomingMulticastSocket.leaveGroup(socketAddress);
+        if (multicastSocket != null) {
+            multicastSocket.leaveGroup(multicastGroup);
         }
         incomingSocket.close();
         outgoingSocket.close();
@@ -139,7 +158,7 @@ public class UdpBindingServiceImpl extends AbstractIdleService implements UdpBin
             packet.setAddress(InetAddress.getByName(message.getHost()));
             packet.setPort(message.getPort());
         } else {
-            packet.setAddress(socketAddress);
+            packet.setAddress(multicastGroup);
             packet.setPort(socketPort);
         }
 
@@ -151,9 +170,9 @@ public class UdpBindingServiceImpl extends AbstractIdleService implements UdpBin
 
         // Retransmission algorithm as defined in
         // http://docs.oasis-open.org/ws-dd/soapoverudp/1.1/os/wsdd-soapoverudp-1.1-spec-os.docx
-        int udpMinDelay = (int)DpwsConstants.UDP_MIN_DELAY.toMillis();
-        int udpMaxDelay = (int)DpwsConstants.UDP_MAX_DELAY.toMillis();
-        int udpUpperDelay = (int)DpwsConstants.UDP_UPPER_DELAY.toMillis();
+        int udpMinDelay = (int) DpwsConstants.UDP_MIN_DELAY.toMillis();
+        int udpMaxDelay = (int) DpwsConstants.UDP_MAX_DELAY.toMillis();
+        int udpUpperDelay = (int) DpwsConstants.UDP_UPPER_DELAY.toMillis();
         int t = random.nextInt(udpMaxDelay - udpMinDelay + 1) + udpMinDelay;
 
         // Use MULTICAST_UDP_REPEAT since UNICAST and MULTICAST repeat numbers are the same in DPWS
@@ -176,7 +195,23 @@ public class UdpBindingServiceImpl extends AbstractIdleService implements UdpBin
 
     @Override
     public String toString() {
-        String type = socketAddress.isMulticastAddress() ? "multicast" : "unicast";
-        return String.format("udp-%s://%s:%s", type, socketAddress.getHostName(), socketPort);
+        if (this.isRunning()) {
+            return makeStringRepresentation();
+        } else {
+            return String.format("[%s]", networkInterface);
+        }
+    }
+
+    private String makeStringRepresentation() {
+        String multicast = "w/o multicast";
+        if (multicastSocket != null) {
+            multicast = String.format("w/ multicast joined at %s:%s", multicastGroup.getHostName(), socketPort);
+        }
+
+        return String.format("[%s:[%s|%s] %s]",
+                networkInterfaceAddress.toString(),
+                incomingSocket.getLocalPort(),
+                outgoingSocket.getLocalPort(),
+                multicast);
     }
 }

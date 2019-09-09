@@ -5,6 +5,7 @@ import it.org.ieee11073.sdc.dpws.TestServiceMetadata;
 import org.ieee11073.sdc.dpws.DpwsFramework;
 import org.ieee11073.sdc.dpws.DpwsUtil;
 import org.ieee11073.sdc.dpws.device.DeviceSettings;
+import org.ieee11073.sdc.dpws.factory.DpwsFrameworkFactory;
 import org.ieee11073.sdc.dpws.guice.DefaultDpwsConfigModule;
 import org.ieee11073.sdc.dpws.service.factory.HostedServiceFactory;
 import org.ieee11073.sdc.dpws.soap.SoapConfig;
@@ -26,8 +27,12 @@ public class BasicPopulatedDevice extends DevicePeer {
     public static final QName QNAME_1 = new QName("http://type-ns", "integration-test-type1");
     public static final QName QNAME_2 = new QName("http://type-ns", "integration-test-type2");
 
+    private final DpwsFramework dpwsFramework;
+
     private DpwsTestService1 service1;
     private DpwsTestService2 service2;
+
+
 
     public BasicPopulatedDevice() {
         this(null);
@@ -42,12 +47,14 @@ public class BasicPopulatedDevice extends DevicePeer {
                         TestServiceMetadata.JAXB_CONTEXT_PATH);
             }
         }, deviceSettings);
+        dpwsFramework = getInjector().getInstance(DpwsFrameworkFactory.class).createDpwsFramework();
     }
 
     public BasicPopulatedDevice(@Nullable DeviceSettings deviceSettings, DefaultDpwsConfigModule configModule) {
         configModule.bind(SoapConfig.JAXB_CONTEXT_PATH, String.class,
                 TestServiceMetadata.JAXB_CONTEXT_PATH);
         setup(configModule, deviceSettings);
+        dpwsFramework = getInjector().getInstance(DpwsFrameworkFactory.class).createDpwsFramework();
     }
 
     public DpwsTestService1 getService1() {
@@ -90,13 +97,13 @@ public class BasicPopulatedDevice extends DevicePeer {
                 service2,
                 wsdlResource2));
 
-        getInjector().getInstance(DpwsFramework.class).startAsync().awaitRunning();
+        dpwsFramework.startAsync().awaitRunning();
         getDevice().startAsync().awaitRunning();
     }
 
     @Override
     protected void shutDown() {
         getDevice().stopAsync().awaitTerminated();
-        getInjector().getInstance(DpwsFramework.class).stopAsync().awaitTerminated();
+        dpwsFramework.stopAsync().awaitTerminated();
     }
 }

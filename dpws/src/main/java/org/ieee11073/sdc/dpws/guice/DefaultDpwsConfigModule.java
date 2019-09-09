@@ -5,6 +5,7 @@ import org.ieee11073.sdc.dpws.DpwsConfig;
 import org.ieee11073.sdc.dpws.client.ClientConfig;
 import org.ieee11073.sdc.dpws.crypto.CryptoConfig;
 import org.ieee11073.sdc.dpws.crypto.CryptoSettings;
+import org.ieee11073.sdc.dpws.device.DeviceConfig;
 import org.ieee11073.sdc.dpws.soap.SoapConfig;
 import org.ieee11073.sdc.dpws.soap.wsaddressing.WsAddressingConfig;
 import org.ieee11073.sdc.dpws.soap.wsdiscovery.WsDiscoveryConfig;
@@ -25,8 +26,19 @@ public class DefaultDpwsConfigModule extends AbstractConfigurationModule {
         configureWsDiscoveryConfig();
         configureWsEventingConfig();
         configureClientConfig();
+        configureDeviceConfig();
         configureCryptoConfig();
         configureDpws();
+    }
+
+    private void configureDeviceConfig() {
+        bind(DeviceConfig.UNSECURED_ENDPOINT,
+                Boolean.class,
+                true);
+
+        bind(DeviceConfig.SECURED_ENDPOINT,
+                Boolean.class,
+                false);
     }
 
     private void configureDpws() {

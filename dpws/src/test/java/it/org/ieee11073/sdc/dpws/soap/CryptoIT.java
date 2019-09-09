@@ -9,6 +9,7 @@ import it.org.ieee11073.sdc.dpws.TestServiceMetadata;
 import org.ieee11073.sdc.dpws.client.DiscoveredDevice;
 import org.ieee11073.sdc.dpws.crypto.CryptoConfig;
 import org.ieee11073.sdc.dpws.crypto.CryptoSettings;
+import org.ieee11073.sdc.dpws.device.DeviceConfig;
 import org.ieee11073.sdc.dpws.device.DeviceSettings;
 import org.ieee11073.sdc.dpws.guice.DefaultDpwsConfigModule;
 import org.ieee11073.sdc.dpws.service.HostedServiceProxy;
@@ -27,6 +28,8 @@ import org.junit.Before;
 import org.junit.Test;
 import test.org.ieee11073.common.TestLogging;
 
+import java.net.InetAddress;
+import java.net.NetworkInterface;
 import java.net.URI;
 import java.time.Duration;
 import java.util.ArrayList;
@@ -62,13 +65,20 @@ public class CryptoIT {
             }
 
             @Override
-            public List<URI> getHostingServiceBindings() {
-                return Collections.singletonList(URI.create("https://localhost:6464"));
+            public NetworkInterface getNetworkInterface() {
+                try {
+                    return NetworkInterface.getByInetAddress(InetAddress.getLoopbackAddress());
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
             }
+
         }, new DefaultDpwsConfigModule() {
             @Override
             public void customConfigure() {
                 bind(CryptoConfig.CRYPTO_SETTINGS, CryptoSettings.class, serverCryptoSettings);
+                bind(DeviceConfig.UNSECURED_ENDPOINT, Boolean.class, false);
+                bind(DeviceConfig.SECURED_ENDPOINT, Boolean.class, true);
             }
         });
 

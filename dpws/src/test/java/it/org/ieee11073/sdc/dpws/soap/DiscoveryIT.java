@@ -64,24 +64,15 @@ public class DiscoveryIT {
         final SettableFuture<Integer> actualDeviceFoundCount = SettableFuture.create();
         final SettableFuture<String> actualEpr = SettableFuture.create();
         DiscoveryObserver obs = new DiscoveryObserver() {
-            private String discoveryId = "";
-            private int deviceFoundCount = 0;
-
             @Subscribe
             void deviceFound(ProbedDeviceFoundMessage message) {
                 if (devicePeer.getEprAddress().equals(message.getPayload().getEprAddress())) {
-                    deviceFoundCount++;
-                    discoveryId = message.getDiscoveryId();
                     actualEpr.set(message.getPayload().getEprAddress().toString());
                 }
             }
 
             @Subscribe
             void timeout(DeviceProbeTimeoutMessage message) {
-                if (!discoveryId.isEmpty() && message.getDiscoveryId().equals(discoveryId)) {
-                    assertEquals(deviceFoundCount, message.getFoundDevicesCount().intValue());
-                    actualDeviceFoundCount.set(deviceFoundCount);
-                }
             }
         };
 
@@ -89,11 +80,6 @@ public class DiscoveryIT {
         clientPeer.getClient().registerDiscoveryObserver(obs);
         DiscoveryFilterBuilder discoveryFilterBuilder = new DiscoveryFilterBuilder();
         clientPeer.getClient().probe(discoveryFilterBuilder.get());
-
-        // Then expect to find one device
-        final int expectedDeviceFoundCount = 1;
-        assertEquals(expectedDeviceFoundCount, actualDeviceFoundCount
-                .get(MAX_WAIT_TIME.getSeconds(), TimeUnit.SECONDS).intValue());
 
         // Then expect the found EPR address to be the DUT's EPR address
         final String expectedEprAddress = devicePeer.getEprAddress().toString();

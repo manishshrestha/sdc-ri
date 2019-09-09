@@ -12,6 +12,7 @@ import org.junit.Test;
 
 import java.io.IOException;
 import java.net.InetAddress;
+import java.net.NetworkInterface;
 import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
@@ -25,6 +26,7 @@ public class UdpBindingServiceImplIT extends DpwsTest {
     private Condition condition;
     private UdpMessage actualMessage;
     private UdpBindingServiceFactory factory;
+    private NetworkInterface localhostInterface;
 
     @Override
     @Before
@@ -33,6 +35,7 @@ public class UdpBindingServiceImplIT extends DpwsTest {
         factory = getInjector().getInstance(UdpBindingServiceFactory.class);
         lock = new ReentrantLock();
         condition = lock.newCondition();
+        localhostInterface = NetworkInterface.getByInetAddress(InetAddress.getLoopbackAddress());
     }
 
     @Test
@@ -41,12 +44,14 @@ public class UdpBindingServiceImplIT extends DpwsTest {
         actualMessage = null;
 
         UdpBindingService receiver = factory.createUdpBindingService(
+                localhostInterface,
                 InetAddress.getByName(WsDiscoveryConstants.IPV4_MULTICAST_ADDRESS),
                 DpwsConstants.DISCOVERY_PORT,
                 DpwsConstants.MAX_UDP_ENVELOPE_SIZE);
         Thread t = new Thread(() -> {
             try {
                 UdpBindingService sender = factory.createUdpBindingService(
+                        localhostInterface,
                         InetAddress.getByName(WsDiscoveryConstants.IPV4_MULTICAST_ADDRESS),
                         DpwsConstants.DISCOVERY_PORT, DpwsConstants.MAX_UDP_ENVELOPE_SIZE);
                 sender.startAsync().awaitRunning();
@@ -98,6 +103,7 @@ public class UdpBindingServiceImplIT extends DpwsTest {
         SettableFuture<String> settableFuture = SettableFuture.create();
 
         final UdpBindingService senderReceiver1 = factory.createUdpBindingService(
+                localhostInterface,
                 InetAddress.getByName(WsDiscoveryConstants.IPV4_MULTICAST_ADDRESS),
                 DpwsConstants.DISCOVERY_PORT,
                 DpwsConstants.MAX_UDP_ENVELOPE_SIZE);
@@ -108,6 +114,7 @@ public class UdpBindingServiceImplIT extends DpwsTest {
         });
 
         final UdpBindingService senderReceiver2 = factory.createUdpBindingService(
+                localhostInterface,
                 InetAddress.getByName(WsDiscoveryConstants.IPV4_MULTICAST_ADDRESS),
                 DpwsConstants.DISCOVERY_PORT,
                 DpwsConstants.MAX_UDP_ENVELOPE_SIZE);
