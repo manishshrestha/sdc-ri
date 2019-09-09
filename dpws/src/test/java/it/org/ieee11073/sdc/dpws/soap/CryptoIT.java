@@ -51,6 +51,10 @@ public class CryptoIT {
     private BasicPopulatedDevice devicePeer;
     private ClientPeer clientPeer;
 
+    public CryptoIT() {
+        IntegrationTestUtil.preferIpV4Usage();
+    }
+
     @Before
     public void setUp() {
         TestLogging.configure();

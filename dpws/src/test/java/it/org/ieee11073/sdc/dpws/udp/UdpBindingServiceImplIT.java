@@ -1,8 +1,8 @@
 package it.org.ieee11073.sdc.dpws.udp;
 
 import com.google.common.util.concurrent.SettableFuture;
+import it.org.ieee11073.sdc.dpws.IntegrationTestUtil;
 import org.ieee11073.sdc.dpws.DpwsConstants;
-import org.ieee11073.sdc.dpws.DpwsTest;
 import org.ieee11073.sdc.dpws.soap.wsdiscovery.WsDiscoveryConstants;
 import org.ieee11073.sdc.dpws.udp.UdpBindingService;
 import org.ieee11073.sdc.dpws.udp.UdpMessage;
@@ -21,18 +21,22 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import static org.junit.Assert.*;
 
-public class UdpBindingServiceImplIT extends DpwsTest {
+public class UdpBindingServiceImplIT {
+    private final IntegrationTestUtil IT = new IntegrationTestUtil();
+
     private Lock lock;
     private Condition condition;
     private UdpMessage actualMessage;
     private UdpBindingServiceFactory factory;
     private NetworkInterface localhostInterface;
 
-    @Override
+    public UdpBindingServiceImplIT() {
+        IntegrationTestUtil.preferIpV4Usage();
+    }
+
     @Before
     public void setUp() throws Exception {
-        super.setUp();
-        factory = getInjector().getInstance(UdpBindingServiceFactory.class);
+        factory = IT.getInjector().getInstance(UdpBindingServiceFactory.class);
         lock = new ReentrantLock();
         condition = lock.newCondition();
         localhostInterface = NetworkInterface.getByInetAddress(InetAddress.getLoopbackAddress());
@@ -143,6 +147,6 @@ public class UdpBindingServiceImplIT extends DpwsTest {
         });
         t.start();
 
-        assertEquals(expectedResponseStr, settableFuture.get(10, TimeUnit.SECONDS).substring(0, expectedResponseStr.length() ));
+        assertEquals(expectedResponseStr, settableFuture.get(10, TimeUnit.SECONDS).substring(0, expectedResponseStr.length()));
     }
 }
