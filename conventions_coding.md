@@ -15,7 +15,7 @@ Immutability allows stricter control over data, hence immutable objects **should
 
 ## Error handling
 
-- Errors *shall* be expressed using checked exceptions.
+- Errors **shall** be expressed using checked exceptions.
 - Errors **should not** be expressed by return values.
 - The format of exception messages **shall** be in compliance with the format for log messages (see below).
 
