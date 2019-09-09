@@ -2,7 +2,10 @@ package org.ieee11073.sdc.dpws.device;
 
 import org.ieee11073.sdc.dpws.soap.wsaddressing.model.EndpointReferenceType;
 
+import java.net.NetworkInterface;
+import java.net.SocketException;
 import java.net.URI;
+import java.net.UnknownHostException;
 import java.util.List;
 
 /**
@@ -11,11 +14,15 @@ import java.util.List;
 public interface DeviceSettings {
     /**
      * The unique and persisted endpoint reference (EPR) of the device.
+     * 
+     * @return the endpoint reference of the device.
      */
     EndpointReferenceType getEndpointReference();
 
     /**
-     * Bindings that are used to make the device accessible from network.
+     * The network interface the device shall bind to.
+     *
+     * @return the network interface to bind to.
      */
-    List<URI> getHostingServiceBindings();
+    NetworkInterface getNetworkInterface();
 }

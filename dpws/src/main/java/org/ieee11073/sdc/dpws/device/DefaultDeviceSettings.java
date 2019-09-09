@@ -4,8 +4,10 @@ import com.google.inject.Inject;
 import org.ieee11073.sdc.dpws.soap.SoapUtil;
 import org.ieee11073.sdc.dpws.soap.wsaddressing.WsAddressingUtil;
 import org.ieee11073.sdc.dpws.soap.wsaddressing.model.EndpointReferenceType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.net.URI;
+import java.net.*;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
@@ -14,6 +16,8 @@ import java.util.UUID;
  * If no device configuration is given, this class will be used as a default.
  */
 public class DefaultDeviceSettings implements DeviceSettings {
+    private static final Logger LOG = LoggerFactory.getLogger(DefaultDeviceSettings.class);
+
     private final WsAddressingUtil wsaUtil;
     private final SoapUtil soapUtil;
     private final EndpointReferenceType endpointReference;
@@ -32,7 +36,12 @@ public class DefaultDeviceSettings implements DeviceSettings {
     }
 
     @Override
-    public List<URI> getHostingServiceBindings() {
-        return Collections.singletonList(URI.create("http://localhost:8080"));
+    public NetworkInterface getNetworkInterface() {
+        try {
+            return NetworkInterface.getByInetAddress(InetAddress.getLoopbackAddress());
+        } catch (Exception e) {
+            LOG.warn("No default network interface was resolvable:", e.getMessage());
+            throw new RuntimeException(e);
+        }
     }
 }

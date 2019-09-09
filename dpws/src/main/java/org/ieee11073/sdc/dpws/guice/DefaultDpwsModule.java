@@ -15,6 +15,7 @@ import org.ieee11073.sdc.dpws.device.Device;
 import org.ieee11073.sdc.dpws.device.DeviceImpl;
 import org.ieee11073.sdc.dpws.device.helper.DiscoveryDeviceUdpMessageProcessor;
 import org.ieee11073.sdc.dpws.device.helper.factory.DeviceHelperFactory;
+import org.ieee11073.sdc.dpws.factory.DpwsFrameworkFactory;
 import org.ieee11073.sdc.dpws.factory.TransportBindingFactory;
 import org.ieee11073.sdc.dpws.factory.TransportBindingFactoryImpl;
 import org.ieee11073.sdc.dpws.helper.NotificationSourceUdpCallback;
@@ -82,9 +83,9 @@ public class DefaultDpwsModule extends AbstractModule {
                 .implement(NotificationSourceUdpCallback.class, NotificationSourceUdpCallback.class)
                 .build(DpwsHelperFactory.class));
 
-        bind(DpwsFramework.class)
-                .to(DpwsFrameworkImpl.class)
-                .asEagerSingleton();
+        install(new FactoryModuleBuilder()
+                .implement(DpwsFramework.class, DpwsFrameworkImpl.class)
+                .build(DpwsFrameworkFactory.class));
 
         bind(TransportBindingFactory.class)
                 .to(TransportBindingFactoryImpl.class);

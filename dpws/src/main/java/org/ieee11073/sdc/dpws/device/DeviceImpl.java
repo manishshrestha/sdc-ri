@@ -4,6 +4,7 @@ import com.google.common.util.concurrent.AbstractIdleService;
 import com.google.common.util.concurrent.Service;
 import com.google.inject.Inject;
 import com.google.inject.Provider;
+import com.google.inject.name.Named;
 import org.ieee11073.sdc.common.helper.StreamUtil;
 import org.ieee11073.sdc.dpws.DiscoveryUdpQueue;
 import org.ieee11073.sdc.dpws.DpwsConstants;
@@ -14,8 +15,10 @@ import org.ieee11073.sdc.dpws.device.helper.UriBaseContextPath;
 import org.ieee11073.sdc.dpws.device.helper.factory.DeviceHelperFactory;
 import org.ieee11073.sdc.dpws.helper.factory.DpwsHelperFactory;
 import org.ieee11073.sdc.dpws.http.HttpServerRegistry;
+import org.ieee11073.sdc.dpws.http.HttpUriBuilder;
 import org.ieee11073.sdc.dpws.model.ThisDeviceType;
 import org.ieee11073.sdc.dpws.model.ThisModelType;
+import org.ieee11073.sdc.dpws.ni.NetworkInterfaceUtil;
 import org.ieee11073.sdc.dpws.service.HostedService;
 import org.ieee11073.sdc.dpws.service.HostedServiceInterceptor;
 import org.ieee11073.sdc.dpws.service.HostingService;
@@ -38,8 +41,10 @@ import org.slf4j.LoggerFactory;
 
 import javax.xml.namespace.QName;
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -63,6 +68,10 @@ public class DeviceImpl extends AbstractIdleService implements Device, Service, 
     private final HostedServiceFactory hostedServiceFactory;
     private final HostedServiceInterceptorFactory hostedServiceInterceptorFactory;
     private final StreamUtil streamUtil;
+    private NetworkInterfaceUtil networkInterfaceUtil;
+    private HttpUriBuilder httpUriBuilder;
+    private Boolean unsecuredEndpoint;
+    private Boolean securedEndpoint;
 
     private DeviceSettings config;
     private WsDiscoveryTargetService wsdTargetService;
@@ -90,7 +99,11 @@ public class DeviceImpl extends AbstractIdleService implements Device, Service, 
                Provider<EventSource> eventSourceProvider,
                HostedServiceFactory hostedServiceFactory,
                HostedServiceInterceptorFactory hostedServiceInterceptorFactory,
-               StreamUtil streamUtil) {
+               StreamUtil streamUtil,
+               NetworkInterfaceUtil networkInterfaceUtil,
+               HttpUriBuilder httpUriBuilder,
+               @Named(DeviceConfig.UNSECURED_ENDPOINT) Boolean unsecuredEndpoint,
+               @Named(DeviceConfig.SECURED_ENDPOINT) Boolean securedEndpoint) {
         this.targetServiceFactory = targetServiceFactory;
         this.defaultConfigProvider = defaultConfigProvider;
         this.wsaUtil = wsaUtil;
@@ -107,6 +120,10 @@ public class DeviceImpl extends AbstractIdleService implements Device, Service, 
         this.hostedServiceFactory = hostedServiceFactory;
         this.hostedServiceInterceptorFactory = hostedServiceInterceptorFactory;
         this.streamUtil = streamUtil;
+        this.networkInterfaceUtil = networkInterfaceUtil;
+        this.httpUriBuilder = httpUriBuilder;
+        this.unsecuredEndpoint = unsecuredEndpoint;
+        this.securedEndpoint = securedEndpoint;
         this.hostedServicesOnStartup = new ArrayList<>();
     }
 
@@ -125,7 +142,7 @@ public class DeviceImpl extends AbstractIdleService implements Device, Service, 
         String hostingServerCtxtPath = buildContextPathBase(eprAddress);
 
         // Initialize HTTP servers
-        List<URI> actualHostingServiceBindings = config.getHostingServiceBindings().stream()
+        List<URI> actualHostingServiceBindings = resolveHostingServiceBindings().stream()
                 .map(uri -> httpServerRegistry.initHttpServer(uri))
                 .collect(Collectors.toList());
 
@@ -185,6 +202,24 @@ public class DeviceImpl extends AbstractIdleService implements Device, Service, 
         LOG.info("Device {} is running.", hostingService);
 
         wsdTargetService.sendHello();
+    }
+
+    private List<URI> resolveHostingServiceBindings() {
+        InetAddress address = networkInterfaceUtil.getFirstIpV4Address(config.getNetworkInterface()).orElseThrow(() ->
+                new RuntimeException(String.format("No required IPv4 address found in configured network interface %s",
+                        config.getNetworkInterface())));
+
+        final List<URI> hostingServiceBindings = new ArrayList<>();
+
+        if (unsecuredEndpoint) {
+            hostingServiceBindings.add(httpUriBuilder.buildUri(address.getHostAddress(), 0));
+        }
+
+        if (securedEndpoint) {
+            hostingServiceBindings.add(httpUriBuilder.buildSecuredUri(address.getHostAddress(), 0));
+        }
+
+        return hostingServiceBindings;
     }
 
     @Override
