@@ -33,6 +33,10 @@ public class DiscoveryIT {
     private DevicePeer devicePeer;
     private ClientPeer clientPeer;
 
+    public DiscoveryIT() {
+        IntegrationTestUtil.preferIpV4Usage();
+    }
+
     @Before
     public void setUp() {
         TestLogging.configure();

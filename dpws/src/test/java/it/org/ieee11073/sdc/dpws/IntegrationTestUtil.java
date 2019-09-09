@@ -13,6 +13,10 @@ public class IntegrationTestUtil {
 
     private final Injector injector;
 
+    public static void preferIpV4Usage() {
+        System.setProperty("java.net.preferIPv4Stack", "true");
+    }
+
     public IntegrationTestUtil() {
         injector = Guice.createInjector(
                 new DefaultDpwsModule(),

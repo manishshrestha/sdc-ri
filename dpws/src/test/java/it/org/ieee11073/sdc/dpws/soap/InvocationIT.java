@@ -44,6 +44,10 @@ public class InvocationIT {
     private ObjectFactory factory;
     private final SoapUtil soapUtil = IT.getInjector().getInstance(SoapUtil.class);
 
+    public InvocationIT() {
+        IntegrationTestUtil.preferIpV4Usage();
+    }
+
     @Before
     public void setUp() throws Exception {
         TestLogging.configure();
