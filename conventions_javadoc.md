@@ -38,16 +38,18 @@ Longer Javadoc always needs multiple paragraphs. This naturally results in a que
 
 ## Use a single `<li>` tag for items in a list
 
-Lists are useful in Javadoc when explaining a set of options, choices or issues. These standards place a single `<li>` tag at the start of the line and no closing tag. In order to get correct paragraph formatting, extra paragraph tags are **required**:
+Lists are useful in Javadoc when explaining a set of options, choices or issues. These standards place a single `<li>` tag at the start of the line and no closing tag:
 
 ```
   /**
    * First paragraph.
-   * <p><ul>
+   *
+   * <ul>
    * <li>the first item
    * <li>the second item
    * <li>the third item
-   * </ul><p>
+   * </ul>
+   *
    * Second paragraph.
    */
   public ...

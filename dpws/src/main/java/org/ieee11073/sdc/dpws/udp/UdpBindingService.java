@@ -10,13 +10,15 @@ import java.io.IOException;
 public interface UdpBindingService extends Service {
 
     /**
-     * Set message receiver callback to fetch any messages from the UDP socket.
+     * Sets a message receiver callback to fetch any messages from the UDP socket.
+     *
+     * @param receiver the message receiver to set.
      */
     void setMessageReceiver(UdpMessageReceiverCallback receiver);
 
     /**
-     * Send byte array given as parameter to UDP socket.
-     *
+     * Sends a byte array given as parameter to the connected UDP socket.
+     * <p>
      * The function blocks until the message is sent.
      *
      * @param message The byte array to send. Uses the length attribute to retrieve byte array size.

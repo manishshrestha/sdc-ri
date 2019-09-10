@@ -28,20 +28,24 @@ public class WsDiscoveryUtil {
     }
 
     /**
-     * Check if QName superset includes subset.
+     * Checks if a QName superset includes a subset.
      *
-     * @return True if subset is in superset or subset is equal to superset, otherwise false.
+     * @param superset the superset to match against.
+     * @param subset the subset to match against.
+     * @return true if subset is in superset or subset is equal to superset, otherwise false.
      */
     public boolean isTypesMatching(List<QName> superset, List<QName> subset) {
         return isMatching(superset, subset, (o1, o2) -> o1.equals(o2) ? 0 : 1);
     }
 
     /**
-     * Check if scope superset includes subset.
+     * Checks if a scope superset includes a subset.
      *
-     * @param matchBy The rule how to compare the URI strings. {@link MatchBy#RFC3986} and {@link MatchBy#STRCMP0} are
+     * @param superset the superset to match against.
+     * @param subset the subset to match against.
+     * @param matchBy the rule how to compare the URI strings. {@link MatchBy#RFC3986} and {@link MatchBy#STRCMP0} are
      *                supported.
-     * @return True if subset is in superset or subset is equal to superset given a matching algorithm in matchBy,
+     * @return true if subset is in superset or subset is equal to superset given a matching algorithm in matchBy,
      *         otherwise false. If the matching algorithm is not supported, this method always returns false.
      */
     public boolean isScopesMatching(List<String> superset, List<String> subset, MatchBy matchBy) {
@@ -59,9 +63,10 @@ public class WsDiscoveryUtil {
     }
 
     /**
-     * Create an app sequence based on a given instance id.
+     * Creates an app sequence based on a given instance id.
      *
-     * @return An app sequence that includes the given instance id and an unsigned integer that is incremented with
+     * @param instanceId the instance id to create the app sequence from.
+     * @return an app sequence that includes the given instance id and an unsigned integer that is incremented with
      * every method request of a specific instance of {@link WsDiscoveryUtil}.
      */
     public AppSequenceType createAppSequence(UnsignedInteger instanceId) {

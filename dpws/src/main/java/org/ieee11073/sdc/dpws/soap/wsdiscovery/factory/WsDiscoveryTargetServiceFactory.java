@@ -6,12 +6,13 @@ import org.ieee11073.sdc.dpws.soap.wsaddressing.model.EndpointReferenceType;
 import org.ieee11073.sdc.dpws.soap.wsdiscovery.WsDiscoveryTargetService;
 
 /**
- * Factory to create WS-Discovery Target Service.
+ * Factory to create WS-Discovery target services.
  */
 public interface WsDiscoveryTargetServiceFactory {
     /**
-     * @param targetServiceEpr   The Target Service Endpoint Reference.
-     * @param notificationSource The source where to send Hello and Bye messages from.
+     * @param targetServiceEpr   the target service endpoint reference.
+     * @param notificationSource the source where to send Hello and Bye messages from.
+     * @return the instance.
      * @see <a href="http://docs.oasis-open.org/ws-dd/discovery/1.1/os/wsdd-discovery-1.1-spec-os.html#_Toc234231810">Endpoint References</a>
      */
     WsDiscoveryTargetService createWsDiscoveryTargetService(@Assisted EndpointReferenceType targetServiceEpr,

@@ -5,9 +5,11 @@ package org.ieee11073.sdc.common.helper;
  */
 public interface ObjectUtil {
     /**
-     * Create deep copy of given object
-     * @param obj Object to copy.
-     * @return Deep copy of given object or null if given object is null.
+     * Creates deep copy of given object.
+     *
+     * @param obj the object to copy.
+     * @param <T> any copyable object.
+     * @return deep copy of given object.
      */
     <T> T deepCopy(T obj);
 }

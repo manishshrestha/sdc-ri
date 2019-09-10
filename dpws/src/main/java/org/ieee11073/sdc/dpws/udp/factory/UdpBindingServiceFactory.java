@@ -21,6 +21,7 @@ public interface UdpBindingServiceFactory {
      * @param multicastAddress the UDP socket multicast address to join if desired (nullable for no multicast join).
      * @param multicastPort the UDP multicast socket port.
      * @param maxMessageSize maximum allowed message size for any messages sent over this binding.
+     * @return the instance.
      */
     UdpBindingService createUdpBindingService(@Assisted NetworkInterface networkInterface,
                                               @Assisted @Nullable InetAddress multicastAddress,
