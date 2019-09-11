@@ -11,15 +11,17 @@ public class UriBaseContextPath {
 
     /**
      * Accepts an URI and tries to cut out the base path on construction.
+     *
+     * @param uri the inspected URI.
      */
     public UriBaseContextPath(URI uri) {
         this.basePath = deriveFrom(uri);
     }
 
     /**
-     * Get extracted base path.
+     * Gets extracted base path.
      *
-     * If the parser was not able to find a base path, an empty string is returned.
+     * @return the base path or an empty string if the parser was not able to find a base path.
      */
     public String get() {
         return basePath;

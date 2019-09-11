@@ -27,24 +27,31 @@ public class ServerHelper {
     }
 
     /**
-     * Dispatch *param* to interceptors from *registry* matching given action in *msg* and *direction*.
-     *
+     * Start dispatching a SOAP message along an interceptor chain.
+     * <p>
      * In contrast to {@link ClientHelper}, which throws {@link InterceptorException} on
      * {@link InterceptorResult#CANCEL} and {@link InterceptorResult#SKIP_RESPONSE}, {@linkplain ServerHelper} throws a
      * {@link SoapFaultException} on {@link InterceptorResult#CANCEL}.
+     *
+     * @param direction the communication direction used for dispatching.
+     * @param registry the interceptor registry used to seek interceptors.
+     * @param soapMessage the SOAP message to dispatch.
+     * @param interceptorCallbackObject the object where to dispatch the message to.
+     * @return the interceptor result.
+     * @throws SoapFaultException if the interceptor was cancelled (in order to communicate this an error to the client).
      */
     public InterceptorResult invokeDispatcher(Direction direction,
                                               InterceptorRegistry registry,
-                                              SoapMessage msg,
-                                              InterceptorCallbackType param) throws SoapFaultException {
-        Optional<AttributedURIType> action = msg.getWsAddressingHeader().getAction();
+                                              SoapMessage soapMessage,
+                                              InterceptorCallbackType interceptorCallbackObject) throws SoapFaultException {
+        Optional<AttributedURIType> action = soapMessage.getWsAddressingHeader().getAction();
         String actionUri = null;
         if (action.isPresent()) {
             actionUri = action.get().getValue();
         }
 
         try {
-            return interceptorInvoker.dispatch(direction, registry, actionUri, param);
+            return interceptorInvoker.dispatch(direction, registry, actionUri, interceptorCallbackObject);
         } catch (SoapFaultException e) {
             throw e;
         } catch (Exception e) {

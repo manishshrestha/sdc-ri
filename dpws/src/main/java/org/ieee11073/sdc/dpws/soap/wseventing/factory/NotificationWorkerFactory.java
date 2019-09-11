@@ -4,11 +4,12 @@ import org.ieee11073.sdc.dpws.soap.wseventing.helper.EventSourceTransportManager
 import org.ieee11073.sdc.dpws.soap.wseventing.helper.NotificationWorker;
 
 /**
- * Create {@link NotificationWorker} instances.
+ * Creates {@link NotificationWorker} instances.
  */
 public interface NotificationWorkerFactory {
     /**
-     * @param eventSourceTransportManager Used to deliver notifications.
+     * @param eventSourceTransportManager the transport manager used to deliver notifications.
+     * @return the instance.
      */
     NotificationWorker createNotificationWorker(EventSourceTransportManager eventSourceTransportManager);
 }

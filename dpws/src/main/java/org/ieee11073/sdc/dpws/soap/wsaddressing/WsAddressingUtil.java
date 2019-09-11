@@ -21,7 +21,10 @@ public class WsAddressingUtil {
     }
 
     /**
-     * Shorthand method to create a {@link AttributedURIType} from simple string.
+     * Shorthand method to create an {@link AttributedURIType} from a simple string.
+     *
+     * @param uri the URI as string.
+     * @return an {@link AttributedURIType} instance.
      */
     public AttributedURIType createAttributedURIType(String uri) {
         AttributedURIType attributedURIType = wsaFactory.createAttributedURIType();
@@ -29,6 +32,11 @@ public class WsAddressingUtil {
         return attributedURIType;
     }
 
+    /**
+     * Shorthand method to create an {@link AttributedURIType} from an URI.
+     * @param uri the URI.
+     * @return an {@link AttributedURIType} instance.
+     */
     public AttributedURIType createAttributedURIType(URI uri) {
         return createAttributedURIType(uri.toString());
     }

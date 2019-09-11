@@ -9,15 +9,17 @@ import java.util.List;
  */
 public interface DiscoveryAccess {
     /**
-     * Types in accordance with WS-Discovery.
+     * Sets the types in accordance with WS-Discovery.
      *
+     * @param types the types to set.
      * @see <a href="http://docs.oasis-open.org/ws-dd/discovery/1.1/os/wsdd-discovery-1.1-spec-os.html#_Toc234231830">Matching Types and Scopes</a>
      */
     void setTypes(List<QName> types);
 
     /**
-     * Scopes in accordance with WS-Discovery.
+     * Sets the scopes in accordance with WS-Discovery.
      *
+     * @param scopes the scopes to set.
      * @see <a href="http://docs.oasis-open.org/ws-dd/discovery/1.1/os/wsdd-discovery-1.1-spec-os.html#_Toc234231830">Matching Types and Scopes</a>
      */
     void setScopes(List<URI> scopes);

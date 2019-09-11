@@ -20,18 +20,20 @@ public class InterceptorRegistry {
     }
 
     /**
-     * Take object and search for interceptor methods.
-     *
+     * Takes an object and searches for interceptor methods.
+     * <p>
      * Interceptor methods are stored for fast access into a registry. They are retrievable using
      *
-     * - {@link #getDefaultInterceptors()}
-     * - {@link #getDefaultInterceptors(Direction)}
-     * - {@link #getInterceptors(String)}
-     * - {@link #getInterceptors(Direction, String)}
+     * <ul>
+     * <li>{@link #getDefaultInterceptors()}
+     * <li>{@link #getDefaultInterceptors(Direction)}
+     * <li>{@link #getInterceptors(String)}
+     * <li>{@link #getInterceptors(Direction, String)}
+     * </ul>
      *
      * To annotate interceptor methods, use {@link MessageInterceptor}.
      *
-     * @param interceptor The object where to search for interceptor methods.
+     * @param interceptor the object where to search for interceptor methods.
      */
     public void addInterceptor(Object interceptor) {
         List<Method> actionCallbackMethods = getCallbackMethods(interceptor);
@@ -54,6 +56,8 @@ public class InterceptorRegistry {
     }
 
     /**
+     * Gets all default interceptors.
+     *
      * @return all interceptors of any direction and action.
      */
     public List<InterceptorInfo> getDefaultInterceptors() {
@@ -61,6 +65,9 @@ public class InterceptorRegistry {
     }
 
     /**
+     * Gets default interceptor of a specific direction.
+     *
+     * @param direction the direction to filter for.
      * @return all interceptors with given direction.
      */
     public List<InterceptorInfo> getDefaultInterceptors(Direction direction) {
@@ -68,6 +75,10 @@ public class InterceptorRegistry {
     }
 
     /**
+     * Gets default interceptor of a specific direction and action.
+     *
+     * @param direction the direction to filter for.
+     * @param action the action to filter for.
      * @return all interceptors with given direction and action.
      */
     public List<InterceptorInfo> getInterceptors(Direction direction, String action) {
@@ -75,6 +86,9 @@ public class InterceptorRegistry {
     }
 
     /**
+     * Gets interceptors of a specific action.
+     *
+     * @param action the action to filter for.
      * @return all interceptors of any direction with given action.
      */
     public List<InterceptorInfo> getInterceptors(String action) {

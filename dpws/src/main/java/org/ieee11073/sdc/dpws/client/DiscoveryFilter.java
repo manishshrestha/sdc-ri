@@ -15,12 +15,11 @@ public class DiscoveryFilter {
     private static final AtomicInteger discoveryIdCounter = new AtomicInteger(0);
 
     /**
-     * Create a new discovery filter with a discovery id that is unique across one application instance.
+     * Creates a new discovery filter with a discovery id that is unique across one application instance.
      *
-     * @param types Types to match.
-     * @param scopes Scopes to match.
+     * @param types  the types to match.
+     * @param scopes the scopes to match.
      * @see <a href="http://docs.oasis-open.org/ws-dd/discovery/1.1/os/wsdd-discovery-1.1-spec-os.html#_Toc234231831">WS-Discovery Probe</a>
-     *
      */
     public DiscoveryFilter(List<QName> types, List<String> scopes) {
         this.types = types;
@@ -37,9 +36,11 @@ public class DiscoveryFilter {
     }
 
     /**
-     * Get discovery id that is unique across one application instance.
-     *
+     * Gets the discovery id.
+     * <p>
      * The discovery id is used to distinguish between probe requests.
+     *
+     * @return the discover id of this filter.
      */
     public String getDiscoveryId() {
         return discoveryId;

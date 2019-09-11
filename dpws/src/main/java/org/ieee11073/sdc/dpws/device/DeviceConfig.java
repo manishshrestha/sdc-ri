@@ -1,12 +1,13 @@
 package org.ieee11073.sdc.dpws.device;
 
 /**
-  * Configuration tags of the DPWS device side.
-  */
+ * Configuration tags of the DPWS device side.
+ */
 public class DeviceConfig {
     /**
      * Configure to provide an unsecured endpoint.
-     * <p><ul>
+     *
+     * <ul>
      * <li>Data type: {@linkplain Boolean}
      * <li>Use: optional
      * </ul>
@@ -15,7 +16,8 @@ public class DeviceConfig {
 
     /**
      * Configure to provide a secured endpoint.
-     * <p><ul>
+     *
+     * <ul>
      * <li>Data type: {@linkplain Boolean}
      * <li>Use: optional
      * </ul>

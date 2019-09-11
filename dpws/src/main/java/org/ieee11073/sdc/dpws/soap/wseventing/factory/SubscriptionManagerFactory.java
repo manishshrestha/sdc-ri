@@ -10,18 +10,19 @@ import javax.annotation.Nullable;
 import java.time.Duration;
 
 /**
- * Create {@link SubscriptionManager} instances for event source and sink side.
+ * Creates {@link SubscriptionManager} instances for event source and sink side.
  */
 public interface SubscriptionManagerFactory {
     /**
-     * Create {@link SourceSubscriptionManager} instance.
+     * Creates an {@link SourceSubscriptionManager} instance.
      *
-     * @param subscriptionManagerEpr Endpoint reference where to send subscription modification requests (GetStatus,
+     * @param subscriptionManagerEpr endpoint reference where to send subscription modification requests (GetStatus,
      *                               Renew, Unsubscribe).
-     * @param expires                Expiration duration.
-     * @param notifyTo               Endpoint reference where to send notifications to.
-     * @param endTo                  Endpoint reference where to send end-to request to or null, if none is available.
-     * @param subscriptionId         The subscription id for the subscription manager or null to auto-generate a unique id.
+     * @param expires                expiration duration.
+     * @param notifyTo               endpoint reference where to send notifications to.
+     * @param endTo                  endpoint reference where to send end-to request to or null, if none is available.
+     * @param subscriptionId         the subscription id for the subscription manager or null to auto-generate a unique id.
+     * @return the instance.
      */
     SourceSubscriptionManager createSourceSubscriptionManager(@Assisted("SubscriptionManager") EndpointReferenceType subscriptionManagerEpr,
                                                               @Assisted Duration expires,
@@ -30,9 +31,10 @@ public interface SubscriptionManagerFactory {
                                                               @Assisted("SubscriptionId") @Nullable String subscriptionId);
 
     /**
-     * Create {@link SinkSubscriptionManager} instance.
+     * Creates a {@link SinkSubscriptionManager} instance.
      *
-     * @param subscriptionManager The subscription manager the sink side is based on.
+     * @param subscriptionManager the subscription manager the sink side is based on.
+     * @return the instance.
      */
     SinkSubscriptionManager createSinkSubscriptionManager(@Assisted SubscriptionManager subscriptionManager);
 }

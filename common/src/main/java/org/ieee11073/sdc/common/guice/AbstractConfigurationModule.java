@@ -22,14 +22,15 @@ public abstract class AbstractConfigurationModule extends AbstractModule {
     private boolean configureStarted = false;
 
     /**
-     * Bind a configuration key to a value from outside.
+     * Binds a configuration key to a value from outside.
      * <p>
      * This operation can only be performed once per key. All unpopulated keys are supposed to be filled with a
      * default value once {@link #configure()} is called by Guice.
      *
-     * @param name     Configuration key.
-     * @param dataType Data type bounded by that key (should be defined in configuration class).
-     * @param value    The configuration value to set.
+     * @param name     the configuration key.
+     * @param dataType the data type bounded by the key (should be defined in configuration class).
+     * @param value    the configuration value to set.
+     * @param <T>      type that is required by the given key.
      */
     public <T> void bind(String name, Class<T> dataType, @Nullable T value) {
         if (!boundValues.containsKey(name)) {
@@ -56,7 +57,9 @@ public abstract class AbstractConfigurationModule extends AbstractModule {
     }
 
     /**
-     * Conduct default configuration. This method is called by Guice.
+     * Conducts default configuration.
+     * <p>
+     * This method is called by Guice.
      */
     @Override
     @SuppressWarnings("Unchecked")
@@ -77,7 +80,7 @@ public abstract class AbstractConfigurationModule extends AbstractModule {
     /**
      * Implement this method to apply custom configuration.
      * <p>
-     * Optional override as values can also be set from outside the class with {@link #bind(String, Class, Object)}.
+     * Optional override as values can also be set from outside the class by using {@link #bind(String, Class, Object)}.
      */
     protected void customConfigure() {
         // Override is optional
