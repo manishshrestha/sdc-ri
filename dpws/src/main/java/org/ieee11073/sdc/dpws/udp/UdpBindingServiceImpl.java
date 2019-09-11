@@ -120,6 +120,10 @@ public class UdpBindingServiceImpl extends AbstractIdleService implements UdpBin
             unicastSocketRunner.start();
         }
 
+        // wait for the sockets, the IGMP join and the worker threads to be available
+        // this has primarily been an issue in low performance environments such as the CI
+        Thread.sleep(1000);
+
         LOG.info("UDP binding {} is running", this);
     }
 
