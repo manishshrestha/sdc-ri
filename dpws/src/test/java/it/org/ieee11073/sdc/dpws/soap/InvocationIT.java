@@ -55,14 +55,14 @@ public class InvocationIT {
 
         factory = new ObjectFactory();
 
-        devicePeer = new BasicPopulatedDevice(new MockedUdpBindingModule());
+        devicePeer = new BasicPopulatedDevice();
         clientPeer = new ClientPeer(new DefaultDpwsConfigModule() {
             @Override
             public void customConfigure() {
                 bind(SoapConfig.JAXB_CONTEXT_PATH, String.class,
                         TestServiceMetadata.JAXB_CONTEXT_PATH);
             }
-        }, new MockedUdpBindingModule());
+        });
         devicePeer.startAsync().awaitRunning();
         clientPeer.startAsync().awaitRunning();
 
