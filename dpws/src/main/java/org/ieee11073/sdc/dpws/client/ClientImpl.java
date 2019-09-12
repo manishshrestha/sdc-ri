@@ -3,7 +3,7 @@ package org.ieee11073.sdc.dpws.client;
 import com.google.common.util.concurrent.*;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
-import org.ieee11073.sdc.dpws.DiscoveryUdpQueue;
+import org.ieee11073.sdc.dpws.guice.DiscoveryUdpQueue;
 import org.ieee11073.sdc.dpws.DpwsConfig;
 import org.ieee11073.sdc.dpws.TransportBinding;
 import org.ieee11073.sdc.dpws.client.helper.*;

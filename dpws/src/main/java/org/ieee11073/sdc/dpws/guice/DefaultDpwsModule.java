@@ -4,7 +4,6 @@ import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.inject.AbstractModule;
 import com.google.inject.assistedinject.FactoryModuleBuilder;
-import org.ieee11073.sdc.dpws.DiscoveryUdpQueue;
 import org.ieee11073.sdc.dpws.DpwsFramework;
 import org.ieee11073.sdc.dpws.DpwsFrameworkImpl;
 import org.ieee11073.sdc.dpws.client.Client;
@@ -58,7 +57,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
 /**
- * Guice module to bind all interfaces and factories led by the DPWS implementation of easySDC.
+ * Default Guice module to bind all interfaces and factories used by the DPWS implementation.
  */
 public class DefaultDpwsModule extends AbstractModule {
     @Override

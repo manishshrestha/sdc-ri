@@ -2,9 +2,9 @@ package org.ieee11073.sdc.dpws;
 
 import com.google.common.util.concurrent.AbstractIdleService;
 import com.google.common.util.concurrent.ServiceManager;
-import com.google.inject.Inject;
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
+import org.ieee11073.sdc.dpws.guice.DiscoveryUdpQueue;
 import org.ieee11073.sdc.dpws.udp.factory.UdpBindingServiceFactory;
 import org.ieee11073.sdc.dpws.http.HttpServerRegistry;
 import org.ieee11073.sdc.dpws.soap.SoapMarshalling;

@@ -1,7 +1,7 @@
 package org.ieee11073.sdc.dpws;
 
 /**
- * Exception that occurs during processing within a transport binding.
+ * Exception that comes up while a transport binding processes a network request.
  */
 public class TransportBindingException extends RuntimeException {
     public TransportBindingException() {
