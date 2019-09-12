@@ -38,7 +38,6 @@ public class UdpBindingServiceMock extends AbstractIdleService implements UdpBin
                           @Assisted @Nullable InetAddress multicastGroup,
                           @Assisted("multicastPort") @Nullable Integer multicastPort,
                           @Assisted("maxMessageSize") Integer maxMessageSize) {
-        UDP_BUS.register(this);
         this.selfAddress = "0.0.0.0";
         this.selfPort = assignRandomPort();
         if (multicastGroup != null && multicastPort != null) {
@@ -78,11 +77,13 @@ public class UdpBindingServiceMock extends AbstractIdleService implements UdpBin
 
     @Override
     protected void startUp() {
+        UDP_BUS.register(this);
         LOG.info("UDP message queue for binding is running: {}", this);
     }
 
     @Override
     protected void shutDown() {
+        UDP_BUS.unregister(this);
         LOG.info("UDP message queue for binding shut down: {}", this);
     }
 
