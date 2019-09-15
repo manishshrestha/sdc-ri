@@ -19,6 +19,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Default implementation of {@linkplain HostedService}.
+ */
 public class HostedServiceImpl implements HostedService {
     private final String serviceId;
     private final List<QName> types;

@@ -22,7 +22,7 @@ import java.time.Duration;
 import java.util.List;
 
 /**
- * Default implementation of {@link HostedServiceProxy}.
+ * Default implementation of {@linkplain HostedServiceProxy}.
  */
 public class HostedServiceProxyImpl implements HostedServiceProxy, EventSinkAccess {
 

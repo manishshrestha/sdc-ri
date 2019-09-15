@@ -18,9 +18,10 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 /**
- * {@link RequestResponseServer} that is invoked on {@link HttpHandler} callbacks.
- *
- * The Handler is an {@link InterceptorHandler}. Any registered objects receive the requests delivered by
+ * {@linkplain RequestResponseServer} that is invoked on SOAP {@linkplain HttpHandler} callbacks.
+ * <p>
+ * The handler is an {@link InterceptorHandler}.
+ * All objects registered via {@link #register(Interceptor)} receive the requests delivered to
  * {@link HttpHandler#process(InputStream, OutputStream, TransportInfo)}.
  */
 public class RequestResponseServerHttpHandler implements HttpHandler, InterceptorHandler {

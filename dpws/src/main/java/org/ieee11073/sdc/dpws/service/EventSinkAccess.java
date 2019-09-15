@@ -12,70 +12,67 @@ import java.time.Duration;
 import java.util.List;
 
 /**
- * Class to manage event sinks.
+ * Offers access to event sink functionality in accordance with WS-Eventing.
  */
 public interface EventSinkAccess {
     /**
-     * @param actions          List of operation actions. Operation actions have the following format:
-     *                         #WSDL-TARGET-NAMESPACE/#WSDL-PORT-TYPE-NAME/#OPERATION-NAME
-     * @param expires          Desired expiration time (the hosted service may decide to grant lesser than this). If
-     *                         known is given, the hosting service will take decision.
-     * @param notificationSink Sink where to deliver notifications.
-     * @return A future object that can throw
+     * Conducts a subscribe.
      *
-     * - {@link SoapFaultException}
-     * - {@link MarshallingException}
-     * - {@link TransportException}
-     *
-     * or in case of success includes subscription information.
+     * @param actions          a list of operation actions to subscribe for.
+     * @param expires          the desired expiration time (the hosted service may decide to grant lesser than this).
+     *                         If none is given, the hosting service will take decision.
+     * @param notificationSink the sink where to deliver notifications.
+     * @return a future object that either includes subscription information or throws
+     * <ul>
+     * <li>{@link SoapFaultException}
+     * <li>{@link MarshallingException}
+     * <li>{@link TransportException}
+     * </ul>
      */
     ListenableFuture<SubscribeResult> subscribe(List<String> actions,
                                                 @Nullable Duration expires,
                                                 Interceptor notificationSink);
 
     /**
-     * Renew a subscription.
+     * Renews a subscription.
      *
-     * @param subscriptionId The subscription id obtained in the {@link SubscribeResult} of
-     * {@link #subscribe(List, Duration, Interceptor)}.
-     * @param expires The desired new expiration duration.
-     * @return A future object that can throw
-     *
-     * - {@link SoapFaultException}
-     * - {@link MarshallingException}
-     * - {@link TransportException}
-     *
-     * or in case of success includes a granted expires duration.
+     * @param subscriptionId the subscription id obtained in the {@link SubscribeResult} of
+     *                       {@link #subscribe(List, Duration, Interceptor)}.
+     * @param expires        the desired new expiration duration.
+     * @return a future object that either includes a granted expires duration or throws
+     * <ul>
+     * <li>{@link SoapFaultException}
+     * <li>{@link MarshallingException}
+     * <li>{@link TransportException}
+     * </ul>
      */
     ListenableFuture<Duration> renew(String subscriptionId, Duration expires);
 
     /**
-     * Get status of a subscription.
+     * Gets the status of a subscription.
      *
-     * @param subscriptionId The subscription id obtained in the {@link SubscribeResult} of
-     * {@link #subscribe(List, Duration, Interceptor)}.
-     * @return A future object that can throw
-     *
-     * - {@link SoapFaultException}
-     * - {@link MarshallingException}
-     * - {@link TransportException}
-     *
-     * or in case of success includes a duration that gives the remaining subscription time.
+     * @param subscriptionId the subscription id obtained in the {@link SubscribeResult} of
+     *                       {@link #subscribe(List, Duration, Interceptor)}.
+     * @return a future object that either includes the remaining subscription time or throws
+     * <ul>
+     * <li>{@link SoapFaultException}
+     * <li>{@link MarshallingException}
+     * <li>{@link TransportException}
+     * </ul>
      */
     ListenableFuture<Duration> getStatus(String subscriptionId);
 
     /**
-     * Unsubscribe from a subscription.
+     * Unsubscribes from a subscription.
      *
-     * @param subscriptionId The subscription id obtained in the {@link SubscribeResult} of
-     * {@link #subscribe(List, Duration, Interceptor)}.
-     * @return A future object that can throw
-     *
-     * - {@link SoapFaultException}
-     * - {@link MarshallingException}
-     * - {@link TransportException}
-     *
-     * or deliver an empty {@linkplain Object} instance to signal success.
+     * @param subscriptionId the subscription id obtained in the {@link SubscribeResult} of
+     *                       {@link #subscribe(List, Duration, Interceptor)}.
+     * @return a future object that either delivers an empty object in case of successful unsubscribe or throws
+     * <ul>
+     * <li>{@link SoapFaultException}
+     * <li>{@link MarshallingException}
+     * <li>{@link TransportException}
+     * </ul>
      */
     ListenableFuture unsubscribe(String subscriptionId);
 
@@ -83,7 +80,7 @@ public interface EventSinkAccess {
      * Start trying to automatically renew a subscription when it is going to expire.
      *
      * @param subscriptionId The subscription id obtained in the {@link SubscribeResult} of
-     * {@link #subscribe(List, Duration, Interceptor)}.
+     *                       {@link #subscribe(List, Duration, Interceptor)}.
      */
     void enableAutoRenew(String subscriptionId);
 
@@ -91,7 +88,7 @@ public interface EventSinkAccess {
      * Stop automatic renew, if enabled via {@link #enableAutoRenew(String)}.
      *
      * @param subscriptionId The subscription id obtained in the {@link SubscribeResult} of
-     * {@link #subscribe(List, Duration, Interceptor)}.
+     *                       {@link #subscribe(List, Duration, Interceptor)}.
      */
     void disableAutoRenew(String subscriptionId);
 }

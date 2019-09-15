@@ -1,4 +1,4 @@
-package org.ieee11073.sdc.dpws.ni;
+package org.ieee11073.sdc.dpws.network;
 
 import java.net.Inet4Address;
 import java.net.Inet6Address;
@@ -13,7 +13,7 @@ import java.util.Optional;
 public class NetworkInterfaceUtil {
 
     /**
-     * Loops through an network interface's addresses and returns the first one that matches an IPv4 address.
+     * Loops through a network interface's addresses and returns the first one that matches an IPv4 address.
      *
      * @param networkInterface the network interface where to seek for an IPv4 address.
      * @return the first found IPv4 address or empty if there is no IPv4 address connected to the network interface.

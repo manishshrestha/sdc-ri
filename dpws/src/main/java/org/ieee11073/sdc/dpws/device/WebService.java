@@ -18,19 +18,25 @@ import java.util.concurrent.TimeoutException;
 
 /**
  * Web Service base class.
- *
- * Provide event source if needed. To retrieve the event source, the instance has to be populated in advance by using
- * {@link Device#getHostingServiceAccess()} to get hosting service access, and then
- * {@link HostingServiceAccess#addHostedService(HostedService)} to add the service to a hosting service.
- *
- * Use this class as a server interceptor that will be registered at a suitable
- * {@link RequestResponseServer} instance within a {@link Device} instance when using
- * {@link HostingServiceAccess#addHostedService(HostedService)}.
+ * <p>
+ * The Web Service is a server interceptor to process incoming requests of a certain Web Service.
+ * Moreover, the Web Service base class is capable of providing an event source to send notifications if needed.
+ * <p>
+ * The event source is only set if a hosted service has been registered at the Web Service. The hosted service can be
+ * registered by first getting the hosting service access followed by adding a hosted service:
+ * <ol>
+ * <li>{@link Device#getHostingServiceAccess()} to get hosting service access, and then
+ * <li>{@link HostingServiceAccess#addHostedService(HostedService)} to add the service to a hosting service.
+ * </ol>
+ * Use this class as a server interceptor when calling {@link HostingServiceAccess#addHostedService(HostedService)}.
  */
 public abstract class WebService extends AbstractIdleService implements EventSourceAccess, Interceptor {
     private static final Logger LOG = LoggerFactory.getLogger(WebService.class);
     private EventSource eventSource;
 
+    /**
+     * Default constructor that initializes a non-functioning event source stub.
+     */
     protected WebService() {
         eventSource = new EventSource() {
             @Override
@@ -100,6 +106,14 @@ public abstract class WebService extends AbstractIdleService implements EventSou
         eventSource.subscriptionEndToAll(status);
     }
 
+    /**
+     * Allows to set the event source from outside.
+     * <p>
+     * Method is not thread-safe and should only be invoked by the {@link Device} implementation.
+     * todo DGr find better design to avoid overwriting during runtime.
+     *
+     * @param eventSource the event source to inject.
+     */
     void setEventSource(EventSource eventSource) {
         this.eventSource = eventSource;
     }

@@ -3,17 +3,22 @@ package org.ieee11073.sdc.dpws.udp;
 import com.google.common.util.concurrent.Service;
 
 /**
- * Two message queues to send and receive UDP messages.
+ * Bundles two message queues to send and receive UDP messages.
  * <p>
- * Use {@link #sendMessage(UdpMessage)} to send a UDP message using the UDP binding set with
+ * The {@linkplain UdpMessageQueueService} instance will use the UDP binding set via
  * {@link #setUdpBinding(UdpBindingService)}.
- * <p>
- * Use {@link #registerUdpMessageQueueObserver(UdpMessageQueueObserver)} to add recipients that receive incoming UDP
- * messages caught by the UDP binding.
+ * <ul>
+ * <li>Use {@link #sendMessage(UdpMessage)} to send a UDP message.
+ * <li>In order to receive messages, add observers to the {@linkplain UdpMessageQueueService} by using
+ * {@link #registerUdpMessageQueueObserver(UdpMessageQueueObserver)}.
+ * </ul>
  */
 public interface UdpMessageQueueService extends Service, UdpMessageReceiverCallback {
     /**
      * Injects the UDP binding service.
+     * <p>
+     * Without a UDP binding service the message queue cannot send and receive messages.
+     * Make sure the UDP binding is injected <em>before</em> the service is started.
      *
      * @param udpBinding the UDP binding service to inject.
      */
@@ -23,7 +28,7 @@ public interface UdpMessageQueueService extends Service, UdpMessageReceiverCallb
      * Queues an outgoing UDP message.
      *
      * @param message the message to be send.
-     * @return true if the message could be queued, otherwise false.
+     * @return true if the message could be queued, otherwise false (queue overflow).
      */
     boolean sendMessage(UdpMessage message);
 
@@ -35,7 +40,7 @@ public interface UdpMessageQueueService extends Service, UdpMessageReceiverCallb
     void registerUdpMessageQueueObserver(UdpMessageQueueObserver observer);
 
     /**
-     * Unregister observer to stop receiving incoming UDP messages.
+     * Unregisters an observer to stop receiving incoming UDP messages.
      *
      * @param observer the observer to unregister.
      */

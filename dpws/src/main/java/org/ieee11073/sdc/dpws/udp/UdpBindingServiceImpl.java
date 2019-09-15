@@ -4,21 +4,20 @@ import com.google.common.util.concurrent.AbstractIdleService;
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
 import org.ieee11073.sdc.dpws.DpwsConstants;
-import org.ieee11073.sdc.dpws.ni.NetworkInterfaceUtil;
+import org.ieee11073.sdc.dpws.network.NetworkInterfaceUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
 import java.io.IOException;
 import java.net.*;
-import java.util.Enumeration;
-import java.util.Iterator;
-import java.util.Optional;
 import java.util.Random;
 
+/**
+ * Default implementation of {@linkplain UdpBindingService}.
+ */
 public class UdpBindingServiceImpl extends AbstractIdleService implements UdpBindingService {
     private static final Logger LOG = LoggerFactory.getLogger(UdpBindingServiceImpl.class);
-
 
     private final Random random = new Random();
     private final NetworkInterface networkInterface;

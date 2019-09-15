@@ -3,7 +3,7 @@ package org.ieee11073.sdc.dpws.client.event;
 import org.ieee11073.sdc.common.event.EventMessage;
 
 /**
- * Indicates probe end of a certain discovery process.
+ * Indicates a probe end of a previously started discovery process.
  */
 public class DeviceProbeTimeoutMessage implements EventMessage {
     private final Integer foundDevicesCount;

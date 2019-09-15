@@ -10,6 +10,9 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.util.concurrent.LinkedBlockingDeque;
 
+/**
+ * Default implementation of {@linkplain UdpMessageQueueService}.
+ */
 public class UdpMessageQueueServiceImpl extends AbstractIdleService implements Service, UdpMessageQueueService {
     private final static Logger LOG = LoggerFactory.getLogger(UdpMessageQueueServiceImpl.class);
     private static int instanceIdCounter = 0;

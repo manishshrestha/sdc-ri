@@ -38,7 +38,7 @@ import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
 
 /**
- * Default implementation of {@link Client}.
+ * Default implementation of {@linkplain Client}.
  */
 public class ClientImpl extends AbstractIdleService implements Client, Service, HelloByeAndProbeMatchesObserver {
     private static final Logger LOG = LoggerFactory.getLogger(ClientImpl.class);

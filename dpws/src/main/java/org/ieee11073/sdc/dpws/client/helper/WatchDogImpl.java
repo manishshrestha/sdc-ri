@@ -5,6 +5,7 @@ import com.google.inject.Inject;
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.name.Named;
 import org.ieee11073.sdc.dpws.client.ClientConfig;
+import org.ieee11073.sdc.dpws.guice.WatchDogScheduler;
 import org.ieee11073.sdc.dpws.service.HostingServiceProxy;
 import org.ieee11073.sdc.dpws.soap.wsdiscovery.WsDiscoveryClient;
 import org.ieee11073.sdc.dpws.soap.wsdiscovery.model.ProbeMatchesType;

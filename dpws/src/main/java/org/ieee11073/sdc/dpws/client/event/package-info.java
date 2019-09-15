@@ -1,7 +1,7 @@
 /**
- * Factories for the service package.
+ * Events that are sent by the client package.
  */
 @ParametersAreNonnullByDefault
-package org.ieee11073.sdc.dpws.service.factory;
+package org.ieee11073.sdc.dpws.client.event;
 
 import javax.annotation.ParametersAreNonnullByDefault;
