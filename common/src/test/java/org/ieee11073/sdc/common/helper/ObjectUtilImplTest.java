@@ -5,7 +5,7 @@ import com.google.inject.Guice;
 import com.google.inject.Injector;
 import org.ieee11073.sdc.common.helper.ObjectUtil;
 import org.ieee11073.sdc.common.helper.ObjectUtilImpl;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import test.org.ieee11073.common.TestLogging;
 
 import java.util.ArrayList;

@@ -21,9 +21,11 @@ import org.ieee11073.sdc.dpws.soap.interception.Interceptor;
 import org.ieee11073.sdc.dpws.soap.interception.MessageInterceptor;
 import org.ieee11073.sdc.dpws.soap.interception.NotificationObject;
 import org.ieee11073.sdc.dpws.soap.wseventing.SubscribeResult;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import test.org.ieee11073.common.LoggingTestWatcher;
 import test.org.ieee11073.common.TestLogging;
 
 import java.time.Duration;
@@ -31,8 +33,9 @@ import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
+@ExtendWith(LoggingTestWatcher.class)
 public class InvocationIT {
     private static final Duration MAX_WAIT_TIME = IntegrationTestUtil.MAX_WAIT_TIME;
 
@@ -49,7 +52,7 @@ public class InvocationIT {
         IntegrationTestUtil.preferIpV4Usage();
     }
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         TestLogging.configure();
 
@@ -70,7 +73,7 @@ public class InvocationIT {
                 .get(MAX_WAIT_TIME.getSeconds(), TimeUnit.SECONDS);
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
         this.devicePeer.stopAsync().awaitTerminated();
         this.clientPeer.stopAsync().awaitTerminated();

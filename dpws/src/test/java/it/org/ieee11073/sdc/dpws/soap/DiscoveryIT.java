@@ -15,9 +15,11 @@ import org.ieee11073.sdc.dpws.guice.DefaultDpwsConfigModule;
 import org.ieee11073.sdc.dpws.service.HostingServiceProxy;
 import org.ieee11073.sdc.dpws.soap.SoapConfig;
 import org.ieee11073.sdc.dpws.soap.wsdiscovery.WsDiscoveryConfig;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import test.org.ieee11073.common.LoggingTestWatcher;
 import test.org.ieee11073.common.TestLogging;
 
 import java.net.URI;
@@ -25,9 +27,10 @@ import java.time.Duration;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
+@ExtendWith(LoggingTestWatcher.class)
 public class DiscoveryIT {
     private static final Duration MAX_WAIT_TIME = IntegrationTestUtil.MAX_WAIT_TIME;
 
@@ -38,7 +41,7 @@ public class DiscoveryIT {
         IntegrationTestUtil.preferIpV4Usage();
     }
 
-    @Before
+    @BeforeEach
     public void setUp() {
         TestLogging.configure();
         this.devicePeer = new BasicPopulatedDevice(new MockedUdpBindingModule());
@@ -53,7 +56,7 @@ public class DiscoveryIT {
         }, new MockedUdpBindingModule());
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
         this.devicePeer.stopAsync().awaitTerminated();
         this.clientPeer.stopAsync().awaitTerminated();
@@ -126,6 +129,7 @@ public class DiscoveryIT {
 
     @Test
     public void directedProbe() throws Exception {
+
         // Given a device under test (DUT) and a client up and running
         devicePeer.startAsync().awaitRunning();
         clientPeer.startAsync().awaitRunning();

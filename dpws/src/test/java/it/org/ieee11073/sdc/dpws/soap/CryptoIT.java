@@ -24,9 +24,11 @@ import org.ieee11073.sdc.dpws.soap.wsaddressing.WsAddressingUtil;
 import org.ieee11073.sdc.dpws.soap.wsaddressing.model.EndpointReferenceType;
 import org.ieee11073.sdc.dpws.soap.wsdiscovery.WsDiscoveryConfig;
 import org.ieee11073.sdc.dpws.soap.wseventing.SubscribeResult;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import test.org.ieee11073.common.LoggingTestWatcher;
 import test.org.ieee11073.common.TestLogging;
 
 import java.net.InetAddress;
@@ -39,9 +41,10 @@ import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
+@ExtendWith(LoggingTestWatcher.class)
 public class CryptoIT {
     private static final Duration MAX_WAIT_TIME = Duration.ofMinutes(3);
 
@@ -56,7 +59,7 @@ public class CryptoIT {
         IntegrationTestUtil.preferIpV4Usage();
     }
 
-    @Before
+    @BeforeEach
     public void setUp() {
         TestLogging.configure();
         final CryptoSettings serverCryptoSettings = Ssl.setupServer();
@@ -104,7 +107,7 @@ public class CryptoIT {
         }
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
         this.devicePeer.stopAsync().awaitTerminated();
         this.clientPeer.stopAsync().awaitTerminated();
