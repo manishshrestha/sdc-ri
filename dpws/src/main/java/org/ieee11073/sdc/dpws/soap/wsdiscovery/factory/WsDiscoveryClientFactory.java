@@ -9,6 +9,8 @@ import org.ieee11073.sdc.dpws.soap.wsdiscovery.WsDiscoveryClient;
  */
 public interface WsDiscoveryClientFactory {
     /**
+     * Creates a new discovery client.
+     *
      * @param notificationSource The source where Probe and Resolve messages are sent from.
      * @return the instance.
      */

@@ -6,14 +6,15 @@ import org.ieee11073.sdc.dpws.soap.wsdiscovery.event.ProbeMatchesMessage;
 import org.ieee11073.sdc.dpws.soap.wsdiscovery.event.ProbeTimeoutMessage;
 
 /**
- * Indicate class as a WS-Discovery Hello, Bye and ProbeMatches observer.
- *
- * Annotate method with {@link com.google.common.eventbus.Subscribe} to
- *
- * - {@link HelloMessage}
- * - {@link ByeMessage}
- * - {@link ProbeMatchesMessage}
- * - {@link ProbeTimeoutMessage}
+ * Designates a deriving class as a WS-Discovery Hello, Bye and ProbeMatches observer.
+ * <p>
+ * Annotate methods with {@link com.google.common.eventbus.Subscribe} to catch
+ * <ul>
+ * <li>{@link HelloMessage}
+ * <li>{@link ByeMessage}
+ * <li>{@link ProbeMatchesMessage}
+ * <li>{@link ProbeTimeoutMessage}
+ * </ul>
  */
 public interface HelloByeAndProbeMatchesObserver {
 }
