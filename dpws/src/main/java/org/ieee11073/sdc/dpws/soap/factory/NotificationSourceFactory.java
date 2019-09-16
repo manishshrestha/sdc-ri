@@ -9,9 +9,11 @@ import org.ieee11073.sdc.dpws.soap.interception.NotificationCallback;
  */
 public interface NotificationSourceFactory {
     /**
-     * @param callback Callback that shall be invoked after all interceptors on are visited and the notification shall
-     *                 be transmitted to AbstractEventMessage sink.
-     * @return a new {@link NotificationSource}
+     * Creates a notification source.
+     *
+     * @param callback a callback that is invoked after all interceptors are visited and the notification is about to
+     *                 be transmitted to an event sink.
+     * @return a new {@link NotificationSource}.
      */
     NotificationSource createNotificationSource(@Assisted NotificationCallback callback);
 }

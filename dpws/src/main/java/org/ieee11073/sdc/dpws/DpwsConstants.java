@@ -65,7 +65,7 @@ public class DpwsConstants {
     public static final int MAX_FIELD_SIZE = 256;
 
     /**
-     * Defines the maximum site for URIs.
+     * Defines the maximum size for URIs.
      * <p>
      * Unit: octets
      */
