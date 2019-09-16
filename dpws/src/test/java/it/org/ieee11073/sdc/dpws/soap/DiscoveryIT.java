@@ -5,6 +5,7 @@ import com.google.common.eventbus.Subscribe;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.SettableFuture;
 import it.org.ieee11073.sdc.dpws.IntegrationTestUtil;
+import it.org.ieee11073.sdc.dpws.MockedUdpBindingModule;
 import it.org.ieee11073.sdc.dpws.TestServiceMetadata;
 import org.ieee11073.sdc.dpws.client.*;
 import org.ieee11073.sdc.dpws.client.event.DeviceEnteredMessage;
@@ -40,7 +41,7 @@ public class DiscoveryIT {
     @Before
     public void setUp() {
         TestLogging.configure();
-        this.devicePeer = new BasicPopulatedDevice();
+        this.devicePeer = new BasicPopulatedDevice(new MockedUdpBindingModule());
         this.clientPeer = new ClientPeer(new DefaultDpwsConfigModule() {
             @Override
             public void customConfigure() {
@@ -49,7 +50,7 @@ public class DiscoveryIT {
                 bind(SoapConfig.JAXB_CONTEXT_PATH, String.class,
                         TestServiceMetadata.JAXB_CONTEXT_PATH);
             }
-        });
+        }, new MockedUdpBindingModule());
     }
 
     @After

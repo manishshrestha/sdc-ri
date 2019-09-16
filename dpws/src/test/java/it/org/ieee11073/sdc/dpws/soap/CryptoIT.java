@@ -85,7 +85,7 @@ public class CryptoIT {
                 bind(DeviceConfig.UNSECURED_ENDPOINT, Boolean.class, false);
                 bind(DeviceConfig.SECURED_ENDPOINT, Boolean.class, true);
             }
-        });
+        }, new MockedUdpBindingModule());
 
         final CryptoSettings clientCryptoSettings = Ssl.setupClient();
         try {
@@ -98,7 +98,7 @@ public class CryptoIT {
                     bind(SoapConfig.JAXB_CONTEXT_PATH, String.class,
                             TestServiceMetadata.JAXB_CONTEXT_PATH);
                 }
-            });
+            }, new MockedUdpBindingModule());
         } catch (Exception e) {
             e.printStackTrace();
         }
