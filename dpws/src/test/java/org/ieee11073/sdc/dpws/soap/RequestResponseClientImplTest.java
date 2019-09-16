@@ -6,19 +6,19 @@ import org.ieee11073.sdc.dpws.soap.model.Envelope;
 import org.ieee11073.sdc.dpws.soap.interception.*;
 import org.ieee11073.sdc.dpws.soap.wsaddressing.WsAddressingUtil;
 import org.ieee11073.sdc.dpws.soap.wsaddressing.model.AttributedURIType;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class RequestResponseClientImplTest extends DpwsTest {
     private List<String> dispatchedSequence;
     
     @Override
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         super.setUp();
         getInjector().getInstance(SoapMarshalling.class).startAsync().awaitRunning();

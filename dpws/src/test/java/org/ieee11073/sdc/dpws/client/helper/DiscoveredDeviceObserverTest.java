@@ -16,15 +16,15 @@ import org.ieee11073.sdc.dpws.soap.wsdiscovery.event.HelloMessage;
 import org.ieee11073.sdc.dpws.soap.wsdiscovery.event.ProbeMatchesMessage;
 import org.ieee11073.sdc.dpws.soap.wsdiscovery.event.ProbeTimeoutMessage;
 import org.ieee11073.sdc.dpws.soap.wsdiscovery.model.*;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Optional;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -38,7 +38,7 @@ public class DiscoveredDeviceObserverTest extends DpwsTest {
     private int callbackVisitCount;
 
     @Override
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         super.setUp();
         WsAddressingUtil wsaUtil = getInjector().getInstance(WsAddressingUtil.class);

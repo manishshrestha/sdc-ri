@@ -2,14 +2,15 @@ package org.ieee11073.sdc.dpws.soap;
 
 import org.ieee11073.sdc.dpws.DpwsTest;
 import org.ieee11073.sdc.dpws.soap.model.Envelope;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+
 
 public class DefaultEnvelopeUnmarshallerTest extends DpwsTest {
     @Override
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         super.setUp();
     }

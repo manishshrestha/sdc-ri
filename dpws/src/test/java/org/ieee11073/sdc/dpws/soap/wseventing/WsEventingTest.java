@@ -17,9 +17,8 @@ import org.ieee11073.sdc.dpws.soap.*;
 import org.ieee11073.sdc.dpws.soap.factory.RequestResponseClientFactory;
 import org.ieee11073.sdc.dpws.soap.wsaddressing.WsAddressingUtil;
 import org.ieee11073.sdc.dpws.soap.wseventing.factory.WsEventingEventSinkFactory;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.net.URI;
 import java.time.Duration;
@@ -27,6 +26,8 @@ import java.util.Collections;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  * Round trip test for WS-Eventing (Source+Sink).
@@ -41,7 +42,7 @@ public class WsEventingTest extends DpwsTest {
     private EventSink wseSink;
     private NotificationSink notificationSink;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         overrideBindings(new DpwsModuleReplacements());
         super.setUp();
@@ -129,9 +130,9 @@ public class WsEventingTest extends DpwsTest {
 
         try {
             wseSink.getStatus(resInfo.get().getSubscriptionId()).get();
-            Assert.fail();
+            fail();
         } catch (Exception e) {
-            Assert.assertTrue(true);
+            assertTrue(true);
         }
     }
 
@@ -146,9 +147,9 @@ public class WsEventingTest extends DpwsTest {
 
         try {
             wseSink.getStatus(resInfo.get().getSubscriptionId()).get();
-            Assert.fail();
+            fail();
         } catch (Exception e) {
-            Assert.assertTrue(true);
+            assertTrue(true);
         }
     }
 
@@ -162,12 +163,7 @@ public class WsEventingTest extends DpwsTest {
         wseSink.enableAutoRenew(resInfo.get().getSubscriptionId());
         Thread.sleep(2000);
 
-        try {
-            wseSink.getStatus(resInfo.get().getSubscriptionId());
-            Assert.assertTrue(true);
-        } catch (Exception e) {
-            Assert.fail();
-        }
+        wseSink.getStatus(resInfo.get().getSubscriptionId());
     }
 
     private class DpwsModuleReplacements extends AbstractModule {

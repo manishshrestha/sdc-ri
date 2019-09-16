@@ -6,20 +6,20 @@ import org.ieee11073.sdc.dpws.soap.model.Envelope;
 import org.ieee11073.sdc.dpws.soap.interception.*;
 import org.ieee11073.sdc.dpws.soap.wsaddressing.WsAddressingUtil;
 import org.ieee11073.sdc.dpws.soap.wsaddressing.model.AttributedURIType;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class RequestResponseServerImplTest extends DpwsTest {
     private List<String> dispatchedSequence;
     private TransportInfo mockTransportInfo;
 
     @Override
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         super.setUp();
         mockTransportInfo = new TransportInfo("mock.scheme", "localhost", 123);

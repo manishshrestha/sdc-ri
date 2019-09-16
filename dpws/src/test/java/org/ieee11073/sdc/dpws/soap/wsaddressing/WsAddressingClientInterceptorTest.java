@@ -6,9 +6,10 @@ import org.ieee11073.sdc.dpws.soap.RequestResponseClient;
 import org.ieee11073.sdc.dpws.soap.factory.SoapMessageFactory;
 import org.ieee11073.sdc.dpws.soap.factory.EnvelopeFactory;
 import org.ieee11073.sdc.dpws.soap.factory.RequestResponseClientFactory;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class WsAddressingClientInterceptorTest extends DpwsTest {
 
@@ -17,7 +18,7 @@ public class WsAddressingClientInterceptorTest extends DpwsTest {
     private SoapMessageFactory soapMessageFactory;
 
     @Override
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         super.setUp();
 
@@ -41,6 +42,6 @@ public class WsAddressingClientInterceptorTest extends DpwsTest {
         SoapMessage req = soapMessageFactory.createSoapMessage(envelopeFactory
                 .createEnvelope("http://request", null));
         SoapMessage res = client.sendRequestResponse(req);
-        Assert.assertTrue(res.getWsAddressingHeader().getMessageId().isPresent());
+        assertTrue(res.getWsAddressingHeader().getMessageId().isPresent());
     }
 }

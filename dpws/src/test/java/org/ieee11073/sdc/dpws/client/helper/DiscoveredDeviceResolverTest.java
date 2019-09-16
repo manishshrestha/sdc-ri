@@ -11,8 +11,8 @@ import org.ieee11073.sdc.dpws.soap.wsdiscovery.model.HelloType;
 import org.ieee11073.sdc.dpws.soap.wsdiscovery.model.ObjectFactory;
 import org.ieee11073.sdc.dpws.soap.wsdiscovery.model.ResolveMatchType;
 import org.ieee11073.sdc.dpws.soap.wsdiscovery.model.ResolveMatchesType;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.net.URI;
 import java.time.Duration;
@@ -21,8 +21,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -32,7 +32,7 @@ public class DiscoveredDeviceResolverTest extends DpwsTest {
     private ObjectFactory objFactory;
 
     @Override
-    @Before
+    @BeforeEach
     public void setUp() throws Exception{
         super.setUp();
         wsaUtil = getInjector().getInstance(WsAddressingUtil.class);

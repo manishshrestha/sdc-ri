@@ -2,13 +2,15 @@ package it.org.ieee11073.sdc.dpws.udp;
 
 import com.google.common.util.concurrent.SettableFuture;
 import it.org.ieee11073.sdc.dpws.IntegrationTestUtil;
+import it.org.ieee11073.sdc.dpws.LoggingTestWatcher;
 import org.ieee11073.sdc.dpws.DpwsConstants;
 import org.ieee11073.sdc.dpws.soap.wsdiscovery.WsDiscoveryConstants;
 import org.ieee11073.sdc.dpws.udp.UdpBindingService;
 import org.ieee11073.sdc.dpws.udp.UdpMessage;
 import org.ieee11073.sdc.dpws.udp.factory.UdpBindingServiceFactory;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -19,8 +21,9 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
+@ExtendWith(LoggingTestWatcher.class)
 public class UdpBindingServiceImplIT {
     private final IntegrationTestUtil IT = new IntegrationTestUtil();
 
@@ -34,7 +37,7 @@ public class UdpBindingServiceImplIT {
         IntegrationTestUtil.preferIpV4Usage();
     }
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         factory = IT.getInjector().getInstance(UdpBindingServiceFactory.class);
         lock = new ReentrantLock();

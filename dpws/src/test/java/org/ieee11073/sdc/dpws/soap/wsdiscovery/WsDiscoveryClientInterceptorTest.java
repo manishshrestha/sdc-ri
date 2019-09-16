@@ -25,8 +25,8 @@ import org.ieee11073.sdc.dpws.soap.wsdiscovery.model.ProbeMatchType;
 import org.ieee11073.sdc.dpws.soap.wsdiscovery.model.ProbeMatchesType;
 import org.ieee11073.sdc.dpws.soap.wsdiscovery.model.ResolveMatchType;
 import org.ieee11073.sdc.dpws.soap.wsdiscovery.model.ResolveMatchesType;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import javax.annotation.Nullable;
 import javax.xml.namespace.QName;
@@ -35,7 +35,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class WsDiscoveryClientInterceptorTest extends DpwsTest {
     private List<SoapMessage> sentSoapMessages;
@@ -51,7 +51,7 @@ public class WsDiscoveryClientInterceptorTest extends DpwsTest {
     private NotificationSink notificationSink;
 
     @Override
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         super.setUp();
 

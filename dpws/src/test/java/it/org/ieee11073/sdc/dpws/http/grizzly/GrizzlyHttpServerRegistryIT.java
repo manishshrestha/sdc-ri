@@ -1,6 +1,7 @@
 package it.org.ieee11073.sdc.dpws.http.grizzly;
 
 import com.google.common.collect.Iterables;
+import it.org.ieee11073.sdc.dpws.LoggingTestWatcher;
 import org.glassfish.grizzly.http.server.HttpServer;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
 import org.ieee11073.sdc.dpws.DpwsTest;
@@ -14,23 +15,26 @@ import org.ieee11073.sdc.dpws.soap.exception.MarshallingException;
 import org.ieee11073.sdc.dpws.soap.exception.TransportException;
 import org.ieee11073.sdc.dpws.soap.factory.EnvelopeFactory;
 import org.ieee11073.sdc.dpws.soap.factory.SoapMessageFactory;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.net.URI;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
-import static org.junit.Assert.*;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.*;
 
+@ExtendWith(LoggingTestWatcher.class)
 public class GrizzlyHttpServerRegistryIT extends DpwsTest {
     private GrizzlyHttpServerRegistry httpServerRegistry;
     private TransportBindingFactory transportBindingFactory;
     private SoapMessageFactory soapMessageFactory;
     private EnvelopeFactory envelopeFactory;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         super.setUp();
 
