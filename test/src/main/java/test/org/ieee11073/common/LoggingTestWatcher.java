@@ -1,4 +1,4 @@
-package it.org.ieee11073.sdc.dpws;
+package test.org.ieee11073.common;
 
 import java.util.Optional;
 

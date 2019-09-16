@@ -5,7 +5,6 @@ import com.google.common.util.concurrent.SettableFuture;
 import dpws_test_service.messages._2017._05._10.ObjectFactory;
 import dpws_test_service.messages._2017._05._10.TestNotification;
 import it.org.ieee11073.sdc.dpws.IntegrationTestUtil;
-import it.org.ieee11073.sdc.dpws.LoggingTestWatcher;
 import it.org.ieee11073.sdc.dpws.MockedUdpBindingModule;
 import it.org.ieee11073.sdc.dpws.TestServiceMetadata;
 import org.ieee11073.sdc.dpws.client.DiscoveredDevice;
@@ -29,6 +28,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import test.org.ieee11073.common.LoggingTestWatcher;
 import test.org.ieee11073.common.TestLogging;
 
 import java.net.InetAddress;

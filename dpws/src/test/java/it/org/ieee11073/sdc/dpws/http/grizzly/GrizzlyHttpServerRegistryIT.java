@@ -1,7 +1,6 @@
 package it.org.ieee11073.sdc.dpws.http.grizzly;
 
 import com.google.common.collect.Iterables;
-import it.org.ieee11073.sdc.dpws.LoggingTestWatcher;
 import org.glassfish.grizzly.http.server.HttpServer;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
 import org.ieee11073.sdc.dpws.DpwsTest;
@@ -18,6 +17,7 @@ import org.ieee11073.sdc.dpws.soap.factory.SoapMessageFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import test.org.ieee11073.common.LoggingTestWatcher;
 
 import java.net.URI;
 import java.util.concurrent.atomic.AtomicBoolean;

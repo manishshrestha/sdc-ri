@@ -2,7 +2,6 @@ package it.org.ieee11073.sdc.dpws.udp;
 
 import com.google.common.util.concurrent.SettableFuture;
 import it.org.ieee11073.sdc.dpws.IntegrationTestUtil;
-import it.org.ieee11073.sdc.dpws.LoggingTestWatcher;
 import org.ieee11073.sdc.dpws.DpwsConstants;
 import org.ieee11073.sdc.dpws.soap.wsdiscovery.WsDiscoveryConstants;
 import org.ieee11073.sdc.dpws.udp.UdpBindingService;
@@ -11,6 +10,7 @@ import org.ieee11073.sdc.dpws.udp.factory.UdpBindingServiceFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import test.org.ieee11073.common.LoggingTestWatcher;
 
 import java.io.IOException;
 import java.net.InetAddress;
