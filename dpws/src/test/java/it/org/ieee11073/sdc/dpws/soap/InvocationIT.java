@@ -9,6 +9,7 @@ import dpws_test_service.messages._2017._05._10.TestNotification;
 import dpws_test_service.messages._2017._05._10.TestOperationRequest;
 import dpws_test_service.messages._2017._05._10.TestOperationResponse;
 import it.org.ieee11073.sdc.dpws.IntegrationTestUtil;
+import it.org.ieee11073.sdc.dpws.MockedUdpBindingModule;
 import it.org.ieee11073.sdc.dpws.TestServiceMetadata;
 import org.ieee11073.sdc.dpws.guice.DefaultDpwsConfigModule;
 import org.ieee11073.sdc.dpws.service.HostedServiceProxy;
@@ -54,14 +55,14 @@ public class InvocationIT {
 
         factory = new ObjectFactory();
 
-        devicePeer = new BasicPopulatedDevice();
+        devicePeer = new BasicPopulatedDevice(new MockedUdpBindingModule());
         clientPeer = new ClientPeer(new DefaultDpwsConfigModule() {
             @Override
             public void customConfigure() {
                 bind(SoapConfig.JAXB_CONTEXT_PATH, String.class,
                         TestServiceMetadata.JAXB_CONTEXT_PATH);
             }
-        });
+        }, new MockedUdpBindingModule());
         devicePeer.startAsync().awaitRunning();
         clientPeer.startAsync().awaitRunning();
 

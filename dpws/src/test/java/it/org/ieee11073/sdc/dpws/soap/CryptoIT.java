@@ -5,6 +5,7 @@ import com.google.common.util.concurrent.SettableFuture;
 import dpws_test_service.messages._2017._05._10.ObjectFactory;
 import dpws_test_service.messages._2017._05._10.TestNotification;
 import it.org.ieee11073.sdc.dpws.IntegrationTestUtil;
+import it.org.ieee11073.sdc.dpws.MockedUdpBindingModule;
 import it.org.ieee11073.sdc.dpws.TestServiceMetadata;
 import org.ieee11073.sdc.dpws.client.DiscoveredDevice;
 import org.ieee11073.sdc.dpws.crypto.CryptoConfig;
@@ -84,7 +85,7 @@ public class CryptoIT {
                 bind(DeviceConfig.UNSECURED_ENDPOINT, Boolean.class, false);
                 bind(DeviceConfig.SECURED_ENDPOINT, Boolean.class, true);
             }
-        });
+        }, new MockedUdpBindingModule());
 
         final CryptoSettings clientCryptoSettings = Ssl.setupClient();
         try {
@@ -97,7 +98,7 @@ public class CryptoIT {
                     bind(SoapConfig.JAXB_CONTEXT_PATH, String.class,
                             TestServiceMetadata.JAXB_CONTEXT_PATH);
                 }
-            });
+            }, new MockedUdpBindingModule());
         } catch (Exception e) {
             e.printStackTrace();
         }
