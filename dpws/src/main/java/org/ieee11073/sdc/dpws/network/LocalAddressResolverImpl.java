@@ -1,4 +1,4 @@
-package org.ieee11073.sdc.dpws.ni;
+package org.ieee11073.sdc.dpws.network;
 
 import com.google.inject.Inject;
 import org.slf4j.Logger;
@@ -8,7 +8,7 @@ import java.net.*;
 import java.util.Optional;
 
 /**
- * Default implementation of {@link LocalAddressResolver}.
+ * Default implementation of {@linkplain LocalAddressResolver}.
  */
 public class LocalAddressResolverImpl implements LocalAddressResolver {
     private static final Logger LOG = LoggerFactory.getLogger(LocalAddressResolverImpl.class);

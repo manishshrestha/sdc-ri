@@ -5,9 +5,9 @@ package org.ieee11073.sdc.dpws.udp;
  */
 public interface UdpMessageReceiverCallback {
     /**
-     * Receive incoming UDP message.
-     *
-     * @param udpMessage Raw data.
+     * Receive one incoming UDP message.
+     * @param udpMessage UDP data as received from the network. The message contains the payload as well as the sender's
+     *                   address and port.
      */
     void receive(UdpMessage udpMessage);
 }

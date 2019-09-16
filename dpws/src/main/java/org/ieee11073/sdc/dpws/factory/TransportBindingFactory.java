@@ -5,28 +5,30 @@ import org.ieee11073.sdc.dpws.TransportBinding;
 import java.net.URI;
 
 /**
- * Factory to create {@link TransportBinding} instances.
+ * Factory to create {@linkplain TransportBinding} instances.
+ * <p>
+ * {@link TransportBinding} instances can be used to request any DPWS compatible endpoints.
  */
 public interface TransportBindingFactory {
 
     /**
      * Generic factory method to create a binding on the basis of a URI.
-     *
-     * Please note that, depending on the implementation, some bindings are not supported. In this case an
+     * <p>
+     * Please note that - depending on the implementation - bindings are not supported. In this case an
      * {@link UnsupportedOperationException} is thrown.
      *
-     * @param endpointUri The URI to create a binding to.
-     * @return A transport binding bound to endpointUri.
-     * @throws UnsupportedOperationException If the URI scheme is not supported.
+     * @param endpointUri the URI to create a binding to.
+     * @return a transport binding bound to endpointUri.
+     * @throws UnsupportedOperationException if the URI scheme is not supported.
      */
     TransportBinding createTransportBinding(URI endpointUri) throws UnsupportedOperationException;
 
     /**
-     * Create an HTTP or HTTPS binding.
+     * Creates an HTTP or HTTPS binding.
      *
-     * @param endpointUri A valid HTTP/HTTPS URI to create a binding to.
-     * @return A transport binding bound to endpointUri.
-     * @throws UnsupportedOperationException If the URI scheme type is not supported.
+     * @param endpointUri a valid HTTP/HTTPS URI to create a binding to.
+     * @return a transport binding bound to endpointUri.
+     * @throws UnsupportedOperationException if the URI scheme type is not supported.
      */
     TransportBinding createHttpBinding(URI endpointUri) throws UnsupportedOperationException;
 }

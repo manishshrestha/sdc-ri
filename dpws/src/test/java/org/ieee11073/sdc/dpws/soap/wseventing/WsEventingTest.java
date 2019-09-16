@@ -11,7 +11,7 @@ import org.ieee11073.sdc.dpws.factory.TransportBindingFactory;
 import org.ieee11073.sdc.dpws.http.HttpServerRegistry;
 import org.ieee11073.sdc.dpws.model.HostedServiceType;
 import org.ieee11073.sdc.dpws.model.ObjectFactory;
-import org.ieee11073.sdc.dpws.ni.LocalAddressResolver;
+import org.ieee11073.sdc.dpws.network.LocalAddressResolver;
 import org.ieee11073.sdc.dpws.service.factory.HostedServiceFactory;
 import org.ieee11073.sdc.dpws.soap.*;
 import org.ieee11073.sdc.dpws.soap.factory.RequestResponseClientFactory;

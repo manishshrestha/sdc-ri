@@ -28,7 +28,9 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * Server interceptor for hosting services that serves as a {@link HostingService} implementation at the same time.
+ * Server interceptor for hosting services to serve WS-TransferGet requests.
+ * <p>
+ * {@linkplain HostingServiceInterceptor} acts as a {@link HostingService} implementation at the same time.
  */
 public class HostingServiceInterceptor implements HostingService {
     private static final Logger LOG = LoggerFactory.getLogger(HostingServiceInterceptor.class);

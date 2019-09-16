@@ -23,9 +23,9 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 /**
- * Receive and send WS-Discovery SOAP messages via UDP at the device side.
- *
- * To receive {@link UdpMessage} instances, {@linkplain DiscoveryDeviceUdpMessageProcessor} shall be registered at a
+ * Message processor that receives and sends WS-Discovery SOAP messages via UDP at the device side.
+ * <p>
+ * To receive {@link UdpMessage} instances, {@linkplain DiscoveryDeviceUdpMessageProcessor} needs to be registered at a
  * {@link UdpMessageQueueService} by using
  * {@link UdpMessageQueueService#registerUdpMessageQueueObserver(UdpMessageQueueObserver)}.
  */

@@ -5,7 +5,7 @@ import org.ieee11073.sdc.common.event.AbstractEventMessage;
 import java.net.URI;
 
 /**
- * Provide device proxy information that is delivered through a Bye message or a watchdog timeout.
+ * Provides device proxy information that is delivered through a Bye message or a watchdog timeout.
  */
 public class DeviceLeftMessage extends AbstractEventMessage<URI> {
     private final TriggeredBy triggeredBy;

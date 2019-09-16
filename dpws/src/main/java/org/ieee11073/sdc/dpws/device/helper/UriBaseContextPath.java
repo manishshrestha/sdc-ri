@@ -4,13 +4,13 @@ import java.net.URI;
 import java.util.Optional;
 
 /**
- * Extracts a base path for from an URI to be used with HTTP addresses.
+ * Helper to extract a base path from an URI.
  */
 public class UriBaseContextPath {
     final String basePath;
 
     /**
-     * Accepts an URI and tries to cut out the base path on construction.
+     * Constructor that accepts an URI and tries to cut out the base path on construction.
      *
      * @param uri the inspected URI.
      */
@@ -19,7 +19,7 @@ public class UriBaseContextPath {
     }
 
     /**
-     * Gets extracted base path.
+     * Gets the extracted base path.
      *
      * @return the base path or an empty string if the parser was not able to find a base path.
      */

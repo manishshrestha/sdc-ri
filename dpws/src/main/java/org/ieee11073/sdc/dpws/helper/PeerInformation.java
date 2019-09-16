@@ -10,34 +10,29 @@ public class PeerInformation {
     private final String localHost;
 
     /**
-     * Create instance with given remote address and local hostname/address.
-     * @param remoteAddress The remote address of the remote peer.
-     * @param localHost The local hostname/address that is used to communicate with remoteAddress.
+     * Creates instance with given remote address and local hostname/address.
+     *
+     * @param remoteAddress the remote address of the remote peer.
+     * @param localHost the local hostname/address that is used to communicate with remoteAddress.
      */
     public PeerInformation(URI remoteAddress, String localHost) {
         this.remoteAddress = remoteAddress;
         this.localHost = localHost;
     }
 
-    /**
-     * @return remote address of peer connection.
-     */
     public URI getRemoteAddress() {
         return remoteAddress;
     }
 
-    /**
-     * @return local hostname/address of peer connection.
-     */
     public String getLocalHost() {
         return localHost;
     }
 
     /**
-     * Compare two peer objects to equality.
+     * Compares two peer objects with each other.
      *
-     * @param o The object to compare against.
-     * @return Return true if remote address and local hostname/address are equal, otherwise false.
+     * @param o the object to compare against.
+     * @return true if the remote address and local hostname/address are equal, otherwise false.
      */
     @Override
     public boolean equals(Object o) {

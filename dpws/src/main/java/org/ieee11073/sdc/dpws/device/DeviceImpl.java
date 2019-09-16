@@ -6,19 +6,19 @@ import com.google.inject.Inject;
 import com.google.inject.Provider;
 import com.google.inject.name.Named;
 import org.ieee11073.sdc.common.helper.StreamUtil;
-import org.ieee11073.sdc.dpws.DiscoveryUdpQueue;
 import org.ieee11073.sdc.dpws.DpwsConstants;
 import org.ieee11073.sdc.dpws.device.helper.ByteResourceHandler;
 import org.ieee11073.sdc.dpws.device.helper.DiscoveryDeviceUdpMessageProcessor;
 import org.ieee11073.sdc.dpws.device.helper.RequestResponseServerHttpHandler;
 import org.ieee11073.sdc.dpws.device.helper.UriBaseContextPath;
 import org.ieee11073.sdc.dpws.device.helper.factory.DeviceHelperFactory;
+import org.ieee11073.sdc.dpws.guice.DiscoveryUdpQueue;
 import org.ieee11073.sdc.dpws.helper.factory.DpwsHelperFactory;
 import org.ieee11073.sdc.dpws.http.HttpServerRegistry;
 import org.ieee11073.sdc.dpws.http.HttpUriBuilder;
 import org.ieee11073.sdc.dpws.model.ThisDeviceType;
 import org.ieee11073.sdc.dpws.model.ThisModelType;
-import org.ieee11073.sdc.dpws.ni.NetworkInterfaceUtil;
+import org.ieee11073.sdc.dpws.network.NetworkInterfaceUtil;
 import org.ieee11073.sdc.dpws.service.HostedService;
 import org.ieee11073.sdc.dpws.service.HostedServiceInterceptor;
 import org.ieee11073.sdc.dpws.service.HostingService;
@@ -44,11 +44,15 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.URI;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+/**
+ * Default implementation of {@linkplain Device}, {@linkplain DiscoveryAccess} and {@linkplain HostingServiceAccess}.
+ * <p>
+ * todo DGr no support for hosting and hosted services being updated during runtime.
+ */
 public class DeviceImpl extends AbstractIdleService implements Device, Service, DiscoveryAccess, HostingServiceAccess {
     private static final Logger LOG = LoggerFactory.getLogger(DeviceImpl.class);
 

@@ -10,9 +10,11 @@ import org.ieee11073.sdc.dpws.soap.wsdiscovery.WsDiscoveryTargetService;
  */
 public interface HostedServiceInterceptorFactory {
     /**
-     * @param hostedService hosted service to create interceptor for
-     * @param targetService matching {@link WsDiscoveryTargetService}
-     * @return interceptor for given hosted service.
+     * Creates a hosted service interceptor.
+     *
+     * @param hostedService hosted service to create the interceptor for.
+     * @param targetService the {@link WsDiscoveryTargetService} that is used to resolve hosting service types.
+     * @return an interceptor for given hosted service.
      */
     HostedServiceInterceptor createHostedServiceInterceptor(@Assisted HostedService hostedService,
                                                             @Assisted WsDiscoveryTargetService targetService);

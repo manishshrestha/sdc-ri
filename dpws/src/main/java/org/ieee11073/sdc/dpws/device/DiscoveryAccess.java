@@ -5,7 +5,7 @@ import java.net.URI;
 import java.util.List;
 
 /**
- * Interface to set discovery metadata provided by a {@link Device}.
+ * Interface to set discovery metadata provided by a {@linkplain Device}.
  */
 public interface DiscoveryAccess {
     /**

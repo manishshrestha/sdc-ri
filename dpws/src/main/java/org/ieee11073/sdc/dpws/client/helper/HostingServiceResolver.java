@@ -13,7 +13,7 @@ import org.ieee11073.sdc.dpws.factory.TransportBindingFactory;
 import org.ieee11073.sdc.dpws.guice.NetworkJobThreadPool;
 import org.ieee11073.sdc.dpws.http.HttpUriBuilder;
 import org.ieee11073.sdc.dpws.model.*;
-import org.ieee11073.sdc.dpws.ni.LocalAddressResolver;
+import org.ieee11073.sdc.dpws.network.LocalAddressResolver;
 import org.ieee11073.sdc.dpws.service.HostedServiceProxy;
 import org.ieee11073.sdc.dpws.service.HostingServiceProxy;
 import org.ieee11073.sdc.dpws.service.factory.HostedServiceFactory;

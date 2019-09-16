@@ -6,7 +6,7 @@ import org.ieee11073.sdc.dpws.client.event.DeviceProbeTimeoutMessage;
 import org.ieee11073.sdc.dpws.client.event.ProbedDeviceFoundMessage;
 
 /**
- * Indicate class as a discovery observer.
+ * Indicates class as a discovery observer.
  *
  * Annotate method with {@link com.google.common.eventbus.Subscribe} to
  *

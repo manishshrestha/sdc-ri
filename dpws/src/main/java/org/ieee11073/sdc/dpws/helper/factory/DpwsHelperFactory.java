@@ -9,10 +9,10 @@ import org.ieee11073.sdc.dpws.udp.UdpMessageQueueService;
  */
 public interface DpwsHelperFactory {
     /**
-     * Create {@linkplain NotificationSourceUdpCallback} instance.
+     * Creates a {@linkplain NotificationSourceUdpCallback} instance.
      *
-     * @param msgQueue UDP message queue to send SOAP messages to network.
-     * @return a configured {@link NotificationSourceUdpCallback} instance
+     * @param msgQueue UDP message queue to send SOAP messages over UDP.
+     * @return a configured {@link NotificationSourceUdpCallback} instance.
      */
     NotificationSourceUdpCallback createNotificationSourceUdpCallback(@Assisted UdpMessageQueueService msgQueue);
 }

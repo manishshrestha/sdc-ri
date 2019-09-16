@@ -8,7 +8,7 @@ import org.ieee11073.sdc.common.helper.StreamUtil;
 import java.io.IOException;
 
 /**
- * Supports generation of server and client SSL configuration.
+ * Supports generation of server and client SSL configurations.
  * <p>
  * Can either generate default configurations or derive configurations based on {@link CryptoSettings} objects.
  */
@@ -25,7 +25,8 @@ public class CryptoConfigurator {
      * <p>
      * The {@linkplain SslConfigurator} object can be used, e.g., with Jersey clients.
      *
-     * @param cryptoSettings the crypto settings. Please note that key store files take precedence over key store streams.
+     * @param cryptoSettings the crypto settings.
+     *                       Please note that key store files take precedence over key store streams.
      * @return an SSL configurator matching the given crypto settings.
      */
     public SslConfigurator createSslConfiguratorFromCryptoConfig(CryptoSettings cryptoSettings) {
@@ -78,7 +79,8 @@ public class CryptoConfigurator {
      * <p>
      * The {@linkplain SSLContextConfigurator} object can be used, e.g., with Grizzly servers.
      *
-     * @param cryptoSettings the crypto settings. Please note that key store files take precedence over key store streams.
+     * @param cryptoSettings the crypto settings.
+     *                       Please note that key store files take precedence over key store streams.
      * @return configured {@linkplain SSLContextConfigurator} instance.
      */
     public SSLContextConfigurator createSslContextConfiguratorFromCryptoConfig(CryptoSettings cryptoSettings) {

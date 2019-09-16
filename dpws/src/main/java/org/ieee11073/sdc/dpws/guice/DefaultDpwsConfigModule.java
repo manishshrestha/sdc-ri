@@ -16,8 +16,8 @@ import java.time.Duration;
 /**
  * Default configuration module to configure {@link DefaultDpwsModule}.
  * <p>
- * Derive from this class to override default configuration values. Use {@link #bind(String, Class, Object)}
- * to set your default values.
+ * Derive from this class to override default configuration values.
+ * Use {@link #bind(String, Class, Object)} to set your default values.
  */
 public class DefaultDpwsConfigModule extends AbstractConfigurationModule {
     @Override
