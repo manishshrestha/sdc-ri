@@ -1,6 +1,6 @@
 package org.ieee11073.sdc.dpws;
 
-import org.ieee11073.sdc.dpws.ni.LocalAddressResolver;
+import org.ieee11073.sdc.dpws.network.LocalAddressResolver;
 
 import java.net.URI;
 import java.util.Optional;

@@ -7,13 +7,12 @@ import org.ieee11073.sdc.dpws.soap.wsaddressing.model.EndpointReferenceType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.net.*;
-import java.util.Collections;
-import java.util.List;
+import java.net.InetAddress;
+import java.net.NetworkInterface;
 import java.util.UUID;
 
 /**
- * If no device configuration is given, this class will be used as a default.
+ * Default device settings if none are injected to a {@linkplain Device}.
  */
 public class DefaultDeviceSettings implements DeviceSettings {
     private static final Logger LOG = LoggerFactory.getLogger(DefaultDeviceSettings.class);

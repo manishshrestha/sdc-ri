@@ -9,9 +9,9 @@ import java.net.URI;
 import java.util.List;
 
 /**
- * Hosting service interface.
+ * Hosting service information of a device.
  * <p>
- * The hosting service depends on WS-Discovery target service information.
+ * The hosting service information is tightly coupled to the WS-Discovery target service information.
  */
 public interface HostingService extends Interceptor {
     /**

@@ -11,17 +11,16 @@ import java.net.URI;
 /**
  * Core class to access DPWS client functionality.
  * <p>
- * Before access to client functions can be granted, make sure to start the client service by using
- * {@link #startAsync()}. Use {@link #stopAsync()} to stop the client service.
+ * Before access to client functions can be established, make sure to start the client service by using
+ * {@link #startAsync()}.
+ * Use {@link #stopAsync()} to stop the client service.
  * <p>
- * <i>Important note: in case the client does not work, did you start the {@link org.ieee11073.sdc.dpws.DpwsFramework}?</i>
+ * <em>Important note: in case the client does not work, check if your code starts the
+ * {@link org.ieee11073.sdc.dpws.DpwsFramework} in advance.</em>
  */
 public interface Client extends Service {
     /**
      * Subscribes to discovery events.
-     * <p>
-     * Discovery events are fired after {@link #probe(DiscoveryFilter)} calls as well as through Hello and Bye
-     * messages sent by any devices.
      *
      * @param observer the observer that is supposed to receive events.
      */
@@ -37,8 +36,9 @@ public interface Client extends Service {
     /**
      * Probes for devices.
      * <p>
-     * This method synchronously sends a WS-Discovery Probe. All parties that subscribed to event messages by using
-     * {@link #registerDiscoveryObserver(DiscoveryObserver)} will be notified on found devices and probe ending.
+     * This method synchronously sends a WS-Discovery Probe.
+     * All parties that subscribed to event messages by using {@link #registerDiscoveryObserver(DiscoveryObserver)}
+     * will be notified on found devices and probe ending.
      *
      * @param discoveryFilter types and scopes the discovery process shall filter against.
      * @throws TransportException if probe cannot be sent.
@@ -70,7 +70,7 @@ public interface Client extends Service {
      * <p>
      * This function requires a fully populated {@link DiscoveredDevice} including XAddrs.
      * <p>
-     * By saying connect, this method resolves a hosting service by using WS-TransferGet and hosted service information
+     * By saying connect this method resolves a hosting service by using WS-TransferGet and hosted service information
      * by using WS-MetadataExchange.
      *
      * @param discoveredDevice a fully populated {@link DiscoveredDevice}.

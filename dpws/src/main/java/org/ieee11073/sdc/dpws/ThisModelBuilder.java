@@ -12,10 +12,19 @@ import java.util.List;
 public class ThisModelBuilder {
     private final ThisModelType thisModel;
 
+    /**
+     * Default constructor.
+     */
     public ThisModelBuilder() {
         thisModel = (new ObjectFactory()).createThisModelType();
     }
 
+    /**
+     * Constructor with predefined manufacturer and model name.
+     *
+     * @param manufacturer the manufacturer name.
+     * @param modelName the model name.
+     */
     public ThisModelBuilder(List<LocalizedStringType> manufacturer,
                             List<LocalizedStringType> modelName) {
         this();
@@ -53,6 +62,11 @@ public class ThisModelBuilder {
         return this;
     }
 
+    /**
+     * Gets the actual model type.
+     *
+     * @return the internally stored model type. Caution: changes afterwards in the fluent interface will affect this returned value.
+     */
     public ThisModelType get() {
         return thisModel;
     }

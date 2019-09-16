@@ -20,7 +20,7 @@ public class LocalizedStringsBuilder {
     private final List<LocalizedStringType> localizedStringTypes;
 
     /**
-     * Create instance with empty localized string list.
+     * Creates an instance with empty localized string list.
      */
     public LocalizedStringsBuilder() {
         objectFactory = new ObjectFactory();
@@ -28,19 +28,19 @@ public class LocalizedStringsBuilder {
     }
 
     /**
-     * Create instance with one text in default language.
+     * Creates an instance with one text in default language.
      *
-     * @param text Text of the first element in the localized string list.
+     * @param text the text of the first element in the localized string list.
      */
     public LocalizedStringsBuilder(String text) {
         this(null, text);
     }
 
     /**
-     * Create instance with one text in specified language.
+     * Creates an instance with one text in a specified language.
      *
-     * @param locale Locale identifier in accordance to XML xml:lang specification. Omitted if null.
-     * @param text   Text of the first element in the localized string list.
+     * @param locale the locale identifier in accordance to XML xml:lang specification. Default is used if null.
+     * @param text   the text of the first element in the localized string list.
      */
     public LocalizedStringsBuilder(@Nullable String locale, String text) {
         this();
@@ -48,21 +48,21 @@ public class LocalizedStringsBuilder {
     }
 
     /**
-     * Add text in default language.
+     * Adds a text in default language.
      *
-     * @param text The text to add.
-     * @return The object where the text was added to chain multiple calls.
+     * @param text the text to add.
+     * @return the object where the text was added to chain multiple calls.
      */
     public LocalizedStringsBuilder add(String text) {
         return add(null, text);
     }
 
     /**
-     * Add text with specified language.
+     * Adds a text with specified language.
      *
-     * @param lang Locale identifier in accordance to XML xml:lang specification. Omitted if null.
-     * @param text The text to add.
-     * @return The object where the text was added to chain multiple calls.
+     * @param lang locale identifier in accordance to XML xml:lang specification. Default is used if null.
+     * @param text the text to add.
+     * @return the object where the text was added to chain multiple calls.
      */
     public LocalizedStringsBuilder add(@Nullable String lang, String text) {
         LocalizedStringType localizedStringType = objectFactory.createLocalizedStringType();
@@ -74,6 +74,8 @@ public class LocalizedStringsBuilder {
     }
 
     /**
+     * Gets the actual localized texts.
+     *
      * @return copy of the current localized string list.
      */
     public List<LocalizedStringType> get() {
@@ -81,9 +83,9 @@ public class LocalizedStringsBuilder {
     }
 
     /**
-     * Reset current localized string buffer.
+     * Resets current localized string buffer.
      *
-     * @return reset localized string buffer
+     * @return this instance with reset localized string buffer.
      */
     public LocalizedStringsBuilder clear() {
         localizedStringTypes.clear();

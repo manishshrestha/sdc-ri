@@ -6,7 +6,8 @@ package org.ieee11073.sdc.dpws.device;
 public class DeviceConfig {
     /**
      * Configure to provide an unsecured endpoint.
-     *
+     * <p>
+     * The configuration can be used together with {@link #SECURED_ENDPOINT}.
      * <ul>
      * <li>Data type: {@linkplain Boolean}
      * <li>Use: optional
@@ -16,7 +17,8 @@ public class DeviceConfig {
 
     /**
      * Configure to provide a secured endpoint.
-     *
+     * <p>
+     * The configuration can be used together with {@link #UNSECURED_ENDPOINT}.
      * <ul>
      * <li>Data type: {@linkplain Boolean}
      * <li>Use: optional

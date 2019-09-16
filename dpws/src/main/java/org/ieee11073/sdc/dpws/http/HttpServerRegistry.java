@@ -1,8 +1,8 @@
 package org.ieee11073.sdc.dpws.http;
 
 import com.google.common.util.concurrent.Service;
-import org.ieee11073.sdc.dpws.soap.TransportInfo;
 import org.ieee11073.sdc.dpws.soap.SoapConstants;
+import org.ieee11073.sdc.dpws.soap.TransportInfo;
 
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -10,53 +10,59 @@ import java.net.URI;
 
 /**
  * Simple HTTP server registry service.
- *
- * Create HTTP server on demand given a dedicated configuration and registerOrUpdate handlers for context paths.
- *
- * For proper shutdown of all servers, {@link Service#stopAsync()} should be called.
+ * <p>
+ * Creates HTTP servers and registers handlers for context paths.
+ * For proper shutdown of all servers {@link Service#stopAsync()} should be called.
  */
 public interface HttpServerRegistry extends Service {
-
     /**
-     * Create HTTP server at given URI if not existing, start and return.
-     * @param schemeAndAuthority The scheme and authority where to access the HTTP server. If port number is
-     *                           0, a random open port is selected and part of the returned URI.
-     * @return The actual assigned URI of the HTTP server.
+     * Creates an HTTP server at given URI.
+     * <p>
+     * If there was no running HTTP server found under the passed scheme and authority, this function starts a new one.
+     *
+     * @param schemeAndAuthority the scheme and authority where to access the HTTP server. If port number is
+     *                           0, then a random open port is selected and will be part of the returned URI.
+     * @return the actual assigned URI of the HTTP server.
      */
     URI initHttpServer(URI schemeAndAuthority);
 
     /**
-     * Register handlers for SOAP messsages on context paths for dedicated hosts.
+     * Registers a handler for SOAP messages for the given scheme, authority and context path.
+     * <p>
+     * SOAP messages use the HTTP media type {@link SoapConstants#MEDIA_TYPE_SOAP} for request and response messages.
      *
-     * @param schemeAndAuthority Base address where to deploy the context path.
-     * @param contextPath A context path where the given host shall listen to.
-     *                    The context path needs to start with a slash.
-     * @param handler     Whenever a request to the given context path is done,
-     *                    {@link HttpHandler#process(InputStream, OutputStream, TransportInfo)} is called. Default
-     *                    response media type is {@link SoapConstants#MEDIA_TYPE_SOAP}.
-     * @return Full path of the HTTP server address including host name, port and context path.
+     * @param schemeAndAuthority scheme and authority used to start a new or re-use an existing HTTP server.
+     * @param contextPath        the context path where the given registry shall listen to.<br>
+     *                           <em>Important note: the context path needs to start with a slash.</em>
+     * @param handler            the handler callback that is invoked on a request to the given context path.
+     * @return the actual full path of the HTTP server address the given handler listens to.
+     * @see #initHttpServer(URI)
      */
     URI registerContext(URI schemeAndAuthority, String contextPath, HttpHandler handler);
 
     /**
-     * @param schemeAndAuthority Base address where to deploy the context path.
-     * @param contextPath A context path where the given hosts shall listen on.
-     *                    The context path needs to start with a slash.
-     * @param mediaType   Media type of the response the handler will produce.
-     * @param handler     Whenever a request to the given context path is done,
-     *                    {@link HttpHandler#process(InputStream, OutputStream, TransportInfo)}  is called.
-     * @return Full path of the HTTP server address including host name, port and context path.
+     * Registers a handler for HTTP requests destined to the given scheme, authority and context path.
+     *
+     * @param schemeAndAuthority scheme and authority used to start a new or re-use an existing HTTP server.
+     * @param contextPath        the context path where the given registry shall listen to.<br>
+     *                           <em>Important note: the context path needs to start with a slash.</em>
+     * @param mediaType          the media type of the response the handler will produce.
+     * @param handler            the handler callback that is invoked on a request to the given context path.
+     * @return the actual full path of the HTTP server address the given handler listens to.
+     * @see #initHttpServer(URI)
      */
     URI registerContext(URI schemeAndAuthority, String contextPath, String mediaType, HttpHandler handler);
 
     /**
-     * Remove context path listener.
+     * Removes a handler for the given scheme, authority and context path.
+     * <p>
+     * {@link HttpHandler#process(InputStream, OutputStream, TransportInfo)} will not be called for
+     * any request destined to the corresponding handler.
+     * Requests to the corresponding are answered with an HTTP 404.
      *
-     * After that call no {@link HttpHandler#process(InputStream, OutputStream, TransportInfo)} will be called for
-     * the given context path.
-     *
-     * @param schemeAndAuthority Scheme and authority where the context shall be removed.
-     * @param contextPath The context path to remove.
+     * @param schemeAndAuthority scheme and authority where the context shall be removed.
+     * @param contextPath        the context path to remove.
+     *                           <em>The context path needs to start with a slash.</em>
      */
     void unregisterContext(URI schemeAndAuthority, String contextPath);
 }

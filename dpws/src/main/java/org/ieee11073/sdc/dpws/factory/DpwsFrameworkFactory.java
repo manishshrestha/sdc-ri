@@ -13,13 +13,13 @@ public interface DpwsFrameworkFactory {
     /**
      * Creates a {@code org.ieee11073.sdc.dpws.DpwsFramework} instance bound to the give network interface.
      *
-     * @param networkInterface the network interface to bind to. Binds to localhost if null.
+     * @param networkInterface the network interface to bind to. Binds to the loopback adapter if null.
      * @return the created {@code org.ieee11073.sdc.dpws.DpwsFramework} instance.
      */
     DpwsFramework createDpwsFramework(@Assisted @Nullable NetworkInterface networkInterface);
 
     /**
-     * Creates a {@code org.ieee11073.sdc.dpws.DpwsFramework} instance bound to localhost.
+     * Creates a {@code org.ieee11073.sdc.dpws.DpwsFramework} instance bound to the loopback adapter.
      *
      * @return the created {@code org.ieee11073.sdc.dpws.DpwsFramework} instance.
      */

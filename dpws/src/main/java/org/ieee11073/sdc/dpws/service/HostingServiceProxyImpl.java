@@ -17,7 +17,7 @@ import java.net.URI;
 import java.util.*;
 
 /**
- * Default implementation of {@link HostingServiceProxy}.
+ * Default implementation of {@linkplain HostingServiceProxy}.
  */
 public class HostingServiceProxyImpl implements HostingServiceProxy {
     private final ObjectUtil objectUtil;
@@ -31,17 +31,6 @@ public class HostingServiceProxyImpl implements HostingServiceProxy {
     private final Map<String, HostedServiceProxy> hostedServices;
     private final long metadataVersion;
 
-    /**
-     * @param endpointReferenceAddress
-     * @param types
-     * @param thisDevice
-     * @param thisModel
-     * @param hostedServices           Map of service ids to hosted service proxies
-     * @param metadataVersion
-     * @param requestResponseClient
-     * @param activeXAddr
-     * @param objectUtil
-     */
     @AssistedInject
     HostingServiceProxyImpl(@Assisted("eprAddress") URI endpointReferenceAddress,
                             @Assisted List<QName> types,

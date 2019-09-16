@@ -13,14 +13,14 @@ import java.util.List;
  */
 public interface DeviceSettings {
     /**
-     * The unique and persisted endpoint reference (EPR) of the device.
+     * Gets the unique and persisted endpoint reference (EPR) of the device.
      * 
      * @return the endpoint reference of the device.
      */
     EndpointReferenceType getEndpointReference();
 
     /**
-     * The network interface the device shall bind to.
+     * Gets the network interface the device shall bind to.
      *
      * @return the network interface to bind to.
      */

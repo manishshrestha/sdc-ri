@@ -1,3 +1,6 @@
+/**
+ * Grizzly HTTP server adapter.
+ */
 @ParametersAreNonnullByDefault
 package org.ieee11073.sdc.dpws.http.grizzly;
 

@@ -7,16 +7,21 @@ import javax.annotation.Nullable;
 /**
  * Core class to create a device that exposes itself to the network.
  * <p>
- * First, configure the device appropriately by using {@link #setConfiguration(DeviceSettings)},
- * {@link #getDiscoveryAccess()}, and {@link #getHostingServiceAccess()}. Afterwards, use {@link #startAsync()} to
- * start the device and send a WS-Discovery Hello. To stop the device, invoke {@link #stopAsync()}. This will send a
- * WS-Discovery Bye.
+ * In order to get a device up and running, perform the following steps
+ * <ol>
+ * <li>Configure the device appropriately by using {@link #setConfiguration(DeviceSettings)},
+ * {@link #getDiscoveryAccess()} and {@link #getHostingServiceAccess()}.
+ * <li>Use {@link #startAsync()} to start the device and send a WS-Discovery Hello.
+ * <li>To stop the device, invoke {@link #stopAsync()}. This will send a WS-Discovery Bye.
+ * </ol>
  */
 public interface Device extends Service {
     /**
      * Injects device configuration to be used by the device.
      * <p>
      * The configuration can only be set before the services is started.
+     * <p>
+     * todo DGr create factory that accepts the settings on creation.
      *
      * @param deviceSettings the device settings of the device.
      */
