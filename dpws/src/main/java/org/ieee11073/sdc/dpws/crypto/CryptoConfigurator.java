@@ -8,10 +8,9 @@ import org.ieee11073.sdc.common.helper.StreamUtil;
 import java.io.IOException;
 
 /**
- * Supports generation of server and client SSL configuration.
- *
+ * Supports generation of server and client SSL configurations.
+ * <p>
  * Can either generate default configurations or derive configurations based on {@link CryptoSettings} objects.
- *
  */
 public class CryptoConfigurator {
     private final StreamUtil streamUtil;
@@ -22,10 +21,13 @@ public class CryptoConfigurator {
     }
 
     /**
-     * Accept a {@link CryptoSettings} object and create an {@linkplain SslConfigurator} object to be used, e.g., with
-     * Jersey clients.
+     * Accepts a {@link CryptoSettings} object and creates an {@linkplain SslConfigurator} object.
+     * <p>
+     * The {@linkplain SslConfigurator} object can be used, e.g., with Jersey clients.
      *
-     * @param cryptoSettings Key store file takes precedence over key store stream.
+     * @param cryptoSettings the crypto settings.
+     *                       Please note that key store files take precedence over key store streams.
+     * @return an SSL configurator matching the given crypto settings.
      */
     public SslConfigurator createSslConfiguratorFromCryptoConfig(CryptoSettings cryptoSettings) {
         final SslConfigurator sslConfig = SslConfigurator.newInstance(false);
@@ -62,19 +64,24 @@ public class CryptoConfigurator {
     }
 
     /**
-     * Create a default {@linkplain SslConfigurator} object based on system properties to be used, e.g., with Jersey
-     * clients.
+     * Creates a default {@linkplain SslConfigurator} object based on system properties.
+     * <p>
+     * The {@linkplain SslConfigurator} object can be used, e.g., with Jersey clients.
+     *
+     * @return an SSL configurator with default crypto settings.
      */
     public SslConfigurator createSslConfiguratorFromSystemProperties() {
         return SslConfigurator.newInstance(true);
     }
 
     /**
-     * Accept a {@link CryptoSettings} object and create an {@linkplain SSLContextConfigurator} object to be used, e.g.,
-     * with Grizzly servers.
+     * Accepts a {@link CryptoSettings} object and creates an {@linkplain SSLContextConfigurator} object.
+     * <p>
+     * The {@linkplain SSLContextConfigurator} object can be used, e.g., with Grizzly servers.
      *
-     * @param cryptoSettings Key store file takes precedence over key store stream.
-     * @return configured SSLContextConfigurator instance
+     * @param cryptoSettings the crypto settings.
+     *                       Please note that key store files take precedence over key store streams.
+     * @return configured {@linkplain SSLContextConfigurator} instance.
      */
     public SSLContextConfigurator createSslContextConfiguratorFromCryptoConfig(CryptoSettings cryptoSettings) {
         final SSLContextConfigurator sslConfig = new SSLContextConfigurator(false);
@@ -111,8 +118,11 @@ public class CryptoConfigurator {
     }
 
     /**
-     * Create a default {@linkplain SSLContextConfigurator} object based on system properties to be used, e.g., with
-     * Grizzly servers.
+     * Creates a default {@linkplain SSLContextConfigurator} object based on system properties.
+     * <p>
+     * The {@linkplain SSLContextConfigurator} object can be used, e.g., with Grizzly servers.
+     *
+     * @return configured {@linkplain SSLContextConfigurator} instance.
      */
     public SSLContextConfigurator createSslContextConfiguratorSystemProperties() {
         return new SSLContextConfigurator(true);

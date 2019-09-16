@@ -6,7 +6,10 @@ import org.ieee11073.sdc.dpws.soap.interception.RequestResponseCallback;
 import java.io.Closeable;
 
 /**
- * Interface to create transport bindings of any kind.
+ * Interface to provide transport bindings of any kind.
+ *
+ * @see NotificationCallback
+ * @see RequestResponseCallback
  */
 public interface TransportBinding extends NotificationCallback, RequestResponseCallback, Closeable {
 }

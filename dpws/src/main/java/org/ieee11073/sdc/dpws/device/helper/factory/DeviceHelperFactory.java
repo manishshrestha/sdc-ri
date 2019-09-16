@@ -12,13 +12,13 @@ import org.ieee11073.sdc.dpws.soap.SoapMessage;
 public interface DeviceHelperFactory {
 
     /**
-     * Create {@linkplain DiscoveryDeviceUdpMessageProcessor} instance.
+     * Creates a {@linkplain DiscoveryDeviceUdpMessageProcessor} instance.
      *
-     * @param rrServer           Request response server where to process incoming and outgoing
+     * @param rrServer           request-response server that processes incoming and outgoing
      *                           {@link SoapMessage} instances.
      * @param udpMsgQueueService UDP message queue where to receive incoming UDP messages from and send outgoing UDP
      *                           messages to.
-     * @return a configured {@link DiscoveryDeviceUdpMessageProcessor} instance
+     * @return a configured {@link DiscoveryDeviceUdpMessageProcessor} instance.
      */
     DiscoveryDeviceUdpMessageProcessor createDiscoveryDeviceUdpMessageProcessor(@Assisted RequestResponseServer rrServer,
                                                                                 @Assisted UdpMessageQueueService udpMsgQueueService);

@@ -15,12 +15,11 @@ import org.ieee11073.sdc.dpws.soap.wsmetadataexchange.model.MetadataSection;
 import org.ieee11073.sdc.dpws.soap.wsmetadataexchange.model.ObjectFactory;
 
 import java.net.URI;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
 /**
- * Interceptor to serve GetMetadata requests on hosted services.
+ * Server interceptor to serve GetMetadata requests on hosted services.
  */
 public class HostedServiceInterceptor implements Interceptor {
     private final HostedService hostedService;
@@ -47,13 +46,13 @@ public class HostedServiceInterceptor implements Interceptor {
 
     @MessageInterceptor(value = WsMetadataExchangeConstants.WSA_ACTION_GET_METADATA_REQUEST,
             direction = Direction.REQUEST)
-    InterceptorResult processGetMetadata(RequestResponseObject rrObj) throws SoapFaultException {
+    InterceptorResult processGetMetadata(RequestResponseObject rrObj) {
         GetMetadata body = soapUtil.getBody(rrObj.getRequest(), GetMetadata.class).orElse(null);
 
         Metadata metadata = mexFactory.createMetadata();
         List<MetadataSection> metadataSection = metadata.getMetadataSection();
 
-        // \todo Is host relationship required here? - probably not
+        // \todo DGr is host relationship required here?
         metadataSection.add(metadataSectionUtil.createRelationship(targetService.getEndpointReference(),
                 targetService.getTypes(), Collections.singletonList(hostedService)));
 

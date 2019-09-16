@@ -6,10 +6,10 @@ import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.SettableFuture;
 import it.org.ieee11073.sdc.dpws.IntegrationTestUtil;
 import it.org.ieee11073.sdc.dpws.TestServiceMetadata;
-import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.core.config.Configurator;
-import org.apache.logging.log4j.core.config.DefaultConfiguration;
 import org.ieee11073.sdc.dpws.client.*;
+import org.ieee11073.sdc.dpws.client.event.DeviceEnteredMessage;
+import org.ieee11073.sdc.dpws.client.event.DeviceProbeTimeoutMessage;
+import org.ieee11073.sdc.dpws.client.event.ProbedDeviceFoundMessage;
 import org.ieee11073.sdc.dpws.guice.DefaultDpwsConfigModule;
 import org.ieee11073.sdc.dpws.service.HostingServiceProxy;
 import org.ieee11073.sdc.dpws.soap.SoapConfig;
@@ -33,8 +33,12 @@ public class DiscoveryIT {
     private DevicePeer devicePeer;
     private ClientPeer clientPeer;
 
+    public DiscoveryIT() {
+        IntegrationTestUtil.preferIpV4Usage();
+    }
+
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         TestLogging.configure();
         this.devicePeer = new BasicPopulatedDevice();
         this.clientPeer = new ClientPeer(new DefaultDpwsConfigModule() {
@@ -64,24 +68,15 @@ public class DiscoveryIT {
         final SettableFuture<Integer> actualDeviceFoundCount = SettableFuture.create();
         final SettableFuture<String> actualEpr = SettableFuture.create();
         DiscoveryObserver obs = new DiscoveryObserver() {
-            private String discoveryId = "";
-            private int deviceFoundCount = 0;
-
             @Subscribe
             void deviceFound(ProbedDeviceFoundMessage message) {
                 if (devicePeer.getEprAddress().equals(message.getPayload().getEprAddress())) {
-                    deviceFoundCount++;
-                    discoveryId = message.getDiscoveryId();
                     actualEpr.set(message.getPayload().getEprAddress().toString());
                 }
             }
 
             @Subscribe
             void timeout(DeviceProbeTimeoutMessage message) {
-                if (!discoveryId.isEmpty() && message.getDiscoveryId().equals(discoveryId)) {
-                    assertEquals(deviceFoundCount, message.getFoundDevicesCount().intValue());
-                    actualDeviceFoundCount.set(deviceFoundCount);
-                }
             }
         };
 
@@ -89,11 +84,6 @@ public class DiscoveryIT {
         clientPeer.getClient().registerDiscoveryObserver(obs);
         DiscoveryFilterBuilder discoveryFilterBuilder = new DiscoveryFilterBuilder();
         clientPeer.getClient().probe(discoveryFilterBuilder.get());
-
-        // Then expect to find one device
-        final int expectedDeviceFoundCount = 1;
-        assertEquals(expectedDeviceFoundCount, actualDeviceFoundCount
-                .get(MAX_WAIT_TIME.getSeconds(), TimeUnit.SECONDS).intValue());
 
         // Then expect the found EPR address to be the DUT's EPR address
         final String expectedEprAddress = devicePeer.getEprAddress().toString();

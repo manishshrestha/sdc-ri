@@ -1,9 +1,10 @@
-package org.ieee11073.sdc.dpws.client;
+package org.ieee11073.sdc.dpws.client.event;
 
 import org.ieee11073.sdc.common.event.AbstractEventMessage;
+import org.ieee11073.sdc.dpws.client.DiscoveredDevice;
 
 /**
- * Provide {@link DiscoveredDevice} object that is delivered through a ProbeMatches message for a certain Probe
+ * Provides a {@linkplain DiscoveredDevice} object that is delivered through a ProbeMatches message for a certain Probe
  * request.
  */
 public class ProbedDeviceFoundMessage extends AbstractEventMessage<DiscoveredDevice> {
@@ -15,7 +16,9 @@ public class ProbedDeviceFoundMessage extends AbstractEventMessage<DiscoveredDev
     }
 
     /**
-     * @return discovery identifier of the discovery process that the discovered device relates to.
+     * Gets the discovery identifier of the Probe request that has resolved the discovered device.
+     *
+     * @return the discovery identifier of the discovery process that the discovered device relates to.
      */
     public String getDiscoveryId() {
         return discoveryId;

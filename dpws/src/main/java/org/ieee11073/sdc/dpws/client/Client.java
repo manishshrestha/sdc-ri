@@ -10,73 +10,81 @@ import java.net.URI;
 
 /**
  * Core class to access DPWS client functionality.
- *
- * Before access to client functions can be granted, make sure to start the client service by using
- * {@link #startAsync()}. Use {@link #stopAsync()} to stop the client service.
- *
- * Important note: in case the client does not work, did you start the {@link org.ieee11073.sdc.dpws.DpwsFramework}?
+ * <p>
+ * Before access to client functions can be established, make sure to start the client service by using
+ * {@link #startAsync()}.
+ * Use {@link #stopAsync()} to stop the client service.
+ * <p>
+ * <em>Important note: in case the client does not work, check if your code starts the
+ * {@link org.ieee11073.sdc.dpws.DpwsFramework} in advance.</em>
  */
 public interface Client extends Service {
     /**
-     * Subscribe to discovery events.
+     * Subscribes to discovery events.
      *
-     * Discovery events are fired after {@link #probe(DiscoveryFilter)} calls as well as through Hello and Bye
-     * messages sent by any devices.
+     * @param observer the observer that is supposed to receive events.
      */
     void registerDiscoveryObserver(DiscoveryObserver observer);
 
     /**
-     * Unsubscribe from discovery events.
+     * Unsubscribes from discovery events.
+     *
+     * @param observer the observer that shall not receive events anymore.
      */
     void unregisterDiscoveryObserver(DiscoveryObserver observer);
 
     /**
-     * Probe for devices.
+     * Probes for devices.
+     * <p>
+     * This method synchronously sends a WS-Discovery Probe.
+     * All parties that subscribed to event messages by using {@link #registerDiscoveryObserver(DiscoveryObserver)}
+     * will be notified on found devices and probe ending.
      *
-     * This method synchronously sends a WS-Discovery Probe settled with given filter data. All parties that subscribed
-     * to event messages by using {@link #registerDiscoveryObserver(DiscoveryObserver)}, will be notified on found
-     * devices and probe ending.
-     *
-     * @param discoveryFilter Types and scopes the discovery process shall filter against.
+     * @param discoveryFilter types and scopes the discovery process shall filter against.
+     * @throws TransportException if probe cannot be sent.
      */
     void probe(DiscoveryFilter discoveryFilter) throws TransportException;
 
     /**
-     * Send a directed probe to a specific physical address.
-     *
+     * Sends a directed probe to a specific physical address.
+     * <p>
      * This method is an asynchronous unidirectional call; the result will not be notified to any subscribed parties.
      *
-     * @param xAddr Device's physical address.
+     * @param xAddr the device's physical address.
+     * @return a future that holds the result of the directed probe.
      */
     ListenableFuture<ProbeMatchesType> directedProbe(URI xAddr);
 
     /**
-     * Resolve physical addresses (XAddrs) of a device.
-     *
+     * Resolves physical addresses (XAddrs) of a device.
+     * <p>
      * This method is an asynchronous unidirectional call; the result will not be notified to any subscribed parties.
      *
-     * @param eprAddress Endpoint reference address of the device to resolve.
+     * @param eprAddress the endpoint reference address of the device to resolve.
+     * @return a future that holds the result of the resolve.
      */
     ListenableFuture<DiscoveredDevice> resolve(URI eprAddress);
 
     /**
-     * Connect to a hosting service by using {@link DiscoveredDevice}.
-     *
+     * Connects to a hosting service by using {@link DiscoveredDevice}.
+     * <p>
      * This function requires a fully populated {@link DiscoveredDevice} including XAddrs.
-     *
-     * By saying connect, this method resolves a hosting service by using WS-TransferGet and hosted service information
+     * <p>
+     * By saying connect this method resolves a hosting service by using WS-TransferGet and hosted service information
      * by using WS-MetadataExchange.
      *
-     * @param discoveredDevice A fully populated {@link DiscoveredDevice}.
+     * @param discoveredDevice a fully populated {@link DiscoveredDevice}.
+     * @return a future that holds the result of the connect.
      */
     ListenableFuture<HostingServiceProxy> connect(DiscoveredDevice discoveredDevice);
 
     /**
-     * Connect to a hosting service by using an EPR address.
-     *
+     * Connects to a hosting service by using an EPR address.
+     * <p>
      * Shortcut for first doing a {@link #resolve(URI)} followed by a {@link #connect(DiscoveredDevice)}.
      *
-     * @param eprAddress EPR address of a device.
+     * @param eprAddress the EPR address of a device.
+     * @return a future that holds the result of the connect.
      */
     ListenableFuture<HostingServiceProxy> connect(URI eprAddress);
 }

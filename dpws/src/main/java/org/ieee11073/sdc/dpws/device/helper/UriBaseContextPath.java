@@ -1,27 +1,27 @@
 package org.ieee11073.sdc.dpws.device.helper;
 
-import com.google.inject.Inject;
-
 import java.net.URI;
 import java.util.Optional;
 
 /**
- * Extracts a base path for from an URI to be used with HTTP addresses.
+ * Helper to extract a base path from an URI.
  */
 public class UriBaseContextPath {
     final String basePath;
 
     /**
-     * Accepts an URI and tries to cut out the base path on construction.
+     * Constructor that accepts an URI and tries to cut out the base path on construction.
+     *
+     * @param uri the inspected URI.
      */
     public UriBaseContextPath(URI uri) {
         this.basePath = deriveFrom(uri);
     }
 
     /**
-     * Get extracted base path.
+     * Gets the extracted base path.
      *
-     * If the parser was not able to find a base path, an empty string is returned.
+     * @return the base path or an empty string if the parser was not able to find a base path.
      */
     public String get() {
         return basePath;
@@ -30,7 +30,7 @@ public class UriBaseContextPath {
     private String deriveFrom(URI uri) {
         final Optional<SupportedEprUriScheme> supportedUriScheme =
                 getSupportedScheme(uri.getScheme(), uri.getSchemeSpecificPart());
-        if (!supportedUriScheme.isPresent()) {
+        if (supportedUriScheme.isEmpty()) {
             return "";
         }
         switch (supportedUriScheme.get()) {

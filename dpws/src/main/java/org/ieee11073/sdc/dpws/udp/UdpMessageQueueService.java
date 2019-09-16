@@ -3,41 +3,46 @@ package org.ieee11073.sdc.dpws.udp;
 import com.google.common.util.concurrent.Service;
 
 /**
- * Two message queues to send and receive UDP messages.
- *
- * Use {@link #sendMessage(UdpMessage)} to send a UDP message using the UDP binding set with
+ * Holds two message queues to send and receive UDP messages.
+ * <p>
+ * The {@linkplain UdpMessageQueueService} instance will use the UDP binding set via
  * {@link #setUdpBinding(UdpBindingService)}.
- *
- * Use {@link #registerUdpMessageQueueObserver(UdpMessageQueueObserver)} to add recipients that receive incoming UDP messages caught
- * by UDP binding set with {@link #setUdpBinding(UdpBindingService)}.
+ * <ul>
+ * <li>Use {@link #sendMessage(UdpMessage)} to send a UDP message.
+ * <li>In order to receive messages, add observers to the {@linkplain UdpMessageQueueService} by using
+ * {@link #registerUdpMessageQueueObserver(UdpMessageQueueObserver)}.
+ * </ul>
  */
 public interface UdpMessageQueueService extends Service, UdpMessageReceiverCallback {
     /**
-     * Inject UDP binding service.
+     * Injects the UDP binding service.
+     * <p>
+     * Without a UDP binding service the message queue cannot send and receive messages.
+     * Make sure the UDP binding is injected <em>before</em> the service is started.
      *
-     * The binding service is started on demand.
+     * @param udpBinding the UDP binding service to inject.
      */
     void setUdpBinding(UdpBindingService udpBinding);
 
     /**
-     * Queue outgoing UDP message for sending it using the UDP binding.
+     * Queues an outgoing UDP message.
      *
-     * @param message Message to send.
-     * @return True if message could be queued, otherwise false.
+     * @param message the message to be send.
+     * @return true if the message could be queued, otherwise false (queue overflow).
      */
     boolean sendMessage(UdpMessage message);
 
     /**
-     * Register observer to receive incoming UDP messages.
+     * Registers an observer to receive incoming UDP messages.
      *
-     * @param observer The observer to registerOrUpdate.
+     * @param observer the observer to register.
      */
     void registerUdpMessageQueueObserver(UdpMessageQueueObserver observer);
 
     /**
-     * Unegister observer to stop receiving incoming UDP messages.
+     * Unregisters an observer to stop receiving incoming UDP messages.
      *
-     * @param observer The observer to unregister.
+     * @param observer the observer to unregister.
      */
     void unregisterUdpMessageQueueObserver(UdpMessageQueueObserver observer);
 }

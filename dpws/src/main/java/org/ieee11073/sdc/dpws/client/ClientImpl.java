@@ -3,7 +3,7 @@ package org.ieee11073.sdc.dpws.client;
 import com.google.common.util.concurrent.*;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
-import org.ieee11073.sdc.dpws.DiscoveryUdpQueue;
+import org.ieee11073.sdc.dpws.guice.DiscoveryUdpQueue;
 import org.ieee11073.sdc.dpws.DpwsConfig;
 import org.ieee11073.sdc.dpws.TransportBinding;
 import org.ieee11073.sdc.dpws.client.helper.*;
@@ -38,7 +38,7 @@ import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
 
 /**
- * Default implementation of {@link Client}.
+ * Default implementation of {@linkplain Client}.
  */
 public class ClientImpl extends AbstractIdleService implements Client, Service, HelloByeAndProbeMatchesObserver {
     private static final Logger LOG = LoggerFactory.getLogger(ClientImpl.class);
@@ -105,7 +105,7 @@ public class ClientImpl extends AbstractIdleService implements Client, Service, 
             wsDiscoveryClient.sendProbe(discoveryFilter.getDiscoveryId(), discoveryFilter.getTypes(),
                     discoveryFilter.getScopes());
         } catch (MarshallingException e) {
-            LOG.warn("Marshalling failed while probing for devices", e.getCause());
+            LOG.error("Marshalling failed while probing for devices", e.getCause());
         }
     }
 
@@ -126,11 +126,11 @@ public class ClientImpl extends AbstractIdleService implements Client, Service, 
             final SettableFuture<DiscoveredDevice> deviceSettableFuture = SettableFuture.create();
             final ListenableFuture<ResolveMatchesType> resolveMatchesFuture = wsDiscoveryClient
                     .sendResolve(wsAddressingUtil.createEprWithAddress(eprAddress));
-            Futures.addCallback(resolveMatchesFuture, new FutureCallback<ResolveMatchesType>() {
+            Futures.addCallback(resolveMatchesFuture, new FutureCallback<>() {
                 @Override
                 public void onSuccess(@Nullable ResolveMatchesType resolveMatchesType) {
                     if (resolveMatchesType == null) {
-                        LOG.warn("Received ResolveMatches with empty payload.");
+                        LOG.warn("Received ResolveMatches with empty payload");
                     } else {
                         final ResolveMatchType rm = resolveMatchesType.getResolveMatch();
                         deviceSettableFuture.set(new DiscoveredDevice(
@@ -175,17 +175,17 @@ public class ClientImpl extends AbstractIdleService implements Client, Service, 
         final ListenableFuture<DiscoveredDevice> resolveFuture = resolve(eprAddress);
         final SettableFuture<HostingServiceProxy> hspFuture = SettableFuture.create();
 
-        Futures.addCallback(resolveFuture, new FutureCallback<DiscoveredDevice>() {
+        Futures.addCallback(resolveFuture, new FutureCallback<>() {
             @Override
             public void onSuccess(@Nullable DiscoveredDevice discoveredDevice) {
                 if (discoveredDevice == null) {
-                    throw new RuntimeException(String.format("Resolve of %s failed.", eprAddress));
+                    throw new RuntimeException(String.format("Resolve of %s failed", eprAddress));
                 }
 
                 try {
                     hspFuture.set(connect(discoveredDevice).get(maxWaitForFutures.toMillis(), TimeUnit.MILLISECONDS));
                 } catch (Exception e) {
-                    throw new RuntimeException(String.format("Connect of %s failed.", eprAddress));
+                    throw new RuntimeException(String.format("Connect of %s failed", eprAddress));
                 }
             }
 
@@ -223,7 +223,7 @@ public class ClientImpl extends AbstractIdleService implements Client, Service, 
 
     private void checkRunning() {
         if (!isRunning()) {
-            String msg = "Try to invoke method on non-running client.";
+            String msg = "Try to invoke method on non-running client";
             LOG.warn(msg);
             throw new RuntimeException(msg);
         }

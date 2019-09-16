@@ -26,8 +26,9 @@ public class WsDiscoveryFaultFactory {
     }
 
     /**
-     * Create MatchingRuleNotSupported fault.
+     * Creates a MatchingRuleNotSupported fault.
      *
+     * @return the instance.
      * @see <a href="http://docs.oasis-open.org/ws-dd/discovery/1.1/os/wsdd-discovery-1.1-spec-os.html#_Toc234231831">Probe</a>
      */
     public SoapMessage createMatchingRuleNotSupported() {

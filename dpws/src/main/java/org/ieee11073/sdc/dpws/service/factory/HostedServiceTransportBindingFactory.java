@@ -6,6 +6,8 @@ import org.ieee11073.sdc.dpws.service.HostedServiceTransportBinding;
 
 /**
  * Factory to create {@link HostedServiceTransportBinding} instances.
+ *
+ * todo DGr this factory is not used; remove
  */
 public interface HostedServiceTransportBindingFactory {
     /**

@@ -4,7 +4,6 @@ import it.org.ieee11073.sdc.dpws.SslMetadata;
 import org.ieee11073.sdc.dpws.crypto.CryptoSettings;
 
 import javax.net.ssl.HttpsURLConnection;
-import javax.net.ssl.SSLContext;
 import java.io.*;
 import java.security.*;
 import java.security.cert.CertificateException;

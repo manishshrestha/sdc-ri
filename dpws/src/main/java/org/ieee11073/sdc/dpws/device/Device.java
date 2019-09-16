@@ -6,25 +6,38 @@ import javax.annotation.Nullable;
 
 /**
  * Core class to create a device that exposes itself to the network.
- *
- * First, configure the device appropriately by using {@link #setConfiguration(DeviceSettings)},
- * {@link #getDiscoveryAccess()}, and {@link #getHostingServiceAccess()}. Afterwards, use {@link #startAsync()} to
- * start the device and send a WS-Discovery Hello. To stop the device, invoke {@link #stopAsync()}. This will send a
- * WS-Discovery Bye.
+ * <p>
+ * In order to get a device up and running, perform the following steps
+ * <ol>
+ * <li>Configure the device appropriately by using {@link #setConfiguration(DeviceSettings)},
+ * {@link #getDiscoveryAccess()} and {@link #getHostingServiceAccess()}.
+ * <li>Use {@link #startAsync()} to start the device and send a WS-Discovery Hello.
+ * <li>To stop the device, invoke {@link #stopAsync()}. This will send a WS-Discovery Bye.
+ * </ol>
  */
 public interface Device extends Service {
     /**
-     * Inject device configuration to be used by the device.
+     * Injects device configuration to be used by the device.
+     * <p>
+     * The configuration can only be set before the services is started.
+     * <p>
+     * todo DGr create factory that accepts the settings on creation.
+     *
+     * @param deviceSettings the device settings of the device.
      */
     void setConfiguration(@Nullable DeviceSettings deviceSettings);
 
     /**
-     * Get access to WS-Discovery to configure types and scopes.
+     * Gets access to WS-Discovery in order to configure types and scopes.
+     *
+     * @return discovery access.
      */
     DiscoveryAccess getDiscoveryAccess();
 
     /**
-     * Get access to Hosting Service metadata and Hosted Services.
+     * Gets access to Hosting Service metadata and Hosted Services.
+     *
+     * @return hosting service access.
      */
     HostingServiceAccess getHostingServiceAccess();
 }

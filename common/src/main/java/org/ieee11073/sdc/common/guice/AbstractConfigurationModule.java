@@ -18,21 +18,22 @@ import java.util.TreeMap;
  */
 public abstract class AbstractConfigurationModule extends AbstractModule {
     private static final Logger LOG = LoggerFactory.getLogger(AbstractConfigurationModule.class);
-    private final Map<String, ConfigurationValue> boundedValues = new TreeMap<>();
+    private final Map<String, ConfigurationValue> boundValues = new TreeMap<>();
     private boolean configureStarted = false;
 
     /**
-     * Bind a configuration key to a value from outside.
+     * Binds a configuration key to a value from outside.
      * <p>
      * This operation can only be performed once per key. All unpopulated keys are supposed to be filled with a
      * default value once {@link #configure()} is called by Guice.
      *
-     * @param name     Configuration key.
-     * @param dataType Data type bounded by that key (should be defined in configuration class).
-     * @param value    The configuration value to set.
+     * @param name     the configuration key.
+     * @param dataType the data type bounded by the key (should be defined in configuration class).
+     * @param value    the configuration value to set.
+     * @param <T>      type that is required by the given key.
      */
     public <T> void bind(String name, Class<T> dataType, @Nullable T value) {
-        if (!boundedValues.containsKey(name)) {
+        if (!boundValues.containsKey(name)) {
             // Wrap binding into closure and call later as Guice's bind() is only available during configure()
             Runnable runBind = () -> {
                 if (value == null) {
@@ -45,8 +46,8 @@ public abstract class AbstractConfigurationModule extends AbstractModule {
                             .toInstance(value);
                 }
             };
-            ValueOrigin valueOrigin = configureStarted ? ValueOrigin.INHERITED : ValueOrigin.OVERRIDDEN;
-            boundedValues.put(name, new ConfigurationValue(valueOrigin, runBind, value));
+            ValueOrigin valueOrigin = configureStarted ? ValueOrigin.DEFAULTED : ValueOrigin.CUSTOMIZED;
+            boundValues.put(name, new ConfigurationValue(valueOrigin, runBind, value));
 
         } else {
             if (!configureStarted) {
@@ -56,7 +57,9 @@ public abstract class AbstractConfigurationModule extends AbstractModule {
     }
 
     /**
-     * Conduct default configuration. This method is called by Guice.
+     * Conducts default configuration.
+     * <p>
+     * This method is called by Guice.
      */
     @Override
     @SuppressWarnings("Unchecked")
@@ -66,7 +69,7 @@ public abstract class AbstractConfigurationModule extends AbstractModule {
         defaultConfigure();
         logConfiguredValues();
 
-        boundedValues.entrySet().stream().forEach(configValue -> configValue.getValue().getBinder().run());
+        boundValues.entrySet().forEach(configValue -> configValue.getValue().getBinder().run());
     }
 
     /**
@@ -77,23 +80,23 @@ public abstract class AbstractConfigurationModule extends AbstractModule {
     /**
      * Implement this method to apply custom configuration.
      * <p>
-     * Optional override as values can also be set from outside the class with {@link #bind(String, Class, Object)}.
+     * Optional override as values can also be set from outside the class by using {@link #bind(String, Class, Object)}.
      */
     protected void customConfigure() {
         // Override is optional
     }
 
     private void logConfiguredValues() {
-        boundedValues.entrySet().stream().forEach(value ->
-                LOG.debug("Configure {} key: {} := {}",
+        boundValues.entrySet().forEach(value ->
+                LOG.info("{} {} := {}",
                         value.getValue().getValueOrigin(),
                         value.getKey(),
                         value.getValue().getValue()));
     }
 
     private enum ValueOrigin {
-        INHERITED("inherited"),
-        OVERRIDDEN("overridden");
+        DEFAULTED("[defaulted ]"),
+        CUSTOMIZED("[customized]");
 
         ValueOrigin(String value) {
             caption = value;

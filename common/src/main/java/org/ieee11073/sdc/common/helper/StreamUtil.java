@@ -10,9 +10,11 @@ import java.io.InputStream;
 public class StreamUtil {
 
     /**
-     * Get bytes from input stream as byte array.
+     * Gets bytes from input stream as byte array.
      *
-     * @throws IOException If reading from the input stream fails.
+     * @param inputStream the input stream to convert.
+     * @return the converted byte array.
+     * @throws IOException if reading from the input stream fails.
      */
     public byte[] getByteArrayFromInputStream(InputStream inputStream) throws IOException {
         byte[] buf = new byte[4096];

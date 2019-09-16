@@ -6,8 +6,6 @@ import dpws_test_service.messages._2017._05._10.ObjectFactory;
 import dpws_test_service.messages._2017._05._10.TestNotification;
 import it.org.ieee11073.sdc.dpws.IntegrationTestUtil;
 import it.org.ieee11073.sdc.dpws.TestServiceMetadata;
-import test.org.ieee11073.common.TestLogging;
-import org.ieee11073.sdc.dpws.client.ClientConfig;
 import org.ieee11073.sdc.dpws.client.DiscoveredDevice;
 import org.ieee11073.sdc.dpws.crypto.CryptoConfig;
 import org.ieee11073.sdc.dpws.crypto.CryptoSettings;
@@ -29,6 +27,8 @@ import org.junit.Before;
 import org.junit.Test;
 import test.org.ieee11073.common.TestLogging;
 
+import java.net.InetAddress;
+import java.net.NetworkInterface;
 import java.net.URI;
 import java.time.Duration;
 import java.util.ArrayList;
@@ -50,8 +50,12 @@ public class CryptoIT {
     private BasicPopulatedDevice devicePeer;
     private ClientPeer clientPeer;
 
+    public CryptoIT() {
+        IntegrationTestUtil.preferIpV4Usage();
+    }
+
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         TestLogging.configure();
         final CryptoSettings serverCryptoSettings = Ssl.setupServer();
 
@@ -64,13 +68,20 @@ public class CryptoIT {
             }
 
             @Override
-            public List<URI> getHostingServiceBindings() {
-                return Collections.singletonList(URI.create("https://localhost:6464"));
+            public NetworkInterface getNetworkInterface() {
+                try {
+                    return NetworkInterface.getByInetAddress(InetAddress.getLoopbackAddress());
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
             }
+
         }, new DefaultDpwsConfigModule() {
             @Override
             public void customConfigure() {
                 bind(CryptoConfig.CRYPTO_SETTINGS, CryptoSettings.class, serverCryptoSettings);
+                bind(DeviceConfig.UNSECURED_ENDPOINT, Boolean.class, false);
+                bind(DeviceConfig.SECURED_ENDPOINT, Boolean.class, true);
             }
         });
 

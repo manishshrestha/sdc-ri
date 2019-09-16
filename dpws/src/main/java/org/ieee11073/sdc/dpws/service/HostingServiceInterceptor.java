@@ -28,7 +28,9 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * Server interceptor for hosting services that serves as a {@link HostingService} implementation at the same time.
+ * Server interceptor for hosting services to serve WS-TransferGet requests.
+ * <p>
+ * {@linkplain HostingServiceInterceptor} acts as a {@link HostingService} implementation at the same time.
  */
 public class HostingServiceInterceptor implements HostingService {
     private static final Logger LOG = LoggerFactory.getLogger(HostingServiceInterceptor.class);
@@ -89,7 +91,7 @@ public class HostingServiceInterceptor implements HostingService {
     InterceptorResult processGet(RequestResponseObject rrObj) throws SoapFaultException {
         if (!rrObj.getRequest().getOriginalEnvelope().getBody().getAny().isEmpty()) {
             throw new SoapFaultException(soapFaultFactory
-                    .createSenderFault(String.format("SOAP envelope body for action %s shall be empty.",
+                    .createSenderFault(String.format("SOAP envelope body for action %s shall be empty",
                             WsTransferConstants.WSA_ACTION_GET)));
         }
 

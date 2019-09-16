@@ -1,16 +1,15 @@
 package org.ieee11073.sdc.common.helper;
 
-
 /**
  * Utility class to deep copy arbitrary objects.
  */
 public interface ObjectUtil {
     /**
-     * Create deep copy of given object.
+     * Creates deep copy of given object.
      *
-     * @param obj Object to copy.
-     * @return Deep copy of given object.
-     * @throws RuntimeException In case object could not be deep-copied.
+     * @param obj the object to copy.
+     * @param <T> any copyable object.
+     * @return deep copy of given object.
      */
     <T> T deepCopy(T obj);
 

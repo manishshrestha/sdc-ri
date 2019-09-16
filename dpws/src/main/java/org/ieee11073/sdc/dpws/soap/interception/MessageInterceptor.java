@@ -17,24 +17,30 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 public @interface MessageInterceptor {
     /**
      * Action filter.
+     * <p>
+     * Default is an empty string that matches any actions.
      *
-     * Default is an empty string, which matches any actions.
+     * @return the value of the interceptor that matches an action.
      */
     String value() default "";
 
     /**
      * Interceptors are sorted and called in the order given by the sequence number in here.
-     *
+     * <p>
      * Default is {@linkplain Integer#MAX_VALUE} (means, the interceptor is put to the end of the chain).
+     * <p>
+     * <em>Note that no two interceptors of the same interceptor chain should possess the same sequence number!</em>
      *
-     * **Note that no two interceptors of the same interceptor chain may possess the same sequence number!**
+     * @return the sequence number
      */
     int sequenceNumber() default Integer.MAX_VALUE;
 
     /**
-     * Define in which communication direction the interceptor method is invoked.
+     * Defines in which communication direction the interceptor method is invoked.
+     * <p>
+     * By default the annotated method is invoked on any direction.
      *
-     * By default any direction let the method be invoked.
+     * @return the direction.
      */
     Direction direction() default Direction.ANY;
 }

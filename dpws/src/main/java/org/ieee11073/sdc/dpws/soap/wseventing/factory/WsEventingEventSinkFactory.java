@@ -7,12 +7,13 @@ import org.ieee11073.sdc.dpws.soap.wseventing.EventSink;
 import java.net.URI;
 
 /**
- * Create {@link EventSink} instances.
+ * Creates {@link EventSink} instances.
  */
 public interface WsEventingEventSinkFactory {
     /**
-     * @param requestResponseClient Request response client where to send requests to (subscribe, renew, ...).
-     * @param hostAddress      Address where to bind a notification sink server
+     * @param requestResponseClient request response client where to send requests to (subscribe, renew, ...).
+     * @param hostAddress           address where to bind a notification sink server.
+     * @return the instance.
      */
     EventSink createWsEventingEventSink(@Assisted RequestResponseClient requestResponseClient,
                                         @Assisted URI hostAddress);

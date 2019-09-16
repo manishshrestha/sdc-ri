@@ -26,7 +26,7 @@ public class UriBaseContextPathTest {
     public void basePathDerivation() {
         final String expectedUrlBasePath = expectedUrlPath.substring(1);
         final String expectedUuidBasePath = expectedUrnUuidSpecificPart.substring("uuid:".length());
-        final String expectedOidBasePath = expectedUrnOidSpecificPart.substring("oid:".length());;
+        final String expectedOidBasePath = expectedUrnOidSpecificPart.substring("oid:".length());
 
         assertEquals(expectedUrlBasePath, new UriBaseContextPath(testUrl).get());
         assertEquals(expectedUuidBasePath, new UriBaseContextPath(testUuid).get());

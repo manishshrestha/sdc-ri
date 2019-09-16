@@ -5,7 +5,6 @@ import com.google.inject.name.Named;
 import org.glassfish.jersey.SslConfigurator;
 import org.ieee11073.sdc.dpws.TransportBinding;
 import org.ieee11073.sdc.dpws.TransportBindingException;
-import org.ieee11073.sdc.dpws.client.ClientConfig;
 import org.ieee11073.sdc.dpws.crypto.CryptoConfig;
 import org.ieee11073.sdc.dpws.crypto.CryptoSettings;
 import org.ieee11073.sdc.dpws.crypto.CryptoConfigurator;
@@ -64,11 +63,11 @@ public class TransportBindingFactoryImpl implements TransportBindingFactory {
             return;
         }
 
-        SslConfigurator sslConfigurator = null;
+        SslConfigurator sslConfigurator;
         try {
             sslConfigurator = cryptoConfigurator.createSslConfiguratorFromCryptoConfig(cryptoSettings);
         } catch (IllegalArgumentException e) {
-            LOG.warn("Could not read client crypto config, fallback to system properties.");
+            LOG.warn("Could not read client crypto config, fallback to system properties");
             sslConfigurator = cryptoConfigurator.createSslConfiguratorFromSystemProperties();
         }
 
@@ -85,13 +84,13 @@ public class TransportBindingFactoryImpl implements TransportBindingFactory {
 
         String scheme = endpointUri.getScheme();
         if (scheme.equalsIgnoreCase(SCHEME_SOAP_OVER_UDP)) {
-            throw new UnsupportedOperationException("SOAP-over-UDP is currently not supported by the TransportBindingFactory.");
+            throw new UnsupportedOperationException("SOAP-over-UDP is currently not supported by the TransportBindingFactory");
         } else if (scheme.equalsIgnoreCase(SCHEME_HTTP)) {
             return createHttpBinding(endpointUri);
         } else if (scheme.equalsIgnoreCase(SCHEME_HTTPS)) {
             return createHttpBinding(endpointUri);
         } else {
-            throw new UnsupportedOperationException(String.format("Unsupported transport binding requested: %s.", scheme));
+            throw new UnsupportedOperationException(String.format("Unsupported transport binding requested: %s", scheme));
         }
 
     }
@@ -180,7 +179,7 @@ public class TransportBindingFactoryImpl implements TransportBindingFactory {
         }
 
         @Override
-        public void close() throws IOException {
+        public void close() {
             // no action on HTTP
         }
     }

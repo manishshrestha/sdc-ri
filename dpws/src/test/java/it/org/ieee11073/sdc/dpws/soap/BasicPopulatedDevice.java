@@ -5,6 +5,7 @@ import it.org.ieee11073.sdc.dpws.TestServiceMetadata;
 import org.ieee11073.sdc.dpws.DpwsFramework;
 import org.ieee11073.sdc.dpws.DpwsUtil;
 import org.ieee11073.sdc.dpws.device.DeviceSettings;
+import org.ieee11073.sdc.dpws.factory.DpwsFrameworkFactory;
 import org.ieee11073.sdc.dpws.guice.DefaultDpwsConfigModule;
 import org.ieee11073.sdc.dpws.service.factory.HostedServiceFactory;
 import org.ieee11073.sdc.dpws.soap.SoapConfig;
@@ -26,8 +27,12 @@ public class BasicPopulatedDevice extends DevicePeer {
     public static final QName QNAME_1 = new QName("http://type-ns", "integration-test-type1");
     public static final QName QNAME_2 = new QName("http://type-ns", "integration-test-type2");
 
+    private final DpwsFramework dpwsFramework;
+
     private DpwsTestService1 service1;
     private DpwsTestService2 service2;
+
+
 
     public BasicPopulatedDevice() {
         this(null);
@@ -42,12 +47,14 @@ public class BasicPopulatedDevice extends DevicePeer {
                         TestServiceMetadata.JAXB_CONTEXT_PATH);
             }
         }, deviceSettings);
+        dpwsFramework = getInjector().getInstance(DpwsFrameworkFactory.class).createDpwsFramework();
     }
 
     public BasicPopulatedDevice(@Nullable DeviceSettings deviceSettings, DefaultDpwsConfigModule configModule) {
         configModule.bind(SoapConfig.JAXB_CONTEXT_PATH, String.class,
                 TestServiceMetadata.JAXB_CONTEXT_PATH);
         setup(configModule, deviceSettings);
+        dpwsFramework = getInjector().getInstance(DpwsFrameworkFactory.class).createDpwsFramework();
     }
 
     public DpwsTestService1 getService1() {
@@ -74,6 +81,7 @@ public class BasicPopulatedDevice extends DevicePeer {
         final ClassLoader classLoader = getClass().getClassLoader();
         InputStream wsdlResource1 = classLoader.getResourceAsStream("it/org/ieee11073/sdc/dpws/TestService1.wsdl");
         InputStream wsdlResource2 = classLoader.getResourceAsStream("it/org/ieee11073/sdc/dpws/TestService2.wsdl");
+        assert wsdlResource1 != null;
         getDevice().getHostingServiceAccess().addHostedService(hostedServiceFactory.createHostedService(
                 DevicePeerMetadata.SERVICE_ID_1,
                 Arrays.asList(
@@ -82,21 +90,20 @@ public class BasicPopulatedDevice extends DevicePeer {
                 service1,
                 wsdlResource1));
 
+        assert wsdlResource2 != null;
         getDevice().getHostingServiceAccess().addHostedService(hostedServiceFactory.createHostedService(
                 DevicePeerMetadata.SERVICE_ID_2,
                 Collections.singletonList(new QName(DevicePeerMetadata.NAMESPACE_SRV, DevicePeerMetadata.PORT_TYPE_NAME_3)),
                 service2,
                 wsdlResource2));
 
-        DpwsFramework dpwsFramework = getInjector().getInstance(DpwsFramework.class);
         dpwsFramework.startAsync().awaitRunning();
-        Runtime.getRuntime().addShutdownHook(new Thread(() -> dpwsFramework.stopAsync().awaitTerminated()));
-
         getDevice().startAsync().awaitRunning();
     }
 
     @Override
     protected void shutDown() {
         getDevice().stopAsync().awaitTerminated();
+        dpwsFramework.stopAsync().awaitTerminated();
     }
 }

@@ -4,7 +4,6 @@ import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.inject.AbstractModule;
 import com.google.inject.assistedinject.FactoryModuleBuilder;
-import org.ieee11073.sdc.dpws.DiscoveryUdpQueue;
 import org.ieee11073.sdc.dpws.DpwsFramework;
 import org.ieee11073.sdc.dpws.DpwsFrameworkImpl;
 import org.ieee11073.sdc.dpws.client.Client;
@@ -15,14 +14,15 @@ import org.ieee11073.sdc.dpws.device.Device;
 import org.ieee11073.sdc.dpws.device.DeviceImpl;
 import org.ieee11073.sdc.dpws.device.helper.DiscoveryDeviceUdpMessageProcessor;
 import org.ieee11073.sdc.dpws.device.helper.factory.DeviceHelperFactory;
+import org.ieee11073.sdc.dpws.factory.DpwsFrameworkFactory;
 import org.ieee11073.sdc.dpws.factory.TransportBindingFactory;
 import org.ieee11073.sdc.dpws.factory.TransportBindingFactoryImpl;
 import org.ieee11073.sdc.dpws.helper.NotificationSourceUdpCallback;
 import org.ieee11073.sdc.dpws.helper.factory.DpwsHelperFactory;
 import org.ieee11073.sdc.dpws.http.HttpServerRegistry;
 import org.ieee11073.sdc.dpws.http.grizzly.GrizzlyHttpServerRegistry;
-import org.ieee11073.sdc.dpws.ni.LocalAddressResolver;
-import org.ieee11073.sdc.dpws.ni.LocalAddressResolverImpl;
+import org.ieee11073.sdc.dpws.network.LocalAddressResolver;
+import org.ieee11073.sdc.dpws.network.LocalAddressResolverImpl;
 import org.ieee11073.sdc.dpws.service.*;
 import org.ieee11073.sdc.dpws.service.factory.HostedServiceFactory;
 import org.ieee11073.sdc.dpws.service.factory.HostedServiceInterceptorFactory;
@@ -57,7 +57,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
 /**
- * Guice module to bind all interfaces and factories led by the DPWS implementation of easySDC.
+ * Default Guice module to bind all interfaces and factories used by the DPWS implementation.
  */
 public class DefaultDpwsModule extends AbstractModule {
     @Override
@@ -82,9 +82,9 @@ public class DefaultDpwsModule extends AbstractModule {
                 .implement(NotificationSourceUdpCallback.class, NotificationSourceUdpCallback.class)
                 .build(DpwsHelperFactory.class));
 
-        bind(DpwsFramework.class)
-                .to(DpwsFrameworkImpl.class)
-                .asEagerSingleton();
+        install(new FactoryModuleBuilder()
+                .implement(DpwsFramework.class, DpwsFrameworkImpl.class)
+                .build(DpwsFrameworkFactory.class));
 
         bind(TransportBindingFactory.class)
                 .to(TransportBindingFactoryImpl.class);

@@ -1,7 +1,7 @@
 package org.ieee11073.sdc.dpws.udp;
 
 /**
- * Raw UDP message packed as byte array plus length.
+ * Raw UDP message packed as a byte array plus a length attribute and receiver information.
  */
 public class UdpMessage {
     private final int length;
@@ -9,6 +9,14 @@ public class UdpMessage {
     private final Integer port;
     private final byte[] data;
 
+    /**
+     * Constructor with transport information.
+     *
+     * @param data   the payload of the UDP message.
+     * @param length the actual message length.
+     * @param host   the message receiver's host.
+     * @param port   the message receiver's port.
+     */
     public UdpMessage(byte[] data, int length, String host, Integer port) {
         this.data = data;
         this.length = length;
@@ -16,6 +24,14 @@ public class UdpMessage {
         this.port = port;
     }
 
+    /**
+     * Constructor without transport information.
+     * <p>
+     * Transport information is not required in case this message is used with multicast.
+     *
+     * @param data   the payload of the UDP message.
+     * @param length the actual message length.
+     */
     public UdpMessage(byte[] data, int length) {
         this.data = data;
         this.length = length;
@@ -23,6 +39,11 @@ public class UdpMessage {
         this.port = null;
     }
 
+    /**
+     * Checks if there is transport data attached to the message.
+     *
+     * @return true if there is a host and port, otherwise false.
+     */
     boolean hasTransportData() {
         return host != null && port != null;
     }
@@ -40,9 +61,11 @@ public class UdpMessage {
     }
 
     /**
-     * Get data byte message.
+     * Gets the data from this object as byte array.
+     * <p>
+     * <em>Do not rely on the byte array's length attribute, retrieve the length via {@link #getLength()} instead!</em>
      *
-     * Do not rely on the byte array's length attribute, retrieve the length via {@link #getLength()} instead.
+     * @return message byte array.
      */
     public byte[] getData() {
         return data;

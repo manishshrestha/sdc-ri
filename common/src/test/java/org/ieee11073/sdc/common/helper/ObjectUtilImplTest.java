@@ -5,9 +5,6 @@ import com.google.inject.Guice;
 import com.google.inject.Injector;
 import org.junit.Assert;
 import org.junit.Before;
-import test.org.ieee11073.common.TestLogging;
-import org.ieee11073.sdc.common.helper.ObjectUtil;
-import org.ieee11073.sdc.common.helper.ObjectUtilImpl;
 import org.junit.Test;
 import test.org.ieee11073.common.TestLogging;
 
@@ -22,7 +19,7 @@ public class ObjectUtilImplTest {
 
     private Injector inj;
     private ObjectUtil objectUtil;
-    
+
     @Before
     public void setUp() {
         TestLogging.configure();

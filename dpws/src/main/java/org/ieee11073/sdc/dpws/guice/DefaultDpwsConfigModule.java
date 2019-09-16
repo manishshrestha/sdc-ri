@@ -5,9 +5,7 @@ import org.ieee11073.sdc.dpws.DpwsConfig;
 import org.ieee11073.sdc.dpws.client.ClientConfig;
 import org.ieee11073.sdc.dpws.crypto.CryptoConfig;
 import org.ieee11073.sdc.dpws.crypto.CryptoSettings;
-import org.ieee11073.sdc.dpws.device.Device;
 import org.ieee11073.sdc.dpws.device.DeviceConfig;
-import org.ieee11073.sdc.dpws.http.HttpConfig;
 import org.ieee11073.sdc.dpws.soap.SoapConfig;
 import org.ieee11073.sdc.dpws.soap.wsaddressing.WsAddressingConfig;
 import org.ieee11073.sdc.dpws.soap.wsdiscovery.WsDiscoveryConfig;
@@ -18,8 +16,8 @@ import java.time.Duration;
 /**
  * Default configuration module to configure {@link DefaultDpwsModule}.
  * <p>
- * Derive from this class to override default configuration values. Use {@link #bind(String, Class, Object)}
- * to set your default values.
+ * Derive from this class to override default configuration values.
+ * Use {@link #bind(String, Class, Object)} to set your default values.
  */
 public class DefaultDpwsConfigModule extends AbstractConfigurationModule {
     @Override
@@ -28,24 +26,25 @@ public class DefaultDpwsConfigModule extends AbstractConfigurationModule {
         configureWsDiscoveryConfig();
         configureWsEventingConfig();
         configureClientConfig();
+        configureDeviceConfig();
         configureCryptoConfig();
-        configureHttpConfig();
         configureDpws();
+    }
+
+    private void configureDeviceConfig() {
+        bind(DeviceConfig.UNSECURED_ENDPOINT,
+                Boolean.class,
+                true);
+
+        bind(DeviceConfig.SECURED_ENDPOINT,
+                Boolean.class,
+                false);
     }
 
     private void configureDpws() {
         bind(DpwsConfig.MAX_WAIT_FOR_FUTURES,
                 Duration.class,
                 Duration.ofSeconds(10));
-    }
-
-    private void configureHttpConfig() {
-        bind(HttpConfig.PORT_MIN,
-                Integer.class,
-                49152);
-        bind(HttpConfig.PORT_MAX,
-                Integer.class,
-                65535);
     }
 
     private void configureCryptoConfig() {

@@ -1,10 +1,8 @@
 package org.ieee11073.sdc.dpws.client.helper;
 
 import com.google.common.util.concurrent.SettableFuture;
-import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.core.config.Configurator;
-import org.apache.logging.log4j.core.config.DefaultConfiguration;
 import org.ieee11073.sdc.dpws.service.HostingServiceProxy;
+import org.ieee11073.sdc.dpws.soap.RequestResponseClient;
 import org.ieee11073.sdc.dpws.soap.exception.TransportException;
 import org.ieee11073.sdc.dpws.soap.wsdiscovery.WsDiscoveryClient;
 import org.ieee11073.sdc.dpws.soap.wsdiscovery.model.ProbeMatchesType;
@@ -14,6 +12,7 @@ import org.junit.Test;
 import test.org.ieee11073.common.TestLogging;
 
 import java.time.Duration;
+import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
@@ -31,7 +30,7 @@ public class WatchDogImplTest {
     private boolean hasFailed;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         TestLogging.configure();
 
         lock = new ReentrantLock();
@@ -40,13 +39,13 @@ public class WatchDogImplTest {
         hostingServiceProxyMock = mock(HostingServiceProxy.class);
         discoveryClientMock = mock(WsDiscoveryClient.class);
         SettableFuture<ProbeMatchesType> future = SettableFuture.create();
-        future.setException(new TransportException("Request failed."));
-        when(discoveryClientMock.sendDirectedProbe(null, null, null))
+        future.setException(new TransportException("Request failed"));
+        when(discoveryClientMock.sendDirectedProbe(mock(RequestResponseClient.class), mock(List.class), mock(List.class)))
                 .thenReturn(future);
     }
 
     @Test
-    public void inspect() throws Exception {
+    public void inspect() {
         WatchDogImpl watchDog = new WatchDogImpl(discoveryClientMock, hostingServiceProxy -> {
             lock.lock();
             try {
@@ -65,7 +64,7 @@ public class WatchDogImplTest {
             condition.await(2, TimeUnit.SECONDS);
             Assert.assertTrue(hasFailed);
         } catch (InterruptedException e) {
-            throw new RuntimeException("Thread unexpectedly interrupted.");
+            throw new RuntimeException("Thread unexpectedly interrupted");
         } finally {
             lock.unlock();
         }

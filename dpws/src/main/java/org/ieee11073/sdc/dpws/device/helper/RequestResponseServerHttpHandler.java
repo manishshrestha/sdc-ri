@@ -18,9 +18,10 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 /**
- * {@link RequestResponseServer} that is invoked on {@link HttpHandler} callbacks.
- *
- * The Handler is an {@link InterceptorHandler}. Any registered objects receive the requests delivered by
+ * {@linkplain RequestResponseServer} that is invoked on SOAP {@linkplain HttpHandler} callbacks.
+ * <p>
+ * The handler is an {@link InterceptorHandler}.
+ * All objects registered via {@link #register(Interceptor)} receive the requests delivered to
  * {@link HttpHandler#process(InputStream, OutputStream, TransportInfo)}.
  */
 public class RequestResponseServerHttpHandler implements HttpHandler, InterceptorHandler {
@@ -48,7 +49,7 @@ public class RequestResponseServerHttpHandler implements HttpHandler, Intercepto
         try {
             inStream.close();
         } catch (IOException e) {
-            throw new TransportException("IO error closing HTTP input stream.", e);
+            throw new TransportException("IO error closing HTTP input stream", e);
         }
 
         if (LOG.isDebugEnabled()) {
@@ -59,9 +60,9 @@ public class RequestResponseServerHttpHandler implements HttpHandler, Intercepto
         try {
             InterceptorResult ir = reqResServer.receiveRequestResponse(requestMsg, responseMsg, transportInfo);
             if (ir == InterceptorResult.CANCEL) {
-                responseMsg = soapFaultFactory.createReceiverFault("Message processing aborted.");
+                responseMsg = soapFaultFactory.createReceiverFault("Message processing aborted");
             } else if (ir == InterceptorResult.NONE_INVOKED) {
-                responseMsg = soapFaultFactory.createReceiverFault("Message was not processed at the server.");
+                responseMsg = soapFaultFactory.createReceiverFault("Message was not processed at the server");
             }
         } catch (SoapFaultException e) {
             responseMsg = e.getFaultMessage();
@@ -80,7 +81,7 @@ public class RequestResponseServerHttpHandler implements HttpHandler, Intercepto
         try {
             outStream.close();
         } catch (IOException e) {
-            throw new TransportException("IO error closing HTTP output stream.", e);
+            throw new TransportException("IO error closing HTTP output stream", e);
         }
     }
 

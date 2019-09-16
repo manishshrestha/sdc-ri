@@ -13,7 +13,7 @@ import org.ieee11073.sdc.dpws.factory.TransportBindingFactory;
 import org.ieee11073.sdc.dpws.guice.NetworkJobThreadPool;
 import org.ieee11073.sdc.dpws.http.HttpUriBuilder;
 import org.ieee11073.sdc.dpws.model.*;
-import org.ieee11073.sdc.dpws.ni.LocalAddressResolver;
+import org.ieee11073.sdc.dpws.network.LocalAddressResolver;
 import org.ieee11073.sdc.dpws.service.HostedServiceProxy;
 import org.ieee11073.sdc.dpws.service.HostingServiceProxy;
 import org.ieee11073.sdc.dpws.service.factory.HostedServiceFactory;
@@ -35,13 +35,11 @@ import org.ieee11073.sdc.dpws.soap.wstransfer.TransferGetClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nullable;
 import javax.xml.namespace.QName;
 import java.net.URI;
 import java.time.Duration;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -126,20 +124,20 @@ public class HostingServiceResolver {
                             .get(maxWaitForFutures.toMillis(), TimeUnit.MILLISECONDS);
                     break;
                 } catch (Exception e) {
-                    LOG.debug("TransferGet to {} failed.", xAddr, e);
+                    LOG.debug("TransferGet to {} failed", xAddr, e);
                 }
             }
 
             if (transferGetResponse == null) {
-                throw new TransportException(String.format("None of the %s XAddr URL(s) responded with a valid TransferGet response.",
+                throw new TransportException(String.format("None of the %s XAddr URL(s) responded with a valid TransferGet response",
                         discoveredDevice.getXAddrs().size()));
             }
 
             Metadata deviceMetadata = soapUtil.getBody(transferGetResponse, Metadata.class).orElseThrow(() ->
-                    new MalformedSoapMessageException("Could not get metadata element from TransferGet response."));
+                    new MalformedSoapMessageException("Could not get metadata element from TransferGet response"));
 
             if (deviceMetadata.getMetadataSection().isEmpty()) {
-                throw new MalformedSoapMessageException("No metadata sections in TransferGet response.");
+                throw new MalformedSoapMessageException("No metadata sections in TransferGet response");
             }
 
             URI deviceEprAddress = discoveredDevice.getEprAddress();
@@ -174,7 +172,7 @@ public class HostingServiceResolver {
                     thisDevice = jaxbUtil.extractElement(metadataSection.getAny(), ThisDeviceType.class);
                     continue;
                 } catch (Exception e) {
-                    LOG.info("Resolve dpws:ThisDevice from {} failed.", eprAddress);
+                    LOG.info("Resolve dpws:ThisDevice from {} failed", eprAddress);
                     continue;
                 }
             }
@@ -184,7 +182,7 @@ public class HostingServiceResolver {
                     thisModel = jaxbUtil.extractElement(metadataSection.getAny(), ThisModelType.class);
                     continue;
                 } catch (Exception e) {
-                    LOG.info("Resolve dpws:ThisModel from {} failed.", eprAddress);
+                    LOG.info("Resolve dpws:ThisModel from {} failed", eprAddress);
                     continue;
                 }
             }
@@ -195,31 +193,34 @@ public class HostingServiceResolver {
                             .orElseThrow(Exception::new);
 
                     if (!rs.getType().equals(DpwsConstants.RELATIONSHIP_TYPE_HOST)) {
-                        LOG.debug("Incompatible dpws:Relationship type found for {}: {}.", eprAddress, rs.getType());
+                        LOG.debug("Incompatible dpws:Relationship type found for {}: {}", eprAddress, rs.getType());
                         continue;
                     }
 
                     relationshipData = extractRelationshipData(rs, eprAddress);
                 } catch (Exception e) {
-                    LOG.info("Resolve dpws:Relationship from {} failed.", eprAddress);
+                    LOG.info("Resolve dpws:Relationship from {} failed", eprAddress);
                 }
             }
         }
 
-        if (!thisDevice.isPresent()) {
-            LOG.info("No dpws:ThisDevice found for {}.", eprAddress);
+        if (thisDevice.isEmpty()) {
+            LOG.info("No dpws:ThisDevice found for {}", eprAddress);
         }
 
-        if (!thisModel.isPresent()) {
-            LOG.info("No dpws:ThisModel found for {}.", eprAddress);
+        if (thisModel.isEmpty()) {
+            LOG.info("No dpws:ThisModel found for {}", eprAddress);
         }
 
         RelationshipData rsDataFromOptional = relationshipData.orElseThrow(() ->
                 new MalformedSoapMessageException(String.format("No dpws:Relationship found for %s, but required",
                         eprAddress)));
 
+        final URI epr = rsDataFromOptional.getEprAddress().orElseThrow(() ->
+                new MalformedSoapMessageException(String.format("Malformed relationship data. Missing expected EPR: %s",
+                        eprAddress)));
         return Optional.of(hostingServiceFactory.createHostingServiceProxy(
-                rsDataFromOptional.getEprAddress(),
+                epr,
                 rsDataFromOptional.getTypes(),
                 thisDevice.orElse(null),
                 thisModel.orElse(null),
@@ -229,7 +230,7 @@ public class HostingServiceResolver {
                 xAddr));
     }
 
-    private Optional<RelationshipData> extractRelationshipData(Relationship relationship, URI eprAddress) throws TransportException {
+    private Optional<RelationshipData> extractRelationshipData(Relationship relationship, URI eprAddress) {
         RelationshipData result = new RelationshipData();
 
         for (Object potentialRelationship : relationship.getAny()) {
@@ -268,23 +269,22 @@ public class HostingServiceResolver {
                         .get(maxWaitForFutures.toMillis(), TimeUnit.MILLISECONDS);
                 break;
             } catch (Exception e) {
-                LOG.debug("GetMetadata to {} failed.", eprType.getAddress().getValue(), e);
+                LOG.debug("GetMetadata to {} failed", eprType.getAddress().getValue(), e);
             }
         }
 
         if (getMetadataResponse == null) {
-            LOG.info("None of the {} hosted service EPR addresses responded with a valid GetMetadata response.",
+            LOG.info("None of the {} hosted service EPR addresses responded with a valid GetMetadata response",
                     host.getEndpointReference().size());
             return Optional.empty();
         }
 
         final Optional<String> localAddress = localAddressResolver.getLocalAddress(activeHostedServiceEprAddress);
-        if (!localAddress.isPresent()) {
+        if (localAddress.isEmpty()) {
             return Optional.empty();
         }
 
-        URI httpBinding = uriBuilder.buildUri(activeHostedServiceEprAddress.getScheme(), localAddress.get(),
-                uriBuilder.buildRandomPort());
+        URI httpBinding = uriBuilder.buildUri(activeHostedServiceEprAddress.getScheme(), localAddress.get(), 0);
 
         final EventSink eventSink = eventSinkFactory.createWsEventingEventSink(rrClient, httpBinding);
         return Optional.of(hostedServiceFactory.createHostedServiceProxy(host, rrClient,
@@ -301,19 +301,19 @@ public class HostingServiceResolver {
         private List<QName> types = null;
         private final Map<String, HostedServiceProxy> hostedServices = new HashMap<>();
 
-        URI getEprAddress() {
-            return eprAddress;
+        Optional<URI> getEprAddress() {
+            return Optional.ofNullable(eprAddress);
         }
 
-        void setEprAddress(URI eprAddress) {
+        void setEprAddress(@Nullable URI eprAddress) {
             this.eprAddress = eprAddress;
         }
 
         List<QName> getTypes() {
-            return types;
+            return types == null ? Collections.emptyList() : types;
         }
 
-        void setTypes(List<QName> types) {
+        void setTypes(@Nullable List<QName> types) {
             this.types = types;
         }
 

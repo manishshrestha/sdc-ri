@@ -4,18 +4,21 @@ import com.google.common.util.concurrent.AbstractIdleService;
 import com.google.common.util.concurrent.Service;
 import com.google.inject.Inject;
 import com.google.inject.Provider;
+import com.google.inject.name.Named;
 import org.ieee11073.sdc.common.helper.StreamUtil;
-import org.ieee11073.sdc.dpws.DiscoveryUdpQueue;
 import org.ieee11073.sdc.dpws.DpwsConstants;
 import org.ieee11073.sdc.dpws.device.helper.ByteResourceHandler;
 import org.ieee11073.sdc.dpws.device.helper.DiscoveryDeviceUdpMessageProcessor;
 import org.ieee11073.sdc.dpws.device.helper.RequestResponseServerHttpHandler;
 import org.ieee11073.sdc.dpws.device.helper.UriBaseContextPath;
 import org.ieee11073.sdc.dpws.device.helper.factory.DeviceHelperFactory;
+import org.ieee11073.sdc.dpws.guice.DiscoveryUdpQueue;
 import org.ieee11073.sdc.dpws.helper.factory.DpwsHelperFactory;
 import org.ieee11073.sdc.dpws.http.HttpServerRegistry;
+import org.ieee11073.sdc.dpws.http.HttpUriBuilder;
 import org.ieee11073.sdc.dpws.model.ThisDeviceType;
 import org.ieee11073.sdc.dpws.model.ThisModelType;
+import org.ieee11073.sdc.dpws.network.NetworkInterfaceUtil;
 import org.ieee11073.sdc.dpws.service.HostedService;
 import org.ieee11073.sdc.dpws.service.HostedServiceInterceptor;
 import org.ieee11073.sdc.dpws.service.HostingService;
@@ -25,7 +28,6 @@ import org.ieee11073.sdc.dpws.service.factory.HostingServiceFactory;
 import org.ieee11073.sdc.dpws.soap.NotificationSource;
 import org.ieee11073.sdc.dpws.soap.RequestResponseServer;
 import org.ieee11073.sdc.dpws.soap.SoapConstants;
-import org.ieee11073.sdc.dpws.soap.SoapUtil;
 import org.ieee11073.sdc.dpws.soap.factory.NotificationSourceFactory;
 import org.ieee11073.sdc.dpws.soap.wsaddressing.WsAddressingUtil;
 import org.ieee11073.sdc.dpws.soap.wsaddressing.model.EndpointReferenceType;
@@ -36,14 +38,21 @@ import org.ieee11073.sdc.dpws.udp.UdpMessageQueueService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nullable;
 import javax.xml.namespace.QName;
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+/**
+ * Default implementation of {@linkplain Device}, {@linkplain DiscoveryAccess} and {@linkplain HostingServiceAccess}.
+ * <p>
+ * todo DGr no support for hosting and hosted services being updated during runtime.
+ */
 public class DeviceImpl extends AbstractIdleService implements Device, Service, DiscoveryAccess, HostingServiceAccess {
     private static final Logger LOG = LoggerFactory.getLogger(DeviceImpl.class);
 
@@ -55,7 +64,6 @@ public class DeviceImpl extends AbstractIdleService implements Device, Service, 
     private final DpwsHelperFactory dpwsHelperFactory;
     private final HostingServiceFactory hostingServiceFactory;
     private final HttpServerRegistry httpServerRegistry;
-    private final SoapUtil soapUtil;
     private final RequestResponseServer wsdRequestResponseInterceptorChain;
     private final UdpMessageQueueService discoveryMessageQueue;
     private final Provider<RequestResponseServerHttpHandler> reqResHandlerProvider;
@@ -63,8 +71,12 @@ public class DeviceImpl extends AbstractIdleService implements Device, Service, 
     private final HostedServiceFactory hostedServiceFactory;
     private final HostedServiceInterceptorFactory hostedServiceInterceptorFactory;
     private final StreamUtil streamUtil;
+    private NetworkInterfaceUtil networkInterfaceUtil;
+    private HttpUriBuilder httpUriBuilder;
+    private Boolean unsecuredEndpoint;
+    private Boolean securedEndpoint;
 
-    private DeviceSettings config;
+    private DeviceSettings deviceSettings;
     private WsDiscoveryTargetService wsdTargetService;
     private HostingService hostingService;
     private final List<HostedService> hostedServicesOnStartup;
@@ -84,13 +96,16 @@ public class DeviceImpl extends AbstractIdleService implements Device, Service, 
                RequestResponseServer wsdRequestResponseInterceptorChain,
                HostingServiceFactory hostingServiceFactory,
                HttpServerRegistry httpServerRegistry,
-               SoapUtil soapUtil,
                Provider<RequestResponseServerHttpHandler> reqResHandlerProvider,
                @DiscoveryUdpQueue UdpMessageQueueService discoveryMessageQueue,
                Provider<EventSource> eventSourceProvider,
                HostedServiceFactory hostedServiceFactory,
                HostedServiceInterceptorFactory hostedServiceInterceptorFactory,
-               StreamUtil streamUtil) {
+               StreamUtil streamUtil,
+               NetworkInterfaceUtil networkInterfaceUtil,
+               HttpUriBuilder httpUriBuilder,
+               @Named(DeviceConfig.UNSECURED_ENDPOINT) Boolean unsecuredEndpoint,
+               @Named(DeviceConfig.SECURED_ENDPOINT) Boolean securedEndpoint) {
         this.targetServiceFactory = targetServiceFactory;
         this.defaultConfigProvider = defaultConfigProvider;
         this.wsaUtil = wsaUtil;
@@ -99,7 +114,6 @@ public class DeviceImpl extends AbstractIdleService implements Device, Service, 
         this.dpwsHelperFactory = dpwsHelperFactory;
         this.hostingServiceFactory = hostingServiceFactory;
         this.httpServerRegistry = httpServerRegistry;
-        this.soapUtil = soapUtil;
         this.wsdRequestResponseInterceptorChain = wsdRequestResponseInterceptorChain;
         this.discoveryMessageQueue = discoveryMessageQueue;
         this.reqResHandlerProvider = reqResHandlerProvider;
@@ -107,22 +121,31 @@ public class DeviceImpl extends AbstractIdleService implements Device, Service, 
         this.hostedServiceFactory = hostedServiceFactory;
         this.hostedServiceInterceptorFactory = hostedServiceInterceptorFactory;
         this.streamUtil = streamUtil;
+        this.networkInterfaceUtil = networkInterfaceUtil;
+        this.httpUriBuilder = httpUriBuilder;
+        this.unsecuredEndpoint = unsecuredEndpoint;
+        this.securedEndpoint = securedEndpoint;
         this.hostedServicesOnStartup = new ArrayList<>();
     }
 
     @Override
     protected void startUp() throws Exception {
-        if (config == null) {
+        if (deviceSettings == null) {
             LOG.warn("No device configuration found. Use default.");
-            config = defaultConfigProvider.get();
+            deviceSettings = defaultConfigProvider.get();
         }
 
-        EndpointReferenceType deviceEpr = config.getEndpointReference();
-        LOG.info("Start device with URN '{}'.", deviceEpr.getAddress().getValue());
+        EndpointReferenceType deviceEpr = deviceSettings.getEndpointReference();
+        LOG.info("Start device with URN '{}'", deviceEpr.getAddress().getValue());
 
-        URI eprAddress = wsaUtil.getAddressUri(config.getEndpointReference()).orElseThrow(() ->
-                new RuntimeException("No valid endpoint reference found in device config."));
+        URI eprAddress = wsaUtil.getAddressUri(deviceSettings.getEndpointReference()).orElseThrow(() ->
+                new RuntimeException("No valid endpoint reference found in device deviceSettings"));
         String hostingServerCtxtPath = buildContextPathBase(eprAddress);
+
+        // Initialize HTTP servers
+        List<URI> actualHostingServiceBindings = resolveHostingServiceBindings().stream()
+                .map(httpServerRegistry::initHttpServer)
+                .collect(Collectors.toList());
 
         /*
          * Configure WS-Discovery
@@ -134,7 +157,7 @@ public class DeviceImpl extends AbstractIdleService implements Device, Service, 
 
         // Create WS-Discovery target service
         wsdTargetService = targetServiceFactory.createWsDiscoveryTargetService(deviceEpr, wsdNotificationSource);
-        wsdTargetService.setXAddrs(config.getHostingServiceBindings().parallelStream()
+        wsdTargetService.setXAddrs(actualHostingServiceBindings.stream()
                 .map(uri -> uri.toString() + hostingServerCtxtPath)
                 .collect(Collectors.toList()));
 
@@ -156,7 +179,7 @@ public class DeviceImpl extends AbstractIdleService implements Device, Service, 
         RequestResponseServerHttpHandler reqResHandler = reqResHandlerProvider.get();
 
         // Register HTTP bindings to HTTP context registry; append EPR UUID from host as context path
-        config.getHostingServiceBindings().forEach(uri -> httpServerRegistry.registerContext(uri,
+        actualHostingServiceBindings.forEach(uri -> httpServerRegistry.registerContext(uri,
                 hostingServerCtxtPath, reqResHandler));
         // Create hosting service
         hostingService = hostingServiceFactory.createHostingService(wsdTargetService);
@@ -177,25 +200,43 @@ public class DeviceImpl extends AbstractIdleService implements Device, Service, 
         Optional.ofNullable(scopesOnStartup).ifPresent(uris ->
                 wsdTargetService.setScopes(scopesAsStrs(uris)));
 
-        LOG.info("Device {} is running.", hostingService);
+        LOG.info("Device {} is running", hostingService);
 
         wsdTargetService.sendHello();
     }
 
+    private List<URI> resolveHostingServiceBindings() {
+        InetAddress address = networkInterfaceUtil.getFirstIpV4Address(deviceSettings.getNetworkInterface()).orElseThrow(() ->
+                new RuntimeException(String.format("No required IPv4 address found in configured network interface %s",
+                        deviceSettings.getNetworkInterface())));
+
+        final List<URI> hostingServiceBindings = new ArrayList<>();
+
+        if (unsecuredEndpoint) {
+            hostingServiceBindings.add(httpUriBuilder.buildUri(address.getHostAddress(), 0));
+        }
+
+        if (securedEndpoint) {
+            hostingServiceBindings.add(httpUriBuilder.buildSecuredUri(address.getHostAddress(), 0));
+        }
+
+        return hostingServiceBindings;
+    }
+
     @Override
     protected void shutDown() throws Exception {
-        LOG.info("Shut down device {}.", hostingService);
+        LOG.info("Shut down device {}", hostingService);
         wsdTargetService.sendBye();
         hostingService.getHostedServices().forEach(hostedService ->
                 hostedService.getWebService().stopAsync().awaitTerminated());
         httpServerRegistry.stopAsync().awaitTerminated();
         discoveryMessageQueue.unregisterUdpMessageQueueObserver(udpMsgProcessor);
-        LOG.info("Device {} shut down.", hostingService);
+        LOG.info("Device {} shut down", hostingService);
     }
 
     @Override
-    public void setConfiguration(DeviceSettings deviceSettings) {
-        this.config = deviceSettings;
+    public void setConfiguration(@Nullable DeviceSettings deviceSettings) {
+        this.deviceSettings = deviceSettings;
     }
 
     @Override
@@ -210,7 +251,7 @@ public class DeviceImpl extends AbstractIdleService implements Device, Service, 
 
     private void checkRunning() {
         if (!isRunning()) {
-            throw new IllegalStateException("Device is not running.");
+            throw new IllegalStateException("Device is not running");
         }
     }
 
@@ -308,10 +349,10 @@ public class DeviceImpl extends AbstractIdleService implements Device, Service, 
         final byte[] wsdlDocBytes = tmpWsdlDocBytes;
         for (EndpointReferenceType epr : hostedService.getType().getEndpointReference()) {
             if (wsdlDocBytes.length == 0) {
-                throw new RuntimeException("Empty WSDL document detected.");
+                throw new RuntimeException("Empty WSDL document detected");
             }
             URI uri = wsaUtil.getAddressUri(epr).orElseThrow(() ->
-                    new RuntimeException("Invalid EPR detected when trying to add hosted service."));
+                    new RuntimeException("Invalid EPR detected when trying to add hosted service"));
 
             httpServerRegistry.registerContext(uri, contextPath, hsReqResHandler);
             URI wsdlLocation = httpServerRegistry.registerContext(uri, wsdlContextPath,

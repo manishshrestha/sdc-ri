@@ -18,9 +18,9 @@ import org.slf4j.LoggerFactory;
 import java.io.ByteArrayInputStream;
 
 /**
- * Receive and send WS-Discovery SOAP messages via UDP at the client side.
- *
- * To receive {@link UdpMessage} instances, {@linkplain DiscoveryClientUdpProcessor} shall be registered at a
+ * Receives WS-Discovery SOAP messages via UDP.
+ * <p>
+ * To receive {@link UdpMessage} instances, {@linkplain DiscoveryClientUdpProcessor} needs to be registered at a
  * {@link UdpMessageQueueService} by using
  * {@link UdpMessageQueueService#registerUdpMessageQueueObserver(UdpMessageQueueObserver)}.
  */
@@ -38,7 +38,7 @@ public class DiscoveryClientUdpProcessor implements UdpMessageQueueObserver {
     }
 
     @Subscribe
-    private void receiveUdpMessage(UdpMessage msg) throws TransportException {
+    private void receiveUdpMessage(UdpMessage msg) {
         SoapMessage notification;
         // Unmarshal SOAP request message
         try {

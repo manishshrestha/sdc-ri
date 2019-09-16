@@ -10,9 +10,6 @@ import dpws_test_service.messages._2017._05._10.TestOperationRequest;
 import dpws_test_service.messages._2017._05._10.TestOperationResponse;
 import it.org.ieee11073.sdc.dpws.IntegrationTestUtil;
 import it.org.ieee11073.sdc.dpws.TestServiceMetadata;
-import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.core.config.Configurator;
-import org.apache.logging.log4j.core.config.DefaultConfiguration;
 import org.ieee11073.sdc.dpws.guice.DefaultDpwsConfigModule;
 import org.ieee11073.sdc.dpws.service.HostedServiceProxy;
 import org.ieee11073.sdc.dpws.service.HostingServiceProxy;
@@ -46,6 +43,10 @@ public class InvocationIT {
     private HostingServiceProxy hostingServiceProxy;
     private ObjectFactory factory;
     private final SoapUtil soapUtil = IT.getInjector().getInstance(SoapUtil.class);
+
+    public InvocationIT() {
+        IntegrationTestUtil.preferIpV4Usage();
+    }
 
     @Before
     public void setUp() throws Exception {

@@ -21,8 +21,8 @@ class InterceptorInfo implements Comparable<InterceptorInfo> {
         return callbackMethod;
     }
 
-    Optional<Object> getCallbackObject() {
-        return Optional.ofNullable(callbackObject);
+    Object getCallbackObject() {
+        return callbackObject;
     }
 
     int getSequenceNumber() {

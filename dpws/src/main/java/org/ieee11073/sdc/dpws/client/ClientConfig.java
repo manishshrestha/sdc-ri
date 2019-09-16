@@ -1,38 +1,42 @@
 package org.ieee11073.sdc.dpws.client;
 
 /**
- * General configuration of client functionality.
+ * Configuration keys for the client.
  */
 public class ClientConfig {
     /**
-     * Control maximum waiting time to get ResolveMatches information fetched from WS-Discovery
-     * <p>
-     * - Data type: {@linkplain java.time.Duration}
-     * - Use: optional
+     * Controls maximum waiting time to get ResolveMatches information fetched from WS-Discovery.
+     * <ul>
+     * <li>Data type: {@linkplain java.time.Duration}
+     * <li>Use: optional
+     * </ul>
      */
     public static final String MAX_WAIT_FOR_RESOLVE_MATCHES = "Dpws.Client.MaxWaitForResolveMatches";
 
     /**
-     * Enable (true) or disable (false) watchdog for hosting services.
-     * <p>
-     * - Data type: {@linkplain Boolean}
-     * - Use: optional
+     * Enables (true) or disables (false) watchdog for hosting services.
+     * <ul>
+     * <li>Data type: {@linkplain Boolean}
+     * <li>Use: optional
+     * </ul>
      */
     public static final String ENABLE_WATCHDOG = "Dpws.Client.EnableWatchdog";
 
     /**
-     * Configure period for watchdog jobs.
-     * <p>
-     * - Data type: {@linkplain java.time.Duration}
-     * - Use: optional
+     * Configures the period for watchdog jobs.
+     * <ul>
+     * <li>Data type: {@linkplain java.time.Duration}
+     * <li>Use: optional
+     * </ul>
      */
     public static final String WATCHDOG_PERIOD = "Dpws.Client.WatchdogPeriod";
 
     /**
-     * Configure auto-resolve for probes and hellos without XAddrs.
-     * <p>
-     * - Data type: {@linkplain Boolean}
-     * - Use: optional
+     * Configures auto-resolve for probes and hellos without XAddrs.
+     * <ul>
+     * <li>Data type: {@linkplain Boolean}
+     * <li>Use: optional
+     * </ul>
      */
     public static final String AUTO_RESOLVE = "Dpws.Client.AutoResolve";
 }

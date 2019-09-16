@@ -13,15 +13,20 @@ public class HttpServerRegistryMock extends AbstractIdleService implements HttpS
     private static final Map<URI, HttpHandler> handlerRegistry = new HashMap<>();
 
     @Override
-    protected void startUp() throws Exception {
+    protected void startUp() {
     }
 
     @Override
-    protected void shutDown() throws Exception {
+    protected void shutDown() {
     }
 
     public static Map<URI, HttpHandler> getRegistry() {
         return handlerRegistry;
+    }
+
+    @Override
+    public URI initHttpServer(URI schemeAndAuthority) {
+        return null;
     }
 
     @Override
@@ -40,6 +45,6 @@ public class HttpServerRegistryMock extends AbstractIdleService implements HttpS
 
     @Override
     public void unregisterContext(URI host, String contextPath) {
-        handlerRegistry.remove(host + contextPath);
+        handlerRegistry.remove(URI.create(host + contextPath));
     }
 }

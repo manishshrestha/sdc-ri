@@ -12,7 +12,7 @@ public class DiscoveryFilterBuilder {
     private final List<String> scopes;
 
     /**
-     * Construct a new object with empty types and scopes.
+     * Constructs a new object with empty types and scopes.
      */
     public DiscoveryFilterBuilder() {
         this.types = new ArrayList<>();
@@ -20,7 +20,10 @@ public class DiscoveryFilterBuilder {
     }
 
     /**
-     * Add a single type.
+     * Adds a type.
+     *
+     * @param type the type as QName according to WS-Discovery.
+     * @return this object.
      */
     public DiscoveryFilterBuilder addType(QName type) {
         types.add(type);
@@ -28,7 +31,10 @@ public class DiscoveryFilterBuilder {
     }
 
     /**
-     * Add a single scope.
+     * Adds a scope.
+     *
+     * @param scope the scope URI as string.
+     * @return this object.
      */
     public DiscoveryFilterBuilder addScope(String scope) {
         scopes.add(scope);
@@ -36,8 +42,10 @@ public class DiscoveryFilterBuilder {
     }
 
     /**
-     * Get discovery filter with all types and scopes added through {@link #addType(QName)} and
+     * Gets a discovery filter with all types and scopes added via {@link #addType(QName)} and
      * {@link #addScope(String)}.
+     *
+     * @return a {@linkplain DiscoveryFilter} instance.
      */
     public DiscoveryFilter get() {
         return new DiscoveryFilter(types, scopes);
