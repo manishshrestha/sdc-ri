@@ -19,11 +19,11 @@ import java.util.Optional;
  * Implements a WS-Addressing server interceptor to check WS-Addressing header information.
  * <p>
  * The {@linkplain WsAddressingServerInterceptor} is in charge of
- * <li>
+ * <ul>
  * <li>checking for existing wsa:Action attribute (and cancelling an incoming request in case it is missing) and
  * <li>tracking message ids and reject duplicates.
- * </li>
- * \todo process ReplyTo automatically
+ * </ul>
+ * todo DGr process ReplyTo automatically
  */
 public class WsAddressingServerInterceptor implements Interceptor {
     private static final Logger LOG = LoggerFactory.getLogger(WsAddressingServerInterceptor.class);
