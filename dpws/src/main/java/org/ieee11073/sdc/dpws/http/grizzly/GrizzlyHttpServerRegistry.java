@@ -35,7 +35,7 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
- * {@linkplain HttpServerRegistry} implementation based Grizzly HTTP servers.
+ * {@linkplain HttpServerRegistry} implementation based on Grizzly HTTP servers.
  */
 public class GrizzlyHttpServerRegistry extends AbstractIdleService implements HttpServerRegistry {
     private static final Logger LOG = LoggerFactory.getLogger(GrizzlyHttpServerRegistry.class);

@@ -3,7 +3,7 @@ package org.ieee11073.sdc.dpws.udp;
 import com.google.common.util.concurrent.Service;
 
 /**
- * Bundles two message queues to send and receive UDP messages.
+ * Holds two message queues to send and receive UDP messages.
  * <p>
  * The {@linkplain UdpMessageQueueService} instance will use the UDP binding set via
  * {@link #setUdpBinding(UdpBindingService)}.

@@ -4,7 +4,7 @@ import java.net.URI;
 import java.util.Optional;
 
 /**
- * Helper to extract a base path from an URL.
+ * Helper to extract a base path from an URI.
  */
 public class UriBaseContextPath {
     final String basePath;

@@ -20,7 +20,7 @@ import java.io.ByteArrayInputStream;
 /**
  * Receives WS-Discovery SOAP messages via UDP.
  * <p>
- * To receive {@link UdpMessage} instances, {@linkplain DiscoveryClientUdpProcessor} needs be registered at a
+ * To receive {@link UdpMessage} instances, {@linkplain DiscoveryClientUdpProcessor} needs to be registered at a
  * {@link UdpMessageQueueService} by using
  * {@link UdpMessageQueueService#registerUdpMessageQueueObserver(UdpMessageQueueObserver)}.
  */
