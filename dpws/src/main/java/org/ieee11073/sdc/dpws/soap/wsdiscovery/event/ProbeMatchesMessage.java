@@ -21,7 +21,7 @@ public class ProbeMatchesMessage extends AbstractEventMessage<ProbeMatchesType> 
     }
 
     /**
-     * Gets the identifier that relates probe request and response to each other.
+     * Gets the identifier that relates a probe request and response to each other.
      *
      * @return the probe request identifier.
      */

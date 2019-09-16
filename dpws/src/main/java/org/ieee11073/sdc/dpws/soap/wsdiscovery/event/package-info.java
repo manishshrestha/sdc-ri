@@ -1,7 +1,7 @@
 /**
- * WS-Addressing plugin for SOAP.
+ * WS-Discovery events.
  */
 @ParametersAreNonnullByDefault
-package org.ieee11073.sdc.dpws.soap.wsaddressing;
+package org.ieee11073.sdc.dpws.soap.wsdiscovery.event;
 
 import javax.annotation.ParametersAreNonnullByDefault;

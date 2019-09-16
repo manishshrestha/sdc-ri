@@ -6,9 +6,9 @@ import org.ieee11073.sdc.dpws.soap.SoapUtil;
 import org.ieee11073.sdc.dpws.soap.interception.*;
 
 /**
- * WS-Addressing server client interceptor.
- *
- * - Create unique message ids on requests and notifications
+ * Implements a WS-Addressing client interceptor to apply WS-Addressing header information.
+ * <p>
+ * The {@linkplain WsAddressingClientInterceptor} creates unique message ids on requests and notifications.
  */
 public class WsAddressingClientInterceptor implements Interceptor {
 
