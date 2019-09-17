@@ -1,6 +1,5 @@
 package it.org.ieee11073.sdc.dpws.soap;
 
-import com.google.inject.AbstractModule;
 import it.org.ieee11073.sdc.dpws.IntegrationTestPeer;
 import org.ieee11073.sdc.dpws.device.Device;
 import org.ieee11073.sdc.dpws.device.DeviceSettings;
@@ -11,7 +10,6 @@ import org.ieee11073.sdc.dpws.soap.wsaddressing.WsAddressingUtil;
 import org.ieee11073.sdc.dpws.soap.wsaddressing.model.EndpointReferenceType;
 
 import javax.annotation.Nullable;
-import javax.validation.constraints.Null;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.URI;
@@ -28,8 +26,8 @@ public abstract class DevicePeer extends IntegrationTestPeer {
         isSetup = false;
     }
 
-    void setup(DefaultDpwsConfigModule configModule, @Nullable DeviceSettings deviceSettings, @Nullable AbstractModule overridingModule) {
-        setupInjector(configModule, overridingModule);
+    void setup(DefaultDpwsConfigModule configModule, @Nullable DeviceSettings deviceSettings) {
+        setupInjector(configModule);
         this.device = getInjector().getInstance(Device.class);
         if (deviceSettings == null) {
             this.eprAddress = getInjector().getInstance(SoapUtil.class).createUriFromUuid(UUID.randomUUID());

@@ -14,10 +14,10 @@ import java.util.List;
 
 /**
  * Ws-Discovery Client interface.
+ * <p>
+ * todo DGr Create observable for receiving Hello and Bye messages
  *
  * @see <a href="http://docs.oasis-open.org/ws-dd/discovery/1.1/os/wsdd-discovery-1.1-spec-os.html#_Toc234231815">Conceptual Message Content</a>
- *
- * \todo Create observable for receiving Hello and Bye messages
  */
 public interface WsDiscoveryClient extends Interceptor {
     ListenableFuture<Integer> sendProbe(String probeId, List<QName> types, List<String> scopes)

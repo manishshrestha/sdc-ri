@@ -5,13 +5,15 @@ import org.ieee11073.sdc.dpws.soap.SoapMessage;
 import org.ieee11073.sdc.dpws.soap.model.Envelope;
 
 /**
- * Guice factory interface to create {@link SoapMessage} instances.
+ * Guice factory interface to create {@linkplain SoapMessage} instances.
  */
 public interface SoapMessageFactory {
     /**
-     * @param envelope The envelope that is encapsulated within the {@link SoapMessage}. All known headers will be
-     *                 added to the convenience header access.
-     * @return a new {@link SoapMessage} instance containing the {@code envelope}
+     * Creates a SOAP message.
+     *
+     * @param envelope the envelope that is enclosed by the {@link SoapMessage}.
+     *                 All known headers will be parsed and copied to the convenience header access.
+     * @return a new {@link SoapMessage} instance containing the envelope.
      */
     SoapMessage createSoapMessage(@Assisted Envelope envelope);
 }

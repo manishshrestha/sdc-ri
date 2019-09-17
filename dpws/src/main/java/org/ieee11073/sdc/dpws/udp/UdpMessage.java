@@ -44,7 +44,7 @@ public class UdpMessage {
      *
      * @return true if there is a host and port, otherwise false.
      */
-    public boolean hasTransportData() {
+    boolean hasTransportData() {
         return host != null && port != null;
     }
 

@@ -21,10 +21,22 @@ public class WsDiscoveryMapper {
         this.wsdFactory = wsdFactory;
     }
 
+    /**
+     * The mapper function that takes a convenience WS-Discovery header and adds it to a list of JAXB objects.
+     *
+     * @param src  The WS-Discovery source information.
+     * @param dest The list of objects where to add the mapped JAXB element (typically the list of headers).
+     */
     public void mapToJaxbSoapHeader(WsDiscoveryHeader src, List<Object> dest) {
         src.getAppSequence().ifPresent(appSequenceType -> dest.add(wsdFactory.createAppSequence(appSequenceType)));
     }
 
+    /**
+     * The mapper function that takes a list of JAXB objects and populates the convenience WS-Discovery header.
+     *
+     * @param src  The list of objects where to get the WS-Discovery header information from.
+     * @param dest The WS-Discovery mapper destination.
+     */
     public void mapFromJaxbSoapHeader(List<Object> src, WsDiscoveryHeader dest) {
         src.forEach(o -> {
             Optional<AppSequenceType> appSeq;

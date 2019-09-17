@@ -9,9 +9,9 @@ import org.ieee11073.sdc.dpws.soap.interception.RequestResponseCallback;
  */
 public interface RequestResponseClientFactory {
     /**
-     * @param callback Callback that shall be invoked after all interceptors on request-direction are visited and a
-     *                 response is required from requested server.
-     * @return a new {@link RequestResponseClient}
+     * @param callback callback that is supposed to be invoked after all interceptors on a request-direction are visited
+     *                 and the request is ready to be conveyed over the network.
+     * @return a new {@link RequestResponseClient}.
      */
     RequestResponseClient createRequestResponseClient(@Assisted RequestResponseCallback callback);
 }

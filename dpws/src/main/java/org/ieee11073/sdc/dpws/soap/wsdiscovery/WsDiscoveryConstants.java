@@ -77,8 +77,8 @@ public class WsDiscoveryConstants {
 
     /**
      * Max delay to wait for transmitting a UDP message.
-     *
-     * Superseded by DPWS.
+     * <p>
+     * <em>Superseded by DPWS.</em>
      *
      * @see <a href="http://docs.oasis-open.org/ws-dd/discovery/1.1/os/wsdd-discovery-1.1-spec-os.html#_Toc234231819">Application Level Transmission Delay</a>
      * @see <a href="http://docs.oasis-open.org/ws-dd/dpws/1.1/os/wsdd-dpws-1.1-spec-os.html#_Toc228672112">Application Level Transmission Delay (DPWS)</a>
@@ -86,7 +86,7 @@ public class WsDiscoveryConstants {
     public static final Duration APP_MAX_DELAY = Duration.ofMillis(2500);
 
     /**
-     * QName of fault subcode if given matching rule is not supported by a target service.
+     * QName of the fault subcode if given matching rule is not supported by a target service.
      *
      * @see <a href="http://docs.oasis-open.org/ws-dd/discovery/1.1/os/wsdd-discovery-1.1-spec-os.html#_Toc234231831">Probe</a>
      */
