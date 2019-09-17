@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -23,13 +24,15 @@ public class MdibStateModificationsTest {
     }
 
     @Test
-    public void differentStateTypes() {
+    public void differentStateTypes() throws NoSuchMethodException, InvocationTargetException {
         int stateCount = 10;
         Collection<MdibStateModifications.Type> changeTypes = EnumSet.allOf(MdibStateModifications.Type.class);
-        changeTypes.stream().forEach(type -> runTestForType(type, stateCount));
+        for (MdibStateModifications.Type changeType : changeTypes) {
+            runTestForType(changeType, stateCount);
+        };
     }
 
-    private void runTestForType(MdibStateModifications.Type type, int stateCount) {
+    private void runTestForType(MdibStateModifications.Type type, int stateCount) throws NoSuchMethodException, InvocationTargetException {
         List<AbstractState> states = new ArrayList<>();
         try {
             for (int i = 0; i < stateCount; ++i) {
@@ -49,7 +52,7 @@ public class MdibStateModificationsTest {
     }
 
     @Test
-    public void typeMismatch() throws InstantiationException, IllegalAccessException {
+    public void typeMismatch() throws InstantiationException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
         final List<AbstractState> validMismatch = Arrays.asList(
                 MockModelFactory.createState(handleGenerator.next(), NumericMetricState.class),
                 MockModelFactory.createState(handleGenerator.next(), StringMetricState.class),

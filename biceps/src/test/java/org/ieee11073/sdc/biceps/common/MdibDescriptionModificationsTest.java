@@ -5,6 +5,7 @@ import org.ieee11073.sdc.biceps.testutil.MockModelFactory;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -15,7 +16,7 @@ import static org.hamcrest.Matchers.is;
 
 public class MdibDescriptionModificationsTest {
     @Test
-    public void singleState() throws InstantiationException, IllegalAccessException {
+    public void singleState() throws InstantiationException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
         final List<AbstractDescriptor> descriptors = Arrays.asList(
                 MockModelFactory.createDescriptor("h1", NumericMetricDescriptor.class),
                 MockModelFactory.createDescriptor("h2", StringMetricDescriptor.class),
@@ -63,7 +64,7 @@ public class MdibDescriptionModificationsTest {
     }
 
     @Test
-    public void multiState() throws InstantiationException, IllegalAccessException {
+    public void multiState() throws InstantiationException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
         final List<AbstractContextDescriptor> descriptors = Arrays.asList(
                 MockModelFactory.createDescriptor("c1", LocationContextDescriptor.class),
                 MockModelFactory.createDescriptor("c2", PatientContextDescriptor.class));
@@ -115,7 +116,7 @@ public class MdibDescriptionModificationsTest {
     }
 
     @Test
-    public void handleDuplicate() throws InstantiationException, IllegalAccessException {
+    public void handleDuplicate() throws InstantiationException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
         final List<AbstractDescriptor> descriptors = Arrays.asList(
                 MockModelFactory.createDescriptor("h1", NumericMetricDescriptor.class),
                 MockModelFactory.createDescriptor("h2", AlertSignalDescriptor.class));

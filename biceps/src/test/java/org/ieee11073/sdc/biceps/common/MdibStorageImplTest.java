@@ -1,19 +1,16 @@
 package org.ieee11073.sdc.biceps.common;
 
-import com.google.inject.Guice;
 import com.google.inject.Injector;
 import org.ieee11073.sdc.biceps.UnitTestUtil;
-import org.ieee11073.sdc.biceps.guice.DefaultBicepsConfigModule;
-import org.ieee11073.sdc.biceps.guice.DefaultBicepsModule;
 import org.ieee11073.sdc.biceps.model.participant.*;
 import org.ieee11073.sdc.biceps.testutil.Handles;
 import org.ieee11073.sdc.biceps.testutil.MockModelFactory;
-import org.ieee11073.sdc.common.guice.DefaultHelperModule;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import test.org.ieee11073.common.TestLogging;
 
+import java.lang.reflect.InvocationTargetException;
 import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.List;
@@ -22,19 +19,19 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 public class MdibStorageImplTest {
-    private static final UnitTestUtil IT = new UnitTestUtil();
+    private static final UnitTestUtil UT = new UnitTestUtil();
 
     private MdibStorage mdibStorage;
 
     @BeforeEach
     public void setUp() {
         TestLogging.configure();
-        Injector injector = IT.getInjector();
+        Injector injector = UT.getInjector();
         mdibStorage = injector.getInstance(MdibStorage.class);
     }
 
     private void applyDescriptionWithVersion(MdibDescriptionModification.Type type,
-                                             BigInteger version) throws InstantiationException, IllegalAccessException {
+                                             BigInteger version) throws InstantiationException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
         final MdibDescriptionModifications modifications = MdibDescriptionModifications.create();
         modifications.add(type,
                 MockModelFactory.createDescriptor(Handles.MDS_0, version, MdsDescriptor.class),
@@ -84,7 +81,7 @@ public class MdibStorageImplTest {
     }
 
     @Test
-    public void writeDescription() throws InstantiationException, IllegalAccessException {
+    public void writeDescription() throws InstantiationException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
         List<String> testedHandles = Arrays.asList(
                 Handles.MDS_0,
                 Handles.SYSTEMCONTEXT_0,
@@ -107,7 +104,7 @@ public class MdibStorageImplTest {
     }
 
     @Test
-    public void mdibAccess() throws InstantiationException, IllegalAccessException {
+    public void mdibAccess() throws InstantiationException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
         applyDescriptionWithVersion(MdibDescriptionModification.Type.INSERT, BigInteger.ZERO);
         assertThat(mdibStorage.getEntity(Handles.UNKNOWN).isPresent(), is(false));
         assertThat(mdibStorage.getEntity(Handles.MDS_0).isPresent(), is(true));
@@ -123,7 +120,7 @@ public class MdibStorageImplTest {
     }
 
     @Test
-    public void writeStates() throws IllegalAccessException, InstantiationException {
+    public void writeStates() throws IllegalAccessException, InstantiationException, NoSuchMethodException, InvocationTargetException {
         List<String> testedHandles = Arrays.asList(
                 Handles.ALERTSYSTEM_0,
                 Handles.ALERTCONDITION_0,

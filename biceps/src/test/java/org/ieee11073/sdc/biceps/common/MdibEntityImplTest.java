@@ -1,17 +1,15 @@
 package org.ieee11073.sdc.biceps.common;
 
-import com.google.inject.Guice;
 import com.google.inject.Injector;
 import org.ieee11073.sdc.biceps.UnitTestUtil;
 import org.ieee11073.sdc.biceps.common.factory.MdibEntityFactory;
-import org.ieee11073.sdc.biceps.guice.DefaultBicepsConfigModule;
-import org.ieee11073.sdc.biceps.guice.DefaultBicepsModule;
 import org.ieee11073.sdc.biceps.model.participant.PatientContextDescriptor;
 import org.ieee11073.sdc.biceps.model.participant.PatientContextState;
 import org.ieee11073.sdc.biceps.testutil.MockModelFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -23,7 +21,7 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 public class MdibEntityImplTest {
-    private static final UnitTestUtil IT = new UnitTestUtil();
+    private static final UnitTestUtil UT = new UnitTestUtil();
 
     private MdibEntityFactory mdibEntityFactory;
     private String expectedDescriptorHandle;
@@ -31,8 +29,8 @@ public class MdibEntityImplTest {
     private MdibEntity mdibEntity;
 
     @BeforeEach
-    public void setUp() throws InstantiationException, IllegalAccessException {
-        Injector injector = IT.getInjector();
+    public void setUp() throws InstantiationException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
+        Injector injector = UT.getInjector();
         mdibEntityFactory = injector.getInstance(MdibEntityFactory.class);
         expectedDescriptorHandle = "descrHandle";
         expectedStateHandles = Arrays.asList("stateHandle1", "stateHandle2", "stateHandle3");
@@ -44,7 +42,7 @@ public class MdibEntityImplTest {
                         .map(handle -> {
                             try {
                                 return MockModelFactory.createContextState(handle, expectedDescriptorHandle, PatientContextState.class);
-                            } catch (IllegalAccessException | InstantiationException e) {
+                            } catch (IllegalAccessException | InstantiationException | NoSuchMethodException | InvocationTargetException e) {
                                 throw new RuntimeException("Creation of context state failed. Handle: " + handle);
                             }
                         })

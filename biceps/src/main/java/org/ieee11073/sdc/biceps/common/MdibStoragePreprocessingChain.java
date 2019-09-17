@@ -8,6 +8,11 @@ import org.ieee11073.sdc.biceps.model.participant.AbstractState;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Provides a processing chain that is supposed to be run before any interaction with an {@linkplain MdibStorage} instance.
+ * <p>
+ * The {@linkplain MdibStoragePreprocessingChain} offers processing functions for description and state change sets.
+ */
 public class MdibStoragePreprocessingChain {
     private final MdibStorage mdibStorage;
     private final List<DescriptionPreprocessingSegment> descriptionChainSegments;
@@ -25,6 +30,12 @@ public class MdibStoragePreprocessingChain {
         this.typeValidator = typeValidator;
     }
 
+    /**
+     * Accepts a set of description modifications and applies them on every available description chain segment.
+     *
+     * @param modifications the modification to pass to the chain segments.
+     * @throws PreprocessingException in case a chain segment fails.
+     */
     public void processDescriptionModifications(MdibDescriptionModifications modifications) throws PreprocessingException {
         final List<MdibDescriptionModification> modificationList = modifications.getModifications();
         int sizeToIterate = modificationList.size();
@@ -41,6 +52,12 @@ public class MdibStoragePreprocessingChain {
         }
     }
 
+    /**
+     * Accepts a set of state modifications and applies them on every available state chain segment.
+     *
+     * @param modifications the modification to pass to the chain segments.
+     * @throws PreprocessingException in case a chain segment fails.
+     */
     public void processStateModifications(MdibStateModifications modifications) throws PreprocessingException {
         for (AbstractState modification : modifications.getStates()) {
             for (StatePreprocessingSegment chainSegment : stateChainSegments) {
