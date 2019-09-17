@@ -16,11 +16,13 @@ public class MdibTypeValidator {
     }
 
     /**
-     * Check if descriptor and state classes match.
+     * Checks if descriptor and state classes match.
      * <p>
-     * A match is given if both classes do not implement the abstract flavor and share the same name prefix up to
-     * the Descriptor and State suffix.
+     * A match is given if both classes do not implement the abstract flavor and share the same name prefix
+     * excluding the Descriptor and State suffix.
      *
+     * @param descrClass the descriptor class to match.
+     * @param stateClass the state class to match.
      * @return true if classes match, otherwise false.
      */
     public boolean match(Class<? extends AbstractDescriptor> descrClass,
@@ -41,12 +43,18 @@ public class MdibTypeValidator {
 
     /**
      * Checks if the given descriptor state pairing is valid.
-     *
+     * <p>
      * A match is given if
-     * - descriptor and states match in terms of {@link #match(Class, Class)},
-     * - {@link AbstractState#getDescriptorHandle()} to {@link AbstractDescriptor#getHandle()} equality, and
-     * - single state descriptors do correspond to exactly one state.
+     * <ul>
+     * <li>descriptor and states match in terms of {@link #match(Class, Class)},
+     * <li>{@link AbstractState#getDescriptorHandle()} equals {@link AbstractDescriptor#getHandle()}, and
+     * <li>single state descriptors do correspond to exactly one state.
+     * </ul>
      *
+     * @param descriptor the descriptor to test.
+     * @param states the list of states to test.
+     * @param <D> any descriptor class.
+     * @param <S> any state class.
      * @return true if instances match, otherwise false.
      */
     public <D extends AbstractDescriptor, S extends AbstractState> boolean match(D descriptor, List<S> states) {
@@ -60,9 +68,13 @@ public class MdibTypeValidator {
 
     /**
      * Tries to match with exactly one state.
+     * <p>
+     * Hint: does also work for multi state lists of size 1.
      *
-     * Hint: does also work for multi state list of size 1.
-     *
+     * @param descriptor the descriptor to test.
+     * @param state the state to test.
+     * @param <D> any descriptor class.
+     * @param <S> any state class.
      * @see #match(AbstractDescriptor, List)
      */
     public <D extends AbstractDescriptor, S extends AbstractState> boolean match(D descriptor, S state) {
@@ -71,13 +83,21 @@ public class MdibTypeValidator {
 
     /**
      * Checks if a descriptor is a single state descriptor (true) or not (false).
+     *
+     * @param descriptor the descriptor to test.
+     * @param <T> any descriptor class.
+     * @return true if the descriptor is a single state descriptor, false otherwise.
      */
     public <T extends AbstractDescriptor> boolean isSingleStateDescriptor(T descriptor) {
         return !isMultiStateDescriptor(descriptor);
     }
 
     /**
-     * Checks if a descriptor is a single state (true) or not (false).
+     * Checks if a state is a single state (true) or not (false).
+     *
+     * @param state the state to test.
+     * @param <T> any state class.
+     * @return true if the state is a single state, false otherwise.
      */
     public <T extends AbstractState> boolean isSingleState(T state) {
         return !isMultiState(state);
@@ -85,18 +105,33 @@ public class MdibTypeValidator {
 
     /**
      * Checks if a descriptor is a multi state descriptor (true) or not (false).
+     *
+     * @param descriptor the descriptor to test.
+     * @param <T> any descriptor class.
+     * @return true if the descriptor is a multi state descriptor, false otherwise.
      */
     public <T extends AbstractDescriptor> boolean isMultiStateDescriptor(T descriptor) {
         return descriptor instanceof AbstractContextDescriptor;
     }
 
     /**
-     * Checks if a descriptor is a multi state (true) or not (false).
+     * Checks if a state is a multi state (true) or not (false).
+     *
+     * @param state the state to test.
+     * @param <T> any state class.
+     * @return true if the state is a multi state, false otherwise.
      */
     public <T extends AbstractState> boolean isMultiState(T state) {
         return state instanceof AbstractMultiState;
     }
 
+    /**
+     * Tries to cast to a multi state.
+     *
+     * @param state the state to cast.
+     * @param <T> any state class.
+     * @return The cast multi state or {@linkplain Optional#empty()} if the state was not a multi state.
+     */
     public <T extends AbstractState> Optional<AbstractMultiState> toMultiState(T state) {
         if (isMultiState(state)) {
             return Optional.of((AbstractMultiState)state);
