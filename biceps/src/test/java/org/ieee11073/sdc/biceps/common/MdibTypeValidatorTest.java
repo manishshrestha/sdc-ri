@@ -5,6 +5,7 @@ import org.ieee11073.sdc.biceps.testutil.MockModelFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -31,7 +32,7 @@ public class MdibTypeValidatorTest {
     }
 
     @Test
-    public void matchingSinleStateInstance() throws InstantiationException, IllegalAccessException {
+    public void matchingSinleStateInstance() throws InstantiationException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
         final StringMetricDescriptor descriptor = MockModelFactory.createDescriptor("handle", StringMetricDescriptor.class);
         final StringMetricState state = MockModelFactory.createState("handle", StringMetricState.class);
         final StringMetricState illegalSecondState = MockModelFactory.createState("handle", StringMetricState.class);
@@ -48,7 +49,7 @@ public class MdibTypeValidatorTest {
     }
 
     @Test
-    public void matchingMultiStateInstance() throws InstantiationException, IllegalAccessException {
+    public void matchingMultiStateInstance() throws InstantiationException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
         final LocationContextDescriptor descriptor = MockModelFactory.createDescriptor("handle", LocationContextDescriptor.class);
         final List<LocationContextState> states = Arrays.asList(
                 MockModelFactory.createContextState("c1", "handle", LocationContextState.class),
