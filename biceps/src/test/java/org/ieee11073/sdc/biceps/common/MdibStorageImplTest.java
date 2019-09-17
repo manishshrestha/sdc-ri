@@ -2,6 +2,7 @@ package org.ieee11073.sdc.biceps.common;
 
 import com.google.inject.Guice;
 import com.google.inject.Injector;
+import org.ieee11073.sdc.biceps.UnitTestUtil;
 import org.ieee11073.sdc.biceps.guice.DefaultBicepsConfigModule;
 import org.ieee11073.sdc.biceps.guice.DefaultBicepsModule;
 import org.ieee11073.sdc.biceps.model.participant.*;
@@ -21,13 +22,14 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 public class MdibStorageImplTest {
-    private Injector injector;
+    private static final UnitTestUtil IT = new UnitTestUtil();
+
     private MdibStorage mdibStorage;
 
     @BeforeEach
     public void setUp() {
         TestLogging.configure();
-        injector = Guice.createInjector(new DefaultHelperModule(), new DefaultBicepsModule(), new DefaultBicepsConfigModule());
+        Injector injector = IT.getInjector();
         mdibStorage = injector.getInstance(MdibStorage.class);
     }
 

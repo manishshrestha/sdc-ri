@@ -2,6 +2,7 @@ package org.ieee11073.sdc.biceps.common;
 
 import com.google.inject.Guice;
 import com.google.inject.Injector;
+import org.ieee11073.sdc.biceps.UnitTestUtil;
 import org.ieee11073.sdc.biceps.common.factory.MdibEntityFactory;
 import org.ieee11073.sdc.biceps.guice.DefaultBicepsConfigModule;
 import org.ieee11073.sdc.biceps.guice.DefaultBicepsModule;
@@ -22,7 +23,8 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 public class MdibEntityImplTest {
-    private Injector injector;
+    private static final UnitTestUtil IT = new UnitTestUtil();
+
     private MdibEntityFactory mdibEntityFactory;
     private String expectedDescriptorHandle;
     private List<String> expectedStateHandles;
@@ -30,7 +32,7 @@ public class MdibEntityImplTest {
 
     @BeforeEach
     public void setUp() throws InstantiationException, IllegalAccessException {
-        injector = Guice.createInjector(new DefaultBicepsModule(), new DefaultBicepsConfigModule());
+        Injector injector = IT.getInjector();
         mdibEntityFactory = injector.getInstance(MdibEntityFactory.class);
         expectedDescriptorHandle = "descrHandle";
         expectedStateHandles = Arrays.asList("stateHandle1", "stateHandle2", "stateHandle3");
