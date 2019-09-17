@@ -47,14 +47,10 @@ class MdibStoragePreprocessingChainTest {
             chain.processDescriptionModifications(modifications);
 
             // Then expect every segment to be processed once
-            segments.forEach(segment -> {
-                try {
-                    verify(segment, times(1))
-                            .process(modifications, modifications.getModifications().get(0), mockStorage);
-                } catch (Exception e) {
-                    Assertions.fail(e);
-                }
-            });
+            for (DescriptionPreprocessingSegment segment : segments) {
+                verify(segment, times(1))
+                        .process(modifications, modifications.getModifications().get(0), mockStorage);
+            }
         }
 
         {
@@ -113,8 +109,8 @@ class MdibStoragePreprocessingChainTest {
         chain.processDescriptionModifications(modifications);
 
         // Then expect every segment to be processed twice; 1x on 1st, 1x on 2nd modification
-        for (DescriptionPreprocessingSegment descriptionPreprocessingSegment : segments) {
-            verify(descriptionPreprocessingSegment, times(1))
+        for (DescriptionPreprocessingSegment segment : segments) {
+            verify(segment, times(1))
                     .process(modifications, modifications.getModifications().get(0), mockStorage);
         }
         for (DescriptionPreprocessingSegment segment : segments) {
