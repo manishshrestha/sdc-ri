@@ -39,6 +39,9 @@ public class MdibStoragePreprocessingChain {
     public void processDescriptionModifications(MdibDescriptionModifications modifications) throws PreprocessingException {
         final List<MdibDescriptionModification> modificationList = modifications.getModifications();
         int sizeToIterate = modificationList.size();
+
+        descriptionChainSegments.forEach(chainSegment -> chainSegment.beforeFirstModification(mdibStorage));
+
         for (int i = 0; i < sizeToIterate; ++i) {
             for (DescriptionPreprocessingSegment chainSegment : descriptionChainSegments) {
                 try {
@@ -50,6 +53,8 @@ public class MdibStoragePreprocessingChain {
             }
             sizeToIterate = modificationList.size();
         }
+
+        descriptionChainSegments.forEach(chainSegment -> chainSegment.afterLastModification(mdibStorage));
     }
 
     /**
@@ -59,6 +64,8 @@ public class MdibStoragePreprocessingChain {
      * @throws PreprocessingException in case a chain segment fails.
      */
     public void processStateModifications(MdibStateModifications modifications) throws PreprocessingException {
+        stateChainSegments.forEach(chainSegment -> chainSegment.beforeFirstModification(mdibStorage));
+
         for (AbstractState modification : modifications.getStates()) {
             for (StatePreprocessingSegment chainSegment : stateChainSegments) {
                 try {
@@ -74,5 +81,7 @@ public class MdibStoragePreprocessingChain {
                 }
             }
         }
+
+        stateChainSegments.forEach(chainSegment -> chainSegment.afterLastModification(mdibStorage));
     }
 }
