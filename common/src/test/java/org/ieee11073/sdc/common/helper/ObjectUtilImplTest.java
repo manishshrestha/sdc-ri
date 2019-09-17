@@ -3,9 +3,9 @@ package org.ieee11073.sdc.common.helper;
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import test.org.ieee11073.common.TestLogging;
 
 import java.util.ArrayList;
@@ -20,7 +20,7 @@ public class ObjectUtilImplTest {
     private Injector inj;
     private ObjectUtil objectUtil;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         TestLogging.configure();
         inj = Guice.createInjector(
@@ -68,7 +68,7 @@ public class ObjectUtilImplTest {
         assertThat(immutableFacade.getStr(), is(expectedStr));
         try {
             immutableFacade.setStr(expectedStr + expectedStr);
-            Assert.fail("Class ought to be mutable, but is not.");
+            Assertions.fail("Class ought to be mutable, but is not.");
         } catch (RuntimeException e) {
         }
         assertThat(immutableFacade.getStr(), is(expectedStr));

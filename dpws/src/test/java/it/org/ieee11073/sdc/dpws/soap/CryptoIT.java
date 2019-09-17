@@ -10,6 +10,7 @@ import it.org.ieee11073.sdc.dpws.TestServiceMetadata;
 import org.ieee11073.sdc.dpws.client.DiscoveredDevice;
 import org.ieee11073.sdc.dpws.crypto.CryptoConfig;
 import org.ieee11073.sdc.dpws.crypto.CryptoSettings;
+import org.ieee11073.sdc.dpws.device.DeviceConfig;
 import org.ieee11073.sdc.dpws.device.DeviceSettings;
 import org.ieee11073.sdc.dpws.guice.DefaultDpwsConfigModule;
 import org.ieee11073.sdc.dpws.service.HostedServiceProxy;
