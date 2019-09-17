@@ -23,6 +23,13 @@ public interface MdibAccess {
     <T extends AbstractDescriptor> Optional<T> getDescriptor(String handle, Class<T> descrClass);
 
     /**
+     * todo DGr comment
+     * @param handle
+     * @return
+     */
+    Optional<AbstractDescriptor> getDescriptor(String handle);
+
+    /**
      * Get an {@link MdibEntity} object with a specific handle.
      */
     Optional<MdibEntity> getEntity(String handle);

@@ -2,8 +2,8 @@ package org.ieee11073.sdc.biceps.common;
 
 import org.ieee11073.sdc.biceps.model.participant.*;
 import org.ieee11073.sdc.biceps.testutil.MockModelFactory;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -16,7 +16,7 @@ import static org.hamcrest.Matchers.is;
 public class MdibTypeValidatorTest {
     private MdibTypeValidator matcher;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         matcher = new MdibTypeValidator();
     }

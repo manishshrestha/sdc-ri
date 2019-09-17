@@ -8,8 +8,8 @@ import org.ieee11073.sdc.biceps.guice.DefaultBicepsModule;
 import org.ieee11073.sdc.biceps.model.participant.PatientContextDescriptor;
 import org.ieee11073.sdc.biceps.model.participant.PatientContextState;
 import org.ieee11073.sdc.biceps.testutil.MockModelFactory;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -28,7 +28,7 @@ public class MdibEntityImplTest {
     private List<String> expectedStateHandles;
     private MdibEntity mdibEntity;
 
-    @Before
+    @BeforeEach
     public void setUp() throws InstantiationException, IllegalAccessException {
         injector = Guice.createInjector(new DefaultBicepsModule(), new DefaultBicepsConfigModule());
         mdibEntityFactory = injector.getInstance(MdibEntityFactory.class);

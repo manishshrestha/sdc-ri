@@ -1,15 +1,12 @@
 package org.ieee11073.sdc.biceps.provider.preprocessing;
 
 import com.google.inject.Inject;
-import org.ieee11073.sdc.biceps.common.MdibDescriptionModification;
-import org.ieee11073.sdc.biceps.common.MdibStorage;
-import org.ieee11073.sdc.biceps.common.PreprocessingException;
-import org.ieee11073.sdc.biceps.common.PreprocessingSegment;
+import org.ieee11073.sdc.biceps.common.*;
 
 import java.util.HashSet;
 import java.util.Set;
 
-public class DuplicateDetector extends PreprocessingSegment<MdibDescriptionModification> {
+public class DuplicateDetector implements DescriptionPreprocessingSegment {
     private final Set<String> handleCache;
 
     @Inject
@@ -23,11 +20,13 @@ public class DuplicateDetector extends PreprocessingSegment<MdibDescriptionModif
     }
 
     @Override
-    public void process(MdibDescriptionModification modification, MdibStorage storage) throws Exception {
-        if (modification.getModificationType() == MdibDescriptionModification.Type.INSERT) {
-            if (storage.getEntity(modification.getHandle()).isPresent()) {
+    public void process(MdibDescriptionModifications allModifications,
+                        MdibDescriptionModification currentModification,
+                        MdibStorage storage) throws Exception {
+        if (currentModification.getModificationType() == MdibDescriptionModification.Type.INSERT) {
+            if (storage.getEntity(currentModification.getHandle()).isPresent()) {
                 throw new HandleDuplicatedException(String.format("Inserted handle is a duplicate: %s",
-                        modification.getHandle()));
+                        currentModification.getHandle()));
             }
         }
     }

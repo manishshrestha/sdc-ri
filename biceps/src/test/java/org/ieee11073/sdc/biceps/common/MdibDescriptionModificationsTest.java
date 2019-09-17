@@ -2,8 +2,8 @@ package org.ieee11073.sdc.biceps.common;
 
 import org.ieee11073.sdc.biceps.model.participant.*;
 import org.ieee11073.sdc.biceps.testutil.MockModelFactory;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -125,7 +125,7 @@ public class MdibDescriptionModificationsTest {
             mdibDescriptionModifications.insert(descriptors.get(0));
             mdibDescriptionModifications.insert(descriptors.get(1));
             mdibDescriptionModifications.insert(descriptors.get(2));
-            Assert.fail("Expected duplicate runtime exception not thrown");
+            Assertions.fail("Expected duplicate runtime exception not thrown");
         } catch (RuntimeException e) {
         }
 
@@ -134,7 +134,7 @@ public class MdibDescriptionModificationsTest {
 
         try {
             mdibDescriptionModifications.update(descriptors.get(0));
-            Assert.fail("Expected duplicate runtime exception not thrown");
+            Assertions.fail("Expected duplicate runtime exception not thrown");
         } catch (RuntimeException e) {
         }
 
@@ -143,7 +143,7 @@ public class MdibDescriptionModificationsTest {
 
         try {
             mdibDescriptionModifications.delete(descriptors.get(0));
-            Assert.fail("Expected duplicate runtime exception not thrown");
+            Assertions.fail("Expected duplicate runtime exception not thrown");
         } catch (RuntimeException e) {
         }
 
@@ -153,7 +153,7 @@ public class MdibDescriptionModificationsTest {
 
         try {
             mdibDescriptionModifications.insert(MockModelFactory.createDescriptor("h3", EnsembleContextDescriptor.class), contextStates);
-            Assert.fail("Expected duplicate runtime exception not thrown");
+            Assertions.fail("Expected duplicate runtime exception not thrown");
         } catch (RuntimeException e) {
         }
     }

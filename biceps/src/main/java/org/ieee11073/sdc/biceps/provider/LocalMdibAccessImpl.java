@@ -22,7 +22,7 @@ public class LocalMdibAccessImpl implements LocalMdibAccess {
 
     private final Distributor eventDistributor;
     private final MdibStorage mdibStorage;
-    private final MdibStoragePreprocessingChain localMdibAccessPreprocessing;
+    private MdibStoragePreprocessingChain localMdibAccessPreprocessing;
     private final ReentrantReadWriteLock readWriteLock;
     private MdibVersion mdibVersion;
 
@@ -38,10 +38,10 @@ public class LocalMdibAccessImpl implements LocalMdibAccess {
 
         this.mdibVersion = MdibVersion.create();
 
-        this.localMdibAccessPreprocessing = chainFactory.createMdibStoragePreprocessingChain(
-                mdibStorage,
-                Collections.emptyList(),
-                Collections.emptyList());
+//        this.localMdibAccessPreprocessing = chainFactory.createMdibStoragePreprocessingChain(
+//                mdibStorage,
+//                Collections.emptyList(),
+//                Collections.emptyList());
     }
 
     @Override

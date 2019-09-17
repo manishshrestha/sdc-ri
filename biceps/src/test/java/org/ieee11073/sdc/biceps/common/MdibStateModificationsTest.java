@@ -5,9 +5,9 @@ import org.ieee11073.sdc.biceps.model.participant.AlertSignalState;
 import org.ieee11073.sdc.biceps.model.participant.NumericMetricState;
 import org.ieee11073.sdc.biceps.model.participant.StringMetricState;
 import org.ieee11073.sdc.biceps.testutil.MockModelFactory;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.*;
 
@@ -17,7 +17,7 @@ import static org.hamcrest.Matchers.is;
 public class MdibStateModificationsTest {
     private HandleGenerator handleGenerator;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         handleGenerator = HandleGenerator.create("test");
     }
@@ -36,7 +36,7 @@ public class MdibStateModificationsTest {
                 states.add(MockModelFactory.createState(handleGenerator.next(), type.getChangeBaseClass()));
             }
         } catch (IllegalAccessException | InstantiationException e) {
-            Assert.fail(e.getMessage());
+            Assertions.fail(e.getMessage());
         }
         assertThat(states.size(), is(stateCount));
 
@@ -66,12 +66,12 @@ public class MdibStateModificationsTest {
 
         try {
             runTestForType(MdibStateModifications.Type.ALERT, invalidMismatch);
-            Assert.fail("Invalid type mismatch as ClassCastException expected, but none was thrown ");
+            Assertions.fail("Invalid type mismatch as ClassCastException expected, but none was thrown ");
         }
         catch (ClassCastException e) {
         }
         catch (Exception e) {
-            Assert.fail("Unexpected exception was thrown with message: " + e.getMessage());
+            Assertions.fail("Unexpected exception was thrown with message: " + e.getMessage());
         }
     }
 

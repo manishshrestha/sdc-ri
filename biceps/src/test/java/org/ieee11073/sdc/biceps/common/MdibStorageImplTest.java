@@ -2,16 +2,16 @@ package org.ieee11073.sdc.biceps.common;
 
 import com.google.inject.Guice;
 import com.google.inject.Injector;
-import org.apache.log4j.BasicConfigurator;
 import org.ieee11073.sdc.biceps.guice.DefaultBicepsConfigModule;
 import org.ieee11073.sdc.biceps.guice.DefaultBicepsModule;
 import org.ieee11073.sdc.biceps.model.participant.*;
 import org.ieee11073.sdc.biceps.testutil.Handles;
 import org.ieee11073.sdc.biceps.testutil.MockModelFactory;
 import org.ieee11073.sdc.common.guice.DefaultHelperModule;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import test.org.ieee11073.common.TestLogging;
 
 import java.math.BigInteger;
 import java.util.Arrays;
@@ -24,9 +24,9 @@ public class MdibStorageImplTest {
     private Injector injector;
     private MdibStorage mdibStorage;
 
-    @Before
+    @BeforeEach
     public void setUp() {
-        BasicConfigurator.configure();
+        TestLogging.configure();
         injector = Guice.createInjector(new DefaultHelperModule(), new DefaultBicepsModule(), new DefaultBicepsConfigModule());
         mdibStorage = injector.getInstance(MdibStorage.class);
     }
@@ -67,7 +67,7 @@ public class MdibStorageImplTest {
 
         mdibStorage.apply(modifications);
     }
-    
+
     private void testWithVersion(List<String> testedHandles, BigInteger version) {
         testWithVersion(testedHandles, version, version);
     }
@@ -80,7 +80,7 @@ public class MdibStorageImplTest {
                     assertThat(state.getStateVersion(), is(stateVersion)));
         });
     }
-    
+
     @Test
     public void writeDescription() throws InstantiationException, IllegalAccessException {
         List<String> testedHandles = Arrays.asList(
@@ -162,8 +162,8 @@ public class MdibStorageImplTest {
         stateModifications.add(MockModelFactory.createState(Handles.ALERTCONDITION_1, BigInteger.ONE, AlertConditionState.class));
         try {
             stateModifications.add(MockModelFactory.createState(Handles.MDS_0, BigInteger.ONE, MdsState.class));
-            Assert.fail("Could add MDS to alert state change set");
-        } catch (Exception e){
+            Assertions.fail("Could add MDS to alert state change set");
+        } catch (Exception e) {
         }
 
         mdibStorage.apply(stateModifications);
