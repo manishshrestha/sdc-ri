@@ -141,7 +141,7 @@ class MdibStoragePreprocessingChainTest {
         final MdibStoragePreprocessingChain chain = chainFactory.createMdibStoragePreprocessingChain(
                 mockStorage,
                 mock(List.class),
-                Arrays.asList(segment1, segment2));
+                Arrays.asList(segment1, segment2, segment3));
 
         final String expectedHandle = "foobarHandle";
         final MdibStateModifications modifications = MdibStateModifications.create(MdibStateModifications.Type.METRIC)
