@@ -274,10 +274,10 @@ public class MdibDescriptionModifications {
     }
 
     /**
-     * Function to get changes. Only visible to classes from the same package.
+     * Function to get changes.
      */
-    List<MdibDescriptionModification> getModifications() {
-        return modifications;
+    public List<MdibDescriptionModification> getModifications() {
+        return Collections.unmodifiableList(modifications);
     }
 
     private MdibDescriptionModifications(@Nullable MdibVersion mdibVersion) {
