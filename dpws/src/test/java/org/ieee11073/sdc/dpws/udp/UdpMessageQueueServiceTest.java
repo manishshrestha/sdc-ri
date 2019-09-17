@@ -2,8 +2,8 @@ package org.ieee11073.sdc.dpws.udp;
 
 import com.google.common.eventbus.Subscribe;
 import org.ieee11073.sdc.dpws.DpwsTest;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
@@ -20,7 +20,7 @@ public class UdpMessageQueueServiceTest extends DpwsTest {
     private Condition condition;
     private Lock lock;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         super.setUp();
         udpMsgQueue = getInjector().getInstance(UdpMessageQueueServiceImpl.class);

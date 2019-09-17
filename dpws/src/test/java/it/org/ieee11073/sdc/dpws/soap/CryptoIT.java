@@ -5,6 +5,7 @@ import com.google.common.util.concurrent.SettableFuture;
 import dpws_test_service.messages._2017._05._10.ObjectFactory;
 import dpws_test_service.messages._2017._05._10.TestNotification;
 import it.org.ieee11073.sdc.dpws.IntegrationTestUtil;
+import it.org.ieee11073.sdc.dpws.MockedUdpBindingModule;
 import it.org.ieee11073.sdc.dpws.TestServiceMetadata;
 import org.ieee11073.sdc.dpws.client.DiscoveredDevice;
 import org.ieee11073.sdc.dpws.crypto.CryptoConfig;
@@ -22,9 +23,11 @@ import org.ieee11073.sdc.dpws.soap.wsaddressing.WsAddressingUtil;
 import org.ieee11073.sdc.dpws.soap.wsaddressing.model.EndpointReferenceType;
 import org.ieee11073.sdc.dpws.soap.wsdiscovery.WsDiscoveryConfig;
 import org.ieee11073.sdc.dpws.soap.wseventing.SubscribeResult;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import test.org.ieee11073.common.LoggingTestWatcher;
 import test.org.ieee11073.common.TestLogging;
 
 import java.net.InetAddress;
@@ -37,9 +40,10 @@ import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
+@ExtendWith(LoggingTestWatcher.class)
 public class CryptoIT {
     private static final Duration MAX_WAIT_TIME = Duration.ofMinutes(3);
 
@@ -54,7 +58,7 @@ public class CryptoIT {
         IntegrationTestUtil.preferIpV4Usage();
     }
 
-    @Before
+    @BeforeEach
     public void setUp() {
         TestLogging.configure();
         final CryptoSettings serverCryptoSettings = Ssl.setupServer();
@@ -83,7 +87,7 @@ public class CryptoIT {
                 bind(DeviceConfig.UNSECURED_ENDPOINT, Boolean.class, false);
                 bind(DeviceConfig.SECURED_ENDPOINT, Boolean.class, true);
             }
-        });
+        }, new MockedUdpBindingModule());
 
         final CryptoSettings clientCryptoSettings = Ssl.setupClient();
         try {
@@ -96,13 +100,13 @@ public class CryptoIT {
                     bind(SoapConfig.JAXB_CONTEXT_PATH, String.class,
                             TestServiceMetadata.JAXB_CONTEXT_PATH);
                 }
-            });
+            }, new MockedUdpBindingModule());
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
         this.devicePeer.stopAsync().awaitTerminated();
         this.clientPeer.stopAsync().awaitTerminated();

@@ -24,14 +24,14 @@ import org.ieee11073.sdc.dpws.soap.wsmetadataexchange.GetMetadataClient;
 import org.ieee11073.sdc.dpws.soap.wsmetadataexchange.model.Metadata;
 import org.ieee11073.sdc.dpws.soap.wsmetadataexchange.model.MetadataSection;
 import org.ieee11073.sdc.dpws.soap.wstransfer.TransferGetClient;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import javax.xml.namespace.QName;
 import java.net.URI;
 import java.util.*;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -58,7 +58,7 @@ public class HostingServiceResolverTest extends DpwsTest {
     private SoapUtil soapUtil;
 
     @Override
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         mockTransferGetClient = new MockTransferGetClient();
         mockGetMetadataClient = new MockGetMetadataClient();

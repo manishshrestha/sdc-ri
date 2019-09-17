@@ -6,9 +6,8 @@ import org.ieee11073.sdc.dpws.soap.RequestResponseClient;
 import org.ieee11073.sdc.dpws.soap.exception.TransportException;
 import org.ieee11073.sdc.dpws.soap.wsdiscovery.WsDiscoveryClient;
 import org.ieee11073.sdc.dpws.soap.wsdiscovery.model.ProbeMatchesType;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import test.org.ieee11073.common.TestLogging;
 
 import java.time.Duration;
@@ -19,6 +18,7 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -29,7 +29,7 @@ public class WatchDogImplTest {
     private Condition condition;
     private boolean hasFailed;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         TestLogging.configure();
 
@@ -62,7 +62,7 @@ public class WatchDogImplTest {
         lock.lock();
         try {
             condition.await(2, TimeUnit.SECONDS);
-            Assert.assertTrue(hasFailed);
+            assertTrue(hasFailed);
         } catch (InterruptedException e) {
             throw new RuntimeException("Thread unexpectedly interrupted");
         } finally {

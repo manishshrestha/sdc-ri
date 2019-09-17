@@ -7,12 +7,12 @@ import org.ieee11073.sdc.dpws.soap.factory.SoapMessageFactory;
 import org.ieee11073.sdc.dpws.soap.model.Envelope;
 import org.ieee11073.sdc.dpws.soap.wsaddressing.model.AttributedURIType;
 import org.ieee11073.sdc.dpws.soap.interception.*;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.io.InputStream;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class WsAddressingServerInterceptorTest extends DpwsTest {
 
@@ -22,7 +22,7 @@ public class WsAddressingServerInterceptorTest extends DpwsTest {
     private TransportInfo mockTransportInfo;
 
     @Override
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         super.setUp();
         mockTransportInfo = new TransportInfo("http", "localhost", 123);

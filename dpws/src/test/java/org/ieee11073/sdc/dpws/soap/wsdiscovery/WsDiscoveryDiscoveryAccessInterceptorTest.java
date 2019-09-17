@@ -12,16 +12,16 @@ import org.ieee11073.sdc.dpws.soap.wsdiscovery.factory.WsDiscoveryTargetServiceF
 import org.ieee11073.sdc.dpws.soap.wsdiscovery.model.ByeType;
 import org.ieee11073.sdc.dpws.soap.wsdiscovery.model.HelloType;
 import org.ieee11073.sdc.dpws.soap.*;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import javax.xml.namespace.QName;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 public class WsDiscoveryDiscoveryAccessInterceptorTest extends DpwsTest {
     private List<SoapMessage> sentSoapMessages;
@@ -39,7 +39,7 @@ public class WsDiscoveryDiscoveryAccessInterceptorTest extends DpwsTest {
     private TransportInfo mockTransportInfo;
 
     @Override
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         super.setUp();
         mockTransportInfo = new TransportInfo("mock.scheme", "localhost", 123);

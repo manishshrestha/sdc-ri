@@ -1,6 +1,7 @@
 package it.org.ieee11073.sdc.dpws.soap;
 
 
+import com.google.inject.AbstractModule;
 import it.org.ieee11073.sdc.dpws.TestServiceMetadata;
 import org.ieee11073.sdc.dpws.DpwsFramework;
 import org.ieee11073.sdc.dpws.DpwsUtil;
@@ -35,25 +36,31 @@ public class BasicPopulatedDevice extends DevicePeer {
 
 
     public BasicPopulatedDevice() {
-        this(null);
+        this(null, null);
     }
 
 
-    public BasicPopulatedDevice(@Nullable DeviceSettings deviceSettings) {
+    public BasicPopulatedDevice(@Nullable DeviceSettings deviceSettings, @Nullable AbstractModule overridingModule) {
         setup(new DefaultDpwsConfigModule() {
             @Override
             public void customConfigure() {
                 bind(SoapConfig.JAXB_CONTEXT_PATH, String.class,
                         TestServiceMetadata.JAXB_CONTEXT_PATH);
             }
-        }, deviceSettings);
+        }, deviceSettings, overridingModule);
         dpwsFramework = getInjector().getInstance(DpwsFrameworkFactory.class).createDpwsFramework();
     }
 
-    public BasicPopulatedDevice(@Nullable DeviceSettings deviceSettings, DefaultDpwsConfigModule configModule) {
+    public BasicPopulatedDevice(@Nullable AbstractModule overridingModule) {
+        this(null, overridingModule);
+    }
+
+    public BasicPopulatedDevice(@Nullable DeviceSettings deviceSettings,
+                                DefaultDpwsConfigModule configModule,
+                                @Nullable AbstractModule overridingModule) {
         configModule.bind(SoapConfig.JAXB_CONTEXT_PATH, String.class,
                 TestServiceMetadata.JAXB_CONTEXT_PATH);
-        setup(configModule, deviceSettings);
+        setup(configModule, deviceSettings, overridingModule);
         dpwsFramework = getInjector().getInstance(DpwsFrameworkFactory.class).createDpwsFramework();
     }
 
