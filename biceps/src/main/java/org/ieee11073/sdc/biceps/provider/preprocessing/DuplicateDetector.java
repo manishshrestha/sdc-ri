@@ -6,6 +6,9 @@ import org.ieee11073.sdc.biceps.common.*;
 import java.util.HashSet;
 import java.util.Set;
 
+/**
+ * Preprocessing segment that checks for handle duplicates on inserted entities during description modifications.
+ */
 public class DuplicateDetector implements DescriptionPreprocessingSegment {
     private final Set<String> handleCache;
 
