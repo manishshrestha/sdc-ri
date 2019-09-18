@@ -1,8 +1,6 @@
 package org.ieee11073.sdc.dpws.soap.exception;
 
-/**
- * Expresses that an object could not be marshalled or unmarshalled.
- */
+
 public class MarshallingException extends Exception {
     public MarshallingException() {
     }

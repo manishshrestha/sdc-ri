@@ -10,12 +10,15 @@ import java.net.URI;
 import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 /**
- * Utility class for the WS-Discovery plugin.
+ * Utility class for WS-Eventing plugin.
  */
 public class WsDiscoveryUtil {
+
     private final ObjectFactory wsdFactory;
+
     private final AtomicInteger messageIdCounter;
 
     @Inject
@@ -28,7 +31,7 @@ public class WsDiscoveryUtil {
      * Checks if a QName superset includes a subset.
      *
      * @param superset the superset to match against.
-     * @param subset   the subset to match against.
+     * @param subset the subset to match against.
      * @return true if subset is in superset or subset is equal to superset, otherwise false.
      */
     public boolean isTypesMatching(List<QName> superset, List<QName> subset) {
@@ -39,11 +42,11 @@ public class WsDiscoveryUtil {
      * Checks if a scope superset includes a subset.
      *
      * @param superset the superset to match against.
-     * @param subset   the subset to match against.
-     * @param matchBy  the rule how to compare the URI strings.
-     *                 {@link MatchBy#RFC3986} and {@link MatchBy#STRCMP0} are supported.
+     * @param subset the subset to match against.
+     * @param matchBy the rule how to compare the URI strings. {@link MatchBy#RFC3986} and {@link MatchBy#STRCMP0} are
+     *                supported.
      * @return true if subset is in superset or subset is equal to superset given a matching algorithm in matchBy,
-     * otherwise false. If the matching algorithm is not supported, this method always returns false.
+     *         otherwise false. If the matching algorithm is not supported, this method always returns false.
      */
     public boolean isScopesMatching(List<String> superset, List<String> subset, MatchBy matchBy) {
         switch (matchBy) {

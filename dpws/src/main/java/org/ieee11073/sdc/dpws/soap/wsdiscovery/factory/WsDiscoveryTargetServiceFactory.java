@@ -10,11 +10,9 @@ import org.ieee11073.sdc.dpws.soap.wsdiscovery.WsDiscoveryTargetService;
  */
 public interface WsDiscoveryTargetServiceFactory {
     /**
-     * Creates a new target service (server side).
-     *
      * @param targetServiceEpr   the target service endpoint reference.
      * @param notificationSource the source where to send Hello and Bye messages from.
-     * @return a new target service instance.
+     * @return the instance.
      * @see <a href="http://docs.oasis-open.org/ws-dd/discovery/1.1/os/wsdd-discovery-1.1-spec-os.html#_Toc234231810">Endpoint References</a>
      */
     WsDiscoveryTargetService createWsDiscoveryTargetService(@Assisted EndpointReferenceType targetServiceEpr,

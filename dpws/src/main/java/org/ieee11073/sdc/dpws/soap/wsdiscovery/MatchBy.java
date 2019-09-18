@@ -1,9 +1,9 @@
 package org.ieee11073.sdc.dpws.soap.wsdiscovery;
 
 /**
- * Set of supported MatchBy rules for the WS-Discovery Scopes type in accordance with dpws:R1019.
+ * Set of supported MatchBy rules for WS-Addressing Scopes type.
  *
- * @see <a href="http://docs.oasis-open.org/ws-dd/dpws/1.1/os/wsdd-dpws-1.1-spec-os.html#_Toc228672091">3 Discovery</a>.
+ * Fulfill at least dpws:R1019.
  */
 public enum MatchBy {
     RFC3986("http://docs.oasis-open.org/ws-dd/ns/discovery/2009/01/rfc3986"),

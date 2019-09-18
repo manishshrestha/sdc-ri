@@ -1,7 +1,7 @@
 package org.ieee11073.sdc.dpws.soap.exception;
 
 /**
- * Any exception that occurs on the transport layer.
+ * Any exception that occurs on transport layer.
  */
 public class TransportException extends Exception {
     public TransportException() {

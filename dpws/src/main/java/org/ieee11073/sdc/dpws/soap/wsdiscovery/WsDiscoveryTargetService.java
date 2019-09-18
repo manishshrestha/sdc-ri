@@ -17,102 +17,25 @@ import java.util.List;
 public interface WsDiscoveryTargetService extends Interceptor {
     EndpointReferenceType getEndpointReference();
 
-    /**
-     * Thread-safe function to set the list of QNames.
-     *
-     * @param qNames the list of QNames to set.
-     */
     void setTypes(List<QName> qNames);
-
-    /**
-     * Thread-safe function to get the list of QNames.
-     *
-     * @return the list of QNames.
-     */
     List<QName> getTypes();
 
-    /**
-     * Thread-safe function to set the list of scope URIs.
-     *
-     * @param uris the list of scope URIs to set.
-     */
     void setScopes(List<String> uris);
-
-    /**
-     * Thread-safe function to get the list of scope URIs.
-     *
-     * @return the list of scope URIs.
-     */
     List<String> getScopes();
 
-    /**
-     * Thread-safe function to set the list of XAddr URIs.
-     *
-     * @param xAddrs the list of XAddr URIs.
-     */
     void setXAddrs(List<String> xAddrs);
-
-    /**
-     * Thread-safe function to get the list of XAddr URIs.
-     *
-     * @return the list of XAddr URIs.
-     */
     List<String> getXAddrs();
 
-    /**
-     * Thread-safe function to set the MatchBy rule.
-     *
-     * @param matchBy the MatchBy rule to set.
-     */
     void setMatchBy(MatchBy matchBy);
-
-    /**
-     * Thread-safe function to get the MatchBy rule.
-     *
-     * @return the MatchBy rule.
-     */
     MatchBy getMatchBy();
 
-    /**
-     * Thread-safe function to explicitly set the target service metadata to be modified (thread-safe).
-     * <p>
-     * This is useful if the metadata change does not belong to, e.g., Types and Scopes.
-     */
     void setMetadataModified();
 
-    /**
-     * Thread-safe function to get the metadata version.
-     *
-     * @return the metadata version.
-     */
     UnsignedInteger getMetadataVersion();
 
-    /**
-     * Blocking function to send out a Hello message.
-     * <p>
-     * This is a shorthand function to {@link #sendHello(boolean)}.
-     *
-     * @return the metadata version that has been attached to the Hello message.
-     * @throws MarshallingException if marshalling the Hello message fails.
-     * @throws TransportException if there is any problem on the transport layer.
-     */
     UnsignedInteger sendHello() throws MarshallingException, TransportException;
 
-    /**
-     * Blocking function to send out a Hello message.
-     *
-     * @param forceNewMetadataVersion set to true to force incrementing the metadata version, or false to not do so.
-     * @return the metadata version that has been attached to the Hello message.
-     * @throws MarshallingException if marshalling the Hello message fails.
-     * @throws TransportException if there is any problem on the transport layer.
-     */
     UnsignedInteger sendHello(boolean forceNewMetadataVersion) throws MarshallingException, TransportException;
 
-    /**
-     * Blocking function to send out a Bye message.
-     *
-     * @throws MarshallingException if marshalling the Bye message fails.
-     * @throws TransportException if there is any problem on the transport layer.
-     */
     void sendBye() throws MarshallingException, TransportException;
 }

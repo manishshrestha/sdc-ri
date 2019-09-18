@@ -16,14 +16,12 @@ import org.slf4j.LoggerFactory;
 import java.util.Optional;
 
 /**
- * Implements a WS-Addressing server interceptor to check WS-Addressing header information.
- * <p>
- * The {@linkplain WsAddressingServerInterceptor} is in charge of
- * <ul>
- * <li>checking for existing wsa:Action attribute (and cancelling an incoming request in case it is missing) and
- * <li>tracking message ids and reject duplicates.
- * </ul>
- * todo DGr process ReplyTo automatically
+ * WS-Addressing server side interceptor.
+ *
+ * - Check for existing wsa:Action attribute and cancels in case of missing
+ * - Track message ids and reject message if already found
+ *
+ * \todo process ReplyTo automatically
  */
 public class WsAddressingServerInterceptor implements Interceptor {
     private static final Logger LOG = LoggerFactory.getLogger(WsAddressingServerInterceptor.class);
@@ -90,8 +88,6 @@ public class WsAddressingServerInterceptor implements Interceptor {
         }
     }
 
-    // note the synchronized keyword as the server interceptor is shared between different requests in order to
-    // facilitate duplicate detection
     private synchronized InterceptorResult processMessageId(SoapMessage msg) throws SoapFaultException {
         if (ignoreMessageIds) {
             return InterceptorResult.PROCEED;

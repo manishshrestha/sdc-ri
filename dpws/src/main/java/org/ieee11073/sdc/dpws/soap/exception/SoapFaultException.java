@@ -8,7 +8,7 @@ import javax.xml.bind.JAXBElement;
 import java.util.List;
 
 /**
- * Defines an exception that is supposed to be used to convey SOAP fault information.
+ * SOAP fault transport over checked exception.
  *
  * @see <a href="https://www.w3.org/TR/2007/REC-soap12-part1-20070427/#soapfault">SOAP Fault</a>
  */
@@ -18,9 +18,6 @@ public class SoapFaultException extends Exception {
 
 
     /**
-     * Constructor that requires an wrapped SOAP fault message.
-     * <p>
-     * todo DGr design flaw: implementation requires knowledge of JAXB.
      * @param faultMessage SOAP message that shall include a {@linkplain JAXBElement} with {@link Fault} body.
      *                     Otherwise, a {@linkplain ClassCastException} is thrown.
      */
@@ -35,9 +32,7 @@ public class SoapFaultException extends Exception {
     }
 
     /**
-     * Gets the SOAP fault information.
-     *
-     * @return {@link Fault} that is encapsulated in the {@link SoapMessage} wrapped by this exception.
+     * @return {@link Fault} that is encapsulated in the {@link SoapMessage} wrapped by the exception.
      */
     public Fault getFault() {
         return fault;

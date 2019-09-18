@@ -14,10 +14,10 @@ import java.util.List;
 
 /**
  * Factory to create SOAP fault structures.
- * <ul>
- * <li>Parameter names are in accordance with the SOAP fault specification. Other parameter names are explained.
- * <li>The implied reason text's language is 'en'.
- * </ul>
+ *
+ * - Parameter names are in accordance to SOAP fault description. Other parameter names are explained.
+ * - The implied reason text's language is 'en'.
+ *
  * @see <a href="https://www.w3.org/TR/2007/REC-soap12-part1-20070427/#soapfault">SOAP Fault</a>
  * @see <a href="https://www.w3.org/TR/2006/REC-ws-addr-soap-20060509/#id2270167">SOAP 1.2 Fault Binding</a>
  */
@@ -33,16 +33,15 @@ public class SoapFaultFactory {
     }
 
     /**
-     * Creates a fault SOAP message based on an action URI, code, subcode, reason text and arbitrary details.
-     *
-     * @param actionUri wsa:Action to put into the resulting {@link SoapMessage} header.
-     * @param code the SOAP fault code.
-     * @param subcode the SOAP fault subcode.
-     * @param reasonText the fault reason.
-     * @param detail the fault details.
-     * @return a {@link SoapMessage} containing the fault.
+     * @param actionUri wsa:Action to put into resulting {@link SoapMessage} header.
+     * @param code Soap fault code
+     * @param subcode Soap fault subcode
+     * @param reasonText reason for fault
+     * @param detail fault details
+     * @return a {@link SoapMessage} containing the fault
      */
     public SoapMessage createFault(String actionUri, QName code, QName subcode, String reasonText, @Nullable Object detail) {
+
         Subcode scObj = new Subcode();
         scObj.setValue(subcode);
 
@@ -75,45 +74,39 @@ public class SoapFaultFactory {
     }
 
     /**
-     * Creates a fault SOAP message based on an action URI, code, subcode and reason text.
-     *
-     * @param actionUri wsa:Action to put into the resulting {@link SoapMessage} header.
-     * @param code the SOAP fault code.
-     * @param subcode the SOAP fault subcode.
-     * @param reasonText the fault reason.
-     * @return a {@link SoapMessage} containing the fault.
+     * @param actionUri wsa:Action to put into resulting {@link SoapMessage} header.
+     * @param code Soap fault code
+     * @param subcode Soap fault subcode
+     * @param reasonText reason for fault
+     * @return a {@link SoapMessage} containing the fault
      */
     public SoapMessage createFault(String actionUri, QName code, QName subcode, String reasonText) {
         return createFault(actionUri, code, subcode, reasonText, null);
     }
 
     /**
-     * Creates a fault SOAP message based on an action URI, code and subcode.
-     *
-     * @param actionUri wsa:Action to put into the resulting {@link SoapMessage} header.
-     * @param code the SOAP fault code.
-     * @param subcode the SOAP fault subcode.
-     * @return a {@link SoapMessage} containing the fault.
+     * @param actionUri wsa:Action to put into resulting {@link SoapMessage} header.
+     * @param code Soap fault code
+     * @param subcode Soap fault subcode
+     * @return a {@link SoapMessage} containing the fault
      */
     public SoapMessage createFault(String actionUri, QName code, QName subcode) {
         return createFault(actionUri, code, subcode, "", null);
     }
 
     /**
-     * Creates a soap:Receiver fault with a given text.
-     *
-     * @param reasonText the fault reason.
-     * @return a {@link SoapMessage} containing the fault.
+     * Create soap:Receiver fault with given text.
+     * @param reasonText reason for fault
+     * @return a {@link SoapMessage} containing the fault
      */
     public SoapMessage createReceiverFault(String reasonText) {
         return createFault(WsAddressingConstants.FAULT_ACTION, SoapConstants.RECEIVER, SoapConstants.DEFAULT_SUBCODE, reasonText);
     }
 
     /**
-     * Creates a soap:Sender fault with a given text.
-     *
-     * @param reasonText the fault reason.
-     * @return a {@link SoapMessage} containing the fault.
+     * Create soap:Sender fault with given text.
+     * @param reasonText reason for fault
+     * @return a {@link SoapMessage} containing the fault
      */
     public SoapMessage createSenderFault(String reasonText) {
         return createFault(WsAddressingConstants.FAULT_ACTION, SoapConstants.SENDER, SoapConstants.DEFAULT_SUBCODE, reasonText);

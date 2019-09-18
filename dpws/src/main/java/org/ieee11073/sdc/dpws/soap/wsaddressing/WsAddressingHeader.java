@@ -6,7 +6,7 @@ import javax.annotation.Nullable;
 import java.util.Optional;
 
 /**
- * Convenience class to access WS-Addressing header information.
+ * Convenience class to represent WS-Addressing header information.
  *
  * @see <a href="https://www.w3.org/TR/2006/REC-ws-addr-core-20060509/#msgaddrprops">Message Addressing Properties</a>
  */

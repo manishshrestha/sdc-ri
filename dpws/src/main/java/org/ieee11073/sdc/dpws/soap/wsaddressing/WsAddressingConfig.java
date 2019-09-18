@@ -1,24 +1,22 @@
 package org.ieee11073.sdc.dpws.soap.wsaddressing;
 
 /**
- * Configuration of the WS-Addressing package.
+ * Configuration of WS-Addressing package.
  */
 public class WsAddressingConfig {
     /**
-     * Controls the maximum amount of cached SOAP messages for SOAP message duplication detection.
-     * <ul>
-     * <li>Data type: {@linkplain Integer}
-     * <li>Use: optional
-     * </ul>
+     * Control maximum amount of cached SOAP messages for SOAP message duplication detection.
+     *
+     * - Data type: {@linkplain Integer}
+     * - Use: optional
      */
     public static final String MESSAGE_ID_CACHE_SIZE = "WsAddressing.MessageIdCacheSize";
 
     /**
      * Set to true to let servers ignore message ids.
-     * <ul>
-     * <li>Data type: {@linkplain Boolean}
-     * <li>Use: optional
-     * </ul>
+     *
+     * - Data type: {@linkplain Boolean}
+     * - Use: optional
      */
     public static final String IGNORE_MESSAGE_IDS = "WsAddressing.IgnoreMessageIds";
 }

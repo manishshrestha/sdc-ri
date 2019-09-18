@@ -30,9 +30,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-/**
- * Default implementation of the {@linkplain WsDiscoveryTargetService}.
- */
 public class WsDiscoveryTargetServiceInterceptor implements WsDiscoveryTargetService {
     private final ObjectFactory wsdFactory;
     private final SoapFaultFactory soapFaultFactory;

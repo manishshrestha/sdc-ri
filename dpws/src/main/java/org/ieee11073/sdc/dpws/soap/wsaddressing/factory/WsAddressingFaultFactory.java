@@ -21,12 +21,6 @@ public class WsAddressingFaultFactory {
         this.soapFaultFactory = soapFaultFactory;
     }
 
-    /**
-     * Creates an action-not-supported fault.
-     *
-     * @param action the action URI that is not supported.
-     * @return a {@link SoapMessage} that encapsulates the fault.
-     */
     public SoapMessage createActionNotSupported(String action) {
         return soapFaultFactory.createFault(
                 WsAddressingConstants.FAULT_ACTION,
@@ -36,12 +30,6 @@ public class WsAddressingFaultFactory {
                 action);
     }
 
-    /**
-     * Creates a message-information-header-required fault.
-     *
-     * @param missingHeaderQName qualified name of the missing header element.
-     * @return a {@link SoapMessage} that encapsulates the fault.
-     */
     public SoapMessage createMessageInformationHeaderRequired(QName missingHeaderQName) {
         return soapFaultFactory.createFault(
                 WsAddressingConstants.FAULT_ACTION,

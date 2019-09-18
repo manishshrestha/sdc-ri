@@ -22,7 +22,7 @@ public class ClientHelper {
     }
 
     /**
-     * Dispatches *param* to interceptors from *registry* matching given action in *msg* and *direction*.
+     * Dispatch *param* to interceptors from *registry* matching given action in *msg* and *direction*.
      *
      * In contrast to {@link ServerHelper}, which throws  {@link SoapFaultException} on
      * {@link InterceptorResult#CANCEL}, {@linkplain ClientHelper} throws an {@link InterceptorException} on

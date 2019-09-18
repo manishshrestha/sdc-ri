@@ -9,7 +9,6 @@ import com.google.common.util.concurrent.MoreExecutors;
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
 import com.google.inject.name.Named;
-import org.ieee11073.sdc.dpws.guice.WsDiscovery;
 import org.ieee11073.sdc.dpws.soap.NotificationSource;
 import org.ieee11073.sdc.dpws.soap.RequestResponseClient;
 import org.ieee11073.sdc.dpws.soap.SoapMessage;
@@ -44,9 +43,6 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import static java.lang.System.currentTimeMillis;
 
-/**
- * Default implementation of {@linkplain WsDiscoveryClient}.
- */
 public class WsDiscoveryClientInterceptor implements WsDiscoveryClient {
 
     private final Duration maxWaitForProbeMatches;

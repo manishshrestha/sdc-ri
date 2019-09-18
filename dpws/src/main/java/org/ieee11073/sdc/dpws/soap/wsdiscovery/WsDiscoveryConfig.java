@@ -1,42 +1,38 @@
 package org.ieee11073.sdc.dpws.soap.wsdiscovery;
 
 /**
- * Configuration of the WS-Discovery package.
+ * Configuration of WS-Discovery package.
  */
 public class WsDiscoveryConfig {
     /**
-     * Controls the maximum waiting time for ProbeMatches messages.
-     * <ul>
-     * <li>Data type: {@linkplain java.time.Duration}
-     * <li>Use: optional
-     * </ul>
+     * Control maximum waiting time for ProbeMatches messages.
+     *
+     * - Data type: {@linkplain java.time.Duration}
+     * - Use: optional
      */
     public static final String MAX_WAIT_FOR_PROBE_MATCHES = "WsDiscovery.MaxWaitForProbeMatches";
 
     /**
-     * Controls the maximum waiting time for ResolveMatches messages.
-     * <ul>
-     * <li>Data type: {@linkplain java.time.Duration}
-     * <li>Use: optional
-     * </ul>
+     * Control maximum waiting time for ResolveMatches messages.
+     *
+     * - Data type: {@linkplain java.time.Duration}
+     * - Use: optional
      */
     public static final String MAX_WAIT_FOR_RESOLVE_MATCHES = "WsDiscovery.MaxWaitForResolveMatches";
 
     /**
-     * Controls the maximum buffer size for incoming ProbeMatches messages.
-     * <ul>
-     * <li>Data type: {@linkplain Integer}
-     * <li>Use: optional
-     * </ul>
+     * Control maximum buffer size for incoming ProbeMatches messages.
+     *
+     * - Data type: {@linkplain Integer}
+     * - Use: optional
      */
     public static final String PROBE_MATCHES_BUFFER_SIZE = "WsDiscovery.MaxProbeMatchesBufferSize";
 
     /**
-     * Controls the maximum buffer size for incoming ResolveMatches messages.
-     * <ul>
-     * <li>Data type: {@linkplain Integer}
-     * <li>Use: optional
-     * </ul>
+     * Control maximum buffer size for incoming ResolveMatches messages.
+     *
+     * - Data type: {@linkplain Integer}
+     * - Use: optional
      */
     public static final String RESOLVE_MATCHES_BUFFER_SIZE = "WsDiscovery.MaxResolveMatchesBufferSize";
 }
