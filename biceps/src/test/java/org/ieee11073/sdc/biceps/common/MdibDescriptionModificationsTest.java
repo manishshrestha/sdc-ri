@@ -68,7 +68,7 @@ public class MdibDescriptionModificationsTest {
         final List<AbstractContextDescriptor> descriptors = Arrays.asList(
                 MockModelFactory.createDescriptor("c1", LocationContextDescriptor.class),
                 MockModelFactory.createDescriptor("c2", PatientContextDescriptor.class));
-        final Map<String, List<AbstractContextState>> states = new HashMap<>();
+        final Map<String, List<AbstractMultiState>> states = new HashMap<>();
         states.put("c1", Arrays.asList(
                 MockModelFactory.createContextState("cs1", "c1", LocationContextState.class),
                 MockModelFactory.createContextState("cs2", "c1", LocationContextState.class)));
@@ -99,7 +99,7 @@ public class MdibDescriptionModificationsTest {
 
     void checkResultsMultiState(MdibDescriptionModifications actualChangeSet,
                                 List<AbstractContextDescriptor> expectedDescriptors,
-                                Map<String, List<AbstractContextState>> expectedStates,
+                                Map<String, List<AbstractMultiState>> expectedStates,
                                 MdibDescriptionModification.Type modificationType,
                                 int size,
                                 int offset) {
@@ -109,7 +109,7 @@ public class MdibDescriptionModificationsTest {
             assertThat(item.getDescriptor().getHandle(), is(expectedDescriptors.get(i).getHandle()));
             assertThat(item.getStates().size(), is(expectedStates.get(item.getDescriptor().getHandle()).size()));
             for (int j = 0; j < item.getStates().size(); ++j) {
-                final AbstractContextState state = expectedStates.get(item.getDescriptor().getHandle()).get(j);
+                final AbstractMultiState state = expectedStates.get(item.getDescriptor().getHandle()).get(j);
                 assertThat(item.getStates().get(j).getDescriptorHandle(), is(state.getDescriptorHandle()));
             }
         }
