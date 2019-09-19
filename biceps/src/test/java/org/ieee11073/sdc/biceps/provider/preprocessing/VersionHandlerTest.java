@@ -1,11 +1,12 @@
 package org.ieee11073.sdc.biceps.provider.preprocessing;
 
 import org.ieee11073.sdc.biceps.UnitTestUtil;
-import org.ieee11073.sdc.biceps.common.*;
-import org.ieee11073.sdc.biceps.common.factory.MdibEntityFactory;
+import org.ieee11073.sdc.biceps.common.MdibDescriptionModification;
+import org.ieee11073.sdc.biceps.common.MdibDescriptionModifications;
+import org.ieee11073.sdc.biceps.common.MdibStateModifications;
+import org.ieee11073.sdc.biceps.common.MdibStorage;
 import org.ieee11073.sdc.biceps.common.factory.MdibStorageFactory;
 import org.ieee11073.sdc.biceps.model.participant.*;
-import org.ieee11073.sdc.biceps.testutil.MockEntityFactory;
 import org.ieee11073.sdc.biceps.testutil.MockModelFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -21,7 +22,6 @@ class VersionHandlerTest {
 
     private MdibStorage mdibStorage;
     private VersionHandler versionHandler;
-    private MockEntityFactory entityFactory;
     private String mdsHandle;
     private String vmdHandle;
     private MdsDescriptor mdsDescriptor;
@@ -43,7 +43,6 @@ class VersionHandlerTest {
         // Given a version handler and sample input
         mdibStorage = UT.getInjector().getInstance(MdibStorageFactory.class).createMdibStorage();
         versionHandler = UT.getInjector().getInstance(VersionHandler.class);
-        entityFactory = new MockEntityFactory(UT.getInjector().getInstance(MdibEntityFactory.class), MdibVersion.create());
 
         mdsHandle = "mds";
         mdsDescriptor = MockModelFactory.createDescriptor(mdsHandle, BigInteger.valueOf(-1), MdsDescriptor.class);
