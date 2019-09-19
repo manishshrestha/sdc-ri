@@ -57,6 +57,16 @@ public interface MdibStorage {
      *
      * @param handle     The state or descriptor handle of the state to request (descriptor handle is used at single
      *                   states).
+     * @return Return {@link Optional} of requested state or {@link Optional#empty()} if not found or something
+     * went wrong.
+     */
+    Optional<AbstractState> getState(String handle);
+
+    /**
+     * Retrieve specific state of the hosted {@link org.ieee11073.sdc.biceps.model.participant.Mdib}.
+     *
+     * @param handle     The state or descriptor handle of the state to request (descriptor handle is used at single
+     *                   states).
      * @param stateClass Class to cast to. If cast fails, {@link Optional#empty()} will be returned.
      *
      * @return Return {@link Optional} of requested state or {@link Optional#empty()} if not found or something

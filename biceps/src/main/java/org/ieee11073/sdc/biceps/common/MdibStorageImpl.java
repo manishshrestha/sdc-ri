@@ -1,6 +1,7 @@
 package org.ieee11073.sdc.biceps.common;
 
-import com.google.inject.Inject;
+import com.google.inject.assistedinject.Assisted;
+import com.google.inject.assistedinject.AssistedInject;
 import org.ieee11073.sdc.biceps.common.factory.MdibEntityFactory;
 import org.ieee11073.sdc.biceps.common.helper.MdibStorageUtil;
 import org.ieee11073.sdc.biceps.model.participant.*;
@@ -13,6 +14,8 @@ import java.util.stream.Collectors;
 public class MdibStorageImpl implements MdibStorage {
     private static final Logger LOG = LoggerFactory.getLogger(MdibStorageImpl.class);
 
+    private MdibVersion mdibVersion;
+
     private final MdibEntityFactory entityFactory;
     private final MdibStorageUtil util;
     private final MdibTypeValidator typeValidator;
@@ -21,10 +24,19 @@ public class MdibStorageImpl implements MdibStorage {
     private Set<String> rootEntities;
     private Map<String, AbstractContextState> contextStates;
 
-    @Inject
+    @AssistedInject
     MdibStorageImpl(MdibEntityFactory entityFactory,
                     MdibStorageUtil util,
                     MdibTypeValidator typeValidator) {
+        this(MdibVersion.create(), entityFactory, util, typeValidator);
+    }
+
+    @AssistedInject
+    MdibStorageImpl(@Assisted MdibVersion initialMdibVersion,
+                    MdibEntityFactory entityFactory,
+                    MdibStorageUtil util,
+                    MdibTypeValidator typeValidator) {
+        this.mdibVersion = initialMdibVersion;
 
         this.entityFactory = entityFactory;
         this.util = util;
@@ -54,6 +66,10 @@ public class MdibStorageImpl implements MdibStorage {
 
     public List<MdibEntity> getRootEntities() {
         return util.exposeEntityList(entities, rootEntities);
+    }
+
+    public Optional<AbstractState> getState(String handle) {
+        return getState(handle, AbstractState.class);
     }
 
     public <T extends AbstractState> Optional<T> getState(String handle, Class<T> stateClass) {
@@ -154,11 +170,13 @@ public class MdibStorageImpl implements MdibStorage {
     }
 
     private void insertEntity(MdibDescriptionModification modification, List<MdibEntity> insertedEntities) {
+        mdibVersion = MdibVersion.increment(mdibVersion);
         final MdibEntity mdibEntity = entityFactory.createMdibEntity(
-                null,
+                modification.getParentHandle().orElse(null),
                 new ArrayList<>(),
                 modification.getDescriptor(),
-                modification.getStates());
+                modification.getStates(),
+                mdibVersion);
 
         // Either add entity as child of a parent or expect it to be a root entity
         if (modification.getParentHandle().isPresent()) {
