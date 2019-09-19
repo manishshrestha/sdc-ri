@@ -1,16 +1,16 @@
-package org.ieee11073.sdc.biceps.provider.preprocessing;
+package org.ieee11073.sdc.biceps.common.preprocessing;
 
-import org.ieee11073.sdc.biceps.common.*;
+import org.ieee11073.sdc.biceps.common.MdibDescriptionModifications;
+import org.ieee11073.sdc.biceps.common.MdibEntity;
+import org.ieee11073.sdc.biceps.common.MdibStorage;
 import org.ieee11073.sdc.biceps.model.participant.MdsDescriptor;
-import org.ieee11073.sdc.biceps.model.participant.NumericMetricState;
+import org.ieee11073.sdc.biceps.provider.preprocessing.HandleDuplicatedException;
 import org.ieee11073.sdc.biceps.testutil.MockModelFactory;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 import java.util.Optional;
-
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 class DuplicateDetectorTest {
     @Test
@@ -25,9 +25,9 @@ class DuplicateDetectorTest {
                 .insert(MockModelFactory.createDescriptor(expectedExistingHandle, MdsDescriptor.class))
                 .update(MockModelFactory.createDescriptor(expectedExistingHandle, MdsDescriptor.class));
 
-        final MdibStorage mdibStorage = mock(MdibStorage.class);
-        when(mdibStorage.getEntity(expectedNonExistingHandle)).thenReturn(Optional.empty());
-        when(mdibStorage.getEntity(expectedExistingHandle)).thenReturn(Optional.of(mock(MdibEntity.class)));
+        final MdibStorage mdibStorage = Mockito.mock(MdibStorage.class);
+        Mockito.when(mdibStorage.getEntity(expectedNonExistingHandle)).thenReturn(Optional.empty());
+        Mockito.when(mdibStorage.getEntity(expectedExistingHandle)).thenReturn(Optional.of(Mockito.mock(MdibEntity.class)));
 
         // When there is no duplication detected
         duplicateDetector.process(modifications, modifications.getModifications().get(0), mdibStorage);
