@@ -20,17 +20,25 @@ public class MdibEntityImpl implements MdibEntity {
     private final String parent;
     private final List<String> children;
     private final AbstractDescriptor descriptor;
-    private final List<? extends AbstractState> states;
+    private final List<AbstractState> states;
+    private final MdibVersion mdibVersion;
 
     @AssistedInject
     MdibEntityImpl(@Assisted @Nullable String parent,
                    @Assisted("children") List<String> children,
                    @Assisted AbstractDescriptor descriptor,
-                   @Assisted("states") List<? extends AbstractState> states) {
+                   @Assisted("states") List<AbstractState> states,
+                   @Assisted MdibVersion mdibVersion) {
         this.parent = parent;
         this.children = children;
         this.descriptor = descriptor;
         this.states = states;
+        this.mdibVersion = mdibVersion;
+    }
+
+    @Override
+    public MdibVersion getLastChanged() {
+        return mdibVersion;
     }
 
     @Override
@@ -54,29 +62,30 @@ public class MdibEntityImpl implements MdibEntity {
     }
 
     @Override
-    public List<? extends AbstractState> getStates() {
+    public List<AbstractState> getStates() {
         return states;
     }
 
     @Override
     public StateAlternative<List<AbstractMultiState>> doIfSingleState(Consumer<AbstractState> consumer) {
         if (!getStates().isEmpty()) {
-            if (!getStates().get(0).getClass().isAssignableFrom(AbstractContextState.class)) {
+            if (!getStates().get(0).getClass().isAssignableFrom(AbstractMultiState.class)) {
                 consumer.accept(getStates().get(0));
-                return stateAlternativeConsumer -> {};
+                return stateAlternativeConsumer -> {
+                };
             }
         }
 
-        return stateAlternativeConsumer -> stateAlternativeConsumer.accept((List<AbstractMultiState>)getStates());
+        return stateAlternativeConsumer -> stateAlternativeConsumer.accept((List) getStates());
     }
 
     @Override
-    public StateAlternative<AbstractState> doIfMultiState(Consumer<List<? extends AbstractMultiState>> consumer) {
+    public StateAlternative<AbstractState> doIfMultiState(Consumer<List<AbstractMultiState>> consumer) {
         if (getStates().isEmpty()) {
             consumer.accept(Collections.emptyList());
         } else {
-            if (getStates().get(0).getClass().isAssignableFrom(AbstractContextState.class)) {
-                consumer.accept((List<? extends AbstractMultiState>) getStates());
+            if (getStates().get(0).getClass().isAssignableFrom(AbstractMultiState.class)) {
+                consumer.accept((List) getStates());
             }
         }
         return stateAlternativeConsumer -> stateAlternativeConsumer.accept(getStates().get(0));

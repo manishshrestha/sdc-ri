@@ -15,12 +15,12 @@ public class MdibDescriptionModification {
 
     final private Type modificationType;
     final private AbstractDescriptor descriptor;
-    final private List<? extends AbstractState> states;
+    final private List<AbstractState> states;
     final private String parentHandle;
 
     public MdibDescriptionModification(Type modificationType,
                                        AbstractDescriptor descriptor,
-                                       @Nullable List<? extends AbstractState> states,
+                                       @Nullable List<AbstractState> states,
                                        @Nullable String parentHandle) {
         this.modificationType = modificationType;
         this.descriptor = descriptor;
@@ -30,7 +30,7 @@ public class MdibDescriptionModification {
 
     public MdibDescriptionModification(Type modificationType,
                                        AbstractDescriptor descriptor,
-                                       @Nullable List<? extends AbstractState> states) {
+                                       @Nullable List<AbstractState> states) {
         this(modificationType, descriptor, states, null);
     }
 
@@ -46,7 +46,7 @@ public class MdibDescriptionModification {
         return descriptor.getHandle();
     }
 
-    public List<? extends AbstractState> getStates() {
+    public List<AbstractState> getStates() {
         return states;
     }
 

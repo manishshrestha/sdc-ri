@@ -70,7 +70,7 @@ public class MdibStateModifications {
     /**
      * Get the list of states to be updated.
      */
-    List<AbstractState> getStates() {
+    public List<AbstractState> getStates() {
         return this.states;
     }
 

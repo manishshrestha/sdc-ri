@@ -16,6 +16,8 @@ import java.util.function.Consumer;
 // * read access, only. Write access is established by using {@link MdibEntity}.
 // */
 public interface MdibEntity {
+    MdibVersion getLastChanged();
+
     /**
      * Obtain a read-only list of the MDIB entity's children.
      *
@@ -53,10 +55,10 @@ public interface MdibEntity {
      *
      * @return List of states currently associated with the entity.
      */
-    List<? extends AbstractState> getStates();
+    List<AbstractState> getStates();
 
     StateAlternative<List<AbstractMultiState>> doIfSingleState(Consumer<AbstractState> consumer);
-    StateAlternative<AbstractState> doIfMultiState(Consumer<List<? extends AbstractMultiState>> consumer);
+    StateAlternative<AbstractState> doIfMultiState(Consumer<List<AbstractMultiState>> consumer);
 
     interface StateAlternative<T> {
         void orElse(Consumer<T> consumer);

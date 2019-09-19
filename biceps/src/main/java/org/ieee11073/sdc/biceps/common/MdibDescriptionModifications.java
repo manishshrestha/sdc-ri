@@ -7,7 +7,7 @@ import java.util.*;
 
 /**
  * Container to collect changes supposed to be applied on an MDIB.
- *
+ * <p>
  * The {@linkplain MdibDescriptionModifications} is a fluent interface.
  */
 public class MdibDescriptionModifications {
@@ -18,7 +18,7 @@ public class MdibDescriptionModifications {
     private Set<String> deletedHandles;
 
     /**
-     * Create set.
+     * Creates a set.
      */
     public static MdibDescriptionModifications create() {
         return new MdibDescriptionModifications(null);
@@ -90,18 +90,6 @@ public class MdibDescriptionModifications {
     }
 
     /**
-     * Add context state descriptor to change set with state information.
-     *
-     * Caveat: the change set processor might check descriptor state consistency.
-     */
-    public MdibDescriptionModifications add(MdibDescriptionModification.Type modType,
-                                            AbstractContextDescriptor context,
-                                            List<? extends AbstractContextState> contextStates) {
-        contextStates.stream().forEach(state -> duplicateDetection(modType, state.getHandle()));
-        return addMdibModification(modType, context, contextStates);
-    }
-
-    /**
      * Add multi state descriptor to change set with state information.
      *
      * Caveat: the change set processor might check descriptor state consistency.
@@ -111,19 +99,6 @@ public class MdibDescriptionModifications {
                                             List<? extends AbstractMultiState> multiStates) {
         multiStates.stream().forEach(state -> duplicateDetection(modType, state.getHandle()));
         return addMdibModification(modType, descriptor, multiStates);
-    }
-
-    /**
-     * Add context state descriptor to change set with state information.
-     *
-     * Caveat: the change set processor might check descriptor state consistency.
-     */
-    public MdibDescriptionModifications add(MdibDescriptionModification.Type modType,
-                                            AbstractContextDescriptor context,
-                                            List<? extends AbstractContextState> contextStates,
-                                            @Nullable String parentHandle) {
-        contextStates.stream().forEach(state -> duplicateDetection(modType, state.getHandle()));
-        return addMdibModification(modType, context, contextStates, parentHandle);
     }
 
     /**
@@ -176,16 +151,7 @@ public class MdibDescriptionModifications {
 
     /**
      * Convenient function to insert a multi state descriptor with state information.
-     * @see #add(MdibDescriptionModification.Type, AbstractContextDescriptor, List)
-     */
-    public MdibDescriptionModifications insert(AbstractContextDescriptor context,
-                                               List<? extends AbstractContextState> contextStates) {
-        return add(MdibDescriptionModification.Type.INSERT, context, contextStates);
-    }
-
-    /**
-     * Convenient function to insert a multi state descriptor with state information.
-     * @see #add(MdibDescriptionModification.Type, AbstractContextDescriptor, List)
+     * @see #add(MdibDescriptionModification.Type, AbstractDescriptor, List)
      */
     public MdibDescriptionModifications insert(AbstractDescriptor descriptor,
                                                List<? extends AbstractMultiState> multiStates) {
@@ -194,17 +160,7 @@ public class MdibDescriptionModifications {
 
     /**
      * Convenient function to insert a multi state descriptor with state information.
-     * @see #add(MdibDescriptionModification.Type, AbstractContextDescriptor, List)
-     */
-    public MdibDescriptionModifications insert(AbstractContextDescriptor context,
-                                               List<? extends AbstractContextState> contextStates,
-                                               @Nullable String parentHandle) {
-        return add(MdibDescriptionModification.Type.INSERT, context, contextStates, parentHandle);
-    }
-
-    /**
-     * Convenient function to insert a multi state descriptor with state information.
-     * @see #add(MdibDescriptionModification.Type, AbstractContextDescriptor, List)
+     * @see #add(MdibDescriptionModification.Type, AbstractDescriptor, List)
      */
     public MdibDescriptionModifications insert(AbstractDescriptor descriptor,
                                                List<? extends AbstractMultiState> multiStates,
@@ -230,16 +186,7 @@ public class MdibDescriptionModifications {
 
     /**
      * Convenient function to update a multi state descriptor with state information.
-     * @see #add(MdibDescriptionModification.Type, AbstractContextDescriptor, List)
-     */
-    public MdibDescriptionModifications update(AbstractContextDescriptor context,
-                                               List<AbstractContextState> contextStates) {
-        return add(MdibDescriptionModification.Type.UPDATE, context, contextStates);
-    }
-
-    /**
-     * Convenient function to update a multi state descriptor with state information.
-     * @see #add(MdibDescriptionModification.Type, AbstractContextDescriptor, List)
+     * @see #add(MdibDescriptionModification.Type, AbstractDescriptor, List)
      */
     public MdibDescriptionModifications update(AbstractDescriptor descriptor,
                                                List<AbstractMultiState> multiStates) {
@@ -299,7 +246,7 @@ public class MdibDescriptionModifications {
                                                              List<? extends AbstractState> states,
                                                              @Nullable String parentHandle) {
         duplicateDetection(modType, descriptor.getHandle());
-        modifications.add(new MdibDescriptionModification(modType, descriptor, states, parentHandle));
+        modifications.add(new MdibDescriptionModification(modType, descriptor, (List)states, parentHandle));
         return this;
     }
 
