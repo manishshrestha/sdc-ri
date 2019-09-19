@@ -11,10 +11,9 @@ import javax.annotation.Nullable;
 import java.util.Optional;
 
 /**
- * Convenience factory to create SOAP envelopes in accordance to JAXB SOAP model.
+ * Convenience factory to create SOAP envelopes in accordance with the JAXB SOAP model.
  */
 public class EnvelopeFactory {
-
     private final ObjectFactory wsaFactory;
     private final org.ieee11073.sdc.dpws.soap.model.ObjectFactory soapFactory;
     private final WsAddressingUtil wsaUtil;
@@ -26,15 +25,14 @@ public class EnvelopeFactory {
         this.wsaFactory = wsaFactory;
         this.soapFactory = soapFactory;
         this.wsaUtil = wsaUtil;
-
     }
 
     /**
-     * Create envelope with given wsa:Action attribute and body.
+     * Creates an envelope with given wsa:Action attribute and body.
      *
-     * @param wsaAction Action to use for Envelope
-     * @param firstBodyChild message body
-     * @return an {@link Envelope}
+     * @param wsaAction the action to be used for the envelope.
+     * @param firstBodyChild the message body.
+     * @return an {@link Envelope} instance.
      */
     public Envelope createEnvelope(String wsaAction, @Nullable Object firstBodyChild) {
         Envelope envelope = createEnvelope(firstBodyChild);
@@ -43,12 +41,12 @@ public class EnvelopeFactory {
     }
 
     /**
-     * Create envelope with given wsa:Action attribute, wsa:To attribute, and body.
+     * Creates an envelope with given wsa:Action attribute, wsa:To attribute, and body.
      *
-     * @param wsaAction Action to use for Envelope
-     * @param firstBodyChild message body
-     * @param wsaTo wsa:To element content
-     * @return an {@link Envelope}
+     * @param wsaAction the action to be used for the envelope.
+     * @param firstBodyChild the message body.
+     * @param wsaTo the wsa:To element content.
+     * @return an {@link Envelope} instance.
      */
     public Envelope createEnvelope(String wsaAction, String wsaTo, @Nullable Object firstBodyChild) {
         Envelope envelope = createEnvelope(firstBodyChild);
@@ -58,12 +56,12 @@ public class EnvelopeFactory {
     }
 
     /**
-     * Create envelope with given JAXB body element.
-     *
+     * Creates an envelope with given JAXB body element.
+     * <p>
      * Any header fields will be left empty.
      *
-     * @param firstBodyChild element to store in body
-     * @return an {@link Envelope}
+     * @param firstBodyChild the message body.
+     * @return an {@link Envelope} instance.
      */
     public Envelope createEnvelope(@Nullable Object firstBodyChild) {
         Envelope envelope = soapFactory.createEnvelope();
@@ -74,13 +72,18 @@ public class EnvelopeFactory {
     }
 
     /**
-     * Create an empty SOAP envelope with existing empty body and header.
-     * @return an empty {@link Envelope}
+     * Creates an empty SOAP envelope with existing empty body and header.
+     * @return an empty {@link Envelope} instance.
      */
     public Envelope createEnvelope() {
         return createEnvelope(null);
     }
 
+    /**
+     * Creates a SOAP envelope from an existing body.
+     * @param body the message body.
+     * @return an {@link Envelope} instance.
+     */
     public Envelope createEnvelopeFromBody(Body body) {
         Envelope envelope = createEnvelope(null);
         envelope.setBody(body);

@@ -5,13 +5,15 @@ import org.ieee11073.sdc.dpws.soap.NotificationSource;
 import org.ieee11073.sdc.dpws.soap.interception.NotificationCallback;
 
 /**
- * Factory to create notification clients (source side).
+ * Factory to create notification sources.
  */
 public interface NotificationSourceFactory {
     /**
-     * @param callback Callback that shall be invoked after all interceptors on are visited and the notification shall
-     *                 be transmitted to AbstractEventMessage sink.
-     * @return a new {@link NotificationSource}
+     * Creates a notification source.
+     *
+     * @param callback a callback that is supposed to be invoked after all interceptors are visited and
+     *                 the notification is ready to be transmitted to an event sink.
+     * @return a new {@link NotificationSource}.
      */
     NotificationSource createNotificationSource(@Assisted NotificationCallback callback);
 }
