@@ -4,6 +4,7 @@ import com.google.inject.AbstractModule;
 import com.google.inject.assistedinject.FactoryModuleBuilder;
 import org.ieee11073.sdc.biceps.common.*;
 import org.ieee11073.sdc.biceps.common.factory.MdibEntityGuiceAssistedFactory;
+import org.ieee11073.sdc.biceps.common.factory.MdibStorageFactory;
 import org.ieee11073.sdc.biceps.common.factory.MdibStoragePreprocessingChainFactory;
 
 /**
@@ -12,7 +13,6 @@ import org.ieee11073.sdc.biceps.common.factory.MdibStoragePreprocessingChainFact
 public class DefaultBicepsModule extends AbstractModule {
     @Override
     protected void configure() {
-        bind(MdibStorage.class).to(MdibStorageImpl.class);
         install(new FactoryModuleBuilder()
                 .implement(MdibEntity.class, MdibEntityImpl.class)
                 .build(MdibEntityGuiceAssistedFactory.class));
@@ -20,6 +20,10 @@ public class DefaultBicepsModule extends AbstractModule {
         install(new FactoryModuleBuilder()
                 .implement(MdibStoragePreprocessingChain.class, MdibStoragePreprocessingChain.class)
                 .build(MdibStoragePreprocessingChainFactory.class));
+
+        install(new FactoryModuleBuilder()
+                .implement(MdibStorage.class, MdibStorageImpl.class)
+                .build(MdibStorageFactory.class));
 //
 //        install(new FactoryModuleBuilder()
 //                .implement(MdibAccess.class, MdibStorageNotificationAccess.class)
