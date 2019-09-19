@@ -3,6 +3,7 @@ package org.ieee11073.sdc.biceps.common;
 import com.google.inject.Injector;
 import org.ieee11073.sdc.biceps.UnitTestUtil;
 import org.ieee11073.sdc.biceps.common.factory.MdibEntityFactory;
+import org.ieee11073.sdc.biceps.model.participant.Mdib;
 import org.ieee11073.sdc.biceps.model.participant.PatientContextDescriptor;
 import org.ieee11073.sdc.biceps.model.participant.PatientContextState;
 import org.ieee11073.sdc.biceps.testutil.MockModelFactory;
@@ -46,7 +47,8 @@ public class MdibEntityImplTest {
                                 throw new RuntimeException("Creation of context state failed. Handle: " + handle);
                             }
                         })
-                        .collect(Collectors.toList()));
+                        .collect(Collectors.toList()),
+                MdibVersion.create());
     }
 
     @Test
