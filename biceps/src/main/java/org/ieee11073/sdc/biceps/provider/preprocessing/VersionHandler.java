@@ -2,9 +2,11 @@ package org.ieee11073.sdc.biceps.provider.preprocessing;
 
 import com.google.inject.Inject;
 import org.ieee11073.sdc.biceps.common.*;
+import org.ieee11073.sdc.biceps.common.factory.MdibEntityFactory;
 import org.ieee11073.sdc.biceps.model.participant.AbstractDescriptor;
 import org.ieee11073.sdc.biceps.model.participant.AbstractMultiState;
 import org.ieee11073.sdc.biceps.model.participant.AbstractState;
+import org.ieee11073.sdc.biceps.model.participant.MdsDescriptor;
 import org.ieee11073.sdc.common.helper.ObjectUtil;
 
 import java.math.BigInteger;
@@ -12,25 +14,44 @@ import java.util.*;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
+/**
+ * Preprocessing segment that manages BICEPS versioning.
+ * <p>
+ * The segment takes care of incrementing descriptor and state versions.
+ * It maintains a map of latest versions independent of the data that is stored in the {@link MdibStorage}.
+ * This facilitates the alignment of versions without prematurely storing them in the {@link MdibStorage}.
+ * <p>
+ * If an error is thrown during processing, the versions stored internally in the version handler are not going to be
+ * tainted.
+ */
 public class VersionHandler implements DescriptionPreprocessingSegment, StatePreprocessingSegment {
-    private final Map<String, VersionPair> versionCache;
     private final MdibTypeValidator mdibTypeValidator;
     private final ObjectUtil objectUtil;
+
+    private Map<String, VersionPair> versionsWorkingCopy;
+    private Map<String, VersionPair> versions;
     private final Set<String> updatedParents;
 
     @Inject
     VersionHandler(MdibTypeValidator mdibTypeValidator,
-                   ObjectUtil objectUtil) {
+                   ObjectUtil objectUtil,
+                   MdibEntityFactory entityFactory) {
         this.mdibTypeValidator = mdibTypeValidator;
         this.objectUtil = objectUtil;
-        this.versionCache = new HashMap<>();
+        this.versionsWorkingCopy = new HashMap<>();
+        this.versions = new HashMap<>();
         this.updatedParents = new HashSet<>();
-
     }
 
     @Override
     public void beforeFirstModification(MdibStorage storage) {
         updatedParents.clear();
+        versionsWorkingCopy = objectUtil.deepCopy(versions);
+    }
+
+    @Override
+    public void afterLastModification(MdibStorage storage) {
+        versions = versionsWorkingCopy;
     }
 
     @Override
@@ -45,7 +66,7 @@ public class VersionHandler implements DescriptionPreprocessingSegment, StatePre
                 processUpdate(modification.getDescriptor(), modification.getStates(), storage);
                 break;
             case DELETE:
-                // Versions are not affected by deletions
+                processDelete(modification.getDescriptor(), storage);
                 break;
         }
     }
@@ -54,11 +75,19 @@ public class VersionHandler implements DescriptionPreprocessingSegment, StatePre
     public void process(AbstractState state, MdibStorage storage) {
         final Optional<AbstractMultiState> multiState = mdibTypeValidator.toMultiState(state);
         if (multiState.isPresent()) {
-            getVersionPair(multiState.get()).ifPresent(versionPair -> {
-                multiState.get().setStateVersion(versionPair.getStateVersion().add(BigInteger.ONE));
-                multiState.get().setDescriptorVersion(versionPair.getDescriptorVersion());
-                putVersionPair(multiState.get());
-            });
+            VersionPair versionPair;
+            Optional<VersionPair> multiStateVersionPair = getVersionPair(multiState.get());
+            if (multiStateVersionPair.isPresent()) {
+                versionPair = multiStateVersionPair.get();
+            } else {
+                VersionPair versionPairFromDescr = getVersionPair(multiState.get().getDescriptorHandle()).orElseThrow(() ->
+                        new RuntimeException("Multi-state descriptor was missing during multi state update"));
+                versionPair = new VersionPair(versionPairFromDescr.getDescriptorVersion(), BigInteger.valueOf(-1));
+            }
+
+            multiState.get().setStateVersion(versionPair.getStateVersion().add(BigInteger.ONE));
+            multiState.get().setDescriptorVersion(versionPair.getDescriptorVersion());
+            putVersionPair(multiState.get());
         } else {
             getVersionPair(state.getDescriptorHandle()).ifPresent(versionPair -> {
                 state.setStateVersion(versionPair.getStateVersion().add(BigInteger.ONE));
@@ -68,18 +97,43 @@ public class VersionHandler implements DescriptionPreprocessingSegment, StatePre
         }
     }
 
+    private void processDelete(AbstractDescriptor descriptor, MdibStorage storage) {
+        if (descriptor instanceof MdsDescriptor) {
+            // no child to update in case of an MDS
+            return;
+        }
+
+        Optional<MdibEntity> entity = storage.getEntity(descriptor.getHandle());
+        if (entity.isEmpty()) {
+            throw new RuntimeException("Deletion of an entity requires an existing entity in the MDIB storage");
+        }
+
+        String parentHandle = entity.get().getParent().orElseThrow(() ->
+                new RuntimeException("MDIB storage inconsistency: parent handle is missing"));
+
+        MdibEntity parentEntity = storage.getEntity(parentHandle).orElseThrow(() ->
+                new RuntimeException("MDIB storage inconsistency: parent entity is missing"));
+
+        processUpdate(parentEntity.getDescriptor(), parentEntity.getStates(), storage);
+    }
+
     private void processUpdate(AbstractDescriptor descriptor,
                                List<? extends AbstractState> states,
                                MdibStorage storage) {
         if (isUpdatedAlready(descriptor)) {
-            return;
+            return; // state has been updated already, ignore
         }
 
         if (mdibTypeValidator.isMultiStateDescriptor(descriptor)) {
             processUpdateWithMultiState(descriptor, states, storage);
         } else {
             if (states.isEmpty()) {
-                throw new RuntimeException("State is missing to complete the insert operation.");
+                Optional<AbstractState> state = storage.getState(descriptor.getHandle());
+                if (state.isEmpty()) {
+                    throw new RuntimeException("State is missing to complete the update operation");
+                } else {
+                    states = Collections.singletonList(state.get());
+                }
             }
             processUpdateWithSingleState(descriptor, states.get(0));
         }
@@ -135,12 +189,23 @@ public class VersionHandler implements DescriptionPreprocessingSegment, StatePre
             processInsertWithMultiState(descriptor, states);
         } else {
             if (states.isEmpty()) {
-                throw new RuntimeException("State is missing to complete the insert operation.");
+                throw new RuntimeException("State is missing to complete the insert operation");
             }
             processInsertWithSingleState(descriptor, states.get(0));
         }
 
         setUpdated(descriptor);
+
+        if (parentHandle.isPresent()) {
+            Optional<MdibEntity> entity = storage.getEntity(parentHandle.get());
+            if (entity.isEmpty()) {
+                if (!updatedParents.contains(parentHandle.get())) {
+                    throw new RuntimeException("Missing parent to be inserted before child");
+                }
+            } else {
+                processUpdate(entity.get().getDescriptor(), entity.get().getStates(), storage);
+            }
+        }
     }
 
     private void processInsertWithSingleState(AbstractDescriptor descriptor, AbstractState state) {
@@ -191,31 +256,31 @@ public class VersionHandler implements DescriptionPreprocessingSegment, StatePre
     }
 
     private void putVersionPair(VersionPair versionPair, AbstractState state) {
-        versionCache.put(state.getDescriptorHandle(), new VersionPair(versionPair.getDescriptorVersion(), state.getStateVersion()));
+        versionsWorkingCopy.put(state.getDescriptorHandle(), new VersionPair(versionPair.getDescriptorVersion(), state.getStateVersion()));
     }
 
     private void putVersionPair(AbstractDescriptor descriptor) {
-        versionCache.put(descriptor.getHandle(), new VersionPair(descriptor.getDescriptorVersion()));
+        versionsWorkingCopy.put(descriptor.getHandle(), new VersionPair(descriptor.getDescriptorVersion()));
     }
 
     private void putVersionPair(AbstractDescriptor descriptor, AbstractState state) {
-        versionCache.put(descriptor.getHandle(), new VersionPair(descriptor.getDescriptorVersion(), state.getStateVersion()));
+        versionsWorkingCopy.put(descriptor.getHandle(), new VersionPair(descriptor.getDescriptorVersion(), state.getStateVersion()));
     }
 
     private void putVersionPair(AbstractMultiState state) {
-        versionCache.put(state.getHandle(), new VersionPair(state.getDescriptorVersion(), state.getStateVersion()));
+        versionsWorkingCopy.put(state.getHandle(), new VersionPair(state.getDescriptorVersion(), state.getStateVersion()));
     }
 
     private Optional<VersionPair> getVersionPair(String handle) {
-        return Optional.ofNullable(versionCache.get(handle));
+        return Optional.ofNullable(versionsWorkingCopy.get(handle));
     }
 
     private Optional<VersionPair> getVersionPair(AbstractDescriptor descriptor) {
-        return Optional.ofNullable(versionCache.get(descriptor.getHandle()));
+        return Optional.ofNullable(versionsWorkingCopy.get(descriptor.getHandle()));
     }
 
     private Optional<VersionPair> getVersionPair(AbstractMultiState state) {
-        return Optional.ofNullable(versionCache.get(state.getHandle()));
+        return Optional.ofNullable(versionsWorkingCopy.get(state.getHandle()));
     }
 
     private class VersionPair {
