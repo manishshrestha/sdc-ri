@@ -2,6 +2,7 @@ package org.ieee11073.sdc.biceps.common;
 
 import com.google.inject.Injector;
 import org.ieee11073.sdc.biceps.UnitTestUtil;
+import org.ieee11073.sdc.biceps.common.factory.MdibStorageFactory;
 import org.ieee11073.sdc.biceps.model.participant.*;
 import org.ieee11073.sdc.biceps.testutil.Handles;
 import org.ieee11073.sdc.biceps.testutil.MockModelFactory;
@@ -27,7 +28,7 @@ public class MdibStorageImplTest {
     public void setUp() {
         TestLogging.configure();
         Injector injector = UT.getInjector();
-        mdibStorage = injector.getInstance(MdibStorage.class);
+        mdibStorage = injector.getInstance(MdibStorageFactory.class).createMdibStorage();
     }
 
     private void applyDescriptionWithVersion(MdibDescriptionModification.Type type,
