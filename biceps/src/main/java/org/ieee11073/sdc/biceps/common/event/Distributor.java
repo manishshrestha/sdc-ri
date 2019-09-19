@@ -2,7 +2,7 @@ package org.ieee11073.sdc.biceps.common.event;
 
 import com.google.common.eventbus.EventBus;
 import com.google.inject.Inject;
-import org.ieee11073.sdc.biceps.common.MdibAccess;
+import org.ieee11073.sdc.biceps.common.access.MdibAccess;
 import org.ieee11073.sdc.biceps.common.MdibEntity;
 import org.ieee11073.sdc.biceps.common.MdibStateModifications;
 import org.slf4j.Logger;

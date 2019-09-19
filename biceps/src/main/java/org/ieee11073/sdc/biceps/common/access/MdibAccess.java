@@ -1,5 +1,6 @@
-package org.ieee11073.sdc.biceps.common;
+package org.ieee11073.sdc.biceps.common.access;
 
+import org.ieee11073.sdc.biceps.common.MdibEntity;
 import org.ieee11073.sdc.biceps.model.participant.AbstractContextState;
 import org.ieee11073.sdc.biceps.model.participant.AbstractDescriptor;
 import org.ieee11073.sdc.biceps.model.participant.AbstractState;
@@ -11,6 +12,7 @@ import java.util.Optional;
  * Read access to MDIB storage.
  */
 public interface MdibAccess {
+
     /**
      * Retrieve specific descriptor of the hosted {@link org.ieee11073.sdc.biceps.model.participant.Mdib}.
      *

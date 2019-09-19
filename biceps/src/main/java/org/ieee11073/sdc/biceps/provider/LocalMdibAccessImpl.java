@@ -3,6 +3,7 @@ package org.ieee11073.sdc.biceps.provider;
 import com.google.common.eventbus.EventBus;
 import com.google.inject.Inject;
 import org.ieee11073.sdc.biceps.common.*;
+import org.ieee11073.sdc.biceps.common.access.MdibAccessObserver;
 import org.ieee11073.sdc.biceps.common.event.Distributor;
 import org.ieee11073.sdc.biceps.common.factory.MdibStoragePreprocessingChainFactory;
 import org.ieee11073.sdc.biceps.model.participant.AbstractContextState;
@@ -12,7 +13,6 @@ import org.ieee11073.sdc.common.helper.AutoLock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.locks.ReentrantReadWriteLock;

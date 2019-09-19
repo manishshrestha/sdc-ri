@@ -1,4 +1,4 @@
-package org.ieee11073.sdc.biceps.common;
+package org.ieee11073.sdc.biceps.common.access;
 
 /**
  * Indicate class as a MDIB changes observer.
