@@ -1,5 +1,7 @@
 package org.ieee11073.sdc.biceps.common;
 
+import org.ieee11073.sdc.biceps.model.participant.Mdib;
+
 import java.math.BigInteger;
 import java.net.URI;
 import java.util.UUID;
@@ -16,6 +18,10 @@ public class MdibVersion {
     public static MdibVersion increment(MdibVersion mdibVersion) {
         return new MdibVersion(mdibVersion.getSequenceId(), mdibVersion.getVersion().add(BigInteger.ONE),
                 mdibVersion.getInstanceId());
+    }
+
+    public static MdibVersion setVersionCounter(MdibVersion mdibVersion, BigInteger versionCounter) {
+        return new MdibVersion(mdibVersion.getSequenceId(), versionCounter, mdibVersion.getInstanceId());
     }
 
     public MdibVersion(URI sequenceId) {
