@@ -16,5 +16,13 @@ public class DefaultBicepsConfigModule extends AbstractConfigurationModule {
         bind(CommonConfig.MDIB_QUEUE_SIZE,
                 Integer.class,
                 Integer.MAX_VALUE);
+
+        bind(CommonConfig.COPY_MDIB_INPUT,
+                Boolean.class,
+                true);
+
+        bind(CommonConfig.COPY_MDIB_OUTPUT,
+                Boolean.class,
+                true);
     }
 }

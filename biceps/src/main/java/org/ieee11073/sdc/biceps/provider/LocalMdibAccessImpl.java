@@ -1,20 +1,28 @@
 package org.ieee11073.sdc.biceps.provider;
 
 import com.google.common.eventbus.EventBus;
-import com.google.inject.Inject;
+import com.google.inject.assistedinject.AssistedInject;
 import org.ieee11073.sdc.biceps.common.*;
-import org.ieee11073.sdc.biceps.common.access.MdibAccessObserver;
+import org.ieee11073.sdc.biceps.common.access.*;
+import org.ieee11073.sdc.biceps.common.access.factory.ReadTransactionFactory;
 import org.ieee11073.sdc.biceps.common.event.Distributor;
+import org.ieee11073.sdc.biceps.common.factory.MdibStorageFactory;
 import org.ieee11073.sdc.biceps.common.factory.MdibStoragePreprocessingChainFactory;
+import org.ieee11073.sdc.biceps.common.preprocessing.DuplicateDetector;
+import org.ieee11073.sdc.biceps.common.preprocessing.TreeConsistencyHandler;
 import org.ieee11073.sdc.biceps.model.participant.AbstractContextState;
 import org.ieee11073.sdc.biceps.model.participant.AbstractDescriptor;
 import org.ieee11073.sdc.biceps.model.participant.AbstractState;
-import org.ieee11073.sdc.common.helper.AutoLock;
+import org.ieee11073.sdc.biceps.provider.preprocessing.VersionHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.math.BigInteger;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class LocalMdibAccessImpl implements LocalMdibAccess {
@@ -24,34 +32,41 @@ public class LocalMdibAccessImpl implements LocalMdibAccess {
     private final MdibStorage mdibStorage;
     private MdibStoragePreprocessingChain localMdibAccessPreprocessing;
     private final ReentrantReadWriteLock readWriteLock;
-    private MdibVersion mdibVersion;
+    private final ReadTransactionFactory readTransactionFactory;
+    private final CopyManager copyManager;
 
-    @Inject
+    @AssistedInject
     LocalMdibAccessImpl(Distributor eventDistributor,
                         MdibStoragePreprocessingChainFactory chainFactory,
-                        MdibStorage mdibStorage,
+                        MdibStorageFactory mdibStorageFactory,
                         EventBus eventBus,
-                        ReentrantReadWriteLock readWriteLock) {
+                        ReentrantReadWriteLock readWriteLock,
+                        ReadTransactionFactory readTransactionFactory,
+                        DuplicateDetector duplicateDetector,
+                        VersionHandler versionHandler,
+                        TreeConsistencyHandler treeConsistencyHandler,
+                        CopyManager copyManager) {
         this.eventDistributor = eventDistributor;
-        this.mdibStorage = mdibStorage;
+        this.mdibStorage = mdibStorageFactory.createMdibStorage();
         this.readWriteLock = readWriteLock;
+        this.readTransactionFactory = readTransactionFactory;
+        this.copyManager = copyManager;
 
-        this.mdibVersion = MdibVersion.create();
-
-//        this.localMdibAccessPreprocessing = chainFactory.createMdibStoragePreprocessingChain(
-//                mdibStorage,
-//                Collections.emptyList(),
-//                Collections.emptyList());
+        this.localMdibAccessPreprocessing = chainFactory.createMdibStoragePreprocessingChain(
+                mdibStorage,
+                Arrays.asList(duplicateDetector, treeConsistencyHandler, versionHandler),
+                Arrays.asList(versionHandler));
     }
 
     @Override
-    public void writeDescription(MdibDescriptionModifications descriptionModifications) throws PreprocessingException {
+    public WriteDescriptionResult writeDescription(MdibDescriptionModifications descriptionModifications) throws PreprocessingException {
+        descriptionModifications = copyManager.processInput(descriptionModifications);
+
         readWriteLock.writeLock().lock();
-        MdibStorage.DescriptionResult modificationResult;
+        WriteDescriptionResult modificationResult;
         try {
             localMdibAccessPreprocessing.processDescriptionModifications(descriptionModifications);
-            mdibVersion = MdibVersion.increment(mdibVersion);
-            modificationResult = mdibStorage.apply(MdibDescriptionModifications.create(mdibVersion, descriptionModifications));
+            modificationResult = mdibStorage.apply(descriptionModifications);
 
             readWriteLock.readLock().lock();
 
@@ -64,23 +79,27 @@ public class LocalMdibAccessImpl implements LocalMdibAccess {
         }
 
         try {
-            eventDistributor.sendDescriptionModificationEvent(this,
+            eventDistributor.sendDescriptionModificationEvent(
+                    this,
                     modificationResult.getInsertedEntities(),
                     modificationResult.getUpdatedEntities(),
                     modificationResult.getDeletedEntities());
         } finally {
             readWriteLock.readLock().unlock();
         }
+
+        return modificationResult;
     }
 
     @Override
-    public void writeStates(MdibStateModifications stateModifications) throws PreprocessingException {
+    public WriteStateResult writeStates(MdibStateModifications stateModifications) throws PreprocessingException {
+        stateModifications = copyManager.processInput(stateModifications);
+
         readWriteLock.writeLock().lock();
-        MdibStorage.StateResult modificationResult;
+        WriteStateResult modificationResult;
         try {
             localMdibAccessPreprocessing.processStateModifications(stateModifications);
-            mdibVersion = MdibVersion.increment(mdibVersion);
-            modificationResult = mdibStorage.apply(MdibStateModifications.create(mdibVersion, stateModifications));
+            modificationResult = mdibStorage.apply(stateModifications);
 
             readWriteLock.readLock().lock();
 
@@ -93,12 +112,15 @@ public class LocalMdibAccessImpl implements LocalMdibAccess {
         }
 
         try {
-            eventDistributor.sendStateModificationEvent(this,
+            eventDistributor.sendStateModificationEvent(
+                    this,
                     stateModifications.getChangeType(),
                     modificationResult.getStates());
         } finally {
             readWriteLock.readLock().unlock();
         }
+
+        return modificationResult;
     }
 
     @Override
@@ -108,46 +130,88 @@ public class LocalMdibAccessImpl implements LocalMdibAccess {
 
     @Override
     public void unregisterObserver(MdibAccessObserver observer) {
-        eventDistributor.registerObserver(observer);
+        eventDistributor.unregisterObserver(observer);
+    }
+
+    @Override
+    public MdibVersion getMdibVersion() {
+        try (ReadTransaction transaction = startTransaction()) {
+            return transaction.getMdibVersion();
+        }
+    }
+
+    @Override
+    public BigInteger getMdDescriptionVersion() {
+        try (ReadTransaction transaction = startTransaction()) {
+            return transaction.getMdDescriptionVersion();
+        }
+    }
+
+    @Override
+    public BigInteger getMdStateVersion() {
+        try (ReadTransaction transaction = startTransaction()) {
+            return transaction.getMdStateVersion();
+        }
     }
 
     @Override
     public <T extends AbstractDescriptor> Optional<T> getDescriptor(String handle, Class<T> descrClass) {
-        try (AutoLock ignored = AutoLock.lock(readWriteLock.readLock())) {
-            return mdibStorage.getDescriptor(handle, descrClass);
+        try (ReadTransaction transaction = startTransaction()) {
+            return transaction.getDescriptor(handle, descrClass);
         }
     }
 
     @Override
     public Optional<AbstractDescriptor> getDescriptor(String handle) {
-        return getDescriptor(handle, AbstractDescriptor.class);
+        try (ReadTransaction transaction = startTransaction()) {
+            return transaction.getDescriptor(handle, AbstractDescriptor.class);
+        }
     }
 
     @Override
     public Optional<MdibEntity> getEntity(String handle) {
-        try (AutoLock ignored = AutoLock.lock(readWriteLock.readLock())) {
-            return mdibStorage.getEntity(handle);
+        try (ReadTransaction transaction = startTransaction()) {
+            return transaction.getEntity(handle);
         }
     }
 
     @Override
     public List<MdibEntity> getRootEntities() {
-        try (AutoLock ignored = AutoLock.lock(readWriteLock.readLock())) {
-            return mdibStorage.getRootEntities();
+        try (ReadTransaction transaction = startTransaction()) {
+            return transaction.getRootEntities();
         }
     }
 
     @Override
     public <T extends AbstractState> Optional<T> getState(String handle, Class<T> stateClass) {
-        try (AutoLock ignored = AutoLock.lock(readWriteLock.readLock())) {
-            return mdibStorage.getState(handle, stateClass);
+        try (ReadTransaction transaction = startTransaction()) {
+            return transaction.getState(handle, stateClass);
         }
     }
 
     @Override
     public <T extends AbstractContextState> List<T> getContextStates(String descriptorHandle, Class<T> stateClass) {
-        try (AutoLock ignored = AutoLock.lock(readWriteLock.readLock())) {
-            return mdibStorage.getContextStates(descriptorHandle, stateClass);
+        try (ReadTransaction transaction = startTransaction()) {
+            return transaction.getContextStates(descriptorHandle, stateClass);
         }
+    }
+
+    @Override
+    public <T extends AbstractDescriptor> Collection<MdibEntity> findEntitiesByType(Class<T> type) {
+        try (ReadTransaction transaction = startTransaction()) {
+            return transaction.findEntitiesByType(type);
+        }
+    }
+
+    @Override
+    public <T extends AbstractDescriptor> List<MdibEntity> getChildrenByType(String handle, Class<T> type) {
+        try (ReadTransaction transaction = startTransaction()) {
+            return transaction.getChildrenByType(handle, type);
+        }
+    }
+
+    @Override
+    public ReadTransaction startTransaction() {
+        return readTransactionFactory.createReadTransaction(mdibStorage, readWriteLock.readLock());
     }
 }

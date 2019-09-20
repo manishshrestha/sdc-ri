@@ -2,27 +2,35 @@ package org.ieee11073.sdc.biceps.common;
 
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
+import org.ieee11073.sdc.biceps.common.access.WriteDescriptionResult;
+import org.ieee11073.sdc.biceps.common.access.WriteStateResult;
 import org.ieee11073.sdc.biceps.common.factory.MdibEntityFactory;
 import org.ieee11073.sdc.biceps.common.helper.MdibStorageUtil;
 import org.ieee11073.sdc.biceps.model.participant.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.math.BigInteger;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.zip.ZipEntry;
 
 public class MdibStorageImpl implements MdibStorage {
     private static final Logger LOG = LoggerFactory.getLogger(MdibStorageImpl.class);
-
-    private MdibVersion mdibVersion;
 
     private final MdibEntityFactory entityFactory;
     private final MdibStorageUtil util;
     private final MdibTypeValidator typeValidator;
 
+    private MdibVersion mdibVersion;
+    private BigInteger mdDescriptionVersion;
+    private BigInteger mdStateVersion;
+
     private Map<String, MdibEntity> entities;
-    private Set<String> rootEntities;
+    private ArrayList<String> rootEntities;
     private Map<String, AbstractContextState> contextStates;
+
+
 
     @AssistedInject
     MdibStorageImpl(MdibEntityFactory entityFactory,
@@ -37,13 +45,14 @@ public class MdibStorageImpl implements MdibStorage {
                     MdibStorageUtil util,
                     MdibTypeValidator typeValidator) {
         this.mdibVersion = initialMdibVersion;
-
+        this.mdDescriptionVersion = BigInteger.ZERO;
+        this.mdStateVersion = BigInteger.ZERO;
         this.entityFactory = entityFactory;
         this.util = util;
         this.typeValidator = typeValidator;
 
         this.entities = new HashMap<>();
-        this.rootEntities = new HashSet<>();
+        this.rootEntities = new ArrayList<>();
         this.contextStates = new HashMap<>();
     }
 
@@ -62,6 +71,37 @@ public class MdibStorageImpl implements MdibStorage {
 
     public Optional<MdibEntity> getEntity(String handle) {
         return Optional.ofNullable(entities.get(handle));
+    }
+
+    @Override
+    public <T extends AbstractDescriptor> Collection<MdibEntity> findEntitiesByType(Class<T> type) {
+        List<MdibEntity> result = new ArrayList<>();
+        for (MdibEntity entity : entities.values()) {
+            if (type.isAssignableFrom(entity.getDescriptor().getClass())) {
+                result.add(entity);
+            }
+        }
+        return result;
+    }
+
+    @Override
+    public <T extends AbstractDescriptor> List<MdibEntity> getChildrenByType(String handle, Class<T> type) {
+        final List<MdibEntity> result = new ArrayList<>();
+        final Optional<MdibEntity> entity = getEntity(handle);
+        if (entity.isEmpty()) {
+            return result;
+        }
+
+        for (String child : entity.get().getChildren()) {
+            getEntity(child).ifPresent(childEntity ->
+            {
+                if (type.isAssignableFrom(childEntity.getDescriptor().getClass())) {
+                    result.add(childEntity);
+                }
+            });
+        }
+
+        return result;
     }
 
     public List<MdibEntity> getRootEntities() {
@@ -118,11 +158,14 @@ public class MdibStorageImpl implements MdibStorage {
     }
 
     @Override
-    public DescriptionResult apply(MdibDescriptionModifications descriptionModifications) {
+    public WriteDescriptionResult apply(MdibDescriptionModifications descriptionModifications) {
+        mdibVersion = MdibVersion.increment(mdibVersion);
+        mdDescriptionVersion = mdDescriptionVersion.add(BigInteger.ONE);
+        mdStateVersion = mdStateVersion.add(BigInteger.ONE);
+
         final List<MdibEntity> insertedEntities = new ArrayList<>();
         final List<MdibEntity> updatedEntities = new ArrayList<>();
         final List<String> deletedEntities = new ArrayList<>();
-
         for (MdibDescriptionModification modification : descriptionModifications.getModifications()) {
             switch (modification.getModificationType()) {
                 case INSERT:
@@ -139,7 +182,7 @@ public class MdibStorageImpl implements MdibStorage {
             }
         }
 
-        return new DescriptionResult(insertedEntities, updatedEntities, deletedEntities);
+        return new WriteDescriptionResult(mdibVersion, insertedEntities, updatedEntities, deletedEntities);
     }
 
     private void deleteEntity(MdibDescriptionModification modification, List<String> deletedEntities) {
@@ -170,7 +213,6 @@ public class MdibStorageImpl implements MdibStorage {
     }
 
     private void insertEntity(MdibDescriptionModification modification, List<MdibEntity> insertedEntities) {
-        mdibVersion = MdibVersion.increment(mdibVersion);
         final MdibEntity mdibEntity = entityFactory.createMdibEntity(
                 modification.getParentHandle().orElse(null),
                 new ArrayList<>(),
@@ -204,7 +246,10 @@ public class MdibStorageImpl implements MdibStorage {
     }
 
     @Override
-    public StateResult apply(MdibStateModifications stateModifications) {
+    public WriteStateResult apply(MdibStateModifications stateModifications) {
+        mdibVersion = MdibVersion.increment(mdibVersion);
+        mdStateVersion = mdStateVersion.add(BigInteger.ONE);
+
         final List<AbstractState> modifiedStates = new ArrayList<>();
         for (AbstractState modification : stateModifications.getStates()) {
             modifiedStates.add(modification);
@@ -230,49 +275,21 @@ public class MdibStorageImpl implements MdibStorage {
             }
         }
 
-        return new StateResult(modifiedStates);
+        return new WriteStateResult(mdibVersion, modifiedStates);
     }
 
-
-    public class DescriptionResult implements MdibStorage.DescriptionResult {
-        private final List<MdibEntity> insertedEntities;
-        private final List<MdibEntity> updatedEntities;
-        private final List<String> deletedEntities;
-
-        public DescriptionResult(List<MdibEntity> insertedEntities,
-                                 List<MdibEntity> updatedEntities,
-                                 List<String> deletedEntities) {
-            this.insertedEntities = insertedEntities;
-            this.updatedEntities = updatedEntities;
-            this.deletedEntities = deletedEntities;
-        }
-
-        @Override
-        public List<MdibEntity> getInsertedEntities() {
-            return insertedEntities;
-        }
-
-        @Override
-        public List<MdibEntity> getUpdatedEntities() {
-            return updatedEntities;
-        }
-
-        @Override
-        public List<String> getDeletedEntities() {
-            return deletedEntities;
-        }
+    @Override
+    public MdibVersion getMdibVersion() {
+        return mdibVersion;
     }
 
-    public class StateResult implements MdibStorage.StateResult {
-        private final List<AbstractState> states;
+    @Override
+    public BigInteger getMdDescriptionVersion() {
+        return mdDescriptionVersion;
+    }
 
-        public StateResult(List<AbstractState> states) {
-            this.states = states;
-        }
-
-        @Override
-        public List<AbstractState> getStates() {
-            return states;
-        }
+    @Override
+    public BigInteger getMdStateVersion() {
+        return mdStateVersion;
     }
 }

@@ -1,16 +1,17 @@
 package org.ieee11073.sdc.biceps.common.access;
 
 /**
- * Indicate class as a MDIB changes observer.
- *
- * Annotate method with {@link com.google.common.eventbus.Subscribe} to
- *
- * - {@link org.ieee11073.sdc.biceps.common.event.AlertStateModificationMessage}
- * - {@link org.ieee11073.sdc.biceps.common.event.ComponentStateModificationMessage}
- * - {@link org.ieee11073.sdc.biceps.common.event.ContextStateModificationMessage}
- * - {@link org.ieee11073.sdc.biceps.common.event.DescriptionModificationMessage}
- * - {@link org.ieee11073.sdc.biceps.common.event.MetricStateModificationMessage}
- * - {@link org.ieee11073.sdc.biceps.common.event.OperationStateModificationMessage}
+ * Marks a class to be an MDIB changes observer.
+ * <p>
+ * Annotate any method with {@link com.google.common.eventbus.Subscribe} to get callbacks on
+ * <ul>
+ * <li>{@link org.ieee11073.sdc.biceps.common.event.AlertStateModificationMessage}
+ * <li>{@link org.ieee11073.sdc.biceps.common.event.ComponentStateModificationMessage}
+ * <li>{@link org.ieee11073.sdc.biceps.common.event.ContextStateModificationMessage}
+ * <li>{@link org.ieee11073.sdc.biceps.common.event.DescriptionModificationMessage}
+ * <li>{@link org.ieee11073.sdc.biceps.common.event.MetricStateModificationMessage}
+ * <li>{@link org.ieee11073.sdc.biceps.common.event.OperationStateModificationMessage}
+ * </ul>
  */
 public interface MdibAccessObserver {
 }

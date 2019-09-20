@@ -1,10 +1,14 @@
 package org.ieee11073.sdc.biceps.common;
 
+import org.ieee11073.sdc.biceps.common.access.WriteDescriptionResult;
+import org.ieee11073.sdc.biceps.common.access.WriteStateResult;
 import org.ieee11073.sdc.biceps.model.participant.AbstractContextState;
 import org.ieee11073.sdc.biceps.model.participant.AbstractDescriptor;
 import org.ieee11073.sdc.biceps.model.participant.AbstractMultiState;
 import org.ieee11073.sdc.biceps.model.participant.AbstractState;
 
+import java.math.BigInteger;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -15,9 +19,15 @@ import java.util.Optional;
  * any other means read {@link org.ieee11073.sdc.biceps.model.participant.Mdib}.
  */
 public interface MdibStorage {
-    DescriptionResult apply(MdibDescriptionModifications descriptionModifications);
+    WriteDescriptionResult apply(MdibDescriptionModifications descriptionModifications);
 
-    StateResult apply(MdibStateModifications stateModifications);
+    WriteStateResult apply(MdibStateModifications stateModifications);
+
+    MdibVersion getMdibVersion();
+
+    BigInteger getMdDescriptionVersion();
+
+    BigInteger getMdStateVersion();
 
     /**
      * Retrieve specific descriptor of the hosted {@link org.ieee11073.sdc.biceps.model.participant.Mdib}.
@@ -45,6 +55,10 @@ public interface MdibStorage {
      * Get an {@link MdibEntity} object with a specific handle.
      */
     Optional<MdibEntity> getEntity(String handle);
+
+    <T extends AbstractDescriptor> Collection<MdibEntity> findEntitiesByType(Class<T> type);
+
+    <T extends AbstractDescriptor> List<MdibEntity> getChildrenByType(String handle, Class<T> type);
 
     /**
      * Get all {@link MdibEntity} objects that are root elements, i.e., hosting descriptors of type
@@ -101,16 +115,4 @@ public interface MdibStorage {
      * Collections may be created on function call, hence be careful with performance issues.
      */
     List<AbstractContextState> getContextStates(String descriptorHandle);
-
-    interface DescriptionResult {
-        List<MdibEntity> getInsertedEntities();
-
-        List<MdibEntity> getUpdatedEntities();
-
-        List<String> getDeletedEntities();
-    }
-
-    interface StateResult {
-        List<AbstractState> getStates();
-    }
 }

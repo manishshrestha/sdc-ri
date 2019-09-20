@@ -67,4 +67,9 @@ public class MdibVersion {
                 && this.version.equals(rhs.version)
                 && this.instanceId.equals(rhs.instanceId);
     }
+
+    @Override
+    public String toString() {
+        return String.format("MdibVersion(sequence=%s;instance=%s;version=%s)", sequenceId, instanceId, version);
+    }
 }

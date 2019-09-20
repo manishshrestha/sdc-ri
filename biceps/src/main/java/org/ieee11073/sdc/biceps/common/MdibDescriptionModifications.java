@@ -44,6 +44,15 @@ public class MdibDescriptionModifications {
         return newModifications;
     }
 
+    public MdibDescriptionModifications add(MdibDescriptionModification.Type modType,
+                                            Entry entry) {
+        return add(modType, entry.getDescriptor(), entry.getState(), entry.getParentHandle());
+    }
+
+    public MdibDescriptionModifications add(MdibDescriptionModification.Type modType,
+                                            MultiStateEntry entry) {
+        return add(modType, entry.getDescriptor(), entry.getStates(), entry.getParentHandle());
+    }
 
     /**
      * Add single or multi state descriptor to change set without state information.
@@ -73,7 +82,7 @@ public class MdibDescriptionModifications {
      */
     public MdibDescriptionModifications add(MdibDescriptionModification.Type modType,
                                             AbstractDescriptor descriptor,
-                                            AbstractState state) {
+                                            @Nullable AbstractState state) {
         return addMdibModification(modType, descriptor, Collections.singletonList(state));
     }
 
@@ -84,7 +93,7 @@ public class MdibDescriptionModifications {
      */
     public MdibDescriptionModifications add(MdibDescriptionModification.Type modType,
                                             AbstractDescriptor descriptor,
-                                            AbstractState state,
+                                            @Nullable AbstractState state,
                                             @Nullable String parentHandle) {
         return addMdibModification(modType, descriptor, Collections.singletonList(state), parentHandle);
     }
@@ -96,7 +105,7 @@ public class MdibDescriptionModifications {
      */
     public MdibDescriptionModifications add(MdibDescriptionModification.Type modType,
                                             AbstractDescriptor descriptor,
-                                            List<? extends AbstractMultiState> multiStates) {
+                                            @Nullable List<? extends AbstractMultiState> multiStates) {
         multiStates.stream().forEach(state -> duplicateDetection(modType, state.getHandle()));
         return addMdibModification(modType, descriptor, multiStates);
     }
@@ -108,12 +117,27 @@ public class MdibDescriptionModifications {
      */
     public MdibDescriptionModifications add(MdibDescriptionModification.Type modType,
                                             AbstractDescriptor descriptor,
-                                            List<? extends AbstractMultiState> multiStates,
+                                            @Nullable List<? extends AbstractMultiState> multiStates,
                                             @Nullable String parentHandle) {
         multiStates.stream().forEach(state -> duplicateDetection(modType, state.getHandle()));
         return addMdibModification(modType, descriptor, multiStates, parentHandle);
     }
 
+    /**
+     * Convenient function to insert a descriptor.
+     * @see #add(MdibDescriptionModification.Type, AbstractDescriptor)
+     */
+    public MdibDescriptionModifications insert(Entry entry) {
+        return add(MdibDescriptionModification.Type.INSERT, entry.getDescriptor(), entry.getState(), entry.getParentHandle());
+    }
+
+    /**
+     * Convenient function to insert a descriptor.
+     * @see #add(MdibDescriptionModification.Type, AbstractDescriptor)
+     */
+    public MdibDescriptionModifications insert(MultiStateEntry entry) {
+        return add(MdibDescriptionModification.Type.INSERT, entry.getDescriptor(), entry.getStates(), entry.getParentHandle());
+    }
 
     /**
      * Convenient function to insert a descriptor.
@@ -172,6 +196,22 @@ public class MdibDescriptionModifications {
      * Convenient function to update a descriptor.
      * @see #add(MdibDescriptionModification.Type, AbstractDescriptor)
      */
+    public MdibDescriptionModifications update(Entry entry) {
+        return add(MdibDescriptionModification.Type.UPDATE, entry.getDescriptor(), entry.getState(), entry.getParentHandle());
+    }
+
+    /**
+     * Convenient function to update a descriptor.
+     * @see #add(MdibDescriptionModification.Type, AbstractDescriptor)
+     */
+    public MdibDescriptionModifications update(MultiStateEntry entry) {
+        return add(MdibDescriptionModification.Type.UPDATE, entry.getDescriptor(), entry.getStates(), entry.getParentHandle());
+    }
+
+    /**
+     * Convenient function to update a descriptor.
+     * @see #add(MdibDescriptionModification.Type, AbstractDescriptor)
+     */
     public MdibDescriptionModifications update(AbstractDescriptor descriptor) {
         return add(MdibDescriptionModification.Type.UPDATE, descriptor);
     }
@@ -191,6 +231,14 @@ public class MdibDescriptionModifications {
     public MdibDescriptionModifications update(AbstractDescriptor descriptor,
                                                List<AbstractMultiState> multiStates) {
         return add(MdibDescriptionModification.Type.UPDATE, descriptor, multiStates);
+    }
+
+    /**
+     * Convenient function to update a descriptor.
+     * @see #add(MdibDescriptionModification.Type, AbstractDescriptor)
+     */
+    public MdibDescriptionModifications delete(Entry entry) {
+        return add(MdibDescriptionModification.Type.DELETE, entry.getDescriptor());
     }
 
     /**
@@ -225,6 +273,58 @@ public class MdibDescriptionModifications {
      */
     public List<MdibDescriptionModification> getModifications() {
         return Collections.unmodifiableList(modifications);
+    }
+
+    public static class Entry {
+        private AbstractDescriptor descriptor;
+        private AbstractState state;
+        private String parentHandle;
+
+        public Entry(AbstractDescriptor descriptor, AbstractState state) {
+            this(descriptor, state, null);
+        }
+
+        public Entry(AbstractDescriptor descriptor, AbstractState state, @Nullable String handle) {
+            this.descriptor = descriptor;
+            this.state = state;
+            this.parentHandle = handle;
+        }
+
+        private AbstractDescriptor getDescriptor() {
+            return descriptor;
+        }
+
+        private AbstractState getState() {
+            return state;
+        }
+
+        private @Nullable String getParentHandle() {
+            return parentHandle;
+        }
+    }
+
+    public static class MultiStateEntry {
+        private AbstractDescriptor descriptor;
+        private List<AbstractMultiState> states;
+        private String parentHandle;
+
+        public MultiStateEntry(AbstractDescriptor descriptor, List<AbstractMultiState> states, String handle) {
+            this.descriptor = descriptor;
+            this.states = states;
+            this.parentHandle = handle;
+        }
+
+        private AbstractDescriptor getDescriptor() {
+            return descriptor;
+        }
+
+        private List<AbstractMultiState> getStates() {
+            return states;
+        }
+
+        private @Nullable String getParentHandle() {
+            return parentHandle;
+        }
     }
 
     private MdibDescriptionModifications(@Nullable MdibVersion mdibVersion) {

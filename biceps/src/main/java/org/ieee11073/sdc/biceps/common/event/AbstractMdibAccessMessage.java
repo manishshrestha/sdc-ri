@@ -2,7 +2,7 @@ package org.ieee11073.sdc.biceps.common.event;
 
 import org.ieee11073.sdc.biceps.common.access.MdibAccess;
 
-abstract class AbstractMdibAccessMessage {
+public abstract class AbstractMdibAccessMessage {
     private final MdibAccess mdibAccess;
 
     AbstractMdibAccessMessage(MdibAccess mdibAccess) {

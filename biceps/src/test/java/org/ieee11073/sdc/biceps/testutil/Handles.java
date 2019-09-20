@@ -4,7 +4,7 @@ public class Handles {
     public static final String UNKNOWN = "unknown";
     public static final String MDS_0 = "mds_0";
     public static final String MDS_1 = "mds_1";
-    public static final String MDS_2 = "mds_1";
+    public static final String MDS_2 = "mds_2";
     public static final String VMD_0 = "vmd_0";
     public static final String VMD_1 = "vmd_1";
     public static final String VMD_2 = "vmd_2";
@@ -24,17 +24,23 @@ public class Handles {
     public static final String OPERATION_2 = "operation_2";
     public static final String OPERATION_3 = "operation_3";
     public static final String OPERATION_4 = "operation_4";
+    public static final String OPERATION_5 = "operation_5";
+    public static final String OPERATION_6 = "operation_6";
     public static final String SYSTEMCONTEXT_0 = "systemcontext_0";
     public static final String SYSTEMCONTEXT_1 = "systemcontext_1";
     public static final String SYSTEMCONTEXT_2 = "systemcontext_2";
     public static final String CONTEXTDESCRIPTOR_0 = "contextdescriptor_0";
     public static final String CONTEXTDESCRIPTOR_1 = "contextdescriptor_1";
     public static final String CONTEXTDESCRIPTOR_2 = "contextdescriptor_2";
+    public static final String CONTEXTDESCRIPTOR_3 = "contextdescriptor_3";
+    public static final String CONTEXTDESCRIPTOR_4 = "contextdescriptor_4";
+    public static final String CONTEXTDESCRIPTOR_5 = "contextdescriptor_5";
     public static final String CONTEXT_0 = "context_0";
     public static final String CONTEXT_1 = "context_1";
     public static final String CONTEXT_2 = "context_2";
     public static final String CONTEXT_3 = "context_3";
     public static final String CONTEXT_4 = "context_4";
+    public static final String CONTEXT_5 = "context_5";
     public static final String ALERTSYSTEM_0 = "alertsystem_0";
     public static final String ALERTSYSTEM_1 = "alertsystem_1";
     public static final String ALERTSYSTEM_2 = "alertsystem_2";
@@ -48,4 +54,8 @@ public class Handles {
     public static final String ALERTSIGNAL_2 = "alertsignal_2";
     public static final String ALERTSIGNAL_3 = "alertsignal_3";
     public static final String ALERTSIGNAL_4 = "alertsignal_4";
+    public static final String BATTERY_0 = "battery_0";
+    public static final String BATTERY_1 = "battery_1";
+    public static final String CLOCK_0 = "clock_0";
+    public static final String CLOCK_1 = "clock_1";
 }

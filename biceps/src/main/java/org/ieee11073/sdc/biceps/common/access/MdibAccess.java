@@ -1,10 +1,13 @@
 package org.ieee11073.sdc.biceps.common.access;
 
 import org.ieee11073.sdc.biceps.common.MdibEntity;
+import org.ieee11073.sdc.biceps.common.MdibVersion;
 import org.ieee11073.sdc.biceps.model.participant.AbstractContextState;
 import org.ieee11073.sdc.biceps.model.participant.AbstractDescriptor;
 import org.ieee11073.sdc.biceps.model.participant.AbstractState;
 
+import java.math.BigInteger;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -12,6 +15,12 @@ import java.util.Optional;
  * Read access to MDIB storage.
  */
 public interface MdibAccess {
+
+    MdibVersion getMdibVersion();
+
+    BigInteger getMdDescriptionVersion();
+
+    BigInteger getMdStateVersion();
 
     /**
      * Retrieve specific descriptor of the hosted {@link org.ieee11073.sdc.biceps.model.participant.Mdib}.
@@ -61,15 +70,8 @@ public interface MdibAccess {
      */
     <T extends AbstractContextState> List<T> getContextStates(String descriptorHandle, Class<T> stateClass);
 
-    /**
-     * Register for MDIB modification reports.
-     *
-     * {@linkplain MdibAccess} fires
-     */
-    void registerObserver(MdibAccessObserver observer);
+    <T extends AbstractDescriptor> Collection<MdibEntity> findEntitiesByType(Class<T> type);
 
-    /**
-     * Unregister from MDIB modification reports.
-     */
-    void unregisterObserver(MdibAccessObserver observer);
+    <T extends AbstractDescriptor> List<MdibEntity> getChildrenByType(String handle, Class<T> type);
+
 }
