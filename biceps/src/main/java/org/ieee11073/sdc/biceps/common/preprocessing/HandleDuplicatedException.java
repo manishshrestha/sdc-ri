@@ -1,4 +1,4 @@
-package org.ieee11073.sdc.biceps.provider.preprocessing;
+package org.ieee11073.sdc.biceps.common.preprocessing;
 
 public class HandleDuplicatedException extends Exception {
     public HandleDuplicatedException() {
