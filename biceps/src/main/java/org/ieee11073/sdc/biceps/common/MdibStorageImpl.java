@@ -13,7 +13,6 @@ import org.slf4j.LoggerFactory;
 import java.math.BigInteger;
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.zip.ZipEntry;
 
 public class MdibStorageImpl implements MdibStorage {
     private static final Logger LOG = LoggerFactory.getLogger(MdibStorageImpl.class);
@@ -29,7 +28,6 @@ public class MdibStorageImpl implements MdibStorage {
     private Map<String, MdibEntity> entities;
     private ArrayList<String> rootEntities;
     private Map<String, AbstractContextState> contextStates;
-
 
 
     @AssistedInject
@@ -204,11 +202,12 @@ public class MdibStorageImpl implements MdibStorage {
 
     private void updateEntity(MdibDescriptionModification modification, List<MdibEntity> updatedEntities) {
         Optional.ofNullable(entities.get(modification.getHandle())).ifPresent(mdibEntity -> {
-            entities.put(mdibEntity.getHandle(), entityFactory.replaceDescriptorAndStates(
+            mdibEntity = entityFactory.replaceDescriptorAndStates(
                     mdibEntity,
                     modification.getDescriptor(),
-                    modification.getStates()));
-            updatedEntities.add(entityFactory.createShallowCopy(mdibEntity));
+                    modification.getStates());
+            entities.put(mdibEntity.getHandle(), mdibEntity);
+            updatedEntities.add(mdibEntity);
         });
     }
 
