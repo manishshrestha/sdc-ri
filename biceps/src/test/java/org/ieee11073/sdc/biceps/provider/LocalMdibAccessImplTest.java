@@ -5,6 +5,7 @@ import com.google.inject.Injector;
 import org.ieee11073.sdc.biceps.UnitTestUtil;
 import org.ieee11073.sdc.biceps.common.*;
 import org.ieee11073.sdc.biceps.common.access.WriteDescriptionResult;
+import org.ieee11073.sdc.biceps.common.access.WriteStateResult;
 import org.ieee11073.sdc.biceps.common.event.DescriptionModificationMessage;
 import org.ieee11073.sdc.biceps.guice.DefaultBicepsConfigModule;
 import org.ieee11073.sdc.biceps.model.participant.*;
@@ -20,8 +21,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class LocalMdibAccessImplTest {
     private static final UnitTestUtil UT = new UnitTestUtil(new DefaultBicepsConfigModule() {
@@ -123,21 +123,192 @@ public class LocalMdibAccessImplTest {
     }
 
     @Test
-    void mdibVersioning() {
-        // Create - check versions
-        // Insert description - check versions
-        // Update description - check versions
-        // Delete description - check versions
-        // Update state - check versions
+    void mdibVersioning() throws Exception {
+        // Given a local mdib access with an initialized base tree
+        MdibDescriptionModifications modifications = setupBaseTree();
+        WriteDescriptionResult writeResult = mdibAccess.writeDescription(modifications);
+
+        final MdibVersion expectedInitialMdibVersion = writeResult.getMdibVersion();
+        final BigInteger expectedInitialVersion = BigInteger.ONE;
+
+        MdibVersion expectedMdibVersion = expectedInitialMdibVersion;
+        BigInteger expectedMdDescrVersion = expectedInitialVersion;
+        BigInteger expectedMdStateVersion = expectedInitialVersion;
+        assertEquals(expectedInitialVersion, expectedMdibVersion.getVersion());
+        assertEquals(expectedMdDescrVersion, mdibAccess.getMdDescriptionVersion());
+        assertEquals(expectedMdStateVersion, mdibAccess.getMdStateVersion());
+
+        {
+            // When an entity is inserted
+            modifications = MdibDescriptionModifications.create()
+                    .insert(entry(Handles.BATTERY_1, BatteryDescriptor.class, Handles.MDS_0));
+
+            writeResult = mdibAccess.writeDescription(modifications);
+
+            // Then expect the version changes to be reflected in the local mdib access
+            expectedMdibVersion = MdibVersion.increment(expectedMdibVersion);
+            expectedMdDescrVersion = expectedMdDescrVersion.add(BigInteger.ONE);
+            expectedMdStateVersion = expectedMdStateVersion.add(BigInteger.ONE);
+            assertEquals(mdibAccess.getMdibVersion(), writeResult.getMdibVersion());
+            assertEquals(expectedMdibVersion, mdibAccess.getMdibVersion());
+            assertEquals(expectedMdDescrVersion, mdibAccess.getMdDescriptionVersion());
+            assertEquals(expectedMdStateVersion, mdibAccess.getMdStateVersion());
+        }
+
+        {
+            // When an entity is updated
+            modifications = MdibDescriptionModifications.create()
+                    .update(entry(Handles.BATTERY_1, BatteryDescriptor.class));
+
+            writeResult = mdibAccess.writeDescription(modifications);
+
+            // Then expect the version changes to be reflected in the local mdib access
+            expectedMdibVersion = MdibVersion.increment(expectedMdibVersion);
+            expectedMdDescrVersion = expectedMdDescrVersion.add(BigInteger.ONE);
+            expectedMdStateVersion = expectedMdStateVersion.add(BigInteger.ONE);
+            assertEquals(mdibAccess.getMdibVersion(), writeResult.getMdibVersion());
+            assertEquals(expectedMdibVersion, mdibAccess.getMdibVersion());
+            assertEquals(expectedMdDescrVersion, mdibAccess.getMdDescriptionVersion());
+            assertEquals(expectedMdStateVersion, mdibAccess.getMdStateVersion());
+        }
+
+        {
+            // When an entity is deleted
+            modifications = MdibDescriptionModifications.create()
+                    .delete(entry(Handles.BATTERY_1, BatteryDescriptor.class));
+
+            writeResult = mdibAccess.writeDescription(modifications);
+
+            // Then expect the version changes to be reflected in the local mdib access
+            expectedMdibVersion = MdibVersion.increment(expectedMdibVersion);
+            expectedMdDescrVersion = expectedMdDescrVersion.add(BigInteger.ONE);
+            expectedMdStateVersion = expectedMdStateVersion.add(BigInteger.ONE);
+            assertEquals(mdibAccess.getMdibVersion(), writeResult.getMdibVersion());
+            assertEquals(expectedMdibVersion, mdibAccess.getMdibVersion());
+            assertEquals(expectedMdDescrVersion, mdibAccess.getMdDescriptionVersion());
+            assertEquals(expectedMdStateVersion, mdibAccess.getMdStateVersion());
+        }
+
+        {
+            // When an only a state is updated
+            MdibStateModifications stateModifications = MdibStateModifications.create(MdibStateModifications.Type.COMPONENT)
+                    .add(state(Handles.MDS_0, MdsState.class));
+
+            WriteStateResult writeStateResult = mdibAccess.writeStates(stateModifications);
+
+            // Then expect the version changes to be reflected in the local mdib access
+            expectedMdibVersion = MdibVersion.increment(expectedMdibVersion);
+            // expectedMdDescrVersion = expectedMdDescrVersion;
+            expectedMdStateVersion = expectedMdStateVersion.add(BigInteger.ONE);
+            assertEquals(mdibAccess.getMdibVersion(), writeStateResult.getMdibVersion());
+            assertEquals(expectedMdibVersion, mdibAccess.getMdibVersion());
+            assertEquals(expectedMdDescrVersion, mdibAccess.getMdDescriptionVersion());
+            assertEquals(expectedMdStateVersion, mdibAccess.getMdStateVersion());
+        }
     }
 
     @Test
-    void insertUpdateDelete() {
-        // Insert description - check descr and state versions
-        // Update description - check descr and state versions
-        // Delete description - check descr and state versions
-        // Reinsert description - check descr and state versions
-        // Update state - check descr and state versions
+    void insertUpdateDelete() throws Exception {
+        // Given a local mdib access with an initialized base tree
+        MdibDescriptionModifications modifications = setupBaseTree();
+        WriteDescriptionResult writeResult = mdibAccess.writeDescription(modifications);
+
+        {
+            // When a description is inserted
+            modifications = MdibDescriptionModifications.create()
+                    .insert(entry(Handles.CHANNEL_2, ChannelDescriptor.class, Handles.VMD_1));
+
+            WriteDescriptionResult writeDescriptionResult = mdibAccess.writeDescription(modifications);
+
+            // Then expect the element to be requestable and versioned
+            assertEquals(1, writeDescriptionResult.getInsertedEntities().size());
+            MdibEntity entity = writeDescriptionResult.getInsertedEntities().get(0);
+            assertEquals(ChannelDescriptor.class, entity.getDescriptor().getClass());
+            assertEquals(BigInteger.ZERO, entity.getDescriptor().getDescriptorVersion());
+            assertEquals(1, entity.getStates().size());
+            assertEquals(BigInteger.ZERO, entity.getStates().get(0).getDescriptorVersion());
+            assertEquals(BigInteger.ZERO, entity.getStates().get(0).getStateVersion());
+
+            assertTrue(mdibAccess.getEntity(Handles.VMD_1).isPresent());
+            assertEquals(BigInteger.ONE, mdibAccess.getEntity(Handles.VMD_1).get().getDescriptor().getDescriptorVersion());
+        }
+
+        {
+            // When the description is updated
+            modifications = MdibDescriptionModifications.create()
+                    .update(entry(Handles.CHANNEL_2, ChannelDescriptor.class));
+
+            WriteDescriptionResult writeDescriptionResult = mdibAccess.writeDescription(modifications);
+
+            // Then expect the element to be updated
+            assertEquals(1, writeDescriptionResult.getUpdatedEntities().size());
+            MdibEntity entity = writeDescriptionResult.getUpdatedEntities().get(0);
+            assertEquals(ChannelDescriptor.class, entity.getDescriptor().getClass());
+            assertEquals(BigInteger.ONE, entity.getDescriptor().getDescriptorVersion());
+            assertEquals(1, entity.getStates().size());
+            assertEquals(BigInteger.ONE, entity.getStates().get(0).getDescriptorVersion());
+            assertEquals(BigInteger.ONE, entity.getStates().get(0).getStateVersion());
+
+            assertTrue(mdibAccess.getEntity(Handles.VMD_1).isPresent());
+            assertEquals(BigInteger.ONE, mdibAccess.getEntity(Handles.VMD_1).get().getDescriptor().getDescriptorVersion());
+        }
+
+        {
+            // When the description is deleted
+            modifications = MdibDescriptionModifications.create()
+                    .delete(entry(Handles.CHANNEL_2, ChannelDescriptor.class));
+
+            WriteDescriptionResult writeDescriptionResult = mdibAccess.writeDescription(modifications);
+
+            // Then expect the element to be deleted
+            assertEquals(1, writeDescriptionResult.getDeletedEntities().size());
+            assertEquals(Handles.CHANNEL_2, writeDescriptionResult.getDeletedEntities().get(0));
+            assertFalse(mdibAccess.getEntity(Handles.CHANNEL_2).isPresent());
+
+            assertTrue(mdibAccess.getEntity(Handles.VMD_1).isPresent());
+            assertEquals(BigInteger.TWO, mdibAccess.getEntity(Handles.VMD_1).get().getDescriptor().getDescriptorVersion());
+        }
+
+        {
+            // When the description is re-inserted
+            modifications = MdibDescriptionModifications.create()
+                    .insert(entry(Handles.CHANNEL_2, ChannelDescriptor.class, Handles.VMD_1));
+
+            WriteDescriptionResult writeDescriptionResult = mdibAccess.writeDescription(modifications);
+
+            // Then expect the element to be requestable and versioned according to the last seen version
+            assertEquals(1, writeDescriptionResult.getInsertedEntities().size());
+            MdibEntity entity = writeDescriptionResult.getInsertedEntities().get(0);
+            assertEquals(ChannelDescriptor.class, entity.getDescriptor().getClass());
+            assertEquals(BigInteger.TWO, entity.getDescriptor().getDescriptorVersion());
+            assertEquals(1, entity.getStates().size());
+            assertEquals(BigInteger.TWO, entity.getStates().get(0).getDescriptorVersion());
+            assertEquals(BigInteger.TWO, entity.getStates().get(0).getStateVersion());
+
+            assertTrue(mdibAccess.getEntity(Handles.VMD_1).isPresent());
+            assertEquals(BigInteger.valueOf(3), mdibAccess.getEntity(Handles.VMD_1).get().getDescriptor().getDescriptorVersion());
+        }
+
+        {
+            // When only the state is updated
+            MdibStateModifications stateModifications = MdibStateModifications.create(MdibStateModifications.Type.COMPONENT)
+                    .add(state(Handles.CHANNEL_2, ChannelState.class));
+
+            WriteStateResult writeStateResult = mdibAccess.writeStates(stateModifications);
+
+            // Then expect the element to be requestable and versioned according to the last seen version
+            assertEquals(1, writeStateResult.getStates().size());
+            AbstractState state = writeStateResult.getStates().get(0);
+            assertEquals(ChannelState.class, state.getClass());
+            assertEquals(BigInteger.TWO, state.getDescriptorVersion());
+            assertEquals(BigInteger.valueOf(3), state.getStateVersion());
+
+            assertTrue(mdibAccess.getEntity(Handles.CHANNEL_2).isPresent());
+            assertEquals(BigInteger.TWO, mdibAccess.getEntity(Handles.CHANNEL_2).get().getDescriptor().getDescriptorVersion());
+
+            assertTrue(mdibAccess.getEntity(Handles.VMD_1).isPresent());
+            assertEquals(BigInteger.valueOf(3), mdibAccess.getEntity(Handles.VMD_1).get().getDescriptor().getDescriptorVersion());
+        }
     }
 
     private MdibDescriptionModifications setupBaseTree() throws Exception {
