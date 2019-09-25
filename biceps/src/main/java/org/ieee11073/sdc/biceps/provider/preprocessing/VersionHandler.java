@@ -57,7 +57,7 @@ public class VersionHandler implements DescriptionPreprocessingSegment, StatePre
     @Override
     public void process(MdibDescriptionModifications modifications,
                         MdibDescriptionModification modification,
-                        MdibStorage storage) {
+                        MdibStorage storage) throws VersioningException {
         switch (modification.getModificationType()) {
             case INSERT:
                 processInsert(modifications, modification.getDescriptor(), modification.getStates(), modification.getParentHandle(), storage);
@@ -72,7 +72,7 @@ public class VersionHandler implements DescriptionPreprocessingSegment, StatePre
     }
 
     @Override
-    public void process(AbstractState state, MdibStorage storage) {
+    public void process(AbstractState state, MdibStorage storage) throws VersioningException {
         final Optional<AbstractMultiState> multiState = mdibTypeValidator.toMultiState(state);
         if (multiState.isPresent()) {
             VersionPair versionPair;
@@ -81,7 +81,7 @@ public class VersionHandler implements DescriptionPreprocessingSegment, StatePre
                 versionPair = multiStateVersionPair.get();
             } else {
                 VersionPair versionPairFromDescr = getVersionPair(multiState.get().getDescriptorHandle()).orElseThrow(() ->
-                        new RuntimeException("Multi-state descriptor was missing during multi state update"));
+                        new VersioningException("Multi-state descriptor was missing during multi state update"));
                 versionPair = new VersionPair(versionPairFromDescr.getDescriptorVersion(), BigInteger.valueOf(-1));
             }
 
@@ -97,7 +97,7 @@ public class VersionHandler implements DescriptionPreprocessingSegment, StatePre
         }
     }
 
-    private void processDelete(AbstractDescriptor descriptor, MdibStorage storage) {
+    private void processDelete(AbstractDescriptor descriptor, MdibStorage storage) throws VersioningException {
         if (descriptor instanceof MdsDescriptor) {
             // no child to update in case of an MDS
             return;
@@ -105,21 +105,21 @@ public class VersionHandler implements DescriptionPreprocessingSegment, StatePre
 
         Optional<MdibEntity> entity = storage.getEntity(descriptor.getHandle());
         if (entity.isEmpty()) {
-            throw new RuntimeException("Deletion of an entity requires an existing entity in the MDIB storage");
+            throw new VersioningException("Deletion of an entity requires an existing entity in the MDIB storage");
         }
 
         String parentHandle = entity.get().getParent().orElseThrow(() ->
-                new RuntimeException("MDIB storage inconsistency: parent handle is missing"));
+                new VersioningException("MDIB storage inconsistency: parent handle is missing"));
 
         MdibEntity parentEntity = storage.getEntity(parentHandle).orElseThrow(() ->
-                new RuntimeException("MDIB storage inconsistency: parent entity is missing"));
+                new VersioningException("MDIB storage inconsistency: parent entity is missing"));
 
         processUpdate(parentEntity.getDescriptor(), parentEntity.getStates(), storage);
     }
 
     private void processUpdate(AbstractDescriptor descriptor,
                                List<? extends AbstractState> states,
-                               MdibStorage storage) {
+                               MdibStorage storage) throws VersioningException {
         if (isUpdatedAlready(descriptor)) {
             return; // state has been updated already, ignore
         }
@@ -130,7 +130,7 @@ public class VersionHandler implements DescriptionPreprocessingSegment, StatePre
             if (states.isEmpty()) {
                 Optional<AbstractState> state = storage.getState(descriptor.getHandle());
                 if (state.isEmpty()) {
-                    throw new RuntimeException("State is missing to complete the update operation");
+                    throw new VersioningException("State is missing to complete the update operation");
                 } else {
                     states = Collections.singletonList(state.get());
                 }
@@ -143,9 +143,9 @@ public class VersionHandler implements DescriptionPreprocessingSegment, StatePre
 
     private void processUpdateWithMultiState(AbstractDescriptor descriptor,
                                              List<? extends AbstractState> states,
-                                             MdibStorage storage) {
+                                             MdibStorage storage) throws VersioningException {
         final VersionPair versionPair = getVersionPair(descriptor).orElseThrow(() ->
-                new RuntimeException("Expected existing version on update, but none found"));
+                new VersioningException("Expected existing version on update, but none found"));
 
         descriptor.setDescriptorVersion(versionPair.getDescriptorVersion().add(BigInteger.ONE));
         putVersionPair(descriptor);
@@ -162,7 +162,7 @@ public class VersionHandler implements DescriptionPreprocessingSegment, StatePre
 
         for (AbstractState state : states) {
             final AbstractMultiState multiState = mdibTypeValidator.toMultiState(state)
-                    .orElseThrow(() -> new RuntimeException("Expected multi state, but single state found"));
+                    .orElseThrow(() -> new VersioningException("Expected multi state, but single state found"));
             replaceVersions.accept(multiState);
             multiStatesFromStorage.remove(multiState.getHandle());
         }
@@ -172,9 +172,9 @@ public class VersionHandler implements DescriptionPreprocessingSegment, StatePre
         }
     }
 
-    private void processUpdateWithSingleState(AbstractDescriptor descriptor, AbstractState state) {
+    private void processUpdateWithSingleState(AbstractDescriptor descriptor, AbstractState state) throws VersioningException {
         final VersionPair versionPair = getVersionPair(descriptor).orElseThrow(() ->
-                new RuntimeException("Expected existing version on update, but none found"));
+                new VersioningException("Expected existing version on update, but none found"));
         descriptor.setDescriptorVersion(versionPair.getDescriptorVersion().add(BigInteger.ONE));
         state.setDescriptorVersion(descriptor.getDescriptorVersion());
         state.setStateVersion(versionPair.getStateVersion().add(BigInteger.ONE));
@@ -184,12 +184,12 @@ public class VersionHandler implements DescriptionPreprocessingSegment, StatePre
     private void processInsert(MdibDescriptionModifications modifications, AbstractDescriptor descriptor,
                                List<? extends AbstractState> states,
                                Optional<String> parentHandle,
-                               MdibStorage storage) {
+                               MdibStorage storage) throws VersioningException {
         if (mdibTypeValidator.isMultiStateDescriptor(descriptor)) {
             processInsertWithMultiState(descriptor, states);
         } else {
             if (states.isEmpty()) {
-                throw new RuntimeException("State is missing to complete the insert operation");
+                throw new VersioningException("State is missing to complete the insert operation");
             }
             processInsertWithSingleState(descriptor, states.get(0));
         }
@@ -200,7 +200,7 @@ public class VersionHandler implements DescriptionPreprocessingSegment, StatePre
             Optional<MdibEntity> entity = storage.getEntity(parentHandle.get());
             if (entity.isEmpty()) {
                 if (!updatedParents.contains(parentHandle.get())) {
-                    throw new RuntimeException("Missing parent to be inserted before child");
+                    throw new VersioningException("Missing parent to be inserted before child");
                 }
             } else {
                 processUpdate(entity.get().getDescriptor(), entity.get().getStates(), storage);
@@ -218,7 +218,7 @@ public class VersionHandler implements DescriptionPreprocessingSegment, StatePre
         putVersionPair(descriptor, state);
     }
 
-    private void processInsertWithMultiState(AbstractDescriptor descriptor, List<? extends AbstractState> states) {
+    private void processInsertWithMultiState(AbstractDescriptor descriptor, List<? extends AbstractState> states) throws VersioningException {
         if (!isUpdatedAlready(descriptor)) {
             final VersionPair versionPair = getVersionPair(descriptor).orElse(new VersionPair());
             descriptor.setDescriptorVersion(versionPair.getDescriptorVersion().add(BigInteger.ONE));
@@ -227,7 +227,7 @@ public class VersionHandler implements DescriptionPreprocessingSegment, StatePre
 
         for (AbstractState state : states) {
             final AbstractMultiState multiState = mdibTypeValidator.toMultiState(state)
-                    .orElseThrow(() -> new RuntimeException("Expected multi state, but single state found"));
+                    .orElseThrow(() -> new VersioningException("Expected multi state, but single state found"));
             final VersionPair stateVersionPair = getVersionPair(multiState).orElse(new VersionPair());
             multiState.setDescriptorVersion(descriptor.getDescriptorVersion());
             multiState.setStateVersion(stateVersionPair.getStateVersion().add(BigInteger.ONE));
@@ -235,10 +235,10 @@ public class VersionHandler implements DescriptionPreprocessingSegment, StatePre
         }
     }
 
-    void incrementParent(String parentHandle, MdibDescriptionModifications modifications, MdibStorage storage) {
+    void incrementParent(String parentHandle, MdibDescriptionModifications modifications, MdibStorage storage) throws VersioningException {
         if (!modifications.isAddedAsInserted(parentHandle) && !modifications.isAddedAsUpdated(parentHandle)) {
             final MdibEntity entity = storage.getEntity(parentHandle)
-                    .orElseThrow(() -> new RuntimeException(String.format("Parent handle not found: %s", parentHandle)));
+                    .orElseThrow(() -> new VersioningException(String.format("Parent handle not found: %s", parentHandle)));
 
             // Queue in update if not in modifications already
             final AbstractDescriptor descriptorCopy = objectUtil.deepCopy(entity.getDescriptor());

@@ -11,11 +11,11 @@ import java.util.Optional;
 /**
  * Preprocessing segment that ensures correctness of child-parent type relationships.
  */
-public class TreeConsistencyHandler implements DescriptionPreprocessingSegment {
+public class TypeConsistencyChecker implements DescriptionPreprocessingSegment {
     private MdibTreeValidator treeValidator;
 
     @Inject
-    TreeConsistencyHandler(MdibTreeValidator treeValidator) {
+    TypeConsistencyChecker(MdibTreeValidator treeValidator) {
         this.treeValidator = treeValidator;
     }
 
@@ -33,12 +33,12 @@ public class TreeConsistencyHandler implements DescriptionPreprocessingSegment {
                 return;
             }
 
-            throw new Exception(String.format("Inserted entities other than MDS require a parent handle: %s",
-                    descriptor.getClass()));
+            throw new TypeConsistencyException(String.format("Inserted entities other than MDS require a parent handle. " +
+                    "Handle is %s, type is %s", descriptor.getHandle(), descriptor.getClass()));
         } else {
             if (descriptor instanceof MdsDescriptor) {
-                throw new Exception(String.format("MDS shall not possess a parent handle",
-                        descriptor.getClass()));
+                throw new TypeConsistencyException(String.format("MDS shall not possess a parent handle. Handle is %s",
+                        descriptor.getHandle()));
             }
         }
 
@@ -52,12 +52,12 @@ public class TreeConsistencyHandler implements DescriptionPreprocessingSegment {
                     .filter(mod -> mod.getDescriptor().getHandle().equals(currentModification.getParentHandle().get()))
                     .map(mod -> mod.getDescriptor())
                     .findAny().orElseThrow(() ->
-                            new Exception(String.format("No parent descriptor found with handle %s",
+                            new TypeConsistencyException(String.format("No parent descriptor found with handle %s",
                                     currentModification.getParentHandle().get())));
         }
 
         if (!treeValidator.isValidParent(parentDescriptor, descriptor)) {
-            throw new Exception(String.format("Parent descriptor of %s is invalid: %s. Valid parents: [%s].",
+            throw new TypeConsistencyException(String.format("Parent descriptor of %s is invalid: %s. Valid parents: [%s].",
                     descriptor.getClass(),
                     parentDescriptor.getClass(),
                     Joiner.on(", ").join(treeValidator.allowedParents(descriptor))));

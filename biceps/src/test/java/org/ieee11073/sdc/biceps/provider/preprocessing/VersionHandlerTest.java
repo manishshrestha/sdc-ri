@@ -1,11 +1,9 @@
 package org.ieee11073.sdc.biceps.provider.preprocessing;
 
 import org.ieee11073.sdc.biceps.UnitTestUtil;
-import org.ieee11073.sdc.biceps.common.MdibDescriptionModification;
-import org.ieee11073.sdc.biceps.common.MdibDescriptionModifications;
-import org.ieee11073.sdc.biceps.common.MdibStateModifications;
-import org.ieee11073.sdc.biceps.common.MdibStorage;
+import org.ieee11073.sdc.biceps.common.*;
 import org.ieee11073.sdc.biceps.common.factory.MdibStorageFactory;
+import org.ieee11073.sdc.biceps.guice.DefaultBicepsConfigModule;
 import org.ieee11073.sdc.biceps.model.participant.*;
 import org.ieee11073.sdc.biceps.testutil.MockModelFactory;
 import org.junit.jupiter.api.BeforeEach;
@@ -18,7 +16,15 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class VersionHandlerTest {
-    private static final UnitTestUtil UT = new UnitTestUtil();
+    private static final UnitTestUtil UT = new UnitTestUtil(new DefaultBicepsConfigModule() {
+        @Override
+        protected void customConfigure() {
+            // Configure to avoid copying and make comparison easier
+            bind(CommonConfig.COPY_MDIB_OUTPUT,
+                    Boolean.class,
+                    false);
+        }
+    });
 
     private MdibStorage mdibStorage;
     private VersionHandler versionHandler;
@@ -71,7 +77,7 @@ class VersionHandlerTest {
     }
 
     @Test
-    void deleteEntity() {
+    void deleteEntity() throws VersioningException {
         final BigInteger expectedDescriptorVersion = mdsDescriptor.getDescriptorVersion();
         final MdibDescriptionModifications modifications = MdibDescriptionModifications.create();
         modifications.delete(mdsDescriptor);
@@ -108,7 +114,7 @@ class VersionHandlerTest {
     }
 
     @Test
-    void updateEntity() {
+    void updateEntity() throws VersioningException {
         // Given a version handler
         final MdibDescriptionModifications modifications = MdibDescriptionModifications.create();
         modifications.update(mdsDescriptor, mdsState);
@@ -148,7 +154,7 @@ class VersionHandlerTest {
     }
 
     @Test
-    void childInsertionWithParentInMdibStorage() {
+    void childInsertionWithParentInMdibStorage() throws VersioningException {
         // Given a pre-inserted MDS
         final MdibDescriptionModifications mdsModifications = MdibDescriptionModifications.create();
         mdsModifications.insert(mdsDescriptor, mdsState);
@@ -181,7 +187,7 @@ class VersionHandlerTest {
     }
 
     @Test
-    void childInsertionWithParentInModifications() {
+    void childInsertionWithParentInModifications() throws VersioningException {
         // Given an MDS starting at a defined version to be inserted together with a child
         final MdibDescriptionModifications mdsModifications = MdibDescriptionModifications.create();
         mdsModifications.insert(mdsDescriptor, mdsState);
@@ -213,7 +219,7 @@ class VersionHandlerTest {
     }
 
     @Test
-    void childDeletionWithParentInMdibStorage() {
+    void childDeletionWithParentInMdibStorage() throws VersioningException {
         // Given a pre-inserted MDS and VMD
         final MdibDescriptionModifications modifications = MdibDescriptionModifications.create();
         modifications.insert(mdsDescriptor, mdsState);
@@ -241,7 +247,7 @@ class VersionHandlerTest {
     }
 
     @Test
-    void childDeletionWithParentInModifications() {
+    void childDeletionWithParentInModifications() throws VersioningException {
         // Given an MDS starting at a defined version to be updated together with a deleted child
         final MdibDescriptionModifications modifications = MdibDescriptionModifications.create();
         modifications.insert(mdsDescriptor, mdsState);
@@ -278,7 +284,7 @@ class VersionHandlerTest {
     }
 
     @Test
-    void insertionAndUpdateOfMultiStates() {
+    void insertionAndUpdateOfMultiStates() throws VersioningException {
         {
             // When an insert comes up without states
             final MdibDescriptionModifications modifications = MdibDescriptionModifications.create();
@@ -328,7 +334,7 @@ class VersionHandlerTest {
     }
 
     @Test
-    void stateModifications() {
+    void stateModifications() throws VersioningException {
         final MdibDescriptionModifications descriptionModifications = MdibDescriptionModifications.create();
         descriptionModifications.insert(mdsDescriptor, mdsState);
         descriptionModifications.insert(systemContextDescriptor, systemContextState, mdsHandle);
@@ -359,7 +365,7 @@ class VersionHandlerTest {
         }
     }
 
-    private void apply(MdibStateModifications modifications) {
+    private void apply(MdibStateModifications modifications) throws VersioningException {
         versionHandler.beforeFirstModification(mdibStorage);
         for (AbstractState modification : modifications.getStates()) {
             versionHandler.process(modification, mdibStorage);
@@ -367,7 +373,7 @@ class VersionHandlerTest {
         versionHandler.afterLastModification(mdibStorage);
     }
 
-    private void apply(MdibDescriptionModifications modifications, boolean applyOnStorage) {
+    private void apply(MdibDescriptionModifications modifications, boolean applyOnStorage) throws VersioningException {
         versionHandler.beforeFirstModification(mdibStorage);
         for (MdibDescriptionModification modification : modifications.getModifications()) {
             versionHandler.process(modifications, modification, mdibStorage);
@@ -379,7 +385,7 @@ class VersionHandlerTest {
         }
     }
 
-    private void apply(MdibDescriptionModifications modifications) {
+    private void apply(MdibDescriptionModifications modifications) throws VersioningException {
         apply(modifications, true);
     }
 }

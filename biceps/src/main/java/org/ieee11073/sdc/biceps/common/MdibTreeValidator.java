@@ -1,19 +1,28 @@
 package org.ieee11073.sdc.biceps.common;
 
 import com.google.common.collect.HashMultimap;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 import org.ieee11073.sdc.biceps.model.participant.*;
 
 import javax.inject.Inject;
-import java.util.Arrays;
-import java.util.Set;
+import java.util.*;
 
 public class MdibTreeValidator {
     private final HashMultimap<Class<?>, Class<?>> allowedParents;
+    private final Set<Class<?>> oneChildEntities;
 
     @Inject
     MdibTreeValidator() {
         this.allowedParents = HashMultimap.create();
+        this.oneChildEntities = new HashSet<>();
+
         setupAllowedParents();
+        setupChildCardinality();
+    }
+
+    public <T extends AbstractDescriptor> boolean isManyAllowed(T child) {
+        return !oneChildEntities.contains(child.getClass());
     }
 
     public boolean isValidParent(AbstractDescriptor parent, AbstractDescriptor child) {
@@ -53,5 +62,13 @@ public class MdibTreeValidator {
         allowedParents.put(WorkflowContextDescriptor.class, SystemContextDescriptor.class);
         allowedParents.put(MeansContextDescriptor.class, SystemContextDescriptor.class);
         allowedParents.put(OperatorContextDescriptor.class, SystemContextDescriptor.class);
+    }
+
+    void setupChildCardinality() {
+        oneChildEntities.add(AlertSystemDescriptor.class);
+        oneChildEntities.add(SystemContextDescriptor.class);
+        oneChildEntities.add(ScoDescriptor.class);
+        oneChildEntities.add(PatientContextDescriptor.class);
+        oneChildEntities.add(LocationContextDescriptor.class);
     }
 }

@@ -5,7 +5,7 @@ import org.ieee11073.sdc.biceps.common.MdibEntity;
 import org.ieee11073.sdc.biceps.common.MdibStorage;
 import org.ieee11073.sdc.biceps.model.participant.MdsDescriptor;
 import org.ieee11073.sdc.biceps.testutil.MockModelFactory;
-import org.junit.jupiter.api.Assertions;
+import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
@@ -29,21 +29,18 @@ class DuplicateDetectorTest {
         Mockito.when(mdibStorage.getEntity(expectedExistingHandle)).thenReturn(Optional.of(Mockito.mock(MdibEntity.class)));
 
         // When there is no duplication detected
-        duplicateDetector.process(modifications, modifications.getModifications().get(0), mdibStorage);
-
         // Then expect the detector to continue
+        assertDoesNotThrow(() ->
+                duplicateDetector.process(modifications, modifications.getModifications().get(0), mdibStorage));
 
         // When there is a duplication detected
-        try {
-            duplicateDetector.process(modifications, modifications.getModifications().get(1), mdibStorage);
-            Assertions.fail("duplicated handle not detected");
-        } catch (HandleDuplicatedException e) {
-            // Then expect the detector to throw an exception
-        }
+        // Then expect the detector to throw an exception
+        assertThrows(HandleDuplicatedException.class, () ->
+                duplicateDetector.process(modifications, modifications.getModifications().get(1), mdibStorage));
 
         // When there is a potential duplicate that is not going to be inserted (updated, deleted)
-        duplicateDetector.process(modifications, modifications.getModifications().get(2), mdibStorage);
-
         // Then expect the detector to continue
+        assertDoesNotThrow(() ->
+                duplicateDetector.process(modifications, modifications.getModifications().get(2), mdibStorage));
     }
 }

@@ -17,10 +17,10 @@ import java.lang.reflect.InvocationTargetException;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class TreeConsistencyHandlerTest {
+class TypeConsistencyCheckerTest {
     private static final UnitTestUtil UT = new UnitTestUtil();
 
-    private TreeConsistencyHandler consistencyHandler;
+    private TypeConsistencyChecker consistencyHandler;
     private MdibStorage mdibStorage;
 
     private String mds;
@@ -30,7 +30,7 @@ class TreeConsistencyHandlerTest {
 
     @BeforeEach
     void beforeEach() throws InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
-        consistencyHandler = UT.getInjector().getInstance(TreeConsistencyHandler.class);
+        consistencyHandler = UT.getInjector().getInstance(TypeConsistencyChecker.class);
         mdibStorage = UT.getInjector().getInstance(MdibStorageFactory.class).createMdibStorage();
 
         mds = "mds";

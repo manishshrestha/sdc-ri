@@ -32,7 +32,7 @@ public class MdibTypeValidatorTest {
     }
 
     @Test
-    public void matchingSinleStateInstance() throws InstantiationException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
+    public void matchingSingleStateInstance() throws InstantiationException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
         final StringMetricDescriptor descriptor = MockModelFactory.createDescriptor("handle", StringMetricDescriptor.class);
         final StringMetricState state = MockModelFactory.createState("handle", StringMetricState.class);
         final StringMetricState illegalSecondState = MockModelFactory.createState("handle", StringMetricState.class);
