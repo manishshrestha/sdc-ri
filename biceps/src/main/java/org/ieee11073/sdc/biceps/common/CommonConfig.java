@@ -1,5 +1,7 @@
 package org.ieee11073.sdc.biceps.common;
 
+import org.ieee11073.sdc.biceps.common.storage.MdibStorage;
+
 /**
  * General configuration of the BICEPS common package.
  */

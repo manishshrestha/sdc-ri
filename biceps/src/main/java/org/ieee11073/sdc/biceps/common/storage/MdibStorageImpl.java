@@ -1,11 +1,12 @@
-package org.ieee11073.sdc.biceps.common;
+package org.ieee11073.sdc.biceps.common.storage;
 
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
+import org.ieee11073.sdc.biceps.common.*;
 import org.ieee11073.sdc.biceps.common.access.WriteDescriptionResult;
 import org.ieee11073.sdc.biceps.common.access.WriteStateResult;
 import org.ieee11073.sdc.biceps.common.factory.MdibEntityFactory;
-import org.ieee11073.sdc.biceps.common.helper.MdibStorageUtil;
+import org.ieee11073.sdc.biceps.common.storage.helper.MdibStorageUtil;
 import org.ieee11073.sdc.biceps.model.participant.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

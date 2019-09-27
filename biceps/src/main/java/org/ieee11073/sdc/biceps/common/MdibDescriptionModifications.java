@@ -1,6 +1,10 @@
 package org.ieee11073.sdc.biceps.common;
 
-import org.ieee11073.sdc.biceps.model.participant.*;
+import org.ieee11073.sdc.biceps.common.preprocessing.HandleDuplicatedException;
+import org.ieee11073.sdc.biceps.model.participant.AbstractDescriptor;
+import org.ieee11073.sdc.biceps.model.participant.AbstractMultiState;
+import org.ieee11073.sdc.biceps.model.participant.AbstractState;
+import org.ieee11073.sdc.biceps.model.participant.MdibVersion;
 
 import javax.annotation.Nullable;
 import java.util.*;
@@ -56,7 +60,7 @@ public class MdibDescriptionModifications {
 
     /**
      * Add single or multi state descriptor to change set without state information.
-     *
+     * <p>
      * It's up to the change set processor to align state information.
      */
     public MdibDescriptionModifications add(MdibDescriptionModification.Type modType,
@@ -67,7 +71,7 @@ public class MdibDescriptionModifications {
 
     /**
      * Add single or multi state descriptor to change set without state information.
-     *
+     * <p>
      * It's up to the change set processor to align state information.
      */
     public MdibDescriptionModifications add(MdibDescriptionModification.Type modType,
@@ -77,7 +81,7 @@ public class MdibDescriptionModifications {
 
     /**
      * Add single state descriptor to change set with state information.
-     *
+     * <p>
      * Caveat: the change set processor might check descriptor state consistency.
      */
     public MdibDescriptionModifications add(MdibDescriptionModification.Type modType,
@@ -88,7 +92,7 @@ public class MdibDescriptionModifications {
 
     /**
      * Add single state descriptor to change set with state information.
-     *
+     * <p>
      * Caveat: the change set processor might check descriptor state consistency.
      */
     public MdibDescriptionModifications add(MdibDescriptionModification.Type modType,
@@ -100,7 +104,7 @@ public class MdibDescriptionModifications {
 
     /**
      * Add multi state descriptor to change set with state information.
-     *
+     * <p>
      * Caveat: the change set processor might check descriptor state consistency.
      */
     public MdibDescriptionModifications add(MdibDescriptionModification.Type modType,
@@ -112,7 +116,7 @@ public class MdibDescriptionModifications {
 
     /**
      * Add multi state descriptor to change set with state information.
-     *
+     * <p>
      * Caveat: the change set processor might check descriptor state consistency.
      */
     public MdibDescriptionModifications add(MdibDescriptionModification.Type modType,
@@ -125,6 +129,7 @@ public class MdibDescriptionModifications {
 
     /**
      * Convenient function to insert a descriptor.
+     *
      * @see #add(MdibDescriptionModification.Type, AbstractDescriptor)
      */
     public MdibDescriptionModifications insert(Entry entry) {
@@ -133,6 +138,7 @@ public class MdibDescriptionModifications {
 
     /**
      * Convenient function to insert a descriptor.
+     *
      * @see #add(MdibDescriptionModification.Type, AbstractDescriptor)
      */
     public MdibDescriptionModifications insert(MultiStateEntry entry) {
@@ -141,6 +147,7 @@ public class MdibDescriptionModifications {
 
     /**
      * Convenient function to insert a descriptor.
+     *
      * @see #add(MdibDescriptionModification.Type, AbstractDescriptor)
      */
     public MdibDescriptionModifications insert(AbstractDescriptor descriptor) {
@@ -149,6 +156,7 @@ public class MdibDescriptionModifications {
 
     /**
      * Convenient function to insert a descriptor.
+     *
      * @see #add(MdibDescriptionModification.Type, AbstractDescriptor, AbstractState, String)
      */
     public MdibDescriptionModifications insert(AbstractDescriptor descriptor, @Nullable String parentHandle) {
@@ -157,6 +165,7 @@ public class MdibDescriptionModifications {
 
     /**
      * Convenient function to insert a single state descriptor with state information.
+     *
      * @see #add(MdibDescriptionModification.Type, AbstractDescriptor, AbstractState)
      */
     public MdibDescriptionModifications insert(AbstractDescriptor descriptor, AbstractState state) {
@@ -165,6 +174,7 @@ public class MdibDescriptionModifications {
 
     /**
      * Convenient function to insert a single state descriptor with state information.
+     *
      * @see #add(MdibDescriptionModification.Type, AbstractDescriptor, AbstractState)
      */
     public MdibDescriptionModifications insert(AbstractDescriptor descriptor,
@@ -175,6 +185,7 @@ public class MdibDescriptionModifications {
 
     /**
      * Convenient function to insert a multi state descriptor with state information.
+     *
      * @see #add(MdibDescriptionModification.Type, AbstractDescriptor, List)
      */
     public MdibDescriptionModifications insert(AbstractDescriptor descriptor,
@@ -184,6 +195,7 @@ public class MdibDescriptionModifications {
 
     /**
      * Convenient function to insert a multi state descriptor with state information.
+     *
      * @see #add(MdibDescriptionModification.Type, AbstractDescriptor, List)
      */
     public MdibDescriptionModifications insert(AbstractDescriptor descriptor,
@@ -194,6 +206,7 @@ public class MdibDescriptionModifications {
 
     /**
      * Convenient function to update a descriptor.
+     *
      * @see #add(MdibDescriptionModification.Type, AbstractDescriptor)
      */
     public MdibDescriptionModifications update(Entry entry) {
@@ -202,6 +215,7 @@ public class MdibDescriptionModifications {
 
     /**
      * Convenient function to update a descriptor.
+     *
      * @see #add(MdibDescriptionModification.Type, AbstractDescriptor)
      */
     public MdibDescriptionModifications update(MultiStateEntry entry) {
@@ -210,6 +224,7 @@ public class MdibDescriptionModifications {
 
     /**
      * Convenient function to update a descriptor.
+     *
      * @see #add(MdibDescriptionModification.Type, AbstractDescriptor)
      */
     public MdibDescriptionModifications update(AbstractDescriptor descriptor) {
@@ -218,6 +233,7 @@ public class MdibDescriptionModifications {
 
     /**
      * Convenient function to update a single state descriptor with state information.
+     *
      * @see #add(MdibDescriptionModification.Type, AbstractDescriptor, AbstractState)
      */
     public MdibDescriptionModifications update(AbstractDescriptor descriptor, AbstractState state) {
@@ -226,6 +242,7 @@ public class MdibDescriptionModifications {
 
     /**
      * Convenient function to update a multi state descriptor with state information.
+     *
      * @see #add(MdibDescriptionModification.Type, AbstractDescriptor, List)
      */
     public MdibDescriptionModifications update(AbstractDescriptor descriptor,
@@ -235,6 +252,7 @@ public class MdibDescriptionModifications {
 
     /**
      * Convenient function to update a descriptor.
+     *
      * @see #add(MdibDescriptionModification.Type, AbstractDescriptor)
      */
     public MdibDescriptionModifications delete(Entry entry) {
@@ -243,6 +261,7 @@ public class MdibDescriptionModifications {
 
     /**
      * Convenient function to delete a descriptor.
+     *
      * @see #add(MdibDescriptionModification.Type, AbstractDescriptor)
      */
     public MdibDescriptionModifications delete(AbstractDescriptor descriptor) {
@@ -298,7 +317,8 @@ public class MdibDescriptionModifications {
             return state;
         }
 
-        private @Nullable String getParentHandle() {
+        private @Nullable
+        String getParentHandle() {
             return parentHandle;
         }
     }
@@ -322,7 +342,8 @@ public class MdibDescriptionModifications {
             return states;
         }
 
-        private @Nullable String getParentHandle() {
+        private @Nullable
+        String getParentHandle() {
             return parentHandle;
         }
     }
@@ -346,7 +367,7 @@ public class MdibDescriptionModifications {
                                                              List<? extends AbstractState> states,
                                                              @Nullable String parentHandle) {
         duplicateDetection(modType, descriptor.getHandle());
-        modifications.add(new MdibDescriptionModification(modType, descriptor, (List)states, parentHandle));
+        modifications.add(new MdibDescriptionModification(modType, descriptor, (List) states, parentHandle));
         return this;
     }
 
@@ -362,8 +383,9 @@ public class MdibDescriptionModifications {
         }
 
         if (handleSet.contains(handle)) {
-            throw new DuplicateHandleException(
-                    String.format("Handle %s has already been inserted into description change set.", handle));
+            // Make this a runtime exception as duplicated handles should not ensue by design
+            throw new RuntimeException(new HandleDuplicatedException(
+                    String.format("Handle %s has already been inserted into description change set.", handle)));
         }
 
         handleSet.add(handle);

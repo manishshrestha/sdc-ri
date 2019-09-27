@@ -2,6 +2,8 @@ package org.ieee11073.sdc.biceps.common.preprocessing;
 
 import com.google.inject.Inject;
 import org.ieee11073.sdc.biceps.common.*;
+import org.ieee11073.sdc.biceps.common.storage.DescriptionPreprocessingSegment;
+import org.ieee11073.sdc.biceps.common.storage.MdibStorage;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -9,11 +11,11 @@ import java.util.Set;
 /**
  * Preprocessing segment that checks for handle duplicates on inserted entities during description modifications.
  */
-public class DuplicateDetector implements DescriptionPreprocessingSegment {
+public class DuplicateChecker implements DescriptionPreprocessingSegment {
     private final Set<String> handleCache;
 
     @Inject
-    DuplicateDetector() {
+    DuplicateChecker() {
         handleCache = new HashSet<>();
     }
 

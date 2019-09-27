@@ -4,7 +4,7 @@ import org.ieee11073.sdc.biceps.UnitTestUtil;
 import org.ieee11073.sdc.biceps.common.MdibDescriptionModification;
 import org.ieee11073.sdc.biceps.common.MdibDescriptionModifications;
 import org.ieee11073.sdc.biceps.common.MdibEntity;
-import org.ieee11073.sdc.biceps.common.MdibStorage;
+import org.ieee11073.sdc.biceps.common.storage.MdibStorage;
 import org.ieee11073.sdc.biceps.model.participant.MdsDescriptor;
 import org.ieee11073.sdc.biceps.model.participant.NumericMetricDescriptor;
 import org.ieee11073.sdc.biceps.model.participant.ScoDescriptor;

@@ -1,10 +1,10 @@
 package org.ieee11073.sdc.biceps.common.factory;
 
 import com.google.inject.assistedinject.Assisted;
-import org.ieee11073.sdc.biceps.common.DescriptionPreprocessingSegment;
-import org.ieee11073.sdc.biceps.common.MdibStorage;
-import org.ieee11073.sdc.biceps.common.MdibStoragePreprocessingChain;
-import org.ieee11073.sdc.biceps.common.StatePreprocessingSegment;
+import org.ieee11073.sdc.biceps.common.storage.DescriptionPreprocessingSegment;
+import org.ieee11073.sdc.biceps.common.storage.MdibStorage;
+import org.ieee11073.sdc.biceps.common.storage.MdibStoragePreprocessingChain;
+import org.ieee11073.sdc.biceps.common.storage.StatePreprocessingSegment;
 
 import java.util.List;
 

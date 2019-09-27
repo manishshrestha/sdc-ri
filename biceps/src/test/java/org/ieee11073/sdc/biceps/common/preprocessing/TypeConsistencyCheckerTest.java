@@ -3,7 +3,7 @@ package org.ieee11073.sdc.biceps.common.preprocessing;
 import org.ieee11073.sdc.biceps.UnitTestUtil;
 import org.ieee11073.sdc.biceps.common.MdibDescriptionModification;
 import org.ieee11073.sdc.biceps.common.MdibDescriptionModifications;
-import org.ieee11073.sdc.biceps.common.MdibStorage;
+import org.ieee11073.sdc.biceps.common.storage.MdibStorage;
 import org.ieee11073.sdc.biceps.common.factory.MdibStorageFactory;
 import org.ieee11073.sdc.biceps.model.participant.ChannelDescriptor;
 import org.ieee11073.sdc.biceps.model.participant.MdsDescriptor;

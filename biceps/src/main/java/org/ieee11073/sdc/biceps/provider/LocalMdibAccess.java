@@ -2,7 +2,7 @@ package org.ieee11073.sdc.biceps.provider;
 
 import org.ieee11073.sdc.biceps.common.MdibDescriptionModifications;
 import org.ieee11073.sdc.biceps.common.MdibStateModifications;
-import org.ieee11073.sdc.biceps.common.PreprocessingException;
+import org.ieee11073.sdc.biceps.common.storage.PreprocessingException;
 import org.ieee11073.sdc.biceps.common.access.*;
 
 public interface LocalMdibAccess extends MdibAccess, ReadTransactionProvider, MdibAccessObservable {

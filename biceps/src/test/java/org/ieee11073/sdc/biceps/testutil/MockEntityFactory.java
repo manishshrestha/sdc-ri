@@ -1,7 +1,7 @@
 package org.ieee11073.sdc.biceps.testutil;
 
 import org.ieee11073.sdc.biceps.common.MdibEntity;
-import org.ieee11073.sdc.biceps.common.MdibVersion;
+import org.ieee11073.sdc.biceps.model.participant.MdibVersion;
 import org.ieee11073.sdc.biceps.common.factory.MdibEntityFactory;
 import org.ieee11073.sdc.biceps.model.participant.AbstractDescriptor;
 import org.ieee11073.sdc.biceps.model.participant.AbstractState;

@@ -1,5 +1,9 @@
-package org.ieee11073.sdc.biceps.common;
+package org.ieee11073.sdc.biceps.common.storage;
 
+import org.ieee11073.sdc.biceps.common.MdibDescriptionModifications;
+import org.ieee11073.sdc.biceps.common.MdibEntity;
+import org.ieee11073.sdc.biceps.common.MdibStateModifications;
+import org.ieee11073.sdc.biceps.model.participant.MdibVersion;
 import org.ieee11073.sdc.biceps.common.access.WriteDescriptionResult;
 import org.ieee11073.sdc.biceps.common.access.WriteStateResult;
 import org.ieee11073.sdc.biceps.model.participant.AbstractContextState;

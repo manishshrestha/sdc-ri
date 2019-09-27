@@ -1,6 +1,5 @@
 package org.ieee11073.sdc.biceps.provider;
 
-import com.google.common.eventbus.EventBus;
 import com.google.inject.assistedinject.AssistedInject;
 import org.ieee11073.sdc.biceps.common.*;
 import org.ieee11073.sdc.biceps.common.access.*;
@@ -8,11 +7,15 @@ import org.ieee11073.sdc.biceps.common.access.factory.ReadTransactionFactory;
 import org.ieee11073.sdc.biceps.common.event.Distributor;
 import org.ieee11073.sdc.biceps.common.factory.MdibStorageFactory;
 import org.ieee11073.sdc.biceps.common.factory.MdibStoragePreprocessingChainFactory;
-import org.ieee11073.sdc.biceps.common.preprocessing.DuplicateDetector;
+import org.ieee11073.sdc.biceps.common.preprocessing.DuplicateChecker;
 import org.ieee11073.sdc.biceps.common.preprocessing.TypeConsistencyChecker;
+import org.ieee11073.sdc.biceps.common.storage.MdibStorage;
+import org.ieee11073.sdc.biceps.common.storage.MdibStoragePreprocessingChain;
+import org.ieee11073.sdc.biceps.common.storage.PreprocessingException;
 import org.ieee11073.sdc.biceps.model.participant.AbstractContextState;
 import org.ieee11073.sdc.biceps.model.participant.AbstractDescriptor;
 import org.ieee11073.sdc.biceps.model.participant.AbstractState;
+import org.ieee11073.sdc.biceps.model.participant.MdibVersion;
 import org.ieee11073.sdc.biceps.provider.preprocessing.VersionHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,10 +41,9 @@ public class LocalMdibAccessImpl implements LocalMdibAccess {
     LocalMdibAccessImpl(Distributor eventDistributor,
                         MdibStoragePreprocessingChainFactory chainFactory,
                         MdibStorageFactory mdibStorageFactory,
-                        EventBus eventBus,
                         ReentrantReadWriteLock readWriteLock,
                         ReadTransactionFactory readTransactionFactory,
-                        DuplicateDetector duplicateDetector,
+                        DuplicateChecker duplicateChecker,
                         VersionHandler versionHandler,
                         TypeConsistencyChecker typeConsistencyChecker,
                         CopyManager copyManager) {
@@ -53,7 +55,7 @@ public class LocalMdibAccessImpl implements LocalMdibAccess {
 
         this.localMdibAccessPreprocessing = chainFactory.createMdibStoragePreprocessingChain(
                 mdibStorage,
-                Arrays.asList(duplicateDetector, typeConsistencyChecker, versionHandler),
+                Arrays.asList(duplicateChecker, typeConsistencyChecker, versionHandler),
                 Arrays.asList(versionHandler));
     }
 

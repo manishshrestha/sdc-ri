@@ -1,7 +1,11 @@
-package org.ieee11073.sdc.biceps.common;
+package org.ieee11073.sdc.biceps.common.storage;
 
 import com.google.inject.Inject;
 import com.google.inject.assistedinject.Assisted;
+import org.ieee11073.sdc.biceps.common.MdibDescriptionModification;
+import org.ieee11073.sdc.biceps.common.MdibDescriptionModifications;
+import org.ieee11073.sdc.biceps.common.MdibStateModifications;
+import org.ieee11073.sdc.biceps.common.MdibTypeValidator;
 import org.ieee11073.sdc.biceps.model.participant.AbstractMultiState;
 import org.ieee11073.sdc.biceps.model.participant.AbstractState;
 

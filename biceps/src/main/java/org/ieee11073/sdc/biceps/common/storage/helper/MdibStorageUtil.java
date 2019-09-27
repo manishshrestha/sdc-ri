@@ -1,4 +1,4 @@
-package org.ieee11073.sdc.biceps.common.helper;
+package org.ieee11073.sdc.biceps.common.storage.helper;
 
 import com.google.inject.Inject;
 import org.ieee11073.sdc.biceps.common.MdibEntity;

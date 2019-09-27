@@ -1,6 +1,4 @@
-package org.ieee11073.sdc.biceps.common;
-
-import org.ieee11073.sdc.biceps.model.participant.Mdib;
+package org.ieee11073.sdc.biceps.model.participant;
 
 import java.math.BigInteger;
 import java.net.URI;
@@ -54,6 +52,7 @@ public class MdibVersion {
         return instanceId;
     }
 
+    @Override
     public boolean equals(Object rhsObject) {
         if (rhsObject == this) {
             return true;

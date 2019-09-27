@@ -1,4 +1,4 @@
-package org.ieee11073.sdc.biceps.common;
+package org.ieee11073.sdc.biceps.common.storage;
 
 import org.ieee11073.sdc.biceps.model.participant.AbstractState;
 

@@ -1,6 +1,6 @@
 package org.ieee11073.sdc.biceps.common.access;
 
-import org.ieee11073.sdc.biceps.common.MdibVersion;
+import org.ieee11073.sdc.biceps.model.participant.MdibVersion;
 import org.ieee11073.sdc.biceps.model.participant.AbstractState;
 
 import java.util.List;
