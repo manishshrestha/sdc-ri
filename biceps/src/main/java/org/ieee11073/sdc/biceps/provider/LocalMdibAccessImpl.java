@@ -4,6 +4,7 @@ import com.google.inject.assistedinject.AssistedInject;
 import org.ieee11073.sdc.biceps.common.*;
 import org.ieee11073.sdc.biceps.common.access.*;
 import org.ieee11073.sdc.biceps.common.access.factory.ReadTransactionFactory;
+import org.ieee11073.sdc.biceps.common.access.helper.WriteUtil;
 import org.ieee11073.sdc.biceps.common.event.Distributor;
 import org.ieee11073.sdc.biceps.common.factory.MdibStorageFactory;
 import org.ieee11073.sdc.biceps.common.factory.MdibStoragePreprocessingChainFactory;
@@ -32,10 +33,12 @@ public class LocalMdibAccessImpl implements LocalMdibAccess {
 
     private final Distributor eventDistributor;
     private final MdibStorage mdibStorage;
-    private MdibStoragePreprocessingChain localMdibAccessPreprocessing;
+    private final MdibStoragePreprocessingChain localMdibAccessPreprocessing;
     private final ReentrantReadWriteLock readWriteLock;
     private final ReadTransactionFactory readTransactionFactory;
     private final CopyManager copyManager;
+
+    private final WriteUtil writeUtil;
 
     @AssistedInject
     LocalMdibAccessImpl(Distributor eventDistributor,
@@ -57,71 +60,20 @@ public class LocalMdibAccessImpl implements LocalMdibAccess {
                 mdibStorage,
                 Arrays.asList(duplicateChecker, typeConsistencyChecker, versionHandler),
                 Arrays.asList(versionHandler));
+
+        this.writeUtil = new WriteUtil(eventDistributor, mdibStorage, localMdibAccessPreprocessing, readWriteLock, this);
     }
 
     @Override
     public WriteDescriptionResult writeDescription(MdibDescriptionModifications descriptionModifications) throws PreprocessingException {
         descriptionModifications = copyManager.processInput(descriptionModifications);
-
-        readWriteLock.writeLock().lock();
-        WriteDescriptionResult modificationResult;
-        try {
-            localMdibAccessPreprocessing.processDescriptionModifications(descriptionModifications);
-            modificationResult = mdibStorage.apply(descriptionModifications);
-
-            readWriteLock.readLock().lock();
-
-        } catch (PreprocessingException e) {
-            LOG.warn("Error while processing description modifications in chain segment {} on handle {}: {}",
-                    e.getSegment(), e.getHandle(), e.getMessage());
-            throw e;
-        } finally {
-            readWriteLock.writeLock().unlock();
-        }
-
-        try {
-            eventDistributor.sendDescriptionModificationEvent(
-                    this,
-                    modificationResult.getInsertedEntities(),
-                    modificationResult.getUpdatedEntities(),
-                    modificationResult.getDeletedEntities());
-        } finally {
-            readWriteLock.readLock().unlock();
-        }
-
-        return modificationResult;
+        return writeUtil.writeDescription(descriptionModifications);
     }
 
     @Override
     public WriteStateResult writeStates(MdibStateModifications stateModifications) throws PreprocessingException {
         stateModifications = copyManager.processInput(stateModifications);
-
-        readWriteLock.writeLock().lock();
-        WriteStateResult modificationResult;
-        try {
-            localMdibAccessPreprocessing.processStateModifications(stateModifications);
-            modificationResult = mdibStorage.apply(stateModifications);
-
-            readWriteLock.readLock().lock();
-
-        } catch (PreprocessingException e) {
-            LOG.warn("Error while processing state modifications in chain segment {} on handle {}: {}",
-                    e.getSegment(), e.getHandle(), e.getMessage());
-            throw e;
-        } finally {
-            readWriteLock.writeLock().unlock();
-        }
-
-        try {
-            eventDistributor.sendStateModificationEvent(
-                    this,
-                    stateModifications.getChangeType(),
-                    modificationResult.getStates());
-        } finally {
-            readWriteLock.readLock().unlock();
-        }
-
-        return modificationResult;
+        return writeUtil.writeStates(stateModifications);
     }
 
     @Override
