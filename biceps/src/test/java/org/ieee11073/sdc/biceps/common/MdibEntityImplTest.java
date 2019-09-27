@@ -2,6 +2,7 @@ package org.ieee11073.sdc.biceps.common;
 
 import com.google.inject.Injector;
 import org.ieee11073.sdc.biceps.UnitTestUtil;
+import org.ieee11073.sdc.biceps.common.MdibEntity;
 import org.ieee11073.sdc.biceps.common.factory.MdibEntityFactory;
 import org.ieee11073.sdc.biceps.model.participant.MdibVersion;
 import org.ieee11073.sdc.biceps.model.participant.PatientContextDescriptor;

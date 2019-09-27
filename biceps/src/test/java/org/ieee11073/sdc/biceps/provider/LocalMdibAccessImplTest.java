@@ -4,6 +4,7 @@ package org.ieee11073.sdc.biceps.provider;
 import com.google.inject.Injector;
 import org.ieee11073.sdc.biceps.UnitTestUtil;
 import org.ieee11073.sdc.biceps.common.*;
+import org.ieee11073.sdc.biceps.testutil.MdibAccessObserverSpy;
 import org.ieee11073.sdc.biceps.common.access.WriteDescriptionResult;
 import org.ieee11073.sdc.biceps.common.access.WriteStateResult;
 import org.ieee11073.sdc.biceps.common.event.DescriptionModificationMessage;

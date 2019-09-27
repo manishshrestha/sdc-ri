@@ -1,4 +1,4 @@
-package org.ieee11073.sdc.biceps.common;
+package org.ieee11073.sdc.biceps.testutil;
 
 import com.google.common.eventbus.Subscribe;
 import org.ieee11073.sdc.biceps.common.access.MdibAccessObserver;
