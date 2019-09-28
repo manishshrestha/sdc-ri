@@ -5,6 +5,9 @@ import org.junit.jupiter.api.Test;
 
 import javax.annotation.Nullable;
 
+import java.util.SortedMap;
+import java.util.TreeMap;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class ObjectStringifierTest {
@@ -85,6 +88,18 @@ class ObjectStringifierTest {
 
         assertEquals(expectedString, ObjectStringifier.stringifyAll(testObject));
 
+    }
+
+    @Test
+    void stringifyMap() {
+        SortedMap<String, Object> map = new TreeMap<>();
+        map.put("foo1", "Bar");
+        map.put("foo2", null);
+        map.put("foo3", 100);
+
+        String expectedString = String.format("%s(foo1=Bar;foo2=null;foo3=100)", TestClassDerived.class.getSimpleName());
+
+        assertEquals(expectedString, ObjectStringifier.stringify(testObject, map));
     }
 
     class TestClassBase {
