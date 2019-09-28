@@ -4,7 +4,7 @@ import org.ieee11073.sdc.biceps.common.CommonConfig;
 import org.ieee11073.sdc.common.guice.AbstractConfigurationModule;
 
 /**
- * Guice module that determines default values for BICEPS package configuration.
+ * Guice module that determines default values for the BICEPS package configuration.
  */
 public class DefaultBicepsConfigModule extends AbstractConfigurationModule {
     @Override

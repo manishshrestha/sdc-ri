@@ -37,8 +37,7 @@ public class VersionHandler implements DescriptionPreprocessingSegment, StatePre
 
     @Inject
     VersionHandler(MdibTypeValidator mdibTypeValidator,
-                   ObjectUtil objectUtil,
-                   MdibEntityFactory entityFactory) {
+                   ObjectUtil objectUtil) {
         this.mdibTypeValidator = mdibTypeValidator;
         this.objectUtil = objectUtil;
         this.versionsWorkingCopy = new HashMap<>();

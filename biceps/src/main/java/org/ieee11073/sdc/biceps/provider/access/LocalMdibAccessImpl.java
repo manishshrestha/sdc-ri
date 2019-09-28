@@ -1,4 +1,4 @@
-package org.ieee11073.sdc.biceps.provider;
+package org.ieee11073.sdc.biceps.provider.access;
 
 import com.google.inject.assistedinject.AssistedInject;
 import org.ieee11073.sdc.biceps.common.*;
@@ -6,8 +6,8 @@ import org.ieee11073.sdc.biceps.common.access.*;
 import org.ieee11073.sdc.biceps.common.access.factory.ReadTransactionFactory;
 import org.ieee11073.sdc.biceps.common.access.helper.WriteUtil;
 import org.ieee11073.sdc.biceps.common.event.Distributor;
-import org.ieee11073.sdc.biceps.common.factory.MdibStorageFactory;
-import org.ieee11073.sdc.biceps.common.factory.MdibStoragePreprocessingChainFactory;
+import org.ieee11073.sdc.biceps.common.storage.factory.MdibStorageFactory;
+import org.ieee11073.sdc.biceps.common.storage.factory.MdibStoragePreprocessingChainFactory;
 import org.ieee11073.sdc.biceps.common.preprocessing.DuplicateChecker;
 import org.ieee11073.sdc.biceps.common.preprocessing.TypeConsistencyChecker;
 import org.ieee11073.sdc.biceps.common.storage.MdibStorage;
@@ -28,6 +28,9 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+/**
+ * Default implementation of {@linkplain LocalMdibAccessImpl}.
+ */
 public class LocalMdibAccessImpl implements LocalMdibAccess {
     private static final Logger LOG = LoggerFactory.getLogger(LocalMdibAccessImpl.class);
 
@@ -71,9 +74,9 @@ public class LocalMdibAccessImpl implements LocalMdibAccess {
     }
 
     @Override
-    public WriteStateResult writeStates(MdibStateModifications stateModifications) throws PreprocessingException {
-        stateModifications = copyManager.processInput(stateModifications);
-        return writeUtil.writeStates(stateModifications);
+    public WriteStateResult writeStates(MdibStateModifications mdibStateModifications) throws PreprocessingException {
+        mdibStateModifications = copyManager.processInput(mdibStateModifications);
+        return writeUtil.writeStates(mdibStateModifications);
     }
 
     @Override
@@ -136,6 +139,13 @@ public class LocalMdibAccessImpl implements LocalMdibAccess {
     }
 
     @Override
+    public Optional<AbstractState> getState(String handle) {
+        try (ReadTransaction transaction = startTransaction()) {
+            return transaction.getState(handle);
+        }
+    }
+
+    @Override
     public <T extends AbstractState> Optional<T> getState(String handle, Class<T> stateClass) {
         try (ReadTransaction transaction = startTransaction()) {
             return transaction.getState(handle, stateClass);
@@ -147,6 +157,11 @@ public class LocalMdibAccessImpl implements LocalMdibAccess {
         try (ReadTransaction transaction = startTransaction()) {
             return transaction.getContextStates(descriptorHandle, stateClass);
         }
+    }
+
+    @Override
+    public List<AbstractContextState> getContextStates(String descriptorHandle) {
+        return null;
     }
 
     @Override

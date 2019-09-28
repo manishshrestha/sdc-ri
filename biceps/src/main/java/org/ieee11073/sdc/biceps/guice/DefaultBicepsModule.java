@@ -7,14 +7,14 @@ import org.ieee11073.sdc.biceps.common.access.ReadTransaction;
 import org.ieee11073.sdc.biceps.common.access.ReadTransactionImpl;
 import org.ieee11073.sdc.biceps.common.access.factory.ReadTransactionFactory;
 import org.ieee11073.sdc.biceps.common.factory.MdibEntityGuiceAssistedFactory;
-import org.ieee11073.sdc.biceps.common.factory.MdibStorageFactory;
-import org.ieee11073.sdc.biceps.common.factory.MdibStoragePreprocessingChainFactory;
+import org.ieee11073.sdc.biceps.common.storage.factory.MdibStorageFactory;
+import org.ieee11073.sdc.biceps.common.storage.factory.MdibStoragePreprocessingChainFactory;
 import org.ieee11073.sdc.biceps.common.storage.MdibStorage;
 import org.ieee11073.sdc.biceps.common.storage.MdibStorageImpl;
 import org.ieee11073.sdc.biceps.common.storage.MdibStoragePreprocessingChain;
-import org.ieee11073.sdc.biceps.provider.LocalMdibAccess;
-import org.ieee11073.sdc.biceps.provider.LocalMdibAccessImpl;
-import org.ieee11073.sdc.biceps.provider.factory.LocalMdibAccessFactory;
+import org.ieee11073.sdc.biceps.provider.access.LocalMdibAccess;
+import org.ieee11073.sdc.biceps.provider.access.LocalMdibAccessImpl;
+import org.ieee11073.sdc.biceps.provider.access.factory.LocalMdibAccessFactory;
 
 /**
  * Default BICEPS module.

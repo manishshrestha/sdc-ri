@@ -1,5 +1,8 @@
 package org.ieee11073.sdc.biceps.common.preprocessing;
 
+/**
+ * Exception that is thrown during preprocessing of {@linkplain TypeConsistencyChecker}.
+ */
 public class TypeConsistencyException extends Exception{
     public TypeConsistencyException() {
     }

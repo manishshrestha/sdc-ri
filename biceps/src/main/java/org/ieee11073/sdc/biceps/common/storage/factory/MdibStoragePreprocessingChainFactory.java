@@ -1,4 +1,4 @@
-package org.ieee11073.sdc.biceps.common.factory;
+package org.ieee11073.sdc.biceps.common.storage.factory;
 
 import com.google.inject.assistedinject.Assisted;
 import org.ieee11073.sdc.biceps.common.storage.DescriptionPreprocessingSegment;

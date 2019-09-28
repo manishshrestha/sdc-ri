@@ -14,6 +14,11 @@ import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+/**
+ * Common code for write description and states that can be used by BICEPS providers and consumers.
+ * <p>
+ * <em>Remark: The operations do not copy descriptors or states.</em>
+ */
 public class WriteUtil {
     private static final Logger LOG = LoggerFactory.getLogger(WriteUtil.class);
 
@@ -23,6 +28,15 @@ public class WriteUtil {
     private final ReentrantReadWriteLock readWriteLock;
     private final MdibAccess mdibAccess;
 
+    /**
+     * Constructor that accepts the dependencies in order to properly process write operations.
+     *
+     * @param eventDistributor             the event distributor to send event messages after write operation is done.
+     * @param mdibStorage                  the MDIB storage to operate writes on.
+     * @param localMdibAccessPreprocessing the preprocessing chain that is invoked before writing to the MDIB storage.
+     * @param readWriteLock                a read write lock to protect against concurrent access.
+     * @param mdibAccess                   the MDIB access that is passed on event distribution.
+     */
     public WriteUtil(Distributor eventDistributor,
                      MdibStorage mdibStorage,
                      MdibStoragePreprocessingChain localMdibAccessPreprocessing,
@@ -35,6 +49,16 @@ public class WriteUtil {
         this.mdibAccess = mdibAccess;
     }
 
+    /**
+     * Performs preprocessing, write operation and event distribution of description modifications.
+     * <p>
+     * The write operation gains a write lock, downgrades it to a read lock during event distribution and releases the
+     * read lock by the end of the function.
+     *
+     * @param descriptionModifications the description modifications to write.
+     * @return a write description result that contains inserted, updated and deleted entities.
+     * @throws PreprocessingException in case a consistency check or modifier fails.
+     */
     public WriteDescriptionResult writeDescription(MdibDescriptionModifications descriptionModifications) throws PreprocessingException {
         readWriteLock.writeLock().lock();
         WriteDescriptionResult modificationResult;
@@ -65,6 +89,16 @@ public class WriteUtil {
         return modificationResult;
     }
 
+    /**
+     * Performs preprocessing, write operation and event distribution of state modifications.
+     * <p>
+     * The write operation gains a write lock, downgrades it to a read lock during event distribution and releases the
+     * read lock by the end of the function.
+     *
+     * @param stateModifications the state modifications to write.
+     * @return a write state result that contains updated states.
+     * @throws PreprocessingException in case a consistency check or modifier fails.
+     */
     public WriteStateResult writeStates(MdibStateModifications stateModifications) throws PreprocessingException {
         readWriteLock.writeLock().lock();
         WriteStateResult modificationResult;

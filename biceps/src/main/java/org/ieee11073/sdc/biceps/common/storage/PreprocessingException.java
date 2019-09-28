@@ -1,5 +1,8 @@
 package org.ieee11073.sdc.biceps.common.storage;
 
+/**
+ * An exception that is thrown if a preprocessing error occurs.
+ */
 public class PreprocessingException extends Exception {
     private final String handle;
     private final String segment;

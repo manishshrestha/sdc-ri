@@ -83,6 +83,7 @@ public class MdibTypeValidator {
      * @param state      the state to test.
      * @param <D>        any descriptor class.
      * @param <S>        any state class.
+     * @return true if descriptor and state match, otherwise false.
      * @see #match(AbstractDescriptor, List)
      */
     public <D extends AbstractDescriptor, S extends AbstractState> boolean match(D descriptor, S state) {

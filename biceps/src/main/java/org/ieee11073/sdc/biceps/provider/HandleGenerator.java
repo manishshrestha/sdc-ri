@@ -5,24 +5,28 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Utility to create handles.
- *
- * \todo Unit test is missing.
+ * <p>
+ * todo DGr Unit test is missing.
  */
 public class HandleGenerator {
     private final String prefix;
     private static final AtomicInteger handleCounter = new AtomicInteger(0);
 
     /**
-     * Create instance that generates handles with a fixed prefix.
+     * Creates instance that generates handles with a fixed prefix.
+     *
+     * @param prefix the prefix to set for all generated handles.
+     * @return a handle generator instance.
      */
     public static HandleGenerator create(String prefix) {
         return new HandleGenerator(prefix);
     }
 
     /**
-     * Create one handle with a given prefix.
+     * Static function to create one handle with a given prefix.
      *
-     * Format: prefix + non-negative integer.
+     * @param prefix the prefix to set for the call.
+     * @return handle name in the format: prefix + non-negative integer.
      */
     public static String createOne(String prefix) {
         return concatHandle(prefix, handleCounter.incrementAndGet());
@@ -31,7 +35,7 @@ public class HandleGenerator {
     /**
      * Creates a handle that is globally unique.
      *
-     * Global uniqueness is established by using UUIDs.
+     * @return a UUID in hex format.
      */
     public static String createGloballyUnique() {
         return UUID.randomUUID().toString();
@@ -40,7 +44,7 @@ public class HandleGenerator {
     /**
      * Creates the next handle with the prefix given during construction.
      *
-     * Format: prefix + non-negative integer.
+     * @return handle name in the format: prefix + non-negative integer.
      */
     public String next() {
         return concatHandle(prefix, handleCounter.incrementAndGet());

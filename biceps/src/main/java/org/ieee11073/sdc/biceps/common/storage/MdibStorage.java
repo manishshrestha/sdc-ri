@@ -3,13 +3,10 @@ package org.ieee11073.sdc.biceps.common.storage;
 import org.ieee11073.sdc.biceps.common.MdibDescriptionModifications;
 import org.ieee11073.sdc.biceps.common.MdibEntity;
 import org.ieee11073.sdc.biceps.common.MdibStateModifications;
-import org.ieee11073.sdc.biceps.model.participant.MdibVersion;
+import org.ieee11073.sdc.biceps.common.access.MdibAccess;
 import org.ieee11073.sdc.biceps.common.access.WriteDescriptionResult;
 import org.ieee11073.sdc.biceps.common.access.WriteStateResult;
-import org.ieee11073.sdc.biceps.model.participant.AbstractContextState;
-import org.ieee11073.sdc.biceps.model.participant.AbstractDescriptor;
-import org.ieee11073.sdc.biceps.model.participant.AbstractMultiState;
-import org.ieee11073.sdc.biceps.model.participant.AbstractState;
+import org.ieee11073.sdc.biceps.model.participant.*;
 
 import java.math.BigInteger;
 import java.util.Collection;
@@ -17,106 +14,154 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * Registry-based access to {@link MdibEntity} instances.
+ * Registry-based access to {@linkplain MdibEntity} instances derived from an {@linkplain org.ieee11073.sdc.biceps.model.participant.Mdib}.
  * <p>
- * In this case "registry-based" means that there is fast (hash map) access to any {@link MdibEntity} instance of a by
- * any other means read {@link org.ieee11073.sdc.biceps.model.participant.Mdib}.
+ * In this case "registry-based" means that there is fast (hash map) access to any {@link MdibEntity} instance if
+ * not mentioned otherwise.
  */
 public interface MdibStorage {
+    /**
+     * Applies description modifications on this object regardless of any consistency checks.
+     *
+     * @param descriptionModifications the modifications to apply.
+     * @return a result set with inserted, updated and deleted entities.
+     */
     WriteDescriptionResult apply(MdibDescriptionModifications descriptionModifications);
 
+    /**
+     * Applies state modifications on this object regardless of any consistency checks.
+     *
+     * @param stateModifications the modifications to apply.
+     * @return a result set with updated states.
+     */
     WriteStateResult apply(MdibStateModifications stateModifications);
 
+    /**
+     * The latest known MDIB version.
+     *
+     * @return the latest known MDIB version.
+     * @see MdibAccess#getMdibVersion()
+     */
     MdibVersion getMdibVersion();
 
+    /**
+     * The latest known MD description version.
+     *
+     * @return the latest known MD description version.
+     * @see MdibAccess#getMdDescriptionVersion()
+     */
     BigInteger getMdDescriptionVersion();
 
+    /**
+     * The latest known MD description version.
+     *
+     * @return The latest known MD state version.
+     * @see MdibAccess#getMdStateVersion()
+     */
     BigInteger getMdStateVersion();
 
     /**
-     * Retrieve specific descriptor of the hosted {@link org.ieee11073.sdc.biceps.model.participant.Mdib}.
+     * Retrieves a specific descriptor of the hosted {@link org.ieee11073.sdc.biceps.model.participant.Mdib}.
      *
      * @param handle     Handle name of the descriptor.
      * @param descrClass Class to cast to. If cast fails, {@link Optional#empty()} will be returned.
-     *
-     * @return Return {@link Optional} of requested descriptor or {@link Optional#empty()} if not found or something
+     * @param <T>        any abstract descriptor.
+     * @return {@link Optional} of the requested descriptor or {@link Optional#empty()} if not found or something
      * went wrong.
      */
     <T extends AbstractDescriptor> Optional<T> getDescriptor(String handle, Class<T> descrClass);
 
     /**
-     * Retrieve specific descriptor of the hosted {@link org.ieee11073.sdc.biceps.model.participant.Mdib}.
+     * Retrieves a specific abstract descriptor of the hosted {@link org.ieee11073.sdc.biceps.model.participant.Mdib}.
      *
-     * @param handle     Handle name of the descriptor.
-     *
-     * @return Return {@link Optional} of requested descriptor or {@link Optional#empty()} if not found or something
+     * @param handle Handle name of the descriptor.
+     * @return {@link Optional} of the requested descriptor or {@link Optional#empty()} if not found or something
      * went wrong.
      */
     Optional<AbstractDescriptor> getDescriptor(String handle);
 
-
     /**
-     * Get an {@link MdibEntity} object with a specific handle.
+     * Gets an {@link MdibEntity} object with a specific handle.
+     *
+     * @param handle the handle to seek.
+     * @return the entity of {@link Optional#empty()} if not found.
      */
     Optional<MdibEntity> getEntity(String handle);
 
+    /**
+     * Searches all entities that match a specific type.
+     *
+     * @param type the class to filter for.
+     * @param <T>  the descriptor type defined by the class.
+     * @return a collection of entities where {@code type} matches.
+     */
     <T extends AbstractDescriptor> Collection<MdibEntity> findEntitiesByType(Class<T> type);
 
+    /**
+     * Resolves the children of a specific type given a parent handle.
+     *
+     * @param handle the parent handle of the entity.
+     * @param type   The class to filter for.
+     * @param <T>    the descriptor type defined by the class.
+     * @return a list of children that matches {@code type} (while preserving ordering).
+     */
     <T extends AbstractDescriptor> List<MdibEntity> getChildrenByType(String handle, Class<T> type);
 
     /**
-     * Get all {@link MdibEntity} objects that are root elements, i.e., hosting descriptors of type
+     * Gets all {@link MdibEntity} objects that are root elements.
+     *
+     * @return the root elements, i.e., entities whose descriptors are of type
      * {@link org.ieee11073.sdc.biceps.model.participant.MdsDescriptor}.
      */
     List<MdibEntity> getRootEntities();
 
     /**
-     * Retrieve specific state of the hosted {@link org.ieee11073.sdc.biceps.model.participant.Mdib}.
+     * Retrieves a specific abstract state of the hosted {@link org.ieee11073.sdc.biceps.model.participant.Mdib}.
      *
-     * @param handle     The state or descriptor handle of the state to request (descriptor handle is used at single
-     *                   states).
-     * @return Return {@link Optional} of requested state or {@link Optional#empty()} if not found or something
+     * @param handle the state or descriptor handle of the state to request (descriptor handle is used in case of
+     *               single states).
+     * @return {@link Optional} of the requested state or {@link Optional#empty()} if not found or something
      * went wrong.
      */
     Optional<AbstractState> getState(String handle);
 
     /**
-     * Retrieve specific state of the hosted {@link org.ieee11073.sdc.biceps.model.participant.Mdib}.
+     * Retrieves a specific state of the hosted {@link org.ieee11073.sdc.biceps.model.participant.Mdib}.
      *
-     * @param handle     The state or descriptor handle of the state to request (descriptor handle is used at single
-     *                   states).
-     * @param stateClass Class to cast to. If cast fails, {@link Optional#empty()} will be returned.
-     *
-     * @return Return {@link Optional} of requested state or {@link Optional#empty()} if not found or something
+     * @param handle     the state or descriptor handle of the state to request (descriptor handle is used in case of
+     *                   single states).
+     * @param stateClass the class to cast to. If cast fails, {@link Optional#empty()} will be returned.
+     * @param <T>        any abstract state.
+     * @return {@link Optional} of the requested state or {@link Optional#empty()} if not found or something
      * went wrong.
      */
     <T extends AbstractState> Optional<T> getState(String handle, Class<T> stateClass);
 
     /**
-     * Get set of all states of the hosted {@link org.ieee11073.sdc.biceps.model.participant.Mdib}.
+     * Finds all context states of a certain descriptor given a state class.
      *
-     * Collections may be created on function call, hence be careful with performance issues.
+     * @param descriptorHandle the descriptor handle to seek.
+     * @param stateClass       the class to filter for.
+     * @param <T>              any abstract context state.
+     * @return a list of the context states of {@code descriptorHandle}.
+     * @see MdibAccess#getContextStates(String, Class)
      */
     <T extends AbstractContextState> List<T> getContextStates(String descriptorHandle, Class<T> stateClass);
 
     /**
-     * Get set of all states of the hosted {@link org.ieee11073.sdc.biceps.model.participant.Mdib}.
+     * Finds all context states of a certain descriptor.
      *
-     * Collections may be created on function call, hence be careful with performance issues.
-     */
-    <T extends AbstractMultiState> List<T> getMultiStates(String descriptorHandle, Class<T> stateClass);
-
-    /**
-     * Get set of all states of the hosted {@link org.ieee11073.sdc.biceps.model.participant.Mdib}.
-     *
-     * Collections may be created on function call, hence be careful with performance issues.
-     */
-    <T extends AbstractMultiState> List<T> getMultiStates(String descriptorHandle);
-
-    /**
-     * Get set of all states of the hosted {@link org.ieee11073.sdc.biceps.model.participant.Mdib}.
-     *
-     * Collections may be created on function call, hence be careful with performance issues.
+     * @param descriptorHandle the descriptor handle to seek.
+     * @return a list of the context states of {@code descriptorHandle}.
+     * @see MdibAccess#getContextStates(String)
      */
     List<AbstractContextState> getContextStates(String descriptorHandle);
+
+    /**
+     * Finds all multi states of a certain handle.
+     *
+     * @param descriptorHandle the descriptor handle to seek.
+     * @return a list of the multi states of {@code descriptorHandle}.
+     */
+    List<AbstractMultiState> getMultiStates(String descriptorHandle);
 }

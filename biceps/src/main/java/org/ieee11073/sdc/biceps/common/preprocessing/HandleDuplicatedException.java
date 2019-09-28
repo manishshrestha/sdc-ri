@@ -1,5 +1,8 @@
 package org.ieee11073.sdc.biceps.common.preprocessing;
 
+/**
+ * Exception that can be thrown if a handle is duplicated during preprocessing.
+ */
 public class HandleDuplicatedException extends Exception {
     public HandleDuplicatedException() {
     }

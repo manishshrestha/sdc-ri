@@ -15,6 +15,9 @@ import java.math.BigInteger;
 import java.util.*;
 import java.util.stream.Collectors;
 
+/**
+ * Default implementation of {@linkplain MdibStorage}.
+ */
 public class MdibStorageImpl implements MdibStorage {
     private static final Logger LOG = LoggerFactory.getLogger(MdibStorageImpl.class);
 
@@ -136,15 +139,6 @@ public class MdibStorageImpl implements MdibStorage {
             return Collections.emptyList();
         }
         return util.exposeListOfType(entity.getStates(), AbstractContextState.class);
-    }
-
-    @Override
-    public <T extends AbstractMultiState> List<T> getMultiStates(String descriptorHandle, Class<T> stateClass) {
-        final MdibEntity entity = entities.get(descriptorHandle);
-        if (entity == null || entity.getStates().isEmpty()) {
-            return Collections.emptyList();
-        }
-        return util.exposeListOfType(entity.getStates(), stateClass);
     }
 
     @Override

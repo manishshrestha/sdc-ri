@@ -9,7 +9,8 @@ import java.util.UUID;
 /**
  * Container for MDIB version attributes.
  * <p>
- * {@linkplain MdibVersion} models sequence id, instance id and version number, enclosed in one class.
+ * This class models the MDIB version attributes that lack a separate container in the XML Schema.
+ * It models sequence id, instance id and version number, enclosed in one class.
  * {@linkplain MdibVersion} is an immutable class and provides means to
  * <ul>
  * <li>create versions with random UUID by {@link #create()}
@@ -48,7 +49,7 @@ public class MdibVersion {
     /**
      * Accepts an existing instance and resets the version counter to the given number
      * @param mdibVersion the version base.
-     * @param versionCounter
+     * @param versionCounter the version counter number to replace.
      * @return a new instance with same sequence and instance id as in {@code mdibVersion} plus a version counter
      * incremented by {@code versionCounter}.
      */
