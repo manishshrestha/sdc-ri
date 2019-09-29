@@ -46,13 +46,13 @@ public class VersionHandler implements DescriptionPreprocessingSegment, StatePre
     }
 
     @Override
-    public void beforeFirstModification(MdibStorage storage) {
+    public void beforeFirstModification(MdibDescriptionModifications modifications, MdibStorage storage) {
         updatedParents.clear();
         versionsWorkingCopy = objectUtil.deepCopy(versions);
     }
 
     @Override
-    public void afterLastModification(MdibStorage storage) {
+    public void afterLastModification(MdibDescriptionModifications modifications, MdibStorage storage) {
         versions = versionsWorkingCopy;
     }
 

@@ -180,7 +180,7 @@ class VersionHandlerTest {
         // When a child is inserted below a non-existing MDS
         final MdibDescriptionModifications vmdModifications = MdibDescriptionModifications.create();
         vmdModifications.insert(vmdDescriptor, vmdState, mdsHandle);
-        versionHandler.beforeFirstModification(mdibStorage);
+        versionHandler.beforeFirstModification(vmdModifications, mdibStorage);
 
         // Then expect an exception to be thrown
         assertThrows(Exception.class, () ->
@@ -367,19 +367,19 @@ class VersionHandlerTest {
     }
 
     private void apply(MdibStateModifications modifications) throws VersioningException {
-        versionHandler.beforeFirstModification(mdibStorage);
+        versionHandler.beforeFirstModification(modifications, mdibStorage);
         for (AbstractState modification : modifications.getStates()) {
             versionHandler.process(modification, mdibStorage);
         }
-        versionHandler.afterLastModification(mdibStorage);
+        versionHandler.afterLastModification(modifications, mdibStorage);
     }
 
     private void apply(MdibDescriptionModifications modifications, boolean applyOnStorage) throws VersioningException {
-        versionHandler.beforeFirstModification(mdibStorage);
+        versionHandler.beforeFirstModification(modifications, mdibStorage);
         for (MdibDescriptionModification modification : modifications.getModifications()) {
             versionHandler.process(modifications, modification, mdibStorage);
         }
-        versionHandler.afterLastModification(mdibStorage);
+        versionHandler.afterLastModification(modifications, mdibStorage);
 
         if (applyOnStorage == true) {
             mdibStorage.apply(modifications);

@@ -186,12 +186,13 @@ class MdibStoragePreprocessingChainTest {
                 mock(List.class));
 
         // When there is a regular call to process state modifications
-        chain.processDescriptionModifications(mock(MdibDescriptionModifications.class));
+        MdibDescriptionModifications expectedModifications = mock(MdibDescriptionModifications.class);
+        chain.processDescriptionModifications(expectedModifications);
 
         // Then expect before first and after last modification callbacks to be triggered for each segment
         segments.forEach(segment -> {
-            verify(segment, times(1)).beforeFirstModification(mockStorage);
-            verify(segment, times(1)).afterLastModification(mockStorage);
+            verify(segment, times(1)).beforeFirstModification(expectedModifications, mockStorage);
+            verify(segment, times(1)).afterLastModification(expectedModifications, mockStorage);
         });
     }
 
@@ -209,12 +210,13 @@ class MdibStoragePreprocessingChainTest {
                 segments);
 
         // When there is a regular call to process state modifications
-        chain.processStateModifications(mock(MdibStateModifications.class));
+        MdibStateModifications modifications = mock(MdibStateModifications.class);
+        chain.processStateModifications(modifications);
 
         // Then expect before first and after last modification callbacks to be triggered for each segment
         segments.forEach(segment -> {
-            verify(segment, times(1)).beforeFirstModification(mockStorage);
-            verify(segment, times(1)).afterLastModification(mockStorage);
+            verify(segment, times(1)).beforeFirstModification(modifications, mockStorage);
+            verify(segment, times(1)).afterLastModification(modifications,mockStorage);
         });
     }
 }

@@ -20,7 +20,7 @@ public class DuplicateChecker implements DescriptionPreprocessingSegment {
     }
 
     @Override
-    public void beforeFirstModification(MdibStorage mdibStorage) {
+    public void beforeFirstModification(MdibDescriptionModifications modifications, MdibStorage mdibStorage) {
         handleCache.clear();
     }
 

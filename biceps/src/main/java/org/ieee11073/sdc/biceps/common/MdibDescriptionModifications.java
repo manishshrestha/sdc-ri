@@ -369,6 +369,16 @@ public class MdibDescriptionModifications {
     }
 
     /**
+     * Empties all modifications.
+     */
+    public void clear() {
+        modifications.clear();
+        insertedHandles.clear();
+        updatedHandles.clear();
+        deletedHandles.clear();
+    }
+
+    /**
      * An entry that allows to bundle all single-state modification information in a single element.
      */
     public static class Entry {

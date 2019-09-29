@@ -1,6 +1,7 @@
 package org.ieee11073.sdc.biceps.provider.access.factory;
 
 import org.ieee11073.sdc.biceps.provider.access.LocalMdibAccess;
+import org.ieee11073.sdc.biceps.provider.preprocessing.VersionHandler;
 
 /**
  * Factory to create {@linkplain LocalMdibAccess} instances.
@@ -13,7 +14,7 @@ public interface LocalMdibAccessFactory {
      * <ol>
      * <li>{@link org.ieee11073.sdc.biceps.common.preprocessing.DuplicateChecker}
      * <li>{@link org.ieee11073.sdc.biceps.common.preprocessing.TypeConsistencyChecker}
-     * <li>{@link org.ieee11073.sdc.biceps.provider.preprocessing.VersionHandler}
+     * <li>{@link VersionHandler}
      * </ol>
      *
      * @return the local mdib access instance.
