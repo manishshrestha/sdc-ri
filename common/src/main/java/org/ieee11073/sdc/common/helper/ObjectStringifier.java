@@ -8,7 +8,7 @@ import java.util.SortedMap;
 import java.util.function.Predicate;
 
 /**
- * Utility to stringify objects in conformance with the SDCri coding conventions.
+ * Utility to stringifyMap objects in conformance with the SDCri coding conventions.
  */
 public class ObjectStringifier {
     /**
@@ -16,23 +16,35 @@ public class ObjectStringifier {
      * <p>
      * This function considers every field that is annotated with {@link Stringified}.
      *
-     * @param obj the object to stringify.
+     * @param obj the object to stringifyMap.
      * @param <T> any object.
      * @return the stringified object in conformance with the SDCri coding conventions.
      */
     public static <T> String stringify(T obj) {
-        return stringifyWithFilter(obj, field -> field.isAnnotationPresent(Stringified.class));
+        return stringifyWithFilter(obj, null, field -> field.isAnnotationPresent(Stringified.class));
+    }
+
+    /**
+     * Stringifies annotated fields of a given object and appends defined map.
+     *
+     * @param obj       the object to stringifyMap.
+     * @param keyValues key-values to be additionally appended.
+     * @param <T>       any object.
+     * @return the stringified object in conformance with the SDCri coding conventions.
+     */
+    public static <T> String stringify(T obj, SortedMap<String, Object> keyValues) {
+        return stringifyWithFilter(obj, keyValues, field -> field.isAnnotationPresent(Stringified.class));
     }
 
     /**
      * Stringifies some fields of a given object.
      *
-     * @param obj the object to stringify.
+     * @param obj the object to stringifyMap.
      * @param <T> any object.
      * @return the stringified object in conformance with the SDCri coding conventions.
      */
     public static <T> String stringify(T obj, String[] fieldNames) {
-        return stringifyWithFilter(obj, field -> {
+        return stringifyWithFilter(obj, null, field -> {
             for (String fieldName : fieldNames) {
                 if (field.getName().equals(fieldName)) {
                     return true;
@@ -43,14 +55,33 @@ public class ObjectStringifier {
     }
 
     /**
-     * Stringifies kex-value pairs from a map.
+     * Stringifies some fields of a given object and appends defined map.
+     *
+     * @param obj       the object to stringifyMap.
+     * @param keyValues key-values to be additionally appended.
+     * @param <T>       any object.
+     * @return the stringified object in conformance with the SDCri coding conventions.
+     */
+    public static <T> String stringify(T obj, String[] fieldNames, SortedMap<String, Object> keyValues) {
+        return stringifyWithFilter(obj, keyValues, field -> {
+            for (String fieldName : fieldNames) {
+                if (field.getName().equals(fieldName)) {
+                    return true;
+                }
+            }
+            return false;
+        });
+    }
+
+    /**
+     * Stringifies key-value pairs from a map.
      *
      * @param obj       the object used to access the class name.
      * @param keyValues key-value pairs to put as properties of the output-string
      * @param <T>       any object.
      * @return
      */
-    public static <T> String stringify(T obj, SortedMap<String, Object> keyValues) {
+    public static <T> String stringifyMap(T obj, SortedMap<String, Object> keyValues) {
         StringBuffer stringBuffer = start(obj);
         appendMapValues(stringBuffer, keyValues);
         return finish(stringBuffer);
@@ -62,12 +93,12 @@ public class ObjectStringifier {
      * In order to filter out certain fields please use either {@link #stringify(Object)} or
      * {@link #stringify(Object, String[])}.
      *
-     * @param obj the object to stringify.
+     * @param obj the object to stringifyMap.
      * @param <T> any object.
      * @return the stringified object in conformance with the SDCri coding conventions.
      */
     public static <T> String stringifyAll(T obj) {
-        return stringifyWithFilter(obj, field -> !field.getName().startsWith("this$"));
+        return stringifyWithFilter(obj, null, field -> !field.getName().startsWith("this$"));
     }
 
     private static <T> void appendMapValues(StringBuffer stringBuffer, SortedMap<String, Object> keyValues) {
@@ -83,13 +114,18 @@ public class ObjectStringifier {
         }
     }
 
-    private static <T> String stringifyWithFilter(T obj, Predicate<Field> filter) {
+    private static <T> String stringifyWithFilter(T obj, @Nullable SortedMap<String, Object> keyValues, Predicate<Field> filter) {
         StringBuffer stringBuffer = start(obj);
 
         try {
             appendToStringProperties(stringBuffer, obj, filter);
         } catch (IllegalAccessException e) {
             throw new RuntimeException(e);
+        }
+
+        if (keyValues != null && !keyValues.isEmpty()) {
+            stringBuffer.append(';');
+            appendMapValues(stringBuffer, keyValues);
         }
 
         return finish(stringBuffer);

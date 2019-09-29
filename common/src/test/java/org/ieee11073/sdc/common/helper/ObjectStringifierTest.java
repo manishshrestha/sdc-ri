@@ -4,7 +4,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import javax.annotation.Nullable;
-
 import java.util.SortedMap;
 import java.util.TreeMap;
 
@@ -54,6 +53,20 @@ class ObjectStringifierTest {
         }
     }
 
+    @Test
+    void stringifyByAnnotationWithMap() {
+
+        String expectedString = String.format("%s(anotherString=%s;foo1=bar;foo2=80)",
+                TestClassDerived.class.getSimpleName(),
+                testObject.getAnotherString());
+
+        SortedMap<String, Object> map = new TreeMap<>();
+        map.put("foo1", "bar");
+        map.put("foo2", 80);
+
+        assertEquals(expectedString, ObjectStringifier.stringify(testObject, map));
+
+    }
 
     @Test
     void stringifyFieldNames() {
@@ -99,7 +112,7 @@ class ObjectStringifierTest {
 
         String expectedString = String.format("%s(foo1=Bar;foo2=null;foo3=100)", TestClassDerived.class.getSimpleName());
 
-        assertEquals(expectedString, ObjectStringifier.stringify(testObject, map));
+        assertEquals(expectedString, ObjectStringifier.stringifyMap(testObject, map));
     }
 
     class TestClassBase {
