@@ -146,7 +146,7 @@ class MdibStoragePreprocessingChainTest {
             // Then expect every segment to be processed once
             for (StatePreprocessingSegment segment : segments) {
                 verify(segment, times(1))
-                        .process(modifications.getStates().get(0), mockStorage);
+                        .process(modifications, modifications.getStates().get(0), mockStorage);
             }
         }
 
@@ -154,7 +154,7 @@ class MdibStoragePreprocessingChainTest {
             // When there is a call that causes an exception during processing of segment2
             final String expectedErrorMessage = "foobarMessage";
             doThrow(new Exception(expectedErrorMessage)).when(segment2)
-                    .process(modifications.getStates().get(0), mockStorage);
+                    .process(modifications, modifications.getStates().get(0), mockStorage);
 
             // Then expect a PreprocessingException to be thrown
             try {
@@ -168,7 +168,7 @@ class MdibStoragePreprocessingChainTest {
 
             // Then expect segment3 not to be processed
             verify(segment3, times(1)) // still one interaction only
-                    .process(modifications.getStates().get(0), mockStorage);
+                    .process(modifications, modifications.getStates().get(0), mockStorage);
         }
     }
 

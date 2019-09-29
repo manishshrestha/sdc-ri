@@ -12,6 +12,9 @@ import org.ieee11073.sdc.biceps.common.storage.factory.MdibStoragePreprocessingC
 import org.ieee11073.sdc.biceps.common.storage.MdibStorage;
 import org.ieee11073.sdc.biceps.common.storage.MdibStorageImpl;
 import org.ieee11073.sdc.biceps.common.storage.MdibStoragePreprocessingChain;
+import org.ieee11073.sdc.biceps.consumer.access.RemoteMdibAccess;
+import org.ieee11073.sdc.biceps.consumer.access.RemoteMdibAccessImpl;
+import org.ieee11073.sdc.biceps.consumer.access.factory.RemoteMdibAccessFactory;
 import org.ieee11073.sdc.biceps.provider.access.LocalMdibAccess;
 import org.ieee11073.sdc.biceps.provider.access.LocalMdibAccessImpl;
 import org.ieee11073.sdc.biceps.provider.access.factory.LocalMdibAccessFactory;
@@ -41,13 +44,9 @@ public class DefaultBicepsModule extends AbstractModule {
         install(new FactoryModuleBuilder()
                 .implement(LocalMdibAccess.class, LocalMdibAccessImpl.class)
                 .build(LocalMdibAccessFactory.class));
-//
-//        install(new FactoryModuleBuilder()
-//                .implement(MdibAccess.class, MdibStorageNotificationAccess.class)
-//                .build(MdibAccessFactory.class));
 
-//        install(new FactoryModuleBuilder()
-//                .implement(MdibQueue.class, MdibQueueImpl.class)
-//                .build(MdibQueueFactory.class));
+        install(new FactoryModuleBuilder()
+                .implement(RemoteMdibAccess.class, RemoteMdibAccessImpl.class)
+                .build(RemoteMdibAccessFactory.class));
     }
 }

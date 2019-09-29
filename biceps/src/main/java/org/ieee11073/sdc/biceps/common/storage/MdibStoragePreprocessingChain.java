@@ -73,7 +73,7 @@ public class MdibStoragePreprocessingChain {
         for (AbstractState modification : modifications.getStates()) {
             for (StatePreprocessingSegment chainSegment : stateChainSegments) {
                 try {
-                    chainSegment.process(modification, mdibStorage);
+                    chainSegment.process(modifications, modification, mdibStorage);
                 } catch (Exception e) {
                     final Optional<AbstractMultiState> multiState = typeValidator.toMultiState(modification);
                     String handle = modification.getDescriptorHandle();

@@ -25,23 +25,21 @@ public class MdibStateModificationsTest {
     }
 
     @Test
-    public void differentStateTypes() throws NoSuchMethodException, InvocationTargetException {
+    public void differentStateTypes() {
         int stateCount = 10;
         Collection<MdibStateModifications.Type> changeTypes = EnumSet.allOf(MdibStateModifications.Type.class);
         for (MdibStateModifications.Type changeType : changeTypes) {
             runTestForType(changeType, stateCount);
-        };
+        }
     }
 
-    private void runTestForType(MdibStateModifications.Type type, int stateCount) throws NoSuchMethodException, InvocationTargetException {
+    private void runTestForType(MdibStateModifications.Type type, int stateCount) {
         List<AbstractState> states = new ArrayList<>();
-        try {
-            for (int i = 0; i < stateCount; ++i) {
-                states.add(MockModelFactory.createState(handleGenerator.next(), type.getChangeBaseClass()));
-            }
-        } catch (IllegalAccessException | InstantiationException e) {
-            Assertions.fail(e.getMessage());
+
+        for (int i = 0; i < stateCount; ++i) {
+            states.add(MockModelFactory.createState(handleGenerator.next(), type.getChangeBaseClass()));
         }
+
         assertThat(states.size(), is(stateCount));
 
         final MdibStateModifications stateModifications = MdibStateModifications.create(type);
@@ -53,7 +51,7 @@ public class MdibStateModificationsTest {
     }
 
     @Test
-    public void typeMismatch() throws InstantiationException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
+    public void typeMismatch()  {
         final List<AbstractState> validMismatch = Arrays.asList(
                 MockModelFactory.createState(handleGenerator.next(), NumericMetricState.class),
                 MockModelFactory.createState(handleGenerator.next(), StringMetricState.class),
@@ -71,10 +69,8 @@ public class MdibStateModificationsTest {
         try {
             runTestForType(MdibStateModifications.Type.ALERT, invalidMismatch);
             Assertions.fail("Invalid type mismatch as ClassCastException expected, but none was thrown ");
-        }
-        catch (ClassCastException e) {
-        }
-        catch (Exception e) {
+        } catch (ClassCastException e) {
+        } catch (Exception e) {
             Assertions.fail("Unexpected exception was thrown with message: " + e.getMessage());
         }
     }

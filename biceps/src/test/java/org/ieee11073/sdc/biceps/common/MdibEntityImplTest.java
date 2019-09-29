@@ -2,7 +2,6 @@ package org.ieee11073.sdc.biceps.common;
 
 import com.google.inject.Injector;
 import org.ieee11073.sdc.biceps.UnitTestUtil;
-import org.ieee11073.sdc.biceps.common.MdibEntity;
 import org.ieee11073.sdc.biceps.common.factory.MdibEntityFactory;
 import org.ieee11073.sdc.biceps.model.participant.MdibVersion;
 import org.ieee11073.sdc.biceps.model.participant.PatientContextDescriptor;
@@ -31,7 +30,7 @@ public class MdibEntityImplTest {
     private MdibEntity mdibEntity;
 
     @BeforeEach
-    public void setUp() throws InstantiationException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
+    public void setUp() {
         Injector injector = UT.getInjector();
         mdibEntityFactory = injector.getInstance(MdibEntityFactory.class);
         expectedDescriptorHandle = "descrHandle";
@@ -41,13 +40,7 @@ public class MdibEntityImplTest {
                 Collections.emptyList(),
                 MockModelFactory.createDescriptor(expectedDescriptorHandle, PatientContextDescriptor.class),
                 expectedStateHandles.stream()
-                        .map(handle -> {
-                            try {
-                                return MockModelFactory.createContextState(handle, expectedDescriptorHandle, PatientContextState.class);
-                            } catch (IllegalAccessException | InstantiationException | NoSuchMethodException | InvocationTargetException e) {
-                                throw new RuntimeException("Creation of context state failed. Handle: " + handle);
-                            }
-                        })
+                        .map(handle -> MockModelFactory.createContextState(handle, expectedDescriptorHandle, PatientContextState.class))
                         .collect(Collectors.toList()),
                 MdibVersion.create());
     }

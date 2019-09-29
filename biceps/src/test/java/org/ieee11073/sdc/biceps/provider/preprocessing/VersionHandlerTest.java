@@ -369,7 +369,7 @@ class VersionHandlerTest {
     private void apply(MdibStateModifications modifications) throws VersioningException {
         versionHandler.beforeFirstModification(modifications, mdibStorage);
         for (AbstractState modification : modifications.getStates()) {
-            versionHandler.process(modification, mdibStorage);
+            versionHandler.process(modifications, modification, mdibStorage);
         }
         versionHandler.afterLastModification(modifications, mdibStorage);
     }

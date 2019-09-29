@@ -57,6 +57,16 @@ public class VersionHandler implements DescriptionPreprocessingSegment, StatePre
     }
 
     @Override
+    public void beforeFirstModification(MdibStateModifications modifications, MdibStorage storage) {
+        versionsWorkingCopy = objectUtil.deepCopy(versions);
+    }
+
+    @Override
+    public void afterLastModification(MdibStateModifications modifications, MdibStorage storage) {
+        versions = versionsWorkingCopy;
+    }
+
+    @Override
     public void process(MdibDescriptionModifications modifications,
                         MdibDescriptionModification modification,
                         MdibStorage storage) throws VersioningException {
@@ -74,7 +84,7 @@ public class VersionHandler implements DescriptionPreprocessingSegment, StatePre
     }
 
     @Override
-    public void process(AbstractState state, MdibStorage storage) throws VersioningException {
+    public void process(MdibStateModifications modifications, AbstractState state, MdibStorage storage) throws VersioningException {
         final Optional<AbstractMultiState> multiState = mdibTypeValidator.toMultiState(state);
         if (multiState.isPresent()) {
             VersionPair versionPair;
