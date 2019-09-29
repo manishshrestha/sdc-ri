@@ -8,6 +8,7 @@ import org.ieee11073.sdc.biceps.common.access.WriteDescriptionResult;
 import org.ieee11073.sdc.biceps.common.access.WriteStateResult;
 import org.ieee11073.sdc.biceps.model.participant.*;
 
+import javax.annotation.Nullable;
 import java.math.BigInteger;
 import java.util.Collection;
 import java.util.List;
@@ -22,19 +23,33 @@ import java.util.Optional;
 public interface MdibStorage {
     /**
      * Applies description modifications on this object regardless of any consistency checks.
+     * <p>
+     * Versions are applied without being verified.
      *
+     * @param mdibVersion              the MDIB version to apply.
+     * @param mdDescriptionVersion     the MD description version to apply. Value null leaves version as is.
+     * @param mdStateVersion           the MD state version to apply. Value null leaves version as is.
      * @param descriptionModifications the modifications to apply.
      * @return a result set with inserted, updated and deleted entities.
      */
-    WriteDescriptionResult apply(MdibDescriptionModifications descriptionModifications);
+    WriteDescriptionResult apply(MdibVersion mdibVersion,
+                                 @Nullable BigInteger mdDescriptionVersion,
+                                 @Nullable BigInteger mdStateVersion,
+                                 MdibDescriptionModifications descriptionModifications);
 
     /**
      * Applies state modifications on this object regardless of any consistency checks.
+     * <p>
+     * Versions are applied without being verified.
      *
+     * @param mdibVersion        the MDIB version to apply.
+     * @param mdStateVersion     the MD state version to apply. Value null leaves version as is.
      * @param stateModifications the modifications to apply.
      * @return a result set with updated states.
      */
-    WriteStateResult apply(MdibStateModifications stateModifications);
+    WriteStateResult apply(MdibVersion mdibVersion,
+                           @Nullable BigInteger mdStateVersion,
+                           MdibStateModifications stateModifications);
 
     /**
      * The latest known MDIB version.

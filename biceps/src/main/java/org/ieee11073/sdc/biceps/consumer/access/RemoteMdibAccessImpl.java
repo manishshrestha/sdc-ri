@@ -20,12 +20,15 @@ import org.ieee11073.sdc.biceps.model.participant.AbstractContextState;
 import org.ieee11073.sdc.biceps.model.participant.AbstractDescriptor;
 import org.ieee11073.sdc.biceps.model.participant.AbstractState;
 import org.ieee11073.sdc.biceps.model.participant.MdibVersion;
-import org.ieee11073.sdc.biceps.provider.preprocessing.VersionHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nullable;
 import java.math.BigInteger;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
@@ -64,21 +67,30 @@ public class RemoteMdibAccessImpl implements RemoteMdibAccess {
                 Arrays.asList(duplicateChecker, typeConsistencyChecker),
                 Arrays.asList(versionDuplicateHandler));
 
-        this.writeUtil = new WriteUtil(eventDistributor, mdibStorage, localMdibAccessPreprocessing, readWriteLock, this);
+        this.writeUtil = new WriteUtil(eventDistributor, localMdibAccessPreprocessing, readWriteLock, this);
     }
 
     @Override
-    public WriteDescriptionResult writeDescription(MdibDescriptionModifications descriptionModifications) throws PreprocessingException {
-        // No copy here as data is read from network source
+    public WriteDescriptionResult writeDescription(MdibVersion mdibVersion,
+                                                   @Nullable BigInteger mdDescriptionVersion,
+                                                   @Nullable BigInteger mdStateVersion,
+                                                   MdibDescriptionModifications mdibDescriptionModifications) throws PreprocessingException {
+        // No copy of mdibDescriptionModifications here as data is read from network source
         // SDCri takes over responsibility to not change elements after write
-        return writeUtil.writeDescription(descriptionModifications);
+        return writeUtil.writeDescription(descriptionModifications ->
+                        mdibStorage.apply(mdibVersion, mdDescriptionVersion, mdStateVersion, descriptionModifications),
+                mdibDescriptionModifications);
     }
 
     @Override
-    public WriteStateResult writeStates(MdibStateModifications mdibStateModifications) throws PreprocessingException {
-        // No copy here as data is read from network source
+    public WriteStateResult writeStates(MdibVersion mdibVersion,
+                                        MdibStateModifications mdibStateModifications) throws PreprocessingException {
+        // No copy of mdibStateModifications here as data is read from network source
         // SDCri takes over responsibility to not change elements after write
-        return writeUtil.writeStates(mdibStateModifications);
+        // return writeUtil.writeStates(mdibStateModifications);
+        return writeUtil.writeStates(stateModifications ->
+                        mdibStorage.apply(mdibVersion, null, stateModifications),
+                mdibStateModifications);
     }
 
     @Override

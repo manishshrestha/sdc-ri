@@ -4,6 +4,10 @@ import org.ieee11073.sdc.biceps.common.MdibDescriptionModifications;
 import org.ieee11073.sdc.biceps.common.MdibStateModifications;
 import org.ieee11073.sdc.biceps.common.access.*;
 import org.ieee11073.sdc.biceps.common.storage.PreprocessingException;
+import org.ieee11073.sdc.biceps.model.participant.MdibVersion;
+
+import javax.annotation.Nullable;
+import java.math.BigInteger;
 
 /**
  * MDIB read and write access for the BICEPS consumer side.
@@ -17,12 +21,18 @@ public interface RemoteMdibAccess extends MdibAccess, ReadTransactionProvider, M
      * <em>Attention: description modifications are expensive. Even if this operation allows to change states, it
      * should only be used for changes that affect descriptors.</em>
      *
+     * @param mdibVersion                  the MDIB version to apply.
+     * @param mdDescriptionVersion         the MD description version to apply. Leave null if unknown.
+     * @param mdStateVersion               the MD state version to apply. Leave null if unknown.
      * @param mdibDescriptionModifications a set of insertions, updates and deletes.
      * @return a write result including inserted, updates and deleted entities.
      * @throws PreprocessingException if something goes wrong during preprocessing, i.e., the consistency of the MDIB
      *                                would be violated.
      */
-    WriteDescriptionResult writeDescription(MdibDescriptionModifications mdibDescriptionModifications) throws PreprocessingException;
+    WriteDescriptionResult writeDescription(MdibVersion mdibVersion,
+                                            @Nullable BigInteger mdDescriptionVersion,
+                                            @Nullable BigInteger mdStateVersion,
+                                            MdibDescriptionModifications mdibDescriptionModifications) throws PreprocessingException;
 
     /**
      * Processes the state modifications object, stores the data internally and triggers an event.
@@ -31,10 +41,12 @@ public interface RemoteMdibAccess extends MdibAccess, ReadTransactionProvider, M
      * <p>
      * <em>Hint: this function cheap in terms of runtime and should be used for state changes.</em>
      *
+     * @param mdibVersion            the MDIB version to apply.
      * @param mdibStateModifications a set of state updates.
      * @return a write result including the updated entities.
      * @throws PreprocessingException if something goes wrong during preprocessing, i.e., the consistency of the MDIB
      *                                would be violated.
      */
-    WriteStateResult writeStates(MdibStateModifications mdibStateModifications) throws PreprocessingException;
+    WriteStateResult writeStates(MdibVersion mdibVersion,
+                                 MdibStateModifications mdibStateModifications) throws PreprocessingException;
 }

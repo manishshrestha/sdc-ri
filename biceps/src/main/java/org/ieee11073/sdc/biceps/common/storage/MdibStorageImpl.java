@@ -11,6 +11,7 @@ import org.ieee11073.sdc.biceps.model.participant.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nullable;
 import java.math.BigInteger;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -38,7 +39,7 @@ public class MdibStorageImpl implements MdibStorage {
     MdibStorageImpl(MdibEntityFactory entityFactory,
                     MdibStorageUtil util,
                     MdibTypeValidator typeValidator) {
-        this(MdibVersion.create(), entityFactory, util, typeValidator);
+        this(MdibVersion.create(), BigInteger.valueOf(-1), BigInteger.valueOf(-1), entityFactory, util, typeValidator);
     }
 
     @AssistedInject
@@ -46,9 +47,19 @@ public class MdibStorageImpl implements MdibStorage {
                     MdibEntityFactory entityFactory,
                     MdibStorageUtil util,
                     MdibTypeValidator typeValidator) {
+        this(initialMdibVersion, BigInteger.valueOf(-1), BigInteger.valueOf(-1), entityFactory, util, typeValidator);
+    }
+
+    @AssistedInject
+    MdibStorageImpl(@Assisted MdibVersion initialMdibVersion,
+                    @Assisted("mdDescriptionVersion") BigInteger mdDescriptionVersion,
+                    @Assisted("mdStateVersion") BigInteger mdStateVersion,
+                    MdibEntityFactory entityFactory,
+                    MdibStorageUtil util,
+                    MdibTypeValidator typeValidator) {
         this.mdibVersion = initialMdibVersion;
-        this.mdDescriptionVersion = BigInteger.ZERO;
-        this.mdStateVersion = BigInteger.ZERO;
+        this.mdDescriptionVersion = mdDescriptionVersion;
+        this.mdStateVersion = mdStateVersion;
         this.entityFactory = entityFactory;
         this.util = util;
         this.typeValidator = typeValidator;
@@ -151,10 +162,13 @@ public class MdibStorageImpl implements MdibStorage {
     }
 
     @Override
-    public WriteDescriptionResult apply(MdibDescriptionModifications descriptionModifications) {
-        mdibVersion = MdibVersion.increment(mdibVersion);
-        mdDescriptionVersion = mdDescriptionVersion.add(BigInteger.ONE);
-        mdStateVersion = mdStateVersion.add(BigInteger.ONE);
+    public WriteDescriptionResult apply(MdibVersion mdibVersion,
+                                        @Nullable BigInteger mdDescriptionVersion,
+                                        @Nullable BigInteger mdStateVersion,
+                                        MdibDescriptionModifications descriptionModifications) {
+        this.mdibVersion = mdibVersion;
+        Optional.ofNullable(mdDescriptionVersion).ifPresent(version -> this.mdDescriptionVersion = version);
+        Optional.ofNullable(mdDescriptionVersion).ifPresent(version -> this.mdStateVersion = version);
 
         final List<MdibEntity> insertedEntities = new ArrayList<>();
         final List<MdibEntity> updatedEntities = new ArrayList<>();
@@ -240,15 +254,35 @@ public class MdibStorageImpl implements MdibStorage {
     }
 
     @Override
-    public WriteStateResult apply(MdibStateModifications stateModifications) {
-        mdibVersion = MdibVersion.increment(mdibVersion);
-        mdStateVersion = mdStateVersion.add(BigInteger.ONE);
+    public WriteStateResult apply(MdibVersion mdibVersion,
+                                  @Nullable BigInteger mdStateVersion,
+                                  MdibStateModifications stateModifications) {
+        this.mdibVersion = mdibVersion;
+        Optional.ofNullable(mdStateVersion).ifPresent(version -> this.mdStateVersion = version);
+
+        MdibDescriptionModifications descriptionModifications = null;
 
         final List<AbstractState> modifiedStates = new ArrayList<>();
         for (AbstractState modification : stateModifications.getStates()) {
             modifiedStates.add(modification);
             final MdibEntity mdibEntity = entities.get(modification.getDescriptorHandle());
-            if (mdibEntity != null) {
+            if (mdibEntity == null) {
+                if (descriptionModifications == null) {
+                    descriptionModifications = MdibDescriptionModifications.create();
+                }
+                AbstractDescriptor descr;
+                try {
+                    descr = typeValidator.resolveDescriptorType(modification.getClass())
+                            .getConstructor().newInstance();
+
+                } catch (Exception e) {
+                    LOG.warn(String.format("Ignore modification. Reason: could not instantiate descriptor type for handle %s",
+                            modification.getDescriptorHandle()), e);
+                    continue;
+                }
+                descr.setHandle(modification.getDescriptorHandle());
+                descriptionModifications.insert(descr, modification);
+            } else
                 mdibEntity
                         .doIfSingleState(state ->
                                 entities.put(mdibEntity.getHandle(),
@@ -266,7 +300,6 @@ public class MdibStorageImpl implements MdibStorage {
                             entities.put(mdibEntity.getHandle(), entityFactory.replaceStates(mdibEntity,
                                     Collections.unmodifiableList(newStates)));
                         });
-            }
         }
 
         return new WriteStateResult(mdibVersion, modifiedStates);

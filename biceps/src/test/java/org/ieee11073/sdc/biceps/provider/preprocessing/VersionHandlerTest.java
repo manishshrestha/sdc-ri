@@ -15,6 +15,7 @@ import java.util.Arrays;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.mock;
 
 class VersionHandlerTest {
     private static final UnitTestUtil UT = new UnitTestUtil(new DefaultBicepsConfigModule() {
@@ -382,7 +383,7 @@ class VersionHandlerTest {
         versionHandler.afterLastModification(modifications, mdibStorage);
 
         if (applyOnStorage == true) {
-            mdibStorage.apply(modifications);
+            mdibStorage.apply(mock(MdibVersion.class), mock(BigInteger.class), mock(BigInteger.class), modifications);
         }
     }
 

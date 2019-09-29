@@ -4,8 +4,6 @@ package org.ieee11073.sdc.biceps.provider.access;
 import com.google.inject.Injector;
 import org.ieee11073.sdc.biceps.UnitTestUtil;
 import org.ieee11073.sdc.biceps.common.*;
-import org.ieee11073.sdc.biceps.provider.access.LocalMdibAccess;
-import org.ieee11073.sdc.biceps.testutil.MdibAccessObserverSpy;
 import org.ieee11073.sdc.biceps.common.access.WriteDescriptionResult;
 import org.ieee11073.sdc.biceps.common.access.WriteStateResult;
 import org.ieee11073.sdc.biceps.common.event.DescriptionModificationMessage;
@@ -13,6 +11,7 @@ import org.ieee11073.sdc.biceps.guice.DefaultBicepsConfigModule;
 import org.ieee11073.sdc.biceps.model.participant.*;
 import org.ieee11073.sdc.biceps.provider.access.factory.LocalMdibAccessFactory;
 import org.ieee11073.sdc.biceps.testutil.Handles;
+import org.ieee11073.sdc.biceps.testutil.MdibAccessObserverSpy;
 import org.ieee11073.sdc.biceps.testutil.MockModelFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -200,7 +199,7 @@ public class LocalMdibAccessImplTest {
 
             // Then expect the version changes to be reflected in the local mdib access
             expectedMdibVersion = MdibVersion.increment(expectedMdibVersion);
-            // expectedMdDescrVersion = expectedMdDescrVersion;
+            // expectedMdDescrVersion = expectedMdDescrVersion; -> state was written, hence no increment
             expectedMdStateVersion = expectedMdStateVersion.add(BigInteger.ONE);
             assertEquals(mdibAccess.getMdibVersion(), writeStateResult.getMdibVersion());
             assertEquals(expectedMdibVersion, mdibAccess.getMdibVersion());

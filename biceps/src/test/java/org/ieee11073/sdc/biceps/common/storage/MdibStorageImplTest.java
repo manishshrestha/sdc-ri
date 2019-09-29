@@ -21,6 +21,7 @@ import java.util.List;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.mockito.Mockito.mock;
 
 public class MdibStorageImplTest {
     private static final UnitTestUtil UT = new UnitTestUtil();
@@ -68,7 +69,7 @@ public class MdibStorageImplTest {
                 ),
                 Handles.SYSTEMCONTEXT_0);
 
-        mdibStorage.apply(modifications);
+        mdibStorage.apply(mock(MdibVersion.class), mock(BigInteger.class), mock(BigInteger.class), modifications);
     }
 
     private void testWithVersion(List<String> testedHandles, BigInteger version) {
@@ -155,7 +156,7 @@ public class MdibStorageImplTest {
                         MockModelFactory.createContextState(Handles.CONTEXT_0, Handles.CONTEXTDESCRIPTOR_0, PatientContextState.class),
                         MockModelFactory.createContextState(Handles.CONTEXT_1, Handles.CONTEXTDESCRIPTOR_0, PatientContextState.class)));
 
-        mdibStorage.apply(descriptionModifications);
+        mdibStorage.apply(mock(MdibVersion.class), mock(BigInteger.class), mock(BigInteger.class), descriptionModifications);
 
         testWithVersion(testedHandles, BigInteger.ZERO);
 
@@ -169,7 +170,7 @@ public class MdibStorageImplTest {
         } catch (Exception e) {
         }
 
-        mdibStorage.apply(stateModifications);
+        mdibStorage.apply(mock(MdibVersion.class), mock(BigInteger.class), stateModifications);
         testWithVersion(testedHandles, BigInteger.ZERO, BigInteger.ONE);
 
         testedHandles = Arrays.asList(Handles.CONTEXTDESCRIPTOR_0);
@@ -178,7 +179,7 @@ public class MdibStorageImplTest {
 
         stateModifications.add(MockModelFactory.createContextState(Handles.CONTEXT_0, Handles.CONTEXTDESCRIPTOR_0, BigInteger.ONE, PatientContextState.class));
         stateModifications.add(MockModelFactory.createContextState(Handles.CONTEXT_1, Handles.CONTEXTDESCRIPTOR_0, BigInteger.ONE, PatientContextState.class));
-        mdibStorage.apply(stateModifications);
+        mdibStorage.apply(mock(MdibVersion.class), mock(BigInteger.class), stateModifications);
 
         testWithVersion(testedHandles, BigInteger.ZERO, BigInteger.ONE);
     }

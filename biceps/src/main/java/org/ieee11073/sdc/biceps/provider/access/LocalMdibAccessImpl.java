@@ -1,18 +1,20 @@
 package org.ieee11073.sdc.biceps.provider.access;
 
 import com.google.inject.assistedinject.AssistedInject;
-import org.ieee11073.sdc.biceps.common.*;
+import org.ieee11073.sdc.biceps.common.MdibDescriptionModifications;
+import org.ieee11073.sdc.biceps.common.MdibEntity;
+import org.ieee11073.sdc.biceps.common.MdibStateModifications;
 import org.ieee11073.sdc.biceps.common.access.*;
 import org.ieee11073.sdc.biceps.common.access.factory.ReadTransactionFactory;
 import org.ieee11073.sdc.biceps.common.access.helper.WriteUtil;
 import org.ieee11073.sdc.biceps.common.event.Distributor;
-import org.ieee11073.sdc.biceps.common.storage.factory.MdibStorageFactory;
-import org.ieee11073.sdc.biceps.common.storage.factory.MdibStoragePreprocessingChainFactory;
 import org.ieee11073.sdc.biceps.common.preprocessing.DuplicateChecker;
 import org.ieee11073.sdc.biceps.common.preprocessing.TypeConsistencyChecker;
 import org.ieee11073.sdc.biceps.common.storage.MdibStorage;
 import org.ieee11073.sdc.biceps.common.storage.MdibStoragePreprocessingChain;
 import org.ieee11073.sdc.biceps.common.storage.PreprocessingException;
+import org.ieee11073.sdc.biceps.common.storage.factory.MdibStorageFactory;
+import org.ieee11073.sdc.biceps.common.storage.factory.MdibStoragePreprocessingChainFactory;
 import org.ieee11073.sdc.biceps.model.participant.AbstractContextState;
 import org.ieee11073.sdc.biceps.model.participant.AbstractDescriptor;
 import org.ieee11073.sdc.biceps.model.participant.AbstractState;
@@ -43,6 +45,10 @@ public class LocalMdibAccessImpl implements LocalMdibAccess {
 
     private final WriteUtil writeUtil;
 
+    private MdibVersion mdibVersion;
+    private BigInteger mdDescriptionVersion;
+    private BigInteger mdStateVersion;
+
     @AssistedInject
     LocalMdibAccessImpl(Distributor eventDistributor,
                         MdibStoragePreprocessingChainFactory chainFactory,
@@ -53,8 +59,12 @@ public class LocalMdibAccessImpl implements LocalMdibAccess {
                         VersionHandler versionHandler,
                         TypeConsistencyChecker typeConsistencyChecker,
                         CopyManager copyManager) {
+        mdibVersion = MdibVersion.create();
+        mdDescriptionVersion = BigInteger.ZERO;
+        mdStateVersion = BigInteger.ZERO;
+
         this.eventDistributor = eventDistributor;
-        this.mdibStorage = mdibStorageFactory.createMdibStorage();
+        this.mdibStorage = mdibStorageFactory.createMdibStorage(mdibVersion, BigInteger.ZERO, BigInteger.ZERO);
         this.readWriteLock = readWriteLock;
         this.readTransactionFactory = readTransactionFactory;
         this.copyManager = copyManager;
@@ -64,19 +74,30 @@ public class LocalMdibAccessImpl implements LocalMdibAccess {
                 Arrays.asList(duplicateChecker, typeConsistencyChecker, versionHandler),
                 Arrays.asList(versionHandler));
 
-        this.writeUtil = new WriteUtil(eventDistributor, mdibStorage, localMdibAccessPreprocessing, readWriteLock, this);
+        this.writeUtil = new WriteUtil(eventDistributor, localMdibAccessPreprocessing, readWriteLock, this);
     }
 
     @Override
-    public WriteDescriptionResult writeDescription(MdibDescriptionModifications descriptionModifications) throws PreprocessingException {
-        descriptionModifications = copyManager.processInput(descriptionModifications);
-        return writeUtil.writeDescription(descriptionModifications);
+    public WriteDescriptionResult writeDescription(MdibDescriptionModifications mdibDescriptionModifications) throws PreprocessingException {
+        readWriteLock.writeLock().lock();
+        mdibDescriptionModifications = copyManager.processInput(mdibDescriptionModifications);
+        return writeUtil.writeDescription(descriptionModifications -> {
+            mdibVersion = MdibVersion.increment(mdibVersion);
+            mdDescriptionVersion = mdDescriptionVersion.add(BigInteger.ONE);
+            mdStateVersion = mdStateVersion.add(BigInteger.ONE);
+            return mdibStorage.apply(mdibVersion, mdDescriptionVersion, mdStateVersion, descriptionModifications);
+        }, mdibDescriptionModifications);
+
     }
 
     @Override
     public WriteStateResult writeStates(MdibStateModifications mdibStateModifications) throws PreprocessingException {
         mdibStateModifications = copyManager.processInput(mdibStateModifications);
-        return writeUtil.writeStates(mdibStateModifications);
+        return writeUtil.writeStates(stateModifications -> {
+            mdibVersion = MdibVersion.increment(mdibVersion);
+            mdStateVersion = mdStateVersion.add(BigInteger.ONE);
+            return mdibStorage.apply(mdibVersion, mdStateVersion, stateModifications);
+        }, mdibStateModifications);
     }
 
     @Override
