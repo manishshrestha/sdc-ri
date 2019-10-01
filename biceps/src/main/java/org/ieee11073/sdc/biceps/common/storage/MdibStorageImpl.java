@@ -281,6 +281,7 @@ public class MdibStorageImpl implements MdibStorage {
                     continue;
                 }
                 descr.setHandle(modification.getDescriptorHandle());
+                descr.setDescriptorVersion(BigInteger.valueOf(-1));
                 descriptionModifications.insert(descr, modification);
             } else
                 mdibEntity
@@ -301,6 +302,9 @@ public class MdibStorageImpl implements MdibStorage {
                                     Collections.unmodifiableList(newStates)));
                         });
         }
+
+        Optional.ofNullable(descriptionModifications).ifPresent(mods ->
+                apply(mdibVersion, null, null, mods));
 
         return new WriteStateResult(mdibVersion, modifiedStates);
     }
