@@ -4,11 +4,13 @@ import com.google.inject.assistedinject.AssistedInject;
 import org.ieee11073.sdc.biceps.common.MdibDescriptionModifications;
 import org.ieee11073.sdc.biceps.common.MdibEntity;
 import org.ieee11073.sdc.biceps.common.MdibStateModifications;
-import org.ieee11073.sdc.biceps.common.access.*;
+import org.ieee11073.sdc.biceps.common.access.MdibAccessObserver;
+import org.ieee11073.sdc.biceps.common.access.ReadTransaction;
+import org.ieee11073.sdc.biceps.common.access.WriteDescriptionResult;
+import org.ieee11073.sdc.biceps.common.access.WriteStateResult;
 import org.ieee11073.sdc.biceps.common.access.factory.ReadTransactionFactory;
 import org.ieee11073.sdc.biceps.common.access.helper.WriteUtil;
 import org.ieee11073.sdc.biceps.common.event.Distributor;
-import org.ieee11073.sdc.biceps.provider.preprocessing.DuplicateChecker;
 import org.ieee11073.sdc.biceps.common.preprocessing.TypeConsistencyChecker;
 import org.ieee11073.sdc.biceps.common.storage.MdibStorage;
 import org.ieee11073.sdc.biceps.common.storage.MdibStoragePreprocessingChain;
@@ -42,7 +44,6 @@ public class RemoteMdibAccessImpl implements RemoteMdibAccess {
     private final MdibStoragePreprocessingChain localMdibAccessPreprocessing;
     private final ReentrantReadWriteLock readWriteLock;
     private final ReadTransactionFactory readTransactionFactory;
-    private final CopyManager copyManager;
 
     private final WriteUtil writeUtil;
 
@@ -52,19 +53,16 @@ public class RemoteMdibAccessImpl implements RemoteMdibAccess {
                          MdibStorageFactory mdibStorageFactory,
                          ReentrantReadWriteLock readWriteLock,
                          ReadTransactionFactory readTransactionFactory,
-                         DuplicateChecker duplicateChecker,
                          VersionDuplicateHandler versionDuplicateHandler,
-                         TypeConsistencyChecker typeConsistencyChecker,
-                         CopyManager copyManager) {
+                         TypeConsistencyChecker typeConsistencyChecker) {
         this.eventDistributor = eventDistributor;
         this.mdibStorage = mdibStorageFactory.createMdibStorage();
         this.readWriteLock = readWriteLock;
         this.readTransactionFactory = readTransactionFactory;
-        this.copyManager = copyManager;
 
         this.localMdibAccessPreprocessing = chainFactory.createMdibStoragePreprocessingChain(
                 mdibStorage,
-                Arrays.asList(duplicateChecker, typeConsistencyChecker),
+                Arrays.asList(typeConsistencyChecker),
                 Arrays.asList(versionDuplicateHandler));
 
         this.writeUtil = new WriteUtil(eventDistributor, localMdibAccessPreprocessing, readWriteLock, this);
