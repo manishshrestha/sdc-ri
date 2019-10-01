@@ -1,4 +1,4 @@
-package org.ieee11073.sdc.biceps.common.preprocessing;
+package org.ieee11073.sdc.biceps.provider.preprocessing;
 
 /**
  * Exception that can be thrown if a handle is duplicated during preprocessing.

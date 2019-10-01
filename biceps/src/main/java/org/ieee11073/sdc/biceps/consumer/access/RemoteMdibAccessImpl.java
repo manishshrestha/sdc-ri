@@ -8,7 +8,7 @@ import org.ieee11073.sdc.biceps.common.access.*;
 import org.ieee11073.sdc.biceps.common.access.factory.ReadTransactionFactory;
 import org.ieee11073.sdc.biceps.common.access.helper.WriteUtil;
 import org.ieee11073.sdc.biceps.common.event.Distributor;
-import org.ieee11073.sdc.biceps.common.preprocessing.DuplicateChecker;
+import org.ieee11073.sdc.biceps.provider.preprocessing.DuplicateChecker;
 import org.ieee11073.sdc.biceps.common.preprocessing.TypeConsistencyChecker;
 import org.ieee11073.sdc.biceps.common.storage.MdibStorage;
 import org.ieee11073.sdc.biceps.common.storage.MdibStoragePreprocessingChain;

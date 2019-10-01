@@ -1,9 +1,11 @@
-package org.ieee11073.sdc.biceps.common.preprocessing;
+package org.ieee11073.sdc.biceps.provider.preprocessing;
 
 import org.ieee11073.sdc.biceps.common.MdibDescriptionModifications;
 import org.ieee11073.sdc.biceps.common.MdibEntity;
 import org.ieee11073.sdc.biceps.common.storage.MdibStorage;
 import org.ieee11073.sdc.biceps.model.participant.MdsDescriptor;
+import org.ieee11073.sdc.biceps.provider.preprocessing.DuplicateChecker;
+import org.ieee11073.sdc.biceps.provider.preprocessing.HandleDuplicatedException;
 import org.ieee11073.sdc.biceps.testutil.MockModelFactory;
 import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.Test;
