@@ -5,8 +5,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Utility to create handles.
- * <p>
- * todo DGr Unit test is missing.
  */
 public class HandleGenerator {
     private final String prefix;

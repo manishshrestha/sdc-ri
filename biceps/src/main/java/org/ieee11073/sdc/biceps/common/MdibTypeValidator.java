@@ -50,7 +50,7 @@ public class MdibTypeValidator {
     }
 
     /**
-     * Checks if the given descriptor state pairing is valid.
+     * Checks if the given descriptor states pairing is valid.
      * <p>
      * A match is given if
      * <ul>
@@ -75,11 +75,9 @@ public class MdibTypeValidator {
     }
 
     /**
-     * Tries to match with exactly one state.
+     * Tries to match a descriptor with exactly one state.
      * <p>
-     * Hint: does also work for multi state lists of size 1.
-     *
-     * todo DGr is this function functionally equal to first match operation?
+     * Hint: does also work for multi-state lists of size 1.
      *
      * @param descriptor the descriptor to test.
      * @param state      the state to test.

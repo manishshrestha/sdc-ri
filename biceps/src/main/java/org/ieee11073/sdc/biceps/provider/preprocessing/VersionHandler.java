@@ -2,7 +2,6 @@ package org.ieee11073.sdc.biceps.provider.preprocessing;
 
 import com.google.inject.Inject;
 import org.ieee11073.sdc.biceps.common.*;
-import org.ieee11073.sdc.biceps.common.factory.MdibEntityFactory;
 import org.ieee11073.sdc.biceps.common.storage.DescriptionPreprocessingSegment;
 import org.ieee11073.sdc.biceps.common.storage.MdibStorage;
 import org.ieee11073.sdc.biceps.common.storage.StatePreprocessingSegment;
@@ -134,7 +133,7 @@ public class VersionHandler implements DescriptionPreprocessingSegment, StatePre
                                List<? extends AbstractState> states,
                                MdibStorage storage) throws VersioningException {
         if (isUpdatedAlready(descriptor)) {
-            return; // state has been updated already, ignore
+            return;
         }
 
         if (mdibTypeValidator.isMultiStateDescriptor(descriptor)) {
@@ -226,42 +225,24 @@ public class VersionHandler implements DescriptionPreprocessingSegment, StatePre
 
     private void processInsertWithSingleState(AbstractDescriptor descriptor, AbstractState state) {
         final VersionPair versionPair = getVersionPair(descriptor).orElse(new VersionPair());
-        if (!isUpdatedAlready(descriptor)) {
-            descriptor.setDescriptorVersion(versionPair.getDescriptorVersion().add(BigInteger.ONE));
-        }
-        // todo add else plu throw
+        descriptor.setDescriptorVersion(versionPair.getDescriptorVersion().add(BigInteger.ONE));
         state.setDescriptorVersion(descriptor.getDescriptorVersion());
         state.setStateVersion(versionPair.getStateVersion().add(BigInteger.ONE));
         putVersionPair(descriptor, state);
     }
 
     private void processInsertWithMultiState(AbstractDescriptor descriptor, List<? extends AbstractState> states) throws VersioningException {
-        if (!isUpdatedAlready(descriptor)) {
-            final VersionPair versionPair = getVersionPair(descriptor).orElse(new VersionPair());
-            descriptor.setDescriptorVersion(versionPair.getDescriptorVersion().add(BigInteger.ONE));
-            putVersionPair(descriptor);
-        }
-        // todo add else plu throw
+        final VersionPair versionPair = getVersionPair(descriptor).orElse(new VersionPair());
+        descriptor.setDescriptorVersion(versionPair.getDescriptorVersion().add(BigInteger.ONE));
+        putVersionPair(descriptor);
 
         for (AbstractState state : states) {
             final AbstractMultiState multiState = mdibTypeValidator.toMultiState(state)
-                    .orElseThrow(() -> new VersioningException("Expected multi state, but single state found"));
+                    .orElseThrow(() -> new VersioningException("Expected multi-state, but single state found"));
             final VersionPair stateVersionPair = getVersionPair(multiState).orElse(new VersionPair());
             multiState.setDescriptorVersion(descriptor.getDescriptorVersion());
             multiState.setStateVersion(stateVersionPair.getStateVersion().add(BigInteger.ONE));
             putVersionPair(multiState);
-        }
-    }
-
-    void incrementParent(String parentHandle, MdibDescriptionModifications modifications, MdibStorage storage) throws VersioningException {
-        if (!modifications.isAddedAsInserted(parentHandle) && !modifications.isAddedAsUpdated(parentHandle)) {
-            final MdibEntity entity = storage.getEntity(parentHandle)
-                    .orElseThrow(() -> new VersioningException(String.format("Parent handle not found: %s", parentHandle)));
-
-            // Queue in update if not in modifications already
-            final AbstractDescriptor descriptorCopy = objectUtil.deepCopy(entity.getDescriptor());
-            entity.doIfSingleState(state -> modifications.update(descriptorCopy, objectUtil.deepCopy(state)))
-                    .orElse(states -> modifications.update(descriptorCopy, objectUtil.deepCopy(states)));
         }
     }
 
