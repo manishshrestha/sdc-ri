@@ -11,7 +11,7 @@ import org.ieee11073.sdc.biceps.common.access.WriteStateResult;
 import org.ieee11073.sdc.biceps.common.access.factory.ReadTransactionFactory;
 import org.ieee11073.sdc.biceps.common.access.helper.WriteUtil;
 import org.ieee11073.sdc.biceps.common.event.Distributor;
-import org.ieee11073.sdc.biceps.common.preprocessing.TypeConsistencyChecker;
+import org.ieee11073.sdc.biceps.provider.preprocessing.TypeConsistencyChecker;
 import org.ieee11073.sdc.biceps.common.storage.MdibStorage;
 import org.ieee11073.sdc.biceps.common.storage.MdibStoragePreprocessingChain;
 import org.ieee11073.sdc.biceps.common.storage.PreprocessingException;
@@ -27,10 +27,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
 import java.math.BigInteger;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
@@ -62,7 +59,7 @@ public class RemoteMdibAccessImpl implements RemoteMdibAccess {
 
         this.localMdibAccessPreprocessing = chainFactory.createMdibStoragePreprocessingChain(
                 mdibStorage,
-                Arrays.asList(typeConsistencyChecker),
+                Collections.EMPTY_LIST,
                 Arrays.asList(versionDuplicateHandler));
 
         this.writeUtil = new WriteUtil(eventDistributor, localMdibAccessPreprocessing, readWriteLock, this);

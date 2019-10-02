@@ -1,7 +1,8 @@
-package org.ieee11073.sdc.biceps.common.preprocessing;
+package org.ieee11073.sdc.biceps.provider.preprocessing;
 
 import com.google.common.base.Joiner;
 import org.ieee11073.sdc.biceps.common.*;
+import org.ieee11073.sdc.biceps.common.preprocessing.TypeConsistencyException;
 import org.ieee11073.sdc.biceps.common.storage.DescriptionPreprocessingSegment;
 import org.ieee11073.sdc.biceps.common.storage.MdibStorage;
 import org.ieee11073.sdc.biceps.model.participant.AbstractDescriptor;
@@ -35,6 +36,7 @@ public class TypeConsistencyChecker implements DescriptionPreprocessingSegment {
                 return;
             }
 
+            // todo replace with Exception
             throw new TypeConsistencyException(String.format("Inserted entities other than MDS require a parent handle. " +
                     "Handle is %s, type is %s", descriptor.getHandle(), descriptor.getClass()));
         } else {

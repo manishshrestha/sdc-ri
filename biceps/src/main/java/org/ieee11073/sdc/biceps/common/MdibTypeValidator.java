@@ -79,6 +79,8 @@ public class MdibTypeValidator {
      * <p>
      * Hint: does also work for multi state lists of size 1.
      *
+     * todo DGr is this function functionally equal to first match operation?
+     *
      * @param descriptor the descriptor to test.
      * @param state      the state to test.
      * @param <D>        any descriptor class.

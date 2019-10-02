@@ -47,6 +47,7 @@ public class CardinalityChecker implements DescriptionPreprocessingSegment {
 
         final Optional<MdibEntity> parentEntityFromStorage = storage.getEntity(parentHandle.get());
         if (parentEntityFromStorage.isEmpty()) {
+            // todo add info which checker verifies consistency plus log output (this should never happen)
             // No parent in the storage yet - early exit
             return;
         }

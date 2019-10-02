@@ -6,6 +6,7 @@ import org.ieee11073.sdc.biceps.common.MdibDescriptionModifications;
 import org.ieee11073.sdc.biceps.common.storage.MdibStorage;
 import org.ieee11073.sdc.biceps.common.storage.factory.MdibStorageFactory;
 import org.ieee11073.sdc.biceps.model.participant.*;
+import org.ieee11073.sdc.biceps.provider.preprocessing.TypeConsistencyChecker;
 import org.ieee11073.sdc.biceps.testutil.MockModelFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

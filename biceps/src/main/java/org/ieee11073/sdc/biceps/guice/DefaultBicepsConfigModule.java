@@ -13,10 +13,6 @@ public class DefaultBicepsConfigModule extends AbstractConfigurationModule {
     }
 
     private void configureCommon() {
-        bind(CommonConfig.MDIB_QUEUE_SIZE,
-                Integer.class,
-                Integer.MAX_VALUE);
-
         bind(CommonConfig.COPY_MDIB_INPUT,
                 Boolean.class,
                 true);

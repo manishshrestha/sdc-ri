@@ -283,7 +283,7 @@ public class MdibStorageImpl implements MdibStorage {
                 descr.setHandle(modification.getDescriptorHandle());
                 descr.setDescriptorVersion(BigInteger.valueOf(-1));
                 descriptionModifications.insert(descr, modification);
-            } else
+            } else {
                 mdibEntity
                         .doIfSingleState(state ->
                                 entities.put(mdibEntity.getHandle(),
@@ -291,7 +291,7 @@ public class MdibStorageImpl implements MdibStorage {
                         .orElse(states -> {
                             final List<AbstractState> newStates = new ArrayList<>();
                             typeValidator.toMultiState(modification).ifPresent(modifiedMultiState ->
-                                    states.stream().forEach(multiState -> {
+                                    states.forEach(multiState -> {
                                         if (multiState.getHandle().equals(modifiedMultiState.getHandle())) {
                                             newStates.add(modifiedMultiState);
                                         } else {
@@ -301,6 +301,7 @@ public class MdibStorageImpl implements MdibStorage {
                             entities.put(mdibEntity.getHandle(), entityFactory.replaceStates(mdibEntity,
                                     Collections.unmodifiableList(newStates)));
                         });
+            }
         }
 
         Optional.ofNullable(descriptionModifications).ifPresent(mods ->

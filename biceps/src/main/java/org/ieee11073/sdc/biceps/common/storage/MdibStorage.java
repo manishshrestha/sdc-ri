@@ -68,7 +68,7 @@ public interface MdibStorage {
     BigInteger getMdDescriptionVersion();
 
     /**
-     * The latest known MD description version.
+     * The latest known MD state version.
      *
      * @return The latest known MD state version.
      * @see MdibAccess#getMdStateVersion()

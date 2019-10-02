@@ -9,7 +9,7 @@ import org.ieee11073.sdc.biceps.common.access.factory.ReadTransactionFactory;
 import org.ieee11073.sdc.biceps.common.access.helper.WriteUtil;
 import org.ieee11073.sdc.biceps.common.event.Distributor;
 import org.ieee11073.sdc.biceps.provider.preprocessing.DuplicateChecker;
-import org.ieee11073.sdc.biceps.common.preprocessing.TypeConsistencyChecker;
+import org.ieee11073.sdc.biceps.provider.preprocessing.TypeConsistencyChecker;
 import org.ieee11073.sdc.biceps.common.storage.MdibStorage;
 import org.ieee11073.sdc.biceps.common.storage.MdibStoragePreprocessingChain;
 import org.ieee11073.sdc.biceps.common.storage.PreprocessingException;
@@ -38,7 +38,6 @@ public class LocalMdibAccessImpl implements LocalMdibAccess {
 
     private final Distributor eventDistributor;
     private final MdibStorage mdibStorage;
-    private final MdibStoragePreprocessingChain localMdibAccessPreprocessing;
     private final ReentrantReadWriteLock readWriteLock;
     private final ReadTransactionFactory readTransactionFactory;
     private final CopyManager copyManager;
@@ -69,7 +68,7 @@ public class LocalMdibAccessImpl implements LocalMdibAccess {
         this.readTransactionFactory = readTransactionFactory;
         this.copyManager = copyManager;
 
-        this.localMdibAccessPreprocessing = chainFactory.createMdibStoragePreprocessingChain(
+        MdibStoragePreprocessingChain localMdibAccessPreprocessing = chainFactory.createMdibStoragePreprocessingChain(
                 mdibStorage,
                 Arrays.asList(duplicateChecker, typeConsistencyChecker, versionHandler),
                 Arrays.asList(versionHandler));

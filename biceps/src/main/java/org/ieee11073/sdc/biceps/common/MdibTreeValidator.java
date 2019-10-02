@@ -8,6 +8,10 @@ import org.ieee11073.sdc.biceps.model.participant.*;
 import javax.inject.Inject;
 import java.util.*;
 
+/**
+ * todo DGr Detailed design
+ * todo DGr Create unit test for tree validator
+ */
 public class MdibTreeValidator {
     private final HashMultimap<Class<?>, Class<?>> allowedParents;
     private final Set<Class<?>> oneChildEntities;
