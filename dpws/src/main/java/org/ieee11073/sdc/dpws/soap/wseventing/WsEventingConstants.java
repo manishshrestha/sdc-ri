@@ -4,6 +4,8 @@ import javax.xml.namespace.QName;
 
 /**
  * WS-Eventing constants.
+ *
+ * @see <a href="https://www.w3.org/Submission/2006/SUBM-WS-Eventing-20060315/">Referenced WS-Eventing specification</a>
  */
 public class WsEventingConstants {
     /**

@@ -12,6 +12,8 @@ public enum WsEventingStatus {
     STATUS_SOURCE_SHUTTING_DOWN(WsEventingConstants.STATUS_SOURCE_SHUTTING_DOWN),
     STATUS_SOURCE_CANCELLING(WsEventingConstants.STATUS_SOURCE_CANCELLING),;
 
+    private final String status;
+
     WsEventingStatus(String status) {
         this.status = status;
     }
@@ -19,6 +21,4 @@ public enum WsEventingStatus {
     public String getUri() {
        return status;
     }
-
-    private final String status;
 }

@@ -9,17 +9,17 @@ import org.ieee11073.sdc.dpws.soap.wseventing.model.WsEventingStatus;
  */
 public interface EventSource extends Interceptor, Service {
     /**
-     * Send a notification to all event sinks.
+     * Sends a notification to all event sinks.
      *
-     * @param action The action URI used for dispatching to event sinks.
-     * @param payload A JAXB element or JAXB generated class object to transport.
+     * @param action  the action URI used for dispatching to event sinks.
+     * @param payload a JAXB element or JAXB generated class object to transport.
      */
     void sendNotification(String action, Object payload);
 
     /**
-     * Send a subscription end to all event sinks.
+     * Sends a subscription end to all event sinks.
      *
-     * @param status The subscription end reason.
+     * @param status the subscription end reason.
      */
     void subscriptionEndToAll(WsEventingStatus status);
 }

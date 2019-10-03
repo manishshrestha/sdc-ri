@@ -11,9 +11,11 @@ import java.net.URI;
  */
 public interface WsEventingEventSinkFactory {
     /**
+     * Creates a new WS-Eventing event sink.
+     *
      * @param requestResponseClient request response client where to send requests to (subscribe, renew, ...).
      * @param hostAddress           address where to bind a notification sink server.
-     * @return the instance.
+     * @return a new {@link EventSink} instance.
      */
     EventSink createWsEventingEventSink(@Assisted RequestResponseClient requestResponseClient,
                                         @Assisted URI hostAddress);

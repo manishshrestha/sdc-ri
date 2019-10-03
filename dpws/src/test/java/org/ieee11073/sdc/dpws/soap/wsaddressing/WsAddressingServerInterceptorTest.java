@@ -1,12 +1,15 @@
 package org.ieee11073.sdc.dpws.soap.wsaddressing;
 
 import org.ieee11073.sdc.dpws.DpwsTest;
-import org.ieee11073.sdc.dpws.soap.*;
+import org.ieee11073.sdc.dpws.soap.RequestResponseServer;
+import org.ieee11073.sdc.dpws.soap.SoapMarshalling;
+import org.ieee11073.sdc.dpws.soap.SoapMessage;
+import org.ieee11073.sdc.dpws.soap.TransportInfo;
 import org.ieee11073.sdc.dpws.soap.exception.SoapFaultException;
 import org.ieee11073.sdc.dpws.soap.factory.SoapMessageFactory;
+import org.ieee11073.sdc.dpws.soap.interception.*;
 import org.ieee11073.sdc.dpws.soap.model.Envelope;
 import org.ieee11073.sdc.dpws.soap.wsaddressing.model.AttributedURIType;
-import org.ieee11073.sdc.dpws.soap.interception.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -39,29 +42,19 @@ public class WsAddressingServerInterceptorTest extends DpwsTest {
         response.getWsAddressingHeader().setAction(responseAction);
 
         server = getInjector().getInstance(RequestResponseServer.class);
-        server.register(getInjector().getInstance(WsAddressingServerInterceptor.class));
         server.register(new Interceptor() {
             @MessageInterceptor(value = "http://example.com/fabrikam/mail/Delete", direction = Direction.REQUEST)
-            InterceptorResult dummyProcess(RequestResponseObject rrInfo) {
+            void dummyProcess(RequestResponseObject rrInfo) {
                 // do nothing here
-                return InterceptorResult.PROCEED;
             }
         });
     }
 
     @Test
-    public void testMessageIdDuplicationDetection() {
-        try {
-            server.receiveRequestResponse(request, response, mockTransportInfo);
-            assertTrue(true);
-        } catch (Exception e) {
-            fail();
-        }
-        try {
-            assertEquals(InterceptorResult.CANCEL, server.receiveRequestResponse(request, response, mockTransportInfo));
-        } catch (SoapFaultException e) {
-            fail();
-        }
+    public void testMessageIdDuplicationDetection() throws SoapFaultException {
+        assertDoesNotThrow(() -> server.receiveRequestResponse(request, response, mockTransportInfo));
+        assertThrows(SoapFaultException.class, () ->
+                server.receiveRequestResponse(request, response, mockTransportInfo));
     }
 
     @Test

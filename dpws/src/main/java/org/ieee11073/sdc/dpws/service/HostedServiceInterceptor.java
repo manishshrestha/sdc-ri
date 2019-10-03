@@ -46,7 +46,7 @@ public class HostedServiceInterceptor implements Interceptor {
 
     @MessageInterceptor(value = WsMetadataExchangeConstants.WSA_ACTION_GET_METADATA_REQUEST,
             direction = Direction.REQUEST)
-    InterceptorResult processGetMetadata(RequestResponseObject rrObj) {
+    void processGetMetadata(RequestResponseObject rrObj) {
         GetMetadata body = soapUtil.getBody(rrObj.getRequest(), GetMetadata.class).orElse(null);
 
         Metadata metadata = mexFactory.createMetadata();
@@ -66,8 +66,6 @@ public class HostedServiceInterceptor implements Interceptor {
 
         metadata.setMetadataSection(metadataSection);
         soapUtil.setBody(metadata, rrObj.getResponse());
-
-        return InterceptorResult.PROCEED;
     }
 
     private MetadataSection createWsdlMetadataSection(URI uri) {

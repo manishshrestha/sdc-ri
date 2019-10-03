@@ -18,10 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Modelling of a SoapMessage with convenient access to different headers.
- *
- * Note: Please note {@link #getOriginalEnvelope()} always returns the envelope es passed to the constructor. Information
- * saved to convenience headers are not synchronized with this envelope.
+ * Modelling of a SOAP Message with convenient access to different headers.
  */
 public class SoapMessage {
     private final WsDiscoveryHeader wsdHeader;
@@ -76,13 +73,18 @@ public class SoapMessage {
     }
 
     /**
-     * @return envelope as passed to constructor.
+     * Gets the original envelope.
+     *
+     * @return always returns the envelope as passed to the constructor.
+     * Information that is stored in convenience headers are not synchronized with this envelope.
      */
     public Envelope getOriginalEnvelope() {
         return envelope;
     }
 
     /**
+     * Gets the envelope that includes mapped headers.
+     *
      * @return new envelope with mapped convenience headers and body reference from {@link #getOriginalEnvelope()}.
      */
     public Envelope getEnvelopeWithMappedHeaders() {
@@ -96,8 +98,13 @@ public class SoapMessage {
         return mappedEnv;
     }
 
+    /**
+     * Checks if a SOAP message is a fault or not.
+     *
+     * @return true if it is a fault, false otherwise.
+     */
     public boolean isFault() {
-        if (getOriginalEnvelope().getBody().getAny().size() == 1){
+        if (getOriginalEnvelope().getBody().getAny().size() == 1) {
             Object obj = getOriginalEnvelope().getBody().getAny().get(0);
             if (JAXBElement.class.isAssignableFrom(obj.getClass())) {
                 JAXBElement jaxbElem = (JAXBElement) obj;
@@ -107,6 +114,7 @@ public class SoapMessage {
         return false;
     }
 
+    @Override
     public String toString() {
         return SoapDebug.getBrief(this);
     }

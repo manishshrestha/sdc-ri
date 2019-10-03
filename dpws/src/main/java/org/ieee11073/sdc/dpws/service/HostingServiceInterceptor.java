@@ -10,7 +10,6 @@ import org.ieee11073.sdc.dpws.soap.SoapUtil;
 import org.ieee11073.sdc.dpws.soap.exception.SoapFaultException;
 import org.ieee11073.sdc.dpws.soap.factory.SoapFaultFactory;
 import org.ieee11073.sdc.dpws.soap.interception.Direction;
-import org.ieee11073.sdc.dpws.soap.interception.InterceptorResult;
 import org.ieee11073.sdc.dpws.soap.interception.MessageInterceptor;
 import org.ieee11073.sdc.dpws.soap.interception.RequestResponseObject;
 import org.ieee11073.sdc.dpws.soap.wsaddressing.WsAddressingUtil;
@@ -88,7 +87,7 @@ public class HostingServiceInterceptor implements HostingService {
     }
 
     @MessageInterceptor(value = WsTransferConstants.WSA_ACTION_GET, direction = Direction.REQUEST)
-    InterceptorResult processGet(RequestResponseObject rrObj) throws SoapFaultException {
+    void processGet(RequestResponseObject rrObj) throws SoapFaultException {
         if (!rrObj.getRequest().getOriginalEnvelope().getBody().getAny().isEmpty()) {
             throw new SoapFaultException(soapFaultFactory
                     .createSenderFault(String.format("SOAP envelope body for action %s shall be empty",
@@ -109,8 +108,6 @@ public class HostingServiceInterceptor implements HostingService {
                 wsaUtil.createAttributedURIType(WsTransferConstants.WSA_ACTION_GET_RESPONSE));
 
         soapUtil.setBody(metadata, rrObj.getResponse());
-
-        return InterceptorResult.PROCEED;
     }
 
     private MetadataSection createThisModel() {

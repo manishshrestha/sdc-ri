@@ -27,6 +27,7 @@ public interface EventSinkAccess {
      * <li>{@link SoapFaultException}
      * <li>{@link MarshallingException}
      * <li>{@link TransportException}
+     * <li>{@link org.ieee11073.sdc.dpws.soap.interception.InterceptorException}
      * </ul>
      */
     ListenableFuture<SubscribeResult> subscribe(List<String> actions,
@@ -44,6 +45,7 @@ public interface EventSinkAccess {
      * <li>{@link SoapFaultException}
      * <li>{@link MarshallingException}
      * <li>{@link TransportException}
+     * <li>{@link org.ieee11073.sdc.dpws.soap.interception.InterceptorException}
      * </ul>
      */
     ListenableFuture<Duration> renew(String subscriptionId, Duration expires);
@@ -58,6 +60,7 @@ public interface EventSinkAccess {
      * <li>{@link SoapFaultException}
      * <li>{@link MarshallingException}
      * <li>{@link TransportException}
+     * <li>{@link org.ieee11073.sdc.dpws.soap.interception.InterceptorException}
      * </ul>
      */
     ListenableFuture<Duration> getStatus(String subscriptionId);
@@ -72,6 +75,7 @@ public interface EventSinkAccess {
      * <li>{@link SoapFaultException}
      * <li>{@link MarshallingException}
      * <li>{@link TransportException}
+     * <li>{@link org.ieee11073.sdc.dpws.soap.interception.InterceptorException}
      * </ul>
      */
     ListenableFuture unsubscribe(String subscriptionId);

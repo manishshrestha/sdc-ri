@@ -13,34 +13,29 @@ import java.util.Optional;
 /**
  * Interceptor dispatcher designed for incoming messages on servers.
  */
-public class ServerHelper {
-    private static final Logger LOG = LoggerFactory.getLogger(ServerHelper.class);
+public class ServerDispatcher {
+    private static final Logger LOG = LoggerFactory.getLogger(ServerDispatcher.class);
 
-    private final InterceptorInvoker interceptorInvoker;
+    private final InterceptorProcessor interceptorProcessor;
     private final SoapFaultFactory soapFaultFactory;
 
     @Inject
-    public ServerHelper(InterceptorInvoker interceptorInvoker,
-                        SoapFaultFactory soapFaultFactory) {
-        this.interceptorInvoker = interceptorInvoker;
+    public ServerDispatcher(InterceptorProcessor interceptorProcessor,
+                            SoapFaultFactory soapFaultFactory) {
+        this.interceptorProcessor = interceptorProcessor;
         this.soapFaultFactory = soapFaultFactory;
     }
 
     /**
-     * Start dispatching a SOAP message along an interceptor chain.
-     * <p>
-     * In contrast to {@link ClientHelper}, which throws {@link InterceptorException} on
-     * {@link InterceptorResult#CANCEL} and {@link InterceptorResult#SKIP_RESPONSE}, {@linkplain ServerHelper} throws a
-     * {@link SoapFaultException} on {@link InterceptorResult#CANCEL}.
+     * Starts dispatching a SOAP message along an interceptor chain.
      *
-     * @param direction the communication direction used for dispatching.
-     * @param registry the interceptor registry used to seek interceptors.
-     * @param soapMessage the SOAP message to dispatch.
+     * @param direction                 the communication direction used for dispatching.
+     * @param registry                  the interceptor registry used to seek interceptors.
+     * @param soapMessage               the SOAP message to dispatch.
      * @param interceptorCallbackObject the object where to dispatch the message to.
-     * @return the interceptor result.
-     * @throws SoapFaultException if the interceptor was cancelled (in order to communicate this an error to the client).
+     * @throws SoapFaultException if the interceptor was cancelled (in order to communicate this as an error to the client).
      */
-    public InterceptorResult invokeDispatcher(Direction direction,
+    public void invokeDispatcher(Direction direction,
                                               InterceptorRegistry registry,
                                               SoapMessage soapMessage,
                                               InterceptorCallbackType interceptorCallbackObject) throws SoapFaultException {
@@ -51,11 +46,15 @@ public class ServerHelper {
         }
 
         try {
-            return interceptorInvoker.dispatch(direction, registry, actionUri, interceptorCallbackObject);
-        } catch (SoapFaultException e) {
-            throw e;
+            interceptorProcessor.dispatch(direction, registry, actionUri, interceptorCallbackObject);
+        } catch (InterceptorException e) {
+            if (e.getCause() instanceof SoapFaultException) {
+                throw (SoapFaultException) e.getCause();
+            }
+            throw new SoapFaultException(soapFaultFactory.createReceiverFault(
+                    String.format("Server fault information: %s", e.getCause().getMessage())));
         } catch (Exception e) {
-            LOG.warn("Unknown exception thrown during dispatcher invocation routine: {}", e.getMessage());
+            LOG.warn("Unexpected exception thrown during dispatcher invocation routine: {}", e.getMessage());
             throw new SoapFaultException(soapFaultFactory.createReceiverFault(
                     String.format("Server fault information: %s", e.getMessage())));
         }

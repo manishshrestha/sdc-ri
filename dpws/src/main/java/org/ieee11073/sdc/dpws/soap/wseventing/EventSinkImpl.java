@@ -7,6 +7,7 @@ import com.google.inject.assistedinject.AssistedInject;
 import com.google.inject.name.Named;
 import org.ieee11073.sdc.dpws.DpwsConfig;
 import org.ieee11073.sdc.dpws.DpwsConstants;
+import org.ieee11073.sdc.dpws.guice.AutoRenewExecutor;
 import org.ieee11073.sdc.dpws.guice.NetworkJobThreadPool;
 import org.ieee11073.sdc.dpws.http.HttpServerRegistry;
 import org.ieee11073.sdc.dpws.soap.*;

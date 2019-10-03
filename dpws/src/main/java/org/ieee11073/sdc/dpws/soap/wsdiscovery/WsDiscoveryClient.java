@@ -5,6 +5,7 @@ import org.ieee11073.sdc.dpws.soap.RequestResponseClient;
 import org.ieee11073.sdc.dpws.soap.exception.MarshallingException;
 import org.ieee11073.sdc.dpws.soap.exception.TransportException;
 import org.ieee11073.sdc.dpws.soap.interception.Interceptor;
+import org.ieee11073.sdc.dpws.soap.interception.InterceptorException;
 import org.ieee11073.sdc.dpws.soap.wsaddressing.model.EndpointReferenceType;
 import org.ieee11073.sdc.dpws.soap.wsdiscovery.model.ProbeMatchesType;
 import org.ieee11073.sdc.dpws.soap.wsdiscovery.model.ResolveMatchesType;
@@ -21,11 +22,11 @@ import java.util.List;
  */
 public interface WsDiscoveryClient extends Interceptor {
     ListenableFuture<Integer> sendProbe(String probeId, List<QName> types, List<String> scopes)
-            throws MarshallingException, TransportException;
+            throws MarshallingException, TransportException, InterceptorException;
     ListenableFuture<Integer> sendProbe(String probeId, List<QName> types, List<String> scopes, Integer maxResults)
-            throws MarshallingException, TransportException;
+            throws MarshallingException, TransportException, InterceptorException;
     ListenableFuture<ProbeMatchesType> sendDirectedProbe(RequestResponseClient rrClient, List<QName> types, List<String> scopes);
-    ListenableFuture<ResolveMatchesType> sendResolve(EndpointReferenceType epr) throws MarshallingException, TransportException;
+    ListenableFuture<ResolveMatchesType> sendResolve(EndpointReferenceType epr) throws MarshallingException, TransportException, InterceptorException;
     void registerHelloByeAndProbeMatchesObserver(HelloByeAndProbeMatchesObserver observer);
     void unregisterHelloByeAndProbeMatchesObserver(HelloByeAndProbeMatchesObserver observer);
 }

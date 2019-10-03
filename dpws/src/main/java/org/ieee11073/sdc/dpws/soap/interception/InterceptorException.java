@@ -1,20 +1,27 @@
 package org.ieee11073.sdc.dpws.soap.interception;
 
 /**
- * Wrapped interceptor interceptorResult that is obtained in interceptor handling.
+ * Exception that comes up during SOAP message interceptor processing.
  */
 public class InterceptorException extends Exception {
-    private InterceptorResult interceptorResult;
-    public InterceptorException(InterceptorResult interceptorResult) {
-        super(String.format("Interceptor interceptorResult: %s", interceptorResult.toString()));
-    }
+    final Interceptor interceptor;
 
-    public InterceptorException(String message, InterceptorResult interceptorResult) {
+    public InterceptorException(String message, Interceptor interceptor) {
         super(message);
-        this.interceptorResult = interceptorResult;
+        this.interceptor = interceptor;
     }
 
-    public InterceptorResult getInterceptorResult() {
-        return interceptorResult;
+    public InterceptorException(String message, Interceptor interceptor, Throwable cause) {
+        super(message, cause);
+        this.interceptor = interceptor;
+    }
+
+    /**
+     * Gets the interceptor where the error was raised.
+     *
+     * @return the exception source.
+     */
+    public Interceptor getInterceptor() {
+        return interceptor;
     }
 }

@@ -5,7 +5,6 @@ import com.google.common.util.concurrent.ListenableFuture;
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
 import com.google.inject.name.Named;
-import org.ieee11073.sdc.dpws.soap.interception.InterceptorResult;
 import org.ieee11073.sdc.dpws.soap.wseventing.SourceSubscriptionManager;
 import org.ieee11073.sdc.dpws.soap.wseventing.WsEventingConfig;
 import org.ieee11073.sdc.dpws.soap.wseventing.event.SubscriptionAddedMessage;
@@ -25,8 +24,8 @@ import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * Worker to process notification network jobs by round-robin through all subscription managers.
- *
- * Subscribe this notification worker to the {@link SubscriptionRegistry} to track subscription managers.
+ * <p>
+ * Subscribe this notification worker to the {@link SubscriptionRegistry} in order to track subscription managers.
  */
 public class NotificationWorker implements Runnable {
     private final EventSourceTransportManager evtSrcTransportManager;
@@ -69,11 +68,11 @@ public class NotificationWorker implements Runnable {
     }
 
     /**
-     * Wake up dispatcher.
-     *
-     * If the worker has nothing to do anymore, i.e., every notification has been processed, it falls into a sleep mode.
+     * Wakes up the dispatcher.
+     * <p>
+     * If the worker has nothing to do, i.e., every notification has been processed, then it falls into a sleep mode.
      * To ensure that the worker will do its work, call this function after at least one of the subscription managers
-     * has a new job.
+     * has a new job to process.
      */
     public void wakeUp() {
         lock.lock();
@@ -153,7 +152,7 @@ public class NotificationWorker implements Runnable {
     // Encapsulation of a subscription manager and an item that shall be processed by the worker
     private class WorkerItem {
         private final SourceSubscriptionManager subscriptionManager;
-        private ListenableFuture<InterceptorResult> processedItem;
+        private ListenableFuture<Boolean> processedItem;
 
         WorkerItem(SourceSubscriptionManager subscriptionManager) {
             this.subscriptionManager = subscriptionManager;
@@ -164,11 +163,11 @@ public class NotificationWorker implements Runnable {
             return subscriptionManager;
         }
 
-        synchronized Optional<ListenableFuture<InterceptorResult>> getProcessedItem() {
+        synchronized Optional<ListenableFuture<Boolean>> getProcessedItem() {
             return Optional.ofNullable(processedItem);
         }
 
-        synchronized void setProcessedItem(ListenableFuture<InterceptorResult> processedNotification) {
+        synchronized void setProcessedItem(ListenableFuture<Boolean> processedNotification) {
             this.processedItem = processedNotification;
         }
     }

@@ -22,18 +22,17 @@ public class WsAddressingClientInterceptor implements Interceptor {
     }
 
     @MessageInterceptor(direction = Direction.REQUEST)
-    InterceptorResult processMessage(RequestObject rInfo) {
-        return processMessage(rInfo.getRequest());
+    void processMessage(RequestObject rInfo) {
+        processMessage(rInfo.getRequest());
     }
 
     @MessageInterceptor(direction = Direction.NOTIFICATION)
-    InterceptorResult processMessage(NotificationObject nInfo) {
-        return processMessage(nInfo.getNotification());
+    void processMessage(NotificationObject nInfo) {
+        processMessage(nInfo.getNotification());
     }
 
-    private InterceptorResult processMessage(SoapMessage msg) {
+    private void processMessage(SoapMessage msg) {
         processMessageId(msg);
-        return InterceptorResult.PROCEED;
     }
 
     private void processMessageId(SoapMessage msg) {

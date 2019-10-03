@@ -1,17 +1,16 @@
 package org.ieee11073.sdc.dpws.soap.interception;
 
 /**
- * Interface to registerOrUpdate interceptor object for message interception chains.
+ * Interface to register or update interceptor objects for message interception chains.
  *
  * @see MessageInterceptor
  */
 public interface InterceptorHandler {
     /**
-     * Register callback object.
+     * Registers a callback object.
      *
-     * Use {@link MessageInterceptor} annotation to define interceptor callbacks.
-     *
-     * @param interceptor Any objects that possess zero or more {@link MessageInterceptor} annotations.
+     * @param interceptor an object that possesses {@link MessageInterceptor} annotated methods.
+     * @see MessageInterceptor
      */
     void register(Interceptor interceptor);
 }

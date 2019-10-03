@@ -9,6 +9,11 @@ import org.ieee11073.sdc.dpws.soap.wseventing.helper.SubscriptionRegistry;
  * {@link SubscriptionRegistry} instance.
  */
 public class SubscriptionRemovedMessage extends AbstractEventMessage<SourceSubscriptionManager> {
+    /**
+     * Constructor.
+     *
+     * @param payload the subscription manager that has been removed.
+     */
     public SubscriptionRemovedMessage(SourceSubscriptionManager payload) {
         super(payload);
     }

@@ -16,16 +16,16 @@ import org.ieee11073.sdc.dpws.soap.SoapMessage;
 import org.ieee11073.sdc.dpws.soap.SoapUtil;
 import org.ieee11073.sdc.dpws.soap.exception.MarshallingException;
 import org.ieee11073.sdc.dpws.soap.exception.TransportException;
-import org.ieee11073.sdc.dpws.soap.interception.InterceptorResult;
+import org.ieee11073.sdc.dpws.soap.interception.InterceptorException;
 import org.ieee11073.sdc.dpws.soap.interception.MessageInterceptor;
 import org.ieee11073.sdc.dpws.soap.interception.NotificationObject;
 import org.ieee11073.sdc.dpws.soap.wsaddressing.WsAddressingUtil;
-import org.ieee11073.sdc.dpws.soap.wsaddressing.model.*;
+import org.ieee11073.sdc.dpws.soap.wsaddressing.model.AttributedURIType;
+import org.ieee11073.sdc.dpws.soap.wsaddressing.model.EndpointReferenceType;
 import org.ieee11073.sdc.dpws.soap.wsdiscovery.event.ByeMessage;
 import org.ieee11073.sdc.dpws.soap.wsdiscovery.event.HelloMessage;
 import org.ieee11073.sdc.dpws.soap.wsdiscovery.event.ProbeMatchesMessage;
 import org.ieee11073.sdc.dpws.soap.wsdiscovery.event.ProbeTimeoutMessage;
-import org.ieee11073.sdc.dpws.soap.wsdiscovery.model.ObjectFactory;
 import org.ieee11073.sdc.dpws.soap.wsdiscovery.model.*;
 
 import javax.xml.namespace.QName;
@@ -106,20 +106,18 @@ public class WsDiscoveryClientInterceptor implements WsDiscoveryClient {
     }
 
     @MessageInterceptor(WsDiscoveryConstants.WSA_ACTION_PROBE)
-    InterceptorResult processProbe(NotificationObject nObj) {
+    void processProbe(NotificationObject nObj) {
         AppSequenceType appSequence = wsdUtil.createAppSequence(instanceId);
         nObj.getNotification().getWsDiscoveryHeader().setAppSequence(appSequence);
-        return InterceptorResult.PROCEED;
     }
 
     @MessageInterceptor(WsDiscoveryConstants.WSA_ACTION_RESOLVE)
-    InterceptorResult processResolve(NotificationObject nObj) {
+    void processResolve(NotificationObject nObj) {
         nObj.getNotification().getWsDiscoveryHeader().setAppSequence(wsdUtil.createAppSequence(instanceId));
-        return InterceptorResult.PROCEED;
     }
 
     @MessageInterceptor(WsDiscoveryConstants.WSA_ACTION_PROBE_MATCHES)
-    InterceptorResult processProbeMatches(NotificationObject nObj) {
+    void processProbeMatches(NotificationObject nObj) {
         try {
             probeLock.lock();
             getProbeMatchesBuffer().add(nObj.getNotification());
@@ -127,11 +125,10 @@ public class WsDiscoveryClientInterceptor implements WsDiscoveryClient {
         } finally {
             probeLock.unlock();
         }
-        return InterceptorResult.PROCEED;
     }
 
     @MessageInterceptor(WsDiscoveryConstants.WSA_ACTION_RESOLVE_MATCHES)
-    InterceptorResult processResolveMatches(NotificationObject nObj) {
+    void processResolveMatches(NotificationObject nObj) {
         try {
             resolveLock.lock();
             getResolveMatchesBuffer().add(nObj.getNotification());
@@ -139,21 +136,18 @@ public class WsDiscoveryClientInterceptor implements WsDiscoveryClient {
         } finally {
             resolveLock.unlock();
         }
-        return InterceptorResult.PROCEED;
     }
 
     @MessageInterceptor(WsDiscoveryConstants.WSA_ACTION_HELLO)
-    InterceptorResult processHello(NotificationObject nObj) {
+    void processHello(NotificationObject nObj) {
         Optional<HelloType> body = soapUtil.getBody(nObj.getNotification(), HelloType.class);
         body.ifPresent(helloType -> helloByeProbeEvents.post(new HelloMessage(helloType)));
-        return InterceptorResult.PROCEED;
     }
 
     @MessageInterceptor(WsDiscoveryConstants.WSA_ACTION_BYE)
-    InterceptorResult processBye(NotificationObject nObj) {
+    void processBye(NotificationObject nObj) {
         Optional<ByeType> body = soapUtil.getBody(nObj.getNotification(), ByeType.class);
         body.ifPresent(byeType -> helloByeProbeEvents.post(new ByeMessage(byeType)));
-        return InterceptorResult.PROCEED;
     }
 
     @Override
@@ -169,7 +163,7 @@ public class WsDiscoveryClientInterceptor implements WsDiscoveryClient {
 
     @Override
     public ListenableFuture<Integer> sendProbe(String probeId, List<QName> types, List<String> scopes, Integer maxResults)
-            throws MarshallingException, TransportException {
+            throws MarshallingException, TransportException, InterceptorException {
         SoapMessage probeMsg = createProbeMessage(types, scopes);
 
         URI msgIdUri = soapUtil.createUriFromUuid(UUID.randomUUID());
@@ -187,13 +181,13 @@ public class WsDiscoveryClientInterceptor implements WsDiscoveryClient {
 
     @Override
     public ListenableFuture<Integer> sendProbe(String probeId, List<QName> types, List<String> scopes)
-            throws MarshallingException, TransportException{
+            throws MarshallingException, TransportException, InterceptorException {
         return sendProbe(probeId, types, scopes, Integer.MAX_VALUE);
     }
 
     @Override
     public ListenableFuture<ResolveMatchesType> sendResolve(EndpointReferenceType epr)
-            throws MarshallingException, TransportException {
+            throws MarshallingException, TransportException, InterceptorException {
         ResolveType resolveType = wsdFactory.createResolveType();
         resolveType.setEndpointReference(epr);
 

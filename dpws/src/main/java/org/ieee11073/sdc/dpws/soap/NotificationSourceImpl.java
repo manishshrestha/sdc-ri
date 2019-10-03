@@ -9,20 +9,23 @@ import org.ieee11073.sdc.dpws.soap.wsaddressing.WsAddressingClientInterceptor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Default implementation of {@linkplain NotificationSource}.
+ */
 public class NotificationSourceImpl implements NotificationSource {
     private static final Logger LOG = LoggerFactory.getLogger(NotificationSourceImpl.class);
 
     private final InterceptorRegistry interceptorRegistry;
     private final NotificationCallback networkCallback;
-    private final ClientHelper clientHelper;
+    private final ClientDispatcher clientDispatcher;
 
     @Inject
     NotificationSourceImpl(@Assisted NotificationCallback networkCallback,
-                           ClientHelper clientHelper,
+                           ClientDispatcher clientDispatcher,
                            InterceptorRegistry interceptorRegistry,
                            WsAddressingClientInterceptor wsaClientInterceptor) {
         this.networkCallback = networkCallback;
-        this.clientHelper = clientHelper;
+        this.clientDispatcher = clientDispatcher;
         this.interceptorRegistry = interceptorRegistry;
 
         register(wsaClientInterceptor);
@@ -34,15 +37,9 @@ public class NotificationSourceImpl implements NotificationSource {
     }
 
     @Override
-    public InterceptorResult sendNotification(SoapMessage notification) throws MarshallingException, TransportException {
+    public void sendNotification(SoapMessage notification) throws MarshallingException, TransportException, InterceptorException {
         NotificationObject nObj = new NotificationObject(notification);
-        InterceptorResult ir = clientHelper.invokeDispatcher(Direction.NOTIFICATION, interceptorRegistry,
-                notification, nObj);
-        if (ir == InterceptorResult.CANCEL) {
-            return InterceptorResult.CANCEL;
-        }
-
+        clientDispatcher.invokeDispatcher(Direction.NOTIFICATION, interceptorRegistry, notification, nObj);
         networkCallback.onNotification(notification);
-        return InterceptorResult.PROCEED;
     }
 }

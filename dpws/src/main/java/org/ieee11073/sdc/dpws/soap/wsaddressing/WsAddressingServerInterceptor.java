@@ -5,9 +5,9 @@ import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import org.ieee11073.sdc.dpws.soap.SoapMessage;
 import org.ieee11073.sdc.dpws.soap.SoapUtil;
+import org.ieee11073.sdc.dpws.soap.exception.SoapFaultException;
 import org.ieee11073.sdc.dpws.soap.factory.SoapFaultFactory;
 import org.ieee11073.sdc.dpws.soap.interception.*;
-import org.ieee11073.sdc.dpws.soap.exception.SoapFaultException;
 import org.ieee11073.sdc.dpws.soap.wsaddressing.factory.WsAddressingFaultFactory;
 import org.ieee11073.sdc.dpws.soap.wsaddressing.model.AttributedURIType;
 import org.slf4j.Logger;
@@ -51,29 +51,22 @@ public class WsAddressingServerInterceptor implements Interceptor {
     }
 
     @MessageInterceptor(direction = Direction.REQUEST)
-    InterceptorResult processMessage(RequestResponseObject rrInfo) throws SoapFaultException {
-        InterceptorResult interceptorResult = processMessage(rrInfo.getRequest());
-        if (interceptorResult == InterceptorResult.PROCEED) {
+    void processMessage(RequestResponseObject rrInfo) throws SoapFaultException {
+        processMessage(rrInfo.getRequest());
             rrInfo.getResponse().getWsAddressingHeader().setRelatesTo(
                     rrInfo.getRequest().getWsAddressingHeader().getMessageId().orElse(null));
             rrInfo.getResponse().getWsAddressingHeader().setMessageId(wsaUtil.createAttributedURIType(
                     soapUtil.createRandomUuidUri()));
-        }
-        return interceptorResult;
     }
 
     @MessageInterceptor
-    InterceptorResult processMessage(NotificationObject nInfo) throws SoapFaultException {
-        return processMessage(nInfo.getNotification());
+    void processMessage(NotificationObject nInfo) throws SoapFaultException {
+        processMessage(nInfo.getNotification());
     }
 
-    private InterceptorResult processMessage(SoapMessage msg) throws SoapFaultException {
+    private void processMessage(SoapMessage msg) throws SoapFaultException {
         processAction(msg);
-        if (processMessageId(msg) == InterceptorResult.CANCEL) {
-            return InterceptorResult.CANCEL;
-        }
-
-        return InterceptorResult.PROCEED;
+        processMessageId(msg);
     }
 
     private void processAction(SoapMessage msg) throws SoapFaultException {
@@ -92,9 +85,9 @@ public class WsAddressingServerInterceptor implements Interceptor {
 
     // note the synchronized keyword as the server interceptor is shared between different requests in order to
     // facilitate duplicate detection
-    private synchronized InterceptorResult processMessageId(SoapMessage msg) throws SoapFaultException {
+    private synchronized void processMessageId(SoapMessage msg) throws SoapFaultException {
         if (ignoreMessageIds) {
-            return InterceptorResult.PROCEED;
+            return;
         }
 
         Optional<AttributedURIType> messageId = msg.getWsAddressingHeader().getMessageId();
@@ -115,10 +108,9 @@ public class WsAddressingServerInterceptor implements Interceptor {
             String faultMsg = String.format("Found message duplicate: %s (message: %s). Skip processing.",
                     foundMessageId.get(), actionUri);
             LOG.debug(faultMsg);
-            return InterceptorResult.CANCEL;
+            throw new RuntimeException(faultMsg);
         }
 
         messageIdCache.add(messageId.get().getValue());
-        return InterceptorResult.PROCEED;
     }
 }

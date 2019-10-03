@@ -1,7 +1,7 @@
 package org.ieee11073.sdc.dpws.soap.interception;
 
 /**
- * Define a communication direction.
+ * Defines a communication direction.
  */
 public enum Direction {
     /**

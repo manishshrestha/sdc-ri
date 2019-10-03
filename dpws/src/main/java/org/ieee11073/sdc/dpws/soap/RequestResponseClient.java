@@ -3,21 +3,23 @@ package org.ieee11073.sdc.dpws.soap;
 import org.ieee11073.sdc.dpws.soap.exception.MarshallingException;
 import org.ieee11073.sdc.dpws.soap.exception.SoapFaultException;
 import org.ieee11073.sdc.dpws.soap.exception.TransportException;
+import org.ieee11073.sdc.dpws.soap.interception.InterceptorException;
 import org.ieee11073.sdc.dpws.soap.interception.InterceptorHandler;
 
 /**
- * Interface for client APIs to invoke execution of request-response message exchanges.
+ * Interface for client APIs to conduct request-response message exchanges.
  */
 public interface RequestResponseClient extends InterceptorHandler {
     /**
-     * Send a SOAP request message and wait for response to be received from recipient.
+     * Sends a SOAP request message and waits for the response to be received from the recipient.
      *
-     * @param request Outgoing request message.
-     * @return Incoming response message.
-     * @throws SoapFaultException SOAP fault that may be thrown on processing.
-     * @throws TransportException   Any transport-related exception during processing. This will hinder the response from
-     *                              being sent.
-     * @throws MarshallingException Any exception that occurs during marshalling or unmarshalling of SOAP messages.
+     * @param request outgoing request message.
+     * @return incoming response message.
+     * @throws SoapFaultException   if a SOAP fault comes up during processing.
+     * @throws TransportException   if  transport-related exceptions come up during processing.
+     *                              This will hinder the response from being sent.
+     * @throws MarshallingException if any exception occurs during marshalling or unmarshalling of SOAP messages.
+     * @throws InterceptorException if one of the interceptors pops up with an error.
      */
-    SoapMessage sendRequestResponse(SoapMessage request) throws SoapFaultException, MarshallingException, TransportException;
+    SoapMessage sendRequestResponse(SoapMessage request) throws SoapFaultException, MarshallingException, TransportException, InterceptorException;
 }

@@ -12,10 +12,22 @@ import java.util.Optional;
 public class WsEventingHeader {
     private URI identifier;
 
+    /**
+     * Gets the WS-Eventing identifier.
+     *
+     * @return the identifier if assigned, otherwise {@link Optional#empty()}.
+     * @deprecated The WS-Eventing identifier is a non-conforming header item and should not be used.
+     */
     public Optional<URI> getIdentifier() {
         return Optional.ofNullable(identifier);
     }
 
+    /**
+     * Sets the WS-Eventing identifier.
+     *
+     * @param identifier the identifier to set.
+     * @deprecated The WS-Eventing identifier is a non-conforming header item and should not be used.
+     */
     public void setIdentifier(@Nullable URI identifier) {
         this.identifier = identifier;
     }

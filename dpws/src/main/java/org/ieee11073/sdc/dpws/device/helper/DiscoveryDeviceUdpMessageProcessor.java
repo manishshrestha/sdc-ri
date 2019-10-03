@@ -6,8 +6,6 @@ import com.google.inject.assistedinject.AssistedInject;
 import org.ieee11073.sdc.dpws.guice.AppDelayExecutor;
 import org.ieee11073.sdc.dpws.soap.exception.MarshallingException;
 import org.ieee11073.sdc.dpws.soap.exception.SoapFaultException;
-import org.ieee11073.sdc.dpws.soap.exception.TransportException;
-import org.ieee11073.sdc.dpws.soap.interception.InterceptorResult;
 import org.ieee11073.sdc.dpws.soap.wsdiscovery.WsDiscoveryConstants;
 import org.ieee11073.sdc.dpws.udp.UdpMessage;
 import org.ieee11073.sdc.dpws.udp.UdpMessageQueueObserver;
@@ -75,9 +73,7 @@ public class DiscoveryDeviceUdpMessageProcessor implements UdpMessageQueueObserv
 
         // Forward SOAP message to given request response interceptor chain
         try {
-            if (requestResponseServer.receiveRequestResponse(request, response, tInfo) != InterceptorResult.PROCEED) {
-                return;
-            }
+            requestResponseServer.receiveRequestResponse(request, response, tInfo);
         } catch (SoapFaultException e) {
             LOG.info("SOAP fault thrown [{}]", e.getMessage());
         }

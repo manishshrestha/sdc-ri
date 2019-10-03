@@ -4,6 +4,7 @@ import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.Service;
 import org.ieee11073.sdc.dpws.service.HostingServiceProxy;
 import org.ieee11073.sdc.dpws.soap.exception.TransportException;
+import org.ieee11073.sdc.dpws.soap.interception.InterceptorException;
 import org.ieee11073.sdc.dpws.soap.wsdiscovery.model.ProbeMatchesType;
 
 import java.net.URI;
@@ -42,8 +43,9 @@ public interface Client extends Service {
      *
      * @param discoveryFilter types and scopes the discovery process shall filter against.
      * @throws TransportException if probe cannot be sent.
+     * @throws InterceptorException if one of the interceptors pops up with an error.
      */
-    void probe(DiscoveryFilter discoveryFilter) throws TransportException;
+    void probe(DiscoveryFilter discoveryFilter) throws TransportException, InterceptorException;
 
     /**
      * Sends a directed probe to a specific physical address.
@@ -62,8 +64,9 @@ public interface Client extends Service {
      *
      * @param eprAddress the endpoint reference address of the device to resolve.
      * @return a future that holds the result of the resolve.
+     * @throws InterceptorException if one of the interceptors pops up with an error.
      */
-    ListenableFuture<DiscoveredDevice> resolve(URI eprAddress);
+    ListenableFuture<DiscoveredDevice> resolve(URI eprAddress) throws InterceptorException;
 
     /**
      * Connects to a hosting service by using {@link DiscoveredDevice}.
@@ -85,6 +88,7 @@ public interface Client extends Service {
      *
      * @param eprAddress the EPR address of a device.
      * @return a future that holds the result of the connect.
+     * @throws InterceptorException if one of the interceptors pops up with an error.
      */
-    ListenableFuture<HostingServiceProxy> connect(URI eprAddress);
+    ListenableFuture<HostingServiceProxy> connect(URI eprAddress) throws InterceptorException;
 }

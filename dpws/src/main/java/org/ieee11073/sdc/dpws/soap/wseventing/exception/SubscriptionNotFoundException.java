@@ -1,7 +1,7 @@
 package org.ieee11073.sdc.dpws.soap.wseventing.exception;
 
 /**
- * Indicate that a subscription was not found in local registry, either on source or sink side.
+ * Indicates that a subscription was not found in, either on source or sink side.
  */
 public class SubscriptionNotFoundException extends RuntimeException {
     public SubscriptionNotFoundException() {

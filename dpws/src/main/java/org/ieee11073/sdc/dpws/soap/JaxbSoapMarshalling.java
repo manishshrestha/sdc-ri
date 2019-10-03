@@ -14,12 +14,14 @@ import org.ieee11073.sdc.dpws.soap.wstransfer.WsTransferConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.xml.bind.*;
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBElement;
+import javax.xml.bind.JAXBException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
 /**
- * Create input and output streams from {@link Envelope} instances.
+ * Creates XML input and output streams from {@link Envelope} instances by using JAXB.
  */
 public class JaxbSoapMarshalling extends AbstractIdleService implements SoapMarshalling {
     private static final Logger LOG = LoggerFactory.getLogger(JaxbSoapMarshalling.class);
@@ -29,8 +31,6 @@ public class JaxbSoapMarshalling extends AbstractIdleService implements SoapMars
 
     private String contextPackages;
     private JAXBContext jaxbContext;
-    private Marshaller marshaller;
-    private Unmarshaller unmarshaller;
 
     @Inject
     JaxbSoapMarshalling(@Named(SoapConfig.JAXB_CONTEXT_PATH) String contextPackages,
@@ -52,7 +52,11 @@ public class JaxbSoapMarshalling extends AbstractIdleService implements SoapMars
     }
 
     /**
-     * Take envelope and marshal it to outputStream.
+     * Takes a SOAP envelope and marshals it.
+     *
+     * @param envelope     the source envelope to marshal.
+     * @param outputStream the destination of the marshalled data.
+     * @throws JAXBException if marshalling fails.
      */
     @Override
     public void marshal(Envelope envelope, OutputStream outputStream) throws JAXBException {
@@ -67,7 +71,12 @@ public class JaxbSoapMarshalling extends AbstractIdleService implements SoapMars
     }
 
     /**
-     * Take inputStream and return unmarshalled {@link Envelope}.
+     * Takes an input stream and unmarshals it.
+     *
+     * @param inputStream the input stream to unmarshal.
+     * @return the unmarshalled SOAP envelope.
+     * @throws JAXBException      if unmarshalling fails.
+     * @throws ClassCastException in case unmarshalled data could not be cast to a JAXB element.
      */
     @Override
     @SuppressWarnings("unchecked")
@@ -91,7 +100,7 @@ public class JaxbSoapMarshalling extends AbstractIdleService implements SoapMars
         LOG.info("Configure JAXB with contexts: {}", contextPackages);
 
         try {
-             jaxbContext = JAXBContext.newInstance(contextPackages);
+            jaxbContext = JAXBContext.newInstance(contextPackages);
         } catch (JAXBException e) {
             throw new RuntimeException("JAXB context for SOAP model(s) could not be created");
         }

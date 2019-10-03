@@ -7,17 +7,20 @@ import org.ieee11073.sdc.dpws.soap.wsaddressing.WsAddressingServerInterceptor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Default implementation of {@linkplain RequestResponseServer}.
+ */
 public class RequestResponseServerImpl implements RequestResponseServer {
     private static final Logger LOG = LoggerFactory.getLogger(RequestResponseServerImpl.class);
 
     private final InterceptorRegistry interceptorRegistry;
-    private final ServerHelper serverHelper;
+    private final ServerDispatcher serverDispatcher;
 
     @Inject
-    RequestResponseServerImpl(ServerHelper serverHelper,
+    RequestResponseServerImpl(ServerDispatcher serverDispatcher,
                               InterceptorRegistry interceptorRegistry,
                               WsAddressingServerInterceptor wsaServerInterceptor) {
-        this.serverHelper = serverHelper;
+        this.serverDispatcher = serverDispatcher;
         this.interceptorRegistry = interceptorRegistry;
         register(wsaServerInterceptor);
     }
@@ -28,30 +31,15 @@ public class RequestResponseServerImpl implements RequestResponseServer {
     }
 
     @Override
-    public InterceptorResult receiveRequestResponse(SoapMessage request,
-                                                    SoapMessage response,
-                                                    TransportInfo transportInfo) throws SoapFaultException {
+    public void receiveRequestResponse(SoapMessage request,
+                                       SoapMessage response,
+                                       TransportInfo transportInfo) throws SoapFaultException {
         RequestResponseObject rrObj = new RequestResponseObject(request, response, transportInfo);
-        InterceptorResult irReq = serverHelper.invokeDispatcher(Direction.REQUEST,
-                interceptorRegistry, request, rrObj);
-
-        if (irReq == InterceptorResult.CANCEL || irReq == InterceptorResult.SKIP_RESPONSE) {
-            return irReq;
-        }
+        serverDispatcher.invokeDispatcher(Direction.REQUEST, interceptorRegistry, request, rrObj);
 
         rrObj = new RequestResponseObject(request, response, transportInfo);
-        InterceptorResult irRes = serverHelper.invokeDispatcher(Direction.RESPONSE,
-                interceptorRegistry, response, rrObj);
+        serverDispatcher.invokeDispatcher(Direction.RESPONSE, interceptorRegistry, response, rrObj);
 
-        if (irRes == InterceptorResult.NONE_INVOKED) {
-            if (irReq == InterceptorResult.NONE_INVOKED) {
-                return InterceptorResult.NONE_INVOKED;
-            } else {
-                return InterceptorResult.PROCEED;
-            }
-        }
-
-        return irRes;
         // \todo somewhere here an ActionNotSupported should be thrown
     }
 }

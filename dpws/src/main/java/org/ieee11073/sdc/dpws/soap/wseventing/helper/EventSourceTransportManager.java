@@ -10,7 +10,6 @@ import org.ieee11073.sdc.dpws.guice.NetworkJobThreadPool;
 import org.ieee11073.sdc.dpws.soap.NotificationSource;
 import org.ieee11073.sdc.dpws.soap.SoapMessage;
 import org.ieee11073.sdc.dpws.soap.factory.NotificationSourceFactory;
-import org.ieee11073.sdc.dpws.soap.interception.InterceptorResult;
 import org.ieee11073.sdc.dpws.soap.wsaddressing.WsAddressingUtil;
 import org.ieee11073.sdc.dpws.soap.wsaddressing.model.EndpointReferenceType;
 import org.ieee11073.sdc.dpws.soap.wseventing.SourceSubscriptionManager;
@@ -26,7 +25,7 @@ import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Helper class to manage sending of event messages, to notify-to and end-to.
+ * Helper class to manage sending of event messages to notify-to and end-to destinations.
  */
 public class EventSourceTransportManager {
     private static final Logger LOG = LoggerFactory.getLogger(EventSourceTransportManager.class);
@@ -55,38 +54,43 @@ public class EventSourceTransportManager {
     }
 
     /**
-     * Try to send an end-to message to a specific event sink.
+     * Tries to send an end-to message to a specific event sink.
      *
-     * @param subMan  The subscription manager where to send the end-to message to.
-     * @param message The SOAP message to send.
-     * @return Future with final interceptor result. Return {@link InterceptorResult#NONE_INVOKED} when no end-to
-     * address could be found.
+     * @param subMan  the subscription manager where to send the end-to message to.
+     * @param message the SOAP message to send.
+     * @return a future with delivery status; true if delivered, false if not.
      */
-    public ListenableFuture<InterceptorResult> sendEndTo(SourceSubscriptionManager subMan, SoapMessage message) {
+    public ListenableFuture<Boolean> sendEndTo(SourceSubscriptionManager subMan, SoapMessage message) {
         String subId = subMan.getSubscriptionId();
         Optional<NotificationSource> notificationSource = Optional.ofNullable(endToSources.get(subId));
-        return notificationSource.map(source -> networkJobExecutor.submit(() -> source.sendNotification(message)))
-                .orElseGet(() -> networkJobExecutor.submit(() -> {
-                    LOG.info("No sink for end-to messages available. Abort sending an end-to event");
-                    return InterceptorResult.NONE_INVOKED;
-                }));
+        return notificationSource.map(source -> networkJobExecutor.submit(() -> {
+            try {
+                source.sendNotification(message);
+            } catch (Exception e) {
+                return false;
+            }
+            return true;
+        })).orElseGet(() -> networkJobExecutor.submit(() -> {
+            LOG.info("No sink for end-to messages available. Abort sending an end-to event");
+            return false;
+        }));
     }
 
     /**
-     * Send a notify-to message to a specific event sink.
+     * Sends a notify-to message to a specific event sink.
      *
-     * @param subMan  The subscription manager where to send the notify-to message to.
-     * @param message The SOAP message to send.
-     * @return Future with final interceptor result. If {@link InterceptorResult#CANCEL} is received and
-     * subscription is not running anymore, then the delivery of the notification failed.
+     * @param subMan  the subscription manager where to send the notify-to message to.
+     * @param message the SOAP message to send.
+     * @return a future with delivery status; true if delivered, false if not.
      */
-    public ListenableFuture<InterceptorResult> sendNotifyTo(SourceSubscriptionManager subMan, SoapMessage message) {
+    public ListenableFuture<Boolean> sendNotifyTo(SourceSubscriptionManager subMan, SoapMessage message) {
         NotificationSource notifSrc = Optional.ofNullable(notifyToSources.get(subMan.getSubscriptionId()))
                 .orElseThrow(() -> new RuntimeException("Notification source is missing, but still required"));
         return networkJobExecutor.submit(() -> {
             for (int i = 1; i <= maxRetriesOnDeliveryFailure; ++i) {
                 try {
-                    return notifSrc.sendNotification(message);
+                    notifSrc.sendNotification(message);
+                    return true;
                 } catch (Exception e) {
                     LOG.debug("Deliver notification to {} failed. Try {} of {}. Reason: {}",
                             subMan.getSubscriptionId(), i, maxRetriesOnDeliveryFailure,
@@ -95,7 +99,9 @@ public class EventSourceTransportManager {
             }
 
             subMan.stopAsync().awaitTerminated();
-            return InterceptorResult.CANCEL;
+            String messageId = "unknown id";
+
+            return false;
         });
     }
 

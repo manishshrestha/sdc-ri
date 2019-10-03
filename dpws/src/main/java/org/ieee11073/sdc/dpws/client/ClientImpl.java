@@ -20,6 +20,7 @@ import org.ieee11073.sdc.dpws.soap.exception.MarshallingException;
 import org.ieee11073.sdc.dpws.soap.exception.TransportException;
 import org.ieee11073.sdc.dpws.soap.factory.NotificationSourceFactory;
 import org.ieee11073.sdc.dpws.soap.factory.RequestResponseClientFactory;
+import org.ieee11073.sdc.dpws.soap.interception.InterceptorException;
 import org.ieee11073.sdc.dpws.soap.wsaddressing.WsAddressingUtil;
 import org.ieee11073.sdc.dpws.soap.wsdiscovery.HelloByeAndProbeMatchesObserver;
 import org.ieee11073.sdc.dpws.soap.wsdiscovery.WsDiscoveryClient;
@@ -98,7 +99,7 @@ public class ClientImpl extends AbstractIdleService implements Client, Service, 
     }
 
     @Override
-    public void probe(DiscoveryFilter discoveryFilter) throws TransportException {
+    public void probe(DiscoveryFilter discoveryFilter) throws TransportException, InterceptorException {
         checkRunning();
 
         try {
@@ -119,7 +120,7 @@ public class ClientImpl extends AbstractIdleService implements Client, Service, 
     }
 
     @Override
-    public ListenableFuture<DiscoveredDevice> resolve(URI eprAddress) {
+    public ListenableFuture<DiscoveredDevice> resolve(URI eprAddress) throws InterceptorException {
         checkRunning();
 
         try {
@@ -169,7 +170,7 @@ public class ClientImpl extends AbstractIdleService implements Client, Service, 
     }
 
     @Override
-    public ListenableFuture<HostingServiceProxy> connect(URI eprAddress) {
+    public ListenableFuture<HostingServiceProxy> connect(URI eprAddress) throws InterceptorException {
         checkRunning();
 
         final ListenableFuture<DiscoveredDevice> resolveFuture = resolve(eprAddress);

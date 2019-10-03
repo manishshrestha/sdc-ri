@@ -35,52 +35,46 @@ public class NotificationSinkImplTest extends DpwsTest {
 
         nSink.register(new Interceptor() {
             @MessageInterceptor(direction = Direction.NOTIFICATION)
-            InterceptorResult onDelete(NotificationObject nInfo) {
+            void onDelete(NotificationObject nInfo) {
                 dispatchedSequence.add("NOTIFICATION(MAX)");
-                return InterceptorResult.PROCEED;
             }
         });
 
         nSink.register(new Interceptor() {
             @MessageInterceptor(direction = Direction.NOTIFICATION, sequenceNumber = 5)
-            InterceptorResult onDelete(NotificationObject nInfo) {
+            void onDelete(NotificationObject nInfo) {
                 dispatchedSequence.add("NOTIFICATION(5)");
-                return InterceptorResult.PROCEED;
             }
         });
 
         nSink.register(new Interceptor() {
             @MessageInterceptor(value = "http://example.com/fabrikam/mail/Delete", direction = Direction.NOTIFICATION)
-            InterceptorResult onDelete(NotificationObject nInfo) {
+            void onDelete(NotificationObject nInfo) {
                 dispatchedSequence.add("NOTIFICATION(ACTION, MAX)");
-                return InterceptorResult.PROCEED;
             }
         });
 
         // Shall be skipped since argument is missing
         nSink.register(new Interceptor() {
             @MessageInterceptor(value = "http://example.com/fabrikam/mail/Delete", direction = Direction.NOTIFICATION)
-            InterceptorResult onDelete() {
+            void onDelete() {
                 dispatchedSequence.add("INVALID NOTIFICATION(ACTION, MAX)");
-                return InterceptorResult.PROCEED;
             }
         });
 
         // Shall be skipped since direction is invalid
         nSink.register(new Interceptor() {
             @MessageInterceptor(direction = Direction.RESPONSE)
-            InterceptorResult onDelete(NotificationObject nInfo) {
+            void onDelete(NotificationObject nInfo) {
                 dispatchedSequence.add("INVALID NOTIFICATION(MAX)");
-                return InterceptorResult.PROCEED;
             }
         });
 
         // Shall be skipped since parameter is Request, but should be Notification
         nSink.register(new Interceptor() {
             @MessageInterceptor(value = "http://example.com/fabrikam/mail/Delete", direction = Direction.NOTIFICATION)
-            InterceptorResult onDelete(RequestObject rInfo) {
+            void onDelete(RequestObject rInfo) {
                 dispatchedSequence.add("INVALID NOTIFICATION(ACTION, MAX)");
-                return InterceptorResult.PROCEED;
             }
         });
 

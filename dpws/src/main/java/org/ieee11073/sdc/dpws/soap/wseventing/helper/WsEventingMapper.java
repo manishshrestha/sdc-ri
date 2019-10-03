@@ -23,10 +23,22 @@ public class WsEventingMapper {
         this.wseFactory = wseFactory;
     }
 
+    /**
+     * The mapper function that takes a convenience WS-Eventing header and adds it to a list of JAXB objects.
+     *
+     * @param src  the WS-Eventing source information.
+     * @param dest the list of objects where to add the mapped JAXB element (typically the list of headers).
+     */
     public void mapToJaxbSoapHeader(WsEventingHeader src, List<Object> dest) {
         src.getIdentifier().ifPresent(uri -> dest.add(wseFactory.createIdentifier(uri.toString())));
     }
 
+    /**
+     * The mapper function that takes a list of JAXB objects and populates the convenience WS-Eventing header.
+     *
+     * @param src  the list of objects where to get the WS-Discovery header information from.
+     * @param dest the WS-Eventing mapper destination.
+     */
     public void mapFromJaxbSoapHeader(List<Object> src, WsEventingHeader dest) {
         src.forEach(o -> {
             Optional<String> uri;
