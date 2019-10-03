@@ -29,19 +29,18 @@ public class ClientHelper {
      * @param registry                  the interceptor registry used to seek interceptors.
      * @param soapMessage               the SOAP message to dispatch.
      * @param interceptorCallbackObject the object where to dispatch the message to.
-     * @return the interceptor result.
      * @throws InterceptorException in case any exception is thrown.
      */
-    public InterceptorResult invokeDispatcher(Direction direction,
-                                              InterceptorRegistry registry,
-                                              SoapMessage soapMessage,
-                                              InterceptorCallbackType interceptorCallbackObject) throws InterceptorException {
+    public void invokeDispatcher(Direction direction,
+                                 InterceptorRegistry registry,
+                                 SoapMessage soapMessage,
+                                 InterceptorCallbackType interceptorCallbackObject) throws InterceptorException {
         Optional<AttributedURIType> action = soapMessage.getWsAddressingHeader().getAction();
         String actionUri = null;
         if (action.isPresent()) {
             actionUri = action.get().getValue();
         }
 
-        return interceptorProcessor.dispatch(direction, registry, actionUri, interceptorCallbackObject);
+        interceptorProcessor.dispatch(direction, registry, actionUri, interceptorCallbackObject);
     }
 }

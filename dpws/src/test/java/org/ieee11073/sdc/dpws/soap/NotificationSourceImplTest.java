@@ -37,52 +37,46 @@ public class NotificationSourceImplTest extends DpwsTest {
 
         nSource.register(new Interceptor() {
             @MessageInterceptor(direction = Direction.NOTIFICATION)
-            InterceptorResult onDelete(NotificationObject nInfo) {
+            void onDelete(NotificationObject nInfo) {
                 dispatchedSequence.add("NOTIFICATION(MAX)");
-                return InterceptorResult.PROCEED;
             }
         });
 
         nSource.register(new Interceptor() {
             @MessageInterceptor(direction = Direction.NOTIFICATION, sequenceNumber = 5)
-            InterceptorResult onDelete(NotificationObject nInfo) {
+            void onDelete(NotificationObject nInfo) {
                 dispatchedSequence.add("NOTIFICATION(5)");
-                return InterceptorResult.PROCEED;
             }
         });
 
         nSource.register(new Interceptor() {
             @MessageInterceptor(value = "http://example.com/fabrikam/mail/Delete", direction = Direction.NOTIFICATION)
-            InterceptorResult onDelete(NotificationObject nInfo) {
+            void onDelete(NotificationObject nInfo) {
                 dispatchedSequence.add("NOTIFICATION(ACTION, MAX)");
-                return InterceptorResult.PROCEED;
             }
         });
 
         // Shall be skipped since argument is missing
         nSource.register(new Interceptor() {
             @MessageInterceptor(value = "http://example.com/fabrikam/mail/Delete", direction = Direction.NOTIFICATION)
-            InterceptorResult onDelete() {
+            void onDelete() {
                 dispatchedSequence.add("INVALID NOTIFICATION(ACTION, MAX)");
-                return InterceptorResult.PROCEED;
             }
         });
 
         // Shall be skipped since argument is Request, but should be Notification
         nSource.register(new Interceptor() {
             @MessageInterceptor(value = "http://example.com/fabrikam/mail/Delete", direction = Direction.NOTIFICATION)
-            InterceptorResult onDelete(RequestObject rInfo) {
+            void onDelete(RequestObject rInfo) {
                 dispatchedSequence.add("INVALID NOTIFICATION(ACTION, MAX)");
-                return InterceptorResult.PROCEED;
             }
         });
 
         // Shall be skipped since direction is Request, but should be Notification
         nSource.register(new Interceptor() {
             @MessageInterceptor(value = "http://example.com/fabrikam/mail/Delete", direction = Direction.REQUEST)
-            InterceptorResult onDelete(NotificationObject nInfo) {
+            void onDelete(NotificationObject nInfo) {
                 dispatchedSequence.add("INVALID NOTIFICATION(ACTION, MAX)");
-                return InterceptorResult.PROCEED;
             }
         });
 

@@ -22,21 +22,18 @@ public class InterceptorRegistryTest extends DpwsTest{
         InterceptorRegistry registry = getInjector().getInstance(InterceptorRegistry.class);
         registry.addInterceptor(new Interceptor() {
             @MessageInterceptor
-            InterceptorResult test(RequestResponseObject rrInfo) {
-                return InterceptorResult.PROCEED;
+            void test(RequestResponseObject rrInfo) {
             }
         });
         registry.addInterceptor(new Interceptor() {
             @MessageInterceptor(sequenceNumber = 5)
-            InterceptorResult test(RequestResponseObject rrInfo) {
-                return InterceptorResult.PROCEED;
+            void test(RequestResponseObject rrInfo) {
             }
         });
 
         registry.addInterceptor(new Interceptor() {
             @MessageInterceptor(action)
-            InterceptorResult test(RequestResponseObject rrInfo) {
-                return InterceptorResult.PROCEED;
+            void test(RequestResponseObject rrInfo) {
             }
         });
 

@@ -17,7 +17,6 @@ import org.ieee11073.sdc.dpws.soap.exception.SoapFaultException;
 import org.ieee11073.sdc.dpws.soap.factory.EnvelopeFactory;
 import org.ieee11073.sdc.dpws.soap.factory.SoapMessageFactory;
 import org.ieee11073.sdc.dpws.soap.interception.Direction;
-import org.ieee11073.sdc.dpws.soap.interception.InterceptorResult;
 import org.ieee11073.sdc.dpws.soap.interception.MessageInterceptor;
 import org.ieee11073.sdc.dpws.soap.interception.RequestResponseObject;
 import org.ieee11073.sdc.dpws.soap.model.Envelope;
@@ -155,7 +154,7 @@ public class EventSourceInterceptor extends AbstractIdleService implements Event
     }
 
     @MessageInterceptor(value = WsEventingConstants.WSA_ACTION_SUBSCRIBE, direction = Direction.REQUEST)
-    InterceptorResult processSubscribe(RequestResponseObject rrObj) throws SoapFaultException {
+    void processSubscribe(RequestResponseObject rrObj) throws SoapFaultException {
         final Supplier<SoapFaultException> soapFaultExceptionSupplier = () ->
                 new SoapFaultException(createInvalidMsg(rrObj));
         Subscribe subscribe = soapUtil.getBody(rrObj.getRequest(), Subscribe.class).orElseThrow(soapFaultExceptionSupplier);
@@ -229,12 +228,10 @@ public class EventSourceInterceptor extends AbstractIdleService implements Event
                 grantedExpires.getSeconds());
 
         subMan.startAsync().awaitRunning();
-
-        return InterceptorResult.PROCEED;
     }
 
     @MessageInterceptor(value = WsEventingConstants.WSA_ACTION_RENEW, direction = Direction.REQUEST)
-    InterceptorResult processRenew(RequestResponseObject rrObj) throws SoapFaultException {
+    void processRenew(RequestResponseObject rrObj) throws SoapFaultException {
         removeStaleSubscriptions();
 
         Renew renew = validateRequestBody(rrObj, Renew.class);
@@ -253,12 +250,10 @@ public class EventSourceInterceptor extends AbstractIdleService implements Event
         LOG.info("Subscription {} is renewed. New expiration in {} seconds",
                 subMan.getSubscriptionId(),
                 grantedExpires.getSeconds());
-
-        return InterceptorResult.PROCEED;
     }
 
     @MessageInterceptor(value = WsEventingConstants.WSA_ACTION_GET_STATUS, direction = Direction.REQUEST)
-    InterceptorResult processGetStatus(RequestResponseObject rrObj) throws SoapFaultException {
+    void processGetStatus(RequestResponseObject rrObj) throws SoapFaultException {
         removeStaleSubscriptions();
 
         // TODO: 06.12.2016 add that somewhere...
@@ -281,12 +276,10 @@ public class EventSourceInterceptor extends AbstractIdleService implements Event
         getStatusResponse.setExpires(expires.toString());
         soapUtil.setBody(getStatusResponse, rrObj.getResponse());
         soapUtil.setWsaAction(rrObj.getResponse(), WsEventingConstants.WSA_ACTION_GET_STATUS_RESPONSE);
-
-        return InterceptorResult.PROCEED;
     }
 
     @MessageInterceptor(value = WsEventingConstants.WSA_ACTION_UNSUBSCRIBE, direction = Direction.REQUEST)
-    InterceptorResult processUnsubscribe(RequestResponseObject rrObj) throws SoapFaultException {
+    void processUnsubscribe(RequestResponseObject rrObj) throws SoapFaultException {
         removeStaleSubscriptions();
 
         validateRequestBody(rrObj, Unsubscribe.class);
@@ -298,8 +291,6 @@ public class EventSourceInterceptor extends AbstractIdleService implements Event
         soapUtil.setWsaAction(rrObj.getResponse(), WsEventingConstants.WSA_ACTION_UNSUBSCRIBE_RESPONSE);
 
         LOG.info("Unsubscribe {}. Invalidate subscription manager", subMan.getSubscriptionId());
-
-        return InterceptorResult.PROCEED;
     }
 
     private void removeStaleSubscriptions() {

@@ -5,7 +5,6 @@ import com.google.common.util.concurrent.ListenableFuture;
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
 import com.google.inject.name.Named;
-import org.ieee11073.sdc.dpws.soap.interception.InterceptorResult;
 import org.ieee11073.sdc.dpws.soap.wseventing.SourceSubscriptionManager;
 import org.ieee11073.sdc.dpws.soap.wseventing.WsEventingConfig;
 import org.ieee11073.sdc.dpws.soap.wseventing.event.SubscriptionAddedMessage;
@@ -153,7 +152,7 @@ public class NotificationWorker implements Runnable {
     // Encapsulation of a subscription manager and an item that shall be processed by the worker
     private class WorkerItem {
         private final SourceSubscriptionManager subscriptionManager;
-        private ListenableFuture<InterceptorResult> processedItem;
+        private ListenableFuture<Boolean> processedItem;
 
         WorkerItem(SourceSubscriptionManager subscriptionManager) {
             this.subscriptionManager = subscriptionManager;
@@ -164,11 +163,11 @@ public class NotificationWorker implements Runnable {
             return subscriptionManager;
         }
 
-        synchronized Optional<ListenableFuture<InterceptorResult>> getProcessedItem() {
+        synchronized Optional<ListenableFuture<Boolean>> getProcessedItem() {
             return Optional.ofNullable(processedItem);
         }
 
-        synchronized void setProcessedItem(ListenableFuture<InterceptorResult> processedNotification) {
+        synchronized void setProcessedItem(ListenableFuture<Boolean> processedNotification) {
             this.processedItem = processedNotification;
         }
     }

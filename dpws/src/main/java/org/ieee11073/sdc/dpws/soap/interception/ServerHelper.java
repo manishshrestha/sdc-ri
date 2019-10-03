@@ -35,10 +35,9 @@ public class ServerHelper {
      * @param registry                  the interceptor registry used to seek interceptors.
      * @param soapMessage               the SOAP message to dispatch.
      * @param interceptorCallbackObject the object where to dispatch the message to.
-     * @return the interceptor result.
      * @throws SoapFaultException if the interceptor was cancelled (in order to communicate this as an error to the client).
      */
-    public InterceptorResult invokeDispatcher(Direction direction,
+    public void invokeDispatcher(Direction direction,
                                               InterceptorRegistry registry,
                                               SoapMessage soapMessage,
                                               InterceptorCallbackType interceptorCallbackObject) throws SoapFaultException {
@@ -49,7 +48,7 @@ public class ServerHelper {
         }
 
         try {
-            return interceptorProcessor.dispatch(direction, registry, actionUri, interceptorCallbackObject);
+            interceptorProcessor.dispatch(direction, registry, actionUri, interceptorCallbackObject);
         } catch (InterceptorException e) {
             if (e.getCause() instanceof SoapFaultException) {
                 throw (SoapFaultException) e.getCause();

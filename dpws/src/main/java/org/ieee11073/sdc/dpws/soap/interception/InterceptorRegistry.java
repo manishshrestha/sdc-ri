@@ -103,8 +103,7 @@ public class InterceptorRegistry {
                         .anyMatch(a -> a.annotationType().equals(MessageInterceptor.class)))
                 .filter(m -> m.getParameterCount() == 1 &&
                         InterceptorCallbackType.class.isAssignableFrom(m.getParameterTypes()[0]))
-                .filter(m -> m.getReturnType().equals(InterceptorResult.class) ||
-                        m.getReturnType().equals(Void.TYPE))
+                .filter(m -> m.getReturnType().equals(Void.TYPE))
                 .peek(method -> method.setAccessible(true))
                 .collect(Collectors.toList());
     }

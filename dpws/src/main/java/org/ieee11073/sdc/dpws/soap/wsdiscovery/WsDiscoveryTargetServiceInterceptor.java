@@ -85,7 +85,7 @@ public class WsDiscoveryTargetServiceInterceptor implements WsDiscoveryTargetSer
     }
 
     @MessageInterceptor(value = WsDiscoveryConstants.WSA_ACTION_PROBE, direction = Direction.REQUEST)
-    InterceptorResult processProbe(RequestResponseObject rrObj)
+    void processProbe(RequestResponseObject rrObj)
             throws SoapFaultException {
         SoapMessage inMsg = rrObj.getRequest();
         ProbeType probe = validateIncomingMessage(inMsg, ProbeType.class);
@@ -105,7 +105,7 @@ public class WsDiscoveryTargetServiceInterceptor implements WsDiscoveryTargetSer
 
         if (!wsdUtil.isScopesMatching(scopes, scopesFromProbe.getValue(), matcher) ||
                 !wsdUtil.isTypesMatching(this.types, typesFromProbe)) {
-            return InterceptorResult.CANCEL;
+            throw new RuntimeException("Scopes and Types do not match in incoming Probe.");
         }
 
         ProbeMatchType probeMatchType = wsdFactory.createProbeMatchType();
@@ -127,12 +127,10 @@ public class WsDiscoveryTargetServiceInterceptor implements WsDiscoveryTargetSer
         wsaHeader.setTo(wsaUtil.createAttributedURIType(WsDiscoveryConstants.WSA_UDP_TO));
         probeMatchesMsg.getWsDiscoveryHeader().setAppSequence(wsdUtil.createAppSequence(instanceId));
         soapUtil.setBody(wsdFactory.createProbeMatches(probeMatchesType), probeMatchesMsg);
-
-        return InterceptorResult.PROCEED;
     }
 
     @MessageInterceptor(value = WsDiscoveryConstants.WSA_ACTION_RESOLVE, direction = Direction.REQUEST)
-    InterceptorResult processResolve(RequestResponseObject rrObj)
+    void processResolve(RequestResponseObject rrObj)
             throws SoapFaultException {
         SoapMessage inMsg = rrObj.getRequest();
         ResolveType resolveType = validateIncomingMessage(inMsg, ResolveType.class);
@@ -151,7 +149,7 @@ public class WsDiscoveryTargetServiceInterceptor implements WsDiscoveryTargetSer
 
         if (!URI.create(resolveType.getEndpointReference().getAddress().getValue())
                 .equals(URI.create(endpointReference.getAddress().getValue()))) {
-            return InterceptorResult.CANCEL;
+            throw new RuntimeException("Scopes and Types do not match in incoming Resolve.");
         }
 
         ResolveMatchType resolveMatchType = wsdFactory.createResolveMatchType();
@@ -173,8 +171,6 @@ public class WsDiscoveryTargetServiceInterceptor implements WsDiscoveryTargetSer
         resolveMatchesMsg.getWsDiscoveryHeader().setAppSequence(wsdUtil.createAppSequence(instanceId));
 
         soapUtil.setBody(wsdFactory.createResolveMatches(resolveMatchesType), resolveMatchesMsg);
-
-        return InterceptorResult.PROCEED;
     }
 
     public EndpointReferenceType getEndpointReference() {

@@ -8,7 +8,6 @@ import javax.annotation.Nullable;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Collection;
-import java.util.Optional;
 
 /**
  * Runs interceptors.
@@ -25,33 +24,23 @@ class InterceptorProcessor {
      * @param interceptorRegistry the registry where to seek actions.
      * @param action              the affected action.
      * @param callbackData        the data to dispatch to found interceptors.
-     * @return interceptor result accumulated from all invoked interceptors.
      * @throws SoapFaultException if a SOAP fault comes up.
      */
-    InterceptorResult dispatch(Direction direction,
+    void dispatch(Direction direction,
                                InterceptorRegistry interceptorRegistry,
                                @Nullable String action,
                                InterceptorCallbackType callbackData) throws InterceptorException {
         // First apply default interceptors
-        InterceptorResult interceptorResult = invokeInterceptors(direction, callbackData,
-                interceptorRegistry.getDefaultInterceptors());
-        if (interceptorResult == InterceptorResult.CANCEL) {
-            return InterceptorResult.CANCEL;
-        }
+        invokeInterceptors(direction, callbackData, interceptorRegistry.getDefaultInterceptors());
 
         // Second apply specific interceptors
-        if (Optional.ofNullable(action).isPresent()) {
-            Collection<InterceptorInfo> interceptors = interceptorRegistry.getInterceptors(action);
-            return invokeInterceptors(direction, callbackData, interceptors);
-        } else {
-            return InterceptorResult.NONE_INVOKED;
-        }
+        Collection<InterceptorInfo> interceptors = interceptorRegistry.getInterceptors(action);
+        invokeInterceptors(direction, callbackData, interceptors);
     }
 
-    private InterceptorResult invokeInterceptors(Direction direction,
-                                                 InterceptorCallbackType callbackParam,
-                                                 Collection<InterceptorInfo> interceptors) throws InterceptorException {
-        InterceptorResult interceptorResult = InterceptorResult.NONE_INVOKED;
+    private void invokeInterceptors(Direction direction,
+                                    InterceptorCallbackType callbackParam,
+                                    Collection<InterceptorInfo> interceptors) throws InterceptorException {
         for (InterceptorInfo interceptorInfo : interceptors) {
             Method callbackMethod = interceptorInfo.getCallbackMethod();
             try {
@@ -68,15 +57,7 @@ class InterceptorProcessor {
                     }
                 }
 
-                if (!callbackMethod.getReturnType().equals(Void.TYPE)) {
-                    InterceptorResult iResult = (InterceptorResult) callbackMethod.invoke(
-                            interceptorInfo.getCallbackObject(), callbackParam);
-                    if (iResult == InterceptorResult.CANCEL) {
-                        return InterceptorResult.CANCEL;
-                    }
-                } else {
-                    callbackMethod.invoke(interceptorInfo.getCallbackObject(), callbackParam);
-                }
+                callbackMethod.invoke(interceptorInfo.getCallbackObject(), callbackParam);
             } catch (IllegalAccessException e) {
                 LOG.warn(e.getMessage());
             } catch (InvocationTargetException e) {
@@ -84,9 +65,6 @@ class InterceptorProcessor {
                         interceptorInfo.getCallbackObject().toString(),
                         interceptorInfo.getCallbackObject(), e.getTargetException());
             }
-            interceptorResult = InterceptorResult.PROCEED;
         }
-
-        return interceptorResult;
     }
 }

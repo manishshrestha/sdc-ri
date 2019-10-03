@@ -2,14 +2,13 @@ package org.ieee11073.sdc.dpws.device.helper;
 
 import com.google.inject.Inject;
 import org.ieee11073.sdc.dpws.http.HttpHandler;
+import org.ieee11073.sdc.dpws.soap.*;
 import org.ieee11073.sdc.dpws.soap.exception.MarshallingException;
 import org.ieee11073.sdc.dpws.soap.exception.SoapFaultException;
 import org.ieee11073.sdc.dpws.soap.exception.TransportException;
 import org.ieee11073.sdc.dpws.soap.factory.SoapFaultFactory;
 import org.ieee11073.sdc.dpws.soap.interception.Interceptor;
 import org.ieee11073.sdc.dpws.soap.interception.InterceptorHandler;
-import org.ieee11073.sdc.dpws.soap.interception.InterceptorResult;
-import org.ieee11073.sdc.dpws.soap.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -58,12 +57,7 @@ public class RequestResponseServerHttpHandler implements HttpHandler, Intercepto
 
         SoapMessage responseMsg = soapUtil.createMessage();
         try {
-            InterceptorResult ir = reqResServer.receiveRequestResponse(requestMsg, responseMsg, transportInfo);
-            if (ir == InterceptorResult.CANCEL) {
-                responseMsg = soapFaultFactory.createReceiverFault("Message processing aborted");
-            } else if (ir == InterceptorResult.NONE_INVOKED) {
-                responseMsg = soapFaultFactory.createReceiverFault("Message was not processed at the server");
-            }
+            reqResServer.receiveRequestResponse(requestMsg, responseMsg, transportInfo);
         } catch (SoapFaultException e) {
             responseMsg = e.getFaultMessage();
         }

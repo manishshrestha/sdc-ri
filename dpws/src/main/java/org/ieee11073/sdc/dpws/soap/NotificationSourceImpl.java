@@ -37,15 +37,9 @@ public class NotificationSourceImpl implements NotificationSource {
     }
 
     @Override
-    public InterceptorResult sendNotification(SoapMessage notification) throws MarshallingException, TransportException, InterceptorException {
+    public void sendNotification(SoapMessage notification) throws MarshallingException, TransportException, InterceptorException {
         NotificationObject nObj = new NotificationObject(notification);
-        InterceptorResult ir = clientHelper.invokeDispatcher(Direction.NOTIFICATION, interceptorRegistry,
-                notification, nObj);
-        if (ir == InterceptorResult.CANCEL) {
-            return InterceptorResult.CANCEL;
-        }
-
+        clientHelper.invokeDispatcher(Direction.NOTIFICATION, interceptorRegistry, notification, nObj);
         networkCallback.onNotification(notification);
-        return InterceptorResult.PROCEED;
     }
 }

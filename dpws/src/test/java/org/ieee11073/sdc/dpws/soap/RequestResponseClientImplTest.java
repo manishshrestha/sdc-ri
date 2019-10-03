@@ -45,68 +45,60 @@ public class RequestResponseClientImplTest extends DpwsTest {
 
         rrClient.register(new Interceptor() {
             @MessageInterceptor(direction = Direction.REQUEST)
-            InterceptorResult onDelete(RequestObject rInfo) {
+            void onDelete(RequestObject rInfo) {
                 dispatchedSequence.add("REQUEST(MAX)");
-                return InterceptorResult.PROCEED;
             }
         });
 
         rrClient.register(new Interceptor() {
             @MessageInterceptor(direction = Direction.REQUEST, sequenceNumber = 5)
-            InterceptorResult onDelete(RequestObject rInfo) {
+            void onDelete(RequestObject rInfo) {
                 dispatchedSequence.add("REQUEST(5)");
-                return InterceptorResult.PROCEED;
             }
         });
 
         rrClient.register(new Interceptor() {
             @MessageInterceptor(value = "http://example.com/fabrikam/mail/Delete", direction = Direction.REQUEST)
-            InterceptorResult onDelete(RequestObject rInfo) {
+            void onDelete(RequestObject rInfo) {
                 dispatchedSequence.add("REQUEST(ACTION, MAX)");
-                return InterceptorResult.PROCEED;
             }
         });
 
         // Shall be skipped since argument is missing
         rrClient.register(new Interceptor() {
             @MessageInterceptor(value = "http://example.com/fabrikam/mail/Delete", direction = Direction.REQUEST)
-            InterceptorResult onDelete() {
+            void onDelete() {
                 dispatchedSequence.add("INVALID REQUEST(ACTION, MAX)");
-                return InterceptorResult.PROCEED;
             }
         });
 
         // Shall be skipped since argument is RequestResponse, but should be Request
         rrClient.register(new Interceptor() {
             @MessageInterceptor(value = "http://example.com/fabrikam/mail/Delete", direction = Direction.REQUEST)
-            InterceptorResult onDelete(RequestResponseObject rrInfo) {
+            void onDelete(RequestResponseObject rrInfo) {
                 dispatchedSequence.add("INVALID REQUEST(ACTION, MAX)");
-                return InterceptorResult.PROCEED;
             }
         });
 
         rrClient.register(new Interceptor() {
             @MessageInterceptor(direction = Direction.RESPONSE)
-            InterceptorResult onDelete(RequestResponseObject rrInfo) {
+            void onDelete(RequestResponseObject rrInfo) {
                 dispatchedSequence.add("RESPONSE(MAX)");
-                return InterceptorResult.PROCEED;
             }
         });
 
         // Shall be skipped since response action is not "http://example.com/fabrikam/mail/Delete"
         rrClient.register(new Interceptor() {
             @MessageInterceptor(value = "http://example.com/fabrikam/mail/Delete", direction = Direction.RESPONSE)
-            InterceptorResult onDelete(RequestResponseObject rrInfo) {
+            void onDelete(RequestResponseObject rrInfo) {
                 dispatchedSequence.add("INVALID RESPONSE(ACTION, MAX)");
-                return InterceptorResult.PROCEED;
             }
         });
 
         rrClient.register(new Interceptor() {
             @MessageInterceptor(value = "http://response-action", direction = Direction.RESPONSE)
-            InterceptorResult onDelete(RequestResponseObject rrInfo) {
+            void onDelete(RequestResponseObject rrInfo) {
                 dispatchedSequence.add("RESPONSE(ACTION,MAX)");
-                return InterceptorResult.PROCEED;
             }
         });
 
