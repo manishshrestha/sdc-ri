@@ -1,4 +1,4 @@
-package org.ieee11073.sdc.common.helper;
+package org.ieee11073.sdc.common.util;
 
 /**
  * Utility class to deep copy arbitrary objects.

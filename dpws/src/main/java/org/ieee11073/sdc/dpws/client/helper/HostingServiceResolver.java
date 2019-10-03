@@ -4,7 +4,7 @@ import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
-import org.ieee11073.sdc.common.helper.JaxbUtil;
+import org.ieee11073.sdc.common.util.JaxbUtil;
 import org.ieee11073.sdc.dpws.DpwsConfig;
 import org.ieee11073.sdc.dpws.DpwsConstants;
 import org.ieee11073.sdc.dpws.TransportBinding;

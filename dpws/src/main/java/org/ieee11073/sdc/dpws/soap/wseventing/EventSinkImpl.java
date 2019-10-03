@@ -20,7 +20,7 @@ import org.ieee11073.sdc.dpws.soap.wsaddressing.model.EndpointReferenceType;
 import org.ieee11073.sdc.dpws.soap.wseventing.exception.SubscriptionNotFoundException;
 import org.ieee11073.sdc.dpws.soap.wseventing.factory.SubscriptionManagerFactory;
 import org.ieee11073.sdc.dpws.soap.wseventing.model.*;
-import org.ieee11073.sdc.common.helper.JaxbUtil;
+import org.ieee11073.sdc.common.util.JaxbUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

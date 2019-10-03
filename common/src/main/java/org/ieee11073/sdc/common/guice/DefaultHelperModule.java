@@ -1,13 +1,13 @@
 package org.ieee11073.sdc.common.guice;
 
 import com.google.inject.AbstractModule;
-import org.ieee11073.sdc.common.helper.JaxbUtil;
-import org.ieee11073.sdc.common.helper.JaxbUtilImpl;
-import org.ieee11073.sdc.common.helper.ObjectUtil;
-import org.ieee11073.sdc.common.helper.ObjectUtilImpl;
+import org.ieee11073.sdc.common.util.JaxbUtil;
+import org.ieee11073.sdc.common.util.JaxbUtilImpl;
+import org.ieee11073.sdc.common.util.ObjectUtil;
+import org.ieee11073.sdc.common.util.ObjectUtilImpl;
 
 /**
- * Guice module to bind helper functionality.
+ * Guice module to bind util functionality.
  */
 public class DefaultHelperModule extends AbstractModule {
     @Override

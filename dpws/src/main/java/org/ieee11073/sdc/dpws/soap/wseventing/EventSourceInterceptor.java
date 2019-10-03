@@ -31,7 +31,7 @@ import org.ieee11073.sdc.dpws.soap.wseventing.helper.EventSourceTransportManager
 import org.ieee11073.sdc.dpws.soap.wseventing.helper.NotificationWorker;
 import org.ieee11073.sdc.dpws.soap.wseventing.helper.SubscriptionRegistry;
 import org.ieee11073.sdc.dpws.soap.wseventing.model.*;
-import org.ieee11073.sdc.common.helper.JaxbUtil;
+import org.ieee11073.sdc.common.util.JaxbUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

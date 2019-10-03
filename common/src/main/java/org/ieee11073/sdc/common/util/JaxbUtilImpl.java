@@ -1,4 +1,4 @@
-package org.ieee11073.sdc.common.helper;
+package org.ieee11073.sdc.common.util;
 
 import org.w3c.dom.Element;
 

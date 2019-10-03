@@ -3,7 +3,7 @@ package org.ieee11073.sdc.biceps.common.storage.helper;
 import com.google.inject.Inject;
 import org.ieee11073.sdc.biceps.common.MdibEntity;
 import org.ieee11073.sdc.biceps.common.factory.MdibEntityFactory;
-import org.ieee11073.sdc.common.helper.ObjectUtil;
+import org.ieee11073.sdc.common.util.ObjectUtil;
 
 import javax.annotation.Nullable;
 import java.util.Collection;

@@ -13,7 +13,7 @@ import org.ieee11073.sdc.dpws.soap.wsdiscovery.WsDiscoveryClient;
 import java.util.function.Consumer;
 
 /**
- * Factory to create helper objects for the DPWS client.
+ * Factory to create util objects for the DPWS client.
  */
 public interface ClientHelperFactory {
     /**

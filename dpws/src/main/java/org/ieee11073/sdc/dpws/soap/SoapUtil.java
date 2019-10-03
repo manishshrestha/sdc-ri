@@ -1,7 +1,7 @@
 package org.ieee11073.sdc.dpws.soap;
 
 import com.google.inject.Inject;
-import org.ieee11073.sdc.common.helper.JaxbUtil;
+import org.ieee11073.sdc.common.util.JaxbUtil;
 import org.ieee11073.sdc.dpws.soap.factory.EnvelopeFactory;
 import org.ieee11073.sdc.dpws.soap.factory.SoapMessageFactory;
 import org.ieee11073.sdc.dpws.soap.model.Envelope;

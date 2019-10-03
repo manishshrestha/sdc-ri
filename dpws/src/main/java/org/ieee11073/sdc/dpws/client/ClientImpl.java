@@ -91,7 +91,7 @@ public class ClientImpl extends AbstractIdleService implements Client, Service, 
         // Bind the notification sink to the WS-Discovery client that was created before
         notificationSink.register(wsDiscoveryClient);
 
-        // Create device resolver proxy helper object
+        // Create device resolver proxy util object
         DiscoveredDeviceResolver discoveredDeviceResolver = clientHelperFactory.createDiscoveredDeviceResolver(wsDiscoveryClient);
 
         // Create observer for WS-Discovery messages

@@ -4,7 +4,7 @@ package org.ieee11073.sdc.biceps.common.access;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import org.ieee11073.sdc.biceps.common.CommonConfig;
-import org.ieee11073.sdc.common.helper.ObjectUtil;
+import org.ieee11073.sdc.common.util.ObjectUtil;
 
 /**
  * A utility class to deep copy any input and output if configured.

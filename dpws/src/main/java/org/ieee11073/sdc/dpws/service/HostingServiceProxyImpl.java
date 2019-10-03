@@ -2,7 +2,7 @@ package org.ieee11073.sdc.dpws.service;
 
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
-import org.ieee11073.sdc.common.helper.ObjectUtil;
+import org.ieee11073.sdc.common.util.ObjectUtil;
 import org.ieee11073.sdc.dpws.model.ThisDeviceType;
 import org.ieee11073.sdc.dpws.model.ThisModelType;
 import org.ieee11073.sdc.dpws.soap.RequestResponseClient;
