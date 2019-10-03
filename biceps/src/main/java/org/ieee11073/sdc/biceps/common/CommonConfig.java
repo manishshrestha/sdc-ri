@@ -1,18 +1,11 @@
 package org.ieee11073.sdc.biceps.common;
 
+import org.ieee11073.sdc.biceps.common.storage.MdibStorage;
+
 /**
  * General configuration of the BICEPS common package.
  */
 public class CommonConfig {
-    /**
-     * Controls the maximum queue size of MDIB queues.
-     * <ul>
-     * <li>Data type: {@linkplain Integer}
-     * <li>Use: optional
-     * </ul>
-     */
-    public static final String MDIB_QUEUE_SIZE = "Biceps.Common.MdibQueueSize";
-
     /**
      * If true any input to an MDIB is copied before stored in the {@link MdibStorage}.
      * <p>

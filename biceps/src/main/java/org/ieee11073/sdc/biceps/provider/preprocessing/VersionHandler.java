@@ -2,7 +2,9 @@ package org.ieee11073.sdc.biceps.provider.preprocessing;
 
 import com.google.inject.Inject;
 import org.ieee11073.sdc.biceps.common.*;
-import org.ieee11073.sdc.biceps.common.factory.MdibEntityFactory;
+import org.ieee11073.sdc.biceps.common.storage.DescriptionPreprocessingSegment;
+import org.ieee11073.sdc.biceps.common.storage.MdibStorage;
+import org.ieee11073.sdc.biceps.common.storage.StatePreprocessingSegment;
 import org.ieee11073.sdc.biceps.model.participant.AbstractDescriptor;
 import org.ieee11073.sdc.biceps.model.participant.AbstractMultiState;
 import org.ieee11073.sdc.biceps.model.participant.AbstractState;
@@ -34,8 +36,7 @@ public class VersionHandler implements DescriptionPreprocessingSegment, StatePre
 
     @Inject
     VersionHandler(MdibTypeValidator mdibTypeValidator,
-                   ObjectUtil objectUtil,
-                   MdibEntityFactory entityFactory) {
+                   ObjectUtil objectUtil) {
         this.mdibTypeValidator = mdibTypeValidator;
         this.objectUtil = objectUtil;
         this.versionsWorkingCopy = new HashMap<>();
@@ -44,13 +45,23 @@ public class VersionHandler implements DescriptionPreprocessingSegment, StatePre
     }
 
     @Override
-    public void beforeFirstModification(MdibStorage storage) {
+    public void beforeFirstModification(MdibDescriptionModifications modifications, MdibStorage storage) {
         updatedParents.clear();
         versionsWorkingCopy = objectUtil.deepCopy(versions);
     }
 
     @Override
-    public void afterLastModification(MdibStorage storage) {
+    public void afterLastModification(MdibDescriptionModifications modifications, MdibStorage storage) {
+        versions = versionsWorkingCopy;
+    }
+
+    @Override
+    public void beforeFirstModification(MdibStateModifications modifications, MdibStorage storage) {
+        versionsWorkingCopy = objectUtil.deepCopy(versions);
+    }
+
+    @Override
+    public void afterLastModification(MdibStateModifications modifications, MdibStorage storage) {
         versions = versionsWorkingCopy;
     }
 
@@ -72,7 +83,7 @@ public class VersionHandler implements DescriptionPreprocessingSegment, StatePre
     }
 
     @Override
-    public void process(AbstractState state, MdibStorage storage) throws VersioningException {
+    public void process(MdibStateModifications modifications, AbstractState state, MdibStorage storage) throws VersioningException {
         final Optional<AbstractMultiState> multiState = mdibTypeValidator.toMultiState(state);
         if (multiState.isPresent()) {
             VersionPair versionPair;
@@ -99,10 +110,11 @@ public class VersionHandler implements DescriptionPreprocessingSegment, StatePre
 
     private void processDelete(AbstractDescriptor descriptor, MdibStorage storage) throws VersioningException {
         if (descriptor instanceof MdsDescriptor) {
-            // no child to update in case of an MDS
+            // no parent to update in case of an MDS
             return;
         }
 
+        // else increment parent version on delete
         Optional<MdibEntity> entity = storage.getEntity(descriptor.getHandle());
         if (entity.isEmpty()) {
             throw new VersioningException("Deletion of an entity requires an existing entity in the MDIB storage");
@@ -121,7 +133,7 @@ public class VersionHandler implements DescriptionPreprocessingSegment, StatePre
                                List<? extends AbstractState> states,
                                MdibStorage storage) throws VersioningException {
         if (isUpdatedAlready(descriptor)) {
-            return; // state has been updated already, ignore
+            return;
         }
 
         if (mdibTypeValidator.isMultiStateDescriptor(descriptor)) {
@@ -160,6 +172,7 @@ public class VersionHandler implements DescriptionPreprocessingSegment, StatePre
             putVersionPair(multiState);
         };
 
+        // increment versions for all states from change set
         for (AbstractState state : states) {
             final AbstractMultiState multiState = mdibTypeValidator.toMultiState(state)
                     .orElseThrow(() -> new VersioningException("Expected multi state, but single state found"));
@@ -167,6 +180,7 @@ public class VersionHandler implements DescriptionPreprocessingSegment, StatePre
             multiStatesFromStorage.remove(multiState.getHandle());
         }
 
+        // increment versions from states in MDIB storage that are not in change set
         for (Map.Entry<String, AbstractMultiState> multiState : multiStatesFromStorage.entrySet()) {
             replaceVersions.accept(multiState.getValue());
         }
@@ -181,7 +195,8 @@ public class VersionHandler implements DescriptionPreprocessingSegment, StatePre
         putVersionPair(descriptor, state);
     }
 
-    private void processInsert(MdibDescriptionModifications modifications, AbstractDescriptor descriptor,
+    private void processInsert(MdibDescriptionModifications modifications,
+                               AbstractDescriptor descriptor,
                                List<? extends AbstractState> states,
                                Optional<String> parentHandle,
                                MdibStorage storage) throws VersioningException {
@@ -210,24 +225,20 @@ public class VersionHandler implements DescriptionPreprocessingSegment, StatePre
 
     private void processInsertWithSingleState(AbstractDescriptor descriptor, AbstractState state) {
         final VersionPair versionPair = getVersionPair(descriptor).orElse(new VersionPair());
-        if (!isUpdatedAlready(descriptor)) {
-            descriptor.setDescriptorVersion(versionPair.getDescriptorVersion().add(BigInteger.ONE));
-        }
+        descriptor.setDescriptorVersion(versionPair.getDescriptorVersion().add(BigInteger.ONE));
         state.setDescriptorVersion(descriptor.getDescriptorVersion());
         state.setStateVersion(versionPair.getStateVersion().add(BigInteger.ONE));
         putVersionPair(descriptor, state);
     }
 
     private void processInsertWithMultiState(AbstractDescriptor descriptor, List<? extends AbstractState> states) throws VersioningException {
-        if (!isUpdatedAlready(descriptor)) {
-            final VersionPair versionPair = getVersionPair(descriptor).orElse(new VersionPair());
-            descriptor.setDescriptorVersion(versionPair.getDescriptorVersion().add(BigInteger.ONE));
-            putVersionPair(descriptor);
-        }
+        final VersionPair versionPair = getVersionPair(descriptor).orElse(new VersionPair());
+        descriptor.setDescriptorVersion(versionPair.getDescriptorVersion().add(BigInteger.ONE));
+        putVersionPair(descriptor);
 
         for (AbstractState state : states) {
             final AbstractMultiState multiState = mdibTypeValidator.toMultiState(state)
-                    .orElseThrow(() -> new VersioningException("Expected multi state, but single state found"));
+                    .orElseThrow(() -> new VersioningException("Expected multi-state, but single state found"));
             final VersionPair stateVersionPair = getVersionPair(multiState).orElse(new VersionPair());
             multiState.setDescriptorVersion(descriptor.getDescriptorVersion());
             multiState.setStateVersion(stateVersionPair.getStateVersion().add(BigInteger.ONE));
@@ -235,23 +246,11 @@ public class VersionHandler implements DescriptionPreprocessingSegment, StatePre
         }
     }
 
-    void incrementParent(String parentHandle, MdibDescriptionModifications modifications, MdibStorage storage) throws VersioningException {
-        if (!modifications.isAddedAsInserted(parentHandle) && !modifications.isAddedAsUpdated(parentHandle)) {
-            final MdibEntity entity = storage.getEntity(parentHandle)
-                    .orElseThrow(() -> new VersioningException(String.format("Parent handle not found: %s", parentHandle)));
-
-            // Queue in update if not in modifications already
-            final AbstractDescriptor descriptorCopy = objectUtil.deepCopy(entity.getDescriptor());
-            entity.doIfSingleState(state -> modifications.update(descriptorCopy, objectUtil.deepCopy(state)))
-                    .orElse(states -> modifications.update(descriptorCopy, objectUtil.deepCopy(states)));
-        }
-    }
-
-    boolean isUpdatedAlready(AbstractDescriptor descriptor) {
+    private boolean isUpdatedAlready(AbstractDescriptor descriptor) {
         return updatedParents.contains(descriptor.getHandle());
     }
 
-    void setUpdated(AbstractDescriptor descriptor) {
+    private void setUpdated(AbstractDescriptor descriptor) {
         updatedParents.add(descriptor.getHandle());
     }
 

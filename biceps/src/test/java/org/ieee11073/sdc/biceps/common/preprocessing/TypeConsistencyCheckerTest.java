@@ -3,19 +3,19 @@ package org.ieee11073.sdc.biceps.common.preprocessing;
 import org.ieee11073.sdc.biceps.UnitTestUtil;
 import org.ieee11073.sdc.biceps.common.MdibDescriptionModification;
 import org.ieee11073.sdc.biceps.common.MdibDescriptionModifications;
-import org.ieee11073.sdc.biceps.common.MdibStorage;
-import org.ieee11073.sdc.biceps.common.factory.MdibStorageFactory;
-import org.ieee11073.sdc.biceps.model.participant.ChannelDescriptor;
-import org.ieee11073.sdc.biceps.model.participant.MdsDescriptor;
-import org.ieee11073.sdc.biceps.model.participant.NumericMetricDescriptor;
-import org.ieee11073.sdc.biceps.model.participant.VmdDescriptor;
+import org.ieee11073.sdc.biceps.common.storage.MdibStorage;
+import org.ieee11073.sdc.biceps.common.storage.factory.MdibStorageFactory;
+import org.ieee11073.sdc.biceps.model.participant.*;
+import org.ieee11073.sdc.biceps.provider.preprocessing.TypeConsistencyChecker;
 import org.ieee11073.sdc.biceps.testutil.MockModelFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.InvocationTargetException;
+import java.math.BigInteger;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.mock;
 
 class TypeConsistencyCheckerTest {
     private static final UnitTestUtil UT = new UnitTestUtil();
@@ -42,7 +42,7 @@ class TypeConsistencyCheckerTest {
         modifications.insert(MockModelFactory.createDescriptor(mds, MdsDescriptor.class));
         modifications.insert(MockModelFactory.createDescriptor(vmd1, VmdDescriptor.class));
         modifications.insert(MockModelFactory.createDescriptor(channel, ChannelDescriptor.class));
-        mdibStorage.apply(modifications);
+        mdibStorage.apply(mock(MdibVersion.class), mock(BigInteger.class), mock(BigInteger.class), modifications);
     }
 
     @Test

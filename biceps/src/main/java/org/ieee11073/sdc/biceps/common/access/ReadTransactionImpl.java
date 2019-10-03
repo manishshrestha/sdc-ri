@@ -3,11 +3,11 @@ package org.ieee11073.sdc.biceps.common.access;
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
 import org.ieee11073.sdc.biceps.common.MdibEntity;
-import org.ieee11073.sdc.biceps.common.MdibStorage;
-import org.ieee11073.sdc.biceps.common.MdibVersion;
+import org.ieee11073.sdc.biceps.common.storage.MdibStorage;
 import org.ieee11073.sdc.biceps.model.participant.AbstractContextState;
 import org.ieee11073.sdc.biceps.model.participant.AbstractDescriptor;
 import org.ieee11073.sdc.biceps.model.participant.AbstractState;
+import org.ieee11073.sdc.biceps.model.participant.MdibVersion;
 
 import java.math.BigInteger;
 import java.util.Collection;
@@ -15,6 +15,9 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.locks.Lock;
 
+/**
+ * Default implementation of {@linkplain ReadTransaction}.
+ */
 public class ReadTransactionImpl implements ReadTransaction {
     private final Lock lock;
     private final MdibStorage mdibStorage;
@@ -68,6 +71,11 @@ public class ReadTransactionImpl implements ReadTransaction {
     }
 
     @Override
+    public Optional<AbstractState> getState(String handle) {
+        return mdibStorage.getState(handle);
+    }
+
+    @Override
     public <T extends AbstractState> Optional<T> getState(String handle, Class<T> stateClass) {
         return mdibStorage.getState(handle, stateClass);
     }
@@ -75,6 +83,11 @@ public class ReadTransactionImpl implements ReadTransaction {
     @Override
     public <T extends AbstractContextState> List<T> getContextStates(String descriptorHandle, Class<T> stateClass) {
         return mdibStorage.getContextStates(descriptorHandle, stateClass);
+    }
+
+    @Override
+    public List<AbstractContextState> getContextStates(String descriptorHandle) {
+        return mdibStorage.getContextStates(descriptorHandle);
     }
 
     @Override

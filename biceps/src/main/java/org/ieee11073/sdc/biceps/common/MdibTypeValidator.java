@@ -50,7 +50,7 @@ public class MdibTypeValidator {
     }
 
     /**
-     * Checks if the given descriptor state pairing is valid.
+     * Checks if the given descriptor states pairing is valid.
      * <p>
      * A match is given if
      * <ul>
@@ -75,14 +75,15 @@ public class MdibTypeValidator {
     }
 
     /**
-     * Tries to match with exactly one state.
+     * Tries to match a descriptor with exactly one state.
      * <p>
-     * Hint: does also work for multi state lists of size 1.
+     * Hint: does also work for multi-state lists of size 1.
      *
      * @param descriptor the descriptor to test.
      * @param state      the state to test.
      * @param <D>        any descriptor class.
      * @param <S>        any state class.
+     * @return true if descriptor and state match, otherwise false.
      * @see #match(AbstractDescriptor, List)
      */
     public <D extends AbstractDescriptor, S extends AbstractState> boolean match(D descriptor, S state) {

@@ -3,48 +3,35 @@ package org.ieee11073.sdc.biceps.common;
 import org.ieee11073.sdc.biceps.common.event.*;
 import org.ieee11073.sdc.biceps.model.participant.*;
 
-import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Optional;
 
 /**
  * Container to collect state updates supposed to be applied on an MDIB.
- *
+ * <p>
  * The {@linkplain MdibStateModifications} is a fluent interface.
  */
 public class MdibStateModifications {
     private final MdibStateModifications.Type changeType;
-    private final MdibVersion mdibVersion;
     private List<AbstractState> states;
 
     /**
-     * Create set.
+     * Creates a set.
+     *
+     * @param changeType the change type to be applied for the set.
+     * @return a new {@link MdibStateModifications} object.
      */
     public static MdibStateModifications create(Type changeType) {
-        return new MdibStateModifications(changeType, null);
+        return new MdibStateModifications(changeType);
     }
 
-    /**
-     * Create set with version number.
-     */
-    public static MdibStateModifications create(Type changeType, MdibVersion mdibVersion) {
-        return new MdibStateModifications(changeType, mdibVersion);
-    }
-
-    /**
-     * Create set with version number form existing base.
-     */
-    public static MdibStateModifications create(MdibVersion mdibVersion, MdibStateModifications existingModifications) {
-        MdibStateModifications newModifications = new MdibStateModifications(existingModifications.getChangeType(), mdibVersion);
-        newModifications.states = existingModifications.states;
-        return newModifications;
-    }
     /**
      * Add a single element to the change set.
      *
-     * @throws ClassCastException Is thrown if the element does not match the change type set on {@link #create(Type)}.
+     * @param state the state to add.
+     * @return this object for fluent access.
+     * @throws ClassCastException if the element does not match the change type that has been set on {@link #create(Type)}.
      */
     public MdibStateModifications add(AbstractState state) {
         if (!changeType.getChangeBaseClass().isAssignableFrom(state.getClass())) {
@@ -60,16 +47,16 @@ public class MdibStateModifications {
     /**
      * Add multiple elements to the change set.
      *
-     * @throws ClassCastException Is thrown if one of the elements does not match the change type set on {@link #create(Type)}.
+     * @param states the states to set.
+     * @param <T>    any state type.
+     * @return this object for fluent access.
+     * @throws ClassCastException if at least one of the elements does not match the change type that has been set on {@link #create(Type)}.
      */
     public <T extends AbstractState> MdibStateModifications addAll(Collection<T> states) {
         states.stream().forEach(state -> add(state));
         return this;
     }
 
-    /**
-     * Get the list of states to be updated.
-     */
     public List<AbstractState> getStates() {
         return this.states;
     }
@@ -78,19 +65,17 @@ public class MdibStateModifications {
         return changeType;
     }
 
-    public Optional<MdibVersion> getMdibVersion() {
-        return Optional.ofNullable(mdibVersion);
-    }
-
     /**
      * Change type designation.
-     *
-     * In accordance to BICEPS one change set can be of a certain base type. BICEPS distinguishes between
-     *
-     * - alert changes
-     * - component changes
-     * - context changes
-     * - operation changes
+     * <p>
+     * In accordance to BICEPS a change set can be of one certain base type at a time. BICEPS distinguishes between
+     * <ul>
+     * <li>alert changes
+     * <li>component changes
+     * <li>context changes
+     * <li>metric changes
+     * <li>operation changes
+     * </ul>
      */
     public enum Type {
         ALERT(AbstractAlertState.class, AlertStateModificationMessage.class),
@@ -117,9 +102,8 @@ public class MdibStateModifications {
         }
     }
 
-    private MdibStateModifications(Type changeType, @Nullable MdibVersion mdibVersion) {
+    private MdibStateModifications(Type changeType) {
         this.changeType = changeType;
-        this.mdibVersion = mdibVersion;
         this.states = new ArrayList<>();
     }
 }

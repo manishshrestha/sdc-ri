@@ -1,5 +1,8 @@
 package org.ieee11073.sdc.biceps.provider.preprocessing;
 
+/**
+ * Exception that is thrown if the versioning rules of BICEPS could not be applied during preprocessing.
+ */
 public class VersioningException extends Exception {
     public VersioningException() {
     }

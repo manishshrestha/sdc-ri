@@ -3,21 +3,33 @@ package org.ieee11073.sdc.biceps.common.event;
 import org.ieee11073.sdc.biceps.common.access.MdibAccess;
 import org.ieee11073.sdc.biceps.common.MdibEntity;
 
+import java.util.Collections;
 import java.util.List;
 
+/**
+ * Subscribe to this message in order to receive description changes.
+ */
 public class DescriptionModificationMessage extends AbstractMdibAccessMessage {
     private final List<MdibEntity> insertedEntities;
     private final List<MdibEntity> updatedEntities;
     private final List<String> deletedEntities;
 
+    /**
+     * Constructor.
+     *
+     * @param mdibAccess the MDIB access for {@link AbstractMdibAccessMessage}.
+     * @param insertedEntities all inserted entities.
+     * @param updatedEntities all updated entities.
+     * @param deletedEntities all deleted entities.
+     */
     public DescriptionModificationMessage(MdibAccess mdibAccess,
                                           List<MdibEntity> insertedEntities,
                                           List<MdibEntity> updatedEntities,
                                           List<String> deletedEntities) {
         super(mdibAccess);
-        this.insertedEntities = insertedEntities;
-        this.updatedEntities = updatedEntities;
-        this.deletedEntities = deletedEntities;
+        this.insertedEntities = Collections.unmodifiableList(insertedEntities);
+        this.updatedEntities = Collections.unmodifiableList(updatedEntities);
+        this.deletedEntities = Collections.unmodifiableList(deletedEntities);
     }
 
     public List<MdibEntity> getInsertedEntities() {

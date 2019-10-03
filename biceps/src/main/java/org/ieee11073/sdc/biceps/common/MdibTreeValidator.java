@@ -8,6 +8,9 @@ import org.ieee11073.sdc.biceps.model.participant.*;
 import javax.inject.Inject;
 import java.util.*;
 
+/**
+ * Utility class to verify cardinality and parent-child type correctness.
+ */
 public class MdibTreeValidator {
     private final HashMultimap<Class<?>, Class<?>> allowedParents;
     private final Set<Class<?>> oneChildEntities;
@@ -21,14 +24,34 @@ public class MdibTreeValidator {
         setupChildCardinality();
     }
 
+    /**
+     * Checks if a descriptor is allowed to appear many times as a child.
+     *
+     * @param child the descriptor to check.
+     * @param <T> a descriptor type.
+     * @return true if it is allowed to appear more than once, false otherwise.
+     */
     public <T extends AbstractDescriptor> boolean isManyAllowed(T child) {
         return !oneChildEntities.contains(child.getClass());
     }
 
+    /**
+     * Checks if the parent child descriptor relation is eligible.
+     *
+     * @param parent the parent descriptor to check against.
+     * @param child  the child descriptor to check against.
+     * @return true if parent child relationship is eligible in terms of the BICEPS hierarchy.
+     */
     public boolean isValidParent(AbstractDescriptor parent, AbstractDescriptor child) {
         return allowedParents.containsEntry(child.getClass(), parent.getClass());
     }
 
+    /**
+     * Resolves allowed parents descriptor type for a given child descriptor type.
+     *
+     * @param child the child where to retrieve parents for.
+     * @return a set of parent descriptor classes.
+     */
     public Set<Class<?>> allowedParents(AbstractDescriptor child) {
         return allowedParents.get(child.getClass());
     }

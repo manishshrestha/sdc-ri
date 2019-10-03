@@ -2,7 +2,8 @@ package org.ieee11073.sdc.biceps.provider.preprocessing;
 
 import org.ieee11073.sdc.biceps.UnitTestUtil;
 import org.ieee11073.sdc.biceps.common.*;
-import org.ieee11073.sdc.biceps.common.factory.MdibStorageFactory;
+import org.ieee11073.sdc.biceps.common.storage.factory.MdibStorageFactory;
+import org.ieee11073.sdc.biceps.common.storage.MdibStorage;
 import org.ieee11073.sdc.biceps.guice.DefaultBicepsConfigModule;
 import org.ieee11073.sdc.biceps.model.participant.*;
 import org.ieee11073.sdc.biceps.testutil.MockModelFactory;
@@ -14,6 +15,7 @@ import java.util.Arrays;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.mock;
 
 class VersionHandlerTest {
     private static final UnitTestUtil UT = new UnitTestUtil(new DefaultBicepsConfigModule() {
@@ -179,7 +181,7 @@ class VersionHandlerTest {
         // When a child is inserted below a non-existing MDS
         final MdibDescriptionModifications vmdModifications = MdibDescriptionModifications.create();
         vmdModifications.insert(vmdDescriptor, vmdState, mdsHandle);
-        versionHandler.beforeFirstModification(mdibStorage);
+        versionHandler.beforeFirstModification(vmdModifications, mdibStorage);
 
         // Then expect an exception to be thrown
         assertThrows(Exception.class, () ->
@@ -366,22 +368,22 @@ class VersionHandlerTest {
     }
 
     private void apply(MdibStateModifications modifications) throws VersioningException {
-        versionHandler.beforeFirstModification(mdibStorage);
+        versionHandler.beforeFirstModification(modifications, mdibStorage);
         for (AbstractState modification : modifications.getStates()) {
-            versionHandler.process(modification, mdibStorage);
+            versionHandler.process(modifications, modification, mdibStorage);
         }
-        versionHandler.afterLastModification(mdibStorage);
+        versionHandler.afterLastModification(modifications, mdibStorage);
     }
 
     private void apply(MdibDescriptionModifications modifications, boolean applyOnStorage) throws VersioningException {
-        versionHandler.beforeFirstModification(mdibStorage);
+        versionHandler.beforeFirstModification(modifications, mdibStorage);
         for (MdibDescriptionModification modification : modifications.getModifications()) {
             versionHandler.process(modifications, modification, mdibStorage);
         }
-        versionHandler.afterLastModification(mdibStorage);
+        versionHandler.afterLastModification(modifications, mdibStorage);
 
         if (applyOnStorage == true) {
-            mdibStorage.apply(modifications);
+            mdibStorage.apply(mock(MdibVersion.class), mock(BigInteger.class), mock(BigInteger.class), modifications);
         }
     }
 

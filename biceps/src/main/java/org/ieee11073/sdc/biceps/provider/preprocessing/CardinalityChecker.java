@@ -1,8 +1,13 @@
 package org.ieee11073.sdc.biceps.provider.preprocessing;
 
 import com.google.inject.Inject;
+import org.apache.commons.logging.LogFactory;
 import org.ieee11073.sdc.biceps.common.*;
+import org.ieee11073.sdc.biceps.common.storage.DescriptionPreprocessingSegment;
+import org.ieee11073.sdc.biceps.common.storage.MdibStorage;
 import org.ieee11073.sdc.biceps.model.participant.AbstractDescriptor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Optional;
 
@@ -13,6 +18,8 @@ import java.util.Optional;
  * This checker guarantees that no child is inserted twice if the maximum allowed number of children is one.
  */
 public class CardinalityChecker implements DescriptionPreprocessingSegment {
+    private static final Logger LOG = LoggerFactory.getLogger(CardinalityChecker.class);
+
     private final MdibTreeValidator treeValidator;
 
     @Inject
@@ -46,6 +53,7 @@ public class CardinalityChecker implements DescriptionPreprocessingSegment {
         final Optional<MdibEntity> parentEntityFromStorage = storage.getEntity(parentHandle.get());
         if (parentEntityFromStorage.isEmpty()) {
             // No parent in the storage yet - early exit
+            LOG.warn("Exepected a parent in the MDIB storage, but non found: %s", parentHandle.get());
             return;
         }
 
