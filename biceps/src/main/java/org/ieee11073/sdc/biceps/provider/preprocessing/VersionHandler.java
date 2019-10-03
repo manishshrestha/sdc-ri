@@ -9,7 +9,7 @@ import org.ieee11073.sdc.biceps.model.participant.AbstractDescriptor;
 import org.ieee11073.sdc.biceps.model.participant.AbstractMultiState;
 import org.ieee11073.sdc.biceps.model.participant.AbstractState;
 import org.ieee11073.sdc.biceps.model.participant.MdsDescriptor;
-import org.ieee11073.sdc.common.helper.ObjectUtil;
+import org.ieee11073.sdc.common.util.ObjectUtil;
 
 import java.math.BigInteger;
 import java.util.*;

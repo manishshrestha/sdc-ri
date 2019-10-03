@@ -78,7 +78,7 @@ public class HelloByeAndProbeMatchesObserverImpl implements HelloByeAndProbeMatc
 
             @Override
             public void onFailure(Throwable throwable) {
-                // nothing to do here - log messages were created by DiscoveredDeviceResolver helper
+                // nothing to do here - log messages were created by DiscoveredDeviceResolver util
             }
         }, networkJobExecutor);
     }
@@ -111,7 +111,7 @@ public class HelloByeAndProbeMatchesObserverImpl implements HelloByeAndProbeMatc
 
             @Override
             public void onFailure(Throwable throwable) {
-                // nothing to do here - log messages were created by DiscoveredDeviceResolver helper
+                // nothing to do here - log messages were created by DiscoveredDeviceResolver util
             }
         }, networkJobExecutor);
     }

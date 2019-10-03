@@ -7,7 +7,7 @@ import org.ieee11073.sdc.dpws.udp.UdpMessageQueueService;
 import org.ieee11073.sdc.dpws.soap.SoapMessage;
 
 /**
- * Factory to create instances of device helper classes.
+ * Factory to create instances of device util classes.
  */
 public interface DeviceHelperFactory {
 

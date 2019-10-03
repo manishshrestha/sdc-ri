@@ -7,8 +7,8 @@ import org.ieee11073.sdc.dpws.model.HostedServiceType;
 import org.ieee11073.sdc.dpws.model.ObjectFactory;
 import org.ieee11073.sdc.dpws.soap.wsaddressing.WsAddressingUtil;
 import org.ieee11073.sdc.dpws.soap.wsaddressing.model.EndpointReferenceType;
-import org.ieee11073.sdc.common.helper.ObjectUtil;
-import org.ieee11073.sdc.common.helper.StreamUtil;
+import org.ieee11073.sdc.common.util.ObjectUtil;
+import org.ieee11073.sdc.common.util.StreamUtil;
 
 import javax.xml.namespace.QName;
 import java.io.ByteArrayInputStream;

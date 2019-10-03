@@ -3,7 +3,7 @@ package org.ieee11073.sdc.dpws.soap.wseventing.helper;
 import com.google.inject.Inject;
 import org.ieee11073.sdc.dpws.soap.wseventing.WsEventingConstants;
 import org.ieee11073.sdc.dpws.soap.wseventing.model.ObjectFactory;
-import org.ieee11073.sdc.common.helper.JaxbUtil;
+import org.ieee11073.sdc.common.util.JaxbUtil;
 
 import java.net.URI;
 import java.util.List;

@@ -15,7 +15,7 @@ import org.ieee11073.sdc.dpws.soap.wsaddressing.WsAddressingHeader;
 import org.ieee11073.sdc.dpws.soap.wsaddressing.WsAddressingUtil;
 import org.ieee11073.sdc.dpws.soap.wsaddressing.model.EndpointReferenceType;
 import org.ieee11073.sdc.dpws.soap.wsdiscovery.factory.WsDiscoveryFaultFactory;
-import org.ieee11073.sdc.common.helper.ObjectUtilImpl;
+import org.ieee11073.sdc.common.util.ObjectUtilImpl;
 import org.ieee11073.sdc.dpws.soap.wsdiscovery.model.*;
 
 import javax.annotation.Nullable;

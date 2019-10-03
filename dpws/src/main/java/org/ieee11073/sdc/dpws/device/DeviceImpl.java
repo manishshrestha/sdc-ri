@@ -5,7 +5,7 @@ import com.google.common.util.concurrent.Service;
 import com.google.inject.Inject;
 import com.google.inject.Provider;
 import com.google.inject.name.Named;
-import org.ieee11073.sdc.common.helper.StreamUtil;
+import org.ieee11073.sdc.common.util.StreamUtil;
 import org.ieee11073.sdc.dpws.DpwsConstants;
 import org.ieee11073.sdc.dpws.device.helper.ByteResourceHandler;
 import org.ieee11073.sdc.dpws.device.helper.DiscoveryDeviceUdpMessageProcessor;

@@ -3,7 +3,7 @@ package org.ieee11073.sdc.dpws.crypto;
 import com.google.inject.Inject;
 import org.glassfish.grizzly.ssl.SSLContextConfigurator;
 import org.glassfish.jersey.SslConfigurator;
-import org.ieee11073.sdc.common.helper.StreamUtil;
+import org.ieee11073.sdc.common.util.StreamUtil;
 
 import java.io.IOException;
 
