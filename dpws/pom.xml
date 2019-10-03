@@ -92,46 +92,6 @@
 					</execution>
 				</executions>
 			</plugin>
-
-			<plugin>
-				<groupId>org.jvnet.jaxb2.maven2</groupId>
-				<artifactId>maven-jaxb2-plugin</artifactId>
-				<version>0.14.0</version>
-				<executions>
-					<execution>
-						<id>soap-12</id>
-						<phase>generate-sources</phase>
-						<configuration>
-							<readOnly>true</readOnly>
-							<episode>true</episode>
-							<schemaDirectory>${it.ieee11073.sdc.dpws.xmlSchemaDirectory}</schemaDirectory>
-							<schemaIncludes>
-								<include>${it.ieee11073.sdc.dpws.serviceSchema}</include>
-							</schemaIncludes>
-							<generateDirectory>${it.ieee11073.sdc.dpws.generatedSources}/java</generateDirectory>
-							<args>
-								<arg>-npa</arg>
-								<arg>-no-header</arg>
-								<arg>-Xsetters</arg>
-								<arg>-Xsetters-mode=accessor</arg>
-								<!--<arg>-Xcopyable</arg>
-								<arg>-Xequals</arg>-->
-								<arg>-XtoString</arg>
-							</args>
-							<plugins>
-								<plugin>
-									<groupId>org.jvnet.jaxb2_commons</groupId>
-									<artifactId>jaxb2-basics</artifactId>
-									<version>0.6.5</version>
-								</plugin>
-							</plugins>
-						</configuration>
-						<goals>
-							<goal>generate</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
 		</plugins>
 	</build>
 </project>
