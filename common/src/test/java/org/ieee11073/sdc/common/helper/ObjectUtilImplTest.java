@@ -3,8 +3,8 @@ package org.ieee11073.sdc.common.helper;
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
-import org.ieee11073.sdc.common.helper.ObjectUtil;
-import org.ieee11073.sdc.common.helper.ObjectUtilImpl;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import test.org.ieee11073.common.TestLogging;
 
@@ -17,21 +17,26 @@ import static org.hamcrest.Matchers.is;
 
 public class ObjectUtilImplTest {
 
-    @Test
-    public void copy() {
-        TestLogging.configure();
+    private Injector inj;
+    private ObjectUtil objectUtil;
 
-        Injector inj = Guice.createInjector(
+    @BeforeEach
+    public void setUp() {
+        TestLogging.configure();
+        inj = Guice.createInjector(
                 new AbstractModule() {
                     @Override
                     protected void configure() {
                         bind(ObjectUtil.class).to(ObjectUtilImpl.class).asEagerSingleton();
                     }
                 });
-        ObjectUtil objectUtil = inj.getInstance(ObjectUtil.class);
+        objectUtil = inj.getInstance(ObjectUtil.class);
+    }
 
-        PojoClass obj = new PojoClass("test", 13, Arrays.asList("entry1", "entry2"));
-        PojoClass objCopy = objectUtil.deepCopy(obj);
+    @Test
+    public void deepCopy() {
+        StandalonePojoClass obj = new StandalonePojoClass("test", 13, Arrays.asList("entry1", "entry2"));
+        StandalonePojoClass objCopy = objectUtil.deepCopy(obj);
 
         assertThat(objCopy.getStr(), is("test"));
         assertThat(objCopy.getNum(), is(13));
@@ -41,10 +46,10 @@ public class ObjectUtilImplTest {
 
         assertThat(objCopy.getStr(), is("test"));
 
-        List<PojoClass> list = Arrays.asList(new PojoClass("test", 1, new ArrayList<>()),
-                new PojoClass("test2", 2, new ArrayList<>()));
+        List<StandalonePojoClass> list = Arrays.asList(new StandalonePojoClass("test", 1, new ArrayList<>()),
+                new StandalonePojoClass("test2", 2, new ArrayList<>()));
 
-        List<PojoClass> listCpy = objectUtil.deepCopy(list);
+        List<StandalonePojoClass> listCpy = objectUtil.deepCopy(list);
 
         assertThat(listCpy.size(), is(2));
         assertThat(listCpy.get(1).getStr(), is("test2"));
@@ -54,39 +59,18 @@ public class ObjectUtilImplTest {
         assertThat(listCpy.get(1).getStr(), is("test2"));
     }
 
-    private class PojoClass {
-        public PojoClass(String str, int num, List<String> strList) {
-            this.str = str;
-            this.num = num;
-            this.strList = strList;
-        }
+    @Test
+    public void immutableFacade() {
+        String expectedStr = "test";
+        StandalonePojoClass obj = new StandalonePojoClass(expectedStr, 13, Arrays.asList("entry1", "entry2"));
+        StandalonePojoClass immutableFacade = objectUtil.immutableFacade(obj);
 
-        private String str;
-        private int num;
-        private List<String> strList;
-
-        public String getStr() {
-            return str;
+        assertThat(immutableFacade.getStr(), is(expectedStr));
+        try {
+            immutableFacade.setStr(expectedStr + expectedStr);
+            Assertions.fail("Class ought to be mutable, but is not.");
+        } catch (RuntimeException e) {
         }
-
-        public void setStr(String str) {
-            this.str = str;
-        }
-
-        public int getNum() {
-            return num;
-        }
-
-        public void setNum(int num) {
-            this.num = num;
-        }
-
-        public List<String> getStrList() {
-            return strList;
-        }
-
-        public void setStrList(List<String> strList) {
-            this.strList = strList;
-        }
+        assertThat(immutableFacade.getStr(), is(expectedStr));
     }
 }

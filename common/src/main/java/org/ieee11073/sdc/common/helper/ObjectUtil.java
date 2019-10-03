@@ -12,4 +12,14 @@ public interface ObjectUtil {
      * @return deep copy of given object.
      */
     <T> T deepCopy(T obj);
+
+    /**
+     * Given a getter/setter bean, this function creates an immutable facade that throws runtime exception when tried
+     * to be modified.
+     *
+     * <b>Attention: implementations may reject instances of inner classes!</b>
+     *
+     * @throws RuntimeException In case object facade could not be created.
+     */
+    <C> C immutableFacade(C instance);
 }

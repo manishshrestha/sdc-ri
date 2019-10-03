@@ -13,7 +13,9 @@
         <module>dpws-model</module>
         <module>dpws</module>
 		<module>test</module>
-	</modules>
+        <module>biceps-model</module>
+        <module>biceps</module>
+    </modules>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

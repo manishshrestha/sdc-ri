@@ -37,6 +37,16 @@ For any line in the log output,
 - a sentence stop **shall not** be placed if the line comprises one sentence only,
 - sentence stops **shall** be placed if the line comprises more than one sentence. 
 
+### Format of toString() methods
+
+A `toString()` method **should** be formatted in accordance with the following style:
+
+- Simple class name prefix followed by essential attributes in parenthesis
+- Each attribute is separated by using a semicolon
+- Each attribute key is separated from the attribute value by an equal character
+
+Example: `MdibVersion(sequenceId=<VALUE>;instanceId=<VALUE>;version=<VALUE>)` for the `MdibVersion` class with attributes `instanceId`, `sequenceId` and `version`.
+
 ## Dependency injection
 
 SDCri utilizes Google Guice for dependency injection.
