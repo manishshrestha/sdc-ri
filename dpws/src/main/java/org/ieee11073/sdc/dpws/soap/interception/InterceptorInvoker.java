@@ -11,29 +11,40 @@ import java.util.Collection;
 import java.util.Optional;
 
 /**
- * Dispatch callback parameter to interceptors.
+ * Runs interceptors.
+ * <p>
+ * todo DGr rename to InterceptorProcessor.
+ * <p>
+ * todo DGr throw InterceptorException that wraps other exception in order to trace exception source
  */
 class InterceptorInvoker {
     private static final Logger LOG = LoggerFactory.getLogger(InterceptorInvoker.class);
 
     /**
-     * Dispatch callbackParam to all interceptor methods in interceptorRegistry annotated with direction and action.
+     * Dispatches callback data to all interceptor methods from the given registry.
      *
-     * @return Interceptor result accumulated from all invoked interceptors.
+     * @param direction           the interceptor direction to capture.
+     * @param interceptorRegistry the registry where to seek actions.
+     * @param action              the affected action.
+     * @param callbackData        the data to dispatch to found interceptors.
+     * @return interceptor result accumulated from all invoked interceptors.
+     * @throws SoapFaultException if a SOAP fault comes up.
      */
     InterceptorResult dispatch(Direction direction,
                                InterceptorRegistry interceptorRegistry,
                                @Nullable String action,
-                               InterceptorCallbackType callbackParam) throws SoapFaultException {
-        InterceptorResult iResult = invokeInterceptors(direction, callbackParam,
+                               InterceptorCallbackType callbackData) throws SoapFaultException {
+        // First apply default interceptors
+        InterceptorResult interceptorResult = invokeInterceptors(direction, callbackData,
                 interceptorRegistry.getDefaultInterceptors());
-        if (iResult == InterceptorResult.CANCEL) {
+        if (interceptorResult == InterceptorResult.CANCEL) {
             return InterceptorResult.CANCEL;
         }
 
+        // Second apply specific interceptors
         if (Optional.ofNullable(action).isPresent()) {
             Collection<InterceptorInfo> interceptors = interceptorRegistry.getInterceptors(action);
-            return invokeInterceptors(direction, callbackParam, interceptors);
+            return invokeInterceptors(direction, callbackData, interceptors);
         } else {
             return InterceptorResult.NONE_INVOKED;
         }
@@ -41,10 +52,8 @@ class InterceptorInvoker {
 
     private InterceptorResult invokeInterceptors(Direction direction,
                                                  InterceptorCallbackType callbackParam,
-                                                 Collection<InterceptorInfo> interceptors)
-            throws SoapFaultException {
-
-        InterceptorResult ir = InterceptorResult.NONE_INVOKED;
+                                                 Collection<InterceptorInfo> interceptors) throws SoapFaultException {
+        InterceptorResult interceptorResult = InterceptorResult.NONE_INVOKED;
         for (InterceptorInfo interceptorInfo : interceptors) {
             Method callbackMethod = interceptorInfo.getCallbackMethod();
             try {
@@ -76,12 +85,13 @@ class InterceptorInvoker {
                 if (e.getTargetException() instanceof SoapFaultException) {
                     throw (SoapFaultException) e.getTargetException();
                 } else {
-                    LOG.warn("Unexpected exception thrown", e.getTargetException());
+                    LOG.warn("Unexpected exception has been thrown", e.getTargetException());
+                    throw new RuntimeException(e);
                 }
             }
-            ir = InterceptorResult.PROCEED;
+            interceptorResult = InterceptorResult.PROCEED;
         }
 
-        return ir;
+        return interceptorResult;
     }
 }

@@ -10,6 +10,9 @@ import org.ieee11073.sdc.dpws.soap.wsaddressing.WsAddressingConstants;
 import org.ieee11073.sdc.dpws.soap.wseventing.WsEventingConstants;
 import org.ieee11073.sdc.dpws.soap.wseventing.model.ObjectFactory;
 
+/**
+ * Factory functions to create WS-Eventing related fault messages.
+ */
 public class WsEventingFaultFactory {
     private final SoapFaultFactory soapFaultFactory;
     private final ObjectFactory wseFactory;
@@ -24,6 +27,12 @@ public class WsEventingFaultFactory {
         this.soapFactory = soapFactory;
     }
 
+    /**
+     * Creates DeliveryModeRequestedUnavailable fault messages.
+     *
+     * @return the fault message.
+     * @see <a href="https://www.w3.org/Submission/WS-Eventing/#DeliveryModeRequestedUnavailable">WS-Eventing specification</a>
+     */
     public SoapMessage createDeliveryModeRequestedUnavailable() {
         return soapFaultFactory.createFault(
                 WsAddressingConstants.FAULT_ACTION,
@@ -34,6 +43,12 @@ public class WsEventingFaultFactory {
         );
     }
 
+    /**
+     * Creates InvalidExpirationTime fault messages.
+     *
+     * @return the fault message.
+     * @see <a href="https://www.w3.org/Submission/WS-Eventing/#InvalidExpirationTime">WS-Eventing specification</a>
+     */
     public SoapMessage createInvalidExpirationTime() {
         return soapFaultFactory.createFault(
                 WsAddressingConstants.FAULT_ACTION,
@@ -43,6 +58,12 @@ public class WsEventingFaultFactory {
         );
     }
 
+    /**
+     * Creates UnsupportedExpirationType fault messages.
+     *
+     * @return the fault message.
+     * @see <a href="https://www.w3.org/Submission/WS-Eventing/#UnsupportedExpirationType">WS-Eventing specification</a>
+     */
     public SoapMessage createUnsupportedExpirationType() {
         return soapFaultFactory.createFault(
                 WsAddressingConstants.FAULT_ACTION,
@@ -52,6 +73,12 @@ public class WsEventingFaultFactory {
         );
     }
 
+    /**
+     * Creates FilteringNotSupported fault messages.
+     *
+     * @return the fault message.
+     * @see <a href="https://www.w3.org/Submission/WS-Eventing/#FilteringNotSupported">WS-Eventing specification</a>
+     */
     public SoapMessage createFilteringNotSupported() {
         return soapFaultFactory.createFault(
                 WsAddressingConstants.FAULT_ACTION,
@@ -61,6 +88,12 @@ public class WsEventingFaultFactory {
         );
     }
 
+    /**
+     * Creates FilteringRequestedUnavailable fault messages.
+     *
+     * @return the fault message.
+     * @see <a href="https://www.w3.org/Submission/WS-Eventing/#FilteringRequestedUnavailable">WS-Eventing specification</a>
+     */
     public SoapMessage createFilteringRequestedUnavailable() {
         return soapFaultFactory.createFault(
                 WsAddressingConstants.FAULT_ACTION,
@@ -71,6 +104,13 @@ public class WsEventingFaultFactory {
         );
     }
 
+    /**
+     * Creates EventSourceUnableToProcess fault messages.
+     *
+     * @param reason a specific reason text.
+     * @return the fault message.
+     * @see <a href="https://www.w3.org/Submission/WS-Eventing/#EventSourceUnableToProcess">WS-Eventing specification</a>
+     */
     public SoapMessage createEventSourceUnableToProcess(String reason) {
         return soapFaultFactory.createFault(
                 WsAddressingConstants.FAULT_ACTION,
@@ -80,6 +120,13 @@ public class WsEventingFaultFactory {
         );
     }
 
+    /**
+     * Creates UnableToRenew fault messages.
+     *
+     * @param reason a specific reason text.
+     * @return the fault message.
+     * @see <a href="https://www.w3.org/Submission/WS-Eventing/#UnableToRenew">WS-Eventing specification</a>
+     */
     public SoapMessage createUnableToRenew(String reason) {
         return soapFaultFactory.createFault(
                 WsAddressingConstants.FAULT_ACTION,
@@ -89,6 +136,14 @@ public class WsEventingFaultFactory {
         );
     }
 
+    /**
+     * Creates InvalidMessage fault messages.
+     *
+     * @param reason a specific reason text.
+     * @param invalidMessage the invalid message to put to the fault.
+     * @return the fault message.
+     * @see <a href="https://www.w3.org/Submission/WS-Eventing/#InvalidMessage">WS-Eventing specification</a>
+     */
     public SoapMessage createInvalidMessage(String reason, Envelope invalidMessage) {
         return soapFaultFactory.createFault(
                 WsAddressingConstants.FAULT_ACTION,

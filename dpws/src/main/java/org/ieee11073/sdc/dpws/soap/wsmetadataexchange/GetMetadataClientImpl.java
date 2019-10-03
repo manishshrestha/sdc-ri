@@ -9,6 +9,9 @@ import org.ieee11073.sdc.dpws.soap.SoapMessage;
 import org.ieee11073.sdc.dpws.soap.SoapUtil;
 import org.ieee11073.sdc.dpws.soap.wsmetadataexchange.model.ObjectFactory;
 
+/**
+ * Default implementation of {@linkplain GetMetadataClient}.
+ */
 public class GetMetadataClientImpl implements GetMetadataClient{
     private final ListeningExecutorService executorService;
     private final SoapUtil soapUtil;
@@ -23,12 +26,6 @@ public class GetMetadataClientImpl implements GetMetadataClient{
         this.wsmexFactory = wsmexFactory;
     }
 
-    /**
-     * Send GetMetadata request.
-     *
-     * @param requestResponseClient The request response client where to send the request to.
-     * @return Requested information as future.
-     */
     @Override
     public ListenableFuture<SoapMessage> sendGetMetadata(RequestResponseClient requestResponseClient) {
         return executorService.submit(() -> requestResponseClient.sendRequestResponse(

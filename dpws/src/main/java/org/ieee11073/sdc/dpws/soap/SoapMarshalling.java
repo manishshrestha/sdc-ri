@@ -12,21 +12,21 @@ import java.io.OutputStream;
  */
 public interface SoapMarshalling extends Service {
     /**
-     * Marshal a SOAP message.
+     * Marshals a SOAP message.
      *
      * @param envelope     The envelope of the SOAP message.
      * @param outputStream The output stream where to write marshalled data to.
-     * @throws JAXBException If marshalling to output stream failed
+     * @throws JAXBException if marshalling to output stream failed
      */
     void marshal(Envelope envelope, OutputStream outputStream) throws JAXBException;
 
     /**
-     * Unmarshal a SOAP message.
+     * Unmarshals a SOAP message.
      *
-     * @param inputStream The input message to unmarshal a SOAP message from.
-     * @return The unmarshalled SOAP envelope.
-     * @throws JAXBException If unmarshalling fails.
-     * @throws ClassCastException If the cast to {@link Envelope} fails.
+     * @param inputStream the input message to unmarshal a SOAP message from.
+     * @return the unmarshalled SOAP envelope.
+     * @throws JAXBException      if unmarshalling fails.
+     * @throws ClassCastException if the cast to {@link Envelope} fails.
      */
     Envelope unmarshal(InputStream inputStream) throws JAXBException, ClassCastException;
 }

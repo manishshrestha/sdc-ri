@@ -11,10 +11,6 @@ import java.io.OutputStream;
 
 /**
  * Utility class to marshal/unmarshal SOAP messages.
- *
- * Moreover, this class possesses
- * {@link #handleRequestResponse(RequestResponseServer, InputStream, OutputStream, TransportInfo)} to execute some
- * marshalling boilerplate code with {@link RequestResponseServer} instances.
  */
 public class MarshallingService {
     private final SoapMarshalling soapMarshalling;
@@ -28,11 +24,11 @@ public class MarshallingService {
     }
 
     /**
-     * Marshal a SOAP message.
+     * Marshals a SOAP message.
      *
-     * @param msg The message to marshal.
-     * @param os  The output stream where to write the XML message to.
-     * @throws MarshallingException Any exception that occurs during marshalling or unmarshalling of SOAP messages.
+     * @param msg the message to marshal.
+     * @param os  the output stream where to write the XML message to.
+     * @throws MarshallingException if any exception occurs during marshalling.
      */
     public void marshal(SoapMessage msg, OutputStream os) throws MarshallingException {
         try {
@@ -43,11 +39,11 @@ public class MarshallingService {
     }
 
     /**
-     * Unmarshal a SOAP message from an input stream.
+     * Unmarshals a SOAP message from an input stream.
      *
-     * @param is The input stream where to unmarshal from.
-     * @return The unmarshalled object.
-     * @throws MarshallingException Any exception that occurs during marshalling or unmarshalling of SOAP messages.
+     * @param is the input stream where to unmarshal from.
+     * @return the unmarshalled object.
+     * @throws MarshallingException if any exception occurs during unmarshalling.
      */
     public SoapMessage unmarshal(InputStream is) throws MarshallingException {
         try {
@@ -59,14 +55,14 @@ public class MarshallingService {
     }
 
     /**
-     * Use the given {@link RequestResponseServer} object to pass unmarshalled request data and marshaled response data.
+     * Uses the given {@link RequestResponseServer} object to accept unmarshalled request data and marshalled response data.
      *
-     * @param srv           The request-response server where to call
+     * @param srv           the request-response server where to call
      *                      {@link RequestResponseServer#receiveRequestResponse(SoapMessage, SoapMessage, TransportInfo)}
-     * @param is            Input stream that provides SOAP request message.
-     * @param os            Output stream where to write SOAP response message to.
-     * @param transportInfo Transport layer information.
-     * @throws MarshallingException Any exception that occurs during marshalling or unmarshalling of SOAP messages.
+     * @param is            input stream that provides SOAP request message.
+     * @param os            output stream where to write SOAP response message to.
+     * @param transportInfo transport layer information.
+     * @throws MarshallingException if any exception occurs during marshalling or unmarshalling of SOAP messages.
      */
     public void handleRequestResponse(RequestResponseServer srv,
                                       InputStream is,

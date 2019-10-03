@@ -7,7 +7,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 /**
- * Registry to hold and provide a set of interceptor objects.
+ * Registry to store and access a set of interceptor objects.
  */
 public class InterceptorRegistry {
     private final Map<Direction, Map<String, List<InterceptorInfo>>> interceptorChains;
@@ -20,9 +20,10 @@ public class InterceptorRegistry {
     }
 
     /**
-     * Takes an object and searches for interceptor methods.
+     * Takes an object and seeks interceptor methods.
      * <p>
-     * Interceptor methods are stored for fast access into a registry. They are retrievable using
+     * Interceptor methods are stored in a registry for fast access.
+     * They are retrievable by using
      *
      * <ul>
      * <li>{@link #getDefaultInterceptors()}
@@ -30,8 +31,6 @@ public class InterceptorRegistry {
      * <li>{@link #getInterceptors(String)}
      * <li>{@link #getInterceptors(Direction, String)}
      * </ul>
-     *
-     * To annotate interceptor methods, use {@link MessageInterceptor}.
      *
      * @param interceptor the object where to search for interceptor methods.
      */
@@ -65,7 +64,7 @@ public class InterceptorRegistry {
     }
 
     /**
-     * Gets default interceptor of a specific direction.
+     * Gets default interceptors of a specific direction.
      *
      * @param direction the direction to filter for.
      * @return all interceptors with given direction.
@@ -78,7 +77,7 @@ public class InterceptorRegistry {
      * Gets default interceptor of a specific direction and action.
      *
      * @param direction the direction to filter for.
-     * @param action the action to filter for.
+     * @param action    the action to filter for.
      * @return all interceptors with given direction and action.
      */
     public List<InterceptorInfo> getInterceptors(Direction direction, String action) {

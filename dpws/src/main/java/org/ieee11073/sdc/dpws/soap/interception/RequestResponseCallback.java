@@ -1,23 +1,25 @@
 package org.ieee11073.sdc.dpws.soap.interception;
 
+import org.ieee11073.sdc.dpws.soap.SoapMessage;
 import org.ieee11073.sdc.dpws.soap.exception.MarshallingException;
 import org.ieee11073.sdc.dpws.soap.exception.SoapFaultException;
-import org.ieee11073.sdc.dpws.soap.SoapMessage;
 import org.ieee11073.sdc.dpws.soap.exception.TransportException;
 
 /**
- * Callback for network bindings to invoke request-response message exchange.
+ * Callback for network bindings to initiate a input-output message exchange.
+ *
+ * @see <a href="https://www.w3.org/2002/ws/cg/2/07/meps.html">Web Services message exchange patterns</a>
  */
 public interface RequestResponseCallback {
     /**
-     * Client is synchronously requested to invoke a request-response message exchange on the network.
+     * Callback that is triggered after an interceptor chain succeeded on the outgoing direction.
      *
-     * @param request The request to send.
-     * @return A SOAP message with the received response.
-     * @throws SoapFaultException Any SOAP fault a server answers.
-     * @throws TransportException   Any transport-related exception during processing. This will hinder the response from
-     *                              being sent.
-     * @throws MarshallingException Any exception that occurs during marshalling or unmarshalling of SOAP messages.
+     * @param request the request to convey to the message receiver.
+     * @return a SOAP message with the received response from the network.
+     * @throws SoapFaultException   in case the server answers with a SOAP fault.
+     * @throws TransportException   if any transport-related exception comes up during processing.
+     *                              This will hinder the response from being received.
+     * @throws MarshallingException if an error occurs during marshalling or unmarshalling of a SOAP message.
      */
     SoapMessage onRequestResponse(SoapMessage request) throws SoapFaultException, MarshallingException, TransportException;
 }

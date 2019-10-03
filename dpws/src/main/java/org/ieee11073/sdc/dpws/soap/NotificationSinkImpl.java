@@ -7,6 +7,9 @@ import org.ieee11073.sdc.dpws.soap.wsaddressing.WsAddressingServerInterceptor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Default implementation of {@linkplain NotificationSink}.
+ */
 public class NotificationSinkImpl implements NotificationSink {
     private static final Logger LOG = LoggerFactory.getLogger(NotificationSinkImpl.class);
 

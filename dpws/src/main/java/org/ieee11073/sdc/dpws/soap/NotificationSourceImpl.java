@@ -9,6 +9,9 @@ import org.ieee11073.sdc.dpws.soap.wsaddressing.WsAddressingClientInterceptor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Default implementation of {@linkplain NotificationSource}.
+ */
 public class NotificationSourceImpl implements NotificationSource {
     private static final Logger LOG = LoggerFactory.getLogger(NotificationSourceImpl.class);
 

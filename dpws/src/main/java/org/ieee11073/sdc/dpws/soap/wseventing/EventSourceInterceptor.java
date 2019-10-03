@@ -46,7 +46,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Supplier;
 
 /**
- * Interceptor to handle event source's incoming subscriptions and send notifications.
+ * Interceptor that handles an event source's incoming subscription requests and facilitates sending notifications.
  */
 public class EventSourceInterceptor extends AbstractIdleService implements EventSource {
     private static final Logger LOG = LoggerFactory.getLogger(EventSourceInterceptor.class);

@@ -25,8 +25,8 @@ import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * Worker to process notification network jobs by round-robin through all subscription managers.
- *
- * Subscribe this notification worker to the {@link SubscriptionRegistry} to track subscription managers.
+ * <p>
+ * Subscribe this notification worker to the {@link SubscriptionRegistry} in order to track subscription managers.
  */
 public class NotificationWorker implements Runnable {
     private final EventSourceTransportManager evtSrcTransportManager;
@@ -69,11 +69,11 @@ public class NotificationWorker implements Runnable {
     }
 
     /**
-     * Wake up dispatcher.
-     *
-     * If the worker has nothing to do anymore, i.e., every notification has been processed, it falls into a sleep mode.
+     * Wakes up the dispatcher.
+     * <p>
+     * If the worker has nothing to do, i.e., every notification has been processed, then it falls into a sleep mode.
      * To ensure that the worker will do its work, call this function after at least one of the subscription managers
-     * has a new job.
+     * has a new job to process.
      */
     public void wakeUp() {
         lock.lock();

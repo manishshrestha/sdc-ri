@@ -7,9 +7,9 @@ import org.ieee11073.sdc.dpws.soap.interception.InterceptorHandler;
  */
 public interface NotificationSink extends InterceptorHandler {
     /**
-     * Start processing of an incoming SOAP notification message.
+     * Starts processing of an incoming SOAP notification message.
      *
-     * @param notification Incoming request message.
+     * @param notification incoming request message.
      */
     void receiveNotification(SoapMessage notification);
 }

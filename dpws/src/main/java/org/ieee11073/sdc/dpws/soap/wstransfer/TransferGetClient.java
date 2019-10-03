@@ -9,11 +9,16 @@ import org.ieee11073.sdc.dpws.soap.SoapMessage;
  */
 public interface TransferGetClient {
     /**
-     * Send WS-Transfer Get request.
+     * Sends a WS-Transfer Get request.
      *
-     * @param requestResponseClient The request response client where to send the request to.
+     * @param requestResponseClient the request response client where to send the request to.
      * @param wsaTo                 WS-Addressing wsa:To field content.
-     * @return Requested information as future.
+     * @return a future object that in case of a success includes the SOAP response message or throws
+     * <ul>
+     * <li>{@link org.ieee11073.sdc.dpws.soap.exception.SoapFaultException}
+     * <li>{@link org.ieee11073.sdc.dpws.soap.exception.MarshallingException}
+     * <li>{@link org.ieee11073.sdc.dpws.soap.exception.TransportException}
+     * </ul>
      */
     ListenableFuture<SoapMessage> sendTransferGet(RequestResponseClient requestResponseClient, String wsaTo);
 }

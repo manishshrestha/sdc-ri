@@ -6,14 +6,14 @@ import javax.xml.bind.JAXBElement;
 import java.util.Optional;
 
 /**
- * Utility class to create textual representation of {@link SoapMessage} objects.
+ * Utility class to create textual representations of {@link SoapMessage} objects.
  */
 public class SoapDebug {
     /**
-     * Get textual representation of a given SOAP message.
+     * Gets textual representation of a given SOAP message.
      *
-     * @param msg The message to create a text representation from.
-     * @return String consisting of the message's action, message id and message type.
+     * @param msg the message to create a text representation from.
+     * @return string consisting of the message's action, message id and message type.
      */
     public static String get(SoapMessage msg) {
         StringBuffer sb = new StringBuffer();
@@ -28,10 +28,10 @@ public class SoapDebug {
     }
 
     /**
-     * Get brief textual representation of a given SOAP message.
+     * Gets brief textual representation of a given SOAP message.
      *
-     * @param msg The message to create a text representation from.
-     * @return String consisting of the message's message id.
+     * @param msg the message to create a text representation from.
+     * @return string consisting of the message's message id.
      */
     public static String getBrief(SoapMessage msg) {
         StringBuilder sb = new StringBuilder();

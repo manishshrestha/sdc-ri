@@ -9,6 +9,11 @@ import org.ieee11073.sdc.dpws.soap.wseventing.helper.SubscriptionRegistry;
  * {@link SubscriptionRegistry} instance.
  */
 public class SubscriptionAddedMessage extends AbstractEventMessage<SourceSubscriptionManager> {
+    /**
+     * Constructor.
+     *
+     * @param payload the subscription manager that has been added.
+     */
     public SubscriptionAddedMessage(SourceSubscriptionManager payload) {
         super(payload);
     }

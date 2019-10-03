@@ -6,7 +6,7 @@ import org.ieee11073.sdc.dpws.soap.TransportInfo;
 import java.util.Optional;
 
 /**
- * Object pushed from interceptor processors to provide both a SOAP request and response message.
+ * Object passed to interceptors to provide both a SOAP request and response message.
  */
 public class RequestResponseObject implements InterceptorCallbackType {
     private final SoapMessage request;

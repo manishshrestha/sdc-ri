@@ -1,7 +1,7 @@
 package org.ieee11073.sdc.dpws.soap.interception;
 
 /**
- * Define progress of interceptor chain processing.
+ * Defines progress of interceptor chain processing.
  */
 public enum InterceptorResult {
     /**
@@ -13,7 +13,7 @@ public enum InterceptorResult {
      */
     SKIP_RESPONSE,
     /**
-     * Only interceptor but default ones were invoked.
+     * No specific interceptors were invoked; default ones ran through.
      */
     NONE_INVOKED,
     /**

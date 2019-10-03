@@ -11,6 +11,8 @@ import java.util.Optional;
 
 /**
  * Interceptor dispatcher designed for outgoing calls on clients.
+ *
+ * todo DGr rename class to ClientDispatcher
  */
 public class ClientHelper {
     private static final Logger LOG = LoggerFactory.getLogger(ClientHelper.class);
@@ -22,30 +24,27 @@ public class ClientHelper {
     }
 
     /**
-     * Dispatches *param* to interceptors from *registry* matching given action in *msg* and *direction*.
+     * Starts dispatching a SOAP message along an interceptor chain.
      *
-     * In contrast to {@link ServerHelper}, which throws  {@link SoapFaultException} on
-     * {@link InterceptorResult#CANCEL}, {@linkplain ClientHelper} throws an {@link InterceptorException} on
-     * {@link InterceptorResult#CANCEL} and {@link InterceptorResult#SKIP_RESPONSE}.
-     *
-     * @param direction direction to match
-     * @param registry registry to retrieve interceptors from
-     * @param msg message to match action from
-     * @param param parameter to dispatch
-     * @return result of dispatch
+     * @param direction the communication direction used for dispatching.
+     * @param registry the interceptor registry used to seek interceptors.
+     * @param soapMessage the SOAP message to dispatch.
+     * @param interceptorCallbackObject the object where to dispatch the message to.
+     * @return the interceptor result.
+     * @throws RuntimeException in case any exception is thrown.
      */
     public InterceptorResult invokeDispatcher(Direction direction,
                                               InterceptorRegistry registry,
-                                              SoapMessage msg,
-                                              InterceptorCallbackType param) {
-        Optional<AttributedURIType> action = msg.getWsAddressingHeader().getAction();
+                                              SoapMessage soapMessage,
+                                              InterceptorCallbackType interceptorCallbackObject) {
+        Optional<AttributedURIType> action = soapMessage.getWsAddressingHeader().getAction();
         String actionUri = null;
         if (action.isPresent()) {
             actionUri = action.get().getValue();
         }
 
         try {
-            return interceptorInvoker.dispatch(direction, registry, actionUri, param);
+            return interceptorInvoker.dispatch(direction, registry, actionUri, interceptorCallbackObject);
         } catch (Exception e) {
             LOG.warn("Exception thrown during dispatcher invocation routine: {}", e.getMessage());
             throw new RuntimeException("An interceptor quit with an exception", e);

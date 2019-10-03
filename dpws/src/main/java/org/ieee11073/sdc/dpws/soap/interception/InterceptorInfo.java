@@ -4,7 +4,7 @@ import java.lang.reflect.Method;
 import java.util.Optional;
 
 /**
- * Information set to encapsulate information needed to invoke interceptor callbacks.
+ * Package private information set to encapsulate information needed to invoke interceptor callbacks.
  */
 class InterceptorInfo implements Comparable<InterceptorInfo> {
     private final Integer sequenceNumber;
@@ -30,10 +30,10 @@ class InterceptorInfo implements Comparable<InterceptorInfo> {
     }
 
     /**
-     * (Required to sort {@linkplain InterceptorInfo} objects.
+     * Compares the interceptors sequence number in order to sort {@linkplain InterceptorInfo} objects.
      */
     @Override
-    public int compareTo(InterceptorInfo ii) {
-        return sequenceNumber.compareTo(ii.sequenceNumber);
+    public int compareTo(InterceptorInfo rhs) {
+        return sequenceNumber.compareTo(rhs.sequenceNumber);
     }
 }

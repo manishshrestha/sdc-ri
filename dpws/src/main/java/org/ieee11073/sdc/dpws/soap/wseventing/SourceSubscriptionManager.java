@@ -6,7 +6,7 @@ import org.ieee11073.sdc.dpws.soap.wseventing.model.Notification;
 import java.util.concurrent.BlockingQueue;
 
 /**
- * Subscription manager to indicate usage on event source side.
+ * Subscription manager interface that is used by event sources.
  */
 public interface SourceSubscriptionManager extends SubscriptionManager, Service {
     /**

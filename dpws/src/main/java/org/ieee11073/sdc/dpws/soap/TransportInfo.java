@@ -1,7 +1,7 @@
 package org.ieee11073.sdc.dpws.soap;
 
 /**
- * Utility class to maintain local transport information.
+ * Utility class to provide local transport information.
  */
 public class TransportInfo {
     private final String scheme;

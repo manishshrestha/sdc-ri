@@ -26,7 +26,7 @@ import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Helper class to manage sending of event messages, to notify-to and end-to.
+ * Helper class to manage sending of event messages to notify-to and end-to destinations.
  */
 public class EventSourceTransportManager {
     private static final Logger LOG = LoggerFactory.getLogger(EventSourceTransportManager.class);
@@ -55,11 +55,11 @@ public class EventSourceTransportManager {
     }
 
     /**
-     * Try to send an end-to message to a specific event sink.
+     * Tries to send an end-to message to a specific event sink.
      *
-     * @param subMan  The subscription manager where to send the end-to message to.
-     * @param message The SOAP message to send.
-     * @return Future with final interceptor result. Return {@link InterceptorResult#NONE_INVOKED} when no end-to
+     * @param subMan  the subscription manager where to send the end-to message to.
+     * @param message the SOAP message to send.
+     * @return a future with final interceptor result. Returns {@link InterceptorResult#NONE_INVOKED} if no end-to
      * address could be found.
      */
     public ListenableFuture<InterceptorResult> sendEndTo(SourceSubscriptionManager subMan, SoapMessage message) {
@@ -73,11 +73,11 @@ public class EventSourceTransportManager {
     }
 
     /**
-     * Send a notify-to message to a specific event sink.
+     * Sends a notify-to message to a specific event sink.
      *
-     * @param subMan  The subscription manager where to send the notify-to message to.
-     * @param message The SOAP message to send.
-     * @return Future with final interceptor result. If {@link InterceptorResult#CANCEL} is received and
+     * @param subMan  the subscription manager where to send the notify-to message to.
+     * @param message the SOAP message to send.
+     * @return a future with final interceptor result. If {@link InterceptorResult#CANCEL} is received and the
      * subscription is not running anymore, then the delivery of the notification failed.
      */
     public ListenableFuture<InterceptorResult> sendNotifyTo(SourceSubscriptionManager subMan, SoapMessage message) {

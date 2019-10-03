@@ -1,4 +1,4 @@
-package org.ieee11073.sdc.dpws.soap.wseventing;
+package org.ieee11073.sdc.dpws.guice;
 
 import com.google.inject.BindingAnnotation;
 

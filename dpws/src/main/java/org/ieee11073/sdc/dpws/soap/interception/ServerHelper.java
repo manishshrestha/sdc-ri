@@ -12,6 +12,8 @@ import java.util.Optional;
 
 /**
  * Interceptor dispatcher designed for incoming messages on servers.
+ *
+ * todo DGr rename class to ServerDispatcher
  */
 public class ServerHelper {
     private static final Logger LOG = LoggerFactory.getLogger(ServerHelper.class);
@@ -27,18 +29,14 @@ public class ServerHelper {
     }
 
     /**
-     * Start dispatching a SOAP message along an interceptor chain.
-     * <p>
-     * In contrast to {@link ClientHelper}, which throws {@link InterceptorException} on
-     * {@link InterceptorResult#CANCEL} and {@link InterceptorResult#SKIP_RESPONSE}, {@linkplain ServerHelper} throws a
-     * {@link SoapFaultException} on {@link InterceptorResult#CANCEL}.
+     * Starts dispatching a SOAP message along an interceptor chain.
      *
      * @param direction the communication direction used for dispatching.
      * @param registry the interceptor registry used to seek interceptors.
      * @param soapMessage the SOAP message to dispatch.
      * @param interceptorCallbackObject the object where to dispatch the message to.
      * @return the interceptor result.
-     * @throws SoapFaultException if the interceptor was cancelled (in order to communicate this an error to the client).
+     * @throws SoapFaultException if the interceptor was cancelled (in order to communicate this as an error to the client).
      */
     public InterceptorResult invokeDispatcher(Direction direction,
                                               InterceptorRegistry registry,

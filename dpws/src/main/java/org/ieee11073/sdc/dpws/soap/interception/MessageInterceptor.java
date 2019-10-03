@@ -16,11 +16,12 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 @BindingAnnotation
 public @interface MessageInterceptor {
     /**
-     * Action filter.
+     * Defines an action filter.
      * <p>
-     * Default is an empty string that matches any actions.
+     * The annotated method is called only if the action of the SOAP message matches this value.
+     * The default value is an empty string that stands for "match any action".
      *
-     * @return the value of the interceptor that matches an action.
+     * @return the action string to match for this interceptor annotation.
      */
     String value() default "";
 
@@ -31,14 +32,14 @@ public @interface MessageInterceptor {
      * <p>
      * <em>Note that no two interceptors of the same interceptor chain should possess the same sequence number!</em>
      *
-     * @return the sequence number
+     * @return the sequence number.
      */
     int sequenceNumber() default Integer.MAX_VALUE;
 
     /**
      * Defines in which communication direction the interceptor method is invoked.
      * <p>
-     * By default the annotated method is invoked on any direction.
+     * By default an annotated method is invoked on any direction.
      *
      * @return the direction.
      */

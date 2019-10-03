@@ -4,6 +4,8 @@ import javax.xml.namespace.QName;
 
 /**
  * WS-MetadataExchange constants.
+ *
+ * @see <a href="https://www.w3.org/Submission/2008/SUBM-WS-MetadataExchange-20080813/">WS-MetadataExchange specification</a>
  */
 public class WsMetadataExchangeConstants {
     public static final String JAXB_CONTEXT_PACKAGE = "org.ieee11073.sdc.dpws.soap.wsmetadataexchange.model";

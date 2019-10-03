@@ -14,15 +14,15 @@ import java.time.Duration;
  */
 public interface SubscriptionManagerFactory {
     /**
-     * Creates an {@link SourceSubscriptionManager} instance.
+     * Creates a {@link SourceSubscriptionManager} instance.
      *
-     * @param subscriptionManagerEpr endpoint reference where to send subscription modification requests (GetStatus,
+     * @param subscriptionManagerEpr endpoint reference where to request subscription modification requests (GetStatus,
      *                               Renew, Unsubscribe).
      * @param expires                expiration duration.
      * @param notifyTo               endpoint reference where to send notifications to.
-     * @param endTo                  endpoint reference where to send end-to request to or null, if none is available.
+     * @param endTo                  endpoint reference where to send end-to request to or null if none is available.
      * @param subscriptionId         the subscription id for the subscription manager or null to auto-generate a unique id.
-     * @return the instance.
+     * @return a new {@link SourceSubscriptionManager} instance.
      */
     SourceSubscriptionManager createSourceSubscriptionManager(@Assisted("SubscriptionManager") EndpointReferenceType subscriptionManagerEpr,
                                                               @Assisted Duration expires,
@@ -34,7 +34,7 @@ public interface SubscriptionManagerFactory {
      * Creates a {@link SinkSubscriptionManager} instance.
      *
      * @param subscriptionManager the subscription manager the sink side is based on.
-     * @return the instance.
+     * @return a new {@link SinkSubscriptionManager} instance.
      */
     SinkSubscriptionManager createSinkSubscriptionManager(@Assisted SubscriptionManager subscriptionManager);
 }
