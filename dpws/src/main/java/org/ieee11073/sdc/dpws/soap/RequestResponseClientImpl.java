@@ -18,15 +18,15 @@ public class RequestResponseClientImpl implements RequestResponseClient {
 
     private final InterceptorRegistry interceptorRegistry;
     private final RequestResponseCallback networkCallback;
-    private final ClientHelper clientHelper;
+    private final ClientDispatcher clientDispatcher;
 
     @AssistedInject
     RequestResponseClientImpl(@Assisted RequestResponseCallback networkCallback,
-                              ClientHelper clientHelper,
+                              ClientDispatcher clientDispatcher,
                               InterceptorRegistry interceptorRegistry,
                               WsAddressingClientInterceptor wsaClientInterceptor) {
         this.networkCallback = networkCallback;
-        this.clientHelper = clientHelper;
+        this.clientDispatcher = clientDispatcher;
         this.interceptorRegistry = interceptorRegistry;
 
         // Enable WS-Addressing commons on this client
@@ -42,7 +42,7 @@ public class RequestResponseClientImpl implements RequestResponseClient {
     public SoapMessage sendRequestResponse(SoapMessage request)
             throws SoapFaultException, MarshallingException, TransportException, InterceptorException {
         RequestObject rObj = new RequestObject(request);
-        clientHelper.invokeDispatcher(Direction.REQUEST, interceptorRegistry, request, rObj);
+        clientDispatcher.invokeDispatcher(Direction.REQUEST, interceptorRegistry, request, rObj);
 
         SoapMessage response = networkCallback.onRequestResponse(request);
         if (response.isFault()) {
@@ -50,7 +50,7 @@ public class RequestResponseClientImpl implements RequestResponseClient {
         }
 
         RequestResponseObject rrObj = new RequestResponseObject(request, response);
-        clientHelper.invokeDispatcher(Direction.RESPONSE, interceptorRegistry, response, rrObj);
+        clientDispatcher.invokeDispatcher(Direction.RESPONSE, interceptorRegistry, response, rrObj);
 
         return response;
     }

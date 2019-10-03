@@ -12,18 +12,16 @@ import java.util.Optional;
 
 /**
  * Interceptor dispatcher designed for incoming messages on servers.
- * <p>
- * todo DGr rename class to ServerDispatcher
  */
-public class ServerHelper {
-    private static final Logger LOG = LoggerFactory.getLogger(ServerHelper.class);
+public class ServerDispatcher {
+    private static final Logger LOG = LoggerFactory.getLogger(ServerDispatcher.class);
 
     private final InterceptorProcessor interceptorProcessor;
     private final SoapFaultFactory soapFaultFactory;
 
     @Inject
-    public ServerHelper(InterceptorProcessor interceptorProcessor,
-                        SoapFaultFactory soapFaultFactory) {
+    public ServerDispatcher(InterceptorProcessor interceptorProcessor,
+                            SoapFaultFactory soapFaultFactory) {
         this.interceptorProcessor = interceptorProcessor;
         this.soapFaultFactory = soapFaultFactory;
     }

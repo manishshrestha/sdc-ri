@@ -10,15 +10,13 @@ import java.util.Optional;
 
 /**
  * Interceptor dispatcher designed for outgoing calls on clients.
- * <p>
- * todo DGr rename class to ClientDispatcher
  */
-public class ClientHelper {
-    private static final Logger LOG = LoggerFactory.getLogger(ClientHelper.class);
+public class ClientDispatcher {
+    private static final Logger LOG = LoggerFactory.getLogger(ClientDispatcher.class);
     private final InterceptorProcessor interceptorProcessor;
 
     @Inject
-    ClientHelper(InterceptorProcessor interceptorProcessor) {
+    ClientDispatcher(InterceptorProcessor interceptorProcessor) {
         this.interceptorProcessor = interceptorProcessor;
     }
 

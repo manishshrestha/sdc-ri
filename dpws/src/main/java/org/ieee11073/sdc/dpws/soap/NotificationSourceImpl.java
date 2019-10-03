@@ -17,15 +17,15 @@ public class NotificationSourceImpl implements NotificationSource {
 
     private final InterceptorRegistry interceptorRegistry;
     private final NotificationCallback networkCallback;
-    private final ClientHelper clientHelper;
+    private final ClientDispatcher clientDispatcher;
 
     @Inject
     NotificationSourceImpl(@Assisted NotificationCallback networkCallback,
-                           ClientHelper clientHelper,
+                           ClientDispatcher clientDispatcher,
                            InterceptorRegistry interceptorRegistry,
                            WsAddressingClientInterceptor wsaClientInterceptor) {
         this.networkCallback = networkCallback;
-        this.clientHelper = clientHelper;
+        this.clientDispatcher = clientDispatcher;
         this.interceptorRegistry = interceptorRegistry;
 
         register(wsaClientInterceptor);
@@ -39,7 +39,7 @@ public class NotificationSourceImpl implements NotificationSource {
     @Override
     public void sendNotification(SoapMessage notification) throws MarshallingException, TransportException, InterceptorException {
         NotificationObject nObj = new NotificationObject(notification);
-        clientHelper.invokeDispatcher(Direction.NOTIFICATION, interceptorRegistry, notification, nObj);
+        clientDispatcher.invokeDispatcher(Direction.NOTIFICATION, interceptorRegistry, notification, nObj);
         networkCallback.onNotification(notification);
     }
 }

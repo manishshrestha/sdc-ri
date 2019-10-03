@@ -14,13 +14,13 @@ public class NotificationSinkImpl implements NotificationSink {
     private static final Logger LOG = LoggerFactory.getLogger(NotificationSinkImpl.class);
 
     private final InterceptorRegistry interceptorRegistry;
-    private final ServerHelper serverHelper;
+    private final ServerDispatcher serverDispatcher;
 
     @Inject
-    NotificationSinkImpl(ServerHelper serverHelper,
+    NotificationSinkImpl(ServerDispatcher serverDispatcher,
                          InterceptorRegistry interceptorRegistry,
                          WsAddressingServerInterceptor wsaServerInterceptor) {
-        this.serverHelper = serverHelper;
+        this.serverDispatcher = serverDispatcher;
         this.interceptorRegistry = interceptorRegistry;
         register(wsaServerInterceptor);
     }
@@ -34,7 +34,7 @@ public class NotificationSinkImpl implements NotificationSink {
     public void receiveNotification(SoapMessage notification) {
         NotificationObject nObj = new NotificationObject(notification);
         try {
-            serverHelper.invokeDispatcher(Direction.NOTIFICATION, interceptorRegistry, notification, nObj);
+            serverDispatcher.invokeDispatcher(Direction.NOTIFICATION, interceptorRegistry, notification, nObj);
         } catch (SoapFaultException e) {
             LOG.warn("SoapFaultException shall not be thrown by notifications");
         }

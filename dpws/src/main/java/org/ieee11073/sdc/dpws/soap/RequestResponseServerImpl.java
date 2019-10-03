@@ -14,13 +14,13 @@ public class RequestResponseServerImpl implements RequestResponseServer {
     private static final Logger LOG = LoggerFactory.getLogger(RequestResponseServerImpl.class);
 
     private final InterceptorRegistry interceptorRegistry;
-    private final ServerHelper serverHelper;
+    private final ServerDispatcher serverDispatcher;
 
     @Inject
-    RequestResponseServerImpl(ServerHelper serverHelper,
+    RequestResponseServerImpl(ServerDispatcher serverDispatcher,
                               InterceptorRegistry interceptorRegistry,
                               WsAddressingServerInterceptor wsaServerInterceptor) {
-        this.serverHelper = serverHelper;
+        this.serverDispatcher = serverDispatcher;
         this.interceptorRegistry = interceptorRegistry;
         register(wsaServerInterceptor);
     }
@@ -35,10 +35,10 @@ public class RequestResponseServerImpl implements RequestResponseServer {
                                        SoapMessage response,
                                        TransportInfo transportInfo) throws SoapFaultException {
         RequestResponseObject rrObj = new RequestResponseObject(request, response, transportInfo);
-        serverHelper.invokeDispatcher(Direction.REQUEST, interceptorRegistry, request, rrObj);
+        serverDispatcher.invokeDispatcher(Direction.REQUEST, interceptorRegistry, request, rrObj);
 
         rrObj = new RequestResponseObject(request, response, transportInfo);
-        serverHelper.invokeDispatcher(Direction.RESPONSE, interceptorRegistry, response, rrObj);
+        serverDispatcher.invokeDispatcher(Direction.RESPONSE, interceptorRegistry, response, rrObj);
 
         // \todo somewhere here an ActionNotSupported should be thrown
     }
