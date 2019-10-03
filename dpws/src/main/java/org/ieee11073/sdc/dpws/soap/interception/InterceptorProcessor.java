@@ -11,8 +11,6 @@ import java.util.Collection;
 
 /**
  * Runs interceptors.
- * <p>
- * todo DGr throw InterceptorException that wraps other exception in order to trace exception source
  */
 class InterceptorProcessor {
     private static final Logger LOG = LoggerFactory.getLogger(InterceptorProcessor.class);

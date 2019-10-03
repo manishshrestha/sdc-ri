@@ -11,8 +11,10 @@ package org.ieee11073.sdc.dpws.soap.interception;
  * <li>a {@link RequestObject} in case of an input-output pattern or input pattern on the incoming direction.
  * <li>a {@link NotificationObject} in case of an output pattern in the outgoing direction
  * </ul>
- *
- *  todo refactor interceptors such that they throw exceptions instead of cancel
+ * <p>
+ * An interceptor may throw RuntimeException which are then wrapped as {@link InterceptorException} and presented to
+ * the user.
+ * In order to trace the interceptor exceptions, interceptors should provide a meaningful {@code toString()} override.
  *
  * @see <a href="https://www.w3.org/2002/ws/cg/2/07/meps.html">Web Services message exchange patterns</a>
  */
