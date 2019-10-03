@@ -69,11 +69,13 @@ public class MdibStateModifications {
      * Change type designation.
      * <p>
      * In accordance to BICEPS a change set can be of one certain base type at a time. BICEPS distinguishes between
-     * <p>
-     * - alert changes
-     * - component changes
-     * - context changes
-     * - operation changes
+     * <ul>
+     * <li>alert changes
+     * <li>component changes
+     * <li>context changes
+     * <li>metric changes
+     * <li>operation changes
+     * </ul>
      */
     public enum Type {
         ALERT(AbstractAlertState.class, AlertStateModificationMessage.class),
