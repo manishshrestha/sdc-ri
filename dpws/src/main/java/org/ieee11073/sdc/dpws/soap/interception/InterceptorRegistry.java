@@ -34,7 +34,7 @@ public class InterceptorRegistry {
      *
      * @param interceptor the object where to search for interceptor methods.
      */
-    public void addInterceptor(Object interceptor) {
+    public void addInterceptor(Interceptor interceptor) {
         List<Method> actionCallbackMethods = getCallbackMethods(interceptor);
         actionCallbackMethods.forEach(method -> {
             MessageInterceptor annotation = method.getAnnotation(MessageInterceptor.class);

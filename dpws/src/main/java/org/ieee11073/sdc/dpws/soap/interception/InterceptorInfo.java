@@ -8,10 +8,10 @@ import java.util.Optional;
  */
 class InterceptorInfo implements Comparable<InterceptorInfo> {
     private final Integer sequenceNumber;
-    private final Object callbackObject;
+    private final Interceptor callbackObject;
     private final Method callbackMethod;
 
-    InterceptorInfo(Object callbackObject, Method callbackMethod, Integer sequenceNumber) {
+    InterceptorInfo(Interceptor callbackObject, Method callbackMethod, Integer sequenceNumber) {
         this.callbackObject = callbackObject;
         this.callbackMethod = callbackMethod;
         this.sequenceNumber = sequenceNumber;
@@ -21,7 +21,7 @@ class InterceptorInfo implements Comparable<InterceptorInfo> {
         return callbackMethod;
     }
 
-    Object getCallbackObject() {
+    Interceptor getCallbackObject() {
         return callbackObject;
     }
 

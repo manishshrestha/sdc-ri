@@ -13,12 +13,10 @@ import java.util.Optional;
 /**
  * Runs interceptors.
  * <p>
- * todo DGr rename to InterceptorProcessor.
- * <p>
  * todo DGr throw InterceptorException that wraps other exception in order to trace exception source
  */
-class InterceptorInvoker {
-    private static final Logger LOG = LoggerFactory.getLogger(InterceptorInvoker.class);
+class InterceptorProcessor {
+    private static final Logger LOG = LoggerFactory.getLogger(InterceptorProcessor.class);
 
     /**
      * Dispatches callback data to all interceptor methods from the given registry.
@@ -33,7 +31,7 @@ class InterceptorInvoker {
     InterceptorResult dispatch(Direction direction,
                                InterceptorRegistry interceptorRegistry,
                                @Nullable String action,
-                               InterceptorCallbackType callbackData) throws SoapFaultException {
+                               InterceptorCallbackType callbackData) throws InterceptorException {
         // First apply default interceptors
         InterceptorResult interceptorResult = invokeInterceptors(direction, callbackData,
                 interceptorRegistry.getDefaultInterceptors());
@@ -52,7 +50,7 @@ class InterceptorInvoker {
 
     private InterceptorResult invokeInterceptors(Direction direction,
                                                  InterceptorCallbackType callbackParam,
-                                                 Collection<InterceptorInfo> interceptors) throws SoapFaultException {
+                                                 Collection<InterceptorInfo> interceptors) throws InterceptorException {
         InterceptorResult interceptorResult = InterceptorResult.NONE_INVOKED;
         for (InterceptorInfo interceptorInfo : interceptors) {
             Method callbackMethod = interceptorInfo.getCallbackMethod();
@@ -82,12 +80,9 @@ class InterceptorInvoker {
             } catch (IllegalAccessException e) {
                 LOG.warn(e.getMessage());
             } catch (InvocationTargetException e) {
-                if (e.getTargetException() instanceof SoapFaultException) {
-                    throw (SoapFaultException) e.getTargetException();
-                } else {
-                    LOG.warn("Unexpected exception has been thrown", e.getTargetException());
-                    throw new RuntimeException(e);
-                }
+                throw new InterceptorException("Exception thrown by interceptor " +
+                        interceptorInfo.getCallbackObject().toString(),
+                        interceptorInfo.getCallbackObject(), e.getTargetException());
             }
             interceptorResult = InterceptorResult.PROCEED;
         }

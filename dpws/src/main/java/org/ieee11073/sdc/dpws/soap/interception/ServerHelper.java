@@ -12,28 +12,28 @@ import java.util.Optional;
 
 /**
  * Interceptor dispatcher designed for incoming messages on servers.
- *
+ * <p>
  * todo DGr rename class to ServerDispatcher
  */
 public class ServerHelper {
     private static final Logger LOG = LoggerFactory.getLogger(ServerHelper.class);
 
-    private final InterceptorInvoker interceptorInvoker;
+    private final InterceptorProcessor interceptorProcessor;
     private final SoapFaultFactory soapFaultFactory;
 
     @Inject
-    public ServerHelper(InterceptorInvoker interceptorInvoker,
+    public ServerHelper(InterceptorProcessor interceptorProcessor,
                         SoapFaultFactory soapFaultFactory) {
-        this.interceptorInvoker = interceptorInvoker;
+        this.interceptorProcessor = interceptorProcessor;
         this.soapFaultFactory = soapFaultFactory;
     }
 
     /**
      * Starts dispatching a SOAP message along an interceptor chain.
      *
-     * @param direction the communication direction used for dispatching.
-     * @param registry the interceptor registry used to seek interceptors.
-     * @param soapMessage the SOAP message to dispatch.
+     * @param direction                 the communication direction used for dispatching.
+     * @param registry                  the interceptor registry used to seek interceptors.
+     * @param soapMessage               the SOAP message to dispatch.
      * @param interceptorCallbackObject the object where to dispatch the message to.
      * @return the interceptor result.
      * @throws SoapFaultException if the interceptor was cancelled (in order to communicate this as an error to the client).
@@ -49,11 +49,15 @@ public class ServerHelper {
         }
 
         try {
-            return interceptorInvoker.dispatch(direction, registry, actionUri, interceptorCallbackObject);
-        } catch (SoapFaultException e) {
-            throw e;
+            return interceptorProcessor.dispatch(direction, registry, actionUri, interceptorCallbackObject);
+        } catch (InterceptorException e) {
+            if (e.getCause() instanceof SoapFaultException) {
+                throw (SoapFaultException) e.getCause();
+            }
+            throw new SoapFaultException(soapFaultFactory.createReceiverFault(
+                    String.format("Server fault information: %s", e.getCause().getMessage())));
         } catch (Exception e) {
-            LOG.warn("Unknown exception thrown during dispatcher invocation routine: {}", e.getMessage());
+            LOG.warn("Unexpected exception thrown during dispatcher invocation routine: {}", e.getMessage());
             throw new SoapFaultException(soapFaultFactory.createReceiverFault(
                     String.format("Server fault information: %s", e.getMessage())));
         }

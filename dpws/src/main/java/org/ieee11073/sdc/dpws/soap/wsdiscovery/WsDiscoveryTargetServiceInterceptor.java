@@ -280,12 +280,12 @@ public class WsDiscoveryTargetServiceInterceptor implements WsDiscoveryTargetSer
     }
 
     @Override
-    public UnsignedInteger sendHello() throws MarshallingException, TransportException {
+    public UnsignedInteger sendHello() throws MarshallingException, TransportException, InterceptorException {
         return sendHello(false);
     }
 
     @Override
-    public UnsignedInteger sendHello(boolean forceNewMetadataVersion) throws MarshallingException, TransportException {
+    public UnsignedInteger sendHello(boolean forceNewMetadataVersion) throws MarshallingException, TransportException, InterceptorException {
         UnsignedInteger currentMetadataVersion;
         if (forceNewMetadataVersion) {
             currentMetadataVersion = incMetadataVersionAndGet();
@@ -310,7 +310,7 @@ public class WsDiscoveryTargetServiceInterceptor implements WsDiscoveryTargetSer
     }
 
     @Override
-    public void sendBye() throws MarshallingException, TransportException {
+    public void sendBye() throws MarshallingException, TransportException, InterceptorException {
         ByeType byeType = wsdFactory.createByeType();
         byeType.setXAddrs(getXAddrs());
         ScopesType scopesType = wsdFactory.createScopesType();
@@ -353,7 +353,7 @@ public class WsDiscoveryTargetServiceInterceptor implements WsDiscoveryTargetSer
         return currentVersion.plus(UnsignedInteger.ONE);
     }
 
-    private void sendMulticast(String action, JAXBElement<?> body) throws MarshallingException, TransportException {
+    private void sendMulticast(String action, JAXBElement<?> body) throws MarshallingException, TransportException, InterceptorException {
         SoapMessage soapMessage = soapUtil.createMessage(action, WsDiscoveryConstants.WSA_UDP_TO, body);
         soapMessage.getWsDiscoveryHeader().setAppSequence(wsdUtil.createAppSequence(instanceId));
         notificationSource.sendNotification(soapMessage);

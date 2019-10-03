@@ -37,7 +37,7 @@ public class NotificationSourceImpl implements NotificationSource {
     }
 
     @Override
-    public InterceptorResult sendNotification(SoapMessage notification) throws MarshallingException, TransportException {
+    public InterceptorResult sendNotification(SoapMessage notification) throws MarshallingException, TransportException, InterceptorException {
         NotificationObject nObj = new NotificationObject(notification);
         InterceptorResult ir = clientHelper.invokeDispatcher(Direction.NOTIFICATION, interceptorRegistry,
                 notification, nObj);

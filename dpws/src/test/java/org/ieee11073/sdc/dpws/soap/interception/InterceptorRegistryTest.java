@@ -20,20 +20,20 @@ public class InterceptorRegistryTest extends DpwsTest{
     public void testAddInterceptor() {
         final String action = "http://action";
         InterceptorRegistry registry = getInjector().getInstance(InterceptorRegistry.class);
-        registry.addInterceptor(new Object() {
+        registry.addInterceptor(new Interceptor() {
             @MessageInterceptor
             InterceptorResult test(RequestResponseObject rrInfo) {
                 return InterceptorResult.PROCEED;
             }
         });
-        registry.addInterceptor(new Object() {
+        registry.addInterceptor(new Interceptor() {
             @MessageInterceptor(sequenceNumber = 5)
             InterceptorResult test(RequestResponseObject rrInfo) {
                 return InterceptorResult.PROCEED;
             }
         });
 
-        registry.addInterceptor(new Object() {
+        registry.addInterceptor(new Interceptor() {
             @MessageInterceptor(action)
             InterceptorResult test(RequestResponseObject rrInfo) {
                 return InterceptorResult.PROCEED;

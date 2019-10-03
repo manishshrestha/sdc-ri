@@ -18,6 +18,7 @@ public interface TransferGetClient {
      * <li>{@link org.ieee11073.sdc.dpws.soap.exception.SoapFaultException}
      * <li>{@link org.ieee11073.sdc.dpws.soap.exception.MarshallingException}
      * <li>{@link org.ieee11073.sdc.dpws.soap.exception.TransportException}
+     * <li>{@link org.ieee11073.sdc.dpws.soap.interception.InterceptorException}
      * </ul>
      */
     ListenableFuture<SoapMessage> sendTransferGet(RequestResponseClient requestResponseClient, String wsaTo);

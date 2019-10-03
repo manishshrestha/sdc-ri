@@ -4,6 +4,7 @@ import com.google.common.primitives.UnsignedInteger;
 import org.ieee11073.sdc.dpws.soap.exception.MarshallingException;
 import org.ieee11073.sdc.dpws.soap.exception.TransportException;
 import org.ieee11073.sdc.dpws.soap.interception.Interceptor;
+import org.ieee11073.sdc.dpws.soap.interception.InterceptorException;
 import org.ieee11073.sdc.dpws.soap.wsaddressing.model.EndpointReferenceType;
 
 import javax.xml.namespace.QName;
@@ -95,8 +96,9 @@ public interface WsDiscoveryTargetService extends Interceptor {
      * @return the metadata version that has been attached to the Hello message.
      * @throws MarshallingException if marshalling the Hello message fails.
      * @throws TransportException if there is any problem on the transport layer.
+     * @throws InterceptorException if one of the interceptors pops up with an error.
      */
-    UnsignedInteger sendHello() throws MarshallingException, TransportException;
+    UnsignedInteger sendHello() throws MarshallingException, TransportException, InterceptorException;
 
     /**
      * Blocking function to send out a Hello message.
@@ -105,14 +107,16 @@ public interface WsDiscoveryTargetService extends Interceptor {
      * @return the metadata version that has been attached to the Hello message.
      * @throws MarshallingException if marshalling the Hello message fails.
      * @throws TransportException if there is any problem on the transport layer.
+     * @throws InterceptorException if one of the interceptors pops up with an error.
      */
-    UnsignedInteger sendHello(boolean forceNewMetadataVersion) throws MarshallingException, TransportException;
+    UnsignedInteger sendHello(boolean forceNewMetadataVersion) throws MarshallingException, TransportException, InterceptorException;
 
     /**
      * Blocking function to send out a Bye message.
      *
      * @throws MarshallingException if marshalling the Bye message fails.
      * @throws TransportException if there is any problem on the transport layer.
+     * @throws InterceptorException if one of the interceptors pops up with an error.
      */
-    void sendBye() throws MarshallingException, TransportException;
+    void sendBye() throws MarshallingException, TransportException, InterceptorException;
 }

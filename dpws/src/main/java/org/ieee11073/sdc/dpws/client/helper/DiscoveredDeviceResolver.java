@@ -8,11 +8,12 @@ import org.ieee11073.sdc.dpws.client.ClientConfig;
 import org.ieee11073.sdc.dpws.client.DiscoveredDevice;
 import org.ieee11073.sdc.dpws.soap.exception.MarshallingException;
 import org.ieee11073.sdc.dpws.soap.exception.TransportException;
+import org.ieee11073.sdc.dpws.soap.interception.InterceptorException;
 import org.ieee11073.sdc.dpws.soap.wsaddressing.WsAddressingUtil;
 import org.ieee11073.sdc.dpws.soap.wsaddressing.model.EndpointReferenceType;
+import org.ieee11073.sdc.dpws.soap.wsdiscovery.WsDiscoveryClient;
 import org.ieee11073.sdc.dpws.soap.wsdiscovery.event.HelloMessage;
 import org.ieee11073.sdc.dpws.soap.wsdiscovery.event.ProbeMatchesMessage;
-import org.ieee11073.sdc.dpws.soap.wsdiscovery.WsDiscoveryClient;
 import org.ieee11073.sdc.dpws.soap.wsdiscovery.model.HelloType;
 import org.ieee11073.sdc.dpws.soap.wsdiscovery.model.ProbeMatchType;
 import org.ieee11073.sdc.dpws.soap.wsdiscovery.model.ProbeMatchesType;
@@ -124,6 +125,8 @@ public class DiscoveredDeviceResolver {
         } catch (TimeoutException e) {
             LOG.debug("Did not get resolve answer from '{}' within {} ms", wsaUtil.getAddressUriAsString(epr),
                     maxWaitForResolveMatches.toMillis());
+        } catch (InterceptorException e) {
+            LOG.info(e.getMessage(), e.getCause());
         }
 
         return Optional.empty();

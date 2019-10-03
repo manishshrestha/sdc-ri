@@ -40,7 +40,7 @@ public class RequestResponseClientImpl implements RequestResponseClient {
 
     @Override
     public SoapMessage sendRequestResponse(SoapMessage request)
-            throws SoapFaultException, MarshallingException, TransportException {
+            throws SoapFaultException, MarshallingException, TransportException, InterceptorException {
         RequestObject rObj = new RequestObject(request);
         clientHelper.invokeDispatcher(Direction.REQUEST, interceptorRegistry, request, rObj);
 

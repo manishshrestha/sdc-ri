@@ -11,6 +11,7 @@ import org.ieee11073.sdc.dpws.soap.exception.MarshallingException;
 import org.ieee11073.sdc.dpws.soap.exception.SoapFaultException;
 import org.ieee11073.sdc.dpws.soap.exception.TransportException;
 import org.ieee11073.sdc.dpws.soap.interception.Interceptor;
+import org.ieee11073.sdc.dpws.soap.interception.InterceptorException;
 
 import javax.xml.namespace.QName;
 import java.net.URI;
@@ -99,7 +100,7 @@ public class HostingServiceProxyImpl implements HostingServiceProxy {
 
     @Override
     public synchronized SoapMessage sendRequestResponse(SoapMessage request)
-            throws SoapFaultException, MarshallingException, TransportException {
+            throws SoapFaultException, MarshallingException, TransportException, InterceptorException {
         return requestResponseClient.sendRequestResponse(request);
     }
 }

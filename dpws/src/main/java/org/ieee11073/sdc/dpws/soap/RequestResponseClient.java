@@ -3,6 +3,7 @@ package org.ieee11073.sdc.dpws.soap;
 import org.ieee11073.sdc.dpws.soap.exception.MarshallingException;
 import org.ieee11073.sdc.dpws.soap.exception.SoapFaultException;
 import org.ieee11073.sdc.dpws.soap.exception.TransportException;
+import org.ieee11073.sdc.dpws.soap.interception.InterceptorException;
 import org.ieee11073.sdc.dpws.soap.interception.InterceptorHandler;
 
 /**
@@ -18,6 +19,7 @@ public interface RequestResponseClient extends InterceptorHandler {
      * @throws TransportException   if  transport-related exceptions come up during processing.
      *                              This will hinder the response from being sent.
      * @throws MarshallingException if any exception occurs during marshalling or unmarshalling of SOAP messages.
+     * @throws InterceptorException if one of the interceptors pops up with an error.
      */
-    SoapMessage sendRequestResponse(SoapMessage request) throws SoapFaultException, MarshallingException, TransportException;
+    SoapMessage sendRequestResponse(SoapMessage request) throws SoapFaultException, MarshallingException, TransportException, InterceptorException;
 }

@@ -16,6 +16,7 @@ import org.ieee11073.sdc.dpws.soap.SoapMessage;
 import org.ieee11073.sdc.dpws.soap.SoapUtil;
 import org.ieee11073.sdc.dpws.soap.exception.MarshallingException;
 import org.ieee11073.sdc.dpws.soap.exception.TransportException;
+import org.ieee11073.sdc.dpws.soap.interception.InterceptorException;
 import org.ieee11073.sdc.dpws.soap.interception.InterceptorResult;
 import org.ieee11073.sdc.dpws.soap.interception.MessageInterceptor;
 import org.ieee11073.sdc.dpws.soap.interception.NotificationObject;
@@ -169,7 +170,7 @@ public class WsDiscoveryClientInterceptor implements WsDiscoveryClient {
 
     @Override
     public ListenableFuture<Integer> sendProbe(String probeId, List<QName> types, List<String> scopes, Integer maxResults)
-            throws MarshallingException, TransportException {
+            throws MarshallingException, TransportException, InterceptorException {
         SoapMessage probeMsg = createProbeMessage(types, scopes);
 
         URI msgIdUri = soapUtil.createUriFromUuid(UUID.randomUUID());
@@ -187,13 +188,13 @@ public class WsDiscoveryClientInterceptor implements WsDiscoveryClient {
 
     @Override
     public ListenableFuture<Integer> sendProbe(String probeId, List<QName> types, List<String> scopes)
-            throws MarshallingException, TransportException{
+            throws MarshallingException, TransportException, InterceptorException {
         return sendProbe(probeId, types, scopes, Integer.MAX_VALUE);
     }
 
     @Override
     public ListenableFuture<ResolveMatchesType> sendResolve(EndpointReferenceType epr)
-            throws MarshallingException, TransportException {
+            throws MarshallingException, TransportException, InterceptorException {
         ResolveType resolveType = wsdFactory.createResolveType();
         resolveType.setEndpointReference(epr);
 
