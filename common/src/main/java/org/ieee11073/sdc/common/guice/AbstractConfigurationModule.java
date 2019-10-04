@@ -11,10 +11,10 @@ import java.util.Map;
 import java.util.TreeMap;
 
 /**
- * Default Guice app configuration module.
+ * Utility class for other modules to allow app configuration via Google Guice.
  * <p>
- * Derive from this class to override default configuration values. Use {@link #bind(String, Class, Object)} to
- * set values.
+ * Derive any concrete configuration module in order to override default values.
+ * Use {@link #bind(String, Class, Object)} to set values.
  */
 public abstract class AbstractConfigurationModule extends AbstractModule {
     private static final Logger LOG = LoggerFactory.getLogger(AbstractConfigurationModule.class);
@@ -24,11 +24,11 @@ public abstract class AbstractConfigurationModule extends AbstractModule {
     /**
      * Binds a configuration key to a value from outside.
      * <p>
-     * This operation can only be performed once per key. All unpopulated keys are supposed to be filled with a
-     * default value once {@link #configure()} is called by Guice.
+     * This operation can only be performed once per key.
+     * All unpopulated keys are supposed to be filled with a default value once {@link #configure()} is called by Guice.
      *
      * @param name     the configuration key.
-     * @param dataType the data type bounded by the key (should be defined in configuration class).
+     * @param dataType the data type bound by the key (should be defined in configuration class).
      * @param value    the configuration value to set.
      * @param <T>      type that is required by the given key.
      */
@@ -57,9 +57,9 @@ public abstract class AbstractConfigurationModule extends AbstractModule {
     }
 
     /**
-     * Conducts default configuration.
+     * Processes the default configuration.
      * <p>
-     * This method is called by Guice.
+     * <em>This method is called by Guice to apply the configuration values.</em>
      */
     @Override
     @SuppressWarnings("Unchecked")
@@ -74,13 +74,18 @@ public abstract class AbstractConfigurationModule extends AbstractModule {
 
     /**
      * Implement this method to settle your default configuration.
+     * <p>
+     * <em>This is only relevant to the module that provides a certain configuration!</em>
      */
     protected abstract void defaultConfigure();
 
     /**
-     * Implement this method to apply custom configuration.
+     * Implement this method to apply some custom configuration.
      * <p>
-     * Optional override as values can also be set from outside the class by using {@link #bind(String, Class, Object)}.
+     * This method is relevant to users that want to override default configuration values.
+     * Instead of overriding this function, it is also legit to bind values from outside the instance itself by using
+     * {@link #bind(String, Class, Object)}.
+     * Always to that <em>before</em> an instance is processed by Guice!
      */
     protected void customConfigure() {
         // Override is optional

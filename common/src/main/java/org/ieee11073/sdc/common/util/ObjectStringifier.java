@@ -8,7 +8,7 @@ import java.util.SortedMap;
 import java.util.function.Predicate;
 
 /**
- * Utility to stringifyMap objects in conformance with the SDCri coding conventions.
+ * Stringifies objects in conformance with the SDCri coding conventions.
  */
 public class ObjectStringifier {
     /**
@@ -16,7 +16,7 @@ public class ObjectStringifier {
      * <p>
      * This function considers every field that is annotated with {@link Stringified}.
      *
-     * @param obj the object to stringifyMap.
+     * @param obj the object to stringify.
      * @param <T> any object.
      * @return the stringified object in conformance with the SDCri coding conventions.
      */
@@ -27,7 +27,7 @@ public class ObjectStringifier {
     /**
      * Stringifies annotated fields of a given object and appends defined map.
      *
-     * @param obj       the object to stringifyMap.
+     * @param obj       the object to stringify.
      * @param keyValues key-values to be additionally appended.
      * @param <T>       any object.
      * @return the stringified object in conformance with the SDCri coding conventions.
@@ -39,8 +39,9 @@ public class ObjectStringifier {
     /**
      * Stringifies some fields of a given object.
      *
-     * @param obj the object to stringifyMap.
-     * @param <T> any object.
+     * @param obj        the object to stringify.
+     * @param fieldNames the fields of the class that are requested to be stringified.
+     * @param <T>        any object.
      * @return the stringified object in conformance with the SDCri coding conventions.
      */
     public static <T> String stringify(T obj, String[] fieldNames) {
@@ -57,9 +58,10 @@ public class ObjectStringifier {
     /**
      * Stringifies some fields of a given object and appends defined map.
      *
-     * @param obj       the object to stringifyMap.
-     * @param keyValues key-values to be additionally appended.
-     * @param <T>       any object.
+     * @param obj        the object to stringify.
+     * @param fieldNames the fields of the class that are requested to be stringified.
+     * @param keyValues  key-values to be additionally appended.
+     * @param <T>        any object.
      * @return the stringified object in conformance with the SDCri coding conventions.
      */
     public static <T> String stringify(T obj, String[] fieldNames, SortedMap<String, Object> keyValues) {
@@ -79,7 +81,7 @@ public class ObjectStringifier {
      * @param obj       the object used to access the class name.
      * @param keyValues key-value pairs to put as properties of the output-string
      * @param <T>       any object.
-     * @return
+     * @return the stringified object in conformance with the SDCri coding conventions.
      */
     public static <T> String stringifyMap(T obj, SortedMap<String, Object> keyValues) {
         StringBuffer stringBuffer = start(obj);
@@ -93,7 +95,7 @@ public class ObjectStringifier {
      * In order to filter out certain fields please use either {@link #stringify(Object)} or
      * {@link #stringify(Object, String[])}.
      *
-     * @param obj the object to stringifyMap.
+     * @param obj the object to stringify.
      * @param <T> any object.
      * @return the stringified object in conformance with the SDCri coding conventions.
      */

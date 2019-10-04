@@ -5,7 +5,7 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 
 /**
- * Utility class to make locks auto-closable.
+ * Converts locks to auto-closables.
  */
 public class AutoLock<T extends Lock> implements Lock, AutoCloseable {
     private final T lock;
@@ -15,7 +15,11 @@ public class AutoLock<T extends Lock> implements Lock, AutoCloseable {
     }
 
     /**
-     * Lock the given lock and return auto-closable variant.
+     * Locks the given lock and return auto-closable variant.
+     *
+     * @param lock the lock to wrap.
+     * @param <T> type of the lock (write/read/common).
+     * @return an auto-closable instance to be used with <code>try (...) { ... }</code>.
      */
      public static <T extends Lock> AutoLock lock(T lock) {
         lock.lock();
@@ -23,7 +27,9 @@ public class AutoLock<T extends Lock> implements Lock, AutoCloseable {
     }
 
     /**
-     * Return the wrapped lock instance.
+     * Returns the wrapped lock instance.
+     *
+     * @return the wrapped lock.
      */
     public T getLock() {
         return lock;
