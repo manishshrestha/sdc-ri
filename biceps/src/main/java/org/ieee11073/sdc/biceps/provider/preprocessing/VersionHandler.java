@@ -309,4 +309,9 @@ public class VersionHandler implements DescriptionPreprocessingSegment, StatePre
             return stateVersion;
         }
     }
+
+    @Override
+    public String toString() {
+        return this.getClass().getSimpleName();
+    }
 }

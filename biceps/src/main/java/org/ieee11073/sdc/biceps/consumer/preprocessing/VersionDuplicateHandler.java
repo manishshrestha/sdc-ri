@@ -8,6 +8,7 @@ import org.ieee11073.sdc.biceps.common.storage.StatePreprocessingSegment;
 import org.ieee11073.sdc.biceps.model.participant.AbstractMultiState;
 import org.ieee11073.sdc.biceps.model.participant.AbstractState;
 
+import javax.print.DocFlavor;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -63,5 +64,10 @@ public class VersionDuplicateHandler implements StatePreprocessingSegment {
         }
 
         modifications.getStates().removeAll(omittedStates);
+    }
+
+    @Override
+    public String toString() {
+        return this.getClass().getSimpleName();
     }
 }

@@ -53,7 +53,7 @@ public class CardinalityChecker implements DescriptionPreprocessingSegment {
         final Optional<MdibEntity> parentEntityFromStorage = storage.getEntity(parentHandle.get());
         if (parentEntityFromStorage.isEmpty()) {
             // No parent in the storage yet - early exit
-            LOG.warn("Exepected a parent in the MDIB storage, but non found: %s", parentHandle.get());
+            LOG.warn("Expected a parent in the MDIB storage, but none found: %s", parentHandle.get());
             return;
         }
 
@@ -82,5 +82,10 @@ public class CardinalityChecker implements DescriptionPreprocessingSegment {
                         "child (see handle %s)",
                 descriptor.getClass().getSimpleName(),
                 descriptor.getHandle()));
+    }
+
+    @Override
+    public String toString() {
+        return this.getClass().getSimpleName();
     }
 }
