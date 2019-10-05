@@ -193,13 +193,15 @@ public class MdibStorageImpl implements MdibStorage {
     }
 
     private void deleteEntity(MdibDescriptionModification modification, List<String> deletedEntities) {
-        Optional.ofNullable(entities.get(modification.getHandle())).ifPresent(mdibEntity ->
-                mdibEntity.getParent().ifPresent(parentHandle ->
-                        Optional.ofNullable(entities.get(parentHandle)).ifPresent(parentEntity ->
-                                entities.put(parentEntity.getHandle(), entityFactory.replaceChildren(parentEntity,
-                                        parentEntity.getChildren().stream()
-                                                .filter(s -> s.equals(mdibEntity.getHandle()))
-                                                .collect(Collectors.toList()))))));
+        Optional.ofNullable(entities.get(modification.getHandle())).ifPresent(mdibEntity -> {
+            LOG.debug("[{}] Delete entity: {}", mdibVersion.getInstanceId(), modification.getDescriptor().getHandle());
+            mdibEntity.getParent().ifPresent(parentHandle ->
+                    Optional.ofNullable(entities.get(parentHandle)).ifPresent(parentEntity ->
+                            entities.put(parentEntity.getHandle(), entityFactory.replaceChildren(parentEntity,
+                                    parentEntity.getChildren().stream()
+                                            .filter(s -> s.equals(mdibEntity.getHandle()))
+                                            .collect(Collectors.toList())))));
+        });
 
         rootEntities.remove(modification.getHandle());
         entities.remove(modification.getHandle());
@@ -211,6 +213,7 @@ public class MdibStorageImpl implements MdibStorage {
 
     private void updateEntity(MdibDescriptionModification modification, List<MdibEntity> updatedEntities) {
         Optional.ofNullable(entities.get(modification.getHandle())).ifPresent(mdibEntity -> {
+            LOG.debug("[{}] Update entity: {}", mdibVersion.getInstanceId(), modification.getDescriptor());
             mdibEntity = entityFactory.replaceDescriptorAndStates(
                     mdibEntity,
                     modification.getDescriptor(),
@@ -243,6 +246,8 @@ public class MdibStorageImpl implements MdibStorage {
         // Add to entities list
         entities.put(mdibEntity.getHandle(), mdibEntity);
 
+        LOG.debug("[{}] Insert entity: {}", mdibVersion.getInstanceId(), mdibEntity.getDescriptor());
+
         // Add to context states if context entity
         if (mdibEntity.getDescriptor() instanceof AbstractContextDescriptor) {
             contextStates.putAll(mdibEntity.getStates().stream()
@@ -264,6 +269,9 @@ public class MdibStorageImpl implements MdibStorage {
 
         final List<AbstractState> modifiedStates = new ArrayList<>();
         for (AbstractState modification : stateModifications.getStates()) {
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("[{}] Update state: {}", mdibVersion.getSequenceId(), modification);
+            }
             modifiedStates.add(modification);
             final MdibEntity mdibEntity = entities.get(modification.getDescriptorHandle());
             if (mdibEntity == null) {

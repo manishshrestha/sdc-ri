@@ -65,4 +65,9 @@ public class TypeConsistencyChecker implements DescriptionPreprocessingSegment {
                     Joiner.on(", ").join(treeValidator.allowedParents(descriptor))));
         }
     }
+
+    @Override
+    public String toString() {
+        return this.getClass().getSimpleName();
+    }
 }
