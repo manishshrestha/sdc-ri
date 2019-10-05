@@ -11,62 +11,58 @@ import java.util.Optional;
 public interface JaxbUtil {
 
     /**
-     * Try to cast the element to given type object and return it as an {@link Optional}.
+     * Tries to cast the element to given type object and returns it as an {@linkplain Optional}.
      *
-     * If anything fails, {@link Optional#empty()} is returned.
-     *
-     * @param element   The element to inspect.
-     * @param typeClass The QName type specification.
-     * @param <T>       The casted generic type
-     * @return {@link Optional} of {@link JAXBElement#getValue()} or {@link Optional#empty()} on error.
+     * @param element   the element to inspect.
+     * @param typeClass the QName type specification.
+     * @param <T>       the casted generic type.
+     * @return {@linkplain JAXBElement#getValue()} or {@linkplain Optional#empty()} on error.
      */
     <T> Optional<T> extractElement(Object element, Class<T> typeClass);
 
     /**
-     * Try to cast the element to a {@link JAXBElement} object with given QName type and return value as
-     * an {@link Optional}.
+     * Tries to cast the element to a {@linkplain JAXBElement} object with given QName type and returns it as an {@linkplain Optional}.
      *
-     * If anything fails, {@link Optional#empty()} is returned.
-     *
-     * @param element     The element to inspect.
-     * @param elementType The QName type specification.
-     * @param <T>         The casted generic type
-     * @return {@link Optional} of {@link JAXBElement#getValue()} or {@link Optional#empty()} on error.
+     * @param element     the element to inspect.
+     * @param elementType the QName type specification.
+     * @param <T>         the generic type to cast to.
+     * @return {@linkplain JAXBElement#getValue()} or {@linkplain Optional#empty()} on error.
      */
     <T> Optional<T> extractElement(Object element, QName elementType);
 
     /**
-     * Same as {@link #extractElement(Object, QName)}, but with QName JAXB type class in addition.
+     * Same as {@link #extractElement(Object, QName)} but with QName JAXB type class in addition.
      *
-     * @param element     The element to inspect.
-     * @param elementType The QName type specification.
+     * @param element     the element to inspect.
+     * @param elementType the QName type specification.
      * @param typeClass   Java JAXB class that matches elementType.
-     * @param <T>         The casted generic type
-     * @return {@link Optional} of {@link JAXBElement#getValue()} or {@link Optional#empty()} on error.
+     * @param <T>         the generic type to cast to.
+     * @return {@linkplain JAXBElement#getValue()} or {@linkplain Optional#empty()} on error.
      */
     <T> Optional<T> extractElement(Object element, QName elementType, Class<T> typeClass);
 
     /**
-     * From a list of {@link JAXBElement} objects, this function retrieves the first element in the list and tries
-     * to cast if to the QName type given by elementType.
+     * From a list of {@link JAXBElement} objects, this function retrieves the first element in the list
+     * <p>
+     * Additionally, it tries to cast it to the QName type given by elementType.
      *
-     * @param anyList     A list of {@link JAXBElement} objects.
-     * @param elementType The QName type specification.
+     * @param anyList     a list of {@link JAXBElement} objects.
+     * @param elementType the QName type specification.
      * @param typeClass   Java JAXB class that matches elementType.
-     * @param <T>         The casted generic type
-     * @return {@link Optional} of the first element's {@link JAXBElement#getValue()} or {@link Optional#empty()} when
-     * the list is empty or an error occurs.
+     * @param <T>         the generic type to cast to.
+     * @return {@linkplain Optional} of the first element's {@link JAXBElement#getValue()} or {@link Optional#empty()}
+     * if the list is empty or an error occurred.
      */
     <T> Optional<T> extractFirstElementFromAny(List<Object> anyList, QName elementType, Class<T> typeClass);
 
     /**
      * Same as {@link #extractFirstElementFromAny(List, QName, Class)}, but without comparing QName in advance.
      *
-     * @param anyList     A list of {@link JAXBElement} objects.
-     * @param typeClass   Java JAXB class that matches elementType.
-     * @param <T>         The casted generic type
-     * @return {@link Optional} of the first element's {@link JAXBElement#getValue()} or {@link Optional#empty()} when
-     * the list is empty or an error occurs.
+     * @param anyList   a list of {@link JAXBElement} objects.
+     * @param typeClass Java JAXB class that matches elementType.
+     * @param <T>       the generic type to cast to.
+     * @return {@linkplain Optional} of the first element's {@link JAXBElement#getValue()} or {@link Optional#empty()}
+     * if the list is empty or an error occurred.
      */
     <T> Optional<T> extractFirstElementFromAny(List<Object> anyList, Class<T> typeClass);
 }

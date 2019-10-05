@@ -7,7 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Default implementation of {@link ObjectUtil}.
+ * Default implementation of {@linkplain ObjectUtil}.
  */
 public class ObjectUtilImpl implements ObjectUtil {
     private static final Logger LOG = LoggerFactory.getLogger(ObjectUtilImpl.class);

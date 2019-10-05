@@ -7,6 +7,9 @@ import javax.xml.namespace.QName;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Default implementation of {@linkplain JaxbUtil}.
+ */
 public class JaxbUtilImpl implements JaxbUtil {
     @Override
     public <T> Optional<T> extractElement(Object element, QName elementType, Class<T> typeClass) {
