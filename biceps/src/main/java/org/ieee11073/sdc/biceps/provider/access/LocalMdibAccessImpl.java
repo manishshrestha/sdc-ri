@@ -8,8 +8,6 @@ import org.ieee11073.sdc.biceps.common.access.*;
 import org.ieee11073.sdc.biceps.common.access.factory.ReadTransactionFactory;
 import org.ieee11073.sdc.biceps.common.access.helper.WriteUtil;
 import org.ieee11073.sdc.biceps.common.event.Distributor;
-import org.ieee11073.sdc.biceps.provider.preprocessing.DuplicateChecker;
-import org.ieee11073.sdc.biceps.provider.preprocessing.TypeConsistencyChecker;
 import org.ieee11073.sdc.biceps.common.storage.MdibStorage;
 import org.ieee11073.sdc.biceps.common.storage.MdibStoragePreprocessingChain;
 import org.ieee11073.sdc.biceps.common.storage.PreprocessingException;
@@ -19,6 +17,8 @@ import org.ieee11073.sdc.biceps.model.participant.AbstractContextState;
 import org.ieee11073.sdc.biceps.model.participant.AbstractDescriptor;
 import org.ieee11073.sdc.biceps.model.participant.AbstractState;
 import org.ieee11073.sdc.biceps.model.participant.MdibVersion;
+import org.ieee11073.sdc.biceps.provider.preprocessing.DuplicateChecker;
+import org.ieee11073.sdc.biceps.provider.preprocessing.TypeConsistencyChecker;
 import org.ieee11073.sdc.biceps.provider.preprocessing.VersionHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -73,12 +73,11 @@ public class LocalMdibAccessImpl implements LocalMdibAccess {
                 Arrays.asList(duplicateChecker, typeConsistencyChecker, versionHandler),
                 Arrays.asList(versionHandler));
 
-        this.writeUtil = new WriteUtil(eventDistributor, localMdibAccessPreprocessing, readWriteLock, this);
+        this.writeUtil = new WriteUtil(LOG, eventDistributor, localMdibAccessPreprocessing, readWriteLock, this);
     }
 
     @Override
     public WriteDescriptionResult writeDescription(MdibDescriptionModifications mdibDescriptionModifications) throws PreprocessingException {
-        readWriteLock.writeLock().lock();
         mdibDescriptionModifications = copyManager.processInput(mdibDescriptionModifications);
         return writeUtil.writeDescription(descriptionModifications -> {
             mdibVersion = MdibVersion.increment(mdibVersion);
@@ -86,7 +85,6 @@ public class LocalMdibAccessImpl implements LocalMdibAccess {
             mdStateVersion = mdStateVersion.add(BigInteger.ONE);
             return mdibStorage.apply(mdibVersion, mdDescriptionVersion, mdStateVersion, descriptionModifications);
         }, mdibDescriptionModifications);
-
     }
 
     @Override
@@ -101,11 +99,13 @@ public class LocalMdibAccessImpl implements LocalMdibAccess {
 
     @Override
     public void registerObserver(MdibAccessObserver observer) {
+        LOG.info("Register MDIB observer: ", observer);
         eventDistributor.registerObserver(observer);
     }
 
     @Override
     public void unregisterObserver(MdibAccessObserver observer) {
+        LOG.info("Unreigster MDIB observer: ", observer);
         eventDistributor.unregisterObserver(observer);
     }
 

@@ -20,7 +20,7 @@ import java.util.function.Function;
  * <em>Remark: The operations do not copy descriptors or states.</em>
  */
 public class WriteUtil {
-    private static final Logger LOG = LoggerFactory.getLogger(WriteUtil.class);
+    private final Logger LOG;
 
     private final Distributor eventDistributor;
     private final MdibStoragePreprocessingChain mdibAccessPreprocessing;
@@ -35,10 +35,12 @@ public class WriteUtil {
      * @param readWriteLock           a read write lock to protect against concurrent access.
      * @param mdibAccess              the MDIB access that is passed on event distribution.
      */
-    public WriteUtil(Distributor eventDistributor,
+    public WriteUtil(Logger logger,
+                     Distributor eventDistributor,
                      MdibStoragePreprocessingChain mdibAccessPreprocessing,
                      ReentrantReadWriteLock readWriteLock,
                      MdibAccess mdibAccess) {
+        this.LOG = logger;
         this.eventDistributor = eventDistributor;
         this.mdibAccessPreprocessing = mdibAccessPreprocessing;
         this.readWriteLock = readWriteLock;
@@ -59,6 +61,13 @@ public class WriteUtil {
     public WriteDescriptionResult writeDescription(Function<MdibDescriptionModifications, WriteDescriptionResult> lockedWriteDescription,
                                                    MdibDescriptionModifications descriptionModifications) throws PreprocessingException {
         readWriteLock.writeLock().lock();
+
+        long startTime = 0;
+        if (LOG.isDebugEnabled()) {
+            startTime = System.currentTimeMillis();
+            LOG.debug("Start writing description");
+        }
+
         WriteDescriptionResult modificationResult;
         try {
             mdibAccessPreprocessing.processDescriptionModifications(descriptionModifications);
@@ -72,6 +81,14 @@ public class WriteUtil {
             readWriteLock.writeLock().unlock();
         }
 
+        long endTime = System.currentTimeMillis();
+        if (LOG.isDebugEnabled()) {
+
+            LOG.debug("MDIB version {} written in {} ms",
+                    modificationResult.getMdibVersion(),
+                    endTime - startTime);
+        }
+
         try {
             eventDistributor.sendDescriptionModificationEvent(
                     mdibAccess,
@@ -80,6 +97,12 @@ public class WriteUtil {
                     modificationResult.getDeletedEntities());
         } finally {
             readWriteLock.readLock().unlock();
+        }
+
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("Distributing changes took {} ms",
+                    modificationResult.getMdibVersion(),
+                    System.currentTimeMillis() - endTime);
         }
 
         return modificationResult;
@@ -99,6 +122,13 @@ public class WriteUtil {
     public WriteStateResult writeStates(Function<MdibStateModifications, WriteStateResult> lockedWriteStates,
                                         MdibStateModifications stateModifications) throws PreprocessingException {
         readWriteLock.writeLock().lock();
+
+        long startTime = 0;
+        if (LOG.isDebugEnabled()) {
+            startTime = System.currentTimeMillis();
+            LOG.debug("Start writing states");
+        }
+
         WriteStateResult modificationResult;
         try {
             mdibAccessPreprocessing.processStateModifications(stateModifications);
@@ -112,6 +142,14 @@ public class WriteUtil {
             readWriteLock.writeLock().unlock();
         }
 
+        long endTime = System.currentTimeMillis();
+        if (LOG.isDebugEnabled()) {
+
+            LOG.debug("MDIB version {} written in {} ms",
+                    modificationResult.getMdibVersion(),
+                    endTime - startTime);
+        }
+
         try {
             eventDistributor.sendStateModificationEvent(
                     mdibAccess,
@@ -119,6 +157,12 @@ public class WriteUtil {
                     modificationResult.getStates());
         } finally {
             readWriteLock.readLock().unlock();
+        }
+
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("Distributing changes took {} ms",
+                    modificationResult.getMdibVersion(),
+                    System.currentTimeMillis() - endTime);
         }
 
         return modificationResult;

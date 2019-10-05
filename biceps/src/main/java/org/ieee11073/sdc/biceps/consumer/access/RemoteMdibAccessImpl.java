@@ -11,7 +11,6 @@ import org.ieee11073.sdc.biceps.common.access.WriteStateResult;
 import org.ieee11073.sdc.biceps.common.access.factory.ReadTransactionFactory;
 import org.ieee11073.sdc.biceps.common.access.helper.WriteUtil;
 import org.ieee11073.sdc.biceps.common.event.Distributor;
-import org.ieee11073.sdc.biceps.provider.preprocessing.TypeConsistencyChecker;
 import org.ieee11073.sdc.biceps.common.storage.MdibStorage;
 import org.ieee11073.sdc.biceps.common.storage.MdibStoragePreprocessingChain;
 import org.ieee11073.sdc.biceps.common.storage.PreprocessingException;
@@ -50,8 +49,7 @@ public class RemoteMdibAccessImpl implements RemoteMdibAccess {
                          MdibStorageFactory mdibStorageFactory,
                          ReentrantReadWriteLock readWriteLock,
                          ReadTransactionFactory readTransactionFactory,
-                         VersionDuplicateHandler versionDuplicateHandler,
-                         TypeConsistencyChecker typeConsistencyChecker) {
+                         VersionDuplicateHandler versionDuplicateHandler) {
         this.eventDistributor = eventDistributor;
         this.mdibStorage = mdibStorageFactory.createMdibStorage();
         this.readWriteLock = readWriteLock;
@@ -62,7 +60,7 @@ public class RemoteMdibAccessImpl implements RemoteMdibAccess {
                 Collections.EMPTY_LIST,
                 Arrays.asList(versionDuplicateHandler));
 
-        this.writeUtil = new WriteUtil(eventDistributor, localMdibAccessPreprocessing, readWriteLock, this);
+        this.writeUtil = new WriteUtil(LOG, eventDistributor, localMdibAccessPreprocessing, readWriteLock, this);
     }
 
     @Override
