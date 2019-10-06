@@ -77,6 +77,22 @@ public interface MdibEntity {
     StateAlternative<AbstractState> doIfMultiState(Consumer<List<AbstractMultiState>> consumer);
 
     /**
+     * Gets the descriptor class.
+     * <p>
+     * Short-hand for {@code getDescriptor().getClass()}.
+     *
+     * @return the descriptor class of the entity.
+     */
+    Class<? extends AbstractDescriptor> getDescriptorClass();
+
+    /**
+     * Gets the state class.
+     *
+     * @return the state class of the entity.
+     */
+    Class<? extends AbstractState> getStateClass();
+
+    /**
      * An alternative lambda to be executed.
      *
      * @param <T> the state type to accept.

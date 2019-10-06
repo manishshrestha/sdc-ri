@@ -24,6 +24,7 @@ public class MdibEntityImpl implements MdibEntity {
     private final List<AbstractState> states;
     private final MdibVersion mdibVersion;
     private final CopyManager copyManager;
+    private final Class<? extends AbstractState> stateClass;
 
     @AssistedInject
     MdibEntityImpl(@Assisted @Nullable String parent,
@@ -31,13 +32,20 @@ public class MdibEntityImpl implements MdibEntity {
                    @Assisted AbstractDescriptor descriptor,
                    @Assisted("states") List<AbstractState> states,
                    @Assisted MdibVersion mdibVersion,
-                   CopyManager copyManager) {
+                   CopyManager copyManager,
+                   MdibTypeValidator typeValidator) {
         this.parent = parent;
         this.children = children;
         this.descriptor = descriptor;
         this.states = states;
         this.mdibVersion = mdibVersion;
         this.copyManager = copyManager;
+
+        try {
+            this.stateClass = typeValidator.resolveStateType(descriptor.getClass());
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException(String.format("Unexpected descriptor class with no matching state class found: %s", descriptor.getClass()));
+        }
     }
 
     @Override
@@ -97,5 +105,15 @@ public class MdibEntityImpl implements MdibEntity {
             }
         }
         return stateAlternativeConsumer -> stateAlternativeConsumer.accept(getStates().get(0));
+    }
+
+    @Override
+    public Class<? extends AbstractDescriptor> getDescriptorClass() {
+        return descriptor.getClass();
+    }
+
+    @Override
+    public Class<? extends AbstractState> getStateClass() {
+        return stateClass;
     }
 }
