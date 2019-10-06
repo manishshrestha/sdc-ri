@@ -64,7 +64,7 @@
                                 <arg>-Xsetters-mode=accessor</arg>
                                 <arg>-Xcopyable</arg>
                                 <!--<arg>-Xequals</arg>-->
-                                <arg>-XtoString</arg>
+                                <!--<arg>-XtoString</arg>-->
                             </args>
                             <plugins>
                                 <plugin>
