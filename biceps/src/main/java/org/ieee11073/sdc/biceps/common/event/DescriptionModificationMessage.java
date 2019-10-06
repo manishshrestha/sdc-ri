@@ -12,7 +12,7 @@ import java.util.List;
 public class DescriptionModificationMessage extends AbstractMdibAccessMessage {
     private final List<MdibEntity> insertedEntities;
     private final List<MdibEntity> updatedEntities;
-    private final List<String> deletedEntities;
+    private final List<MdibEntity> deletedEntities;
 
     /**
      * Constructor.
@@ -25,7 +25,7 @@ public class DescriptionModificationMessage extends AbstractMdibAccessMessage {
     public DescriptionModificationMessage(MdibAccess mdibAccess,
                                           List<MdibEntity> insertedEntities,
                                           List<MdibEntity> updatedEntities,
-                                          List<String> deletedEntities) {
+                                          List<MdibEntity> deletedEntities) {
         super(mdibAccess);
         this.insertedEntities = Collections.unmodifiableList(insertedEntities);
         this.updatedEntities = Collections.unmodifiableList(updatedEntities);
@@ -40,7 +40,7 @@ public class DescriptionModificationMessage extends AbstractMdibAccessMessage {
         return updatedEntities;
     }
 
-    public List<String> getDeletedEntities() {
+    public List<MdibEntity> getDeletedEntities() {
         return deletedEntities;
     }
 }

@@ -44,7 +44,7 @@ public class Distributor {
     public void sendDescriptionModificationEvent(MdibAccess mdibAccess,
                                                  List<MdibEntity> insertedEntities,
                                                  List<MdibEntity> updatedEntities,
-                                                 List<String> deletedEntities) {
+                                                 List<MdibEntity> deletedEntities) {
         eventBus.post(new DescriptionModificationMessage(mdibAccess, insertedEntities, updatedEntities, deletedEntities));
     }
 

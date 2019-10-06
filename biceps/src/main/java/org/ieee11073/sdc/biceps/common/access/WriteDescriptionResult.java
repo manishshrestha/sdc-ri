@@ -16,7 +16,7 @@ public class WriteDescriptionResult {
     private final MdibVersion mdibVersion;
     private final List<MdibEntity> insertedEntities;
     private final List<MdibEntity> updatedEntities;
-    private final List<String> deletedEntities;
+    private final List<MdibEntity> deletedEntities;
 
     /**
      * Constructor to initialize all values of the result set.
@@ -29,7 +29,7 @@ public class WriteDescriptionResult {
     public WriteDescriptionResult(MdibVersion mdibVersion,
                                   List<MdibEntity> insertedEntities,
                                   List<MdibEntity> updatedEntities,
-                                  List<String> deletedEntities) {
+                                  List<MdibEntity> deletedEntities) {
         this.mdibVersion = mdibVersion;
         this.insertedEntities = Collections.unmodifiableList(insertedEntities);
         this.updatedEntities = Collections.unmodifiableList(updatedEntities);
@@ -68,7 +68,7 @@ public class WriteDescriptionResult {
      *
      * @return the entities.
      */
-    public List<String> getDeletedEntities() {
+    public List<MdibEntity> getDeletedEntities() {
         return deletedEntities;
     }
 
