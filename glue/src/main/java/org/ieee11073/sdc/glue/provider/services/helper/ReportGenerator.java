@@ -49,62 +49,42 @@ public class ReportGenerator implements MdibAccessObserver {
 
     @Subscribe
     void onAlertChange(AlertStateModificationMessage modificationMessage) {
-        try {
-            sendStateChange(ActionConstants.ACTION_EPISODIC_ALERT_REPORT,
-                    modificationMessage.getMdibAccess().getMdibVersion(),
-                    modificationMessage.getStates(),
-                    EpisodicAlertReport.class);
-        } catch (ReflectiveOperationException e) {
-            LOG.warn(REFLECTION_ERROR_STRING, e);
-        }
+        sendStateChange(ActionConstants.ACTION_EPISODIC_ALERT_REPORT,
+                modificationMessage.getMdibAccess().getMdibVersion(),
+                modificationMessage.getStates(),
+                EpisodicAlertReport.class);
     }
 
     @Subscribe
     void onComponentChange(ComponentStateModificationMessage modificationMessage) {
-        try {
-            sendStateChange(ActionConstants.ACTION_EPISODIC_COMPONENT_REPORT,
-                    modificationMessage.getMdibAccess().getMdibVersion(),
-                    modificationMessage.getStates(),
-                    EpisodicComponentReport.class);
-        } catch (ReflectiveOperationException e) {
-            LOG.warn(REFLECTION_ERROR_STRING, e);
-        }
+        sendStateChange(ActionConstants.ACTION_EPISODIC_COMPONENT_REPORT,
+                modificationMessage.getMdibAccess().getMdibVersion(),
+                modificationMessage.getStates(),
+                EpisodicComponentReport.class);
     }
 
     @Subscribe
     void onContextChange(ContextStateModificationMessage modificationMessage) {
-        try {
-            sendStateChange(ActionConstants.ACTION_EPISODIC_CONTEXT_REPORT,
-                    modificationMessage.getMdibAccess().getMdibVersion(),
-                    modificationMessage.getStates(),
-                    EpisodicContextReport.class);
-        } catch (ReflectiveOperationException e) {
-            LOG.warn(REFLECTION_ERROR_STRING, e);
-        }
+        sendStateChange(ActionConstants.ACTION_EPISODIC_CONTEXT_REPORT,
+                modificationMessage.getMdibAccess().getMdibVersion(),
+                modificationMessage.getStates(),
+                EpisodicContextReport.class);
     }
 
     @Subscribe
     void onMetricChange(MetricStateModificationMessage modificationMessage) {
-        try {
-            sendStateChange(ActionConstants.ACTION_EPISODIC_METRIC_REPORT,
-                    modificationMessage.getMdibAccess().getMdibVersion(),
-                    modificationMessage.getStates(),
-                    EpisodicMetricReport.class);
-        } catch (ReflectiveOperationException e) {
-            LOG.warn(REFLECTION_ERROR_STRING, e);
-        }
+        sendStateChange(ActionConstants.ACTION_EPISODIC_METRIC_REPORT,
+                modificationMessage.getMdibAccess().getMdibVersion(),
+                modificationMessage.getStates(),
+                EpisodicMetricReport.class);
     }
 
     @Subscribe
     void onOperationChange(OperationStateModificationMessage modificationMessage) {
-        try {
-            sendStateChange(ActionConstants.ACTION_EPISODIC_OPERATIONAL_STATE_REPORT,
-                    modificationMessage.getMdibAccess().getMdibVersion(),
-                    modificationMessage.getStates(),
-                    EpisodicOperationalStateReport.class);
-        } catch (ReflectiveOperationException e) {
-            LOG.warn(REFLECTION_ERROR_STRING, e);
-        }
+        sendStateChange(ActionConstants.ACTION_EPISODIC_OPERATIONAL_STATE_REPORT,
+                modificationMessage.getMdibAccess().getMdibVersion(),
+                modificationMessage.getStates(),
+                EpisodicOperationalStateReport.class);
     }
 
     @Subscribe
@@ -143,16 +123,12 @@ public class ReportGenerator implements MdibAccessObserver {
         collectStates(classifiedStates, insertedEntities);
         collectStates(classifiedStates, updatedEntities);
 
-        try {
-            for (Class<? extends AbstractReport> aClass : classifiedStates.keySet()) {
-                sendStateChange(
-                        reportMappings.getEpisodicAction(aClass),
-                        mdibVersion,
-                        classifiedStates.get(aClass),
-                        aClass);
-            }
-        } catch (ReflectiveOperationException e) {
-            LOG.warn(REFLECTION_ERROR_STRING, e);
+        for (Class<? extends AbstractReport> aClass : classifiedStates.keySet()) {
+            sendStateChange(
+                    reportMappings.getEpisodicAction(aClass),
+                    mdibVersion,
+                    classifiedStates.get(aClass),
+                    aClass);
         }
     }
 
@@ -180,29 +156,37 @@ public class ReportGenerator implements MdibAccessObserver {
     private <T, V extends AbstractReport> void sendStateChange(String action,
                                                                MdibVersion mdibVersion,
                                                                Collection<T> states,
-                                                               Class<V> reportClass) throws ReflectiveOperationException {
+                                                               Class<V> reportClass) {
         // todo DGr add source MDS somewhere in this function if available
 
         if (states.isEmpty()) {
             return;
         }
 
-        final Constructor<V> reportCtor = reportClass.getConstructor();
-        final V report = reportCtor.newInstance();
+        V report = null;
+        try {
+            final Constructor<V> reportCtor = reportClass.getConstructor();
+            report = reportCtor.newInstance();
 
-        final Class<?> reportPartClass = findReportPartClass(reportClass);
-        final Constructor<?> reportPartCtor = reportPartClass.getConstructor();
-        final Object reportPart = reportPartCtor.newInstance();
+            final Class<?> reportPartClass = findReportPartClass(reportClass);
+            final Constructor<?> reportPartCtor = reportPartClass.getConstructor();
+            final Object reportPart = reportPartCtor.newInstance();
 
-        final Object reportParts = findGetReportPartMethod(reportClass).invoke(report);
-        if (!List.class.isAssignableFrom(reportParts.getClass())) {
-            throw new NoSuchMethodException(String.format("Returned report parts was not a list, it was of type %s",
-                    reportParts.getClass()));
+            final Object reportParts = findGetReportPartMethod(reportClass).invoke(report);
+            if (!List.class.isAssignableFrom(reportParts.getClass())) {
+                throw new NoSuchMethodException(String.format("Returned report parts was not a list, it was of type %s",
+                        reportParts.getClass()));
+            }
+            ((List) reportParts).add(reportPart);
+
+            populateMdibVersion(report, mdibVersion);
+            findSetStateMethod(reportPartClass).invoke(reportPart, states);
+
+        } catch (ReflectiveOperationException e) {
+            LOG.warn(REFLECTION_ERROR_STRING, e);
+            return;
         }
-        ((List)reportParts).add(reportPart);
 
-        populateMdibVersion(report, mdibVersion);
-        findSetStateMethod(reportPartClass).invoke(reportPart, states);
         try {
             eventSourceAccess.sendNotification(action, report);
         } catch (MarshallingException e) {
