@@ -110,9 +110,9 @@ public class ReportGenerator implements MdibAccessObserver {
     @Subscribe
     void onDescriptionChange(DescriptionModificationMessage modificationMessage) {
         final DescriptionModificationReport report = bicepsMessageFactory.createDescriptionModificationReport();
+        appendReport(report, DescriptionModificationType.DEL, modificationMessage.getDeletedEntities());
         appendReport(report, DescriptionModificationType.CRT, modificationMessage.getInsertedEntities());
         appendReport(report, DescriptionModificationType.UPT, modificationMessage.getUpdatedEntities());
-        appendReport(report, DescriptionModificationType.DEL, modificationMessage.getDeletedEntities());
         populateMdibVersion(report, modificationMessage.getMdibAccess().getMdibVersion());
 
         try {
@@ -158,7 +158,7 @@ public class ReportGenerator implements MdibAccessObserver {
 
     private void collectStates(Multimap<Class<? extends AbstractReport>, AbstractState> classifiedStates, List<MdibEntity> entities) {
         for (MdibEntity entity : entities) {
-            classifiedStates.putAll(reportMappings.getReportClass(entity.getStateClass()), entity.getStates());
+            classifiedStates.putAll(reportMappings.getEpisodicReportClass(entity.getStateClass()), entity.getStates());
         }
     }
 

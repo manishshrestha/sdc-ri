@@ -8,7 +8,7 @@ import java.util.*;
 
 public class ReportMappings {
     private final Map<Class<? extends AbstractReport>, Class<? extends AbstractState>> reportStateMapping;
-    private final Map<Class<? extends AbstractState>, Class<? extends AbstractReport>> stateReportMapping;
+    private final Map<Class<? extends AbstractState>, Class<? extends AbstractReport>> episodicStateReportMapping;
     private final Map<Class<? extends AbstractReport>, String> reportActionMapping;
 
     private final Set<Class<? extends AbstractReport>> reportMessageTypes;
@@ -25,13 +25,13 @@ public class ReportMappings {
         reportStateMapping = Collections.unmodifiableMap(modifiableReportStateMapping);
         reportMessageTypes = Collections.unmodifiableSet(reportStateMapping.keySet());
 
-        final Map<Class<? extends AbstractState>, Class<? extends AbstractReport>> modifiableStateReportMapping = new HashMap<>();
-        modifiableStateReportMapping.put(AbstractAlertState.class, AbstractAlertReport.class);
-        modifiableStateReportMapping.put(AbstractDeviceComponentState.class, AbstractComponentReport.class);
-        modifiableStateReportMapping.put(AbstractContextState.class, AbstractContextReport.class);
-        modifiableStateReportMapping.put(AbstractMetricState.class, AbstractMetricReport.class);
-        modifiableStateReportMapping.put(AbstractOperationState.class, AbstractOperationalStateReport.class);
-        stateReportMapping = Collections.unmodifiableMap(modifiableStateReportMapping);
+        final Map<Class<? extends AbstractState>, Class<? extends AbstractReport>> modifiableEpisodicStateReportMapping = new HashMap<>();
+        modifiableEpisodicStateReportMapping.put(AbstractAlertState.class, EpisodicAlertReport.class);
+        modifiableEpisodicStateReportMapping.put(AbstractDeviceComponentState.class, EpisodicComponentReport.class);
+        modifiableEpisodicStateReportMapping.put(AbstractContextState.class, EpisodicContextReport.class);
+        modifiableEpisodicStateReportMapping.put(AbstractMetricState.class, EpisodicMetricReport.class);
+        modifiableEpisodicStateReportMapping.put(AbstractOperationState.class, EpisodicOperationalStateReport.class);
+        episodicStateReportMapping = Collections.unmodifiableMap(modifiableEpisodicStateReportMapping);
 
         Set<Class<? extends AbstractState>> modifiableReportStateTypes = new HashSet<>();
         modifiableReportStateTypes.add(AbstractAlertState.class);
@@ -50,10 +50,10 @@ public class ReportMappings {
         reportActionMapping = Collections.unmodifiableMap(modifiableReportActionMapping);
     }
 
-    public Class<? extends AbstractReport> getReportClass(Class<? extends AbstractState> stateClass) {
-        Class<?> superClass = stateClass.getSuperclass();
+    public Class<? extends AbstractReport> getEpisodicReportClass(Class<? extends AbstractState> stateClass) {
+        Class<?> superClass = stateClass;
         while (superClass != null) {
-            final Class<? extends AbstractReport> reportClass = stateReportMapping.get(superClass);
+            final Class<? extends AbstractReport> reportClass = episodicStateReportMapping.get(superClass);
             if (reportClass != null) {
                 return reportClass;
             }
@@ -63,7 +63,14 @@ public class ReportMappings {
     }
 
     public String getEpisodicAction(Class<? extends AbstractReport> reportClass) {
-        return Optional.ofNullable(reportActionMapping.get(reportClass)).orElseThrow(() ->
-                new RuntimeException(String.format("Unknown report class found: %s", reportClass)));
+        Class<?> superClass = reportClass;
+        while (superClass != null) {
+            final String action = reportActionMapping.get(superClass);
+            if (action != null) {
+                return action;
+            }
+            superClass = superClass.getSuperclass();
+        }
+        throw new RuntimeException(String.format("Unknown report class found: %s", reportClass));
     }
 }

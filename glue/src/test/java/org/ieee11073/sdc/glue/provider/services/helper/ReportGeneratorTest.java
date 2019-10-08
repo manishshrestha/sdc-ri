@@ -1,5 +1,6 @@
 package org.ieee11073.sdc.glue.provider.services.helper;
 
+import com.google.common.collect.Sets;
 import com.google.common.eventbus.EventBus;
 import com.google.inject.Injector;
 import org.ieee11073.sdc.biceps.common.MdibEntity;
@@ -25,6 +26,7 @@ import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -147,7 +149,7 @@ class ReportGeneratorTest {
                 entity(anyParent, ActivateOperationDescriptor.class),
                 entity(anyParent, LocationContextDescriptor.class));
 
-        eventBus.post(new DescriptionModificationMessage(mdibAccess, insertedEntities, Collections.EMPTY_LIST, Collections.emptyList()));
+        eventBus.post(new DescriptionModificationMessage(mdibAccess, insertedEntities, Collections.EMPTY_LIST, Collections.EMPTY_LIST));
 
         verify(eventSourceAccess, times(6))
                 .sendNotification(actualAction.capture(), actualReport.capture());
@@ -159,6 +161,28 @@ class ReportGeneratorTest {
             assertEquals(expectedMdibVersion.getSequenceId().toString(), report.getSequenceId());
             assertEquals(expectedMdibVersion.getSequenceId().toString(), report.getSequenceId());
         }
+
+        assertEquals(DescriptionModificationReport.class, actualReport.getAllValues().get(0).getClass());
+        DescriptionModificationReport descrReport = (DescriptionModificationReport) actualReport.getAllValues().get(0);
+        assertEquals(insertedEntities.size(), descrReport.getReportPart().size());
+
+        for (int i = 0; i < insertedEntities.size(); ++i) {
+            testReportPart(descrReport.getReportPart().get(i), insertedEntities.get(i).getDescriptor().getClass());
+        }
+
+        Set<Class<? extends AbstractReport>> classes = Sets.newHashSet(
+                DescriptionModificationReport.class,
+                EpisodicComponentReport.class,
+                EpisodicAlertReport.class,
+                EpisodicMetricReport.class,
+                EpisodicOperationalStateReport.class,
+                EpisodicContextReport.class);
+
+        final List<Object> allReports = actualReport.getAllValues();
+        for (Object report : allReports) {
+            assertTrue(classes.remove(report.getClass()));
+        }
+        assertEquals(0, classes.size());
     }
 
     @Test
@@ -173,8 +197,92 @@ class ReportGeneratorTest {
 
         verify(eventSourceAccess, times(4))
                 .sendNotification(actualAction.capture(), actualReport.capture());
+
+        for (Object value : actualReport.getAllValues()) {
+            final AbstractReport report = AbstractReport.class.cast(value);
+            assertEquals(expectedMdibVersion.getVersion(), report.getMdibVersion());
+            assertEquals(expectedMdibVersion.getInstanceId(), report.getInstanceId());
+            assertEquals(expectedMdibVersion.getSequenceId().toString(), report.getSequenceId());
+            assertEquals(expectedMdibVersion.getSequenceId().toString(), report.getSequenceId());
+        }
+
+        assertTrue(actualReport.getAllValues().get(0) instanceof DescriptionModificationReport);
+        DescriptionModificationReport descrReport = (DescriptionModificationReport) actualReport.getAllValues().get(0);
+        assertEquals(insertedEntities.size(), descrReport.getReportPart().size());
+
+        for (int i = 0; i < insertedEntities.size(); ++i) {
+            testReportPart(descrReport.getReportPart().get(i), insertedEntities.get(i).getDescriptor().getClass());
+        }
+
+        Set<Class<? extends AbstractReport>> classes = Sets.newHashSet(
+                DescriptionModificationReport.class,
+                EpisodicComponentReport.class,
+                EpisodicMetricReport.class,
+                EpisodicOperationalStateReport.class);
+
+        final List<Object> allReports = actualReport.getAllValues();
+        for (Object report : allReports) {
+            assertTrue(classes.remove(report.getClass()));
+        }
+        assertEquals(0, classes.size());
     }
 
+    @Test
+    void onDescriptionChangeWithInsertedUpdatedDeleted() throws Exception {
+        List<MdibEntity> insertedEntities = Arrays.asList(
+                entity(MdsDescriptor.class),
+                entity(VmdDescriptor.class),
+                entity(RealTimeSampleArrayMetricDescriptor.class),
+                entity(ActivateOperationDescriptor.class));
+
+        List<MdibEntity> updatedEntities = Arrays.asList(
+                entity(AlertSystemDescriptor.class),
+                entity(ActivateOperationDescriptor.class));
+
+        List<MdibEntity> deletedEntities = Arrays.asList(
+                entity(ActivateOperationDescriptor.class),
+                entity(PatientContextDescriptor.class));
+
+        eventBus.post(new DescriptionModificationMessage(mdibAccess, insertedEntities, updatedEntities, deletedEntities));
+
+        verify(eventSourceAccess, times(5))
+                .sendNotification(actualAction.capture(), actualReport.capture());
+
+        assertTrue(actualReport.getAllValues().get(0) instanceof DescriptionModificationReport);
+        DescriptionModificationReport descrReport = (DescriptionModificationReport) actualReport.getAllValues().get(0);
+        assertEquals(insertedEntities.size() + updatedEntities.size() + deletedEntities.size(),
+                descrReport.getReportPart().size());
+
+        for (int i = 0; i < deletedEntities.size(); ++i) {
+            testReportPart(descrReport.getReportPart().get(i), deletedEntities.get(i).getDescriptor().getClass());
+        }
+
+        int offset = deletedEntities.size();
+
+        for (int i = 0; i < insertedEntities.size(); ++i) {
+            testReportPart(descrReport.getReportPart().get(offset + i), insertedEntities.get(i).getDescriptor().getClass());
+        }
+
+        offset += insertedEntities.size();
+
+        for (int i = 0; i < updatedEntities.size(); ++i) {
+            testReportPart(descrReport.getReportPart().get(offset + i), updatedEntities.get(i).getDescriptor().getClass());
+        }
+
+        // Expect no context state updates as contexts have been deleted
+        Set<Class<? extends AbstractReport>> classes = Sets.newHashSet(
+                DescriptionModificationReport.class,
+                EpisodicComponentReport.class,
+                EpisodicMetricReport.class,
+                EpisodicOperationalStateReport.class,
+                EpisodicAlertReport.class);
+
+        final List<Object> allReports = actualReport.getAllValues();
+        for (Object report : allReports) {
+            assertTrue(classes.remove(report.getClass()));
+        }
+        assertEquals(0, classes.size());
+    }
 
     private void testStateReport(String expectedAction,
                                  List<? extends AbstractState> expectedStates,
@@ -196,6 +304,13 @@ class ReportGeneratorTest {
         assertEquals(1, reportParts.size());
         assertNull(reportParts.get(0).getClass().getMethod("getSourceMds").invoke(reportParts.get(0)));
         assertEquals(expectedStates, reportParts.get(0).getClass().getMethod(getStatesMethodName).invoke(reportParts.get(0)));
+    }
+
+    private void testReportPart(DescriptionModificationReport.ReportPart reportPart,
+                                Class<? extends AbstractDescriptor> descriptorType) {
+        assertEquals(1, reportPart.getDescriptor().size());
+        assertEquals(1, reportPart.getState().size());
+        assertTrue(descriptorType.isAssignableFrom(reportPart.getDescriptor().get(0).getClass()));
     }
 
     private MdibEntity entity(Class<? extends AbstractDescriptor> theClass) throws Exception {
