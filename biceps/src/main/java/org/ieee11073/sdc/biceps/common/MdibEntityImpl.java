@@ -64,6 +64,11 @@ public class MdibEntityImpl implements MdibEntity {
     }
 
     @Override
+    public <T extends AbstractDescriptor> Optional<T> getDescriptor(Class<T> theClass) {
+        return theClass.isAssignableFrom(descriptor.getClass()) ? Optional.of(theClass.cast(descriptor)) : Optional.empty();
+    }
+
+    @Override
     public String getHandle() {
         return descriptor.getHandle();
     }

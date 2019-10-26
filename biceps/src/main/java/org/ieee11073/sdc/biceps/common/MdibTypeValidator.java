@@ -27,6 +27,30 @@ public class MdibTypeValidator {
     }
 
     /**
+     * Gets the base name of a descriptor class.
+     *
+     * The base name is the name of the class without <em>Descriptor</em> suffix.
+     *
+     * @param descrClass the class where to resolve the base name from.
+     * @return the base name.
+     */
+    public String resolveDescriptorBaseName(Class<? extends AbstractDescriptor> descrClass) {
+        return descrClass.getSimpleName().substring(0, descrClass.getSimpleName().length() - DESCRIPTOR_SUFFIX_LENGTH);
+    }
+
+    /**
+     * Gets the base name of a state class.
+     *
+     * The base name is the name of the class without <em>State</em> suffix.
+     *
+     * @param stateClass the class where to resolve the base name from.
+     * @return the base name.
+     */
+    public String resolveStateBaseName(Class<? extends AbstractState> stateClass) {
+        return stateClass.getSimpleName().substring(0, stateClass.getSimpleName().length() - STATE_SUFFIX_LENGTH);
+    }
+
+    /**
      * Checks if descriptor and state classes match.
      * <p>
      * A match is given if both classes do not implement the abstract flavor and share the same name prefix
@@ -44,8 +68,8 @@ public class MdibTypeValidator {
             return false;
         }
 
-        final String name1 = descrClass.getSimpleName().substring(0, descrClass.getSimpleName().length() - DESCRIPTOR_SUFFIX_LENGTH);
-        final String name2 = stateClass.getSimpleName().substring(0, stateClass.getSimpleName().length() - STATE_SUFFIX_LENGTH);
+        final String name1 = resolveDescriptorBaseName(descrClass);
+        final String name2 = resolveStateBaseName(stateClass);
         return name1.equals(name2);
     }
 

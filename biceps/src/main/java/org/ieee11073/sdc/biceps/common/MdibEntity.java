@@ -31,11 +31,19 @@ public interface MdibEntity {
     List<String> getChildren();
 
     /**
-     * Obtain the entity's descriptor
+     * Obtain the entity's descriptor.
      *
      * @return descriptor information currently associated with the entity.
      */
     AbstractDescriptor getDescriptor();
+
+    /**
+     * Obtains the entity's descriptor as a given type.
+     *
+     * @param theClass the class to cast.
+     * @return descriptor information currently associated with the entity.
+     */
+    <T extends AbstractDescriptor> Optional<T> getDescriptor(Class<T> theClass);
 
     /**
      * Unique name to identify the entity.
