@@ -19,6 +19,8 @@ import org.ieee11073.sdc.biceps.consumer.access.factory.RemoteMdibAccessFactory;
 import org.ieee11073.sdc.biceps.provider.access.LocalMdibAccess;
 import org.ieee11073.sdc.biceps.provider.access.LocalMdibAccessImpl;
 import org.ieee11073.sdc.biceps.provider.access.factory.LocalMdibAccessFactory;
+import org.ieee11073.sdc.glue.provider.sco.factory.ContextFactory;
+import org.ieee11073.sdc.glue.provider.sco.factory.ScoControllerFactory;
 import org.ieee11073.sdc.glue.provider.services.helper.ReportGenerator;
 import org.ieee11073.sdc.glue.provider.services.helper.factory.MdibMapperFactory;
 import org.ieee11073.sdc.glue.provider.services.helper.factory.ReportGeneratorFactory;
@@ -34,6 +36,12 @@ public class DefaultGlueModule extends AbstractModule {
 
         install(new FactoryModuleBuilder()
                 .build(MdibMapperFactory.class));
+
+        install(new FactoryModuleBuilder()
+                .build(ContextFactory.class));
+
+        install(new FactoryModuleBuilder()
+                .build(ScoControllerFactory.class));
 //
 //        install(new FactoryModuleBuilder()
 //                .implement(MdibStorage.class, MdibStorageImpl.class)

@@ -162,6 +162,11 @@ public class MdibStorageImpl implements MdibStorage {
     }
 
     @Override
+    public List<AbstractContextState> getContextStates() {
+        return new ArrayList<>(contextStates.values());
+    }
+
+    @Override
     public WriteDescriptionResult apply(MdibVersion mdibVersion,
                                         @Nullable BigInteger mdDescriptionVersion,
                                         @Nullable BigInteger mdStateVersion,

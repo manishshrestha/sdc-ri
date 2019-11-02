@@ -12,7 +12,7 @@ public class ActionConstants {
     public static final String ACTION_SET_STRING = WsdlConstants.ACTION_SET_PREFIX + WsdlConstants.OPERATION_SET_STRING;
     public static final String ACTION_ACTIVATE = WsdlConstants.ACTION_SET_PREFIX + WsdlConstants.OPERATION_ACTIVATE;
     public static final String ACTION_SET_ALERT_STATE = WsdlConstants.ACTION_SET_PREFIX + WsdlConstants.OPERATION_SET_ALERT_STATE;
-    public static final String ACTION_SET_COMPONEN_TSTATE = WsdlConstants.ACTION_SET_PREFIX + WsdlConstants.OPERATION_SET_COMPONEN_TSTATE;
+    public static final String ACTION_SET_COMPONENT_STATE = WsdlConstants.ACTION_SET_PREFIX + WsdlConstants.OPERATION_SET_COMPONEN_TSTATE;
     public static final String ACTION_SET_METRIC_STATE = WsdlConstants.ACTION_SET_PREFIX + WsdlConstants.OPERATION_SET_METRIC_STATE;
     public static final String ACTION_OPERATION_INVOKED_REPORT = WsdlConstants.ACTION_SET_PREFIX + WsdlConstants.OPERATION_OPERATION_INVOKED_REPORT;
 
@@ -32,7 +32,6 @@ public class ActionConstants {
     public static final String ACTION_SET_CONTEXT_STATE = WsdlConstants.ACTION_CONTEXT_PREFIX + WsdlConstants.OPERATION_SET_CONTEXT_STATE;
     public static final String ACTION_GET_CONTEXT_STATES_BY_IDENTIFICATION = WsdlConstants.ACTION_CONTEXT_PREFIX + WsdlConstants.OPERATION_GET_CONTEXT_STATES_BY_IDENTIFICATION;
     public static final String ACTION_GET_CONTEXT_STATES_BY_FILTER = WsdlConstants.ACTION_CONTEXT_PREFIX + WsdlConstants.OPERATION_GET_CONTEXT_STATES_BY_FILTER;
-    public static final String ACTION_OPERATION_ = WsdlConstants.ACTION_CONTEXT_PREFIX + WsdlConstants.OPERATION_EPISODIC_CONTEXT_REPORT;
     public static final String ACTION_PERIODIC_CONTEXT_REPORT = WsdlConstants.ACTION_CONTEXT_PREFIX + WsdlConstants.OPERATION_PERIODIC_CONTEXT_REPORT;
     public static final String ACTION_EPISODIC_CONTEXT_REPORT = WsdlConstants.ACTION_CONTEXT_PREFIX + WsdlConstants.OPERATION_EPISODIC_CONTEXT_REPORT;
 

@@ -46,7 +46,7 @@ public class ReportMappings {
         modifiableReportActionMapping.put(AbstractComponentReport.class, ActionConstants.ACTION_EPISODIC_COMPONENT_REPORT);
         modifiableReportActionMapping.put(AbstractContextReport.class, ActionConstants.ACTION_EPISODIC_CONTEXT_REPORT);
         modifiableReportActionMapping.put(AbstractMetricReport.class, ActionConstants.ACTION_EPISODIC_METRIC_REPORT);
-        modifiableReportActionMapping.put(AbstractOperationalStateReport.class, ActionConstants.ACTION_PERIODIC_OPERATIONAL_STATE_REPORT);
+        modifiableReportActionMapping.put(AbstractOperationalStateReport.class, ActionConstants.ACTION_EPISODIC_OPERATIONAL_STATE_REPORT);
         reportActionMapping = Collections.unmodifiableMap(modifiableReportActionMapping);
     }
 

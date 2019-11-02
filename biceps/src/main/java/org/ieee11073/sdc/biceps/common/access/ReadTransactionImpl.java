@@ -91,6 +91,11 @@ public class ReadTransactionImpl implements ReadTransaction {
     }
 
     @Override
+    public List<AbstractContextState> getContextStates() {
+        return mdibStorage.getContextStates();
+    }
+
+    @Override
     public <T extends AbstractDescriptor> Collection<MdibEntity> findEntitiesByType(Class<T> type) {
         return mdibStorage.findEntitiesByType(type);
     }
