@@ -6,6 +6,7 @@ import com.google.inject.Injector;
 import com.google.inject.name.Names;
 import org.ieee11073.sdc.dpws.DpwsFramework;
 import org.ieee11073.sdc.dpws.DpwsUtil;
+import org.ieee11073.sdc.dpws.device.factory.DeviceFactory;
 import org.ieee11073.sdc.dpws.guice.DefaultDpwsModule;
 import org.ieee11073.sdc.dpws.service.factory.HostedServiceFactory;
 import org.ieee11073.sdc.dpws.soap.wsaddressing.WsAddressingConfig;
@@ -52,8 +53,7 @@ public class DeviceImplTest implements Runnable {
         DpwsFramework dpwsFramework = inj.getInstance(DpwsFramework.class);
         dpwsFramework.startAsync().awaitRunning();
 
-        Device device = inj.getInstance(Device.class);
-        device.setConfiguration(devConf);
+        Device device = inj.getInstance(DeviceFactory.class).createDevice(devConf);
 
         HostedServiceFactory hsFactory = inj.getInstance(HostedServiceFactory.class);
 //        HostedService testService = hsFactory.createHostedService("TestService", new WebService() {

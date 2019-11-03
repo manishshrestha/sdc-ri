@@ -4,6 +4,8 @@ import com.google.common.util.concurrent.AbstractIdleService;
 import com.google.common.util.concurrent.Service;
 import com.google.inject.Inject;
 import com.google.inject.Provider;
+import com.google.inject.assistedinject.Assisted;
+import com.google.inject.assistedinject.AssistedInject;
 import com.google.inject.name.Named;
 import org.ieee11073.sdc.common.util.StreamUtil;
 import org.ieee11073.sdc.dpws.DpwsConstants;
@@ -56,6 +58,7 @@ import java.util.stream.Collectors;
 public class DeviceImpl extends AbstractIdleService implements Device, Service, DiscoveryAccess, HostingServiceAccess {
     private static final Logger LOG = LoggerFactory.getLogger(DeviceImpl.class);
 
+    private final DeviceSettings deviceSettings;
     private final WsDiscoveryTargetServiceFactory targetServiceFactory;
     private final Provider<DefaultDeviceSettings> defaultConfigProvider;
     private final WsAddressingUtil wsaUtil;
@@ -76,7 +79,6 @@ public class DeviceImpl extends AbstractIdleService implements Device, Service, 
     private Boolean unsecuredEndpoint;
     private Boolean securedEndpoint;
 
-    private DeviceSettings deviceSettings;
     private WsDiscoveryTargetService wsdTargetService;
     private HostingService hostingService;
     private final List<HostedService> hostedServicesOnStartup;
@@ -86,8 +88,9 @@ public class DeviceImpl extends AbstractIdleService implements Device, Service, 
     private ThisModelType thisModelOnStartup;
     private DiscoveryDeviceUdpMessageProcessor udpMsgProcessor;
 
-    @Inject
-    DeviceImpl(WsDiscoveryTargetServiceFactory targetServiceFactory,
+    @AssistedInject
+    DeviceImpl(@Assisted DeviceSettings deviceSettings,
+               WsDiscoveryTargetServiceFactory targetServiceFactory,
                Provider<DefaultDeviceSettings> defaultConfigProvider,
                WsAddressingUtil wsaUtil,
                NotificationSourceFactory notificationSourceFactory,
@@ -106,6 +109,7 @@ public class DeviceImpl extends AbstractIdleService implements Device, Service, 
                HttpUriBuilder httpUriBuilder,
                @Named(DeviceConfig.UNSECURED_ENDPOINT) Boolean unsecuredEndpoint,
                @Named(DeviceConfig.SECURED_ENDPOINT) Boolean securedEndpoint) {
+        this.deviceSettings = deviceSettings;
         this.targetServiceFactory = targetServiceFactory;
         this.defaultConfigProvider = defaultConfigProvider;
         this.wsaUtil = wsaUtil;
@@ -130,11 +134,6 @@ public class DeviceImpl extends AbstractIdleService implements Device, Service, 
 
     @Override
     protected void startUp() throws Exception {
-        if (deviceSettings == null) {
-            LOG.warn("No device configuration found. Use default.");
-            deviceSettings = defaultConfigProvider.get();
-        }
-
         EndpointReferenceType deviceEpr = deviceSettings.getEndpointReference();
         LOG.info("Start device with URN '{}'", deviceEpr.getAddress().getValue());
 
@@ -232,11 +231,6 @@ public class DeviceImpl extends AbstractIdleService implements Device, Service, 
         httpServerRegistry.stopAsync().awaitTerminated();
         discoveryMessageQueue.unregisterUdpMessageQueueObserver(udpMsgProcessor);
         LOG.info("Device {} shut down", hostingService);
-    }
-
-    @Override
-    public void setConfiguration(@Nullable DeviceSettings deviceSettings) {
-        this.deviceSettings = deviceSettings;
     }
 
     @Override
