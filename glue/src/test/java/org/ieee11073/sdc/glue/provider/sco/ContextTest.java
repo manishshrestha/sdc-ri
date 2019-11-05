@@ -24,7 +24,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
 class ContextTest {
-    private static final UnitTestUtil IT = new UnitTestUtil();
+    private static final UnitTestUtil UT = new UnitTestUtil();
 
     private Context context;
     private EventSourceAccess eventSourceAccess;
@@ -37,7 +37,7 @@ class ContextTest {
         actionCaptor = ArgumentCaptor.forClass(String.class);
         reportCaptor = ArgumentCaptor.forClass(OperationInvokedReport.class);
 
-        context = IT.getInjector().getInstance(ContextFactory.class).createContext(0, "handle",
+        context = UT.getInjector().getInstance(ContextFactory.class).createContext(0, "handle",
                 new InstanceIdentifier(), eventSourceAccess);
     }
 
