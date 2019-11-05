@@ -4,13 +4,13 @@ import com.google.common.eventbus.Subscribe;
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
 import org.ieee11073.sdc.dpws.guice.AppDelayExecutor;
+import org.ieee11073.sdc.dpws.soap.*;
 import org.ieee11073.sdc.dpws.soap.exception.MarshallingException;
 import org.ieee11073.sdc.dpws.soap.exception.SoapFaultException;
 import org.ieee11073.sdc.dpws.soap.wsdiscovery.WsDiscoveryConstants;
 import org.ieee11073.sdc.dpws.udp.UdpMessage;
 import org.ieee11073.sdc.dpws.udp.UdpMessageQueueObserver;
 import org.ieee11073.sdc.dpws.udp.UdpMessageQueueService;
-import org.ieee11073.sdc.dpws.soap.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -75,7 +75,8 @@ public class DiscoveryDeviceUdpMessageProcessor implements UdpMessageQueueObserv
         try {
             requestResponseServer.receiveRequestResponse(request, response, tInfo);
         } catch (SoapFaultException e) {
-            LOG.info("SOAP fault thrown [{}]", e.getMessage());
+            LOG.debug("SOAP fault thrown [{}]", e.getMessage());
+            return;
         }
 
         if (LOG.isDebugEnabled()) {
@@ -97,7 +98,7 @@ public class DiscoveryDeviceUdpMessageProcessor implements UdpMessageQueueObserv
 
         int wait = randomNumbers.nextInt((int) WsDiscoveryConstants.APP_MAX_DELAY.toMillis() + 1);
         scheduledExecutorService.schedule(() ->
-            udpMessageQueueService.sendMessage(new UdpMessage(bytes, bytes.length, msg.getHost(), msg.getPort())),
+                        udpMessageQueueService.sendMessage(new UdpMessage(bytes, bytes.length, msg.getHost(), msg.getPort())),
                 wait, TimeUnit.MILLISECONDS);
     }
 }
