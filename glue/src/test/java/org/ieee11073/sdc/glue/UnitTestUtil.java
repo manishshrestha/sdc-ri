@@ -8,21 +8,23 @@ import org.ieee11073.sdc.biceps.guice.DefaultBicepsConfigModule;
 import org.ieee11073.sdc.biceps.guice.DefaultBicepsModule;
 import org.ieee11073.sdc.common.guice.AbstractConfigurationModule;
 import org.ieee11073.sdc.common.guice.DefaultHelperModule;
+import org.ieee11073.sdc.dpws.guice.DefaultDpwsConfigModule;
+import org.ieee11073.sdc.dpws.guice.DefaultDpwsModule;
+import org.ieee11073.sdc.glue.guice.DefaultGlueConfigModule;
 import org.ieee11073.sdc.glue.guice.DefaultGlueModule;
 
 public class UnitTestUtil {
     private final Injector injector;
 
-    public UnitTestUtil(AbstractConfigurationModule configModule) {
+    public UnitTestUtil() {
         injector = Guice.createInjector(
                 new DefaultGlueModule(),
+                new DefaultGlueConfigModule(),
                 new DefaultBicepsModule(),
+                new DefaultBicepsConfigModule(),
                 new DefaultHelperModule(),
-                configModule);
-    }
-
-    public UnitTestUtil() {
-        this(new DefaultBicepsConfigModule());
+                new DefaultDpwsModule(),
+                new DefaultDpwsConfigModule());
     }
 
     public Injector getInjector() {
