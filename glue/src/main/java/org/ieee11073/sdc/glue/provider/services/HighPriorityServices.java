@@ -3,13 +3,12 @@ package org.ieee11073.sdc.glue.provider.services;
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
 import org.ieee11073.sdc.biceps.common.MdibEntity;
+import org.ieee11073.sdc.biceps.common.access.MdibAccess;
 import org.ieee11073.sdc.biceps.common.access.ReadTransaction;
 import org.ieee11073.sdc.biceps.model.message.AbstractSet;
+import org.ieee11073.sdc.biceps.model.message.ObjectFactory;
 import org.ieee11073.sdc.biceps.model.message.*;
-import org.ieee11073.sdc.biceps.model.participant.AbstractContextState;
-import org.ieee11073.sdc.biceps.model.participant.ContainmentTree;
-import org.ieee11073.sdc.biceps.model.participant.ContainmentTreeEntry;
-import org.ieee11073.sdc.biceps.model.participant.InstanceIdentifier;
+import org.ieee11073.sdc.biceps.model.participant.*;
 import org.ieee11073.sdc.biceps.provider.access.LocalMdibAccess;
 import org.ieee11073.sdc.dpws.device.WebService;
 import org.ieee11073.sdc.dpws.soap.SoapUtil;
@@ -18,11 +17,13 @@ import org.ieee11073.sdc.dpws.soap.factory.SoapFaultFactory;
 import org.ieee11073.sdc.dpws.soap.interception.MessageInterceptor;
 import org.ieee11073.sdc.dpws.soap.interception.RequestResponseObject;
 import org.ieee11073.sdc.glue.common.ActionConstants;
+import org.ieee11073.sdc.glue.provider.sco.IncomingSetServiceRequest;
 import org.ieee11073.sdc.glue.provider.sco.InvocationResponse;
+import org.ieee11073.sdc.glue.provider.sco.OperationInvocationReceiver;
 import org.ieee11073.sdc.glue.provider.sco.ScoController;
 import org.ieee11073.sdc.glue.provider.sco.factory.ScoControllerFactory;
 import org.ieee11073.sdc.glue.provider.services.helper.MdibMapper;
-import org.ieee11073.sdc.glue.provider.services.helper.ReportGenerator;
+import org.ieee11073.sdc.glue.provider.services.helper.MdibVersionUtil;
 import org.ieee11073.sdc.glue.provider.services.helper.factory.MdibMapperFactory;
 import org.ieee11073.sdc.glue.provider.services.helper.factory.ReportGeneratorFactory;
 
@@ -50,12 +51,12 @@ import java.util.function.Function;
  */
 public class HighPriorityServices extends WebService {
     private final LocalMdibAccess mdibAccess;
-    private final ReportGenerator reportGenerator;
     private final SoapUtil soapUtil;
     private final SoapFaultFactory faultFactory;
     private final ObjectFactory messageModelFactory;
     private final org.ieee11073.sdc.biceps.model.participant.ObjectFactory participantModelFactory;
     private final MdibMapperFactory mdibMapperFactory;
+    private final MdibVersionUtil mdibVersionUtil;
     private final ScoController scoController;
 
     private final InstanceIdentifier anonymousSource;
@@ -68,19 +69,32 @@ public class HighPriorityServices extends WebService {
                          ObjectFactory messageModelFactory,
                          org.ieee11073.sdc.biceps.model.participant.ObjectFactory participantModelFactory,
                          MdibMapperFactory mdibMapperFactory,
-                         ScoControllerFactory scoControllerFactory) {
+                         ScoControllerFactory scoControllerFactory,
+                         MdibVersionUtil mdibVersionUtil) {
         this.mdibAccess = mdibAccess;
-        this.reportGenerator = reportGeneratorFactory.createReportGenerator(this);
         this.soapUtil = soapUtil;
         this.faultFactory = faultFactory;
         this.messageModelFactory = messageModelFactory;
         this.participantModelFactory = participantModelFactory;
         this.mdibMapperFactory = mdibMapperFactory;
+        this.mdibVersionUtil = mdibVersionUtil;
         this.scoController = scoControllerFactory.createScoController(this, mdibAccess);
 
         anonymousSource = new InstanceIdentifier();
         anonymousSource.setExtensionName("TBD");
         anonymousSource.setRootName("TBD");
+
+        mdibAccess.registerObserver(reportGeneratorFactory.createReportGenerator(this));
+    }
+
+    /**
+     * Registers an object that possesses callback functions for incoming set service requests.
+     *
+     * @param receiver the object that includes methods annotated with {@link IncomingSetServiceRequest}.
+     * @see ScoController
+     */
+    public void addOperationInvocationReceiver(OperationInvocationReceiver receiver) {
+        scoController.addOperationInvocationReceiver(receiver);
     }
 
     @MessageInterceptor(ActionConstants.ACTION_GET_MDIB)
@@ -92,9 +106,9 @@ public class HighPriorityServices extends WebService {
         try (ReadTransaction transaction = mdibAccess.startTransaction()) {
             final MdibMapper mdibMapper = mdibMapperFactory.createMdibMapper(transaction);
             getMdibResponse.setMdib(mdibMapper.mapMdib());
-        }
 
-        setResponse(requestResponseObject, getMdibResponse);
+            setResponse(requestResponseObject, getMdibResponse, transaction.getMdibVersion());
+        }
     }
 
     @MessageInterceptor(ActionConstants.ACTION_GET_MD_DESCRIPTION)
@@ -106,9 +120,8 @@ public class HighPriorityServices extends WebService {
         try (ReadTransaction transaction = mdibAccess.startTransaction()) {
             final MdibMapper mdibMapper = mdibMapperFactory.createMdibMapper(transaction);
             getMdDescriptionResponse.setMdDescription(mdibMapper.mapMdDescription(getMdDescription.getHandleRef()));
+            setResponse(requestResponseObject, getMdDescriptionResponse, transaction.getMdibVersion());
         }
-
-        setResponse(requestResponseObject, getMdDescriptionResponse);
     }
 
     @MessageInterceptor(ActionConstants.ACTION_GET_MD_STATE)
@@ -120,9 +133,8 @@ public class HighPriorityServices extends WebService {
         try (ReadTransaction transaction = mdibAccess.startTransaction()) {
             final MdibMapper mdibMapper = mdibMapperFactory.createMdibMapper(transaction);
             getMdStateResponse.setMdState(mdibMapper.mapMdState(getMdState.getHandleRef()));
+            setResponse(requestResponseObject, getMdStateResponse, transaction.getMdibVersion());
         }
-
-        setResponse(requestResponseObject, getMdStateResponse);
     }
 
     /**
@@ -164,9 +176,8 @@ public class HighPriorityServices extends WebService {
             }
 
             getContextStatesResponse.setContextState(filteredContextStates);
+            setResponse(requestResponseObject, getContextStatesResponse, transaction.getMdibVersion());
         }
-
-        setResponse(requestResponseObject, getContextStatesResponse);
     }
 
     @MessageInterceptor(ActionConstants.ACTION_GET_CONTEXT_STATES_BY_FILTER)
@@ -235,9 +246,8 @@ public class HighPriorityServices extends WebService {
                         getDescriptorResponse.getDescriptor().add(descriptor)
                 );
             }
+            setResponse(requestResponseObject, getDescriptorResponse, transaction.getMdibVersion());
         }
-
-        setResponse(requestResponseObject, getDescriptorResponse);
     }
 
     /**
@@ -256,18 +266,16 @@ public class HighPriorityServices extends WebService {
     void getContainmentTree(RequestResponseObject requestResponseObject) throws SoapFaultException {
         final GetContainmentTree getContainmentTree = getRequest(requestResponseObject, GetContainmentTree.class);
         final GetContainmentTreeResponse getContainmentTreeResponse = messageModelFactory.createGetContainmentTreeResponse();
-
         final List<String> handleReferences = getContainmentTree.getHandleRef();
-
         final ContainmentTree containmentTree = participantModelFactory.createContainmentTree();
 
-        List<MdibEntity> filteredEntities;
-        if (handleReferences.isEmpty()) {
-            filteredEntities = mdibAccess.getRootEntities();
-        } else {
-            filteredEntities = new ArrayList<>(handleReferences.size());
-            Optional<String> parent = null;
-            try (ReadTransaction transaction = mdibAccess.startTransaction()) {
+        try (ReadTransaction transaction = mdibAccess.startTransaction()) {
+            List<MdibEntity> filteredEntities;
+            if (handleReferences.isEmpty()) {
+                filteredEntities = transaction.getRootEntities();
+            } else {
+                filteredEntities = new ArrayList<>(handleReferences.size());
+                Optional<String> parent = null;
                 for (String handleReference : handleReferences) {
                     final Optional<MdibEntity> entity = transaction.getEntity(handleReference);
                     if (entity.isPresent()) {
@@ -285,28 +293,28 @@ public class HighPriorityServices extends WebService {
                     }
                 }
             }
-        }
 
-        for (MdibEntity entity : filteredEntities) {
-            final ContainmentTreeEntry entry = participantModelFactory.createContainmentTreeEntry();
-            entry.setChildrenCount(entity.getChildren().size());
-            entry.setHandleRef(entity.getHandle());
-            entry.setType(entity.getDescriptor().getType());
+            for (MdibEntity entity : filteredEntities) {
+                final ContainmentTreeEntry entry = participantModelFactory.createContainmentTreeEntry();
+                entry.setChildrenCount(entity.getChildren().size());
+                entry.setHandleRef(entity.getHandle());
+                entry.setType(entity.getDescriptor().getType());
 
-            try {
-                final JAXBContext jaxbCtx = JAXBContext.newInstance(entity.getDescriptorClass());
-                final QName qname = jaxbCtx.createJAXBIntrospector().getElementName(entity.getDescriptor());
-                entry.setEntryType(qname);
-            } catch (JAXBException e) {
-                throw new SoapFaultException(faultFactory.createReceiverFault(String.format(
-                        "Could not resolve entry type the requested descriptor %s. Operation aborted.", entity.getHandle())));
+                try {
+                    final JAXBContext jaxbCtx = JAXBContext.newInstance(entity.getDescriptorClass());
+                    final QName qname = jaxbCtx.createJAXBIntrospector().getElementName(entity.getDescriptor());
+                    entry.setEntryType(qname);
+                } catch (JAXBException e) {
+                    throw new SoapFaultException(faultFactory.createReceiverFault(String.format(
+                            "Could not resolve entry type the requested descriptor %s. Operation aborted.", entity.getHandle())));
+                }
+
+                containmentTree.getEntry().add(entry);
             }
 
-            containmentTree.getEntry().add(entry);
+            getContainmentTreeResponse.setContainmentTree(containmentTree);
+            setResponse(requestResponseObject, getContainmentTreeResponse, transaction.getMdibVersion());
         }
-
-        getContainmentTreeResponse.setContainmentTree(containmentTree);
-        setResponse(requestResponseObject, getContainmentTreeResponse);
     }
 
     private <T> T getRequest(RequestResponseObject requestResponseObject, Class<T> bodyType) throws SoapFaultException {
@@ -315,7 +323,12 @@ public class HighPriorityServices extends WebService {
                         bodyType.getSimpleName()))));
     }
 
-    private <T> void setResponse(RequestResponseObject requestResponseObject, T response) {
+    private <T> void setResponse(RequestResponseObject requestResponseObject, T response, MdibVersion mdibVersion) throws SoapFaultException {
+        try {
+            mdibVersionUtil.setMdibVersion(mdibVersion, response);
+        } catch (Exception e) {
+            throw new SoapFaultException(faultFactory.createReceiverFault("Could not create MDIB version."));
+        }
         soapUtil.setBody(response, requestResponseObject.getResponse());
     }
 
@@ -353,6 +366,7 @@ public class HighPriorityServices extends WebService {
                     String.format("Error while processing set service request: ", e.getMessage())));
         }
 
-        setResponse(requestResponseObject, getResponseObjectAsTypeOrThrow(invocationResponse, responseClass));
+        setResponse(requestResponseObject, getResponseObjectAsTypeOrThrow(invocationResponse, responseClass),
+                invocationResponse.getMdibVersion());
     }
 }
