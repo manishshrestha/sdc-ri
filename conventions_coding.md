@@ -58,7 +58,7 @@ SDCri utilizes Google Guice for dependency injection.
 
 For each module there **shall** be a package `guice` that includes a default Guice module and other Guice related classes and annotations.
 
-Example: the dpws module encloses a package named `org.ieee11073.sdc.dpws.guice` with the default module named `DefaultDpwsModule`.
+Example: the dpws module encloses a package named `org.somda.sdc.dpws.guice` with the default module named `DefaultDpwsModule`.
 
 ## Module configuration
 
@@ -66,7 +66,7 @@ Example: the dpws module encloses a package named `org.ieee11073.sdc.dpws.guice`
 
 The configuration of a module **shall** be facilitated by a specific Guice configuration module located under the `guice` package that includes named bindings for all module related static configuration values (values that are applied once during runtime and never change). Consider the configuration to be loadable from an IO resource on application start.
 
-Example: the dpws module encloses the file `DefaultDpwsConfigModule` derived from `org.ieee11073.sdc.common.guice.AbstractConfigurationModule`, which defines default values for all DPWS related static configuration values. The keys for those values are part of different classes ending with `Config`, e.g., `DpwsConfig`, `SoapConfig`, etc. Exemplary excerpt from `SoapConfig`:
+Example: the dpws module encloses the file `DefaultDpwsConfigModule` derived from `org.somda.sdc.common.guice.AbstractConfigurationModule`, which defines default values for all DPWS related static configuration values. The keys for those values are part of different classes ending with `Config`, e.g., `DpwsConfig`, `SoapConfig`, etc. Exemplary excerpt from `SoapConfig`:
 
 ```
 /**  
@@ -168,7 +168,7 @@ Unit test class names **shall** end with a *Test* and go to the same package as 
 
 Integration test class names **shall** end with an IT and go to a package that complies with the top-level package named *it* followed by the module package name plus a suitable sub-package tree.
 
-Example: `it.org.ieee11073.sdc.dpws. soap` where `it` is the integration test prefix package, `org.ieee11073.sdc.dpws` is the modules base package and `soap` is a meaningful sub-package name.
+Example: `it.org.somda.sdc.dpws. soap` where `it` is the integration test prefix package, `org.somda.sdc.dpws` is the modules base package and `soap` is a meaningful sub-package name.
  
 #### Unit test scaffold
 

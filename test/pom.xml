@@ -4,7 +4,7 @@
 		 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<parent>
 		<artifactId>sdc-ri</artifactId>
-		<groupId>org.ieee11073.sdc</groupId>
+		<groupId>org.somda.sdc</groupId>
 		<version>1.0-SNAPSHOT</version>
 	</parent>
 	<modelVersion>4.0.0</modelVersion>
@@ -12,9 +12,9 @@
 	<artifactId>test</artifactId>
 
 	<properties>
-		<it.ieee11073.sdc.dpws.xmlSchemaDirectory>${project.basedir}/src/main/resources/it/org/ieee11073/sdc/dpws</it.ieee11073.sdc.dpws.xmlSchemaDirectory>
+		<it.somda.sdc.dpws.xmlSchemaDirectory>${project.basedir}/src/main/resources/it/org/somda/sdc/dpws</it.somda.sdc.dpws.xmlSchemaDirectory>
 		<directories.generatedSources>${project.build.directory}/generated-sources</directories.generatedSources>
-		<it.ieee11073.sdc.dpws.serviceSchema>TestServiceSchema.xsd</it.ieee11073.sdc.dpws.serviceSchema>
+		<it.somda.sdc.dpws.serviceSchema>TestServiceSchema.xsd</it.somda.sdc.dpws.serviceSchema>
 	</properties>
 
 	<dependencies>
@@ -104,9 +104,9 @@
 						<configuration>
 							<readOnly>true</readOnly>
 							<episode>true</episode>
-							<schemaDirectory>${it.ieee11073.sdc.dpws.xmlSchemaDirectory}</schemaDirectory>
+							<schemaDirectory>${it.somda.sdc.dpws.xmlSchemaDirectory}</schemaDirectory>
 							<schemaIncludes>
-								<include>${it.ieee11073.sdc.dpws.serviceSchema}</include>
+								<include>${it.somda.sdc.dpws.serviceSchema}</include>
 							</schemaIncludes>
 							<generateDirectory>${directories.generatedSources}/java</generateDirectory>
 							<args>

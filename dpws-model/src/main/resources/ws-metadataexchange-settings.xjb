@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xjb:bindings xmlns:xjb="http://java.sun.com/xml/ns/jaxb" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="2.1">
     <xjb:bindings schemaLocation="ws-metadataexchange-schema.xsd">
-        <!-- Put WS-Discovery 1.1 elements to package org.ieee11073.sdc.dpws.soap.wsmetadataexchange.model. -->
+        <!-- Put WS-Discovery 1.1 elements to package org.somda.sdc.dpws.soap.wsmetadataexchange.model. -->
         <xjb:schemaBindings>
-            <xjb:package name="org.ieee11073.sdc.dpws.soap.wsmetadataexchange.model"/>
+            <xjb:package name="org.somda.sdc.dpws.soap.wsmetadataexchange.model"/>
         </xjb:schemaBindings>
     </xjb:bindings>
 </xjb:bindings>
