@@ -1,4 +1,4 @@
-package org.ieee11073.sdc.dpws.soap;
+package org.somda.sdc.dpws.soap;
 
 import javax.xml.bind.JAXBContext;
 

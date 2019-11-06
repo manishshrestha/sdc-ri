@@ -1,4 +1,4 @@
-package org.ieee11073.sdc.dpws.udp;
+package org.somda.sdc.dpws.udp;
 
 /**
  * Raw UDP message packed as a byte array plus a length attribute and receiver information.

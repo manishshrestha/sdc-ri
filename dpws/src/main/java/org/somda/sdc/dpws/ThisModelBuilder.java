@@ -1,8 +1,8 @@
-package org.ieee11073.sdc.dpws;
+package org.somda.sdc.dpws;
 
-import org.ieee11073.sdc.dpws.model.LocalizedStringType;
-import org.ieee11073.sdc.dpws.model.ObjectFactory;
-import org.ieee11073.sdc.dpws.model.ThisModelType;
+import org.somda.sdc.dpws.model.LocalizedStringType;
+import org.somda.sdc.dpws.model.ObjectFactory;
+import org.somda.sdc.dpws.model.ThisModelType;
 
 import java.util.List;
 

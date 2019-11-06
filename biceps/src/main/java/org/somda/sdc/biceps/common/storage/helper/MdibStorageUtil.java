@@ -1,9 +1,9 @@
-package org.ieee11073.sdc.biceps.common.storage.helper;
+package org.somda.sdc.biceps.common.storage.helper;
 
 import com.google.inject.Inject;
-import org.ieee11073.sdc.biceps.common.MdibEntity;
-import org.ieee11073.sdc.biceps.common.factory.MdibEntityFactory;
-import org.ieee11073.sdc.common.util.ObjectUtil;
+import org.somda.sdc.biceps.common.MdibEntity;
+import org.somda.sdc.biceps.common.factory.MdibEntityFactory;
+import org.somda.sdc.common.util.ObjectUtil;
 
 import javax.annotation.Nullable;
 import java.util.Collection;
@@ -13,7 +13,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
- * Helper class to expose information hosted by {@linkplain org.ieee11073.sdc.biceps.common.storage.MdibStorage}.
+ * Helper class to expose information hosted by {@linkplain org.somda.sdc.biceps.common.storage.MdibStorage}.
  * <p>
  * {@linkplain MdibStorageUtil} is used for but not limited to type-dependent data exposition.
  */

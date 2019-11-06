@@ -1,10 +1,10 @@
-package org.ieee11073.sdc.dpws.soap.interception;
+package org.somda.sdc.dpws.soap.interception;
 
 import com.google.inject.Inject;
-import org.ieee11073.sdc.dpws.soap.SoapMessage;
-import org.ieee11073.sdc.dpws.soap.exception.SoapFaultException;
-import org.ieee11073.sdc.dpws.soap.factory.SoapFaultFactory;
-import org.ieee11073.sdc.dpws.soap.wsaddressing.model.AttributedURIType;
+import org.somda.sdc.dpws.soap.SoapMessage;
+import org.somda.sdc.dpws.soap.exception.SoapFaultException;
+import org.somda.sdc.dpws.soap.factory.SoapFaultFactory;
+import org.somda.sdc.dpws.soap.wsaddressing.model.AttributedURIType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

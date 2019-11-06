@@ -1,9 +1,9 @@
-package org.ieee11073.sdc.dpws.soap.wsdiscovery.factory;
+package org.somda.sdc.dpws.soap.wsdiscovery.factory;
 
 import com.google.inject.assistedinject.Assisted;
-import org.ieee11073.sdc.dpws.soap.NotificationSource;
-import org.ieee11073.sdc.dpws.soap.wsaddressing.model.EndpointReferenceType;
-import org.ieee11073.sdc.dpws.soap.wsdiscovery.WsDiscoveryTargetService;
+import org.somda.sdc.dpws.soap.NotificationSource;
+import org.somda.sdc.dpws.soap.wsaddressing.model.EndpointReferenceType;
+import org.somda.sdc.dpws.soap.wsdiscovery.WsDiscoveryTargetService;
 
 /**
  * Factory to create WS-Discovery target services.

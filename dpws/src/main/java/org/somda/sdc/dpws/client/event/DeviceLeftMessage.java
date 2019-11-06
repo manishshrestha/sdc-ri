@@ -1,6 +1,6 @@
-package org.ieee11073.sdc.dpws.client.event;
+package org.somda.sdc.dpws.client.event;
 
-import org.ieee11073.sdc.common.event.AbstractEventMessage;
+import org.somda.sdc.common.event.AbstractEventMessage;
 
 import java.net.URI;
 

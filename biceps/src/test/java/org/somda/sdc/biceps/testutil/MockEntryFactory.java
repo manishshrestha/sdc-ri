@@ -1,10 +1,10 @@
-package org.ieee11073.sdc.biceps.testutil;
+package org.somda.sdc.biceps.testutil;
 
-import org.ieee11073.sdc.biceps.common.MdibDescriptionModifications;
-import org.ieee11073.sdc.biceps.common.MdibTypeValidator;
-import org.ieee11073.sdc.biceps.model.participant.AbstractContextState;
-import org.ieee11073.sdc.biceps.model.participant.AbstractDescriptor;
-import org.ieee11073.sdc.biceps.model.participant.AbstractState;
+import org.somda.sdc.biceps.common.MdibDescriptionModifications;
+import org.somda.sdc.biceps.common.MdibTypeValidator;
+import org.somda.sdc.biceps.model.participant.AbstractContextState;
+import org.somda.sdc.biceps.model.participant.AbstractDescriptor;
+import org.somda.sdc.biceps.model.participant.AbstractState;
 
 import javax.annotation.Nullable;
 import java.util.Collections;

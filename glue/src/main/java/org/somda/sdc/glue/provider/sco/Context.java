@@ -1,17 +1,17 @@
-package org.ieee11073.sdc.glue.provider.sco;
+package org.somda.sdc.glue.provider.sco;
 
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
-import org.ieee11073.sdc.biceps.model.message.*;
-import org.ieee11073.sdc.biceps.model.participant.InstanceIdentifier;
-import org.ieee11073.sdc.biceps.model.participant.LocalizedText;
-import org.ieee11073.sdc.biceps.model.participant.MdibVersion;
-import org.ieee11073.sdc.common.util.ObjectStringifier;
-import org.ieee11073.sdc.common.util.Stringified;
-import org.ieee11073.sdc.dpws.device.EventSourceAccess;
-import org.ieee11073.sdc.dpws.soap.exception.MarshallingException;
-import org.ieee11073.sdc.dpws.soap.exception.TransportException;
-import org.ieee11073.sdc.glue.common.ActionConstants;
+import org.somda.sdc.biceps.model.message.*;
+import org.somda.sdc.biceps.model.participant.InstanceIdentifier;
+import org.somda.sdc.biceps.model.participant.LocalizedText;
+import org.somda.sdc.biceps.model.participant.MdibVersion;
+import org.somda.sdc.common.util.ObjectStringifier;
+import org.somda.sdc.common.util.Stringified;
+import org.somda.sdc.dpws.device.EventSourceAccess;
+import org.somda.sdc.dpws.soap.exception.MarshallingException;
+import org.somda.sdc.dpws.soap.exception.TransportException;
+import org.somda.sdc.glue.common.ActionConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

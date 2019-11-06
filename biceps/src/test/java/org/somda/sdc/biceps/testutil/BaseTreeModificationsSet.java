@@ -1,7 +1,7 @@
-package org.ieee11073.sdc.biceps.testutil;
+package org.somda.sdc.biceps.testutil;
 
-import org.ieee11073.sdc.biceps.common.MdibDescriptionModifications;
-import org.ieee11073.sdc.biceps.model.participant.*;
+import org.somda.sdc.biceps.common.MdibDescriptionModifications;
+import org.somda.sdc.biceps.model.participant.*;
 
 import javax.annotation.Nullable;
 

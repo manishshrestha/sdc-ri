@@ -1,9 +1,9 @@
-package org.ieee11073.sdc.dpws.soap.interception;
+package org.somda.sdc.dpws.soap.interception;
 
-import org.ieee11073.sdc.dpws.soap.SoapMessage;
-import org.ieee11073.sdc.dpws.soap.exception.MarshallingException;
-import org.ieee11073.sdc.dpws.soap.exception.SoapFaultException;
-import org.ieee11073.sdc.dpws.soap.exception.TransportException;
+import org.somda.sdc.dpws.soap.SoapMessage;
+import org.somda.sdc.dpws.soap.exception.MarshallingException;
+import org.somda.sdc.dpws.soap.exception.SoapFaultException;
+import org.somda.sdc.dpws.soap.exception.TransportException;
 
 /**
  * Callback for network bindings to initiate a input-output message exchange.

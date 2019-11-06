@@ -1,17 +1,17 @@
-package org.ieee11073.sdc.glue.provider.services.helper;
+package org.somda.sdc.glue.provider.services.helper;
 
-import org.ieee11073.sdc.biceps.common.MdibDescriptionModifications;
-import org.ieee11073.sdc.biceps.common.MdibEntity;
-import org.ieee11073.sdc.biceps.common.MdibTypeValidator;
-import org.ieee11073.sdc.biceps.common.storage.PreprocessingException;
-import org.ieee11073.sdc.biceps.model.participant.*;
-import org.ieee11073.sdc.biceps.provider.access.LocalMdibAccess;
-import org.ieee11073.sdc.biceps.provider.access.factory.LocalMdibAccessFactory;
-import org.ieee11073.sdc.biceps.testutil.BaseTreeModificationsSet;
-import org.ieee11073.sdc.biceps.testutil.Handles;
-import org.ieee11073.sdc.biceps.testutil.MockEntryFactory;
-import org.ieee11073.sdc.glue.UnitTestUtil;
-import org.ieee11073.sdc.glue.provider.services.helper.factory.MdibMapperFactory;
+import org.somda.sdc.biceps.common.MdibDescriptionModifications;
+import org.somda.sdc.biceps.common.MdibEntity;
+import org.somda.sdc.biceps.common.MdibTypeValidator;
+import org.somda.sdc.biceps.common.storage.PreprocessingException;
+import org.somda.sdc.biceps.model.participant.*;
+import org.somda.sdc.biceps.provider.access.LocalMdibAccess;
+import org.somda.sdc.biceps.provider.access.factory.LocalMdibAccessFactory;
+import org.somda.sdc.biceps.testutil.BaseTreeModificationsSet;
+import org.somda.sdc.biceps.testutil.Handles;
+import org.somda.sdc.biceps.testutil.MockEntryFactory;
+import org.somda.sdc.glue.UnitTestUtil;
+import org.somda.sdc.glue.provider.services.helper.factory.MdibMapperFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 

@@ -1,17 +1,17 @@
-package org.ieee11073.sdc.glue;
+package org.somda.sdc.glue;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.util.Modules;
-import org.ieee11073.sdc.biceps.guice.DefaultBicepsConfigModule;
-import org.ieee11073.sdc.biceps.guice.DefaultBicepsModule;
-import org.ieee11073.sdc.common.guice.AbstractConfigurationModule;
-import org.ieee11073.sdc.common.guice.DefaultHelperModule;
-import org.ieee11073.sdc.dpws.guice.DefaultDpwsConfigModule;
-import org.ieee11073.sdc.dpws.guice.DefaultDpwsModule;
-import org.ieee11073.sdc.glue.guice.DefaultGlueConfigModule;
-import org.ieee11073.sdc.glue.guice.DefaultGlueModule;
+import org.somda.sdc.biceps.guice.DefaultBicepsConfigModule;
+import org.somda.sdc.biceps.guice.DefaultBicepsModule;
+import org.somda.sdc.common.guice.AbstractConfigurationModule;
+import org.somda.sdc.common.guice.DefaultHelperModule;
+import org.somda.sdc.dpws.guice.DefaultDpwsConfigModule;
+import org.somda.sdc.dpws.guice.DefaultDpwsModule;
+import org.somda.sdc.glue.guice.DefaultGlueConfigModule;
+import org.somda.sdc.glue.guice.DefaultGlueModule;
 
 public class UnitTestUtil {
     private final Injector injector;

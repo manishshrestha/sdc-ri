@@ -1,11 +1,11 @@
-package it.org.ieee11073.sdc.dpws.soap;
+package it.org.somda.sdc.dpws.soap;
 
 import com.google.inject.AbstractModule;
-import it.org.ieee11073.sdc.dpws.IntegrationTestPeer;
-import org.ieee11073.sdc.dpws.DpwsFramework;
-import org.ieee11073.sdc.dpws.client.Client;
-import org.ieee11073.sdc.dpws.factory.DpwsFrameworkFactory;
-import org.ieee11073.sdc.dpws.guice.DefaultDpwsConfigModule;
+import it.org.somda.sdc.dpws.IntegrationTestPeer;
+import org.somda.sdc.dpws.DpwsFramework;
+import org.somda.sdc.dpws.client.Client;
+import org.somda.sdc.dpws.factory.DpwsFrameworkFactory;
+import org.somda.sdc.dpws.guice.DefaultDpwsConfigModule;
 
 import javax.annotation.Nullable;
 

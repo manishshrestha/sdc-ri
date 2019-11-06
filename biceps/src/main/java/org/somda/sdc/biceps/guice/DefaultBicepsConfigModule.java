@@ -1,7 +1,7 @@
-package org.ieee11073.sdc.biceps.guice;
+package org.somda.sdc.biceps.guice;
 
-import org.ieee11073.sdc.biceps.common.CommonConfig;
-import org.ieee11073.sdc.common.guice.AbstractConfigurationModule;
+import org.somda.sdc.biceps.common.CommonConfig;
+import org.somda.sdc.common.guice.AbstractConfigurationModule;
 
 /**
  * Guice module that determines default values for the BICEPS package configuration.

@@ -1,4 +1,4 @@
-package org.ieee11073.sdc.dpws;
+package org.somda.sdc.dpws;
 
 /**
  * Exception that comes up while a transport binding processes a network request.

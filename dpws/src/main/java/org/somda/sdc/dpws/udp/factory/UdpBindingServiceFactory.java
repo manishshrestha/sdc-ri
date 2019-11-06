@@ -1,7 +1,7 @@
-package org.ieee11073.sdc.dpws.udp.factory;
+package org.somda.sdc.dpws.udp.factory;
 
 import com.google.inject.assistedinject.Assisted;
-import org.ieee11073.sdc.dpws.udp.UdpBindingService;
+import org.somda.sdc.dpws.udp.UdpBindingService;
 
 import javax.annotation.Nullable;
 import java.net.InetAddress;

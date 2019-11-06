@@ -1,4 +1,4 @@
-package org.ieee11073.sdc.dpws.udp;
+package org.somda.sdc.dpws.udp;
 
 /**
  * Observer that is fed by {@link UdpMessageQueueService}.

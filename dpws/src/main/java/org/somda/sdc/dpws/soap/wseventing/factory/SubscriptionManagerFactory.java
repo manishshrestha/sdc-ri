@@ -1,10 +1,10 @@
-package org.ieee11073.sdc.dpws.soap.wseventing.factory;
+package org.somda.sdc.dpws.soap.wseventing.factory;
 
 import com.google.inject.assistedinject.Assisted;
-import org.ieee11073.sdc.dpws.soap.wsaddressing.model.EndpointReferenceType;
-import org.ieee11073.sdc.dpws.soap.wseventing.SinkSubscriptionManager;
-import org.ieee11073.sdc.dpws.soap.wseventing.SourceSubscriptionManager;
-import org.ieee11073.sdc.dpws.soap.wseventing.SubscriptionManager;
+import org.somda.sdc.dpws.soap.wsaddressing.model.EndpointReferenceType;
+import org.somda.sdc.dpws.soap.wseventing.SinkSubscriptionManager;
+import org.somda.sdc.dpws.soap.wseventing.SourceSubscriptionManager;
+import org.somda.sdc.dpws.soap.wseventing.SubscriptionManager;
 
 import javax.annotation.Nullable;
 import java.time.Duration;

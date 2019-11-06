@@ -1,23 +1,23 @@
-package it.org.ieee11073.sdc.dpws.http.grizzly;
+package it.org.somda.sdc.dpws.http.grizzly;
 
 import com.google.common.collect.Iterables;
 import org.glassfish.grizzly.http.server.HttpServer;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
-import org.ieee11073.sdc.dpws.DpwsTest;
-import org.ieee11073.sdc.dpws.TransportBinding;
-import org.ieee11073.sdc.dpws.TransportBindingException;
-import org.ieee11073.sdc.dpws.factory.TransportBindingFactory;
-import org.ieee11073.sdc.dpws.http.grizzly.GrizzlyHttpServerRegistry;
-import org.ieee11073.sdc.dpws.soap.SoapMarshalling;
-import org.ieee11073.sdc.dpws.soap.SoapMessage;
-import org.ieee11073.sdc.dpws.soap.exception.MarshallingException;
-import org.ieee11073.sdc.dpws.soap.exception.TransportException;
-import org.ieee11073.sdc.dpws.soap.factory.EnvelopeFactory;
-import org.ieee11073.sdc.dpws.soap.factory.SoapMessageFactory;
+import org.somda.sdc.dpws.DpwsTest;
+import org.somda.sdc.dpws.TransportBinding;
+import org.somda.sdc.dpws.TransportBindingException;
+import org.somda.sdc.dpws.factory.TransportBindingFactory;
+import org.somda.sdc.dpws.http.grizzly.GrizzlyHttpServerRegistry;
+import org.somda.sdc.dpws.soap.SoapMarshalling;
+import org.somda.sdc.dpws.soap.SoapMessage;
+import org.somda.sdc.dpws.soap.exception.MarshallingException;
+import org.somda.sdc.dpws.soap.exception.TransportException;
+import org.somda.sdc.dpws.soap.factory.EnvelopeFactory;
+import org.somda.sdc.dpws.soap.factory.SoapMessageFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import test.org.ieee11073.common.LoggingTestWatcher;
+import test.org.somda.common.LoggingTestWatcher;
 
 import java.net.URI;
 import java.util.concurrent.atomic.AtomicBoolean;

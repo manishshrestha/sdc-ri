@@ -1,10 +1,10 @@
-package org.ieee11073.sdc.glue.provider.factory;
+package org.somda.sdc.glue.provider.factory;
 
 import com.google.inject.assistedinject.Assisted;
-import org.ieee11073.sdc.biceps.provider.access.LocalMdibAccess;
-import org.ieee11073.sdc.dpws.device.Device;
-import org.ieee11073.sdc.glue.provider.SdcServices;
-import org.ieee11073.sdc.glue.provider.sco.OperationInvocationReceiver;
+import org.somda.sdc.biceps.provider.access.LocalMdibAccess;
+import org.somda.sdc.dpws.device.Device;
+import org.somda.sdc.glue.provider.SdcServices;
+import org.somda.sdc.glue.provider.sco.OperationInvocationReceiver;
 
 import java.util.Collection;
 

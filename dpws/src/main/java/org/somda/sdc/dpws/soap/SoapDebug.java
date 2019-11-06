@@ -1,6 +1,6 @@
-package org.ieee11073.sdc.dpws.soap;
+package org.somda.sdc.dpws.soap;
 
-import org.ieee11073.sdc.dpws.soap.wsaddressing.model.AttributedURIType;
+import org.somda.sdc.dpws.soap.wsaddressing.model.AttributedURIType;
 
 import javax.xml.bind.JAXBElement;
 import java.util.Optional;

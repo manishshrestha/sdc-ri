@@ -1,6 +1,6 @@
-package org.ieee11073.sdc.dpws.factory;
+package org.somda.sdc.dpws.factory;
 
-import org.ieee11073.sdc.dpws.TransportBinding;
+import org.somda.sdc.dpws.TransportBinding;
 
 import java.net.URI;
 

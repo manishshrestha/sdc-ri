@@ -1,16 +1,16 @@
-package org.ieee11073.sdc.biceps.consumer.access;
+package org.somda.sdc.biceps.consumer.access;
 
 import com.google.inject.Injector;
-import org.ieee11073.sdc.biceps.UnitTestUtil;
-import org.ieee11073.sdc.biceps.common.*;
-import org.ieee11073.sdc.biceps.common.access.WriteDescriptionResult;
-import org.ieee11073.sdc.biceps.common.access.WriteStateResult;
-import org.ieee11073.sdc.biceps.common.event.DescriptionModificationMessage;
-import org.ieee11073.sdc.biceps.common.storage.PreprocessingException;
-import org.ieee11073.sdc.biceps.consumer.access.factory.RemoteMdibAccessFactory;
-import org.ieee11073.sdc.biceps.guice.DefaultBicepsConfigModule;
-import org.ieee11073.sdc.biceps.model.participant.*;
-import org.ieee11073.sdc.biceps.testutil.*;
+import org.somda.sdc.biceps.UnitTestUtil;
+import org.somda.sdc.biceps.common.*;
+import org.somda.sdc.biceps.common.access.WriteDescriptionResult;
+import org.somda.sdc.biceps.common.access.WriteStateResult;
+import org.somda.sdc.biceps.common.event.DescriptionModificationMessage;
+import org.somda.sdc.biceps.common.storage.PreprocessingException;
+import org.somda.sdc.biceps.consumer.access.factory.RemoteMdibAccessFactory;
+import org.somda.sdc.biceps.guice.DefaultBicepsConfigModule;
+import org.somda.sdc.biceps.model.participant.*;
+import org.somda.sdc.biceps.testutil.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 

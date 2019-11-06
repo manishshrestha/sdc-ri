@@ -1,9 +1,9 @@
-package org.ieee11073.sdc.dpws.device.helper;
+package org.somda.sdc.dpws.device.helper;
 
-import org.ieee11073.sdc.dpws.http.HttpHandler;
-import org.ieee11073.sdc.dpws.soap.TransportInfo;
-import org.ieee11073.sdc.dpws.soap.exception.MarshallingException;
-import org.ieee11073.sdc.dpws.soap.exception.TransportException;
+import org.somda.sdc.dpws.http.HttpHandler;
+import org.somda.sdc.dpws.soap.TransportInfo;
+import org.somda.sdc.dpws.soap.exception.MarshallingException;
+import org.somda.sdc.dpws.soap.exception.TransportException;
 
 import java.io.IOException;
 import java.io.InputStream;

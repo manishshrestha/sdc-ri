@@ -1,8 +1,8 @@
-package org.ieee11073.sdc.dpws.helper.factory;
+package org.somda.sdc.dpws.helper.factory;
 
 import com.google.inject.assistedinject.Assisted;
-import org.ieee11073.sdc.dpws.helper.NotificationSourceUdpCallback;
-import org.ieee11073.sdc.dpws.udp.UdpMessageQueueService;
+import org.somda.sdc.dpws.helper.NotificationSourceUdpCallback;
+import org.somda.sdc.dpws.udp.UdpMessageQueueService;
 
 /**
  * Factory to create instances of {@link NotificationSourceUdpCallback}.

@@ -1,30 +1,30 @@
-package org.ieee11073.sdc.dpws.soap.wsdiscovery;
+package org.somda.sdc.dpws.soap.wsdiscovery;
 
 import com.google.common.eventbus.Subscribe;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.MoreExecutors;
-import org.ieee11073.sdc.dpws.DpwsTest;
-import org.ieee11073.sdc.dpws.soap.NotificationSink;
-import org.ieee11073.sdc.dpws.soap.NotificationSource;
-import org.ieee11073.sdc.dpws.soap.SoapMessage;
-import org.ieee11073.sdc.dpws.soap.SoapUtil;
-import org.ieee11073.sdc.dpws.soap.factory.EnvelopeFactory;
-import org.ieee11073.sdc.dpws.soap.factory.NotificationSourceFactory;
-import org.ieee11073.sdc.dpws.soap.factory.SoapMessageFactory;
-import org.ieee11073.sdc.dpws.soap.model.Envelope;
-import org.ieee11073.sdc.dpws.soap.wsaddressing.WsAddressingClientInterceptor;
-import org.ieee11073.sdc.dpws.soap.wsaddressing.WsAddressingUtil;
-import org.ieee11073.sdc.dpws.soap.wsaddressing.model.AttributedURIType;
-import org.ieee11073.sdc.dpws.soap.wsaddressing.model.EndpointReferenceType;
-import org.ieee11073.sdc.dpws.soap.wsaddressing.model.ObjectFactory;
-import org.ieee11073.sdc.dpws.soap.wsdiscovery.event.ProbeMatchesMessage;
-import org.ieee11073.sdc.dpws.soap.wsdiscovery.factory.WsDiscoveryClientFactory;
-import org.ieee11073.sdc.dpws.soap.wsdiscovery.model.ProbeMatchType;
-import org.ieee11073.sdc.dpws.soap.wsdiscovery.model.ProbeMatchesType;
-import org.ieee11073.sdc.dpws.soap.wsdiscovery.model.ResolveMatchType;
-import org.ieee11073.sdc.dpws.soap.wsdiscovery.model.ResolveMatchesType;
+import org.somda.sdc.dpws.DpwsTest;
+import org.somda.sdc.dpws.soap.NotificationSink;
+import org.somda.sdc.dpws.soap.NotificationSource;
+import org.somda.sdc.dpws.soap.SoapMessage;
+import org.somda.sdc.dpws.soap.SoapUtil;
+import org.somda.sdc.dpws.soap.factory.EnvelopeFactory;
+import org.somda.sdc.dpws.soap.factory.NotificationSourceFactory;
+import org.somda.sdc.dpws.soap.factory.SoapMessageFactory;
+import org.somda.sdc.dpws.soap.model.Envelope;
+import org.somda.sdc.dpws.soap.wsaddressing.WsAddressingClientInterceptor;
+import org.somda.sdc.dpws.soap.wsaddressing.WsAddressingUtil;
+import org.somda.sdc.dpws.soap.wsaddressing.model.AttributedURIType;
+import org.somda.sdc.dpws.soap.wsaddressing.model.EndpointReferenceType;
+import org.somda.sdc.dpws.soap.wsaddressing.model.ObjectFactory;
+import org.somda.sdc.dpws.soap.wsdiscovery.event.ProbeMatchesMessage;
+import org.somda.sdc.dpws.soap.wsdiscovery.factory.WsDiscoveryClientFactory;
+import org.somda.sdc.dpws.soap.wsdiscovery.model.ProbeMatchType;
+import org.somda.sdc.dpws.soap.wsdiscovery.model.ProbeMatchesType;
+import org.somda.sdc.dpws.soap.wsdiscovery.model.ResolveMatchType;
+import org.somda.sdc.dpws.soap.wsdiscovery.model.ResolveMatchesType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -45,7 +45,7 @@ public class WsDiscoveryClientInterceptorTest extends DpwsTest {
     private List<String> expectedScopes;
     private NotificationSource notificationSource;
     private EndpointReferenceType expectedEpr;
-    private org.ieee11073.sdc.dpws.soap.wsdiscovery.model.ObjectFactory wsdFactory;
+    private org.somda.sdc.dpws.soap.wsdiscovery.model.ObjectFactory wsdFactory;
     private SoapMessageFactory soapMessageFactory;
     private EnvelopeFactory envelopeFactory;
     private NotificationSink notificationSink;
@@ -84,7 +84,7 @@ public class WsDiscoveryClientInterceptorTest extends DpwsTest {
         eprUri.setValue("http://expectedEpr-uri");
         expectedEpr.setAddress(eprUri);
 
-        wsdFactory = getInjector().getInstance(org.ieee11073.sdc.dpws.soap.wsdiscovery.model.ObjectFactory.class);
+        wsdFactory = getInjector().getInstance(org.somda.sdc.dpws.soap.wsdiscovery.model.ObjectFactory.class);
         envelopeFactory = getInjector().getInstance(EnvelopeFactory.class);
     }
 

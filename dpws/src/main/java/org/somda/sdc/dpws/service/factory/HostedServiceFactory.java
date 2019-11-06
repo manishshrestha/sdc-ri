@@ -1,12 +1,12 @@
-package org.ieee11073.sdc.dpws.service.factory;
+package org.somda.sdc.dpws.service.factory;
 
 import com.google.inject.assistedinject.Assisted;
-import org.ieee11073.sdc.dpws.device.WebService;
-import org.ieee11073.sdc.dpws.model.HostedServiceType;
-import org.ieee11073.sdc.dpws.service.HostedService;
-import org.ieee11073.sdc.dpws.service.HostedServiceProxy;
-import org.ieee11073.sdc.dpws.soap.RequestResponseClient;
-import org.ieee11073.sdc.dpws.soap.wseventing.EventSink;
+import org.somda.sdc.dpws.device.WebService;
+import org.somda.sdc.dpws.model.HostedServiceType;
+import org.somda.sdc.dpws.service.HostedService;
+import org.somda.sdc.dpws.service.HostedServiceProxy;
+import org.somda.sdc.dpws.soap.RequestResponseClient;
+import org.somda.sdc.dpws.soap.wseventing.EventSink;
 
 import javax.xml.namespace.QName;
 import java.io.InputStream;

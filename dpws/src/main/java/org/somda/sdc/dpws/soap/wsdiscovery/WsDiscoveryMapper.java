@@ -1,9 +1,9 @@
-package org.ieee11073.sdc.dpws.soap.wsdiscovery;
+package org.somda.sdc.dpws.soap.wsdiscovery;
 
 import com.google.inject.Inject;
-import org.ieee11073.sdc.dpws.soap.wsdiscovery.model.AppSequenceType;
-import org.ieee11073.sdc.dpws.soap.wsdiscovery.model.ObjectFactory;
-import org.ieee11073.sdc.common.util.JaxbUtil;
+import org.somda.sdc.dpws.soap.wsdiscovery.model.AppSequenceType;
+import org.somda.sdc.dpws.soap.wsdiscovery.model.ObjectFactory;
+import org.somda.sdc.common.util.JaxbUtil;
 
 import java.util.List;
 import java.util.Optional;

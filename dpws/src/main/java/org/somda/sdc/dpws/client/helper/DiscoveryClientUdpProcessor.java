@@ -1,17 +1,17 @@
-package org.ieee11073.sdc.dpws.client.helper;
+package org.somda.sdc.dpws.client.helper;
 
 import com.google.common.eventbus.Subscribe;
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
-import org.ieee11073.sdc.dpws.soap.MarshallingService;
-import org.ieee11073.sdc.dpws.soap.NotificationSink;
-import org.ieee11073.sdc.dpws.soap.SoapDebug;
-import org.ieee11073.sdc.dpws.soap.SoapMessage;
-import org.ieee11073.sdc.dpws.soap.exception.MarshallingException;
-import org.ieee11073.sdc.dpws.soap.exception.TransportException;
-import org.ieee11073.sdc.dpws.udp.UdpMessage;
-import org.ieee11073.sdc.dpws.udp.UdpMessageQueueObserver;
-import org.ieee11073.sdc.dpws.udp.UdpMessageQueueService;
+import org.somda.sdc.dpws.soap.MarshallingService;
+import org.somda.sdc.dpws.soap.NotificationSink;
+import org.somda.sdc.dpws.soap.SoapDebug;
+import org.somda.sdc.dpws.soap.SoapMessage;
+import org.somda.sdc.dpws.soap.exception.MarshallingException;
+import org.somda.sdc.dpws.soap.exception.TransportException;
+import org.somda.sdc.dpws.udp.UdpMessage;
+import org.somda.sdc.dpws.udp.UdpMessageQueueObserver;
+import org.somda.sdc.dpws.udp.UdpMessageQueueService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -1,7 +1,7 @@
-package org.ieee11073.sdc.dpws.soap.wseventing;
+package org.somda.sdc.dpws.soap.wseventing;
 
 import com.google.common.util.concurrent.Service;
-import org.ieee11073.sdc.dpws.soap.wseventing.model.Notification;
+import org.somda.sdc.dpws.soap.wseventing.model.Notification;
 
 import java.util.concurrent.BlockingQueue;
 

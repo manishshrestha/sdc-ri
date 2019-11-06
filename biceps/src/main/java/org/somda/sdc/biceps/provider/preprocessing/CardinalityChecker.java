@@ -1,11 +1,11 @@
-package org.ieee11073.sdc.biceps.provider.preprocessing;
+package org.somda.sdc.biceps.provider.preprocessing;
 
 import com.google.inject.Inject;
 import org.apache.commons.logging.LogFactory;
-import org.ieee11073.sdc.biceps.common.*;
-import org.ieee11073.sdc.biceps.common.storage.DescriptionPreprocessingSegment;
-import org.ieee11073.sdc.biceps.common.storage.MdibStorage;
-import org.ieee11073.sdc.biceps.model.participant.AbstractDescriptor;
+import org.somda.sdc.biceps.common.*;
+import org.somda.sdc.biceps.common.storage.DescriptionPreprocessingSegment;
+import org.somda.sdc.biceps.common.storage.MdibStorage;
+import org.somda.sdc.biceps.model.participant.AbstractDescriptor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

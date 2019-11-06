@@ -1,4 +1,4 @@
-package org.ieee11073.sdc.dpws.device.helper;
+package org.somda.sdc.dpws.device.helper;
 
 import org.junit.jupiter.api.Test;
 

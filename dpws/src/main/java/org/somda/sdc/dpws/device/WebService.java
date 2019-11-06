@@ -1,14 +1,14 @@
-package org.ieee11073.sdc.dpws.device;
+package org.somda.sdc.dpws.device;
 
 import com.google.common.util.concurrent.AbstractIdleService;
 import com.google.common.util.concurrent.Service;
-import org.ieee11073.sdc.dpws.service.HostedService;
-import org.ieee11073.sdc.dpws.soap.exception.MarshallingException;
-import org.ieee11073.sdc.dpws.soap.exception.TransportException;
-import org.ieee11073.sdc.dpws.soap.interception.Interceptor;
-import org.ieee11073.sdc.dpws.soap.wseventing.EventSource;
-import org.ieee11073.sdc.dpws.soap.wseventing.model.WsEventingStatus;
-import org.ieee11073.sdc.dpws.soap.RequestResponseServer;
+import org.somda.sdc.dpws.service.HostedService;
+import org.somda.sdc.dpws.soap.exception.MarshallingException;
+import org.somda.sdc.dpws.soap.exception.TransportException;
+import org.somda.sdc.dpws.soap.interception.Interceptor;
+import org.somda.sdc.dpws.soap.wseventing.EventSource;
+import org.somda.sdc.dpws.soap.wseventing.model.WsEventingStatus;
+import org.somda.sdc.dpws.soap.RequestResponseServer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

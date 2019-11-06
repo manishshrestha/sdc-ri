@@ -1,10 +1,10 @@
-package org.ieee11073.sdc.dpws.soap.wseventing.helper;
+package org.somda.sdc.dpws.soap.wseventing.helper;
 
 import com.google.common.eventbus.EventBus;
 import com.google.inject.Inject;
-import org.ieee11073.sdc.dpws.soap.wseventing.SourceSubscriptionManager;
-import org.ieee11073.sdc.dpws.soap.wseventing.event.SubscriptionAddedMessage;
-import org.ieee11073.sdc.dpws.soap.wseventing.event.SubscriptionRemovedMessage;
+import org.somda.sdc.dpws.soap.wseventing.SourceSubscriptionManager;
+import org.somda.sdc.dpws.soap.wseventing.event.SubscriptionAddedMessage;
+import org.somda.sdc.dpws.soap.wseventing.event.SubscriptionRemovedMessage;
 
 import java.util.HashMap;
 import java.util.Map;

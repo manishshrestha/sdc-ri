@@ -1,22 +1,22 @@
-package org.ieee11073.sdc.dpws.soap.wsdiscovery;
+package org.somda.sdc.dpws.soap.wsdiscovery;
 
 import com.google.common.primitives.UnsignedInteger;
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
-import org.ieee11073.sdc.dpws.soap.NotificationSource;
-import org.ieee11073.sdc.dpws.soap.SoapMessage;
-import org.ieee11073.sdc.dpws.soap.SoapUtil;
-import org.ieee11073.sdc.dpws.soap.exception.MarshallingException;
-import org.ieee11073.sdc.dpws.soap.exception.SoapFaultException;
-import org.ieee11073.sdc.dpws.soap.exception.TransportException;
-import org.ieee11073.sdc.dpws.soap.factory.SoapFaultFactory;
-import org.ieee11073.sdc.dpws.soap.interception.*;
-import org.ieee11073.sdc.dpws.soap.wsaddressing.WsAddressingHeader;
-import org.ieee11073.sdc.dpws.soap.wsaddressing.WsAddressingUtil;
-import org.ieee11073.sdc.dpws.soap.wsaddressing.model.EndpointReferenceType;
-import org.ieee11073.sdc.dpws.soap.wsdiscovery.factory.WsDiscoveryFaultFactory;
-import org.ieee11073.sdc.common.util.ObjectUtilImpl;
-import org.ieee11073.sdc.dpws.soap.wsdiscovery.model.*;
+import org.somda.sdc.dpws.soap.NotificationSource;
+import org.somda.sdc.dpws.soap.SoapMessage;
+import org.somda.sdc.dpws.soap.SoapUtil;
+import org.somda.sdc.dpws.soap.exception.MarshallingException;
+import org.somda.sdc.dpws.soap.exception.SoapFaultException;
+import org.somda.sdc.dpws.soap.exception.TransportException;
+import org.somda.sdc.dpws.soap.factory.SoapFaultFactory;
+import org.somda.sdc.dpws.soap.interception.*;
+import org.somda.sdc.dpws.soap.wsaddressing.WsAddressingHeader;
+import org.somda.sdc.dpws.soap.wsaddressing.WsAddressingUtil;
+import org.somda.sdc.dpws.soap.wsaddressing.model.EndpointReferenceType;
+import org.somda.sdc.dpws.soap.wsdiscovery.factory.WsDiscoveryFaultFactory;
+import org.somda.sdc.common.util.ObjectUtilImpl;
+import org.somda.sdc.dpws.soap.wsdiscovery.model.*;
 
 import javax.annotation.Nullable;
 import javax.xml.bind.JAXBElement;

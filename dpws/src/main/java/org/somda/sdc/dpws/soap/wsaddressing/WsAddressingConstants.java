@@ -1,4 +1,4 @@
-package org.ieee11073.sdc.dpws.soap.wsaddressing;
+package org.somda.sdc.dpws.soap.wsaddressing;
 
 import javax.xml.namespace.QName;
 
@@ -12,7 +12,7 @@ public class WsAddressingConstants {
     /**
      * Package that includes all JAXB generated WS-Addressing objects.
      */
-    public static final String JAXB_CONTEXT_PACKAGE = "org.ieee11073.sdc.dpws.soap.wsaddressing.model";
+    public static final String JAXB_CONTEXT_PACKAGE = "org.somda.sdc.dpws.soap.wsaddressing.model";
 
     /**
      * WS-Addressing 1.0 namespace.

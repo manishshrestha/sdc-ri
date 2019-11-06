@@ -1,10 +1,10 @@
-package org.ieee11073.sdc.dpws.soap;
+package org.somda.sdc.dpws.soap;
 
-import org.ieee11073.sdc.dpws.soap.exception.MarshallingException;
-import org.ieee11073.sdc.dpws.soap.exception.SoapFaultException;
-import org.ieee11073.sdc.dpws.soap.exception.TransportException;
-import org.ieee11073.sdc.dpws.soap.interception.InterceptorException;
-import org.ieee11073.sdc.dpws.soap.interception.InterceptorHandler;
+import org.somda.sdc.dpws.soap.exception.MarshallingException;
+import org.somda.sdc.dpws.soap.exception.SoapFaultException;
+import org.somda.sdc.dpws.soap.exception.TransportException;
+import org.somda.sdc.dpws.soap.interception.InterceptorException;
+import org.somda.sdc.dpws.soap.interception.InterceptorHandler;
 
 /**
  * Interface for client APIs to conduct request-response message exchanges.

@@ -1,9 +1,9 @@
-package org.ieee11073.sdc.glue.provider.sco;
+package org.somda.sdc.glue.provider.sco;
 
 import com.google.inject.BindingAnnotation;
-import org.ieee11073.sdc.biceps.model.message.InvocationError;
-import org.ieee11073.sdc.biceps.model.message.InvocationState;
-import org.ieee11073.sdc.biceps.model.participant.MdibVersion;
+import org.somda.sdc.biceps.model.message.InvocationError;
+import org.somda.sdc.biceps.model.message.InvocationState;
+import org.somda.sdc.biceps.model.participant.MdibVersion;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
@@ -26,10 +26,10 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
  * <li>{@link String} for a SetString request
  * <li>{@link java.math.BigDecimal} for a SetValue request
  * <li>{@link java.util.List} of {@link Object} depending on the argument types for an Activate request
- * <li>An instance derived from {@link org.ieee11073.sdc.biceps.model.participant.AbstractMetricState} for a SetMetricState request
- * <li>An instance derived from {@link org.ieee11073.sdc.biceps.model.participant.AbstractAlertState} for a SetAlertState request
- * <li>An instance derived from {@link org.ieee11073.sdc.biceps.model.participant.AbstractDeviceComponentState} for a SetComponentState request
- * <li>An instance derived from {@link org.ieee11073.sdc.biceps.model.participant.AbstractContextState} for a SetContextState request
+ * <li>An instance derived from {@link org.somda.sdc.biceps.model.participant.AbstractMetricState} for a SetMetricState request
+ * <li>An instance derived from {@link org.somda.sdc.biceps.model.participant.AbstractAlertState} for a SetAlertState request
+ * <li>An instance derived from {@link org.somda.sdc.biceps.model.participant.AbstractDeviceComponentState} for a SetComponentState request
+ * <li>An instance derived from {@link org.somda.sdc.biceps.model.participant.AbstractContextState} for a SetContextState request
  * </ul>
  * <p>
  * The result of the operation is required to be of the type {@link InvocationResponse}, which can be created by using

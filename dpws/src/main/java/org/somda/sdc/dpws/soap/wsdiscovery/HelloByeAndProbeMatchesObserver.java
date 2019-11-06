@@ -1,9 +1,9 @@
-package org.ieee11073.sdc.dpws.soap.wsdiscovery;
+package org.somda.sdc.dpws.soap.wsdiscovery;
 
-import org.ieee11073.sdc.dpws.soap.wsdiscovery.event.ByeMessage;
-import org.ieee11073.sdc.dpws.soap.wsdiscovery.event.HelloMessage;
-import org.ieee11073.sdc.dpws.soap.wsdiscovery.event.ProbeMatchesMessage;
-import org.ieee11073.sdc.dpws.soap.wsdiscovery.event.ProbeTimeoutMessage;
+import org.somda.sdc.dpws.soap.wsdiscovery.event.ByeMessage;
+import org.somda.sdc.dpws.soap.wsdiscovery.event.HelloMessage;
+import org.somda.sdc.dpws.soap.wsdiscovery.event.ProbeMatchesMessage;
+import org.somda.sdc.dpws.soap.wsdiscovery.event.ProbeTimeoutMessage;
 
 /**
  * Designates a deriving class as a WS-Discovery Hello, Bye and ProbeMatches observer.

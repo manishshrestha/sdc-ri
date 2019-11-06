@@ -1,8 +1,8 @@
-package org.ieee11073.sdc.dpws.service;
+package org.somda.sdc.dpws.service;
 
-import org.ieee11073.sdc.dpws.model.ThisDeviceType;
-import org.ieee11073.sdc.dpws.model.ThisModelType;
-import org.ieee11073.sdc.dpws.soap.RequestResponseClient;
+import org.somda.sdc.dpws.model.ThisDeviceType;
+import org.somda.sdc.dpws.model.ThisModelType;
+import org.somda.sdc.dpws.soap.RequestResponseClient;
 
 import javax.xml.namespace.QName;
 import java.net.URI;

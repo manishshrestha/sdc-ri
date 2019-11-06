@@ -1,6 +1,6 @@
-package org.ieee11073.sdc.glue.guice;
+package org.somda.sdc.glue.guice;
 
-import org.ieee11073.sdc.common.guice.AbstractConfigurationModule;
+import org.somda.sdc.common.guice.AbstractConfigurationModule;
 
 /**
  * Guice module that determines default values for the Glue package configuration.

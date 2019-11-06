@@ -1,6 +1,6 @@
-package org.ieee11073.sdc.dpws.client.event;
+package org.somda.sdc.dpws.client.event;
 
-import org.ieee11073.sdc.common.event.EventMessage;
+import org.somda.sdc.common.event.EventMessage;
 
 /**
  * Indicates a probe end of a previously started discovery process.

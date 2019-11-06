@@ -1,13 +1,13 @@
-package org.ieee11073.sdc.biceps.common.access.helper;
+package org.somda.sdc.biceps.common.access.helper;
 
-import org.ieee11073.sdc.biceps.common.MdibDescriptionModifications;
-import org.ieee11073.sdc.biceps.common.MdibStateModifications;
-import org.ieee11073.sdc.biceps.common.access.MdibAccess;
-import org.ieee11073.sdc.biceps.common.access.WriteDescriptionResult;
-import org.ieee11073.sdc.biceps.common.access.WriteStateResult;
-import org.ieee11073.sdc.biceps.common.event.Distributor;
-import org.ieee11073.sdc.biceps.common.storage.MdibStoragePreprocessingChain;
-import org.ieee11073.sdc.biceps.common.storage.PreprocessingException;
+import org.somda.sdc.biceps.common.MdibDescriptionModifications;
+import org.somda.sdc.biceps.common.MdibStateModifications;
+import org.somda.sdc.biceps.common.access.MdibAccess;
+import org.somda.sdc.biceps.common.access.WriteDescriptionResult;
+import org.somda.sdc.biceps.common.access.WriteStateResult;
+import org.somda.sdc.biceps.common.event.Distributor;
+import org.somda.sdc.biceps.common.storage.MdibStoragePreprocessingChain;
+import org.somda.sdc.biceps.common.storage.PreprocessingException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

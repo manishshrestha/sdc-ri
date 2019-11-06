@@ -1,26 +1,26 @@
-package it.org.ieee11073.sdc.dpws.soap;
+package it.org.somda.sdc.dpws.soap;
 
 
 import com.google.common.eventbus.Subscribe;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.SettableFuture;
-import it.org.ieee11073.sdc.dpws.IntegrationTestUtil;
-import it.org.ieee11073.sdc.dpws.MockedUdpBindingModule;
-import it.org.ieee11073.sdc.dpws.TestServiceMetadata;
-import org.ieee11073.sdc.dpws.client.*;
-import org.ieee11073.sdc.dpws.client.event.DeviceEnteredMessage;
-import org.ieee11073.sdc.dpws.client.event.DeviceProbeTimeoutMessage;
-import org.ieee11073.sdc.dpws.client.event.ProbedDeviceFoundMessage;
-import org.ieee11073.sdc.dpws.guice.DefaultDpwsConfigModule;
-import org.ieee11073.sdc.dpws.service.HostingServiceProxy;
-import org.ieee11073.sdc.dpws.soap.SoapConfig;
-import org.ieee11073.sdc.dpws.soap.wsdiscovery.WsDiscoveryConfig;
+import it.org.somda.sdc.dpws.IntegrationTestUtil;
+import it.org.somda.sdc.dpws.MockedUdpBindingModule;
+import it.org.somda.sdc.dpws.TestServiceMetadata;
+import org.somda.sdc.dpws.client.*;
+import org.somda.sdc.dpws.client.event.DeviceEnteredMessage;
+import org.somda.sdc.dpws.client.event.DeviceProbeTimeoutMessage;
+import org.somda.sdc.dpws.client.event.ProbedDeviceFoundMessage;
+import org.somda.sdc.dpws.guice.DefaultDpwsConfigModule;
+import org.somda.sdc.dpws.service.HostingServiceProxy;
+import org.somda.sdc.dpws.soap.SoapConfig;
+import org.somda.sdc.dpws.soap.wsdiscovery.WsDiscoveryConfig;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import test.org.ieee11073.common.LoggingTestWatcher;
-import test.org.ieee11073.common.TestLogging;
+import test.org.somda.common.LoggingTestWatcher;
+import test.org.somda.common.TestLogging;
 
 import java.net.URI;
 import java.time.Duration;

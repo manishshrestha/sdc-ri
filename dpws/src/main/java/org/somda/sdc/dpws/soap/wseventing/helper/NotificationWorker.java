@@ -1,15 +1,15 @@
-package org.ieee11073.sdc.dpws.soap.wseventing.helper;
+package org.somda.sdc.dpws.soap.wseventing.helper;
 
 import com.google.common.eventbus.Subscribe;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
 import com.google.inject.name.Named;
-import org.ieee11073.sdc.dpws.soap.wseventing.SourceSubscriptionManager;
-import org.ieee11073.sdc.dpws.soap.wseventing.WsEventingConfig;
-import org.ieee11073.sdc.dpws.soap.wseventing.event.SubscriptionAddedMessage;
-import org.ieee11073.sdc.dpws.soap.wseventing.event.SubscriptionRemovedMessage;
-import org.ieee11073.sdc.dpws.soap.wseventing.model.Notification;
+import org.somda.sdc.dpws.soap.wseventing.SourceSubscriptionManager;
+import org.somda.sdc.dpws.soap.wseventing.WsEventingConfig;
+import org.somda.sdc.dpws.soap.wseventing.event.SubscriptionAddedMessage;
+import org.somda.sdc.dpws.soap.wseventing.event.SubscriptionRemovedMessage;
+import org.somda.sdc.dpws.soap.wseventing.model.Notification;
 
 import javax.annotation.Nullable;
 import java.time.Duration;

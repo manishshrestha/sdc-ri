@@ -1,14 +1,14 @@
-package org.ieee11073.sdc.dpws.service;
+package org.somda.sdc.dpws.service;
 
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
-import org.ieee11073.sdc.dpws.TransportBinding;
-import org.ieee11073.sdc.dpws.TransportBindingException;
-import org.ieee11073.sdc.dpws.factory.TransportBindingFactory;
-import org.ieee11073.sdc.dpws.soap.SoapMessage;
-import org.ieee11073.sdc.dpws.soap.exception.MarshallingException;
-import org.ieee11073.sdc.dpws.soap.exception.SoapFaultException;
-import org.ieee11073.sdc.dpws.soap.exception.TransportException;
+import org.somda.sdc.dpws.TransportBinding;
+import org.somda.sdc.dpws.TransportBindingException;
+import org.somda.sdc.dpws.factory.TransportBindingFactory;
+import org.somda.sdc.dpws.soap.SoapMessage;
+import org.somda.sdc.dpws.soap.exception.MarshallingException;
+import org.somda.sdc.dpws.soap.exception.SoapFaultException;
+import org.somda.sdc.dpws.soap.exception.TransportException;
 
 import java.io.IOException;
 import java.net.URI;

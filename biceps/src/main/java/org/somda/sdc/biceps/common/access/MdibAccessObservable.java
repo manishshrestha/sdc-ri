@@ -1,4 +1,4 @@
-package org.ieee11073.sdc.biceps.common.access;
+package org.somda.sdc.biceps.common.access;
 
 /**
  * Interface to allow registration and unregistration of {@linkplain MdibAccessObserver} instances.

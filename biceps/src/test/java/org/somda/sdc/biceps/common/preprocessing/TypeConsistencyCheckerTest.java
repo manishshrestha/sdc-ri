@@ -1,13 +1,13 @@
-package org.ieee11073.sdc.biceps.common.preprocessing;
+package org.somda.sdc.biceps.common.preprocessing;
 
-import org.ieee11073.sdc.biceps.UnitTestUtil;
-import org.ieee11073.sdc.biceps.common.MdibDescriptionModification;
-import org.ieee11073.sdc.biceps.common.MdibDescriptionModifications;
-import org.ieee11073.sdc.biceps.common.storage.MdibStorage;
-import org.ieee11073.sdc.biceps.common.storage.factory.MdibStorageFactory;
-import org.ieee11073.sdc.biceps.model.participant.*;
-import org.ieee11073.sdc.biceps.provider.preprocessing.TypeConsistencyChecker;
-import org.ieee11073.sdc.biceps.testutil.MockModelFactory;
+import org.somda.sdc.biceps.UnitTestUtil;
+import org.somda.sdc.biceps.common.MdibDescriptionModification;
+import org.somda.sdc.biceps.common.MdibDescriptionModifications;
+import org.somda.sdc.biceps.common.storage.MdibStorage;
+import org.somda.sdc.biceps.common.storage.factory.MdibStorageFactory;
+import org.somda.sdc.biceps.model.participant.*;
+import org.somda.sdc.biceps.provider.preprocessing.TypeConsistencyChecker;
+import org.somda.sdc.biceps.testutil.MockModelFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 

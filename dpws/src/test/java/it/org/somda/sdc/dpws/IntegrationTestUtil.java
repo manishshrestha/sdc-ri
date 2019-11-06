@@ -1,10 +1,10 @@
-package it.org.ieee11073.sdc.dpws;
+package it.org.somda.sdc.dpws;
 
 import com.google.inject.Guice;
 import com.google.inject.Injector;
-import org.ieee11073.sdc.common.guice.DefaultHelperModule;
-import org.ieee11073.sdc.dpws.guice.DefaultDpwsConfigModule;
-import org.ieee11073.sdc.dpws.guice.DefaultDpwsModule;
+import org.somda.sdc.common.guice.DefaultHelperModule;
+import org.somda.sdc.dpws.guice.DefaultDpwsConfigModule;
+import org.somda.sdc.dpws.guice.DefaultDpwsModule;
 
 import java.time.Duration;
 

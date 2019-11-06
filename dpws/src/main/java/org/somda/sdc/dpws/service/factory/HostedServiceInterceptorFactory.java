@@ -1,9 +1,9 @@
-package org.ieee11073.sdc.dpws.service.factory;
+package org.somda.sdc.dpws.service.factory;
 
 import com.google.inject.assistedinject.Assisted;
-import org.ieee11073.sdc.dpws.service.HostedService;
-import org.ieee11073.sdc.dpws.service.HostedServiceInterceptor;
-import org.ieee11073.sdc.dpws.soap.wsdiscovery.WsDiscoveryTargetService;
+import org.somda.sdc.dpws.service.HostedService;
+import org.somda.sdc.dpws.service.HostedServiceInterceptor;
+import org.somda.sdc.dpws.soap.wsdiscovery.WsDiscoveryTargetService;
 
 /**
  * Factory to create {@link HostedServiceInterceptor} instances.

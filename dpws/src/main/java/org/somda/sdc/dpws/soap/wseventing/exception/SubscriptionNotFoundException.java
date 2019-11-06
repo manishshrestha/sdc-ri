@@ -1,4 +1,4 @@
-package org.ieee11073.sdc.dpws.soap.wseventing.exception;
+package org.somda.sdc.dpws.soap.wseventing.exception;
 
 /**
  * Indicates that a subscription was not found in, either on source or sink side.

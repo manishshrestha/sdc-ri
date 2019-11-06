@@ -1,6 +1,6 @@
-package it.org.ieee11073.sdc.dpws.soap;
+package it.org.somda.sdc.dpws.soap;
 
-import it.org.ieee11073.sdc.dpws.TestServiceMetadata;
+import it.org.somda.sdc.dpws.TestServiceMetadata;
 
 public class DevicePeerMetadata extends TestServiceMetadata {
     public static final String SERVICE_ID_1 = "TestServiceId1";

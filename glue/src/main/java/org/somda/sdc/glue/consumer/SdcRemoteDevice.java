@@ -1,4 +1,4 @@
-package org.ieee11073.sdc.glue.consumer;
+package org.somda.sdc.glue.consumer;
 
 /**
  * SDC consumer device interface.

@@ -1,7 +1,7 @@
-package org.ieee11073.sdc.biceps.common;
+package org.somda.sdc.biceps.common;
 
-import org.ieee11073.sdc.biceps.model.participant.*;
-import org.ieee11073.sdc.biceps.testutil.MockModelFactory;
+import org.somda.sdc.biceps.model.participant.*;
+import org.somda.sdc.biceps.testutil.MockModelFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 

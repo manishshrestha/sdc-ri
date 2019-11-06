@@ -1,4 +1,4 @@
-package org.ieee11073.sdc.dpws;
+package org.somda.sdc.dpws;
 
 import com.google.common.util.concurrent.Service;
 

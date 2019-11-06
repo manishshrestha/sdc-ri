@@ -1,7 +1,7 @@
-package org.ieee11073.sdc.dpws.soap;
+package org.somda.sdc.dpws.soap;
 
 import com.google.common.util.concurrent.Service;
-import org.ieee11073.sdc.dpws.soap.model.Envelope;
+import org.somda.sdc.dpws.soap.model.Envelope;
 
 import javax.xml.bind.JAXBException;
 import java.io.InputStream;

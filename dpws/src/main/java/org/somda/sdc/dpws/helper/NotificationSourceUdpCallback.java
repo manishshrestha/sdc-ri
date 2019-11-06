@@ -1,15 +1,15 @@
-package org.ieee11073.sdc.dpws.helper;
+package org.somda.sdc.dpws.helper;
 
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
-import org.ieee11073.sdc.dpws.soap.MarshallingService;
-import org.ieee11073.sdc.dpws.soap.SoapDebug;
-import org.ieee11073.sdc.dpws.soap.SoapMessage;
-import org.ieee11073.sdc.dpws.soap.exception.MarshallingException;
-import org.ieee11073.sdc.dpws.soap.interception.NotificationCallback;
-import org.ieee11073.sdc.dpws.udp.UdpMessage;
-import org.ieee11073.sdc.dpws.udp.UdpMessageQueueService;
-import org.ieee11073.sdc.dpws.soap.NotificationSource;
+import org.somda.sdc.dpws.soap.MarshallingService;
+import org.somda.sdc.dpws.soap.SoapDebug;
+import org.somda.sdc.dpws.soap.SoapMessage;
+import org.somda.sdc.dpws.soap.exception.MarshallingException;
+import org.somda.sdc.dpws.soap.interception.NotificationCallback;
+import org.somda.sdc.dpws.udp.UdpMessage;
+import org.somda.sdc.dpws.udp.UdpMessageQueueService;
+import org.somda.sdc.dpws.soap.NotificationSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

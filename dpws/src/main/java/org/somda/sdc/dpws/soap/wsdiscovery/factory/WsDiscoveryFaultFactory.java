@@ -1,12 +1,12 @@
-package org.ieee11073.sdc.dpws.soap.wsdiscovery.factory;
+package org.somda.sdc.dpws.soap.wsdiscovery.factory;
 
 import com.google.inject.Inject;
-import org.ieee11073.sdc.dpws.soap.SoapMessage;
-import org.ieee11073.sdc.dpws.soap.SoapConstants;
-import org.ieee11073.sdc.dpws.soap.factory.SoapFaultFactory;
-import org.ieee11073.sdc.dpws.soap.wsdiscovery.MatchBy;
-import org.ieee11073.sdc.dpws.soap.wsdiscovery.WsDiscoveryConstants;
-import org.ieee11073.sdc.dpws.soap.wsdiscovery.model.ObjectFactory;
+import org.somda.sdc.dpws.soap.SoapMessage;
+import org.somda.sdc.dpws.soap.SoapConstants;
+import org.somda.sdc.dpws.soap.factory.SoapFaultFactory;
+import org.somda.sdc.dpws.soap.wsdiscovery.MatchBy;
+import org.somda.sdc.dpws.soap.wsdiscovery.WsDiscoveryConstants;
+import org.somda.sdc.dpws.soap.wsdiscovery.model.ObjectFactory;
 
 import java.util.ArrayList;
 import java.util.Arrays;

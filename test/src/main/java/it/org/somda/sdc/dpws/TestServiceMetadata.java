@@ -1,4 +1,4 @@
-package it.org.ieee11073.sdc.dpws;
+package it.org.somda.sdc.dpws;
 
 /**
  * Metadata describing the test services.

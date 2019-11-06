@@ -2,6 +2,6 @@
  * Encloses classes relevant for the BICEPS provider side.
  */
 @ParametersAreNonnullByDefault
-package org.ieee11073.sdc.biceps.provider;
+package org.somda.sdc.biceps.provider;
 
 import javax.annotation.ParametersAreNonnullByDefault;

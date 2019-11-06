@@ -1,4 +1,4 @@
-package org.ieee11073.sdc.dpws.soap.interception;
+package org.somda.sdc.dpws.soap.interception;
 
 import java.lang.reflect.Method;
 import java.util.Optional;

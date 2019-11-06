@@ -1,13 +1,13 @@
-package org.ieee11073.sdc.dpws.service.helper;
+package org.somda.sdc.dpws.service.helper;
 
 import com.google.inject.Inject;
-import org.ieee11073.sdc.dpws.DpwsConstants;
-import org.ieee11073.sdc.dpws.model.HostServiceType;
-import org.ieee11073.sdc.dpws.model.Relationship;
-import org.ieee11073.sdc.dpws.service.HostedService;
-import org.ieee11073.sdc.dpws.soap.wsaddressing.model.EndpointReferenceType;
-import org.ieee11073.sdc.dpws.soap.wsmetadataexchange.model.MetadataSection;
-import org.ieee11073.sdc.dpws.soap.wsmetadataexchange.model.ObjectFactory;
+import org.somda.sdc.dpws.DpwsConstants;
+import org.somda.sdc.dpws.model.HostServiceType;
+import org.somda.sdc.dpws.model.Relationship;
+import org.somda.sdc.dpws.service.HostedService;
+import org.somda.sdc.dpws.soap.wsaddressing.model.EndpointReferenceType;
+import org.somda.sdc.dpws.soap.wsmetadataexchange.model.MetadataSection;
+import org.somda.sdc.dpws.soap.wsmetadataexchange.model.ObjectFactory;
 
 import javax.xml.namespace.QName;
 import java.util.List;
@@ -18,11 +18,11 @@ import java.util.List;
 public class MetadataSectionUtil {
 
     private final ObjectFactory mexFactory;
-    private final org.ieee11073.sdc.dpws.model.ObjectFactory dpwsFactory;
+    private final org.somda.sdc.dpws.model.ObjectFactory dpwsFactory;
 
     @Inject
     MetadataSectionUtil(ObjectFactory mexFactory,
-                        org.ieee11073.sdc.dpws.model.ObjectFactory dpwsFactory) {
+                        org.somda.sdc.dpws.model.ObjectFactory dpwsFactory) {
         this.mexFactory = mexFactory;
         this.dpwsFactory = dpwsFactory;
     }

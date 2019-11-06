@@ -1,8 +1,8 @@
-package org.ieee11073.sdc.dpws.device;
+package org.somda.sdc.dpws.device;
 
-import org.ieee11073.sdc.dpws.model.ThisDeviceType;
-import org.ieee11073.sdc.dpws.model.ThisModelType;
-import org.ieee11073.sdc.dpws.service.HostedService;
+import org.somda.sdc.dpws.model.ThisDeviceType;
+import org.somda.sdc.dpws.model.ThisModelType;
+import org.somda.sdc.dpws.service.HostedService;
 
 /**
  * Interface to access the hosting service provided by a {@link Device}.

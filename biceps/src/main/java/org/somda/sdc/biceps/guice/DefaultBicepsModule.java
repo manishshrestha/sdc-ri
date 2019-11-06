@@ -1,23 +1,23 @@
-package org.ieee11073.sdc.biceps.guice;
+package org.somda.sdc.biceps.guice;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.assistedinject.FactoryModuleBuilder;
-import org.ieee11073.sdc.biceps.common.*;
-import org.ieee11073.sdc.biceps.common.access.ReadTransaction;
-import org.ieee11073.sdc.biceps.common.access.ReadTransactionImpl;
-import org.ieee11073.sdc.biceps.common.access.factory.ReadTransactionFactory;
-import org.ieee11073.sdc.biceps.common.factory.MdibEntityGuiceAssistedFactory;
-import org.ieee11073.sdc.biceps.common.storage.factory.MdibStorageFactory;
-import org.ieee11073.sdc.biceps.common.storage.factory.MdibStoragePreprocessingChainFactory;
-import org.ieee11073.sdc.biceps.common.storage.MdibStorage;
-import org.ieee11073.sdc.biceps.common.storage.MdibStorageImpl;
-import org.ieee11073.sdc.biceps.common.storage.MdibStoragePreprocessingChain;
-import org.ieee11073.sdc.biceps.consumer.access.RemoteMdibAccess;
-import org.ieee11073.sdc.biceps.consumer.access.RemoteMdibAccessImpl;
-import org.ieee11073.sdc.biceps.consumer.access.factory.RemoteMdibAccessFactory;
-import org.ieee11073.sdc.biceps.provider.access.LocalMdibAccess;
-import org.ieee11073.sdc.biceps.provider.access.LocalMdibAccessImpl;
-import org.ieee11073.sdc.biceps.provider.access.factory.LocalMdibAccessFactory;
+import org.somda.sdc.biceps.common.*;
+import org.somda.sdc.biceps.common.access.ReadTransaction;
+import org.somda.sdc.biceps.common.access.ReadTransactionImpl;
+import org.somda.sdc.biceps.common.access.factory.ReadTransactionFactory;
+import org.somda.sdc.biceps.common.factory.MdibEntityGuiceAssistedFactory;
+import org.somda.sdc.biceps.common.storage.factory.MdibStorageFactory;
+import org.somda.sdc.biceps.common.storage.factory.MdibStoragePreprocessingChainFactory;
+import org.somda.sdc.biceps.common.storage.MdibStorage;
+import org.somda.sdc.biceps.common.storage.MdibStorageImpl;
+import org.somda.sdc.biceps.common.storage.MdibStoragePreprocessingChain;
+import org.somda.sdc.biceps.consumer.access.RemoteMdibAccess;
+import org.somda.sdc.biceps.consumer.access.RemoteMdibAccessImpl;
+import org.somda.sdc.biceps.consumer.access.factory.RemoteMdibAccessFactory;
+import org.somda.sdc.biceps.provider.access.LocalMdibAccess;
+import org.somda.sdc.biceps.provider.access.LocalMdibAccessImpl;
+import org.somda.sdc.biceps.provider.access.factory.LocalMdibAccessFactory;
 
 /**
  * Default BICEPS module.

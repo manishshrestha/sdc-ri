@@ -1,8 +1,8 @@
-package org.ieee11073.sdc.dpws.soap.interception;
+package org.somda.sdc.dpws.soap.interception;
 
 import com.google.inject.Inject;
-import org.ieee11073.sdc.dpws.soap.SoapMessage;
-import org.ieee11073.sdc.dpws.soap.wsaddressing.model.AttributedURIType;
+import org.somda.sdc.dpws.soap.SoapMessage;
+import org.somda.sdc.dpws.soap.wsaddressing.model.AttributedURIType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

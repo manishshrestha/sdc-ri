@@ -1,10 +1,10 @@
-package org.ieee11073.sdc.biceps.consumer.preprocessing;
+package org.somda.sdc.biceps.consumer.preprocessing;
 
-import org.ieee11073.sdc.biceps.UnitTestUtil;
-import org.ieee11073.sdc.biceps.common.MdibStateModifications;
-import org.ieee11073.sdc.biceps.common.storage.MdibStorage;
-import org.ieee11073.sdc.biceps.model.participant.*;
-import org.ieee11073.sdc.biceps.testutil.MockModelFactory;
+import org.somda.sdc.biceps.UnitTestUtil;
+import org.somda.sdc.biceps.common.MdibStateModifications;
+import org.somda.sdc.biceps.common.storage.MdibStorage;
+import org.somda.sdc.biceps.model.participant.*;
+import org.somda.sdc.biceps.testutil.MockModelFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;

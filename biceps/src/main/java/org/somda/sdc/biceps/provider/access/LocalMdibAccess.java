@@ -1,9 +1,9 @@
-package org.ieee11073.sdc.biceps.provider.access;
+package org.somda.sdc.biceps.provider.access;
 
-import org.ieee11073.sdc.biceps.common.MdibDescriptionModifications;
-import org.ieee11073.sdc.biceps.common.MdibStateModifications;
-import org.ieee11073.sdc.biceps.common.access.*;
-import org.ieee11073.sdc.biceps.common.storage.PreprocessingException;
+import org.somda.sdc.biceps.common.MdibDescriptionModifications;
+import org.somda.sdc.biceps.common.MdibStateModifications;
+import org.somda.sdc.biceps.common.access.*;
+import org.somda.sdc.biceps.common.storage.PreprocessingException;
 
 /**
  * MDIB read and write access for the BICEPS provider side.

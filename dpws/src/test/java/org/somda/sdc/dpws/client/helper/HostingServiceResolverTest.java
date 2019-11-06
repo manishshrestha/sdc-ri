@@ -1,29 +1,29 @@
-package org.ieee11073.sdc.dpws.client.helper;
+package org.somda.sdc.dpws.client.helper;
 
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.inject.AbstractModule;
-import org.ieee11073.sdc.dpws.*;
-import org.ieee11073.sdc.dpws.client.DiscoveredDevice;
-import org.ieee11073.sdc.dpws.model.HostedServiceType;
-import org.ieee11073.sdc.dpws.model.ThisDeviceType;
-import org.ieee11073.sdc.dpws.model.ThisModelType;
-import org.ieee11073.sdc.dpws.network.LocalAddressResolver;
-import org.ieee11073.sdc.dpws.service.HostedService;
-import org.ieee11073.sdc.dpws.service.HostedServiceProxy;
-import org.ieee11073.sdc.dpws.service.HostingServiceProxy;
-import org.ieee11073.sdc.dpws.service.factory.HostingServiceFactory;
-import org.ieee11073.sdc.dpws.service.helper.MetadataSectionUtil;
-import org.ieee11073.sdc.dpws.soap.RequestResponseClient;
-import org.ieee11073.sdc.dpws.soap.SoapMessage;
-import org.ieee11073.sdc.dpws.soap.SoapUtil;
-import org.ieee11073.sdc.dpws.soap.factory.RequestResponseClientFactory;
-import org.ieee11073.sdc.dpws.soap.wsaddressing.WsAddressingUtil;
-import org.ieee11073.sdc.dpws.soap.wsaddressing.model.EndpointReferenceType;
-import org.ieee11073.sdc.dpws.soap.wsmetadataexchange.GetMetadataClient;
-import org.ieee11073.sdc.dpws.soap.wsmetadataexchange.model.Metadata;
-import org.ieee11073.sdc.dpws.soap.wsmetadataexchange.model.MetadataSection;
-import org.ieee11073.sdc.dpws.soap.wstransfer.TransferGetClient;
+import org.somda.sdc.dpws.*;
+import org.somda.sdc.dpws.client.DiscoveredDevice;
+import org.somda.sdc.dpws.model.HostedServiceType;
+import org.somda.sdc.dpws.model.ThisDeviceType;
+import org.somda.sdc.dpws.model.ThisModelType;
+import org.somda.sdc.dpws.network.LocalAddressResolver;
+import org.somda.sdc.dpws.service.HostedService;
+import org.somda.sdc.dpws.service.HostedServiceProxy;
+import org.somda.sdc.dpws.service.HostingServiceProxy;
+import org.somda.sdc.dpws.service.factory.HostingServiceFactory;
+import org.somda.sdc.dpws.service.helper.MetadataSectionUtil;
+import org.somda.sdc.dpws.soap.RequestResponseClient;
+import org.somda.sdc.dpws.soap.SoapMessage;
+import org.somda.sdc.dpws.soap.SoapUtil;
+import org.somda.sdc.dpws.soap.factory.RequestResponseClientFactory;
+import org.somda.sdc.dpws.soap.wsaddressing.WsAddressingUtil;
+import org.somda.sdc.dpws.soap.wsaddressing.model.EndpointReferenceType;
+import org.somda.sdc.dpws.soap.wsmetadataexchange.GetMetadataClient;
+import org.somda.sdc.dpws.soap.wsmetadataexchange.model.Metadata;
+import org.somda.sdc.dpws.soap.wsmetadataexchange.model.MetadataSection;
+import org.somda.sdc.dpws.soap.wstransfer.TransferGetClient;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -51,8 +51,8 @@ public class HostingServiceResolverTest extends DpwsTest {
     private List<QName> expectedHostedServiceQNameTypes;
 
     private HostingServiceFactory hostingServiceFactory;
-    private org.ieee11073.sdc.dpws.soap.wsmetadataexchange.model.ObjectFactory mexFactory;
-    private org.ieee11073.sdc.dpws.model.ObjectFactory dpwsFactory;
+    private org.somda.sdc.dpws.soap.wsmetadataexchange.model.ObjectFactory mexFactory;
+    private org.somda.sdc.dpws.model.ObjectFactory dpwsFactory;
     private MetadataSectionUtil metadataSectionUtil;
     private WsAddressingUtil wsaUtil;
     private SoapUtil soapUtil;
@@ -76,8 +76,8 @@ public class HostingServiceResolverTest extends DpwsTest {
         wsaUtil = getInjector().getInstance(WsAddressingUtil.class);
         soapUtil = getInjector().getInstance(SoapUtil.class);
         metadataSectionUtil = getInjector().getInstance(MetadataSectionUtil.class);
-        dpwsFactory = getInjector().getInstance(org.ieee11073.sdc.dpws.model.ObjectFactory.class);
-        mexFactory = getInjector().getInstance(org.ieee11073.sdc.dpws.soap.wsmetadataexchange.model.ObjectFactory.class);
+        dpwsFactory = getInjector().getInstance(org.somda.sdc.dpws.model.ObjectFactory.class);
+        mexFactory = getInjector().getInstance(org.somda.sdc.dpws.soap.wsmetadataexchange.model.ObjectFactory.class);
 
         hostingServiceFactory = getInjector().getInstance(HostingServiceFactory.class);
 

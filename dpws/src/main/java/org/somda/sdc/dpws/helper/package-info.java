@@ -2,6 +2,6 @@
  * Basic helpers.
  */
 @ParametersAreNonnullByDefault
-package org.ieee11073.sdc.dpws.helper;
+package org.somda.sdc.dpws.helper;
 
 import javax.annotation.ParametersAreNonnullByDefault;

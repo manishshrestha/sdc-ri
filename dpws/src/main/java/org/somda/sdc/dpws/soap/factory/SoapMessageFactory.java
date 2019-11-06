@@ -1,8 +1,8 @@
-package org.ieee11073.sdc.dpws.soap.factory;
+package org.somda.sdc.dpws.soap.factory;
 
 import com.google.inject.assistedinject.Assisted;
-import org.ieee11073.sdc.dpws.soap.SoapMessage;
-import org.ieee11073.sdc.dpws.soap.model.Envelope;
+import org.somda.sdc.dpws.soap.SoapMessage;
+import org.somda.sdc.dpws.soap.model.Envelope;
 
 /**
  * Guice factory interface to create {@linkplain SoapMessage} instances.

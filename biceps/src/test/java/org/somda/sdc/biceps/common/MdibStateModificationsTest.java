@@ -1,11 +1,11 @@
-package org.ieee11073.sdc.biceps.common;
+package org.somda.sdc.biceps.common;
 
-import org.ieee11073.sdc.biceps.model.participant.AbstractState;
-import org.ieee11073.sdc.biceps.model.participant.AlertSignalState;
-import org.ieee11073.sdc.biceps.model.participant.NumericMetricState;
-import org.ieee11073.sdc.biceps.model.participant.StringMetricState;
-import org.ieee11073.sdc.biceps.provider.HandleGenerator;
-import org.ieee11073.sdc.biceps.testutil.MockModelFactory;
+import org.somda.sdc.biceps.model.participant.AbstractState;
+import org.somda.sdc.biceps.model.participant.AlertSignalState;
+import org.somda.sdc.biceps.model.participant.NumericMetricState;
+import org.somda.sdc.biceps.model.participant.StringMetricState;
+import org.somda.sdc.biceps.provider.HandleGenerator;
+import org.somda.sdc.biceps.testutil.MockModelFactory;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

@@ -1,4 +1,4 @@
-package org.ieee11073.sdc.dpws.crypto;
+package org.somda.sdc.dpws.crypto;
 
 /**
  * Configuration keys for cryptographic components.

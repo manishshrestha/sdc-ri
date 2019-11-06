@@ -1,7 +1,7 @@
-package org.ieee11073.sdc.dpws.soap.wseventing.factory;
+package org.somda.sdc.dpws.soap.wseventing.factory;
 
-import org.ieee11073.sdc.dpws.soap.wseventing.helper.EventSourceTransportManager;
-import org.ieee11073.sdc.dpws.soap.wseventing.helper.NotificationWorker;
+import org.somda.sdc.dpws.soap.wseventing.helper.EventSourceTransportManager;
+import org.somda.sdc.dpws.soap.wseventing.helper.NotificationWorker;
 
 /**
  * Creates {@link NotificationWorker} instances.

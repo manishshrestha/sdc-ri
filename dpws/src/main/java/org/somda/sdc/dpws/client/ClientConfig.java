@@ -1,4 +1,4 @@
-package org.ieee11073.sdc.dpws.client;
+package org.somda.sdc.dpws.client;
 
 /**
  * Configuration keys for the client.

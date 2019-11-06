@@ -1,4 +1,4 @@
-package org.ieee11073.sdc.dpws.device;
+package org.somda.sdc.dpws.device;
 
 /**
  * Configuration tags of the DPWS device side.

@@ -1,4 +1,4 @@
-package org.ieee11073.sdc.dpws.soap.exception;
+package org.somda.sdc.dpws.soap.exception;
 
 /**
  * Expresses that an object could not be marshalled or unmarshalled.

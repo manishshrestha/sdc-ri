@@ -1,4 +1,4 @@
-package org.ieee11073.sdc.biceps.common.access;
+package org.somda.sdc.biceps.common.access;
 
 /**
  * Defines an interface to declare a class capable of starting read transactions.

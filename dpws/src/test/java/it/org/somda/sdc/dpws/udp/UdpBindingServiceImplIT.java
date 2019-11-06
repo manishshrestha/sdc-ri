@@ -1,16 +1,16 @@
-package it.org.ieee11073.sdc.dpws.udp;
+package it.org.somda.sdc.dpws.udp;
 
 import com.google.common.util.concurrent.SettableFuture;
-import it.org.ieee11073.sdc.dpws.IntegrationTestUtil;
-import org.ieee11073.sdc.dpws.DpwsConstants;
-import org.ieee11073.sdc.dpws.soap.wsdiscovery.WsDiscoveryConstants;
-import org.ieee11073.sdc.dpws.udp.UdpBindingService;
-import org.ieee11073.sdc.dpws.udp.UdpMessage;
-import org.ieee11073.sdc.dpws.udp.factory.UdpBindingServiceFactory;
+import it.org.somda.sdc.dpws.IntegrationTestUtil;
+import org.somda.sdc.dpws.DpwsConstants;
+import org.somda.sdc.dpws.soap.wsdiscovery.WsDiscoveryConstants;
+import org.somda.sdc.dpws.udp.UdpBindingService;
+import org.somda.sdc.dpws.udp.UdpMessage;
+import org.somda.sdc.dpws.udp.factory.UdpBindingServiceFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import test.org.ieee11073.common.LoggingTestWatcher;
+import test.org.somda.common.LoggingTestWatcher;
 
 import java.io.IOException;
 import java.net.InetAddress;

@@ -1,11 +1,11 @@
-package org.ieee11073.sdc.dpws.soap;
+package org.somda.sdc.dpws.soap;
 
 import com.google.inject.Inject;
-import org.ieee11073.sdc.common.util.JaxbUtil;
-import org.ieee11073.sdc.dpws.soap.factory.EnvelopeFactory;
-import org.ieee11073.sdc.dpws.soap.factory.SoapMessageFactory;
-import org.ieee11073.sdc.dpws.soap.model.Envelope;
-import org.ieee11073.sdc.dpws.soap.wsaddressing.WsAddressingUtil;
+import org.somda.sdc.common.util.JaxbUtil;
+import org.somda.sdc.dpws.soap.factory.EnvelopeFactory;
+import org.somda.sdc.dpws.soap.factory.SoapMessageFactory;
+import org.somda.sdc.dpws.soap.model.Envelope;
+import org.somda.sdc.dpws.soap.wsaddressing.WsAddressingUtil;
 
 import javax.annotation.Nullable;
 import java.net.URI;

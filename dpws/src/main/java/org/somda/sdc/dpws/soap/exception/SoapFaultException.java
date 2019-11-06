@@ -1,8 +1,8 @@
-package org.ieee11073.sdc.dpws.soap.exception;
+package org.somda.sdc.dpws.soap.exception;
 
-import org.ieee11073.sdc.dpws.soap.SoapMessage;
-import org.ieee11073.sdc.dpws.soap.model.Fault;
-import org.ieee11073.sdc.dpws.soap.model.Reasontext;
+import org.somda.sdc.dpws.soap.SoapMessage;
+import org.somda.sdc.dpws.soap.model.Fault;
+import org.somda.sdc.dpws.soap.model.Reasontext;
 
 import javax.xml.bind.JAXBElement;
 import java.util.List;

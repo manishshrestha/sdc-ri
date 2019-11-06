@@ -1,9 +1,9 @@
-package org.ieee11073.sdc.dpws.device;
+package org.somda.sdc.dpws.device;
 
 import com.google.inject.Inject;
-import org.ieee11073.sdc.dpws.soap.SoapUtil;
-import org.ieee11073.sdc.dpws.soap.wsaddressing.WsAddressingUtil;
-import org.ieee11073.sdc.dpws.soap.wsaddressing.model.EndpointReferenceType;
+import org.somda.sdc.dpws.soap.SoapUtil;
+import org.somda.sdc.dpws.soap.wsaddressing.WsAddressingUtil;
+import org.somda.sdc.dpws.soap.wsaddressing.model.EndpointReferenceType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

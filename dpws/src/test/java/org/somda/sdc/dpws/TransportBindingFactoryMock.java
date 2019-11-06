@@ -1,15 +1,15 @@
-package org.ieee11073.sdc.dpws;
+package org.somda.sdc.dpws;
 
 import com.google.inject.Inject;
-import org.ieee11073.sdc.dpws.factory.TransportBindingFactory;
-import org.ieee11073.sdc.dpws.http.HttpHandler;
-import org.ieee11073.sdc.dpws.soap.SoapMarshalling;
-import org.ieee11073.sdc.dpws.soap.SoapMessage;
-import org.ieee11073.sdc.dpws.soap.TransportInfo;
-import org.ieee11073.sdc.dpws.soap.exception.MarshallingException;
-import org.ieee11073.sdc.dpws.soap.exception.TransportException;
-import org.ieee11073.sdc.dpws.soap.factory.SoapMessageFactory;
-import org.ieee11073.sdc.dpws.soap.model.Envelope;
+import org.somda.sdc.dpws.factory.TransportBindingFactory;
+import org.somda.sdc.dpws.http.HttpHandler;
+import org.somda.sdc.dpws.soap.SoapMarshalling;
+import org.somda.sdc.dpws.soap.SoapMessage;
+import org.somda.sdc.dpws.soap.TransportInfo;
+import org.somda.sdc.dpws.soap.exception.MarshallingException;
+import org.somda.sdc.dpws.soap.exception.TransportException;
+import org.somda.sdc.dpws.soap.factory.SoapMessageFactory;
+import org.somda.sdc.dpws.soap.model.Envelope;
 
 import javax.xml.bind.JAXBException;
 import java.io.ByteArrayInputStream;

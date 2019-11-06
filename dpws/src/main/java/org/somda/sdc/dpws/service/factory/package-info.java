@@ -2,6 +2,6 @@
  * Factories for the service package.
  */
 @ParametersAreNonnullByDefault
-package org.ieee11073.sdc.dpws.service.factory;
+package org.somda.sdc.dpws.service.factory;
 
 import javax.annotation.ParametersAreNonnullByDefault;

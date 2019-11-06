@@ -1,14 +1,14 @@
-package org.ieee11073.sdc.dpws.service;
+package org.somda.sdc.dpws.service;
 
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
-import org.ieee11073.sdc.dpws.device.WebService;
-import org.ieee11073.sdc.dpws.model.HostedServiceType;
-import org.ieee11073.sdc.dpws.model.ObjectFactory;
-import org.ieee11073.sdc.dpws.soap.wsaddressing.WsAddressingUtil;
-import org.ieee11073.sdc.dpws.soap.wsaddressing.model.EndpointReferenceType;
-import org.ieee11073.sdc.common.util.ObjectUtil;
-import org.ieee11073.sdc.common.util.StreamUtil;
+import org.somda.sdc.dpws.device.WebService;
+import org.somda.sdc.dpws.model.HostedServiceType;
+import org.somda.sdc.dpws.model.ObjectFactory;
+import org.somda.sdc.dpws.soap.wsaddressing.WsAddressingUtil;
+import org.somda.sdc.dpws.soap.wsaddressing.model.EndpointReferenceType;
+import org.somda.sdc.common.util.ObjectUtil;
+import org.somda.sdc.common.util.StreamUtil;
 
 import javax.xml.namespace.QName;
 import java.io.ByteArrayInputStream;

@@ -1,4 +1,4 @@
-package org.ieee11073.sdc.dpws.soap.wsdiscovery;
+package org.somda.sdc.dpws.soap.wsdiscovery;
 
 /**
  * Configuration of the WS-Discovery package.

@@ -1,4 +1,4 @@
-package org.ieee11073.sdc.glue.common;
+package org.somda.sdc.glue.common;
 
 import javax.xml.namespace.QName;
 

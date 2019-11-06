@@ -1,4 +1,4 @@
-package org.ieee11073.sdc.dpws.udp;
+package org.somda.sdc.dpws.udp;
 
 /**
  * Callback to process UDP messages received by {@link UdpBindingService}.

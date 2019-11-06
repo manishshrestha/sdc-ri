@@ -1,9 +1,9 @@
-package org.ieee11073.sdc.biceps.provider.access.factory;
+package org.somda.sdc.biceps.provider.access.factory;
 
-import org.ieee11073.sdc.biceps.provider.access.LocalMdibAccess;
-import org.ieee11073.sdc.biceps.provider.preprocessing.DuplicateChecker;
-import org.ieee11073.sdc.biceps.provider.preprocessing.TypeConsistencyChecker;
-import org.ieee11073.sdc.biceps.provider.preprocessing.VersionHandler;
+import org.somda.sdc.biceps.provider.access.LocalMdibAccess;
+import org.somda.sdc.biceps.provider.preprocessing.DuplicateChecker;
+import org.somda.sdc.biceps.provider.preprocessing.TypeConsistencyChecker;
+import org.somda.sdc.biceps.provider.preprocessing.VersionHandler;
 
 /**
  * Factory to create {@linkplain LocalMdibAccess} instances.

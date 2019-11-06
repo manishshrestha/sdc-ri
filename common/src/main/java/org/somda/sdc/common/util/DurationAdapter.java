@@ -1,4 +1,4 @@
-package org.ieee11073.sdc.common.util;
+package org.somda.sdc.common.util;
 
 import javax.xml.bind.annotation.adapters.XmlAdapter;
 import javax.xml.datatype.DatatypeFactory;

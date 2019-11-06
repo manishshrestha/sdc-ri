@@ -1,7 +1,7 @@
-package org.ieee11073.sdc.biceps.common.storage;
+package org.somda.sdc.biceps.common.storage;
 
-import org.ieee11073.sdc.biceps.common.MdibStateModifications;
-import org.ieee11073.sdc.biceps.model.participant.AbstractState;
+import org.somda.sdc.biceps.common.MdibStateModifications;
+import org.somda.sdc.biceps.model.participant.AbstractState;
 
 /**
  * A segment that is applied during state modifications.

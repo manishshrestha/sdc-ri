@@ -1,6 +1,6 @@
-package org.ieee11073.sdc.biceps.provider.preprocessing;
+package org.somda.sdc.biceps.provider.preprocessing;
 
-import org.ieee11073.sdc.biceps.provider.preprocessing.TypeConsistencyChecker;
+import org.somda.sdc.biceps.provider.preprocessing.TypeConsistencyChecker;
 
 /**
  * Exception that is thrown during preprocessing of {@linkplain TypeConsistencyChecker}.

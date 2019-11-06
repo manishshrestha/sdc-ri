@@ -1,4 +1,4 @@
-package org.ieee11073.sdc.glue.provider.sco;
+package org.somda.sdc.glue.provider.sco;
 
 /**
  * Class that is capable of processing incoming set service requests.

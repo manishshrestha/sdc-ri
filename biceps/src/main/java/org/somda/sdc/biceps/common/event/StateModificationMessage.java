@@ -1,8 +1,8 @@
-package org.ieee11073.sdc.biceps.common.event;
+package org.somda.sdc.biceps.common.event;
 
-import org.ieee11073.sdc.biceps.common.access.MdibAccess;
-import org.ieee11073.sdc.biceps.model.participant.AbstractState;
-import org.ieee11073.sdc.common.event.EventMessage;
+import org.somda.sdc.biceps.common.access.MdibAccess;
+import org.somda.sdc.biceps.model.participant.AbstractState;
+import org.somda.sdc.common.event.EventMessage;
 
 import java.util.Collections;
 import java.util.List;

@@ -1,9 +1,9 @@
-package org.ieee11073.sdc.dpws.service;
+package org.somda.sdc.dpws.service;
 
-import org.ieee11073.sdc.dpws.model.ThisDeviceType;
-import org.ieee11073.sdc.dpws.model.ThisModelType;
-import org.ieee11073.sdc.dpws.service.factory.HostedServiceFactory;
-import org.ieee11073.sdc.dpws.soap.interception.Interceptor;
+import org.somda.sdc.dpws.model.ThisDeviceType;
+import org.somda.sdc.dpws.model.ThisModelType;
+import org.somda.sdc.dpws.service.factory.HostedServiceFactory;
+import org.somda.sdc.dpws.soap.interception.Interceptor;
 
 import java.net.URI;
 import java.util.List;

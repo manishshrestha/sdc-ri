@@ -1,6 +1,6 @@
-package org.ieee11073.sdc.dpws.soap.wseventing;
+package org.somda.sdc.dpws.soap.wseventing;
 
-import org.ieee11073.sdc.dpws.soap.NotificationSink;
+import org.somda.sdc.dpws.soap.NotificationSink;
 
 import java.time.Duration;
 import java.util.List;

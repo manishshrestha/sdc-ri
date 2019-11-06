@@ -1,16 +1,16 @@
-package org.ieee11073.sdc.biceps.provider.access;
+package org.somda.sdc.biceps.provider.access;
 
 
 import com.google.inject.Injector;
-import org.ieee11073.sdc.biceps.UnitTestUtil;
-import org.ieee11073.sdc.biceps.common.*;
-import org.ieee11073.sdc.biceps.common.access.WriteDescriptionResult;
-import org.ieee11073.sdc.biceps.common.access.WriteStateResult;
-import org.ieee11073.sdc.biceps.common.event.DescriptionModificationMessage;
-import org.ieee11073.sdc.biceps.guice.DefaultBicepsConfigModule;
-import org.ieee11073.sdc.biceps.model.participant.*;
-import org.ieee11073.sdc.biceps.provider.access.factory.LocalMdibAccessFactory;
-import org.ieee11073.sdc.biceps.testutil.*;
+import org.somda.sdc.biceps.UnitTestUtil;
+import org.somda.sdc.biceps.common.*;
+import org.somda.sdc.biceps.common.access.WriteDescriptionResult;
+import org.somda.sdc.biceps.common.access.WriteStateResult;
+import org.somda.sdc.biceps.common.event.DescriptionModificationMessage;
+import org.somda.sdc.biceps.guice.DefaultBicepsConfigModule;
+import org.somda.sdc.biceps.model.participant.*;
+import org.somda.sdc.biceps.provider.access.factory.LocalMdibAccessFactory;
+import org.somda.sdc.biceps.testutil.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 

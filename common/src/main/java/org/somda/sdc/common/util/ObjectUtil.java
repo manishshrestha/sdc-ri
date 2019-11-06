@@ -1,4 +1,4 @@
-package org.ieee11073.sdc.common.util;
+package org.somda.sdc.common.util;
 
 /**
  * Creates deep copies of arbitrary objects.

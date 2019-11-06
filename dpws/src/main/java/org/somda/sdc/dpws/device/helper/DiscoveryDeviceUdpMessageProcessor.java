@@ -1,16 +1,16 @@
-package org.ieee11073.sdc.dpws.device.helper;
+package org.somda.sdc.dpws.device.helper;
 
 import com.google.common.eventbus.Subscribe;
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
-import org.ieee11073.sdc.dpws.guice.AppDelayExecutor;
-import org.ieee11073.sdc.dpws.soap.*;
-import org.ieee11073.sdc.dpws.soap.exception.MarshallingException;
-import org.ieee11073.sdc.dpws.soap.exception.SoapFaultException;
-import org.ieee11073.sdc.dpws.soap.wsdiscovery.WsDiscoveryConstants;
-import org.ieee11073.sdc.dpws.udp.UdpMessage;
-import org.ieee11073.sdc.dpws.udp.UdpMessageQueueObserver;
-import org.ieee11073.sdc.dpws.udp.UdpMessageQueueService;
+import org.somda.sdc.dpws.guice.AppDelayExecutor;
+import org.somda.sdc.dpws.soap.*;
+import org.somda.sdc.dpws.soap.exception.MarshallingException;
+import org.somda.sdc.dpws.soap.exception.SoapFaultException;
+import org.somda.sdc.dpws.soap.wsdiscovery.WsDiscoveryConstants;
+import org.somda.sdc.dpws.udp.UdpMessage;
+import org.somda.sdc.dpws.udp.UdpMessageQueueObserver;
+import org.somda.sdc.dpws.udp.UdpMessageQueueService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

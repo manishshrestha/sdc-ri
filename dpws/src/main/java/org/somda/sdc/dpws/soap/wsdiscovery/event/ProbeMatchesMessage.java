@@ -1,7 +1,7 @@
-package org.ieee11073.sdc.dpws.soap.wsdiscovery.event;
+package org.somda.sdc.dpws.soap.wsdiscovery.event;
 
-import org.ieee11073.sdc.common.event.AbstractEventMessage;
-import org.ieee11073.sdc.dpws.soap.wsdiscovery.model.ProbeMatchesType;
+import org.somda.sdc.common.event.AbstractEventMessage;
+import org.somda.sdc.dpws.soap.wsdiscovery.model.ProbeMatchesType;
 
 /**
  * ProbeMatches event message.

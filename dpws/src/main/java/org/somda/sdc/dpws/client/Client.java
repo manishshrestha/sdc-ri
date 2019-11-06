@@ -1,11 +1,11 @@
-package org.ieee11073.sdc.dpws.client;
+package org.somda.sdc.dpws.client;
 
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.Service;
-import org.ieee11073.sdc.dpws.service.HostingServiceProxy;
-import org.ieee11073.sdc.dpws.soap.exception.TransportException;
-import org.ieee11073.sdc.dpws.soap.interception.InterceptorException;
-import org.ieee11073.sdc.dpws.soap.wsdiscovery.model.ProbeMatchesType;
+import org.somda.sdc.dpws.service.HostingServiceProxy;
+import org.somda.sdc.dpws.soap.exception.TransportException;
+import org.somda.sdc.dpws.soap.interception.InterceptorException;
+import org.somda.sdc.dpws.soap.wsdiscovery.model.ProbeMatchesType;
 
 import java.net.URI;
 
@@ -17,7 +17,7 @@ import java.net.URI;
  * Use {@link #stopAsync()} to stop the client service.
  * <p>
  * <em>Important note: in case the client does not work, check if your code starts the
- * {@link org.ieee11073.sdc.dpws.DpwsFramework} in advance.</em>
+ * {@link org.somda.sdc.dpws.DpwsFramework} in advance.</em>
  */
 public interface Client extends Service {
     /**

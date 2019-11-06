@@ -1,4 +1,4 @@
-package org.ieee11073.sdc.dpws.network;
+package org.somda.sdc.dpws.network;
 
 import java.net.Inet4Address;
 import java.net.Inet6Address;

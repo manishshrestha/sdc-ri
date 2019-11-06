@@ -1,6 +1,6 @@
-package org.ieee11073.sdc.dpws.soap.interception;
+package org.somda.sdc.dpws.soap.interception;
 
-import org.ieee11073.sdc.dpws.soap.exception.SoapFaultException;
+import org.somda.sdc.dpws.soap.exception.SoapFaultException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

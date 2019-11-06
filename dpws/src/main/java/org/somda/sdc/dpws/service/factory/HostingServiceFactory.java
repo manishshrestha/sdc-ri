@@ -1,13 +1,13 @@
-package org.ieee11073.sdc.dpws.service.factory;
+package org.somda.sdc.dpws.service.factory;
 
 import com.google.inject.assistedinject.Assisted;
-import org.ieee11073.sdc.dpws.model.ThisDeviceType;
-import org.ieee11073.sdc.dpws.model.ThisModelType;
-import org.ieee11073.sdc.dpws.service.HostedServiceProxy;
-import org.ieee11073.sdc.dpws.service.HostingService;
-import org.ieee11073.sdc.dpws.service.HostingServiceProxy;
-import org.ieee11073.sdc.dpws.soap.RequestResponseClient;
-import org.ieee11073.sdc.dpws.soap.wsdiscovery.WsDiscoveryTargetService;
+import org.somda.sdc.dpws.model.ThisDeviceType;
+import org.somda.sdc.dpws.model.ThisModelType;
+import org.somda.sdc.dpws.service.HostedServiceProxy;
+import org.somda.sdc.dpws.service.HostingService;
+import org.somda.sdc.dpws.service.HostingServiceProxy;
+import org.somda.sdc.dpws.soap.RequestResponseClient;
+import org.somda.sdc.dpws.soap.wsdiscovery.WsDiscoveryTargetService;
 
 import javax.annotation.Nullable;
 import javax.xml.namespace.QName;

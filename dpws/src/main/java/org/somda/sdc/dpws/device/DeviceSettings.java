@@ -1,6 +1,6 @@
-package org.ieee11073.sdc.dpws.device;
+package org.somda.sdc.dpws.device;
 
-import org.ieee11073.sdc.dpws.soap.wsaddressing.model.EndpointReferenceType;
+import org.somda.sdc.dpws.soap.wsaddressing.model.EndpointReferenceType;
 
 import java.net.NetworkInterface;
 import java.net.SocketException;

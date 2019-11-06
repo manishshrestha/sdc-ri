@@ -1,8 +1,8 @@
-package org.ieee11073.sdc.biceps.consumer.access.factory;
+package org.somda.sdc.biceps.consumer.access.factory;
 
-import org.ieee11073.sdc.biceps.consumer.access.RemoteMdibAccess;
-import org.ieee11073.sdc.biceps.provider.preprocessing.DuplicateChecker;
-import org.ieee11073.sdc.biceps.provider.preprocessing.TypeConsistencyChecker;
+import org.somda.sdc.biceps.consumer.access.RemoteMdibAccess;
+import org.somda.sdc.biceps.provider.preprocessing.DuplicateChecker;
+import org.somda.sdc.biceps.provider.preprocessing.TypeConsistencyChecker;
 
 /**
  * Factory to create {@linkplain RemoteMdibAccess} instances.
@@ -15,7 +15,7 @@ public interface RemoteMdibAccessFactory {
      * <ol>
      * <li>{@link DuplicateChecker}
      * <li>{@link TypeConsistencyChecker}
-     * <li>{@link org.ieee11073.sdc.biceps.consumer.preprocessing.VersionDuplicateHandler}
+     * <li>{@link org.somda.sdc.biceps.consumer.preprocessing.VersionDuplicateHandler}
      * </ol>
      *
      * @return the remote mdib access instance.

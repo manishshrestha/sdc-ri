@@ -1,13 +1,13 @@
-package org.ieee11073.sdc.biceps.common.storage;
+package org.somda.sdc.biceps.common.storage;
 
 import com.google.inject.Inject;
 import com.google.inject.assistedinject.Assisted;
-import org.ieee11073.sdc.biceps.common.MdibDescriptionModification;
-import org.ieee11073.sdc.biceps.common.MdibDescriptionModifications;
-import org.ieee11073.sdc.biceps.common.MdibStateModifications;
-import org.ieee11073.sdc.biceps.common.MdibTypeValidator;
-import org.ieee11073.sdc.biceps.model.participant.AbstractMultiState;
-import org.ieee11073.sdc.biceps.model.participant.AbstractState;
+import org.somda.sdc.biceps.common.MdibDescriptionModification;
+import org.somda.sdc.biceps.common.MdibDescriptionModifications;
+import org.somda.sdc.biceps.common.MdibStateModifications;
+import org.somda.sdc.biceps.common.MdibTypeValidator;
+import org.somda.sdc.biceps.model.participant.AbstractMultiState;
+import org.somda.sdc.biceps.model.participant.AbstractState;
 
 import java.util.List;
 import java.util.Optional;

@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xjb:bindings xmlns:xjb="http://java.sun.com/xml/ns/jaxb" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="2.1">
 	<xjb:bindings schemaLocation="ExtensionPoint.xsd">
-		<!-- Put SOAP 1.2 elements to package org.ieee11073.sdc.biceps.model.extension. -->
+		<!-- Put SOAP 1.2 elements to package org.somda.sdc.biceps.model.extension. -->
 		<xjb:schemaBindings>
-			<xjb:package name="org.ieee11073.sdc.biceps.model.extension"/>
+			<xjb:package name="org.somda.sdc.biceps.model.extension"/>
 		</xjb:schemaBindings>
 	</xjb:bindings>
 </xjb:bindings>

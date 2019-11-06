@@ -2,6 +2,6 @@
  * Contains a DPWS implementation.
  */
 @ParametersAreNonnullByDefault
-package org.ieee11073.sdc.dpws;
+package org.somda.sdc.dpws;
 
 import javax.annotation.ParametersAreNonnullByDefault;

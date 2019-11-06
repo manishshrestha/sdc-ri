@@ -1,11 +1,11 @@
-package org.ieee11073.sdc.glue.provider.services.helper;
+package org.somda.sdc.glue.provider.services.helper;
 
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
-import org.ieee11073.sdc.biceps.common.MdibEntity;
-import org.ieee11073.sdc.biceps.common.access.MdibAccess;
-import org.ieee11073.sdc.biceps.model.participant.*;
-import org.ieee11073.sdc.common.util.ObjectUtil;
+import org.somda.sdc.biceps.common.MdibEntity;
+import org.somda.sdc.biceps.common.access.MdibAccess;
+import org.somda.sdc.biceps.model.participant.*;
+import org.somda.sdc.common.util.ObjectUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

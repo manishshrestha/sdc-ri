@@ -1,17 +1,17 @@
-package org.ieee11073.sdc.dpws.soap;
+package org.somda.sdc.dpws.soap;
 
 
 import com.google.inject.Provider;
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
-import org.ieee11073.sdc.dpws.soap.factory.EnvelopeFactory;
-import org.ieee11073.sdc.dpws.soap.model.Envelope;
-import org.ieee11073.sdc.dpws.soap.wsaddressing.WsAddressingHeader;
-import org.ieee11073.sdc.dpws.soap.wsaddressing.WsAddressingMapper;
-import org.ieee11073.sdc.dpws.soap.wsdiscovery.WsDiscoveryHeader;
-import org.ieee11073.sdc.dpws.soap.wsdiscovery.WsDiscoveryMapper;
-import org.ieee11073.sdc.dpws.soap.wseventing.helper.WsEventingHeader;
-import org.ieee11073.sdc.dpws.soap.wseventing.helper.WsEventingMapper;
+import org.somda.sdc.dpws.soap.factory.EnvelopeFactory;
+import org.somda.sdc.dpws.soap.model.Envelope;
+import org.somda.sdc.dpws.soap.wsaddressing.WsAddressingHeader;
+import org.somda.sdc.dpws.soap.wsaddressing.WsAddressingMapper;
+import org.somda.sdc.dpws.soap.wsdiscovery.WsDiscoveryHeader;
+import org.somda.sdc.dpws.soap.wsdiscovery.WsDiscoveryMapper;
+import org.somda.sdc.dpws.soap.wseventing.helper.WsEventingHeader;
+import org.somda.sdc.dpws.soap.wseventing.helper.WsEventingMapper;
 
 import javax.xml.bind.JAXBElement;
 import java.util.ArrayList;

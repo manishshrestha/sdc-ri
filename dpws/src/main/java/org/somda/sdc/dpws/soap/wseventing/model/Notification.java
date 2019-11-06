@@ -1,6 +1,6 @@
-package org.ieee11073.sdc.dpws.soap.wseventing.model;
+package org.somda.sdc.dpws.soap.wseventing.model;
 
-import org.ieee11073.sdc.dpws.soap.SoapMessage;
+import org.somda.sdc.dpws.soap.SoapMessage;
 
 import java.time.LocalDateTime;
 

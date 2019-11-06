@@ -1,8 +1,8 @@
-package org.ieee11073.sdc.glue.common;
+package org.somda.sdc.glue.common;
 
 import com.google.inject.Inject;
-import org.ieee11073.sdc.biceps.model.message.*;
-import org.ieee11073.sdc.biceps.model.participant.*;
+import org.somda.sdc.biceps.model.message.*;
+import org.somda.sdc.biceps.model.participant.*;
 
 import java.util.*;
 

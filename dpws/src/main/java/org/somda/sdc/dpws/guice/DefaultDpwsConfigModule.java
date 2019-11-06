@@ -1,15 +1,15 @@
-package org.ieee11073.sdc.dpws.guice;
+package org.somda.sdc.dpws.guice;
 
-import org.ieee11073.sdc.common.guice.AbstractConfigurationModule;
-import org.ieee11073.sdc.dpws.DpwsConfig;
-import org.ieee11073.sdc.dpws.client.ClientConfig;
-import org.ieee11073.sdc.dpws.crypto.CryptoConfig;
-import org.ieee11073.sdc.dpws.crypto.CryptoSettings;
-import org.ieee11073.sdc.dpws.device.DeviceConfig;
-import org.ieee11073.sdc.dpws.soap.SoapConfig;
-import org.ieee11073.sdc.dpws.soap.wsaddressing.WsAddressingConfig;
-import org.ieee11073.sdc.dpws.soap.wsdiscovery.WsDiscoveryConfig;
-import org.ieee11073.sdc.dpws.soap.wseventing.WsEventingConfig;
+import org.somda.sdc.common.guice.AbstractConfigurationModule;
+import org.somda.sdc.dpws.DpwsConfig;
+import org.somda.sdc.dpws.client.ClientConfig;
+import org.somda.sdc.dpws.crypto.CryptoConfig;
+import org.somda.sdc.dpws.crypto.CryptoSettings;
+import org.somda.sdc.dpws.device.DeviceConfig;
+import org.somda.sdc.dpws.soap.SoapConfig;
+import org.somda.sdc.dpws.soap.wsaddressing.WsAddressingConfig;
+import org.somda.sdc.dpws.soap.wsdiscovery.WsDiscoveryConfig;
+import org.somda.sdc.dpws.soap.wseventing.WsEventingConfig;
 
 import java.time.Duration;
 

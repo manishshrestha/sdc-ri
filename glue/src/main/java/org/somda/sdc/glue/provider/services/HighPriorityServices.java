@@ -1,31 +1,31 @@
-package org.ieee11073.sdc.glue.provider.services;
+package org.somda.sdc.glue.provider.services;
 
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
-import org.ieee11073.sdc.biceps.common.MdibEntity;
-import org.ieee11073.sdc.biceps.common.access.MdibAccess;
-import org.ieee11073.sdc.biceps.common.access.ReadTransaction;
-import org.ieee11073.sdc.biceps.model.message.AbstractSet;
-import org.ieee11073.sdc.biceps.model.message.ObjectFactory;
-import org.ieee11073.sdc.biceps.model.message.*;
-import org.ieee11073.sdc.biceps.model.participant.*;
-import org.ieee11073.sdc.biceps.provider.access.LocalMdibAccess;
-import org.ieee11073.sdc.dpws.device.WebService;
-import org.ieee11073.sdc.dpws.soap.SoapUtil;
-import org.ieee11073.sdc.dpws.soap.exception.SoapFaultException;
-import org.ieee11073.sdc.dpws.soap.factory.SoapFaultFactory;
-import org.ieee11073.sdc.dpws.soap.interception.MessageInterceptor;
-import org.ieee11073.sdc.dpws.soap.interception.RequestResponseObject;
-import org.ieee11073.sdc.glue.common.ActionConstants;
-import org.ieee11073.sdc.glue.provider.sco.IncomingSetServiceRequest;
-import org.ieee11073.sdc.glue.provider.sco.InvocationResponse;
-import org.ieee11073.sdc.glue.provider.sco.OperationInvocationReceiver;
-import org.ieee11073.sdc.glue.provider.sco.ScoController;
-import org.ieee11073.sdc.glue.provider.sco.factory.ScoControllerFactory;
-import org.ieee11073.sdc.glue.provider.services.helper.MdibMapper;
-import org.ieee11073.sdc.glue.provider.services.helper.MdibVersionUtil;
-import org.ieee11073.sdc.glue.provider.services.helper.factory.MdibMapperFactory;
-import org.ieee11073.sdc.glue.provider.services.helper.factory.ReportGeneratorFactory;
+import org.somda.sdc.biceps.common.MdibEntity;
+import org.somda.sdc.biceps.common.access.MdibAccess;
+import org.somda.sdc.biceps.common.access.ReadTransaction;
+import org.somda.sdc.biceps.model.message.AbstractSet;
+import org.somda.sdc.biceps.model.message.ObjectFactory;
+import org.somda.sdc.biceps.model.message.*;
+import org.somda.sdc.biceps.model.participant.*;
+import org.somda.sdc.biceps.provider.access.LocalMdibAccess;
+import org.somda.sdc.dpws.device.WebService;
+import org.somda.sdc.dpws.soap.SoapUtil;
+import org.somda.sdc.dpws.soap.exception.SoapFaultException;
+import org.somda.sdc.dpws.soap.factory.SoapFaultFactory;
+import org.somda.sdc.dpws.soap.interception.MessageInterceptor;
+import org.somda.sdc.dpws.soap.interception.RequestResponseObject;
+import org.somda.sdc.glue.common.ActionConstants;
+import org.somda.sdc.glue.provider.sco.IncomingSetServiceRequest;
+import org.somda.sdc.glue.provider.sco.InvocationResponse;
+import org.somda.sdc.glue.provider.sco.OperationInvocationReceiver;
+import org.somda.sdc.glue.provider.sco.ScoController;
+import org.somda.sdc.glue.provider.sco.factory.ScoControllerFactory;
+import org.somda.sdc.glue.provider.services.helper.MdibMapper;
+import org.somda.sdc.glue.provider.services.helper.MdibVersionUtil;
+import org.somda.sdc.glue.provider.services.helper.factory.MdibMapperFactory;
+import org.somda.sdc.glue.provider.services.helper.factory.ReportGeneratorFactory;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
@@ -54,7 +54,7 @@ public class HighPriorityServices extends WebService {
     private final SoapUtil soapUtil;
     private final SoapFaultFactory faultFactory;
     private final ObjectFactory messageModelFactory;
-    private final org.ieee11073.sdc.biceps.model.participant.ObjectFactory participantModelFactory;
+    private final org.somda.sdc.biceps.model.participant.ObjectFactory participantModelFactory;
     private final MdibMapperFactory mdibMapperFactory;
     private final MdibVersionUtil mdibVersionUtil;
     private final ScoController scoController;
@@ -67,7 +67,7 @@ public class HighPriorityServices extends WebService {
                          SoapUtil soapUtil,
                          SoapFaultFactory faultFactory,
                          ObjectFactory messageModelFactory,
-                         org.ieee11073.sdc.biceps.model.participant.ObjectFactory participantModelFactory,
+                         org.somda.sdc.biceps.model.participant.ObjectFactory participantModelFactory,
                          MdibMapperFactory mdibMapperFactory,
                          ScoControllerFactory scoControllerFactory,
                          MdibVersionUtil mdibVersionUtil) {

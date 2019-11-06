@@ -1,7 +1,7 @@
-package org.ieee11073.sdc.dpws.client.helper;
+package org.somda.sdc.dpws.client.helper;
 
-import org.ieee11073.sdc.dpws.client.ClientConfig;
-import org.ieee11073.sdc.dpws.service.HostingServiceProxy;
+import org.somda.sdc.dpws.client.ClientConfig;
+import org.somda.sdc.dpws.service.HostingServiceProxy;
 
 /**
  * A simple watchdog implementation.

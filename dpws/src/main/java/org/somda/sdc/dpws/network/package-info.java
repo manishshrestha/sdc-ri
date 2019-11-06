@@ -2,6 +2,6 @@
  * Fundamental network utilities.
  */
 @ParametersAreNonnullByDefault
-package org.ieee11073.sdc.dpws.network;
+package org.somda.sdc.dpws.network;
 
 import javax.annotation.ParametersAreNonnullByDefault;

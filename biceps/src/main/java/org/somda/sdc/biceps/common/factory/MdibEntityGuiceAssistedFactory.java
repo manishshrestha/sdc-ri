@@ -1,10 +1,10 @@
-package org.ieee11073.sdc.biceps.common.factory;
+package org.somda.sdc.biceps.common.factory;
 
 import com.google.inject.assistedinject.Assisted;
-import org.ieee11073.sdc.biceps.common.MdibEntity;
-import org.ieee11073.sdc.biceps.model.participant.MdibVersion;
-import org.ieee11073.sdc.biceps.model.participant.AbstractDescriptor;
-import org.ieee11073.sdc.biceps.model.participant.AbstractState;
+import org.somda.sdc.biceps.common.MdibEntity;
+import org.somda.sdc.biceps.model.participant.MdibVersion;
+import org.somda.sdc.biceps.model.participant.AbstractDescriptor;
+import org.somda.sdc.biceps.model.participant.AbstractState;
 
 import javax.annotation.Nullable;
 import java.util.List;

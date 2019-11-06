@@ -1,11 +1,11 @@
-package org.ieee11073.sdc.dpws.soap.wsaddressing;
+package org.somda.sdc.dpws.soap.wsaddressing;
 
-import org.ieee11073.sdc.dpws.DpwsTest;
-import org.ieee11073.sdc.dpws.soap.SoapMessage;
-import org.ieee11073.sdc.dpws.soap.RequestResponseClient;
-import org.ieee11073.sdc.dpws.soap.factory.SoapMessageFactory;
-import org.ieee11073.sdc.dpws.soap.factory.EnvelopeFactory;
-import org.ieee11073.sdc.dpws.soap.factory.RequestResponseClientFactory;
+import org.somda.sdc.dpws.DpwsTest;
+import org.somda.sdc.dpws.soap.SoapMessage;
+import org.somda.sdc.dpws.soap.RequestResponseClient;
+import org.somda.sdc.dpws.soap.factory.SoapMessageFactory;
+import org.somda.sdc.dpws.soap.factory.EnvelopeFactory;
+import org.somda.sdc.dpws.soap.factory.RequestResponseClientFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 

@@ -1,14 +1,14 @@
-package org.ieee11073.sdc.dpws.soap.wseventing.factory;
+package org.somda.sdc.dpws.soap.wseventing.factory;
 
 import com.google.inject.Inject;
-import org.ieee11073.sdc.dpws.DpwsConstants;
-import org.ieee11073.sdc.dpws.soap.SoapConstants;
-import org.ieee11073.sdc.dpws.soap.SoapMessage;
-import org.ieee11073.sdc.dpws.soap.factory.SoapFaultFactory;
-import org.ieee11073.sdc.dpws.soap.model.Envelope;
-import org.ieee11073.sdc.dpws.soap.wsaddressing.WsAddressingConstants;
-import org.ieee11073.sdc.dpws.soap.wseventing.WsEventingConstants;
-import org.ieee11073.sdc.dpws.soap.wseventing.model.ObjectFactory;
+import org.somda.sdc.dpws.DpwsConstants;
+import org.somda.sdc.dpws.soap.SoapConstants;
+import org.somda.sdc.dpws.soap.SoapMessage;
+import org.somda.sdc.dpws.soap.factory.SoapFaultFactory;
+import org.somda.sdc.dpws.soap.model.Envelope;
+import org.somda.sdc.dpws.soap.wsaddressing.WsAddressingConstants;
+import org.somda.sdc.dpws.soap.wseventing.WsEventingConstants;
+import org.somda.sdc.dpws.soap.wseventing.model.ObjectFactory;
 
 /**
  * Factory functions to create WS-Eventing related fault messages.
@@ -16,12 +16,12 @@ import org.ieee11073.sdc.dpws.soap.wseventing.model.ObjectFactory;
 public class WsEventingFaultFactory {
     private final SoapFaultFactory soapFaultFactory;
     private final ObjectFactory wseFactory;
-    private final org.ieee11073.sdc.dpws.soap.model.ObjectFactory soapFactory;
+    private final org.somda.sdc.dpws.soap.model.ObjectFactory soapFactory;
 
     @Inject
     WsEventingFaultFactory(SoapFaultFactory soapFaultFactory,
                            ObjectFactory wseFactory,
-                           org.ieee11073.sdc.dpws.soap.model.ObjectFactory soapFactory) {
+                           org.somda.sdc.dpws.soap.model.ObjectFactory soapFactory) {
         this.soapFaultFactory = soapFaultFactory;
         this.wseFactory = wseFactory;
         this.soapFactory = soapFactory;

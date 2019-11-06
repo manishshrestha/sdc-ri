@@ -1,16 +1,16 @@
-package org.ieee11073.sdc.dpws;
+package org.somda.sdc.dpws;
 
 import com.google.common.util.concurrent.AbstractIdleService;
 import com.google.common.util.concurrent.ServiceManager;
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
-import org.ieee11073.sdc.dpws.guice.DiscoveryUdpQueue;
-import org.ieee11073.sdc.dpws.udp.factory.UdpBindingServiceFactory;
-import org.ieee11073.sdc.dpws.http.HttpServerRegistry;
-import org.ieee11073.sdc.dpws.soap.SoapMarshalling;
-import org.ieee11073.sdc.dpws.soap.wsdiscovery.WsDiscoveryConstants;
-import org.ieee11073.sdc.dpws.udp.UdpBindingService;
-import org.ieee11073.sdc.dpws.udp.UdpMessageQueueService;
+import org.somda.sdc.dpws.guice.DiscoveryUdpQueue;
+import org.somda.sdc.dpws.udp.factory.UdpBindingServiceFactory;
+import org.somda.sdc.dpws.http.HttpServerRegistry;
+import org.somda.sdc.dpws.soap.SoapMarshalling;
+import org.somda.sdc.dpws.soap.wsdiscovery.WsDiscoveryConstants;
+import org.somda.sdc.dpws.udp.UdpBindingService;
+import org.somda.sdc.dpws.udp.UdpMessageQueueService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

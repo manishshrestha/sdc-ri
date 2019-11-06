@@ -1,8 +1,8 @@
-package org.ieee11073.sdc.dpws.soap.factory;
+package org.somda.sdc.dpws.soap.factory;
 
 import com.google.inject.assistedinject.Assisted;
-import org.ieee11073.sdc.dpws.soap.RequestResponseClient;
-import org.ieee11073.sdc.dpws.soap.interception.RequestResponseCallback;
+import org.somda.sdc.dpws.soap.RequestResponseClient;
+import org.somda.sdc.dpws.soap.interception.RequestResponseCallback;
 
 /**
  * Factory to create request-response clients.

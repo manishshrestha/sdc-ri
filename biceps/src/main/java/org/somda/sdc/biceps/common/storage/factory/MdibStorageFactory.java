@@ -1,8 +1,8 @@
-package org.ieee11073.sdc.biceps.common.storage.factory;
+package org.somda.sdc.biceps.common.storage.factory;
 
 import com.google.inject.assistedinject.Assisted;
-import org.ieee11073.sdc.biceps.common.storage.MdibStorage;
-import org.ieee11073.sdc.biceps.model.participant.MdibVersion;
+import org.somda.sdc.biceps.common.storage.MdibStorage;
+import org.somda.sdc.biceps.model.participant.MdibVersion;
 
 import java.math.BigInteger;
 

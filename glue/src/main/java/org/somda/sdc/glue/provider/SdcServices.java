@@ -1,14 +1,14 @@
-package org.ieee11073.sdc.glue.provider;
+package org.somda.sdc.glue.provider;
 
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
-import org.ieee11073.sdc.biceps.provider.access.LocalMdibAccess;
-import org.ieee11073.sdc.dpws.device.Device;
-import org.ieee11073.sdc.dpws.service.factory.HostedServiceFactory;
-import org.ieee11073.sdc.glue.common.WsdlConstants;
-import org.ieee11073.sdc.glue.provider.sco.OperationInvocationReceiver;
-import org.ieee11073.sdc.glue.provider.services.HighPriorityServices;
-import org.ieee11073.sdc.glue.provider.services.factory.ServicesFactory;
+import org.somda.sdc.biceps.provider.access.LocalMdibAccess;
+import org.somda.sdc.dpws.device.Device;
+import org.somda.sdc.dpws.service.factory.HostedServiceFactory;
+import org.somda.sdc.glue.common.WsdlConstants;
+import org.somda.sdc.glue.provider.sco.OperationInvocationReceiver;
+import org.somda.sdc.glue.provider.services.HighPriorityServices;
+import org.somda.sdc.glue.provider.services.factory.ServicesFactory;
 
 import javax.xml.namespace.QName;
 import java.io.InputStream;

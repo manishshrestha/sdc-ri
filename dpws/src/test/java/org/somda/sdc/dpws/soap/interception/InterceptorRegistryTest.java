@@ -1,6 +1,6 @@
-package org.ieee11073.sdc.dpws.soap.interception;
+package org.somda.sdc.dpws.soap.interception;
 
-import org.ieee11073.sdc.dpws.DpwsTest;
+import org.somda.sdc.dpws.DpwsTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 

@@ -1,21 +1,21 @@
-package org.ieee11073.sdc.dpws.soap.wseventing.helper;
+package org.somda.sdc.dpws.soap.wseventing.helper;
 
 import com.google.common.eventbus.Subscribe;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
-import org.ieee11073.sdc.dpws.factory.TransportBindingFactory;
-import org.ieee11073.sdc.dpws.guice.NetworkJobThreadPool;
-import org.ieee11073.sdc.dpws.soap.NotificationSource;
-import org.ieee11073.sdc.dpws.soap.SoapMessage;
-import org.ieee11073.sdc.dpws.soap.factory.NotificationSourceFactory;
-import org.ieee11073.sdc.dpws.soap.wsaddressing.WsAddressingUtil;
-import org.ieee11073.sdc.dpws.soap.wsaddressing.model.EndpointReferenceType;
-import org.ieee11073.sdc.dpws.soap.wseventing.SourceSubscriptionManager;
-import org.ieee11073.sdc.dpws.soap.wseventing.WsEventingConfig;
-import org.ieee11073.sdc.dpws.soap.wseventing.event.SubscriptionAddedMessage;
-import org.ieee11073.sdc.dpws.soap.wseventing.event.SubscriptionRemovedMessage;
+import org.somda.sdc.dpws.factory.TransportBindingFactory;
+import org.somda.sdc.dpws.guice.NetworkJobThreadPool;
+import org.somda.sdc.dpws.soap.NotificationSource;
+import org.somda.sdc.dpws.soap.SoapMessage;
+import org.somda.sdc.dpws.soap.factory.NotificationSourceFactory;
+import org.somda.sdc.dpws.soap.wsaddressing.WsAddressingUtil;
+import org.somda.sdc.dpws.soap.wsaddressing.model.EndpointReferenceType;
+import org.somda.sdc.dpws.soap.wseventing.SourceSubscriptionManager;
+import org.somda.sdc.dpws.soap.wseventing.WsEventingConfig;
+import org.somda.sdc.dpws.soap.wseventing.event.SubscriptionAddedMessage;
+import org.somda.sdc.dpws.soap.wseventing.event.SubscriptionRemovedMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -1,4 +1,4 @@
-package org.ieee11073.sdc.dpws.soap.wseventing;
+package org.somda.sdc.dpws.soap.wseventing;
 
 import javax.xml.namespace.QName;
 
@@ -11,7 +11,7 @@ public class WsEventingConstants {
     /**
      * Package that includes all JAXB generated WS-Eventing objects.
      */
-    public static final String JAXB_CONTEXT_PACKAGE = "org.ieee11073.sdc.dpws.soap.wseventing.model";
+    public static final String JAXB_CONTEXT_PACKAGE = "org.somda.sdc.dpws.soap.wseventing.model";
 
     public static final String NAMESPACE = "http://schemas.xmlsoap.org/ws/2004/08/eventing";
 

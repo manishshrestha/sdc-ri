@@ -1,4 +1,4 @@
-package org.ieee11073.sdc.dpws.client.helper;
+package org.somda.sdc.dpws.client.helper;
 
 import com.google.common.eventbus.EventBus;
 import com.google.common.eventbus.Subscribe;
@@ -8,18 +8,18 @@ import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.inject.Inject;
 import com.google.inject.assistedinject.Assisted;
-import org.ieee11073.sdc.dpws.client.*;
-import org.ieee11073.sdc.dpws.client.event.DeviceEnteredMessage;
-import org.ieee11073.sdc.dpws.client.event.DeviceLeftMessage;
-import org.ieee11073.sdc.dpws.client.event.DeviceProbeTimeoutMessage;
-import org.ieee11073.sdc.dpws.client.event.ProbedDeviceFoundMessage;
-import org.ieee11073.sdc.dpws.guice.NetworkJobThreadPool;
-import org.ieee11073.sdc.dpws.soap.wsaddressing.WsAddressingUtil;
-import org.ieee11073.sdc.dpws.soap.wsdiscovery.*;
-import org.ieee11073.sdc.dpws.soap.wsdiscovery.event.ByeMessage;
-import org.ieee11073.sdc.dpws.soap.wsdiscovery.event.HelloMessage;
-import org.ieee11073.sdc.dpws.soap.wsdiscovery.event.ProbeMatchesMessage;
-import org.ieee11073.sdc.dpws.soap.wsdiscovery.event.ProbeTimeoutMessage;
+import org.somda.sdc.dpws.client.*;
+import org.somda.sdc.dpws.client.event.DeviceEnteredMessage;
+import org.somda.sdc.dpws.client.event.DeviceLeftMessage;
+import org.somda.sdc.dpws.client.event.DeviceProbeTimeoutMessage;
+import org.somda.sdc.dpws.client.event.ProbedDeviceFoundMessage;
+import org.somda.sdc.dpws.guice.NetworkJobThreadPool;
+import org.somda.sdc.dpws.soap.wsaddressing.WsAddressingUtil;
+import org.somda.sdc.dpws.soap.wsdiscovery.*;
+import org.somda.sdc.dpws.soap.wsdiscovery.event.ByeMessage;
+import org.somda.sdc.dpws.soap.wsdiscovery.event.HelloMessage;
+import org.somda.sdc.dpws.soap.wsdiscovery.event.ProbeMatchesMessage;
+import org.somda.sdc.dpws.soap.wsdiscovery.event.ProbeTimeoutMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,11 +48,11 @@ public class HelloByeAndProbeMatchesObserverImpl implements HelloByeAndProbeMatc
         this.discoveryBus = new EventBus();
     }
 
-    public void registerDiscoveryObserver(org.ieee11073.sdc.dpws.client.DiscoveryObserver observer) {
+    public void registerDiscoveryObserver(org.somda.sdc.dpws.client.DiscoveryObserver observer) {
         discoveryBus.register(observer);
     }
 
-    public void unregisterDiscoveryObserver(org.ieee11073.sdc.dpws.client.DiscoveryObserver observer) {
+    public void unregisterDiscoveryObserver(org.somda.sdc.dpws.client.DiscoveryObserver observer) {
         discoveryBus.unregister(observer);
     }
 

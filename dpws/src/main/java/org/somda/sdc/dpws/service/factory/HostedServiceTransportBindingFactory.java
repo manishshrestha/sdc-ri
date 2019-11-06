@@ -1,8 +1,8 @@
-package org.ieee11073.sdc.dpws.service.factory;
+package org.somda.sdc.dpws.service.factory;
 
 import com.google.inject.assistedinject.Assisted;
-import org.ieee11073.sdc.dpws.service.HostedServiceProxy;
-import org.ieee11073.sdc.dpws.service.HostedServiceTransportBinding;
+import org.somda.sdc.dpws.service.HostedServiceProxy;
+import org.somda.sdc.dpws.service.HostedServiceTransportBinding;
 
 /**
  * Factory to create {@link HostedServiceTransportBinding} instances.

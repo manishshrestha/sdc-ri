@@ -1,4 +1,4 @@
-package org.ieee11073.sdc.glue.common;
+package org.somda.sdc.glue.common;
 
 /**
  * Constants for every SDC service operation comprising input-output and input-only message exchanges.

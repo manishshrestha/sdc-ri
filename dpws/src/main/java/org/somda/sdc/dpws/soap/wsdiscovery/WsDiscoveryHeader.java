@@ -1,6 +1,6 @@
-package org.ieee11073.sdc.dpws.soap.wsdiscovery;
+package org.somda.sdc.dpws.soap.wsdiscovery;
 
-import org.ieee11073.sdc.dpws.soap.wsdiscovery.model.AppSequenceType;
+import org.somda.sdc.dpws.soap.wsdiscovery.model.AppSequenceType;
 
 import javax.annotation.Nullable;
 import java.util.Optional;

@@ -1,21 +1,21 @@
-package org.ieee11073.sdc.glue.provider.services.helper;
+package org.somda.sdc.glue.provider.services.helper;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.eventbus.Subscribe;
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
-import org.ieee11073.sdc.biceps.common.MdibEntity;
-import org.ieee11073.sdc.biceps.common.access.MdibAccessObserver;
-import org.ieee11073.sdc.biceps.common.event.*;
-import org.ieee11073.sdc.biceps.model.message.*;
-import org.ieee11073.sdc.biceps.model.participant.AbstractState;
-import org.ieee11073.sdc.biceps.model.participant.MdibVersion;
-import org.ieee11073.sdc.dpws.device.EventSourceAccess;
-import org.ieee11073.sdc.dpws.soap.exception.MarshallingException;
-import org.ieee11073.sdc.dpws.soap.exception.TransportException;
-import org.ieee11073.sdc.glue.common.ActionConstants;
-import org.ieee11073.sdc.glue.common.ReportMappings;
+import org.somda.sdc.biceps.common.MdibEntity;
+import org.somda.sdc.biceps.common.access.MdibAccessObserver;
+import org.somda.sdc.biceps.common.event.*;
+import org.somda.sdc.biceps.model.message.*;
+import org.somda.sdc.biceps.model.participant.AbstractState;
+import org.somda.sdc.biceps.model.participant.MdibVersion;
+import org.somda.sdc.dpws.device.EventSourceAccess;
+import org.somda.sdc.dpws.soap.exception.MarshallingException;
+import org.somda.sdc.dpws.soap.exception.TransportException;
+import org.somda.sdc.glue.common.ActionConstants;
+import org.somda.sdc.glue.common.ReportMappings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,7 +27,7 @@ import java.util.List;
 /**
  * Helper class to generate and send reports.
  * <p>
- * As there is currently support for one MDS only ({@link org.ieee11073.sdc.biceps.common.MdibEntity} does not come
+ * As there is currently support for one MDS only ({@link org.somda.sdc.biceps.common.MdibEntity} does not come
  * with an MDS handle reference), no SourceMds attribute is set and hence all changes go into one report part.
  */
 public class ReportGenerator implements MdibAccessObserver {

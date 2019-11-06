@@ -1,4 +1,4 @@
-package org.ieee11073.sdc.dpws.device.helper;
+package org.somda.sdc.dpws.device.helper;
 
 /**
  * Enumeration of URI schemes that are supported to be used as an EPR address.

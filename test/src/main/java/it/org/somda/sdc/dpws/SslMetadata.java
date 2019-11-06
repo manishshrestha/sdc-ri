@@ -1,4 +1,4 @@
-package it.org.ieee11073.sdc.dpws;
+package it.org.somda.sdc.dpws;
 
 import com.google.common.util.concurrent.AbstractIdleService;
 import com.google.common.util.concurrent.Service;
@@ -182,8 +182,8 @@ public class SslMetadata extends AbstractIdleService implements Service {
 //        trustStoreFile = new File("truststore.jks");
 //        keyStoreFile = new File("keystore.jks");
 //        String test = trustStoreFile.getAbsolutePath();
-//        copy(classLoader.getResourceAsStream("it/org/ieee11073/sdc/dpws/truststore.jks"), trustStoreFile);
-//        copy(classLoader.getResourceAsStream("it/org/ieee11073/sdc/dpws/keystore.jks"), keyStoreFile);
+//        copy(classLoader.getResourceAsStream("it/org/somda/sdc/dpws/truststore.jks"), trustStoreFile);
+//        copy(classLoader.getResourceAsStream("it/org/somda/sdc/dpws/keystore.jks"), keyStoreFile);
 //
 //        trustStorePassword = "whatever";
 //        keyStorePassword = "whatever";

@@ -1,4 +1,4 @@
-package org.ieee11073.sdc.common.guice;
+package org.somda.sdc.common.guice;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.name.Names;

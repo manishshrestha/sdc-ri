@@ -1,8 +1,8 @@
-package org.ieee11073.sdc.dpws.soap.wseventing;
+package org.somda.sdc.dpws.soap.wseventing;
 
 import com.google.common.util.concurrent.Service;
-import org.ieee11073.sdc.dpws.soap.interception.Interceptor;
-import org.ieee11073.sdc.dpws.soap.wseventing.model.WsEventingStatus;
+import org.somda.sdc.dpws.soap.interception.Interceptor;
+import org.somda.sdc.dpws.soap.wseventing.model.WsEventingStatus;
 
 /**
  * Interface to provide WS-Eventing event source functions.

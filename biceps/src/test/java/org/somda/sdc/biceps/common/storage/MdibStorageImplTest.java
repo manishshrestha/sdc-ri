@@ -1,18 +1,18 @@
-package org.ieee11073.sdc.biceps.common.storage;
+package org.somda.sdc.biceps.common.storage;
 
 import com.google.inject.Injector;
-import org.ieee11073.sdc.biceps.UnitTestUtil;
-import org.ieee11073.sdc.biceps.common.MdibDescriptionModification;
-import org.ieee11073.sdc.biceps.common.MdibDescriptionModifications;
-import org.ieee11073.sdc.biceps.common.MdibStateModifications;
-import org.ieee11073.sdc.biceps.common.storage.factory.MdibStorageFactory;
-import org.ieee11073.sdc.biceps.model.participant.*;
-import org.ieee11073.sdc.biceps.testutil.Handles;
-import org.ieee11073.sdc.biceps.testutil.MockModelFactory;
+import org.somda.sdc.biceps.UnitTestUtil;
+import org.somda.sdc.biceps.common.MdibDescriptionModification;
+import org.somda.sdc.biceps.common.MdibDescriptionModifications;
+import org.somda.sdc.biceps.common.MdibStateModifications;
+import org.somda.sdc.biceps.common.storage.factory.MdibStorageFactory;
+import org.somda.sdc.biceps.model.participant.*;
+import org.somda.sdc.biceps.testutil.Handles;
+import org.somda.sdc.biceps.testutil.MockModelFactory;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import test.org.ieee11073.common.TestLogging;
+import test.org.somda.common.TestLogging;
 
 import java.lang.reflect.InvocationTargetException;
 import java.math.BigInteger;

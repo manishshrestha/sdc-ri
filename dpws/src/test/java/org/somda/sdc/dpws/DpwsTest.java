@@ -1,13 +1,13 @@
-package org.ieee11073.sdc.dpws;
+package org.somda.sdc.dpws;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.util.Modules;
-import org.ieee11073.sdc.dpws.guice.DefaultDpwsConfigModule;
-import org.ieee11073.sdc.dpws.guice.DefaultDpwsModule;
-import org.ieee11073.sdc.common.guice.DefaultHelperModule;
-import test.org.ieee11073.common.TestLogging;
+import org.somda.sdc.dpws.guice.DefaultDpwsConfigModule;
+import org.somda.sdc.dpws.guice.DefaultDpwsModule;
+import org.somda.sdc.common.guice.DefaultHelperModule;
+import test.org.somda.common.TestLogging;
 
 /**
  * Test base class to provide common test functionality.

@@ -1,8 +1,8 @@
-package org.ieee11073.sdc.dpws.http;
+package org.somda.sdc.dpws.http;
 
 import com.google.common.util.concurrent.Service;
-import org.ieee11073.sdc.dpws.soap.SoapConstants;
-import org.ieee11073.sdc.dpws.soap.TransportInfo;
+import org.somda.sdc.dpws.soap.SoapConstants;
+import org.somda.sdc.dpws.soap.TransportInfo;
 
 import java.io.InputStream;
 import java.io.OutputStream;

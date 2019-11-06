@@ -1,7 +1,7 @@
-package org.ieee11073.sdc.dpws.service;
+package org.somda.sdc.dpws.service;
 
-import org.ieee11073.sdc.dpws.model.HostedServiceType;
-import org.ieee11073.sdc.dpws.soap.RequestResponseClient;
+import org.somda.sdc.dpws.model.HostedServiceType;
+import org.somda.sdc.dpws.soap.RequestResponseClient;
 
 import java.net.URI;
 

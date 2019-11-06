@@ -1,12 +1,12 @@
-package org.ieee11073.sdc.biceps.common;
+package org.somda.sdc.biceps.common;
 
 import com.google.inject.Injector;
-import org.ieee11073.sdc.biceps.UnitTestUtil;
-import org.ieee11073.sdc.biceps.common.factory.MdibEntityFactory;
-import org.ieee11073.sdc.biceps.model.participant.MdibVersion;
-import org.ieee11073.sdc.biceps.model.participant.PatientContextDescriptor;
-import org.ieee11073.sdc.biceps.model.participant.PatientContextState;
-import org.ieee11073.sdc.biceps.testutil.MockModelFactory;
+import org.somda.sdc.biceps.UnitTestUtil;
+import org.somda.sdc.biceps.common.factory.MdibEntityFactory;
+import org.somda.sdc.biceps.model.participant.MdibVersion;
+import org.somda.sdc.biceps.model.participant.PatientContextDescriptor;
+import org.somda.sdc.biceps.model.participant.PatientContextState;
+import org.somda.sdc.biceps.testutil.MockModelFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 

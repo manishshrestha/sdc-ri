@@ -1,7 +1,7 @@
-package org.ieee11073.sdc.biceps.common.storage;
+package org.somda.sdc.biceps.common.storage;
 
-import org.ieee11073.sdc.biceps.common.MdibDescriptionModification;
-import org.ieee11073.sdc.biceps.common.MdibDescriptionModifications;
+import org.somda.sdc.biceps.common.MdibDescriptionModification;
+import org.somda.sdc.biceps.common.MdibDescriptionModifications;
 
 /**
  * A segment that is applied during description modifications.

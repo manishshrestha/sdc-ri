@@ -1,4 +1,4 @@
-package org.ieee11073.sdc.dpws.soap.wstransfer;
+package org.somda.sdc.dpws.soap.wstransfer;
 
 /**
  * WS-Transfer constants.
@@ -6,7 +6,7 @@ package org.ieee11073.sdc.dpws.soap.wstransfer;
  * @see <a href="https://www.w3.org/Submission/2006/SUBM-WS-Transfer-20060927/">WS-Transfer specification</a>
  */
 public class WsTransferConstants {
-    public static final String JAXB_CONTEXT_PACKAGE = "org.ieee11073.sdc.dpws.soap.wstransfer.model";
+    public static final String JAXB_CONTEXT_PACKAGE = "org.somda.sdc.dpws.soap.wstransfer.model";
 
     /**
      * WS-Transfer namespace.

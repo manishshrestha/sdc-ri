@@ -1,4 +1,4 @@
-package org.ieee11073.sdc.biceps.provider.preprocessing;
+package org.somda.sdc.biceps.provider.preprocessing;
 
 /**
  * Exception that is thrown if the cardinality rules of BICEPS are violated during preprocessing.

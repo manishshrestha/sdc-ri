@@ -1,16 +1,16 @@
-package org.ieee11073.sdc.dpws.client.helper;
+package org.somda.sdc.dpws.client.helper;
 
 import com.google.common.util.concurrent.Futures;
-import org.ieee11073.sdc.dpws.DpwsTest;
-import org.ieee11073.sdc.dpws.client.DiscoveredDevice;
-import org.ieee11073.sdc.dpws.soap.wsaddressing.WsAddressingUtil;
-import org.ieee11073.sdc.dpws.soap.wsaddressing.model.EndpointReferenceType;
-import org.ieee11073.sdc.dpws.soap.wsdiscovery.event.HelloMessage;
-import org.ieee11073.sdc.dpws.soap.wsdiscovery.WsDiscoveryClient;
-import org.ieee11073.sdc.dpws.soap.wsdiscovery.model.HelloType;
-import org.ieee11073.sdc.dpws.soap.wsdiscovery.model.ObjectFactory;
-import org.ieee11073.sdc.dpws.soap.wsdiscovery.model.ResolveMatchType;
-import org.ieee11073.sdc.dpws.soap.wsdiscovery.model.ResolveMatchesType;
+import org.somda.sdc.dpws.DpwsTest;
+import org.somda.sdc.dpws.client.DiscoveredDevice;
+import org.somda.sdc.dpws.soap.wsaddressing.WsAddressingUtil;
+import org.somda.sdc.dpws.soap.wsaddressing.model.EndpointReferenceType;
+import org.somda.sdc.dpws.soap.wsdiscovery.event.HelloMessage;
+import org.somda.sdc.dpws.soap.wsdiscovery.WsDiscoveryClient;
+import org.somda.sdc.dpws.soap.wsdiscovery.model.HelloType;
+import org.somda.sdc.dpws.soap.wsdiscovery.model.ObjectFactory;
+import org.somda.sdc.dpws.soap.wsdiscovery.model.ResolveMatchType;
+import org.somda.sdc.dpws.soap.wsdiscovery.model.ResolveMatchesType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 

@@ -1,8 +1,8 @@
-package org.ieee11073.sdc.biceps.common.access.factory;
+package org.somda.sdc.biceps.common.access.factory;
 
 import com.google.inject.assistedinject.Assisted;
-import org.ieee11073.sdc.biceps.common.access.ReadTransaction;
-import org.ieee11073.sdc.biceps.common.storage.MdibStorage;
+import org.somda.sdc.biceps.common.access.ReadTransaction;
+import org.somda.sdc.biceps.common.storage.MdibStorage;
 
 import javax.annotation.Nullable;
 import java.util.concurrent.locks.Lock;

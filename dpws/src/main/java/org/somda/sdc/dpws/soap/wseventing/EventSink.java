@@ -1,10 +1,10 @@
-package org.ieee11073.sdc.dpws.soap.wseventing;
+package org.somda.sdc.dpws.soap.wseventing;
 
 import com.google.common.util.concurrent.ListenableFuture;
-import org.ieee11073.sdc.dpws.soap.NotificationSink;
-import org.ieee11073.sdc.dpws.soap.exception.MarshallingException;
-import org.ieee11073.sdc.dpws.soap.exception.SoapFaultException;
-import org.ieee11073.sdc.dpws.soap.exception.TransportException;
+import org.somda.sdc.dpws.soap.NotificationSink;
+import org.somda.sdc.dpws.soap.exception.MarshallingException;
+import org.somda.sdc.dpws.soap.exception.SoapFaultException;
+import org.somda.sdc.dpws.soap.exception.TransportException;
 
 import javax.annotation.Nullable;
 import java.time.Duration;
@@ -28,7 +28,7 @@ public interface EventSink {
      * <li>{@link SoapFaultException}
      * <li>{@link MarshallingException}
      * <li>{@link TransportException}
-     * <li>{@link org.ieee11073.sdc.dpws.soap.interception.InterceptorException}
+     * <li>{@link org.somda.sdc.dpws.soap.interception.InterceptorException}
      * </ul>
      */
     ListenableFuture<SubscribeResult> subscribe(List<String> actions,
@@ -46,7 +46,7 @@ public interface EventSink {
      * <li>{@link SoapFaultException}
      * <li>{@link MarshallingException}
      * <li>{@link TransportException}
-     * <li>{@link org.ieee11073.sdc.dpws.soap.interception.InterceptorException}
+     * <li>{@link org.somda.sdc.dpws.soap.interception.InterceptorException}
      * </ul>
      */
     ListenableFuture<Duration> renew(String subscriptionId, Duration expires);
@@ -61,7 +61,7 @@ public interface EventSink {
      * <li>{@link SoapFaultException}
      * <li>{@link MarshallingException}
      * <li>{@link TransportException}
-     * <li>{@link org.ieee11073.sdc.dpws.soap.interception.InterceptorException}
+     * <li>{@link org.somda.sdc.dpws.soap.interception.InterceptorException}
      * </ul>
      */
     ListenableFuture<Duration> getStatus(String subscriptionId);
@@ -76,7 +76,7 @@ public interface EventSink {
      * <li>{@link SoapFaultException}
      * <li>{@link MarshallingException}
      * <li>{@link TransportException}
-     * <li>{@link org.ieee11073.sdc.dpws.soap.interception.InterceptorException}
+     * <li>{@link org.somda.sdc.dpws.soap.interception.InterceptorException}
      * </ul>
      */
     ListenableFuture unsubscribe(String subscriptionId);

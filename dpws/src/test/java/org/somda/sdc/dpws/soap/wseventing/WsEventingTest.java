@@ -1,22 +1,22 @@
-package org.ieee11073.sdc.dpws.soap.wseventing;
+package org.somda.sdc.dpws.soap.wseventing;
 
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.inject.AbstractModule;
 import com.google.inject.name.Names;
-import org.ieee11073.sdc.dpws.DpwsTest;
-import org.ieee11073.sdc.dpws.HttpServerRegistryMock;
-import org.ieee11073.sdc.dpws.LocalAddressResolverMock;
-import org.ieee11073.sdc.dpws.TransportBindingFactoryMock;
-import org.ieee11073.sdc.dpws.factory.TransportBindingFactory;
-import org.ieee11073.sdc.dpws.http.HttpServerRegistry;
-import org.ieee11073.sdc.dpws.model.HostedServiceType;
-import org.ieee11073.sdc.dpws.model.ObjectFactory;
-import org.ieee11073.sdc.dpws.network.LocalAddressResolver;
-import org.ieee11073.sdc.dpws.service.factory.HostedServiceFactory;
-import org.ieee11073.sdc.dpws.soap.*;
-import org.ieee11073.sdc.dpws.soap.factory.RequestResponseClientFactory;
-import org.ieee11073.sdc.dpws.soap.wsaddressing.WsAddressingUtil;
-import org.ieee11073.sdc.dpws.soap.wseventing.factory.WsEventingEventSinkFactory;
+import org.somda.sdc.dpws.DpwsTest;
+import org.somda.sdc.dpws.HttpServerRegistryMock;
+import org.somda.sdc.dpws.LocalAddressResolverMock;
+import org.somda.sdc.dpws.TransportBindingFactoryMock;
+import org.somda.sdc.dpws.factory.TransportBindingFactory;
+import org.somda.sdc.dpws.http.HttpServerRegistry;
+import org.somda.sdc.dpws.model.HostedServiceType;
+import org.somda.sdc.dpws.model.ObjectFactory;
+import org.somda.sdc.dpws.network.LocalAddressResolver;
+import org.somda.sdc.dpws.service.factory.HostedServiceFactory;
+import org.somda.sdc.dpws.soap.*;
+import org.somda.sdc.dpws.soap.factory.RequestResponseClientFactory;
+import org.somda.sdc.dpws.soap.wsaddressing.WsAddressingUtil;
+import org.somda.sdc.dpws.soap.wseventing.factory.WsEventingEventSinkFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 

@@ -1,16 +1,16 @@
-package org.ieee11073.sdc.dpws.soap;
+package org.somda.sdc.dpws.soap;
 
 import com.google.common.util.concurrent.AbstractIdleService;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
-import org.ieee11073.sdc.dpws.DpwsConstants;
-import org.ieee11073.sdc.dpws.soap.model.Envelope;
-import org.ieee11073.sdc.dpws.soap.model.ObjectFactory;
-import org.ieee11073.sdc.dpws.soap.wsaddressing.WsAddressingConstants;
-import org.ieee11073.sdc.dpws.soap.wsdiscovery.WsDiscoveryConstants;
-import org.ieee11073.sdc.dpws.soap.wseventing.WsEventingConstants;
-import org.ieee11073.sdc.dpws.soap.wsmetadataexchange.WsMetadataExchangeConstants;
-import org.ieee11073.sdc.dpws.soap.wstransfer.WsTransferConstants;
+import org.somda.sdc.dpws.DpwsConstants;
+import org.somda.sdc.dpws.soap.model.Envelope;
+import org.somda.sdc.dpws.soap.model.ObjectFactory;
+import org.somda.sdc.dpws.soap.wsaddressing.WsAddressingConstants;
+import org.somda.sdc.dpws.soap.wsdiscovery.WsDiscoveryConstants;
+import org.somda.sdc.dpws.soap.wseventing.WsEventingConstants;
+import org.somda.sdc.dpws.soap.wsmetadataexchange.WsMetadataExchangeConstants;
+import org.somda.sdc.dpws.soap.wstransfer.WsTransferConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

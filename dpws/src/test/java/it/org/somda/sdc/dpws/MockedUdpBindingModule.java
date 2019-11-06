@@ -1,9 +1,9 @@
-package it.org.ieee11073.sdc.dpws;
+package it.org.somda.sdc.dpws;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.assistedinject.FactoryModuleBuilder;
-import org.ieee11073.sdc.dpws.udp.UdpBindingService;
-import org.ieee11073.sdc.dpws.udp.factory.UdpBindingServiceFactory;
+import org.somda.sdc.dpws.udp.UdpBindingService;
+import org.somda.sdc.dpws.udp.factory.UdpBindingServiceFactory;
 
 public class MockedUdpBindingModule extends AbstractModule {
     @Override

@@ -1,4 +1,4 @@
-package org.ieee11073.sdc.dpws;
+package org.somda.sdc.dpws;
 
 import javax.xml.namespace.QName;
 import java.time.Duration;
@@ -12,7 +12,7 @@ public class DpwsConstants {
     /**
      * Defines the context package for JAXB.
      */
-    public static final String JAXB_CONTEXT_PACKAGE = "org.ieee11073.sdc.dpws.model";
+    public static final String JAXB_CONTEXT_PACKAGE = "org.somda.sdc.dpws.model";
 
     /**
      * Defines the DPWS namespace.

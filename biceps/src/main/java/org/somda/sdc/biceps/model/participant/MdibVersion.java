@@ -1,6 +1,6 @@
-package org.ieee11073.sdc.biceps.model.participant;
+package org.somda.sdc.biceps.model.participant;
 
-import org.ieee11073.sdc.common.util.ObjectStringifier;
+import org.somda.sdc.common.util.ObjectStringifier;
 
 import java.math.BigInteger;
 import java.net.URI;

@@ -1,7 +1,7 @@
-package org.ieee11073.sdc.glue.provider.services.helper;
+package org.somda.sdc.glue.provider.services.helper;
 
 import com.google.inject.Inject;
-import org.ieee11073.sdc.biceps.model.participant.MdibVersion;
+import org.somda.sdc.biceps.model.participant.MdibVersion;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -20,7 +20,7 @@ public class MdibVersionUtil {
      *
      * @param mdibVersion the {@link MdibVersion} to store.
      * @param target      the target where to store sequence id, instance id and version from given {@link MdibVersion}.
-     * @param <T>         any type that supports setSequenceId, setInstanceId and setMdibVersion (e.g., {@link org.ieee11073.sdc.biceps.model.participant.Mdib}.
+     * @param <T>         any type that supports setSequenceId, setInstanceId and setMdibVersion (e.g., {@link org.somda.sdc.biceps.model.participant.Mdib}.
      * @throws NoSuchMethodException     in case one of the methods setSequenceId, setInstanceId and setMdibVersion does not exist.
      * @throws InvocationTargetException in case one of the methods setSequenceId, setInstanceId and setMdibVersion cannot be applied on target.
      * @throws IllegalAccessException    in case one of the methods setSequenceId, setInstanceId and setMdibVersion cannot be applied on target.

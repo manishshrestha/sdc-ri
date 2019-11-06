@@ -1,4 +1,4 @@
-package org.ieee11073.sdc.biceps.testutil;
+package org.somda.sdc.biceps.testutil;
 
 public class Handles {
     public static final String UNKNOWN = "unknown";

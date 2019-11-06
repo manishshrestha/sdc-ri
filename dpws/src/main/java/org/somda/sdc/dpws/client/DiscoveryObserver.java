@@ -1,9 +1,9 @@
-package org.ieee11073.sdc.dpws.client;
+package org.somda.sdc.dpws.client;
 
-import org.ieee11073.sdc.dpws.client.event.DeviceEnteredMessage;
-import org.ieee11073.sdc.dpws.client.event.DeviceLeftMessage;
-import org.ieee11073.sdc.dpws.client.event.DeviceProbeTimeoutMessage;
-import org.ieee11073.sdc.dpws.client.event.ProbedDeviceFoundMessage;
+import org.somda.sdc.dpws.client.event.DeviceEnteredMessage;
+import org.somda.sdc.dpws.client.event.DeviceLeftMessage;
+import org.somda.sdc.dpws.client.event.DeviceProbeTimeoutMessage;
+import org.somda.sdc.dpws.client.event.ProbedDeviceFoundMessage;
 
 /**
  * Indicates class as a discovery observer.

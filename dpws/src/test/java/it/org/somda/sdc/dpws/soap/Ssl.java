@@ -1,7 +1,7 @@
-package it.org.ieee11073.sdc.dpws.soap;
+package it.org.somda.sdc.dpws.soap;
 
-import it.org.ieee11073.sdc.dpws.SslMetadata;
-import org.ieee11073.sdc.dpws.crypto.CryptoSettings;
+import it.org.somda.sdc.dpws.SslMetadata;
+import org.somda.sdc.dpws.crypto.CryptoSettings;
 
 import javax.net.ssl.HttpsURLConnection;
 import java.io.*;

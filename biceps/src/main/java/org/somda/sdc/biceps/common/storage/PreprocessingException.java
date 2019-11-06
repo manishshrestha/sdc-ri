@@ -1,4 +1,4 @@
-package org.ieee11073.sdc.biceps.common.storage;
+package org.somda.sdc.biceps.common.storage;
 
 /**
  * An exception that is thrown if a preprocessing error occurs.

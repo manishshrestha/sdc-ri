@@ -1,6 +1,6 @@
-package org.ieee11073.sdc.dpws.soap.wsdiscovery.event;
+package org.somda.sdc.dpws.soap.wsdiscovery.event;
 
-import org.ieee11073.sdc.common.event.EventMessage;
+import org.somda.sdc.common.event.EventMessage;
 
 /**
  * Message that signalizes the end of a probe phase.

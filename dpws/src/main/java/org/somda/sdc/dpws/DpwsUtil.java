@@ -1,10 +1,10 @@
-package org.ieee11073.sdc.dpws;
+package org.somda.sdc.dpws;
 
 import com.google.inject.Inject;
-import org.ieee11073.sdc.dpws.model.LocalizedStringType;
-import org.ieee11073.sdc.dpws.model.ObjectFactory;
-import org.ieee11073.sdc.dpws.model.ThisDeviceType;
-import org.ieee11073.sdc.dpws.model.ThisModelType;
+import org.somda.sdc.dpws.model.LocalizedStringType;
+import org.somda.sdc.dpws.model.ObjectFactory;
+import org.somda.sdc.dpws.model.ThisDeviceType;
+import org.somda.sdc.dpws.model.ThisModelType;
 
 import javax.annotation.Nullable;
 import java.util.List;

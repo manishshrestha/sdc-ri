@@ -1,4 +1,4 @@
-package org.ieee11073.sdc.common.util;
+package org.somda.sdc.common.util;
 
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;

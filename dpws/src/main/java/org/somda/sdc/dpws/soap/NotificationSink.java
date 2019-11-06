@@ -1,6 +1,6 @@
-package org.ieee11073.sdc.dpws.soap;
+package org.somda.sdc.dpws.soap;
 
-import org.ieee11073.sdc.dpws.soap.interception.InterceptorHandler;
+import org.somda.sdc.dpws.soap.interception.InterceptorHandler;
 
 /**
  * Interface for network bindings to invoke execution of incoming SOAP notification messages.

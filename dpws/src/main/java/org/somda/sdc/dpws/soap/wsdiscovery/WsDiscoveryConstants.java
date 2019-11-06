@@ -1,4 +1,4 @@
-package org.ieee11073.sdc.dpws.soap.wsdiscovery;
+package org.somda.sdc.dpws.soap.wsdiscovery;
 
 import javax.xml.namespace.QName;
 import java.time.Duration;
@@ -10,7 +10,7 @@ public class WsDiscoveryConstants {
     /**
      * Package that includes all JAXB generated WS-Discovery objects.
      */
-    public static final String JAXB_CONTEXT_PACKAGE = "org.ieee11073.sdc.dpws.soap.wsdiscovery.model";
+    public static final String JAXB_CONTEXT_PACKAGE = "org.somda.sdc.dpws.soap.wsdiscovery.model";
 
     /**
      * WS-Discovery 1.1 namespace.

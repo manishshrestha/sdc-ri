@@ -1,10 +1,10 @@
-package org.ieee11073.sdc.biceps.common.access;
+package org.somda.sdc.biceps.common.access;
 
-import org.ieee11073.sdc.biceps.common.MdibEntity;
-import org.ieee11073.sdc.biceps.model.participant.AbstractContextState;
-import org.ieee11073.sdc.biceps.model.participant.AbstractDescriptor;
-import org.ieee11073.sdc.biceps.model.participant.AbstractState;
-import org.ieee11073.sdc.biceps.model.participant.MdibVersion;
+import org.somda.sdc.biceps.common.MdibEntity;
+import org.somda.sdc.biceps.model.participant.AbstractContextState;
+import org.somda.sdc.biceps.model.participant.AbstractDescriptor;
+import org.somda.sdc.biceps.model.participant.AbstractState;
+import org.somda.sdc.biceps.model.participant.MdibVersion;
 
 import java.math.BigInteger;
 import java.util.Collection;
@@ -48,7 +48,7 @@ public interface MdibAccess {
     BigInteger getMdStateVersion();
 
     /**
-     * Retrieves a specific descriptor of the hosted {@link org.ieee11073.sdc.biceps.model.participant.Mdib}.
+     * Retrieves a specific descriptor of the hosted {@link org.somda.sdc.biceps.model.participant.Mdib}.
      *
      * @param handle     Handle name of the descriptor.
      * @param descrClass Class to cast to. If cast fails, {@link Optional#empty()} will be returned.
@@ -59,7 +59,7 @@ public interface MdibAccess {
     <T extends AbstractDescriptor> Optional<T> getDescriptor(String handle, Class<T> descrClass);
 
     /**
-     * Retrieves a specific abstract descriptor of the hosted {@link org.ieee11073.sdc.biceps.model.participant.Mdib}.
+     * Retrieves a specific abstract descriptor of the hosted {@link org.somda.sdc.biceps.model.participant.Mdib}.
      *
      * @param handle Handle name of the descriptor.
      * @return {@link Optional} of the requested descriptor or {@link Optional#empty()} if not found or something
@@ -98,12 +98,12 @@ public interface MdibAccess {
      * Gets all {@link MdibEntity} objects that are root elements.
      *
      * @return the root elements, i.e., entities whose descriptors are of type
-     * {@link org.ieee11073.sdc.biceps.model.participant.MdsDescriptor}.
+     * {@link org.somda.sdc.biceps.model.participant.MdsDescriptor}.
      */
     List<MdibEntity> getRootEntities();
 
     /**
-     * Retrieves a specific abstract state of the hosted {@link org.ieee11073.sdc.biceps.model.participant.Mdib}.
+     * Retrieves a specific abstract state of the hosted {@link org.somda.sdc.biceps.model.participant.Mdib}.
      *
      * @param handle the state or descriptor handle of the state to request (descriptor handle is used in case of
      *               single states).
@@ -113,7 +113,7 @@ public interface MdibAccess {
     Optional<AbstractState> getState(String handle);
 
     /**
-     * Retrieves a specific state of the hosted {@link org.ieee11073.sdc.biceps.model.participant.Mdib}.
+     * Retrieves a specific state of the hosted {@link org.somda.sdc.biceps.model.participant.Mdib}.
      *
      * @param handle     the state or descriptor handle of the state to request (descriptor handle is used in case of
      *                   single states).

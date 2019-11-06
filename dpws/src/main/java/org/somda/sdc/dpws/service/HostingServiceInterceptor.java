@@ -1,23 +1,23 @@
-package org.ieee11073.sdc.dpws.service;
+package org.somda.sdc.dpws.service;
 
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
-import org.ieee11073.sdc.common.util.ObjectUtil;
-import org.ieee11073.sdc.dpws.DpwsConstants;
-import org.ieee11073.sdc.dpws.model.*;
-import org.ieee11073.sdc.dpws.service.helper.MetadataSectionUtil;
-import org.ieee11073.sdc.dpws.soap.SoapUtil;
-import org.ieee11073.sdc.dpws.soap.exception.SoapFaultException;
-import org.ieee11073.sdc.dpws.soap.factory.SoapFaultFactory;
-import org.ieee11073.sdc.dpws.soap.interception.Direction;
-import org.ieee11073.sdc.dpws.soap.interception.MessageInterceptor;
-import org.ieee11073.sdc.dpws.soap.interception.RequestResponseObject;
-import org.ieee11073.sdc.dpws.soap.wsaddressing.WsAddressingUtil;
-import org.ieee11073.sdc.dpws.soap.wsdiscovery.WsDiscoveryTargetService;
-import org.ieee11073.sdc.dpws.soap.wsmetadataexchange.model.Metadata;
-import org.ieee11073.sdc.dpws.soap.wsmetadataexchange.model.MetadataSection;
-import org.ieee11073.sdc.dpws.soap.wsmetadataexchange.model.ObjectFactory;
-import org.ieee11073.sdc.dpws.soap.wstransfer.WsTransferConstants;
+import org.somda.sdc.common.util.ObjectUtil;
+import org.somda.sdc.dpws.DpwsConstants;
+import org.somda.sdc.dpws.model.*;
+import org.somda.sdc.dpws.service.helper.MetadataSectionUtil;
+import org.somda.sdc.dpws.soap.SoapUtil;
+import org.somda.sdc.dpws.soap.exception.SoapFaultException;
+import org.somda.sdc.dpws.soap.factory.SoapFaultFactory;
+import org.somda.sdc.dpws.soap.interception.Direction;
+import org.somda.sdc.dpws.soap.interception.MessageInterceptor;
+import org.somda.sdc.dpws.soap.interception.RequestResponseObject;
+import org.somda.sdc.dpws.soap.wsaddressing.WsAddressingUtil;
+import org.somda.sdc.dpws.soap.wsdiscovery.WsDiscoveryTargetService;
+import org.somda.sdc.dpws.soap.wsmetadataexchange.model.Metadata;
+import org.somda.sdc.dpws.soap.wsmetadataexchange.model.MetadataSection;
+import org.somda.sdc.dpws.soap.wsmetadataexchange.model.ObjectFactory;
+import org.somda.sdc.dpws.soap.wstransfer.WsTransferConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,7 +42,7 @@ public class HostingServiceInterceptor implements HostingService {
     private final SoapUtil soapUtil;
     private final SoapFaultFactory soapFaultFactory;
     private final ObjectFactory mexFactory;
-    private final org.ieee11073.sdc.dpws.model.ObjectFactory dpwsFactory;
+    private final org.somda.sdc.dpws.model.ObjectFactory dpwsFactory;
     private ThisModelType thisModel;
     private ThisDeviceType thisDevice;
 
@@ -58,7 +58,7 @@ public class HostingServiceInterceptor implements HostingService {
                               SoapUtil soapUtil,
                               SoapFaultFactory soapFaultFactory,
                               ObjectFactory mexFactory,
-                              org.ieee11073.sdc.dpws.model.ObjectFactory dpwsFactory,
+                              org.somda.sdc.dpws.model.ObjectFactory dpwsFactory,
                               ObjectUtil beanUtil,
                               WsAddressingUtil wsaUtil,
                               MetadataSectionUtil metadataSectionUtil) {

@@ -1,7 +1,7 @@
-package org.ieee11073.sdc.biceps.common.event;
+package org.somda.sdc.biceps.common.event;
 
-import org.ieee11073.sdc.biceps.common.access.MdibAccess;
-import org.ieee11073.sdc.biceps.common.MdibEntity;
+import org.somda.sdc.biceps.common.access.MdibAccess;
+import org.somda.sdc.biceps.common.MdibEntity;
 
 import java.util.Collections;
 import java.util.List;

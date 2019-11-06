@@ -1,4 +1,4 @@
-package org.ieee11073.sdc.dpws.network;
+package org.somda.sdc.dpws.network;
 
 import com.google.inject.Inject;
 import org.slf4j.Logger;

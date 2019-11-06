@@ -1,12 +1,12 @@
-package org.ieee11073.sdc.dpws.service.helper;
+package org.somda.sdc.dpws.service.helper;
 
 import com.google.inject.Inject;
-import org.ieee11073.sdc.dpws.helper.PeerInformation;
-import org.ieee11073.sdc.dpws.model.HostedServiceType;
-import org.ieee11073.sdc.dpws.network.LocalAddressResolver;
-import org.ieee11073.sdc.dpws.soap.wsaddressing.WsAddressingUtil;
-import org.ieee11073.sdc.dpws.soap.wsaddressing.model.EndpointReferenceType;
-import org.ieee11073.sdc.dpws.model.HostServiceType;
+import org.somda.sdc.dpws.helper.PeerInformation;
+import org.somda.sdc.dpws.model.HostedServiceType;
+import org.somda.sdc.dpws.network.LocalAddressResolver;
+import org.somda.sdc.dpws.soap.wsaddressing.WsAddressingUtil;
+import org.somda.sdc.dpws.soap.wsaddressing.model.EndpointReferenceType;
+import org.somda.sdc.dpws.model.HostServiceType;
 
 import java.net.URI;
 import java.util.List;

@@ -1,4 +1,4 @@
-package org.ieee11073.sdc.dpws.device.helper;
+package org.somda.sdc.dpws.device.helper;
 
 import java.net.URI;
 import java.util.Optional;

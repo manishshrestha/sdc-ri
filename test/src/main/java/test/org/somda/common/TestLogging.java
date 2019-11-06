@@ -1,4 +1,4 @@
-package test.org.ieee11073.common;
+package test.org.somda.common;
 
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.core.config.Configurator;

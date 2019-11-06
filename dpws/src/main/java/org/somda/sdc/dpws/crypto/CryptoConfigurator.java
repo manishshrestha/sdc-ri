@@ -1,9 +1,9 @@
-package org.ieee11073.sdc.dpws.crypto;
+package org.somda.sdc.dpws.crypto;
 
 import com.google.inject.Inject;
 import org.glassfish.grizzly.ssl.SSLContextConfigurator;
 import org.glassfish.jersey.SslConfigurator;
-import org.ieee11073.sdc.common.util.StreamUtil;
+import org.somda.sdc.common.util.StreamUtil;
 
 import java.io.IOException;
 

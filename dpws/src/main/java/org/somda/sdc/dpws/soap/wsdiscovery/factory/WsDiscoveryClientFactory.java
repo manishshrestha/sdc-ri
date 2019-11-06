@@ -1,8 +1,8 @@
-package org.ieee11073.sdc.dpws.soap.wsdiscovery.factory;
+package org.somda.sdc.dpws.soap.wsdiscovery.factory;
 
 import com.google.inject.assistedinject.Assisted;
-import org.ieee11073.sdc.dpws.soap.NotificationSource;
-import org.ieee11073.sdc.dpws.soap.wsdiscovery.WsDiscoveryClient;
+import org.somda.sdc.dpws.soap.NotificationSource;
+import org.somda.sdc.dpws.soap.wsdiscovery.WsDiscoveryClient;
 
 /**
  * Factory to create WS-Discovery clients.

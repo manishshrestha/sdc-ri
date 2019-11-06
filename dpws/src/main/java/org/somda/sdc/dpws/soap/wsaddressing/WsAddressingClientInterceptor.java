@@ -1,9 +1,9 @@
-package org.ieee11073.sdc.dpws.soap.wsaddressing;
+package org.somda.sdc.dpws.soap.wsaddressing;
 
 import com.google.inject.Inject;
-import org.ieee11073.sdc.dpws.soap.SoapMessage;
-import org.ieee11073.sdc.dpws.soap.SoapUtil;
-import org.ieee11073.sdc.dpws.soap.interception.*;
+import org.somda.sdc.dpws.soap.SoapMessage;
+import org.somda.sdc.dpws.soap.SoapUtil;
+import org.somda.sdc.dpws.soap.interception.*;
 
 /**
  * Implements a WS-Addressing client interceptor to apply WS-Addressing header information.

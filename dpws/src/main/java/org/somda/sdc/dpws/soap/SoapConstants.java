@@ -1,4 +1,4 @@
-package org.ieee11073.sdc.dpws.soap;
+package org.somda.sdc.dpws.soap;
 
 import javax.xml.namespace.QName;
 
@@ -11,7 +11,7 @@ public class SoapConstants {
     /**
      * Package that includes all JAXB generated SOAP objects.
      */
-    public static final String JAXB_CONTEXT_PACKAGE = "org.ieee11073.sdc.dpws.soap.model";
+    public static final String JAXB_CONTEXT_PACKAGE = "org.somda.sdc.dpws.soap.model";
 
     /**
      * SOAP 1.2 namespace.

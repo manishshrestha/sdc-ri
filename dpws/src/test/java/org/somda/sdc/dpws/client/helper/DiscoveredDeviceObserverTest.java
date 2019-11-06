@@ -1,21 +1,21 @@
-package org.ieee11073.sdc.dpws.client.helper;
+package org.somda.sdc.dpws.client.helper;
 
 import com.google.common.eventbus.Subscribe;
 import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.common.util.concurrent.MoreExecutors;
-import org.ieee11073.sdc.dpws.DpwsTest;
-import org.ieee11073.sdc.dpws.client.*;
-import org.ieee11073.sdc.dpws.client.event.DeviceEnteredMessage;
-import org.ieee11073.sdc.dpws.client.event.DeviceLeftMessage;
-import org.ieee11073.sdc.dpws.client.event.DeviceProbeTimeoutMessage;
-import org.ieee11073.sdc.dpws.client.event.ProbedDeviceFoundMessage;
-import org.ieee11073.sdc.dpws.soap.wsaddressing.WsAddressingUtil;
-import org.ieee11073.sdc.dpws.soap.wsaddressing.model.EndpointReferenceType;
-import org.ieee11073.sdc.dpws.soap.wsdiscovery.event.ByeMessage;
-import org.ieee11073.sdc.dpws.soap.wsdiscovery.event.HelloMessage;
-import org.ieee11073.sdc.dpws.soap.wsdiscovery.event.ProbeMatchesMessage;
-import org.ieee11073.sdc.dpws.soap.wsdiscovery.event.ProbeTimeoutMessage;
-import org.ieee11073.sdc.dpws.soap.wsdiscovery.model.*;
+import org.somda.sdc.dpws.DpwsTest;
+import org.somda.sdc.dpws.client.*;
+import org.somda.sdc.dpws.client.event.DeviceEnteredMessage;
+import org.somda.sdc.dpws.client.event.DeviceLeftMessage;
+import org.somda.sdc.dpws.client.event.DeviceProbeTimeoutMessage;
+import org.somda.sdc.dpws.client.event.ProbedDeviceFoundMessage;
+import org.somda.sdc.dpws.soap.wsaddressing.WsAddressingUtil;
+import org.somda.sdc.dpws.soap.wsaddressing.model.EndpointReferenceType;
+import org.somda.sdc.dpws.soap.wsdiscovery.event.ByeMessage;
+import org.somda.sdc.dpws.soap.wsdiscovery.event.HelloMessage;
+import org.somda.sdc.dpws.soap.wsdiscovery.event.ProbeMatchesMessage;
+import org.somda.sdc.dpws.soap.wsdiscovery.event.ProbeTimeoutMessage;
+import org.somda.sdc.dpws.soap.wsdiscovery.model.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -53,7 +53,7 @@ public class DiscoveredDeviceObserverTest extends DpwsTest {
 
     @Test
     public void publishDeviceLeft() {
-        helloByeAndProbeMatchesObserverImpl.registerDiscoveryObserver(new org.ieee11073.sdc.dpws.client.DiscoveryObserver() {
+        helloByeAndProbeMatchesObserverImpl.registerDiscoveryObserver(new org.somda.sdc.dpws.client.DiscoveryObserver() {
             @Subscribe
             void onDeviceLeft(DeviceLeftMessage deviceLeftMessage) {
                 assertEquals(expectedUri, deviceLeftMessage.getPayload());
@@ -79,7 +79,7 @@ public class DiscoveredDeviceObserverTest extends DpwsTest {
                         new ArrayList<>(),
                         1)));
 
-        helloByeAndProbeMatchesObserverImpl.registerDiscoveryObserver(new org.ieee11073.sdc.dpws.client.DiscoveryObserver() {
+        helloByeAndProbeMatchesObserverImpl.registerDiscoveryObserver(new org.somda.sdc.dpws.client.DiscoveryObserver() {
             @Subscribe
             void onDeviceEntered(DeviceEnteredMessage deviceEntered) {
                 assertEquals(expectedUri, deviceEntered.getPayload().getEprAddress());
@@ -97,7 +97,7 @@ public class DiscoveredDeviceObserverTest extends DpwsTest {
         bType.setEndpointReference(expectedEpr);
         ByeMessage bMsg = new ByeMessage(bType);
 
-        helloByeAndProbeMatchesObserverImpl.registerDiscoveryObserver(new org.ieee11073.sdc.dpws.client.DiscoveryObserver() {
+        helloByeAndProbeMatchesObserverImpl.registerDiscoveryObserver(new org.somda.sdc.dpws.client.DiscoveryObserver() {
             @Subscribe
             void onDeviceLeft(DeviceLeftMessage deviceLeftMessage) {
                 assertEquals(expectedUri, deviceLeftMessage.getPayload());
@@ -127,7 +127,7 @@ public class DiscoveredDeviceObserverTest extends DpwsTest {
                         new ArrayList<>(),
                         1)));
 
-        helloByeAndProbeMatchesObserverImpl.registerDiscoveryObserver(new org.ieee11073.sdc.dpws.client.DiscoveryObserver() {
+        helloByeAndProbeMatchesObserverImpl.registerDiscoveryObserver(new org.somda.sdc.dpws.client.DiscoveryObserver() {
             @Subscribe
             void onProbedDevice(ProbedDeviceFoundMessage probedDeviceFound) {
                 assertEquals(expectedId, probedDeviceFound.getDiscoveryId());
@@ -146,7 +146,7 @@ public class DiscoveredDeviceObserverTest extends DpwsTest {
         String expectedId = "expectedId";
         ProbeTimeoutMessage ptMsg = new ProbeTimeoutMessage(expectedDevicesCount, expectedId);
 
-        helloByeAndProbeMatchesObserverImpl.registerDiscoveryObserver(new org.ieee11073.sdc.dpws.client.DiscoveryObserver() {
+        helloByeAndProbeMatchesObserverImpl.registerDiscoveryObserver(new org.somda.sdc.dpws.client.DiscoveryObserver() {
             @Subscribe
             void onTimeout(DeviceProbeTimeoutMessage deviceProbeTimeout) {
                 assertEquals(expectedDevicesCount, deviceProbeTimeout.getFoundDevicesCount());

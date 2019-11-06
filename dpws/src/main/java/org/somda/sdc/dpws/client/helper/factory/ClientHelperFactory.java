@@ -1,14 +1,14 @@
-package org.ieee11073.sdc.dpws.client.helper.factory;
+package org.somda.sdc.dpws.client.helper.factory;
 
 import com.google.inject.assistedinject.Assisted;
-import org.ieee11073.sdc.dpws.client.helper.DiscoveredDeviceResolver;
-import org.ieee11073.sdc.dpws.client.helper.DiscoveryClientUdpProcessor;
-import org.ieee11073.sdc.dpws.client.helper.HelloByeAndProbeMatchesObserverImpl;
-import org.ieee11073.sdc.dpws.client.helper.WatchDog;
-import org.ieee11073.sdc.dpws.service.HostingServiceProxy;
-import org.ieee11073.sdc.dpws.soap.NotificationSink;
-import org.ieee11073.sdc.dpws.soap.SoapMessage;
-import org.ieee11073.sdc.dpws.soap.wsdiscovery.WsDiscoveryClient;
+import org.somda.sdc.dpws.client.helper.DiscoveredDeviceResolver;
+import org.somda.sdc.dpws.client.helper.DiscoveryClientUdpProcessor;
+import org.somda.sdc.dpws.client.helper.HelloByeAndProbeMatchesObserverImpl;
+import org.somda.sdc.dpws.client.helper.WatchDog;
+import org.somda.sdc.dpws.service.HostingServiceProxy;
+import org.somda.sdc.dpws.soap.NotificationSink;
+import org.somda.sdc.dpws.soap.SoapMessage;
+import org.somda.sdc.dpws.soap.wsdiscovery.WsDiscoveryClient;
 
 import java.util.function.Consumer;
 

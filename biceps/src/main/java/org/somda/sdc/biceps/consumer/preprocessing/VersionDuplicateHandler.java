@@ -1,12 +1,12 @@
-package org.ieee11073.sdc.biceps.consumer.preprocessing;
+package org.somda.sdc.biceps.consumer.preprocessing;
 
 import com.google.inject.Inject;
-import org.ieee11073.sdc.biceps.common.MdibStateModifications;
-import org.ieee11073.sdc.biceps.common.MdibTypeValidator;
-import org.ieee11073.sdc.biceps.common.storage.MdibStorage;
-import org.ieee11073.sdc.biceps.common.storage.StatePreprocessingSegment;
-import org.ieee11073.sdc.biceps.model.participant.AbstractMultiState;
-import org.ieee11073.sdc.biceps.model.participant.AbstractState;
+import org.somda.sdc.biceps.common.MdibStateModifications;
+import org.somda.sdc.biceps.common.MdibTypeValidator;
+import org.somda.sdc.biceps.common.storage.MdibStorage;
+import org.somda.sdc.biceps.common.storage.StatePreprocessingSegment;
+import org.somda.sdc.biceps.model.participant.AbstractMultiState;
+import org.somda.sdc.biceps.model.participant.AbstractState;
 
 import javax.print.DocFlavor;
 import java.util.ArrayList;

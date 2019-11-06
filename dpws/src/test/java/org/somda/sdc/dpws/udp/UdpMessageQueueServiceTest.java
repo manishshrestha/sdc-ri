@@ -1,7 +1,7 @@
-package org.ieee11073.sdc.dpws.udp;
+package org.somda.sdc.dpws.udp;
 
 import com.google.common.eventbus.Subscribe;
-import org.ieee11073.sdc.dpws.DpwsTest;
+import org.somda.sdc.dpws.DpwsTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 

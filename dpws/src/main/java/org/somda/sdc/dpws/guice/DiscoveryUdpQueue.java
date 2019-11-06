@@ -1,4 +1,4 @@
-package org.ieee11073.sdc.dpws.guice;
+package org.somda.sdc.dpws.guice;
 
 import com.google.inject.BindingAnnotation;
 
@@ -11,7 +11,7 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 /**
  * Defines the UDP queue a device uses for discovery during runtime.
  *
- * @see org.ieee11073.sdc.dpws.guice.DefaultDpwsModule
+ * @see org.somda.sdc.dpws.guice.DefaultDpwsModule
  */
 @Target({PARAMETER, FIELD, METHOD})
 @Retention(RUNTIME)

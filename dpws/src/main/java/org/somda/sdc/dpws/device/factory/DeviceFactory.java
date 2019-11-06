@@ -1,8 +1,8 @@
-package org.ieee11073.sdc.dpws.device.factory;
+package org.somda.sdc.dpws.device.factory;
 
 import com.google.inject.assistedinject.Assisted;
-import org.ieee11073.sdc.dpws.device.Device;
-import org.ieee11073.sdc.dpws.device.DeviceSettings;
+import org.somda.sdc.dpws.device.Device;
+import org.somda.sdc.dpws.device.DeviceSettings;
 
 /**
  * Factory to create {@linkplain Device} instances.

@@ -1,14 +1,14 @@
-package org.ieee11073.sdc.dpws.device.helper;
+package org.somda.sdc.dpws.device.helper;
 
 import com.google.inject.Inject;
-import org.ieee11073.sdc.dpws.http.HttpHandler;
-import org.ieee11073.sdc.dpws.soap.*;
-import org.ieee11073.sdc.dpws.soap.exception.MarshallingException;
-import org.ieee11073.sdc.dpws.soap.exception.SoapFaultException;
-import org.ieee11073.sdc.dpws.soap.exception.TransportException;
-import org.ieee11073.sdc.dpws.soap.factory.SoapFaultFactory;
-import org.ieee11073.sdc.dpws.soap.interception.Interceptor;
-import org.ieee11073.sdc.dpws.soap.interception.InterceptorHandler;
+import org.somda.sdc.dpws.http.HttpHandler;
+import org.somda.sdc.dpws.soap.*;
+import org.somda.sdc.dpws.soap.exception.MarshallingException;
+import org.somda.sdc.dpws.soap.exception.SoapFaultException;
+import org.somda.sdc.dpws.soap.exception.TransportException;
+import org.somda.sdc.dpws.soap.factory.SoapFaultFactory;
+import org.somda.sdc.dpws.soap.interception.Interceptor;
+import org.somda.sdc.dpws.soap.interception.InterceptorHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

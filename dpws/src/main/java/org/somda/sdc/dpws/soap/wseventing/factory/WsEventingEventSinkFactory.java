@@ -1,8 +1,8 @@
-package org.ieee11073.sdc.dpws.soap.wseventing.factory;
+package org.somda.sdc.dpws.soap.wseventing.factory;
 
 import com.google.inject.assistedinject.Assisted;
-import org.ieee11073.sdc.dpws.soap.RequestResponseClient;
-import org.ieee11073.sdc.dpws.soap.wseventing.EventSink;
+import org.somda.sdc.dpws.soap.RequestResponseClient;
+import org.somda.sdc.dpws.soap.wseventing.EventSink;
 
 import java.net.URI;
 

@@ -1,11 +1,11 @@
-package org.ieee11073.sdc.dpws.soap.factory;
+package org.somda.sdc.dpws.soap.factory;
 
 import com.google.inject.Inject;
-import org.ieee11073.sdc.dpws.soap.model.Body;
-import org.ieee11073.sdc.dpws.soap.model.Envelope;
-import org.ieee11073.sdc.dpws.soap.wsaddressing.WsAddressingUtil;
-import org.ieee11073.sdc.dpws.soap.wsaddressing.model.AttributedURIType;
-import org.ieee11073.sdc.dpws.soap.wsaddressing.model.ObjectFactory;
+import org.somda.sdc.dpws.soap.model.Body;
+import org.somda.sdc.dpws.soap.model.Envelope;
+import org.somda.sdc.dpws.soap.wsaddressing.WsAddressingUtil;
+import org.somda.sdc.dpws.soap.wsaddressing.model.AttributedURIType;
+import org.somda.sdc.dpws.soap.wsaddressing.model.ObjectFactory;
 
 import javax.annotation.Nullable;
 import java.util.Optional;
@@ -15,12 +15,12 @@ import java.util.Optional;
  */
 public class EnvelopeFactory {
     private final ObjectFactory wsaFactory;
-    private final org.ieee11073.sdc.dpws.soap.model.ObjectFactory soapFactory;
+    private final org.somda.sdc.dpws.soap.model.ObjectFactory soapFactory;
     private final WsAddressingUtil wsaUtil;
 
     @Inject
     EnvelopeFactory(ObjectFactory wsaFactory,
-                    org.ieee11073.sdc.dpws.soap.model.ObjectFactory soapFactory,
+                    org.somda.sdc.dpws.soap.model.ObjectFactory soapFactory,
                     WsAddressingUtil wsaUtil) {
         this.wsaFactory = wsaFactory;
         this.soapFactory = soapFactory;

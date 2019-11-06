@@ -1,4 +1,4 @@
-package org.ieee11073.sdc.dpws.soap.wsdiscovery;
+package org.somda.sdc.dpws.soap.wsdiscovery;
 
 /**
  * Set of supported MatchBy rules for the WS-Discovery Scopes type in accordance with dpws:R1019.

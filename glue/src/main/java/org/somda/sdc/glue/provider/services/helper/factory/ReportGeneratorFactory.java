@@ -1,8 +1,8 @@
-package org.ieee11073.sdc.glue.provider.services.helper.factory;
+package org.somda.sdc.glue.provider.services.helper.factory;
 
 import com.google.inject.assistedinject.Assisted;
-import org.ieee11073.sdc.dpws.device.EventSourceAccess;
-import org.ieee11073.sdc.glue.provider.services.helper.ReportGenerator;
+import org.somda.sdc.dpws.device.EventSourceAccess;
+import org.somda.sdc.glue.provider.services.helper.ReportGenerator;
 
 /**
  * Factory to create {@linkplain ReportGenerator} instances.

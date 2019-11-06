@@ -1,10 +1,10 @@
-package org.ieee11073.sdc.biceps.consumer.access;
+package org.somda.sdc.biceps.consumer.access;
 
-import org.ieee11073.sdc.biceps.common.MdibDescriptionModifications;
-import org.ieee11073.sdc.biceps.common.MdibStateModifications;
-import org.ieee11073.sdc.biceps.common.access.*;
-import org.ieee11073.sdc.biceps.common.storage.PreprocessingException;
-import org.ieee11073.sdc.biceps.model.participant.MdibVersion;
+import org.somda.sdc.biceps.common.MdibDescriptionModifications;
+import org.somda.sdc.biceps.common.MdibStateModifications;
+import org.somda.sdc.biceps.common.access.*;
+import org.somda.sdc.biceps.common.storage.PreprocessingException;
+import org.somda.sdc.biceps.model.participant.MdibVersion;
 
 import javax.annotation.Nullable;
 import java.math.BigInteger;

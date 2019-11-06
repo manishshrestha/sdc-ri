@@ -1,9 +1,9 @@
-package org.ieee11073.sdc.glue.provider.sco.factory;
+package org.somda.sdc.glue.provider.sco.factory;
 
 import com.google.inject.assistedinject.Assisted;
-import org.ieee11073.sdc.biceps.common.access.MdibAccess;
-import org.ieee11073.sdc.dpws.device.EventSourceAccess;
-import org.ieee11073.sdc.glue.provider.sco.ScoController;
+import org.somda.sdc.biceps.common.access.MdibAccess;
+import org.somda.sdc.dpws.device.EventSourceAccess;
+import org.somda.sdc.glue.provider.sco.ScoController;
 
 /**
  * Factory to create {@linkplain ScoControllerFactory} instances.

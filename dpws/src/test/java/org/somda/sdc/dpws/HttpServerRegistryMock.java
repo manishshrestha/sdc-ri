@@ -1,8 +1,8 @@
-package org.ieee11073.sdc.dpws;
+package org.somda.sdc.dpws;
 
 import com.google.common.util.concurrent.AbstractIdleService;
-import org.ieee11073.sdc.dpws.http.HttpHandler;
-import org.ieee11073.sdc.dpws.http.HttpServerRegistry;
+import org.somda.sdc.dpws.http.HttpHandler;
+import org.somda.sdc.dpws.http.HttpServerRegistry;
 
 import javax.annotation.Nullable;
 import java.net.URI;

@@ -1,4 +1,4 @@
-package test.org.ieee11073.common;
+package test.org.somda.common;
 
 import java.util.Optional;
 

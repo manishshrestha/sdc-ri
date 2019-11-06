@@ -1,16 +1,16 @@
-package org.ieee11073.sdc.biceps.provider.preprocessing;
+package org.somda.sdc.biceps.provider.preprocessing;
 
-import org.ieee11073.sdc.biceps.UnitTestUtil;
-import org.ieee11073.sdc.biceps.common.MdibDescriptionModification;
-import org.ieee11073.sdc.biceps.common.MdibDescriptionModifications;
-import org.ieee11073.sdc.biceps.common.MdibEntity;
-import org.ieee11073.sdc.biceps.common.storage.MdibStorage;
-import org.ieee11073.sdc.biceps.model.participant.MdsDescriptor;
-import org.ieee11073.sdc.biceps.model.participant.NumericMetricDescriptor;
-import org.ieee11073.sdc.biceps.model.participant.ScoDescriptor;
-import org.ieee11073.sdc.biceps.model.participant.VmdDescriptor;
-import org.ieee11073.sdc.biceps.testutil.Handles;
-import org.ieee11073.sdc.biceps.testutil.MockModelFactory;
+import org.somda.sdc.biceps.UnitTestUtil;
+import org.somda.sdc.biceps.common.MdibDescriptionModification;
+import org.somda.sdc.biceps.common.MdibDescriptionModifications;
+import org.somda.sdc.biceps.common.MdibEntity;
+import org.somda.sdc.biceps.common.storage.MdibStorage;
+import org.somda.sdc.biceps.model.participant.MdsDescriptor;
+import org.somda.sdc.biceps.model.participant.NumericMetricDescriptor;
+import org.somda.sdc.biceps.model.participant.ScoDescriptor;
+import org.somda.sdc.biceps.model.participant.VmdDescriptor;
+import org.somda.sdc.biceps.testutil.Handles;
+import org.somda.sdc.biceps.testutil.MockModelFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 

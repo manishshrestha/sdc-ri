@@ -1,20 +1,20 @@
-package it.org.ieee11073.sdc.dpws.soap;
+package it.org.somda.sdc.dpws.soap;
 
 import com.google.inject.Inject;
 import dpws_test_service.messages._2017._05._10.ObjectFactory;
 import dpws_test_service.messages._2017._05._10.TestNotification;
 import dpws_test_service.messages._2017._05._10.TestOperationRequest;
 import dpws_test_service.messages._2017._05._10.TestOperationResponse;
-import it.org.ieee11073.sdc.dpws.TestServiceMetadata;
-import org.ieee11073.sdc.dpws.device.WebService;
-import org.ieee11073.sdc.dpws.soap.SoapUtil;
-import org.ieee11073.sdc.dpws.soap.exception.MarshallingException;
-import org.ieee11073.sdc.dpws.soap.exception.SoapFaultException;
-import org.ieee11073.sdc.dpws.soap.exception.TransportException;
-import org.ieee11073.sdc.dpws.soap.factory.SoapFaultFactory;
-import org.ieee11073.sdc.dpws.soap.interception.MessageInterceptor;
-import org.ieee11073.sdc.dpws.soap.interception.RequestResponseObject;
-import org.ieee11073.sdc.dpws.soap.wsaddressing.WsAddressingUtil;
+import it.org.somda.sdc.dpws.TestServiceMetadata;
+import org.somda.sdc.dpws.device.WebService;
+import org.somda.sdc.dpws.soap.SoapUtil;
+import org.somda.sdc.dpws.soap.exception.MarshallingException;
+import org.somda.sdc.dpws.soap.exception.SoapFaultException;
+import org.somda.sdc.dpws.soap.exception.TransportException;
+import org.somda.sdc.dpws.soap.factory.SoapFaultFactory;
+import org.somda.sdc.dpws.soap.interception.MessageInterceptor;
+import org.somda.sdc.dpws.soap.interception.RequestResponseObject;
+import org.somda.sdc.dpws.soap.wsaddressing.WsAddressingUtil;
 
 
 public class DpwsTestService2 extends WebService {

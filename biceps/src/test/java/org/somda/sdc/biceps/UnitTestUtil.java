@@ -1,13 +1,13 @@
-package org.ieee11073.sdc.biceps;
+package org.somda.sdc.biceps;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.util.Modules;
-import org.ieee11073.sdc.biceps.guice.DefaultBicepsConfigModule;
-import org.ieee11073.sdc.biceps.guice.DefaultBicepsModule;
-import org.ieee11073.sdc.common.guice.AbstractConfigurationModule;
-import org.ieee11073.sdc.common.guice.DefaultHelperModule;
+import org.somda.sdc.biceps.guice.DefaultBicepsConfigModule;
+import org.somda.sdc.biceps.guice.DefaultBicepsModule;
+import org.somda.sdc.common.guice.AbstractConfigurationModule;
+import org.somda.sdc.common.guice.DefaultHelperModule;
 
 public class UnitTestUtil {
     private final Injector injector;

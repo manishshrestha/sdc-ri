@@ -1,8 +1,8 @@
-package org.ieee11073.sdc.glue.provider.services.factory;
+package org.somda.sdc.glue.provider.services.factory;
 
 import com.google.inject.assistedinject.Assisted;
-import org.ieee11073.sdc.biceps.provider.access.LocalMdibAccess;
-import org.ieee11073.sdc.glue.provider.services.HighPriorityServices;
+import org.somda.sdc.biceps.provider.access.LocalMdibAccess;
+import org.somda.sdc.glue.provider.services.HighPriorityServices;
 
 /**
  * Factory to create {@linkplain ServicesFactory} instances.

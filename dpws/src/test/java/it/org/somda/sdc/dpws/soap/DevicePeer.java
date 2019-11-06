@@ -1,14 +1,14 @@
-package it.org.ieee11073.sdc.dpws.soap;
+package it.org.somda.sdc.dpws.soap;
 
 import com.google.inject.AbstractModule;
-import it.org.ieee11073.sdc.dpws.IntegrationTestPeer;
-import org.ieee11073.sdc.dpws.device.Device;
-import org.ieee11073.sdc.dpws.device.DeviceSettings;
-import org.ieee11073.sdc.dpws.device.factory.DeviceFactory;
-import org.ieee11073.sdc.dpws.guice.DefaultDpwsConfigModule;
-import org.ieee11073.sdc.dpws.soap.SoapUtil;
-import org.ieee11073.sdc.dpws.soap.wsaddressing.WsAddressingUtil;
-import org.ieee11073.sdc.dpws.soap.wsaddressing.model.EndpointReferenceType;
+import it.org.somda.sdc.dpws.IntegrationTestPeer;
+import org.somda.sdc.dpws.device.Device;
+import org.somda.sdc.dpws.device.DeviceSettings;
+import org.somda.sdc.dpws.device.factory.DeviceFactory;
+import org.somda.sdc.dpws.guice.DefaultDpwsConfigModule;
+import org.somda.sdc.dpws.soap.SoapUtil;
+import org.somda.sdc.dpws.soap.wsaddressing.WsAddressingUtil;
+import org.somda.sdc.dpws.soap.wsaddressing.model.EndpointReferenceType;
 
 import javax.annotation.Nullable;
 import java.net.InetAddress;

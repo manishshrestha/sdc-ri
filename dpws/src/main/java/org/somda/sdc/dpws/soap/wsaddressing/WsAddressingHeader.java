@@ -1,6 +1,6 @@
-package org.ieee11073.sdc.dpws.soap.wsaddressing;
+package org.somda.sdc.dpws.soap.wsaddressing;
 
-import org.ieee11073.sdc.dpws.soap.wsaddressing.model.AttributedURIType;
+import org.somda.sdc.dpws.soap.wsaddressing.model.AttributedURIType;
 
 import javax.annotation.Nullable;
 import java.util.Optional;

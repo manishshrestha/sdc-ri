@@ -1,9 +1,9 @@
-package org.ieee11073.sdc.glue.provider.sco.factory;
+package org.somda.sdc.glue.provider.sco.factory;
 
 import com.google.inject.assistedinject.Assisted;
-import org.ieee11073.sdc.biceps.model.participant.InstanceIdentifier;
-import org.ieee11073.sdc.dpws.device.EventSourceAccess;
-import org.ieee11073.sdc.glue.provider.sco.Context;
+import org.somda.sdc.biceps.model.participant.InstanceIdentifier;
+import org.somda.sdc.dpws.device.EventSourceAccess;
+import org.somda.sdc.glue.provider.sco.Context;
 
 /**
  * Factory to create {@linkplain Context} instances.

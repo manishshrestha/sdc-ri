@@ -1,15 +1,15 @@
-package it.org.ieee11073.sdc.dpws.soap;
+package it.org.somda.sdc.dpws.soap;
 
 
 import com.google.inject.AbstractModule;
-import it.org.ieee11073.sdc.dpws.TestServiceMetadata;
-import org.ieee11073.sdc.dpws.DpwsFramework;
-import org.ieee11073.sdc.dpws.DpwsUtil;
-import org.ieee11073.sdc.dpws.device.DeviceSettings;
-import org.ieee11073.sdc.dpws.factory.DpwsFrameworkFactory;
-import org.ieee11073.sdc.dpws.guice.DefaultDpwsConfigModule;
-import org.ieee11073.sdc.dpws.service.factory.HostedServiceFactory;
-import org.ieee11073.sdc.dpws.soap.SoapConfig;
+import it.org.somda.sdc.dpws.TestServiceMetadata;
+import org.somda.sdc.dpws.DpwsFramework;
+import org.somda.sdc.dpws.DpwsUtil;
+import org.somda.sdc.dpws.device.DeviceSettings;
+import org.somda.sdc.dpws.factory.DpwsFrameworkFactory;
+import org.somda.sdc.dpws.guice.DefaultDpwsConfigModule;
+import org.somda.sdc.dpws.service.factory.HostedServiceFactory;
+import org.somda.sdc.dpws.soap.SoapConfig;
 
 import javax.annotation.Nullable;
 import javax.xml.namespace.QName;
@@ -86,8 +86,8 @@ public class BasicPopulatedDevice extends DevicePeer {
         service2 = getInjector().getInstance(DpwsTestService2.class);
 
         final ClassLoader classLoader = getClass().getClassLoader();
-        InputStream wsdlResource1 = classLoader.getResourceAsStream("it/org/ieee11073/sdc/dpws/TestService1.wsdl");
-        InputStream wsdlResource2 = classLoader.getResourceAsStream("it/org/ieee11073/sdc/dpws/TestService2.wsdl");
+        InputStream wsdlResource1 = classLoader.getResourceAsStream("it/org/somda/sdc/dpws/TestService1.wsdl");
+        InputStream wsdlResource2 = classLoader.getResourceAsStream("it/org/somda/sdc/dpws/TestService2.wsdl");
         assert wsdlResource1 != null;
         getDevice().getHostingServiceAccess().addHostedService(hostedServiceFactory.createHostedService(
                 DevicePeerMetadata.SERVICE_ID_1,

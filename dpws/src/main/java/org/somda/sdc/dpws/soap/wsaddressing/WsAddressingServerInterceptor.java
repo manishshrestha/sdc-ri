@@ -1,15 +1,15 @@
-package org.ieee11073.sdc.dpws.soap.wsaddressing;
+package org.somda.sdc.dpws.soap.wsaddressing;
 
 import com.google.common.collect.EvictingQueue;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
-import org.ieee11073.sdc.dpws.soap.SoapMessage;
-import org.ieee11073.sdc.dpws.soap.SoapUtil;
-import org.ieee11073.sdc.dpws.soap.exception.SoapFaultException;
-import org.ieee11073.sdc.dpws.soap.factory.SoapFaultFactory;
-import org.ieee11073.sdc.dpws.soap.interception.*;
-import org.ieee11073.sdc.dpws.soap.wsaddressing.factory.WsAddressingFaultFactory;
-import org.ieee11073.sdc.dpws.soap.wsaddressing.model.AttributedURIType;
+import org.somda.sdc.dpws.soap.SoapMessage;
+import org.somda.sdc.dpws.soap.SoapUtil;
+import org.somda.sdc.dpws.soap.exception.SoapFaultException;
+import org.somda.sdc.dpws.soap.factory.SoapFaultFactory;
+import org.somda.sdc.dpws.soap.interception.*;
+import org.somda.sdc.dpws.soap.wsaddressing.factory.WsAddressingFaultFactory;
+import org.somda.sdc.dpws.soap.wsaddressing.model.AttributedURIType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

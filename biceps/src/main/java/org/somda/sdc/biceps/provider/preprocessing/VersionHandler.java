@@ -1,15 +1,15 @@
-package org.ieee11073.sdc.biceps.provider.preprocessing;
+package org.somda.sdc.biceps.provider.preprocessing;
 
 import com.google.inject.Inject;
-import org.ieee11073.sdc.biceps.common.*;
-import org.ieee11073.sdc.biceps.common.storage.DescriptionPreprocessingSegment;
-import org.ieee11073.sdc.biceps.common.storage.MdibStorage;
-import org.ieee11073.sdc.biceps.common.storage.StatePreprocessingSegment;
-import org.ieee11073.sdc.biceps.model.participant.AbstractDescriptor;
-import org.ieee11073.sdc.biceps.model.participant.AbstractMultiState;
-import org.ieee11073.sdc.biceps.model.participant.AbstractState;
-import org.ieee11073.sdc.biceps.model.participant.MdsDescriptor;
-import org.ieee11073.sdc.common.util.ObjectUtil;
+import org.somda.sdc.biceps.common.*;
+import org.somda.sdc.biceps.common.storage.DescriptionPreprocessingSegment;
+import org.somda.sdc.biceps.common.storage.MdibStorage;
+import org.somda.sdc.biceps.common.storage.StatePreprocessingSegment;
+import org.somda.sdc.biceps.model.participant.AbstractDescriptor;
+import org.somda.sdc.biceps.model.participant.AbstractMultiState;
+import org.somda.sdc.biceps.model.participant.AbstractState;
+import org.somda.sdc.biceps.model.participant.MdsDescriptor;
+import org.somda.sdc.common.util.ObjectUtil;
 
 import java.math.BigInteger;
 import java.util.*;

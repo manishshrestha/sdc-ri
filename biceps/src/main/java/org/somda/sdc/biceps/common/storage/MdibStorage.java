@@ -1,12 +1,12 @@
-package org.ieee11073.sdc.biceps.common.storage;
+package org.somda.sdc.biceps.common.storage;
 
-import org.ieee11073.sdc.biceps.common.MdibDescriptionModifications;
-import org.ieee11073.sdc.biceps.common.MdibEntity;
-import org.ieee11073.sdc.biceps.common.MdibStateModifications;
-import org.ieee11073.sdc.biceps.common.access.MdibAccess;
-import org.ieee11073.sdc.biceps.common.access.WriteDescriptionResult;
-import org.ieee11073.sdc.biceps.common.access.WriteStateResult;
-import org.ieee11073.sdc.biceps.model.participant.*;
+import org.somda.sdc.biceps.common.MdibDescriptionModifications;
+import org.somda.sdc.biceps.common.MdibEntity;
+import org.somda.sdc.biceps.common.MdibStateModifications;
+import org.somda.sdc.biceps.common.access.MdibAccess;
+import org.somda.sdc.biceps.common.access.WriteDescriptionResult;
+import org.somda.sdc.biceps.common.access.WriteStateResult;
+import org.somda.sdc.biceps.model.participant.*;
 
 import javax.annotation.Nullable;
 import java.math.BigInteger;
@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * Registry-based access to {@linkplain MdibEntity} instances derived from an {@linkplain org.ieee11073.sdc.biceps.model.participant.Mdib}.
+ * Registry-based access to {@linkplain MdibEntity} instances derived from an {@linkplain org.somda.sdc.biceps.model.participant.Mdib}.
  * <p>
  * In this case "registry-based" means that there is fast (hash map) access to any {@link MdibEntity} instance if
  * not mentioned otherwise.
@@ -76,7 +76,7 @@ public interface MdibStorage {
     BigInteger getMdStateVersion();
 
     /**
-     * Retrieves a specific descriptor of the hosted {@link org.ieee11073.sdc.biceps.model.participant.Mdib}.
+     * Retrieves a specific descriptor of the hosted {@link org.somda.sdc.biceps.model.participant.Mdib}.
      *
      * @param handle     Handle name of the descriptor.
      * @param descrClass Class to cast to. If cast fails, {@link Optional#empty()} will be returned.
@@ -87,7 +87,7 @@ public interface MdibStorage {
     <T extends AbstractDescriptor> Optional<T> getDescriptor(String handle, Class<T> descrClass);
 
     /**
-     * Retrieves a specific abstract descriptor of the hosted {@link org.ieee11073.sdc.biceps.model.participant.Mdib}.
+     * Retrieves a specific abstract descriptor of the hosted {@link org.somda.sdc.biceps.model.participant.Mdib}.
      *
      * @param handle Handle name of the descriptor.
      * @return {@link Optional} of the requested descriptor or {@link Optional#empty()} if not found or something
@@ -126,12 +126,12 @@ public interface MdibStorage {
      * Gets all {@link MdibEntity} objects that are root elements.
      *
      * @return the root elements, i.e., entities whose descriptors are of type
-     * {@link org.ieee11073.sdc.biceps.model.participant.MdsDescriptor}.
+     * {@link org.somda.sdc.biceps.model.participant.MdsDescriptor}.
      */
     List<MdibEntity> getRootEntities();
 
     /**
-     * Retrieves a specific abstract state of the hosted {@link org.ieee11073.sdc.biceps.model.participant.Mdib}.
+     * Retrieves a specific abstract state of the hosted {@link org.somda.sdc.biceps.model.participant.Mdib}.
      *
      * @param handle the state or descriptor handle of the state to request (descriptor handle is used in case of
      *               single states).
@@ -141,7 +141,7 @@ public interface MdibStorage {
     Optional<AbstractState> getState(String handle);
 
     /**
-     * Retrieves a specific state of the hosted {@link org.ieee11073.sdc.biceps.model.participant.Mdib}.
+     * Retrieves a specific state of the hosted {@link org.somda.sdc.biceps.model.participant.Mdib}.
      *
      * @param handle     the state or descriptor handle of the state to request (descriptor handle is used in case of
      *                   single states).

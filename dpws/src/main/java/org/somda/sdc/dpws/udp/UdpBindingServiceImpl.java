@@ -1,10 +1,10 @@
-package org.ieee11073.sdc.dpws.udp;
+package org.somda.sdc.dpws.udp;
 
 import com.google.common.util.concurrent.AbstractIdleService;
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
-import org.ieee11073.sdc.dpws.DpwsConstants;
-import org.ieee11073.sdc.dpws.network.NetworkInterfaceUtil;
+import org.somda.sdc.dpws.DpwsConstants;
+import org.somda.sdc.dpws.network.NetworkInterfaceUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

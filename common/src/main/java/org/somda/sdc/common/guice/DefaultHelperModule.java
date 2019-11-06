@@ -1,10 +1,10 @@
-package org.ieee11073.sdc.common.guice;
+package org.somda.sdc.common.guice;
 
 import com.google.inject.AbstractModule;
-import org.ieee11073.sdc.common.util.JaxbUtil;
-import org.ieee11073.sdc.common.util.JaxbUtilImpl;
-import org.ieee11073.sdc.common.util.ObjectUtil;
-import org.ieee11073.sdc.common.util.ObjectUtilImpl;
+import org.somda.sdc.common.util.JaxbUtil;
+import org.somda.sdc.common.util.JaxbUtilImpl;
+import org.somda.sdc.common.util.ObjectUtil;
+import org.somda.sdc.common.util.ObjectUtilImpl;
 
 /**
  * Guice module to bind util functionality.

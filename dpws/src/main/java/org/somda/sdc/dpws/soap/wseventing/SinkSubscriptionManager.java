@@ -1,4 +1,4 @@
-package org.ieee11073.sdc.dpws.soap.wseventing;
+package org.somda.sdc.dpws.soap.wseventing;
 
 /**
  * Subscription manager interface that is used by event sinks.

@@ -1,13 +1,13 @@
-package it.org.ieee11073.sdc.dpws;
+package it.org.somda.sdc.dpws;
 
 import com.google.common.eventbus.EventBus;
 import com.google.common.eventbus.Subscribe;
 import com.google.common.util.concurrent.AbstractIdleService;
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
-import org.ieee11073.sdc.dpws.udp.UdpBindingService;
-import org.ieee11073.sdc.dpws.udp.UdpMessage;
-import org.ieee11073.sdc.dpws.udp.UdpMessageReceiverCallback;
+import org.somda.sdc.dpws.udp.UdpBindingService;
+import org.somda.sdc.dpws.udp.UdpMessage;
+import org.somda.sdc.dpws.udp.UdpMessageReceiverCallback;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

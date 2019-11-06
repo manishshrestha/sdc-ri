@@ -1,10 +1,10 @@
-package org.ieee11073.sdc.biceps.common.access;
+package org.somda.sdc.biceps.common.access;
 
 
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
-import org.ieee11073.sdc.biceps.common.CommonConfig;
-import org.ieee11073.sdc.common.util.ObjectUtil;
+import org.somda.sdc.biceps.common.CommonConfig;
+import org.somda.sdc.common.util.ObjectUtil;
 
 /**
  * A utility class to deep copy any input and output if configured.

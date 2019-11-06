@@ -1,4 +1,4 @@
-package org.ieee11073.sdc.common.util;
+package org.somda.sdc.common.util;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
@@ -6,7 +6,7 @@ import com.google.inject.Injector;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import test.org.ieee11073.common.TestLogging;
+import test.org.somda.common.TestLogging;
 
 import java.util.ArrayList;
 import java.util.Arrays;

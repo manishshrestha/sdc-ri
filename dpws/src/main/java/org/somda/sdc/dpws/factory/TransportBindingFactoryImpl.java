@@ -1,18 +1,18 @@
-package org.ieee11073.sdc.dpws.factory;
+package org.somda.sdc.dpws.factory;
 
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import org.glassfish.jersey.SslConfigurator;
-import org.ieee11073.sdc.dpws.TransportBinding;
-import org.ieee11073.sdc.dpws.TransportBindingException;
-import org.ieee11073.sdc.dpws.crypto.CryptoConfig;
-import org.ieee11073.sdc.dpws.crypto.CryptoSettings;
-import org.ieee11073.sdc.dpws.crypto.CryptoConfigurator;
-import org.ieee11073.sdc.dpws.soap.SoapConstants;
-import org.ieee11073.sdc.dpws.soap.SoapMarshalling;
-import org.ieee11073.sdc.dpws.soap.SoapMessage;
-import org.ieee11073.sdc.dpws.soap.SoapUtil;
-import org.ieee11073.sdc.dpws.soap.exception.SoapFaultException;
+import org.somda.sdc.dpws.TransportBinding;
+import org.somda.sdc.dpws.TransportBindingException;
+import org.somda.sdc.dpws.crypto.CryptoConfig;
+import org.somda.sdc.dpws.crypto.CryptoSettings;
+import org.somda.sdc.dpws.crypto.CryptoConfigurator;
+import org.somda.sdc.dpws.soap.SoapConstants;
+import org.somda.sdc.dpws.soap.SoapMarshalling;
+import org.somda.sdc.dpws.soap.SoapMessage;
+import org.somda.sdc.dpws.soap.SoapUtil;
+import org.somda.sdc.dpws.soap.exception.SoapFaultException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -1,11 +1,11 @@
-package org.ieee11073.sdc.biceps.provider.preprocessing;
+package org.somda.sdc.biceps.provider.preprocessing;
 
 import com.google.common.base.Joiner;
-import org.ieee11073.sdc.biceps.common.*;
-import org.ieee11073.sdc.biceps.common.storage.DescriptionPreprocessingSegment;
-import org.ieee11073.sdc.biceps.common.storage.MdibStorage;
-import org.ieee11073.sdc.biceps.model.participant.AbstractDescriptor;
-import org.ieee11073.sdc.biceps.model.participant.MdsDescriptor;
+import org.somda.sdc.biceps.common.*;
+import org.somda.sdc.biceps.common.storage.DescriptionPreprocessingSegment;
+import org.somda.sdc.biceps.common.storage.MdibStorage;
+import org.somda.sdc.biceps.model.participant.AbstractDescriptor;
+import org.somda.sdc.biceps.model.participant.MdsDescriptor;
 
 import javax.inject.Inject;
 import java.util.Optional;

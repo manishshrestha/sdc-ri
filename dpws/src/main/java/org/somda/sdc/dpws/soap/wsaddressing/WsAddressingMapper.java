@@ -1,10 +1,10 @@
-package org.ieee11073.sdc.dpws.soap.wsaddressing;
+package org.somda.sdc.dpws.soap.wsaddressing;
 
 import com.google.inject.Inject;
-import org.ieee11073.sdc.common.util.JaxbUtil;
-import org.ieee11073.sdc.dpws.soap.wsaddressing.model.AttributedURIType;
-import org.ieee11073.sdc.dpws.soap.wsaddressing.model.ObjectFactory;
-import org.ieee11073.sdc.dpws.soap.wsaddressing.model.RelatesToType;
+import org.somda.sdc.common.util.JaxbUtil;
+import org.somda.sdc.dpws.soap.wsaddressing.model.AttributedURIType;
+import org.somda.sdc.dpws.soap.wsaddressing.model.ObjectFactory;
+import org.somda.sdc.dpws.soap.wsaddressing.model.RelatesToType;
 
 import java.util.List;
 import java.util.Optional;

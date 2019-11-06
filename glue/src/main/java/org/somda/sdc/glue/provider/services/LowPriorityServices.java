@@ -1,6 +1,6 @@
-package org.ieee11073.sdc.glue.provider.services;
+package org.somda.sdc.glue.provider.services;
 
-import org.ieee11073.sdc.dpws.device.WebService;
+import org.somda.sdc.dpws.device.WebService;
 
 /**
  * Implementation of the low-priority services.

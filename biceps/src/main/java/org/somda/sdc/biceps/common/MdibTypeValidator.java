@@ -1,10 +1,10 @@
-package org.ieee11073.sdc.biceps.common;
+package org.somda.sdc.biceps.common;
 
 import com.google.inject.Inject;
-import org.ieee11073.sdc.biceps.model.participant.AbstractContextDescriptor;
-import org.ieee11073.sdc.biceps.model.participant.AbstractDescriptor;
-import org.ieee11073.sdc.biceps.model.participant.AbstractMultiState;
-import org.ieee11073.sdc.biceps.model.participant.AbstractState;
+import org.somda.sdc.biceps.model.participant.AbstractContextDescriptor;
+import org.somda.sdc.biceps.model.participant.AbstractDescriptor;
+import org.somda.sdc.biceps.model.participant.AbstractMultiState;
+import org.somda.sdc.biceps.model.participant.AbstractState;
 
 import java.util.Collections;
 import java.util.List;

@@ -1,10 +1,10 @@
-package org.ieee11073.sdc.dpws.soap.wsaddressing.factory;
+package org.somda.sdc.dpws.soap.wsaddressing.factory;
 
 import com.google.inject.Inject;
-import org.ieee11073.sdc.dpws.soap.SoapMessage;
-import org.ieee11073.sdc.dpws.soap.SoapConstants;
-import org.ieee11073.sdc.dpws.soap.factory.SoapFaultFactory;
-import org.ieee11073.sdc.dpws.soap.wsaddressing.WsAddressingConstants;
+import org.somda.sdc.dpws.soap.SoapMessage;
+import org.somda.sdc.dpws.soap.SoapConstants;
+import org.somda.sdc.dpws.soap.factory.SoapFaultFactory;
+import org.somda.sdc.dpws.soap.wsaddressing.WsAddressingConstants;
 
 import javax.xml.namespace.QName;
 

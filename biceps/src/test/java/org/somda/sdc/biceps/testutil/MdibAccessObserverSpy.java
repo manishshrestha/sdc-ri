@@ -1,8 +1,8 @@
-package org.ieee11073.sdc.biceps.testutil;
+package org.somda.sdc.biceps.testutil;
 
 import com.google.common.eventbus.Subscribe;
-import org.ieee11073.sdc.biceps.common.access.MdibAccessObserver;
-import org.ieee11073.sdc.biceps.common.event.*;
+import org.somda.sdc.biceps.common.access.MdibAccessObserver;
+import org.somda.sdc.biceps.common.event.*;
 
 import java.util.ArrayList;
 import java.util.List;

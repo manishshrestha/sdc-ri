@@ -2,6 +2,6 @@
  * Factories for the client util package.
  */
 @ParametersAreNonnullByDefault
-package org.ieee11073.sdc.dpws.client.helper.factory;
+package org.somda.sdc.dpws.client.helper.factory;
 
 import javax.annotation.ParametersAreNonnullByDefault;

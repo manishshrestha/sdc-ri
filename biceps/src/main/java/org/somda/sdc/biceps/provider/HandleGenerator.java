@@ -1,4 +1,4 @@
-package org.ieee11073.sdc.biceps.provider;
+package org.somda.sdc.biceps.provider;
 
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;

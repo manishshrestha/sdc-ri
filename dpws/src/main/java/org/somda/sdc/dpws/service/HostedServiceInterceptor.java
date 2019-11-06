@@ -1,18 +1,18 @@
-package org.ieee11073.sdc.dpws.service;
+package org.somda.sdc.dpws.service;
 
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
-import org.ieee11073.sdc.dpws.service.helper.MetadataSectionUtil;
-import org.ieee11073.sdc.dpws.soap.SoapUtil;
-import org.ieee11073.sdc.dpws.soap.exception.SoapFaultException;
-import org.ieee11073.sdc.dpws.soap.interception.*;
-import org.ieee11073.sdc.dpws.soap.wsaddressing.WsAddressingUtil;
-import org.ieee11073.sdc.dpws.soap.wsdiscovery.WsDiscoveryTargetService;
-import org.ieee11073.sdc.dpws.soap.wsmetadataexchange.WsMetadataExchangeConstants;
-import org.ieee11073.sdc.dpws.soap.wsmetadataexchange.model.GetMetadata;
-import org.ieee11073.sdc.dpws.soap.wsmetadataexchange.model.Metadata;
-import org.ieee11073.sdc.dpws.soap.wsmetadataexchange.model.MetadataSection;
-import org.ieee11073.sdc.dpws.soap.wsmetadataexchange.model.ObjectFactory;
+import org.somda.sdc.dpws.service.helper.MetadataSectionUtil;
+import org.somda.sdc.dpws.soap.SoapUtil;
+import org.somda.sdc.dpws.soap.exception.SoapFaultException;
+import org.somda.sdc.dpws.soap.interception.*;
+import org.somda.sdc.dpws.soap.wsaddressing.WsAddressingUtil;
+import org.somda.sdc.dpws.soap.wsdiscovery.WsDiscoveryTargetService;
+import org.somda.sdc.dpws.soap.wsmetadataexchange.WsMetadataExchangeConstants;
+import org.somda.sdc.dpws.soap.wsmetadataexchange.model.GetMetadata;
+import org.somda.sdc.dpws.soap.wsmetadataexchange.model.Metadata;
+import org.somda.sdc.dpws.soap.wsmetadataexchange.model.MetadataSection;
+import org.somda.sdc.dpws.soap.wsmetadataexchange.model.ObjectFactory;
 
 import java.net.URI;
 import java.util.Collections;

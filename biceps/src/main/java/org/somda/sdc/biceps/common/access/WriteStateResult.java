@@ -1,9 +1,9 @@
-package org.ieee11073.sdc.biceps.common.access;
+package org.somda.sdc.biceps.common.access;
 
-import org.ieee11073.sdc.biceps.model.participant.AbstractState;
-import org.ieee11073.sdc.biceps.model.participant.MdibVersion;
-import org.ieee11073.sdc.common.util.ObjectStringifier;
-import org.ieee11073.sdc.common.util.Stringified;
+import org.somda.sdc.biceps.model.participant.AbstractState;
+import org.somda.sdc.biceps.model.participant.MdibVersion;
+import org.somda.sdc.common.util.ObjectStringifier;
+import org.somda.sdc.common.util.Stringified;
 
 import java.util.List;
 

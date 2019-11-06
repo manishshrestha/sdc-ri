@@ -1,4 +1,4 @@
-package org.ieee11073.sdc.dpws.soap.wseventing.helper;
+package org.somda.sdc.dpws.soap.wseventing.helper;
 
 import javax.annotation.Nullable;
 import java.net.URI;

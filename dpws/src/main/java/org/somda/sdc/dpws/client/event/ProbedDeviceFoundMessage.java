@@ -1,7 +1,7 @@
-package org.ieee11073.sdc.dpws.client.event;
+package org.somda.sdc.dpws.client.event;
 
-import org.ieee11073.sdc.common.event.AbstractEventMessage;
-import org.ieee11073.sdc.dpws.client.DiscoveredDevice;
+import org.somda.sdc.common.event.AbstractEventMessage;
+import org.somda.sdc.dpws.client.DiscoveredDevice;
 
 /**
  * Provides a {@linkplain DiscoveredDevice} object that is delivered through a ProbeMatches message for a certain Probe

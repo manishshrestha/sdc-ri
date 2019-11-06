@@ -1,7 +1,7 @@
-package org.ieee11073.sdc.biceps.common;
+package org.somda.sdc.biceps.common;
 
-import org.ieee11073.sdc.biceps.common.event.*;
-import org.ieee11073.sdc.biceps.model.participant.*;
+import org.somda.sdc.biceps.common.event.*;
+import org.somda.sdc.biceps.model.participant.*;
 
 import java.util.ArrayList;
 import java.util.Collection;

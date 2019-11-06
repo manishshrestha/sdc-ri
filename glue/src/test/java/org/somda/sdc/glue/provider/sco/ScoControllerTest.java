@@ -1,13 +1,13 @@
-package org.ieee11073.sdc.glue.provider.sco;
+package org.somda.sdc.glue.provider.sco;
 
-import org.ieee11073.sdc.biceps.common.access.MdibAccess;
-import org.ieee11073.sdc.biceps.model.message.InvocationError;
-import org.ieee11073.sdc.biceps.model.message.InvocationState;
-import org.ieee11073.sdc.biceps.model.participant.*;
-import org.ieee11073.sdc.biceps.testutil.Handles;
-import org.ieee11073.sdc.dpws.device.EventSourceAccess;
-import org.ieee11073.sdc.glue.UnitTestUtil;
-import org.ieee11073.sdc.glue.provider.sco.factory.ScoControllerFactory;
+import org.somda.sdc.biceps.common.access.MdibAccess;
+import org.somda.sdc.biceps.model.message.InvocationError;
+import org.somda.sdc.biceps.model.message.InvocationState;
+import org.somda.sdc.biceps.model.participant.*;
+import org.somda.sdc.biceps.testutil.Handles;
+import org.somda.sdc.dpws.device.EventSourceAccess;
+import org.somda.sdc.glue.UnitTestUtil;
+import org.somda.sdc.glue.provider.sco.factory.ScoControllerFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 

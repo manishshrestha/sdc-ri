@@ -1,4 +1,4 @@
-package org.ieee11073.sdc.common.event;
+package org.somda.sdc.common.event;
 
 /**
  * Simple message container to ease use with {@linkplain com.google.common.eventbus.EventBus}.

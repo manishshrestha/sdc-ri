@@ -1,9 +1,9 @@
-package org.ieee11073.sdc.dpws.soap.wseventing.helper;
+package org.somda.sdc.dpws.soap.wseventing.helper;
 
 import com.google.inject.Inject;
-import org.ieee11073.sdc.dpws.soap.wseventing.WsEventingConstants;
-import org.ieee11073.sdc.dpws.soap.wseventing.model.ObjectFactory;
-import org.ieee11073.sdc.common.util.JaxbUtil;
+import org.somda.sdc.dpws.soap.wseventing.WsEventingConstants;
+import org.somda.sdc.dpws.soap.wseventing.model.ObjectFactory;
+import org.somda.sdc.common.util.JaxbUtil;
 
 import java.net.URI;
 import java.util.List;

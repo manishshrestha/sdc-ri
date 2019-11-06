@@ -1,9 +1,9 @@
-package org.ieee11073.sdc.glue.provider.sco;
+package org.somda.sdc.glue.provider.sco;
 
-import org.ieee11073.sdc.biceps.model.message.InvocationError;
-import org.ieee11073.sdc.biceps.model.message.InvocationState;
-import org.ieee11073.sdc.biceps.model.participant.LocalizedText;
-import org.ieee11073.sdc.biceps.model.participant.MdibVersion;
+import org.somda.sdc.biceps.model.message.InvocationError;
+import org.somda.sdc.biceps.model.message.InvocationState;
+import org.somda.sdc.biceps.model.participant.LocalizedText;
+import org.somda.sdc.biceps.model.participant.MdibVersion;
 
 import javax.annotation.Nullable;
 import java.util.List;

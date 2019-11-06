@@ -1,4 +1,4 @@
-package org.ieee11073.sdc.biceps.common.access;
+package org.somda.sdc.biceps.common.access;
 
 /**
  * Definition of an auto-closeable interface that allows to invoke read functions without getting distracted by write calls.

@@ -1,8 +1,8 @@
-package org.ieee11073.sdc.dpws.http;
+package org.somda.sdc.dpws.http;
 
-import org.ieee11073.sdc.dpws.soap.TransportInfo;
-import org.ieee11073.sdc.dpws.soap.exception.MarshallingException;
-import org.ieee11073.sdc.dpws.soap.exception.TransportException;
+import org.somda.sdc.dpws.soap.TransportInfo;
+import org.somda.sdc.dpws.soap.exception.MarshallingException;
+import org.somda.sdc.dpws.soap.exception.TransportException;
 
 import java.io.InputStream;
 import java.io.OutputStream;

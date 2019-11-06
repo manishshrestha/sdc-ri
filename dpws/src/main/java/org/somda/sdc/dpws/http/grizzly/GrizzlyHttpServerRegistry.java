@@ -1,4 +1,4 @@
-package org.ieee11073.sdc.dpws.http.grizzly;
+package org.somda.sdc.dpws.http.grizzly;
 
 import com.google.common.collect.Iterables;
 import com.google.common.util.concurrent.AbstractIdleService;
@@ -13,14 +13,14 @@ import org.glassfish.grizzly.ssl.SSLContextConfigurator;
 import org.glassfish.grizzly.ssl.SSLEngineConfigurator;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpContainer;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
-import org.ieee11073.sdc.dpws.crypto.CryptoConfig;
-import org.ieee11073.sdc.dpws.crypto.CryptoConfigurator;
-import org.ieee11073.sdc.dpws.crypto.CryptoSettings;
-import org.ieee11073.sdc.dpws.http.HttpHandler;
-import org.ieee11073.sdc.dpws.http.HttpServerRegistry;
-import org.ieee11073.sdc.dpws.http.HttpUriBuilder;
-import org.ieee11073.sdc.dpws.soap.SoapConstants;
-import org.ieee11073.sdc.dpws.soap.TransportInfo;
+import org.somda.sdc.dpws.crypto.CryptoConfig;
+import org.somda.sdc.dpws.crypto.CryptoConfigurator;
+import org.somda.sdc.dpws.crypto.CryptoSettings;
+import org.somda.sdc.dpws.http.HttpHandler;
+import org.somda.sdc.dpws.http.HttpServerRegistry;
+import org.somda.sdc.dpws.http.HttpUriBuilder;
+import org.somda.sdc.dpws.soap.SoapConstants;
+import org.somda.sdc.dpws.soap.TransportInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

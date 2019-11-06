@@ -1,9 +1,9 @@
-package org.ieee11073.sdc.dpws.soap.wsdiscovery;
+package org.somda.sdc.dpws.soap.wsdiscovery;
 
 import com.google.common.primitives.UnsignedInteger;
 import com.google.inject.Inject;
-import org.ieee11073.sdc.dpws.soap.wsdiscovery.model.AppSequenceType;
-import org.ieee11073.sdc.dpws.soap.wsdiscovery.model.ObjectFactory;
+import org.somda.sdc.dpws.soap.wsdiscovery.model.AppSequenceType;
+import org.somda.sdc.dpws.soap.wsdiscovery.model.ObjectFactory;
 
 import javax.xml.namespace.QName;
 import java.net.URI;
