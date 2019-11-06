@@ -31,11 +31,19 @@ public interface MdibEntity {
     List<String> getChildren();
 
     /**
-     * Obtain the entity's descriptor
+     * Obtain the entity's descriptor.
      *
      * @return descriptor information currently associated with the entity.
      */
     AbstractDescriptor getDescriptor();
+
+    /**
+     * Obtains the entity's descriptor as a given type.
+     *
+     * @param theClass the class to cast.
+     * @return descriptor information currently associated with the entity.
+     */
+    <T extends AbstractDescriptor> Optional<T> getDescriptor(Class<T> theClass);
 
     /**
      * Unique name to identify the entity.
@@ -75,6 +83,22 @@ public interface MdibEntity {
      * @return an alternative to execute if the opposite turns out.
      */
     StateAlternative<AbstractState> doIfMultiState(Consumer<List<AbstractMultiState>> consumer);
+
+    /**
+     * Gets the descriptor class.
+     * <p>
+     * Short-hand for {@code getDescriptor().getClass()}.
+     *
+     * @return the descriptor class of the entity.
+     */
+    Class<? extends AbstractDescriptor> getDescriptorClass();
+
+    /**
+     * Gets the state class.
+     *
+     * @return the state class of the entity.
+     */
+    Class<? extends AbstractState> getStateClass();
 
     /**
      * An alternative lambda to be executed.

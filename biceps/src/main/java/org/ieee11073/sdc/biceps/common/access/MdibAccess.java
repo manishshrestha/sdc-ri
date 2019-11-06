@@ -146,4 +146,13 @@ public interface MdibAccess {
      */
     List<AbstractContextState> getContextStates(String descriptorHandle);
 
+    /**
+     * Gets all context states.
+     * <p>
+     * <em>Attention: collections may be created on function call, hence be careful with performance issues.</em>
+     *
+     * @return a list of all context states.
+     */
+    List<AbstractContextState> getContextStates();
+
 }

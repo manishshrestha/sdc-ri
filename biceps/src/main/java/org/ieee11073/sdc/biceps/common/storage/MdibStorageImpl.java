@@ -162,6 +162,11 @@ public class MdibStorageImpl implements MdibStorage {
     }
 
     @Override
+    public List<AbstractContextState> getContextStates() {
+        return new ArrayList<>(contextStates.values());
+    }
+
+    @Override
     public WriteDescriptionResult apply(MdibVersion mdibVersion,
                                         @Nullable BigInteger mdDescriptionVersion,
                                         @Nullable BigInteger mdStateVersion,
@@ -172,7 +177,7 @@ public class MdibStorageImpl implements MdibStorage {
 
         final List<MdibEntity> insertedEntities = new ArrayList<>();
         final List<MdibEntity> updatedEntities = new ArrayList<>();
-        final List<String> deletedEntities = new ArrayList<>();
+        final List<MdibEntity> deletedEntities = new ArrayList<>();
         for (MdibDescriptionModification modification : descriptionModifications.getModifications()) {
             switch (modification.getModificationType()) {
                 case INSERT:
@@ -192,7 +197,7 @@ public class MdibStorageImpl implements MdibStorage {
         return new WriteDescriptionResult(mdibVersion, insertedEntities, updatedEntities, deletedEntities);
     }
 
-    private void deleteEntity(MdibDescriptionModification modification, List<String> deletedEntities) {
+    private void deleteEntity(MdibDescriptionModification modification, List<MdibEntity> deletedEntities) {
         Optional.ofNullable(entities.get(modification.getHandle())).ifPresent(mdibEntity -> {
             LOG.debug("[{}] Delete entity: {}", mdibVersion.getInstanceId(), modification.getDescriptor().getHandle());
             mdibEntity.getParent().ifPresent(parentHandle ->
@@ -203,12 +208,18 @@ public class MdibStorageImpl implements MdibStorage {
                                             .collect(Collectors.toList())))));
         });
 
+        final MdibEntity deletedEntity = entities.get(modification.getHandle());
+        if (deletedEntity == null) {
+            LOG.warn("Possible inconsistency detected. Entity to delete was not found: {}" + modification.getHandle());
+            return;
+        }
+
         rootEntities.remove(modification.getHandle());
         entities.remove(modification.getHandle());
         contextStates.entrySet().removeIf(state ->
                 state.getValue().getDescriptorHandle().equals(modification.getHandle()));
 
-        deletedEntities.add(modification.getHandle());
+        deletedEntities.add(deletedEntity);
     }
 
     private void updateEntity(MdibDescriptionModification modification, List<MdibEntity> updatedEntities) {

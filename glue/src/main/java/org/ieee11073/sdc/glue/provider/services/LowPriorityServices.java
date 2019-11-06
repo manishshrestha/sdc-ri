@@ -10,6 +10,8 @@ import org.ieee11073.sdc.dpws.device.WebService;
  * <li>Archive service
  * <li>Localization service
  * </ul>
+ *
+ * todo DGr implementation of LowPriorityServices is missing
  */
 public class LowPriorityServices extends WebService {
 }

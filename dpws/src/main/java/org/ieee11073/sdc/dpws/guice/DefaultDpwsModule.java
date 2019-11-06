@@ -12,6 +12,7 @@ import org.ieee11073.sdc.dpws.client.helper.*;
 import org.ieee11073.sdc.dpws.client.helper.factory.ClientHelperFactory;
 import org.ieee11073.sdc.dpws.device.Device;
 import org.ieee11073.sdc.dpws.device.DeviceImpl;
+import org.ieee11073.sdc.dpws.device.factory.DeviceFactory;
 import org.ieee11073.sdc.dpws.device.helper.DiscoveryDeviceUdpMessageProcessor;
 import org.ieee11073.sdc.dpws.device.helper.factory.DeviceHelperFactory;
 import org.ieee11073.sdc.dpws.factory.DpwsFrameworkFactory;
@@ -132,9 +133,6 @@ public class DefaultDpwsModule extends AbstractModule {
     }
 
     private void configureDevice() {
-        bind(Device.class)
-                .to(DeviceImpl.class);
-
         bind(ScheduledExecutorService.class)
                 .annotatedWith(AppDelayExecutor.class)
                 .toInstance(Executors.newScheduledThreadPool(10));
@@ -142,6 +140,10 @@ public class DefaultDpwsModule extends AbstractModule {
         install(new FactoryModuleBuilder()
                 .implement(DiscoveryDeviceUdpMessageProcessor.class, DiscoveryDeviceUdpMessageProcessor.class)
                 .build(DeviceHelperFactory.class));
+
+        install(new FactoryModuleBuilder()
+                .implement(Device.class, DeviceImpl.class)
+                .build(DeviceFactory.class));
     }
 
     private void configureWsMetadataExchange() {

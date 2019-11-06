@@ -1,5 +1,7 @@
 package org.ieee11073.sdc.glue.common;
 
+import javax.xml.namespace.QName;
+
 /**
  * Constants used throughout high priority and low priority WSDL files.
  * <p>
@@ -43,7 +45,7 @@ public class WsdlConstants {
     public static final String OPERATION_SET_STRING = "SetString";
     public static final String OPERATION_ACTIVATE = "Activate";
     public static final String OPERATION_SET_ALERT_STATE = "SetAlertState";
-    public static final String OPERATION_SET_COMPONEN_TSTATE = "SetComponentState";
+    public static final String OPERATION_SET_COMPONENT_STATE = "SetComponentState";
     public static final String OPERATION_SET_METRIC_STATE = "SetMetricState";
     public static final String OPERATION_OPERATION_INVOKED_REPORT = "OperationInvokedReport";
 
@@ -77,4 +79,14 @@ public class WsdlConstants {
 
     public static final String OPERATION_GET_LOCALIZED_TEXT = "GetLocalizedText";
     public static final String OPERATION_GET_SUPPORTED_LANGUAGES = "GetSupportedLanguages";
+
+    public static final QName PORT_TYPE_GET_QNAME = new QName(TARGET_NAMESPACE, SERVICE_GET);
+    public static final QName PORT_TYPE_SET_QNAME = new QName(TARGET_NAMESPACE, SERVICE_SET);
+    public static final QName PORT_TYPE_DESCRIPTION_EVENT_QNAME = new QName(TARGET_NAMESPACE, SERVICE_DESCRIPTION_EVENT);
+    public static final QName PORT_TYPE_STATE_EVENT_QNAME = new QName(TARGET_NAMESPACE, SERVICE_STATE_EVENT);
+    public static final QName PORT_TYPE_CONTEXT_QNAME = new QName(TARGET_NAMESPACE, SERVICE_CONTEXT);
+    public static final QName PORT_TYPE_WAVEFORM_QNAME = new QName(TARGET_NAMESPACE, SERVICE_WAVEFORM);
+    public static final QName PORT_TYPE_CONTAINMENT_TREE_QNAME = new QName(TARGET_NAMESPACE, SERVICE_CONTAINMENT_TREE);
+    public static final QName PORT_TYPE_ARCHIVE_QNAME = new QName(TARGET_NAMESPACE, SERVICE_ARCHIVE);
+    public static final QName PORT_TYPE_LOCALIZATION_QNAME = new QName(TARGET_NAMESPACE, SERVICE_LOCALIZATION);
 }

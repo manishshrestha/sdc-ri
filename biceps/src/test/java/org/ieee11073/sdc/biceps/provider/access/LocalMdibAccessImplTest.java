@@ -263,7 +263,7 @@ public class LocalMdibAccessImplTest {
 
             // Then expect the element to be deleted
             assertEquals(1, writeDescriptionResult.getDeletedEntities().size());
-            assertEquals(Handles.CHANNEL_2, writeDescriptionResult.getDeletedEntities().get(0));
+            assertEquals(Handles.CHANNEL_2, writeDescriptionResult.getDeletedEntities().get(0).getHandle());
             assertFalse(mdibAccess.getEntity(Handles.CHANNEL_2).isPresent());
 
             assertTrue(mdibAccess.getEntity(Handles.VMD_1).isPresent());
