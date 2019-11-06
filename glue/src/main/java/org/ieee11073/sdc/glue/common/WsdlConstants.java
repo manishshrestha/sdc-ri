@@ -45,7 +45,7 @@ public class WsdlConstants {
     public static final String OPERATION_SET_STRING = "SetString";
     public static final String OPERATION_ACTIVATE = "Activate";
     public static final String OPERATION_SET_ALERT_STATE = "SetAlertState";
-    public static final String OPERATION_SET_COMPONEN_TSTATE = "SetComponentState";
+    public static final String OPERATION_SET_COMPONENT_STATE = "SetComponentState";
     public static final String OPERATION_SET_METRIC_STATE = "SetMetricState";
     public static final String OPERATION_OPERATION_INVOKED_REPORT = "OperationInvokedReport";
 
