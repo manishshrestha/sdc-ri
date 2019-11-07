@@ -1,4 +1,4 @@
-package org.somda.sdc.glue.provider.services.helper;
+package org.somda.sdc.glue.common;
 
 import org.somda.sdc.biceps.common.MdibDescriptionModifications;
 import org.somda.sdc.biceps.common.MdibEntity;
@@ -11,7 +11,8 @@ import org.somda.sdc.biceps.testutil.BaseTreeModificationsSet;
 import org.somda.sdc.biceps.testutil.Handles;
 import org.somda.sdc.biceps.testutil.MockEntryFactory;
 import org.somda.sdc.glue.UnitTestUtil;
-import org.somda.sdc.glue.provider.services.helper.factory.MdibMapperFactory;
+import org.somda.sdc.glue.common.MdibMapper;
+import org.somda.sdc.glue.common.factory.MdibMapperFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 

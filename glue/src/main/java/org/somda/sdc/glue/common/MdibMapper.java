@@ -1,4 +1,4 @@
-package org.somda.sdc.glue.provider.services.helper;
+package org.somda.sdc.glue.common;
 
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
@@ -15,7 +15,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 /**
- * Maps MDIB structure from {@linkplain MdibAccess} to an {@linkplain Mdib} object.
+ * Maps MDIB entities from {@linkplain MdibAccess} to an {@linkplain Mdib} object.
  */
 public class MdibMapper {
     private static final Logger LOG = LoggerFactory.getLogger(MdibMapper.class);
