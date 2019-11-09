@@ -28,6 +28,7 @@ public class DefaultDpwsConfigModule extends AbstractConfigurationModule {
         configureClientConfig();
         configureDeviceConfig();
         configureCryptoConfig();
+        configureSoapConfig();
         configureDpws();
     }
 
@@ -114,7 +115,13 @@ public class DefaultDpwsConfigModule extends AbstractConfigurationModule {
         bind(WsEventingConfig.SOURCE_SUBSCRIPTION_MANAGER_PATH,
                 String.class,
                 "SubscriptionManager");
+    }
+
+    private void configureSoapConfig() {
         bind(SoapConfig.JAXB_CONTEXT_PATH,
+                String.class,
+                "");
+        bind(SoapConfig.NAMESPACE_MAPPINGS,
                 String.class,
                 "");
     }
