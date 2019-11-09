@@ -1,5 +1,13 @@
 package org.somda.sdc.dpws.soap;
 
+import org.somda.sdc.dpws.DpwsConstants;
+import org.somda.sdc.dpws.soap.wsaddressing.WsAddressingConstants;
+import org.somda.sdc.dpws.soap.wsdiscovery.WsDiscoveryConstants;
+import org.somda.sdc.dpws.soap.wseventing.WsEventingConfig;
+import org.somda.sdc.dpws.soap.wseventing.WsEventingConstants;
+import org.somda.sdc.dpws.soap.wsmetadataexchange.WsMetadataExchangeConstants;
+import org.somda.sdc.dpws.soap.wstransfer.WsTransferConstants;
+
 import javax.xml.namespace.QName;
 
 /**
@@ -19,6 +27,15 @@ public class SoapConstants {
      * @see <a href="https://www.w3.org/TR/2007/REC-soap12-part1-20070427/#notation">Namespaces</a>
      */
     public static final String NAMESPACE = "http://www.w3.org/2003/05/soap-envelope";
+
+    /**
+     * XML Schema instance namespace.
+     * <p>
+     * Remark: atually, this namespace belongs to a different constant file that describes XML or rather XML Schema
+     * constants. Since there are no further constants being used through the project, this constant is defined
+     * on the SOAP level, the closest logical layer next to XML here.
+     */
+    public static final String NAMESPACE_XSI = "http://www.w3.org/2001/XMLSchema-instance";
 
     /**
      * SOAP fault code "Receiver".
@@ -54,5 +71,20 @@ public class SoapConstants {
     public static final String MEDIA_TYPE_WSDL = "text/xml";
     //public static final String MEDIA_TYPE_WSDL = "application/wsdl+xml";
 
+    /**
+     * Qualified name of a SOAP 1.2 fault.
+     */
     public static final QName FAULT = new QName(NAMESPACE, "Fault");
+
+    /**
+     * Definition of namespace prefix mappings relevant to SOAP (including WS-* and OASIS standards).
+     */
+    public static final String NAMESPACE_PREFIX_MAPPINGS = "{xsi:" + NAMESPACE_XSI + "}" +
+            "{wsa:" + WsAddressingConstants.NAMESPACE + "}" +
+            "{wse:" + WsEventingConstants.NAMESPACE + "}" +
+            "{wsd:" + WsDiscoveryConstants.NAMESPACE + "}" +
+            "{wsm:" + WsMetadataExchangeConstants.NAMESPACE + "}" +
+            "{wst:" + WsTransferConstants.NAMESPACE + "}" +
+            "{dpws:" + DpwsConstants.NAMESPACE + "}" +
+            "{s12:" + NAMESPACE + "}";
 }

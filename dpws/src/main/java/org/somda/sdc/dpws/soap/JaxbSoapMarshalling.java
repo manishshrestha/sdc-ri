@@ -47,15 +47,9 @@ public class JaxbSoapMarshalling extends AbstractIdleService implements SoapMars
                         ObjectFactory soapFactory) {
         this.contextPackages = contextPackages;
         this.soapFactory = soapFactory;
-        namespaceMappings +=
-                "{xsi:http://www.w3.org/2001/XMLSchema-instance}" +
-                        "{wsa:http://www.w3.org/2005/08/addressing}" +
-                        "{wse:http://schemas.xmlsoap.org/ws/2004/08/eventing}" +
-                        "{wsd:http://docs.oasis-open.org/ws-dd/ns/discovery/2009/01}" +
-                        "{wsm:http://schemas.xmlsoap.org/ws/2004/09/mex}" +
-                        "{wst:http://schemas.xmlsoap.org/ws/2004/09/transfer}" +
-                        "{dpws:http://docs.oasis-open.org/ws-dd/ns/dpws/2009/01}" +
-                        "{s12:http://www.w3.org/2003/05/soap-envelope}";
+
+        // Append internal mappings
+        namespaceMappings += SoapConstants.NAMESPACE_PREFIX_MAPPINGS;
 
         namespacePrefixMapper = namespacePrefixMapperConverter.convert(
                 namespaceMappingParser.parse(namespaceMappings));
