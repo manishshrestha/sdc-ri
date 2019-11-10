@@ -12,7 +12,7 @@ import javax.xml.namespace.QName;
 public class WsdlConstants {
     private static final String SLASH = "/";
 
-    public static final String TARGET_NAMESPACE = "http://standards.ieee.org/downloads/11073/11073-20701-2018";
+    public static final String TARGET_NAMESPACE = CommonConstants.NAMESPACE_SDC;
 
     public static final String ACTION_PREFIX = TARGET_NAMESPACE + SLASH;
 
