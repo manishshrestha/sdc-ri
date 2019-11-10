@@ -26,6 +26,12 @@ public class Handles {
     public static final String OPERATION_4 = "operation_4";
     public static final String OPERATION_5 = "operation_5";
     public static final String OPERATION_6 = "operation_6";
+    public static final String OPERATION_7 = "operation_7";
+    public static final String OPERATION_8 = "operation_8";
+    public static final String OPERATION_9 = "operation_9";
+    public static final String OPERATION_10 = "operation_10";
+    public static final String OPERATION_11 = "operation_11";
+    public static final String OPERATION_12 = "operation_12";
     public static final String SYSTEMCONTEXT_0 = "systemcontext_0";
     public static final String SYSTEMCONTEXT_1 = "systemcontext_1";
     public static final String SYSTEMCONTEXT_2 = "systemcontext_2";
@@ -54,6 +60,9 @@ public class Handles {
     public static final String ALERTSIGNAL_2 = "alertsignal_2";
     public static final String ALERTSIGNAL_3 = "alertsignal_3";
     public static final String ALERTSIGNAL_4 = "alertsignal_4";
+    public static final String ALERTSIGNAL_5 = "alertsignal_5";
+    public static final String ALERTSIGNAL_6 = "alertsignal_6";
+    public static final String ALERTSIGNAL_7 = "alertsignal_7";
     public static final String BATTERY_0 = "battery_0";
     public static final String BATTERY_1 = "battery_1";
     public static final String CLOCK_0 = "clock_0";
