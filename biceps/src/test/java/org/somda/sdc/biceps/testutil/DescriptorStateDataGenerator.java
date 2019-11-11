@@ -1,5 +1,6 @@
 package org.somda.sdc.biceps.testutil;
 
+import org.somda.sdc.biceps.model.message.RetrievabilityMethod;
 import org.somda.sdc.biceps.model.participant.*;
 
 import java.math.BigDecimal;
@@ -9,10 +10,12 @@ import java.util.Arrays;
 
 public class DescriptorStateDataGenerator {
     private final ObjectFactory participantFactory;
+    private final org.somda.sdc.biceps.model.extension.ObjectFactory extensionFactory;
     private final BaseTypeDataGenerator baseTypes;
 
     public DescriptorStateDataGenerator() {
         this.participantFactory = new ObjectFactory();
+        this.extensionFactory = new org.somda.sdc.biceps.model.extension.ObjectFactory();
         this.baseTypes = new BaseTypeDataGenerator();
     }
 
@@ -485,9 +488,15 @@ public class DescriptorStateDataGenerator {
     }
 
     private void descriptor(AbstractDescriptor descriptor, String handle) {
+        descriptor(descriptor, handle, RetrievabilityMethod.EP);
+    }
+
+    private void descriptor(AbstractDescriptor descriptor, String handle, RetrievabilityMethod retrievabilityMethod) {
         descriptor.setSafetyClassification(SafetyClassification.MED_A);
         descriptor.setHandle(handle);
         descriptor.setType(baseTypes.codedValue(handle + "-code"));
+        descriptor.setExtension(extensionFactory.createExtensionType());
+        descriptor.getExtension().getAny().add(baseTypes.retrievability(retrievabilityMethod));
     }
 
     private void deviceComponentDescriptor(AbstractDeviceComponentDescriptor descriptor) {
@@ -549,7 +558,7 @@ public class DescriptorStateDataGenerator {
     }
 
     private void operationDescriptor(AbstractOperationDescriptor descriptor, String targetHandle) {
-        descriptor.setAccessLevel("access-level");
+        descriptor.setAccessLevel("Oth");
         descriptor.setInvocationEffectiveTimeout(Duration.ofMillis(10000));
         descriptor.setMaxTimeToFinish(Duration.ofMillis(500));
         descriptor.setOperationTarget(targetHandle);

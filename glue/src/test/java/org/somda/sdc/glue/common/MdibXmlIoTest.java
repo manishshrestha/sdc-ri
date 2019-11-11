@@ -48,6 +48,8 @@ class MdibXmlIoTest {
         // some plausibility checks
         assertEquals(expectedMdib.getMdDescription().getMds().get(0).getHandle(),
                 actualMdib.getMdDescription().getMds().get(0).getHandle());
+        assertEquals(expectedMdib.getMdDescription().getMds().get(0).getExtension().getAny().size(),
+                actualMdib.getMdDescription().getMds().get(0).getExtension().getAny().size());
         assertEquals(expectedMdib.getMdDescription().getMds().get(0).getClock().getResolution(),
                 actualMdib.getMdDescription().getMds().get(0).getClock().getResolution());
 

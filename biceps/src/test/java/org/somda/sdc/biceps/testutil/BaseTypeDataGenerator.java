@@ -1,19 +1,25 @@
 package org.somda.sdc.biceps.testutil;
 
+import org.somda.sdc.biceps.model.message.Retrievability;
+import org.somda.sdc.biceps.model.message.RetrievabilityInfo;
+import org.somda.sdc.biceps.model.message.RetrievabilityMethod;
 import org.somda.sdc.biceps.model.participant.*;
 
 import javax.xml.namespace.QName;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 public class BaseTypeDataGenerator {
     private final ObjectFactory participantFactory;
+    private final org.somda.sdc.biceps.model.message.ObjectFactory messageFactory;
 
     public BaseTypeDataGenerator() {
         this.participantFactory = new ObjectFactory();
+        this.messageFactory = new org.somda.sdc.biceps.model.message.ObjectFactory();
     }
 
     public ApprovedJurisdictions approvedJurisdictions() {
@@ -255,5 +261,17 @@ public class BaseTypeDataGenerator {
         argument.setArg(new QName("http://argument-uri", "a-type", "a"));
         argument.setArgName(codedValue(code));
         return argument;
+    }
+
+    public Retrievability retrievability(RetrievabilityMethod method) {
+        Retrievability retrievability = messageFactory.createRetrievability();
+
+        RetrievabilityInfo getMethod = messageFactory.createRetrievabilityInfo();
+        getMethod.setMethod(RetrievabilityMethod.GET);
+        RetrievabilityInfo additionalMethod = messageFactory.createRetrievabilityInfo();
+        additionalMethod.setMethod(method);
+
+        retrievability.setBy(Arrays.asList(getMethod, additionalMethod));
+        return retrievability;
     }
 }
