@@ -1,6 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xjb:bindings xmlns:xjb="http://java.sun.com/xml/ns/jaxb" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="2.1">
+<xjb:bindings xmlns:xjb="http://java.sun.com/xml/ns/jaxb" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="2.1" xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc">
 	<xjb:bindings schemaLocation="BICEPS_ParticipantModel.xsd">
+	    <!-- Make JAXB using Java 8 state of the art date-time objects -->
+        <xjb:globalBindings>
+            <xjc:javaType name="java.time.LocalDate" xmlType="xs:date" adapter="io.github.threetenjaxb.core.LocalDateXmlAdapter" />
+            <xjc:javaType name="java.time.LocalDateTime" xmlType="xs:dateTime" adapter="io.github.threetenjaxb.core.LocalDateTimeXmlAdapter" />
+            <xjc:javaType name="java.time.Duration" xmlType="xs:duration" adapter="io.github.threetenjaxb.core.DurationXmlAdapter" />
+        </xjb:globalBindings>
+
 		<!-- Put SOAP 1.2 elements to package org.somda.sdc.biceps.model.participant. -->
 		<xjb:schemaBindings>
 			<xjb:package name="org.somda.sdc.biceps.model.participant"/>

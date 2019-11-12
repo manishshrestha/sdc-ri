@@ -1,8 +1,8 @@
-package org.somda.sdc.glue.provider.services.helper.factory;
+package org.somda.sdc.glue.common.factory;
 
 import com.google.inject.assistedinject.Assisted;
 import org.somda.sdc.biceps.common.access.MdibAccess;
-import org.somda.sdc.glue.provider.services.helper.MdibMapper;
+import org.somda.sdc.glue.common.MdibMapper;
 
 /**
  * Factory to create {@linkplain MdibMapper} instances.

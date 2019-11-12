@@ -3,6 +3,11 @@ package org.somda.sdc.dpws.soap;
 import com.google.common.util.concurrent.AbstractIdleService;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
+import com.sun.xml.bind.marshaller.NamespacePrefixMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.somda.sdc.common.util.NamespacePrefixMapperConverter;
+import org.somda.sdc.common.util.PrefixNamespaceMappingParser;
 import org.somda.sdc.dpws.DpwsConstants;
 import org.somda.sdc.dpws.soap.model.Envelope;
 import org.somda.sdc.dpws.soap.model.ObjectFactory;
@@ -11,12 +16,11 @@ import org.somda.sdc.dpws.soap.wsdiscovery.WsDiscoveryConstants;
 import org.somda.sdc.dpws.soap.wseventing.WsEventingConstants;
 import org.somda.sdc.dpws.soap.wsmetadataexchange.WsMetadataExchangeConstants;
 import org.somda.sdc.dpws.soap.wstransfer.WsTransferConstants;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
+import javax.xml.bind.Marshaller;
 import java.io.InputStream;
 import java.io.OutputStream;
 
@@ -26,17 +30,29 @@ import java.io.OutputStream;
 public class JaxbSoapMarshalling extends AbstractIdleService implements SoapMarshalling {
     private static final Logger LOG = LoggerFactory.getLogger(JaxbSoapMarshalling.class);
 
-    private static final String pkgDelim = ":";
+    private static final String PKG_DELIM = ":";
+
+    private final NamespacePrefixMapper namespacePrefixMapper;
     private final ObjectFactory soapFactory;
+
 
     private String contextPackages;
     private JAXBContext jaxbContext;
 
     @Inject
     JaxbSoapMarshalling(@Named(SoapConfig.JAXB_CONTEXT_PATH) String contextPackages,
+                        @Named(SoapConfig.NAMESPACE_MAPPINGS) String namespaceMappings,
+                        PrefixNamespaceMappingParser namespaceMappingParser,
+                        NamespacePrefixMapperConverter namespacePrefixMapperConverter,
                         ObjectFactory soapFactory) {
         this.contextPackages = contextPackages;
         this.soapFactory = soapFactory;
+
+        // Append internal mappings
+        namespaceMappings += SoapConstants.NAMESPACE_PREFIX_MAPPINGS;
+
+        namespacePrefixMapper = namespacePrefixMapperConverter.convert(
+                namespaceMappingParser.parse(namespaceMappings));
     }
 
     @Override
@@ -61,7 +77,9 @@ public class JaxbSoapMarshalling extends AbstractIdleService implements SoapMars
     @Override
     public void marshal(Envelope envelope, OutputStream outputStream) throws JAXBException {
         checkRunning();
-        jaxbContext.createMarshaller().marshal(soapFactory.createEnvelope(envelope), outputStream);
+        final Marshaller marshaller = jaxbContext.createMarshaller();
+        marshaller.setProperty(NamespacePrefixMapperConverter.JAXB_MARSHALLER_PROPERTY_KEY, namespacePrefixMapper);
+        marshaller.marshal(soapFactory.createEnvelope(envelope), outputStream);
     }
 
     private void checkRunning() {
@@ -87,14 +105,14 @@ public class JaxbSoapMarshalling extends AbstractIdleService implements SoapMars
 
     private void initializeJaxb() {
         if (!contextPackages.isEmpty()) {
-            contextPackages += pkgDelim;
+            contextPackages += PKG_DELIM;
         }
-        contextPackages += SoapConstants.JAXB_CONTEXT_PACKAGE + pkgDelim +
-                DpwsConstants.JAXB_CONTEXT_PACKAGE + pkgDelim +
-                WsAddressingConstants.JAXB_CONTEXT_PACKAGE + pkgDelim +
-                WsDiscoveryConstants.JAXB_CONTEXT_PACKAGE + pkgDelim +
-                WsEventingConstants.JAXB_CONTEXT_PACKAGE + pkgDelim +
-                WsTransferConstants.JAXB_CONTEXT_PACKAGE + pkgDelim +
+        contextPackages += SoapConstants.JAXB_CONTEXT_PACKAGE + PKG_DELIM +
+                DpwsConstants.JAXB_CONTEXT_PACKAGE + PKG_DELIM +
+                WsAddressingConstants.JAXB_CONTEXT_PACKAGE + PKG_DELIM +
+                WsDiscoveryConstants.JAXB_CONTEXT_PACKAGE + PKG_DELIM +
+                WsEventingConstants.JAXB_CONTEXT_PACKAGE + PKG_DELIM +
+                WsTransferConstants.JAXB_CONTEXT_PACKAGE + PKG_DELIM +
                 WsMetadataExchangeConstants.JAXB_CONTEXT_PACKAGE;
 
         LOG.info("Configure JAXB with contexts: {}", contextPackages);

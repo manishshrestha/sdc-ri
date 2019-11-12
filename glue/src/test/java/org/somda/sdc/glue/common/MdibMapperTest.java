@@ -1,4 +1,4 @@
-package org.somda.sdc.glue.provider.services.helper;
+package org.somda.sdc.glue.common;
 
 import org.somda.sdc.biceps.common.MdibDescriptionModifications;
 import org.somda.sdc.biceps.common.MdibEntity;
@@ -11,7 +11,7 @@ import org.somda.sdc.biceps.testutil.BaseTreeModificationsSet;
 import org.somda.sdc.biceps.testutil.Handles;
 import org.somda.sdc.biceps.testutil.MockEntryFactory;
 import org.somda.sdc.glue.UnitTestUtil;
-import org.somda.sdc.glue.provider.services.helper.factory.MdibMapperFactory;
+import org.somda.sdc.glue.common.factory.MdibMapperFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -22,7 +22,7 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.*;
 
 class MdibMapperTest {
-    private static final UnitTestUtil IT = new UnitTestUtil();
+    private static final UnitTestUtil UT = new UnitTestUtil();
 
     LocalMdibAccess mdibAccess;
     BaseTreeModificationsSet baseTreeModificationsSet;
@@ -31,9 +31,9 @@ class MdibMapperTest {
     @BeforeEach
     void beforeEach() {
         baseTreeModificationsSet = new BaseTreeModificationsSet(new MockEntryFactory(
-                IT.getInjector().getInstance(MdibTypeValidator.class)));
-        mdibAccess = IT.getInjector().getInstance(LocalMdibAccessFactory.class).createLocalMdibAccess();
-        mdibMapper = IT.getInjector().getInstance(MdibMapperFactory.class).createMdibMapper(mdibAccess);
+                UT.getInjector().getInstance(MdibTypeValidator.class)));
+        mdibAccess = UT.getInjector().getInstance(LocalMdibAccessFactory.class).createLocalMdibAccess();
+        mdibMapper = UT.getInjector().getInstance(MdibMapperFactory.class).createMdibMapper(mdibAccess);
     }
 
     @Test

@@ -413,15 +413,15 @@ public class MdibDescriptionModifications {
             this.parentHandle = parentHandle;
         }
 
-        private AbstractDescriptor getDescriptor() {
+        public AbstractDescriptor getDescriptor() {
             return descriptor;
         }
 
-        private AbstractState getState() {
+        public AbstractState getState() {
             return state;
         }
 
-        private String getParentHandle() {
+        public String getParentHandle() {
             return parentHandle;
         }
     }
