@@ -1,9 +1,14 @@
 package org.somda.sdc.glue.provider;
 
+import com.google.common.util.concurrent.AbstractIdleService;
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
 import org.somda.sdc.biceps.provider.access.LocalMdibAccess;
 import org.somda.sdc.dpws.device.Device;
+import org.somda.sdc.dpws.device.DeviceSettings;
+import org.somda.sdc.dpws.device.DiscoveryAccess;
+import org.somda.sdc.dpws.device.HostingServiceAccess;
+import org.somda.sdc.dpws.device.factory.DeviceFactory;
 import org.somda.sdc.dpws.service.factory.HostedServiceFactory;
 import org.somda.sdc.glue.common.WsdlConstants;
 import org.somda.sdc.glue.provider.sco.OperationInvocationReceiver;
@@ -18,31 +23,63 @@ import java.util.Collection;
 /**
  * Adds SDC services to a DPWS device and manages incoming set service requests.
  * <p>
- * The purpose of the {@linkplain SdcServices} class is to provide SDC data on the network.
+ * The purpose of the {@linkplain SdcDevice} class is to provide SDC data on the network.
  */
-public class SdcServices {
+public class SdcDevice extends AbstractIdleService implements Device {
     private final Device dpwsDevice;
     private final HostedServiceFactory hostedServiceFactory;
     private final HighPriorityServices highPriorityServices;
+    private final Collection<OperationInvocationReceiver> operationInvocationReceivers;
 
     @AssistedInject
-    SdcServices(@Assisted Device dpwsDevice,
-                @Assisted LocalMdibAccess mdibAccess,
-                @Assisted Collection<OperationInvocationReceiver> operationInvocationReceivers,
-                ServicesFactory servicesFactory,
-                HostedServiceFactory hostedServiceFactory) {
-        this.dpwsDevice = dpwsDevice;
-        this.hostedServiceFactory = hostedServiceFactory;
+    SdcDevice(@Assisted DeviceSettings deviceSettings,
+              @Assisted LocalMdibAccess mdibAccess,
+              @Assisted Collection<OperationInvocationReceiver> operationInvocationReceivers,
+              DeviceFactory deviceFactory,
+              ServicesFactory servicesFactory,
+              HostedServiceFactory hostedServiceFactory) {
+        this.dpwsDevice = deviceFactory.createDevice(deviceSettings);
         this.highPriorityServices = servicesFactory.createHighPriorityServices(mdibAccess);
+        this.hostedServiceFactory = hostedServiceFactory;
+        this.operationInvocationReceivers = operationInvocationReceivers;
+    }
 
-        operationInvocationReceivers.forEach(receiver -> addOperationInvocationReceiver(receiver));
+    /**
+     * Gets the discovery access.
+     *
+     * @return the discovery access.
+     * @see Device#getDiscoveryAccess()
+     */
+    @Override
+    public DiscoveryAccess getDiscoveryAccess() {
+        return dpwsDevice.getDiscoveryAccess();
+    }
 
+    /**
+     * Gets the hosting service access.
+     *
+     * @return the hosting service access.
+     * @see Device#getHostingServiceAccess()
+     */
+    @Override
+    public HostingServiceAccess getHostingServiceAccess() {
+        return dpwsDevice.getHostingServiceAccess();
+    }
+
+    @Override
+    protected void startUp() {
+        setupInvocationReceivers();
         setupHostedServices();
+        dpwsDevice.startAsync().awaitRunning();
+    }
+
+    @Override
+    protected void shutDown() {
     }
 
     private void setupHostedServices() {
         final ClassLoader classLoader = getClass().getClassLoader();
-        InputStream highPrioWsdl = classLoader.getResourceAsStream("wsdl/IEEE11073-20701-HighPriority-Services.wsdl");
+        InputStream highPrioWsdlStream = classLoader.getResourceAsStream("wsdl/IEEE11073-20701-HighPriority-Services.wsdl");
         dpwsDevice.getHostingServiceAccess().addHostedService(hostedServiceFactory.createHostedService(
                 "HighPriorityServices",
                 Arrays.asList(
@@ -54,10 +91,14 @@ public class SdcServices {
                         new QName(WsdlConstants.TARGET_NAMESPACE, WsdlConstants.SERVICE_STATE_EVENT),
                         new QName(WsdlConstants.TARGET_NAMESPACE, WsdlConstants.SERVICE_WAVEFORM)),
                 highPriorityServices,
-                highPrioWsdl));
+                highPrioWsdlStream));
     }
 
     private void addOperationInvocationReceiver(OperationInvocationReceiver receiver) {
         highPriorityServices.addOperationInvocationReceiver(receiver);
+    }
+
+    private void setupInvocationReceivers() {
+        operationInvocationReceivers.forEach(receiver -> addOperationInvocationReceiver(receiver));
     }
 }

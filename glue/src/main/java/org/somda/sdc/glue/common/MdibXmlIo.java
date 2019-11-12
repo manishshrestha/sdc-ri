@@ -113,13 +113,13 @@ public class MdibXmlIo {
     }
 
     private void initJaxb() {
-        LOG.info("Setup an MDIB XML reader with JAXB contexts: {}", GlueConstants.JAXB_CONTEXT_PACKAGE);
+        LOG.info("Setup an MDIB XML reader with JAXB contexts: {}", GlueConstants.JAXB_CONTEXT_PATH);
 
         try {
-            jaxbContext = JAXBContext.newInstance(GlueConstants.JAXB_CONTEXT_PACKAGE);
+            jaxbContext = JAXBContext.newInstance(GlueConstants.JAXB_CONTEXT_PATH);
         } catch (JAXBException e) {
             throw new RuntimeException(String.format("JAXB context for '%s' could not be set up",
-                    GlueConstants.JAXB_CONTEXT_PACKAGE), e);
+                    GlueConstants.JAXB_CONTEXT_PATH), e);
         }
     }
 }

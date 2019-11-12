@@ -2,8 +2,8 @@ package org.somda.sdc.glue.guice;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.assistedinject.FactoryModuleBuilder;
-import org.somda.sdc.glue.provider.SdcServices;
-import org.somda.sdc.glue.provider.factory.SdcServicesFactory;
+import org.somda.sdc.glue.provider.SdcDevice;
+import org.somda.sdc.glue.provider.factory.SdcDeviceFactory;
 import org.somda.sdc.glue.provider.sco.Context;
 import org.somda.sdc.glue.provider.sco.ScoController;
 import org.somda.sdc.glue.provider.sco.factory.ContextFactory;
@@ -42,7 +42,7 @@ public class DefaultGlueModule extends AbstractModule {
                 .build(ServicesFactory.class));
 
         install(new FactoryModuleBuilder()
-                .implement(SdcServices.class, SdcServices.class)
-                .build(SdcServicesFactory.class));
+                .implement(SdcDevice.class, SdcDevice.class)
+                .build(SdcDeviceFactory.class));
     }
 }
