@@ -78,7 +78,7 @@ No other rights are granted by implication, estoppel or otherwise.
         <xs:element name="EndTo" type="wsa:EndpointReferenceType" 
           minOccurs="0" />
         <xs:element name="Delivery" type="tns:DeliveryType" />
-        <xs:element name="Expires" type="tns:ExpirationType" 
+        <xs:element name="Expires" type="xs:duration"
           minOccurs="0" />
         <xs:element name="Filter" type="tns:FilterType" minOccurs="0" />
         <xs:any namespace="##other" processContents="lax" 
@@ -96,7 +96,7 @@ No other rights are granted by implication, estoppel or otherwise.
       <xs:sequence>
 	  <xs:element name="SubscriptionManager" 
                     type="wsa:EndpointReferenceType" />
-        <xs:element name="Expires" type="tns:ExpirationType" />
+        <xs:element name="Expires" type="xs:duration" /> <!-- originally tns:ExpirationType -->
         <xs:any namespace="##other" processContents="lax" 
           minOccurs="0" maxOccurs="unbounded" />
       </xs:sequence>
@@ -114,7 +114,8 @@ No other rights are granted by implication, estoppel or otherwise.
   <xs:element name="Renew">
     <xs:complexType>
       <xs:sequence>
-        <xs:element name="Expires" type="tns:ExpirationType" 
+        <!-- originally tns:ExpirationType -->
+        <xs:element name="Expires" type="xs:duration"
           minOccurs="0" />
         <xs:any namespace="##other" processContents="lax" 
           minOccurs="0" maxOccurs="unbounded" />
@@ -127,7 +128,8 @@ No other rights are granted by implication, estoppel or otherwise.
   <xs:element name="RenewResponse">
     <xs:complexType>
       <xs:sequence>
-        <xs:element name="Expires" type="tns:ExpirationType" 
+        <!-- originally tns:ExpirationType -->
+        <xs:element name="Expires" type="xs:duration"
           minOccurs="0" />
         <xs:any namespace="##other" processContents="lax" 
           minOccurs="0" maxOccurs="unbounded" />
@@ -151,7 +153,8 @@ No other rights are granted by implication, estoppel or otherwise.
   <xs:element name="GetStatusResponse">
     <xs:complexType>
       <xs:sequence>
-        <xs:element name="Expires" type="tns:ExpirationType" 
+        <!-- originall tns:ExpirationType -->
+        <xs:element name="Expires" type="xs:duration"
           minOccurs="0" />
         <xs:any namespace="##other" processContents="lax" 
           minOccurs="0" maxOccurs="unbounded" />

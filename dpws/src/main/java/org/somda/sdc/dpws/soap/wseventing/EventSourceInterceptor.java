@@ -214,7 +214,7 @@ public class EventSourceInterceptor extends AbstractIdleService implements Event
 
         // Build response body and populate response envelope
         SubscribeResponse subscribeResponse = wseFactory.createSubscribeResponse();
-        subscribeResponse.setExpires(grantedExpires.toString());
+        subscribeResponse.setExpires(grantedExpires);
 
         subscribeResponse.setSubscriptionManager(subMan.getSubscriptionManagerEpr());
         soapUtil.setBody(subscribeResponse, rrObj.getResponse());
@@ -243,7 +243,7 @@ public class EventSourceInterceptor extends AbstractIdleService implements Event
 
 
         RenewResponse renewResponse = wseFactory.createRenewResponse();
-        renewResponse.setExpires(grantedExpires.toString());
+        renewResponse.setExpires(grantedExpires);
         soapUtil.setBody(renewResponse, rrObj.getResponse());
         soapUtil.setWsaAction(rrObj.getResponse(), WsEventingConstants.WSA_ACTION_RENEW_RESPONSE);
 
@@ -273,7 +273,7 @@ public class EventSourceInterceptor extends AbstractIdleService implements Event
         }
 
         GetStatusResponse getStatusResponse = wseFactory.createGetStatusResponse();
-        getStatusResponse.setExpires(expires.toString());
+        getStatusResponse.setExpires(expires);
         soapUtil.setBody(getStatusResponse, rrObj.getResponse());
         soapUtil.setWsaAction(rrObj.getResponse(), WsEventingConstants.WSA_ACTION_GET_STATUS_RESPONSE);
     }
@@ -336,11 +336,10 @@ public class EventSourceInterceptor extends AbstractIdleService implements Event
         return expires.isZero() || expires.isNegative();
     }
 
-    private Duration validateExpires(String expires) throws SoapFaultException {
+    private Duration validateExpires(Duration requestedExpires) throws SoapFaultException {
         try {
-            Duration requestedExpires = Duration.parse(expires);
             if (requestedExpires.isZero() || requestedExpires.isNegative()) {
-                throw new Exception();
+                throw new Exception(String.format("Expires is lower equal 0", requestedExpires.toString()));
             } else {
                 return requestedExpires;
             }
