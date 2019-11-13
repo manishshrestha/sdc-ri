@@ -3,7 +3,7 @@
     <xjb:bindings schemaLocation="ws-eventing-schema.xsd">
     	<!-- Make JAXB using Java 8 state of the art date-time objects -->
         <xjb:globalBindings>
-            <xjc:javaType name="java.time.Duration" xmlType="xs:duration" adapter="io.github.threetenjaxb.core.DurationXmlAdapter" />
+            <xjc:javaType name="java.time.Duration" xmlType="xs:duration" adapter="org.somda.sdc.common.util.DurationAdapter" />
         </xjb:globalBindings>
 
         <!-- Put WS-Discovery 1.1 elements to package org.somda.sdc.dpws.soap.wseventing.model. -->

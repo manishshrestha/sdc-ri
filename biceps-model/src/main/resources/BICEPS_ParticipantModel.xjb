@@ -5,7 +5,7 @@
         <xjb:globalBindings>
             <xjc:javaType name="java.time.LocalDate" xmlType="xs:date" adapter="io.github.threetenjaxb.core.LocalDateXmlAdapter" />
             <xjc:javaType name="java.time.LocalDateTime" xmlType="xs:dateTime" adapter="io.github.threetenjaxb.core.LocalDateTimeXmlAdapter" />
-            <xjc:javaType name="java.time.Duration" xmlType="xs:duration" adapter="io.github.threetenjaxb.core.DurationXmlAdapter" />
+            <xjc:javaType name="java.time.Duration" xmlType="xs:duration" adapter="org.somda.sdc.common.util.DurationAdapter" />
         </xjb:globalBindings>
 
 		<!-- Put SOAP 1.2 elements to package org.somda.sdc.biceps.model.participant. -->
