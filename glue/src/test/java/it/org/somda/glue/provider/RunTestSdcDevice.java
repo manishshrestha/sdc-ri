@@ -37,7 +37,7 @@ public class RunTestSdcDevice {
     public static void main(String[] args) throws IOException, PreprocessingException, JAXBException {
         final Injector injector = IT.getInjector();
 
-        final NetworkInterface networkInterface = NetworkInterface.getByName("eth0");//InetAddress.getLocalHost());
+        final NetworkInterface networkInterface = NetworkInterface.getByName("wlan1");//InetAddress.getLocalHost());
 
         final DpwsFramework dpwsFramework = injector.getInstance(DpwsFrameworkFactory.class).createDpwsFramework(networkInterface);
 
