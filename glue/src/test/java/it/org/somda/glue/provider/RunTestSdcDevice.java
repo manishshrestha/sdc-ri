@@ -2,18 +2,22 @@ package it.org.somda.glue.provider;
 
 import com.google.inject.Injector;
 import it.org.somda.glue.IntegrationTestUtil;
+import org.somda.sdc.biceps.common.MdibStateModifications;
 import org.somda.sdc.biceps.common.MdibTypeValidator;
 import org.somda.sdc.biceps.common.storage.PreprocessingException;
 import org.somda.sdc.biceps.model.participant.Mdib;
+import org.somda.sdc.biceps.model.participant.NumericMetricState;
 import org.somda.sdc.biceps.provider.access.LocalMdibAccess;
 import org.somda.sdc.biceps.provider.access.factory.LocalMdibAccessFactory;
 import org.somda.sdc.biceps.testutil.BaseTreeModificationsSet;
+import org.somda.sdc.biceps.testutil.Handles;
 import org.somda.sdc.biceps.testutil.MockEntryFactory;
 import org.somda.sdc.dpws.DpwsFramework;
 import org.somda.sdc.dpws.device.DeviceSettings;
 import org.somda.sdc.dpws.factory.DpwsFrameworkFactory;
 import org.somda.sdc.dpws.soap.wsaddressing.WsAddressingUtil;
 import org.somda.sdc.dpws.soap.wsaddressing.model.EndpointReferenceType;
+import org.somda.sdc.glue.common.ActionConstants;
 import org.somda.sdc.glue.common.MdibMapper;
 import org.somda.sdc.glue.common.MdibXmlIo;
 import org.somda.sdc.glue.common.factory.MdibMapperFactory;
@@ -24,12 +28,14 @@ import javax.xml.bind.JAXBException;
 import javax.xml.namespace.QName;
 import java.io.File;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Optional;
 
 public class RunTestSdcDevice {
     private static final IntegrationTestUtil IT = new IntegrationTestUtil();
@@ -37,7 +43,7 @@ public class RunTestSdcDevice {
     public static void main(String[] args) throws IOException, PreprocessingException, JAXBException {
         final Injector injector = IT.getInjector();
 
-        final NetworkInterface networkInterface = NetworkInterface.getByName("wlan1");//InetAddress.getLocalHost());
+        final NetworkInterface networkInterface = NetworkInterface.getByName("eth0"); // "wlan1");//InetAddress.getLocalHost());
 
         final DpwsFramework dpwsFramework = injector.getInstance(DpwsFrameworkFactory.class).createDpwsFramework(networkInterface);
 
@@ -70,6 +76,24 @@ public class RunTestSdcDevice {
 
         dpwsFramework.startAsync().awaitRunning();
         sdcDevice.startAsync().awaitRunning();
+
+        Thread thread = new Thread(() -> {
+            while (true) {
+                try {
+                    Thread.sleep(1000);
+                    Optional<NumericMetricState> state = localMdibAccess.getState(Handles.METRIC_0, NumericMetricState.class);
+                    NumericMetricState clone = (NumericMetricState)state.get().clone();
+                    clone.getMetricValue().setValue(clone.getMetricValue().getValue().add(BigDecimal.ONE));
+                    localMdibAccess.writeStates(MdibStateModifications.create(MdibStateModifications.Type.METRIC)
+                    .add(clone));
+                } catch (InterruptedException | PreprocessingException e) {
+                    e.printStackTrace();
+                    break;
+                }
+            }
+        });
+        thread.setDaemon(false);
+        thread.start();
 
         System.in.read();
 

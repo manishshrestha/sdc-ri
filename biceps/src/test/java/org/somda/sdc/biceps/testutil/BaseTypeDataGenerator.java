@@ -205,7 +205,7 @@ public class BaseTypeDataGenerator {
         AbstractMetricDescriptor.Relation relation = participantFactory.createAbstractMetricDescriptorRelation();
         relation.setCode(codedValue(handle));
         relation.setIdentification(instanceIdentifier(handle));
-        relation.setKind(handle);
+        relation.setKind("Rcm");
         relation.setEntries(Arrays.asList(handle));
         return relation;
     }

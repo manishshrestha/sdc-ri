@@ -4,12 +4,12 @@ import com.google.common.util.concurrent.AbstractIdleService;
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
 import org.somda.sdc.biceps.provider.access.LocalMdibAccess;
-import org.somda.sdc.dpws.device.Device;
-import org.somda.sdc.dpws.device.DeviceSettings;
-import org.somda.sdc.dpws.device.DiscoveryAccess;
-import org.somda.sdc.dpws.device.HostingServiceAccess;
+import org.somda.sdc.dpws.device.*;
 import org.somda.sdc.dpws.device.factory.DeviceFactory;
 import org.somda.sdc.dpws.service.factory.HostedServiceFactory;
+import org.somda.sdc.dpws.soap.exception.MarshallingException;
+import org.somda.sdc.dpws.soap.exception.TransportException;
+import org.somda.sdc.dpws.soap.wseventing.model.WsEventingStatus;
 import org.somda.sdc.glue.common.WsdlConstants;
 import org.somda.sdc.glue.provider.sco.OperationInvocationReceiver;
 import org.somda.sdc.glue.provider.services.HighPriorityServices;
@@ -25,7 +25,7 @@ import java.util.Collection;
  * <p>
  * The purpose of the {@linkplain SdcDevice} class is to provide SDC data on the network.
  */
-public class SdcDevice extends AbstractIdleService implements Device {
+public class SdcDevice extends AbstractIdleService implements Device, EventSourceAccess {
     private final Device dpwsDevice;
     private final HostedServiceFactory hostedServiceFactory;
     private final HighPriorityServices highPriorityServices;
@@ -100,5 +100,15 @@ public class SdcDevice extends AbstractIdleService implements Device {
 
     private void setupInvocationReceivers() {
         operationInvocationReceivers.forEach(receiver -> addOperationInvocationReceiver(receiver));
+    }
+
+    @Override
+    public void sendNotification(String action, Object payload) throws MarshallingException, TransportException {
+        highPriorityServices.sendNotification(action, payload);
+    }
+
+    @Override
+    public void subscriptionEndToAll(WsEventingStatus status) throws TransportException {
+        highPriorityServices.subscriptionEndToAll(status);
     }
 }
