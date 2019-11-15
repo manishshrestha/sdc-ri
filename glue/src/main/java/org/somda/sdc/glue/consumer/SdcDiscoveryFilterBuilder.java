@@ -1,28 +1,38 @@
 package org.somda.sdc.glue.consumer;
 
-import org.somda.sdc.biceps.model.participant.EnsembleContextState;
-import org.somda.sdc.biceps.model.participant.LocationContextState;
+import org.somda.sdc.biceps.model.participant.*;
 import org.somda.sdc.dpws.client.DiscoveryFilter;
 import org.somda.sdc.dpws.client.DiscoveryFilterBuilder;
+import org.somda.sdc.glue.GlueConstants;
+import org.somda.sdc.glue.common.ContextIdentificationMapper;
 
 import javax.xml.namespace.QName;
 
 /**
  * A variant of the {@linkplain DiscoveryFilterBuilder} that adds scopes and types required by SDC.
  * <p>
- * The following type is assigned: todo put type here
- * The following scope is assigned: todo put scope here
+ * The following type is assigned: {@code {http://standards.ieee.org/downloads/11073/11073-20702-2016}MedicalDevice}
+ * The following scope is assigned: {@code sdc.mds.pkp:1.2.840.10004.20701.1.1}
+ * <p>
+ * todo DGr add reference to MDPWS type
+ *
+ * @see GlueConstants#OID_KEY_PURPOSE_SDC_SERVICE_PROVIDER
  */
 public class SdcDiscoveryFilterBuilder {
     private final DiscoveryFilterBuilder discoveryFilterBuilder;
+
+    // todo DGr should be defined in MDPWS
+    private static final QName TYPE_MEDICAL_DEVICE = new QName("http://standards.ieee.org/downloads/11073/11073-20702-2016", "MedicalDevice");
+
+    private static final String SCOPE_SDC_PARTICIPANT = "sdc.mds.pkp:" + GlueConstants.OID_KEY_PURPOSE_SDC_SERVICE_PROVIDER;
 
     /**
      * Constructs a new object with empty types and scopes.
      */
     public SdcDiscoveryFilterBuilder() {
         this.discoveryFilterBuilder = new DiscoveryFilterBuilder();
-        this.discoveryFilterBuilder.addScope("http://scope"); // todo add actual SDC Glue scope here
-        this.discoveryFilterBuilder.addType(new QName("http://type", "Type")); // todo add actual MDPWS type here
+        this.discoveryFilterBuilder.addType(TYPE_MEDICAL_DEVICE);
+        this.discoveryFilterBuilder.addScope(SCOPE_SDC_PARTICIPANT);
     }
 
     /**
@@ -48,24 +58,13 @@ public class SdcDiscoveryFilterBuilder {
     }
 
     /**
-     * Adds a primary location context state instance identifier as scope.
+     * Adds a primary context state instance identifier as scope.
      *
      * @param state the location context state.
      * @return this object.
      */
-    public SdcDiscoveryFilterBuilder addContext(LocationContextState state) {
-        // todo implement
-        return this;
-    }
-
-    /**
-     * Adds a primary ensemble context state instance identifier as scope.
-     *
-     * @param state the ensemble context state.
-     * @return this object.
-     */
-    public SdcDiscoveryFilterBuilder addContext(EnsembleContextState state) {
-        // todo implement
+    public <T extends AbstractContextState> SdcDiscoveryFilterBuilder addContext(T state) {
+        addScope(createScopeFromContext(state));
         return this;
     }
 
@@ -77,5 +76,29 @@ public class SdcDiscoveryFilterBuilder {
      */
     public DiscoveryFilter get() {
         return discoveryFilterBuilder.get();
+    }
+
+    // Creates a scope for a context based on the grammar in IEEE 11073-20701 section 9.4
+    // empty string means: not associated or no identification found
+    private static String createScopeFromContext(AbstractContextState contextState) {
+        if (!contextState.getContextAssociation().equals(ContextAssociation.ASSOC)) {
+            return "";
+        }
+
+        if (contextState.getIdentification().isEmpty()) {
+            return "";
+        }
+
+        ContextIdentificationMapper.ContextSource contextSource = mapToContextSource(contextState);
+        return ContextIdentificationMapper.fromInstanceIdentifier(contextState.getIdentification().get(0), contextSource).toString();
+    }
+
+    private static ContextIdentificationMapper.ContextSource mapToContextSource(AbstractContextState contextState) {
+        for (ContextIdentificationMapper.ContextSource value : ContextIdentificationMapper.ContextSource.values()) {
+            if (value.getSourceClass().isAssignableFrom(contextState.getClass())) {
+                return value;
+            }
+        }
+        throw new RuntimeException(String.format("Reached unknown context: %s", contextState.getClass().toString()));
     }
 }

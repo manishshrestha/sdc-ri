@@ -24,7 +24,7 @@ public interface SdcRemoteDevicesConnector {
      * <li>The MDIB is requested from the remote node.
      * <li>Reports are applied on the MDIB.
      * <li>An {@link SdcRemoteDevice} is supplied.
-     * <ol>
+     * </ol>
      * <p>
      * Connections can be triggered only once per device per time. As reports are applied on the received MDIB there
      * are no gaps as long as every subscription has been subscribed during connection.
