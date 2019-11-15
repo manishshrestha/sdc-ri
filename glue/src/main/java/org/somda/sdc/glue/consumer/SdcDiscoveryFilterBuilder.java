@@ -32,10 +32,14 @@ public class SdcDiscoveryFilterBuilder {
 
     private static final String SCOPE_SDC_PARTICIPANT = "sdc.mds.pkp:" + GlueConstants.OID_KEY_PURPOSE_SDC_SERVICE_PROVIDER;
 
+    public static SdcDiscoveryFilterBuilder create() {
+        return new SdcDiscoveryFilterBuilder();
+    }
+
     /**
      * Constructs a new object with empty types and scopes.
      */
-    public SdcDiscoveryFilterBuilder() {
+    private SdcDiscoveryFilterBuilder() {
         this.discoveryFilterBuilder = new DiscoveryFilterBuilder();
         this.discoveryFilterBuilder.addType(TYPE_MEDICAL_DEVICE);
         this.discoveryFilterBuilder.addScope(SCOPE_SDC_PARTICIPANT);
@@ -70,7 +74,7 @@ public class SdcDiscoveryFilterBuilder {
      * @return this object.
      */
     public <T extends AbstractContextState> SdcDiscoveryFilterBuilder addContext(T state) {
-        addScope(createScopeFromContext(state));
+        createScopeFromContext(state).ifPresent(scope -> addScope(scope));
         return this;
     }
 
@@ -84,7 +88,7 @@ public class SdcDiscoveryFilterBuilder {
         if (component.getType() == null) {
             return this;
         }
-        createScopeFromCodedValue("sdc.cdc.type:", component.getType()).ifPresent(scope -> addScope(scope));
+        createScopeFromCodedValue("sdc.cdc.type", component.getType()).ifPresent(scope -> addScope(scope));
         return this;
     }
 
@@ -99,18 +103,18 @@ public class SdcDiscoveryFilterBuilder {
     }
 
     // Creates a scope for a context based on the grammar in IEEE 11073-20701 section 9.4
-    // empty string means: not associated or no identification found
-    private static String createScopeFromContext(AbstractContextState contextState) {
+    // optional means: not associated or no identification found
+    private static Optional<String> createScopeFromContext(AbstractContextState contextState) {
         if (!contextState.getContextAssociation().equals(ContextAssociation.ASSOC)) {
-            return "";
+            return Optional.empty();
         }
 
         if (contextState.getIdentification().isEmpty()) {
-            return "";
+            return Optional.empty();
         }
 
         ContextIdentificationMapper.ContextSource contextSource = mapToContextSource(contextState);
-        return ContextIdentificationMapper.fromInstanceIdentifier(contextState.getIdentification().get(0), contextSource).toString();
+        return Optional.of(ContextIdentificationMapper.fromInstanceIdentifier(contextState.getIdentification().get(0), contextSource).toString());
     }
 
     private static ContextIdentificationMapper.ContextSource mapToContextSource(AbstractContextState contextState) {
