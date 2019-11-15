@@ -11,7 +11,7 @@ import java.util.Collections;
 /**
  * Container to provide connection options for remote SDC device connections.
  *
- * @see {@link SdcRemoteDevicesConnector#connect(HostingServiceProxy, ConnectConfiguration)}
+ * @see SdcRemoteDevicesConnector#connect(HostingServiceProxy, ConnectConfiguration)
  */
 public class ConnectConfiguration {
     /**

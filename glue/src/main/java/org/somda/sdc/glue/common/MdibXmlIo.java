@@ -54,6 +54,7 @@ public class MdibXmlIo {
     /**
      * Reads the MDIB from an input stream.
      *
+     * @param getMdibResponseStream the input stream to read from.
      * @return the parsed {@link Mdib}.
      * @throws JAXBException      in case JAXB cannot parse the input stream.
      * @throws ClassCastException if something unexpected was read in.
@@ -65,6 +66,7 @@ public class MdibXmlIo {
     /**
      * Reads an MDIB from a file input.
      *
+     * @param getMdibResponseFile the file to read from.
      * @return the parsed {@link Mdib}.
      * @throws JAXBException         in case JAXB cannot parse the input stream.
      * @throws ClassCastException    if something unexpected was read in.
