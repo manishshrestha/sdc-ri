@@ -10,7 +10,7 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-class FallbackInstanceIdentifierAlgorithmTest {
+class FallbackInstanceIdentifierTest {
     private static final String EXPECTED_ROOT = "sdc.ctxt.loc.detail";
 
     @Test
@@ -76,6 +76,6 @@ class FallbackInstanceIdentifierAlgorithmTest {
         locationDetail.setPoC(poc);
         locationDetail.setRoom(room);
         locationDetail.setBed(bed);
-        return FallbackInstanceIdentifierAlgorithm.create(locationDetail);
+        return FallbackInstanceIdentifier.create(locationDetail);
     }
 }

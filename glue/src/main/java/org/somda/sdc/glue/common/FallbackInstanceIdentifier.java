@@ -13,7 +13,7 @@ import java.util.Optional;
  * <p>
  * The instance identifier generated with this class meet the specification of IEEE 11073-20701-2018 section 9.4.1.1.
  */
-public class FallbackInstanceIdentifierAlgorithm {
+public class FallbackInstanceIdentifier {
     private static final String LOCATION_ROOT_SEGMENT = "sdc.ctxt.loc.detail";
     private static final String DELIMITER = "/";
 
