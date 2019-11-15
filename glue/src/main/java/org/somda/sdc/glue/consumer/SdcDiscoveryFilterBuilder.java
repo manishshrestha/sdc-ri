@@ -1,12 +1,18 @@
 package org.somda.sdc.glue.consumer;
 
-import org.somda.sdc.biceps.model.participant.*;
+import org.somda.sdc.biceps.model.participant.AbstractComplexDeviceComponentDescriptor;
+import org.somda.sdc.biceps.model.participant.AbstractContextState;
+import org.somda.sdc.biceps.model.participant.CodedValue;
+import org.somda.sdc.biceps.model.participant.ContextAssociation;
 import org.somda.sdc.dpws.client.DiscoveryFilter;
 import org.somda.sdc.dpws.client.DiscoveryFilterBuilder;
 import org.somda.sdc.glue.GlueConstants;
 import org.somda.sdc.glue.common.ContextIdentificationMapper;
 
 import javax.xml.namespace.QName;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.util.Optional;
 
 /**
  * A variant of the {@linkplain DiscoveryFilterBuilder} that adds scopes and types required by SDC.
@@ -69,6 +75,20 @@ public class SdcDiscoveryFilterBuilder {
     }
 
     /**
+     * Adds a device component type.
+     *
+     * @param component the location context state.
+     * @return this object.
+     */
+    public <T extends AbstractComplexDeviceComponentDescriptor> SdcDiscoveryFilterBuilder addDeviceComponent(T component) {
+        if (component.getType() == null) {
+            return this;
+        }
+        createScopeFromCodedValue("sdc.cdc.type:", component.getType()).ifPresent(scope -> addScope(scope));
+        return this;
+    }
+
+    /**
      * Gets a discovery filter with all types and scopes added via {@link #addType(QName)} and
      * {@link #addScope(String)}.
      *
@@ -100,5 +120,25 @@ public class SdcDiscoveryFilterBuilder {
             }
         }
         throw new RuntimeException(String.format("Reached unknown context: %s", contextState.getClass().toString()));
+    }
+
+    private Optional<String> createScopeFromCodedValue(String scheme, CodedValue codedValue) {
+        try {
+            String codingSystem = codedValue.getCodingSystem();
+            if ("urn:oid:1.2.840.10004.1.1.1.0.0.1".equals(codingSystem)) {
+                codingSystem = null;
+            }
+
+            return Optional.of(scheme + ":" +
+                    "/" + encode(codingSystem) +
+                    "/" + encode(codedValue.getCodingSystemVersion()) +
+                    "/" + encode(codedValue.getCode()));
+        } catch (UnsupportedEncodingException e) {
+            return Optional.empty();
+        }
+    }
+
+    private static String encode(String text) throws UnsupportedEncodingException {
+        return text == null ? "" : URLEncoder.encode(text, "UTF-8");
     }
 }
