@@ -505,11 +505,11 @@ public class DescriptorStateDataGenerator {
 
     private void deviceComponentState(AbstractDeviceComponentState state) {
         state.setActivationState(ComponentActivation.ON);
-//        state.setCalibrationInfo(baseTypes.calibrationInfo());
-//        state.setNextCalibration(baseTypes.calibrationInfo());
-//        state.setOperatingCycles(Integer.valueOf(100));
-//        state.setOperatingHours(Long.valueOf(1000));
-//        state.setPhysicalConnector(baseTypes.physicalConnectorInfo());
+        state.setCalibrationInfo(baseTypes.calibrationInfo());
+        state.setNextCalibration(baseTypes.calibrationInfo());
+        state.setOperatingCycles(Integer.valueOf(100));
+        state.setOperatingHours(Long.valueOf(1000));
+        state.setPhysicalConnector(baseTypes.physicalConnectorInfo());
     }
 
     private void contextState(AbstractContextState state, String handle) {

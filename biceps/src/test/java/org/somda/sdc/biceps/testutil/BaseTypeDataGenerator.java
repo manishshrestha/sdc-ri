@@ -258,7 +258,7 @@ public class BaseTypeDataGenerator {
 
     public ActivateOperationDescriptor.Argument argument(String code) {
         ActivateOperationDescriptor.Argument argument = participantFactory.createActivateOperationDescriptorArgument();
-        //argument.setArg(new QName("http://argument-uri", "a-type", "a"));
+        argument.setArg(new QName("http://argument-uri", "a-type", "a"));
         argument.setArgName(codedValue(code));
         return argument;
     }
