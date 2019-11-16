@@ -63,7 +63,7 @@ public class ContextIdentificationMapper {
                     root == null ||
                     extension == null ||
                     root.isEmpty() ||
-                    !contextSource.equals(expectedContextSource.toString())) {
+                    !contextSource.equals(expectedContextSource.getSourceString())) {
                 return Optional.empty();
             }
 
