@@ -1,5 +1,6 @@
 package org.somda.sdc.biceps.common.access.helper;
 
+import org.slf4j.Logger;
 import org.somda.sdc.biceps.common.MdibDescriptionModifications;
 import org.somda.sdc.biceps.common.MdibStateModifications;
 import org.somda.sdc.biceps.common.access.MdibAccess;
@@ -8,8 +9,6 @@ import org.somda.sdc.biceps.common.access.WriteStateResult;
 import org.somda.sdc.biceps.common.event.Distributor;
 import org.somda.sdc.biceps.common.storage.MdibStoragePreprocessingChain;
 import org.somda.sdc.biceps.common.storage.PreprocessingException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.Function;
@@ -30,6 +29,7 @@ public class WriteUtil {
     /**
      * Constructor that accepts the dependencies in order to properly process write operations.
      *
+     * @param logger                  the utility owner's logger to be used for logging.
      * @param eventDistributor        the event distributor to send event messages after write operation is done.
      * @param mdibAccessPreprocessing the preprocessing chain that is invoked before writing to the MDIB storage.
      * @param readWriteLock           a read write lock to protect against concurrent access.

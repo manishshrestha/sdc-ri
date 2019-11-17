@@ -431,7 +431,7 @@ public class MdibDescriptionModifications {
      */
     public static class MultiStateEntry {
         private AbstractDescriptor descriptor;
-        private List<AbstractMultiState> states;
+        private List<? extends AbstractMultiState> states;
         private String parentHandle;
 
         /**
@@ -442,17 +442,17 @@ public class MdibDescriptionModifications {
          * @param parentHandle the affected parent handle for this entry.
          * @see Entry
          */
-        public MultiStateEntry(AbstractDescriptor descriptor, List<AbstractMultiState> states, String parentHandle) {
+        public MultiStateEntry(AbstractDescriptor descriptor, List<? extends AbstractMultiState> states, String parentHandle) {
             this.descriptor = descriptor;
             this.states = states;
             this.parentHandle = parentHandle;
         }
 
-        private AbstractDescriptor getDescriptor() {
+        public AbstractDescriptor getDescriptor() {
             return descriptor;
         }
 
-        private List<AbstractMultiState> getStates() {
+        public List<? extends AbstractMultiState> getStates() {
             return states;
         }
 

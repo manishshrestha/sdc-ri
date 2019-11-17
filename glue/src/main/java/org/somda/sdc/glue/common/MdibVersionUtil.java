@@ -1,11 +1,16 @@
 package org.somda.sdc.glue.provider.services.helper;
 
 import com.google.inject.Inject;
+import org.somda.sdc.biceps.model.message.AbstractGetResponse;
+import org.somda.sdc.biceps.model.message.AbstractReport;
 import org.somda.sdc.biceps.model.participant.MdibVersion;
 
+import javax.annotation.Nullable;
+import javax.validation.constraints.Null;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.math.BigInteger;
+import java.net.URI;
 
 /**
  * Utility functions for the {@link MdibVersion} container.
@@ -33,5 +38,21 @@ public class MdibVersionUtil {
         setSequenceId.invoke(target, mdibVersion.getSequenceId().toString());
         setInstanceId.invoke(target, mdibVersion.getInstanceId());
         setMdibVersion.invoke(target, mdibVersion.getVersion());
+    }
+
+    public MdibVersion getMdibVersion(AbstractReport msg) {
+        return new MdibVersion(sequenceId(msg.getSequenceId()), msg.getMdibVersion(), instanceId(msg.getInstanceId()));
+    }
+
+    public MdibVersion getMdibVersion(AbstractGetResponse msg) {
+        return new MdibVersion(sequenceId(msg.getSequenceId()), msg.getMdibVersion(), instanceId(msg.getInstanceId()));
+    }
+
+    private BigInteger instanceId(@Nullable BigInteger instanceId) {
+        return instanceId == null ? BigInteger.ZERO : instanceId;
+    }
+
+    private URI sequenceId(String sequenceId) {
+        return URI.create(sequenceId);
     }
 }
