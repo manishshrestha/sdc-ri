@@ -71,6 +71,7 @@ public class SdcDiscoveryFilterBuilder {
      * Adds a primary context state instance identifier as scope.
      *
      * @param state the location context state.
+     * @param <T>   a context state type.
      * @return this object.
      */
     public <T extends AbstractContextState> SdcDiscoveryFilterBuilder addContext(T state) {
@@ -82,6 +83,7 @@ public class SdcDiscoveryFilterBuilder {
      * Adds a device component type.
      *
      * @param component the location context state.
+     * @param <T>       a complex device component descriptor type.
      * @return this object.
      */
     public <T extends AbstractComplexDeviceComponentDescriptor> SdcDiscoveryFilterBuilder addDeviceComponent(T component) {

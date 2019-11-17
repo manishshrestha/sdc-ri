@@ -22,7 +22,7 @@ import org.somda.sdc.glue.provider.sco.OperationInvocationReceiver;
 import org.somda.sdc.glue.provider.sco.ScoController;
 import org.somda.sdc.glue.provider.sco.factory.ScoControllerFactory;
 import org.somda.sdc.glue.common.MdibMapper;
-import org.somda.sdc.glue.provider.services.helper.MdibVersionUtil;
+import org.somda.sdc.glue.common.MdibVersionUtil;
 import org.somda.sdc.glue.common.factory.MdibMapperFactory;
 import org.somda.sdc.glue.provider.services.helper.factory.ReportGeneratorFactory;
 
