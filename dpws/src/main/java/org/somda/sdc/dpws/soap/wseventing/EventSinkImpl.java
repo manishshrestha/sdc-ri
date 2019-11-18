@@ -136,7 +136,7 @@ public class EventSinkImpl implements EventSink {
             filterType.setDialect(DpwsConstants.WS_EVENTING_SUPPORTED_DIALECT);
             filterType.setContent(Collections.singletonList(implodeUriList(actions)));
 
-            subscribeBody.setExpires(Optional.ofNullable(expires).orElse(defaultRequestExpires).toString());
+            subscribeBody.setExpires(Optional.ofNullable(expires).orElse(defaultRequestExpires));
 
             subscribeBody.setFilter(filterType);
 
@@ -155,7 +155,7 @@ public class EventSinkImpl implements EventSink {
             // Create subscription manager from response
             SubscriptionManager subMan = subscriptionManagerFactory.createSourceSubscriptionManager(
                     responseBody.getSubscriptionManager(),
-                    Duration.parse(responseBody.getExpires()),
+                    responseBody.getExpires(),
                     notifyToEpr,
                     endToEpr,
                     null);
@@ -185,7 +185,7 @@ public class EventSinkImpl implements EventSink {
 
             // Create new request body
             Renew renew = wseFactory.createRenew();
-            renew.setExpires(expires.toString());
+            renew.setExpires(expires);
             String subManAddress = wsaUtil.getAddressUriAsString(subMan.getSubscriptionManagerEpr()).orElseThrow(() ->
                     new RuntimeException("No subscription manager EPR found"));
 
@@ -203,7 +203,7 @@ public class EventSinkImpl implements EventSink {
                     new MalformedSoapMessageException("WS-Eventing RenewResponse message is malformed"));
 
             // Parse expires in response message, renew at subscription manager and return
-            Duration newExpires = Duration.parse(renewResponse.getExpires());
+            Duration newExpires = renewResponse.getExpires();
             subMan.renew(newExpires);
             return newExpires;
         });
@@ -236,7 +236,7 @@ public class EventSinkImpl implements EventSink {
                             new MalformedSoapMessageException("WS-Eventing GetStatusResponse message is malformed"));
 
             // Parse expires in response message and return
-            return Duration.parse(getStatusResponse.getExpires());
+            return getStatusResponse.getExpires();
         });
     }
 

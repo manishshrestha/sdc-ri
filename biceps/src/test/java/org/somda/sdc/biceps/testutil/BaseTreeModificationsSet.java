@@ -103,7 +103,8 @@ public class BaseTreeModificationsSet {
                 .insert(dataGenerator.setValueOperationDescriptor(Handles.OPERATION_9, Handles.METRIC_0), dataGenerator.setValueOperationState(), Handles.SCO_1)
                 .insert(dataGenerator.setComponentStateOperationDescriptor(Handles.OPERATION_10, Handles.VMD_0), dataGenerator.setComponentStateOperationState(), Handles.SCO_1)
                 .insert(dataGenerator.setMetricStateOperationDescriptor(Handles.OPERATION_11, Handles.METRIC_2), dataGenerator.setMetricStateOperationState(), Handles.SCO_1)
-                .insert(dataGenerator.setAlertStateOperationDescriptor(Handles.OPERATION_12, Handles.ALERTSIGNAL_7), dataGenerator.setAlertStateOperationState(), Handles.SCO_1);
+                .insert(dataGenerator.setAlertStateOperationDescriptor(Handles.OPERATION_12, Handles.ALERTSIGNAL_7), dataGenerator.setAlertStateOperationState(), Handles.SCO_1)
+                ;
     }
 
     private <T extends AbstractDescriptor, V extends AbstractState> MdibDescriptionModifications.Entry entry(String handle, Class<T> descrClass) throws Exception {

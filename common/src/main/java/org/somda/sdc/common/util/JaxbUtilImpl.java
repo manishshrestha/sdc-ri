@@ -46,9 +46,10 @@ public class JaxbUtilImpl implements JaxbUtil {
                 return Optional.ofNullable(elementAsJaxb.getValue());
             }
         } catch (Exception e) {
-            if (element instanceof Element) {
-                throw new RuntimeException("JAXB object conversion failed. Make sure the expected class is known to JAXB via context path.");
-            }
+              // todo DGr should this check be enabled or not? change to trace/debug LOG
+//            if (element instanceof Element) {
+//                throw new RuntimeException("JAXB object conversion failed. Make sure the expected class is known to JAXB via context path.");
+//            }
             // ignore, empty optional will be returned
         }
         return Optional.empty();

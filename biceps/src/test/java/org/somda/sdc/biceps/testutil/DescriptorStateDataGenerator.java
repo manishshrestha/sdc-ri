@@ -68,9 +68,9 @@ public class DescriptorStateDataGenerator {
         clockState.setCriticalUse(false);
         clockState.setActiveSyncProtocol(baseTypes.codedValue("time-protocol1"));
         clockState.setAccuracy(BigDecimal.ONE);
-        clockState.setDateAndTime(BigInteger.valueOf(123456789));
-        clockState.setLastSet(BigInteger.valueOf(101112131));
-        clockState.setReferenceSource(Arrays.asList("127.0.0.1", "192.168.0.22"));
+        clockState.setDateAndTime(BigInteger.valueOf(1573588068000L));
+        clockState.setLastSet(BigInteger.valueOf(1573588068000L));
+        clockState.setReferenceSource(Arrays.asList("0.de.pool.ntp.org"));
         clockState.setRemoteSync(true);
         clockState.setTimeZone("CST6CDT,M3.2.0/2:00:00,M11.1.0/2:00:00");
         return clockState;
@@ -162,7 +162,7 @@ public class DescriptorStateDataGenerator {
     public AlertSystemState alertSystemState() {
         AlertSystemState alertSystemState = participantFactory.createAlertSystemState();
         alertState(alertSystemState);
-        alertSystemState.setLastSelfCheck(BigInteger.valueOf(123456789));
+        alertSystemState.setLastSelfCheck(BigInteger.valueOf(1573588068000L));
         alertSystemState.setSelfCheckCount(Long.valueOf(1234));
         alertSystemState.setSystemSignalActivation(Arrays.asList(baseTypes.systemSignalActivation(AlertSignalManifestation.AUD),
                 baseTypes.systemSignalActivation(AlertSignalManifestation.VIS)));
@@ -187,7 +187,7 @@ public class DescriptorStateDataGenerator {
         alertState(alertConditionState);
         alertConditionState.setActualConditionGenerationDelay(Duration.ofMillis(50));
         alertConditionState.setActualPriority(AlertConditionPriority.ME);
-        alertConditionState.setDeterminationTime(BigInteger.valueOf(123456789));
+        alertConditionState.setDeterminationTime(BigInteger.valueOf(1573588068000L));
         alertConditionState.setPresence(false);
         alertConditionState.setRank(5);
         return alertConditionState;
@@ -514,7 +514,7 @@ public class DescriptorStateDataGenerator {
 
     private void contextState(AbstractContextState state, String handle) {
         state.setHandle(handle);
-        state.setBindingStartTime(BigInteger.valueOf(123456789));
+        state.setBindingStartTime(BigInteger.valueOf(1573588068000L));
         state.setBindingMdibVersion(BigInteger.ZERO);
         state.setContextAssociation(ContextAssociation.ASSOC);
         state.setIdentification(Arrays.asList(baseTypes.instanceIdentifier(handle + "id0"),
@@ -551,10 +551,10 @@ public class DescriptorStateDataGenerator {
 
     private void metricValue(AbstractMetricValue value) {
         value.setAnnotation(baseTypes.annotations("metric-value-annotation"));
-        value.setDeterminationTime(BigInteger.valueOf(123456789));
+        value.setDeterminationTime(BigInteger.valueOf(1573588068000L));
         value.setMetricQuality(baseTypes.metricQuality());
-        value.setStartTime(BigInteger.valueOf(234567788));
-        value.setStopTime(BigInteger.valueOf(334567788));
+        value.setStartTime(BigInteger.valueOf(1573588068000L));
+        value.setStopTime(BigInteger.valueOf(1573588068000L));
     }
 
     private void operationDescriptor(AbstractOperationDescriptor descriptor, String targetHandle) {

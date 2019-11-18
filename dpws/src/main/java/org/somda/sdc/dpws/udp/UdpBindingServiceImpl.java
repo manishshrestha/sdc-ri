@@ -56,7 +56,7 @@ public class UdpBindingServiceImpl extends AbstractIdleService implements UdpBin
         LOG.info("Start UDP binding {}", this);
         // try to get first available address from network interface
         networkInterfaceAddress = networkInterfaceUtil.getFirstIpV4Address(networkInterface).orElseThrow(() ->
-                new SocketException(String.format("Could not retrieve network interface address from: {}", networkInterface)));
+                new SocketException(String.format("Could not retrieve network interface address from: %s", networkInterface)));
 
         LOG.info("Start UDP binding to {}.", networkInterfaceAddress);
 
@@ -64,7 +64,7 @@ public class UdpBindingServiceImpl extends AbstractIdleService implements UdpBin
         LOG.info("Outgoing socket at {} is open.", outgoingSocket.getLocalSocketAddress());
         if (multicastGroup != null) {
             if (!multicastGroup.isMulticastAddress()) {
-                throw new Exception(String.format("Given address is not a multicast address: {}.", multicastGroup));
+                throw new Exception(String.format("Given address is not a multicast address: %s.", multicastGroup));
             }
 
             multicastSocket = new MulticastSocket(socketPort);

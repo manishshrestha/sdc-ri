@@ -1,6 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xjb:bindings xmlns:xjb="http://java.sun.com/xml/ns/jaxb" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="2.1">
+<xjb:bindings xmlns:xjb="http://java.sun.com/xml/ns/jaxb" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc" version="2.1">
     <xjb:bindings schemaLocation="ws-eventing-schema.xsd">
+    	<!-- Make JAXB using Java 8 state of the art date-time objects -->
+        <xjb:globalBindings>
+            <xjc:javaType name="java.time.Duration" xmlType="xs:duration" adapter="org.somda.sdc.common.util.DurationAdapter" />
+        </xjb:globalBindings>
+
         <!-- Put WS-Discovery 1.1 elements to package org.somda.sdc.dpws.soap.wseventing.model. -->
         <xjb:schemaBindings>
             <xjb:package name="org.somda.sdc.dpws.soap.wseventing.model"/>

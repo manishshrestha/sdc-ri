@@ -18,6 +18,7 @@ import org.somda.sdc.biceps.model.participant.AbstractDescriptor;
 import org.somda.sdc.biceps.model.participant.AbstractState;
 import org.somda.sdc.biceps.model.participant.MdibVersion;
 import org.somda.sdc.biceps.provider.preprocessing.DuplicateChecker;
+import org.somda.sdc.biceps.provider.preprocessing.HandleReferenceHandler;
 import org.somda.sdc.biceps.provider.preprocessing.TypeConsistencyChecker;
 import org.somda.sdc.biceps.provider.preprocessing.VersionHandler;
 import org.slf4j.Logger;
@@ -57,6 +58,7 @@ public class LocalMdibAccessImpl implements LocalMdibAccess {
                         DuplicateChecker duplicateChecker,
                         VersionHandler versionHandler,
                         TypeConsistencyChecker typeConsistencyChecker,
+                        HandleReferenceHandler handleReferenceHandler,
                         CopyManager copyManager) {
         mdibVersion = MdibVersion.create();
         mdDescriptionVersion = BigInteger.ZERO;
@@ -70,7 +72,7 @@ public class LocalMdibAccessImpl implements LocalMdibAccess {
 
         MdibStoragePreprocessingChain localMdibAccessPreprocessing = chainFactory.createMdibStoragePreprocessingChain(
                 mdibStorage,
-                Arrays.asList(duplicateChecker, typeConsistencyChecker, versionHandler),
+                Arrays.asList(duplicateChecker, typeConsistencyChecker, versionHandler, handleReferenceHandler),
                 Arrays.asList(versionHandler));
 
         this.writeUtil = new WriteUtil(LOG, eventDistributor, localMdibAccessPreprocessing, readWriteLock, this);

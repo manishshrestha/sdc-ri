@@ -6,6 +6,9 @@ import org.somda.sdc.biceps.model.participant.*;
 
 import java.util.*;
 
+/**
+ * Reflection utility that provides class mappings between reports and other information items.
+ */
 public class ReportMappings {
     private final Map<Class<? extends AbstractReport>, Class<? extends AbstractState>> reportStateMapping;
     private final Map<Class<? extends AbstractState>, Class<? extends AbstractReport>> episodicStateReportMapping;
