@@ -21,6 +21,14 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
 
+/**
+ * Class that is responsible for buffering and processing of incoming reports.
+ * <p>
+ * As long as there is no MDIB (plus optional context states) available, the report processor buffers incoming reports
+ * and only applies them once an MDIB (plus optional context states) was set.
+ * In case every report type is received through one subscription, the {@linkplain ReportProcessor} ensures data
+ * coherency.
+ */
 public class ReportProcessor {
     private final ReentrantLock mdibReadyLock;
     private final Condition mdibReadyCondition;
@@ -47,12 +55,33 @@ public class ReportProcessor {
         initMdibAccessWait();
     }
 
+    /**
+     * Queues or processes a report.
+     * <p>
+     * In case no MDIB was set via {@link #startApplyingReportsOnMdib(RemoteMdibAccess, GetContextStatesResponse)} yet,
+     * this function queues incoming reports.
+     * Once {@link #startApplyingReportsOnMdib(RemoteMdibAccess, GetContextStatesResponse)} was called, reports are
+     * directly applied on the injected {@link RemoteMdibAccess} instance.
+     * <p>
+     * <em>Attention: this function is not thread-safe. Calling it in parallel will invalidate the report processing!</em>
+     *
+     * @param report the report to process.
+     * @param <T>    any report type in terms of the SDC protocol.
+     */
     public <T extends AbstractReport> void processReport(T report) {
         this.writeReport.accept(report);
     }
 
+    /**
+     * Accepts an MDIB and starts applying reports on it.
+     *
+     * @param mdibAccess            the MDIB access to use for application of incoming reports.
+     * @param contextStatesResponse optionally a get-context-states response message in case a get-mdib request did not returned some.
+     * @throws PreprocessingException    is thrown in case writing to the MDIB fails.
+     * @throws ReportProcessingException is thrown in case there is any error during processing of a report or accessing data from the queue.
+     */
     public void startApplyingReportsOnMdib(RemoteMdibAccess mdibAccess, @Nullable GetContextStatesResponse contextStatesResponse)
-            throws InterruptedException, PreprocessingException, ReportProcessingException {
+            throws PreprocessingException, ReportProcessingException {
 
         applyReportsFromBuffer(mdibAccess);
         bufferingRequested.set(false);
@@ -66,9 +95,13 @@ public class ReportProcessor {
         }
     }
 
-    private void applyReportsFromBuffer(RemoteMdibAccess mdibAccess) throws InterruptedException, PreprocessingException, ReportProcessingException {
+    private void applyReportsFromBuffer(RemoteMdibAccess mdibAccess) throws PreprocessingException, ReportProcessingException {
         while (!bufferedReports.isEmpty()) {
-            applyReportOnMdib(bufferedReports.take(), mdibAccess);
+            try {
+                applyReportOnMdib(bufferedReports.take(), mdibAccess);
+            } catch (InterruptedException e) {
+                throw new ReportProcessingException("Could not take an element from the queue though expected");
+            }
         }
     }
 

@@ -1,5 +1,8 @@
 package org.somda.sdc.glue.consumer.report;
 
+/**
+ * An exception that is thrown if something during report processing fails.
+ */
 public class ReportProcessingException extends Exception {
     public ReportProcessingException() {
     }
