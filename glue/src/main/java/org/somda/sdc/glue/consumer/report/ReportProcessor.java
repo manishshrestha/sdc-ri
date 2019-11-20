@@ -1,6 +1,8 @@
 package org.somda.sdc.glue.consumer.report;
 
 import com.google.inject.Inject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.somda.sdc.biceps.common.MdibStateModifications;
 import org.somda.sdc.biceps.common.storage.PreprocessingException;
 import org.somda.sdc.biceps.consumer.access.RemoteMdibAccess;
@@ -30,6 +32,8 @@ import java.util.function.Consumer;
  * coherency.
  */
 public class ReportProcessor {
+    private static final Logger LOG = LoggerFactory.getLogger(ReportProcessor.class);
+
     private final ReentrantLock mdibReadyLock;
     private final Condition mdibReadyCondition;
     private final MdibVersionUtil mdibVersionUtil;
@@ -39,7 +43,6 @@ public class ReportProcessor {
     private AtomicBoolean bufferingRequested;
     private RemoteMdibAccess mdibAccess;
     private Consumer<AbstractReport> writeReport;
-    private GetContextStatesResponse contextStatesResponse;
 
     @Inject
     ReportProcessor(ReentrantLock mdibReadyLock,
@@ -82,15 +85,23 @@ public class ReportProcessor {
      */
     public void startApplyingReportsOnMdib(RemoteMdibAccess mdibAccess, @Nullable GetContextStatesResponse contextStatesResponse)
             throws PreprocessingException, ReportProcessingException {
+        try (AutoLock ignored = AutoLock.lock(mdibReadyLock)) {
+            if (this.mdibAccess != null) {
+                LOG.warn("Tried to invoke startApplyingReportsOnMdib() multiple times. " +
+                        "Make sure to call it only once. " +
+                        "Invocation ignored.");
+                return;
+            }
+        }
+
+        applyOptionalContextStates(mdibAccess, contextStatesResponse);
 
         applyReportsFromBuffer(mdibAccess);
         bufferingRequested.set(false);
         applyReportsFromBuffer(mdibAccess);
 
-
         try (AutoLock ignored = AutoLock.lock(mdibReadyLock)) {
             this.mdibAccess = mdibAccess;
-            this.contextStatesResponse = contextStatesResponse;
             mdibReadyCondition.signalAll();
         }
     }
@@ -113,7 +124,7 @@ public class ReportProcessor {
         final MdibVersion mdibAccessMdibVersion = mdibAccess.getMdibVersion();
         final MdibVersion reportMdibVersion = mdibVersionUtil.getMdibVersion(report);
         if (!mdibAccessMdibVersion.getSequenceId().equals(reportMdibVersion.getSequenceId()) ||
-                mdibAccessMdibVersion.getInstanceId().equals(reportMdibVersion.getInstanceId())) {
+                !mdibAccessMdibVersion.getInstanceId().equals(reportMdibVersion.getInstanceId())) {
             throw new ReportProcessingException(String.format("MDIB version from MDIB (%s) and MDIB version from report (%s) do not match",
                     mdibAccessMdibVersion, reportMdibVersion));
         }
@@ -143,7 +154,6 @@ public class ReportProcessor {
                 }
 
                 applyReportOnMdib(report);
-                applyOptionalContextStates();
                 writeReport = abstractReport -> {
                     try {
                         applyReportOnMdib(report);
@@ -157,7 +167,8 @@ public class ReportProcessor {
         };
     }
 
-    private void applyOptionalContextStates() throws PreprocessingException, ReportProcessingException {
+    private void applyOptionalContextStates(RemoteMdibAccess mdibAccess, @Nullable GetContextStatesResponse contextStatesResponse)
+            throws PreprocessingException, ReportProcessingException {
         if (contextStatesResponse == null) {
             return;
         }
@@ -169,12 +180,14 @@ public class ReportProcessor {
                     mdibVersionUtil.getMdibVersion(contextStatesResponse), mdibVersion));
         }
 
-        if (mdibVersion.getVersion().compareTo(contextStatesResponse.getMdibVersion()) >= 0) {
+        if (mdibVersion.getVersion().compareTo(contextStatesResponse.getMdibVersion()) > 0) {
+            LOG.warn("Found a context state response whose MDIB version ({}) is older than the MDIB's MDIB version ({})",
+                    contextStatesResponse.getMdibVersion(), mdibVersion.getVersion());
             return;
         }
 
         final MdibStateModifications modifications = MdibStateModifications.create(MdibStateModifications.Type.CONTEXT)
                 .addAll(contextStatesResponse.getContextState());
-        mdibAccess.writeStates(mdibAccess.getMdibVersion(), modifications);
+        mdibAccess.writeStates(mdibVersion, modifications);
     }
 }
