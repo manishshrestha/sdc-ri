@@ -61,4 +61,7 @@ public interface SdcRemoteDevicesConnector {
      * @return an {@link SdcRemoteDevice} instance if connected, otherwise {@link Optional#empty()}.
      */
     Optional<SdcRemoteDevice> getConnectedDevice(URI eprAddress);
+
+    void registerObserver(SdcRemoteDevicesObserver observer);
+    void unregisterObserver(SdcRemoteDevicesObserver observer);
 }
