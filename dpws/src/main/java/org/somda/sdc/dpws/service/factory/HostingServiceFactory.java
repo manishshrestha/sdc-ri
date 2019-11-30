@@ -42,8 +42,8 @@ public interface HostingServiceFactory {
      */
     HostingServiceProxy createHostingServiceProxy(@Assisted("eprAddress") URI endpointReferenceAddress,
                                                   @Assisted List<QName> types,
-                                                  @Assisted @Nullable ThisDeviceType thisDevice,
-                                                  @Assisted @Nullable ThisModelType thisModel,
+                                                  @Assisted ThisDeviceType thisDevice,
+                                                  @Assisted ThisModelType thisModel,
                                                   @Assisted Map<String, HostedServiceProxy> hostedServices,
                                                   @Assisted long metadataVersion,
                                                   @Assisted RequestResponseClient requestResponseClient,

@@ -1,5 +1,6 @@
 package org.somda.sdc.glue.consumer.report;
 
+import com.google.common.util.concurrent.AbstractIdleService;
 import com.google.inject.Inject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,7 +32,7 @@ import java.util.function.Consumer;
  * In case every report type is received through one subscription, the {@linkplain ReportProcessor} ensures data
  * coherency.
  */
-public class ReportProcessor {
+public class ReportProcessor extends AbstractIdleService {
     private static final Logger LOG = LoggerFactory.getLogger(ReportProcessor.class);
 
     private final ReentrantLock mdibReadyLock;
@@ -55,6 +56,8 @@ public class ReportProcessor {
         this.bufferedReports = new ArrayBlockingQueue<>(500); // todo make queue size configurable
         this.mdibAccess = null;
         this.bufferingRequested = new AtomicBoolean(true);
+
+        startAsync().awaitRunning();
         initMdibAccessWait();
     }
 
@@ -66,13 +69,15 @@ public class ReportProcessor {
      * Once {@link #startApplyingReportsOnMdib(RemoteMdibAccess, GetContextStatesResponse)} was called, reports are
      * directly applied on the injected {@link RemoteMdibAccess} instance.
      * <p>
-     * <em>Attention: this function is not thread-safe. Calling it in parallel will invalidate the report processing!</em>
+     * As soon as the {@linkplain ReportProcessor} is shut down, no reports will be processed henceforth.
      *
      * @param report the report to process.
      * @param <T>    any report type in terms of the SDC protocol.
      */
     public <T extends AbstractReport> void processReport(T report) {
-        this.writeReport.accept(report);
+        try (AutoLock ignored = AutoLock.lock(mdibReadyLock)) {
+            this.writeReport.accept(report);
+        }
     }
 
     /**
@@ -189,5 +194,19 @@ public class ReportProcessor {
         final MdibStateModifications modifications = MdibStateModifications.create(MdibStateModifications.Type.CONTEXT)
                 .addAll(contextStatesResponse.getContextState());
         mdibAccess.writeStates(mdibVersion, modifications);
+    }
+
+    @Override
+    protected void startUp() {
+        // nothing to be done
+    }
+
+    @Override
+    protected void shutDown() {
+        try (AutoLock ignored = AutoLock.lock(mdibReadyLock)) {
+            writeReport = abstractReport -> {
+                // stop processing reports by doing nothing
+            };
+        }
     }
 }

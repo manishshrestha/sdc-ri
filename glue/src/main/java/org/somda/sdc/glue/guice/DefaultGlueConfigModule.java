@@ -26,5 +26,8 @@ public class DefaultGlueConfigModule extends AbstractConfigurationModule {
         bind(ConsumerConfig.WATCHDOG_PERIOD,
                 Duration.class,
                 Duration.ofMillis(5000));
+        bind(ConsumerConfig.AWAITING_TRANSACTION_TIMEOUT,
+                Duration.class,
+                Duration.ofSeconds(5));
     }
 }

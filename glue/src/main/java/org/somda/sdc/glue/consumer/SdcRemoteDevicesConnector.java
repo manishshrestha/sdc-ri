@@ -33,9 +33,10 @@ public interface SdcRemoteDevicesConnector {
      * @param connectConfiguration Options for the connection process.
      * @return a future that contains the {@link SdcRemoteDevice} if connection succeeds. It will immediately return if
      * there is an existing connection already.
+     * @throws PrerequisitesException if verification of premises for connection establishment fails.
      */
     ListenableFuture<SdcRemoteDevice> connect(HostingServiceProxy hostingServiceProxy,
-                                              ConnectConfiguration connectConfiguration);
+                                              ConnectConfiguration connectConfiguration) throws PrerequisitesException;
 
     /**
      * Disconnects a device.
