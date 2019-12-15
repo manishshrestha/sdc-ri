@@ -96,6 +96,9 @@ public class SdcRemoteDevicesConnectorImpl implements SdcRemoteDevicesConnector 
     @Override
     public ListenableFuture<SdcRemoteDevice> connect(HostingServiceProxy hostingServiceProxy,
                                                      ConnectConfiguration connectConfiguration) throws PrerequisitesException {
+        // Early exit if there is a connection already
+        checkExistingConnection(hostingServiceProxy);
+
         // precheck: necessary services present?
         checkRequiredServices(hostingServiceProxy, connectConfiguration.getRequiredPortTypes());
 
@@ -125,15 +128,25 @@ public class SdcRemoteDevicesConnectorImpl implements SdcRemoteDevicesConnector 
                         scoController.orElse(null));
                 sdcRemoteDevice.startAsync().awaitRunning();
 
-                sdcRemoteDevices.put(hostingServiceProxy.getEndpointReferenceAddress(), sdcRemoteDevice);
-
-                eventBus.post(new RemoteDeviceConnectedMessage(sdcRemoteDevice));
+                if (sdcRemoteDevices.putIfAbsent(hostingServiceProxy.getEndpointReferenceAddress(), sdcRemoteDevice) == null) {
+                    eventBus.post(new RemoteDeviceConnectedMessage(sdcRemoteDevice));
+                } else {
+                    throw new PrerequisitesException(String.format("A remote device with EPR address {} was already connected",
+                            hostingServiceProxy.getEndpointReferenceAddress()));
+                }
 
                 return sdcRemoteDevice;
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
         });
+    }
+
+    private void checkExistingConnection(HostingServiceProxy hostingServiceProxy) throws PrerequisitesException {
+        if (sdcRemoteDevices.get(hostingServiceProxy.getEndpointReferenceAddress()) != null) {
+            throw new PrerequisitesException(String.format("A remote device with EPR address {} was already connected",
+                    hostingServiceProxy.getEndpointReferenceAddress()));
+        }
     }
 
     private ReportProcessor createReportProcessor() {
