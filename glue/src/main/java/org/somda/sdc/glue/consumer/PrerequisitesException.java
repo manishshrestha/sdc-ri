@@ -1,5 +1,8 @@
 package org.somda.sdc.glue.consumer;
 
+/**
+ * Any exception that comes up before the connection process to a remote device could be started.
+ */
 public class PrerequisitesException extends Exception{
     public PrerequisitesException() {
     }

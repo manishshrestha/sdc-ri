@@ -46,4 +46,14 @@ public class ActionConstants {
 
     public static final String ACTION_GET_LOCALIZED_TEXT = WsdlConstants.ACTION_LOCALIZATION_PREFIX + WsdlConstants.OPERATION_GET_LOCALIZED_TEXT;
     public static final String ACTION_GET_SUPPORTED_LANGUAGES = WsdlConstants.ACTION_LOCALIZATION_PREFIX + WsdlConstants.OPERATION_GET_SUPPORTED_LANGUAGES;
+
+    /**
+     * Generates a response action URI from an input action URI by appending 'Response'.
+     *
+     * @param requestActionUri the request action URI.
+     * @return the response action that is the requestAction plus 'Response'.
+     */
+    public static String getResponseAction(String requestActionUri) {
+        return requestActionUri + "Response";
+    }
 }

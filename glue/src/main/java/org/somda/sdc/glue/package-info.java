@@ -1,7 +1,7 @@
 /**
- * Implementation of the SDC provider.
+ * SDC Glue implementation.
  */
 @ParametersAreNonnullByDefault
-package org.somda.sdc.glue.provider;
+package org.somda.sdc.glue;
 
 import javax.annotation.ParametersAreNonnullByDefault;

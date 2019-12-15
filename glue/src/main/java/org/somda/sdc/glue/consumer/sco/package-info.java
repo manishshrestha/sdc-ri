@@ -1,5 +1,5 @@
 /**
- * Implementation of the SDC consumer service control object (SCO).
+ * Implementation of the SDC provider service control object (SCO).
  */
 @ParametersAreNonnullByDefault
 package org.somda.sdc.glue.consumer.sco;

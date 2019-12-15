@@ -9,7 +9,7 @@ import org.somda.sdc.biceps.model.message.OperationInvokedReport;
 import org.somda.sdc.common.util.AutoLock;
 import org.somda.sdc.dpws.service.HostingServiceProxy;
 import org.somda.sdc.glue.consumer.ConsumerConfig;
-import org.somda.sdc.glue.consumer.LogPrepender;
+import org.somda.sdc.glue.consumer.helper.LogPrepender;
 import org.somda.sdc.glue.consumer.sco.ScoTransaction;
 import org.somda.sdc.glue.consumer.sco.ScoTransactionImpl;
 import org.somda.sdc.glue.consumer.sco.ScoUtil;

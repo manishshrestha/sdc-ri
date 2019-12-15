@@ -1,7 +1,7 @@
 /**
- * Implementation of the SDC provider.
+ * Helpers for the consumer SCO package.
  */
 @ParametersAreNonnullByDefault
-package org.somda.sdc.glue.provider;
+package org.somda.sdc.glue.consumer.sco.helper;
 
 import javax.annotation.ParametersAreNonnullByDefault;

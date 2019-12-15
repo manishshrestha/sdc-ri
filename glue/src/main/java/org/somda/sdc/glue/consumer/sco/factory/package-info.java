@@ -1,5 +1,5 @@
 /**
- * Implementation of the SDC consumer.
+ * Factories for the SCO consumer side.
  */
 @ParametersAreNonnullByDefault
 package org.somda.sdc.glue.consumer.sco.factory;

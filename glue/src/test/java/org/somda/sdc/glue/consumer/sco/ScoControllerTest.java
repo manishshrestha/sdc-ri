@@ -6,17 +6,22 @@ import com.google.inject.Injector;
 import com.google.inject.assistedinject.Assisted;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.somda.sdc.biceps.model.message.AbstractSetResponse;
-import org.somda.sdc.biceps.model.message.OperationInvokedReport;
-import org.somda.sdc.biceps.model.message.SetContextState;
-import org.somda.sdc.biceps.model.message.SetContextStateResponse;
+import org.mockito.ArgumentCaptor;
+import org.somda.sdc.biceps.model.message.*;
 import org.somda.sdc.dpws.model.ThisDeviceType;
 import org.somda.sdc.dpws.model.ThisModelType;
 import org.somda.sdc.dpws.service.HostedServiceProxy;
 import org.somda.sdc.dpws.service.HostingServiceProxy;
 import org.somda.sdc.dpws.service.factory.HostingServiceFactory;
 import org.somda.sdc.dpws.soap.RequestResponseClient;
+import org.somda.sdc.dpws.soap.SoapMessage;
+import org.somda.sdc.dpws.soap.SoapUtil;
+import org.somda.sdc.dpws.soap.exception.MarshallingException;
+import org.somda.sdc.dpws.soap.exception.SoapFaultException;
+import org.somda.sdc.dpws.soap.exception.TransportException;
+import org.somda.sdc.dpws.soap.interception.InterceptorException;
 import org.somda.sdc.glue.UnitTestUtil;
+import org.somda.sdc.glue.common.ActionConstants;
 import org.somda.sdc.glue.consumer.sco.factory.OperationInvocationDispatcherFactory;
 import org.somda.sdc.glue.consumer.sco.factory.ScoControllerFactory;
 import org.somda.sdc.glue.consumer.sco.factory.ScoTransactionFactory;
@@ -25,26 +30,41 @@ import org.somda.sdc.glue.consumer.sco.helper.OperationInvocationDispatcher;
 import javax.annotation.Nullable;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.function.Consumer;
 
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 class ScoControllerTest {
+    private Injector injector;
     private HostingServiceProxy hostingServiceProxy;
     private OperationInvocationDispatcher dispatcher;
     private HostedServiceProxy setServiceMock;
     private HostedServiceProxy contextServiceMock;
     private ScoController scoController;
+    private ArgumentCaptor<SoapMessage> messageCaptor;
+    private RequestResponseClient requestResponseClient;
 
     @BeforeEach
     void beforeEach() {
+        messageCaptor = ArgumentCaptor.forClass(SoapMessage.class);
+        requestResponseClient = mock(RequestResponseClient.class);
+
         setServiceMock = mock(HostedServiceProxy.class);
         contextServiceMock = mock(HostedServiceProxy.class);
 
+        when(setServiceMock.getRequestResponseClient()).thenReturn(requestResponseClient);
+        when(contextServiceMock.getRequestResponseClient()).thenReturn(requestResponseClient);
+
         // bind OperationInvocationDispatcherFactory to invocation dispatcher instance
-        Injector injector = new UnitTestUtil().createInjectorWithOverrides(new AbstractModule() {
+        injector = new UnitTestUtil().createInjectorWithOverrides(new AbstractModule() {
             @Override
             protected void configure() {
                 bind(OperationInvocationDispatcherFactory.class).to(DispatcherFactory.class);
@@ -68,20 +88,73 @@ class ScoControllerTest {
     }
 
     @Test
-    void invokeSetContext() {
-        SetContextState setContextState = new SetContextState();
-        ReportConsumer reportConsumer = new ReportConsumer();
-        ListenableFuture<ScoTransaction<SetContextStateResponse>> future = scoController.invoke(setContextState, reportConsumer, SetContextStateResponse.class);
-    }
+    void scoInvoke() throws InterruptedException, ExecutionException, TimeoutException, InterceptorException,
+            SoapFaultException, MarshallingException, TransportException {
+        List<SetOperationTestSet> testSets = Arrays.asList(
+                new SetOperationTestSet(
+                        ActionConstants.ACTION_SET_CONTEXT_STATE,
+                        new SetContextState(),
+                        ScoArtifacts.createResponse(10, InvocationState.WAIT, SetContextStateResponse.class),
+                        SetContextStateResponse.class
+                ),
+                new SetOperationTestSet(
+                        ActionConstants.ACTION_ACTIVATE,
+                        new Activate(),
+                        ScoArtifacts.createResponse(10, InvocationState.WAIT, ActivateResponse.class),
+                        ActivateResponse.class
+                ),
+                new SetOperationTestSet(
+                        ActionConstants.ACTION_SET_ALERT_STATE,
+                        new SetAlertState(),
+                        ScoArtifacts.createResponse(10, InvocationState.WAIT, SetAlertStateResponse.class),
+                        SetAlertStateResponse.class
+                ),
+                new SetOperationTestSet(
+                        ActionConstants.ACTION_SET_COMPONENT_STATE,
+                        new SetComponentState(),
+                        ScoArtifacts.createResponse(10, InvocationState.WAIT, SetComponentStateResponse.class),
+                        SetComponentStateResponse.class
+                ),
+                new SetOperationTestSet(
+                        ActionConstants.ACTION_SET_METRIC_STATE,
+                        new SetMetricState(),
+                        ScoArtifacts.createResponse(10, InvocationState.WAIT, SetMetricStateResponse.class),
+                        SetMetricStateResponse.class
+                ),
+                new SetOperationTestSet(
+                        ActionConstants.ACTION_SET_STRING,
+                        new SetString(),
+                        ScoArtifacts.createResponse(10, InvocationState.WAIT, SetStringResponse.class),
+                        SetStringResponse.class
+                ),
+                new SetOperationTestSet(
+                        ActionConstants.ACTION_SET_VALUE,
+                        new SetValue(),
+                        ScoArtifacts.createResponse(10, InvocationState.WAIT, SetValueResponse.class),
+                        SetValueResponse.class
+                ));
 
-    @Test
-    void invoke1() {
-    }
+        for (SetOperationTestSet testSet : testSets) {
+            final SoapUtil soapUtil = injector.getInstance(SoapUtil.class);
+            final SoapMessage response = soapUtil.createMessage(
+                    ActionConstants.getResponseAction(testSet.expectedRequestAction), testSet.expectedResponse);
 
-    @Test
-    void processOperationInvokedReport() {
-        // as the operation invocation dispatcher is responsible of dispatching events,
-        // this test is only checking for correct forwarding
+            when(requestResponseClient.sendRequestResponse(messageCaptor.capture())).thenReturn(response);
+
+            ReportConsumer reportConsumer = new ReportConsumer();
+            final ListenableFuture<? extends ScoTransaction<? extends AbstractSetResponse>> future =
+                    scoController.invoke(testSet.expectedRequest, reportConsumer, testSet.expectedResponseClass);
+            final ScoTransaction<? extends AbstractSetResponse> transaction = future.get(2, TimeUnit.SECONDS);
+            assertNotEquals(testSet.expectedResponse, transaction.getResponse());
+            assertEquals(testSet.expectedResponse.getInvocationInfo().getTransactionId(),
+                    transaction.getResponse().getInvocationInfo().getTransactionId());
+
+            final SoapMessage capturedRequest = messageCaptor.getValue();
+            assertTrue(capturedRequest.getWsAddressingHeader().getAction().isPresent());
+            assertEquals(testSet.expectedRequestAction, capturedRequest.getWsAddressingHeader().getAction().get().getValue());
+            assertTrue(soapUtil.getBody(capturedRequest, testSet.expectedRequest.getClass()).isPresent());
+            assertEquals(testSet.expectedRequest, soapUtil.getBody(capturedRequest, testSet.expectedRequest.getClass()).get());
+        }
     }
 
     private static class DispatcherFactory implements OperationInvocationDispatcherFactory {
@@ -111,6 +184,23 @@ class ScoControllerTest {
         @Override
         public void accept(OperationInvokedReport.ReportPart reportPart) {
             reportParts.add(reportPart);
+        }
+    }
+
+    private class SetOperationTestSet {
+        String expectedRequestAction;
+        AbstractSet expectedRequest;
+        AbstractSetResponse expectedResponse;
+        Class<? extends AbstractSetResponse> expectedResponseClass;
+
+        SetOperationTestSet(String expectedRequestAction,
+                            AbstractSet expectedRequest,
+                            AbstractSetResponse expectedResponse,
+                            Class<? extends AbstractSetResponse> expectedResponseClass) {
+            this.expectedRequestAction = expectedRequestAction;
+            this.expectedRequest = expectedRequest;
+            this.expectedResponse = expectedResponse;
+            this.expectedResponseClass = expectedResponseClass;
         }
     }
 }

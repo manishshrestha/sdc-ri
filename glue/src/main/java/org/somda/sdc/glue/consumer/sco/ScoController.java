@@ -19,7 +19,7 @@ import org.somda.sdc.dpws.soap.exception.TransportException;
 import org.somda.sdc.dpws.soap.interception.InterceptorException;
 import org.somda.sdc.glue.common.ActionConstants;
 import org.somda.sdc.glue.common.WsdlConstants;
-import org.somda.sdc.glue.consumer.LogPrepender;
+import org.somda.sdc.glue.consumer.helper.LogPrepender;
 import org.somda.sdc.glue.consumer.SetServiceAccess;
 import org.somda.sdc.glue.consumer.sco.factory.OperationInvocationDispatcherFactory;
 import org.somda.sdc.glue.consumer.sco.factory.ScoTransactionFactory;
@@ -42,8 +42,8 @@ public class ScoController implements SetServiceAccess {
 
     @AssistedInject
     ScoController(@Assisted HostingServiceProxy hostingServiceProxy,
-                  @Assisted HostedServiceProxy setServiceProxy,
-                  @Assisted @Nullable HostedServiceProxy contextServiceProxy,
+                  @Assisted("setServiceProxy") HostedServiceProxy setServiceProxy,
+                  @Assisted("contextServiceProxy") @Nullable HostedServiceProxy contextServiceProxy,
                   OperationInvocationDispatcherFactory operationInvocationDispatcherFactory,
                   @Consumer ListeningExecutorService executorService,
                   SoapUtil soapUtil,

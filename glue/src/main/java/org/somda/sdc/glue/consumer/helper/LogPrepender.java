@@ -1,11 +1,25 @@
-package org.somda.sdc.glue.consumer;
+package org.somda.sdc.glue.consumer.helper;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.Marker;
 import org.somda.sdc.dpws.service.HostingServiceProxy;
 
+/**
+ * Logger helper utility to prepend remote connection information to log messages.
+ * <p>
+ * The prefixes are supposed to help identifying problems during log output analysis.
+ */
 public class LogPrepender {
+    /**
+     * Gets a logger.
+     * <p>
+     * Use this function as a replacement for {@link LoggerFactory#getLogger(Class)}.
+     *
+     * @param hostingService the hosting service information that is prepended to log messages.
+     * @param theClass the class used by the logger.
+     * @return a logger adapter that prepends hosting service information to each log message.
+     */
     public static Logger getLogger(HostingServiceProxy hostingService, Class<?> theClass) {
         final Logger logger = LoggerFactory.getLogger(theClass);
         return new Logger() {

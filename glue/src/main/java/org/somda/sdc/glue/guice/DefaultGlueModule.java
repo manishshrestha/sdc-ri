@@ -30,20 +30,36 @@ import java.util.concurrent.Executors;
 public class DefaultGlueModule extends AbstractModule {
     @Override
     protected void configure() {
-        configureThreadPools();
+        configureCommon();
+        configureConsumer();
+        configureProvider();
+    }
 
-        install(new FactoryModuleBuilder()
-                .implement(ReportGenerator.class, ReportGenerator.class)
-                .build(ReportGeneratorFactory.class));
-
+    private void configureCommon() {
         install(new FactoryModuleBuilder()
                 .implement(MdibMapper.class, MdibMapper.class)
                 .build(MdibMapperFactory.class));
+    }
+
+    private void configureConsumer() {
+        bind(ListeningExecutorService.class)
+                .annotatedWith(Consumer.class)
+                .toInstance(MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(10)));
 
         install(new FactoryModuleBuilder()
-                .implement(Context.class, Context.class)
-                .build(ContextFactory.class));
+                .implement(OperationInvocationDispatcher.class, OperationInvocationDispatcher.class)
+                .build(OperationInvocationDispatcherFactory.class));
 
+        install(new FactoryModuleBuilder()
+                .implement(SdcRemoteDevice.class, SdcRemoteDeviceImpl.class)
+                .build(SdcRemoteDeviceFactory.class));
+
+        install(new FactoryModuleBuilder()
+                .implement(org.somda.sdc.glue.consumer.sco.ScoController.class, org.somda.sdc.glue.consumer.sco.ScoController.class)
+                .build(org.somda.sdc.glue.consumer.sco.factory.ScoControllerFactory.class));
+    }
+
+    private void configureProvider() {
         install(new FactoryModuleBuilder()
                 .implement(ScoController.class, ScoController.class)
                 .build(ScoControllerFactory.class));
@@ -57,17 +73,11 @@ public class DefaultGlueModule extends AbstractModule {
                 .build(SdcDeviceFactory.class));
 
         install(new FactoryModuleBuilder()
-                .implement(OperationInvocationDispatcher.class, OperationInvocationDispatcher.class)
-                .build(OperationInvocationDispatcherFactory.class));
+                .implement(Context.class, Context.class)
+                .build(ContextFactory.class));
 
         install(new FactoryModuleBuilder()
-                .implement(SdcRemoteDevice.class, SdcRemoteDeviceImpl.class)
-                .build(SdcRemoteDeviceFactory.class));
-    }
-
-    private void configureThreadPools() {
-        bind(ListeningExecutorService.class)
-                .annotatedWith(Consumer.class)
-                .toInstance(MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(10)));
+                .implement(ReportGenerator.class, ReportGenerator.class)
+                .build(ReportGeneratorFactory.class));
     }
 }

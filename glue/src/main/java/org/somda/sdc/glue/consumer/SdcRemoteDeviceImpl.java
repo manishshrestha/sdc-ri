@@ -11,15 +11,17 @@ import org.somda.sdc.biceps.model.message.AbstractSet;
 import org.somda.sdc.biceps.model.message.AbstractSetResponse;
 import org.somda.sdc.biceps.model.message.OperationInvokedReport;
 import org.somda.sdc.dpws.service.HostingServiceProxy;
+import org.somda.sdc.glue.consumer.helper.LogPrepender;
 import org.somda.sdc.glue.consumer.report.ReportProcessor;
-import org.somda.sdc.glue.consumer.sco.InvocationException;
 import org.somda.sdc.glue.consumer.sco.ScoController;
 import org.somda.sdc.glue.consumer.sco.ScoTransaction;
 
 import javax.annotation.Nullable;
-import java.net.URI;
 import java.util.function.Consumer;
 
+/**
+ * Default implementation of {@linkplain SdcRemoteDevice}.
+ */
 public class SdcRemoteDeviceImpl extends AbstractIdleService implements SdcRemoteDevice {
     private final Logger LOG;
     private final RemoteMdibAccess remoteMdibAccess;
@@ -86,7 +88,6 @@ public class SdcRemoteDeviceImpl extends AbstractIdleService implements SdcRemot
 
     @Override
     protected void startUp() {
-
     }
 
     @Override
