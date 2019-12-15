@@ -96,4 +96,12 @@ public interface EventSink {
      *                       {@link #subscribe(List, Duration, NotificationSink)}.
      */
     void disableAutoRenew(String subscriptionId);
+
+    /**
+     * Synchronously unsubscribes all subscriptions.
+     * <p>
+     * Once this function returns, all running subscriptions have been tried to unsubscribe.
+     * Errors are swallowed.
+     */
+    void unsubscribeAll();
 }

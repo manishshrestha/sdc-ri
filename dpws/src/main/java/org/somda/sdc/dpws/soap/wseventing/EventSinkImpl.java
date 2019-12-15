@@ -33,10 +33,7 @@ import java.net.URI;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
+import java.util.concurrent.*;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -94,7 +91,7 @@ public class EventSinkImpl implements EventSink {
         this.jaxbUtil = jaxbUtil;
         this.executorService = executorService;
         this.subscriptionManagerFactory = subscriptionManagerFactory;
-        this.subscriptionManagers = new HashMap<>();
+        this.subscriptionManagers = new ConcurrentHashMap<>();
         this.autoRenewExecutor = autoRenewExecutor;
         this.subscriptionsLock = new ReentrantLock();
     }
@@ -276,6 +273,18 @@ public class EventSinkImpl implements EventSink {
     public void disableAutoRenew(String subscriptionId) {
         Optional.ofNullable(subscriptionManagers.get(subscriptionId)).ifPresent(subscriptionManagerProxy ->
                 subscriptionManagerProxy.setAutoRenewEnabled(false));
+    }
+
+    @Override
+    public void unsubscribeAll() {
+        for (SinkSubscriptionManager subscriptionManager : new ArrayList<>(this.subscriptionManagers.values())) {
+            final ListenableFuture<Object> future = unsubscribe(subscriptionManager.getSubscriptionId());
+            try {
+                future.get(maxWaitForFutures.toSeconds(), TimeUnit.SECONDS);
+            } catch (InterruptedException | ExecutionException | TimeoutException e) {
+                LOG.warn("Subscription {} could not be unsubscribed. Ignore.", subscriptionManager.getSubscriptionId());
+            }
+        }
     }
 
     private String implodeUriList(List<String> actionUris) {

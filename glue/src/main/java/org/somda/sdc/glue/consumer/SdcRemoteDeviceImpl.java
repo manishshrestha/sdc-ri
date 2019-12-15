@@ -10,6 +10,7 @@ import org.somda.sdc.biceps.consumer.access.RemoteMdibAccess;
 import org.somda.sdc.biceps.model.message.AbstractSet;
 import org.somda.sdc.biceps.model.message.AbstractSetResponse;
 import org.somda.sdc.biceps.model.message.OperationInvokedReport;
+import org.somda.sdc.dpws.service.HostedServiceProxy;
 import org.somda.sdc.dpws.service.HostingServiceProxy;
 import org.somda.sdc.glue.consumer.helper.LogPrepender;
 import org.somda.sdc.glue.consumer.report.ReportProcessor;
@@ -17,6 +18,7 @@ import org.somda.sdc.glue.consumer.sco.ScoController;
 import org.somda.sdc.glue.consumer.sco.ScoTransaction;
 
 import javax.annotation.Nullable;
+import java.util.ArrayList;
 import java.util.function.Consumer;
 
 /**
@@ -93,7 +95,10 @@ public class SdcRemoteDeviceImpl extends AbstractIdleService implements SdcRemot
     @Override
     protected void shutDown() {
         reportProcessor.stopAsync().awaitTerminated();
-
+        final ArrayList<HostedServiceProxy> hostedServices = new ArrayList<>(hostingServiceProxy.getHostedServices().values());
+        for (HostedServiceProxy hostedService : hostedServices) {
+            hostedService.getEventSinkAccess().unsubscribeAll();
+        }
     }
 
     private void checkRunning() {

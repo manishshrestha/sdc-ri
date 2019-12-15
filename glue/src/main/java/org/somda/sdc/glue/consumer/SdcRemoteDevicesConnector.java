@@ -42,11 +42,13 @@ public interface SdcRemoteDevicesConnector {
      * Disconnects a device.
      * <p>
      * This function is non-blocking.
-     * Right after it returns the disconnected device can be re-connected.
+     * Right after it returns the disconnected device can be re-connected (while the former device is still disconnecting).
      *
      * @param eprAddress the endpoint reference address of the remote device to disconnect.
+     * @return a listenable future that finishes once the remote device is disconnected (i.e., subscriptions are
+     * unsubscribed). If there is no device to disconnect, an immediate cancelled future is returned.
      */
-    void disconnect(URI eprAddress);
+    ListenableFuture<?> disconnect(URI eprAddress);
 
     /**
      * Gets a copy of all connected devices at a certain point in time.
@@ -64,5 +66,6 @@ public interface SdcRemoteDevicesConnector {
     Optional<SdcRemoteDevice> getConnectedDevice(URI eprAddress);
 
     void registerObserver(SdcRemoteDevicesObserver observer);
+
     void unregisterObserver(SdcRemoteDevicesObserver observer);
 }

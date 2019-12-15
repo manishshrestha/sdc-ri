@@ -4,6 +4,7 @@ import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.eventbus.EventBus;
 import com.google.common.eventbus.Subscribe;
+import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.inject.Provider;
@@ -170,13 +171,17 @@ public class SdcRemoteDevicesConnectorImpl implements SdcRemoteDevicesConnector 
     }
 
     @Override
-    public void disconnect(URI eprAddress) {
+    public ListenableFuture<?> disconnect(URI eprAddress) {
         SdcRemoteDevice sdcRemoteDevice = sdcRemoteDevices.remove(eprAddress);
         if (sdcRemoteDevice != null) {
-            // invalidate sdcRemoteDevice
-            // unsubscribe everything
+            return executorService.submit(() -> {
+                // invalidate sdcRemoteDevice
+                // unsubscribe everything
+                sdcRemoteDevice.stopAsync().awaitTerminated();
 
+            });
         }
+        return Futures.immediateCancelledFuture();
     }
 
     @Override
