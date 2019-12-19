@@ -29,7 +29,9 @@ import org.somda.sdc.dpws.soap.wseventing.SubscribeResult;
 import org.somda.sdc.glue.common.*;
 import org.somda.sdc.glue.common.factory.ModificationsBuilderFactory;
 import org.somda.sdc.glue.consumer.event.RemoteDeviceConnectedMessage;
+import org.somda.sdc.glue.consumer.event.WatchdogMessage;
 import org.somda.sdc.glue.consumer.factory.SdcRemoteDeviceFactory;
+import org.somda.sdc.glue.consumer.factory.SdcRemoteDeviceWatchdogFactory;
 import org.somda.sdc.glue.consumer.report.ReportProcessingException;
 import org.somda.sdc.glue.consumer.report.ReportProcessor;
 import org.somda.sdc.glue.consumer.sco.ScoController;
@@ -48,7 +50,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-public class SdcRemoteDevicesConnectorImpl implements SdcRemoteDevicesConnector {
+public class SdcRemoteDevicesConnectorImpl implements SdcRemoteDevicesConnector, WatchdogObserver {
     private static final Logger LOG = LoggerFactory.getLogger(SdcRemoteDevicesConnectorImpl.class);
 
     private ListeningExecutorService executorService;
@@ -64,6 +66,7 @@ public class SdcRemoteDevicesConnectorImpl implements SdcRemoteDevicesConnector 
     private final ObjectFactory messageModelFactory;
     private final MdibVersionUtil mdibVersionUtil;
     private final SdcRemoteDeviceFactory sdcRemoteDeviceFactory;
+    private final SdcRemoteDeviceWatchdogFactory watchdogFactory;
 
     @Inject
     SdcRemoteDevicesConnectorImpl(@Consumer ListeningExecutorService executorService,
@@ -78,7 +81,8 @@ public class SdcRemoteDevicesConnectorImpl implements SdcRemoteDevicesConnector 
                                   RemoteMdibAccessFactory remoteMdibAccessFactory,
                                   ObjectFactory messageModelFactory,
                                   MdibVersionUtil mdibVersionUtil,
-                                  SdcRemoteDeviceFactory sdcRemoteDeviceFactory) {
+                                  SdcRemoteDeviceFactory sdcRemoteDeviceFactory,
+                                  SdcRemoteDeviceWatchdogFactory watchdogFactory) {
         this.executorService = executorService;
         this.sdcRemoteDevices = sdcRemoteDevices;
         this.eventBus = eventBus;
@@ -92,6 +96,7 @@ public class SdcRemoteDevicesConnectorImpl implements SdcRemoteDevicesConnector 
         this.messageModelFactory = messageModelFactory;
         this.mdibVersionUtil = mdibVersionUtil;
         this.sdcRemoteDeviceFactory = sdcRemoteDeviceFactory;
+        this.watchdogFactory = watchdogFactory;
     }
 
     @Override
@@ -109,7 +114,10 @@ public class SdcRemoteDevicesConnectorImpl implements SdcRemoteDevicesConnector 
                 RemoteMdibAccess mdibAccess = createRemoteMdibAccess(hostingServiceProxy);
                 Optional<ScoController> scoController = createScoController(hostingServiceProxy);
 
-                subscribeServices(hostingServiceProxy, connectConfiguration.getActions(), reportProcessor, scoController.orElse(null));
+                // Map<ServiceId, SubscribeResult>
+                // use these later for watchdog, which is in charge of automatic renew
+                final Map<String, SubscribeResult> subscribeResults = subscribeServices(hostingServiceProxy,
+                        connectConfiguration.getActions(), reportProcessor, scoController.orElse(null));
 
                 GetContextStatesResponse getContextStatesResponse = null;
                 if (mdibAccess.getContextStates().isEmpty()) {
@@ -129,12 +137,16 @@ public class SdcRemoteDevicesConnectorImpl implements SdcRemoteDevicesConnector 
                         scoController.orElse(null));
                 sdcRemoteDevice.startAsync().awaitRunning();
 
+                watchdogFactory.createSdcRemoteDeviceWatchdog(hostingServiceProxy, subscribeResults, this);
+
                 if (sdcRemoteDevices.putIfAbsent(hostingServiceProxy.getEndpointReferenceAddress(), sdcRemoteDevice) == null) {
                     eventBus.post(new RemoteDeviceConnectedMessage(sdcRemoteDevice));
                 } else {
                     throw new PrerequisitesException(String.format("A remote device with EPR address {} was already connected",
                             hostingServiceProxy.getEndpointReferenceAddress()));
                 }
+
+                // Connection established, starting new watchdog, subscribe to watchdog
 
                 return sdcRemoteDevice;
             } catch (Exception e) {
@@ -214,22 +226,24 @@ public class SdcRemoteDevicesConnectorImpl implements SdcRemoteDevicesConnector 
         }
     }
 
-    private void subscribeServices(HostingServiceProxy hostingServiceProxy,
+    private Map<String, SubscribeResult> subscribeServices(HostingServiceProxy hostingServiceProxy,
                                    Collection<String> actionsToSubscribe,
                                    ReportProcessor reportProcessor,
                                    @Nullable ScoController scoController) throws PrerequisitesException {
         // Multimap<ServiceId, ActionUri>
         final Multimap<String, String> subscriptions = getServiceIdWithActionsToSubscribe(hostingServiceProxy, actionsToSubscribe);
+        Map<String, SubscribeResult> subscribeResults = new HashMap<>(subscriptions.size());
+
         for (String serviceId : subscriptions.keySet()) {
             final Collection<String> actions = subscriptions.get(serviceId);
             if (actions.isEmpty()) {
                 LOG.warn("Expect to find at least one action to subscribe for service id {}, but none found", serviceId);
-                return;
+                continue;
             }
             final HostedServiceProxy hostedServiceProxy = hostingServiceProxy.getHostedServices().get(serviceId);
             if (hostedServiceProxy == null) {
                 LOG.warn("Expect to found a hosted service proxy to access for service id {}, but none found", serviceId);
-                return;
+                continue;
             }
 
             final ListenableFuture<SubscribeResult> subscribeResult = hostedServiceProxy.getEventSinkAccess().subscribe(
@@ -252,7 +266,7 @@ public class SdcRemoteDevicesConnectorImpl implements SdcRemoteDevicesConnector 
                     });
 
             try {
-                subscribeResult.get(responseWaitingTime.toSeconds(), TimeUnit.SECONDS);
+                subscribeResults.put(serviceId, subscribeResult.get(responseWaitingTime.toSeconds(), TimeUnit.SECONDS));
             } catch (InterruptedException | ExecutionException | TimeoutException e) {
                 throw new PrerequisitesException(
                         String.format("Subscribe request towards service with service id %s failed. Physical target address: %s",
@@ -260,6 +274,8 @@ public class SdcRemoteDevicesConnectorImpl implements SdcRemoteDevicesConnector 
                                 hostedServiceProxy.getActiveEprAddress().toString()), e);
             }
         }
+
+        return subscribeResults;
     }
 
     private Multimap<String, String> getServiceIdWithActionsToSubscribe(HostingServiceProxy hostingServiceProxy, Collection<String> actionsToSubscribe) {
@@ -329,7 +345,6 @@ public class SdcRemoteDevicesConnectorImpl implements SdcRemoteDevicesConnector 
                                     "physical target address %s",
                             hostingServiceProxy.getEndpointReferenceAddress(),
                             hostingServiceProxy.getActiveXAddr()));
-
         }
 
         return foundProxy;
@@ -349,6 +364,13 @@ public class SdcRemoteDevicesConnectorImpl implements SdcRemoteDevicesConnector 
             throw new PrerequisitesException(String.format("Could not send a GetContextStates request to service %s with physical address %s",
                     contextServiceProxy.getType().getServiceId(), contextServiceProxy.getActiveEprAddress()), e);
         }
+    }
+
+    @Subscribe
+    void onConnectionLoss(WatchdogMessage watchdogMessage) {
+        LOG.info("Lost connection to device {}. Reason: {}", watchdogMessage.getPayload(),
+                watchdogMessage.getReason().getMessage());
+        disconnect(watchdogMessage.getPayload());
     }
 }
 

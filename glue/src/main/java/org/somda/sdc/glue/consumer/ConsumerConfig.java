@@ -1,5 +1,10 @@
 package org.somda.sdc.glue.consumer;
 
+/**
+ * Configuration for the SDC consumer side.
+ *
+ * @see org.somda.sdc.glue.guice.DefaultGlueConfigModule
+ */
 public class ConsumerConfig {
     /**
      * Configures the period for {@linkplain SdcRemoteDevice} watchdog jobs.
@@ -46,4 +51,5 @@ public class ConsumerConfig {
      * </ul>
      */
     public static final String AWAITING_TRANSACTION_TIMEOUT = "SdcGlue.Consumer.AwaitingTransactionTimeout";
+
 }
