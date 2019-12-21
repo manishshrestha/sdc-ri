@@ -4,6 +4,8 @@ import javax.xml.bind.JAXBContext;
 
 /**
  * Configuration of the SOAP package.
+ *
+ * @see org.somda.sdc.dpws.guice.DefaultDpwsConfigModule
  */
 public class SoapConfig {
 
@@ -39,7 +41,7 @@ public class SoapConfig {
      * </ul>
      * <p>
      * Internally, the prefix-to-namespace mappings are stored as a namespace to prefix-namespace map, which allows you
-     * to overwrite prefixes by customizing the a namespace in the config.
+     * to overwrite prefixes by customizing the namespace in the config.
      * Configuration metadata:
      * <ul>
      * <li>Data type: {@linkplain String}
@@ -48,5 +50,5 @@ public class SoapConfig {
      *
      * @see org.somda.sdc.common.util.PrefixNamespaceMappingParser
      */
-    public static final String NAMESPACE_MAPPINGS = "Dpws.NamespaceMappings";
+    public static final String NAMESPACE_MAPPINGS = "SoapConfig.NamespaceMappings";
 }

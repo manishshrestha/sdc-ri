@@ -4,6 +4,8 @@ import org.somda.sdc.biceps.common.storage.MdibStorage;
 
 /**
  * General configuration of the BICEPS common package.
+ *
+ * @see org.somda.sdc.biceps.guice.DefaultBicepsConfigModule
  */
 public class CommonConfig {
     /**

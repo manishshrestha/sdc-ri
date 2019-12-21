@@ -3,12 +3,13 @@ package org.somda.sdc.dpws.soap.wseventing;
 import com.google.common.util.concurrent.AbstractIdleService;
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
-import org.somda.sdc.dpws.soap.wsaddressing.model.EndpointReferenceType;
-import org.somda.sdc.dpws.soap.wseventing.model.Notification;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.somda.sdc.dpws.soap.wsaddressing.model.EndpointReferenceType;
+import org.somda.sdc.dpws.soap.wseventing.model.Notification;
 
 import javax.annotation.Nullable;
+import javax.inject.Named;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Optional;
@@ -37,8 +38,9 @@ public class SourceSubscriptionManagerImpl extends AbstractIdleService implement
     SourceSubscriptionManagerImpl(@Assisted("SubscriptionManager") EndpointReferenceType subscriptionManagerEpr,
                                   @Assisted Duration expires,
                                   @Assisted("NotifyTo") EndpointReferenceType notifyTo,
-                                  @Assisted("EntTo") @Nullable EndpointReferenceType endTo) {
-        this(subscriptionManagerEpr, expires, notifyTo, endTo, null);
+                                  @Assisted("EntTo") @Nullable EndpointReferenceType endTo,
+                                  @Named(WsEventingConfig.NOTIFICATION_QUEUE_CAPACITY) Integer notificationQueueCapacity) {
+        this(subscriptionManagerEpr, expires, notifyTo, endTo, null, notificationQueueCapacity);
     }
 
     @AssistedInject
@@ -46,7 +48,8 @@ public class SourceSubscriptionManagerImpl extends AbstractIdleService implement
                                   @Assisted Duration expires,
                                   @Assisted("NotifyTo") EndpointReferenceType notifyTo,
                                   @Assisted("EntTo") @Nullable EndpointReferenceType endTo,
-                                  @Assisted("SubscriptionId") @Nullable String subscriptionId) {
+                                  @Assisted("SubscriptionId") @Nullable String subscriptionId,
+                                  @Named(WsEventingConfig.NOTIFICATION_QUEUE_CAPACITY) Integer notificationQueueCapacity) {
         this.subscriptionId = Optional.ofNullable(subscriptionId).orElse(UUID.randomUUID().toString());
         this.expiresTimeout = calculateTimeout(expires);
         this.expires = expires;
@@ -54,7 +57,7 @@ public class SourceSubscriptionManagerImpl extends AbstractIdleService implement
         this.notifyTo = notifyTo;
         this.subscriptionManagerEpr = subscriptionManagerEpr;
         this.expiresLock = new ReentrantLock();
-        this.notificationQueue = new ArrayBlockingQueue<>(500); // todo make queue size configurable
+        this.notificationQueue = new ArrayBlockingQueue<>(notificationQueueCapacity);
     }
 
     @Override

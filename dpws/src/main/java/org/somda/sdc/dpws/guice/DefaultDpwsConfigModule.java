@@ -59,14 +59,6 @@ public class DefaultDpwsConfigModule extends AbstractConfigurationModule {
                 Duration.class,
                 Duration.ofSeconds(10));
 
-        bind(ClientConfig.ENABLE_WATCHDOG,
-                Boolean.class,
-                true);
-
-        bind(ClientConfig.WATCHDOG_PERIOD,
-                Duration.class,
-                Duration.ofSeconds(10));
-
         bind(ClientConfig.AUTO_RESOLVE,
                 Boolean.class,
                 false);
@@ -115,6 +107,9 @@ public class DefaultDpwsConfigModule extends AbstractConfigurationModule {
         bind(WsEventingConfig.SOURCE_SUBSCRIPTION_MANAGER_PATH,
                 String.class,
                 "SubscriptionManager");
+        bind(WsEventingConfig.NOTIFICATION_QUEUE_CAPACITY,
+                Integer.class,
+                Integer.valueOf(500));
     }
 
     private void configureSoapConfig() {

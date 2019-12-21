@@ -2,6 +2,8 @@ package org.somda.sdc.dpws.soap.wsdiscovery;
 
 /**
  * Configuration of the WS-Discovery package.
+ *
+ * @see org.somda.sdc.dpws.guice.DefaultDpwsConfigModule
  */
 public class WsDiscoveryConfig {
     /**

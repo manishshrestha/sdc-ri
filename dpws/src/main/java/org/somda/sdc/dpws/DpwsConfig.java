@@ -2,6 +2,8 @@ package org.somda.sdc.dpws;
 
 /**
  * Configuration of the DPWS top level package.
+ *
+ * @see org.somda.sdc.dpws.guice.DefaultDpwsConfigModule
  */
 public class DpwsConfig {
     /**
