@@ -78,10 +78,10 @@ public class ConnectConfiguration {
      * This can be used in order to watch remote devices without receiving all of their data.
      * Note that this setup includes operation invoked reports by default.
      */
-    public static String[] DESCRIPTION_AND_CONTEXTS = {
+    public static Collection<String> DESCRIPTION_AND_CONTEXTS =  Collections.unmodifiableCollection(Arrays.asList(
             ActionConstants.ACTION_EPISODIC_CONTEXT_REPORT,
             ActionConstants.ACTION_DESCRIPTION_MODIFICATION_REPORT,
-            ActionConstants.ACTION_OPERATION_INVOKED_REPORT};
+            ActionConstants.ACTION_OPERATION_INVOKED_REPORT));
 
     private Collection<String> actions;
     private Collection<QName> requiredPortTypes;

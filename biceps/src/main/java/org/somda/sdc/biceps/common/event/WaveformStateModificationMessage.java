@@ -7,7 +7,7 @@ import org.somda.sdc.biceps.model.participant.RealTimeSampleArrayMetricState;
 import java.util.List;
 
 /**
- * Subscribe to this message in order to receive metric state changes.
+ * Subscribe to this message in order to receive waveform changes.
  */
 public class WaveformStateModificationMessage extends StateModificationMessage<RealTimeSampleArrayMetricState> {
     /**
