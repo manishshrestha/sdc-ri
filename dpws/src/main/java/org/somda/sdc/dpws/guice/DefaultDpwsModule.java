@@ -128,7 +128,6 @@ public class DefaultDpwsModule extends AbstractModule {
                 .implement(DiscoveryClientUdpProcessor.class, DiscoveryClientUdpProcessor.class)
                 .implement(DiscoveredDeviceResolver.class, DiscoveredDeviceResolver.class)
                 .implement(HelloByeAndProbeMatchesObserverImpl.class, HelloByeAndProbeMatchesObserverImpl.class)
-                .implement(WatchDog.class, WatchDogImpl.class)
                 .build(ClientHelperFactory.class));
     }
 
