@@ -1,5 +1,8 @@
 package org.somda.sdc.common.util;
 
+import com.google.inject.Inject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Element;
 
 import javax.xml.bind.JAXBElement;
@@ -11,6 +14,8 @@ import java.util.Optional;
  * Default implementation of {@linkplain JaxbUtil}.
  */
 public class JaxbUtilImpl implements JaxbUtil {
+    private static final Logger LOG = LoggerFactory.getLogger(JaxbUtilImpl.class);
+
     @Override
     public <T> Optional<T> extractElement(Object element, QName elementType, Class<T> typeClass) {
         Optional<Object> extractedObj = extractElement(element, elementType);
@@ -46,10 +51,8 @@ public class JaxbUtilImpl implements JaxbUtil {
                 return Optional.ofNullable(elementAsJaxb.getValue());
             }
         } catch (Exception e) {
-              // todo DGr should this check be enabled or not? change to trace/debug LOG
-//            if (element instanceof Element) {
-//                throw new RuntimeException("JAXB object conversion failed. Make sure the expected class is known to JAXB via context path.");
-//            }
+            LOG.info("Element could not be extracted. Is the QName {} known to JAXB via context path?. " +
+                    "Exception message: {}", elementType, e.getMessage());
             // ignore, empty optional will be returned
         }
         return Optional.empty();
