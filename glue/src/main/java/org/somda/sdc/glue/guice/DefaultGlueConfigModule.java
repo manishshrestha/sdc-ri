@@ -29,5 +29,11 @@ public class DefaultGlueConfigModule extends AbstractConfigurationModule {
         bind(ConsumerConfig.AWAITING_TRANSACTION_TIMEOUT,
                 Duration.class,
                 Duration.ofSeconds(5));
+        bind(ConsumerConfig.REQUESTED_EXPIRES,
+                Duration.class,
+                Duration.ofSeconds(5));
+        bind(ConsumerConfig.RESPONSE_WAITING_TIME,
+                Duration.class,
+                Duration.ofSeconds(5));
     }
 }

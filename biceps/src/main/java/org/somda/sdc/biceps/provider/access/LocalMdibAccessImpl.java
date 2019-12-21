@@ -8,6 +8,7 @@ import org.somda.sdc.biceps.common.access.*;
 import org.somda.sdc.biceps.common.access.factory.ReadTransactionFactory;
 import org.somda.sdc.biceps.common.access.helper.WriteUtil;
 import org.somda.sdc.biceps.common.event.Distributor;
+import org.somda.sdc.biceps.common.preprocessing.DescriptorChildRemover;
 import org.somda.sdc.biceps.common.storage.MdibStorage;
 import org.somda.sdc.biceps.common.storage.MdibStoragePreprocessingChain;
 import org.somda.sdc.biceps.common.storage.PreprocessingException;
@@ -59,6 +60,7 @@ public class LocalMdibAccessImpl implements LocalMdibAccess {
                         VersionHandler versionHandler,
                         TypeConsistencyChecker typeConsistencyChecker,
                         HandleReferenceHandler handleReferenceHandler,
+                        DescriptorChildRemover descriptorChildRemover,
                         CopyManager copyManager) {
         mdibVersion = MdibVersion.create();
         mdDescriptionVersion = BigInteger.ZERO;
@@ -72,7 +74,7 @@ public class LocalMdibAccessImpl implements LocalMdibAccess {
 
         MdibStoragePreprocessingChain localMdibAccessPreprocessing = chainFactory.createMdibStoragePreprocessingChain(
                 mdibStorage,
-                Arrays.asList(duplicateChecker, typeConsistencyChecker, versionHandler, handleReferenceHandler),
+                Arrays.asList(duplicateChecker, typeConsistencyChecker, versionHandler, handleReferenceHandler, descriptorChildRemover),
                 Arrays.asList(versionHandler));
 
         this.writeUtil = new WriteUtil(LOG, eventDistributor, localMdibAccessPreprocessing, readWriteLock, this);
@@ -101,13 +103,13 @@ public class LocalMdibAccessImpl implements LocalMdibAccess {
 
     @Override
     public void registerObserver(MdibAccessObserver observer) {
-        LOG.info("Register MDIB observer: ", observer);
+        LOG.info("Register MDIB observer: {}", observer);
         eventDistributor.registerObserver(observer);
     }
 
     @Override
     public void unregisterObserver(MdibAccessObserver observer) {
-        LOG.info("Unreigster MDIB observer: ", observer);
+        LOG.info("Unreigster MDIB observer: {}", observer);
         eventDistributor.unregisterObserver(observer);
     }
 
@@ -183,7 +185,9 @@ public class LocalMdibAccessImpl implements LocalMdibAccess {
 
     @Override
     public List<AbstractContextState> getContextStates(String descriptorHandle) {
-        return null;
+        try (ReadTransaction transaction = startTransaction()) {
+            return transaction.getContextStates(descriptorHandle);
+        }
     }
 
     @Override

@@ -60,7 +60,7 @@ public class WriteUtil {
      */
     public WriteDescriptionResult writeDescription(Function<MdibDescriptionModifications, WriteDescriptionResult> lockedWriteDescription,
                                                    MdibDescriptionModifications descriptionModifications) throws PreprocessingException {
-        readWriteLock.writeLock().lock();
+        acquireWriteLock();
 
         long startTime = 0;
         if (LOG.isDebugEnabled()) {
@@ -121,7 +121,7 @@ public class WriteUtil {
      */
     public WriteStateResult writeStates(Function<MdibStateModifications, WriteStateResult> lockedWriteStates,
                                         MdibStateModifications stateModifications) throws PreprocessingException {
-        readWriteLock.writeLock().lock();
+        acquireWriteLock();
 
         long startTime = 0;
         if (LOG.isDebugEnabled()) {
@@ -166,5 +166,16 @@ public class WriteUtil {
         }
 
         return modificationResult;
+    }
+
+    private void acquireWriteLock() {
+        if (readWriteLock.getReadLockCount() > 0) {
+            throw new IllegalThreadStateException("Tried to invoke write operation with read lock. " +
+                    "Check if a write description or state function has been executed within a read transaction context.");
+        }
+
+        if (!readWriteLock.isWriteLockedByCurrentThread()) {
+            readWriteLock.writeLock().lock();
+        }
     }
 }

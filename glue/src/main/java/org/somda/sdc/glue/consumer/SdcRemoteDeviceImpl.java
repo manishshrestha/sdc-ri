@@ -6,6 +6,7 @@ import com.google.common.util.concurrent.ListenableFuture;
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
 import org.slf4j.Logger;
+import org.somda.sdc.biceps.common.access.MdibAccessObservable;
 import org.somda.sdc.biceps.consumer.access.RemoteMdibAccess;
 import org.somda.sdc.biceps.model.message.AbstractSet;
 import org.somda.sdc.biceps.model.message.AbstractSetResponse;
@@ -52,6 +53,11 @@ public class SdcRemoteDeviceImpl extends AbstractIdleService implements SdcRemot
     @Override
     public RemoteMdibAccess getMdibAccess() {
         checkRunning();
+        return remoteMdibAccess;
+    }
+
+    @Override
+    public MdibAccessObservable getMdibAccessObservable() {
         return remoteMdibAccess;
     }
 

@@ -29,7 +29,7 @@ public class MdibStateModifications {
     /**
      * Creates a set with initial capacity.
      *
-     * @param changeType the change type to be applied for the set.
+     * @param changeType      the change type to be applied for the set.
      * @param initialCapacity the number of pre-allocated elements hold by this modifications set.
      * @return a new {@link MdibStateModifications} object.
      */
@@ -74,6 +74,13 @@ public class MdibStateModifications {
 
     public Type getChangeType() {
         return changeType;
+    }
+
+    /**
+     * Flushes added states.
+     */
+    public void clear() {
+        this.states.clear();
     }
 
     /**

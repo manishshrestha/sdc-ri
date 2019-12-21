@@ -2,6 +2,7 @@ package org.somda.sdc.glue.consumer;
 
 import com.google.common.util.concurrent.Service;
 import org.somda.sdc.biceps.common.access.MdibAccess;
+import org.somda.sdc.biceps.common.access.MdibAccessObservable;
 import org.somda.sdc.biceps.model.message.AbstractSet;
 import org.somda.sdc.dpws.service.HostingServiceProxy;
 
@@ -31,6 +32,13 @@ public interface SdcRemoteDevice extends Service {
      * @return MDIB access to read the remote MDIB.
      */
     MdibAccess getMdibAccess();
+
+    /**
+     * Gets an interface to subscribe for MDIB updates.
+     *
+     * @return the MDIB observable interface.
+     */
+    MdibAccessObservable getMdibAccessObservable();
 
     /**
      * Gets a set service invoker access.

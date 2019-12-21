@@ -24,6 +24,7 @@ import org.somda.sdc.dpws.soap.exception.SoapFaultException;
 import org.somda.sdc.dpws.soap.exception.TransportException;
 import org.somda.sdc.dpws.soap.interception.Interceptor;
 import org.somda.sdc.dpws.soap.interception.InterceptorException;
+import org.somda.sdc.dpws.soap.interception.MessageInterceptor;
 import org.somda.sdc.dpws.soap.interception.NotificationObject;
 import org.somda.sdc.dpws.soap.wseventing.SubscribeResult;
 import org.somda.sdc.glue.common.*;
@@ -142,7 +143,7 @@ public class SdcRemoteDevicesConnectorImpl implements SdcRemoteDevicesConnector,
                 if (sdcRemoteDevices.putIfAbsent(hostingServiceProxy.getEndpointReferenceAddress(), sdcRemoteDevice) == null) {
                     eventBus.post(new RemoteDeviceConnectedMessage(sdcRemoteDevice));
                 } else {
-                    throw new PrerequisitesException(String.format("A remote device with EPR address {} was already connected",
+                    throw new PrerequisitesException(String.format("A remote device with EPR address %s was already connected",
                             hostingServiceProxy.getEndpointReferenceAddress()));
                 }
 
@@ -157,7 +158,7 @@ public class SdcRemoteDevicesConnectorImpl implements SdcRemoteDevicesConnector,
 
     private void checkExistingConnection(HostingServiceProxy hostingServiceProxy) throws PrerequisitesException {
         if (sdcRemoteDevices.get(hostingServiceProxy.getEndpointReferenceAddress()) != null) {
-            throw new PrerequisitesException(String.format("A remote device with EPR address {} was already connected",
+            throw new PrerequisitesException(String.format("A remote device with EPR address %s was already connected",
                     hostingServiceProxy.getEndpointReferenceAddress()));
         }
     }
@@ -222,7 +223,7 @@ public class SdcRemoteDevicesConnectorImpl implements SdcRemoteDevicesConnector,
         hostingServiceProxy.getHostedServices().values().forEach(hostedServiceProxy ->
                 nonFoundPortTypes.removeAll(hostedServiceProxy.getType().getTypes()));
         if (!nonFoundPortTypes.isEmpty()) {
-            throw new PrerequisitesException(String.format("Required port types not found: ", nonFoundPortTypes));
+            throw new PrerequisitesException(String.format("Required port types not found: %s", nonFoundPortTypes));
         }
     }
 
@@ -250,7 +251,7 @@ public class SdcRemoteDevicesConnectorImpl implements SdcRemoteDevicesConnector,
                     new ArrayList<>(actions),
                     requestedExpires,
                     new Interceptor() {
-                        @Subscribe
+                        @MessageInterceptor
                         void onNotification(NotificationObject notificationObject) {
                             final AbstractReport report = soapUtil.getBody(notificationObject.getNotification(),
                                     AbstractReport.class).orElseThrow(() -> new RuntimeException(
@@ -354,12 +355,11 @@ public class SdcRemoteDevicesConnectorImpl implements SdcRemoteDevicesConnector,
         final HostedServiceProxy contextServiceProxy = findHostedServiceProxy(hostingServiceProxy, WsdlConstants.PORT_TYPE_CONTEXT_QNAME);
         try {
             final SoapMessage getContextStatesResponseMessage = contextServiceProxy.getRequestResponseClient().sendRequestResponse(
-                    soapUtil.createMessage(ActionConstants.ACTION_GET_CONTEXT_STATES, messageModelFactory.createGetMdib()));
-            final GetContextStatesResponse getContextStatesResponse = soapUtil.getBody(getContextStatesResponseMessage,
+                    soapUtil.createMessage(ActionConstants.ACTION_GET_CONTEXT_STATES, messageModelFactory.createGetContextStates()));
+            return soapUtil.getBody(getContextStatesResponseMessage,
                     GetContextStatesResponse.class).orElseThrow(() -> new PrerequisitesException("Remote endpoint did not send a GetContextStatesResponse message in response to " +
                     String.format("a GetContextStates to service %s with physical address %s",
                             contextServiceProxy.getType().getServiceId(), contextServiceProxy.getActiveEprAddress())));
-            return getContextStatesResponse;
         } catch (MarshallingException | InterceptorException | TransportException | SoapFaultException e) {
             throw new PrerequisitesException(String.format("Could not send a GetContextStates request to service %s with physical address %s",
                     contextServiceProxy.getType().getServiceId(), contextServiceProxy.getActiveEprAddress()), e);

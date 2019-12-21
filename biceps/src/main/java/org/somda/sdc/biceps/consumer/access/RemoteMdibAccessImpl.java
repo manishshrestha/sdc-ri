@@ -11,6 +11,7 @@ import org.somda.sdc.biceps.common.access.WriteStateResult;
 import org.somda.sdc.biceps.common.access.factory.ReadTransactionFactory;
 import org.somda.sdc.biceps.common.access.helper.WriteUtil;
 import org.somda.sdc.biceps.common.event.Distributor;
+import org.somda.sdc.biceps.common.preprocessing.DescriptorChildRemover;
 import org.somda.sdc.biceps.common.storage.MdibStorage;
 import org.somda.sdc.biceps.common.storage.MdibStoragePreprocessingChain;
 import org.somda.sdc.biceps.common.storage.PreprocessingException;
@@ -49,7 +50,8 @@ public class RemoteMdibAccessImpl implements RemoteMdibAccess {
                          MdibStorageFactory mdibStorageFactory,
                          ReentrantReadWriteLock readWriteLock,
                          ReadTransactionFactory readTransactionFactory,
-                         VersionDuplicateHandler versionDuplicateHandler) {
+                         VersionDuplicateHandler versionDuplicateHandler,
+                         DescriptorChildRemover descriptorChildRemover) {
         this.eventDistributor = eventDistributor;
         this.mdibStorage = mdibStorageFactory.createMdibStorage();
         this.readWriteLock = readWriteLock;
@@ -57,7 +59,7 @@ public class RemoteMdibAccessImpl implements RemoteMdibAccess {
 
         this.localMdibAccessPreprocessing = chainFactory.createMdibStoragePreprocessingChain(
                 mdibStorage,
-                Collections.EMPTY_LIST,
+                Arrays.asList(descriptorChildRemover),
                 Arrays.asList(versionDuplicateHandler));
 
         this.writeUtil = new WriteUtil(LOG, eventDistributor, localMdibAccessPreprocessing, readWriteLock, this);

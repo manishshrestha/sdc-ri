@@ -5,10 +5,10 @@ import com.google.common.util.concurrent.MoreExecutors;
 import com.google.inject.AbstractModule;
 import com.google.inject.assistedinject.FactoryModuleBuilder;
 import org.somda.sdc.glue.common.MdibMapper;
+import org.somda.sdc.glue.common.ModificationsBuilder;
 import org.somda.sdc.glue.common.factory.MdibMapperFactory;
-import org.somda.sdc.glue.consumer.SdcRemoteDevice;
-import org.somda.sdc.glue.consumer.SdcRemoteDeviceImpl;
-import org.somda.sdc.glue.consumer.SdcRemoteDeviceWatchdog;
+import org.somda.sdc.glue.common.factory.ModificationsBuilderFactory;
+import org.somda.sdc.glue.consumer.*;
 import org.somda.sdc.glue.consumer.factory.SdcRemoteDeviceFactory;
 import org.somda.sdc.glue.consumer.factory.SdcRemoteDeviceWatchdogFactory;
 import org.somda.sdc.glue.consumer.sco.factory.OperationInvocationDispatcherFactory;
@@ -42,6 +42,9 @@ public class DefaultGlueModule extends AbstractModule {
         install(new FactoryModuleBuilder()
                 .implement(MdibMapper.class, MdibMapper.class)
                 .build(MdibMapperFactory.class));
+        install(new FactoryModuleBuilder()
+                .implement(ModificationsBuilder.class, ModificationsBuilder.class)
+                .build(ModificationsBuilderFactory.class));
     }
 
     private void configureConsumer() {
@@ -51,6 +54,8 @@ public class DefaultGlueModule extends AbstractModule {
         bind(ScheduledExecutorService.class)
                 .annotatedWith(WatchdogScheduledExecutor.class)
                 .toInstance(Executors.newScheduledThreadPool(10));
+
+        bind(SdcRemoteDevicesConnector.class).to(SdcRemoteDevicesConnectorImpl.class);
 
         install(new FactoryModuleBuilder()
                 .implement(OperationInvocationDispatcher.class, OperationInvocationDispatcher.class)
