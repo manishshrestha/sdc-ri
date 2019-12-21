@@ -2,6 +2,7 @@ package org.somda.sdc.dpws.guice;
 
 import org.somda.sdc.common.guice.AbstractConfigurationModule;
 import org.somda.sdc.dpws.DpwsConfig;
+import org.somda.sdc.dpws.DpwsConstants;
 import org.somda.sdc.dpws.client.ClientConfig;
 import org.somda.sdc.dpws.crypto.CryptoConfig;
 import org.somda.sdc.dpws.crypto.CryptoSettings;
@@ -46,6 +47,10 @@ public class DefaultDpwsConfigModule extends AbstractConfigurationModule {
         bind(DpwsConfig.MAX_WAIT_FOR_FUTURES,
                 Duration.class,
                 Duration.ofSeconds(10));
+
+        bind(DpwsConfig.MAX_ENVELOPE_SIZE,
+                Integer.class,
+                DpwsConstants.MAX_ENVELOPE_SIZE);
     }
 
     private void configureCryptoConfig() {

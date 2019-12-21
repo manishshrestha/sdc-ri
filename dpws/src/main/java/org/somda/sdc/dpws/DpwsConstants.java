@@ -45,8 +45,6 @@ public class DpwsConstants {
      * Defines the maximum size for envelopes transmitted over TCP.
      * <p>
      * Unit: octets.
-     * <p>
-     * todo DGr MAX_ENVELOPE_SIZE should be configurable or increased such that it meets MDPWS's relaxed size of 4MB.
      */
     public static final int MAX_ENVELOPE_SIZE = 32_767;
 
