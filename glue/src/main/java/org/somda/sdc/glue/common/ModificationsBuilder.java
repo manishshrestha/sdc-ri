@@ -58,7 +58,7 @@ public class ModificationsBuilder {
         }
         insert(sco, parent);
 
-        sco.getOperation().forEach(descriptor -> buildLeaf(descriptor, parent));
+        sco.getOperation().forEach(descriptor -> buildLeaf(descriptor, sco));
         sco.setOperation(null);
     }
 

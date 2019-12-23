@@ -161,7 +161,7 @@ public class ReportProcessor extends AbstractIdleService {
                 applyReportOnMdib(report);
                 writeReport = abstractReport -> {
                     try {
-                        applyReportOnMdib(report);
+                        applyReportOnMdib(abstractReport);
                     } catch (PreprocessingException | ReportProcessingException e) {
                         throw new RuntimeException(e);
                     }

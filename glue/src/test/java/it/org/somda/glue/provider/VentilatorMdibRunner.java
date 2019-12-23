@@ -15,6 +15,7 @@ import org.somda.sdc.glue.common.factory.ModificationsBuilderFactory;
 import javax.annotation.Nullable;
 import java.io.InputStream;
 import java.math.BigDecimal;
+import java.util.Arrays;
 
 public class VentilatorMdibRunner extends AbstractIdleService {
     public static final String HANDLE_MDC_DEV_SYS_PT_VENT_MDS = "handle_MDC_DEV_SYS_PT_VENT_MDS";
@@ -25,6 +26,8 @@ public class VentilatorMdibRunner extends AbstractIdleService {
     public static final String HANDLE_MDC_DEV_SYS_PT_VENT_CHAN = "handle_MDC_DEV_SYS_PT_VENT_CHAN";
     public static final String HANDLE_MDC_VENT_MODE = "handle_MDC_VENT_MODE";
     public static final String HANDLE_MDC_PRESS_AWAY_END_EXP_POS = "handle_MDC_PRESS_AWAY_END_EXP_POS";
+    public static final String HANDLE_BAD_MDC_DEV_SYS_PT_VENT_VMD = "handle_bad_MDC_DEV_SYS_PT_VENT_VMD";
+    public static final String HANDLE_VIS_BAD_MDC_DEV_SYS_PT_VENT_VMD = "handle_vis_bad_MDC_DEV_SYS_PT_VENT_VMD";
 
     private final MdibXmlIo mdibXmlIo;
     private final ModificationsBuilderFactory modificationsBuilderFactory;
@@ -80,6 +83,35 @@ public class VentilatorMdibRunner extends AbstractIdleService {
         locationContextState.getValidator().add(validator);
         modifications.add(locationContextState);
         mdibAccess.writeStates(modifications);
+    }
+
+    public void changeAlertsPresence(@Nullable Boolean ventilatorModeAlarm) throws PreprocessingException {
+        final MdibStateModifications modifications = MdibStateModifications.create(MdibStateModifications.Type.ALERT);
+        try (ReadTransaction readTransaction = mdibAccess.startTransaction()) {
+            if (ventilatorModeAlarm != null) {
+                changeVentilatorModeAlarm(readTransaction, modifications, ventilatorModeAlarm);
+            }
+        }
+        mdibAccess.writeStates(modifications);
+    }
+
+    private void changeVentilatorModeAlarm(ReadTransaction readTransaction, MdibStateModifications modifications, Boolean ventilatorModeAlarm) {
+        final AlertConditionState conditionState = readTransaction.getState(HANDLE_BAD_MDC_DEV_SYS_PT_VENT_VMD, AlertConditionState.class)
+                .orElseThrow(() ->
+                        new RuntimeException(String.format("Could not find state for handle %s", HANDLE_BAD_MDC_DEV_SYS_PT_VENT_VMD)));
+        final AlertSignalState signalState = readTransaction.getState(HANDLE_VIS_BAD_MDC_DEV_SYS_PT_VENT_VMD, AlertSignalState.class)
+                .orElseThrow(() ->
+                        new RuntimeException(String.format("Could not find state for handle %s", HANDLE_VIS_BAD_MDC_DEV_SYS_PT_VENT_VMD)));
+
+        conditionState.setPresence(ventilatorModeAlarm);
+        conditionState.setDeterminationTime(Timestamp.now());
+        if (ventilatorModeAlarm) {
+            signalState.setPresence(AlertSignalPresence.ON);
+        } else {
+            signalState.setPresence(AlertSignalPresence.OFF);
+        }
+
+        modifications.addAll(Arrays.asList(conditionState, signalState));
     }
 
     public void changeMetrics(@Nullable VentilatorMode ventilatorMode,
