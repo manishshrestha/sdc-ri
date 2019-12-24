@@ -386,7 +386,7 @@ public class HighPriorityServices extends WebService {
                     request.getOperationHandleRef(), anonymousSource, getPayload.apply(request));
         } catch (Exception e) {
             throw new SoapFaultException(faultFactory.createReceiverFault(
-                    String.format("Error while processing set service request: ", e.getMessage())));
+                    String.format("Error while processing set service request: %s", e.getMessage())));
         }
 
         setResponse(requestResponseObject, getResponseObjectAsTypeOrThrow(invocationResponse, responseClass),

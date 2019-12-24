@@ -112,8 +112,8 @@ public class ScoController implements SetServiceAccess {
             return soapUtil.getBody(response, expectedResponseClass).orElseThrow(() ->
                     new InvocationException("Received unexpected response"));
         } catch (InterceptorException | SoapFaultException | MarshallingException | TransportException e) {
-            throw new InvocationException(String.format("Request to %s failed",
-                    hostedServiceProxy.getActiveEprAddress()), e);
+            throw new InvocationException(String.format("Request to %s failed: %s",
+                    hostedServiceProxy.getActiveEprAddress(), e.getMessage()), e);
         }
     }
 }

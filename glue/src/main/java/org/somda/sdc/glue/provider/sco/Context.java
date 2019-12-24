@@ -6,6 +6,7 @@ import org.somda.sdc.biceps.model.message.*;
 import org.somda.sdc.biceps.model.participant.InstanceIdentifier;
 import org.somda.sdc.biceps.model.participant.LocalizedText;
 import org.somda.sdc.biceps.model.participant.MdibVersion;
+import org.somda.sdc.biceps.provider.access.LocalMdibAccess;
 import org.somda.sdc.common.util.ObjectStringifier;
 import org.somda.sdc.common.util.Stringified;
 import org.somda.sdc.dpws.device.EventSourceAccess;
@@ -34,6 +35,7 @@ public class Context {
     private final InstanceIdentifier invocationSource;
 
     private final EventSourceAccess eventSource;
+    private final LocalMdibAccess mdibAccess;
     private final ObjectFactory messageModelFactory;
 
     @AssistedInject
@@ -41,12 +43,18 @@ public class Context {
             @Assisted String operationHandle,
             @Assisted InstanceIdentifier invocationSource,
             @Assisted EventSourceAccess eventSource,
+            @Assisted LocalMdibAccess mdibAccess,
             ObjectFactory messageModelFactory) {
         this.transactionId = transactionId;
         this.operationHandle = operationHandle;
         this.invocationSource = invocationSource;
         this.eventSource = eventSource;
+        this.mdibAccess = mdibAccess;
         this.messageModelFactory = messageModelFactory;
+    }
+
+    public LocalMdibAccess getMdibAccess() {
+        return mdibAccess;
     }
 
     public long getTransactionId() {
@@ -75,6 +83,17 @@ public class Context {
     }
 
     /**
+     * Creates a successful initial invocation response based on this context with latest MDIB version.
+     *
+     * @param invocationState the invocation state that is put to the response message.
+     *                        The enumeration is not verified.
+     * @return the invocation response object.
+     */
+    public InvocationResponse createSuccessfulResponse(InvocationState invocationState) {
+        return new InvocationResponse(mdibAccess.getMdibVersion(), transactionId, invocationState, null, null);
+    }
+
+    /**
      * Creates an unsuccessful initial invocation response based on this context.
      *
      * @param mdibVersion            the MDIB version that is put to the response message.
@@ -92,6 +111,33 @@ public class Context {
     }
 
     /**
+     * Creates an unsuccessful initial invocation response based on this context with latest MDIB version.
+     *
+     * @param invocationState        the invocation state that is put to the response message.
+     *                               The enumeration is not verified.
+     * @param invocationError        the specified error.
+     * @param invocationErrorMessage a human-readable text to describe the error.
+     * @return the invocation response object.
+     */
+    public InvocationResponse createUnsucessfulResponse(InvocationState invocationState,
+                                                        InvocationError invocationError,
+                                                        List<LocalizedText> invocationErrorMessage) {
+        return new InvocationResponse(mdibAccess.getMdibVersion(), transactionId, invocationState, invocationError, invocationErrorMessage);
+    }
+
+    /**
+     * Sends a successful operation invoked report.
+     *
+     * @param mdibVersion     the MDIB version that is put to the notification message.
+     * @param invocationState the invocation state that is put to the notification message.
+     *                        The enumeration is not verified.
+     */
+    public void sendSuccessfulReport(MdibVersion mdibVersion,
+                                     InvocationState invocationState) {
+        sendReport(mdibVersion, invocationState, null, null, null);
+    }
+
+    /**
      * Sends a successful operation invoked report.
      *
      * @param mdibVersion     the MDIB version that is put to the notification message.
@@ -103,6 +149,28 @@ public class Context {
                                      InvocationState invocationState,
                                      @Nullable String operationTarget) {
         sendReport(mdibVersion, invocationState, null, null, operationTarget);
+    }
+
+    /**
+     * Sends a successful operation invoked report with latest MDIB version.
+     *
+     * @param invocationState the invocation state that is put to the notification message.
+     *                        The enumeration is not verified.
+     * @param operationTarget the operation target if available or null if unknown/irrelevant.
+     */
+    public void sendSuccessfulReport(InvocationState invocationState,
+                                     @Nullable String operationTarget) {
+        sendReport(mdibAccess.getMdibVersion(), invocationState, null, null, operationTarget);
+    }
+
+    /**
+     * Sends a successful operation invoked report with latest MDIB version.
+     *
+     * @param invocationState the invocation state that is put to the notification message.
+     *                        The enumeration is not verified.
+     */
+    public void sendSuccessfulReport(InvocationState invocationState) {
+        sendReport(mdibAccess.getMdibVersion(), invocationState, null, null, null);
     }
 
     /**
@@ -119,6 +187,20 @@ public class Context {
                                       InvocationError invocationError,
                                       List<LocalizedText> invocationErrorMessage) {
         sendReport(mdibVersion, invocationState, invocationError, invocationErrorMessage, null);
+    }
+
+    /**
+     * Sends an unsuccessful operation invoked report with latest MDIB version.
+     *
+     * @param invocationState        the invocation state that is put to the notification message.
+     *                               The enumeration is not verified.
+     * @param invocationError        the specified error.
+     * @param invocationErrorMessage a human-readable text to describe the error.
+     */
+    public void sendUnsucessfulReport(InvocationState invocationState,
+                                      InvocationError invocationError,
+                                      List<LocalizedText> invocationErrorMessage) {
+        sendReport(mdibAccess.getMdibVersion(), invocationState, invocationError, invocationErrorMessage, null);
     }
 
     private void sendReport(MdibVersion mdibVersion,

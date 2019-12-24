@@ -36,6 +36,9 @@ public class MdibAccessObserverSpy implements MdibAccessObserver {
             do {
                 Instant start = Instant.now();
                 try {
+                    if (recordedMessages.size() == messageNumber) {
+                        return true;
+                    }
                     if (messageCondition.await(waitTime.toMillis(), TimeUnit.MILLISECONDS)) {
                         if (recordedMessages.size() == messageNumber) {
                             return true;

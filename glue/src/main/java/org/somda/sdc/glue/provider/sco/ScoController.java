@@ -8,6 +8,7 @@ import org.somda.sdc.biceps.model.message.InvocationState;
 import org.somda.sdc.biceps.model.participant.InstanceIdentifier;
 import org.somda.sdc.biceps.model.participant.LocalizedText;
 import org.somda.sdc.biceps.model.participant.ObjectFactory;
+import org.somda.sdc.biceps.provider.access.LocalMdibAccess;
 import org.somda.sdc.dpws.device.EventSourceAccess;
 import org.somda.sdc.glue.provider.sco.factory.ContextFactory;
 import org.slf4j.Logger;
@@ -26,7 +27,7 @@ public class ScoController {
     private final Map<String, ReflectionInfo> invocationReceivers;
     private final List<ReflectionInfo> defaultInvocationReceivers;
     private final EventSourceAccess eventSourceAccess;
-    private final MdibAccess mdibAccess;
+    private final LocalMdibAccess mdibAccess;
     private final ContextFactory contextFactory;
     private final ObjectFactory participantModelFactory;
 
@@ -34,7 +35,7 @@ public class ScoController {
 
     @AssistedInject
     ScoController(@Assisted EventSourceAccess eventSourceAccess,
-                  @Assisted MdibAccess mdibAccess,
+                  @Assisted LocalMdibAccess mdibAccess,
                   ContextFactory contextFactory,
                   ObjectFactory participantModelFactory) {
         this.eventSourceAccess = eventSourceAccess;
@@ -59,7 +60,7 @@ public class ScoController {
      * returned.
      */
     public <T> InvocationResponse processIncomingSetOperation(String handle, InstanceIdentifier source, T payload) {
-        final Context context = contextFactory.createContext(transactionCounter++, handle, source, eventSourceAccess);
+        final Context context = contextFactory.createContext(transactionCounter++, handle, source, eventSourceAccess, mdibAccess);
 
         final LocalizedText localizedText = participantModelFactory.createLocalizedText();
         localizedText.setLang("en");
@@ -102,6 +103,7 @@ public class ScoController {
             localizedText.setValue("The invocation request could not be forwarded to the ultimate invocation processor");
         }
 
+        // send error report
         return context.createUnsucessfulResponse(
                 mdibAccess.getMdibVersion(),
                 InvocationState.FAIL,
@@ -144,6 +146,7 @@ public class ScoController {
                 continue;
             }
 
+            method.setAccessible(true);
             final ReflectionInfo reflectionInfo = new ReflectionInfo(receiver, method, annotation);
             if (key.isEmpty()) {
                 defaultInvocationReceivers.add(reflectionInfo);

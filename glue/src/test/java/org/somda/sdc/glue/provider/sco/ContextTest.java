@@ -6,6 +6,7 @@ import org.somda.sdc.biceps.model.message.OperationInvokedReport;
 import org.somda.sdc.biceps.model.participant.InstanceIdentifier;
 import org.somda.sdc.biceps.model.participant.LocalizedText;
 import org.somda.sdc.biceps.model.participant.MdibVersion;
+import org.somda.sdc.biceps.provider.access.LocalMdibAccess;
 import org.somda.sdc.dpws.device.EventSourceAccess;
 import org.somda.sdc.dpws.soap.exception.MarshallingException;
 import org.somda.sdc.dpws.soap.exception.TransportException;
@@ -38,7 +39,7 @@ class ContextTest {
         reportCaptor = ArgumentCaptor.forClass(OperationInvokedReport.class);
 
         context = UT.getInjector().getInstance(ContextFactory.class).createContext(0, "handle",
-                new InstanceIdentifier(), eventSourceAccess);
+                new InstanceIdentifier(), eventSourceAccess, mock(LocalMdibAccess.class));
     }
 
     @Test
