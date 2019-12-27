@@ -33,6 +33,7 @@ import org.somda.sdc.glue.consumer.event.RemoteDeviceConnectedMessage;
 import org.somda.sdc.glue.consumer.event.WatchdogMessage;
 import org.somda.sdc.glue.consumer.factory.SdcRemoteDeviceFactory;
 import org.somda.sdc.glue.consumer.factory.SdcRemoteDeviceWatchdogFactory;
+import org.somda.sdc.glue.consumer.helper.LogPrepender;
 import org.somda.sdc.glue.consumer.report.ReportProcessingException;
 import org.somda.sdc.glue.consumer.report.ReportProcessor;
 import org.somda.sdc.glue.consumer.sco.ScoController;
@@ -111,6 +112,8 @@ public class SdcRemoteDevicesConnectorImpl implements SdcRemoteDevicesConnector,
 
         return executorService.submit(() -> {
             try {
+                final Logger tempLog = LogPrepender.getLogger(hostingServiceProxy, SdcRemoteDevicesConnectorImpl.class);
+                tempLog.info("Start connecting");
                 ReportProcessor reportProcessor = createReportProcessor();
                 RemoteMdibAccess mdibAccess = createRemoteMdibAccess(hostingServiceProxy);
                 Optional<ScoController> scoController = createScoController(hostingServiceProxy);
@@ -122,23 +125,28 @@ public class SdcRemoteDevicesConnectorImpl implements SdcRemoteDevicesConnector,
 
                 GetContextStatesResponse getContextStatesResponse = null;
                 if (mdibAccess.getContextStates().isEmpty()) {
+                    tempLog.info("No context states found, try to request separately");
                     getContextStatesResponse = requestContextStates(hostingServiceProxy);
                 }
 
                 try {
+                    tempLog.info("Start applying reports");
                     reportProcessor.startApplyingReportsOnMdib(mdibAccess, getContextStatesResponse);
                 } catch (ReportProcessingException | PreprocessingException e) {
                     throw new PrerequisitesException("Could not start applying reports on remote MDIB access", e);
                 }
 
+                tempLog.info("Start watchdog");
+                watchdogFactory.createSdcRemoteDeviceWatchdog(hostingServiceProxy, subscribeResults, this);
+
+                tempLog.info("Create and run remote device structure");
                 final SdcRemoteDevice sdcRemoteDevice = sdcRemoteDeviceFactory.createSdcRemoteDevice(
                         hostingServiceProxy,
                         mdibAccess,
                         reportProcessor,
                         scoController.orElse(null));
                 sdcRemoteDevice.startAsync().awaitRunning();
-
-                watchdogFactory.createSdcRemoteDeviceWatchdog(hostingServiceProxy, subscribeResults, this);
+                tempLog.info("Remote device is running");
 
                 if (sdcRemoteDevices.putIfAbsent(hostingServiceProxy.getEndpointReferenceAddress(), sdcRemoteDevice) == null) {
                     eventBus.post(new RemoteDeviceConnectedMessage(sdcRemoteDevice));

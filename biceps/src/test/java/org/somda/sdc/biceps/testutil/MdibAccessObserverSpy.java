@@ -56,6 +56,12 @@ public class MdibAccessObserverSpy implements MdibAccessObserver {
 
     }
 
+    public void reset() {
+        try (AutoLock ignored = AutoLock.lock(messageLock)) {
+            recordedMessages.clear();
+        }
+    }
+
     @Subscribe
     void onUpdate(AbstractMdibAccessMessage updates) {
         try (AutoLock ignored = AutoLock.lock(messageLock)) {

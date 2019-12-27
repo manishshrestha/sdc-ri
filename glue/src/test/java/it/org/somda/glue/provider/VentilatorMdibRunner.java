@@ -167,7 +167,7 @@ public class VentilatorMdibRunner extends AbstractIdleService {
         metricValue.setValue(peep);
         metricValue.setDeterminationTime(Timestamp.now());
         metricValue.setMetricQuality(metricQuality);
-
+        state.setMetricValue(metricValue);
         modifications.add(state);
     }
 

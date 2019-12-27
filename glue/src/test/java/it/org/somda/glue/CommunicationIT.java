@@ -1,6 +1,7 @@
 package it.org.somda.glue;
 
 import com.google.common.util.concurrent.ListenableFuture;
+import it.org.somda.glue.consumer.ReportListenerSpy;
 import it.org.somda.glue.consumer.TestSdcClient;
 import it.org.somda.glue.provider.TestSdcDevice;
 import it.org.somda.glue.provider.VentilatorMdibRunner;
@@ -24,7 +25,9 @@ import org.somda.sdc.glue.provider.sco.IncomingSetServiceRequest;
 import org.somda.sdc.glue.provider.sco.InvocationResponse;
 import org.somda.sdc.glue.provider.sco.OperationInvocationReceiver;
 
+import java.math.BigDecimal;
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -33,7 +36,7 @@ import java.util.concurrent.TimeUnit;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class BasicCommunicationIT {
+public class CommunicationIT {
     private static final IntegrationTestUtil IT = new IntegrationTestUtil();
 
     private TestSdcDevice testDevice;
@@ -62,6 +65,8 @@ public class BasicCommunicationIT {
                     return context.createUnsucessfulResponse(InvocationState.FAIL, InvocationError.OTH, Collections.emptyList());
                 }
 
+                context.sendSuccessfulReport(InvocationState.WAIT);
+                context.sendSuccessfulReport(InvocationState.START);
                 ventilatorMdibRunner.changeMetrics(match.get(), null);
                 context.sendSuccessfulReport(InvocationState.FIN);
                 return context.createSuccessfulResponse(InvocationState.FIN);
@@ -75,7 +80,7 @@ public class BasicCommunicationIT {
     }
 
     @Test
-    void startDeviceAndConnectOneClient() throws Exception {
+    void connectOneClientAndTransferData() throws Exception {
         ventilatorMdibRunner.startAsync().awaitRunning();
         testDevice.startAsync().awaitRunning();
         testClient.startAsync().awaitRunning();
@@ -88,10 +93,12 @@ public class BasicCommunicationIT {
                 ConnectConfiguration.create(ConnectConfiguration.ALL_EPISODIC_AND_WAVEFORM_REPORTS));
 
         final SdcRemoteDevice sdcRemoteDevice = remoteDeviceFuture.get(WAIT_IN_SECONDS, WAIT_TIME_UNIT);
-        MdibAccessObserverSpy mdibSpy = new MdibAccessObserverSpy();
+        final MdibAccessObserverSpy mdibSpy = new MdibAccessObserverSpy();
+
         sdcRemoteDevice.getMdibAccessObservable().registerObserver(mdibSpy);
 
         {
+            mdibSpy.reset();
             ventilatorMdibRunner.changeMetrics(VentilatorMdibRunner.VentilatorMode.VENT_MODE_INSPASSIST, null);
 
             assertTrue(mdibSpy.waitForNumberOfRecordedMessages(1, WAIT_DURATION));
@@ -107,10 +114,11 @@ public class BasicCommunicationIT {
         }
 
         {
+            mdibSpy.reset();
             ventilatorMdibRunner.changeAlertsPresence(true);
 
-            assertTrue(mdibSpy.waitForNumberOfRecordedMessages(2, WAIT_DURATION));
-            final AbstractMdibAccessMessage recordedMessage = mdibSpy.getRecordedMessages().get(1);
+            assertTrue(mdibSpy.waitForNumberOfRecordedMessages(1, WAIT_DURATION));
+            final AbstractMdibAccessMessage recordedMessage = mdibSpy.getRecordedMessages().get(0);
             assertTrue(recordedMessage instanceof AlertStateModificationMessage);
             AlertStateModificationMessage alertStateMessage = (AlertStateModificationMessage) recordedMessage;
             assertEquals(2, alertStateMessage.getStates().size());
@@ -126,17 +134,26 @@ public class BasicCommunicationIT {
         }
 
         {
+            mdibSpy.reset();
+
+            ReportListenerSpy reportListenerSpy = new ReportListenerSpy();
+
             SetString setString = new SetString();
             setString.setOperationHandleRef(VentilatorMdibRunner.HANDLE_SET_MDC_DEV_SYS_PT_VENT_VMD);
             setString.setRequestedStringValue(VentilatorMdibRunner.VentilatorMode.VENT_MODE_SIMV.getModeValue());
             final ListenableFuture<ScoTransaction<SetStringResponse>> scoFuture = sdcRemoteDevice.getSetServiceAccess()
-                    .invoke(setString, SetStringResponse.class);
+                    .invoke(setString, reportListenerSpy, SetStringResponse.class);
             final ScoTransaction<SetStringResponse> scoTransaction = scoFuture.get(WAIT_IN_SECONDS, WAIT_TIME_UNIT);
             final List<OperationInvokedReport.ReportPart> reportParts = scoTransaction.waitForFinalReport(WAIT_DURATION);
             assertTrue(!reportParts.isEmpty());
 
-            assertTrue(mdibSpy.waitForNumberOfRecordedMessages(3, WAIT_DURATION));
-            final AbstractMdibAccessMessage recordedMessage = mdibSpy.getRecordedMessages().get(2);
+            assertTrue(reportListenerSpy.waitForReports(3, WAIT_DURATION));
+            assertEquals(InvocationState.WAIT, reportListenerSpy.getReports().get(0).getInvocationInfo().getInvocationState());
+            assertEquals(InvocationState.START, reportListenerSpy.getReports().get(1).getInvocationInfo().getInvocationState());
+            assertEquals(InvocationState.FIN, reportListenerSpy.getReports().get(2).getInvocationInfo().getInvocationState());
+
+            assertTrue(mdibSpy.waitForNumberOfRecordedMessages(1, WAIT_DURATION));
+            final AbstractMdibAccessMessage recordedMessage = mdibSpy.getRecordedMessages().get(0);
             assertTrue(recordedMessage instanceof MetricStateModificationMessage);
             MetricStateModificationMessage metricStateMessage = (MetricStateModificationMessage) recordedMessage;
             assertEquals(1, metricStateMessage.getStates().size());
@@ -146,5 +163,85 @@ public class BasicCommunicationIT {
             assertEquals(VentilatorMdibRunner.VentilatorMode.VENT_MODE_SIMV.getModeValue(),
                     stringMetricState.getMetricValue().getValue());
         }
+
+        {
+            for (int i = 0; i < 100; ++i) {
+                mdibSpy.reset();
+                ventilatorMdibRunner.changeMetrics(null, BigDecimal.valueOf(i));
+
+                assertTrue(mdibSpy.waitForNumberOfRecordedMessages(1, WAIT_DURATION));
+                final AbstractMdibAccessMessage recordedMessage = mdibSpy.getRecordedMessages().get(0);
+                assertTrue(recordedMessage instanceof MetricStateModificationMessage);
+                MetricStateModificationMessage metricStateMessage = (MetricStateModificationMessage) recordedMessage;
+                assertEquals(1, metricStateMessage.getStates().size());
+                final AbstractMetricState abstractMetricState = metricStateMessage.getStates().get(0);
+                assertTrue(abstractMetricState instanceof NumericMetricState);
+                NumericMetricState numericMetricState = (NumericMetricState) abstractMetricState;
+                assertEquals(BigDecimal.valueOf(i), numericMetricState.getMetricValue().getValue());
+            }
+        }
+    }
+
+    @Test
+    void connectMultipleClientsAndTransferData() throws Exception {
+        int numberMessages = 100;
+        int numberDevices = 10;
+
+
+        ventilatorMdibRunner.startAsync().awaitRunning();
+        testDevice.startAsync().awaitRunning();
+
+        List<TestSdcClient> testSdcClients = new ArrayList<>(numberDevices);
+        List<MdibAccessObserverSpy> mdibSpies = new ArrayList<>(numberDevices);
+        for (int i = 0; i < numberDevices; ++i) {
+            final TestSdcClient testSdcClient = new TestSdcClient();
+            testSdcClients.add(testSdcClient);
+            testSdcClient.startAsync();
+            mdibSpies.add(new MdibAccessObserverSpy());
+        }
+
+        for (int i = 0; i < numberDevices; ++i) {
+            testSdcClients.get(i).awaitRunning();
+        }
+
+        List<ListenableFuture<SdcRemoteDevice>> futures = new ArrayList<>(numberDevices);
+        for (int i = 0; i < numberDevices; ++i) {
+            final ListenableFuture<HostingServiceProxy> hostingServiceFuture = testSdcClients.get(i).getClient()
+                    .connect(testDevice.getSdcDevice().getEprAddress());
+            final HostingServiceProxy hostingServiceProxy = hostingServiceFuture.get(WAIT_IN_SECONDS, WAIT_TIME_UNIT);
+
+            futures.add(testSdcClients.get(i).getConnector().connect(hostingServiceProxy,
+                    ConnectConfiguration.create(ConnectConfiguration.ALL_EPISODIC_AND_WAVEFORM_REPORTS)));
+        }
+
+        for (int i = 0; i < numberDevices; ++i) {
+            final SdcRemoteDevice sdcRemoteDevice = futures.get(i).get(WAIT_IN_SECONDS, WAIT_TIME_UNIT);
+            sdcRemoteDevice.getMdibAccessObservable().registerObserver(mdibSpies.get(i));
+        }
+
+        for (int j = 0; j < numberMessages; ++j) {
+            ventilatorMdibRunner.changeMetrics(null, BigDecimal.valueOf(j));
+        }
+
+        for (int i = 0; i < numberDevices; ++i) {
+            assertTrue(mdibSpies.get(i).waitForNumberOfRecordedMessages(numberMessages, WAIT_DURATION));
+
+            final List<AbstractMdibAccessMessage> recordedMessages = mdibSpies.get(i).getRecordedMessages();
+            for (int j = 0; j < numberMessages; ++j) {
+                final AbstractMdibAccessMessage recordedMessage = recordedMessages.get(j);
+                assertTrue(recordedMessage instanceof MetricStateModificationMessage);
+                MetricStateModificationMessage metricStateMessage = (MetricStateModificationMessage) recordedMessage;
+                assertEquals(1, metricStateMessage.getStates().size());
+                final AbstractMetricState abstractMetricState = metricStateMessage.getStates().get(0);
+                assertTrue(abstractMetricState instanceof NumericMetricState);
+                NumericMetricState numericMetricState = (NumericMetricState) abstractMetricState;
+                assertEquals(BigDecimal.valueOf(j), numericMetricState.getMetricValue().getValue());
+            }
+        }
+    }
+
+    @Test
+    void connectMultipleDevicesAndTransferData() throws Exception {
+        // tbd
     }
 }

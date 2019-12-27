@@ -2,7 +2,9 @@ package org.somda.sdc.dpws.service;
 
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
+import org.somda.sdc.common.util.ObjectStringifier;
 import org.somda.sdc.common.util.ObjectUtil;
+import org.somda.sdc.common.util.Stringified;
 import org.somda.sdc.dpws.model.ThisDeviceType;
 import org.somda.sdc.dpws.model.ThisModelType;
 import org.somda.sdc.dpws.soap.RequestResponseClient;
@@ -24,7 +26,9 @@ public class HostingServiceProxyImpl implements HostingServiceProxy {
     private final ObjectUtil objectUtil;
 
     private final RequestResponseClient requestResponseClient;
+    @Stringified
     private final URI activeXAddr;
+    @Stringified
     private final URI endpointReferenceAddress;
     private final List<QName> types;
     private final ThisDeviceType thisDevice;
@@ -102,5 +106,10 @@ public class HostingServiceProxyImpl implements HostingServiceProxy {
     public synchronized SoapMessage sendRequestResponse(SoapMessage request)
             throws SoapFaultException, MarshallingException, TransportException, InterceptorException {
         return requestResponseClient.sendRequestResponse(request);
+    }
+
+    @Override
+    public String toString() {
+        return ObjectStringifier.stringify(this);
     }
 }
