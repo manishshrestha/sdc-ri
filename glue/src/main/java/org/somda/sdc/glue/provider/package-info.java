@@ -1,5 +1,5 @@
 /**
- * Classes that are shared between the SDC provider and consumer side.
+ * Implementation of the SDC provider.
  */
 @ParametersAreNonnullByDefault
 package org.somda.sdc.glue.provider;

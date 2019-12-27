@@ -2,6 +2,8 @@ package org.somda.sdc.dpws.client;
 
 /**
  * Configuration keys for the client.
+ *
+ * @see org.somda.sdc.dpws.guice.DefaultDpwsConfigModule
  */
 public class ClientConfig {
     /**

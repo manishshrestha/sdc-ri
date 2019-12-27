@@ -4,13 +4,9 @@ import com.google.inject.assistedinject.Assisted;
 import org.somda.sdc.dpws.client.helper.DiscoveredDeviceResolver;
 import org.somda.sdc.dpws.client.helper.DiscoveryClientUdpProcessor;
 import org.somda.sdc.dpws.client.helper.HelloByeAndProbeMatchesObserverImpl;
-import org.somda.sdc.dpws.client.helper.WatchDog;
-import org.somda.sdc.dpws.service.HostingServiceProxy;
 import org.somda.sdc.dpws.soap.NotificationSink;
 import org.somda.sdc.dpws.soap.SoapMessage;
 import org.somda.sdc.dpws.soap.wsdiscovery.WsDiscoveryClient;
-
-import java.util.function.Consumer;
 
 /**
  * Factory to create util objects for the DPWS client.
@@ -40,16 +36,4 @@ public interface ClientHelperFactory {
      * @return the oberserver instance.
      */
     HelloByeAndProbeMatchesObserverImpl createDiscoveryObserver(@Assisted DiscoveredDeviceResolver discoveredDeviceResolver);
-
-    /**
-     * Creates a watchdog.
-     * <p>
-     * todo DGr needs to be tested
-     *
-     * @param wsDiscoveryClient       discovery client to send heartbeat requests.
-     * @param watchdogTriggerCallback callback that is triggered if the watchdog could not ping a remote device.
-     * @return the watchdog instance.
-     */
-    WatchDog createWatchdog(@Assisted WsDiscoveryClient wsDiscoveryClient,
-                            @Assisted Consumer<HostingServiceProxy> watchdogTriggerCallback);
 }

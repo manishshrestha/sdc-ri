@@ -256,8 +256,7 @@ public class EventSourceInterceptor extends AbstractIdleService implements Event
     void processGetStatus(RequestResponseObject rrObj) throws SoapFaultException {
         removeStaleSubscriptions();
 
-        // TODO: 06.12.2016 add that somewhere...
-        GetStatus getStatus = validateRequestBody(rrObj, GetStatus.class);
+        validateRequestBody(rrObj, GetStatus.class);
 
         Duration expires;
         subscribedActionsLock.lock();

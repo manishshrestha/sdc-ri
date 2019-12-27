@@ -3,6 +3,7 @@ package org.somda.sdc.dpws.device;
 import com.google.common.util.concurrent.Service;
 
 import javax.annotation.Nullable;
+import java.net.URI;
 
 /**
  * Core class to create a device that exposes itself to the network.
@@ -30,4 +31,6 @@ public interface Device extends Service {
      * @return hosting service access.
      */
     HostingServiceAccess getHostingServiceAccess();
+
+    URI getEprAddress();
 }

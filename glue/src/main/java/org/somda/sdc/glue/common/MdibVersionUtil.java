@@ -1,11 +1,15 @@
-package org.somda.sdc.glue.provider.services.helper;
+package org.somda.sdc.glue.common;
 
 import com.google.inject.Inject;
+import org.somda.sdc.biceps.model.message.AbstractGetResponse;
+import org.somda.sdc.biceps.model.message.AbstractReport;
 import org.somda.sdc.biceps.model.participant.MdibVersion;
 
+import javax.annotation.Nullable;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.math.BigInteger;
+import java.net.URI;
 
 /**
  * Utility functions for the {@link MdibVersion} container.
@@ -33,5 +37,33 @@ public class MdibVersionUtil {
         setSequenceId.invoke(target, mdibVersion.getSequenceId().toString());
         setInstanceId.invoke(target, mdibVersion.getInstanceId());
         setMdibVersion.invoke(target, mdibVersion.getVersion());
+    }
+
+    /**
+     * Extracts the MDIB version from a report.
+     *
+     * @param msg the report to extract data from.
+     * @return the converted MDIB version. Default values are transformed according to BICEPS's prose information.
+     */
+    public MdibVersion getMdibVersion(AbstractReport msg) {
+        return new MdibVersion(sequenceId(msg.getSequenceId()), defaultZero(msg.getMdibVersion()), defaultZero(msg.getInstanceId()));
+    }
+
+    /**
+     * Extracts the MDIB version from a get response.
+     *
+     * @param msg the get response to extract data from.
+     * @return the converted MDIB version. Default values are transformed according to BICEPS's prose information.
+     */
+    public MdibVersion getMdibVersion(AbstractGetResponse msg) {
+        return new MdibVersion(sequenceId(msg.getSequenceId()), defaultZero(msg.getMdibVersion()), defaultZero(msg.getInstanceId()));
+    }
+
+    private BigInteger defaultZero(@Nullable BigInteger instanceId) {
+        return instanceId == null ? BigInteger.ZERO : instanceId;
+    }
+
+    private URI sequenceId(String sequenceId) {
+        return URI.create(sequenceId);
     }
 }

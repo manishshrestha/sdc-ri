@@ -41,6 +41,7 @@ public interface MdibEntity {
      * Obtains the entity's descriptor as a given type.
      *
      * @param theClass the class to cast.
+     * @param <T> the descriptor class type.
      * @return descriptor information currently associated with the entity.
      */
     <T extends AbstractDescriptor> Optional<T> getDescriptor(Class<T> theClass);

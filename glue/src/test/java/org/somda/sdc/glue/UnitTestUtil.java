@@ -33,8 +33,12 @@ public class UnitTestUtil {
 
     public Injector createInjectorWithOverrides(AbstractModule overridingModule) {
         return Guice.createInjector(Modules.override(
+                new DefaultGlueModule(),
+                new DefaultGlueConfigModule(),
                 new DefaultBicepsModule(),
                 new DefaultBicepsConfigModule(),
-                new DefaultHelperModule()).with(overridingModule));
+                new DefaultHelperModule(),
+                new DefaultDpwsModule(),
+                new DefaultDpwsConfigModule()).with(overridingModule));
     }
 }

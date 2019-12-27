@@ -2,6 +2,8 @@ package org.somda.sdc.dpws.crypto;
 
 /**
  * Configuration keys for cryptographic components.
+ *
+ * @see org.somda.sdc.dpws.guice.DefaultDpwsConfigModule
  */
 public class CryptoConfig {
     /**

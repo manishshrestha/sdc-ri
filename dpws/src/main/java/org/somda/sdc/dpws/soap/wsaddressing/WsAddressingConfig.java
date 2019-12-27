@@ -2,6 +2,8 @@ package org.somda.sdc.dpws.soap.wsaddressing;
 
 /**
  * Configuration of the WS-Addressing package.
+ *
+ * @see org.somda.sdc.dpws.guice.DefaultDpwsConfigModule
  */
 public class WsAddressingConfig {
     /**

@@ -39,5 +39,11 @@ public class GlueConstants {
      */
     public static final URI URI_KEY_PURPOSE_SDC_SERVICE_CONSUMER = URI.create(URI_SCHEME_OID + OID_KEY_PURPOSE_SDC_SERVICE_CONSUMER);
 
+    /**
+     * Definition of the SDC participant discovery scope.
+     * todo DGr check if SCOPE_SDC_PROVIDER is the right term to use
+     */
+    public static final URI SCOPE_SDC_PROVIDER = URI.create("sdc.mds.pkp:" + OID_KEY_PURPOSE_SDC_SERVICE_PROVIDER);
+
 
 }

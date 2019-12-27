@@ -40,48 +40,81 @@ public class ModificationsBuilder {
         insert(mds, null);
 
         mds.getBattery().forEach(descr -> buildLeaf(descr, mds));
+        mds.setBattery(null);
         buildLeaf(mds.getClock(), mds);
         build(mds.getSystemContext(), mds);
+        mds.setSystemContext(null);
         build(mds.getAlertSystem(), mds);
+        mds.setAlertSystem(null);
         mds.getVmd().forEach(descr -> build(descr, mds));
+        mds.setVmd(null);
         build(mds.getSco(), mds);
+        mds.setSco(null);
     }
 
-    private void build(ScoDescriptor sco, AbstractDescriptor parent) {
+    private void build(@Nullable ScoDescriptor sco, AbstractDescriptor parent) {
+        if (sco == null) {
+            return;
+        }
         insert(sco, parent);
-        
-        sco.getOperation().forEach(descriptor -> buildLeaf(descriptor, parent));
+
+        sco.getOperation().forEach(descriptor -> buildLeaf(descriptor, sco));
+        sco.setOperation(null);
     }
 
-    private void build(SystemContextDescriptor systemContext, AbstractDescriptor parent) {
+    private void build(@Nullable SystemContextDescriptor systemContext, AbstractDescriptor parent) {
+        if (systemContext == null) {
+            return;
+        }
         insert(systemContext, parent);
-        
+
         buildMultiStateLeaf(systemContext.getLocationContext(), systemContext);
+        systemContext.setLocationContext(null);
         buildMultiStateLeaf(systemContext.getPatientContext(), systemContext);
+        systemContext.setPatientContext(null);
         systemContext.getEnsembleContext().forEach(descr -> buildMultiStateLeaf(descr, systemContext));
+        systemContext.setEnsembleContext(null);
         systemContext.getWorkflowContext().forEach(descr -> buildMultiStateLeaf(descr, systemContext));
+        systemContext.setWorkflowContext(null);
         systemContext.getOperatorContext().forEach(descr -> buildMultiStateLeaf(descr, systemContext));
+        systemContext.setOperatorContext(null);
         systemContext.getMeansContext().forEach(descr -> buildMultiStateLeaf(descr, systemContext));
+        systemContext.setMeansContext(null);
     }
 
-    private void build(AlertSystemDescriptor alertSystem, AbstractDescriptor parent) {
+    private void build(@Nullable AlertSystemDescriptor alertSystem, AbstractDescriptor parent) {
+        if (alertSystem == null) {
+            return;
+        }
         insert(alertSystem, parent);
-        
+
         alertSystem.getAlertCondition().forEach(descr -> buildLeaf(descr, alertSystem));
+        alertSystem.setAlertCondition(null);
         alertSystem.getAlertSignal().forEach(descr -> buildLeaf(descr, alertSystem));
+        alertSystem.setAlertSignal(null);
     }
 
-    private void build(VmdDescriptor vmd, AbstractDescriptor parent) {
+    private void build(@Nullable VmdDescriptor vmd, AbstractDescriptor parent) {
+        if (vmd == null) {
+            return;
+        }
         insert(vmd, parent);
-        
+
         build(vmd.getSco(), vmd);
+        vmd.setSco(null);
         build(vmd.getAlertSystem(), vmd);
-        vmd.getChannel().forEach(descr -> buildLeaf(descr, vmd));
+        vmd.setAlertSystem(null);
+        vmd.getChannel().forEach(descr -> build(descr, vmd));
+        vmd.setChannel(null);
     }
 
-    private void build(ChannelDescriptor channel, AbstractDescriptor parent) {
+    private void build(@Nullable ChannelDescriptor channel, AbstractDescriptor parent) {
+        if (channel == null) {
+            return;
+        }
         insert(channel, parent);
         channel.getMetric().forEach(descr -> buildLeaf(descr, channel));
+        channel.setMetric(null);
     }
 
     private <T extends AbstractDescriptor> void buildLeaf(@Nullable T descriptor, AbstractDescriptor parent) {
@@ -118,6 +151,10 @@ public class ModificationsBuilder {
     }
 
     private void insert(AbstractDescriptor descriptor, @Nullable AbstractDescriptor parent) {
-        modifications.insert(descriptor, singleState(descriptor), parent.getHandle());
+        String parentHandle = null;
+        if (parent != null) {
+            parentHandle = parent.getHandle();
+        }
+        modifications.insert(descriptor, singleState(descriptor), parentHandle);
     }
 }

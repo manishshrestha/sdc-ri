@@ -2,6 +2,8 @@ package org.somda.sdc.glue.common;
 
 /**
  * General configuration of the SDC Glue common package.
+ *
+ * @see org.somda.sdc.glue.guice.DefaultGlueConfigModule
  */
 public class CommonConfig {
     /**

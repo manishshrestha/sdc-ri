@@ -11,6 +11,7 @@ import org.somda.sdc.dpws.soap.SoapConfig;
 import org.somda.sdc.glue.GlueConstants;
 import org.somda.sdc.glue.guice.DefaultGlueConfigModule;
 import org.somda.sdc.glue.guice.DefaultGlueModule;
+import org.somda.sdc.glue.guice.GlueDpwsConfigModule;
 import test.org.somda.common.TestLogging;
 
 public class IntegrationTestUtil {
@@ -25,14 +26,7 @@ public class IntegrationTestUtil {
                 new DefaultBicepsConfigModule(),
                 new DefaultHelperModule(),
                 new DefaultDpwsModule(),
-                new DefaultDpwsConfigModule() {
-                    @Override
-                    protected void customConfigure() {
-                        bind(SoapConfig.JAXB_CONTEXT_PATH,
-                                String.class,
-                                GlueConstants.JAXB_CONTEXT_PATH);
-                    }
-                });
+                new GlueDpwsConfigModule());
     }
 
     public Injector getInjector() {

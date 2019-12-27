@@ -5,6 +5,7 @@ import org.somda.sdc.dpws.soap.exception.MarshallingException;
 import org.somda.sdc.dpws.soap.exception.SoapFaultException;
 import org.somda.sdc.dpws.soap.exception.TransportException;
 import org.somda.sdc.dpws.soap.interception.Interceptor;
+import org.somda.sdc.dpws.soap.wseventing.EventSink;
 import org.somda.sdc.dpws.soap.wseventing.SubscribeResult;
 
 import javax.annotation.Nullable;
@@ -95,4 +96,11 @@ public interface EventSinkAccess {
      *                       {@link #subscribe(List, Duration, Interceptor)}.
      */
     void disableAutoRenew(String subscriptionId);
+
+    /**
+     * Synchronously unsubscribes all subscriptions.
+     *
+     * @see EventSink#unsubscribeAll()
+     */
+    void unsubscribeAll();
 }

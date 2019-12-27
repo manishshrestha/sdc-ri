@@ -2,6 +2,8 @@ package org.somda.sdc.dpws.device;
 
 /**
  * Configuration tags of the DPWS device side.
+ *
+ * @see org.somda.sdc.dpws.guice.DefaultDpwsConfigModule
  */
 public class DeviceConfig {
     /**

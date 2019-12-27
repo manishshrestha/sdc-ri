@@ -2,6 +2,8 @@ package org.somda.sdc.dpws.soap.wseventing;
 
 /**
  * WS-Eventing configuration identifiers.
+ *
+ * @see org.somda.sdc.dpws.guice.DefaultDpwsConfigModule
  */
 public class WsEventingConfig {
     /**
@@ -75,4 +77,14 @@ public class WsEventingConfig {
      * </ul>
      */
     public static final String AUTO_RENEW_THREAD_POOL_SIZE = "WsEventing.Sink.AutoRenewThreadPoolSize";
+
+    /**
+     * Configuration of the notification queue size used for WS-Eventing.
+     *
+     * <ul>
+     * <li>Data type: {@linkplain Integer}
+     * <li>Use: optional
+     * </ul>
+     */
+    public static final String NOTIFICATION_QUEUE_CAPACITY = "SoapConfig.NotificationQueueCapacity";
 }

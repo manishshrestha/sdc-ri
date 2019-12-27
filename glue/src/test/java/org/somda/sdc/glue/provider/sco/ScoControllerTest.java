@@ -4,6 +4,7 @@ import org.somda.sdc.biceps.common.access.MdibAccess;
 import org.somda.sdc.biceps.model.message.InvocationError;
 import org.somda.sdc.biceps.model.message.InvocationState;
 import org.somda.sdc.biceps.model.participant.*;
+import org.somda.sdc.biceps.provider.access.LocalMdibAccess;
 import org.somda.sdc.biceps.testutil.Handles;
 import org.somda.sdc.dpws.device.EventSourceAccess;
 import org.somda.sdc.glue.UnitTestUtil;
@@ -25,13 +26,13 @@ class ScoControllerTest {
 
     private ScoController scoController;
     private EventSourceAccess eventSourceAccessMock;
-    private MdibAccess mdibAccessMock;
+    private LocalMdibAccess mdibAccessMock;
     private Receiver receiver;
 
     @BeforeEach
     void beforeEach() {
         eventSourceAccessMock = mock(EventSourceAccess.class);
-        mdibAccessMock = mock(MdibAccess.class);
+        mdibAccessMock = mock(LocalMdibAccess.class);
         receiver = new Receiver();
         scoController = IT.getInjector().getInstance(ScoControllerFactory.class).createScoController(eventSourceAccessMock, mdibAccessMock);
         scoController.addOperationInvocationReceiver(receiver);

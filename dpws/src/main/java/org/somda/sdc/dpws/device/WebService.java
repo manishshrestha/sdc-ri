@@ -2,19 +2,15 @@ package org.somda.sdc.dpws.device;
 
 import com.google.common.util.concurrent.AbstractIdleService;
 import com.google.common.util.concurrent.Service;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.somda.sdc.dpws.service.HostedService;
-import org.somda.sdc.dpws.soap.exception.MarshallingException;
-import org.somda.sdc.dpws.soap.exception.TransportException;
 import org.somda.sdc.dpws.soap.interception.Interceptor;
 import org.somda.sdc.dpws.soap.wseventing.EventSource;
 import org.somda.sdc.dpws.soap.wseventing.model.WsEventingStatus;
-import org.somda.sdc.dpws.soap.RequestResponseServer;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 /**
  * Web Service base class.
@@ -86,12 +82,14 @@ public abstract class WebService extends AbstractIdleService implements EventSou
 
             @Override
             public void sendNotification(String action, Object payload) {
-                LOG.warn("No handler for notifications set yet. WebService has to be populated.");
+                LOG.info("No handler for notifications configured yet. " +
+                        "Skip sending notification with action: {}", action);
             }
 
             @Override
             public void subscriptionEndToAll(WsEventingStatus status) {
-                LOG.warn("No handler for notifications set yet. WebService has to be populated.");
+                LOG.info("No handler for subscriptionEndToAll configured yet. " +
+                        "Skip sending subscriptionEndToAll with status: {}", status.getUri());
             }
         };
     }
@@ -122,7 +120,7 @@ public abstract class WebService extends AbstractIdleService implements EventSou
         eventSource.startAsync().awaitRunning();
     }
 
-    protected void shutDown()  {
+    protected void shutDown() {
         eventSource.stopAsync().awaitTerminated();
     }
 }

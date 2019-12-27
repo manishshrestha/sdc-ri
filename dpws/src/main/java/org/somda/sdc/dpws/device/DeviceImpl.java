@@ -2,11 +2,12 @@ package org.somda.sdc.dpws.device;
 
 import com.google.common.util.concurrent.AbstractIdleService;
 import com.google.common.util.concurrent.Service;
-import com.google.inject.Inject;
 import com.google.inject.Provider;
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
 import com.google.inject.name.Named;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.somda.sdc.common.util.StreamUtil;
 import org.somda.sdc.dpws.DpwsConstants;
 import org.somda.sdc.dpws.device.helper.ByteResourceHandler;
@@ -37,10 +38,7 @@ import org.somda.sdc.dpws.soap.wsdiscovery.WsDiscoveryTargetService;
 import org.somda.sdc.dpws.soap.wsdiscovery.factory.WsDiscoveryTargetServiceFactory;
 import org.somda.sdc.dpws.soap.wseventing.EventSource;
 import org.somda.sdc.dpws.udp.UdpMessageQueueService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import javax.annotation.Nullable;
 import javax.xml.namespace.QName;
 import java.io.IOException;
 import java.net.InetAddress;
@@ -74,6 +72,7 @@ public class DeviceImpl extends AbstractIdleService implements Device, Service, 
     private final HostedServiceFactory hostedServiceFactory;
     private final HostedServiceInterceptorFactory hostedServiceInterceptorFactory;
     private final StreamUtil streamUtil;
+    private final URI eprAddress;
     private NetworkInterfaceUtil networkInterfaceUtil;
     private HttpUriBuilder httpUriBuilder;
     private Boolean unsecuredEndpoint;
@@ -130,6 +129,9 @@ public class DeviceImpl extends AbstractIdleService implements Device, Service, 
         this.unsecuredEndpoint = unsecuredEndpoint;
         this.securedEndpoint = securedEndpoint;
         this.hostedServicesOnStartup = new ArrayList<>();
+
+        this.eprAddress = wsaUtil.getAddressUri(deviceSettings.getEndpointReference()).orElseThrow(() ->
+                new RuntimeException("No valid endpoint reference found in device deviceSettings"));
     }
 
     @Override
@@ -137,8 +139,6 @@ public class DeviceImpl extends AbstractIdleService implements Device, Service, 
         EndpointReferenceType deviceEpr = deviceSettings.getEndpointReference();
         LOG.info("Start device with URN '{}'", deviceEpr.getAddress().getValue());
 
-        URI eprAddress = wsaUtil.getAddressUri(deviceSettings.getEndpointReference()).orElseThrow(() ->
-                new RuntimeException("No valid endpoint reference found in device deviceSettings"));
         String hostingServerCtxtPath = buildContextPathBase(eprAddress);
 
         // Initialize HTTP servers
@@ -243,6 +243,11 @@ public class DeviceImpl extends AbstractIdleService implements Device, Service, 
         return this;
     }
 
+    @Override
+    public URI getEprAddress() {
+        return eprAddress;
+    }
+
     private void checkRunning() {
         if (!isRunning()) {
             throw new IllegalStateException("Device is not running");
@@ -252,7 +257,9 @@ public class DeviceImpl extends AbstractIdleService implements Device, Service, 
     @Override
     public void setTypes(List<QName> types) {
         ArrayList<QName> tmpTypes = new ArrayList<>();
-        tmpTypes.add(DpwsConstants.DEVICE_TYPE);
+        if (types.stream().filter(qName -> qName.equals(DpwsConstants.DEVICE_TYPE)).findAny().isEmpty()) {
+            tmpTypes.add(DpwsConstants.DEVICE_TYPE);
+        }
         tmpTypes.addAll(types);
         if (isRunning()) {
             wsdTargetService.setTypes(tmpTypes);

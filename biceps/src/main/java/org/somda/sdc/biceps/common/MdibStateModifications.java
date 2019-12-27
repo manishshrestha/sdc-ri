@@ -27,6 +27,17 @@ public class MdibStateModifications {
     }
 
     /**
+     * Creates a set with initial capacity.
+     *
+     * @param changeType      the change type to be applied for the set.
+     * @param initialCapacity the number of pre-allocated elements hold by this modifications set.
+     * @return a new {@link MdibStateModifications} object.
+     */
+    public static MdibStateModifications create(Type changeType, int initialCapacity) {
+        return new MdibStateModifications(changeType, initialCapacity);
+    }
+
+    /**
      * Add a single element to the change set.
      *
      * @param state the state to add.
@@ -66,6 +77,13 @@ public class MdibStateModifications {
     }
 
     /**
+     * Flushes added states.
+     */
+    public void clear() {
+        this.states.clear();
+    }
+
+    /**
      * Change type designation.
      * <p>
      * In accordance to BICEPS a change set can be of one certain base type at a time. BICEPS distinguishes between
@@ -82,7 +100,8 @@ public class MdibStateModifications {
         COMPONENT(AbstractDeviceComponentState.class, ComponentStateModificationMessage.class),
         CONTEXT(AbstractContextState.class, ContextStateModificationMessage.class),
         METRIC(AbstractMetricState.class, MetricStateModificationMessage.class),
-        OPERATION(AbstractOperationState.class, OperationStateModificationMessage.class);
+        OPERATION(AbstractOperationState.class, OperationStateModificationMessage.class),
+        WAVEFORM(RealTimeSampleArrayMetricState.class, WaveformStateModificationMessage.class);
 
         private Class<? extends AbstractState> changeBaseClass;
         private Class<? extends StateModificationMessage<?>> eventMessageClass;
@@ -105,5 +124,10 @@ public class MdibStateModifications {
     private MdibStateModifications(Type changeType) {
         this.changeType = changeType;
         this.states = new ArrayList<>();
+    }
+
+    private MdibStateModifications(Type changeType, int initialCapacity) {
+        this.changeType = changeType;
+        this.states = new ArrayList<>(initialCapacity);
     }
 }

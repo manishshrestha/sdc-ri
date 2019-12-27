@@ -9,9 +9,11 @@ import org.somda.sdc.dpws.client.DiscoveryFilterBuilder;
 import org.somda.sdc.glue.GlueConstants;
 import org.somda.sdc.glue.common.ContextIdentificationMapper;
 
+import javax.annotation.Nullable;
 import javax.xml.namespace.QName;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 
 /**
@@ -30,8 +32,6 @@ public class SdcDiscoveryFilterBuilder {
     // todo DGr should be defined in MDPWS
     private static final QName TYPE_MEDICAL_DEVICE = new QName("http://standards.ieee.org/downloads/11073/11073-20702-2016", "MedicalDevice");
 
-    private static final String SCOPE_SDC_PARTICIPANT = "sdc.mds.pkp:" + GlueConstants.OID_KEY_PURPOSE_SDC_SERVICE_PROVIDER;
-
     public static SdcDiscoveryFilterBuilder create() {
         return new SdcDiscoveryFilterBuilder();
     }
@@ -42,7 +42,7 @@ public class SdcDiscoveryFilterBuilder {
     private SdcDiscoveryFilterBuilder() {
         this.discoveryFilterBuilder = new DiscoveryFilterBuilder();
         this.discoveryFilterBuilder.addType(TYPE_MEDICAL_DEVICE);
-        this.discoveryFilterBuilder.addScope(SCOPE_SDC_PARTICIPANT);
+        this.discoveryFilterBuilder.addScope(GlueConstants.SCOPE_SDC_PROVIDER.toString());
     }
 
     /**
@@ -71,6 +71,7 @@ public class SdcDiscoveryFilterBuilder {
      * Adds a primary context state instance identifier as scope.
      *
      * @param state the location context state.
+     * @param <T>   a context state type.
      * @return this object.
      */
     public <T extends AbstractContextState> SdcDiscoveryFilterBuilder addContext(T state) {
@@ -82,6 +83,7 @@ public class SdcDiscoveryFilterBuilder {
      * Adds a device component type.
      *
      * @param component the location context state.
+     * @param <T>       a complex device component descriptor type.
      * @return this object.
      */
     public <T extends AbstractComplexDeviceComponentDescriptor> SdcDiscoveryFilterBuilder addDeviceComponent(T component) {
@@ -142,7 +144,7 @@ public class SdcDiscoveryFilterBuilder {
         }
     }
 
-    private static String encode(String text) throws UnsupportedEncodingException {
-        return text == null ? "" : URLEncoder.encode(text, "UTF-8");
+    private static String encode(@Nullable String text) throws UnsupportedEncodingException {
+        return text == null ? "" : URLEncoder.encode(text, StandardCharsets.UTF_8);
     }
 }

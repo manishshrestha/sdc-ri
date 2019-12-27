@@ -111,4 +111,9 @@ public class HostedServiceProxyImpl implements HostedServiceProxy, EventSinkAcce
     public void disableAutoRenew(String subscriptionId) {
         eventSink.disableAutoRenew(subscriptionId);
     }
+
+    @Override
+    public void unsubscribeAll() {
+        eventSink.unsubscribeAll();
+    }
 }

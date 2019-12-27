@@ -15,14 +15,16 @@ import org.somda.sdc.dpws.soap.exception.SoapFaultException;
 import org.somda.sdc.dpws.soap.factory.SoapFaultFactory;
 import org.somda.sdc.dpws.soap.interception.MessageInterceptor;
 import org.somda.sdc.dpws.soap.interception.RequestResponseObject;
+import org.somda.sdc.dpws.soap.wsaddressing.WsAddressingUtil;
 import org.somda.sdc.glue.common.ActionConstants;
+import org.somda.sdc.glue.common.WsdlConstants;
 import org.somda.sdc.glue.provider.sco.IncomingSetServiceRequest;
 import org.somda.sdc.glue.provider.sco.InvocationResponse;
 import org.somda.sdc.glue.provider.sco.OperationInvocationReceiver;
 import org.somda.sdc.glue.provider.sco.ScoController;
 import org.somda.sdc.glue.provider.sco.factory.ScoControllerFactory;
 import org.somda.sdc.glue.common.MdibMapper;
-import org.somda.sdc.glue.provider.services.helper.MdibVersionUtil;
+import org.somda.sdc.glue.common.MdibVersionUtil;
 import org.somda.sdc.glue.common.factory.MdibMapperFactory;
 import org.somda.sdc.glue.provider.services.helper.factory.ReportGeneratorFactory;
 
@@ -56,6 +58,7 @@ public class HighPriorityServices extends WebService {
     private final org.somda.sdc.biceps.model.participant.ObjectFactory participantModelFactory;
     private final MdibMapperFactory mdibMapperFactory;
     private final MdibVersionUtil mdibVersionUtil;
+    private final WsAddressingUtil wsaUtil;
     private final ScoController scoController;
 
     private final InstanceIdentifier anonymousSource;
@@ -69,7 +72,8 @@ public class HighPriorityServices extends WebService {
                          org.somda.sdc.biceps.model.participant.ObjectFactory participantModelFactory,
                          MdibMapperFactory mdibMapperFactory,
                          ScoControllerFactory scoControllerFactory,
-                         MdibVersionUtil mdibVersionUtil) {
+                         MdibVersionUtil mdibVersionUtil,
+                         WsAddressingUtil wsaUtil) {
         this.mdibAccess = mdibAccess;
         this.soapUtil = soapUtil;
         this.faultFactory = faultFactory;
@@ -77,6 +81,7 @@ public class HighPriorityServices extends WebService {
         this.participantModelFactory = participantModelFactory;
         this.mdibMapperFactory = mdibMapperFactory;
         this.mdibVersionUtil = mdibVersionUtil;
+        this.wsaUtil = wsaUtil;
         this.scoController = scoControllerFactory.createScoController(this, mdibAccess);
 
         anonymousSource = new InstanceIdentifier();
@@ -106,7 +111,8 @@ public class HighPriorityServices extends WebService {
             final MdibMapper mdibMapper = mdibMapperFactory.createMdibMapper(transaction);
             getMdibResponse.setMdib(mdibMapper.mapMdib());
 
-            setResponse(requestResponseObject, getMdibResponse, transaction.getMdibVersion());
+            setResponse(requestResponseObject, getMdibResponse, transaction.getMdibVersion(),
+                    ActionConstants.getResponseAction(ActionConstants.ACTION_GET_MDIB));
         }
     }
 
@@ -119,7 +125,8 @@ public class HighPriorityServices extends WebService {
         try (ReadTransaction transaction = mdibAccess.startTransaction()) {
             final MdibMapper mdibMapper = mdibMapperFactory.createMdibMapper(transaction);
             getMdDescriptionResponse.setMdDescription(mdibMapper.mapMdDescription(getMdDescription.getHandleRef()));
-            setResponse(requestResponseObject, getMdDescriptionResponse, transaction.getMdibVersion());
+            setResponse(requestResponseObject, getMdDescriptionResponse, transaction.getMdibVersion(),
+                    ActionConstants.getResponseAction(ActionConstants.ACTION_GET_MD_DESCRIPTION));
         }
     }
 
@@ -132,7 +139,8 @@ public class HighPriorityServices extends WebService {
         try (ReadTransaction transaction = mdibAccess.startTransaction()) {
             final MdibMapper mdibMapper = mdibMapperFactory.createMdibMapper(transaction);
             getMdStateResponse.setMdState(mdibMapper.mapMdState(getMdState.getHandleRef()));
-            setResponse(requestResponseObject, getMdStateResponse, transaction.getMdibVersion());
+            setResponse(requestResponseObject, getMdStateResponse, transaction.getMdibVersion(),
+                    ActionConstants.getResponseAction(ActionConstants.ACTION_GET_MD_STATE));
         }
     }
 
@@ -175,7 +183,8 @@ public class HighPriorityServices extends WebService {
             }
 
             getContextStatesResponse.setContextState(filteredContextStates);
-            setResponse(requestResponseObject, getContextStatesResponse, transaction.getMdibVersion());
+            setResponse(requestResponseObject, getContextStatesResponse, transaction.getMdibVersion(),
+                    ActionConstants.getResponseAction(ActionConstants.ACTION_GET_CONTEXT_STATES));
         }
     }
 
@@ -194,42 +203,49 @@ public class HighPriorityServices extends WebService {
     @MessageInterceptor(ActionConstants.ACTION_SET_VALUE)
     void setValue(RequestResponseObject requestResponseObject) throws SoapFaultException {
         processSetServiceRequest(requestResponseObject, SetValue.class, SetValueResponse.class,
+                ActionConstants.getResponseAction(ActionConstants.ACTION_SET_VALUE),
                 SetValue::getRequestedNumericValue);
     }
 
     @MessageInterceptor(ActionConstants.ACTION_SET_STRING)
     void setString(RequestResponseObject requestResponseObject) throws SoapFaultException {
         processSetServiceRequest(requestResponseObject, SetString.class, SetStringResponse.class,
+                ActionConstants.getResponseAction(ActionConstants.ACTION_SET_STRING),
                 SetString::getRequestedStringValue);
     }
 
     @MessageInterceptor(ActionConstants.ACTION_ACTIVATE)
     void activate(RequestResponseObject requestResponseObject) throws SoapFaultException {
         processSetServiceRequest(requestResponseObject, Activate.class, ActivateResponse.class,
+                ActionConstants.getResponseAction(ActionConstants.ACTION_ACTIVATE),
                 Activate::getArgument);
     }
 
     @MessageInterceptor(ActionConstants.ACTION_SET_COMPONENT_STATE)
     void setComponentState(RequestResponseObject requestResponseObject) throws SoapFaultException {
         processSetServiceRequest(requestResponseObject, SetComponentState.class, SetComponentStateResponse.class,
+                ActionConstants.getResponseAction(ActionConstants.ACTION_SET_COMPONENT_STATE),
                 SetComponentState::getProposedComponentState);
     }
 
     @MessageInterceptor(ActionConstants.ACTION_SET_CONTEXT_STATE)
     void setContextState(RequestResponseObject requestResponseObject) throws SoapFaultException {
         processSetServiceRequest(requestResponseObject, SetContextState.class, SetContextStateResponse.class,
+                ActionConstants.getResponseAction(ActionConstants.ACTION_SET_CONTEXT_STATE),
                 SetContextState::getProposedContextState);
     }
 
     @MessageInterceptor(ActionConstants.ACTION_SET_ALERT_STATE)
     void setAlertState(RequestResponseObject requestResponseObject) throws SoapFaultException {
         processSetServiceRequest(requestResponseObject, SetAlertState.class, SetAlertStateResponse.class,
+                ActionConstants.getResponseAction(ActionConstants.ACTION_SET_ALERT_STATE),
                 SetAlertState::getProposedAlertState);
     }
 
     @MessageInterceptor(ActionConstants.ACTION_SET_METRIC_STATE)
     void setMetricState(RequestResponseObject requestResponseObject) throws SoapFaultException {
         processSetServiceRequest(requestResponseObject, SetMetricState.class, SetMetricStateResponse.class,
+                ActionConstants.getResponseAction(ActionConstants.ACTION_SET_METRIC_STATE),
                 SetMetricState::getProposedMetricState);
     }
 
@@ -245,7 +261,8 @@ public class HighPriorityServices extends WebService {
                         getDescriptorResponse.getDescriptor().add(descriptor)
                 );
             }
-            setResponse(requestResponseObject, getDescriptorResponse, transaction.getMdibVersion());
+            setResponse(requestResponseObject, getDescriptorResponse, transaction.getMdibVersion(),
+                    ActionConstants.getResponseAction(ActionConstants.ACTION_GET_DESCRIPTOR));
         }
     }
 
@@ -312,7 +329,8 @@ public class HighPriorityServices extends WebService {
             }
 
             getContainmentTreeResponse.setContainmentTree(containmentTree);
-            setResponse(requestResponseObject, getContainmentTreeResponse, transaction.getMdibVersion());
+            setResponse(requestResponseObject, getContainmentTreeResponse, transaction.getMdibVersion(),
+                    ActionConstants.getResponseAction(ActionConstants.ACTION_GET_CONTAINMENT_TREE));
         }
     }
 
@@ -322,12 +340,17 @@ public class HighPriorityServices extends WebService {
                         bodyType.getSimpleName()))));
     }
 
-    private <T> void setResponse(RequestResponseObject requestResponseObject, T response, MdibVersion mdibVersion) throws SoapFaultException {
+    private <T> void setResponse(RequestResponseObject requestResponseObject,
+                                 T response,
+                                 MdibVersion mdibVersion,
+                                 String responseAction) throws SoapFaultException {
         try {
             mdibVersionUtil.setMdibVersion(mdibVersion, response);
         } catch (Exception e) {
             throw new SoapFaultException(faultFactory.createReceiverFault("Could not create MDIB version."));
         }
+        requestResponseObject.getResponse().getWsAddressingHeader().setAction(wsaUtil.createAttributedURIType(
+                responseAction));
         soapUtil.setBody(response, requestResponseObject.getResponse());
     }
 
@@ -354,6 +377,7 @@ public class HighPriorityServices extends WebService {
     private <T extends AbstractSet, V extends AbstractSetResponse> void processSetServiceRequest(RequestResponseObject requestResponseObject,
                                                                                                  Class<T> requestClass,
                                                                                                  Class<V> responseClass,
+                                                                                                 String responseAction,
                                                                                                  Function<T, ?> getPayload) throws SoapFaultException {
         T request = getRequest(requestResponseObject, requestClass);
         final InvocationResponse invocationResponse;
@@ -362,10 +386,10 @@ public class HighPriorityServices extends WebService {
                     request.getOperationHandleRef(), anonymousSource, getPayload.apply(request));
         } catch (Exception e) {
             throw new SoapFaultException(faultFactory.createReceiverFault(
-                    String.format("Error while processing set service request: ", e.getMessage())));
+                    String.format("Error while processing set service request: %s", e.getMessage())));
         }
 
         setResponse(requestResponseObject, getResponseObjectAsTypeOrThrow(invocationResponse, responseClass),
-                invocationResponse.getMdibVersion());
+                invocationResponse.getMdibVersion(), responseAction);
     }
 }

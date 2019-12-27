@@ -67,6 +67,7 @@
                         <phase>generate-sources</phase>
                         <configuration>
                             <!-- <forceRegenerate>${jaxb-plugin.forceRegenerate}</forceRegenerate> -->
+                            <locale>en</locale>
                             <readOnly>true</readOnly>
                             <episode>true</episode>
                             <generateDirectory>${directories.generatedSources}/java</generateDirectory>

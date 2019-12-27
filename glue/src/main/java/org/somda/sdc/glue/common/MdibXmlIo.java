@@ -13,7 +13,6 @@ import org.somda.sdc.common.util.NamespacePrefixMapperConverter;
 import org.somda.sdc.common.util.PrefixNamespaceMappingParser;
 import org.somda.sdc.dpws.soap.SoapConstants;
 import org.somda.sdc.glue.GlueConstants;
-import org.somda.sdc.glue.provider.services.helper.MdibVersionUtil;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;

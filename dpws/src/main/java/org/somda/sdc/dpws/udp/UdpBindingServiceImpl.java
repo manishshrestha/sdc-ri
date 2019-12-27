@@ -53,22 +53,22 @@ public class UdpBindingServiceImpl extends AbstractIdleService implements UdpBin
     @Override
     protected void startUp() throws Exception {
         InetSocketAddress address = new InetSocketAddress(multicastGroup, socketPort);
-        LOG.info("Start UDP binding {}", this);
+        LOG.info("Start UDP binding on network interface {}", this);
         // try to get first available address from network interface
         networkInterfaceAddress = networkInterfaceUtil.getFirstIpV4Address(networkInterface).orElseThrow(() ->
                 new SocketException(String.format("Could not retrieve network interface address from: %s", networkInterface)));
 
-        LOG.info("Start UDP binding to {}.", networkInterfaceAddress);
+        LOG.info("Bind to address {}", networkInterfaceAddress);
 
         outgoingSocket = new DatagramSocket(0, networkInterfaceAddress);
-        LOG.info("Outgoing socket at {} is open.", outgoingSocket.getLocalSocketAddress());
+        LOG.info("Outgoing socket at {} is open", outgoingSocket.getLocalSocketAddress());
         if (multicastGroup != null) {
             if (!multicastGroup.isMulticastAddress()) {
-                throw new Exception(String.format("Given address is not a multicast address: %s.", multicastGroup));
+                throw new Exception(String.format("Given address is not a multicast address: %s", multicastGroup));
             }
 
             multicastSocket = new MulticastSocket(socketPort);
-            LOG.info("Join to UDP multicast address group {}.", address);
+            LOG.info("Join to UDP multicast address group {}", address);
             multicastSocket.joinGroup(address, networkInterface);
             incomingSocket = multicastSocket;
         } else {
@@ -151,7 +151,7 @@ public class UdpBindingServiceImpl extends AbstractIdleService implements UdpBin
             return;
         }
         if (message.getLength() > maxMessageSize) {
-            String msg = String.format("Exceed maximum UDP message size. Try to write %d Bytes, but only %d Bytes allowed",
+            String msg = String.format("Exceed maximum UDP message size. Try to write %d Bytes, but only %d Bytes allowed.",
                     message.getLength(), maxMessageSize);
             throw new IOException(msg);
         }
