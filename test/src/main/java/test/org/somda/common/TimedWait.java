@@ -1,7 +1,5 @@
 package test.org.somda.common;
 
-import org.somda.sdc.common.util.AutoLock;
-
 import java.time.Duration;
 import java.time.Instant;
 import java.util.concurrent.TimeUnit;
@@ -25,20 +23,27 @@ public class TimedWait<T> {
     }
 
     public T getData() {
-        try (AutoLock ignored = AutoLock.lock(reentrantLock)) {
+        try {
+            reentrantLock.lock();
             return data;
+        } finally {
+            reentrantLock.unlock();
         }
     }
 
     public void modifyData(Consumer<T> modifierCallback) {
-        try (AutoLock ignored = AutoLock.lock(reentrantLock)) {
+        try {
+            reentrantLock.lock();
             modifierCallback.accept(data);
             condition.signalAll();
+        } finally {
+            reentrantLock.unlock();
         }
     }
 
     public boolean waitForData(Predicate<T> dataCondition, Duration waitTime) {
-        try (AutoLock ignored = AutoLock.lock(reentrantLock)) {
+        try {
+            reentrantLock.lock();
             do {
                 Instant start = Instant.now();
                 try {
@@ -58,12 +63,17 @@ public class TimedWait<T> {
                 waitTime = waitTime.minus(Duration.between(start, finish));
             } while (waitTime.toMillis() > 0);
             return dataCondition.test(data);
+        } finally {
+            reentrantLock.unlock();
         }
     }
 
     public void reset() {
-        try (AutoLock ignored = AutoLock.lock(reentrantLock)) {
+        try {
+            reentrantLock.lock();
             data = resetSupplier.get();
+        } finally {
+            reentrantLock.unlock();
         }
     }
 }
