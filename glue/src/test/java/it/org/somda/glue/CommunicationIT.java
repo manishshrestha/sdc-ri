@@ -1,5 +1,6 @@
 package it.org.somda.glue;
 
+import com.google.common.util.concurrent.AbstractIdleService;
 import com.google.common.util.concurrent.ListenableFuture;
 import it.org.somda.glue.consumer.ReportListenerSpy;
 import it.org.somda.glue.consumer.TestSdcClient;
@@ -26,6 +27,7 @@ import org.somda.sdc.glue.provider.sco.InvocationResponse;
 import org.somda.sdc.glue.provider.sco.OperationInvocationReceiver;
 
 import java.math.BigDecimal;
+import java.net.URI;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -185,36 +187,37 @@ public class CommunicationIT {
     @Test
     void connectMultipleClientsAndTransferData() throws Exception {
         int numberMessages = 100;
-        int numberDevices = 10;
+        int numberClients = 10;
 
 
         ventilatorMdibRunner.startAsync().awaitRunning();
         testDevice.startAsync().awaitRunning();
 
-        List<TestSdcClient> testSdcClients = new ArrayList<>(numberDevices);
-        List<MdibAccessObserverSpy> mdibSpies = new ArrayList<>(numberDevices);
-        for (int i = 0; i < numberDevices; ++i) {
+        List<TestSdcClient> testSdcClients = new ArrayList<>(numberClients);
+        List<MdibAccessObserverSpy> mdibSpies = new ArrayList<>(numberClients);
+        for (int i = 0; i < numberClients; ++i) {
             final TestSdcClient testSdcClient = new TestSdcClient();
             testSdcClients.add(testSdcClient);
             testSdcClient.startAsync();
-            mdibSpies.add(new MdibAccessObserverSpy());
         }
 
-        for (int i = 0; i < numberDevices; ++i) {
-            testSdcClients.get(i).awaitRunning();
-        }
+        testSdcClients.parallelStream().forEach(AbstractIdleService::awaitRunning);
 
-        List<ListenableFuture<SdcRemoteDevice>> futures = new ArrayList<>(numberDevices);
-        for (int i = 0; i < numberDevices; ++i) {
-            final ListenableFuture<HostingServiceProxy> hostingServiceFuture = testSdcClients.get(i).getClient()
-                    .connect(testDevice.getSdcDevice().getEprAddress());
-            final HostingServiceProxy hostingServiceProxy = hostingServiceFuture.get(WAIT_IN_SECONDS, WAIT_TIME_UNIT);
+        List<ListenableFuture<SdcRemoteDevice>> futures = new ArrayList<>(numberClients);
+        testSdcClients.parallelStream().forEach(client -> {
+            try {
+                final ListenableFuture<HostingServiceProxy> hostingServiceFuture = client.getClient()
+                        .connect(testDevice.getSdcDevice().getEprAddress());
+                final HostingServiceProxy hostingServiceProxy = hostingServiceFuture.get(WAIT_IN_SECONDS, WAIT_TIME_UNIT);
 
-            futures.add(testSdcClients.get(i).getConnector().connect(hostingServiceProxy,
-                    ConnectConfiguration.create(ConnectConfiguration.ALL_EPISODIC_AND_WAVEFORM_REPORTS)));
-        }
+                futures.add(client.getConnector().connect(hostingServiceProxy,
+                        ConnectConfiguration.create(ConnectConfiguration.ALL_EPISODIC_AND_WAVEFORM_REPORTS)));
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        });
 
-        for (int i = 0; i < numberDevices; ++i) {
+        for (int i = 0; i < numberClients; ++i) {
             final SdcRemoteDevice sdcRemoteDevice = futures.get(i).get(WAIT_IN_SECONDS, WAIT_TIME_UNIT);
             sdcRemoteDevice.getMdibAccessObservable().registerObserver(mdibSpies.get(i));
         }
@@ -223,10 +226,10 @@ public class CommunicationIT {
             ventilatorMdibRunner.changeMetrics(null, BigDecimal.valueOf(j));
         }
 
-        for (int i = 0; i < numberDevices; ++i) {
-            assertTrue(mdibSpies.get(i).waitForNumberOfRecordedMessages(numberMessages, WAIT_DURATION));
+        mdibSpies.parallelStream().forEach(spy -> {
+            assertTrue(spy.waitForNumberOfRecordedMessages(numberMessages, WAIT_DURATION));
 
-            final List<AbstractMdibAccessMessage> recordedMessages = mdibSpies.get(i).getRecordedMessages();
+            final List<AbstractMdibAccessMessage> recordedMessages = spy.getRecordedMessages();
             for (int j = 0; j < numberMessages; ++j) {
                 final AbstractMdibAccessMessage recordedMessage = recordedMessages.get(j);
                 assertTrue(recordedMessage instanceof MetricStateModificationMessage);
@@ -237,11 +240,87 @@ public class CommunicationIT {
                 NumericMetricState numericMetricState = (NumericMetricState) abstractMetricState;
                 assertEquals(BigDecimal.valueOf(j), numericMetricState.getMetricValue().getValue());
             }
-        }
+        });
     }
 
     @Test
     void connectMultipleDevicesAndTransferData() throws Exception {
-        // tbd
+        int numberMessagesPerDevice = 100;
+        int numberDevices = 10;
+
+        testClient.startAsync().awaitRunning();
+
+        List<TestSdcDevice> testSdcDevices = new ArrayList<>(numberDevices);
+        List<MdibAccessObserverSpy> mdibSpies = new ArrayList<>(numberDevices);
+        for (int i = 0; i < numberDevices; ++i) {
+            TestSdcDevice testSdcDevice = new TestSdcDevice();
+            testSdcDevices.add(testSdcDevice);
+            testSdcDevice.startAsync();
+            mdibSpies.add(new MdibAccessObserverSpy());
+        }
+
+        List<VentilatorMdibRunner> ventilatorMdibRunners = new ArrayList<>(numberDevices);
+        testSdcDevices.parallelStream().forEach(testDevice -> {
+            testDevice.awaitRunning();
+            final VentilatorMdibRunner ventilatorMdibRunner = new VentilatorMdibRunner(
+                    IT.getInjector().getInstance(MdibXmlIo.class),
+                    IT.getInjector().getInstance(ModificationsBuilderFactory.class),
+                    testDevice.getSdcDevice().getMdibAccess());
+            ventilatorMdibRunners.add(ventilatorMdibRunner);
+            ventilatorMdibRunner.startAsync().awaitRunning();
+        });
+
+        List<HostingServiceProxy> hostingServiceProxies = new ArrayList<>(numberDevices);
+        testSdcDevices.parallelStream().forEach(testSdcDevice -> {
+            final URI eprAddress = testSdcDevice.getSdcDevice().getEprAddress();
+            try {
+                final ListenableFuture<HostingServiceProxy> hostingServiceFuture = testClient.getClient()
+                        .connect(eprAddress);
+                hostingServiceProxies.add(hostingServiceFuture.get(WAIT_IN_SECONDS, WAIT_TIME_UNIT));
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        });
+
+        List<ListenableFuture<SdcRemoteDevice>> futures = new ArrayList<>(numberDevices);
+        hostingServiceProxies.parallelStream().forEach(hostingServiceProxy -> {
+            try {
+                futures.add(testClient.getConnector().connect(hostingServiceProxy,
+                        ConnectConfiguration.create(ConnectConfiguration.ALL_EPISODIC_AND_WAVEFORM_REPORTS)));
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        });
+
+        for (int i = 0; i < numberDevices; ++i) {
+            final SdcRemoteDevice sdcRemoteDevice = futures.get(i).get(WAIT_IN_SECONDS, WAIT_TIME_UNIT);
+            sdcRemoteDevice.getMdibAccessObservable().registerObserver(mdibSpies.get(i));
+        }
+
+        ventilatorMdibRunners.parallelStream().forEach(ventilatorMdibRunner -> {
+            try {
+                for (int j = 0; j < numberMessagesPerDevice; ++j) {
+                    ventilatorMdibRunner.changeMetrics(null, BigDecimal.valueOf(j));
+                }
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        });
+
+        mdibSpies.parallelStream().forEach(spy -> {
+            assertTrue(spy.waitForNumberOfRecordedMessages(numberMessagesPerDevice, WAIT_DURATION));
+
+            final List<AbstractMdibAccessMessage> recordedMessages = spy.getRecordedMessages();
+            for (int j = 0; j < numberMessagesPerDevice; ++j) {
+                final AbstractMdibAccessMessage recordedMessage = recordedMessages.get(j);
+                assertTrue(recordedMessage instanceof MetricStateModificationMessage);
+                MetricStateModificationMessage metricStateMessage = (MetricStateModificationMessage) recordedMessage;
+                assertEquals(1, metricStateMessage.getStates().size());
+                final AbstractMetricState abstractMetricState = metricStateMessage.getStates().get(0);
+                assertTrue(abstractMetricState instanceof NumericMetricState);
+                NumericMetricState numericMetricState = (NumericMetricState) abstractMetricState;
+                assertEquals(BigDecimal.valueOf(j), numericMetricState.getMetricValue().getValue());
+            }
+        });
     }
 }
