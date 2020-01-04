@@ -16,12 +16,15 @@ build:
 
 test:
   stage: test
-  script:
+  before_script:
     - ./ci/run_tcpdump.sh
+  script:
     - mvn $MAVEN_CLI_OPTS verify
+  after_script:
     - ./ci/stop_tcpdump.sh
 
   artifacts:
+    when: on_failure
     paths:
       - udp_traffic.pcap
-    expire_in: 1 week
+    expire_in: 4 weeks
