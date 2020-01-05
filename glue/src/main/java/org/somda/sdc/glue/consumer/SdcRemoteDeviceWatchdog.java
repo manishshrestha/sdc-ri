@@ -128,9 +128,9 @@ public class SdcRemoteDeviceWatchdog extends AbstractIdleService {
                 try {
                     final Duration grantedExpires = renewFuture.get(timeout.toMillis(), TimeUnit.MILLISECONDS);
                     if (grantedExpires.compareTo(watchdogPeriod) < 0) {
-                        LOG.warn("Too less time granted for subscription on service {} (expected at least {}, got {})",
+                        LOG.warn("Too little time granted for subscription on service {} (expected at least {}, got {})",
                                 serviceId, watchdogPeriod, grantedExpires);
-                        postWatchdogMessage(new Exception(String.format("Too less time granted for subscription on service %s (expected at least %s, got %s)",
+                        postWatchdogMessage(new Exception(String.format("Too little time granted for subscription on service %s (expected at least %s, got %s)",
                                 serviceId, watchdogPeriod, grantedExpires)));
                         return;
                     }
