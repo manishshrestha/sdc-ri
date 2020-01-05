@@ -150,7 +150,7 @@ class ReportWriterTest {
     }
 
     @Test
-    void writeComponent() throws ReportProcessingException, PreprocessingException, NoSuchMethodException, IllegalAccessException, InvocationTargetException {
+    void writeComponent() throws Exception {
         final EpisodicComponentReport report = messageFactory.createEpisodicComponentReport();
         final EpisodicComponentReport.ReportPart reportPart = messageFactory.createAbstractComponentReportReportPart();
         final MdibVersion expectedMdibVersion = MdibVersion.create();
@@ -169,7 +169,7 @@ class ReportWriterTest {
     }
 
     @Test
-    void writeAlert() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, ReportProcessingException, PreprocessingException {
+    void writeAlert() throws Exception {
         final EpisodicAlertReport report = messageFactory.createEpisodicAlertReport();
         final EpisodicAlertReport.ReportPart reportPart = messageFactory.createAbstractAlertReportReportPart();
         final MdibVersion expectedMdibVersion = MdibVersion.create();
@@ -188,7 +188,7 @@ class ReportWriterTest {
     }
 
     @Test
-    void writeMetric() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, ReportProcessingException, PreprocessingException {
+    void writeMetric() throws Exception {
         final EpisodicMetricReport report = messageFactory.createEpisodicMetricReport();
         final EpisodicMetricReport.ReportPart reportPart = messageFactory.createAbstractMetricReportReportPart();
         final MdibVersion expectedMdibVersion = MdibVersion.create();
@@ -207,7 +207,7 @@ class ReportWriterTest {
     }
 
     @Test
-    void writeOperation() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, ReportProcessingException, PreprocessingException {
+    void writeOperation() throws Exception {
         final EpisodicOperationalStateReport report = messageFactory.createEpisodicOperationalStateReport();
         final EpisodicOperationalStateReport.ReportPart reportPart = messageFactory.createAbstractOperationalStateReportReportPart();
         final MdibVersion expectedMdibVersion = MdibVersion.create();
@@ -226,7 +226,7 @@ class ReportWriterTest {
     }
 
     @Test
-    void writeContext() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, ReportProcessingException, PreprocessingException {
+    void writeContext() throws Exception {
         final EpisodicContextReport report = messageFactory.createEpisodicContextReport();
         final EpisodicContextReport.ReportPart reportPart = messageFactory.createAbstractContextReportReportPart();
         final MdibVersion expectedMdibVersion = MdibVersion.create();
@@ -245,7 +245,7 @@ class ReportWriterTest {
     }
 
     @Test
-    void writeWaveform() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, ReportProcessingException, PreprocessingException {
+    void writeWaveform() throws Exception {
         final WaveformStream report = messageFactory.createWaveformStream();
         final MdibVersion expectedMdibVersion = MdibVersion.create();
         mdibVersionUtil.setMdibVersion(expectedMdibVersion, report);

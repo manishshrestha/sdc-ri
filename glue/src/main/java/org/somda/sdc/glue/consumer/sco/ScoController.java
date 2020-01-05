@@ -42,7 +42,7 @@ public class ScoController implements SetServiceAccess {
 
     @AssistedInject
     ScoController(@Assisted HostingServiceProxy hostingServiceProxy,
-                  @Assisted("setServiceProxy") HostedServiceProxy setServiceProxy,
+                  @Assisted("setServiceProxy") @Nullable HostedServiceProxy setServiceProxy,
                   @Assisted("contextServiceProxy") @Nullable HostedServiceProxy contextServiceProxy,
                   OperationInvocationDispatcherFactory operationInvocationDispatcherFactory,
                   @Consumer ListeningExecutorService executorService,
@@ -97,13 +97,18 @@ public class ScoController implements SetServiceAccess {
     private <T extends AbstractSet> Object sendMessage(T setRequest, Class<?> expectedResponseClass)
             throws InvocationException {
         String action = WsdlConstants.ACTION_SET_PREFIX + setRequest.getClass().getSimpleName();
-        HostedServiceProxy hostedServiceProxy = setServiceProxy;
+        HostedServiceProxy hostedServiceProxy;
         if (setRequest.getClass().equals(SetContextState.class)) {
             if (contextServiceProxy == null) {
                 throw new InvocationException("SetContextState request could not be sent: no context service available");
             }
             action = ActionConstants.ACTION_SET_CONTEXT_STATE;
             hostedServiceProxy = contextServiceProxy;
+        } else {
+            if (setServiceProxy == null) {
+                throw new InvocationException("Set request could not be sent: no set service available");
+            }
+            hostedServiceProxy = setServiceProxy;
         }
 
         final SoapMessage request = soapUtil.createMessage(action, setRequest);

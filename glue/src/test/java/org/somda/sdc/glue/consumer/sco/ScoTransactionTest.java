@@ -1,5 +1,6 @@
 package org.somda.sdc.glue.consumer.sco;
 
+import it.org.somda.glue.consumer.ReportListenerSpy;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.somda.sdc.biceps.model.message.InvocationState;
@@ -83,7 +84,7 @@ class ScoTransactionTest {
 
     @Test
     void waitForFinalReport() {
-        final Listener listener = new Listener();
+        final ReportListenerSpy listener = new ReportListenerSpy();
         final List<OperationInvokedReport.ReportPart> expectedReportParts = Arrays.asList(
                 ScoArtifacts.createReportPart(expectedTransactionId, InvocationState.START),
                 ScoArtifacts.createReportPart(expectedTransactionId, InvocationState.FIN));
@@ -103,7 +104,8 @@ class ScoTransactionTest {
         actualReportParts = scoTransaction.waitForFinalReport(Duration.ofSeconds(5));
 
         assertEquals(expectedReportParts.size(), actualReportParts.size());
-        assertEquals(expectedReportParts.size(), listener.getReportParts().size());
+        assertTrue(listener.waitForReports(2, Duration.ofSeconds(5)));
+        assertEquals(expectedReportParts.size(), listener.getReports().size());
 
         for (int i = 0; i < expectedReportParts.size(); ++i) {
             // result from waiting shall match
@@ -114,9 +116,9 @@ class ScoTransactionTest {
 
             // result from listening shall match
             assertEquals(expectedReportParts.get(i).getInvocationInfo().getTransactionId(),
-                    listener.getReportParts().get(i).getInvocationInfo().getTransactionId());
+                    listener.getReports().get(i).getInvocationInfo().getTransactionId());
             assertEquals(expectedReportParts.get(i).getInvocationInfo().getInvocationState(),
-                    listener.getReportParts().get(i).getInvocationInfo().getInvocationState());
+                    listener.getReports().get(i).getInvocationInfo().getInvocationState());
         }
     }
 
