@@ -47,6 +47,8 @@ A `toString()` method **should** be formatted in accordance with the following s
 
 Example: `MdibVersion(sequenceId=<VALUE>;instanceId=<VALUE>;version=<VALUE>)` for the `MdibVersion` class with attributes `instanceId`, `sequenceId` and `version`.
 
+> See `org.somda.sdc.common.util.ObjectStringifier` to generate `toString()` output that is in accordance with the aforementioned rules.
+
 ## Dependency injection
 
 SDCri utilizes Google Guice for dependency injection.
@@ -116,6 +118,13 @@ public interface DeviceSettings {
     List<URI> getHostingServiceBindings();  
 }
 ```
+
+## Directory/package structure
+
+- Every module *shall* include a package named `guice` (see section _Class bindings with default modules_)
+- Factories are stored in each package as a sub-package named `factory`
+- Helper classes go into a sub-package of each package named `helper`. Helper classes are not intended to be used publicly.
+- Event messages *shall* go into `event` packages (see section _Observer pattern_) 
 
 ## Observer pattern
 
