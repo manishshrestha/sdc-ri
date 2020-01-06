@@ -1,21 +1,54 @@
 package org.somda.sdc.biceps.common;
 
+import com.google.common.collect.ImmutableMap;
 import org.somda.sdc.biceps.model.participant.*;
 import org.somda.sdc.biceps.testutil.MockModelFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class MdibTypeValidatorTest {
     private MdibTypeValidator matcher;
+
+    private static final Map<Class<? extends AbstractDescriptor>, Class<? extends AbstractState>> singleStateMap
+            // Map.of is only defined up to 10 elements, so we need to use the builder
+            = ImmutableMap.<Class<? extends AbstractDescriptor>, Class<? extends AbstractState>>builder()
+            .put(ActivateOperationDescriptor.class, ActivateOperationState.class)
+            .put(AlertConditionDescriptor.class, AlertConditionState.class)
+            .put(AlertSignalDescriptor.class, AlertSignalState.class)
+            .put(AlertSystemDescriptor.class, AlertSystemState.class)
+            .put(BatteryDescriptor.class, BatteryState.class)
+            .put(ClockDescriptor.class, ClockState.class)
+            .put(DistributionSampleArrayMetricDescriptor.class, DistributionSampleArrayMetricState.class)
+            .put(EnumStringMetricDescriptor.class, EnumStringMetricState.class)
+            .put(LimitAlertConditionDescriptor.class, LimitAlertConditionState.class)
+            .put(MdsDescriptor.class, MdsState.class)
+            .put(NumericMetricDescriptor.class, NumericMetricState.class)
+            .put(RealTimeSampleArrayMetricDescriptor.class, RealTimeSampleArrayMetricState.class)
+            .put(ScoDescriptor.class, ScoState.class)
+            .put(SetAlertStateOperationDescriptor.class, SetAlertStateOperationState.class)
+            .put(SetComponentStateOperationDescriptor.class, SetComponentStateOperationState.class)
+            .put(SetContextStateOperationDescriptor.class, SetContextStateOperationState.class)
+            .put(SetMetricStateOperationDescriptor.class, SetMetricStateOperationState.class)
+            .put(SetStringOperationDescriptor.class, SetStringOperationState.class)
+            .put(SetValueOperationDescriptor.class, SetValueOperationState.class)
+            .put(StringMetricDescriptor.class, StringMetricState.class)
+            .put(SystemContextDescriptor.class, SystemContextState.class)
+            .put(VmdDescriptor.class, VmdState.class)
+            .build();
+
+    private static final Map<Class<? extends AbstractDescriptor>, Class<? extends AbstractMultiState>> multiStateMap = Map.of(
+            EnsembleContextDescriptor.class, EnsembleContextState.class,
+            LocationContextDescriptor.class, LocationContextState.class,
+            MeansContextDescriptor.class, MeansContextState.class,
+            OperatorContextDescriptor.class, OperatorContextState.class,
+            PatientContextDescriptor.class, PatientContextState.class,
+            WorkflowContextDescriptor.class, WorkflowContextState.class
+    );
 
     @BeforeEach
     public void setUp() {
@@ -24,90 +57,169 @@ public class MdibTypeValidatorTest {
 
     @Test
     public void matchingClassTypes() {
-        assertThat(matcher.match(AbstractContextDescriptor.class, PatientContextState.class), is(false));
-        assertThat(matcher.match(LocationContextDescriptor.class, AbstractMetricState.class), is(false));
-        assertThat(matcher.match(LocationContextDescriptor.class, PatientContextState.class), is(false));
 
-        assertThat(matcher.match(NumericMetricDescriptor.class, NumericMetricState.class), is(true));
+        singleStateMap.forEach(
+                (descOuter, stateOuter) -> {
+                    singleStateMap.forEach(
+                            (descInner, stateInner) -> {
+                                if (descInner == descOuter) {
+                                    assertTrue(matcher.match(descOuter, stateInner));
+                                } else {
+                                    assertFalse(matcher.match(descOuter, stateInner));
+                                }
+                            }
+                    );
+                    multiStateMap.forEach(
+                            (descInner, stateInner) -> {
+                                assertFalse(matcher.match(descOuter, stateInner));
+                            }
+                    );
+                }
+        );
+
+        multiStateMap.forEach(
+                (descOuter, stateOuter) -> {
+                    multiStateMap.forEach(
+                            (descInner, stateInner) -> {
+                                if (descInner == descOuter) {
+                                    assertTrue(matcher.match(descOuter, stateInner));
+                                } else {
+                                    assertFalse(matcher.match(descOuter, stateInner));
+                                }
+                            }
+                    );
+                    singleStateMap.forEach(
+                            (descInner, stateInner) -> {
+                                assertFalse(matcher.match(descOuter, stateInner));
+                            }
+                    );
+                }
+        );
+
     }
 
     @Test
-    public void matchingSingleStateInstance() throws InstantiationException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
-        final StringMetricDescriptor descriptor = MockModelFactory.createDescriptor("handle", StringMetricDescriptor.class);
-        final StringMetricState state = MockModelFactory.createState("handle", StringMetricState.class);
-        final StringMetricState illegalSecondState = MockModelFactory.createState("handle", StringMetricState.class);
-        final NumericMetricState mismatchingTypeState = MockModelFactory.createState("handle", NumericMetricState.class);
-        final StringMetricState mismatchingHandleState = MockModelFactory.createState("invalid-handle", StringMetricState.class);
+    public <T extends AbstractDescriptor, U extends AbstractState> void matchSingleStateInstance() {
 
-        assertThat(matcher.match(descriptor, state), is(true));
-        assertThat(matcher.match(descriptor, Collections.singletonList(state)), is(true));
+        singleStateMap.forEach(
+                (descOuter, stateOuter) -> {
+                    Class<T> descOuterCast = (Class<T>) descOuter; // to force one warning up here
+                    Class<U> stateOuterCast = (Class<U>) stateOuter;
+                    T descriptor = MockModelFactory.createDescriptor("handle", descOuterCast);
+                    U state = MockModelFactory.createState("handle", stateOuterCast);
+                    U illegalSecondState = MockModelFactory.createState("handle", stateOuterCast);
 
-        assertThat(matcher.match(descriptor, Collections.singletonList(mismatchingTypeState)), is(false));
-        assertThat(matcher.match(descriptor, Collections.singletonList(mismatchingHandleState)), is(false));
-        assertThat(matcher.match(descriptor, Arrays.asList(state, illegalSecondState)), is(false));
-        assertThat(matcher.match(descriptor, Collections.emptyList()), is(false));
+                    U mismatchingHandleState = MockModelFactory.createState("invalid-handle", stateOuterCast);
+
+                    assertTrue(matcher.match(descriptor, state));
+                    assertTrue(matcher.match(descriptor, Collections.singletonList(state)));
+
+                    assertFalse(matcher.match(descriptor, mismatchingHandleState));
+                    assertFalse(matcher.match(descriptor, Collections.singletonList(mismatchingHandleState)));
+                    assertFalse(matcher.match(descriptor, Arrays.asList(state, illegalSecondState)));
+                    assertFalse(matcher.match(descriptor, Collections.emptyList()));
+
+                    singleStateMap.forEach(
+                            (descInner, stateInner) -> {
+                                if (descOuter == descInner) return; // don't compare with the same class
+                                Class<U> stateInnerCast = (Class<U>) stateInner;
+                                U illegalStateType = MockModelFactory.createState("handle", stateInnerCast);
+
+                                assertFalse(matcher.match(descriptor, illegalStateType));
+                                assertFalse(matcher.match(descriptor, Collections.singletonList(illegalStateType)));
+                            }
+                    );
+
+                }
+        );
+
     }
 
     @Test
-    public void matchingMultiStateInstance() throws InstantiationException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
-        final LocationContextDescriptor descriptor = MockModelFactory.createDescriptor("handle", LocationContextDescriptor.class);
-        final List<LocationContextState> states = Arrays.asList(
-                MockModelFactory.createContextState("c1", "handle", LocationContextState.class),
-                MockModelFactory.createContextState("c2", "handle", LocationContextState.class),
-                MockModelFactory.createContextState("c3", "handle", LocationContextState.class));
+    public <T extends AbstractDescriptor, U extends AbstractState, V extends AbstractContextState> void matchingMultiStateInstance() {
+        multiStateMap.forEach(
+                (descOuter, stateOuter) -> {
+                    Class<T> descOuterCast = (Class<T>) descOuter; // to force one warning up here
+                    Class<V> stateOuterCast = (Class<V>) stateOuter;
 
-        final NumericMetricState mismatchingTypeState = MockModelFactory.createState("handle", NumericMetricState.class);
-        final LocationContextState mismatchingHandleState = MockModelFactory.createContextState("c4", "invalid-handle", LocationContextState.class);
+                    T descriptor = MockModelFactory.createDescriptor("handle", descOuterCast);
+                    List<V> states = Arrays.asList(
+                            MockModelFactory.createContextState("c1", "handle", stateOuterCast),
+                            MockModelFactory.createContextState("c2", "handle", stateOuterCast),
+                            MockModelFactory.createContextState("c3", "handle", stateOuterCast)
+                    );
 
-        assertThat(matcher.match(descriptor, states.get(0)), is(true));
-        assertThat(matcher.match(descriptor, states), is(true));
-        assertThat(matcher.match(descriptor, Collections.emptyList()), is(true));
+                    V mismatchingHandleState = MockModelFactory.createContextState("c4", "invalid-handle", stateOuterCast);
+                    final List<V> mismatchingHandleStates = new ArrayList<>(states);
+                    mismatchingHandleStates.add(mismatchingHandleState);
 
-        final List<LocationContextState> mismatchingHandleStates = new ArrayList<>(states);
-        mismatchingHandleStates.add(mismatchingHandleState);
-        assertThat(matcher.match(descriptor, mismatchingHandleStates), is(false));
+                    assertTrue(matcher.match(descriptor, states.get(0)));
+                    assertTrue(matcher.match(descriptor, states));
+                    assertTrue(matcher.match(descriptor, Collections.emptyList()));
 
-        final List<AbstractState> mismatchingTypeStates = Arrays.asList(
-                states.get(0),
-                mismatchingTypeState,
-                states.get(1));
-        assertThat(matcher.match(descriptor, mismatchingTypeStates), is(false));
+                    assertFalse(matcher.match(descriptor, mismatchingHandleStates));
+
+                    multiStateMap.forEach(
+                            (descInner, stateInner) -> {
+                                if (descOuter == descInner) return; // don't compare with the same class
+                                Class<V> stateInnerCast = (Class<V>) stateInner;
+
+                                V mismatchingTypeState = MockModelFactory.createContextState("e1", "handle", stateInnerCast);
+
+                                final List<AbstractState> mismatchingTypeStates = Arrays.asList(
+                                        states.get(0),
+                                        mismatchingTypeState,
+                                        states.get(1));
+                                assertFalse(matcher.match(descriptor, mismatchingTypeStates));
+                            }
+                    );
+
+                    singleStateMap.forEach(
+                            (descInner, stateInner) -> {
+                                if (descOuter == descInner) return; // don't compare with the same class
+                                Class<U> stateInnerCast = (Class<U>) stateInner;
+                                U illegalStateType = MockModelFactory.createState("handle", stateInnerCast);
+
+                                assertFalse(matcher.match(descriptor, illegalStateType));
+                                final List<AbstractState> mismatchingTypeStates = Arrays.asList(
+                                        states.get(0),
+                                        illegalStateType,
+                                        states.get(1));
+                                assertFalse(matcher.match(descriptor, Collections.singletonList(illegalStateType)));
+                            }
+                    );
+
+                }
+        );
     }
 
     @Test
-    public void singleAndMultiStateMatchers() {
-        final List<AbstractDescriptor> singleStateDescriptors = Arrays.asList(
-                new NumericMetricDescriptor(),
-                new SetAlertStateOperationDescriptor(),
-                new SystemContextDescriptor(),
-                new MdsDescriptor());
-        final List<AbstractDescriptor> multiStateDescriptors = Arrays.asList(
-                new PatientContextDescriptor(),
-                new LocationContextDescriptor(),
-                new EnsembleContextDescriptor()
-        );
-        final List<AbstractState> singleStates = Arrays.asList(
-                new NumericMetricState(),
-                new MdsState(),
-                new BatteryState(),
-                new SetValueOperationState()
-        );
-        final List<AbstractState> multiStates = Arrays.asList(
-                new LocationContextState(),
-                new EnsembleContextState(),
-                new WorkflowContextState()
+    public <T extends AbstractDescriptor, U extends AbstractState, V extends AbstractContextState> void singleAndMultiStateMatchers() {
+        singleStateMap.forEach(
+                (descOuter, stateOuter) -> {
+                    Class<T> descOuterCast = (Class<T>) descOuter; // to force one warning up here
+                    Class<U> stateOuterCast = (Class<U>) stateOuter;
+
+                    T descriptor = MockModelFactory.createDescriptor("handle", descOuterCast);
+                    U state = MockModelFactory.createState("handle", stateOuterCast);
+
+                    assertTrue(matcher.isSingleStateDescriptor(descriptor));
+                    assertTrue(matcher.isSingleState(state));
+                }
         );
 
-        singleStateDescriptors.stream().forEach(descriptor ->
-                assertThat(matcher.isSingleStateDescriptor(descriptor), is(true)));
+        multiStateMap.forEach(
+                (descOuter, stateOuter) -> {
+                    Class<T> descOuterCast = (Class<T>) descOuter; // to force one warning up here
+                    Class<V> stateOuterCast = (Class<V>) stateOuter;
 
-        multiStateDescriptors.stream().forEach(descriptor ->
-                assertThat(matcher.isMultiStateDescriptor(descriptor), is(true)));
+                    T descriptor = MockModelFactory.createDescriptor("handle", descOuterCast);
+                    V state = MockModelFactory.createContextState("c", "handle", stateOuterCast);
 
-        singleStates.stream().forEach(state ->
-                assertThat(matcher.isSingleState(state), is(true)));
-
-        multiStates.stream().forEach(state ->
-                assertThat(matcher.isMultiState(state), is(true)));
+                    assertTrue(matcher.isMultiStateDescriptor(descriptor));
+                    assertTrue(matcher.isMultiState(state));
+                }
+        );
     }
+
 }
