@@ -196,7 +196,7 @@ public class MdibTypeValidatorTest {
     }
 
     @Test
-    public <T extends AbstractDescriptor, U extends AbstractState, V extends AbstractContextState> void singleAndMultiStateMatchersGeneric() {
+    public <T extends AbstractDescriptor, U extends AbstractState, V extends AbstractContextState> void singleAndMultiStateMatchers() {
         singleStateMap.forEach(
                 (descOuter, stateOuter) -> {
                     Class<T> descOuterCast = (Class<T>) descOuter; // to force one warning up here
