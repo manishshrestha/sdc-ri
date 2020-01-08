@@ -16,6 +16,7 @@ import org.somda.sdc.glue.common.WsdlConstants;
 import org.somda.sdc.glue.provider.sco.OperationInvocationReceiver;
 import org.somda.sdc.glue.provider.services.HighPriorityServices;
 import org.somda.sdc.glue.provider.services.factory.ServicesFactory;
+import org.somda.sdc.mdpws.common.CommonConstants;
 
 import javax.xml.namespace.QName;
 import java.io.InputStream;
@@ -77,9 +78,7 @@ public class SdcDevice extends AbstractIdleService implements Device, EventSourc
             @Override
             public void setTypes(List<QName> types) {
                 ArrayList<QName> tmpTypes = new ArrayList<>();
-                // todo DGr should be defined in MDPWS
-                final QName TYPE_MEDICAL_DEVICE = new QName("http://standards.ieee.org/downloads/11073/11073-20702-2016", "MedicalDevice");
-                if (types.stream().filter(qName -> qName.equals(TYPE_MEDICAL_DEVICE)).findAny().isEmpty()) {
+                if (types.stream().filter(qName -> qName.equals(CommonConstants.MEDICAL_DEVICE_TYPE)).findAny().isEmpty()) {
                     tmpTypes.add(DpwsConstants.DEVICE_TYPE);
                 }
                 tmpTypes.addAll(types);

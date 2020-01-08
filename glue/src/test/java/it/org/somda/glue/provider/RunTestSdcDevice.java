@@ -23,6 +23,7 @@ import org.somda.sdc.glue.common.MdibXmlIo;
 import org.somda.sdc.glue.common.factory.MdibMapperFactory;
 import org.somda.sdc.glue.provider.SdcDevice;
 import org.somda.sdc.glue.provider.factory.SdcDeviceFactory;
+import org.somda.sdc.mdpws.common.CommonConstants;
 
 import javax.xml.bind.JAXBException;
 import javax.xml.namespace.QName;
@@ -66,7 +67,7 @@ public class RunTestSdcDevice {
             }
         }, localMdibAccess, Collections.EMPTY_LIST);
 
-        sdcDevice.getDiscoveryAccess().setTypes(Arrays.asList(new QName("http://standards.ieee.org/downloads/11073/11073-20702-2016", "MedicalDevice")));
+        sdcDevice.getDiscoveryAccess().setTypes(Arrays.asList(CommonConstants.MEDICAL_DEVICE_TYPE));
 
         final MdibMapperFactory mapperFactory = injector.getInstance(MdibMapperFactory.class);
         final MdibXmlIo mdibXmlIo = injector.getInstance(MdibXmlIo.class);

@@ -8,7 +8,7 @@
             <xjc:javaType name="java.time.Duration" xmlType="xs:duration" adapter="org.somda.sdc.common.util.DurationAdapter" />
         </xjb:globalBindings>
 
-		<!-- Put SOAP 1.2 elements to package org.somda.sdc.biceps.model.participant. -->
+		<!-- Put Participant Model elements to package org.somda.sdc.biceps.model.participant. -->
 		<xjb:schemaBindings>
 			<xjb:package name="org.somda.sdc.biceps.model.participant"/>
 		</xjb:schemaBindings>

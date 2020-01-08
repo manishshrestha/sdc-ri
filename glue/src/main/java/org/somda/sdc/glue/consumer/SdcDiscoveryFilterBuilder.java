@@ -8,6 +8,7 @@ import org.somda.sdc.dpws.client.DiscoveryFilter;
 import org.somda.sdc.dpws.client.DiscoveryFilterBuilder;
 import org.somda.sdc.glue.GlueConstants;
 import org.somda.sdc.glue.common.ContextIdentificationMapper;
+import org.somda.sdc.mdpws.common.CommonConstants;
 
 import javax.annotation.Nullable;
 import javax.xml.namespace.QName;
@@ -21,16 +22,11 @@ import java.util.Optional;
  * <p>
  * The following type is assigned: {@code {http://standards.ieee.org/downloads/11073/11073-20702-2016}MedicalDevice}
  * The following scope is assigned: {@code sdc.mds.pkp:1.2.840.10004.20701.1.1}
- * <p>
- * todo DGr add reference to MDPWS type
  *
  * @see GlueConstants#OID_KEY_PURPOSE_SDC_SERVICE_PROVIDER
  */
 public class SdcDiscoveryFilterBuilder {
     private final DiscoveryFilterBuilder discoveryFilterBuilder;
-
-    // todo DGr should be defined in MDPWS
-    private static final QName TYPE_MEDICAL_DEVICE = new QName("http://standards.ieee.org/downloads/11073/11073-20702-2016", "MedicalDevice");
 
     public static SdcDiscoveryFilterBuilder create() {
         return new SdcDiscoveryFilterBuilder();
@@ -41,7 +37,7 @@ public class SdcDiscoveryFilterBuilder {
      */
     private SdcDiscoveryFilterBuilder() {
         this.discoveryFilterBuilder = new DiscoveryFilterBuilder();
-        this.discoveryFilterBuilder.addType(TYPE_MEDICAL_DEVICE);
+        this.discoveryFilterBuilder.addType(CommonConstants.MEDICAL_DEVICE_TYPE);
         this.discoveryFilterBuilder.addScope(GlueConstants.SCOPE_SDC_PROVIDER.toString());
     }
 
