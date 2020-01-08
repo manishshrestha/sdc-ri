@@ -16,7 +16,8 @@
         <module>biceps-model</module>
         <module>biceps</module>
         <module>glue</module>
-    </modules>
+		<module>mdpws-model</module>
+	</modules>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

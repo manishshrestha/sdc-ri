@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xjb:bindings xmlns:xjb="http://java.sun.com/xml/ns/jaxb" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc" version="2.1">
+	<xjb:bindings schemaLocation="MDPWS.xsd">
+		<!-- Put MDPWS elements to package org.somda.sdc.mdpws.model. -->
+		<xjb:schemaBindings>
+			<xjb:package name="org.somda.sdc.mdpws.model"/>
+		</xjb:schemaBindings>
+
+		<!-- The MDPWS schema comes with plenty of abbreviations which are transformed to well-written names here. -->
+		<xjb:bindings node="//xs:complexType[@name='CtxtValueType']">
+			<xjb:class name="ContextValueType"/>
+		</xjb:bindings>
+		<xjb:bindings node="//xs:complexType[@name='DcValueType']">
+			<xjb:class name="DualChannelValueType"/>
+		</xjb:bindings>
+		<xjb:bindings node="//xs:complexType[@name='DualChannelDefType']">
+			<xjb:class name="DualChannelDefinitionType"/>
+		</xjb:bindings>
+		<xjb:bindings node="//xs:complexType[@name='SafetyReqAssertionType']">
+			<xjb:class name="SafetyRequirementsAssertionType"/>
+		</xjb:bindings>
+		<xjb:bindings node="//xs:complexType[@name='SafetyReqType']">
+			<xjb:class name="SafetyRequirementsType"/>
+		</xjb:bindings>
+		<xjb:bindings node="//xs:element[@name='DualChannelDef']">
+			<xjb:class name="DualChannelDefinition"/>
+			<xjb:property name="DualChannelDefinition"/>
+		</xjb:bindings>
+		<xjb:bindings node="//xs:element[@name='SafetyContextDef']">
+			<xjb:class name="SafetyContextDefinition"/>
+			<xjb:property name="SafetyContextDefinition"/>
+		</xjb:bindings>
+		<xjb:bindings node="//xs:element[@name='DcValue']">
+			<xjb:class name="Value"/>
+			<xjb:property name="Value"/>
+		</xjb:bindings>
+		<xjb:bindings node="//xs:element[@name='CtxtValue']">
+			<xjb:class name="Value"/>
+			<xjb:property name="Value"/>
+		</xjb:bindings>
+	</xjb:bindings>
+</xjb:bindings>
