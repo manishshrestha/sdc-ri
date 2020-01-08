@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xjb:bindings xmlns:xjb="http://java.sun.com/xml/ns/jaxb" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="2.1">
 	<xjb:bindings schemaLocation="BICEPS_MessageModel.xsd">
-		<!-- Put SOAP 1.2 elements to package org.somda.sdc.biceps.model.message. -->
+		<!-- Put Message Model elements to package org.somda.sdc.biceps.model.message. -->
 		<xjb:schemaBindings>
 			<xjb:package name="org.somda.sdc.biceps.model.message"/>
 		</xjb:schemaBindings>
