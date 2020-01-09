@@ -2,6 +2,7 @@ package org.somda.sdc.glue.common;
 
 import org.somda.sdc.biceps.model.participant.InstanceIdentifier;
 import org.somda.sdc.biceps.model.participant.LocationDetail;
+import org.somda.sdc.glue.common.helper.UrlUtf8;
 
 import javax.annotation.Nullable;
 import java.net.URLEncoder;
@@ -25,12 +26,12 @@ public class FallbackInstanceIdentifier {
      * is set.
      */
     public static Optional<InstanceIdentifier> create(LocationDetail locationDetail) {
-        final String extension = encode(locationDetail.getFacility())
-                + DELIMITER + encode(locationDetail.getBuilding())
-                + DELIMITER + encode(locationDetail.getFloor())
-                + DELIMITER + encode(locationDetail.getPoC())
-                + DELIMITER + encode(locationDetail.getRoom())
-                + DELIMITER + encode(locationDetail.getBed());
+        final String extension = UrlUtf8.encode(locationDetail.getFacility())
+                + DELIMITER + UrlUtf8.encode(locationDetail.getBuilding())
+                + DELIMITER + UrlUtf8.encode(locationDetail.getFloor())
+                + DELIMITER + UrlUtf8.encode(locationDetail.getPoC())
+                + DELIMITER + UrlUtf8.encode(locationDetail.getRoom())
+                + DELIMITER + UrlUtf8.encode(locationDetail.getBed());
         if (!extension.equals("/////")) {
             InstanceIdentifier instanceIdentifier = new InstanceIdentifier();
             instanceIdentifier.setRootName(LOCATION_ROOT_SEGMENT);
@@ -39,9 +40,5 @@ public class FallbackInstanceIdentifier {
         }
 
         return Optional.empty();
-    }
-
-    private static String encode(@Nullable String text) {
-        return text == null ? "" : URLEncoder.encode(text, StandardCharsets.UTF_8);
     }
 }

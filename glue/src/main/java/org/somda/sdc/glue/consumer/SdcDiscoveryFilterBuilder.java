@@ -2,11 +2,11 @@ package org.somda.sdc.glue.consumer;
 
 import org.somda.sdc.biceps.model.participant.AbstractComplexDeviceComponentDescriptor;
 import org.somda.sdc.biceps.model.participant.AbstractContextState;
-import org.somda.sdc.biceps.model.participant.CodedValue;
 import org.somda.sdc.biceps.model.participant.ContextAssociation;
 import org.somda.sdc.dpws.client.DiscoveryFilter;
 import org.somda.sdc.dpws.client.DiscoveryFilterBuilder;
 import org.somda.sdc.glue.GlueConstants;
+import org.somda.sdc.glue.common.ComplexDeviceComponentMapper;
 import org.somda.sdc.glue.common.ContextIdentificationMapper;
 import org.somda.sdc.mdpws.common.CommonConstants;
 
@@ -83,10 +83,8 @@ public class SdcDiscoveryFilterBuilder {
      * @return this object.
      */
     public <T extends AbstractComplexDeviceComponentDescriptor> SdcDiscoveryFilterBuilder addDeviceComponent(T component) {
-        if (component.getType() == null) {
-            return this;
-        }
-        createScopeFromCodedValue("sdc.cdc.type", component.getType()).ifPresent(scope -> addScope(scope));
+        ComplexDeviceComponentMapper.fromComplexDeviceComponent(component).ifPresent(scope ->
+                addScope(scope.toString()));
         return this;
     }
 
@@ -122,22 +120,6 @@ public class SdcDiscoveryFilterBuilder {
             }
         }
         throw new RuntimeException(String.format("Reached unknown context: %s", contextState.getClass().toString()));
-    }
-
-    private Optional<String> createScopeFromCodedValue(String scheme, CodedValue codedValue) {
-        try {
-            String codingSystem = codedValue.getCodingSystem();
-            if ("urn:oid:1.2.840.10004.1.1.1.0.0.1".equals(codingSystem)) {
-                codingSystem = null;
-            }
-
-            return Optional.of(scheme + ":" +
-                    "/" + encode(codingSystem) +
-                    "/" + encode(codedValue.getCodingSystemVersion()) +
-                    "/" + encode(codedValue.getCode()));
-        } catch (UnsupportedEncodingException e) {
-            return Optional.empty();
-        }
     }
 
     private static String encode(@Nullable String text) throws UnsupportedEncodingException {
