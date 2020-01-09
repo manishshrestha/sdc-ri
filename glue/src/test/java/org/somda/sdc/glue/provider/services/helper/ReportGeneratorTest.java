@@ -284,11 +284,26 @@ class ReportGeneratorTest {
         assertEquals(0, classes.size());
     }
 
+    @Test
+    void onWaveformChange() throws Exception {
+        final List<RealTimeSampleArrayMetricState> expectedStates = Arrays.asList(
+                MockModelFactory.createState(Handles.METRIC_0, RealTimeSampleArrayMetricState.class),
+                MockModelFactory.createState(Handles.METRIC_1, RealTimeSampleArrayMetricState.class)
+        );
+        eventBus.post(new WaveformStateModificationMessage(mdibAccess, expectedStates));
+        AbstractReport abstractReport = testStateReportHeader(ActionConstants.ACTION_WAVEFORM_STREAM, WaveformStream.class);
+        assertEquals(expectedStates, ((WaveformStream) abstractReport).getState());
+    }
+
     private void testStateReport(String expectedAction,
                                  List<? extends AbstractState> expectedStates,
                                  Class<? extends AbstractReport> reportClass,
                                  String getStatesMethodName) throws Exception {
+        testStateReportHeader(expectedAction, reportClass);
+        testStateReportBody(expectedStates, reportClass, getStatesMethodName);
+    }
 
+    private AbstractReport testStateReportHeader(String expectedAction, Class<? extends AbstractReport> reportClass) throws Exception {
         verify(eventSourceAccess).sendNotification(actualAction.capture(), actualReport.capture());
 
         assertEquals(expectedAction, actualAction.getValue());
@@ -298,7 +313,13 @@ class ReportGeneratorTest {
         assertEquals(expectedMdibVersion.getVersion(), actualNotification.getMdibVersion());
         assertEquals(expectedMdibVersion.getInstanceId(), actualNotification.getInstanceId());
         assertEquals(expectedMdibVersion.getSequenceId().toString(), actualNotification.getSequenceId());
+        return actualNotification;
+    }
 
+    private void testStateReportBody(List<? extends AbstractState> expectedStates,
+                                 Class<? extends AbstractReport> reportClass,
+                                 String getStatesMethodName) throws Exception {
+        final AbstractReport actualNotification = reportClass.cast(actualReport.getValue());
         final Method getReportPart = actualNotification.getClass().getMethod("getReportPart");
         final List<?> reportParts = ((List) getReportPart.invoke(actualNotification));
         assertEquals(1, reportParts.size());
