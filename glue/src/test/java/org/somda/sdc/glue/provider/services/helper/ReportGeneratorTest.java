@@ -317,8 +317,8 @@ class ReportGeneratorTest {
     }
 
     private void testStateReportBody(List<? extends AbstractState> expectedStates,
-                                 Class<? extends AbstractReport> reportClass,
-                                 String getStatesMethodName) throws Exception {
+                                     Class<? extends AbstractReport> reportClass,
+                                     String getStatesMethodName) throws Exception {
         final AbstractReport actualNotification = reportClass.cast(actualReport.getValue());
         final Method getReportPart = actualNotification.getClass().getMethod("getReportPart");
         final List<?> reportParts = ((List) getReportPart.invoke(actualNotification));
