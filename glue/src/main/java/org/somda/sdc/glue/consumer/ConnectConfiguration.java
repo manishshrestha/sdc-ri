@@ -1,6 +1,5 @@
 package org.somda.sdc.glue.consumer;
 
-import org.apache.commons.logging.LogFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.somda.sdc.dpws.service.HostingServiceProxy;
@@ -60,7 +59,7 @@ public class ConnectConfiguration {
      */
     public static final Collection<String> STREAMING_REPORTS = Collections.unmodifiableCollection(Arrays.asList(
             ActionConstants.ACTION_OBSERVED_VALUE_STREAM,
-            ActionConstants.ACTION_WAVEFORM_SERVICE));
+            ActionConstants.ACTION_WAVEFORM_STREAM));
 
     /**
      * Commonly used actions for remote SDC device synchronization.
@@ -73,7 +72,7 @@ public class ConnectConfiguration {
 
     static {
         ArrayList<String> allEpisodicAndWaveformReports = new ArrayList<>(EPISODIC_REPORTS);
-        allEpisodicAndWaveformReports.add(ActionConstants.ACTION_WAVEFORM_SERVICE);
+        allEpisodicAndWaveformReports.add(ActionConstants.ACTION_WAVEFORM_STREAM);
         ALL_EPISODIC_AND_WAVEFORM_REPORTS = Collections.unmodifiableCollection(allEpisodicAndWaveformReports);
     }
 

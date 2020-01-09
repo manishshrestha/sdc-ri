@@ -11,6 +11,7 @@ import org.somda.sdc.biceps.common.event.*;
 import org.somda.sdc.biceps.model.message.*;
 import org.somda.sdc.biceps.model.participant.AbstractState;
 import org.somda.sdc.biceps.model.participant.MdibVersion;
+import org.somda.sdc.biceps.model.participant.RealTimeSampleArrayMetricState;
 import org.somda.sdc.dpws.device.EventSourceAccess;
 import org.somda.sdc.dpws.soap.exception.MarshallingException;
 import org.somda.sdc.dpws.soap.exception.TransportException;
@@ -110,6 +111,14 @@ public class ReportGenerator implements MdibAccessObserver {
                 modificationMessage.getUpdatedEntities());
     }
 
+    @Subscribe
+    void onWaveformChange(WaveformStateModificationMessage modificationMessage) {
+        sendWaveformChange(
+                modificationMessage.getMdibAccess().getMdibVersion(),
+                modificationMessage.getStates()
+        );
+    }
+
     private void dispatchStateEvents(MdibVersion mdibVersion, List<MdibEntity> insertedEntities, List<MdibEntity> updatedEntities) {
         // expectedKeys = 5 because of the following event types
         // 1. alert changes
@@ -153,6 +162,27 @@ public class ReportGenerator implements MdibAccessObserver {
         }
     }
 
+    private void sendWaveformChange(MdibVersion mdibVersion, List<RealTimeSampleArrayMetricState> states) {
+        if (states.isEmpty()) {
+            return;
+        }
+
+        WaveformStream waveformStream = new WaveformStream();
+        populateMdibVersion(waveformStream, mdibVersion);
+
+        waveformStream.setState(states);
+
+        try {
+            eventSourceAccess.sendNotification(ActionConstants.ACTION_WAVEFORM_STREAM, waveformStream);
+        } catch (MarshallingException e) {
+            LOG.warn("Could not marshal message for state action {} with version: {}. {}",
+                    ActionConstants.ACTION_WAVEFORM_STREAM, mdibVersion, e.getMessage());
+        } catch (TransportException e) {
+            LOG.info("Failed to deliver notification for state action {} with version: {}. {}",
+                    ActionConstants.ACTION_WAVEFORM_STREAM, mdibVersion, e.getMessage());
+        }
+    }
+
     private <T, V extends AbstractReport> void sendStateChange(String action,
                                                                MdibVersion mdibVersion,
                                                                Collection<T> states,
@@ -190,10 +220,10 @@ public class ReportGenerator implements MdibAccessObserver {
         try {
             eventSourceAccess.sendNotification(action, report);
         } catch (MarshallingException e) {
-            LOG.warn("Could not marshal message for state action {} with version: {}",
+            LOG.warn("Could not marshal message for state action {} with version: {}. {}",
                     action, mdibVersion, e.getMessage());
         } catch (TransportException e) {
-            LOG.info("Failed to deliver notification for state action {}: {}",
+            LOG.info("Failed to deliver notification for state action {} with version: {}. {}",
                     action, mdibVersion, e.getMessage());
         }
     }
