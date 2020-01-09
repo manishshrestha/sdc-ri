@@ -11,6 +11,7 @@ package org.somda.sdc.biceps.common.access;
  * <li>{@link org.somda.sdc.biceps.common.event.DescriptionModificationMessage}
  * <li>{@link org.somda.sdc.biceps.common.event.MetricStateModificationMessage}
  * <li>{@link org.somda.sdc.biceps.common.event.OperationStateModificationMessage}
+ * <li>{@link org.somda.sdc.biceps.common.event.WaveformStateModificationMessage}
  * </ul>
  */
 public interface MdibAccessObserver {

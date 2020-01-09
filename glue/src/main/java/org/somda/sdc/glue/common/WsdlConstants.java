@@ -68,7 +68,7 @@ public class WsdlConstants {
     public static final String OPERATION_EPISODIC_CONTEXT_REPORT = "EpisodicContextReport";
     public static final String OPERATION_PERIODIC_CONTEXT_REPORT = "PeriodicContextReport";
 
-    public static final String OPERATION_WAVEFORM_SERVICE = "WaveformService";
+    public static final String OPERATION_WAVEFORM_STREAM = "WaveformStream";
     public static final String OPERATION_OBSERVED_VALUE_STREAM = "ObservedValueStream";
 
     public static final String OPERATION_GET_CONTAINMENT_TREE = "GetContainmentTree";

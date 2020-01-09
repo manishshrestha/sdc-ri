@@ -25,7 +25,7 @@ public class SubscribableActionsMapping {
         TARGET_QNAMES.put(ActionConstants.ACTION_PERIODIC_CONTEXT_REPORT, WsdlConstants.PORT_TYPE_CONTEXT_QNAME);
         TARGET_QNAMES.put(ActionConstants.ACTION_EPISODIC_CONTEXT_REPORT, WsdlConstants.PORT_TYPE_CONTEXT_QNAME);
 
-        TARGET_QNAMES.put(ActionConstants.ACTION_WAVEFORM_SERVICE, WsdlConstants.PORT_TYPE_WAVEFORM_QNAME);
+        TARGET_QNAMES.put(ActionConstants.ACTION_WAVEFORM_STREAM, WsdlConstants.PORT_TYPE_WAVEFORM_QNAME);
         TARGET_QNAMES.put(ActionConstants.ACTION_OBSERVED_VALUE_STREAM, WsdlConstants.PORT_TYPE_WAVEFORM_QNAME);
     }
 }
