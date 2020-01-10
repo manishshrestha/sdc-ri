@@ -15,4 +15,8 @@ It is not intended to be used in clinical trials, clinical studies, or in clinic
 
 ## License
 
-SDCri is licensed under the MIT license, see LICENSE file.
+SDCri is licensed under the MIT license, see [LICENSE](LICENSE) file.
+
+## Changelog
+
+The changelog is available [here](CHANGELOG).
