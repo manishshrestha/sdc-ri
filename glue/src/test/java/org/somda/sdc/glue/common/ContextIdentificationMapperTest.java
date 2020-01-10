@@ -46,7 +46,7 @@ class ContextIdentificationMapperTest {
     @Test
     void fromURI() {
         {
-            Optional<InstanceIdentifier> actualInstanceIdentifier = ContextIdentificationMapper.fromURI(URI.create("sdc.ctxt.loc:/biceps.uri.unk/"),
+            Optional<InstanceIdentifier> actualInstanceIdentifier = ContextIdentificationMapper.fromUri(URI.create("sdc.ctxt.loc:/biceps.uri.unk/"),
                     ContextIdentificationMapper.ContextSource.Location);
             assertTrue(actualInstanceIdentifier.isPresent());
             InstanceIdentifier expectedInstanceIdentifier = createInstanceIdentifier(null, null);
@@ -54,7 +54,7 @@ class ContextIdentificationMapperTest {
         }
 
         {
-            Optional<InstanceIdentifier> actualInstanceIdentifier = ContextIdentificationMapper.fromURI(URI.create("sdc.ctxt.loc:/http%3A%2F%2Froot/"),
+            Optional<InstanceIdentifier> actualInstanceIdentifier = ContextIdentificationMapper.fromUri(URI.create("sdc.ctxt.loc:/http%3A%2F%2Froot/"),
                     ContextIdentificationMapper.ContextSource.Location);
             assertTrue(actualInstanceIdentifier.isPresent());
             InstanceIdentifier expectedInstanceIdentifier = createInstanceIdentifier("http://root", null);
@@ -62,7 +62,7 @@ class ContextIdentificationMapperTest {
         }
 
         {
-            Optional<InstanceIdentifier> actualInstanceIdentifier = ContextIdentificationMapper.fromURI(URI.create("sdc.ctxt.pat:/http%3A%2F%2Froot/extension"),
+            Optional<InstanceIdentifier> actualInstanceIdentifier = ContextIdentificationMapper.fromUri(URI.create("sdc.ctxt.pat:/http%3A%2F%2Froot/extension"),
                     ContextIdentificationMapper.ContextSource.Patient);
             assertTrue(actualInstanceIdentifier.isPresent());
             InstanceIdentifier expectedInstanceIdentifier = createInstanceIdentifier("http://root", "extension");
@@ -70,7 +70,7 @@ class ContextIdentificationMapperTest {
         }
 
         {
-            Optional<InstanceIdentifier> actualInstanceIdentifier = ContextIdentificationMapper.fromURI("sdc.ctxt.ens:/http%3A%2F%2Froot/ext%2Fen%C3%96sion%3F",
+            Optional<InstanceIdentifier> actualInstanceIdentifier = ContextIdentificationMapper.fromUri("sdc.ctxt.ens:/http%3A%2F%2Froot/ext%2Fen%C3%96sion%3F",
                     ContextIdentificationMapper.ContextSource.Ensemble);
             assertTrue(actualInstanceIdentifier.isPresent());
             InstanceIdentifier expectedInstanceIdentifier = createInstanceIdentifier("http://root", "ext/enÖsion?");
@@ -78,7 +78,7 @@ class ContextIdentificationMapperTest {
         }
 
         {
-            Optional<InstanceIdentifier> actualInstanceIdentifier = ContextIdentificationMapper.fromURI("sdc.ctxt.loc:/http%3A%2F%2Froot/ext%2Fen%C3%96sion%3F",
+            Optional<InstanceIdentifier> actualInstanceIdentifier = ContextIdentificationMapper.fromUri("sdc.ctxt.loc:/http%3A%2F%2Froot/ext%2Fen%C3%96sion%3F",
                     ContextIdentificationMapper.ContextSource.Patient);
             assertTrue(actualInstanceIdentifier.isEmpty());
         }

@@ -1,5 +1,7 @@
 package org.somda.sdc.glue.consumer;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.somda.sdc.dpws.service.HostingServiceProxy;
 import org.somda.sdc.glue.common.ActionConstants;
 import org.somda.sdc.glue.common.SubscribableActionsMapping;
@@ -14,6 +16,8 @@ import java.util.*;
  * @see SdcRemoteDevicesConnector#connect(HostingServiceProxy, ConnectConfiguration)
  */
 public class ConnectConfiguration {
+    private static final Logger LOG = LoggerFactory.getLogger(ConnectConfiguration.class);
+
     /**
      * List of all port types shipped with SDC.
      */
@@ -55,7 +59,7 @@ public class ConnectConfiguration {
      */
     public static final Collection<String> STREAMING_REPORTS = Collections.unmodifiableCollection(Arrays.asList(
             ActionConstants.ACTION_OBSERVED_VALUE_STREAM,
-            ActionConstants.ACTION_WAVEFORM_SERVICE));
+            ActionConstants.ACTION_WAVEFORM_STREAM));
 
     /**
      * Commonly used actions for remote SDC device synchronization.
@@ -68,7 +72,7 @@ public class ConnectConfiguration {
 
     static {
         ArrayList<String> allEpisodicAndWaveformReports = new ArrayList<>(EPISODIC_REPORTS);
-        allEpisodicAndWaveformReports.add(ActionConstants.ACTION_WAVEFORM_SERVICE);
+        allEpisodicAndWaveformReports.add(ActionConstants.ACTION_WAVEFORM_STREAM);
         ALL_EPISODIC_AND_WAVEFORM_REPORTS = Collections.unmodifiableCollection(allEpisodicAndWaveformReports);
     }
 
@@ -89,7 +93,7 @@ public class ConnectConfiguration {
     /**
      * Creates a configuration that subscribes nothing.
      * <p>
-     * The configuration automatically requests the get service to be existing.
+     * The configuration automatically requires the get service to be existing.
      *
      * @return the new connect configuration.
      */
@@ -100,7 +104,7 @@ public class ConnectConfiguration {
     /**
      * Creates a configuration with predefined actions.
      * <p>
-     * The configuration automatically requests all port types required by the given actions plus the get service.
+     * The configuration automatically requires all port types required by the given actions plus the get service.
      *
      * @param actions the action URIs to be subscribed.
      * @return the new connect configuration.
@@ -149,6 +153,9 @@ public class ConnectConfiguration {
                 qNames.add(qName);
             }
         });
+        if (qNames.isEmpty()) {
+            LOG.warn("No matching QNames found for actions {}", Arrays.toString(actions.toArray()));
+        }
         return qNames;
     }
 }

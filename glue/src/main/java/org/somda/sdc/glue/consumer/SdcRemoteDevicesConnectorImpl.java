@@ -183,12 +183,19 @@ public class SdcRemoteDevicesConnectorImpl implements SdcRemoteDevicesConnector,
             // ignore and proceed with empty context service
         }
 
+        HostedServiceProxy setServiceProxy = null;
         try {
-            final HostedServiceProxy setServiceProxy = findHostedServiceProxy(hostingServiceProxy, WsdlConstants.PORT_TYPE_SET_QNAME);
-            return Optional.of(scoControllerFactory.createScoController(hostingServiceProxy, setServiceProxy, contextServiceProxy));
+            setServiceProxy = findHostedServiceProxy(hostingServiceProxy, WsdlConstants.PORT_TYPE_SET_QNAME);
+
         } catch (PrerequisitesException e) {
+            // ignore and proceed with empty set service
+        }
+
+        if (contextServiceProxy == null && setServiceProxy == null) {
             return Optional.empty();
         }
+
+        return Optional.of(scoControllerFactory.createScoController(hostingServiceProxy, setServiceProxy, contextServiceProxy));
     }
 
     @Override
@@ -212,7 +219,7 @@ public class SdcRemoteDevicesConnectorImpl implements SdcRemoteDevicesConnector,
 
     @Override
     public Optional<SdcRemoteDevice> getConnectedDevice(URI eprAddress) {
-        return Optional.empty();
+        return Optional.ofNullable(sdcRemoteDevices.get(eprAddress));
     }
 
     @Override
@@ -350,8 +357,9 @@ public class SdcRemoteDevicesConnectorImpl implements SdcRemoteDevicesConnector,
 
         if (foundProxy == null) {
             throw new PrerequisitesException(
-                    String.format("Get service not found for remote device with UUID %s and " +
+                    String.format("Service port type %s not found for remote device with UUID %s and " +
                                     "physical target address %s",
+                            portType,
                             hostingServiceProxy.getEndpointReferenceAddress(),
                             hostingServiceProxy.getActiveXAddr()));
         }

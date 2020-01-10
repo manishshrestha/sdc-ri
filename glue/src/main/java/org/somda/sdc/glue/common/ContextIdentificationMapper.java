@@ -1,13 +1,10 @@
 package org.somda.sdc.glue.common;
 
 import org.somda.sdc.biceps.model.participant.*;
+import org.somda.sdc.glue.common.helper.UrlUtf8;
 
-import javax.annotation.Nullable;
-import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URLDecoder;
-import java.net.URLEncoder;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -35,13 +32,9 @@ public class ContextIdentificationMapper {
      */
     public static URI fromInstanceIdentifier(InstanceIdentifier instanceIdentifier,
                                              ContextSource contextSource) {
-        try {
-            final String root = instanceIdentifier.getRootName() == null ? NULL_FLAVOR_ROOT : encode(instanceIdentifier.getRootName());
-            final String extension = encode(instanceIdentifier.getExtensionName());
-            return URI.create(contextSource.getSourceString() + ":/" + root + "/" + extension);
-        } catch (UnsupportedEncodingException e) {
-            throw new RuntimeException(e); // this should never happen...
-        }
+        final String root = instanceIdentifier.getRootName() == null ? NULL_FLAVOR_ROOT : UrlUtf8.encode(instanceIdentifier.getRootName());
+        final String extension = UrlUtf8.encode(instanceIdentifier.getExtensionName());
+        return URI.create(contextSource.getSourceString() + ":/" + root + "/" + extension);
     }
 
     /**
@@ -52,7 +45,7 @@ public class ContextIdentificationMapper {
      * @return the converted instance identifier or {@link Optional#empty()} if either there was a parsing error or
      * the scheme did not match the expected context source.
      */
-    public static Optional<InstanceIdentifier> fromURI(String contextIdentificationUri,
+    public static Optional<InstanceIdentifier> fromUri(String contextIdentificationUri,
                                                        ContextSource expectedContextSource) {
         Matcher matcher = pattern.matcher(contextIdentificationUri);
         if (matcher.matches()) {
@@ -69,13 +62,11 @@ public class ContextIdentificationMapper {
 
             try {
                 final InstanceIdentifier instanceIdentifier = new InstanceIdentifier();
-                final String decodedRoot = new URI(decode(root)).toString();
+                final String decodedRoot = new URI(UrlUtf8.decode(root)).toString();
                 instanceIdentifier.setRootName(decodedRoot.equals(NULL_FLAVOR_ROOT) ? null : decodedRoot);
-                final String decodedExtension = decode(extension);
+                final String decodedExtension = UrlUtf8.decode(extension);
                 instanceIdentifier.setExtensionName(decodedExtension.isEmpty() ? null : decodedExtension);
                 return Optional.of(instanceIdentifier);
-            } catch (UnsupportedEncodingException encodingException) {
-                throw new RuntimeException(encodingException); // this should never happen...
             } catch (URISyntaxException uriSyntaxException) {
                 return Optional.empty();
             }
@@ -90,11 +81,11 @@ public class ContextIdentificationMapper {
      * @param contextIdentificationUri the URI.
      * @param expectedContextSource    the context source.
      * @return the converted instance identifier.
-     * @see #fromURI(String, ContextSource)
+     * @see #fromUri(String, ContextSource)
      */
-    public static Optional<InstanceIdentifier> fromURI(URI contextIdentificationUri,
+    public static Optional<InstanceIdentifier> fromUri(URI contextIdentificationUri,
                                                        ContextSource expectedContextSource) {
-        return fromURI(contextIdentificationUri.toString(), expectedContextSource);
+        return fromUri(contextIdentificationUri.toString(), expectedContextSource);
     }
 
     /**
@@ -134,13 +125,4 @@ public class ContextIdentificationMapper {
             return sourceClass;
         }
     }
-
-    private static String encode(@Nullable String text) throws UnsupportedEncodingException {
-        return text == null ? "" : URLEncoder.encode(text, "UTF-8");
-    }
-
-    private static String decode(String text) throws UnsupportedEncodingException {
-        return URLDecoder.decode(text, "UTF-8");
-    }
-
 }

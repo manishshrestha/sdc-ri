@@ -2,10 +2,11 @@ package org.somda.sdc.glue.common;
 
 import org.somda.sdc.biceps.model.participant.InstanceIdentifier;
 import org.somda.sdc.biceps.model.participant.LocationDetail;
+import org.somda.sdc.glue.common.helper.UrlUtf8;
 
 import javax.annotation.Nullable;
-import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 
 /**
@@ -21,32 +22,23 @@ public class FallbackInstanceIdentifier {
      * Creates an instance identifier based on the fallback algorithm defined in IEEE 11073-20701-2018 section 9.4.1.1.
      *
      * @param locationDetail the location detail used to derive the instance identifier.
-     * @return a converted instance identifier or {@link Optional#empty()} if encoding fails or no location information
+     * @return a converted instance identifier or {@link Optional#empty()} if no location information
      * is set.
      */
     public static Optional<InstanceIdentifier> create(LocationDetail locationDetail) {
-        try {
-            final String extension = encode(locationDetail.getFacility())
-                    + DELIMITER + encode(locationDetail.getBuilding())
-                    + DELIMITER + encode(locationDetail.getFloor())
-                    + DELIMITER + encode(locationDetail.getPoC())
-                    + DELIMITER + encode(locationDetail.getRoom())
-                    + DELIMITER + encode(locationDetail.getBed());
-
-            if (extension.equals("/////")) {
-                return Optional.empty();
-            } else {
-                InstanceIdentifier instanceIdentifier = new InstanceIdentifier();
-                instanceIdentifier.setRootName(LOCATION_ROOT_SEGMENT);
-                instanceIdentifier.setExtensionName(extension);
-                return Optional.of(instanceIdentifier);
-            }
-        } catch (UnsupportedEncodingException e) {
-            return Optional.empty();
+        final String extension = UrlUtf8.encode(locationDetail.getFacility())
+                + DELIMITER + UrlUtf8.encode(locationDetail.getBuilding())
+                + DELIMITER + UrlUtf8.encode(locationDetail.getFloor())
+                + DELIMITER + UrlUtf8.encode(locationDetail.getPoC())
+                + DELIMITER + UrlUtf8.encode(locationDetail.getRoom())
+                + DELIMITER + UrlUtf8.encode(locationDetail.getBed());
+        if (!extension.equals("/////")) {
+            InstanceIdentifier instanceIdentifier = new InstanceIdentifier();
+            instanceIdentifier.setRootName(LOCATION_ROOT_SEGMENT);
+            instanceIdentifier.setExtensionName(extension);
+            return Optional.of(instanceIdentifier);
         }
-    }
 
-    private static String encode(@Nullable String text) throws UnsupportedEncodingException {
-        return text == null ? "" : URLEncoder.encode(text, "UTF-8");
+        return Optional.empty();
     }
 }

@@ -9,6 +9,6 @@ import javax.annotation.Nullable;
 
 public interface ScoControllerFactory {
     ScoController createScoController(@Assisted HostingServiceProxy hostingServiceProxy,
-                                      @Assisted("setServiceProxy") HostedServiceProxy setServiceProxy,
+                                      @Assisted("setServiceProxy") @Nullable HostedServiceProxy setServiceProxy,
                                       @Assisted("contextServiceProxy") @Nullable HostedServiceProxy contextServiceProxy);
 }

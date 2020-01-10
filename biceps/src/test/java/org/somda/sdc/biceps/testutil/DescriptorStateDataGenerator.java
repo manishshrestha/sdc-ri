@@ -91,7 +91,7 @@ public class DescriptorStateDataGenerator {
         deviceComponentState(batteryState);
         batteryState.setCapacityRemaining(baseTypes.measurement(BigDecimal.valueOf(80)));
         batteryState.setChargeCycles(Long.valueOf(100));
-        batteryState.setChargeStatus("charge-status");
+        batteryState.setChargeStatus(BatteryState.ChargeStatus.CH_B);
         batteryState.setCurrent(baseTypes.measurement(BigDecimal.TEN));
         batteryState.setTemperature(baseTypes.measurement(BigDecimal.valueOf(45)));
         batteryState.setVoltage(baseTypes.measurement(BigDecimal.valueOf(8)));
@@ -558,7 +558,7 @@ public class DescriptorStateDataGenerator {
     }
 
     private void operationDescriptor(AbstractOperationDescriptor descriptor, String targetHandle) {
-        descriptor.setAccessLevel("Oth");
+        descriptor.setAccessLevel(AbstractOperationDescriptor.AccessLevel.OTH);
         descriptor.setInvocationEffectiveTimeout(Duration.ofMillis(10000));
         descriptor.setMaxTimeToFinish(Duration.ofMillis(500));
         descriptor.setOperationTarget(targetHandle);
