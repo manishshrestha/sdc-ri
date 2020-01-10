@@ -16,7 +16,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Utility class to map location detail to and from URIs in accordance with .
+ * Utility class to map location detail to and from URIs in accordance with SDC Glue section 9.4.1.2.
  */
 public class LocationDetailQueryMapper {
     private static final Logger LOG = LoggerFactory.getLogger(LocationDetailQueryMapper.class);
