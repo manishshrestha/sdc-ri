@@ -335,8 +335,11 @@ public class EventSourceInterceptor extends AbstractIdleService implements Event
         return expires.isZero() || expires.isNegative();
     }
 
-    private Duration validateExpires(Duration requestedExpires) throws SoapFaultException {
+    private Duration validateExpires(@Nullable Duration requestedExpires) throws SoapFaultException {
         try {
+            if (requestedExpires == null) {
+                return null;
+            }
             if (requestedExpires.isZero() || requestedExpires.isNegative()) {
                 throw new Exception(String.format("Expires is lower equal 0", requestedExpires.toString()));
             } else {
@@ -385,8 +388,8 @@ public class EventSourceInterceptor extends AbstractIdleService implements Event
         return createInvalidMsg(rrObj, "SOAP message is invalid.");
     }
 
-    private Duration grantExpires(Duration expires) {
-        if (maxExpires.compareTo(expires) >= 0) {
+    private Duration grantExpires(@Nullable Duration expires) {
+        if (expires != null && maxExpires.compareTo(expires) >= 0) {
             return expires;
         } else {
             return maxExpires;
