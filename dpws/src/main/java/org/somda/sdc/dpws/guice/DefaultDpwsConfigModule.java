@@ -100,9 +100,6 @@ public class DefaultDpwsConfigModule extends AbstractConfigurationModule {
         bind(WsEventingConfig.NOTIFICATION_STALE_DURATION,
                 Duration.class,
                 Duration.ofSeconds(10));
-        bind(WsEventingConfig.SINK_DEFAULT_REQUESTED_EXPIRES,
-                Duration.class,
-                Duration.ofHours(2));
         bind(WsEventingConfig.SOURCE_MAX_EXPIRES,
                 Duration.class,
                 Duration.ofHours(1));

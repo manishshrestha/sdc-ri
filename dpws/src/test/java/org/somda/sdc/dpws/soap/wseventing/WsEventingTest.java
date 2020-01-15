@@ -3,6 +3,8 @@ package org.somda.sdc.dpws.soap.wseventing;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.inject.AbstractModule;
 import com.google.inject.name.Names;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.somda.sdc.dpws.DpwsTest;
 import org.somda.sdc.dpws.HttpServerRegistryMock;
 import org.somda.sdc.dpws.LocalAddressResolverMock;
@@ -17,8 +19,6 @@ import org.somda.sdc.dpws.soap.*;
 import org.somda.sdc.dpws.soap.factory.RequestResponseClientFactory;
 import org.somda.sdc.dpws.soap.wsaddressing.WsAddressingUtil;
 import org.somda.sdc.dpws.soap.wseventing.factory.WsEventingEventSinkFactory;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 
 import java.net.URI;
 import java.time.Duration;
@@ -78,7 +78,7 @@ public class WsEventingTest extends DpwsTest {
 
     @Test
     public void subscribe() throws Exception {
-        Duration expectedExpires = Duration.ofHours(1);
+        Duration expectedExpires = MAX_EXPIRES;
 
         ListenableFuture<SubscribeResult> resInfo = wseSink.subscribe(Collections.singletonList(ACTION),
                 expectedExpires, notificationSink);
@@ -87,6 +87,10 @@ public class WsEventingTest extends DpwsTest {
 
         Duration tryExpires = MAX_EXPIRES.plusHours(1);
         resInfo = wseSink.subscribe(Collections.singletonList(ACTION), tryExpires, notificationSink);
+        assertThat("Second subscription ID length", resInfo.get().getSubscriptionId().length(), greaterThan(0));
+        assertThat("Seconds granted expires duration", resInfo.get().getGrantedExpires(), is(MAX_EXPIRES));
+
+        resInfo = wseSink.subscribe(Collections.singletonList(ACTION), null, notificationSink);
         assertThat("Second subscription ID length", resInfo.get().getSubscriptionId().length(), greaterThan(0));
         assertThat("Seconds granted expires duration", resInfo.get().getGrantedExpires(), is(MAX_EXPIRES));
     }
@@ -151,19 +155,6 @@ public class WsEventingTest extends DpwsTest {
         } catch (Exception e) {
             assertTrue(true);
         }
-    }
-
-    @Test
-    public void enabledAutoRenew() throws Exception {
-        Duration expectedExpires = Duration.ofSeconds(2);
-        ListenableFuture<SubscribeResult> resInfo = wseSink.subscribe(Collections.singletonList(ACTION),
-                expectedExpires, notificationSink);
-        assertThat("Granted expires duration", resInfo.get().getGrantedExpires(), is(expectedExpires));
-
-        wseSink.enableAutoRenew(resInfo.get().getSubscriptionId());
-        Thread.sleep(2000);
-
-        wseSink.getStatus(resInfo.get().getSubscriptionId());
     }
 
     private class DpwsModuleReplacements extends AbstractModule {
