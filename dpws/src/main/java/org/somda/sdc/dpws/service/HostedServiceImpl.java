@@ -1,14 +1,14 @@
 package org.somda.sdc.dpws.service;
 
+import com.google.common.io.ByteStreams;
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
+import org.somda.sdc.common.util.ObjectUtil;
 import org.somda.sdc.dpws.device.WebService;
 import org.somda.sdc.dpws.model.HostedServiceType;
 import org.somda.sdc.dpws.model.ObjectFactory;
 import org.somda.sdc.dpws.soap.wsaddressing.WsAddressingUtil;
 import org.somda.sdc.dpws.soap.wsaddressing.model.EndpointReferenceType;
-import org.somda.sdc.common.util.ObjectUtil;
-import org.somda.sdc.common.util.StreamUtil;
 
 import javax.xml.namespace.QName;
 import java.io.ByteArrayInputStream;
@@ -40,15 +40,14 @@ public class HostedServiceImpl implements HostedService {
                       @Assisted InputStream wsdlDocumentStream,
                       ObjectFactory dpwsFactory,
                       ObjectUtil objectUtil,
-                      WsAddressingUtil wsaUtil,
-                      StreamUtil streamUtil) throws IOException {
+                      WsAddressingUtil wsaUtil) throws IOException {
         this.serviceId = serviceId;
         this.types = types;
         this.eprs = eprAddresses.parallelStream()
                 .map(wsaUtil::createEprWithAddress)
                 .collect(Collectors.toList());
         this.webService = webService;
-        this.wsdlDocument = new ByteArrayInputStream(streamUtil.getByteArrayFromInputStream(wsdlDocumentStream));
+        this.wsdlDocument = new ByteArrayInputStream(ByteStreams.toByteArray(wsdlDocumentStream));
         this.dpwsFactory = dpwsFactory;
         this.objectUtil = objectUtil;
         this.wsdlLocations = new ArrayList<>();
@@ -61,10 +60,8 @@ public class HostedServiceImpl implements HostedService {
                       @Assisted InputStream wsdlDocumentStream,
                       ObjectFactory dpwsFactory,
                       ObjectUtil objectUtil,
-                      WsAddressingUtil wsaUtil,
-                      StreamUtil streamUtil) throws IOException {
-        this(serviceId, types, new ArrayList<>(), webService, wsdlDocumentStream, dpwsFactory, objectUtil, wsaUtil,
-                streamUtil);
+                      WsAddressingUtil wsaUtil) throws IOException {
+        this(serviceId, types, new ArrayList<>(), webService, wsdlDocumentStream, dpwsFactory, objectUtil, wsaUtil);
     }
 
     @Override

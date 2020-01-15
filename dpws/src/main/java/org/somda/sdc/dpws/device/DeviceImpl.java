@@ -1,5 +1,6 @@
 package org.somda.sdc.dpws.device;
 
+import com.google.common.io.ByteStreams;
 import com.google.common.util.concurrent.AbstractIdleService;
 import com.google.common.util.concurrent.Service;
 import com.google.inject.Provider;
@@ -8,7 +9,6 @@ import com.google.inject.assistedinject.AssistedInject;
 import com.google.inject.name.Named;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.somda.sdc.common.util.StreamUtil;
 import org.somda.sdc.dpws.DpwsConstants;
 import org.somda.sdc.dpws.device.helper.ByteResourceHandler;
 import org.somda.sdc.dpws.device.helper.DiscoveryDeviceUdpMessageProcessor;
@@ -71,7 +71,6 @@ public class DeviceImpl extends AbstractIdleService implements Device, Service, 
     private final Provider<EventSource> eventSourceProvider;
     private final HostedServiceFactory hostedServiceFactory;
     private final HostedServiceInterceptorFactory hostedServiceInterceptorFactory;
-    private final StreamUtil streamUtil;
     private final URI eprAddress;
     private NetworkInterfaceUtil networkInterfaceUtil;
     private HttpUriBuilder httpUriBuilder;
@@ -103,7 +102,6 @@ public class DeviceImpl extends AbstractIdleService implements Device, Service, 
                Provider<EventSource> eventSourceProvider,
                HostedServiceFactory hostedServiceFactory,
                HostedServiceInterceptorFactory hostedServiceInterceptorFactory,
-               StreamUtil streamUtil,
                NetworkInterfaceUtil networkInterfaceUtil,
                HttpUriBuilder httpUriBuilder,
                @Named(DeviceConfig.UNSECURED_ENDPOINT) Boolean unsecuredEndpoint,
@@ -123,7 +121,6 @@ public class DeviceImpl extends AbstractIdleService implements Device, Service, 
         this.eventSourceProvider = eventSourceProvider;
         this.hostedServiceFactory = hostedServiceFactory;
         this.hostedServiceInterceptorFactory = hostedServiceInterceptorFactory;
-        this.streamUtil = streamUtil;
         this.networkInterfaceUtil = networkInterfaceUtil;
         this.httpUriBuilder = httpUriBuilder;
         this.unsecuredEndpoint = unsecuredEndpoint;
@@ -340,7 +337,7 @@ public class DeviceImpl extends AbstractIdleService implements Device, Service, 
         // Retrieve WSDL document bytes
         byte[] tmpWsdlDocBytes;
         try {
-            tmpWsdlDocBytes = streamUtil.getByteArrayFromInputStream(hostedService.getWsdlDocument());
+            tmpWsdlDocBytes = ByteStreams.toByteArray(hostedService.getWsdlDocument());
         } catch (IOException e) {
             LOG.warn("Could not add hosted service properly. IO exception while requesting WSDL document stream.", e);
             return;

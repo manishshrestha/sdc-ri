@@ -1,9 +1,9 @@
 package org.somda.sdc.dpws.crypto;
 
+import com.google.common.io.ByteStreams;
 import com.google.inject.Inject;
 import org.glassfish.grizzly.ssl.SSLContextConfigurator;
 import org.glassfish.jersey.SslConfigurator;
-import org.somda.sdc.common.util.StreamUtil;
 
 import java.io.IOException;
 
@@ -13,11 +13,9 @@ import java.io.IOException;
  * Can either generate default configurations or derive configurations based on {@link CryptoSettings} objects.
  */
 public class CryptoConfigurator {
-    private final StreamUtil streamUtil;
 
     @Inject
-    CryptoConfigurator(StreamUtil streamUtil) {
-        this.streamUtil = streamUtil;
+    CryptoConfigurator() {
     }
 
     /**
@@ -38,7 +36,7 @@ public class CryptoConfigurator {
             sslConfig.keyStoreFile(cryptoSettings.getKeyStoreFile().get().getAbsolutePath());
         } else {
             try {
-                sslConfig.keyStoreBytes(streamUtil.getByteArrayFromInputStream(cryptoSettings.getKeyStoreStream()
+                sslConfig.keyStoreBytes(ByteStreams.toByteArray(cryptoSettings.getKeyStoreStream()
                         .orElseThrow(() -> new IllegalArgumentException("no stream available"))));
             } catch (IOException e) {
                 throw new IllegalArgumentException(
@@ -52,7 +50,7 @@ public class CryptoConfigurator {
             sslConfig.trustStoreFile(cryptoSettings.getTrustStoreFile().get().getAbsolutePath());
         } else {
             try {
-                sslConfig.trustStoreBytes(streamUtil.getByteArrayFromInputStream(cryptoSettings.getTrustStoreStream()
+                sslConfig.trustStoreBytes(ByteStreams.toByteArray(cryptoSettings.getTrustStoreStream()
                         .orElseThrow(() -> new IllegalArgumentException("no stream available"))));
             } catch (IOException e) {
                 throw new IllegalArgumentException(
@@ -92,7 +90,7 @@ public class CryptoConfigurator {
             sslConfig.setKeyStoreFile(cryptoSettings.getKeyStoreFile().get().getAbsolutePath());
         } else {
             try {
-                sslConfig.setKeyStoreBytes(streamUtil.getByteArrayFromInputStream(cryptoSettings.getKeyStoreStream()
+                sslConfig.setKeyStoreBytes(ByteStreams.toByteArray(cryptoSettings.getKeyStoreStream()
                         .orElseThrow(() -> new IllegalArgumentException("no stream available"))));
             } catch (IOException e) {
                 throw new IllegalArgumentException(
@@ -106,7 +104,7 @@ public class CryptoConfigurator {
             sslConfig.setTrustStoreFile(cryptoSettings.getTrustStoreFile().get().getAbsolutePath());
         } else {
             try {
-                sslConfig.setTrustStoreBytes(streamUtil.getByteArrayFromInputStream(cryptoSettings.getTrustStoreStream()
+                sslConfig.setTrustStoreBytes(ByteStreams.toByteArray(cryptoSettings.getTrustStoreStream()
                         .orElseThrow(() -> new IllegalArgumentException("no stream available"))));
             } catch (IOException e) {
                 throw new IllegalArgumentException(
