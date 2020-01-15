@@ -17,6 +17,7 @@ import test.org.somda.common.TestLogging;
 import java.lang.reflect.InvocationTargetException;
 import java.math.BigInteger;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import static org.hamcrest.CoreMatchers.is;
@@ -155,6 +156,9 @@ public class MdibStorageImplTest {
                 Arrays.asList(
                         MockModelFactory.createContextState(Handles.CONTEXT_0, Handles.CONTEXTDESCRIPTOR_0, PatientContextState.class),
                         MockModelFactory.createContextState(Handles.CONTEXT_1, Handles.CONTEXTDESCRIPTOR_0, PatientContextState.class)));
+        descriptionModifications.insert(
+                MockModelFactory.createDescriptor(Handles.CONTEXTDESCRIPTOR_1, LocationContextDescriptor.class)
+        );
 
         mdibStorage.apply(mock(MdibVersion.class), mock(BigInteger.class), mock(BigInteger.class), descriptionModifications);
 
@@ -182,5 +186,18 @@ public class MdibStorageImplTest {
         mdibStorage.apply(mock(MdibVersion.class), mock(BigInteger.class), stateModifications);
 
         testWithVersion(testedHandles, BigInteger.ZERO, BigInteger.ONE);
+
+        // add a MultiState to a descriptor without any previous states
+        stateModifications = MdibStateModifications.create(MdibStateModifications.Type.CONTEXT);
+        stateModifications.add(MockModelFactory.createContextState(Handles.CONTEXT_2, Handles.CONTEXTDESCRIPTOR_1, BigInteger.ONE, LocationContextState.class));
+        mdibStorage.apply(mock(MdibVersion.class), mock(BigInteger.class), stateModifications);
+        assertThat(mdibStorage.getContextStates(Handles.CONTEXTDESCRIPTOR_1, LocationContextState.class).size(), is(1));
+
+        // add a second MultiState
+        stateModifications = MdibStateModifications.create(MdibStateModifications.Type.CONTEXT);
+        stateModifications.add(MockModelFactory.createContextState(Handles.CONTEXT_3, Handles.CONTEXTDESCRIPTOR_1, BigInteger.ONE, LocationContextState.class));
+        mdibStorage.apply(mock(MdibVersion.class), mock(BigInteger.class), stateModifications);
+        assertThat(mdibStorage.getContextStates(Handles.CONTEXTDESCRIPTOR_1, LocationContextState.class).size(), is(2));
+
     }
 }

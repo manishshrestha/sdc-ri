@@ -14,6 +14,7 @@ import org.slf4j.LoggerFactory;
 import javax.annotation.Nullable;
 import java.math.BigInteger;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 /**
@@ -310,13 +311,22 @@ public class MdibStorageImpl implements MdibStorage {
                         .orElse(states -> {
                             final List<AbstractState> newStates = new ArrayList<>();
                             typeValidator.toMultiState(modification).ifPresent(modifiedMultiState ->
-                                    states.forEach(multiState -> {
-                                        if (multiState.getHandle().equals(modifiedMultiState.getHandle())) {
-                                            newStates.add(modifiedMultiState);
-                                        } else {
-                                            newStates.add(multiState);
-                                        }
-                                    }));
+                            {
+                                AtomicBoolean found = new AtomicBoolean(false);
+                                states.forEach(multiState -> {
+                                    if (multiState.getHandle().equals(modifiedMultiState.getHandle())) {
+                                        LOG.debug("Replacing already present MultiState {}", multiState.getHandle());
+                                        newStates.add(modifiedMultiState);
+                                        found.set(true);
+                                    } else {
+                                        newStates.add(multiState);
+                                    }
+                                });
+                                if (!found.get()) {
+                                    LOG.debug("Adding new MultiState {}", modifiedMultiState.getHandle());
+                                    newStates.add(modifiedMultiState);
+                                }
+                            });
                             entities.put(mdibEntity.getHandle(), entityFactory.replaceStates(mdibEntity,
                                     Collections.unmodifiableList(newStates)));
                         });
