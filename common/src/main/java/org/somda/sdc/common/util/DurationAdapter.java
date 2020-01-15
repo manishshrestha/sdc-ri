@@ -35,6 +35,10 @@ public class DurationAdapter extends XmlAdapter<String, Duration> {
 
     @Override
     public Duration unmarshal(String v) {
+        if (v == null) {
+            return null;
+        }
+
         try {
             return Duration.parse(v);
         } catch (Exception e) {
