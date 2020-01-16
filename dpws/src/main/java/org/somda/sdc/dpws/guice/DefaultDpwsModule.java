@@ -217,9 +217,6 @@ public class DefaultDpwsModule extends AbstractModule {
                 .to(EventSourceInterceptor.class);
         bind(LocalAddressResolver.class)
                 .to(LocalAddressResolverImpl.class);
-        bind(ScheduledExecutorService.class)
-                .annotatedWith(AutoRenewExecutor.class)
-                .toInstance(Executors.newScheduledThreadPool(10));
 
         install(new FactoryModuleBuilder()
                 .implement(EventSink.class, EventSinkImpl.class)

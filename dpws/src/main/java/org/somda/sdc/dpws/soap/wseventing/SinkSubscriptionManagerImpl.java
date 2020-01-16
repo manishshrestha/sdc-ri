@@ -15,8 +15,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * Default implementation of {@link SinkSubscriptionManager}.
  */
 public class SinkSubscriptionManagerImpl implements SinkSubscriptionManager {
-    private final AtomicBoolean autoRenew;
-
     private final SubscriptionManagerBase delegate;
 
     @AssistedInject
@@ -24,9 +22,8 @@ public class SinkSubscriptionManagerImpl implements SinkSubscriptionManager {
                                 @Assisted Duration expires,
                                 @Assisted("NotifyTo") EndpointReferenceType notifyTo,
                                 @Assisted("EntTo") EndpointReferenceType endTo) {
-        var subscriptionId = UUID.randomUUID().toString();
+        final var subscriptionId = UUID.randomUUID().toString();
         this.delegate = new SubscriptionManagerBase(notifyTo, endTo, subscriptionId, expires, subscriptionManagerEpr);
-        this.autoRenew = new AtomicBoolean(false);
     }
 
     @Override
@@ -62,15 +59,5 @@ public class SinkSubscriptionManagerImpl implements SinkSubscriptionManager {
     @Override
     public void renew(Duration expires) {
         delegate.renew(expires);
-    }
-
-    @Override
-    public boolean isAutoRenewEnabled() {
-        return autoRenew.get();
-    }
-
-    @Override
-    public void setAutoRenewEnabled(boolean enabled) {
-        autoRenew.set(enabled);
     }
 }

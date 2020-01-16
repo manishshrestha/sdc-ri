@@ -10,13 +10,11 @@ import org.slf4j.LoggerFactory;
 import org.somda.sdc.common.util.JaxbUtil;
 import org.somda.sdc.dpws.DpwsConfig;
 import org.somda.sdc.dpws.DpwsConstants;
-import org.somda.sdc.dpws.guice.AutoRenewExecutor;
 import org.somda.sdc.dpws.guice.NetworkJobThreadPool;
 import org.somda.sdc.dpws.http.HttpServerRegistry;
 import org.somda.sdc.dpws.soap.*;
 import org.somda.sdc.dpws.soap.exception.MalformedSoapMessageException;
 import org.somda.sdc.dpws.soap.exception.MarshallingException;
-import org.somda.sdc.dpws.soap.exception.SoapFaultException;
 import org.somda.sdc.dpws.soap.exception.TransportException;
 import org.somda.sdc.dpws.soap.wsaddressing.WsAddressingUtil;
 import org.somda.sdc.dpws.soap.wsaddressing.model.EndpointReferenceType;
@@ -31,9 +29,11 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URI;
 import java.time.Duration;
-import java.time.LocalDateTime;
 import java.util.*;
-import java.util.concurrent.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -48,7 +48,6 @@ public class EventSinkImpl implements EventSink {
     private static final String EVENT_SINK_END_TO_CONTEXT_PREFIX = EVENT_SINK_CONTEXT_PREFIX + "EndTo/";
     private final RequestResponseClient requestResponseClient;
     private final URI hostAddress;
-    private final Duration autoRenewBeforeExpires;
     private final HttpServerRegistry httpServerRegistry;
     private final ObjectFactory wseFactory;
     private final WsAddressingUtil wsaUtil;
@@ -58,14 +57,12 @@ public class EventSinkImpl implements EventSink {
     private final ListeningExecutorService executorService;
     private final SubscriptionManagerFactory subscriptionManagerFactory;
     private final Map<String, SinkSubscriptionManager> subscriptionManagers;
-    private final ScheduledExecutorService autoRenewExecutor;
     private final Lock subscriptionsLock;
     private final Duration maxWaitForFutures;
 
     @AssistedInject
     EventSinkImpl(@Assisted RequestResponseClient requestResponseClient,
                   @Assisted URI hostAddress,
-                  @Named(WsEventingConfig.AUTO_RENEW_BEFORE_EXPIRES) Duration autoRenewBeforeExpires,
                   @Named(DpwsConfig.MAX_WAIT_FOR_FUTURES) Duration maxWaitForFutures,
                   HttpServerRegistry httpServerRegistry,
                   ObjectFactory wseFactory,
@@ -74,11 +71,9 @@ public class EventSinkImpl implements EventSink {
                   SoapUtil soapUtil,
                   JaxbUtil jaxbUtil,
                   @NetworkJobThreadPool ListeningExecutorService executorService,
-                  @AutoRenewExecutor ScheduledExecutorService autoRenewExecutor,
                   SubscriptionManagerFactory subscriptionManagerFactory) {
         this.requestResponseClient = requestResponseClient;
         this.hostAddress = hostAddress;
-        this.autoRenewBeforeExpires = autoRenewBeforeExpires;
         this.maxWaitForFutures = maxWaitForFutures;
         this.httpServerRegistry = httpServerRegistry;
         this.wseFactory = wseFactory;
@@ -89,7 +84,6 @@ public class EventSinkImpl implements EventSink {
         this.executorService = executorService;
         this.subscriptionManagerFactory = subscriptionManagerFactory;
         this.subscriptionManagers = new ConcurrentHashMap<>();
-        this.autoRenewExecutor = autoRenewExecutor;
         this.subscriptionsLock = new ReentrantLock();
     }
 
