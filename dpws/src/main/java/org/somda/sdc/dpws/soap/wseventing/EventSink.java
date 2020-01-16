@@ -82,22 +82,6 @@ public interface EventSink {
     ListenableFuture unsubscribe(String subscriptionId);
 
     /**
-     * Starts trying to automatically renew a subscription shortly before it is about to expire.
-     *
-     * @param subscriptionId the subscription id obtained in the {@link SubscribeResult} of
-     *                       {@link #subscribe(List, Duration, NotificationSink)}.
-     */
-    void enableAutoRenew(String subscriptionId);
-
-    /**
-     * Stops automatic renew if enabled via {@link #enableAutoRenew(String)}.
-     *
-     * @param subscriptionId the subscription id obtained in the {@link SubscribeResult} of
-     *                       {@link #subscribe(List, Duration, NotificationSink)}.
-     */
-    void disableAutoRenew(String subscriptionId);
-
-    /**
      * Synchronously unsubscribes all subscriptions.
      * <p>
      * Once this function returns, all running subscriptions have been tried to unsubscribe.

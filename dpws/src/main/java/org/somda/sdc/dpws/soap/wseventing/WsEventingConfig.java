@@ -52,15 +52,6 @@ public class WsEventingConfig {
     public static final String NOTIFICATION_STALE_DURATION = "WsEventing.Source.NotificationStaleDuration";
 
     /**
-     * Default expires value to be generated on subscribe requests.
-     * <ul>
-     * <li>Data type: {@linkplain java.time.Duration}
-     * <li>Use: optional
-     * </ul>
-     */
-    public static final String SINK_DEFAULT_REQUESTED_EXPIRES = "WsEventing.Sink.DefaultRequestedExpires";
-
-    /**
      * Default period before trying to auto-renew a subscription.
      * <ul>
      * <li>Data type: {@linkplain java.time.Duration}

@@ -48,7 +48,6 @@ public class EventSinkImpl implements EventSink {
     private static final String EVENT_SINK_END_TO_CONTEXT_PREFIX = EVENT_SINK_CONTEXT_PREFIX + "EndTo/";
     private final RequestResponseClient requestResponseClient;
     private final URI hostAddress;
-    private final Duration defaultRequestExpires;
     private final Duration autoRenewBeforeExpires;
     private final HttpServerRegistry httpServerRegistry;
     private final ObjectFactory wseFactory;
@@ -66,7 +65,6 @@ public class EventSinkImpl implements EventSink {
     @AssistedInject
     EventSinkImpl(@Assisted RequestResponseClient requestResponseClient,
                   @Assisted URI hostAddress,
-                  @Named(WsEventingConfig.SINK_DEFAULT_REQUESTED_EXPIRES) Duration defaultRequestExpires,
                   @Named(WsEventingConfig.AUTO_RENEW_BEFORE_EXPIRES) Duration autoRenewBeforeExpires,
                   @Named(DpwsConfig.MAX_WAIT_FOR_FUTURES) Duration maxWaitForFutures,
                   HttpServerRegistry httpServerRegistry,
@@ -80,7 +78,6 @@ public class EventSinkImpl implements EventSink {
                   SubscriptionManagerFactory subscriptionManagerFactory) {
         this.requestResponseClient = requestResponseClient;
         this.hostAddress = hostAddress;
-        this.defaultRequestExpires = defaultRequestExpires;
         this.autoRenewBeforeExpires = autoRenewBeforeExpires;
         this.maxWaitForFutures = maxWaitForFutures;
         this.httpServerRegistry = httpServerRegistry;
@@ -133,7 +130,7 @@ public class EventSinkImpl implements EventSink {
             filterType.setDialect(DpwsConstants.WS_EVENTING_SUPPORTED_DIALECT);
             filterType.setContent(Collections.singletonList(implodeUriList(actions)));
 
-            subscribeBody.setExpires(Optional.ofNullable(expires).orElse(defaultRequestExpires));
+            subscribeBody.setExpires(expires);
 
             subscribeBody.setFilter(filterType);
 
@@ -258,20 +255,6 @@ public class EventSinkImpl implements EventSink {
     }
 
     @Override
-    public void enableAutoRenew(String subscriptionId) {
-        Optional.ofNullable(subscriptionManagers.get(subscriptionId)).ifPresent(subscriptionManagerProxy -> {
-            subscriptionManagerProxy.setAutoRenewEnabled(true);
-            autoRenewExecutor.submit(new AutoRenewTask(subscriptionManagerProxy));
-        });
-    }
-
-    @Override
-    public void disableAutoRenew(String subscriptionId) {
-        Optional.ofNullable(subscriptionManagers.get(subscriptionId)).ifPresent(subscriptionManagerProxy ->
-                subscriptionManagerProxy.setAutoRenewEnabled(false));
-    }
-
-    @Override
     public void unsubscribeAll() {
         for (SinkSubscriptionManager subscriptionManager : new ArrayList<>(this.subscriptionManagers.values())) {
             final ListenableFuture<Object> future = unsubscribe(subscriptionManager.getSubscriptionId());
@@ -309,70 +292,6 @@ public class EventSinkImpl implements EventSink {
             throw new TransportException(e);
         } catch (JAXBException e) {
             throw new MarshallingException(e);
-        }
-    }
-
-    private class AutoRenewTask implements Runnable {
-        private final SinkSubscriptionManager subscriptionManager;
-
-        AutoRenewTask(SinkSubscriptionManager subscriptionManager) {
-            this.subscriptionManager = subscriptionManager;
-        }
-
-        @Override
-        public void run() {
-            // Quit if auto-renew is no longer enabled for subscription
-            if (!subscriptionManager.isAutoRenewEnabled()) {
-                return;
-            }
-
-            // Compute duration to next schedule
-            LocalDateTime now = LocalDateTime.now();
-            LocalDateTime expires = subscriptionManager.getExpiresTimeout();
-            Duration durationLeft = Duration.between(now, expires);
-            Duration nextSchedule = durationLeft.minus(autoRenewBeforeExpires);
-            if (nextSchedule.isNegative() || nextSchedule.isZero()) {
-                // It's time to try to renew
-                Duration expiresFromRenew;
-                try {
-                    ListenableFuture<Duration> fut = renew(subscriptionManager.getSubscriptionId(), defaultRequestExpires);
-                    expiresFromRenew = fut.get(maxWaitForFutures.toMillis(), TimeUnit.MILLISECONDS);
-                } catch (InterruptedException e) {
-                    LOG.info("Auto-renew failed, because a message could not be properly delivered", e);
-                    return;
-                } catch (ExecutionException e) {
-                    if (e.getCause() instanceof SoapFaultException) {
-                        LOG.warn("Request of renew in {} failed. Subscription id: {}.", this.getClass().getSimpleName(),
-                                subscriptionManager.getSubscriptionId());
-                    } else if (e.getCause() instanceof SubscriptionNotFoundException) {
-                        LOG.info("Auto-renew failed, because subscription with id '{}' does not exist anymore",
-                                subscriptionManager.getSubscriptionId());
-                    } else if (e.getCause() instanceof MarshallingException) {
-                        LOG.info("Auto-renew failed, because a message could not be marshalled or unmarshalled",
-                                e.getCause());
-                    } else if (e.getCause() instanceof TransportException) {
-                        LOG.info("Auto-renew failed, because a message could not be properly delivered", e.getCause());
-                    } else {
-                        LOG.info("Unexpected exception on unsubscribe", e.getCause());
-                    }
-                    return;
-                } catch (TimeoutException e) {
-                    LOG.info("Auto-renew failed, because the renew future did not responded in time", e);
-                    return;
-                }
-
-                // Renew succeed and give new duration until subscription expires again
-                // Based on that duration, compute next schedule duration
-                nextSchedule = expiresFromRenew.minus(autoRenewBeforeExpires);
-                if (nextSchedule.isZero() || nextSchedule.isNegative()) {
-                    // It's time again to renew - submit immediate task
-                    autoRenewExecutor.submit(new AutoRenewTask(subscriptionManager));
-                    return;
-                }
-            }
-
-            // We have some time left to invoke next renew - schedule accordingly with seconds precision
-            autoRenewExecutor.schedule(new AutoRenewTask(subscriptionManager), nextSchedule.getSeconds(), TimeUnit.SECONDS);
         }
     }
 
