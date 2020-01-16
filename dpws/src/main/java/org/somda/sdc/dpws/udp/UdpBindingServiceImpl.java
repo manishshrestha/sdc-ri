@@ -3,6 +3,7 @@ package org.somda.sdc.dpws.udp;
 import com.google.common.util.concurrent.AbstractIdleService;
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
+import org.somda.sdc.dpws.CommunicationLogImpl;
 import org.somda.sdc.dpws.DpwsConstants;
 import org.somda.sdc.dpws.network.NetworkInterfaceUtil;
 import org.slf4j.Logger;
@@ -32,6 +33,7 @@ public class UdpBindingServiceImpl extends AbstractIdleService implements UdpBin
 
     private final int maxMessageSize;
     private NetworkInterfaceUtil networkInterfaceUtil;
+    private final CommunicationLogImpl communicationLog;
     private UdpMessageReceiverCallback receiver;
     private InetAddress networkInterfaceAddress;
 
@@ -40,12 +42,14 @@ public class UdpBindingServiceImpl extends AbstractIdleService implements UdpBin
                           @Assisted @Nullable InetAddress multicastGroup,
                           @Assisted("multicastPort") Integer multicastPort,
                           @Assisted("maxMessageSize") Integer maxMessageSize,
-                          NetworkInterfaceUtil networkInterfaceUtil) {
+                          NetworkInterfaceUtil networkInterfaceUtil,
+                          CommunicationLogImpl communicationLog) {
         this.networkInterface = networkInterface;
         this.multicastGroup = multicastGroup;
         this.socketPort = multicastPort;
         this.maxMessageSize = maxMessageSize;
         this.networkInterfaceUtil = networkInterfaceUtil;
+        this.communicationLog = communicationLog;
         this.multicastSocket = null;
         this.networkInterfaceAddress = null;
     }
@@ -94,6 +98,7 @@ public class UdpBindingServiceImpl extends AbstractIdleService implements UdpBin
 
                     UdpMessage message = new UdpMessage(packet.getData(), packet.getLength(),
                             packet.getAddress().getHostAddress(), packet.getPort());
+                    communicationLog.logUdpMessage(CommunicationLogImpl.UdpDirection.INBOUND, packet.getAddress().getHostAddress(), packet.getPort(), message);
                     receiver.receive(message);
                 }
             });
@@ -111,6 +116,7 @@ public class UdpBindingServiceImpl extends AbstractIdleService implements UdpBin
 
                     UdpMessage message = new UdpMessage(packet.getData(), packet.getLength(),
                             packet.getAddress().getHostAddress(), packet.getPort());
+                    communicationLog.logUdpMessage(CommunicationLogImpl.UdpDirection.INBOUND, packet.getAddress().getHostAddress(), packet.getPort(), message);
                     receiver.receive(message);
                 }
             });
@@ -155,12 +161,15 @@ public class UdpBindingServiceImpl extends AbstractIdleService implements UdpBin
                     message.getLength(), maxMessageSize);
             throw new IOException(msg);
         }
+
         DatagramPacket packet = new DatagramPacket(message.getData(), message.getLength());
 
         if (message.hasTransportData()) {
+            communicationLog.logUdpMessage(CommunicationLogImpl.UdpDirection.OUTBOUND, message.getHost(), message.getPort(), message);
             packet.setAddress(InetAddress.getByName(message.getHost()));
             packet.setPort(message.getPort());
         } else {
+            communicationLog.logUdpMessage(CommunicationLogImpl.UdpDirection.OUTBOUND, multicastGroup.getHostAddress(), socketPort, message);
             packet.setAddress(multicastGroup);
             packet.setPort(socketPort);
         }

@@ -3,18 +3,19 @@ package org.somda.sdc.dpws.factory;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import org.glassfish.jersey.SslConfigurator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.somda.sdc.dpws.CommunicationLogImpl;
 import org.somda.sdc.dpws.TransportBinding;
 import org.somda.sdc.dpws.TransportBindingException;
 import org.somda.sdc.dpws.crypto.CryptoConfig;
-import org.somda.sdc.dpws.crypto.CryptoSettings;
 import org.somda.sdc.dpws.crypto.CryptoConfigurator;
+import org.somda.sdc.dpws.crypto.CryptoSettings;
 import org.somda.sdc.dpws.soap.SoapConstants;
 import org.somda.sdc.dpws.soap.SoapMarshalling;
 import org.somda.sdc.dpws.soap.SoapMessage;
 import org.somda.sdc.dpws.soap.SoapUtil;
 import org.somda.sdc.dpws.soap.exception.SoapFaultException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
 import javax.ws.rs.client.Client;
@@ -40,6 +41,10 @@ public class TransportBindingFactoryImpl implements TransportBindingFactory {
 
     private final SoapMarshalling marshalling;
     private final SoapUtil soapUtil;
+    private final CryptoConfigurator cryptoConfigurator;
+    @Nullable
+    private final CryptoSettings cryptoSettings;
+    private final CommunicationLogImpl communicationLog;
 
     private final Client client;
     private Client securedClient; // if null => no cryptography configured/enabled
@@ -48,9 +53,13 @@ public class TransportBindingFactoryImpl implements TransportBindingFactory {
     TransportBindingFactoryImpl(SoapMarshalling marshalling,
                                 SoapUtil soapUtil,
                                 CryptoConfigurator cryptoConfigurator,
-                                @Nullable @Named(CryptoConfig.CRYPTO_SETTINGS) CryptoSettings cryptoSettings) {
+                                @Nullable @Named(CryptoConfig.CRYPTO_SETTINGS) CryptoSettings cryptoSettings,
+                                CommunicationLogImpl communicationLog) {
         this.marshalling = marshalling;
         this.soapUtil = soapUtil;
+        this.cryptoConfigurator = cryptoConfigurator;
+        this.cryptoSettings = cryptoSettings;
+        this.communicationLog = communicationLog;
         this.client = ClientBuilder.newClient();
 
         configureSecuredClient(cryptoConfigurator, cryptoSettings);
@@ -135,20 +144,24 @@ public class TransportBindingFactoryImpl implements TransportBindingFactory {
 
         @Override
         public SoapMessage onRequestResponse(SoapMessage request) throws TransportBindingException, SoapFaultException {
-            ByteArrayOutputStream os = new ByteArrayOutputStream();
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
             try {
-                marshalling.marshal(request.getEnvelopeWithMappedHeaders(), os);
+                marshalling.marshal(request.getEnvelopeWithMappedHeaders(), outputStream);
             } catch (JAXBException e) {
                 LOG.warn("Marshalling of a message failed: {}", e.getMessage());
-                e.printStackTrace();
                 throw new TransportBindingException(
                         String.format("Sending of a request failed due to marshalling problem: %s", e.getMessage()));
+            }
+
+            if (LOG.isDebugEnabled()) {
+                communicationLog.logHttpMessage(CommunicationLogImpl.HttpDirection.OUTBOUND_REQUEST,
+                        remoteEndpoint.getUri().getHost(), remoteEndpoint.getUri().getPort(), outputStream.toByteArray());
             }
 
             Response response = remoteEndpoint
                     .request(SoapConstants.MEDIA_TYPE_SOAP)
                     .accept(SoapConstants.MEDIA_TYPE_SOAP)
-                    .post(Entity.entity(os.toString(), SoapConstants.MEDIA_TYPE_SOAP));
+                    .post(Entity.entity(outputStream.toString(), SoapConstants.MEDIA_TYPE_SOAP));
 
             if (response.getStatus() >= 300) {
                 throw new TransportBindingException(
@@ -156,10 +169,14 @@ public class TransportBindingFactoryImpl implements TransportBindingFactory {
                                 response.getStatus()));
             }
 
-            InputStream is = response.readEntity(InputStream.class);
+            InputStream inputStream = response.readEntity(InputStream.class);
+            if (LOG.isDebugEnabled()) {
+                inputStream = communicationLog.logHttpMessage(CommunicationLogImpl.HttpDirection.OUTBOUND_RESPONSE,
+                        remoteEndpoint.getUri().getHost(), remoteEndpoint.getUri().getPort(), inputStream);
+            }
             try {
-                if (is.available() > 0) {
-                    SoapMessage msg = soapUtil.createMessage(marshalling.unmarshal(is));
+                if (inputStream.available() > 0) {
+                    SoapMessage msg = soapUtil.createMessage(marshalling.unmarshal(inputStream));
                     if (msg.isFault()) {
                         throw new SoapFaultException(msg);
                     }

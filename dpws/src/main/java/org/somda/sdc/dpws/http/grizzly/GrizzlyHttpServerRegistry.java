@@ -13,6 +13,9 @@ import org.glassfish.grizzly.ssl.SSLContextConfigurator;
 import org.glassfish.grizzly.ssl.SSLEngineConfigurator;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpContainer;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.somda.sdc.dpws.CommunicationLogImpl;
 import org.somda.sdc.dpws.crypto.CryptoConfig;
 import org.somda.sdc.dpws.crypto.CryptoConfigurator;
 import org.somda.sdc.dpws.crypto.CryptoSettings;
@@ -21,10 +24,12 @@ import org.somda.sdc.dpws.http.HttpServerRegistry;
 import org.somda.sdc.dpws.http.HttpUriBuilder;
 import org.somda.sdc.dpws.soap.SoapConstants;
 import org.somda.sdc.dpws.soap.TransportInfo;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.URI;
 import java.net.UnknownHostException;
@@ -44,13 +49,21 @@ public class GrizzlyHttpServerRegistry extends AbstractIdleService implements Ht
     private final Map<String, GrizzlyHttpHandlerBroker> handlerRegistry;
     private final Lock registryLock;
     private final HttpUriBuilder uriBuilder;
+    private final CryptoConfigurator cryptoConfigurator;
+    @Nullable
+    private final CryptoSettings cryptoSettings;
+    private final CommunicationLogImpl communicationLog;
     private SSLContextConfigurator sslContextConfigurator; // null => no support for SSL enabled/configured
 
     @Inject
     GrizzlyHttpServerRegistry(HttpUriBuilder uriBuilder,
                               CryptoConfigurator cryptoConfigurator,
-                              @Nullable @Named(CryptoConfig.CRYPTO_SETTINGS) CryptoSettings cryptoSettings) {
+                              @Nullable @Named(CryptoConfig.CRYPTO_SETTINGS) CryptoSettings cryptoSettings,
+                              CommunicationLogImpl communicationLog) {
         this.uriBuilder = uriBuilder;
+        this.cryptoConfigurator = cryptoConfigurator;
+        this.cryptoSettings = cryptoSettings;
+        this.communicationLog = communicationLog;
         serverRegistry = new HashMap<>();
         handlerRegistry = new HashMap<>();
         registryLock = new ReentrantLock();
@@ -218,7 +231,7 @@ public class GrizzlyHttpServerRegistry extends AbstractIdleService implements Ht
 
     /**
      * Calculate http server map key:
-     *
+     * <p>
      * - scheme is transformed to lower case.
      * - host address is used instead of DNS name.
      *
@@ -231,7 +244,7 @@ public class GrizzlyHttpServerRegistry extends AbstractIdleService implements Ht
 
     /**
      * Calculate http server handler map key:
-     *
+     * <p>
      * - scheme is transformed to lower case.
      * - host address is used instead of DNS name.
      * - context path is appended to base URI.
@@ -257,16 +270,31 @@ public class GrizzlyHttpServerRegistry extends AbstractIdleService implements Ht
 
         @Override
         public void service(Request request, Response response) throws Exception {
+            InputStream input = request.getInputStream();
             if (LOG.isDebugEnabled()) {
                 LOG.debug("Request to {}", requestedUri);
+                input = communicationLog.logHttpMessage(CommunicationLogImpl.HttpDirection.INBOUND_REQUEST,
+                        request.getRemoteHost(), request.getRemotePort(), input);
             }
 
             response.setStatus(HttpStatus.OK_200);
             response.setContentType(mediaType);
 
             try {
-                handler.process(request.getInputStream(), response.getOutputStream(),
+                OutputStream output = response.getOutputStream();
+                if (LOG.isDebugEnabled()) {
+                    output = new ByteArrayOutputStream();
+                }
+
+                handler.process(input, output,
                         new TransportInfo(request.getScheme(), request.getLocalAddr(), request.getLocalPort()));
+
+                if (LOG.isDebugEnabled()) {
+                    final byte[] bytes = ((ByteArrayOutputStream) output).toByteArray();
+                    communicationLog.logHttpMessage(CommunicationLogImpl.HttpDirection.INBOUND_RESPONSE,
+                            request.getRemoteHost(), request.getRemotePort(), new ByteArrayInputStream(bytes));
+                    response.getOutputStream().write(bytes);
+                }
             } catch (Exception e) {
                 response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR_500);
                 response.getOutputStream().flush();
