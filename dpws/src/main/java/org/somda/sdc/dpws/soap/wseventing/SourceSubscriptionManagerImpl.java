@@ -1,134 +1,186 @@
 package org.somda.sdc.dpws.soap.wseventing;
 
-import com.google.common.util.concurrent.AbstractIdleService;
+import com.google.common.util.concurrent.AbstractExecutionThreadService;
+import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.somda.sdc.dpws.factory.TransportBindingFactory;
+import org.somda.sdc.dpws.guice.NetworkJobThreadPool;
+import org.somda.sdc.dpws.soap.NotificationSource;
+import org.somda.sdc.dpws.soap.SoapMessage;
+import org.somda.sdc.dpws.soap.factory.NotificationSourceFactory;
+import org.somda.sdc.dpws.soap.wsaddressing.WsAddressingUtil;
 import org.somda.sdc.dpws.soap.wsaddressing.model.EndpointReferenceType;
+import org.somda.sdc.dpws.soap.wseventing.helper.SubscriptionManagerBase;
 import org.somda.sdc.dpws.soap.wseventing.model.Notification;
 
 import javax.annotation.Nullable;
 import javax.inject.Named;
+import java.net.URI;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Optional;
-import java.util.UUID;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * Default implementation of {@link SourceSubscriptionManager}.
  */
-public class SourceSubscriptionManagerImpl extends AbstractIdleService implements SourceSubscriptionManager {
+public class SourceSubscriptionManagerImpl extends AbstractExecutionThreadService implements SourceSubscriptionManager {
     private static final Logger LOG = LoggerFactory.getLogger(SourceSubscriptionManagerImpl.class);
 
-    private final EndpointReferenceType notifyTo;
-    private final EndpointReferenceType endTo;
-    private LocalDateTime expiresTimeout;
-    private final String subscriptionId;
-    private Duration expires;
-    private final EndpointReferenceType subscriptionManagerEpr;
-    private final Lock expiresLock;
-    private final BlockingQueue<Notification> notificationQueue;
+    private final BlockingQueue<QueueItem> notificationQueue;
+    private final SubscriptionManagerBase delegate;
+    private final NotificationSourceFactory notificationSourceFactory;
+    private final TransportBindingFactory transportBindingFactory;
+    private final WsAddressingUtil wsaUtil;
+    private final ListeningExecutorService networkJobExecutor;
+
+    private NotificationSource notifyToSender;
+    private NotificationSource endToSender;
 
     @AssistedInject
     SourceSubscriptionManagerImpl(@Assisted("SubscriptionManager") EndpointReferenceType subscriptionManagerEpr,
                                   @Assisted Duration expires,
                                   @Assisted("NotifyTo") EndpointReferenceType notifyTo,
                                   @Assisted("EntTo") @Nullable EndpointReferenceType endTo,
-                                  @Named(WsEventingConfig.NOTIFICATION_QUEUE_CAPACITY) Integer notificationQueueCapacity) {
-        this(subscriptionManagerEpr, expires, notifyTo, endTo, null, notificationQueueCapacity);
-    }
-
-    @AssistedInject
-    SourceSubscriptionManagerImpl(@Assisted("SubscriptionManager") EndpointReferenceType subscriptionManagerEpr,
-                                  @Assisted Duration expires,
-                                  @Assisted("NotifyTo") EndpointReferenceType notifyTo,
-                                  @Assisted("EntTo") @Nullable EndpointReferenceType endTo,
-                                  @Assisted("SubscriptionId") @Nullable String subscriptionId,
-                                  @Named(WsEventingConfig.NOTIFICATION_QUEUE_CAPACITY) Integer notificationQueueCapacity) {
-        this.subscriptionId = Optional.ofNullable(subscriptionId).orElse(UUID.randomUUID().toString());
-        this.expiresTimeout = calculateTimeout(expires);
-        this.expires = expires;
-        this.endTo = endTo;
-        this.notifyTo = notifyTo;
-        this.subscriptionManagerEpr = subscriptionManagerEpr;
-        this.expiresLock = new ReentrantLock();
+                                  @Assisted("SubscriptionId") String subscriptionId,
+                                  @Named(WsEventingConfig.NOTIFICATION_QUEUE_CAPACITY) Integer notificationQueueCapacity,
+                                  NotificationSourceFactory notificationSourceFactory,
+                                  TransportBindingFactory transportBindingFactory,
+                                  WsAddressingUtil wsaUtil,
+                                  @NetworkJobThreadPool ListeningExecutorService networkJobExecutor) {
+        this.notificationSourceFactory = notificationSourceFactory;
+        this.transportBindingFactory = transportBindingFactory;
+        this.wsaUtil = wsaUtil;
+        this.networkJobExecutor = networkJobExecutor;
+        this.delegate = new SubscriptionManagerBase(notifyTo, endTo, subscriptionId, expires, subscriptionManagerEpr);
         this.notificationQueue = new ArrayBlockingQueue<>(notificationQueueCapacity);
+
+        this.notifyToSender = null;
+        this.endToSender = null;
     }
 
     @Override
     public String getSubscriptionId() {
-        return subscriptionId;
+        return delegate.getSubscriptionId();
     }
 
     @Override
     public LocalDateTime getExpiresTimeout() {
-        expiresLock.lock();
-        try {
-            return expiresTimeout;
-        } finally {
-            expiresLock.unlock();
-        }
+        return delegate.getExpiresTimeout();
     }
 
     @Override
     public EndpointReferenceType getNotifyTo() {
-        return notifyTo;
+        return delegate.getNotifyTo();
     }
 
     @Override
-    public EndpointReferenceType getEndTo() {
-        return endTo;
+    public Optional<EndpointReferenceType> getEndTo() {
+        return delegate.getEndTo();
     }
 
     @Override
     public Duration getExpires() {
-        expiresLock.lock();
-        try {
-            return expires;
-        } finally {
-            expiresLock.unlock();
-        }
+        return delegate.getExpires();
     }
 
     @Override
     public EndpointReferenceType getSubscriptionManagerEpr() {
-        return subscriptionManagerEpr;
+        return delegate.getSubscriptionManagerEpr();
     }
 
 
     @Override
     public void renew(Duration expires) {
-        expiresLock.lock();
-        try {
-            this.expires = expires;
-            this.expiresTimeout = calculateTimeout(expires);
-        } finally {
-            expiresLock.unlock();
+        delegate.renew(expires);
+    }
+
+    @Override
+    public void offerNotification(Notification notification) {
+        if (!isRunning()) {
+            return;
+        }
+        if (!notificationQueue.offer(new QueueItem(notification))) {
+            stopAsync().awaitTerminated();
         }
     }
 
     @Override
-    public BlockingQueue<Notification> getNotificationQueue() {
-        return notificationQueue;
-    }
+    public void sendToEndTo(SoapMessage endToMessage) {
+        if (endToSender == null) {
+            return;
+        }
 
-    private LocalDateTime calculateTimeout(Duration expires) {
-        LocalDateTime t = LocalDateTime.now();
-        return t.plus(expires);
+        networkJobExecutor.submit(() -> {
+            try {
+                endToSender.sendNotification(endToMessage);
+            } catch (Exception e) {
+                LOG.info("End-to message could not be delivered.", e);
+            }
+        });
     }
 
     @Override
     protected void startUp() {
-        // void
+        final String uri = wsaUtil.getAddressUriAsString(getNotifyTo()).orElseThrow(() ->
+                new RuntimeException("Invalid notify-to EPR"));
+        this.notifyToSender = notificationSourceFactory.createNotificationSource(
+                transportBindingFactory.createTransportBinding(URI.create(uri)));
+
+        if (getEndTo().isPresent()) {
+            final Optional<String> addressUriAsString = wsaUtil.getAddressUriAsString(getEndTo().get());
+            if (addressUriAsString.isPresent()) {
+                this.endToSender = notificationSourceFactory.createNotificationSource(
+                        transportBindingFactory.createTransportBinding(URI.create(uri)));
+            }
+        }
+    }
+
+    @Override
+    protected void run() {
+        while (isRunning()) {
+            try {
+                final QueueItem queueItem = notificationQueue.take();
+                if (queueItem instanceof QueueShutDownItem) {
+                    break;
+                }
+                notifyToSender.sendNotification(queueItem.getNotification().getPayload());
+            } catch (Exception e) {
+                break;
+            }
+        }
     }
 
     @Override
     protected void shutDown() {
         // void
+    }
+
+    @Override
+    protected void triggerShutdown() {
+        notificationQueue.clear();
+        notificationQueue.offer(new QueueShutDownItem());
+    }
+
+    private class QueueItem {
+        public Notification notification;
+
+        QueueItem(@Nullable Notification notification) {
+            this.notification = notification;
+        }
+
+        public Notification getNotification() {
+            return notification;
+        }
+    }
+
+    private class QueueShutDownItem extends QueueItem {
+        QueueShutDownItem() {
+            super(null);
+        }
     }
 }

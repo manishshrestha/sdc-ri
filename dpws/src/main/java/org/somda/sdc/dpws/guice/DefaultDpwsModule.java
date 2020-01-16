@@ -8,7 +8,9 @@ import org.somda.sdc.dpws.DpwsFramework;
 import org.somda.sdc.dpws.DpwsFrameworkImpl;
 import org.somda.sdc.dpws.client.Client;
 import org.somda.sdc.dpws.client.ClientImpl;
-import org.somda.sdc.dpws.client.helper.*;
+import org.somda.sdc.dpws.client.helper.DiscoveredDeviceResolver;
+import org.somda.sdc.dpws.client.helper.DiscoveryClientUdpProcessor;
+import org.somda.sdc.dpws.client.helper.HelloByeAndProbeMatchesObserverImpl;
 import org.somda.sdc.dpws.client.helper.factory.ClientHelperFactory;
 import org.somda.sdc.dpws.device.Device;
 import org.somda.sdc.dpws.device.DeviceImpl;
@@ -35,14 +37,15 @@ import org.somda.sdc.dpws.soap.factory.RequestResponseClientFactory;
 import org.somda.sdc.dpws.soap.factory.SoapMessageFactory;
 import org.somda.sdc.dpws.soap.wsaddressing.WsAddressingClientInterceptor;
 import org.somda.sdc.dpws.soap.wsaddressing.WsAddressingServerInterceptor;
-import org.somda.sdc.dpws.soap.wsdiscovery.*;
+import org.somda.sdc.dpws.soap.wsdiscovery.WsDiscoveryClient;
+import org.somda.sdc.dpws.soap.wsdiscovery.WsDiscoveryClientInterceptor;
+import org.somda.sdc.dpws.soap.wsdiscovery.WsDiscoveryTargetService;
+import org.somda.sdc.dpws.soap.wsdiscovery.WsDiscoveryTargetServiceInterceptor;
 import org.somda.sdc.dpws.soap.wsdiscovery.factory.WsDiscoveryClientFactory;
 import org.somda.sdc.dpws.soap.wsdiscovery.factory.WsDiscoveryTargetServiceFactory;
 import org.somda.sdc.dpws.soap.wseventing.*;
-import org.somda.sdc.dpws.soap.wseventing.factory.NotificationWorkerFactory;
 import org.somda.sdc.dpws.soap.wseventing.factory.SubscriptionManagerFactory;
 import org.somda.sdc.dpws.soap.wseventing.factory.WsEventingEventSinkFactory;
-import org.somda.sdc.dpws.soap.wseventing.helper.NotificationWorker;
 import org.somda.sdc.dpws.soap.wsmetadataexchange.GetMetadataClient;
 import org.somda.sdc.dpws.soap.wsmetadataexchange.GetMetadataClientImpl;
 import org.somda.sdc.dpws.soap.wstransfer.TransferGetClient;
@@ -221,10 +224,6 @@ public class DefaultDpwsModule extends AbstractModule {
         install(new FactoryModuleBuilder()
                 .implement(EventSink.class, EventSinkImpl.class)
                 .build(WsEventingEventSinkFactory.class));
-
-        install(new FactoryModuleBuilder()
-                .implement(NotificationWorker.class, NotificationWorker.class)
-                .build(NotificationWorkerFactory.class));
 
         install(new FactoryModuleBuilder()
                 .implement(SourceSubscriptionManager.class, SourceSubscriptionManagerImpl.class)

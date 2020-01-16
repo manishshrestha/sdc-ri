@@ -5,6 +5,9 @@ import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
 import com.google.inject.name.Named;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.somda.sdc.common.util.JaxbUtil;
 import org.somda.sdc.dpws.DpwsConfig;
 import org.somda.sdc.dpws.DpwsConstants;
 import org.somda.sdc.dpws.guice.AutoRenewExecutor;
@@ -20,9 +23,6 @@ import org.somda.sdc.dpws.soap.wsaddressing.model.EndpointReferenceType;
 import org.somda.sdc.dpws.soap.wseventing.exception.SubscriptionNotFoundException;
 import org.somda.sdc.dpws.soap.wseventing.factory.SubscriptionManagerFactory;
 import org.somda.sdc.dpws.soap.wseventing.model.*;
-import org.somda.sdc.common.util.JaxbUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
 import javax.xml.bind.JAXBException;
@@ -149,16 +149,12 @@ public class EventSinkImpl implements EventSink {
             SubscribeResponse responseBody = soapUtil.getBody(soapResponse, SubscribeResponse.class).orElseThrow(() ->
                     new MalformedSoapMessageException("Cannot read WS-Eventing Subscribe response"));
 
-            // Create subscription manager from response
-            SubscriptionManager subMan = subscriptionManagerFactory.createSourceSubscriptionManager(
+            //  Create subscription manager proxy from response
+            SinkSubscriptionManager sinkSubMan = subscriptionManagerFactory.createSinkSubscriptionManager(
                     responseBody.getSubscriptionManager(),
                     responseBody.getExpires(),
                     notifyToEpr,
-                    endToEpr,
-                    null);
-
-            // Next, create proxy object and put additional required info to it
-            SinkSubscriptionManager sinkSubMan = subscriptionManagerFactory.createSinkSubscriptionManager(subMan);
+                    endToEpr);
 
             // Add sink subscription manager to internal registry
             subscriptionsLock.lock();
@@ -304,7 +300,7 @@ public class EventSinkImpl implements EventSink {
             SoapMessage soapMsg = soapUtil.createMessage(marshalling.unmarshal(in));
             in.close();
             notificationSink.receiveNotification(soapMsg);
-            
+
             // Only close the output stream when the notification has been processed
             // as closing allows the server do dispatch the next request, which will cause concurrency problems
             // for the ultimate receiver of the notifications
