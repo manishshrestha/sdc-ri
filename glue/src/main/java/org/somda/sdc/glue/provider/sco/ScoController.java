@@ -69,7 +69,7 @@ public class ScoController {
         try {
             final ReflectionInfo reflectionInfo = invocationReceivers.get(handle);
             if (reflectionInfo != null) {
-                if (payload.getClass().isAssignableFrom(reflectionInfo.getCallbackMethod().getParameters()[1].getType())) {
+                if (reflectionInfo.getCallbackMethod().getParameters()[1].getType().isAssignableFrom(payload.getClass())) {
                     return (InvocationResponse) reflectionInfo.getCallbackMethod().invoke(reflectionInfo.getReceiver(),
                             context, payload);
                 }
@@ -100,7 +100,9 @@ public class ScoController {
                 }
             }
         } catch (Exception e) {
-            localizedText.setValue("The invocation request could not be forwarded to the ultimate invocation processor");
+            LOG.error("The invocation request could not be forwarded to or processed by the ultimate invocation processor.");
+            LOG.trace("The invocation request could not be forwarded to or processed by the ultimate invocation processor.", e);
+            localizedText.setValue("The invocation request could not be forwarded to or processed by the ultimate invocation processor");
         }
 
         // send error report
