@@ -10,7 +10,6 @@ import java.io.InputStream;
 public class CommunicationLogEmptySink implements CommunicationLog {
     @Override
     public void logHttpMessage(CommunicationLogImpl.HttpDirection direction, String address, Integer port, byte[] httpMessage) {
-        return;
     }
 
     @Override

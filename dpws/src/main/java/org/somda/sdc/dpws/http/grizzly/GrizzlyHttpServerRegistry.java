@@ -15,6 +15,7 @@ import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpContainer;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.somda.sdc.dpws.CommunicationLog;
 import org.somda.sdc.dpws.CommunicationLogImpl;
 import org.somda.sdc.dpws.crypto.CryptoConfig;
 import org.somda.sdc.dpws.crypto.CryptoConfigurator;
@@ -49,20 +50,15 @@ public class GrizzlyHttpServerRegistry extends AbstractIdleService implements Ht
     private final Map<String, GrizzlyHttpHandlerBroker> handlerRegistry;
     private final Lock registryLock;
     private final HttpUriBuilder uriBuilder;
-    private final CryptoConfigurator cryptoConfigurator;
-    @Nullable
-    private final CryptoSettings cryptoSettings;
-    private final CommunicationLogImpl communicationLog;
+    private final CommunicationLog communicationLog;
     private SSLContextConfigurator sslContextConfigurator; // null => no support for SSL enabled/configured
 
     @Inject
     GrizzlyHttpServerRegistry(HttpUriBuilder uriBuilder,
                               CryptoConfigurator cryptoConfigurator,
                               @Nullable @Named(CryptoConfig.CRYPTO_SETTINGS) CryptoSettings cryptoSettings,
-                              CommunicationLogImpl communicationLog) {
+                              CommunicationLog communicationLog) {
         this.uriBuilder = uriBuilder;
-        this.cryptoConfigurator = cryptoConfigurator;
-        this.cryptoSettings = cryptoSettings;
         this.communicationLog = communicationLog;
         serverRegistry = new HashMap<>();
         handlerRegistry = new HashMap<>();
@@ -229,27 +225,25 @@ public class GrizzlyHttpServerRegistry extends AbstractIdleService implements Ht
         throw new RuntimeException(String.format("HTTP server setup failed. Unknown scheme: %s", uri.getScheme()));
     }
 
-    /**
+    /*
      * Calculate http server map key:
-     * <p>
      * - scheme is transformed to lower case.
      * - host address is used instead of DNS name.
      *
-     * @throws UnknownHostException if host address cannot be resolved.
+     * throws UnknownHostException if host address cannot be resolved.
      */
     private String makeMapKey(URI uri) throws UnknownHostException {
         InetAddress address = InetAddress.getByName(uri.getHost());
         return uriBuilder.buildUri(uri.getScheme().toLowerCase(), address.getHostAddress(), uri.getPort()).toString();
     }
 
-    /**
+    /*
      * Calculate http server handler map key:
-     * <p>
      * - scheme is transformed to lower case.
      * - host address is used instead of DNS name.
      * - context path is appended to base URI.
      *
-     * @throws UnknownHostException if host address cannot be resolved.
+     * throws UnknownHostException if host address cannot be resolved.
      */
     private String makeMapKey(URI uri, String contextPath) throws UnknownHostException {
         return makeMapKey(uri) + contextPath;

@@ -3,11 +3,12 @@ package org.somda.sdc.dpws.udp;
 import com.google.common.util.concurrent.AbstractIdleService;
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.somda.sdc.dpws.CommunicationLog;
 import org.somda.sdc.dpws.CommunicationLogImpl;
 import org.somda.sdc.dpws.DpwsConstants;
 import org.somda.sdc.dpws.network.NetworkInterfaceUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
 import java.io.IOException;
@@ -33,7 +34,7 @@ public class UdpBindingServiceImpl extends AbstractIdleService implements UdpBin
 
     private final int maxMessageSize;
     private NetworkInterfaceUtil networkInterfaceUtil;
-    private final CommunicationLogImpl communicationLog;
+    private final CommunicationLog communicationLog;
     private UdpMessageReceiverCallback receiver;
     private InetAddress networkInterfaceAddress;
 
@@ -43,7 +44,7 @@ public class UdpBindingServiceImpl extends AbstractIdleService implements UdpBin
                           @Assisted("multicastPort") Integer multicastPort,
                           @Assisted("maxMessageSize") Integer maxMessageSize,
                           NetworkInterfaceUtil networkInterfaceUtil,
-                          CommunicationLogImpl communicationLog) {
+                          CommunicationLog communicationLog) {
         this.networkInterface = networkInterface;
         this.multicastGroup = multicastGroup;
         this.socketPort = multicastPort;

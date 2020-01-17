@@ -26,11 +26,8 @@ public class CommunicationLogImpl implements CommunicationLog {
     @Inject
     CommunicationLogImpl(@Named(DpwsConfig.COMMUNICATION_LOG_DIRECTORY) File logDirectory) {
         this.logDirectory = null;
-        if (!logDirectory.mkdirs()) {
+        if (!logDirectory.exists() && !logDirectory.mkdirs()) {
             LOG.warn("Could not create communication log directory '{}'", logDirectory.getAbsolutePath());
-        }
-        if (!logDirectory.exists()) {
-            LOG.warn("Communication log directory '{}' does not exist", logDirectory.getAbsolutePath());
         } else {
             this.logDirectory = logDirectory;
         }

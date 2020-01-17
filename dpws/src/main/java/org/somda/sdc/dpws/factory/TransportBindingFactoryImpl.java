@@ -5,6 +5,7 @@ import com.google.inject.name.Named;
 import org.glassfish.jersey.SslConfigurator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.somda.sdc.dpws.CommunicationLog;
 import org.somda.sdc.dpws.CommunicationLogImpl;
 import org.somda.sdc.dpws.TransportBinding;
 import org.somda.sdc.dpws.TransportBindingException;
@@ -41,10 +42,7 @@ public class TransportBindingFactoryImpl implements TransportBindingFactory {
 
     private final SoapMarshalling marshalling;
     private final SoapUtil soapUtil;
-    private final CryptoConfigurator cryptoConfigurator;
-    @Nullable
-    private final CryptoSettings cryptoSettings;
-    private final CommunicationLogImpl communicationLog;
+    private final CommunicationLog communicationLog;
 
     private final Client client;
     private Client securedClient; // if null => no cryptography configured/enabled
@@ -54,11 +52,9 @@ public class TransportBindingFactoryImpl implements TransportBindingFactory {
                                 SoapUtil soapUtil,
                                 CryptoConfigurator cryptoConfigurator,
                                 @Nullable @Named(CryptoConfig.CRYPTO_SETTINGS) CryptoSettings cryptoSettings,
-                                CommunicationLogImpl communicationLog) {
+                                CommunicationLog communicationLog) {
         this.marshalling = marshalling;
         this.soapUtil = soapUtil;
-        this.cryptoConfigurator = cryptoConfigurator;
-        this.cryptoSettings = cryptoSettings;
         this.communicationLog = communicationLog;
         this.client = ClientBuilder.newClient();
 
@@ -149,6 +145,7 @@ public class TransportBindingFactoryImpl implements TransportBindingFactory {
                 marshalling.marshal(request.getEnvelopeWithMappedHeaders(), outputStream);
             } catch (JAXBException e) {
                 LOG.warn("Marshalling of a message failed: {}", e.getMessage());
+                LOG.trace("Marshalling of a message failed", e);
                 throw new TransportBindingException(
                         String.format("Sending of a request failed due to marshalling problem: %s", e.getMessage()));
             }
