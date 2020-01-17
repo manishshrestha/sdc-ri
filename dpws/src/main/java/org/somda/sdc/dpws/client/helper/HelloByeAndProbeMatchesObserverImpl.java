@@ -78,7 +78,7 @@ public class HelloByeAndProbeMatchesObserverImpl implements HelloByeAndProbeMatc
 
             @Override
             public void onFailure(Throwable throwable) {
-                // nothing to do here - log messages were created by DiscoveredDeviceResolver util
+                LOG.trace("Error while processing Hello message.", throwable);
             }
         }, networkJobExecutor);
     }

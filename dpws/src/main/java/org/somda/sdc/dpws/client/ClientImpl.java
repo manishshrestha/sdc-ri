@@ -36,6 +36,8 @@ import javax.annotation.Nullable;
 import java.net.URI;
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -134,10 +136,14 @@ public class ClientImpl extends AbstractIdleService implements Client, Service, 
                         LOG.warn("Received ResolveMatches with empty payload");
                     } else {
                         final ResolveMatchType rm = resolveMatchesType.getResolveMatch();
+                        List<String> scopes = Collections.emptyList();
+                        if (rm.getScopes() != null) {
+                            scopes = rm.getScopes().getValue();
+                        }
                         deviceSettableFuture.set(new DiscoveredDevice(
                                 URI.create(rm.getEndpointReference().getAddress().getValue()),
                                 rm.getTypes(),
-                                rm.getScopes().getValue(),
+                                scopes,
                                 rm.getXAddrs(),
                                 rm.getMetadataVersion()));
                     }
@@ -145,6 +151,7 @@ public class ClientImpl extends AbstractIdleService implements Client, Service, 
 
                 @Override
                 public void onFailure(Throwable throwable) {
+                    LOG.trace("Resolve failed.", throwable);
                     deviceSettableFuture.setException(throwable);
                 }
             }, executorService);
@@ -192,6 +199,7 @@ public class ClientImpl extends AbstractIdleService implements Client, Service, 
 
             @Override
             public void onFailure(Throwable throwable) {
+                LOG.trace("Connecting to endpoint failed.", throwable);
                 hspFuture.setException(throwable);
             }
         }, executorService);
