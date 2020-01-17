@@ -64,7 +64,7 @@ public class ScoController {
 
         final LocalizedText localizedText = participantModelFactory.createLocalizedText();
         localizedText.setLang("en");
-        localizedText.setValue(String.format("There is no ultimate invocation processor available for operation {}", handle));
+        localizedText.setValue(String.format("There is no ultimate invocation processor available for operation %s", handle));
 
         try {
             final ReflectionInfo reflectionInfo = invocationReceivers.get(handle);
