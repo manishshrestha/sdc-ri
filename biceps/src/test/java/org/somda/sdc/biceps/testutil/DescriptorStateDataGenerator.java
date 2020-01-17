@@ -242,7 +242,8 @@ public class DescriptorStateDataGenerator {
         alertSignalState.setActualSignalGenerationDelay(Duration.ofMillis(30));
         alertSignalState.setLocation(AlertSignalPrimaryLocation.LOC);
         alertSignalState.setPresence(AlertSignalPresence.OFF);
-        alertSignalState.setSlot(Long.valueOf(2));
+        alertSignalState.setSlot(2L);
+        alertSignalState.setActivationState(AlertActivation.OFF);
         return alertSignalState;
     }
 
