@@ -130,3 +130,5 @@ buildNumber.properties
 
 # Custom rules
 temp/
+commlog/
+*/commlog/
