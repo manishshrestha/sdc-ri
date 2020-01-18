@@ -23,6 +23,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.xml.namespace.QName;
 import java.time.Duration;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
@@ -80,7 +81,11 @@ public class DiscoveredDeviceResolver {
         }
 
         ProbeMatchType pm = probe.getProbeMatch().get(0);
-        return resolve(pm.getEndpointReference(), pm.getTypes(), pm.getScopes().getValue(), pm.getXAddrs(),
+        List<String> scopes = Collections.emptyList();
+        if (pm.getScopes() != null) {
+            scopes = pm.getScopes().getValue();
+        }
+        return resolve(pm.getEndpointReference(), pm.getTypes(), scopes, pm.getXAddrs(),
                 pm.getMetadataVersion());
     }
 
@@ -96,13 +101,18 @@ public class DiscoveredDeviceResolver {
 
         if (xAddrs.isEmpty() && autoResolve) {
             return sendResolve(epr).flatMap(rms -> Optional.ofNullable(rms.getResolveMatch()).map(rm ->
-                    wsaUtil.getAddressUri(rm.getEndpointReference()).map(uri ->
-                            Optional.of(new DiscoveredDevice(
-                                    uri,
-                                    rm.getTypes(),
-                                    rm.getScopes().getValue(),
-                                    rm.getXAddrs(),
-                                    rm.getMetadataVersion())))
+                    wsaUtil.getAddressUri(rm.getEndpointReference()).map(uri -> {
+                        List<String> rmScopes = Collections.emptyList();
+                        if (rm.getScopes() != null) {
+                            rmScopes = rm.getScopes().getValue();
+                        }
+                        return Optional.of(new DiscoveredDevice(
+                                uri,
+                                rm.getTypes(),
+                                rmScopes,
+                                rm.getXAddrs(),
+                                rm.getMetadataVersion()));
+                    })
                             .orElse(Optional.empty()))
                     .orElse(Optional.empty()));
         }
