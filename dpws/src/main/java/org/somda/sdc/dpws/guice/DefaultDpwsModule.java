@@ -4,11 +4,15 @@ import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.inject.AbstractModule;
 import com.google.inject.assistedinject.FactoryModuleBuilder;
+import org.somda.sdc.dpws.CommunicationLog;
+import org.somda.sdc.dpws.CommunicationLogImpl;
 import org.somda.sdc.dpws.DpwsFramework;
 import org.somda.sdc.dpws.DpwsFrameworkImpl;
 import org.somda.sdc.dpws.client.Client;
 import org.somda.sdc.dpws.client.ClientImpl;
-import org.somda.sdc.dpws.client.helper.*;
+import org.somda.sdc.dpws.client.helper.DiscoveredDeviceResolver;
+import org.somda.sdc.dpws.client.helper.DiscoveryClientUdpProcessor;
+import org.somda.sdc.dpws.client.helper.HelloByeAndProbeMatchesObserverImpl;
 import org.somda.sdc.dpws.client.helper.factory.ClientHelperFactory;
 import org.somda.sdc.dpws.device.Device;
 import org.somda.sdc.dpws.device.DeviceImpl;
@@ -35,7 +39,10 @@ import org.somda.sdc.dpws.soap.factory.RequestResponseClientFactory;
 import org.somda.sdc.dpws.soap.factory.SoapMessageFactory;
 import org.somda.sdc.dpws.soap.wsaddressing.WsAddressingClientInterceptor;
 import org.somda.sdc.dpws.soap.wsaddressing.WsAddressingServerInterceptor;
-import org.somda.sdc.dpws.soap.wsdiscovery.*;
+import org.somda.sdc.dpws.soap.wsdiscovery.WsDiscoveryClient;
+import org.somda.sdc.dpws.soap.wsdiscovery.WsDiscoveryClientInterceptor;
+import org.somda.sdc.dpws.soap.wsdiscovery.WsDiscoveryTargetService;
+import org.somda.sdc.dpws.soap.wsdiscovery.WsDiscoveryTargetServiceInterceptor;
 import org.somda.sdc.dpws.soap.wsdiscovery.factory.WsDiscoveryClientFactory;
 import org.somda.sdc.dpws.soap.wsdiscovery.factory.WsDiscoveryTargetServiceFactory;
 import org.somda.sdc.dpws.soap.wseventing.*;
@@ -94,6 +101,8 @@ public class DefaultDpwsModule extends AbstractModule {
         install(new FactoryModuleBuilder()
                 .implement(UdpBindingService.class, UdpBindingServiceImpl.class)
                 .build(UdpBindingServiceFactory.class));
+
+        bind(CommunicationLog.class).to(CommunicationLogImpl.class).asEagerSingleton();
     }
 
     private void configureService() {

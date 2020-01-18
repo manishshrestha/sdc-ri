@@ -12,6 +12,7 @@ import org.somda.sdc.dpws.soap.wsaddressing.WsAddressingConfig;
 import org.somda.sdc.dpws.soap.wsdiscovery.WsDiscoveryConfig;
 import org.somda.sdc.dpws.soap.wseventing.WsEventingConfig;
 
+import java.io.File;
 import java.time.Duration;
 
 /**
@@ -51,6 +52,10 @@ public class DefaultDpwsConfigModule extends AbstractConfigurationModule {
         bind(DpwsConfig.MAX_ENVELOPE_SIZE,
                 Integer.class,
                 DpwsConstants.MAX_ENVELOPE_SIZE);
+
+        bind(DpwsConfig.COMMUNICATION_LOG_DIRECTORY,
+                File.class,
+                new File("commlog"));
     }
 
     private void configureCryptoConfig() {
