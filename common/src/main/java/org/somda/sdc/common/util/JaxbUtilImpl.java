@@ -51,11 +51,11 @@ public class JaxbUtilImpl implements JaxbUtil {
                 return Optional.ofNullable(elementAsJaxb.getValue());
             }
         } catch (ClassCastException e) {
-            LOG.trace("Object was not a JAXBElement, extracting elements failed but it's alright.");
+            LOG.trace("Object was not a JAXBElement, extracting elements failed but it's alright");
         } catch (Exception e) {
-            LOG.warn("Element could not be extracted. Is the QName {} known to JAXB via context path?. " +
+            LOG.warn("Element could not be extracted. Is the QName {} known to JAXB via context path? " +
                     "Exception message: {}", elementType, e.getMessage());
-            LOG.trace("Element could not be extracted.", e);
+            LOG.trace("Element could not be extracted", e);
             // ignore, empty optional will be returned
         }
         return Optional.empty();

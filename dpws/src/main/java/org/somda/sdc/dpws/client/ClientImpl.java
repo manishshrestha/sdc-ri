@@ -199,7 +199,7 @@ public class ClientImpl extends AbstractIdleService implements Client, Service, 
 
             @Override
             public void onFailure(Throwable throwable) {
-                LOG.trace("Connecting to endpoint failed.", throwable);
+                LOG.trace("Connecting to endpoint {} failed", eprAddress, throwable);
                 hspFuture.setException(throwable);
             }
         }, executorService);

@@ -92,7 +92,7 @@ public class WsAddressingServerInterceptor implements Interceptor {
 
         Optional<AttributedURIType> messageId = msg.getWsAddressingHeader().getMessageId();
         if (messageId.isEmpty()) {
-            LOG.warn("Incoming messages {} had no MessageID element in its header", msg);
+            LOG.warn("Incoming message {} had no MessageID element in its header", msg);
             return;
         }
 
