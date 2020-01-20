@@ -21,6 +21,7 @@ import org.somda.sdc.dpws.device.DeviceSettings;
 import org.somda.sdc.dpws.factory.DpwsFrameworkFactory;
 import org.somda.sdc.dpws.soap.wsaddressing.WsAddressingUtil;
 import org.somda.sdc.dpws.soap.wsaddressing.model.EndpointReferenceType;
+import org.somda.sdc.glue.GlueConstants;
 import org.somda.sdc.glue.common.FallbackInstanceIdentifier;
 import org.somda.sdc.glue.common.LocationDetailQueryMapper;
 import org.somda.sdc.glue.common.MdibXmlIo;
@@ -135,8 +136,6 @@ public class Provider extends AbstractIdleService {
         sdcDevice.stopAsync().awaitTerminated();
     }
 
-
-
     public void setLocation(LocationDetail location) throws PreprocessingException {
         Optional<InstanceIdentifier> newInstanceIdentifier = FallbackInstanceIdentifier.create(location);
         newInstanceIdentifier.ifPresent(
@@ -146,7 +145,10 @@ public class Provider extends AbstractIdleService {
                 });
         LOG.info("Updating location scopes");
         sdcDevice.getDiscoveryAccess().setScopes(
-                List.of(LocationDetailQueryMapper.createWithLocationDetailQuery(this.instanceIdentifier, location))
+                List.of(
+                        LocationDetailQueryMapper.createWithLocationDetailQuery(this.instanceIdentifier, location),
+                        GlueConstants.SCOPE_SDC_PROVIDER
+                )
         );
         if (this.isRunning()) {
             LOG.info("Updating location context");
@@ -338,7 +340,7 @@ public class Provider extends AbstractIdleService {
         var t1 = new Thread(() -> {
             while (true) {
                 try {
-                    Thread.sleep(500);
+                    Thread.sleep(100);
                     provider.changeWaveform(ProviderMdibConstants.HANDLE_WAVEFORM);
                 } catch (InterruptedException | PreprocessingException e) {
                     LOG.error("", e);
