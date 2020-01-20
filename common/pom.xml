@@ -27,11 +27,11 @@
 
 	<dependencies>
 		<!-- Deep copy utility -->
-		<!-- https://mvnrepository.com/artifact/uk.com.robust-it/cloning -->
+		<!-- https://mvnrepository.com/artifact/io.github.kostaskougios/cloning -->
 		<dependency>
-			<groupId>uk.com.robust-it</groupId>
+			<groupId>io.github.kostaskougios</groupId>
 			<artifactId>cloning</artifactId>
-			<version>1.9.12</version>
+			<version>1.10.1</version>
 		</dependency>
 
 		<!-- Immutable facade utility -->
