@@ -10,7 +10,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * Utility class to map between context-based URI on the grammar in
+ * Utility class to map between context-based URIs and instance identifiers.
  * <p>
  * This class implements the grammar defined in IEEE 11073-20701 section 9.4.
  */
@@ -18,7 +18,7 @@ public class ContextIdentificationMapper {
     private static final String NULL_FLAVOR_ROOT = "biceps.uri.unk";
     private static final String SCHEME_PREFIX = "sdc.ctxt.";
 
-    private static final Pattern pattern = Pattern.compile("^(?<contextsource>sdc\\.ctxt\\..+?)\\:\\/" +
+    private static final Pattern PATTERN = Pattern.compile("^(?<contextsource>sdc\\.ctxt\\..+?)\\:\\/" +
                     "(?<root>.*?)\\/" +
                     "(?<extension>.*?)$",
             Pattern.CASE_INSENSITIVE);
@@ -47,7 +47,7 @@ public class ContextIdentificationMapper {
      */
     public static Optional<InstanceIdentifier> fromUri(String contextIdentificationUri,
                                                        ContextSource expectedContextSource) {
-        Matcher matcher = pattern.matcher(contextIdentificationUri);
+        Matcher matcher = PATTERN.matcher(contextIdentificationUri);
         if (matcher.matches()) {
             final String contextSource = matcher.group("contextsource");
             final String root = matcher.group("root");
