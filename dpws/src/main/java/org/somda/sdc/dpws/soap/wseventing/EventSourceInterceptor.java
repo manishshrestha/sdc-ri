@@ -114,6 +114,7 @@ public class EventSourceInterceptor extends AbstractIdleService implements Event
         this.subscriptionRegistry.registerObserver(notificationWorker);
 
         this.notificationWorkerThread = new Thread(notificationWorker);
+        this.notificationWorkerThread.setDaemon(true);
     }
 
     @Override

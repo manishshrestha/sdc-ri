@@ -345,7 +345,6 @@ public class Consumer {
         consumer.getConnector().disconnect(device_uri);
         consumer.shutDown();
 
-        System.exit(0);
     }
 
 }

@@ -2,6 +2,7 @@ package org.somda.sdc.glue.guice;
 
 import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.common.util.concurrent.MoreExecutors;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.inject.AbstractModule;
 import com.google.inject.assistedinject.FactoryModuleBuilder;
 import org.somda.sdc.glue.common.MdibMapper;
@@ -50,10 +51,22 @@ public class DefaultGlueModule extends AbstractModule {
     private void configureConsumer() {
         bind(ListeningExecutorService.class)
                 .annotatedWith(Consumer.class)
-                .toInstance(MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(10)));
+                .toInstance(MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(
+                        10,
+                        new ThreadFactoryBuilder()
+                                .setNameFormat("Consumer-thread-%d")
+                                .setDaemon(true)
+                                .build()
+                        )));
         bind(ScheduledExecutorService.class)
                 .annotatedWith(WatchdogScheduledExecutor.class)
-                .toInstance(Executors.newScheduledThreadPool(10));
+                .toInstance(Executors.newScheduledThreadPool(
+                        10,
+                        new ThreadFactoryBuilder()
+                                .setNameFormat("WatchdogScheduledExecutor-thread-%d")
+                                .setDaemon(true)
+                                .build()
+                        ));
 
         bind(SdcRemoteDevicesConnector.class).to(SdcRemoteDevicesConnectorImpl.class);
 
