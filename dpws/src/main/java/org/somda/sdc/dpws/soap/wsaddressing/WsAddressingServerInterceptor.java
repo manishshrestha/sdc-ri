@@ -85,15 +85,15 @@ public class WsAddressingServerInterceptor implements Interceptor {
 
     // note the synchronized keyword as the server interceptor is shared between different requests in order to
     // facilitate duplicate detection
-    private synchronized void processMessageId(SoapMessage msg) throws SoapFaultException {
+    private synchronized void processMessageId(SoapMessage msg) {
         if (ignoreMessageIds) {
             return;
         }
 
         Optional<AttributedURIType> messageId = msg.getWsAddressingHeader().getMessageId();
         if (messageId.isEmpty()) {
-            throw new SoapFaultException(
-                    addressingFaultFactory.createMessageInformationHeaderRequired(WsAddressingConstants.MESSAGE_ID));
+            LOG.warn("Incoming message {} had no MessageID element in its header", msg);
+            return;
         }
 
         Optional<String> foundMessageId = messageIdCache.parallelStream()

@@ -9,6 +9,7 @@ import org.somda.sdc.biceps.model.participant.AbstractDescriptor;
 import org.somda.sdc.biceps.model.participant.AbstractMultiState;
 import org.somda.sdc.biceps.model.participant.AbstractState;
 import org.somda.sdc.biceps.model.participant.MdsDescriptor;
+import org.somda.sdc.biceps.provider.preprocessing.helper.VersionPair;
 import org.somda.sdc.common.util.ObjectUtil;
 
 import java.math.BigInteger;
@@ -280,34 +281,6 @@ public class VersionHandler implements DescriptionPreprocessingSegment, StatePre
 
     private Optional<VersionPair> getVersionPair(AbstractMultiState state) {
         return Optional.ofNullable(versionsWorkingCopy.get(state.getHandle()));
-    }
-
-    private class VersionPair {
-        private final BigInteger descriptorVersion;
-        private final BigInteger stateVersion;
-
-        VersionPair() {
-            descriptorVersion = BigInteger.valueOf(-1);
-            stateVersion = BigInteger.valueOf(-1);
-        }
-
-        VersionPair(BigInteger descriptorVersion, BigInteger stateVersion) {
-            this.descriptorVersion = descriptorVersion;
-            this.stateVersion = stateVersion;
-        }
-
-        VersionPair(BigInteger descriptorVersion) {
-            this.descriptorVersion = descriptorVersion;
-            this.stateVersion = BigInteger.ZERO;
-        }
-
-        public BigInteger getDescriptorVersion() {
-            return descriptorVersion;
-        }
-
-        public BigInteger getStateVersion() {
-            return stateVersion;
-        }
     }
 
     @Override

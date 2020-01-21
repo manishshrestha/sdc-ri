@@ -4,6 +4,8 @@ import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.inject.AbstractModule;
 import com.google.inject.assistedinject.FactoryModuleBuilder;
+import org.somda.sdc.dpws.CommunicationLog;
+import org.somda.sdc.dpws.CommunicationLogImpl;
 import org.somda.sdc.dpws.DpwsFramework;
 import org.somda.sdc.dpws.DpwsFrameworkImpl;
 import org.somda.sdc.dpws.client.Client;
@@ -97,6 +99,8 @@ public class DefaultDpwsModule extends AbstractModule {
         install(new FactoryModuleBuilder()
                 .implement(UdpBindingService.class, UdpBindingServiceImpl.class)
                 .build(UdpBindingServiceFactory.class));
+
+        bind(CommunicationLog.class).to(CommunicationLogImpl.class).asEagerSingleton();
     }
 
     private void configureService() {

@@ -60,18 +60,4 @@ public class WsAddressingServerInterceptorTest extends DpwsTest {
                 server.receiveRequestResponse(request, response, mockTransportInfo));
     }
 
-    @Test
-    public void testEmptyMessageIdException() {
-        request.getWsAddressingHeader().setMessageId(null);
-
-        try {
-            server.receiveRequestResponse(request, response, mockTransportInfo);
-            fail();
-        } catch (SoapFaultException e) {
-            assertEquals(WsAddressingConstants.MESSAGE_ADDRESSING_HEADER_REQUIRED,
-                    e.getFault().getCode().getSubcode().getValue());
-            assertEquals(1, e.getFault().getDetail().getAny().size());
-            assertEquals(WsAddressingConstants.MESSAGE_ID.toString(), e.getFault().getDetail().getAny().get(0));
-        }
-    }
 }
