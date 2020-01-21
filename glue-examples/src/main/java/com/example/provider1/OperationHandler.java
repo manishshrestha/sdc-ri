@@ -107,10 +107,12 @@ public class OperationHandler implements OperationInvocationReceiver {
 
         try {
             mdibAccess.writeStates(mod);
+            context.sendSuccessfulReport(InvocationState.FIN);
             return context.createSuccessfulResponse(InvocationState.FIN);
         } catch (PreprocessingException e) {
             LOG.error("Error while writing states", e);
             var errorMessage = createLocalizedText("Error while writing states");
+            context.sendUnsucessfulReport(InvocationState.FAIL, InvocationError.UNSPEC, List.of(errorMessage));
             return context.createUnsucessfulResponse(InvocationState.FAIL, InvocationError.UNSPEC, List.of(errorMessage));
         }
     }
@@ -170,10 +172,12 @@ public class OperationHandler implements OperationInvocationReceiver {
 
         try {
             mdibAccess.writeStates(mod);
+            context.sendSuccessfulReport(InvocationState.FIN);
             return context.createSuccessfulResponse(InvocationState.FIN);
         } catch (PreprocessingException e) {
             LOG.error("Error while writing states", e);
             var errorMessage = createLocalizedText("Error while writing states");
+            context.sendUnsucessfulReport(InvocationState.FAIL, InvocationError.UNSPEC, List.of(errorMessage));
             return context.createUnsucessfulResponse(InvocationState.FAIL, InvocationError.UNSPEC, List.of(errorMessage));
         }
     }
@@ -198,8 +202,8 @@ public class OperationHandler implements OperationInvocationReceiver {
         context.sendSuccessfulReport(InvocationState.START);
         LOG.debug("Received Activate for {}", ProviderMdibConstants.HANDLE_ACTIVATE);
 
+        context.sendSuccessfulReport(InvocationState.FIN);
         return context.createSuccessfulResponse(mdibAccess.getMdibVersion(), InvocationState.FIN);
-
     }
 
 }
