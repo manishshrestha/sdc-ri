@@ -174,6 +174,15 @@ public class Provider extends AbstractIdleService {
         }
     }
 
+    private void addMetricQuality(AbstractMetricValue val) {
+        if (val.getMetricQuality() == null) {
+            var qual = new AbstractMetricValue.MetricQuality();
+            qual.setMode(GenerationMode.DEMO);
+            qual.setValidity(MeasurementValidity.VLD);
+            val.setMetricQuality(qual);
+        }
+    }
+
     public void changeWaveform(String handle) throws PreprocessingException {
         final MdibStateModifications modifications = MdibStateModifications.create(MdibStateModifications.Type.WAVEFORM);
 
@@ -223,12 +232,8 @@ public class Provider extends AbstractIdleService {
         }
         val.setDeterminationTime(Timestamp.now());
 
-        var quality = new AbstractMetricValue.MetricQuality();
-        quality.setValidity(MeasurementValidity.VLD);
-        quality.setMode(GenerationMode.REAL);
-        val.setMetricQuality(quality);
+        addMetricQuality(val);
 
-        val.setMetricQuality(quality);
         clone.setMetricValue(val);
         mdibAccess.writeStates(MdibStateModifications.create(MdibStateModifications.Type.METRIC).add(clone));
     }
@@ -249,6 +254,9 @@ public class Provider extends AbstractIdleService {
             val.setValue("inital VALUE");
         }
         val.setDeterminationTime(Timestamp.now());
+
+        addMetricQuality(val);
+
         clone.setMetricValue(val);
         mdibAccess.writeStates(MdibStateModifications.create(MdibStateModifications.Type.METRIC).add(clone));
     }
@@ -285,6 +293,7 @@ public class Provider extends AbstractIdleService {
             val.setValue(allowedValue.get(0));
         }
         val.setDeterminationTime(Timestamp.now());
+        addMetricQuality(val);
         clone.setMetricValue(val);
         mdibAccess.writeStates(MdibStateModifications.create(MdibStateModifications.Type.METRIC).add(clone));
     }

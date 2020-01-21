@@ -174,7 +174,7 @@
                                 <pm:ConceptDescription Lang="en-US">no unit</pm:ConceptDescription>
                             </pm:Unit>
                         </pm:Metric>
-                        <pm:Metric Handle="rtsa.ch0.vmd0" MetricCategory="Msrmt" MetricAvailability="Cont" xsi:type="pm:RealTimeSampleArrayMetricDescriptor" Resolution="1" SamplePeriod="1">
+                        <pm:Metric Handle="rtsa.ch0.vmd0" MetricCategory="Msrmt" MetricAvailability="Cont" xsi:type="pm:RealTimeSampleArrayMetricDescriptor" Resolution="1" SamplePeriod="PT1S">
                             <pm:Type Code="196076">
                                 <pm:ConceptDescription Lang="en-US">dummy waveform</pm:ConceptDescription>
                             </pm:Type>
