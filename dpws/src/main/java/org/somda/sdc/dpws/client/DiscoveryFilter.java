@@ -1,6 +1,7 @@
 package org.somda.sdc.dpws.client;
 
 import javax.xml.namespace.QName;
+import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -8,8 +9,8 @@ import java.util.concurrent.atomic.AtomicInteger;
  * Filter information to be used by {@link Client#probe(DiscoveryFilter)}.
  */
 public class DiscoveryFilter {
-    private final List<QName> types;
-    private final List<String> scopes;
+    private final Collection<QName> types;
+    private final Collection<String> scopes;
     private final String discoveryId;
 
     private static final AtomicInteger discoveryIdCounter = new AtomicInteger(0);
@@ -21,17 +22,17 @@ public class DiscoveryFilter {
      * @param scopes the scopes to match.
      * @see <a href="http://docs.oasis-open.org/ws-dd/discovery/1.1/os/wsdd-discovery-1.1-spec-os.html#_Toc234231831">WS-Discovery Probe</a>
      */
-    public DiscoveryFilter(List<QName> types, List<String> scopes) {
+    public DiscoveryFilter(Collection<QName> types, Collection<String> scopes) {
         this.types = types;
         this.scopes = scopes;
         this.discoveryId = Integer.toString(discoveryIdCounter.incrementAndGet());
     }
 
-    public List<QName> getTypes() {
+    public Collection<QName> getTypes() {
         return types;
     }
 
-    public List<String> getScopes() {
+    public Collection<String> getScopes() {
         return scopes;
     }
 
