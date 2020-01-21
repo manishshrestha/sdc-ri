@@ -343,7 +343,7 @@ public class Provider extends AbstractIdleService {
                     Thread.sleep(100);
                     provider.changeWaveform(ProviderMdibConstants.HANDLE_WAVEFORM);
                 } catch (InterruptedException | PreprocessingException e) {
-                    LOG.error("", e);
+                    LOG.error("Thread loop stopping", e);
                     break;
                 }
             }
@@ -360,7 +360,7 @@ public class Provider extends AbstractIdleService {
                     provider.changeEnumStringMetric(ProviderMdibConstants.HANDLE_ENUM_DYNAMIC);
                     provider.changeAlertStuff(ProviderMdibConstants.HANDLE_ALERT_SIGNAL, ProviderMdibConstants.HANDLE_ALERT_CONDITION);
                 } catch (InterruptedException | PreprocessingException e) {
-                    LOG.error("", e);
+                    LOG.error("Thread loop stopping", e);
                     break;
                 }
             }

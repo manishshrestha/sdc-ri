@@ -62,7 +62,7 @@ public class Consumer {
     private static final Duration MAX_WAIT = Duration.ofSeconds(11);
     private static final long MAX_WAIT_SEC = MAX_WAIT.getSeconds();
 
-    private static final long REPORT_TIMEOUT = Duration.ofSeconds(30).getSeconds();
+    private static final long REPORT_TIMEOUT = Duration.ofSeconds(30).toMillis();
 
     private final Client client;
     private final SdcRemoteDevicesConnector connector;
@@ -142,6 +142,7 @@ public class Consumer {
             return arg;
         }).collect(Collectors.toList());
         activate.setArgument(argumentList);
+        activate.setOperationHandleRef(handle);
 
         final ListenableFuture<ScoTransaction<ActivateResponse>> activateFuture = setServiceAccess
                 .invoke(activate, ActivateResponse.class);
@@ -209,7 +210,6 @@ public class Consumer {
                 )
         );
 
-        final Thread mainThread = Thread.currentThread();
         Runtime.getRuntime().addShutdownHook(new Thread() {
             public void run() {
                 var keys = new ArrayList<Integer>(resultMap.keySet());
@@ -220,12 +220,6 @@ public class Consumer {
                             String.format("### Test %s ### %s", key, resultMap.get(key) ? "passed" : "failed")
                     );
                 });
-
-                try {
-                    mainThread.join();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
             }
         });
 
@@ -256,7 +250,7 @@ public class Consumer {
             resultMap.put(1, true);
         } catch (InterruptedException | TimeoutException | ExecutionException e) {
             LOG.error("Couldn't find target with EPR {}", targetEpr, e);
-            System.exit(0);
+            System.exit(1);
         }
         consumer.getClient().unregisterDiscoveryObserver(obs);
 
@@ -270,7 +264,7 @@ public class Consumer {
             resultMap.put(2, true);
         } catch (InterruptedException | TimeoutException | ExecutionException e) {
             LOG.error("Couldn't connect to EPR {}", targetEpr, e);
-            System.exit(0);
+            System.exit(1);
         }
 
         LOG.info("Attaching to remote mdib and subscriptions for {}", targetEpr);
@@ -287,7 +281,7 @@ public class Consumer {
             resultMap.put(4, true);
         } catch (PrerequisitesException | InterruptedException | ExecutionException | TimeoutException e) {
             LOG.error("Couldn't attach to remote mdib and subscriptions for {}", targetEpr, e);
-            System.exit(0);
+            System.exit(1);
         }
 
         Thread.sleep(1000);
@@ -350,6 +344,8 @@ public class Consumer {
         sdcRemoteDevice.getMdibAccessObservable().unregisterObserver(reportObs);
         consumer.getConnector().disconnect(device_uri);
         consumer.shutDown();
+
+        System.exit(0);
     }
 
 }

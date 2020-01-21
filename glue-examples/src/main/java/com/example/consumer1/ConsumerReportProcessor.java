@@ -51,7 +51,11 @@ public class ConsumerReportProcessor implements MdibAccessObserver {
                 LOG.info("{} has changed", ProviderMdibConstants.HANDLE_ALERT_CONDITION);
             }
         });
+    }
 
+    @Subscribe
+    void onOperationChange(OperationStateModificationMessage modificationMessage) {
+        LOG.info("onOperationChange");
     }
 
 }
