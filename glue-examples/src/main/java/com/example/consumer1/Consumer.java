@@ -132,7 +132,7 @@ public class Consumer {
         return cmd;
     }
 
-    private static InvocationState invokeActivate(SetServiceAccess setServiceAccess, String handle, List<String> args) throws ExecutionException, InterruptedException {
+    private static InvocationState invokeActivate(SetServiceAccess setServiceAccess, String handle, List<String> args) throws ExecutionException, InterruptedException, TimeoutException {
         LOG.info("Invoking Activate for handle {} with arguments {}", handle, args);
 
         Activate activate = new Activate();
@@ -146,14 +146,14 @@ public class Consumer {
 
         final ListenableFuture<ScoTransaction<ActivateResponse>> activateFuture = setServiceAccess
                 .invoke(activate, ActivateResponse.class);
-        ScoTransaction<ActivateResponse> activateResponse = activateFuture.get();
+        ScoTransaction<ActivateResponse> activateResponse = activateFuture.get(MAX_WAIT_SEC, TimeUnit.SECONDS);
         List<OperationInvokedReport.ReportPart> reportParts = activateResponse.waitForFinalReport(Duration.ofSeconds(5));
 
         // return the final reports invocation state
         return reportParts.get(reportParts.size()-1).getInvocationInfo().getInvocationState();
     }
 
-    private static InvocationState invokeSetValue(SetServiceAccess setServiceAccess, String handle, BigDecimal value) throws ExecutionException, InterruptedException {
+    private static InvocationState invokeSetValue(SetServiceAccess setServiceAccess, String handle, BigDecimal value) throws ExecutionException, InterruptedException, TimeoutException {
         LOG.info("Invoking SetValue for handle {} with value {}", handle, value);
         SetValue setValue = new SetValue();
         setValue.setOperationHandleRef(handle);
@@ -161,14 +161,14 @@ public class Consumer {
 
         final ListenableFuture<ScoTransaction<SetValueResponse>> setValueFuture = setServiceAccess
                 .invoke(setValue, SetValueResponse.class);
-        ScoTransaction<SetValueResponse> setValueResponse = setValueFuture.get();
+        ScoTransaction<SetValueResponse> setValueResponse = setValueFuture.get(MAX_WAIT_SEC, TimeUnit.SECONDS);
         List<OperationInvokedReport.ReportPart> reportParts = setValueResponse.waitForFinalReport(Duration.ofSeconds(5));
 
         // return the final reports invocation state
         return reportParts.get(reportParts.size()-1).getInvocationInfo().getInvocationState();
     }
 
-    private static InvocationState invokeSetString(SetServiceAccess setServiceAccess, String handle, String value) throws ExecutionException, InterruptedException {
+    private static InvocationState invokeSetString(SetServiceAccess setServiceAccess, String handle, String value) throws ExecutionException, InterruptedException, TimeoutException {
         LOG.info("Invoking SetString for handle {} with value {}", handle, value);
         SetString setString = new SetString();
         setString.setOperationHandleRef(handle);
@@ -176,7 +176,7 @@ public class Consumer {
 
         final ListenableFuture<ScoTransaction<SetStringResponse>> setStringFuture = setServiceAccess
                 .invoke(setString, SetStringResponse.class);
-        ScoTransaction<SetStringResponse> setStringResponse = setStringFuture.get();
+        ScoTransaction<SetStringResponse> setStringResponse = setStringFuture.get(MAX_WAIT_SEC, TimeUnit.SECONDS);
         List<OperationInvokedReport.ReportPart> reportParts = setStringResponse.waitForFinalReport(Duration.ofSeconds(5));
 
         // return the final reports invocation state
@@ -315,27 +315,27 @@ public class Consumer {
         boolean operationFailed = false;
         try {
             invokeSetString(setServiceAccess, ProviderMdibConstants.HANDLE_SET_STRING, "SDCri was here");
-        } catch (ExecutionException e) {
+        } catch (ExecutionException | TimeoutException e) {
             operationFailed = true;
-            LOG.error("Could not invoke {}", ProviderMdibConstants.HANDLE_SET_STRING);
+            LOG.error("Could not invoke {}", ProviderMdibConstants.HANDLE_SET_STRING, e);
         }
         try {
             invokeSetString(setServiceAccess, ProviderMdibConstants.HANDLE_SET_STRING_ENUM, "OFF");
-        } catch (ExecutionException e) {
+        } catch (ExecutionException | TimeoutException e) {
             operationFailed = true;
-            LOG.error("Could not invoke {}", ProviderMdibConstants.HANDLE_SET_STRING_ENUM);
+            LOG.error("Could not invoke {}", ProviderMdibConstants.HANDLE_SET_STRING_ENUM, e);
         }
         try {
             invokeSetValue(setServiceAccess, ProviderMdibConstants.HANDLE_SET_VALUE, BigDecimal.valueOf(20));
-        } catch (ExecutionException e) {
+        } catch (ExecutionException | TimeoutException e) {
             operationFailed = true;
-            LOG.error("Could not invoke {}", ProviderMdibConstants.HANDLE_SET_VALUE);
+            LOG.error("Could not invoke {}", ProviderMdibConstants.HANDLE_SET_VALUE, e);
         }
         try {
             invokeActivate(setServiceAccess, ProviderMdibConstants.HANDLE_ACTIVATE, Collections.emptyList());
-        } catch (ExecutionException e) {
+        } catch (ExecutionException | TimeoutException e) {
             operationFailed = true;
-            LOG.error("Could not invoke {}", ProviderMdibConstants.HANDLE_ACTIVATE);
+            LOG.error("Could not invoke {}", ProviderMdibConstants.HANDLE_ACTIVATE, e);
         }
         resultMap.put(9, !operationFailed);
 
