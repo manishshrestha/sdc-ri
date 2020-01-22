@@ -74,8 +74,10 @@ public class DpwsConstants {
 
     /**
      * Defines the retry number for unreliable UDP unicast traffic.
+     *
+     * @see #MULTICAST_UDP_REPEAT
      */
-    public static final int UNICAST_UDP_REPEAT = 1;
+    public static final int UNICAST_UDP_REPEAT = MULTICAST_UDP_REPEAT;
 
     /**
      * Defines the namespace for the DPWS ThisModel data structure.
