@@ -25,11 +25,6 @@ public class DpwsConstants {
     public static final int DISCOVERY_PORT = 3_702;
 
     /**
-     * Defines the timeout after which a probe or resolve match shall be discarded.
-     */
-    public static final Duration MATCH_TIMEOUT = Duration.ofSeconds(10L);
-
-    /**
      * Defines the maximum size for envelopes transmitted over TCP.
      * <p>
      * Unit: octets.
