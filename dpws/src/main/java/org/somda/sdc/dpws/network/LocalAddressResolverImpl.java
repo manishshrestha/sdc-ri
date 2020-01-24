@@ -19,8 +19,7 @@ public class LocalAddressResolverImpl implements LocalAddressResolver {
 
     @Override
     public Optional<String> getLocalAddress(URI remoteUri) {
-        try {
-            Socket socket = new Socket(remoteUri.getHost(), remoteUri.getPort());
+        try (Socket socket = new Socket(remoteUri.getHost(), remoteUri.getPort())) {
             return Optional.of(socket.getLocalAddress().getHostAddress());
         } catch (Exception e) {
             LOG.info("Could not access remote URI {} and resolve local address. Reason: {}", remoteUri, e.getMessage());
