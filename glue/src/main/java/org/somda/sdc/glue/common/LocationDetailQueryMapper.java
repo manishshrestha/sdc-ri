@@ -53,7 +53,7 @@ public class LocationDetailQueryMapper {
         }
 
         final String queryParamsString = queryParams.toString();
-        return URI.create(uri.getScheme() + ":" + uri.getSchemeSpecificPart() +
+        return URI.create(uri.getScheme() + ":" + uri.getRawSchemeSpecificPart() +
                 (queryParamsString.equals("?") ? "" : queryParamsString));
     }
 
