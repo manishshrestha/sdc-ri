@@ -27,6 +27,7 @@ import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.Response;
 import javax.xml.bind.JAXBException;
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -178,6 +179,19 @@ public class TransportBindingFactoryImpl implements TransportBindingFactory {
             }
 
             InputStream inputStream = response.readEntity(InputStream.class);
+
+            // TODO: This is a workaround for some odd behavior encountered when communicating with
+            //  pysdc using an encrypted connection. It turns out, inputStream.available() is quite unreliable
+            //  and might be 0 while still having incoming content. But in case it actually is zero, we don't
+            //  want to pass the stream to JAXB to fail hard. The correct way to determine whether there is
+            //  data remaining in the stream would be to just read the stream until it's done,
+            //  so this is what we're doing here.
+            try {
+                inputStream = new ByteArrayInputStream(inputStream.readAllBytes());
+            } catch (IOException e) {
+                LOG.error("Could not copy incoming data into new input stream", e);
+            }
+
             if (LOG.isDebugEnabled()) {
                 inputStream = communicationLog.logHttpMessage(CommunicationLogImpl.HttpDirection.OUTBOUND_RESPONSE,
                         remoteEndpoint.getUri().getHost(), remoteEndpoint.getUri().getPort(), inputStream);
