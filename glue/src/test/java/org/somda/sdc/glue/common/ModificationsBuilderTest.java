@@ -1,10 +1,8 @@
 package org.somda.sdc.glue.common;
 
 import org.junit.jupiter.api.Test;
-import org.somda.sdc.biceps.model.participant.MdDescription;
-import org.somda.sdc.biceps.model.participant.Mdib;
-import org.somda.sdc.biceps.model.participant.MdsDescriptor;
-import org.somda.sdc.biceps.model.participant.VmdDescriptor;
+import org.somda.sdc.biceps.common.MdibDescriptionModifications;
+import org.somda.sdc.biceps.model.participant.*;
 import org.somda.sdc.biceps.testutil.Handles;
 import org.somda.sdc.biceps.testutil.MockModelFactory;
 import org.somda.sdc.glue.UnitTestUtil;
@@ -38,5 +36,26 @@ class ModificationsBuilderTest {
         assertEquals(2, modifications.getModifications().size());
         assertEquals(1, modifications.getModifications().get(0).getStates().size());
         assertEquals(1, modifications.getModifications().get(1).getStates().size());
+    }
+
+    @Test
+    void applyDefaultStates() {
+        var builderFactory = UT.getInjector().getInstance(ModificationsBuilderFactory.class);
+
+        var mdib = new Mdib();
+        var mdDescription = new MdDescription();
+        mdib.setMdDescription(mdDescription);
+        var mds = MockModelFactory.createDescriptor(Handles.MDS_0, MdsDescriptor.class);
+        mdDescription.getMds().add(mds);
+        var clock = MockModelFactory.createDescriptor(Handles.CLOCK_0, ClockDescriptor.class);
+        mds.setClock(clock);
+
+        ModificationsBuilder modificationsBuilder = builderFactory.createModificationsBuilder(mdib, true);
+        MdibDescriptionModifications modifications = modificationsBuilder.get();
+        assertEquals(2, modifications.getModifications().size());
+        assertEquals(1,  modifications.getModifications().get(1).getStates().size());
+        var state = modifications.getModifications().get(1).getStates().get(0);
+        assertTrue(state instanceof ClockState);
+        assertFalse(((ClockState)state).isRemoteSync());
     }
 }

@@ -37,4 +37,25 @@ public class DpwsConfig {
      *
      */
     public static final String COMMUNICATION_LOG_DIRECTORY = "Dpws.CommunicationLogDirectory";
+
+    /**
+     * Defines the timeout the http client uses when connecting to an endpoint.
+     *
+     * <ul>
+     * <li>Data type: {@linkplain java.time.Duration}
+     * <li>Use: optional
+     * </ul>
+     */
+    public static final String HTTP_CLIENT_CONNECT_TIMEOUT = "Dpws.HttpClientConnectTimeout";
+
+    /**
+     * Defines the timeout the http client uses when reading a response.
+     *
+     * <ul>
+     * <li>Data type: {@linkplain java.time.Duration}
+     * <li>Use: optional
+     * </ul>
+     */
+    public static final String HTTP_CLIENT_READ_TIMEOUT = "Dpws.HttpClientReadTimeout";
+
 }

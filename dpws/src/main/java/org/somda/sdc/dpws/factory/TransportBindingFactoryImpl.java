@@ -3,10 +3,12 @@ package org.somda.sdc.dpws.factory;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import org.glassfish.jersey.SslConfigurator;
+import org.glassfish.jersey.client.ClientProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.somda.sdc.dpws.CommunicationLog;
 import org.somda.sdc.dpws.CommunicationLogImpl;
+import org.somda.sdc.dpws.DpwsConfig;
 import org.somda.sdc.dpws.TransportBinding;
 import org.somda.sdc.dpws.TransportBindingException;
 import org.somda.sdc.dpws.crypto.CryptoConfig;
@@ -25,10 +27,12 @@ import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.Response;
 import javax.xml.bind.JAXBException;
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
+import java.time.Duration;
 
 /**
  * Default implementation of {@link TransportBindingFactory}.
@@ -43,6 +47,8 @@ public class TransportBindingFactoryImpl implements TransportBindingFactory {
     private final SoapMarshalling marshalling;
     private final SoapUtil soapUtil;
     private final CommunicationLog communicationLog;
+    private Duration clientConnectTimeout;
+    private Duration clientReadTimeout;
 
     private final Client client;
     private Client securedClient; // if null => no cryptography configured/enabled
@@ -52,10 +58,14 @@ public class TransportBindingFactoryImpl implements TransportBindingFactory {
                                 SoapUtil soapUtil,
                                 CryptoConfigurator cryptoConfigurator,
                                 @Nullable @Named(CryptoConfig.CRYPTO_SETTINGS) CryptoSettings cryptoSettings,
-                                CommunicationLog communicationLog) {
+                                CommunicationLog communicationLog,
+                                @Named (DpwsConfig.HTTP_CLIENT_CONNECT_TIMEOUT) Duration clientConnectTimeout,
+                                @Named (DpwsConfig.HTTP_CLIENT_READ_TIMEOUT) Duration clientReadTimeout) {
         this.marshalling = marshalling;
         this.soapUtil = soapUtil;
         this.communicationLog = communicationLog;
+        this.clientConnectTimeout = clientConnectTimeout;
+        this.clientReadTimeout = clientReadTimeout;
         this.client = ClientBuilder.newClient();
 
         configureSecuredClient(cryptoConfigurator, cryptoSettings);
@@ -158,6 +168,8 @@ public class TransportBindingFactoryImpl implements TransportBindingFactory {
             Response response = remoteEndpoint
                     .request(SoapConstants.MEDIA_TYPE_SOAP)
                     .accept(SoapConstants.MEDIA_TYPE_SOAP)
+                    .property(ClientProperties.CONNECT_TIMEOUT, (int) clientConnectTimeout.toMillis())
+                    .property(ClientProperties.READ_TIMEOUT, (int) clientReadTimeout.toMillis())
                     .post(Entity.entity(outputStream.toString(), SoapConstants.MEDIA_TYPE_SOAP));
 
             if (response.getStatus() >= 300) {
@@ -167,6 +179,19 @@ public class TransportBindingFactoryImpl implements TransportBindingFactory {
             }
 
             InputStream inputStream = response.readEntity(InputStream.class);
+
+            // TODO: This is a workaround for some odd behavior encountered when communicating with
+            //  pysdc using an encrypted connection. It turns out, inputStream.available() is quite unreliable
+            //  and might be 0 while still having incoming content. But in case it actually is zero, we don't
+            //  want to pass the stream to JAXB to fail hard. The correct way to determine whether there is
+            //  data remaining in the stream would be to just read the stream until it's done,
+            //  so this is what we're doing here.
+            try {
+                inputStream = new ByteArrayInputStream(inputStream.readAllBytes());
+            } catch (IOException e) {
+                LOG.error("Could not copy incoming data into new input stream", e);
+            }
+
             if (LOG.isDebugEnabled()) {
                 inputStream = communicationLog.logHttpMessage(CommunicationLogImpl.HttpDirection.OUTBOUND_RESPONSE,
                         remoteEndpoint.getUri().getHost(), remoteEndpoint.getUri().getPort(), inputStream);

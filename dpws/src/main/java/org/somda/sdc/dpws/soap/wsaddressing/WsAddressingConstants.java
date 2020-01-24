@@ -15,6 +15,11 @@ public class WsAddressingConstants {
     public static final String JAXB_CONTEXT_PACKAGE = "org.somda.sdc.dpws.soap.wsaddressing.model";
 
     /**
+     * Resource path to WS-Addressing XML Schema.
+     */
+    public static final String SCHEMA_PATH = "ws-addressing-1.0-schema.xsd";
+
+    /**
      * WS-Addressing 1.0 namespace.
      *
      * @see <a href="https://www.w3.org/TR/2006/REC-ws-addr-core-20060509/#namespaces">Namespaces</a>

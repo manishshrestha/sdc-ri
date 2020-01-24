@@ -24,7 +24,6 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.List;
 
 /**
  * Adds SDC services to a DPWS device and manages incoming set service requests.
@@ -76,7 +75,7 @@ public class SdcDevice extends AbstractIdleService implements Device, EventSourc
     public DiscoveryAccess getDiscoveryAccess() {
         return new DiscoveryAccess() {
             @Override
-            public void setTypes(List<QName> types) {
+            public void setTypes(Collection<QName> types) {
                 ArrayList<QName> tmpTypes = new ArrayList<>();
                 if (types.stream().filter(qName -> qName.equals(CommonConstants.MEDICAL_DEVICE_TYPE)).findAny().isEmpty()) {
                     tmpTypes.add(DpwsConstants.DEVICE_TYPE);
@@ -86,7 +85,7 @@ public class SdcDevice extends AbstractIdleService implements Device, EventSourc
             }
 
             @Override
-            public void setScopes(List<URI> scopes) {
+            public void setScopes(Collection<URI> scopes) {
                 // todo DGr track scopes from MDIB and update accordingly
                 ArrayList<URI> tmpScopes = new ArrayList<>();
                 if (scopes.stream().filter(scope -> scope.equals(GlueConstants.SCOPE_SDC_PROVIDER)).findAny().isEmpty()) {

@@ -13,6 +13,11 @@ public class WsEventingConstants {
      */
     public static final String JAXB_CONTEXT_PACKAGE = "org.somda.sdc.dpws.soap.wseventing.model";
 
+    /**
+     * Resource path to WS-Eventing XML Schema.
+     */
+    public static final String SCHEMA_PATH = "ws-addressing-1.0-schema.xsd";
+
     public static final String NAMESPACE = "http://schemas.xmlsoap.org/ws/2004/08/eventing";
 
     public static final String WSA_ACTION_SUBSCRIBE = NAMESPACE + "/Subscribe";
