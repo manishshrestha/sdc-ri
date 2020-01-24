@@ -19,6 +19,7 @@ import org.somda.sdc.dpws.device.DeviceImpl;
 import org.somda.sdc.dpws.device.factory.DeviceFactory;
 import org.somda.sdc.dpws.device.helper.DiscoveryDeviceUdpMessageProcessor;
 import org.somda.sdc.dpws.device.helper.factory.DeviceHelperFactory;
+import org.somda.sdc.dpws.factory.ApacheTransportBindingFactoryImpl;
 import org.somda.sdc.dpws.factory.DpwsFrameworkFactory;
 import org.somda.sdc.dpws.factory.TransportBindingFactory;
 import org.somda.sdc.dpws.factory.TransportBindingFactoryImpl;
@@ -95,7 +96,7 @@ public class DefaultDpwsModule extends AbstractModule {
                 .build(DpwsFrameworkFactory.class));
 
         bind(TransportBindingFactory.class)
-                .to(TransportBindingFactoryImpl.class);
+                .to(ApacheTransportBindingFactoryImpl.class);
 
 
         install(new FactoryModuleBuilder()
