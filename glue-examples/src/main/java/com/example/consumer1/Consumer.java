@@ -342,6 +342,8 @@ public class Consumer {
         LOG.info("Done, quitting");
 
         sdcRemoteDevice.getMdibAccessObservable().unregisterObserver(reportObs);
+        sdcRemoteDevice.stopAsync().awaitTerminated();
+
         consumer.getConnector().disconnect(device_uri);
         consumer.shutDown();
 

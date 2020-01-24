@@ -132,6 +132,7 @@ public class Provider extends AbstractIdleService {
 
     @Override
     protected void shutDown() {
+        sdcDevice.stopAsync().awaitTerminated();
         dpwsFramework.stopAsync().awaitTerminated();
         sdcDevice.stopAsync().awaitTerminated();
     }
