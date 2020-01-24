@@ -78,12 +78,20 @@ public class WsDiscoveryConstants {
     /**
      * Max delay to wait for transmitting a UDP message.
      * <p>
-     * <em>Superseded by DPWS.</em>
+     * The constant defines the Application Level Transmission Delay defined in WS-Discovery, section 3.1.3.
+     * <em>The value is superseded by DPWS.</em>
+     * <p>
+     * Excerpt from WS-Discovery:
+     * <blockquote>
+     * As designated below, before sending some message types defined herein, a Target Service MUST wait for a timer
+     * to elapse before sending the message using the bindings described above. This timer MUST be set to a random
+     * value between 0 and APP_MAX_DELAY. Table 5 specifies the default value for this parameter.
+     * </blockquote>
      *
      * @see <a href="http://docs.oasis-open.org/ws-dd/discovery/1.1/os/wsdd-discovery-1.1-spec-os.html#_Toc234231819">Application Level Transmission Delay</a>
      * @see <a href="http://docs.oasis-open.org/ws-dd/dpws/1.1/os/wsdd-dpws-1.1-spec-os.html#_Toc228672112">Application Level Transmission Delay (DPWS)</a>
      */
-    public static final Duration APP_MAX_DELAY = Duration.ofMillis(2500);
+    public static final Duration APP_MAX_DELAY = Duration.ofMillis(2_500);
 
     /**
      * QName of the fault subcode if given matching rule is not supported by a target service.

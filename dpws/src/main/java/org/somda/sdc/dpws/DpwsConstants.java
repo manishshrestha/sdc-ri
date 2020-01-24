@@ -20,26 +20,9 @@ public class DpwsConstants {
     public static final String NAMESPACE = "http://docs.oasis-open.org/ws-dd/ns/dpws/2009/01";
 
     /**
-     * Defines the Application Level Transmission Delay defined in WS-Discovery, section 3.1.3.
-     * <p>
-     * Excerpt from WS-Discovery:
-     * <blockquote>
-     * As designated below, before sending some message types defined herein, a Target Service MUST wait for a timer
-     * to elapse before sending the message using the bindings described above. This timer MUST be set to a random
-     * value between 0 and APP_MAX_DELAY. Table 5 specifies the default value for this parameter.
-     * </blockquote>
-     */
-    public static final Duration APP_MAX_DELAY = Duration.ofMillis(2_500L);
-
-    /**
      * Defines the multicast port used to transmit discovery messages.
      */
     public static final int DISCOVERY_PORT = 3_702;
-
-    /**
-     * Defines the timeout after which a probe or resolve match shall be discarded.
-     */
-    public static final Duration MATCH_TIMEOUT = Duration.ofSeconds(10L);
 
     /**
      * Defines the maximum size for envelopes transmitted over TCP.
@@ -91,8 +74,10 @@ public class DpwsConstants {
 
     /**
      * Defines the retry number for unreliable UDP unicast traffic.
+     *
+     * @see #MULTICAST_UDP_REPEAT
      */
-    public static final int UNICAST_UDP_REPEAT = 1;
+    public static final int UNICAST_UDP_REPEAT = MULTICAST_UDP_REPEAT;
 
     /**
      * Defines the namespace for the DPWS ThisModel data structure.
