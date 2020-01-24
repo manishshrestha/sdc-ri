@@ -73,6 +73,15 @@ public class DefaultDpwsConfigModule extends AbstractConfigurationModule {
         bind(ClientConfig.AUTO_RESOLVE,
                 Boolean.class,
                 false);
+
+        bind(DpwsConfig.HTTP_CLIENT_CONNECT_TIMEOUT,
+                Duration.class,
+                Duration.ofSeconds(5));
+
+        bind(DpwsConfig.HTTP_CLIENT_READ_TIMEOUT,
+                Duration.class,
+                Duration.ofSeconds(5));
+
     }
 
     private void configureWsDiscoveryConfig() {
