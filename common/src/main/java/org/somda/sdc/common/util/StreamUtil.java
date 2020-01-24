@@ -20,6 +20,7 @@ public class StreamUtil {
      * @deprecated This function is a shortcut for a Guava utility ({@link ByteStreams}). Please use the Guava utility
      * instead.
      */
+    @Deprecated
     public byte[] getByteArrayFromInputStream(InputStream inputStream) throws IOException {
         return ByteStreams.toByteArray(inputStream);
     }

@@ -21,7 +21,6 @@ import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.URI;
 import java.util.Collections;
-import java.util.List;
 
 public class DeviceImplTest implements Runnable {
     public static void main(String[] args) {

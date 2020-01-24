@@ -31,10 +31,7 @@ import org.somda.sdc.dpws.soap.wsdiscovery.model.*;
 import javax.xml.namespace.QName;
 import java.net.URI;
 import java.time.Duration;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -162,7 +159,7 @@ public class WsDiscoveryClientInterceptor implements WsDiscoveryClient {
     }
 
     @Override
-    public ListenableFuture<Integer> sendProbe(String probeId, List<QName> types, List<String> scopes, Integer maxResults)
+    public ListenableFuture<Integer> sendProbe(String probeId, Collection<QName> types, Collection<String> scopes, Integer maxResults)
             throws MarshallingException, TransportException, InterceptorException {
         SoapMessage probeMsg = createProbeMessage(types, scopes);
 
@@ -180,7 +177,7 @@ public class WsDiscoveryClientInterceptor implements WsDiscoveryClient {
     }
 
     @Override
-    public ListenableFuture<Integer> sendProbe(String probeId, List<QName> types, List<String> scopes)
+    public ListenableFuture<Integer> sendProbe(String probeId, Collection<QName> types, Collection<String> scopes)
             throws MarshallingException, TransportException, InterceptorException {
         return sendProbe(probeId, types, scopes, Integer.MAX_VALUE);
     }
@@ -207,7 +204,7 @@ public class WsDiscoveryClientInterceptor implements WsDiscoveryClient {
         return future;
     }
 
-    private SoapMessage createProbeMessage(List<QName> types, List<String> scopes) {
+    private SoapMessage createProbeMessage(Collection<QName> types, Collection<String> scopes) {
         ProbeType probeType = wsdFactory.createProbeType();
         probeType.setTypes(new ArrayList<>(types));
         ScopesType scopesType = wsdFactory.createScopesType();
