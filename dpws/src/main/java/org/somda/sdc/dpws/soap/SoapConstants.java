@@ -22,6 +22,11 @@ public class SoapConstants {
     public static final String JAXB_CONTEXT_PACKAGE = "org.somda.sdc.dpws.soap.model";
 
     /**
+     * Resource path to XML, WSDL 1.1 and SOAP XML Schema.
+     */
+    public static final String SCHEMA_PATH = "xml.xsd:wsdl-1.1-schema.xsd:soap-1.2-schema.xsd";
+
+    /**
      * SOAP 1.2 namespace.
      *
      * @see <a href="https://www.w3.org/TR/2007/REC-soap12-part1-20070427/#notation">Namespaces</a>

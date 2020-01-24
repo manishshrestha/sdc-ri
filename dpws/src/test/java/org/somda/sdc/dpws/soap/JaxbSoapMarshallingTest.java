@@ -1,5 +1,7 @@
 package org.somda.sdc.dpws.soap;
 
+import com.google.inject.AbstractModule;
+import org.somda.sdc.common.guice.AbstractConfigurationModule;
 import org.somda.sdc.dpws.DpwsTest;
 import org.somda.sdc.dpws.NetworkSinkMock;
 import org.somda.sdc.dpws.soap.factory.EnvelopeFactory;
@@ -28,6 +30,15 @@ public class JaxbSoapMarshallingTest extends DpwsTest {
     @Override
     @BeforeEach
     public void setUp() throws Exception {
+        overrideBindings(new AbstractConfigurationModule() {
+            @Override
+            protected void defaultConfigure() {
+                // no need for valiation as tests to test general marshalling
+                bind(SoapConfig.VALIDATE_SOAP_MESSAGES,
+                        Boolean.class,
+                        false);
+            }
+        });
         super.setUp();
         getInjector().getInstance(SoapMarshalling.class).startAsync().awaitRunning();
     }

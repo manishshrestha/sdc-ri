@@ -8,6 +8,7 @@ import org.somda.sdc.dpws.crypto.CryptoConfig;
 import org.somda.sdc.dpws.crypto.CryptoSettings;
 import org.somda.sdc.dpws.device.DeviceConfig;
 import org.somda.sdc.dpws.soap.SoapConfig;
+import org.somda.sdc.dpws.soap.SoapConstants;
 import org.somda.sdc.dpws.soap.wsaddressing.WsAddressingConfig;
 import org.somda.sdc.dpws.soap.wsdiscovery.WsDiscoveryConfig;
 import org.somda.sdc.dpws.soap.wseventing.WsEventingConfig;
@@ -124,6 +125,12 @@ public class DefaultDpwsConfigModule extends AbstractConfigurationModule {
                 String.class,
                 "");
         bind(SoapConfig.NAMESPACE_MAPPINGS,
+                String.class,
+                "");
+        bind(SoapConfig.VALIDATE_SOAP_MESSAGES,
+                Boolean.class,
+                true);
+        bind(SoapConfig.JAXB_SCHEMA_PATH,
                 String.class,
                 "");
     }

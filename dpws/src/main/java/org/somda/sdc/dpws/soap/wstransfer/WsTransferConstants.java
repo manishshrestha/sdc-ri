@@ -9,6 +9,11 @@ public class WsTransferConstants {
     public static final String JAXB_CONTEXT_PACKAGE = "org.somda.sdc.dpws.soap.wstransfer.model";
 
     /**
+     * Resource path to WS-TransferGet XML Schema.
+     */
+    public static final String SCHEMA_PATH = "ws-transfer-schema.xsd";
+
+    /**
      * WS-Transfer namespace.
      *
      * @see <a href="https://www.w3.org/Submission/2006/SUBM-WS-Transfer-20060927/#XML_Namespaces">XML Namespaces</a>

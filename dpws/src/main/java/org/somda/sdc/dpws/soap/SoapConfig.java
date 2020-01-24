@@ -19,7 +19,36 @@ public class SoapConfig {
      * <li>Use: optional
      * </ul>
      */
-    public static final String JAXB_CONTEXT_PATH = "SoapConfig.ContextPaths";
+    public static final String JAXB_CONTEXT_PATH = "SoapConfig.JaxbContextPath";
+
+    /**
+     * Colon-separated list of XML Schemas to validate against in case validation is enabled.
+     * <p>
+     * Please note that the order of the files matters.
+     * If schema X uses schema Y, then schema Y is required to be listed before schema X.
+     * <p>
+     * The defined paths are resource paths.
+     * XML Schemas used by DPWS are added automatically. Recognized namespaces are
+     * <ul>
+     * <li>http://www.w3.org/2003/05/soap-envelope
+     * <li>http://www.w3.org/2005/08/addressing
+     * <li>http://docs.oasis-open.org/ws-dd/ns/discovery/2009/01
+     * <li>http://schemas.xmlsoap.org/ws/2004/08/eventing
+     * <li>http://schemas.xmlsoap.org/ws/2004/09/mex
+     * <li>http://schemas.xmlsoap.org/ws/2004/09/transfer
+     * <li>http://docs.oasis-open.org/ws-dd/ns/dpws/2009/01
+     * <li>http://schemas.xmlsoap.org/wsdl/
+     * <li>http://www.w3.org/XML/1998/namespace
+     * </ul>
+     * <p>
+     * <ul>
+     * <li>Data type: {@linkplain String}
+     * <li>Use: optional
+     * </ul>
+     *
+     * @see #VALIDATE_SOAP_MESSAGES
+     */
+    public static final String JAXB_SCHEMA_PATH = "SoapConfig.JaxbSchemaPath";
 
     /**
      * Defines a mapping of namespace prefixes to namespace URIS.
@@ -51,4 +80,14 @@ public class SoapConfig {
      * @see org.somda.sdc.common.util.PrefixNamespaceMappingParser
      */
     public static final String NAMESPACE_MAPPINGS = "SoapConfig.NamespaceMappings";
+
+    /**
+     * Defines if SOAP message validation is enabled (true) or not (false).
+     *
+     * <ul>
+     * <li>Data type: {@linkplain Boolean}
+     * <li>Use: optional
+     * </ul>
+     */
+    public static final String VALIDATE_SOAP_MESSAGES = "SoapConfig.ValidateSoapMessages";
 }
