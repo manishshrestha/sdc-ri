@@ -1,5 +1,6 @@
 package com.example.consumer1;
 
+import com.example.CustomCryptoSettings;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import org.apache.logging.log4j.Level;
@@ -22,7 +23,6 @@ public class ConsumerUtil {
         Configurator.initialize(new DefaultConfiguration());
         Configurator.setRootLevel(Level.INFO);
 
-//        var settings = new ConsumerCryptoSettings();
         injector = Guice.createInjector(
                 new DefaultGlueModule(),
                 new DefaultGlueConfigModule(),
@@ -34,10 +34,10 @@ public class ConsumerUtil {
                     @Override
                     protected void customConfigure() {
                         super.customConfigure();
-//                        bind(CryptoConfig.CRYPTO_SETTINGS,
-//                                CryptoSettings.class,
-//                                settings
-//                        );
+                        bind(CryptoConfig.CRYPTO_SETTINGS,
+                                CryptoSettings.class,
+                                new CustomCryptoSettings()
+                        );
                     }
                 });
     }

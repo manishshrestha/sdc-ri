@@ -1,5 +1,6 @@
 package com.example.provider1;
 
+import com.example.CustomCryptoSettings;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import org.apache.logging.log4j.Level;
@@ -21,9 +22,8 @@ public class ProviderUtil {
 
     public ProviderUtil() {
         Configurator.initialize(new DefaultConfiguration());
-        Configurator.setRootLevel(Level.TRACE);
+        Configurator.setRootLevel(Level.INFO);
 
-//        var settings = new ProviderCryptoSettings();
         injector = Guice.createInjector(
                 new DefaultGlueModule(),
                 new DefaultGlueConfigModule(),
@@ -35,12 +35,12 @@ public class ProviderUtil {
                     @Override
                     protected void customConfigure() {
                         super.customConfigure();
-//                        bind(CryptoConfig.CRYPTO_SETTINGS,
-//                                CryptoSettings.class,
-//                                settings
-//                        );
-//                        bind(DeviceConfig.UNSECURED_ENDPOINT, Boolean.class, false);
-//                        bind(DeviceConfig.SECURED_ENDPOINT, Boolean.class, true);
+                        bind(CryptoConfig.CRYPTO_SETTINGS,
+                                CryptoSettings.class,
+                                new CustomCryptoSettings()
+                        );
+                        bind(DeviceConfig.UNSECURED_ENDPOINT, Boolean.class, false);
+                        bind(DeviceConfig.SECURED_ENDPOINT, Boolean.class, true);
                     }
                 });
     }

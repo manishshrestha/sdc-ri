@@ -38,17 +38,17 @@ import java.util.stream.Collectors;
 
 /**
  * This is an example consumer which matches {@link com.example.provider1.Provider} in functionality
- *
+ * <p>
  * This consumer executes the following steps and prints whether each step was successful
- *      1. discovery of device with specific endpoint
- *      2. connect to device with specific endpoint
- *      3. read mdib of provider
- *      4. subscribe metrics, alerts, waveforms
- *      5. check that least one patient context exists
- *      6. check that at least one location context exists
- *      7. check that the metric (see above) changes within 30 seconds at least 5 times
- *      8. check that the alert condition (see above)change within 30 seconds at least 5 times
- *      9. execute operations (Activate, SetString, SetValue) as specified and check that result is “finished”
+ * 1. discovery of device with specific endpoint
+ * 2. connect to device with specific endpoint
+ * 3. read mdib of provider
+ * 4. subscribe metrics, alerts, waveforms
+ * 5. check that least one patient context exists
+ * 6. check that at least one location context exists
+ * 7. check that the metric (see above) changes within 30 seconds at least 5 times
+ * 8. check that the alert condition (see above)change within 30 seconds at least 5 times
+ * 9. execute operations (Activate, SetString, SetValue) as specified and check that result is “finished”
  */
 public class Consumer {
     static {
@@ -150,7 +150,7 @@ public class Consumer {
         List<OperationInvokedReport.ReportPart> reportParts = activateResponse.waitForFinalReport(Duration.ofSeconds(5));
 
         // return the final reports invocation state
-        return reportParts.get(reportParts.size()-1).getInvocationInfo().getInvocationState();
+        return reportParts.get(reportParts.size() - 1).getInvocationInfo().getInvocationState();
     }
 
     private static InvocationState invokeSetValue(SetServiceAccess setServiceAccess, String handle, BigDecimal value) throws ExecutionException, InterruptedException, TimeoutException {
@@ -165,7 +165,7 @@ public class Consumer {
         List<OperationInvokedReport.ReportPart> reportParts = setValueResponse.waitForFinalReport(Duration.ofSeconds(5));
 
         // return the final reports invocation state
-        return reportParts.get(reportParts.size()-1).getInvocationInfo().getInvocationState();
+        return reportParts.get(reportParts.size() - 1).getInvocationInfo().getInvocationState();
     }
 
     private static InvocationState invokeSetString(SetServiceAccess setServiceAccess, String handle, String value) throws ExecutionException, InterruptedException, TimeoutException {
