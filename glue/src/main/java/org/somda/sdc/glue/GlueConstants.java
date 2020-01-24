@@ -19,6 +19,11 @@ public class GlueConstants {
             "org.somda.sdc.biceps.model.message";
 
     /**
+     * Resource path to BICEPS XML Schemas.
+     */
+    public static final String SCHEMA_PATH = "ExtensionPoint.xsd:BICEPS_ParticipantModel.xsd:BICEPS_MessageModel.xsd";
+
+    /**
      * Key purpose dot-notated OID that expresses compliance with all mandatory requirements for an SDC service provider.
      */
     public static final String OID_KEY_PURPOSE_SDC_SERVICE_PROVIDER = "1.2.840.10004.20701.1.1";

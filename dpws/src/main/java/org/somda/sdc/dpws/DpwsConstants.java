@@ -15,6 +15,11 @@ public class DpwsConstants {
     public static final String JAXB_CONTEXT_PACKAGE = "org.somda.sdc.dpws.model";
 
     /**
+     * Resource path to DPWS XML Schema.
+     */
+    public static final String SCHEMA_PATH = "wsdd-dpws-1.1-schema.xsd";
+
+    /**
      * Defines the DPWS namespace.
      */
     public static final String NAMESPACE = "http://docs.oasis-open.org/ws-dd/ns/dpws/2009/01";

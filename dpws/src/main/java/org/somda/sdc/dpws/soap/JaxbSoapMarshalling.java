@@ -16,13 +16,20 @@ import org.somda.sdc.dpws.soap.wsdiscovery.WsDiscoveryConstants;
 import org.somda.sdc.dpws.soap.wseventing.WsEventingConstants;
 import org.somda.sdc.dpws.soap.wsmetadataexchange.WsMetadataExchangeConstants;
 import org.somda.sdc.dpws.soap.wstransfer.WsTransferConstants;
+import org.xml.sax.SAXException;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBElement;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
+import javax.xml.XMLConstants;
+import javax.xml.bind.*;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.stream.StreamSource;
+import javax.xml.validation.Schema;
+import javax.xml.validation.SchemaFactory;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.URL;
 
 /**
  * Creates XML input and output streams from {@link Envelope} instances by using JAXB.
@@ -31,32 +38,41 @@ public class JaxbSoapMarshalling extends AbstractIdleService implements SoapMars
     private static final Logger LOG = LoggerFactory.getLogger(JaxbSoapMarshalling.class);
 
     private static final String PKG_DELIM = ":";
+    private static final String SCHEMA_DELIM = ":";
 
     private final NamespacePrefixMapper namespacePrefixMapper;
+    private final String schemaPath;
+    private final Boolean validateSoapMessages;
     private final ObjectFactory soapFactory;
 
 
     private String contextPackages;
     private JAXBContext jaxbContext;
+    private Schema schema;
 
     @Inject
     JaxbSoapMarshalling(@Named(SoapConfig.JAXB_CONTEXT_PATH) String contextPackages,
                         @Named(SoapConfig.NAMESPACE_MAPPINGS) String namespaceMappings,
+                        @Named(SoapConfig.JAXB_SCHEMA_PATH) String schemaPath,
+                        @Named(SoapConfig.VALIDATE_SOAP_MESSAGES) Boolean validateSoapMessages,
                         PrefixNamespaceMappingParser namespaceMappingParser,
                         NamespacePrefixMapperConverter namespacePrefixMapperConverter,
                         ObjectFactory soapFactory) {
         this.contextPackages = contextPackages;
+        this.schemaPath = schemaPath;
+        this.validateSoapMessages = validateSoapMessages;
         this.soapFactory = soapFactory;
 
         // Append internal mappings
         namespaceMappings += SoapConstants.NAMESPACE_PREFIX_MAPPINGS;
 
-        namespacePrefixMapper = namespacePrefixMapperConverter.convert(
+        this.namespacePrefixMapper = namespacePrefixMapperConverter.convert(
                 namespaceMappingParser.parse(namespaceMappings));
+
     }
 
     @Override
-    protected void startUp() {
+    protected void startUp() throws Exception {
         LOG.info("Start SOAP marshalling. Initialize JAXB.");
         initializeJaxb();
         LOG.info("JAXB initialization finished");
@@ -100,10 +116,15 @@ public class JaxbSoapMarshalling extends AbstractIdleService implements SoapMars
     @SuppressWarnings("unchecked")
     public Envelope unmarshal(InputStream inputStream) throws JAXBException, ClassCastException {
         checkRunning();
-        return ((JAXBElement<Envelope>) (jaxbContext.createUnmarshaller().unmarshal(inputStream))).getValue();
+
+        Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
+        if (schema != null) {
+            unmarshaller.setSchema(schema);
+        }
+        return ((JAXBElement<Envelope>) (unmarshaller.unmarshal(inputStream))).getValue();
     }
 
-    private void initializeJaxb() {
+    private void initializeJaxb() throws SAXException, IOException, ParserConfigurationException {
         if (!contextPackages.isEmpty()) {
             contextPackages += PKG_DELIM;
         }
@@ -121,6 +142,56 @@ public class JaxbSoapMarshalling extends AbstractIdleService implements SoapMars
             jaxbContext = JAXBContext.newInstance(contextPackages);
         } catch (JAXBException e) {
             throw new RuntimeException("JAXB context for SOAP model(s) could not be created");
+        }
+
+        if (validateSoapMessages) {
+            var extendedSchemaPath = SoapConstants.SCHEMA_PATH +
+                    SCHEMA_DELIM + WsAddressingConstants.SCHEMA_PATH +
+                    SCHEMA_DELIM + WsDiscoveryConstants.SCHEMA_PATH +
+                    SCHEMA_DELIM + WsEventingConstants.SCHEMA_PATH +
+                    SCHEMA_DELIM + WsMetadataExchangeConstants.SCHEMA_PATH +
+                    SCHEMA_DELIM + WsTransferConstants.SCHEMA_PATH +
+                    SCHEMA_DELIM + DpwsConstants.SCHEMA_PATH +
+                    SCHEMA_DELIM + schemaPath;
+            LOG.info("SOAP message validation enabled with schemas (order matters!): {}", extendedSchemaPath);
+            schema = generateTopLevelSchema(extendedSchemaPath);
+        } else {
+            LOG.info("SOAP message validation disabled");
+            schema = null;
+        }
+    }
+
+    private Schema generateTopLevelSchema(String schemaPath) throws SAXException, IOException, ParserConfigurationException {
+        final var topLevelSchemaBeginning =
+                "<xsd:schema xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" elementFormDefault=\"qualified\">";
+        final var importPattern = "<xsd:import namespace=\"%s\" schemaLocation=\"%s\"/>";
+        final var topLevelSchemaEnd = "</xsd:schema>";
+
+        var stringBuilder = new StringBuilder();
+        stringBuilder.append(topLevelSchemaBeginning);
+        for (String path : schemaPath.split(SCHEMA_DELIM)) {
+            var classLoader = getClass().getClassLoader();
+            var schemaUrl = classLoader.getResource(path);
+            if (schemaUrl == null) {
+                LOG.error("Could not find schema for resource: {}", path);
+                throw new IOException(String.format("Could not find schema for resource while loading in %s: %s",
+                        JaxbSoapMarshalling.class.getSimpleName(), path));
+            }
+            var targetNamespace = resolveTargetNamespace(schemaUrl);
+            LOG.info("Register namespace for validation: {}, read from {}", targetNamespace, schemaUrl.toString());
+            stringBuilder.append(String.format(importPattern, targetNamespace, schemaUrl.toString()));
+        }
+        stringBuilder.append(topLevelSchemaEnd);
+        SchemaFactory schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
+        return schemaFactory.newSchema(new StreamSource(new ByteArrayInputStream(stringBuilder.toString().getBytes())));
+    }
+
+    private String resolveTargetNamespace(URL url) throws IOException, ParserConfigurationException, SAXException {
+        try (InputStream inputStream = url.openStream()) {
+            var factory = DocumentBuilderFactory.newInstance();
+            var builder = factory.newDocumentBuilder();
+            var document = builder.parse(inputStream);
+            return document.getDocumentElement().getAttribute("targetNamespace");
         }
     }
 }

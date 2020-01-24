@@ -13,6 +13,11 @@ public class WsDiscoveryConstants {
     public static final String JAXB_CONTEXT_PACKAGE = "org.somda.sdc.dpws.soap.wsdiscovery.model";
 
     /**
+     * Resource path to WS-Discovery XML Schema.
+     */
+    public static final String SCHEMA_PATH = "ws-discovery-1.1-schema.xsd";
+
+    /**
      * WS-Discovery 1.1 namespace.
      *
      * @see <a href="http://docs.oasis-open.org/ws-dd/discovery/1.1/os/wsdd-discovery-1.1-spec-os.html#_Toc234231804">XML Namespaces</a>
