@@ -7,6 +7,12 @@ import org.slf4j.LoggerFactory;
 import org.somda.sdc.biceps.common.access.MdibAccessObserver;
 import org.somda.sdc.biceps.common.event.*;
 
+/**
+ * This class handles incoming reports on the provider.
+ * <p>
+ * Every incoming report triggers the respective handler, or the generic onUpdate handler if no
+ * specialized handler is found.
+ */
 public class ConsumerReportProcessor implements MdibAccessObserver {
     private static final Logger LOG = LoggerFactory.getLogger(ConsumerReportProcessor.class);
 

@@ -19,6 +19,12 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * This class provides a handler for incoming operations on the sdc provider.
+ * <p>
+ * It implements generic handlers for some operations, which enables handling operations easily, although
+ * a real application should be a little more specialized in its handling.
+ */
 public class OperationHandler implements OperationInvocationReceiver {
 
     private static final Logger LOG = LoggerFactory.getLogger(OperationHandler.class);

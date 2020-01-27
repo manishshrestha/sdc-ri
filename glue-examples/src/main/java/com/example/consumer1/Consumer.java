@@ -54,6 +54,7 @@ public class Consumer {
     static {
         // TODO: Workaround for
         //  javax.net.ssl.SSLHandshakeException: No subject alternative names present
+        //  when using the jersey client
         HttpsURLConnection.setDefaultHostnameVerifier((hostname, session) -> true);
     }
 
@@ -70,6 +71,12 @@ public class Consumer {
     private final Injector injector;
     private NetworkInterface networkInterface;
 
+    /**
+     * Creates an SDC Consumer instance.
+     * @param adapterName Optional adapter name to bind to, otherwise localhost default interface is chosen
+     * @throws SocketException if network adapter couldn't be bound
+     * @throws UnknownHostException if localhost couldn't be determined
+     */
     public Consumer(@Nullable String adapterName) throws SocketException, UnknownHostException {
         this.injector = IT.getInjector();
         this.client = injector.getInstance(Client.class);
@@ -103,11 +110,15 @@ public class Consumer {
         dpwsFramework.stopAsync().awaitTerminated();
     }
 
-
+    /**
+     * Parse command line arguments for epr address and network interface
+     * @param args array of arguments, as passed to main
+     * @return instance of parsed command line arguments
+     */
     public static CommandLine parseCommandLineArgs(String[] args) {
         Options options = new Options();
 
-        Option epr = new Option("e", "epr", true, "epr of target provider");
+        Option epr = new Option("e", "epr", true, "epr address of target provider");
         epr.setRequired(true);
         options.addOption(epr);
 
@@ -132,6 +143,16 @@ public class Consumer {
         return cmd;
     }
 
+    /**
+     * Synchronously invokes an ActivateOperation on a given SetService using the provided handle and arguments
+     * @param setServiceAccess SetService to call Activate on
+     * @param handle operation handle
+     * @param args activate arguments
+     * @return InvocationState of final OperationInvokedReport
+     * @throws ExecutionException if retrieving the final OperationInvokedReport is aborted
+     * @throws InterruptedException if retrieving the final OperationInvokedReport is interrupted
+     * @throws TimeoutException if retrieving the final OperationInvokedReport times out
+     */
     private static InvocationState invokeActivate(SetServiceAccess setServiceAccess, String handle, List<String> args) throws ExecutionException, InterruptedException, TimeoutException {
         LOG.info("Invoking Activate for handle {} with arguments {}", handle, args);
 
@@ -153,6 +174,16 @@ public class Consumer {
         return reportParts.get(reportParts.size() - 1).getInvocationInfo().getInvocationState();
     }
 
+    /**
+     * Synchronously invokes a SetValue on a given SetService using the provided handle and argument
+     * @param setServiceAccess SetService to call Activate on
+     * @param handle operation handle
+     * @param value desired value of operation target
+     * @return InvocationState of final OperationInvokedReport
+     * @throws ExecutionException if retrieving the final OperationInvokedReport is aborted
+     * @throws InterruptedException if retrieving the final OperationInvokedReport is interrupted
+     * @throws TimeoutException if retrieving the final OperationInvokedReport times out
+     */
     private static InvocationState invokeSetValue(SetServiceAccess setServiceAccess, String handle, BigDecimal value) throws ExecutionException, InterruptedException, TimeoutException {
         LOG.info("Invoking SetValue for handle {} with value {}", handle, value);
         SetValue setValue = new SetValue();
@@ -168,6 +199,16 @@ public class Consumer {
         return reportParts.get(reportParts.size() - 1).getInvocationInfo().getInvocationState();
     }
 
+    /**
+     * Synchronously invokes a SetString on a given SetService using the provided handle and argument
+     * @param setServiceAccess SetService to call Activate on
+     * @param handle operation handle
+     * @param value desired value of operation target
+     * @return InvocationState of final OperationInvokedReport
+     * @throws ExecutionException if retrieving the final OperationInvokedReport is aborted
+     * @throws InterruptedException if retrieving the final OperationInvokedReport is interrupted
+     * @throws TimeoutException if retrieving the final OperationInvokedReport times out
+     */
     private static InvocationState invokeSetString(SetServiceAccess setServiceAccess, String handle, String value) throws ExecutionException, InterruptedException, TimeoutException {
         LOG.info("Invoking SetString for handle {} with value {}", handle, value);
         SetString setString = new SetString();
@@ -196,6 +237,7 @@ public class Consumer {
         var consumer = new Consumer(networkInterface);
         consumer.startUp();
 
+        // this map is used to track the outcome of each of the nine steps listed for this class
         Map<Integer, Boolean> resultMap = new HashMap<>(
                 Map.of(
                         1, false,
@@ -210,20 +252,16 @@ public class Consumer {
                 )
         );
 
-        Runtime.getRuntime().addShutdownHook(new Thread() {
-            public void run() {
-                var keys = new ArrayList<Integer>(resultMap.keySet());
-                Collections.sort(keys);
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            var keys = new ArrayList<>(resultMap.keySet());
+            Collections.sort(keys);
 
-                keys.forEach(key -> {
-                    System.out.println(
-                            String.format("### Test %s ### %s", key, resultMap.get(key) ? "passed" : "failed")
-                    );
-                });
-            }
-        });
+            keys.forEach(key -> System.out.println(
+                    String.format("### Test %s ### %s", key, resultMap.get(key) ? "passed" : "failed")
+            ));
+        }));
 
-        // see if epr device is available
+        // see if device using the provided epr address is available
         LOG.info("Starting discovery for {}", targetEpr);
         final SettableFuture<List<String>> xAddrs = SettableFuture.create();
         DiscoveryObserver obs = new DiscoveryObserver() {
@@ -238,13 +276,12 @@ public class Consumer {
                 }
             }
         };
-
-        // When explicit discovery is triggered (filter set to none)
         consumer.getClient().registerDiscoveryObserver(obs);
 
+        // filter discovery for SDC devices only
         SdcDiscoveryFilterBuilder discoveryFilterBuilder = SdcDiscoveryFilterBuilder.create();
         consumer.getClient().probe(discoveryFilterBuilder.get());
-        // default probe timeout is 10 seconds, so 10 should be sufficient
+
         try {
             List<String> targetXAddrs = xAddrs.get(MAX_WAIT_SEC, TimeUnit.SECONDS);
             resultMap.put(1, true);
@@ -283,8 +320,6 @@ public class Consumer {
             LOG.error("Couldn't attach to remote mdib and subscriptions for {}", targetEpr, e);
             System.exit(1);
         }
-
-        Thread.sleep(1000);
 
         // attach report listener
         var reportObs = new ConsumerReportProcessor();

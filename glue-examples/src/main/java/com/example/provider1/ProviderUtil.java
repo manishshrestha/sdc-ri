@@ -17,6 +17,12 @@ import org.somda.sdc.glue.guice.DefaultGlueConfigModule;
 import org.somda.sdc.glue.guice.DefaultGlueModule;
 import org.somda.sdc.glue.guice.GlueDpwsConfigModule;
 
+/**
+ * This class provides the configuration used for the provider instance.
+ * <p>
+ * Overwriting configuration steps allows customizing the behavior of the framework through
+ * injection.
+ */
 public class ProviderUtil {
     private final Injector injector;
 

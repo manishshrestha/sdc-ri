@@ -45,10 +45,17 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+/**
+ * This is an example provider using an mdib provided as XML as well as TLS secured communication.
+ *
+ * It is the complement to {@link com.example.consumer1.Consumer} in terms of used
+ * functionality and features.
+ */
 public class Provider extends AbstractIdleService {
     static {
         // TODO: Workaround for
         //  javax.net.ssl.SSLHandshakeException: No subject alternative names present
+        //  when using the jersey client
         HttpsURLConnection.setDefaultHostnameVerifier((hostname, session) -> true);
     }
 
@@ -61,8 +68,15 @@ public class Provider extends AbstractIdleService {
     private SdcDevice sdcDevice;
 
     private InstanceIdentifier instanceIdentifier;
+    private Optional<LocationDetail> currentLocation;
 
-    public Provider(String networkAdapterName, String epr) throws SocketException {
+    /**
+     * Create an instance of an SDC Provider
+     * @param networkAdapterName name of the adapter the provider bindes to, e.g. eth1
+     * @param eprAddress WS-Addressing EndpointReference Address element
+     * @throws SocketException thrown if network adapter cannot be set up
+     */
+    public Provider(String networkAdapterName, String eprAddress) throws SocketException {
         this.injector = IT.getInjector();
         final NetworkInterface networkInterface = NetworkInterface.getByName(networkAdapterName);
         this.dpwsFramework = injector.getInstance(DpwsFrameworkFactory.class).createDpwsFramework(networkInterface);
@@ -73,7 +87,7 @@ public class Provider extends AbstractIdleService {
             @Override
             public EndpointReferenceType getEndpointReference() {
                 return injector.getInstance(WsAddressingUtil.class)
-                        .createEprWithAddress(epr);
+                        .createEprWithAddress(eprAddress);
             }
 
             @Override
@@ -87,6 +101,8 @@ public class Provider extends AbstractIdleService {
 
         this.instanceIdentifier = new InstanceIdentifier();
         this.instanceIdentifier.setRootName("AwesomeExampleInstance");
+
+        this.currentLocation = Optional.empty();
     }
 
     @Override
@@ -128,6 +144,11 @@ public class Provider extends AbstractIdleService {
 
         dpwsFramework.startAsync().awaitRunning();
         sdcDevice.startAsync().awaitRunning();
+
+        if (currentLocation.isPresent()) {
+            // update the location again to match mdib and scopes
+            this.setLocation(currentLocation.get());
+        }
     }
 
     @Override
@@ -151,7 +172,7 @@ public class Provider extends AbstractIdleService {
                         GlueConstants.SCOPE_SDC_PROVIDER
                 )
         );
-        if (this.isRunning()) {
+        if (this.isRunning() || this.state() == State.STARTING) {
             LOG.info("Updating location context");
             final MdibStateModifications locMod = MdibStateModifications.create(MdibStateModifications.Type.CONTEXT);
             // update location state
@@ -173,6 +194,7 @@ public class Provider extends AbstractIdleService {
             }
             mdibAccess.writeStates(locMod);
         }
+        this.currentLocation = Optional.of(location);
     }
 
     private void addMetricQuality(AbstractMetricValue val) {
@@ -184,6 +206,11 @@ public class Provider extends AbstractIdleService {
         }
     }
 
+    /**
+     * Adds a sine wave to the data of a waveform
+     * @param handle descriptor handle of waveform state
+     * @throws PreprocessingException if changes could not be committed to mdib
+     */
     public void changeWaveform(String handle) throws PreprocessingException {
         final MdibStateModifications modifications = MdibStateModifications.create(MdibStateModifications.Type.WAVEFORM);
 
@@ -221,6 +248,11 @@ public class Provider extends AbstractIdleService {
         mdibAccess.writeStates(modifications);
     }
 
+    /**
+     * Increments the value of a NumericMetricState.
+     * @param handle descriptor handle of metric state
+     * @throws PreprocessingException if changes could not be committed to mdib
+     */
     public void changeNumericMetric(String handle) throws PreprocessingException {
         Optional<NumericMetricState> state = mdibAccess.getState(handle, NumericMetricState.class);
         NumericMetricState clone = (NumericMetricState) state.get().clone();
@@ -239,6 +271,11 @@ public class Provider extends AbstractIdleService {
         mdibAccess.writeStates(MdibStateModifications.create(MdibStateModifications.Type.METRIC).add(clone));
     }
 
+    /**
+     * Changes the content of a StringMetricState, toggling between "UPPERCASE" and "lowercase" as content.
+     * @param handle descriptor handle of metric state
+     * @throws PreprocessingException if changes could not be committed to mdib
+     */
     public void changeStringMetric(String handle) throws PreprocessingException {
         Optional<StringMetricState> state = mdibAccess.getState(handle, StringMetricState.class);
         StringMetricState clone = (StringMetricState) state.get().clone();
@@ -252,7 +289,7 @@ public class Provider extends AbstractIdleService {
             }
         } else {
             val = new StringMetricValue();
-            val.setValue("inital VALUE");
+            val.setValue("initial VALUE");
         }
         val.setDeterminationTime(Timestamp.now());
 
@@ -262,6 +299,11 @@ public class Provider extends AbstractIdleService {
         mdibAccess.writeStates(MdibStateModifications.create(MdibStateModifications.Type.METRIC).add(clone));
     }
 
+    /**
+     * Changes the content of an EnumStringMetricState, selecting the next allowed value.
+     * @param handle descriptor handle of metric state
+     * @throws PreprocessingException if changes could not be committed to mdib
+     */
     public void changeEnumStringMetric(String handle) throws PreprocessingException {
         Optional<MdibEntity> entityOpt = mdibAccess.getEntity(handle);
         MdibEntity mdibEntity = entityOpt.get();
@@ -299,6 +341,11 @@ public class Provider extends AbstractIdleService {
         mdibAccess.writeStates(MdibStateModifications.create(MdibStateModifications.Type.METRIC).add(clone));
     }
 
+    /**
+     * Toggles an AlertSignalState and AlertConditionState between presence on and off
+     * @param signalHandle signal handle to toggle
+     * @param conditionHandle matching condition to toggle
+     */
     public void changeAlertStuff(String signalHandle, String conditionHandle) {
 
         var signalEntity = mdibAccess.getEntity(signalHandle).get();
@@ -326,7 +373,6 @@ public class Provider extends AbstractIdleService {
 
     public static void main(String[] args) throws IOException, PreprocessingException {
         final Injector injector = IT.getInjector();
-        final ModificationsBuilderFactory modificationsBuilderFactory = injector.getInstance(ModificationsBuilderFactory.class);
 
         Provider provider = new Provider(
                 "eth1",
@@ -341,10 +387,6 @@ public class Provider extends AbstractIdleService {
         provider.setLocation(loc);
 
         provider.startAsync().awaitRunning();
-
-        // TODO: This is awful and stupid.
-        // set a location to add it to contexts as well
-        provider.setLocation(loc);
 
         // generate some data
         var t1 = new Thread(() -> {
