@@ -238,7 +238,6 @@ public class ApacheTransportBindingFactoryImpl implements TransportBindingFactor
                 LOG.error("Couldn't read response", e);
                 inputStream = new ByteArrayInputStream(new byte[0]);
             }
-            // TODO: Do we really want to attach the communication log to a loglevel?
             if (LOG.isDebugEnabled()) {
                 inputStream = communicationLog.logHttpMessage(
                         CommunicationLogImpl.HttpDirection.OUTBOUND_RESPONSE,
