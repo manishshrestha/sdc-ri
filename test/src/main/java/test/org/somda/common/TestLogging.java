@@ -15,7 +15,8 @@ public class TestLogging {
     public static void configure() {
         Configurator.initialize(new DefaultConfiguration());
         Configurator.setRootLevel(Level.DEBUG);
-        // silence the apache wire log output, it's too much to handle in CI
+        // silence the apache httpclient log output a little, it's too much to handle in CI
         Configurator.setAllLevels("org.apache.http.wire", Level.INFO);
+        Configurator.setAllLevels("org.apache.http.headers", Level.INFO);
     }
 }
