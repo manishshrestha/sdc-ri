@@ -10,6 +10,7 @@ import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.config.SocketConfig;
 import org.apache.http.entity.ByteArrayEntity;
+import org.apache.http.impl.client.DefaultHttpRequestRetryHandler;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
@@ -94,6 +95,8 @@ public class ApacheTransportBindingFactoryImpl implements TransportBindingFactor
                 .setMaxConnPerRoute(1)
                 // allow reusing ssl connections in the pool
                 .disableConnectionState()
+                // retry every request just once in case the socket has died
+                .setRetryHandler(new DefaultHttpRequestRetryHandler(1, false))
                 // disable gzip compression for now
                 .disableContentCompression();
     }
@@ -206,9 +209,9 @@ public class ApacheTransportBindingFactoryImpl implements TransportBindingFactor
             HttpResponse response;
 
             try {
+                // no retry handling is required as apache httpclient already does
                 response = this.client.execute(post);
             } catch (SocketException e) {
-                // TODO: retry on socket exception? Connection might've died
                 LOG.error("No response received in request to {}", this.clientUri, e);
                 throw new TransportBindingException(e);
             } catch (IOException e) {
