@@ -73,8 +73,9 @@ public class Consumer {
 
     /**
      * Creates an SDC Consumer instance.
+     *
      * @param adapterName Optional adapter name to bind to, otherwise localhost default interface is chosen
-     * @throws SocketException if network adapter couldn't be bound
+     * @throws SocketException      if network adapter couldn't be bound
      * @throws UnknownHostException if localhost couldn't be determined
      */
     public Consumer(@Nullable String adapterName) throws SocketException, UnknownHostException {
@@ -112,6 +113,7 @@ public class Consumer {
 
     /**
      * Parse command line arguments for epr address and network interface
+     *
      * @param args array of arguments, as passed to main
      * @return instance of parsed command line arguments
      */
@@ -145,13 +147,14 @@ public class Consumer {
 
     /**
      * Synchronously invokes an ActivateOperation on a given SetService using the provided handle and arguments
+     *
      * @param setServiceAccess SetService to call Activate on
-     * @param handle operation handle
-     * @param args activate arguments
+     * @param handle           operation handle
+     * @param args             activate arguments
      * @return InvocationState of final OperationInvokedReport
-     * @throws ExecutionException if retrieving the final OperationInvokedReport is aborted
+     * @throws ExecutionException   if retrieving the final OperationInvokedReport is aborted
      * @throws InterruptedException if retrieving the final OperationInvokedReport is interrupted
-     * @throws TimeoutException if retrieving the final OperationInvokedReport times out
+     * @throws TimeoutException     if retrieving the final OperationInvokedReport times out
      */
     private static InvocationState invokeActivate(SetServiceAccess setServiceAccess, String handle, List<String> args) throws ExecutionException, InterruptedException, TimeoutException {
         LOG.info("Invoking Activate for handle {} with arguments {}", handle, args);
@@ -176,13 +179,14 @@ public class Consumer {
 
     /**
      * Synchronously invokes a SetValue on a given SetService using the provided handle and argument
+     *
      * @param setServiceAccess SetService to call Activate on
-     * @param handle operation handle
-     * @param value desired value of operation target
+     * @param handle           operation handle
+     * @param value            desired value of operation target
      * @return InvocationState of final OperationInvokedReport
-     * @throws ExecutionException if retrieving the final OperationInvokedReport is aborted
+     * @throws ExecutionException   if retrieving the final OperationInvokedReport is aborted
      * @throws InterruptedException if retrieving the final OperationInvokedReport is interrupted
-     * @throws TimeoutException if retrieving the final OperationInvokedReport times out
+     * @throws TimeoutException     if retrieving the final OperationInvokedReport times out
      */
     private static InvocationState invokeSetValue(SetServiceAccess setServiceAccess, String handle, BigDecimal value) throws ExecutionException, InterruptedException, TimeoutException {
         LOG.info("Invoking SetValue for handle {} with value {}", handle, value);
@@ -201,13 +205,14 @@ public class Consumer {
 
     /**
      * Synchronously invokes a SetString on a given SetService using the provided handle and argument
+     *
      * @param setServiceAccess SetService to call Activate on
-     * @param handle operation handle
-     * @param value desired value of operation target
+     * @param handle           operation handle
+     * @param value            desired value of operation target
      * @return InvocationState of final OperationInvokedReport
-     * @throws ExecutionException if retrieving the final OperationInvokedReport is aborted
+     * @throws ExecutionException   if retrieving the final OperationInvokedReport is aborted
      * @throws InterruptedException if retrieving the final OperationInvokedReport is interrupted
-     * @throws TimeoutException if retrieving the final OperationInvokedReport times out
+     * @throws TimeoutException     if retrieving the final OperationInvokedReport times out
      */
     private static InvocationState invokeSetString(SetServiceAccess setServiceAccess, String handle, String value) throws ExecutionException, InterruptedException, TimeoutException {
         LOG.info("Invoking SetString for handle {} with value {}", handle, value);
@@ -335,6 +340,7 @@ public class Consumer {
         long numLocationContexts = contextStates.stream().filter(x -> LocationContextState.class.isAssignableFrom(x.getClass())).count();
         resultMap.put(6, numLocationContexts >= 1);
 
+        // wait for incoming reports
         Thread.sleep(REPORT_TIMEOUT);
 
         // verify the number of reports for the expected metrics is at least five during the timeout
