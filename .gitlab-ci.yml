@@ -30,6 +30,7 @@ test:
       - udp_traffic.pcap
       - ./**/target/surefire-reports/TEST-*.xml
       - ./**/target/failsafe-reports/TEST-*.xml
+      - ./**/ConsoleOutput.txt
     reports:
       junit:
         - ./**/target/surefire-reports/TEST-*.xml
