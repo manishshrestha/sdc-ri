@@ -179,7 +179,7 @@ public class WsEventingReferenceParametersTest extends DpwsTest {
         assertEquals(IDENTIFIER, o.getValue());
     }
 
-    public static class EventSourceInterceptorMock extends EventSourceInterceptor  {
+    public static class EventSourceInterceptorMock extends EventSourceInterceptor {
 
         public static SettableFuture<ReferenceParametersType> unsubscribeRefParam = SettableFuture.create();
         public static SettableFuture<ReferenceParametersType> getStatusRefParam = SettableFuture.create();
