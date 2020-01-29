@@ -9,7 +9,6 @@ import org.slf4j.LoggerFactory;
 import org.somda.sdc.biceps.common.MdibDescriptionModifications;
 import org.somda.sdc.biceps.common.MdibEntity;
 import org.somda.sdc.biceps.common.MdibStateModifications;
-import org.somda.sdc.biceps.common.Timestamp;
 import org.somda.sdc.biceps.common.access.ReadTransaction;
 import org.somda.sdc.biceps.common.storage.PreprocessingException;
 import org.somda.sdc.biceps.model.participant.*;
@@ -38,6 +37,7 @@ import java.math.BigInteger;
 import java.math.RoundingMode;
 import java.net.NetworkInterface;
 import java.net.SocketException;
+import java.time.Instant;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -242,7 +242,7 @@ public class Provider extends AbstractIdleService {
                                 .setScale(15, RoundingMode.DOWN));
             });
             sampleArrayValue.setSamples(values);
-            sampleArrayValue.setDeterminationTime(Timestamp.now());
+            sampleArrayValue.setDeterminationTime(Instant.now());
 
             state.setMetricValue(sampleArrayValue);
 
@@ -268,7 +268,7 @@ public class Provider extends AbstractIdleService {
             val = new NumericMetricValue();
             val.setValue(BigDecimal.ONE);
         }
-        val.setDeterminationTime(Timestamp.now());
+        val.setDeterminationTime(Instant.now());
 
         addMetricQuality(val);
 
@@ -297,7 +297,7 @@ public class Provider extends AbstractIdleService {
             val = new StringMetricValue();
             val.setValue("initial VALUE");
         }
-        val.setDeterminationTime(Timestamp.now());
+        val.setDeterminationTime(Instant.now());
 
         addMetricQuality(val);
 
@@ -346,7 +346,7 @@ public class Provider extends AbstractIdleService {
             val = new StringMetricValue();
             val.setValue(allowedValue.get(0));
         }
-        val.setDeterminationTime(Timestamp.now());
+        val.setDeterminationTime(Instant.now());
         addMetricQuality(val);
         state.setMetricValue(val);
         mdibAccess.writeStates(MdibStateModifications.create(MdibStateModifications.Type.METRIC).add(state));

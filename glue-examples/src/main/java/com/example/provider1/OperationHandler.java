@@ -4,7 +4,6 @@ import com.example.ProviderMdibConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.somda.sdc.biceps.common.MdibStateModifications;
-import org.somda.sdc.biceps.common.Timestamp;
 import org.somda.sdc.biceps.common.storage.PreprocessingException;
 import org.somda.sdc.biceps.model.message.InvocationError;
 import org.somda.sdc.biceps.model.message.InvocationState;
@@ -16,6 +15,7 @@ import org.somda.sdc.glue.provider.sco.InvocationResponse;
 import org.somda.sdc.glue.provider.sco.OperationInvocationReceiver;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 
@@ -105,7 +105,7 @@ public class OperationHandler implements OperationInvocationReceiver {
             targetState.setMetricValue(new NumericMetricValue());
         }
         targetState.getMetricValue().setValue(data);
-        targetState.getMetricValue().setDeterminationTime(Timestamp.now());
+        targetState.getMetricValue().setDeterminationTime(Instant.now());
 
         final MdibStateModifications mod = MdibStateModifications.create(MdibStateModifications.Type.METRIC);
 
@@ -171,7 +171,7 @@ public class OperationHandler implements OperationInvocationReceiver {
             targetState.setMetricValue(new StringMetricValue());
         }
         targetState.getMetricValue().setValue(data);
-        targetState.getMetricValue().setDeterminationTime(Timestamp.now());
+        targetState.getMetricValue().setDeterminationTime(Instant.now());
 
         final MdibStateModifications mod = MdibStateModifications.create(MdibStateModifications.Type.METRIC);
         mod.add(targetState);
