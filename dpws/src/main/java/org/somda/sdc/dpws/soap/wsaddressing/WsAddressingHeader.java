@@ -1,6 +1,7 @@
 package org.somda.sdc.dpws.soap.wsaddressing;
 
 import org.somda.sdc.dpws.soap.wsaddressing.model.AttributedURIType;
+import org.somda.sdc.dpws.soap.wsaddressing.model.ReferenceParametersType;
 
 import javax.annotation.Nullable;
 import java.util.Optional;
@@ -15,6 +16,7 @@ public class WsAddressingHeader {
     private AttributedURIType messageId;
     private AttributedURIType to;
     private AttributedURIType relatesTo;
+    private ReferenceParametersType referenceParameters;
 
     public Optional<AttributedURIType> getAction() {
         return Optional.ofNullable(action);
@@ -46,5 +48,13 @@ public class WsAddressingHeader {
 
     public void setRelatesTo(@Nullable AttributedURIType relatesTo) {
         this.relatesTo = relatesTo;
+    }
+
+    public Optional<ReferenceParametersType> getReferenceParameters() {
+        return Optional.ofNullable(referenceParameters);
+    }
+
+    public void setReferenceParameters(@Nullable ReferenceParametersType referenceParameters) {
+        this.referenceParameters = referenceParameters;
     }
 }
