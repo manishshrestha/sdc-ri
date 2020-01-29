@@ -41,7 +41,7 @@ public interface MdibEntity {
      * Obtains the entity's descriptor as a given type.
      *
      * @param theClass the class to cast.
-     * @param <T> the descriptor class type.
+     * @param <T>      the descriptor class type.
      * @return descriptor information currently associated with the entity.
      */
     <T extends AbstractDescriptor> Optional<T> getDescriptor(Class<T> theClass);
@@ -56,18 +56,40 @@ public interface MdibEntity {
     String getHandle();
 
     /**
-     * Obtain the entity's parent handle.
+     * Obtains the entity's parent handle.
      *
      * @return the handle of the parent if known, otherwise {@linkplain Optional#empty()}.
      */
     Optional<String> getParent();
 
     /**
-     * Obtain a copy of the MDIB entity's state list.
+     * Obtains a copy of the MDIB entity's state list.
      *
      * @return list of states currently associated with the entity.
      */
     List<AbstractState> getStates();
+
+    /**
+     * Obtains the list of states cast to a specific type.
+     *
+     * @param theClass the class to cast.
+     * @param <T>      the state class type.
+     * @return list of cast states currently associated with the entity.
+     * Please note that this list is empty either if there is no state available or there is no state available with
+     * the given type information.
+     */
+    <T extends AbstractState> List<T> getStates(Class<T> theClass);
+
+    /**
+     * Obtains the first state if available.
+     * <p>
+     * This function is useful to retrieve single state information.
+     *
+     * @param theClass the class to cast.
+     * @param <T>      the state class type.
+     * @return the cast type of {@linkplain Optional#empty()} if there is no first state or a class cast error.
+     */
+    <T extends AbstractState> Optional<T> getFirstState(Class<T> theClass);
 
     /**
      * Convenience method to execute code if en entity hosts a single-state.
