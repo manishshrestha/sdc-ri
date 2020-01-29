@@ -55,6 +55,13 @@ public class WsAddressingConstants {
     public static final QName TO = new QName(NAMESPACE, "To");
 
     /**
+     * WS-Addressing wsa:ReferenceParameters header element.
+     *
+     * @see <a href="https://www.w3.org/TR/2006/REC-ws-addr-core-20060509/#msgaddrprops">Message Addressing Properties</a>
+     */
+    public static final QName REFERENCE_PARAMETERS =  new QName(NAMESPACE, "ReferenceParameters");
+
+    /**
      * ActionNotSupported fault QName.
      *
      * @see <a href="https://www.w3.org/TR/2006/REC-ws-addr-soap-20060509/#actionfault">Action Not Supported</a>

@@ -207,6 +207,7 @@ public class TransportBindingFactoryImpl implements TransportBindingFactory {
                 }
             } catch (JAXBException e) {
                 LOG.debug("Unmarshalling of a message failed: {}", e.getMessage());
+                LOG.trace("Unmarshalling of a message failed", e);
                 throw new TransportBindingException(
                         String.format("Receiving of a response failed due to unmarshalling problem: %s",
                                 e.getMessage()));

@@ -2,6 +2,7 @@ package org.somda.sdc.dpws.guice;
 
 import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.common.util.concurrent.MoreExecutors;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.inject.AbstractModule;
 import com.google.inject.assistedinject.FactoryModuleBuilder;
 import org.somda.sdc.dpws.CommunicationLog;
@@ -19,9 +20,9 @@ import org.somda.sdc.dpws.device.DeviceImpl;
 import org.somda.sdc.dpws.device.factory.DeviceFactory;
 import org.somda.sdc.dpws.device.helper.DiscoveryDeviceUdpMessageProcessor;
 import org.somda.sdc.dpws.device.helper.factory.DeviceHelperFactory;
+import org.somda.sdc.dpws.factory.ApacheTransportBindingFactoryImpl;
 import org.somda.sdc.dpws.factory.DpwsFrameworkFactory;
 import org.somda.sdc.dpws.factory.TransportBindingFactory;
-import org.somda.sdc.dpws.factory.TransportBindingFactoryImpl;
 import org.somda.sdc.dpws.helper.NotificationSourceUdpCallback;
 import org.somda.sdc.dpws.helper.factory.DpwsHelperFactory;
 import org.somda.sdc.dpws.http.HttpServerRegistry;
@@ -93,7 +94,7 @@ public class DefaultDpwsModule extends AbstractModule {
                 .build(DpwsFrameworkFactory.class));
 
         bind(TransportBindingFactory.class)
-                .to(TransportBindingFactoryImpl.class);
+                .to(ApacheTransportBindingFactoryImpl.class).asEagerSingleton();
 
 
         install(new FactoryModuleBuilder()
@@ -129,7 +130,13 @@ public class DefaultDpwsModule extends AbstractModule {
 
         bind(ScheduledExecutorService.class)
                 .annotatedWith(WatchDogScheduler.class)
-                .toProvider(() -> Executors.newScheduledThreadPool(20));
+                .toProvider(() -> Executors.newScheduledThreadPool(
+                        20,
+                        new ThreadFactoryBuilder()
+                                .setNameFormat("WatchDogScheduler-thread-%d")
+                                .setDaemon(true)
+                                .build()
+                ));
 
         install(new FactoryModuleBuilder()
                 .implement(DiscoveryClientUdpProcessor.class, DiscoveryClientUdpProcessor.class)
@@ -141,7 +148,13 @@ public class DefaultDpwsModule extends AbstractModule {
     private void configureDevice() {
         bind(ScheduledExecutorService.class)
                 .annotatedWith(AppDelayExecutor.class)
-                .toInstance(Executors.newScheduledThreadPool(10));
+                .toInstance(Executors.newScheduledThreadPool(
+                        10,
+                        new ThreadFactoryBuilder()
+                                .setNameFormat("AppDelayExecutor-thread-%d")
+                                .setDaemon(true)
+                                .build()
+                        ));
 
         install(new FactoryModuleBuilder()
                 .implement(DiscoveryDeviceUdpMessageProcessor.class, DiscoveryDeviceUdpMessageProcessor.class)
@@ -163,7 +176,13 @@ public class DefaultDpwsModule extends AbstractModule {
     private void configureThreadPools() {
         bind(ListeningExecutorService.class)
                 .annotatedWith(NetworkJobThreadPool.class)
-                .toInstance(MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(10)));
+                .toInstance(MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(
+                        10,
+                        new ThreadFactoryBuilder()
+                                .setNameFormat("NetworkJobThreadPool-thread-%d")
+                                .setDaemon(true)
+                                .build()
+                        )));
     }
 
     private void configureMarshalling() {
@@ -179,7 +198,13 @@ public class DefaultDpwsModule extends AbstractModule {
     private void configureWsDiscovery() {
         bind(ExecutorService.class)
                 .annotatedWith(WsDiscovery.class)
-                .toInstance(Executors.newFixedThreadPool(10));
+                .toInstance(Executors.newFixedThreadPool(
+                        10,
+                        new ThreadFactoryBuilder()
+                                .setNameFormat("WsDiscovery-thread-%d")
+                                .setDaemon(true)
+                                .build()
+                        ));
 
         bind(UdpMessageQueueService.class)
                 .annotatedWith(DiscoveryUdpQueue.class)

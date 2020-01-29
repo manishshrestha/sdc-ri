@@ -25,6 +25,12 @@ test:
 
   artifacts:
     when: on_failure
+    expire_in: 4 weeks
     paths:
       - udp_traffic.pcap
-    expire_in: 4 weeks
+      - ./**/target/surefire-reports/TEST-*.xml
+      - ./**/target/failsafe-reports/TEST-*.xml
+    reports:
+      junit:
+        - ./**/target/surefire-reports/TEST-*.xml
+        - ./**/target/failsafe-reports/TEST-*.xml

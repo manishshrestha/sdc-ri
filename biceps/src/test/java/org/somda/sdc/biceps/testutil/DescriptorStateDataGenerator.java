@@ -6,6 +6,7 @@ import org.somda.sdc.biceps.model.participant.*;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.time.Duration;
+import java.time.Instant;
 import java.util.Arrays;
 
 public class DescriptorStateDataGenerator {
@@ -68,8 +69,8 @@ public class DescriptorStateDataGenerator {
         clockState.setCriticalUse(false);
         clockState.setActiveSyncProtocol(baseTypes.codedValue("time-protocol1"));
         clockState.setAccuracy(BigDecimal.ONE);
-        clockState.setDateAndTime(BigInteger.valueOf(1573588068000L));
-        clockState.setLastSet(BigInteger.valueOf(1573588068000L));
+        clockState.setDateAndTime(Instant.ofEpochMilli(1580152377910L));
+        clockState.setLastSet(Instant.ofEpochMilli(1580152377910L).minus(Duration.ofHours(5)));
         clockState.setReferenceSource(Arrays.asList("0.de.pool.ntp.org"));
         clockState.setRemoteSync(true);
         clockState.setTimeZone("CST6CDT,M3.2.0/2:00:00,M11.1.0/2:00:00");
@@ -162,7 +163,7 @@ public class DescriptorStateDataGenerator {
     public AlertSystemState alertSystemState() {
         AlertSystemState alertSystemState = participantFactory.createAlertSystemState();
         alertState(alertSystemState);
-        alertSystemState.setLastSelfCheck(BigInteger.valueOf(1573588068000L));
+        alertSystemState.setLastSelfCheck(Instant.ofEpochMilli(1580152377910L).minus(Duration.ofHours(2)));
         alertSystemState.setSelfCheckCount(Long.valueOf(1234));
         alertSystemState.setSystemSignalActivation(Arrays.asList(baseTypes.systemSignalActivation(AlertSignalManifestation.AUD),
                 baseTypes.systemSignalActivation(AlertSignalManifestation.VIS)));
@@ -187,7 +188,7 @@ public class DescriptorStateDataGenerator {
         alertState(alertConditionState);
         alertConditionState.setActualConditionGenerationDelay(Duration.ofMillis(50));
         alertConditionState.setActualPriority(AlertConditionPriority.ME);
-        alertConditionState.setDeterminationTime(BigInteger.valueOf(1573588068000L));
+        alertConditionState.setDeterminationTime(Instant.ofEpochMilli(1580152377910L));
         alertConditionState.setPresence(false);
         alertConditionState.setRank(5);
         return alertConditionState;
@@ -213,7 +214,7 @@ public class DescriptorStateDataGenerator {
         alertState(limitAlertConditionState);
         limitAlertConditionState.setActualConditionGenerationDelay(Duration.ofMillis(10));
         limitAlertConditionState.setActualPriority(AlertConditionPriority.NONE);
-        limitAlertConditionState.setDeterminationTime(BigInteger.valueOf(223456789));
+        limitAlertConditionState.setDeterminationTime(Instant.ofEpochMilli(1580152377910L));
         limitAlertConditionState.setPresence(false);
         limitAlertConditionState.setRank(3);
         limitAlertConditionState.setAutoLimitActivationState(AlertActivation.PSD);
@@ -515,7 +516,7 @@ public class DescriptorStateDataGenerator {
 
     private void contextState(AbstractContextState state, String handle) {
         state.setHandle(handle);
-        state.setBindingStartTime(BigInteger.valueOf(1573588068000L));
+        state.setBindingStartTime(Instant.ofEpochMilli(1580152377910L));
         state.setBindingMdibVersion(BigInteger.ZERO);
         state.setContextAssociation(ContextAssociation.ASSOC);
         state.setIdentification(Arrays.asList(baseTypes.instanceIdentifier(handle + "id0"),
@@ -552,10 +553,10 @@ public class DescriptorStateDataGenerator {
 
     private void metricValue(AbstractMetricValue value) {
         value.setAnnotation(baseTypes.annotations("metric-value-annotation"));
-        value.setDeterminationTime(BigInteger.valueOf(1573588068000L));
+        value.setDeterminationTime(Instant.ofEpochMilli(1580152377910L));
         value.setMetricQuality(baseTypes.metricQuality());
-        value.setStartTime(BigInteger.valueOf(1573588068000L));
-        value.setStopTime(BigInteger.valueOf(1573588068000L));
+        value.setStartTime(Instant.ofEpochMilli(1580152377910L).minus(Duration.ofSeconds(10)));
+        value.setStopTime(Instant.ofEpochMilli(1580152377910L));
     }
 
     private void operationDescriptor(AbstractOperationDescriptor descriptor, String targetHandle) {
