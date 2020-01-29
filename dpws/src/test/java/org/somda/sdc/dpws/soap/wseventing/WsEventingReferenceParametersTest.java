@@ -36,11 +36,9 @@ import org.somda.sdc.dpws.soap.interception.MessageInterceptor;
 import org.somda.sdc.dpws.soap.interception.RequestResponseObject;
 import org.somda.sdc.dpws.soap.wsaddressing.WsAddressingUtil;
 import org.somda.sdc.dpws.soap.wsaddressing.model.ReferenceParametersType;
-import org.somda.sdc.dpws.soap.wseventing.factory.NotificationWorkerFactory;
 import org.somda.sdc.dpws.soap.wseventing.factory.SubscriptionManagerFactory;
 import org.somda.sdc.dpws.soap.wseventing.factory.WsEventingEventSinkFactory;
 import org.somda.sdc.dpws.soap.wseventing.factory.WsEventingFaultFactory;
-import org.somda.sdc.dpws.soap.wseventing.helper.EventSourceTransportManager;
 import org.somda.sdc.dpws.soap.wseventing.helper.SubscriptionRegistry;
 import org.somda.sdc.dpws.soap.wseventing.model.SubscribeResponse;
 
@@ -196,17 +194,15 @@ public class WsEventingReferenceParametersTest extends DpwsTest {
                 JaxbUtil jaxbUtil,
                 WsAddressingUtil wsaUtil,
                 org.somda.sdc.dpws.soap.wseventing.model.ObjectFactory wseFactory,
-                EventSourceTransportManager eventSourceTransportManager,
                 SoapMessageFactory soapMessageFactory,
                 EnvelopeFactory envelopeFactory,
                 HttpServerRegistry httpServerRegistry,
                 Provider<RequestResponseServerHttpHandler> rrServerHttpHandlerProvider,
                 SubscriptionRegistry subscriptionRegistry,
-                NotificationWorkerFactory notificationWorkerFactory,
                 SubscriptionManagerFactory subscriptionManagerFactory,
                 HttpUriBuilder httpUriBuilder
         ) {
-            super(maxExpires, subscriptionManagerPath, soapUtil, faultFactory, jaxbUtil, wsaUtil, wseFactory, eventSourceTransportManager, soapMessageFactory, envelopeFactory, httpServerRegistry, rrServerHttpHandlerProvider, subscriptionRegistry, notificationWorkerFactory, subscriptionManagerFactory, httpUriBuilder);
+            super(maxExpires, subscriptionManagerPath, soapUtil, faultFactory, jaxbUtil, wsaUtil, wseFactory, soapMessageFactory, envelopeFactory, httpServerRegistry, rrServerHttpHandlerProvider, subscriptionRegistry, subscriptionManagerFactory, httpUriBuilder);
             this.soapUtil = soapUtil;
             this.wseFactory = wseFactory;
 
