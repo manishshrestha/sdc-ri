@@ -4,6 +4,7 @@ import com.google.inject.Inject;
 import org.somda.sdc.common.util.JaxbUtil;
 import org.somda.sdc.dpws.soap.wsaddressing.model.AttributedURIType;
 import org.somda.sdc.dpws.soap.wsaddressing.model.ObjectFactory;
+import org.somda.sdc.dpws.soap.wsaddressing.model.ReferenceParametersType;
 import org.somda.sdc.dpws.soap.wsaddressing.model.RelatesToType;
 
 import java.util.List;
@@ -41,6 +42,9 @@ public class WsAddressingMapper {
             relatesToType.setValue(attributedURIType.getValue());
             dest.add(wsaFactory.createRelatesTo(relatesToType));
         });
+        src.getReferenceParameters().ifPresent(referenceParameters -> {
+            dest.add(wsaFactory.createReferenceParameters(referenceParameters));
+        });
     }
 
     /**
@@ -71,6 +75,11 @@ public class WsAddressingMapper {
             Optional<RelatesToType> rt = jaxbUtil.extractElement(jaxbObject, WsAddressingConstants.RELATES_TO);
             if (rt.isPresent() && dest.getRelatesTo().isEmpty()) {
                 dest.setRelatesTo(wsaUtil.createAttributedURIType(rt.get().getValue()));
+            }
+
+            Optional<ReferenceParametersType> refPar = jaxbUtil.extractElement(jaxbObject, WsAddressingConstants.REFERENCE_PARAMETERS);
+            if (refPar.isPresent() && dest.getReferenceParameters().isEmpty()) {
+                dest.setReferenceParameters(refPar.get());
             }
         });
     }
