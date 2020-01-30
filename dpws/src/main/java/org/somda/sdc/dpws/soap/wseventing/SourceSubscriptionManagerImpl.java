@@ -21,7 +21,9 @@ import javax.inject.Named;
 import java.net.URI;
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.NoSuchElementException;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 
@@ -41,6 +43,9 @@ public class SourceSubscriptionManagerImpl extends AbstractExecutionThreadServic
     private NotificationSource notifyToSender;
     private NotificationSource endToSender;
 
+    private String subscriptionId;
+    private String notifyToUri;
+
     @AssistedInject
     SourceSubscriptionManagerImpl(@Assisted("SubscriptionManager") EndpointReferenceType subscriptionManagerEpr,
                                   @Assisted Duration expires,
@@ -56,11 +61,13 @@ public class SourceSubscriptionManagerImpl extends AbstractExecutionThreadServic
         this.transportBindingFactory = transportBindingFactory;
         this.wsaUtil = wsaUtil;
         this.networkJobExecutor = networkJobExecutor;
+        this.subscriptionId = UUID.randomUUID().toString();
         this.delegate = new SubscriptionManagerBase(notifyTo, endTo, subscriptionId, expires, subscriptionManagerEpr);
         this.notificationQueue = new ArrayBlockingQueue<>(notificationQueueCapacity);
 
         this.notifyToSender = null;
         this.endToSender = null;
+        this.notifyToUri = "";
     }
 
     @Override
@@ -126,18 +133,24 @@ public class SourceSubscriptionManagerImpl extends AbstractExecutionThreadServic
 
     @Override
     protected void startUp() {
-        final String uri = wsaUtil.getAddressUriAsString(getNotifyTo()).orElseThrow(() ->
+        notifyToUri = wsaUtil.getAddressUriAsString(getNotifyTo()).orElseThrow(() ->
                 new RuntimeException("Invalid notify-to EPR"));
         this.notifyToSender = notificationSourceFactory.createNotificationSource(
-                transportBindingFactory.createTransportBinding(URI.create(uri)));
+                transportBindingFactory.createTransportBinding(URI.create(notifyToUri)));
 
         if (getEndTo().isPresent()) {
             final Optional<String> addressUriAsString = wsaUtil.getAddressUriAsString(getEndTo().get());
             if (addressUriAsString.isPresent()) {
                 this.endToSender = notificationSourceFactory.createNotificationSource(
-                        transportBindingFactory.createTransportBinding(URI.create(uri)));
+                        transportBindingFactory.createTransportBinding(URI.create(notifyToUri)));
             }
         }
+
+        subscriptionId = wsaUtil.getAddressUriAsString(delegate.getSubscriptionManagerEpr()).orElseThrow(() ->
+                new NoSuchElementException("Subscription manager id could not be resolved"));
+
+        LOG.info("Source subscription manager '{}' started. Start delivering notifications to '{}'",
+                subscriptionId, notifyToUri);
     }
 
     @Override
@@ -146,10 +159,13 @@ public class SourceSubscriptionManagerImpl extends AbstractExecutionThreadServic
             try {
                 final QueueItem queueItem = notificationQueue.take();
                 if (queueItem instanceof QueueShutDownItem) {
+                    LOG.info("Source subscription manager '{}' received stop signal and is about to shut down", subscriptionId);
                     break;
                 }
                 notifyToSender.sendNotification(queueItem.getNotification().getPayload());
             } catch (Exception e) {
+                LOG.info("Source subscription manager '{}' ended unexpectedly", subscriptionId);
+                LOG.trace("Source subscription manager '{}' ended unexpectedly", subscriptionId, e);
                 break;
             }
         }
@@ -157,7 +173,8 @@ public class SourceSubscriptionManagerImpl extends AbstractExecutionThreadServic
 
     @Override
     protected void shutDown() {
-        // void
+        LOG.info("Source subscription manager '{}' shut down. Delivery to '{}' stopped.",
+                subscriptionId, notifyToUri);
     }
 
     @Override
@@ -166,7 +183,7 @@ public class SourceSubscriptionManagerImpl extends AbstractExecutionThreadServic
         notificationQueue.offer(new QueueShutDownItem());
     }
 
-    private class QueueItem {
+    private static class QueueItem {
         public Notification notification;
 
         QueueItem(@Nullable Notification notification) {
@@ -178,7 +195,7 @@ public class SourceSubscriptionManagerImpl extends AbstractExecutionThreadServic
         }
     }
 
-    private class QueueShutDownItem extends QueueItem {
+    private static class QueueShutDownItem extends QueueItem {
         QueueShutDownItem() {
             super(null);
         }
