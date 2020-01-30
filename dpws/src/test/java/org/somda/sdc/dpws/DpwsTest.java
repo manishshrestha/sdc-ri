@@ -9,14 +9,20 @@ import org.somda.sdc.dpws.guice.DefaultDpwsModule;
 import org.somda.sdc.common.guice.DefaultHelperModule;
 import test.org.somda.common.TestLogging;
 
+import java.util.List;
+
 /**
  * Test base class to provide common test functionality.
  */
 public class DpwsTest {
     private Injector injector;
-    private AbstractModule overridingModule;
+    private List<AbstractModule> overridingModule;
 
     protected void overrideBindings(AbstractModule module) {
+        this.overrideBindings(List.of(module));
+    }
+
+    protected void overrideBindings(List<AbstractModule> module) {
         this.overridingModule = module;
     }
 

@@ -34,6 +34,7 @@ import org.somda.sdc.dpws.soap.factory.SoapMessageFactory;
 import org.somda.sdc.dpws.soap.interception.Direction;
 import org.somda.sdc.dpws.soap.interception.MessageInterceptor;
 import org.somda.sdc.dpws.soap.interception.RequestResponseObject;
+import org.somda.sdc.dpws.soap.wsaddressing.WsAddressingConstants;
 import org.somda.sdc.dpws.soap.wsaddressing.WsAddressingUtil;
 import org.somda.sdc.dpws.soap.wsaddressing.model.ReferenceParametersType;
 import org.somda.sdc.dpws.soap.wseventing.factory.NotificationWorkerFactory;
@@ -43,10 +44,14 @@ import org.somda.sdc.dpws.soap.wseventing.factory.WsEventingFaultFactory;
 import org.somda.sdc.dpws.soap.wseventing.helper.EventSourceTransportManager;
 import org.somda.sdc.dpws.soap.wseventing.helper.SubscriptionRegistry;
 import org.somda.sdc.dpws.soap.wseventing.model.SubscribeResponse;
+import org.w3c.dom.Element;
 
-import javax.xml.bind.JAXBElement;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import java.net.URI;
 import java.time.Duration;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -60,8 +65,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class WsEventingReferenceParametersTest extends DpwsTest {
 
-    public static final String IDENTIFIER = "covfefe";
-
     private static final String HOST = "mock-host";
     private static final Integer PORT = 8080;
     private static final String HOSTED_SERVICE_PATH = "/hosted-service";
@@ -69,13 +72,15 @@ public class WsEventingReferenceParametersTest extends DpwsTest {
     private static final Duration MAX_EXPIRES = Duration.ofHours(3);
     private static final Duration FUTURE_WAIT = Duration.ofSeconds(1);
 
+    private static final String REFERENCE = "my_secret_is_cofveve";
+
 
     private EventSink wseSink;
     private NotificationSink notificationSink;
 
     @BeforeEach
     public void setUp() throws Exception {
-        overrideBindings(new DpwsModuleReplacements());
+        overrideBindings(List.of(new DpwsModuleReplacements()));
         super.setUp();
 
         getInjector().getInstance(SoapMarshalling.class).startAsync().awaitRunning();
@@ -107,6 +112,23 @@ public class WsEventingReferenceParametersTest extends DpwsTest {
 
     }
 
+    public void verifyReferenceParam(SettableFuture<Collection<Element>> future) throws Exception {
+        Collection<Element> incomingRefParm;
+        incomingRefParm = future.get(FUTURE_WAIT.toSeconds(), TimeUnit.SECONDS);
+
+        assertEquals(1, incomingRefParm.size());
+
+        Element element = incomingRefParm.stream().findFirst().get();
+
+        assertEquals(1, element.getChildNodes().getLength());
+        assertEquals(REFERENCE, element.getTextContent());
+        assertTrue(element.hasAttributeNS(
+                WsAddressingConstants.IS_REFERENCE_PARAMETER.getNamespaceURI(),
+                WsAddressingConstants.IS_REFERENCE_PARAMETER.getLocalPart()
+                )
+        );
+    }
+
     @Test
     public void referenceParameterInUnsubscribe() throws Exception {
         assertFalse(EventSourceInterceptorMock.unsubscribeRefParam.isDone());
@@ -120,16 +142,8 @@ public class WsEventingReferenceParametersTest extends DpwsTest {
 
         wseSink.unsubscribe(resInfo.get().getSubscriptionId()).get();
 
-        ReferenceParametersType incomingRefParm;
-        incomingRefParm = EventSourceInterceptorMock.unsubscribeRefParam.get(FUTURE_WAIT.toSeconds(), TimeUnit.SECONDS);
-
-        assertEquals(1, incomingRefParm.getAny().size());
-        assertTrue(incomingRefParm.getAny().get(0) instanceof JAXBElement);
-
-        JAXBElement<String> o = (JAXBElement<String>) incomingRefParm.getAny().get(0);
-        assertEquals(IDENTIFIER, o.getValue());
+        verifyReferenceParam(EventSourceInterceptorMock.unsubscribeRefParam);
     }
-
 
     @Test
     public void referenceParameterInGetStatus() throws Exception {
@@ -144,14 +158,7 @@ public class WsEventingReferenceParametersTest extends DpwsTest {
 
         wseSink.unsubscribe(resInfo.get().getSubscriptionId()).get();
 
-        ReferenceParametersType incomingRefParm;
-        incomingRefParm = EventSourceInterceptorMock.getStatusRefParam.get(FUTURE_WAIT.toSeconds(), TimeUnit.SECONDS);
-
-        assertEquals(1, incomingRefParm.getAny().size());
-        assertTrue(incomingRefParm.getAny().get(0) instanceof JAXBElement);
-
-        JAXBElement<String> o = (JAXBElement<String>) incomingRefParm.getAny().get(0);
-        assertEquals(IDENTIFIER, o.getValue());
+        verifyReferenceParam(EventSourceInterceptorMock.getStatusRefParam);
     }
 
     @Test
@@ -169,23 +176,15 @@ public class WsEventingReferenceParametersTest extends DpwsTest {
 
         wseSink.unsubscribe(resInfo.get().getSubscriptionId()).get();
 
-        ReferenceParametersType incomingRefParm;
-        incomingRefParm = EventSourceInterceptorMock.renewRefParam.get(FUTURE_WAIT.toSeconds(), TimeUnit.SECONDS);
-
-        assertEquals(1, incomingRefParm.getAny().size());
-        assertTrue(incomingRefParm.getAny().get(0) instanceof JAXBElement);
-
-        JAXBElement<String> o = (JAXBElement<String>) incomingRefParm.getAny().get(0);
-        assertEquals(IDENTIFIER, o.getValue());
+        verifyReferenceParam(EventSourceInterceptorMock.renewRefParam);
     }
 
     public static class EventSourceInterceptorMock extends EventSourceInterceptor {
 
-        public static SettableFuture<ReferenceParametersType> unsubscribeRefParam = SettableFuture.create();
-        public static SettableFuture<ReferenceParametersType> getStatusRefParam = SettableFuture.create();
-        public static SettableFuture<ReferenceParametersType> renewRefParam = SettableFuture.create();
+        public static SettableFuture<Collection<Element>> unsubscribeRefParam = SettableFuture.create();
+        public static SettableFuture<Collection<Element>> getStatusRefParam = SettableFuture.create();
+        public static SettableFuture<Collection<Element>> renewRefParam = SettableFuture.create();
         private final SoapUtil soapUtil;
-        private org.somda.sdc.dpws.soap.wseventing.model.ObjectFactory wseFactory;
 
         @Inject
         EventSourceInterceptorMock(
@@ -208,7 +207,6 @@ public class WsEventingReferenceParametersTest extends DpwsTest {
         ) {
             super(maxExpires, subscriptionManagerPath, soapUtil, faultFactory, jaxbUtil, wsaUtil, wseFactory, eventSourceTransportManager, soapMessageFactory, envelopeFactory, httpServerRegistry, rrServerHttpHandlerProvider, subscriptionRegistry, notificationWorkerFactory, subscriptionManagerFactory, httpUriBuilder);
             this.soapUtil = soapUtil;
-            this.wseFactory = wseFactory;
 
             // reset the futures on every instantiation to avoid side effects
             unsubscribeRefParam = SettableFuture.create();
@@ -217,14 +215,25 @@ public class WsEventingReferenceParametersTest extends DpwsTest {
         }
 
         @Override
-        @MessageInterceptor(value = WsEventingConstants.WSA_ACTION_SUBSCRIBE, direction = Direction.REQUEST)
+        @MessageInterceptor(value = WsEventingConstants.WSE_ACTION_SUBSCRIBE, direction = Direction.REQUEST)
         void processSubscribe(RequestResponseObject rrObj) throws SoapFaultException {
             super.processSubscribe(rrObj);
 
             ReferenceParametersType referenceParameters = new ReferenceParametersType();
-            var identifier = wseFactory.createIdentifier(IDENTIFIER);
+            // create some random child element
+            var fac = DocumentBuilderFactory.newInstance();
+            DocumentBuilder builder;
+            try {
+                builder = fac.newDocumentBuilder();
+            } catch (ParserConfigurationException e) {
+                throw new RuntimeException(e);
+            }
+            var doc = builder.newDocument();
 
-            referenceParameters.setAny(List.of(identifier));
+            var root = doc.createElementNS("ftp://namespace.example.com", "MyFunkyRoot");
+            root.setTextContent(REFERENCE);
+
+            referenceParameters.setAny(List.of(root));
 
             SubscribeResponse body = soapUtil.getBody(rrObj.getResponse(), SubscribeResponse.class)
                     .orElseThrow(() -> new RuntimeException("err"));
@@ -236,30 +245,33 @@ public class WsEventingReferenceParametersTest extends DpwsTest {
 
 
         @Override
-        @MessageInterceptor(value = WsEventingConstants.WSA_ACTION_UNSUBSCRIBE, direction = Direction.REQUEST)
+        @MessageInterceptor(value = WsEventingConstants.WSE_ACTION_UNSUBSCRIBE, direction = Direction.REQUEST)
         void processUnsubscribe(RequestResponseObject rrObj) throws SoapFaultException {
             super.processUnsubscribe(rrObj);
 
-            var incRefParm = rrObj.getRequest().getWsAddressingHeader().getReferenceParameters();
-            incRefParm.ifPresent(referenceParametersType -> unsubscribeRefParam.set(referenceParametersType));
+            // find any reference parameters
+            var refParm = rrObj.getRequest().getWsAddressingHeader().getMappedReferenceParameters();
+            refParm.ifPresent(refParmContent -> unsubscribeRefParam.set(refParmContent));
         }
 
         @Override
-        @MessageInterceptor(value = WsEventingConstants.WSA_ACTION_GET_STATUS, direction = Direction.REQUEST)
+        @MessageInterceptor(value = WsEventingConstants.WSE_ACTION_GET_STATUS, direction = Direction.REQUEST)
         void processGetStatus(RequestResponseObject rrObj) throws SoapFaultException {
             super.processGetStatus(rrObj);
 
-            var incRefParm = rrObj.getRequest().getWsAddressingHeader().getReferenceParameters();
-            incRefParm.ifPresent(referenceParametersType -> getStatusRefParam.set(referenceParametersType));
+            // find any reference parameters
+            var refParm = rrObj.getRequest().getWsAddressingHeader().getMappedReferenceParameters();
+            refParm.ifPresent(refParmContent -> getStatusRefParam.set(refParmContent));
         }
 
         @Override
-        @MessageInterceptor(value = WsEventingConstants.WSA_ACTION_RENEW, direction = Direction.REQUEST)
+        @MessageInterceptor(value = WsEventingConstants.WSE_ACTION_RENEW, direction = Direction.REQUEST)
         void processRenew(RequestResponseObject rrObj) throws SoapFaultException {
             super.processRenew(rrObj);
 
-            var incRefParm = rrObj.getRequest().getWsAddressingHeader().getReferenceParameters();
-            incRefParm.ifPresent(referenceParametersType -> renewRefParam.set(referenceParametersType));
+            // find any reference parameters
+            var refParm = rrObj.getRequest().getWsAddressingHeader().getMappedReferenceParameters();
+            refParm.ifPresent(refParmContent -> renewRefParam.set(refParmContent));
         }
     }
 

@@ -141,6 +141,7 @@ public class JaxbSoapMarshalling extends AbstractIdleService implements SoapMars
         try {
             jaxbContext = JAXBContext.newInstance(contextPackages);
         } catch (JAXBException e) {
+            LOG.error("JAXB context for SOAP model(s) could not be created", e);
             throw new RuntimeException("JAXB context for SOAP model(s) could not be created");
         }
 

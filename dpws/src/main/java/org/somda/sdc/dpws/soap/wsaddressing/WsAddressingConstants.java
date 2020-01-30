@@ -27,6 +27,11 @@ public class WsAddressingConstants {
     public static final String NAMESPACE = "http://www.w3.org/2005/08/addressing";
 
     /**
+     * Defines the preferred prefix for the WS-Addressing 1.0 namespace
+     */
+    public static final String NAMESPACE_PREFIX = "wsa";
+
+    /**
      * WS-Addressing wsa:Action header element.
      *
      * @see <a href="https://www.w3.org/TR/2006/REC-ws-addr-core-20060509/#msgaddrprops">Message Addressing Properties</a>
@@ -59,7 +64,7 @@ public class WsAddressingConstants {
      *
      * @see <a href="https://www.w3.org/TR/2006/REC-ws-addr-core-20060509/#msgaddrprops">Message Addressing Properties</a>
      */
-    public static final QName REFERENCE_PARAMETERS =  new QName(NAMESPACE, "ReferenceParameters");
+    public static final QName REFERENCE_PARAMETERS = new QName(NAMESPACE, "ReferenceParameters");
 
     /**
      * ActionNotSupported fault QName.
@@ -88,4 +93,12 @@ public class WsAddressingConstants {
      * @see <a href="https://www.w3.org/TR/2006/REC-ws-addr-soap-20060509/#anonaddress">Use of Anonymous Address in SOAP Response Endpoints</a>
      */
     public static final String ANONYMOUS = NAMESPACE + "/anonymous";
+
+    /**
+     * IsReferenceParameter fault QName.
+     *
+     * @see <a href="https://www.w3.org/TR/2006/REC-ws-addr-soap-20060509/#missingmapfault">Message Addressing Header Required</a>
+     */
+    public static final QName IS_REFERENCE_PARAMETER = new QName(NAMESPACE, "IsReferenceParameter");
+
 }

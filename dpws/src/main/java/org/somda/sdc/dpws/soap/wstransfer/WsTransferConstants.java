@@ -21,6 +21,11 @@ public class WsTransferConstants {
     public static final String NAMESPACE = "http://schemas.xmlsoap.org/ws/2004/09/transfer";
 
     /**
+     * Defines the preferred prefix for the WS-Transfer namespace
+     */
+    public static final String NAMESPACE_PREFIX = "wst";
+
+    /**
      * Get request action URI.
      *
      * @see <a href="https://www.w3.org/Submission/2006/SUBM-WS-Transfer-20060927/#Get">Get</a>

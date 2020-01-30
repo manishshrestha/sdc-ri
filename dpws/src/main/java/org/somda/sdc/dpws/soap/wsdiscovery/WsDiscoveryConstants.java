@@ -25,6 +25,11 @@ public class WsDiscoveryConstants {
     public static final String NAMESPACE = "http://docs.oasis-open.org/ws-dd/ns/discovery/2009/01/";
 
     /**
+     * Defines the preferred prefix for the WS-Discovery 1.1 namespace
+     */
+    public static final String NAMESPACE_PREFIX = "wsd";
+
+    /**
      * WS-Addressing Probe action.
      *
      * @see <a href="http://docs.oasis-open.org/ws-dd/discovery/1.1/os/wsdd-discovery-1.1-spec-os.html#_Toc234231831">Probe</a>

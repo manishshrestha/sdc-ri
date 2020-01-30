@@ -3,7 +3,6 @@ package org.somda.sdc.dpws.soap;
 import org.somda.sdc.dpws.DpwsConstants;
 import org.somda.sdc.dpws.soap.wsaddressing.WsAddressingConstants;
 import org.somda.sdc.dpws.soap.wsdiscovery.WsDiscoveryConstants;
-import org.somda.sdc.dpws.soap.wseventing.WsEventingConfig;
 import org.somda.sdc.dpws.soap.wseventing.WsEventingConstants;
 import org.somda.sdc.dpws.soap.wsmetadataexchange.WsMetadataExchangeConstants;
 import org.somda.sdc.dpws.soap.wstransfer.WsTransferConstants;
@@ -34,6 +33,11 @@ public class SoapConstants {
     public static final String NAMESPACE = "http://www.w3.org/2003/05/soap-envelope";
 
     /**
+     * Defines the preferred prefix for the SOAP 1.2 namespace
+     */
+    public static final String NAMESPACE_PREFIX = "s12";
+
+    /**
      * XML Schema instance namespace.
      * <p>
      * Remark: atually, this namespace belongs to a different constant file that describes XML or rather XML Schema
@@ -41,6 +45,11 @@ public class SoapConstants {
      * on the SOAP level, the closest logical layer next to XML here.
      */
     public static final String NAMESPACE_XSI = "http://www.w3.org/2001/XMLSchema-instance";
+
+    /**
+     * Defines the preferred prefix for the XML Schema instance namespace
+     */
+    public static final String NAMESPACE_XSI_PREFIX = "xsi";
 
     /**
      * SOAP fault code "Receiver".
@@ -84,12 +93,12 @@ public class SoapConstants {
     /**
      * Definition of namespace prefix mappings relevant to SOAP (including WS-* and OASIS standards).
      */
-    public static final String NAMESPACE_PREFIX_MAPPINGS = "{xsi:" + NAMESPACE_XSI + "}" +
-            "{wsa:" + WsAddressingConstants.NAMESPACE + "}" +
-            "{wse:" + WsEventingConstants.NAMESPACE + "}" +
-            "{wsd:" + WsDiscoveryConstants.NAMESPACE + "}" +
-            "{wsm:" + WsMetadataExchangeConstants.NAMESPACE + "}" +
-            "{wst:" + WsTransferConstants.NAMESPACE + "}" +
-            "{dpws:" + DpwsConstants.NAMESPACE + "}" +
-            "{s12:" + NAMESPACE + "}";
+    public static final String NAMESPACE_PREFIX_MAPPINGS = "{" + NAMESPACE_XSI_PREFIX + ":" + NAMESPACE_XSI + "}" +
+            "{" + WsAddressingConstants.NAMESPACE_PREFIX + ":" + WsAddressingConstants.NAMESPACE + "}" +
+            "{" + WsEventingConstants.NAMESPACE_PREFIX + ":" + WsEventingConstants.NAMESPACE + "}" +
+            "{" + WsDiscoveryConstants.NAMESPACE_PREFIX + ":" + WsDiscoveryConstants.NAMESPACE + "}" +
+            "{" + WsMetadataExchangeConstants.NAMESPACE_PREFIX + ":" + WsMetadataExchangeConstants.NAMESPACE + "}" +
+            "{" + WsTransferConstants.NAMESPACE_PREFIX + ":" + WsTransferConstants.NAMESPACE + "}" +
+            "{" + DpwsConstants.NAMESPACE_PREFIX + ":" + DpwsConstants.NAMESPACE + "}" +
+            "{" + NAMESPACE_PREFIX + ":" + NAMESPACE + "}";
 }
