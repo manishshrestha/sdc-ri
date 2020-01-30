@@ -50,7 +50,8 @@ public class WsAddressingMapper {
             referenceParameters.forEach(param -> {
                 param.setAttributeNS(
                         WsAddressingConstants.NAMESPACE,
-                        WsAddressingConstants.NAMESPACE_PREFIX + ":IsReferenceParameter",
+                        WsAddressingConstants.NAMESPACE_PREFIX + ":"
+                                + WsAddressingConstants.IS_REFERENCE_PARAMETER.getLocalPart(),
                         "true");
                 dest.add(param);
             });

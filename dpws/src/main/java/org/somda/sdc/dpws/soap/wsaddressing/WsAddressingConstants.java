@@ -95,9 +95,9 @@ public class WsAddressingConstants {
     public static final String ANONYMOUS = NAMESPACE + "/anonymous";
 
     /**
-     * IsReferenceParameter fault QName.
+     * IsReferenceParameter attribute
      *
-     * @see <a href="https://www.w3.org/TR/2006/REC-ws-addr-soap-20060509/#missingmapfault">Message Addressing Header Required</a>
+     * @see <a href="https://www.w3.org/TR/2006/REC-ws-addr-soap-20060509/#additionalinfoset">Additional Infoset Items</a>
      */
     public static final QName IS_REFERENCE_PARAMETER = new QName(NAMESPACE, "IsReferenceParameter");
 
