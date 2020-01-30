@@ -16,21 +16,21 @@ import java.util.List;
  */
 public class DpwsTest {
     private Injector injector;
-    private List<AbstractModule> overridingModule;
+    private List<AbstractModule> overridingModules;
 
     protected void overrideBindings(AbstractModule module) {
         this.overrideBindings(List.of(module));
     }
 
     protected void overrideBindings(List<AbstractModule> module) {
-        this.overridingModule = module;
+        this.overridingModules = module;
     }
 
     protected void setUp() throws Exception {
         TestLogging.configure();
-        if (overridingModule != null) {
+        if (overridingModules != null) {
             injector = Guice.createInjector(Modules.override(new DefaultDpwsModule(), new DefaultHelperModule(),
-                    new DefaultDpwsConfigModule()).with(overridingModule));
+                    new DefaultDpwsConfigModule()).with(overridingModules));
         } else {
             injector = Guice.createInjector(new DefaultDpwsModule(), new DefaultHelperModule(), new DefaultDpwsConfigModule());
         }

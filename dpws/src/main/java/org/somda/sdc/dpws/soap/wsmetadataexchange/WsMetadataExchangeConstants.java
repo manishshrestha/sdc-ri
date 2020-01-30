@@ -16,12 +16,12 @@ public class WsMetadataExchangeConstants {
     public static final String SCHEMA_PATH = "ws-metadataexchange-schema.xsd";
 
     /**
-     * WS-MetadataExchange namespace
+     * WS-MetadataExchange namespace.
      */
     public static final String NAMESPACE = "http://schemas.xmlsoap.org/ws/2004/09/mex";
 
     /**
-     * Defines the preferred prefix for the WS-MetadataExchange namespace
+     * Defines the preferred prefix for the WS-MetadataExchange namespace.
      */
     public static final String NAMESPACE_PREFIX = "wsm";
     public static final String WSA_ACTION_GET_METADATA_REQUEST = NAMESPACE + "/GetMetadata/Request";

@@ -27,7 +27,7 @@ public class WsAddressingConstants {
     public static final String NAMESPACE = "http://www.w3.org/2005/08/addressing";
 
     /**
-     * Defines the preferred prefix for the WS-Addressing 1.0 namespace
+     * Defines the preferred prefix for the WS-Addressing 1.0 namespace.
      */
     public static final String NAMESPACE_PREFIX = "wsa";
 
@@ -95,7 +95,7 @@ public class WsAddressingConstants {
     public static final String ANONYMOUS = NAMESPACE + "/anonymous";
 
     /**
-     * IsReferenceParameter attribute
+     * IsReferenceParameter attribute.
      *
      * @see <a href="https://www.w3.org/TR/2006/REC-ws-addr-soap-20060509/#additionalinfoset">Additional Infoset Items</a>
      */
