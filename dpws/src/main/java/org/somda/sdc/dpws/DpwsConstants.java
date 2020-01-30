@@ -25,6 +25,11 @@ public class DpwsConstants {
     public static final String NAMESPACE = "http://docs.oasis-open.org/ws-dd/ns/dpws/2009/01";
 
     /**
+     * Defines the preferred prefix for the DPWS namespace
+     */
+    public static final String NAMESPACE_PREFIX = "dpws";
+
+    /**
      * Defines the multicast port used to transmit discovery messages.
      */
     public static final int DISCOVERY_PORT = 3_702;
