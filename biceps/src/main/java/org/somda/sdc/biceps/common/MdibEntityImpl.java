@@ -9,6 +9,7 @@ import org.somda.sdc.biceps.model.participant.AbstractState;
 import org.somda.sdc.biceps.model.participant.MdibVersion;
 
 import javax.annotation.Nullable;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -65,7 +66,7 @@ public class MdibEntityImpl implements MdibEntity {
 
     @Override
     public <T extends AbstractDescriptor> Optional<T> getDescriptor(Class<T> theClass) {
-        return theClass.isAssignableFrom(descriptor.getClass()) ? Optional.of(theClass.cast(descriptor)) : Optional.empty();
+        return theClass.isAssignableFrom(descriptor.getClass()) ? Optional.of(theClass.cast(getDescriptor())) : Optional.empty();
     }
 
     @Override
@@ -81,6 +82,23 @@ public class MdibEntityImpl implements MdibEntity {
     @Override
     public List<AbstractState> getStates() {
         return copyManager.processOutput(states);
+    }
+
+    @Override
+    public <T extends AbstractState> List<T> getStates(Class<T> theClass) {
+        if (!states.isEmpty() && theClass.isAssignableFrom(states.get(0).getClass())) {
+            return (List<T>) copyManager.processOutput(states);
+        }
+
+        return new ArrayList<>();
+    }
+
+    @Override
+    public <T extends AbstractState> Optional<T> getFirstState(Class<T> theClass) {
+        if (!states.isEmpty() && theClass.isAssignableFrom(states.get(0).getClass())) {
+            return Optional.of(theClass.cast(copyManager.processOutput(states.get(0))));
+        }
+        return Optional.empty();
     }
 
     @Override

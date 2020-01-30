@@ -1,25 +1,22 @@
 package org.somda.sdc.biceps.common;
 
 import com.google.inject.Injector;
-import org.somda.sdc.biceps.UnitTestUtil;
-import org.somda.sdc.biceps.common.factory.MdibEntityFactory;
-import org.somda.sdc.biceps.model.participant.MdibVersion;
-import org.somda.sdc.biceps.model.participant.PatientContextDescriptor;
-import org.somda.sdc.biceps.model.participant.PatientContextState;
-import org.somda.sdc.biceps.testutil.MockModelFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.somda.sdc.biceps.UnitTestUtil;
+import org.somda.sdc.biceps.common.factory.MdibEntityFactory;
+import org.somda.sdc.biceps.model.participant.*;
+import org.somda.sdc.biceps.testutil.MockModelFactory;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static org.hamcrest.CoreMatchers.instanceOf;
-import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class MdibEntityImplTest {
     private static final UnitTestUtil UT = new UnitTestUtil();
@@ -30,7 +27,7 @@ public class MdibEntityImplTest {
     private MdibEntity mdibEntity;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         Injector injector = UT.getInjector();
         mdibEntityFactory = injector.getInstance(MdibEntityFactory.class);
         expectedDescriptorHandle = "descrHandle";
@@ -46,17 +43,22 @@ public class MdibEntityImplTest {
     }
 
     @Test
-    public void mdibEntityGetters() {
-        assertThat(mdibEntity.getParent(), is(Optional.empty()));
-        assertThat(mdibEntity.getChildren().isEmpty(), is(true));
+    void mdibEntityGetters() {
+        assertTrue(mdibEntity.getParent().isEmpty());
+        assertTrue(mdibEntity.getChildren().isEmpty());
         assertThat(mdibEntity.getDescriptor(), instanceOf(PatientContextDescriptor.class));
-        assertThat(mdibEntity.getDescriptor().getHandle(), is(expectedDescriptorHandle));
-        assertThat(mdibEntity.getStates().size(), is(expectedStateHandles.size()));
+        assertEquals(expectedDescriptorHandle, mdibEntity.getDescriptor().getHandle());
+        assertEquals(expectedStateHandles.size(), mdibEntity.getStates().size());
+        assertTrue(mdibEntity.getFirstState(NumericMetricState.class).isEmpty());
+        assertTrue(mdibEntity.getFirstState(PatientContextState.class).isPresent());
+        assertEquals(expectedStateHandles.get(0), mdibEntity.getFirstState(PatientContextState.class).get().getHandle());
+        assertEquals(0, mdibEntity.getStates(StringMetricState.class).size());
+        assertEquals(expectedStateHandles.size(), mdibEntity.getStates(PatientContextState.class).size());
         for (int i = 0; i < expectedStateHandles.size(); ++i) {
-            assertThat(mdibEntity.getStates().get(i), instanceOf(PatientContextState.class));
-            PatientContextState state = (PatientContextState) mdibEntity.getStates().get(i);
-            assertThat(state.getHandle(), is(expectedStateHandles.get(i)));
-            assertThat(state.getDescriptorHandle(), is(expectedDescriptorHandle));
+            assertThat(mdibEntity.getStates(PatientContextState.class).get(i), instanceOf(PatientContextState.class));
+            PatientContextState state = mdibEntity.getStates(PatientContextState.class).get(i);
+            assertEquals(expectedStateHandles.get(i), state.getHandle());
+            assertEquals(expectedDescriptorHandle, state.getDescriptorHandle());
         }
     }
 }
