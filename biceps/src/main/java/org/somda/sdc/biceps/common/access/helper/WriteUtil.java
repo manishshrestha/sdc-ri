@@ -169,9 +169,11 @@ public class WriteUtil {
     }
 
     private void acquireWriteLock() {
-        if (readWriteLock.getReadLockCount() > 0) {
-            throw new IllegalThreadStateException("Tried to invoke write operation with read lock. " +
-                    "Check if a write description or state function has been executed within a read transaction context.");
+        if (readWriteLock.getReadHoldCount() > 0) {
+            throw new IllegalThreadStateException(
+                    "Tried to invoke write operation with read lock held by the current thread present. " +
+                    "Check if a write description or state function has been executed within a read transaction context."
+            );
         }
 
         if (!readWriteLock.isWriteLockedByCurrentThread()) {

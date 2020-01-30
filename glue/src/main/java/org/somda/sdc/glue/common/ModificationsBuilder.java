@@ -3,8 +3,12 @@ package org.somda.sdc.glue.common;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.somda.sdc.biceps.common.MdibDescriptionModifications;
+import org.somda.sdc.biceps.common.MdibTypeValidator;
 import org.somda.sdc.biceps.model.participant.*;
+import org.somda.sdc.glue.common.helper.DefaultStateValuesDispatcher;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -12,15 +16,54 @@ import java.util.List;
 
 /**
  * Utility class to create an {@linkplain MdibDescriptionModifications} object from an {@linkplain Mdib} container.
+ * <p>
+ * <em>Important note: the MDIB passed to the {@linkplain ModificationsBuilder} will be modified. Make sure to pass a
+ * copy if necessary.</em>
  */
 public class ModificationsBuilder {
+    private final Logger LOG = LoggerFactory.getLogger(ModificationsBuilder.class);
+
     private final ArrayListMultimap<String, AbstractState> states;
     private final MdibDescriptionModifications modifications;
 
+    private final Boolean createSingleStateIfMissing;
+    private final MdibTypeValidator typeValidator;
+    private final DefaultStateValuesDispatcher defaultStateValuesDispatcher;
+
     @AssistedInject
-    ModificationsBuilder(@Assisted Mdib mdib) {
+    ModificationsBuilder(@Assisted Mdib mdib,
+                         MdibTypeValidator typeValidator) {
+        this(mdib, false, null, typeValidator);
+    }
+
+    @AssistedInject
+    ModificationsBuilder(@Assisted Mdib mdib,
+                         @Assisted Boolean createSingleStateIfMissing,
+                         MdibTypeValidator typeValidator) {
+        this(mdib, createSingleStateIfMissing, null, typeValidator);
+    }
+
+    @AssistedInject
+    ModificationsBuilder(@Assisted Mdib mdib,
+                         @Assisted Boolean createSingleStateIfMissing,
+                         @Assisted @Nullable DefaultStateValues defaultStateValues,
+                         MdibTypeValidator typeValidator) {
+        this.createSingleStateIfMissing = createSingleStateIfMissing;
+        this.typeValidator = typeValidator;
+        if (defaultStateValues == null) {
+            defaultStateValues = new RequiredDefaultStateValues();
+        }
+        this.defaultStateValuesDispatcher = new DefaultStateValuesDispatcher(defaultStateValues);
+
+        if (!createSingleStateIfMissing && mdib.getMdState() == null) {
+            throw new RuntimeException("No states found but required. " +
+                    "Try using createSingleStateIfMissing=false to auto-create states");
+        }
+
         this.states = ArrayListMultimap.create();
-        mdib.getMdState().getState().forEach(state -> states.put(state.getDescriptorHandle(), state));
+        if (mdib.getMdState() != null) {
+            mdib.getMdState().getState().forEach(state -> states.put(state.getDescriptorHandle(), state));
+        }
 
         this.modifications = MdibDescriptionModifications.create();
         mdib.getMdDescription().getMds().forEach(this::build);
@@ -132,7 +175,20 @@ public class ModificationsBuilder {
     private AbstractState singleState(AbstractDescriptor descriptor) {
         final List<AbstractState> statesCollection = states.get(descriptor.getHandle());
         if (statesCollection.isEmpty()) {
-            throw new RuntimeException(String.format("No state found for descriptor handle %s", descriptor.getHandle()));
+            if (createSingleStateIfMissing) {
+                try {
+                    var state = typeValidator.resolveStateType(descriptor.getClass()).getConstructor().newInstance();
+                    defaultStateValuesDispatcher.dispatchDefaultStateValues(state);
+                    return state;
+                } catch (Exception e) {
+                    final String message = String.format("Could not create state for %s with handle %s",
+                            descriptor.getClass().getSimpleName(), descriptor.getHandle());
+                    LOG.warn(message, e);
+                    throw new RuntimeException(e);
+                }
+            } else {
+                throw new RuntimeException(String.format("No state found for descriptor handle %s", descriptor.getHandle()));
+            }
         }
 
         return statesCollection.get(0);
@@ -143,7 +199,7 @@ public class ModificationsBuilder {
         ArrayList<AbstractMultiState> abstractMultiStates = new ArrayList<>(abstractStates.size());
         abstractStates.forEach(abstractState -> {
             if (abstractState instanceof AbstractMultiState) {
-                abstractMultiStates.add(AbstractMultiState.class.cast(abstractState));
+                abstractMultiStates.add((AbstractMultiState) abstractState);
             }
         });
 

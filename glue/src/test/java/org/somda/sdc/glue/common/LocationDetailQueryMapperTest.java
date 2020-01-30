@@ -13,8 +13,11 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 class LocationDetailQueryMapperTest {
     @Test
     void createWithLocationDetailQuery() {
+    	
+    	InstanceIdentifier instanceIdentifier = new InstanceIdentifier();
+    	instanceIdentifier.setRootName("http://root");
+    	
         {
-            var instanceIdentifier = createInstanceIdentifier(URI.create("http%3A%2F%2Froot"));
             var locationDetail = createLocationDetail("facility1", "building1", "floor1", "poc1", "room1", "bed1");
             final URI actualUri = LocationDetailQueryMapper.createWithLocationDetailQuery(instanceIdentifier, locationDetail);
 
@@ -22,7 +25,6 @@ class LocationDetailQueryMapperTest {
             assertEquals(expectedUri, actualUri.toString());
         }
         {
-            var instanceIdentifier = createInstanceIdentifier(URI.create("http%3A%2F%2Froot"));
             var locationDetail = createLocationDetail("facility1", null, "floor1", "poc1", "room1", null);
             final URI actualUri = LocationDetailQueryMapper.createWithLocationDetailQuery(instanceIdentifier, locationDetail);
 
@@ -30,11 +32,20 @@ class LocationDetailQueryMapperTest {
             assertEquals(expectedUri, actualUri.toString());
         }
         {
-            var instanceIdentifier = createInstanceIdentifier(URI.create("http%3A%2F%2Froot"));
             var locationDetail = createLocationDetail(null, null, null, null, null, null);
             final URI actualUri = LocationDetailQueryMapper.createWithLocationDetailQuery(instanceIdentifier, locationDetail);
 
             var expectedUri = "sdc.ctxt.loc:/http%3A%2F%2Froot/";
+            assertEquals(expectedUri, actualUri.toString());
+        }
+        {
+            instanceIdentifier.setRootName("sdc.ctxt.loc.detail");
+            instanceIdentifier.setExtensionName("//lol");
+        	
+            var locationDetail = createLocationDetail(null, null, null, null, null, null);
+            final URI actualUri = LocationDetailQueryMapper.createWithLocationDetailQuery(instanceIdentifier, locationDetail);
+
+            var expectedUri = "sdc.ctxt.loc:/sdc.ctxt.loc.detail/%2F%2Flol";
             assertEquals(expectedUri, actualUri.toString());
         }
     }
@@ -87,11 +98,5 @@ class LocationDetailQueryMapperTest {
         locationDetail.setRoom(room);
         locationDetail.setBed(bed);
         return locationDetail;
-    }
-
-    private InstanceIdentifier createInstanceIdentifier(URI root) {
-        var instanceIdentifier = new InstanceIdentifier();
-        instanceIdentifier.setRootName(root.toString());
-        return instanceIdentifier;
     }
 }

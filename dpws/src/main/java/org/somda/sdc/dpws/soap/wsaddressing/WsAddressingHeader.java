@@ -1,8 +1,10 @@
 package org.somda.sdc.dpws.soap.wsaddressing;
 
 import org.somda.sdc.dpws.soap.wsaddressing.model.AttributedURIType;
+import org.w3c.dom.Element;
 
 import javax.annotation.Nullable;
+import java.util.Collection;
 import java.util.Optional;
 
 /**
@@ -15,6 +17,7 @@ public class WsAddressingHeader {
     private AttributedURIType messageId;
     private AttributedURIType to;
     private AttributedURIType relatesTo;
+    private Collection<Element> referenceParameters;
 
     public Optional<AttributedURIType> getAction() {
         return Optional.ofNullable(action);
@@ -46,5 +49,22 @@ public class WsAddressingHeader {
 
     public void setRelatesTo(@Nullable AttributedURIType relatesTo) {
         this.relatesTo = relatesTo;
+    }
+
+    public Optional<Collection<Element>> getMappedReferenceParameters() {
+        return Optional.ofNullable(referenceParameters);
+    }
+
+    /**
+     * Attaches reference parameters to the SOAP Header.
+     * <p>
+     * These will be attached to the header directly, and will have the attribute
+     * "IsReferenceParameter='true'" added. <b>Make sure you only add elements which aren't simple types
+     * and allow adding attributes!</b>
+     *
+     * @param referenceParameters Elements which will be attached to the SOAP header
+     */
+    public void setMappedReferenceParameters(Collection<Element> referenceParameters) {
+        this.referenceParameters = referenceParameters;
     }
 }

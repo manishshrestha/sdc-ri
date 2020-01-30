@@ -1,11 +1,15 @@
 package org.somda.sdc.dpws.soap.wsaddressing;
 
 import com.google.inject.Inject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.somda.sdc.common.util.JaxbUtil;
 import org.somda.sdc.dpws.soap.wsaddressing.model.AttributedURIType;
 import org.somda.sdc.dpws.soap.wsaddressing.model.ObjectFactory;
 import org.somda.sdc.dpws.soap.wsaddressing.model.RelatesToType;
+import org.w3c.dom.Element;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -13,6 +17,7 @@ import java.util.Optional;
  * Mapper to map between WS-Addressing JAXB elements and {@link WsAddressingHeader}.
  */
 public class WsAddressingMapper {
+    private static final Logger LOG = LoggerFactory.getLogger(WsAddressingMapper.class);
     private final JaxbUtil jaxbUtil;
     private final ObjectFactory wsaFactory;
     private final WsAddressingUtil wsaUtil;
@@ -41,6 +46,16 @@ public class WsAddressingMapper {
             relatesToType.setValue(attributedURIType.getValue());
             dest.add(wsaFactory.createRelatesTo(relatesToType));
         });
+        src.getMappedReferenceParameters().ifPresent(referenceParameters -> {
+            referenceParameters.forEach(param -> {
+                param.setAttributeNS(
+                        WsAddressingConstants.NAMESPACE,
+                        WsAddressingConstants.NAMESPACE_PREFIX + ":"
+                                + WsAddressingConstants.IS_REFERENCE_PARAMETER.getLocalPart(),
+                        "true");
+                dest.add(param);
+            });
+        });
     }
 
     /**
@@ -50,6 +65,7 @@ public class WsAddressingMapper {
      * @param dest The WS-Addressing mapper destination.
      */
     public void mapFromJaxbSoapHeader(List<Object> src, WsAddressingHeader dest) {
+        List<Element> referenceParameters = new ArrayList<>();
         src.forEach(jaxbObject -> {
             Optional<AttributedURIType> uri;
 
@@ -72,6 +88,25 @@ public class WsAddressingMapper {
             if (rt.isPresent() && dest.getRelatesTo().isEmpty()) {
                 dest.setRelatesTo(wsaUtil.createAttributedURIType(rt.get().getValue()));
             }
+
+            if (jaxbObject instanceof Element) {
+                // verify element is reference parameter
+                var elem = (Element) jaxbObject;
+                var isRefParm = elem.hasAttributeNS(
+                        WsAddressingConstants.IS_REFERENCE_PARAMETER.getNamespaceURI(),
+                        WsAddressingConstants.IS_REFERENCE_PARAMETER.getLocalPart()
+                );
+                if (isRefParm) {
+                    LOG.debug(
+                            "Incoming message contained reference parameter element ({}:{})",
+                            elem.getNamespaceURI(), elem.getTagName()
+                    );
+                    referenceParameters.add(elem);
+                }
+            }
         });
+        if (!referenceParameters.isEmpty()) {
+            dest.setMappedReferenceParameters(referenceParameters);
+        }
     }
 }

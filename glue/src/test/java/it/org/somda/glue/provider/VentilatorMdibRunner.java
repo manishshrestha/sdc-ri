@@ -3,7 +3,6 @@ package it.org.somda.glue.provider;
 import com.google.common.util.concurrent.AbstractIdleService;
 import org.somda.sdc.biceps.common.MdibDescriptionModifications;
 import org.somda.sdc.biceps.common.MdibStateModifications;
-import org.somda.sdc.biceps.common.Timestamp;
 import org.somda.sdc.biceps.common.access.ReadTransaction;
 import org.somda.sdc.biceps.common.storage.PreprocessingException;
 import org.somda.sdc.biceps.model.participant.*;
@@ -15,6 +14,7 @@ import org.somda.sdc.glue.common.factory.ModificationsBuilderFactory;
 import javax.annotation.Nullable;
 import java.io.InputStream;
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.util.Arrays;
 
 public class VentilatorMdibRunner extends AbstractIdleService {
@@ -105,7 +105,7 @@ public class VentilatorMdibRunner extends AbstractIdleService {
                         new RuntimeException(String.format("Could not find state for handle %s", HANDLE_VIS_BAD_MDC_DEV_SYS_PT_VENT_VMD)));
 
         conditionState.setPresence(ventilatorModeAlarm);
-        conditionState.setDeterminationTime(Timestamp.now());
+        conditionState.setDeterminationTime(Instant.now());
         if (ventilatorModeAlarm) {
             signalState.setPresence(AlertSignalPresence.ON);
         } else {
@@ -147,7 +147,7 @@ public class VentilatorMdibRunner extends AbstractIdleService {
             metricValue = new StringMetricValue();
         }
         metricValue.setValue(ventilatorMode.getModeValue());
-        metricValue.setDeterminationTime(Timestamp.now());
+        metricValue.setDeterminationTime(Instant.now());
         metricValue.setMetricQuality(metricQuality);
         state.setMetricValue(metricValue);
         modifications.add(state);
@@ -165,7 +165,7 @@ public class VentilatorMdibRunner extends AbstractIdleService {
             metricValue = new NumericMetricValue();
         }
         metricValue.setValue(peep);
-        metricValue.setDeterminationTime(Timestamp.now());
+        metricValue.setDeterminationTime(Instant.now());
         metricValue.setMetricQuality(metricQuality);
         state.setMetricValue(metricValue);
         modifications.add(state);

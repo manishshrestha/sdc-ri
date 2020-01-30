@@ -1,22 +1,22 @@
 package org.somda.sdc.dpws.client;
 
 import javax.xml.namespace.QName;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * {@link DiscoveryFilter} convenience builder with method chaining.
  */
 public class DiscoveryFilterBuilder {
-    private final List<QName> types;
-    private final List<String> scopes;
+    private final Set<QName> types;
+    private final Set<String> scopes;
 
     /**
      * Constructs a new object with empty types and scopes.
      */
     public DiscoveryFilterBuilder() {
-        this.types = new ArrayList<>();
-        this.scopes = new ArrayList<>();
+        this.types = new HashSet<>();
+        this.scopes = new HashSet<>();
     }
 
     /**

@@ -18,9 +18,11 @@ import org.somda.sdc.dpws.soap.exception.MarshallingException;
 import org.somda.sdc.dpws.soap.exception.TransportException;
 import org.somda.sdc.dpws.soap.wsaddressing.WsAddressingUtil;
 import org.somda.sdc.dpws.soap.wsaddressing.model.EndpointReferenceType;
+import org.somda.sdc.dpws.soap.wsaddressing.model.ReferenceParametersType;
 import org.somda.sdc.dpws.soap.wseventing.exception.SubscriptionNotFoundException;
 import org.somda.sdc.dpws.soap.wseventing.factory.SubscriptionManagerFactory;
 import org.somda.sdc.dpws.soap.wseventing.model.*;
+import org.w3c.dom.Element;
 
 import javax.annotation.Nullable;
 import javax.xml.bind.JAXBException;
@@ -36,6 +38,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.stream.Collectors;
 
 /**
  * Default implementation of {@link EventSink}.
@@ -128,7 +131,7 @@ public class EventSinkImpl implements EventSink {
 
             subscribeBody.setFilter(filterType);
 
-            SoapMessage subscribeRequest = soapUtil.createMessage(WsEventingConstants.WSA_ACTION_SUBSCRIBE, subscribeBody);
+            SoapMessage subscribeRequest = soapUtil.createMessage(WsEventingConstants.WSE_ACTION_SUBSCRIBE, subscribeBody);
 
             // Create client to send request
             // // TODO: 19.01.2017
@@ -174,12 +177,10 @@ public class EventSinkImpl implements EventSink {
                     new RuntimeException("No subscription manager EPR found"));
 
             // Create new message, put subscription manager EPR address as wsa:To
-            SoapMessage renewMsg = soapUtil.createMessage(WsEventingConstants.WSA_ACTION_RENEW, subManAddress, renew);
+            SoapMessage renewMsg = soapUtil.createMessage(WsEventingConstants.WSE_ACTION_RENEW, subManAddress, renew);
 
-            // On demand, append wse:Identifier
-            jaxbUtil.extractFirstElementFromAny(subMan.getSubscriptionManagerEpr().getAny(),
-                    WsEventingConstants.IDENTIFIER, String.class).ifPresent(s ->
-                    renewMsg.getWsEventingHeader().setIdentifier(URI.create(s)));
+            // append wsa:ReferenceParameters elements to the header
+            attachReferenceParameters(subMan, renewMsg);
 
             // Invoke request-response
             SoapMessage renewResMsg = requestResponseClient.sendRequestResponse(renewMsg);
@@ -205,13 +206,11 @@ public class EventSinkImpl implements EventSink {
                     new RuntimeException("No subscription manager EPR found"));
 
             // Create new message, put subscription manager EPR address as wsa:To
-            SoapMessage getStatusMsg = soapUtil.createMessage(WsEventingConstants.WSA_ACTION_GET_STATUS, subManAddress,
+            SoapMessage getStatusMsg = soapUtil.createMessage(WsEventingConstants.WSE_ACTION_GET_STATUS, subManAddress,
                     getStatus);
 
-            // On demand, append wse:Identifier
-            jaxbUtil.extractFirstElementFromAny(subMan.getSubscriptionManagerEpr().getAny(),
-                    WsEventingConstants.IDENTIFIER, String.class).ifPresent(s ->
-                    getStatusMsg.getWsEventingHeader().setIdentifier(URI.create(s)));
+            // append wsa:ReferenceParameters elements to the header
+            attachReferenceParameters(subMan, getStatusMsg);
 
             // Invoke request-response
             SoapMessage getStatusResMsg = requestResponseClient.sendRequestResponse(getStatusMsg);
@@ -234,18 +233,37 @@ public class EventSinkImpl implements EventSink {
                     new RuntimeException("No subscription manager EPR found"));
 
             // Create new message, put subscription manager EPR address as wsa:To
-            SoapMessage unsubscribeMsg = soapUtil.createMessage(WsEventingConstants.WSA_ACTION_UNSUBSCRIBE, subManAddress,
+            SoapMessage unsubscribeMsg = soapUtil.createMessage(WsEventingConstants.WSE_ACTION_UNSUBSCRIBE, subManAddress,
                     unsubscribe);
 
-            // On demand, append wse:Identifier
-            jaxbUtil.extractFirstElementFromAny(subMan.getSubscriptionManagerEpr().getAny(),
-                    WsEventingConstants.IDENTIFIER, String.class).ifPresent(s ->
-                    unsubscribeMsg.getWsEventingHeader().setIdentifier(URI.create(s)));
+            // append wsa:ReferenceParameters elements to the header
+            attachReferenceParameters(subMan, unsubscribeMsg);
 
             // Invoke request-response and ignore result
             requestResponseClient.sendRequestResponse(unsubscribeMsg);
             return new Object();
         });
+    }
+
+    private void attachReferenceParameters(SinkSubscriptionManager subMan, SoapMessage unsubscribeMsg) {
+        ReferenceParametersType referenceParameters = subMan.getSubscriptionManagerEpr().getReferenceParameters();
+        if (referenceParameters != null) {
+            List<Element> actualParameters = referenceParameters.getAny().stream()
+                    // we can only reliably attach wsa:IsReferenceParameter to Element instances
+                    .filter(obj -> {
+                        boolean correctType = obj instanceof Element;
+                        if (!correctType) {
+                            LOG.warn(
+                                    "reference parameter couldn't be attached to outgoing message, wrong type!" +
+                                            "Type was {}", obj.getClass().getSimpleName()
+                            );
+                        }
+                        return correctType;
+                    })
+                    .map(obj -> (Element) ((Element) obj).cloneNode(true))
+                    .collect(Collectors.toList());
+            unsubscribeMsg.getWsAddressingHeader().setMappedReferenceParameters(actualParameters);
+        }
     }
 
     @Override

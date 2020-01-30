@@ -8,10 +8,12 @@ import org.somda.sdc.dpws.crypto.CryptoConfig;
 import org.somda.sdc.dpws.crypto.CryptoSettings;
 import org.somda.sdc.dpws.device.DeviceConfig;
 import org.somda.sdc.dpws.soap.SoapConfig;
+import org.somda.sdc.dpws.soap.SoapConstants;
 import org.somda.sdc.dpws.soap.wsaddressing.WsAddressingConfig;
 import org.somda.sdc.dpws.soap.wsdiscovery.WsDiscoveryConfig;
 import org.somda.sdc.dpws.soap.wseventing.WsEventingConfig;
 
+import java.io.File;
 import java.time.Duration;
 
 /**
@@ -51,6 +53,10 @@ public class DefaultDpwsConfigModule extends AbstractConfigurationModule {
         bind(DpwsConfig.MAX_ENVELOPE_SIZE,
                 Integer.class,
                 DpwsConstants.MAX_ENVELOPE_SIZE);
+
+        bind(DpwsConfig.COMMUNICATION_LOG_DIRECTORY,
+                File.class,
+                new File("commlog"));
     }
 
     private void configureCryptoConfig() {
@@ -67,6 +73,15 @@ public class DefaultDpwsConfigModule extends AbstractConfigurationModule {
         bind(ClientConfig.AUTO_RESOLVE,
                 Boolean.class,
                 false);
+
+        bind(DpwsConfig.HTTP_CLIENT_CONNECT_TIMEOUT,
+                Duration.class,
+                Duration.ofSeconds(5));
+
+        bind(DpwsConfig.HTTP_CLIENT_READ_TIMEOUT,
+                Duration.class,
+                Duration.ofSeconds(5));
+
     }
 
     private void configureWsDiscoveryConfig() {
@@ -116,6 +131,12 @@ public class DefaultDpwsConfigModule extends AbstractConfigurationModule {
                 String.class,
                 "");
         bind(SoapConfig.NAMESPACE_MAPPINGS,
+                String.class,
+                "");
+        bind(SoapConfig.VALIDATE_SOAP_MESSAGES,
+                Boolean.class,
+                true);
+        bind(SoapConfig.JAXB_SCHEMA_PATH,
                 String.class,
                 "");
     }

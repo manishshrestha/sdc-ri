@@ -44,6 +44,7 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -80,7 +81,7 @@ public class DeviceImpl extends AbstractIdleService implements Device, Service, 
     private WsDiscoveryTargetService wsdTargetService;
     private HostingService hostingService;
     private final List<HostedService> hostedServicesOnStartup;
-    private List<URI> scopesOnStartup;
+    private Collection<URI> scopesOnStartup;
     private List<QName> typesOnStartup;
     private ThisDeviceType thisDeviceOnStartup;
     private ThisModelType thisModelOnStartup;
@@ -252,7 +253,7 @@ public class DeviceImpl extends AbstractIdleService implements Device, Service, 
     }
 
     @Override
-    public void setTypes(List<QName> types) {
+    public void setTypes(Collection<QName> types) {
         ArrayList<QName> tmpTypes = new ArrayList<>();
         if (types.stream().filter(qName -> qName.equals(DpwsConstants.DEVICE_TYPE)).findAny().isEmpty()) {
             tmpTypes.add(DpwsConstants.DEVICE_TYPE);
@@ -266,7 +267,7 @@ public class DeviceImpl extends AbstractIdleService implements Device, Service, 
     }
 
     @Override
-    public void setScopes(List<URI> scopes) {
+    public void setScopes(Collection<URI> scopes) {
         if (isRunning()) {
             wsdTargetService.setScopes(scopesAsStrs(scopes));
         } else {
@@ -274,7 +275,7 @@ public class DeviceImpl extends AbstractIdleService implements Device, Service, 
         }
     }
 
-    private List<String> scopesAsStrs(List<URI> scopes) {
+    private List<String> scopesAsStrs(Collection<URI> scopes) {
         return scopes.parallelStream().map(URI::toString).collect(Collectors.toList());
     }
 

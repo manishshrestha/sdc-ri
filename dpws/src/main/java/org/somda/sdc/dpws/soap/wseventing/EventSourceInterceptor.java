@@ -137,7 +137,7 @@ public class EventSourceInterceptor extends AbstractIdleService implements Event
                 }));
     }
 
-    @MessageInterceptor(value = WsEventingConstants.WSA_ACTION_SUBSCRIBE, direction = Direction.REQUEST)
+    @MessageInterceptor(value = WsEventingConstants.WSE_ACTION_SUBSCRIBE, direction = Direction.REQUEST)
     void processSubscribe(RequestResponseObject rrObj) throws SoapFaultException {
         final Supplier<SoapFaultException> soapFaultExceptionSupplier = () ->
                 new SoapFaultException(createInvalidMsg(rrObj));
@@ -204,7 +204,7 @@ public class EventSourceInterceptor extends AbstractIdleService implements Event
 
         subscribeResponse.setSubscriptionManager(subMan.getSubscriptionManagerEpr());
         soapUtil.setBody(subscribeResponse, rrObj.getResponse());
-        soapUtil.setWsaAction(rrObj.getResponse(), WsEventingConstants.WSA_ACTION_SUBSCRIBE_RESPONSE);
+        soapUtil.setWsaAction(rrObj.getResponse(), WsEventingConstants.WSE_ACTION_SUBSCRIBE_RESPONSE);
 
         LOG.info("Incoming subscribe request. Action(s): {}. Generated subscription id: {}. Notifications go to {}. " +
                         "Expiration in {} seconds",
@@ -214,7 +214,7 @@ public class EventSourceInterceptor extends AbstractIdleService implements Event
                 grantedExpires.getSeconds());
     }
 
-    @MessageInterceptor(value = WsEventingConstants.WSA_ACTION_RENEW, direction = Direction.REQUEST)
+    @MessageInterceptor(value = WsEventingConstants.WSE_ACTION_RENEW, direction = Direction.REQUEST)
     void processRenew(RequestResponseObject rrObj) throws SoapFaultException {
         removeStaleSubscriptions();
 
@@ -229,14 +229,14 @@ public class EventSourceInterceptor extends AbstractIdleService implements Event
         RenewResponse renewResponse = wseFactory.createRenewResponse();
         renewResponse.setExpires(grantedExpires);
         soapUtil.setBody(renewResponse, rrObj.getResponse());
-        soapUtil.setWsaAction(rrObj.getResponse(), WsEventingConstants.WSA_ACTION_RENEW_RESPONSE);
+        soapUtil.setWsaAction(rrObj.getResponse(), WsEventingConstants.WSE_ACTION_RENEW_RESPONSE);
 
         LOG.info("Subscription {} is renewed. New expiration in {} seconds",
                 subMan.getSubscriptionId(),
                 grantedExpires.getSeconds());
     }
 
-    @MessageInterceptor(value = WsEventingConstants.WSA_ACTION_GET_STATUS, direction = Direction.REQUEST)
+    @MessageInterceptor(value = WsEventingConstants.WSE_ACTION_GET_STATUS, direction = Direction.REQUEST)
     void processGetStatus(RequestResponseObject rrObj) throws SoapFaultException {
         removeStaleSubscriptions();
 
@@ -258,10 +258,10 @@ public class EventSourceInterceptor extends AbstractIdleService implements Event
         GetStatusResponse getStatusResponse = wseFactory.createGetStatusResponse();
         getStatusResponse.setExpires(expires);
         soapUtil.setBody(getStatusResponse, rrObj.getResponse());
-        soapUtil.setWsaAction(rrObj.getResponse(), WsEventingConstants.WSA_ACTION_GET_STATUS_RESPONSE);
+        soapUtil.setWsaAction(rrObj.getResponse(), WsEventingConstants.WSE_ACTION_GET_STATUS_RESPONSE);
     }
 
-    @MessageInterceptor(value = WsEventingConstants.WSA_ACTION_UNSUBSCRIBE, direction = Direction.REQUEST)
+    @MessageInterceptor(value = WsEventingConstants.WSE_ACTION_UNSUBSCRIBE, direction = Direction.REQUEST)
     void processUnsubscribe(RequestResponseObject rrObj) throws SoapFaultException {
         removeStaleSubscriptions();
 
@@ -271,7 +271,7 @@ public class EventSourceInterceptor extends AbstractIdleService implements Event
         subMan.stopAsync().awaitTerminated();
 
         // No response body required
-        soapUtil.setWsaAction(rrObj.getResponse(), WsEventingConstants.WSA_ACTION_UNSUBSCRIBE_RESPONSE);
+        soapUtil.setWsaAction(rrObj.getResponse(), WsEventingConstants.WSE_ACTION_UNSUBSCRIBE_RESPONSE);
 
         LOG.info("Unsubscribe {}. Invalidate subscription manager", subMan.getSubscriptionId());
     }
@@ -385,7 +385,7 @@ public class EventSourceInterceptor extends AbstractIdleService implements Event
         subscriptionEnd.setSubscriptionManager(subMan.getSubscriptionManagerEpr());
         subscriptionEnd.setStatus(status.getUri());
         String wsaTo = wsaUtil.getAddressUriAsString(endTo).orElse(null);
-        return createNotification(WsEventingConstants.WSA_ACTION_SUBSCRIPTION_END, wsaTo, subscriptionEnd);
+        return createNotification(WsEventingConstants.WSE_ACTION_SUBSCRIPTION_END, wsaTo, subscriptionEnd);
     }
 
     private SoapMessage createForNotifyTo(String wsaAction, Object payload, SourceSubscriptionManager subMan) {

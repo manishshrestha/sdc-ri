@@ -18,6 +18,7 @@
 		<module>glue</module>
 		<module>mdpws-model</module>
 		<module>mdpws</module>
+		<module>glue-examples</module>
 	</modules>
 
 	<properties>
