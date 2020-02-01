@@ -13,6 +13,7 @@ import org.somda.sdc.dpws.soap.exception.TransportException;
 import org.somda.sdc.dpws.soap.wseventing.model.WsEventingStatus;
 import org.somda.sdc.glue.GlueConstants;
 import org.somda.sdc.glue.common.WsdlConstants;
+import org.somda.sdc.glue.provider.helper.SdcDevicePluginProcessor;
 import org.somda.sdc.glue.provider.sco.OperationInvocationReceiver;
 import org.somda.sdc.glue.provider.services.HighPriorityServices;
 import org.somda.sdc.glue.provider.services.factory.ServicesFactory;
@@ -36,21 +37,40 @@ public class SdcDevice extends AbstractIdleService implements Device, EventSourc
     private final HighPriorityServices highPriorityServices;
     private final Collection<OperationInvocationReceiver> operationInvocationReceivers;
     private final LocalMdibAccess mdibAccess;
-    private final DeviceSettings deviceSettings;
+    private final Collection<SdcDevicePlugin> plugins;
+    private final SdcDevicePluginProcessor pluginProcessor;
 
     @AssistedInject
     SdcDevice(@Assisted DeviceSettings deviceSettings,
               @Assisted LocalMdibAccess mdibAccess,
               @Assisted Collection<OperationInvocationReceiver> operationInvocationReceivers,
+              @Assisted Collection<SdcDevicePlugin> plugins,
               DeviceFactory deviceFactory,
               ServicesFactory servicesFactory,
               HostedServiceFactory hostedServiceFactory) {
-        this.deviceSettings = deviceSettings;
         this.mdibAccess = mdibAccess;
+        this.plugins = plugins;
         this.dpwsDevice = deviceFactory.createDevice(deviceSettings);
         this.highPriorityServices = servicesFactory.createHighPriorityServices(mdibAccess);
         this.hostedServiceFactory = hostedServiceFactory;
         this.operationInvocationReceivers = operationInvocationReceivers;
+
+        this.pluginProcessor = new SdcDevicePluginProcessor(plugins, new SdcDeviceContext() {
+            @Override
+            public Device getDevice() {
+                return dpwsDevice;
+            }
+
+            @Override
+            public LocalMdibAccess getLocalMdibAccess() {
+                return mdibAccess;
+            }
+
+            @Override
+            public Collection<OperationInvocationReceiver> getOperationInvocationReceivers() {
+                return operationInvocationReceivers;
+            }
+        });
     }
 
     public LocalMdibAccess getMdibAccess() {
@@ -110,19 +130,27 @@ public class SdcDevice extends AbstractIdleService implements Device, EventSourc
     }
 
     @Override
-    protected void startUp() {
+    protected void startUp() throws Exception {
+        pluginProcessor.beforeStartUp();
+
         setupInvocationReceivers();
         setupHostedServices();
         dpwsDevice.startAsync().awaitRunning();
+
+        pluginProcessor.afterStartUp();
     }
 
     @Override
     protected void shutDown() {
+        pluginProcessor.beforeShutDown();
+        dpwsDevice.stopAsync().awaitTerminated();
+        pluginProcessor.afterShutDown();
     }
 
     private void setupHostedServices() {
         final ClassLoader classLoader = getClass().getClassLoader();
         InputStream highPrioWsdlStream = classLoader.getResourceAsStream("wsdl/IEEE11073-20701-HighPriority-Services.wsdl");
+        assert highPrioWsdlStream != null;
         dpwsDevice.getHostingServiceAccess().addHostedService(hostedServiceFactory.createHostedService(
                 "HighPriorityServices",
                 Arrays.asList(
@@ -142,7 +170,7 @@ public class SdcDevice extends AbstractIdleService implements Device, EventSourc
     }
 
     private void setupInvocationReceivers() {
-        operationInvocationReceivers.forEach(receiver -> addOperationInvocationReceiver(receiver));
+        operationInvocationReceivers.forEach(this::addOperationInvocationReceiver);
     }
 
     @Override

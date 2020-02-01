@@ -60,7 +60,7 @@ public class RunTestSdcDevice {
             public NetworkInterface getNetworkInterface() {
                 return networkInterface;
             }
-        }, localMdibAccess, Collections.EMPTY_LIST);
+        }, localMdibAccess, Collections.emptyList(), Collections.emptyList());
 
         sdcDevice.getDiscoveryAccess().setTypes(Arrays.asList(CommonConstants.MEDICAL_DEVICE_TYPE));
 

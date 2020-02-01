@@ -51,7 +51,8 @@ public class TestSdcDevice extends IntegrationTestPeer {
         this.sdcDevice = injector.getInstance(SdcDeviceFactory.class).createSdcDevice(
                 deviceSettings,
                 injector.getInstance(LocalMdibAccessFactory.class).createLocalMdibAccess(),
-                operationInvocationReceivers);
+                operationInvocationReceivers,
+                Collections.emptyList());
     }
 
     public TestSdcDevice() {
