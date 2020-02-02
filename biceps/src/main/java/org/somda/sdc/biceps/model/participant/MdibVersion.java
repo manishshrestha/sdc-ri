@@ -2,8 +2,10 @@ package org.somda.sdc.biceps.model.participant;
 
 import org.somda.sdc.common.util.ObjectStringifier;
 
+import javax.annotation.Nullable;
 import java.math.BigInteger;
 import java.net.URI;
+import java.util.Optional;
 import java.util.UUID;
 
 /**
@@ -128,6 +130,46 @@ public class MdibVersion {
         return this.sequenceId.equals(rhs.sequenceId)
                 && this.version.equals(rhs.version)
                 && this.instanceId.equals(rhs.instanceId);
+    }
+
+    /**
+     * Compares two MDIB versions.
+     * <p>
+     * As the MDIB version is a triple consisting of at least one non-trivially comparable data type, it cannot be
+     * compared the classical way.
+     * Hence there is a set of rules that define what to expect depending on the data of that triple.
+     * For that reason this compare function introduces a forth result state, which is {@linkplain Optional#empty()},
+     * in case that the non-trivially comparable sequence ids are not equal.
+     *
+     * @param rhs right hand side to compare.
+     * @return depending on the fields of the MDIB version triple:
+     * <ul>
+     * <li>{@linkplain Optional#empty()} if sequence ids differ from each other
+     * <li>-1 if {@code lhs.instanceId < rhs.instanceId || lhs.instanceId == rhs.instanceId && lhs.version < rhs.version}
+     * <li>the result of {@code lhs.version.compareTo(rhs.version)} if {@code lhs.instanceId == rhs.instanceId}
+     * <li>1 if {@code lhs.instanceId > rhs.instanceId || lhs.instanceId == rhs.instanceId && lhs.version > rhs.version}
+     * </ul>
+     */
+    public Optional<Integer> compareTo(@Nullable MdibVersion rhs) {
+        if (rhs == null || !this.getSequenceId().equals(rhs.getSequenceId())) {
+            return Optional.empty();
+        }
+
+        if (this.getInstanceId().compareTo(rhs.getInstanceId()) < 0 ||
+                this.getInstanceId().equals(rhs.getInstanceId()) && this.getVersion().compareTo(rhs.getVersion()) < 0) {
+            return Optional.of(-1);
+        }
+
+        if (this.getInstanceId().equals(rhs.getInstanceId())) {
+            return Optional.of(this.getVersion().compareTo(rhs.getVersion()));
+        }
+
+        if (this.getInstanceId().compareTo(rhs.getInstanceId()) > 0 ||
+                this.getInstanceId().equals(rhs.getInstanceId()) && this.getVersion().compareTo(rhs.getVersion()) > 0) {
+            return Optional.of(1);
+        }
+
+        return Optional.empty();
     }
 
     @Override
