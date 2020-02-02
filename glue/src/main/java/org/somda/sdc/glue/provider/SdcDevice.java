@@ -131,10 +131,11 @@ public class SdcDevice extends AbstractIdleService implements Device, EventSourc
 
     @Override
     protected void startUp() throws Exception {
-        pluginProcessor.beforeStartUp();
-
         setupInvocationReceivers();
         setupHostedServices();
+
+        pluginProcessor.beforeStartUp();
+
         dpwsDevice.startAsync().awaitRunning();
 
         pluginProcessor.afterStartUp();
