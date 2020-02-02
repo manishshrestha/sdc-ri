@@ -168,6 +168,17 @@ public class MdibStorageImpl implements MdibStorage {
     }
 
     @Override
+    public <T extends AbstractContextState> List<T> getContextStates(Class<T> stateClass) {
+        var result = new ArrayList<T>();
+        contextStates.forEach((handle, state) -> {
+            if (stateClass.isAssignableFrom(state.getClass())) {
+                result.add(stateClass.cast(state));
+            }
+        });
+        return result;
+    }
+
+    @Override
     public WriteDescriptionResult apply(MdibVersion mdibVersion,
                                         @Nullable BigInteger mdDescriptionVersion,
                                         @Nullable BigInteger mdStateVersion,

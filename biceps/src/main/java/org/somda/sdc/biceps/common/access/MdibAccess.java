@@ -155,4 +155,15 @@ public interface MdibAccess {
      */
     List<AbstractContextState> getContextStates();
 
+    /**
+     * Gets all context states of a specific type.
+     * <p>
+     * <em>Attention: collections may be created on function call, hence be careful with performance issues.</em>
+     *
+     * @param stateClass the class information to filter for.
+     * @param <T>        the type to filter for.
+     * @return a list of all context states of the specific type.
+     */
+    <T extends AbstractContextState> List<T> getContextStates(Class<T> stateClass);
+
 }

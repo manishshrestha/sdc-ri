@@ -188,4 +188,13 @@ public interface MdibStorage {
      * @return a list of all context states.
      */
     List<AbstractContextState> getContextStates();
+
+    /**
+     * Gets all context states of a specific type.
+     *
+     * @param stateClass the class information to filter for.
+     * @param <T>        the context type to filter for.
+     * @return a list of all context states with the given type.
+     */
+    <T extends AbstractContextState> List<T> getContextStates(Class<T> stateClass);
 }
