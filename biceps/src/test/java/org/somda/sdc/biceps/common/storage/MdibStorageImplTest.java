@@ -14,10 +14,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import test.org.somda.common.TestLogging;
 
-import java.lang.reflect.InvocationTargetException;
 import java.math.BigInteger;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 import static org.hamcrest.CoreMatchers.is;
@@ -134,8 +132,8 @@ public class MdibStorageImplTest {
         assertThat(mdibStorage.getContextStates(Handles.CONTEXTDESCRIPTOR_0, LocationContextState.class).isEmpty(), is(true));
         assertThat(mdibStorage.getContextStates(Handles.CONTEXTDESCRIPTOR_0, PatientContextState.class).size(), is(2));
 
-        assertThat(mdibStorage.getContextStates(PatientContextState.class).size(), is(2));
-        assertThat(mdibStorage.getContextStates(LocationContextState.class).size(), is(1));
+        assertThat(mdibStorage.findContextStatesByType(PatientContextState.class).size(), is(2));
+        assertThat(mdibStorage.findContextStatesByType(LocationContextState.class).size(), is(1));
     }
 
     @Test

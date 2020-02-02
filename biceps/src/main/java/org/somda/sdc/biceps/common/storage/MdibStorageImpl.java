@@ -168,7 +168,7 @@ public class MdibStorageImpl implements MdibStorage {
     }
 
     @Override
-    public <T extends AbstractContextState> List<T> getContextStates(Class<T> stateClass) {
+    public <T extends AbstractContextState> List<T> findContextStatesByType(Class<T> stateClass) {
         var result = new ArrayList<T>();
         contextStates.forEach((handle, state) -> {
             if (stateClass.isAssignableFrom(state.getClass())) {

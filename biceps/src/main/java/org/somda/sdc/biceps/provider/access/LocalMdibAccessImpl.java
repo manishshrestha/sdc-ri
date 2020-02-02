@@ -198,9 +198,9 @@ public class LocalMdibAccessImpl implements LocalMdibAccess {
     }
 
     @Override
-    public <T extends AbstractContextState> List<T> getContextStates(Class<T> stateClass) {
+    public <T extends AbstractContextState> List<T> findContextStatesByType(Class<T> stateClass) {
         try (ReadTransaction transaction = startTransaction()) {
-            return transaction.getContextStates(stateClass);
+            return transaction.findContextStatesByType(stateClass);
         }
     }
 
