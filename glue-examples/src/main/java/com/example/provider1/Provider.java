@@ -38,10 +38,7 @@ import java.math.RoundingMode;
 import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.time.Instant;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -97,7 +94,7 @@ public class Provider extends AbstractIdleService {
             public NetworkInterface getNetworkInterface() {
                 return networkInterface;
             }
-        }, this.mdibAccess, List.of(handler));
+        }, this.mdibAccess, List.of(handler), Collections.emptyList());
 
         // set SDC types
         this.sdcDevice.getDiscoveryAccess().setTypes(List.of(CommonConstants.MEDICAL_DEVICE_TYPE));

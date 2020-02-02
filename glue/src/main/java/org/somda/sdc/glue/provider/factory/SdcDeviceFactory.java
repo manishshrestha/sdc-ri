@@ -28,6 +28,6 @@ public interface SdcDeviceFactory {
      */
     SdcDevice createSdcDevice(@Assisted DeviceSettings deviceSettings,
                               @Assisted LocalMdibAccess mdibAccess,
-                              @Assisted Collection<OperationInvocationReceiver> operationInvocationReceivers,
-                              @Assisted Collection<SdcDevicePlugin> plugins);
+                              @Assisted("operationInvocationReceivers") Collection<OperationInvocationReceiver> operationInvocationReceivers,
+                              @Assisted("plugins") Collection<SdcDevicePlugin> plugins);
 }
