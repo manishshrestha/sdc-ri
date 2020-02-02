@@ -90,8 +90,10 @@ public class SdcDevice extends AbstractIdleService implements Device, EventSourc
      *
      * @return the discovery access.
      * @see Device#getDiscoveryAccess()
+     * @deprecated Use plugins to get access to discovery information
      */
     @Override
+    @Deprecated
     public DiscoveryAccess getDiscoveryAccess() {
         return new DiscoveryAccess() {
             @Override
@@ -123,8 +125,10 @@ public class SdcDevice extends AbstractIdleService implements Device, EventSourc
      *
      * @return the hosting service access.
      * @see Device#getHostingServiceAccess()
+     * @deprecated Use plugins to get access to hosting service information
      */
     @Override
+    @Deprecated
     public HostingServiceAccess getHostingServiceAccess() {
         return dpwsDevice.getHostingServiceAccess();
     }
