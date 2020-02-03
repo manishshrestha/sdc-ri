@@ -11,6 +11,7 @@ import org.somda.sdc.dpws.http.grizzly.GrizzlyHttpServerRegistry;
 import org.somda.sdc.dpws.soap.SoapMarshalling;
 import org.somda.sdc.dpws.soap.SoapMessage;
 import org.somda.sdc.dpws.soap.exception.MarshallingException;
+import org.somda.sdc.dpws.soap.exception.SoapFaultException;
 import org.somda.sdc.dpws.soap.exception.TransportException;
 import org.somda.sdc.dpws.soap.factory.EnvelopeFactory;
 import org.somda.sdc.dpws.soap.factory.SoapMessageFactory;
@@ -89,9 +90,9 @@ public class GrizzlyHttpServerRegistryIT extends DpwsTest {
 
     @Test
     public void registerMultipleContextsOnOneServer() throws MarshallingException, TransportException {
-        final URI baseUri = URI.create("http://127.0.0.1:0");
-        final String ctxtPath1 = "/path1";
-        final String ctxtPath2 = "/path2";
+        URI baseUri = URI.create("http://127.0.0.1:0");
+        final String ctxtPath1 = "/ctxt/path1";
+        final String ctxtPath2 = "/ctxt/path2";
 
         final AtomicBoolean isPath1Requested = new AtomicBoolean(false);
         final AtomicBoolean isPath2Requested = new AtomicBoolean(false);
@@ -99,6 +100,8 @@ public class GrizzlyHttpServerRegistryIT extends DpwsTest {
         httpServerRegistry.startAsync().awaitRunning();
         URI srvUri1 = httpServerRegistry.registerContext(baseUri, ctxtPath1, (req, res, ti) ->
                 isPath1Requested.set(true));
+        // uri1 has found a free port, attach uri 2 to the same
+        baseUri = URI.create(String.format("%s:%s", srvUri1.getScheme(), srvUri1.getSchemeSpecificPart()));
         URI srvUri2 = httpServerRegistry.registerContext(baseUri, ctxtPath2, (req, res, ti) ->
                 isPath2Requested.set(true));
 
@@ -119,6 +122,17 @@ public class GrizzlyHttpServerRegistryIT extends DpwsTest {
         }
 
         assertThat(isPath1Requested.get(), is(false));
+
+//        TODO: Re-enable this section!
+//        // verify path 2 is still working after removing path 1
+//        isPath2Requested.set(false);
+//        assertFalse(isPath2Requested.get());
+//        try {
+//            httpBinding2.onRequestResponse(createASoapMessage());
+//        } catch (SoapFaultException e) {
+//            fail(e);
+//        }
+//        assertTrue(isPath2Requested.get());
 
         httpServerRegistry.stopAsync().awaitTerminated();
     }

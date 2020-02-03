@@ -315,7 +315,7 @@ public class EventSourceInterceptor extends AbstractIdleService implements Event
     private EndpointReferenceType createSubscriptionManagerEprAndRegisterHttpHandler(TransportInfo transportInfo) {
         final URI hostPart = httpUriBuilder.buildUri(
                 transportInfo.getScheme(), transportInfo.getLocalAddress(), transportInfo.getLocalPort());
-        String contextPath = "/" + subscriptionManagerPath + "/" + UUID.randomUUID().toString();
+        String contextPath = "/" + UUID.randomUUID().toString() + "/" + subscriptionManagerPath;
         String eprAddress = hostPart + contextPath;
 
         RequestResponseServerHttpHandler handler = rrServerHttpHandlerProvider.get();
