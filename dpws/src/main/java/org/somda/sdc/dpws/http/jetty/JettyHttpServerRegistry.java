@@ -34,6 +34,7 @@ import org.somda.sdc.dpws.soap.exception.MarshallingException;
 import org.somda.sdc.dpws.soap.exception.TransportException;
 
 import javax.annotation.Nullable;
+import javax.net.ssl.SSLContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -299,13 +300,14 @@ public class JettyHttpServerRegistry extends AbstractIdleService implements Http
                 return server;
             }
             if (sslContextConfigurator != null && uri.getScheme().equalsIgnoreCase("https")) {
-                SslContextFactory fac = new SslContextFactory.Server();
+                SslContextFactory.Server fac = new SslContextFactory.Server();
                 fac.setSslContext(sslContextConfigurator.createSSLContext(true));
+                fac.setNeedClientAuth(true);
+                fac.setHostnameVerifier((a, b) -> true);
 
                 HttpConfiguration httpsConfig = new HttpConfiguration(httpConfig);
                 SecureRequestCustomizer src = new SecureRequestCustomizer();
                 httpsConfig.addCustomizer(src);
-
 
                 ServerConnector httpsConnector = new ServerConnector(server,
                         new SslConnectionFactory(fac, "http/1.1"),
