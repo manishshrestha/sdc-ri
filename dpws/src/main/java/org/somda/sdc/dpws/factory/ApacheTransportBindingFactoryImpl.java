@@ -51,8 +51,9 @@ public class ApacheTransportBindingFactoryImpl implements TransportBindingFactor
 
     private final SoapMarshalling marshalling;
     private final SoapUtil soapUtil;
-    private Duration clientConnectTimeout;
-    private Duration clientReadTimeout;
+    private final boolean enableGzipCompression;
+    private final Duration clientConnectTimeout;
+    private final Duration clientReadTimeout;
     private final CommunicationLog communicationLog;
 
     private final HttpClient client;
@@ -65,13 +66,15 @@ public class ApacheTransportBindingFactoryImpl implements TransportBindingFactor
                                       @Nullable @Named(CryptoConfig.CRYPTO_SETTINGS) CryptoSettings cryptoSettings,
                                       CommunicationLog communicationLog,
                                       @Named(DpwsConfig.HTTP_CLIENT_CONNECT_TIMEOUT) Duration clientConnectTimeout,
-                                      @Named(DpwsConfig.HTTP_CLIENT_READ_TIMEOUT) Duration clientReadTimeout) {
+                                      @Named(DpwsConfig.HTTP_CLIENT_READ_TIMEOUT) Duration clientReadTimeout,
+                                      @Named(DpwsConfig.HTTP_GZIP_COMPRESSION) boolean enableGzipCompression) {
         this.marshalling = marshalling;
         this.soapUtil = soapUtil;
         this.clientConnectTimeout = clientConnectTimeout;
         this.clientReadTimeout = clientReadTimeout;
         this.communicationLog = communicationLog;
         this.client = buildBaseClient().build();
+        this.enableGzipCompression = enableGzipCompression;
 
         configureSecuredClient(cryptoConfigurator, cryptoSettings);
     }
@@ -88,7 +91,7 @@ public class ApacheTransportBindingFactoryImpl implements TransportBindingFactor
                 .setSocketTimeout((int) clientConnectTimeout.toMillis())
                 .build();
 
-        return HttpClients.custom()
+        var clientBuilder = HttpClients.custom()
                 .setDefaultSocketConfig(socketConfig)
                 .setDefaultRequestConfig(requestConfig)
                 // only allow one connection per host
@@ -96,9 +99,12 @@ public class ApacheTransportBindingFactoryImpl implements TransportBindingFactor
                 // allow reusing ssl connections in the pool
                 .disableConnectionState()
                 // retry every request just once in case the socket has died
-                .setRetryHandler(new DefaultHttpRequestRetryHandler(1, false))
-                // disable gzip compression for now
-                .disableContentCompression();
+                .setRetryHandler(new DefaultHttpRequestRetryHandler(1, false));
+        if (!enableGzipCompression) {
+            // disable gzip compression
+            clientBuilder.disableContentCompression();
+        }
+        return clientBuilder;
     }
 
     private void configureSecuredClient(CryptoConfigurator cryptoConfigurator, @Nullable CryptoSettings cryptoSettings) {
