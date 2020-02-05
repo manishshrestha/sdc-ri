@@ -158,6 +158,7 @@ class ScoControllerTest {
                 invokeOp.getInvocationState());
 
         verify(eventSourceAccessMock).sendNotification(actionCaptor.capture(), reportCaptor.capture());
+        assertEquals(1, reportCaptor.getAllValues().size());
 
         assertEquals(ActionConstants.ACTION_OPERATION_INVOKED_REPORT, actionCaptor.getValue());
         assertEquals(expectedInvocationState, reportCaptor.getValue().getReportPart().get(0).getInvocationInfo().getInvocationState());
