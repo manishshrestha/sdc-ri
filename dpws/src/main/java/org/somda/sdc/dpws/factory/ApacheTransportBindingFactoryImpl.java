@@ -4,6 +4,7 @@ import com.google.common.io.ByteStreams;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import org.apache.http.HttpEntity;
+import org.apache.http.HttpHeaders;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.config.RequestConfig;
@@ -204,8 +205,8 @@ public class ApacheTransportBindingFactoryImpl implements TransportBindingFactor
 
             // create post request and set content type to SOAP
             HttpPost post = new HttpPost(this.clientUri);
-            post.setHeader("Accept", SoapConstants.MEDIA_TYPE_SOAP);
-            post.setHeader("Content-type", SoapConstants.MEDIA_TYPE_SOAP);
+            post.setHeader(HttpHeaders.ACCEPT, SoapConstants.MEDIA_TYPE_SOAP);
+            post.setHeader(HttpHeaders.CONTENT_TYPE, SoapConstants.MEDIA_TYPE_SOAP);
 
             // attach payload
             var requestEntity = new ByteArrayEntity(outputStream.toByteArray());
