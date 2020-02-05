@@ -60,12 +60,12 @@ class ContextTest {
     }
 
     @Test
-    void sendUnsucessfulReport() throws MarshallingException, TransportException {
+    void sendUnsuccessfulReport() throws MarshallingException, TransportException {
         final MdibVersion expectedMdibVersion = MdibVersion.create();
         final InvocationState expectedInvocationState = InvocationState.FIN_MOD;
         final InvocationError expectedInvocationError = InvocationError.INV;
         final List<LocalizedText> expectedErrorMessage = new ArrayList<>();
-        context.sendUnsucessfulReport(expectedMdibVersion, expectedInvocationState, expectedInvocationError, expectedErrorMessage);
+        context.sendUnsuccessfulReport(expectedMdibVersion, expectedInvocationState, expectedInvocationError, expectedErrorMessage);
 
         verify(eventSourceAccess).sendNotification(actionCaptor.capture(), reportCaptor.capture());
 

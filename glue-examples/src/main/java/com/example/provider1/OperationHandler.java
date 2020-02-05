@@ -56,7 +56,7 @@ public class OperationHandler implements OperationInvocationReceiver {
         // find operation target
         var setNumeric = mdibAccess.getDescriptor(operationHandle, SetValueOperationDescriptor.class).orElseThrow(() -> {
                     var errorMessage = createLocalizedText("Operation target cannot be found");
-                    context.sendUnsucessfulReport(InvocationState.FAIL, InvocationError.OTH, List.of(errorMessage));
+                    context.sendUnsuccessfulReport(InvocationState.FAIL, InvocationError.OTH, List.of(errorMessage));
                     throw new RuntimeException(
                             String.format("Operation descriptor %s missing", operationHandle)
                     );
@@ -66,7 +66,7 @@ public class OperationHandler implements OperationInvocationReceiver {
 
         var targetDesc = mdibAccess.getDescriptor(operationTargetHandle, NumericMetricDescriptor.class).orElseThrow(() -> {
             var errorMessage = createLocalizedText("Operation target cannot be found");
-            context.sendUnsucessfulReport(InvocationState.FAIL, InvocationError.OTH, List.of(errorMessage));
+            context.sendUnsuccessfulReport(InvocationState.FAIL, InvocationError.OTH, List.of(errorMessage));
             throw new RuntimeException(
                     String.format("Operation target descriptor %s missing", operationTargetHandle)
             );
@@ -77,7 +77,7 @@ public class OperationHandler implements OperationInvocationReceiver {
                     if (range.getLower() != null && range.getLower().compareTo(data) > 0) {
                         // value too small
                         var errorMessage = createLocalizedText("Value too small");
-                        context.sendUnsucessfulReport(InvocationState.FAIL, InvocationError.OTH, List.of(errorMessage));
+                        context.sendUnsuccessfulReport(InvocationState.FAIL, InvocationError.OTH, List.of(errorMessage));
                         throw new RuntimeException(
                                 String.format("Operation set value below lower limit of %s, was %s", range.getLower(), data)
                         );
@@ -85,7 +85,7 @@ public class OperationHandler implements OperationInvocationReceiver {
                     if (range.getUpper() != null && range.getUpper().compareTo(data) < 0) {
                         // value too big
                         var errorMessage = createLocalizedText("Value too big");
-                        context.sendUnsucessfulReport(InvocationState.FAIL, InvocationError.OTH, List.of(errorMessage));
+                        context.sendUnsuccessfulReport(InvocationState.FAIL, InvocationError.OTH, List.of(errorMessage));
                         throw new RuntimeException(
                                 String.format("Operation set value below lower limit of %s, was %s", range.getLower(), data)
                         );
@@ -95,7 +95,7 @@ public class OperationHandler implements OperationInvocationReceiver {
 
         var targetState = mdibAccess.getState(operationTargetHandle, NumericMetricState.class).orElseThrow(() -> {
             var errorMessage = createLocalizedText("Operation target state cannot be found");
-            context.sendUnsucessfulReport(InvocationState.FAIL, InvocationError.OTH, List.of(errorMessage));
+            context.sendUnsuccessfulReport(InvocationState.FAIL, InvocationError.OTH, List.of(errorMessage));
             throw new RuntimeException(
                     String.format("Operation target descriptor %s missing", operationTargetHandle)
             );
@@ -118,7 +118,7 @@ public class OperationHandler implements OperationInvocationReceiver {
         } catch (PreprocessingException e) {
             LOG.error("Error while writing states", e);
             var errorMessage = createLocalizedText("Error while writing states");
-            context.sendUnsucessfulReport(InvocationState.FAIL, InvocationError.UNSPEC, List.of(errorMessage));
+            context.sendUnsuccessfulReport(InvocationState.FAIL, InvocationError.UNSPEC, List.of(errorMessage));
             return context.createUnsuccessfulResponse(InvocationState.FAIL, InvocationError.UNSPEC, List.of(errorMessage));
         }
     }
@@ -132,7 +132,7 @@ public class OperationHandler implements OperationInvocationReceiver {
         // find operation target
         var setString = mdibAccess.getDescriptor(operationHandle, SetStringOperationDescriptor.class).orElseThrow(() -> {
                     var errorMessage = createLocalizedText("Operation target cannot be found");
-                    context.sendUnsucessfulReport(InvocationState.FAIL, InvocationError.OTH, List.of(errorMessage));
+                    context.sendUnsuccessfulReport(InvocationState.FAIL, InvocationError.OTH, List.of(errorMessage));
                     throw new RuntimeException(
                             String.format("Operation descriptor %s missing", operationHandle)
                     );
@@ -144,7 +144,7 @@ public class OperationHandler implements OperationInvocationReceiver {
         if (isEnumString) {
             var targetDesc = mdibAccess.getDescriptor(operationTargetHandle, EnumStringMetricDescriptor.class).orElseThrow(() -> {
                 var errorMessage = createLocalizedText("Operation target descriptor cannot be found");
-                context.sendUnsucessfulReport(InvocationState.FAIL, InvocationError.OTH, List.of(errorMessage));
+                context.sendUnsuccessfulReport(InvocationState.FAIL, InvocationError.OTH, List.of(errorMessage));
                 throw new RuntimeException(
                         String.format("Operation target descriptor %s missing", operationTargetHandle)
                 );
@@ -161,7 +161,7 @@ public class OperationHandler implements OperationInvocationReceiver {
 
         var targetState = mdibAccess.getState(operationTargetHandle, StringMetricState.class).orElseThrow(() -> {
             var errorMessage = createLocalizedText("Operation target state cannot be found");
-            context.sendUnsucessfulReport(InvocationState.FAIL, InvocationError.OTH, List.of(errorMessage));
+            context.sendUnsuccessfulReport(InvocationState.FAIL, InvocationError.OTH, List.of(errorMessage));
             throw new RuntimeException(
                     String.format("Operation target descriptor %s missing", operationTargetHandle)
             );
@@ -183,7 +183,7 @@ public class OperationHandler implements OperationInvocationReceiver {
         } catch (PreprocessingException e) {
             LOG.error("Error while writing states", e);
             var errorMessage = createLocalizedText("Error while writing states");
-            context.sendUnsucessfulReport(InvocationState.FAIL, InvocationError.UNSPEC, List.of(errorMessage));
+            context.sendUnsuccessfulReport(InvocationState.FAIL, InvocationError.UNSPEC, List.of(errorMessage));
             return context.createUnsuccessfulResponse(InvocationState.FAIL, InvocationError.UNSPEC, List.of(errorMessage));
         }
     }

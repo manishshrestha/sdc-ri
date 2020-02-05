@@ -94,8 +94,22 @@ public class ScoController {
                 }
 
                 if (receiver.getCallbackMethod().getParameters()[1].getType().isAssignableFrom(payload.getClass())) {
-                    return (InvocationResponse) receiver.getCallbackMethod().invoke(receiver.getReceiver(),
+                    var response = (InvocationResponse) receiver.getCallbackMethod().invoke(receiver.getReceiver(),
                             context, payload);
+                    if (!response.getInvocationState().equals(context.getCurrentReportInvocationState())) {
+                        LOG.debug(
+                                "No matching OperationInvokedReport was sent before sending response." +
+                                        " TransactionId: {} - InvocationState: {}",
+                                response.getTransactionId(), response.getInvocationState()
+                        );
+                        context.sendUnsuccessfulReport(
+                                response.getMdibVersion(),
+                                response.getInvocationState(),
+                                response.getInvocationError(),
+                                response.getInvocationErrorMessage()
+                        );
+                    }
+                    return response;
                 }
             }
         } catch (Exception e) {
