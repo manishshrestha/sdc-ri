@@ -204,13 +204,17 @@ public class GrizzlyHttpServerRegistryIT extends DpwsTest {
             gzos.write(expectedString.getBytes(StandardCharsets.UTF_8));
         }
 
+        byte[] requestContent = baos.toByteArray();
+        // ensure data isn't just the raw string
+        assertNotEquals(expectedString.getBytes(), requestContent);
+
         // create post request and set content type to SOAP
         HttpPost post = new HttpPost(srvUri1);
         post.setHeader(HttpHeaders.ACCEPT_ENCODING, "gzip");
         post.setHeader(HttpHeaders.CONTENT_ENCODING, "gzip");
 
         // attach payload
-        var requestEntity = new ByteArrayEntity(baos.toByteArray());
+        var requestEntity = new ByteArrayEntity(requestContent);
         post.setEntity(requestEntity);
 
         // no retry handling is required as apache httpclient already does
