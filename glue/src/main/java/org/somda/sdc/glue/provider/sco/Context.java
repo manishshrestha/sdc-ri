@@ -77,8 +77,8 @@ public class Context {
     /**
      * Creates a successful initial invocation response based on this context.
      * <p>
-     * <em>Creating the response will send an OperationInvokedReport matching the response
-     * if no report matching this invocation state has been send before</em>
+     * <em>Creating the response will send an {@linkplain OperationInvokedReport} matching the response
+     * if no report matching this invocation state has been sent before.</em>
      *
      * @param mdibVersion     the MDIB version that is put to the response message.
      * @param invocationState the invocation state that is put to the response message.
@@ -101,8 +101,8 @@ public class Context {
     /**
      * Creates a successful initial invocation response based on this context with latest MDIB version.
      * <p>
-     * <em>Creating the response will send an OperationInvokedReport matching the response
-     * if no report matching this invocation state has been send before</em>
+     * <em>Creating the response will send an {@linkplain OperationInvokedReport} matching the response
+     * if no report matching this invocation state has been sent before.</em>
      *
      * @param invocationState the invocation state that is put to the response message.
      *                        The enumeration is not verified.
@@ -115,8 +115,8 @@ public class Context {
     /**
      * Creates an unsuccessful initial invocation response based on this context.
      * <p>
-     * <em>Creating the response will send an OperationInvokedReport matching the response
-     * if no report matching this invocation state has been send before</em>
+     * <em>Creating the response will send an {@linkplain OperationInvokedReport} matching the response
+     * if no report matching this invocation state has been sent before.</em>
      *
      * @param mdibVersion            the MDIB version that is put to the response message.
      * @param invocationState        the invocation state that is put to the response message.
@@ -135,8 +135,8 @@ public class Context {
     /**
      * Creates an unsuccessful initial invocation response based on this context with latest MDIB version.
      * <p>
-     * <em>Creating the response will send an OperationInvokedReport matching the response
-     * if no report matching this invocation state has been send before</em>
+     * <em>Creating the response will send an {@linkplain OperationInvokedReport} matching the response
+     * if no report matching this invocation state has been sent before.</em>
      *
      * @param invocationState        the invocation state that is put to the response message.
      *                               The enumeration is not verified.
@@ -268,7 +268,7 @@ public class Context {
     /**
      * Returns the last {@linkplain InvocationState} for which an {@linkplain OperationInvokedReport} was sent out.
      *
-     * @return The last {@linkplain InvocationState} sent as a report
+     * @return The last {@linkplain InvocationState} sent as a report.
      */
     public InvocationState getCurrentReportInvocationState() {
         return currentReportInvocationState;
