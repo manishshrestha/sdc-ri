@@ -12,7 +12,7 @@ import java.util.List;
  * Initial response required to answer a set service request.
  * <p>
  * The object is supposed to be created by using {@link Context#createSuccessfulResponse(MdibVersion, InvocationState)}
- * and {@link Context#createUnsucessfulResponse(MdibVersion, InvocationState, InvocationError, List)}.
+ * and {@link Context#createUnsuccessfulResponse(MdibVersion, InvocationState, InvocationError, List)}.
  */
 public class InvocationResponse {
     private final MdibVersion mdibVersion;
