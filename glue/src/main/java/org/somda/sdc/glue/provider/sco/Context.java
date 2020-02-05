@@ -85,6 +85,11 @@ public class Context {
     public InvocationResponse createSuccessfulResponse(MdibVersion mdibVersion,
                                                        InvocationState invocationState) {
         if (!invocationState.equals(this.currentReportInvocationState)) {
+            LOG.debug(
+                    "No matching OperationInvokedReport was sent before sending response." +
+                            " Sending response as OperationInvokedReport as well. Operation: {} - State: {}",
+                    this.operationHandle, invocationState
+            );
             sendSuccessfulReport(mdibVersion, invocationState);
         }
         return new InvocationResponse(mdibVersion, transactionId, invocationState, null, null);
@@ -99,6 +104,11 @@ public class Context {
      */
     public InvocationResponse createSuccessfulResponse(InvocationState invocationState) {
         if (!invocationState.equals(this.currentReportInvocationState)) {
+            LOG.debug(
+                    "No matching OperationInvokedReport was sent before sending response." +
+                            " Sending response as OperationInvokedReport as well. Operation: {} - State: {}",
+                    this.operationHandle, invocationState
+            );
             sendSuccessfulReport(invocationState);
         }
         return new InvocationResponse(mdibAccess.getMdibVersion(), transactionId, invocationState, null, null);
@@ -119,6 +129,11 @@ public class Context {
                                                          InvocationError invocationError,
                                                          List<LocalizedText> invocationErrorMessage) {
         if (!invocationState.equals(this.currentReportInvocationState)) {
+            LOG.debug(
+                    "No matching OperationInvokedReport was sent before sending response." +
+                            " Sending response as OperationInvokedReport as well. Operation: {} - State: {}",
+                    this.operationHandle, invocationState
+            );
             sendUnsucessfulReport(mdibVersion, invocationState, invocationError, invocationErrorMessage);
         }
         return new InvocationResponse(mdibVersion, transactionId, invocationState, invocationError, invocationErrorMessage);
