@@ -1,6 +1,5 @@
 package org.somda.sdc.glue.provider.sco;
 
-import org.somda.sdc.biceps.common.access.MdibAccess;
 import org.somda.sdc.biceps.model.message.InvocationError;
 import org.somda.sdc.biceps.model.message.InvocationState;
 import org.somda.sdc.biceps.model.participant.*;
@@ -12,6 +11,7 @@ import org.somda.sdc.glue.provider.sco.factory.ScoControllerFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -20,6 +20,7 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 class ScoControllerTest {
     private static final UnitTestUtil IT = new UnitTestUtil();
@@ -33,6 +34,9 @@ class ScoControllerTest {
     void beforeEach() {
         eventSourceAccessMock = mock(EventSourceAccess.class);
         mdibAccessMock = mock(LocalMdibAccess.class);
+        when(mdibAccessMock.getMdibVersion()).thenReturn(
+                new MdibVersion(URI.create("ABC"))
+        );
         receiver = new Receiver();
         scoController = IT.getInjector().getInstance(ScoControllerFactory.class).createScoController(eventSourceAccessMock, mdibAccessMock);
         scoController.addOperationInvocationReceiver(receiver);
@@ -126,7 +130,7 @@ class ScoControllerTest {
         @IncomingSetServiceRequest(operationHandle = Handles.OPERATION_1, listType = AbstractContextState.class)
         InvocationResponse setContext(Context context, List<AbstractContextState> data) {
             items.add(new Item(context, data));
-            return context.createUnsucessfulResponse(MdibVersion.create(), InvocationState.FAIL, InvocationError.UNSPEC, Collections.EMPTY_LIST);
+            return context.createUnsuccessfulResponse(MdibVersion.create(), InvocationState.FAIL, InvocationError.UNSPEC, Collections.EMPTY_LIST);
         }
 
         @IncomingSetServiceRequest(listType = AbstractMetricState.class)

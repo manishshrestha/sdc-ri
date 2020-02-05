@@ -38,6 +38,10 @@ public class Context {
     private final LocalMdibAccess mdibAccess;
     private final ObjectFactory messageModelFactory;
 
+    // this is used to track whether the last OperationInvokedReport state
+    // matches the Responses state, and sends an OperationInvokedReport in case it doesn't
+    private InvocationState currentReportInvocationState;
+
     @AssistedInject
     Context(@Assisted long transactionId,
             @Assisted String operationHandle,
@@ -51,6 +55,7 @@ public class Context {
         this.eventSource = eventSource;
         this.mdibAccess = mdibAccess;
         this.messageModelFactory = messageModelFactory;
+        this.currentReportInvocationState = null;
     }
 
     public LocalMdibAccess getMdibAccess() {
@@ -79,6 +84,9 @@ public class Context {
      */
     public InvocationResponse createSuccessfulResponse(MdibVersion mdibVersion,
                                                        InvocationState invocationState) {
+        if (!invocationState.equals(this.currentReportInvocationState)) {
+            sendSuccessfulReport(mdibVersion, invocationState);
+        }
         return new InvocationResponse(mdibVersion, transactionId, invocationState, null, null);
     }
 
@@ -90,6 +98,9 @@ public class Context {
      * @return the invocation response object.
      */
     public InvocationResponse createSuccessfulResponse(InvocationState invocationState) {
+        if (!invocationState.equals(this.currentReportInvocationState)) {
+            sendSuccessfulReport(invocationState);
+        }
         return new InvocationResponse(mdibAccess.getMdibVersion(), transactionId, invocationState, null, null);
     }
 
@@ -103,10 +114,13 @@ public class Context {
      * @param invocationErrorMessage a human-readable text to describe the error.
      * @return the invocation response object.
      */
-    public InvocationResponse createUnsucessfulResponse(MdibVersion mdibVersion,
-                                                        InvocationState invocationState,
-                                                        InvocationError invocationError,
-                                                        List<LocalizedText> invocationErrorMessage) {
+    public InvocationResponse createUnsuccessfulResponse(MdibVersion mdibVersion,
+                                                         InvocationState invocationState,
+                                                         InvocationError invocationError,
+                                                         List<LocalizedText> invocationErrorMessage) {
+        if (!invocationState.equals(this.currentReportInvocationState)) {
+            sendUnsucessfulReport(mdibVersion, invocationState, invocationError, invocationErrorMessage);
+        }
         return new InvocationResponse(mdibVersion, transactionId, invocationState, invocationError, invocationErrorMessage);
     }
 
@@ -119,9 +133,12 @@ public class Context {
      * @param invocationErrorMessage a human-readable text to describe the error.
      * @return the invocation response object.
      */
-    public InvocationResponse createUnsucessfulResponse(InvocationState invocationState,
-                                                        InvocationError invocationError,
-                                                        List<LocalizedText> invocationErrorMessage) {
+    public InvocationResponse createUnsuccessfulResponse(InvocationState invocationState,
+                                                         InvocationError invocationError,
+                                                         List<LocalizedText> invocationErrorMessage) {
+        if (!invocationState.equals(this.currentReportInvocationState)) {
+            sendUnsucessfulReport(invocationState, invocationError, invocationErrorMessage);
+        }
         return new InvocationResponse(mdibAccess.getMdibVersion(), transactionId, invocationState, invocationError, invocationErrorMessage);
     }
 
@@ -208,6 +225,8 @@ public class Context {
                             @Nullable InvocationError invocationError,
                             @Nullable List<LocalizedText> invocationErrorMessage,
                             @Nullable String operationTarget) {
+
+        this.currentReportInvocationState = invocationState;
 
         final InvocationInfo invocationInfo = messageModelFactory.createInvocationInfo();
         invocationInfo.setInvocationState(invocationState);

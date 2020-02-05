@@ -119,7 +119,7 @@ public class OperationHandler implements OperationInvocationReceiver {
             LOG.error("Error while writing states", e);
             var errorMessage = createLocalizedText("Error while writing states");
             context.sendUnsucessfulReport(InvocationState.FAIL, InvocationError.UNSPEC, List.of(errorMessage));
-            return context.createUnsucessfulResponse(InvocationState.FAIL, InvocationError.UNSPEC, List.of(errorMessage));
+            return context.createUnsuccessfulResponse(InvocationState.FAIL, InvocationError.UNSPEC, List.of(errorMessage));
         }
     }
 
@@ -155,7 +155,7 @@ public class OperationHandler implements OperationInvocationReceiver {
             if (first.isEmpty()) {
                 // not allowed value, bye bye
                 var errormessage = createLocalizedText("Value is not allowed here");
-                return context.createUnsucessfulResponse(mdibAccess.getMdibVersion(), InvocationState.FAIL, InvocationError.UNSPEC, List.of(errormessage));
+                return context.createUnsuccessfulResponse(mdibAccess.getMdibVersion(), InvocationState.FAIL, InvocationError.UNSPEC, List.of(errormessage));
             }
         }
 
@@ -184,7 +184,7 @@ public class OperationHandler implements OperationInvocationReceiver {
             LOG.error("Error while writing states", e);
             var errorMessage = createLocalizedText("Error while writing states");
             context.sendUnsucessfulReport(InvocationState.FAIL, InvocationError.UNSPEC, List.of(errorMessage));
-            return context.createUnsucessfulResponse(InvocationState.FAIL, InvocationError.UNSPEC, List.of(errorMessage));
+            return context.createUnsuccessfulResponse(InvocationState.FAIL, InvocationError.UNSPEC, List.of(errorMessage));
         }
     }
 

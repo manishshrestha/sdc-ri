@@ -2,7 +2,6 @@ package org.somda.sdc.glue.provider.sco;
 
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
-import org.somda.sdc.biceps.common.access.MdibAccess;
 import org.somda.sdc.biceps.model.message.InvocationError;
 import org.somda.sdc.biceps.model.message.InvocationState;
 import org.somda.sdc.biceps.model.participant.InstanceIdentifier;
@@ -106,7 +105,7 @@ public class ScoController {
         }
 
         // send error report
-        return context.createUnsucessfulResponse(
+        return context.createUnsuccessfulResponse(
                 mdibAccess.getMdibVersion(),
                 InvocationState.FAIL,
                 InvocationError.UNSPEC,

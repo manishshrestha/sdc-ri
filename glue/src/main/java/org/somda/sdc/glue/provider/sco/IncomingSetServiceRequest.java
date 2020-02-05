@@ -34,7 +34,7 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
  * <p>
  * The result of the operation is required to be of the type {@link InvocationResponse}, which can be created by using
  * {@link Context#createSuccessfulResponse(MdibVersion, InvocationState)} or
- * {@link Context#createUnsucessfulResponse(MdibVersion, InvocationState, InvocationError, List)}.
+ * {@link Context#createUnsuccessfulResponse(MdibVersion, InvocationState, InvocationError, List)}.
  */
 @Target({METHOD})
 @Retention(RUNTIME)
