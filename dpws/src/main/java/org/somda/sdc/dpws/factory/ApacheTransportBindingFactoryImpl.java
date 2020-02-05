@@ -74,8 +74,8 @@ public class ApacheTransportBindingFactoryImpl implements TransportBindingFactor
         this.clientConnectTimeout = clientConnectTimeout;
         this.clientReadTimeout = clientReadTimeout;
         this.communicationLog = communicationLog;
-        this.client = buildBaseClient().build();
         this.enableGzipCompression = enableGzipCompression;
+        this.client = buildBaseClient().build();
 
         configureSecuredClient(cryptoConfigurator, cryptoSettings);
     }
