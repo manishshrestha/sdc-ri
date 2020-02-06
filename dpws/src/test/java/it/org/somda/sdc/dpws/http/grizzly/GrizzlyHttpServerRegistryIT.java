@@ -9,10 +9,12 @@ import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.impl.client.HttpClients;
 import org.glassfish.grizzly.http.server.HttpServer;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
+import org.somda.sdc.dpws.DpwsConfig;
 import org.somda.sdc.dpws.DpwsTest;
 import org.somda.sdc.dpws.TransportBinding;
 import org.somda.sdc.dpws.TransportBindingException;
 import org.somda.sdc.dpws.factory.TransportBindingFactory;
+import org.somda.sdc.dpws.guice.DefaultDpwsConfigModule;
 import org.somda.sdc.dpws.http.grizzly.GrizzlyHttpServerRegistry;
 import org.somda.sdc.dpws.soap.SoapMarshalling;
 import org.somda.sdc.dpws.soap.SoapMessage;
@@ -49,8 +51,15 @@ public class GrizzlyHttpServerRegistryIT extends DpwsTest {
 
     @BeforeEach
     public void setUp() throws Exception {
+        var override = new DefaultDpwsConfigModule() {
+            @Override
+            public void customConfigure() {
+                bind(DpwsConfig.HTTP_GZIP_COMPRESSION, Boolean.class, true);
+                bind(DpwsConfig.HTTP_RESPONSE_COMPRESSION_MIN_SIZE, Integer.class, 32);
+            }
+        };
+        this.overrideBindings(override);
         super.setUp();
-
         httpServerRegistry = getInjector().getInstance(GrizzlyHttpServerRegistry.class);
         transportBindingFactory = getInjector().getInstance(TransportBindingFactory.class);
         soapMessageFactory = getInjector().getInstance(SoapMessageFactory.class);

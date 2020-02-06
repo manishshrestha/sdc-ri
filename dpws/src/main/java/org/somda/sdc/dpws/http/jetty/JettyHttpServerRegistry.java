@@ -15,26 +15,26 @@ import org.eclipse.jetty.server.SslConnectionFactory;
 import org.eclipse.jetty.server.handler.AbstractHandler;
 import org.eclipse.jetty.server.handler.ContextHandler;
 import org.eclipse.jetty.server.handler.ContextHandlerCollection;
+import org.eclipse.jetty.server.handler.gzip.GzipHandler;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.glassfish.grizzly.ssl.SSLContextConfigurator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.somda.sdc.dpws.CommunicationLog;
 import org.somda.sdc.dpws.CommunicationLogImpl;
+import org.somda.sdc.dpws.DpwsConfig;
 import org.somda.sdc.dpws.crypto.CryptoConfig;
 import org.somda.sdc.dpws.crypto.CryptoConfigurator;
 import org.somda.sdc.dpws.crypto.CryptoSettings;
 import org.somda.sdc.dpws.http.HttpHandler;
 import org.somda.sdc.dpws.http.HttpServerRegistry;
 import org.somda.sdc.dpws.http.HttpUriBuilder;
-import org.somda.sdc.dpws.http.grizzly.GrizzlyHttpServerRegistry;
 import org.somda.sdc.dpws.soap.SoapConstants;
 import org.somda.sdc.dpws.soap.TransportInfo;
 import org.somda.sdc.dpws.soap.exception.MarshallingException;
 import org.somda.sdc.dpws.soap.exception.TransportException;
 
 import javax.annotation.Nullable;
-import javax.net.ssl.SSLContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -66,15 +66,21 @@ public class JettyHttpServerRegistry extends AbstractIdleService implements Http
     private final Lock registryLock;
     private final HttpUriBuilder uriBuilder;
     private final CommunicationLog communicationLog;
+    private boolean enableGzipCompression;
+    private int minCompressionSize;
     private SSLContextConfigurator sslContextConfigurator; // null => no support for SSL enabled/configured
 
     @Inject
     JettyHttpServerRegistry(HttpUriBuilder uriBuilder,
                             CryptoConfigurator cryptoConfigurator,
                             @Nullable @Named(CryptoConfig.CRYPTO_SETTINGS) CryptoSettings cryptoSettings,
-                            CommunicationLog communicationLog) {
+                            CommunicationLog communicationLog,
+                            @Named(DpwsConfig.HTTP_GZIP_COMPRESSION) boolean enableGzipCompression,
+                            @Named(DpwsConfig.HTTP_RESPONSE_COMPRESSION_MIN_SIZE) int minCompressionSize) {
         this.uriBuilder = uriBuilder;
         this.communicationLog = communicationLog;
+        this.enableGzipCompression = enableGzipCompression;
+        this.minCompressionSize = minCompressionSize;
         serverRegistry = new HashMap<>();
         handlerRegistry = new HashMap<>();
         contextHandlerMap = new HashMap<>();
@@ -296,6 +302,20 @@ public class JettyHttpServerRegistry extends AbstractIdleService implements Http
             server.setHandler(context);
             this.contextHandlerMap.put(server, context);
 
+            // wrap the context handler in a gzip handler
+            if (this.enableGzipCompression) {
+                GzipHandler gzipHandler = new GzipHandler();
+                gzipHandler.setIncludedMethods("PUT", "POST", "GET");
+                gzipHandler.setInflateBufferSize(2048);
+                gzipHandler.setHandler(context);
+                gzipHandler.setMinGzipSize(minCompressionSize);
+                gzipHandler.setIncludedMimeTypes(
+                        "text/plain", "text/html",
+                        SoapConstants.MEDIA_TYPE_SOAP, SoapConstants.MEDIA_TYPE_WSDL
+                );
+                server.setHandler(gzipHandler);
+            }
+
             if (uri.getScheme().equalsIgnoreCase("http")) {
                 return server;
             }
@@ -315,7 +335,6 @@ public class JettyHttpServerRegistry extends AbstractIdleService implements Http
                 httpsConnector.setIdleTimeout(50000);
 
                 server.setConnectors(new Connector[]{ httpsConnector });
-                server.setHandler(context);
 
                 return server;
             }

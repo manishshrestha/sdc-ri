@@ -54,6 +54,7 @@ public class GrizzlyHttpServerRegistry extends AbstractIdleService implements Ht
     private final Lock registryLock;
     private final HttpUriBuilder uriBuilder;
     private final CommunicationLog communicationLog;
+    private int minCompressionSize;
     private final boolean enableGzipCompression;
     private SSLContextConfigurator sslContextConfigurator; // null => no support for SSL enabled/configured
 
@@ -62,9 +63,11 @@ public class GrizzlyHttpServerRegistry extends AbstractIdleService implements Ht
                               CryptoConfigurator cryptoConfigurator,
                               @Nullable @Named(CryptoConfig.CRYPTO_SETTINGS) CryptoSettings cryptoSettings,
                               CommunicationLog communicationLog,
-                              @Named(DpwsConfig.HTTP_GZIP_COMPRESSION) boolean enableGzipCompression) {
+                              @Named(DpwsConfig.HTTP_GZIP_COMPRESSION) boolean enableGzipCompression,
+                              @Named(DpwsConfig.HTTP_RESPONSE_COMPRESSION_MIN_SIZE) int minCompressionSize) {
         this.uriBuilder = uriBuilder;
         this.communicationLog = communicationLog;
+        this.minCompressionSize = minCompressionSize;
         serverRegistry = new HashMap<>();
         handlerRegistry = new HashMap<>();
         registryLock = new ReentrantLock();
@@ -244,8 +247,8 @@ public class GrizzlyHttpServerRegistry extends AbstractIdleService implements Ht
         if (enableGzipCompression) {
             CompressionConfig compressionConfig =
                     server.getListener("grizzly").getCompressionConfig();
-            compressionConfig.setCompressionMode(CompressionConfig.CompressionMode.ON); // the mode
-            compressionConfig.setCompressionMinSize(1); // the min amount of bytes to compress
+            compressionConfig.setCompressionMode(CompressionConfig.CompressionMode.ON);
+            compressionConfig.setCompressionMinSize(minCompressionSize);
             compressionConfig.setDecompressionEnabled(true);
             // the mime types to compress
             compressionConfig.setCompressibleMimeTypes(

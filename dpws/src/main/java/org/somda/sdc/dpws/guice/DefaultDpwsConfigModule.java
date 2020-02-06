@@ -61,6 +61,10 @@ public class DefaultDpwsConfigModule extends AbstractConfigurationModule {
         bind(DpwsConfig.HTTP_GZIP_COMPRESSION,
                 Boolean.class,
                 true);
+
+        bind(DpwsConfig.HTTP_RESPONSE_COMPRESSION_MIN_SIZE,
+                Integer.class,
+                32);
     }
 
     private void configureCryptoConfig() {
