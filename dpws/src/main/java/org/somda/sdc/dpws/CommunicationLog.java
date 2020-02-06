@@ -3,6 +3,7 @@ package org.somda.sdc.dpws;
 import org.somda.sdc.dpws.udp.UdpMessage;
 
 import java.io.InputStream;
+import java.io.OutputStream;
 
 /**
  * Communication log interface.
@@ -16,7 +17,20 @@ public interface CommunicationLog {
      * @param port        port information used for filename.
      * @param httpMessage the message to log.
      */
+	@Deprecated
     void logHttpMessage(CommunicationLogImpl.HttpDirection direction, String address, Integer port, byte[] httpMessage);
+    
+    /**
+     * Log an HTTP message based on an output stream.
+     *
+     * @param direction   direction used for filename.
+     * @param address     address information used for filename.
+     * @param port        port information used for filename.
+     * @param httpMessage the output stream to branch to the log file.
+     * @return a output stream, that streams to the original output stream and optionally streams to another stream 
+ * 				similarly to the tee Unix command.
+     */
+    OutputStream logHttpMessage(CommunicationLogImpl.HttpDirection direction, String address, Integer port, OutputStream httpMessage);
 
     /**
      * Log an HTTP message based on an input stream.

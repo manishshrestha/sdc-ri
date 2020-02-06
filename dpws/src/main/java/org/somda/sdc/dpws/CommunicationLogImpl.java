@@ -5,10 +5,10 @@ import com.google.inject.Inject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.somda.sdc.dpws.udp.UdpMessage;
+import org.apache.commons.io.output.TeeOutputStream;
 
 import javax.inject.Named;
 import java.io.*;
-import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 
@@ -33,11 +33,27 @@ public class CommunicationLogImpl implements CommunicationLog {
         }
     }
 
+    @Deprecated
     @Override
     public void logHttpMessage(HttpDirection direction, String address, Integer port, byte[] httpMessage) {
         writeLogFile(
                 makeName(direction.toString(), address, port),
                 new ByteArrayInputStream(httpMessage));
+    }
+    
+    @Override
+    public OutputStream logHttpMessage(HttpDirection direction, String address, Integer port, OutputStream httpMessage) {
+    	
+    	try {
+    		FileOutputStream log_file = new FileOutputStream(logDirectory.getAbsolutePath() + File.separator + makeName(direction.toString(), address, port));
+    		
+    		return new TeeOutputStream(httpMessage, log_file);
+    		
+    	} catch (FileNotFoundException e) {
+    		
+    		return new TeeOutputStream(httpMessage, TeeOutputStream.nullOutputStream());
+    		
+    	}
     }
 
     @Override
