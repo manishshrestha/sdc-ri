@@ -12,6 +12,7 @@ import java.io.*;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 
+
 /**
  * Default implementation of {@linkplain CommunicationLog}.
  */
@@ -42,7 +43,7 @@ public class CommunicationLogImpl implements CommunicationLog {
     }
     
     @Override
-    public OutputStream logHttpMessage(HttpDirection direction, String address, Integer port, OutputStream httpMessage) {
+    public TeeOutputStream logHttpMessage(HttpDirection direction, String address, Integer port, OutputStream httpMessage) {
     	
     	try {
     		FileOutputStream log_file = new FileOutputStream(logDirectory.getAbsolutePath() + File.separator + makeName(direction.toString(), address, port));
@@ -50,6 +51,8 @@ public class CommunicationLogImpl implements CommunicationLog {
     		return new TeeOutputStream(httpMessage, log_file);
     		
     	} catch (FileNotFoundException e) {
+    		
+    		LOG.warn("Could not write communication log file", e);
     		
     		return new TeeOutputStream(httpMessage, TeeOutputStream.nullOutputStream());
     		
