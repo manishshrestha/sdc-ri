@@ -27,7 +27,7 @@ public interface CommunicationLog {
      * @param address     address information used for filename.
      * @param port        port information used for filename.
      * @param httpMessage the output stream to branch to the log file.
-     * @return a output stream, that streams to the original output stream and optionally streams to another stream 
+     * @return an output stream, that streams to the original output stream and optionally streams to another stream 
  * 				similarly to the tee Unix command. The other stream can be a log file stream.
      */
     OutputStream logHttpMessage(CommunicationLogImpl.HttpDirection direction, String address, Integer port, OutputStream httpMessage);
