@@ -45,18 +45,10 @@ public class CommunicationLogImpl implements CommunicationLog {
     @Override
     public TeeOutputStream logHttpMessage(HttpDirection direction, String address, Integer port, OutputStream httpMessage) {
     	
-    	try {
-    		FileOutputStream log_file = new FileOutputStream(logDirectory.getAbsolutePath() + File.separator + makeName(direction.toString(), address, port));
-    		
-    		return new TeeOutputStream(httpMessage, log_file);
-    		
-    	} catch (FileNotFoundException e) {
-    		
-    		LOG.warn("Could not write communication log file", e);
-    		
-    		return new TeeOutputStream(httpMessage, TeeOutputStream.nullOutputStream());
-    		
-    	}
+		OutputStream log_file = getFileOutStream(makeName(direction.toString(), address, port));
+		
+		return new TeeOutputStream(httpMessage, log_file);
+
     }
 
     @Override
@@ -74,22 +66,34 @@ public class CommunicationLogImpl implements CommunicationLog {
     }
 
     private InputStream writeLogFile(String filename, InputStream inputStream) {
-        if (logDirectory == null) {
-            return inputStream;
-        }
+
         try {
             final byte[] bytes = ByteStreams.toByteArray(inputStream);
             if (bytes.length > 0) {
-                new ByteArrayInputStream(bytes)
-                        .transferTo(new FileOutputStream(logDirectory.getAbsolutePath() + File.separator + filename));
+                new ByteArrayInputStream(bytes).transferTo(getFileOutStream(filename));
 
                 return new ByteArrayInputStream(bytes);
             }
         } catch (IOException e) {
-            LOG.warn("Could not write communication log file", e);
+            LOG.warn("Could not write to communication log file", e);
         }
 
         return inputStream;
+    }
+    
+    private OutputStream getFileOutStream(String filename) {
+
+    	try {
+
+    		return new FileOutputStream(logDirectory.getAbsolutePath() + File.separator + filename);
+    		
+    	} catch (FileNotFoundException e) {
+    		
+    		LOG.warn("Could not open communication log file", e);
+    		
+    		return OutputStream.nullOutputStream();
+    	}
+    	
     }
 
     private String makeName(String direction, String destinationAddress, Integer destinationPort) {
