@@ -4,6 +4,7 @@ import com.google.common.collect.Iterables;
 import com.google.common.util.concurrent.AbstractIdleService;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
+import org.glassfish.grizzly.http.CompressionConfig;
 import org.glassfish.grizzly.http.server.HttpServer;
 import org.glassfish.grizzly.http.server.NetworkListener;
 import org.glassfish.grizzly.http.server.Request;
@@ -17,6 +18,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.somda.sdc.dpws.CommunicationLog;
 import org.somda.sdc.dpws.CommunicationLogImpl;
+import org.somda.sdc.dpws.DpwsConfig;
 import org.somda.sdc.dpws.crypto.CryptoConfig;
 import org.somda.sdc.dpws.crypto.CryptoConfigurator;
 import org.somda.sdc.dpws.crypto.CryptoSettings;
@@ -29,6 +31,7 @@ import org.somda.sdc.dpws.soap.TransportInfo;
 import javax.annotation.Nullable;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.InetAddress;
@@ -51,18 +54,21 @@ public class GrizzlyHttpServerRegistry extends AbstractIdleService implements Ht
     private final Lock registryLock;
     private final HttpUriBuilder uriBuilder;
     private final CommunicationLog communicationLog;
+    private final boolean enableGzipCompression;
     private SSLContextConfigurator sslContextConfigurator; // null => no support for SSL enabled/configured
 
     @Inject
     GrizzlyHttpServerRegistry(HttpUriBuilder uriBuilder,
                               CryptoConfigurator cryptoConfigurator,
                               @Nullable @Named(CryptoConfig.CRYPTO_SETTINGS) CryptoSettings cryptoSettings,
-                              CommunicationLog communicationLog) {
+                              CommunicationLog communicationLog,
+                              @Named(DpwsConfig.HTTP_GZIP_COMPRESSION) boolean enableGzipCompression) {
         this.uriBuilder = uriBuilder;
         this.communicationLog = communicationLog;
         serverRegistry = new HashMap<>();
         handlerRegistry = new HashMap<>();
         registryLock = new ReentrantLock();
+        this.enableGzipCompression = enableGzipCompression;
         configureSsl(cryptoConfigurator, cryptoSettings);
 
     }
@@ -187,6 +193,7 @@ public class GrizzlyHttpServerRegistry extends AbstractIdleService implements Ht
             }
 
             LOG.debug("Init new HTTP server from URI: {}", schemeAndAuthority);
+
             HttpServer newHttpServer = createHttpServer(URI.create(mapKey));
 
             NetworkListener netListener = Iterables.get(newHttpServer.getListeners(), 0);
@@ -201,28 +208,51 @@ public class GrizzlyHttpServerRegistry extends AbstractIdleService implements Ht
             LOG.warn("Cannot resolve host name", e);
             throw new RuntimeException(e);
         } catch (IndexOutOfBoundsException e) {
-            LOG.warn("No network listener found for requested HTTP server: {}", schemeAndAuthority);
+            LOG.warn("No network listener found for requested HTTP server: {}", schemeAndAuthority, e);
+            throw new RuntimeException(e);
+        } catch (IOException e) {
+            LOG.warn("Could not start http server for: {}", schemeAndAuthority, e);
             throw new RuntimeException(e);
         }
     }
 
-    private HttpServer createHttpServer(URI uri) {
+    private HttpServer createHttpServer(URI uri) throws IOException {
         LOG.info("Setup HTTP server for address '{}'", uri);
         if (uri.getScheme().equalsIgnoreCase("http")) {
-            return GrizzlyHttpServerFactory.createHttpServer(uri, true);
+            var server = GrizzlyHttpServerFactory.createHttpServer(uri, false);
+            enableCompression(server);
+            server.start();
+            return server;
         }
         if (sslContextConfigurator != null && uri.getScheme().equalsIgnoreCase("https")) {
             final SSLEngineConfigurator sslEngineConfigurator = new SSLEngineConfigurator(sslContextConfigurator);
-            sslEngineConfigurator.setNeedClientAuth(true).setClientMode(false); //.setWantClientAuth(false);
-            return GrizzlyHttpServerFactory.createHttpServer(
+            sslEngineConfigurator.setNeedClientAuth(true).setClientMode(false);
+            var server = GrizzlyHttpServerFactory.createHttpServer(
                     uri,
                     (GrizzlyHttpContainer) null,
                     true,
                     sslEngineConfigurator,
-                    true);
+                    false);
+            enableCompression(server);
+            server.start();
+            return server;
         }
-
         throw new RuntimeException(String.format("HTTP server setup failed. Unknown scheme: %s", uri.getScheme()));
+    }
+
+    private void enableCompression(HttpServer server) {
+        if (enableGzipCompression) {
+            CompressionConfig compressionConfig =
+                    server.getListener("grizzly").getCompressionConfig();
+            compressionConfig.setCompressionMode(CompressionConfig.CompressionMode.ON); // the mode
+            compressionConfig.setCompressionMinSize(1); // the min amount of bytes to compress
+            compressionConfig.setDecompressionEnabled(true);
+            // the mime types to compress
+            compressionConfig.setCompressibleMimeTypes(
+                    "text/plain", "text/html",
+                    SoapConstants.MEDIA_TYPE_SOAP, SoapConstants.MEDIA_TYPE_WSDL
+            );
+        }
     }
 
     /*
@@ -286,8 +316,8 @@ public class GrizzlyHttpServerRegistry extends AbstractIdleService implements Ht
                 
                 output.flush();
                 output.write(e.getMessage().getBytes());
+                LOG.error("Internal server error processing request.", e);
             }
-            
         }
     }
 

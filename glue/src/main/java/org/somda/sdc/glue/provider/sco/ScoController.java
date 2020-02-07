@@ -2,7 +2,6 @@ package org.somda.sdc.glue.provider.sco;
 
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
-import org.somda.sdc.biceps.common.access.MdibAccess;
 import org.somda.sdc.biceps.model.message.InvocationError;
 import org.somda.sdc.biceps.model.message.InvocationState;
 import org.somda.sdc.biceps.model.participant.InstanceIdentifier;
@@ -95,8 +94,22 @@ public class ScoController {
                 }
 
                 if (receiver.getCallbackMethod().getParameters()[1].getType().isAssignableFrom(payload.getClass())) {
-                    return (InvocationResponse) receiver.getCallbackMethod().invoke(receiver.getReceiver(),
+                    var response = (InvocationResponse) receiver.getCallbackMethod().invoke(receiver.getReceiver(),
                             context, payload);
+                    if (!response.getInvocationState().equals(context.getCurrentReportInvocationState())) {
+                        LOG.debug(
+                                "No matching OperationInvokedReport was sent before sending response." +
+                                        " TransactionId: {} - InvocationState: {}",
+                                response.getTransactionId(), response.getInvocationState()
+                        );
+                        context.sendUnsuccessfulReport(
+                                response.getMdibVersion(),
+                                response.getInvocationState(),
+                                response.getInvocationError(),
+                                response.getInvocationErrorMessage()
+                        );
+                    }
+                    return response;
                 }
             }
         } catch (Exception e) {
@@ -106,7 +119,7 @@ public class ScoController {
         }
 
         // send error report
-        return context.createUnsucessfulResponse(
+        return context.createUnsuccessfulResponse(
                 mdibAccess.getMdibVersion(),
                 InvocationState.FAIL,
                 InvocationError.UNSPEC,
