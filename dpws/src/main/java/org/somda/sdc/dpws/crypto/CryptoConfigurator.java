@@ -2,10 +2,14 @@ package org.somda.sdc.dpws.crypto;
 
 import com.google.common.io.ByteStreams;
 import com.google.inject.Inject;
+import org.apache.http.ssl.SSLContextBuilder;
+import org.apache.http.ssl.SSLContexts;
 import org.glassfish.grizzly.ssl.SSLContextConfigurator;
-import org.glassfish.jersey.SslConfigurator;
 
+import javax.net.ssl.SSLContext;
 import java.io.IOException;
+import java.security.*;
+import java.security.cert.CertificateException;
 
 /**
  * Supports generation of server and client SSL configurations.
@@ -19,57 +23,54 @@ public class CryptoConfigurator {
     }
 
     /**
-     * Accepts a {@link CryptoSettings} object and creates an {@linkplain SslConfigurator} object.
+     * Accepts a {@link CryptoSettings} object and creates an {@linkplain SSLContext} object.
      * <p>
-     * The {@linkplain SslConfigurator} object can be used, e.g., with Jersey clients.
      *
      * @param cryptoSettings the crypto settings.
      *                       Please note that key store files take precedence over key store streams.
-     * @return an SSL configurator matching the given crypto settings.
+     * @return an SSlContext matching the given crypto settings.
      */
-    public SslConfigurator createSslConfiguratorFromCryptoConfig(CryptoSettings cryptoSettings) {
-        final SslConfigurator sslConfig = SslConfigurator.newInstance(false);
+    public SSLContext createSslContextFromCryptoConfig(CryptoSettings cryptoSettings)
+            throws KeyStoreException, UnrecoverableKeyException, CertificateException, NoSuchAlgorithmException, IOException, KeyManagementException {
+        final SSLContextBuilder sslContextBuilder = SSLContexts.custom();
 
-        // Configure key store
-        sslConfig.keyStorePassword(cryptoSettings.getKeyStorePassword());
+        // key store
         if (cryptoSettings.getKeyStoreFile().isPresent()) {
-            sslConfig.keyStoreFile(cryptoSettings.getKeyStoreFile().get().getAbsolutePath());
-        } else {
-            try {
-                sslConfig.keyStoreBytes(ByteStreams.toByteArray(cryptoSettings.getKeyStoreStream()
-                        .orElseThrow(() -> new IllegalArgumentException("no stream available"))));
-            } catch (IOException e) {
-                throw new IllegalArgumentException(
-                        String.format("Cryptography activated, but no key store could be read: %s", e.getMessage()));
-            }
+            sslContextBuilder
+                    .loadKeyMaterial(
+                            cryptoSettings.getKeyStoreFile().get(),
+                            cryptoSettings.getKeyStorePassword().toCharArray(),
+                            cryptoSettings.getKeyStorePassword().toCharArray()
+                    );
+        } else if (cryptoSettings.getKeyStoreStream().isPresent()) {
+            KeyStore ks = KeyStore.getInstance(KeyStore.getDefaultType());
+            ks.load(cryptoSettings.getKeyStoreStream().get(), cryptoSettings.getKeyStorePassword().toCharArray());
+            sslContextBuilder.loadKeyMaterial(ks, cryptoSettings.getKeyStorePassword().toCharArray());
         }
 
-        // Configure trust store
-        sslConfig.trustStorePassword(cryptoSettings.getTrustStorePassword());
+        // trust store
         if (cryptoSettings.getTrustStoreFile().isPresent()) {
-            sslConfig.trustStoreFile(cryptoSettings.getTrustStoreFile().get().getAbsolutePath());
-        } else {
-            try {
-                sslConfig.trustStoreBytes(ByteStreams.toByteArray(cryptoSettings.getTrustStoreStream()
-                        .orElseThrow(() -> new IllegalArgumentException("no stream available"))));
-            } catch (IOException e) {
-                throw new IllegalArgumentException(
-                        String.format("Cryptography activated, but no trust store could be read: %s", e.getMessage()));
-            }
+            sslContextBuilder
+                    .loadTrustMaterial(
+                            cryptoSettings.getTrustStoreFile().get(),
+                            cryptoSettings.getTrustStorePassword().toCharArray()
+                    );
+        } else if (cryptoSettings.getTrustStoreStream().isPresent()) {
+            KeyStore ts = KeyStore.getInstance(KeyStore.getDefaultType());
+            ts.load(cryptoSettings.getTrustStoreStream().get(), cryptoSettings.getTrustStorePassword().toCharArray());
+            sslContextBuilder.loadTrustMaterial(ts, null);
         }
 
-        return sslConfig;
+        return sslContextBuilder.build();
     }
 
     /**
-     * Creates a default {@linkplain SslConfigurator} object based on system properties.
-     * <p>
-     * The {@linkplain SslConfigurator} object can be used, e.g., with Jersey clients.
+     * Creates a default {@linkplain SSLContext} object based on system properties.
      *
-     * @return an SSL configurator with default crypto settings.
+     * @return an SSLContext with default crypto settings.
      */
-    public SslConfigurator createSslConfiguratorFromSystemProperties() {
-        return SslConfigurator.newInstance(true);
+    public SSLContext createSslContextFromSystemProperties() {
+        return SSLContexts.createSystemDefault();
     }
 
     /**

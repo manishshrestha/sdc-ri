@@ -1,6 +1,12 @@
 package it.org.somda.sdc.dpws.http.grizzly;
 
 import com.google.common.collect.Iterables;
+import org.apache.http.HttpHeaders;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.ByteArrayEntity;
+import org.apache.http.impl.client.HttpClients;
 import org.glassfish.grizzly.http.server.HttpServer;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
 import org.somda.sdc.dpws.DpwsTest;
@@ -19,8 +25,15 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import test.org.somda.common.LoggingTestWatcher;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.zip.GZIPInputStream;
+import java.util.zip.GZIPOutputStream;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
@@ -89,9 +102,9 @@ public class GrizzlyHttpServerRegistryIT extends DpwsTest {
 
     @Test
     public void registerMultipleContextsOnOneServer() throws MarshallingException, TransportException {
-        final URI baseUri = URI.create("http://127.0.0.1:0");
-        final String ctxtPath1 = "/path1";
-        final String ctxtPath2 = "/path2";
+        URI baseUri = URI.create("http://127.0.0.1:0");
+        final String ctxtPath1 = "/ctxt/path1";
+        final String ctxtPath2 = "/ctxt/path2";
 
         final AtomicBoolean isPath1Requested = new AtomicBoolean(false);
         final AtomicBoolean isPath2Requested = new AtomicBoolean(false);
@@ -99,6 +112,8 @@ public class GrizzlyHttpServerRegistryIT extends DpwsTest {
         httpServerRegistry.startAsync().awaitRunning();
         URI srvUri1 = httpServerRegistry.registerContext(baseUri, ctxtPath1, (req, res, ti) ->
                 isPath1Requested.set(true));
+        // uri1 has found a free port, attach uri 2 to the same
+        baseUri = URI.create(String.format("%s:%s", srvUri1.getScheme(), srvUri1.getSchemeSpecificPart()));
         URI srvUri2 = httpServerRegistry.registerContext(baseUri, ctxtPath2, (req, res, ti) ->
                 isPath2Requested.set(true));
 
@@ -119,6 +134,17 @@ public class GrizzlyHttpServerRegistryIT extends DpwsTest {
         }
 
         assertThat(isPath1Requested.get(), is(false));
+
+//        TODO: Re-enable this section!
+//        // verify path 2 is still working after removing path 1
+//        isPath2Requested.set(false);
+//        assertFalse(isPath2Requested.get());
+//        try {
+//            httpBinding2.onRequestResponse(createASoapMessage());
+//        } catch (SoapFaultException e) {
+//            fail(e);
+//        }
+//        assertTrue(isPath2Requested.get());
 
         httpServerRegistry.stopAsync().awaitTerminated();
     }
@@ -141,6 +167,74 @@ public class GrizzlyHttpServerRegistryIT extends DpwsTest {
         assertEquals(1, httpServer.getListeners().size());
         assertThat(Iterables.get(httpServer.getListeners(), 0).getPort(), is(not(0)));
         httpServer.shutdown();
+    }
+
+    @Test
+    public void gzipCompression() throws IOException {
+        URI baseUri = URI.create("http://127.0.0.1:0");
+        final String compressedPath = "/ctxt/path1";
+
+        final String expectedString = "The quick brown fox jumps over the lazy dog";
+        final String expectedResponse = "ABCEDFG12345";
+        AtomicReference<String> resultString = new AtomicReference<>();
+
+        httpServerRegistry.startAsync().awaitRunning();
+        URI srvUri1 = httpServerRegistry.registerContext(
+                baseUri, compressedPath, (req, res, ti) -> {
+                    try {
+                        // request should be decompressed transparently
+                        byte[] bytes = req.readAllBytes();
+                        resultString.set(new String(bytes));
+
+                        // write response, which should be compressed transparently
+                        res.write(expectedResponse.getBytes());
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
+                });
+
+        // as we explicitly want to compress this request, we build our own client
+        // with compression disabled, which allows us to validate the response content
+        HttpClient client = HttpClients.custom().disableContentCompression().build();
+
+        // create gzip payload
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+
+        try (GZIPOutputStream gzos = new GZIPOutputStream(baos)) {
+            gzos.write(expectedString.getBytes(StandardCharsets.UTF_8));
+        }
+
+        byte[] requestContent = baos.toByteArray();
+        // ensure data isn't just the raw string
+        assertNotEquals(expectedString.getBytes(), requestContent);
+
+        // create post request and set content type to SOAP
+        HttpPost post = new HttpPost(srvUri1);
+        post.setHeader(HttpHeaders.ACCEPT_ENCODING, "gzip");
+        post.setHeader(HttpHeaders.CONTENT_ENCODING, "gzip");
+
+        // attach payload
+        var requestEntity = new ByteArrayEntity(requestContent);
+        post.setEntity(requestEntity);
+
+        // no retry handling is required as apache httpclient already does
+        HttpResponse response = client.execute(post);
+        var responseBytes = response.getEntity().getContent().readAllBytes();
+
+        // compressed response should not match uncompressed expectation
+        assertNotEquals(expectedResponse.getBytes(), responseBytes);
+
+        ByteArrayInputStream responseBais = new ByteArrayInputStream(responseBytes);
+        byte[] decompressedResponseBytes;
+        try (GZIPInputStream gzos = new GZIPInputStream(responseBais)) {
+            decompressedResponseBytes = gzos.readAllBytes();
+        }
+
+        // decompressed response matches
+        assertEquals(expectedResponse, new String(decompressedResponseBytes));
+
+        // request was properly processed and decompressed in server
+        assertEquals(expectedString, resultString.get());
     }
 
     private SoapMessage createASoapMessage() {

@@ -63,8 +63,8 @@ public class CommunicationIT {
                 }
 
                 if (match.isEmpty()) {
-                    context.sendUnsucessfulReport(InvocationState.FAIL, InvocationError.OTH, Collections.emptyList());
-                    return context.createUnsucessfulResponse(InvocationState.FAIL, InvocationError.OTH, Collections.emptyList());
+                    context.sendUnsuccessfulReport(InvocationState.FAIL, InvocationError.OTH, Collections.emptyList());
+                    return context.createUnsuccessfulResponse(InvocationState.FAIL, InvocationError.OTH, Collections.emptyList());
                 }
 
                 context.sendSuccessfulReport(InvocationState.WAIT);

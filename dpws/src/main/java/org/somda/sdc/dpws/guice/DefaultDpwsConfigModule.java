@@ -57,6 +57,10 @@ public class DefaultDpwsConfigModule extends AbstractConfigurationModule {
         bind(DpwsConfig.COMMUNICATION_LOG_DIRECTORY,
                 File.class,
                 new File("commlog"));
+
+        bind(DpwsConfig.HTTP_GZIP_COMPRESSION,
+                Boolean.class,
+                true);
     }
 
     private void configureCryptoConfig() {
