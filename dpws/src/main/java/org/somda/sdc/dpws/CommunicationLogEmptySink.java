@@ -9,11 +9,6 @@ import java.io.OutputStream;
  * Implementation of {@link CommunicationLog} that does not output anything.
  */
 public class CommunicationLogEmptySink implements CommunicationLog {
-	
-	@Deprecated
-    @Override
-    public void logHttpMessage(CommunicationLogImpl.HttpDirection direction, String address, Integer port, byte[] httpMessage) {
-    }
     
     @Override
     public OutputStream logHttpMessage(CommunicationLogImpl.HttpDirection direction, String address, Integer port, OutputStream httpMessage) {

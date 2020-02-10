@@ -9,16 +9,6 @@ import java.io.OutputStream;
  * Communication log interface.
  */
 public interface CommunicationLog {
-    /**
-     * Log an HTTP message based on a byte array.
-     *
-     * @param direction   direction used for filename.
-     * @param address     address information used for filename.
-     * @param port        port information used for filename.
-     * @param httpMessage the message to log.
-     */
-	@Deprecated
-    void logHttpMessage(CommunicationLogImpl.HttpDirection direction, String address, Integer port, byte[] httpMessage);
     
     /**
      * Log an HTTP message based on an output stream.

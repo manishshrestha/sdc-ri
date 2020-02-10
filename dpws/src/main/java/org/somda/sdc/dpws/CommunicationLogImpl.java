@@ -33,14 +33,6 @@ public class CommunicationLogImpl implements CommunicationLog {
             this.logDirectory = logDirectory;
         }
     }
-
-    @Deprecated
-    @Override
-    public void logHttpMessage(HttpDirection direction, String address, Integer port, byte[] httpMessage) {
-        writeLogFile(
-                makeName(direction.toString(), address, port),
-                new ByteArrayInputStream(httpMessage));
-    }
     
     @Override
     public TeeOutputStream logHttpMessage(HttpDirection direction, String address, Integer port, OutputStream httpMessage) {
