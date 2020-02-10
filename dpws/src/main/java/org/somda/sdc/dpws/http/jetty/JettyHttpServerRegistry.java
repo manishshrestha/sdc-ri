@@ -334,7 +334,7 @@ public class JettyHttpServerRegistry extends AbstractIdleService implements Http
                         new HttpConnectionFactory(httpsConfig));
                 httpsConnector.setIdleTimeout(50000);
 
-                server.setConnectors(new Connector[]{ httpsConnector });
+                server.setConnectors(new Connector[]{httpsConnector});
 
                 return server;
             }
@@ -364,7 +364,8 @@ public class JettyHttpServerRegistry extends AbstractIdleService implements Http
         var mapKeyOpt = makeMapKey(uri);
         if (mapKeyOpt.isPresent()) {
             return Optional.of(mapKeyOpt.get() + contextPath);
-        };
+        }
+        ;
         return Optional.empty();
     }
 
@@ -375,8 +376,8 @@ public class JettyHttpServerRegistry extends AbstractIdleService implements Http
         private final String requestedUri;
 
         MyHandler(String mediaType,
-                                 HttpHandler handler,
-                                 String requestedUri) {
+                  HttpHandler handler,
+                  String requestedUri) {
             this.mediaType = mediaType;
             this.handler = handler;
             this.requestedUri = requestedUri;
@@ -395,27 +396,20 @@ public class JettyHttpServerRegistry extends AbstractIdleService implements Http
             response.setStatus(HttpStatus.OK_200);
             response.setContentType(mediaType);
 
+            OutputStream output = communicationLog.logHttpMessage(CommunicationLogImpl.HttpDirection.OUTBOUND_RESPONSE,
+                    request.getRemoteHost(), request.getRemotePort(), response.getOutputStream());
+
             try {
-                OutputStream output = response.getOutputStream();
-                if (LOG.isDebugEnabled()) {
-                    output = new ByteArrayOutputStream();
-                }
 
                 handler.process(input, output,
                         new TransportInfo(request.getScheme(), request.getLocalAddr(), request.getLocalPort()));
 
-                if (LOG.isDebugEnabled()) {
-                    final byte[] bytes = ((ByteArrayOutputStream) output).toByteArray();
-                    communicationLog.logHttpMessage(CommunicationLogImpl.HttpDirection.INBOUND_RESPONSE,
-                            request.getRemoteHost(), request.getRemotePort(), new ByteArrayInputStream(bytes));
-                    response.getOutputStream().write(bytes);
-                }
-                baseRequest.setHandled(true);
             } catch (TransportException | MarshallingException | ClassCastException e) {
                 LOG.error("", e);
                 response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR_500);
-                response.getOutputStream().flush();
                 response.getOutputStream().write(e.getMessage().getBytes());
+                response.getOutputStream().flush();
+            } finally {
                 baseRequest.setHandled(true);
             }
 
