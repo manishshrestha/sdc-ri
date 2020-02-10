@@ -54,7 +54,7 @@ public class GrizzlyHttpServerRegistry extends AbstractIdleService implements Ht
     private final Lock registryLock;
     private final HttpUriBuilder uriBuilder;
     private final CommunicationLog communicationLog;
-    private int minCompressionSize;
+    private final int minCompressionSize;
     private final boolean enableGzipCompression;
     private SSLContextConfigurator sslContextConfigurator; // null => no support for SSL enabled/configured
 

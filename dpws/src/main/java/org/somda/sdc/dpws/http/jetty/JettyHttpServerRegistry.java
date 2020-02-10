@@ -66,8 +66,8 @@ public class JettyHttpServerRegistry extends AbstractIdleService implements Http
     private final Lock registryLock;
     private final HttpUriBuilder uriBuilder;
     private final CommunicationLog communicationLog;
-    private boolean enableGzipCompression;
-    private int minCompressionSize;
+    private final boolean enableGzipCompression;
+    private final int minCompressionSize;
     private SSLContextConfigurator sslContextConfigurator; // null => no support for SSL enabled/configured
 
     @Inject
