@@ -36,6 +36,9 @@ public class CommunicationLogImpl implements CommunicationLog {
         		(!udpSubDirectory.exists() && !udpSubDirectory.mkdirs()) ||
         		(!httpSubDirectory.exists() && !httpSubDirectory.mkdirs())
         	) {
+        	this.udpSubDirectory = null;
+            this.httpSubDirectory = null;
+        	
             LOG.warn("Could not create communication log directories '{}'", logDirectory.getAbsolutePath());
         } else {
             this.udpSubDirectory = udpSubDirectory;
@@ -85,15 +88,17 @@ public class CommunicationLogImpl implements CommunicationLog {
     }
     
     private OutputStream getFileOutStream(File subDir, String filename) {
-
-    	try {
-    		return new FileOutputStream(subDir.getAbsolutePath() + File.separator + filename);
-    		
-    	} catch (FileNotFoundException e) {
-    		LOG.warn("Could not open communication log file", e);
-    		
-    		return OutputStream.nullOutputStream();
+    	
+    	if (subDir != null) {
+	    	try {
+	    		return new FileOutputStream(subDir.getAbsolutePath() + File.separator + filename);
+	    		
+	    	} catch (FileNotFoundException e) {
+	    		LOG.warn("Could not open communication log file", e);
+	    	}
     	}
+    	
+    	return OutputStream.nullOutputStream();
     	
     }
 
