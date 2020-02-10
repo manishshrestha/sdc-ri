@@ -19,25 +19,34 @@ import java.time.format.DateTimeFormatter;
 public class CommunicationLogImpl implements CommunicationLog {
     private static final Logger LOG = LoggerFactory.getLogger(CommunicationLogImpl.class);
 
-    private File logDirectory;
+    private File udpSubDirectory;
+    private File httpSubDirectory;
+    
 
     private static final String SEPARATOR = "_";
     private static final String SUFFIX = ".xml";
 
     @Inject
     CommunicationLogImpl(@Named(DpwsConfig.COMMUNICATION_LOG_DIRECTORY) File logDirectory) {
-        this.logDirectory = null;
-        if (!logDirectory.exists() && !logDirectory.mkdirs()) {
-            LOG.warn("Could not create communication log directory '{}'", logDirectory.getAbsolutePath());
+        
+        File udpSubDirectory = new File(logDirectory, "udp");
+        File httpSubDirectory = new File(logDirectory, "http");
+        
+        if (
+        		(!udpSubDirectory.exists() && !udpSubDirectory.mkdirs()) ||
+        		(!httpSubDirectory.exists() && !httpSubDirectory.mkdirs())
+        	) {
+            LOG.warn("Could not create communication log directories '{}'", logDirectory.getAbsolutePath());
         } else {
-            this.logDirectory = logDirectory;
+            this.udpSubDirectory = udpSubDirectory;
+            this.httpSubDirectory = httpSubDirectory;
         }
     }
     
     @Override
     public TeeOutputStream logHttpMessage(HttpDirection direction, String address, Integer port, OutputStream httpMessage) {
     	
-		OutputStream log_file = getFileOutStream(makeName(direction.toString(), address, port));
+		OutputStream log_file = getFileOutStream(this.httpSubDirectory, makeName(direction.toString(), address, port));
 		
 		return new TeeOutputStream(httpMessage, log_file);
 
@@ -46,6 +55,7 @@ public class CommunicationLogImpl implements CommunicationLog {
     @Override
     public InputStream logHttpMessage(HttpDirection direction, String address, Integer port, InputStream httpMessage) {
         return writeLogFile(
+        		this.httpSubDirectory,
                 makeName(direction.toString(), address, port),
                 httpMessage);
     }
@@ -53,16 +63,17 @@ public class CommunicationLogImpl implements CommunicationLog {
     @Override
     public void logUdpMessage(UdpDirection direction, String destinationAddress, Integer destinationPort, UdpMessage udpMessage) {
         writeLogFile(
+        		this.udpSubDirectory,
                 makeName(direction.toString(), destinationAddress, destinationPort),
                 new ByteArrayInputStream(udpMessage.getData(), 0, udpMessage.getLength()));
     }
 
-    private InputStream writeLogFile(String filename, InputStream inputStream) {
+    private InputStream writeLogFile(File subDir, String filename, InputStream inputStream) {
 
         try {
             final byte[] bytes = ByteStreams.toByteArray(inputStream);
             
-            new ByteArrayInputStream(bytes).transferTo(getFileOutStream(filename));
+            new ByteArrayInputStream(bytes).transferTo(getFileOutStream(subDir, filename));
 
             return new ByteArrayInputStream(bytes);
             
@@ -73,10 +84,10 @@ public class CommunicationLogImpl implements CommunicationLog {
         return inputStream;
     }
     
-    private OutputStream getFileOutStream(String filename) {
+    private OutputStream getFileOutStream(File subDir, String filename) {
 
     	try {
-    		return new FileOutputStream(logDirectory.getAbsolutePath() + File.separator + filename);
+    		return new FileOutputStream(subDir.getAbsolutePath() + File.separator + filename);
     		
     	} catch (FileNotFoundException e) {
     		LOG.warn("Could not open communication log file", e);
