@@ -61,11 +61,11 @@ public class CommunicationLogImpl implements CommunicationLog {
 
         try {
             final byte[] bytes = ByteStreams.toByteArray(inputStream);
-            if (bytes.length > 0) {
-                new ByteArrayInputStream(bytes).transferTo(getFileOutStream(filename));
+            
+            new ByteArrayInputStream(bytes).transferTo(getFileOutStream(filename));
 
-                return new ByteArrayInputStream(bytes);
-            }
+            return new ByteArrayInputStream(bytes);
+            
         } catch (IOException e) {
             LOG.warn("Could not write to communication log file", e);
         }
@@ -76,11 +76,9 @@ public class CommunicationLogImpl implements CommunicationLog {
     private OutputStream getFileOutStream(String filename) {
 
     	try {
-
     		return new FileOutputStream(logDirectory.getAbsolutePath() + File.separator + filename);
     		
     	} catch (FileNotFoundException e) {
-    		
     		LOG.warn("Could not open communication log file", e);
     		
     		return OutputStream.nullOutputStream();
