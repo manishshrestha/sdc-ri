@@ -52,24 +52,6 @@ public class WsEventingConfig {
     public static final String NOTIFICATION_STALE_DURATION = "WsEventing.Source.NotificationStaleDuration";
 
     /**
-     * Default period before trying to auto-renew a subscription.
-     * <ul>
-     * <li>Data type: {@linkplain java.time.Duration}
-     * <li>Use: optional
-     * </ul>
-     */
-    public static final String AUTO_RENEW_BEFORE_EXPIRES = "WsEventing.Sink.AutoRenewBeforeExpires";
-
-    /**
-     * Default thread pool size for auto-renew jobs.
-     * <ul>
-     * <li>Data type: {@linkplain Integer}
-     * <li>Use: optional
-     * </ul>
-     */
-    public static final String AUTO_RENEW_THREAD_POOL_SIZE = "WsEventing.Sink.AutoRenewThreadPoolSize";
-
-    /**
      * Configuration of the notification queue size used for WS-Eventing.
      *
      * <ul>

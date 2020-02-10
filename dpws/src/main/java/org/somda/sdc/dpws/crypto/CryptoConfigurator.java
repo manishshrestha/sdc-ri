@@ -1,20 +1,14 @@
 package org.somda.sdc.dpws.crypto;
 
+import com.google.common.io.ByteStreams;
 import com.google.inject.Inject;
-import org.apache.http.conn.ssl.TrustSelfSignedStrategy;
 import org.apache.http.ssl.SSLContextBuilder;
 import org.apache.http.ssl.SSLContexts;
-import org.apache.http.ssl.TrustStrategy;
 import org.glassfish.grizzly.ssl.SSLContextConfigurator;
-import org.somda.sdc.common.util.StreamUtil;
 
 import javax.net.ssl.SSLContext;
 import java.io.IOException;
-import java.security.KeyManagementException;
-import java.security.KeyStore;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.UnrecoverableKeyException;
+import java.security.*;
 import java.security.cert.CertificateException;
 
 /**
@@ -23,11 +17,9 @@ import java.security.cert.CertificateException;
  * Can either generate default configurations or derive configurations based on {@link CryptoSettings} objects.
  */
 public class CryptoConfigurator {
-    private final StreamUtil streamUtil;
 
     @Inject
-    CryptoConfigurator(StreamUtil streamUtil) {
-        this.streamUtil = streamUtil;
+    CryptoConfigurator() {
     }
 
     /**
@@ -38,8 +30,8 @@ public class CryptoConfigurator {
      *                       Please note that key store files take precedence over key store streams.
      * @return an SSlContext matching the given crypto settings.
      */
-    public SSLContext createSslContextFromCryptoConfig(CryptoSettings cryptoSettings) throws KeyStoreException, UnrecoverableKeyException, CertificateException, NoSuchAlgorithmException, IOException, KeyManagementException {
-
+    public SSLContext createSslContextFromCryptoConfig(CryptoSettings cryptoSettings)
+            throws KeyStoreException, UnrecoverableKeyException, CertificateException, NoSuchAlgorithmException, IOException, KeyManagementException {
         final SSLContextBuilder sslContextBuilder = SSLContexts.custom();
 
         // key store
@@ -51,7 +43,7 @@ public class CryptoConfigurator {
                             cryptoSettings.getKeyStorePassword().toCharArray()
                     );
         } else if (cryptoSettings.getKeyStoreStream().isPresent()) {
-            KeyStore ks  = KeyStore.getInstance(KeyStore.getDefaultType());
+            KeyStore ks = KeyStore.getInstance(KeyStore.getDefaultType());
             ks.load(cryptoSettings.getKeyStoreStream().get(), cryptoSettings.getKeyStorePassword().toCharArray());
             sslContextBuilder.loadKeyMaterial(ks, cryptoSettings.getKeyStorePassword().toCharArray());
         }
@@ -64,18 +56,17 @@ public class CryptoConfigurator {
                             cryptoSettings.getTrustStorePassword().toCharArray()
                     );
         } else if (cryptoSettings.getTrustStoreStream().isPresent()) {
-            KeyStore ts  = KeyStore.getInstance(KeyStore.getDefaultType());
+            KeyStore ts = KeyStore.getInstance(KeyStore.getDefaultType());
             ts.load(cryptoSettings.getTrustStoreStream().get(), cryptoSettings.getTrustStorePassword().toCharArray());
             sslContextBuilder.loadTrustMaterial(ts, null);
         }
-
 
         return sslContextBuilder.build();
     }
 
     /**
      * Creates a default {@linkplain SSLContext} object based on system properties.
-
+     *
      * @return an SSLContext with default crypto settings.
      */
     public SSLContext createSslContextFromSystemProperties() {
@@ -100,7 +91,7 @@ public class CryptoConfigurator {
             sslConfig.setKeyStoreFile(cryptoSettings.getKeyStoreFile().get().getAbsolutePath());
         } else {
             try {
-                sslConfig.setKeyStoreBytes(streamUtil.getByteArrayFromInputStream(cryptoSettings.getKeyStoreStream()
+                sslConfig.setKeyStoreBytes(ByteStreams.toByteArray(cryptoSettings.getKeyStoreStream()
                         .orElseThrow(() -> new IllegalArgumentException("no stream available"))));
             } catch (IOException e) {
                 throw new IllegalArgumentException(
@@ -114,7 +105,7 @@ public class CryptoConfigurator {
             sslConfig.setTrustStoreFile(cryptoSettings.getTrustStoreFile().get().getAbsolutePath());
         } else {
             try {
-                sslConfig.setTrustStoreBytes(streamUtil.getByteArrayFromInputStream(cryptoSettings.getTrustStoreStream()
+                sslConfig.setTrustStoreBytes(ByteStreams.toByteArray(cryptoSettings.getTrustStoreStream()
                         .orElseThrow(() -> new IllegalArgumentException("no stream available"))));
             } catch (IOException e) {
                 throw new IllegalArgumentException(

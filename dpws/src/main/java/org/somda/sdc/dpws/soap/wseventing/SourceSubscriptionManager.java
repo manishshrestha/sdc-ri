@@ -1,18 +1,33 @@
 package org.somda.sdc.dpws.soap.wseventing;
 
 import com.google.common.util.concurrent.Service;
+import org.somda.sdc.dpws.soap.SoapMessage;
 import org.somda.sdc.dpws.soap.wseventing.model.Notification;
-
-import java.util.concurrent.BlockingQueue;
 
 /**
  * Subscription manager interface that is used by event sources.
  */
 public interface SourceSubscriptionManager extends SubscriptionManager, Service {
+
     /**
-     * Gets the notification queue where notifications are temporarily stored until ready to be send over the network.
+     * Inserts the notification into the subscription manager's queue.
+     * <p>
+     * The manager is shut down
+     * <ul>
+     * <li>on first delivery failure or
+     * <li>in case there is queue overflow or a delivery failure.
+     * </ul>
      *
-     * @return a blocking queue with notifications.
+     * @param notification the notification to add.
      */
-    BlockingQueue<Notification> getNotificationQueue();
+    void offerNotification(Notification notification);
+
+    /**
+     * Tries to send an end-to message to the event sink.
+     * <p>
+     * This is a non-blocking call that silently ignores failed delivery.
+     *
+     * @param endToMessage the message to send. This message is supposed to be a valid end-to message.
+     */
+    void sendToEndTo(SoapMessage endToMessage);
 }

@@ -25,6 +25,4 @@ public class SubscribeResult {
     public Duration getGrantedExpires() {
         return grantedExpires;
     }
-
-
 }

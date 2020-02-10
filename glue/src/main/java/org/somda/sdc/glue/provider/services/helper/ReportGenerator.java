@@ -120,13 +120,14 @@ public class ReportGenerator implements MdibAccessObserver {
     }
 
     private void dispatchStateEvents(MdibVersion mdibVersion, List<MdibEntity> insertedEntities, List<MdibEntity> updatedEntities) {
-        // expectedKeys = 5 because of the following event types
-        // 1. alert changes
-        // 2. component change
-        // 3. context changes
-        // 4. metric changes
-        // 5. operation changes
-        final Multimap<Class<? extends AbstractReport>, AbstractState> classifiedStates = ArrayListMultimap.create(5,
+        // expectedKeys (which pertains to the key size of the multimap below) = 6 because of the following event types
+        // - alert changes
+        // - component change
+        // - context changes
+        // - metric changes
+        // - operation changes
+        // - waveform changes
+        final Multimap<Class<? extends AbstractReport>, AbstractState> classifiedStates = ArrayListMultimap.create(6,
                 insertedEntities.size() + updatedEntities.size());
 
         collectStates(classifiedStates, insertedEntities);
