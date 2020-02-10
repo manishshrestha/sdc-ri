@@ -11,7 +11,7 @@ import java.io.OutputStream;
 public interface CommunicationLog {
     
     /**
-     * Log an HTTP message based on an output stream.
+     * Logs an HTTP message based on an {@linkplain OutputStream}.
      *
      * @param direction   direction used for filename.
      * @param address     address information used for filename.
@@ -23,7 +23,7 @@ public interface CommunicationLog {
     OutputStream logHttpMessage(CommunicationLogImpl.HttpDirection direction, String address, Integer port, OutputStream httpMessage);
 
     /**
-     * Log an HTTP message based on an input stream.
+     * Logs an HTTP message based on an {@linkplain InputStream}.
      *
      * @param direction   direction used for filename.
      * @param address     address information used for filename.
@@ -36,7 +36,7 @@ public interface CommunicationLog {
     InputStream logHttpMessage(CommunicationLogImpl.HttpDirection direction, String address, Integer port, InputStream httpMessage);
 
     /**
-     * Log a UDP message based on an {@linkplain UdpMessage}.
+     * Logs a UDP message based on an {@linkplain UdpMessage}.
      *
      * @param direction  direction used for filename.
      * @param address    address information used for filename.
