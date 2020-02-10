@@ -319,6 +319,7 @@ public class GrizzlyHttpServerRegistry extends AbstractIdleService implements Ht
                 
                 output.flush();
                 output.write(e.getMessage().getBytes());
+                output.close();
                 LOG.error("Internal server error processing request.", e);
             }
         }

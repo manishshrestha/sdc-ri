@@ -388,10 +388,9 @@ public class JettyHttpServerRegistry extends AbstractIdleService implements Http
 
             InputStream input = request.getInputStream();
             LOG.debug("Request to {}", request.getRequestURL());
-            if (LOG.isDebugEnabled()) {
-                input = communicationLog.logHttpMessage(CommunicationLogImpl.HttpDirection.INBOUND_REQUEST,
-                        request.getRemoteHost(), request.getRemotePort(), input);
-            }
+            
+            input = communicationLog.logHttpMessage(CommunicationLogImpl.HttpDirection.INBOUND_REQUEST,
+                    request.getRemoteHost(), request.getRemotePort(), input);
 
             response.setStatus(HttpStatus.OK_200);
             response.setContentType(mediaType);
@@ -407,8 +406,9 @@ public class JettyHttpServerRegistry extends AbstractIdleService implements Http
             } catch (TransportException | MarshallingException | ClassCastException e) {
                 LOG.error("", e);
                 response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR_500);
-                response.getOutputStream().write(e.getMessage().getBytes());
-                response.getOutputStream().flush();
+                output.write(e.getMessage().getBytes());
+                output.flush();
+                output.close();
             } finally {
                 baseRequest.setHandled(true);
             }
