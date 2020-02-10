@@ -57,6 +57,10 @@ public class DefaultDpwsConfigModule extends AbstractConfigurationModule {
         bind(DpwsConfig.COMMUNICATION_LOG_DIRECTORY,
                 File.class,
                 new File("commlog"));
+
+        bind(DpwsConfig.HTTP_GZIP_COMPRESSION,
+                Boolean.class,
+                true);
     }
 
     private void configureCryptoConfig() {
@@ -109,9 +113,6 @@ public class DefaultDpwsConfigModule extends AbstractConfigurationModule {
     }
 
     private void configureWsEventingConfig() {
-        bind(WsEventingConfig.AUTO_RENEW_BEFORE_EXPIRES,
-                Duration.class,
-                Duration.ofMinutes(1));
         bind(WsEventingConfig.NOTIFICATION_STALE_DURATION,
                 Duration.class,
                 Duration.ofSeconds(10));

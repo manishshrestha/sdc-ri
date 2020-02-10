@@ -140,23 +140,6 @@ public class WsEventingTest extends DpwsTest {
         }
     }
 
-    @Test
-    public void disabledAutoRenew() throws Exception {
-        Duration expectedExpires = Duration.ofSeconds(2);
-        ListenableFuture<SubscribeResult> resInfo = wseSink.subscribe(Collections.singletonList(ACTION),
-                expectedExpires, notificationSink);
-        assertThat("Granted expires duration", resInfo.get().getGrantedExpires(), is(expectedExpires));
-
-        Thread.sleep(2000);
-
-        try {
-            wseSink.getStatus(resInfo.get().getSubscriptionId()).get();
-            fail();
-        } catch (Exception e) {
-            assertTrue(true);
-        }
-    }
-
     private class DpwsModuleReplacements extends AbstractModule {
         @Override
         protected void configure() {

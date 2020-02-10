@@ -47,10 +47,8 @@ import org.somda.sdc.dpws.soap.wsdiscovery.WsDiscoveryTargetServiceInterceptor;
 import org.somda.sdc.dpws.soap.wsdiscovery.factory.WsDiscoveryClientFactory;
 import org.somda.sdc.dpws.soap.wsdiscovery.factory.WsDiscoveryTargetServiceFactory;
 import org.somda.sdc.dpws.soap.wseventing.*;
-import org.somda.sdc.dpws.soap.wseventing.factory.NotificationWorkerFactory;
 import org.somda.sdc.dpws.soap.wseventing.factory.SubscriptionManagerFactory;
 import org.somda.sdc.dpws.soap.wseventing.factory.WsEventingEventSinkFactory;
-import org.somda.sdc.dpws.soap.wseventing.helper.NotificationWorker;
 import org.somda.sdc.dpws.soap.wsmetadataexchange.GetMetadataClient;
 import org.somda.sdc.dpws.soap.wsmetadataexchange.GetMetadataClientImpl;
 import org.somda.sdc.dpws.soap.wstransfer.TransferGetClient;
@@ -248,23 +246,10 @@ public class DefaultDpwsModule extends AbstractModule {
                 .to(EventSourceInterceptor.class);
         bind(LocalAddressResolver.class)
                 .to(LocalAddressResolverImpl.class);
-        bind(ScheduledExecutorService.class)
-                .annotatedWith(AutoRenewExecutor.class)
-                .toInstance(Executors.newScheduledThreadPool(
-                        10,
-                        new ThreadFactoryBuilder()
-                                .setNameFormat("AutoRenewExecutor-thread-%d")
-                                .setDaemon(true)
-                                .build()
-                        ));
 
         install(new FactoryModuleBuilder()
                 .implement(EventSink.class, EventSinkImpl.class)
                 .build(WsEventingEventSinkFactory.class));
-
-        install(new FactoryModuleBuilder()
-                .implement(NotificationWorker.class, NotificationWorker.class)
-                .build(NotificationWorkerFactory.class));
 
         install(new FactoryModuleBuilder()
                 .implement(SourceSubscriptionManager.class, SourceSubscriptionManagerImpl.class)

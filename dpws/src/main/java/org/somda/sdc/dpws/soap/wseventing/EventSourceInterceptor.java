@@ -6,6 +6,9 @@ import com.google.common.util.concurrent.AbstractIdleService;
 import com.google.inject.Inject;
 import com.google.inject.Provider;
 import com.google.inject.name.Named;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.somda.sdc.common.util.JaxbUtil;
 import org.somda.sdc.dpws.DpwsConstants;
 import org.somda.sdc.dpws.device.helper.RequestResponseServerHttpHandler;
 import org.somda.sdc.dpws.http.HttpServerRegistry;
@@ -24,16 +27,10 @@ import org.somda.sdc.dpws.soap.wsaddressing.WsAddressingUtil;
 import org.somda.sdc.dpws.soap.wsaddressing.model.AttributedURIType;
 import org.somda.sdc.dpws.soap.wsaddressing.model.EndpointReferenceType;
 import org.somda.sdc.dpws.soap.wsaddressing.model.ReferenceParametersType;
-import org.somda.sdc.dpws.soap.wseventing.factory.NotificationWorkerFactory;
 import org.somda.sdc.dpws.soap.wseventing.factory.SubscriptionManagerFactory;
 import org.somda.sdc.dpws.soap.wseventing.factory.WsEventingFaultFactory;
-import org.somda.sdc.dpws.soap.wseventing.helper.EventSourceTransportManager;
-import org.somda.sdc.dpws.soap.wseventing.helper.NotificationWorker;
 import org.somda.sdc.dpws.soap.wseventing.helper.SubscriptionRegistry;
 import org.somda.sdc.dpws.soap.wseventing.model.*;
-import org.somda.sdc.common.util.JaxbUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
 import java.net.URI;
@@ -67,11 +64,8 @@ public class EventSourceInterceptor extends AbstractIdleService implements Event
     private final WsAddressingUtil wsaUtil;
 
     private final ObjectFactory wseFactory;
-    private final EventSourceTransportManager eventSourceTransportManager;
     private final SoapMessageFactory soapMessageFactory;
     private final EnvelopeFactory envelopeFactory;
-    private final NotificationWorker notificationWorker;
-    private final Thread notificationWorkerThread;
 
     @Inject
     EventSourceInterceptor(@Named(WsEventingConfig.SOURCE_MAX_EXPIRES) Duration maxExpires,
@@ -81,13 +75,11 @@ public class EventSourceInterceptor extends AbstractIdleService implements Event
                            JaxbUtil jaxbUtil,
                            WsAddressingUtil wsaUtil,
                            ObjectFactory wseFactory,
-                           EventSourceTransportManager eventSourceTransportManager,
                            SoapMessageFactory soapMessageFactory,
                            EnvelopeFactory envelopeFactory,
                            HttpServerRegistry httpServerRegistry,
                            Provider<RequestResponseServerHttpHandler> rrServerHttpHandlerProvider,
                            SubscriptionRegistry subscriptionRegistry,
-                           NotificationWorkerFactory notificationWorkerFactory,
                            SubscriptionManagerFactory subscriptionManagerFactory,
                            HttpUriBuilder httpUriBuilder) {
         this.maxExpires = maxExpires;
@@ -106,15 +98,8 @@ public class EventSourceInterceptor extends AbstractIdleService implements Event
         this.subscribedActionsLock = new ReentrantLock();
         this.wseFactory = wseFactory;
 
-        this.eventSourceTransportManager = eventSourceTransportManager;
-
         this.soapMessageFactory = soapMessageFactory;
         this.envelopeFactory = envelopeFactory;
-        this.notificationWorker = notificationWorkerFactory.createNotificationWorker(eventSourceTransportManager);
-        this.subscriptionRegistry.registerObserver(notificationWorker);
-
-        this.notificationWorkerThread = new Thread(notificationWorker);
-        this.notificationWorkerThread.setDaemon(true);
     }
 
     @Override
@@ -139,19 +124,17 @@ public class EventSourceInterceptor extends AbstractIdleService implements Event
         affectedSubscriptionIds.parallelStream().forEach(subId ->
                 subscriptionRegistry.getSubscription(subId).ifPresent(subscriptionManager -> {
                     SoapMessage notifyTo = createForNotifyTo(action, payload, subscriptionManager);
-                    subscriptionManager.getNotificationQueue().offer(new Notification(notifyTo));
+                    subscriptionManager.offerNotification(new Notification(notifyTo));
                 }));
-
-        // Run worker to distribute the notification to all sinks
-        notificationWorker.wakeUp();
     }
 
     @Override
     public void subscriptionEndToAll(WsEventingStatus status) {
-        subscriptionRegistry.getSubscriptions().forEach((uri, subMan) -> {
-            SoapMessage endTo = createForEndTo(status, subMan);
-            eventSourceTransportManager.sendEndTo(subMan, endTo);
-        });
+        subscriptionRegistry.getSubscriptions().forEach((uri, subMan) ->
+                subMan.getEndTo().ifPresent(endTo -> {
+                    SoapMessage endToMessage = createForEndTo(status, subMan, endTo);
+                    subMan.sendToEndTo(endToMessage);
+                }));
     }
 
     @MessageInterceptor(value = WsEventingConstants.WSE_ACTION_SUBSCRIBE, direction = Direction.REQUEST)
@@ -191,6 +174,8 @@ public class EventSourceInterceptor extends AbstractIdleService implements Event
                 subscribe.getEndTo(),
                 epr.getAddress().getValue());
 
+        subMan.startAsync().awaitRunning();
+
         // Validate filter type
         FilterType filterType = Optional.ofNullable(subscribe.getFilter()).orElseThrow(() ->
                 new SoapFaultException(faultFactory.createEventSourceUnableToProcess("No filter given, but required.")));
@@ -227,8 +212,6 @@ public class EventSourceInterceptor extends AbstractIdleService implements Event
                 subMan.getSubscriptionId(),
                 wsaUtil.getAddressUriAsString(subMan.getNotifyTo()).orElse("<unknown>"),
                 grantedExpires.getSeconds());
-
-        subMan.startAsync().awaitRunning();
     }
 
     @MessageInterceptor(value = WsEventingConstants.WSE_ACTION_RENEW, direction = Direction.REQUEST)
@@ -315,7 +298,7 @@ public class EventSourceInterceptor extends AbstractIdleService implements Event
     private EndpointReferenceType createSubscriptionManagerEprAndRegisterHttpHandler(TransportInfo transportInfo) {
         final URI hostPart = httpUriBuilder.buildUri(
                 transportInfo.getScheme(), transportInfo.getLocalAddress(), transportInfo.getLocalPort());
-        String contextPath = "/" + subscriptionManagerPath + "/" + UUID.randomUUID().toString();
+        String contextPath = "/" + UUID.randomUUID().toString() + "/" + subscriptionManagerPath;
         String eprAddress = hostPart + contextPath;
 
         RequestResponseServerHttpHandler handler = rrServerHttpHandlerProvider.get();
@@ -397,11 +380,11 @@ public class EventSourceInterceptor extends AbstractIdleService implements Event
         }
     }
 
-    private SoapMessage createForEndTo(WsEventingStatus status, SourceSubscriptionManager subMan) {
+    private SoapMessage createForEndTo(WsEventingStatus status, SourceSubscriptionManager subMan, EndpointReferenceType endTo) {
         SubscriptionEnd subscriptionEnd = wseFactory.createSubscriptionEnd();
         subscriptionEnd.setSubscriptionManager(subMan.getSubscriptionManagerEpr());
         subscriptionEnd.setStatus(status.getUri());
-        String wsaTo = wsaUtil.getAddressUriAsString(subMan.getEndTo()).orElse(null);
+        String wsaTo = wsaUtil.getAddressUriAsString(endTo).orElse(null);
         return createNotification(WsEventingConstants.WSE_ACTION_SUBSCRIPTION_END, wsaTo, subscriptionEnd);
     }
 
@@ -426,14 +409,10 @@ public class EventSourceInterceptor extends AbstractIdleService implements Event
 
     @Override
     protected void startUp() {
-        subscriptionRegistry.registerObserver(eventSourceTransportManager);
-        notificationWorkerThread.start();
     }
 
     @Override
     protected void shutDown() {
-        notificationWorkerThread.interrupt();
         subscriptionEndToAll(WsEventingStatus.STATUS_SOURCE_SHUTTING_DOWN);
-        subscriptionRegistry.unregisterObserver(eventSourceTransportManager);
     }
 }

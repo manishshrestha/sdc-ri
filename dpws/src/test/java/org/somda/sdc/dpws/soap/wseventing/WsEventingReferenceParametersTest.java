@@ -21,12 +21,7 @@ import org.somda.sdc.dpws.http.HttpUriBuilder;
 import org.somda.sdc.dpws.model.HostedServiceType;
 import org.somda.sdc.dpws.model.ObjectFactory;
 import org.somda.sdc.dpws.network.LocalAddressResolver;
-import org.somda.sdc.dpws.soap.MarshallingService;
-import org.somda.sdc.dpws.soap.NotificationSink;
-import org.somda.sdc.dpws.soap.RequestResponseClient;
-import org.somda.sdc.dpws.soap.RequestResponseServer;
-import org.somda.sdc.dpws.soap.SoapMarshalling;
-import org.somda.sdc.dpws.soap.SoapUtil;
+import org.somda.sdc.dpws.soap.*;
 import org.somda.sdc.dpws.soap.exception.SoapFaultException;
 import org.somda.sdc.dpws.soap.factory.EnvelopeFactory;
 import org.somda.sdc.dpws.soap.factory.RequestResponseClientFactory;
@@ -37,11 +32,9 @@ import org.somda.sdc.dpws.soap.interception.RequestResponseObject;
 import org.somda.sdc.dpws.soap.wsaddressing.WsAddressingConstants;
 import org.somda.sdc.dpws.soap.wsaddressing.WsAddressingUtil;
 import org.somda.sdc.dpws.soap.wsaddressing.model.ReferenceParametersType;
-import org.somda.sdc.dpws.soap.wseventing.factory.NotificationWorkerFactory;
 import org.somda.sdc.dpws.soap.wseventing.factory.SubscriptionManagerFactory;
 import org.somda.sdc.dpws.soap.wseventing.factory.WsEventingEventSinkFactory;
 import org.somda.sdc.dpws.soap.wseventing.factory.WsEventingFaultFactory;
-import org.somda.sdc.dpws.soap.wseventing.helper.EventSourceTransportManager;
 import org.somda.sdc.dpws.soap.wseventing.helper.SubscriptionRegistry;
 import org.somda.sdc.dpws.soap.wseventing.model.SubscribeResponse;
 import org.w3c.dom.Element;
@@ -58,9 +51,7 @@ import java.util.concurrent.TimeUnit;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 
 public class WsEventingReferenceParametersTest extends DpwsTest {
@@ -195,17 +186,15 @@ public class WsEventingReferenceParametersTest extends DpwsTest {
                 JaxbUtil jaxbUtil,
                 WsAddressingUtil wsaUtil,
                 org.somda.sdc.dpws.soap.wseventing.model.ObjectFactory wseFactory,
-                EventSourceTransportManager eventSourceTransportManager,
                 SoapMessageFactory soapMessageFactory,
                 EnvelopeFactory envelopeFactory,
                 HttpServerRegistry httpServerRegistry,
                 Provider<RequestResponseServerHttpHandler> rrServerHttpHandlerProvider,
                 SubscriptionRegistry subscriptionRegistry,
-                NotificationWorkerFactory notificationWorkerFactory,
                 SubscriptionManagerFactory subscriptionManagerFactory,
                 HttpUriBuilder httpUriBuilder
         ) {
-            super(maxExpires, subscriptionManagerPath, soapUtil, faultFactory, jaxbUtil, wsaUtil, wseFactory, eventSourceTransportManager, soapMessageFactory, envelopeFactory, httpServerRegistry, rrServerHttpHandlerProvider, subscriptionRegistry, notificationWorkerFactory, subscriptionManagerFactory, httpUriBuilder);
+            super(maxExpires, subscriptionManagerPath, soapUtil, faultFactory, jaxbUtil, wsaUtil, wseFactory, soapMessageFactory, envelopeFactory, httpServerRegistry, rrServerHttpHandlerProvider, subscriptionRegistry, subscriptionManagerFactory, httpUriBuilder);
             this.soapUtil = soapUtil;
 
             // reset the futures on every instantiation to avoid side effects

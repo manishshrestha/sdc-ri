@@ -34,7 +34,6 @@ public class DpwsConfig {
      * <li>Data type: {@linkplain java.io.File}
      * <li>Use: optional
      * </ul>
-     *
      */
     public static final String COMMUNICATION_LOG_DIRECTORY = "Dpws.CommunicationLogDirectory";
 
@@ -57,5 +56,15 @@ public class DpwsConfig {
      * </ul>
      */
     public static final String HTTP_CLIENT_READ_TIMEOUT = "Dpws.HttpClientReadTimeout";
+
+    /**
+     * Enable gzip compression support in Client and Server.
+     *
+     * <ul>
+     * <li>Data type: {@linkplain Boolean}
+     * <li>Use: optional
+     * </ul>
+     */
+    public static final String HTTP_GZIP_COMPRESSION = "Dpws.GzipCompression";
 
 }

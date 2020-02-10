@@ -4,6 +4,7 @@ import com.google.common.io.ByteStreams;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import org.apache.http.HttpEntity;
+import org.apache.http.HttpHeaders;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.config.RequestConfig;
@@ -35,6 +36,7 @@ import javax.net.ssl.SSLContext;
 import javax.xml.bind.JAXBException;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.OutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.SocketException;
@@ -51,8 +53,9 @@ public class ApacheTransportBindingFactoryImpl implements TransportBindingFactor
 
     private final SoapMarshalling marshalling;
     private final SoapUtil soapUtil;
-    private Duration clientConnectTimeout;
-    private Duration clientReadTimeout;
+    private final boolean enableGzipCompression;
+    private final Duration clientConnectTimeout;
+    private final Duration clientReadTimeout;
     private final CommunicationLog communicationLog;
 
     private final HttpClient client;
@@ -65,12 +68,14 @@ public class ApacheTransportBindingFactoryImpl implements TransportBindingFactor
                                       @Nullable @Named(CryptoConfig.CRYPTO_SETTINGS) CryptoSettings cryptoSettings,
                                       CommunicationLog communicationLog,
                                       @Named(DpwsConfig.HTTP_CLIENT_CONNECT_TIMEOUT) Duration clientConnectTimeout,
-                                      @Named(DpwsConfig.HTTP_CLIENT_READ_TIMEOUT) Duration clientReadTimeout) {
+                                      @Named(DpwsConfig.HTTP_CLIENT_READ_TIMEOUT) Duration clientReadTimeout,
+                                      @Named(DpwsConfig.HTTP_GZIP_COMPRESSION) boolean enableGzipCompression) {
         this.marshalling = marshalling;
         this.soapUtil = soapUtil;
         this.clientConnectTimeout = clientConnectTimeout;
         this.clientReadTimeout = clientReadTimeout;
         this.communicationLog = communicationLog;
+        this.enableGzipCompression = enableGzipCompression;
         this.client = buildBaseClient().build();
 
         configureSecuredClient(cryptoConfigurator, cryptoSettings);
@@ -88,7 +93,7 @@ public class ApacheTransportBindingFactoryImpl implements TransportBindingFactor
                 .setSocketTimeout((int) clientConnectTimeout.toMillis())
                 .build();
 
-        return HttpClients.custom()
+        var clientBuilder = HttpClients.custom()
                 .setDefaultSocketConfig(socketConfig)
                 .setDefaultRequestConfig(requestConfig)
                 // only allow one connection per host
@@ -96,9 +101,12 @@ public class ApacheTransportBindingFactoryImpl implements TransportBindingFactor
                 // allow reusing ssl connections in the pool
                 .disableConnectionState()
                 // retry every request just once in case the socket has died
-                .setRetryHandler(new DefaultHttpRequestRetryHandler(1, false))
-                // disable gzip compression for now
-                .disableContentCompression();
+                .setRetryHandler(new DefaultHttpRequestRetryHandler(1, false));
+        if (!enableGzipCompression) {
+            // disable gzip compression
+            clientBuilder.disableContentCompression();
+        }
+        return clientBuilder;
     }
 
     private void configureSecuredClient(CryptoConfigurator cryptoConfigurator, @Nullable CryptoSettings cryptoSettings) {
@@ -109,10 +117,10 @@ public class ApacheTransportBindingFactoryImpl implements TransportBindingFactor
 
         SSLContext sslContext;
         try {
-            sslContext = cryptoConfigurator.createSslConfiguratorFromCryptoConfig(cryptoSettings).createSSLContext();
-        } catch (IllegalArgumentException e) {
-            LOG.warn("Could not read client crypto config, fallback to system properties");
-            sslContext = cryptoConfigurator.createSslConfiguratorFromSystemProperties().createSSLContext();
+            sslContext = cryptoConfigurator.createSslContextFromCryptoConfig(cryptoSettings);
+        } catch (Exception e) {
+            LOG.error("Could not read client crypto config, fallback to system properties", e);
+            sslContext = cryptoConfigurator.createSslContextFromSystemProperties();
         }
 
         this.securedClient = buildBaseClient()
@@ -181,7 +189,15 @@ public class ApacheTransportBindingFactoryImpl implements TransportBindingFactor
 
         @Override
         public SoapMessage onRequestResponse(SoapMessage request) throws TransportBindingException, SoapFaultException {
-            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+            
+            OutputStream outputStream = communicationLog.logHttpMessage(
+            		CommunicationLogImpl.HttpDirection.OUTBOUND_REQUEST, 
+            		this.clientUri.getHost(), 
+            		this.clientUri.getPort(), 
+            		byteArrayOutputStream
+            		);
+            
             try {
                 marshalling.marshal(request.getEnvelopeWithMappedHeaders(), outputStream);
             } catch (JAXBException e) {
@@ -191,18 +207,13 @@ public class ApacheTransportBindingFactoryImpl implements TransportBindingFactor
                         String.format("Sending of a request failed due to marshalling problem: %s", e.getMessage()));
             }
 
-            if (LOG.isDebugEnabled()) {
-                communicationLog.logHttpMessage(CommunicationLogImpl.HttpDirection.OUTBOUND_REQUEST,
-                        this.clientUri.getHost(), this.clientUri.getPort(), outputStream.toByteArray());
-            }
-
             // create post request and set content type to SOAP
             HttpPost post = new HttpPost(this.clientUri);
-            post.setHeader("Accept", SoapConstants.MEDIA_TYPE_SOAP);
-            post.setHeader("Content-type", SoapConstants.MEDIA_TYPE_SOAP);
+            post.setHeader(HttpHeaders.ACCEPT, SoapConstants.MEDIA_TYPE_SOAP);
+            post.setHeader(HttpHeaders.CONTENT_TYPE, SoapConstants.MEDIA_TYPE_SOAP);
 
             // attach payload
-            var requestEntity = new ByteArrayEntity(outputStream.toByteArray());
+            var requestEntity = new ByteArrayEntity(byteArrayOutputStream.toByteArray());
             post.setEntity(requestEntity);
 
             LOG.debug("Sending POST request to {}", this.clientUri);
@@ -239,14 +250,12 @@ public class ApacheTransportBindingFactoryImpl implements TransportBindingFactor
                 LOG.error("Couldn't read response", e);
                 inputStream = new ByteArrayInputStream(new byte[0]);
             }
-            if (LOG.isDebugEnabled()) {
-                inputStream = communicationLog.logHttpMessage(
-                        CommunicationLogImpl.HttpDirection.OUTBOUND_RESPONSE,
-                        this.clientUri.getHost(),
-                        this.clientUri.getPort(),
-                        inputStream
-                );
-            }
+            inputStream = communicationLog.logHttpMessage(
+                    CommunicationLogImpl.HttpDirection.OUTBOUND_RESPONSE,
+                    this.clientUri.getHost(),
+                    this.clientUri.getPort(),
+                    inputStream
+            );
             try {
                 if (inputStream.available() > 0) {
                     SoapMessage msg = soapUtil.createMessage(marshalling.unmarshal(inputStream));
