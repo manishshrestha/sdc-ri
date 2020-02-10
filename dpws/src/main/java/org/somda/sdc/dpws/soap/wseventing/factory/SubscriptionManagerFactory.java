@@ -21,20 +21,28 @@ public interface SubscriptionManagerFactory {
      * @param expires                expiration duration.
      * @param notifyTo               endpoint reference where to send notifications to.
      * @param endTo                  endpoint reference where to send end-to request to or null if none is available.
-     * @param subscriptionId         the subscription id for the subscription manager or null to auto-generate a unique id.
+     * @param subscriptionId         the subscription id for the subscription manager.
      * @return a new {@link SourceSubscriptionManager} instance.
      */
     SourceSubscriptionManager createSourceSubscriptionManager(@Assisted("SubscriptionManager") EndpointReferenceType subscriptionManagerEpr,
                                                               @Assisted Duration expires,
                                                               @Assisted("NotifyTo") EndpointReferenceType notifyTo,
                                                               @Assisted("EntTo") @Nullable EndpointReferenceType endTo,
-                                                              @Assisted("SubscriptionId") @Nullable String subscriptionId);
+                                                              @Assisted("SubscriptionId") String subscriptionId);
 
     /**
      * Creates a {@link SinkSubscriptionManager} instance.
+     * <p>
+     * A subscription id is assigned automatically.
      *
-     * @param subscriptionManager the subscription manager the sink side is based on.
+     * @param subscriptionManagerEpr
+     * @param expires
+     * @param notifyTo
+     * @param endTo
      * @return a new {@link SinkSubscriptionManager} instance.
      */
-    SinkSubscriptionManager createSinkSubscriptionManager(@Assisted SubscriptionManager subscriptionManager);
+    SinkSubscriptionManager createSinkSubscriptionManager(@Assisted("SubscriptionManager") EndpointReferenceType subscriptionManagerEpr,
+                                                          @Assisted Duration expires,
+                                                          @Assisted("NotifyTo") EndpointReferenceType notifyTo,
+                                                          @Assisted("EntTo") EndpointReferenceType endTo);
 }
