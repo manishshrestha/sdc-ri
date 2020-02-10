@@ -386,11 +386,10 @@ public class JettyHttpServerRegistry extends AbstractIdleService implements Http
         @Override
         public void handle(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
 
-            InputStream input = request.getInputStream();
             LOG.debug("Request to {}", request.getRequestURL());
             
-            input = communicationLog.logHttpMessage(CommunicationLogImpl.HttpDirection.INBOUND_REQUEST,
-                    request.getRemoteHost(), request.getRemotePort(), input);
+            InputStream input = communicationLog.logHttpMessage(CommunicationLogImpl.HttpDirection.INBOUND_REQUEST,
+                    request.getRemoteHost(), request.getRemotePort(), request.getInputStream());
 
             response.setStatus(HttpStatus.OK_200);
             response.setContentType(mediaType);
