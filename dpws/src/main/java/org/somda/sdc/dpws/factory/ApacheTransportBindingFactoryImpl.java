@@ -36,6 +36,7 @@ import javax.net.ssl.SSLContext;
 import javax.xml.bind.JAXBException;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.OutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.SocketException;
@@ -188,7 +189,15 @@ public class ApacheTransportBindingFactoryImpl implements TransportBindingFactor
 
         @Override
         public SoapMessage onRequestResponse(SoapMessage request) throws TransportBindingException, SoapFaultException {
-            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+            
+            OutputStream outputStream = communicationLog.logHttpMessage(
+            		CommunicationLogImpl.HttpDirection.OUTBOUND_REQUEST, 
+            		this.clientUri.getHost(), 
+            		this.clientUri.getPort(), 
+            		byteArrayOutputStream
+            		);
+            
             try {
                 marshalling.marshal(request.getEnvelopeWithMappedHeaders(), outputStream);
             } catch (JAXBException e) {
@@ -198,18 +207,13 @@ public class ApacheTransportBindingFactoryImpl implements TransportBindingFactor
                         String.format("Sending of a request failed due to marshalling problem: %s", e.getMessage()));
             }
 
-            if (LOG.isDebugEnabled()) {
-                communicationLog.logHttpMessage(CommunicationLogImpl.HttpDirection.OUTBOUND_REQUEST,
-                        this.clientUri.getHost(), this.clientUri.getPort(), outputStream.toByteArray());
-            }
-
             // create post request and set content type to SOAP
             HttpPost post = new HttpPost(this.clientUri);
             post.setHeader(HttpHeaders.ACCEPT, SoapConstants.MEDIA_TYPE_SOAP);
             post.setHeader(HttpHeaders.CONTENT_TYPE, SoapConstants.MEDIA_TYPE_SOAP);
 
             // attach payload
-            var requestEntity = new ByteArrayEntity(outputStream.toByteArray());
+            var requestEntity = new ByteArrayEntity(byteArrayOutputStream.toByteArray());
             post.setEntity(requestEntity);
 
             LOG.debug("Sending POST request to {}", this.clientUri);
@@ -246,14 +250,12 @@ public class ApacheTransportBindingFactoryImpl implements TransportBindingFactor
                 LOG.error("Couldn't read response", e);
                 inputStream = new ByteArrayInputStream(new byte[0]);
             }
-            if (LOG.isDebugEnabled()) {
-                inputStream = communicationLog.logHttpMessage(
-                        CommunicationLogImpl.HttpDirection.OUTBOUND_RESPONSE,
-                        this.clientUri.getHost(),
-                        this.clientUri.getPort(),
-                        inputStream
-                );
-            }
+            inputStream = communicationLog.logHttpMessage(
+                    CommunicationLogImpl.HttpDirection.OUTBOUND_RESPONSE,
+                    this.clientUri.getHost(),
+                    this.clientUri.getPort(),
+                    inputStream
+            );
             try {
                 if (inputStream.available() > 0) {
                     SoapMessage msg = soapUtil.createMessage(marshalling.unmarshal(inputStream));

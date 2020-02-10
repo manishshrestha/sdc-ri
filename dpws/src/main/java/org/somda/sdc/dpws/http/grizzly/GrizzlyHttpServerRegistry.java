@@ -295,34 +295,27 @@ public class GrizzlyHttpServerRegistry extends AbstractIdleService implements Ht
         @Override
         public void service(Request request, Response response) throws Exception {
             InputStream input = request.getInputStream();
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("Request to {}", requestedUri);
-                input = communicationLog.logHttpMessage(CommunicationLogImpl.HttpDirection.INBOUND_REQUEST,
+            
+            LOG.debug("Request to {}", requestedUri);
+            input = communicationLog.logHttpMessage(CommunicationLogImpl.HttpDirection.INBOUND_REQUEST,
                         request.getRemoteHost(), request.getRemotePort(), input);
-            }
 
             response.setStatus(HttpStatus.OK_200);
             response.setContentType(mediaType);
-
+            
+            OutputStream output = communicationLog.logHttpMessage(CommunicationLogImpl.HttpDirection.OUTBOUND_RESPONSE,
+                        request.getRemoteHost(), request.getRemotePort(), response.getOutputStream());
+            
             try {
-                OutputStream output = response.getOutputStream();
-                if (LOG.isDebugEnabled()) {
-                    output = new ByteArrayOutputStream();
-                }
-
-                handler.process(input, output,
+            	
+            	handler.process(input, output,
                         new TransportInfo(request.getScheme(), request.getLocalAddr(), request.getLocalPort()));
-
-                if (LOG.isDebugEnabled()) {
-                    final byte[] bytes = ((ByteArrayOutputStream) output).toByteArray();
-                    communicationLog.logHttpMessage(CommunicationLogImpl.HttpDirection.INBOUND_RESPONSE,
-                            request.getRemoteHost(), request.getRemotePort(), new ByteArrayInputStream(bytes));
-                    response.getOutputStream().write(bytes);
-                }
+            	
             } catch (Exception e) {
                 response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR_500);
-                response.getOutputStream().flush();
-                response.getOutputStream().write(e.getMessage().getBytes());
+                
+                output.flush();
+                output.write(e.getMessage().getBytes());
                 LOG.error("Internal server error processing request.", e);
             }
         }
