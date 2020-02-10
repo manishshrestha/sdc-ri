@@ -35,11 +35,8 @@ import org.somda.sdc.dpws.soap.exception.MarshallingException;
 import org.somda.sdc.dpws.soap.exception.TransportException;
 
 import javax.annotation.Nullable;
-import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -136,7 +133,7 @@ public class JettyHttpServerRegistry extends AbstractIdleService implements Http
                     contextWrapperRegistry.clear();
 
                 } catch (Exception e) {
-                    LOG.warn("HTTP server could not be stopped properly.", e);
+                    LOG.warn("HTTP server could not be stopped properly", e);
                 }
             });
 
@@ -177,12 +174,14 @@ public class JettyHttpServerRegistry extends AbstractIdleService implements Http
         registryLock.lock();
         try {
             Server server = makeHttpServer(schemeAndAuthority);
-            Optional<String> mapKeyOpt = makeMapKey(server.getURI(), contextPath);
-            if (mapKeyOpt.isEmpty()) {
-                LOG.warn("Unexpected URI conversion error");
+            String mapKey;
+            try {
+                mapKey = makeMapKey(server.getURI(), contextPath);
+            } catch (UnknownHostException e) {
+                LOG.error("Unexpected URI conversion error", e);
                 throw new RuntimeException("Unexpected URI conversion error");
             }
-            URI mapKeyUri = URI.create(mapKeyOpt.get());
+            URI mapKeyUri = URI.create(mapKey);
             MyHandler endpointHandler = new MyHandler(mediaType, handler, mapKeyUri.toString());
 
             ContextHandler context = new ContextHandler(contextPath);
@@ -200,7 +199,7 @@ public class JettyHttpServerRegistry extends AbstractIdleService implements Http
             return mapKeyUri;
 
         } catch (Exception e) {
-            LOG.error("", e);
+            LOG.error("Registering context {} failed.", contextPath, e);
             throw new RuntimeException(e);
         } finally {
             registryLock.unlock();
@@ -211,10 +210,16 @@ public class JettyHttpServerRegistry extends AbstractIdleService implements Http
     public void unregisterContext(URI schemeAndAuthority, String contextPath) {
         registryLock.lock();
         try {
-            Optional<String> serverRegistryKeyOpt = makeMapKey(schemeAndAuthority);
-            Optional<String> httpHandlerRegistryKeyOpt = makeMapKey(schemeAndAuthority, contextPath);
-            var serverRegistryKey = serverRegistryKeyOpt.get();
-            var httpHandlerRegistryKey = httpHandlerRegistryKeyOpt.get();
+            String serverRegistryKey;
+            String httpHandlerRegistryKey;
+
+            try {
+                serverRegistryKey = makeMapKey(schemeAndAuthority);
+                httpHandlerRegistryKey = makeMapKey(schemeAndAuthority, contextPath);
+            } catch (UnknownHostException e) {
+                LOG.error("Unexpected URI conversion error", e);
+                throw new RuntimeException("Unexpected URI conversion error");
+            }
 
             Optional.ofNullable(serverRegistry.get(serverRegistryKey)).ifPresent(httpServer ->
             {
@@ -259,11 +264,13 @@ public class JettyHttpServerRegistry extends AbstractIdleService implements Http
     }
 
     private Server makeHttpServer(URI uri) {
-        final Optional<String> mapKeyOpt = makeMapKey(uri);
-        if (mapKeyOpt.isEmpty()) {
-            throw new RuntimeException("Cannot resolve hostname");
+        String mapKey;
+        try {
+            mapKey = makeMapKey(uri);
+        } catch (UnknownHostException e) {
+            LOG.error("Unexpected URI conversion error", e);
+            throw new RuntimeException("Unexpected URI conversion error");
         }
-        final String mapKey = mapKeyOpt.get();
 
         Optional<Server> oldServer = Optional.ofNullable(serverRegistry.get(mapKey));
         if (oldServer.isPresent()) {
@@ -281,65 +288,66 @@ public class JettyHttpServerRegistry extends AbstractIdleService implements Http
 
         URI serverUri = httpServer.getURI();
 
-        makeMapKey(serverUri).ifPresent(x ->
-                serverRegistry.put(x, httpServer)
-        );
+        try {
+            serverRegistry.put(makeMapKey(serverUri), httpServer);
+        } catch (UnknownHostException e) {
+            LOG.error("Unexpected URI conversion error", e);
+            throw new RuntimeException("Unexpected URI conversion error");
+        }
         LOG.debug("New HTTP server initialized: {}", uri);
         return httpServer;
     }
 
     private Server createHttpServer(URI uri) {
         LOG.info("Setup HTTP server for address '{}'", uri);
-        if (uri.getScheme().toLowerCase().startsWith("http")) {
-            HttpConfiguration httpConfig = new HttpConfiguration();
-            httpConfig.setSecureScheme("https");
+        if (!uri.getScheme().toLowerCase().startsWith("http")) {
+            throw new RuntimeException(String.format("HTTP server setup failed. Unknown scheme: %s", uri.getScheme()));
 
-            var server = new Server(new InetSocketAddress(
-                    uri.getHost(),
-                    uri.getPort()));
-
-            ContextHandlerCollection context = new ContextHandlerCollection();
-            server.setHandler(context);
-            this.contextHandlerMap.put(server, context);
-
-            // wrap the context handler in a gzip handler
-            if (this.enableGzipCompression) {
-                GzipHandler gzipHandler = new GzipHandler();
-                gzipHandler.setIncludedMethods("PUT", "POST", "GET");
-                gzipHandler.setInflateBufferSize(2048);
-                gzipHandler.setHandler(context);
-                gzipHandler.setMinGzipSize(minCompressionSize);
-                gzipHandler.setIncludedMimeTypes(
-                        "text/plain", "text/html",
-                        SoapConstants.MEDIA_TYPE_SOAP, SoapConstants.MEDIA_TYPE_WSDL
-                );
-                server.setHandler(gzipHandler);
-            }
-
-            if (uri.getScheme().equalsIgnoreCase("http")) {
-                return server;
-            }
-            if (sslContextConfigurator != null && uri.getScheme().equalsIgnoreCase("https")) {
-                SslContextFactory.Server fac = new SslContextFactory.Server();
-                fac.setSslContext(sslContextConfigurator.createSSLContext(true));
-                fac.setNeedClientAuth(true);
-                fac.setHostnameVerifier((a, b) -> true);
-
-                HttpConfiguration httpsConfig = new HttpConfiguration(httpConfig);
-                SecureRequestCustomizer src = new SecureRequestCustomizer();
-                httpsConfig.addCustomizer(src);
-
-                ServerConnector httpsConnector = new ServerConnector(server,
-                        new SslConnectionFactory(fac, "http/1.1"),
-                        new HttpConnectionFactory(httpsConfig));
-                httpsConnector.setIdleTimeout(50000);
-
-                server.setConnectors(new Connector[]{httpsConnector});
-
-                return server;
-            }
         }
-        throw new RuntimeException(String.format("HTTP server setup failed. Unknown scheme: %s", uri.getScheme()));
+        HttpConfiguration httpConfig = new HttpConfiguration();
+        httpConfig.setSecureScheme("https");
+
+        var server = new Server(new InetSocketAddress(
+                uri.getHost(),
+                uri.getPort()));
+
+        ContextHandlerCollection context = new ContextHandlerCollection();
+        server.setHandler(context);
+        this.contextHandlerMap.put(server, context);
+
+        // wrap the context handler in a gzip handler
+        if (this.enableGzipCompression) {
+            GzipHandler gzipHandler = new GzipHandler();
+            gzipHandler.setIncludedMethods("PUT", "POST", "GET");
+            gzipHandler.setInflateBufferSize(2048);
+            gzipHandler.setHandler(context);
+            gzipHandler.setMinGzipSize(minCompressionSize);
+            gzipHandler.setIncludedMimeTypes(
+                    "text/plain", "text/html",
+                    SoapConstants.MEDIA_TYPE_SOAP, SoapConstants.MEDIA_TYPE_WSDL
+            );
+            server.setHandler(gzipHandler);
+        }
+
+        if (sslContextConfigurator != null && uri.getScheme().equalsIgnoreCase("https")) {
+            SslContextFactory.Server fac = new SslContextFactory.Server();
+            fac.setSslContext(sslContextConfigurator.createSSLContext(true));
+            fac.setNeedClientAuth(true);
+            fac.setHostnameVerifier((a, b) -> true);
+
+            HttpConfiguration httpsConfig = new HttpConfiguration(httpConfig);
+            SecureRequestCustomizer src = new SecureRequestCustomizer();
+            httpsConfig.addCustomizer(src);
+
+            ServerConnector httpsConnector = new ServerConnector(server,
+                    new SslConnectionFactory(fac, "http/1.1"),
+                    new HttpConnectionFactory(httpsConfig));
+            httpsConnector.setIdleTimeout(50000);
+
+            server.setConnectors(new Connector[]{httpsConnector});
+        }
+
+        return server;
     }
 
 
@@ -350,23 +358,13 @@ public class JettyHttpServerRegistry extends AbstractIdleService implements Http
      *
      * throws UnknownHostException if host address cannot be resolved.
      */
-    private Optional<String> makeMapKey(URI uri) {
-        try {
-            InetAddress address = InetAddress.getByName(uri.getHost());
-            return Optional.of(uriBuilder.buildUri(uri.getScheme().toLowerCase(), address.getHostAddress(), uri.getPort()).toString());
-        } catch (UnknownHostException e) {
-            LOG.error("Could not make map key", e);
-            return Optional.empty();
-        }
+    private String makeMapKey(URI uri) throws UnknownHostException {
+        InetAddress address = InetAddress.getByName(uri.getHost());
+        return uriBuilder.buildUri(uri.getScheme().toLowerCase(), address.getHostAddress(), uri.getPort()).toString();
     }
 
-    private Optional<String> makeMapKey(URI uri, String contextPath) {
-        var mapKeyOpt = makeMapKey(uri);
-        if (mapKeyOpt.isPresent()) {
-            return Optional.of(mapKeyOpt.get() + contextPath);
-        }
-        ;
-        return Optional.empty();
+    private String makeMapKey(URI uri, String contextPath) throws UnknownHostException {
+        return makeMapKey(uri) + contextPath;
     }
 
     private class MyHandler extends AbstractHandler {
@@ -384,10 +382,10 @@ public class JettyHttpServerRegistry extends AbstractIdleService implements Http
         }
 
         @Override
-        public void handle(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
+        public void handle(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response) throws IOException {
 
             LOG.debug("Request to {}", request.getRequestURL());
-            
+
             InputStream input = communicationLog.logHttpMessage(CommunicationLogImpl.HttpDirection.INBOUND_REQUEST,
                     request.getRemoteHost(), request.getRemotePort(), request.getInputStream());
 

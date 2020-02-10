@@ -148,7 +148,6 @@ public class JettyHttpServerRegistryIT extends DpwsTest {
 
         assertThat(isPath1Requested.get(), is(false));
 
-//        TODO: Re-enable this section!
         // verify path 2 is still working after removing path 1
         isPath2Requested.set(false);
         assertFalse(isPath2Requested.get());
@@ -174,7 +173,7 @@ public class JettyHttpServerRegistryIT extends DpwsTest {
     public void defaultPort() throws Exception {
         // Plausibility test that default port is assigned
         // Plus: there is always one listener expected that holds the port
-        // If Grizzly is about to change this behavior, this test will fail
+        // If Jetty is about to change this behavior, this test will fail
         Server httpServer = new Server(new InetSocketAddress("127.0.0.1", 0));
         httpServer.start();
         assertTrue(httpServer.isStarted());
