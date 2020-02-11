@@ -35,7 +35,9 @@ public class CommunicationLogImpl implements CommunicationLog {
 	    this.udpSubDirectory = null;
 	    this.httpSubDirectory = null;
 
-	    LOG.warn("Could not create communication log directories '{}'", logDirectory.getAbsolutePath());
+	    LOG.warn("Could not create at least one of the communication log directories '{}{}{}' and '{}{}{}'.",
+		    logDirectory.getAbsolutePath(), File.separator, udpSubDirectory.getName(),
+		    logDirectory.getAbsolutePath(), File.separator, httpSubDirectory.getName());
 	} else {
 	    this.udpSubDirectory = udpSubDirectory;
 	    this.httpSubDirectory = httpSubDirectory;
