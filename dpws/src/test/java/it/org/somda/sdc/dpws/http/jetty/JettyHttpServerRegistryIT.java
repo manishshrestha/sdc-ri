@@ -1,35 +1,35 @@
-package it.org.somda.sdc.dpws.http.grizzly;
+package it.org.somda.sdc.dpws.http.jetty;
 
-import com.google.common.collect.Iterables;
 import org.apache.http.HttpHeaders;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.impl.client.HttpClients;
-import org.glassfish.grizzly.http.server.HttpServer;
-import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
+import org.eclipse.jetty.server.Server;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.somda.sdc.dpws.DpwsConfig;
 import org.somda.sdc.dpws.DpwsTest;
 import org.somda.sdc.dpws.TransportBinding;
 import org.somda.sdc.dpws.TransportBindingException;
 import org.somda.sdc.dpws.factory.TransportBindingFactory;
 import org.somda.sdc.dpws.guice.DefaultDpwsConfigModule;
-import org.somda.sdc.dpws.http.grizzly.GrizzlyHttpServerRegistry;
+import org.somda.sdc.dpws.http.jetty.JettyHttpServerRegistry;
 import org.somda.sdc.dpws.soap.SoapMarshalling;
 import org.somda.sdc.dpws.soap.SoapMessage;
 import org.somda.sdc.dpws.soap.exception.MarshallingException;
+import org.somda.sdc.dpws.soap.exception.SoapFaultException;
 import org.somda.sdc.dpws.soap.exception.TransportException;
 import org.somda.sdc.dpws.soap.factory.EnvelopeFactory;
 import org.somda.sdc.dpws.soap.factory.SoapMessageFactory;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import test.org.somda.common.LoggingTestWatcher;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -41,10 +41,13 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 @ExtendWith(LoggingTestWatcher.class)
-public class GrizzlyHttpServerRegistryIT extends DpwsTest {
-    private GrizzlyHttpServerRegistry httpServerRegistry;
+public class JettyHttpServerRegistryIT extends DpwsTest {
+    private static final int COMPRESSION_MIN_SIZE = 32;
+
+    private JettyHttpServerRegistry httpServerRegistry;
     private TransportBindingFactory transportBindingFactory;
     private SoapMessageFactory soapMessageFactory;
     private EnvelopeFactory envelopeFactory;
@@ -55,12 +58,13 @@ public class GrizzlyHttpServerRegistryIT extends DpwsTest {
             @Override
             public void customConfigure() {
                 bind(DpwsConfig.HTTP_GZIP_COMPRESSION, Boolean.class, true);
-                bind(DpwsConfig.HTTP_RESPONSE_COMPRESSION_MIN_SIZE, Integer.class, 32);
+                bind(DpwsConfig.HTTP_RESPONSE_COMPRESSION_MIN_SIZE, Integer.class, COMPRESSION_MIN_SIZE);
             }
         };
         this.overrideBindings(override);
         super.setUp();
-        httpServerRegistry = getInjector().getInstance(GrizzlyHttpServerRegistry.class);
+
+        httpServerRegistry = getInjector().getInstance(JettyHttpServerRegistry.class);
         transportBindingFactory = getInjector().getInstance(TransportBindingFactory.class);
         soapMessageFactory = getInjector().getInstance(SoapMessageFactory.class);
         envelopeFactory = getInjector().getInstance(EnvelopeFactory.class);
@@ -144,16 +148,15 @@ public class GrizzlyHttpServerRegistryIT extends DpwsTest {
 
         assertThat(isPath1Requested.get(), is(false));
 
-//        TODO: Re-enable this section!
-//        // verify path 2 is still working after removing path 1
-//        isPath2Requested.set(false);
-//        assertFalse(isPath2Requested.get());
-//        try {
-//            httpBinding2.onRequestResponse(createASoapMessage());
-//        } catch (SoapFaultException e) {
-//            fail(e);
-//        }
-//        assertTrue(isPath2Requested.get());
+        // verify path 2 is still working after removing path 1
+        isPath2Requested.set(false);
+        assertFalse(isPath2Requested.get());
+        try {
+            httpBinding2.onRequestResponse(createASoapMessage());
+        } catch (SoapFaultException e) {
+            fail(e);
+        }
+        assertTrue(isPath2Requested.get());
 
         httpServerRegistry.stopAsync().awaitTerminated();
     }
@@ -167,15 +170,16 @@ public class GrizzlyHttpServerRegistryIT extends DpwsTest {
     }
 
     @Test
-    public void defaultPort() {
+    public void defaultPort() throws Exception {
         // Plausibility test that default port is assigned
         // Plus: there is always one listener expected that holds the port
-        // If Grizzly is about to change this behavior, this test will fail
-        HttpServer httpServer = GrizzlyHttpServerFactory.createHttpServer(URI.create("http://127.0.0.1:0"), true);
+        // If Jetty is about to change this behavior, this test will fail
+        Server httpServer = new Server(new InetSocketAddress("127.0.0.1", 0));
+        httpServer.start();
         assertTrue(httpServer.isStarted());
-        assertEquals(1, httpServer.getListeners().size());
-        assertThat(Iterables.get(httpServer.getListeners(), 0).getPort(), is(not(0)));
-        httpServer.shutdown();
+        assertEquals(1, httpServer.getConnectors().length);
+        assertThat(httpServer.getURI().getPort(), is(not(0)));
+        httpServer.stop();
     }
 
     @Test
@@ -184,7 +188,11 @@ public class GrizzlyHttpServerRegistryIT extends DpwsTest {
         final String compressedPath = "/ctxt/path1";
 
         final String expectedString = "The quick brown fox jumps over the lazy dog";
-        final String expectedResponse = "ABCEDFG12345";
+        final StringBuilder expectedResponseBuilder = new StringBuilder("ABCEDFG12345");
+        // fill up the expected response to match COMPRESSION_MIN_SIZE
+        while (expectedResponseBuilder.toString().getBytes().length < COMPRESSION_MIN_SIZE) {
+            expectedResponseBuilder.append("a");
+        }
         AtomicReference<String> resultString = new AtomicReference<>();
 
         httpServerRegistry.startAsync().awaitRunning();
@@ -196,7 +204,7 @@ public class GrizzlyHttpServerRegistryIT extends DpwsTest {
                         resultString.set(new String(bytes));
 
                         // write response, which should be compressed transparently
-                        res.write(expectedResponse.getBytes());
+                        res.write(expectedResponseBuilder.toString().getBytes());
                     } catch (Exception e) {
                         throw new RuntimeException(e);
                     }
@@ -231,7 +239,7 @@ public class GrizzlyHttpServerRegistryIT extends DpwsTest {
         var responseBytes = response.getEntity().getContent().readAllBytes();
 
         // compressed response should not match uncompressed expectation
-        assertNotEquals(expectedResponse.getBytes(), responseBytes);
+        assertNotEquals(expectedResponseBuilder.toString().getBytes(), responseBytes);
 
         ByteArrayInputStream responseBais = new ByteArrayInputStream(responseBytes);
         byte[] decompressedResponseBytes;
@@ -240,11 +248,12 @@ public class GrizzlyHttpServerRegistryIT extends DpwsTest {
         }
 
         // decompressed response matches
-        assertEquals(expectedResponse, new String(decompressedResponseBytes));
+        assertEquals(expectedResponseBuilder.toString(), new String(decompressedResponseBytes));
 
         // request was properly processed and decompressed in server
         assertEquals(expectedString, resultString.get());
     }
+
 
     private SoapMessage createASoapMessage() {
         return soapMessageFactory.createSoapMessage(envelopeFactory.createEnvelope());
