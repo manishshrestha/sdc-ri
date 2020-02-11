@@ -294,6 +294,7 @@ public class EventSinkImpl implements EventSink {
         try {
             SoapMessage soapMsg = soapUtil.createMessage(marshalling.unmarshal(in));
             in.close();
+            LOG.debug("Received incoming notification {}", soapMsg);
             notificationSink.receiveNotification(soapMsg);
 
             // Only close the output stream when the notification has been processed

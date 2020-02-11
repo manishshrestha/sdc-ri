@@ -27,6 +27,7 @@ import org.somda.sdc.dpws.helper.NotificationSourceUdpCallback;
 import org.somda.sdc.dpws.helper.factory.DpwsHelperFactory;
 import org.somda.sdc.dpws.http.HttpServerRegistry;
 import org.somda.sdc.dpws.http.grizzly.GrizzlyHttpServerRegistry;
+import org.somda.sdc.dpws.http.jetty.JettyHttpServerRegistry;
 import org.somda.sdc.dpws.network.LocalAddressResolver;
 import org.somda.sdc.dpws.network.LocalAddressResolverImpl;
 import org.somda.sdc.dpws.service.*;
@@ -258,6 +259,6 @@ public class DefaultDpwsModule extends AbstractModule {
     }
 
     private void configureHttpServer() {
-        bind(HttpServerRegistry.class).to(GrizzlyHttpServerRegistry.class).asEagerSingleton();
+        bind(HttpServerRegistry.class).to(JettyHttpServerRegistry.class).asEagerSingleton();
     }
 }

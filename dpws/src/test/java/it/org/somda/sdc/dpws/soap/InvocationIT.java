@@ -77,6 +77,8 @@ public class InvocationIT {
     public void tearDown() {
         this.devicePeer.stopAsync().awaitTerminated();
         this.clientPeer.stopAsync().awaitTerminated();
+        this.devicePeer = null;
+        this.clientPeer = null;
     }
 
     @Test

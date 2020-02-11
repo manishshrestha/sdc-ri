@@ -67,4 +67,14 @@ public class DpwsConfig {
      */
     public static final String HTTP_GZIP_COMPRESSION = "Dpws.GzipCompression";
 
+    /**
+     * Minimum number of bytes a message needs to have in order to trigger compression.
+     *
+     * <ul>
+     * <li>Data type: {@linkplain Integer}
+     * <li>Use: optional
+     * </ul>
+     */
+    public static final String HTTP_RESPONSE_COMPRESSION_MIN_SIZE = "Dpws.GzipCompressionMinSize";
+
 }
