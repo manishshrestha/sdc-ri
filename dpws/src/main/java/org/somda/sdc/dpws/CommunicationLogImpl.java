@@ -27,117 +27,117 @@ public class CommunicationLogImpl implements CommunicationLog {
     @Inject
     CommunicationLogImpl(@Named(DpwsConfig.COMMUNICATION_LOG_DIRECTORY) File logDirectory) {
 
-	File udpSubDirectory = new File(logDirectory, "udp");
-	File httpSubDirectory = new File(logDirectory, "http");
+        File udpSubDirectory = new File(logDirectory, "udp");
+        File httpSubDirectory = new File(logDirectory, "http");
 
-	if ((!udpSubDirectory.exists() && !udpSubDirectory.mkdirs())
-		|| (!httpSubDirectory.exists() && !httpSubDirectory.mkdirs())) {
-	    this.udpSubDirectory = null;
-	    this.httpSubDirectory = null;
+        if ((!udpSubDirectory.exists() && !udpSubDirectory.mkdirs())
+                || (!httpSubDirectory.exists() && !httpSubDirectory.mkdirs())) {
+            this.udpSubDirectory = null;
+            this.httpSubDirectory = null;
 
-	    LOG.warn("Could not create at least one of the communication log directories '{}{}{}' and '{}{}{}'.",
-		    logDirectory.getAbsolutePath(), File.separator, udpSubDirectory.getName(),
-		    logDirectory.getAbsolutePath(), File.separator, httpSubDirectory.getName());
-	} else {
-	    this.udpSubDirectory = udpSubDirectory;
-	    this.httpSubDirectory = httpSubDirectory;
-	}
+            LOG.warn("Could not create at least one of the communication log directories '{}{}{}' and '{}{}{}'.",
+                    logDirectory.getAbsolutePath(), File.separator, udpSubDirectory.getName(),
+                    logDirectory.getAbsolutePath(), File.separator, httpSubDirectory.getName());
+        } else {
+            this.udpSubDirectory = udpSubDirectory;
+            this.httpSubDirectory = httpSubDirectory;
+        }
     }
 
     @Override
     public TeeOutputStream logHttpMessage(HttpDirection direction, String address, Integer port,
-	    OutputStream httpMessage) {
+            OutputStream httpMessage) {
 
-	OutputStream log_file = getFileOutStream(this.httpSubDirectory, makeName(direction.toString(), address, port));
+        OutputStream log_file = getFileOutStream(this.httpSubDirectory, makeName(direction.toString(), address, port));
 
-	return new TeeOutputStream(httpMessage, log_file);
+        return new TeeOutputStream(httpMessage, log_file);
 
     }
 
     @Override
     public InputStream logHttpMessage(HttpDirection direction, String address, Integer port, InputStream httpMessage) {
-	return writeLogFile(this.httpSubDirectory, makeName(direction.toString(), address, port), httpMessage);
+        return writeLogFile(this.httpSubDirectory, makeName(direction.toString(), address, port), httpMessage);
     }
 
     @Override
     public void logUdpMessage(UdpDirection direction, String destinationAddress, Integer destinationPort,
-	    UdpMessage udpMessage) {
-	writeLogFile(this.udpSubDirectory, makeName(direction.toString(), destinationAddress, destinationPort),
-		new ByteArrayInputStream(udpMessage.getData(), 0, udpMessage.getLength()));
+            UdpMessage udpMessage) {
+        writeLogFile(this.udpSubDirectory, makeName(direction.toString(), destinationAddress, destinationPort),
+                new ByteArrayInputStream(udpMessage.getData(), 0, udpMessage.getLength()));
     }
 
     private InputStream writeLogFile(File subDir, String filename, InputStream inputStream) {
 
-	try {
-	    final byte[] bytes = ByteStreams.toByteArray(inputStream);
+        try {
+            final byte[] bytes = ByteStreams.toByteArray(inputStream);
 
-	    new ByteArrayInputStream(bytes).transferTo(getFileOutStream(subDir, filename));
+            new ByteArrayInputStream(bytes).transferTo(getFileOutStream(subDir, filename));
 
-	    return new ByteArrayInputStream(bytes);
+            return new ByteArrayInputStream(bytes);
 
-	} catch (IOException e) {
-	    LOG.warn("Could not write to communication log file", e);
-	}
+        } catch (IOException e) {
+            LOG.warn("Could not write to communication log file", e);
+        }
 
-	return inputStream;
+        return inputStream;
     }
 
     private OutputStream getFileOutStream(File subDir, String filename) {
 
-	if (subDir != null) {
-	    try {
-		return new FileOutputStream(subDir.getAbsolutePath() + File.separator + filename);
+        if (subDir != null) {
+            try {
+                return new FileOutputStream(subDir.getAbsolutePath() + File.separator + filename);
 
-	    } catch (FileNotFoundException e) {
-		LOG.warn("Could not open communication log file", e);
-	    }
-	}
+            } catch (FileNotFoundException e) {
+                LOG.warn("Could not open communication log file", e);
+            }
+        }
 
-	return OutputStream.nullOutputStream();
+        return OutputStream.nullOutputStream();
 
     }
 
     private String makeName(String direction, String destinationAddress, Integer destinationPort) {
-	LocalTime date = LocalTime.now();
-	DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH-mm-ss-SSS");
-	return System.nanoTime() + SEPARATOR + date.format(formatter) + SEPARATOR + direction + SEPARATOR
-		+ destinationAddress + SEPARATOR + destinationPort + SUFFIX;
+        LocalTime date = LocalTime.now();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH-mm-ss-SSS");
+        return System.nanoTime() + SEPARATOR + date.format(formatter) + SEPARATOR + direction + SEPARATOR
+                + destinationAddress + SEPARATOR + destinationPort + SUFFIX;
     }
 
     /**
      * UDP direction enumeration.
      */
     public enum UdpDirection {
-	INBOUND("ibound-udp"), OUTBOUND("obound-udp");
+        INBOUND("ibound-udp"), OUTBOUND("obound-udp");
 
-	private final String stringRepresentation;
+        private final String stringRepresentation;
 
-	UdpDirection(String stringRepresentation) {
-	    this.stringRepresentation = stringRepresentation;
-	}
+        UdpDirection(String stringRepresentation) {
+            this.stringRepresentation = stringRepresentation;
+        }
 
-	@Override
-	public String toString() {
-	    return stringRepresentation;
-	}
+        @Override
+        public String toString() {
+            return stringRepresentation;
+        }
     }
 
     /**
      * HTTP direction enumeration.
      */
     public enum HttpDirection {
-	INBOUND_REQUEST("ibound-http-request"), INBOUND_RESPONSE("ibound-http-response"),
-	OUTBOUND_REQUEST("obound-http-request"), OUTBOUND_RESPONSE("obound-http-response");
+        INBOUND_REQUEST("ibound-http-request"), INBOUND_RESPONSE("ibound-http-response"),
+        OUTBOUND_REQUEST("obound-http-request"), OUTBOUND_RESPONSE("obound-http-response");
 
-	private final String stringRepresentation;
+        private final String stringRepresentation;
 
-	HttpDirection(String stringRepresentation) {
-	    this.stringRepresentation = stringRepresentation;
-	}
+        HttpDirection(String stringRepresentation) {
+            this.stringRepresentation = stringRepresentation;
+        }
 
-	@Override
-	public String toString() {
-	    return stringRepresentation;
-	}
+        @Override
+        public String toString() {
+            return stringRepresentation;
+        }
     }
 }
