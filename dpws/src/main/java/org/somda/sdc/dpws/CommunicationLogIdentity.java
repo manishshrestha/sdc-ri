@@ -8,7 +8,7 @@ import java.io.OutputStream;
 /**
  * Implementation of {@link CommunicationLog} that does not output anything.
  */
-public class CommunicationLogEmptySink implements CommunicationLog {
+public class CommunicationLogIdentity implements CommunicationLog {
     
     @Override
     public OutputStream logHttpMessage(CommunicationLogImpl.HttpDirection direction, String address, Integer port, OutputStream httpMessage) {
