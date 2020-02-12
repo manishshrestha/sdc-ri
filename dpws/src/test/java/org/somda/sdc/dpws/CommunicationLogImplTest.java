@@ -25,7 +25,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.CoreMatchers.is;
 
 /**
- * 
+ *  Tests {@linkplain CommunicationLogImpl}.
  */
 public class CommunicationLogImplTest extends DpwsTest {
 
