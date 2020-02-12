@@ -1,25 +1,13 @@
 package org.somda.sdc.dpws;
 
-import com.google.inject.AbstractModule;
-import com.google.inject.Guice;
-import com.google.inject.Injector;
-import com.google.inject.util.Modules;
-import org.somda.sdc.dpws.guice.DefaultDpwsConfigModule;
-import org.somda.sdc.dpws.guice.DefaultDpwsModule;
-import org.somda.sdc.common.guice.DefaultHelperModule;
-import test.org.somda.common.TestLogging;
 import org.junit.jupiter.api.Test;
 import org.somda.sdc.dpws.CommunicationLogImpl;
 import org.somda.sdc.dpws.CommunicationLogSinkImpl;
 import org.somda.sdc.dpws.CommunicationLogSink;
 import org.somda.sdc.dpws.udp.UdpMessage;
 
-import java.util.List;
-import java.io.File;
 import java.io.OutputStream;
 import java.io.InputStream;
-import java.io.PipedOutputStream;
-import java.io.PipedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
