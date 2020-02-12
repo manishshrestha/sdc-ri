@@ -4,6 +4,7 @@ import com.google.inject.Inject;
 
 import java.lang.reflect.Method;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 /**
@@ -16,7 +17,9 @@ public class InterceptorRegistry {
     InterceptorRegistry() {
         interceptorChains = new HashMap<>();
         Arrays.stream(Direction.values()).forEach(direction ->
-                interceptorChains.put(direction, new HashMap<>()));
+                // concurrent hash map as computeIfAbsent is a mutating function that could potentially be called by
+                // getInterceptorInfoList in parallel
+                interceptorChains.put(direction, new ConcurrentHashMap<>()));
     }
 
     /**
@@ -60,7 +63,7 @@ public class InterceptorRegistry {
      * @return all interceptors of any direction and action.
      */
     public List<InterceptorInfo> getDefaultInterceptors() {
-        return getInterceptors("");
+        return Collections.unmodifiableList(getInterceptors(""));
     }
 
     /**
@@ -70,7 +73,7 @@ public class InterceptorRegistry {
      * @return all interceptors with given direction.
      */
     public List<InterceptorInfo> getDefaultInterceptors(Direction direction) {
-        return getInterceptors(direction, "");
+        return Collections.unmodifiableList(getInterceptors(direction, ""));
     }
 
     /**
@@ -81,7 +84,7 @@ public class InterceptorRegistry {
      * @return all interceptors with given direction and action.
      */
     public List<InterceptorInfo> getInterceptors(Direction direction, String action) {
-        return getInterceptorInfoList(direction, action);
+        return Collections.unmodifiableList(getInterceptorInfoList(direction, action));
     }
 
     /**
@@ -91,7 +94,7 @@ public class InterceptorRegistry {
      * @return all interceptors of any direction with given action.
      */
     public List<InterceptorInfo> getInterceptors(String action) {
-        return getInterceptorInfoList(Direction.ANY, action);
+        return Collections.unmodifiableList(getInterceptorInfoList(Direction.ANY, action));
     }
 
     private List<Method> getCallbackMethods(Object obj) {
@@ -109,7 +112,7 @@ public class InterceptorRegistry {
     }
 
     private List<InterceptorInfo> getInterceptorInfoList(Direction direction, String action) {
-        Map<String, List<InterceptorInfo>> actionMap = interceptorChains.get(direction);
+        var actionMap = interceptorChains.get(direction);
         return actionMap.computeIfAbsent(action, k -> new ArrayList<>());
     }
 }
