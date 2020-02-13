@@ -49,10 +49,10 @@ public class TypeConsistencyChecker implements DescriptionPreprocessingSegment {
         if (parentFromStorage.isPresent()) {
             parentDescriptor = parentFromStorage.get();
         } else {
-            parentDescriptor = allModifications.getModifications().parallelStream()
+            parentDescriptor = allModifications.getModifications().stream()
                     .filter(mod -> mod.getModificationType() == MdibDescriptionModification.Type.INSERT)
                     .filter(mod -> mod.getDescriptor().getHandle().equals(currentModification.getParentHandle().get()))
-                    .map(mod -> mod.getDescriptor())
+                    .map(MdibDescriptionModification::getDescriptor)
                     .findAny().orElseThrow(() ->
                             new TypeConsistencyException(String.format("No parent descriptor found with handle %s",
                                     currentModification.getParentHandle().get())));

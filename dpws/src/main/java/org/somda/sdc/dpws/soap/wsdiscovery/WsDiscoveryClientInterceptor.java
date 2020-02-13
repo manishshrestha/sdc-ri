@@ -233,7 +233,7 @@ public class WsDiscoveryClientInterceptor implements WsDiscoveryClient {
     }
 
     private Optional<SoapMessage> popMatches(EvictingQueue<SoapMessage> messageQueue, String messageId) {
-        Optional<SoapMessage> item = messageQueue.parallelStream().filter(message ->
+        Optional<SoapMessage> item = messageQueue.stream().filter(message ->
                 messageId.equals(message.getWsAddressingHeader().getRelatesTo().orElse(new AttributedURIType())
                         .getValue())).findFirst();
         item.ifPresent(messageQueue::remove);

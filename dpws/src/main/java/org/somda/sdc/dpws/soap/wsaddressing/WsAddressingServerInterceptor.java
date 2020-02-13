@@ -96,7 +96,7 @@ public class WsAddressingServerInterceptor implements Interceptor {
             return;
         }
 
-        Optional<String> foundMessageId = messageIdCache.parallelStream()
+        Optional<String> foundMessageId = messageIdCache.stream()
                 .filter(s -> messageId.get().getValue().equals(s))
                 .findFirst();
         if (foundMessageId.isPresent()) {
