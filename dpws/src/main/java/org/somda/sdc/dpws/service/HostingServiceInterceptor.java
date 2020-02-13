@@ -53,7 +53,7 @@ public class HostingServiceInterceptor implements HostingService {
 
     @Override
     public List<URI> getXAddrs() {
-        return targetService.getXAddrs().parallelStream()
+        return targetService.getXAddrs().stream()
                 .map(URI::create)
                 .collect(Collectors.toList());
     }

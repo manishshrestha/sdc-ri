@@ -99,10 +99,8 @@ public class InterceptorRegistry {
 
     private List<Method> getCallbackMethods(Object obj) {
         final Method[] declaredMethods = obj.getClass().getDeclaredMethods();
-        return Arrays.asList(declaredMethods)
-                .parallelStream()
-                .filter(m -> Arrays.asList(m.getAnnotations())
-                        .parallelStream()
+        return Arrays.stream(declaredMethods)
+                .filter(m -> Arrays.stream(m.getAnnotations())
                         .anyMatch(a -> a.annotationType().equals(MessageInterceptor.class)))
                 .filter(m -> m.getParameterCount() == 1 &&
                         InterceptorCallbackType.class.isAssignableFrom(m.getParameterTypes()[0]))
