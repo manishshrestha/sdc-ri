@@ -93,7 +93,7 @@ public class WsDiscoveryTargetServiceInterceptor implements WsDiscoveryTargetSer
         List<QName> typesFromProbe = Optional.ofNullable(probe.getTypes()).orElse(new ArrayList<>());
 
         String matchBy = Optional.ofNullable(scopesFromProbe.getMatchBy()).orElse(MatchBy.RFC3986.getUri());
-        MatchBy matcher = Arrays.asList(MatchBy.values()).parallelStream()
+        MatchBy matcher = Arrays.stream(MatchBy.values())
                 .filter(item -> item.getUri().equals(matchBy))
                 .findAny().orElseThrow(() -> new SoapFaultException(wsdFaultFactory.createMatchingRuleNotSupported()));
 

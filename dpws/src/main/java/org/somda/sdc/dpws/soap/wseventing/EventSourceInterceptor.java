@@ -121,11 +121,12 @@ public class EventSourceInterceptor extends AbstractIdleService implements Event
 
         // For each affected subscription manager create a SOAP message and add it as a Notification object to the
         // subscription manager's notification queue
-        affectedSubscriptionIds.parallelStream().forEach(subId ->
-                subscriptionRegistry.getSubscription(subId).ifPresent(subscriptionManager -> {
-                    SoapMessage notifyTo = createForNotifyTo(action, payload, subscriptionManager);
-                    subscriptionManager.offerNotification(new Notification(notifyTo));
-                }));
+        for (String subId : affectedSubscriptionIds) {
+            subscriptionRegistry.getSubscription(subId).ifPresent(subscriptionManager -> {
+                SoapMessage notifyTo = createForNotifyTo(action, payload, subscriptionManager);
+                subscriptionManager.offerNotification(new Notification(notifyTo));
+            });
+        }
     }
 
     @Override
@@ -277,7 +278,7 @@ public class EventSourceInterceptor extends AbstractIdleService implements Event
     }
 
     private void removeStaleSubscriptions() {
-        subscriptionRegistry.getSubscriptions().entrySet().parallelStream().forEach(entry -> {
+        subscriptionRegistry.getSubscriptions().entrySet().forEach(entry -> {
             SourceSubscriptionManager subMan = entry.getValue();
             if (!subMan.isRunning() || isSubscriptionExpired(subMan)) {
                 subscriptionRegistry.removeSubscription(entry.getKey());
