@@ -28,7 +28,7 @@ import org.somda.sdc.dpws.factory.TransportBindingFactory;
 import org.somda.sdc.dpws.helper.NotificationSourceUdpCallback;
 import org.somda.sdc.dpws.helper.factory.DpwsHelperFactory;
 import org.somda.sdc.dpws.http.HttpServerRegistry;
-import org.somda.sdc.dpws.http.grizzly.GrizzlyHttpServerRegistry;
+import org.somda.sdc.dpws.http.grizzly.factory.GrizzlyHttpHandlerBrokerFactory;
 import org.somda.sdc.dpws.http.jetty.JettyHttpServerRegistry;
 import org.somda.sdc.dpws.network.LocalAddressResolver;
 import org.somda.sdc.dpws.network.LocalAddressResolverImpl;
@@ -103,6 +103,9 @@ public class DefaultDpwsModule extends AbstractModule {
         install(new FactoryModuleBuilder()
                 .implement(UdpBindingService.class, UdpBindingServiceImpl.class)
                 .build(UdpBindingServiceFactory.class));
+        
+        install(new FactoryModuleBuilder()
+                .build(GrizzlyHttpHandlerBrokerFactory.class));
         
         bind(CommunicationLogSink.class).to(CommunicationLogSinkImpl.class).asEagerSingleton();
 

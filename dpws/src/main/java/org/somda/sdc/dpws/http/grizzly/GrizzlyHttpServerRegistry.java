@@ -25,12 +25,11 @@ import org.somda.sdc.dpws.crypto.CryptoSettings;
 import org.somda.sdc.dpws.http.HttpHandler;
 import org.somda.sdc.dpws.http.HttpServerRegistry;
 import org.somda.sdc.dpws.http.HttpUriBuilder;
+import org.somda.sdc.dpws.http.grizzly.factory.GrizzlyHttpHandlerBrokerFactory;
 import org.somda.sdc.dpws.soap.SoapConstants;
 import org.somda.sdc.dpws.soap.TransportInfo;
 
 import javax.annotation.Nullable;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -48,6 +47,8 @@ import java.util.concurrent.locks.ReentrantLock;
  */
 public class GrizzlyHttpServerRegistry extends AbstractIdleService implements HttpServerRegistry {
     private static final Logger LOG = LoggerFactory.getLogger(GrizzlyHttpServerRegistry.class);
+    
+    @Inject private GrizzlyHttpHandlerBrokerFactory grizzlyHttpHandlerBrokerFactory;
 
     private final Map<String, HttpServer> serverRegistry;
     private final Map<String, GrizzlyHttpHandlerBroker> handlerRegistry;
@@ -129,7 +130,7 @@ public class GrizzlyHttpServerRegistry extends AbstractIdleService implements Ht
             HttpServerInfo httpServerInfo = makeHttpServerIfNotExistingFor(schemeAndAuthority);
             String mapKeyString = makeMapKey(httpServerInfo.getUri(), contextPath);
             URI mapKeyUri = URI.create(mapKeyString);
-            GrizzlyHttpHandlerBroker handlerBroker = new GrizzlyHttpHandlerBroker(mediaType, handler, mapKeyUri.toString());
+            GrizzlyHttpHandlerBroker handlerBroker = grizzlyHttpHandlerBrokerFactory.create(mediaType, handler, mapKeyUri.toString());
             handlerRegistry.put(mapKeyString, handlerBroker);
 
             LOG.info("Register context path '{}' at HTTP server '{}'", contextPath, httpServerInfo.getUri());
@@ -280,49 +281,6 @@ public class GrizzlyHttpServerRegistry extends AbstractIdleService implements Ht
      */
     private String makeMapKey(URI uri, String contextPath) throws UnknownHostException {
         return makeMapKey(uri) + contextPath;
-    }
-
-    private class GrizzlyHttpHandlerBroker extends org.glassfish.grizzly.http.server.HttpHandler {
-        private final String mediaType;
-        private final HttpHandler handler;
-        private final String requestedUri;
-
-        GrizzlyHttpHandlerBroker(String mediaType,
-                                 HttpHandler handler,
-                                 String requestedUri) {
-            this.mediaType = mediaType;
-            this.handler = handler;
-            this.requestedUri = requestedUri;
-        }
-
-        @Override
-        public void service(Request request, Response response) throws Exception {
-            InputStream input = request.getInputStream();
-            
-            LOG.debug("Request to {}", requestedUri);
-            input = communicationLog.logHttpMessage(CommunicationLogImpl.HttpDirection.INBOUND_REQUEST,
-                        request.getRemoteHost(), request.getRemotePort(), input);
-
-            response.setStatus(HttpStatus.OK_200);
-            response.setContentType(mediaType);
-            
-            OutputStream output = communicationLog.logHttpMessage(CommunicationLogImpl.HttpDirection.OUTBOUND_RESPONSE,
-                        request.getRemoteHost(), request.getRemotePort(), response.getOutputStream());
-            
-            try {
-            	
-            	handler.process(input, output,
-                        new TransportInfo(request.getScheme(), request.getLocalAddr(), request.getLocalPort()));
-            	
-            } catch (Exception e) {
-                response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR_500);
-                
-                output.flush();
-                output.write(e.getMessage().getBytes());
-                output.close();
-                LOG.error("Internal server error processing request.", e);
-            }
-        }
     }
 
     private class HttpServerInfo {

@@ -22,7 +22,7 @@ public class CommunicationLogImpl implements CommunicationLog {
     private final CommunicationLogSink logSink;
 
     @Inject
-    CommunicationLogImpl(CommunicationLogSink sink) {
+    public CommunicationLogImpl(CommunicationLogSink sink) {
 
         this.logSink = sink;
     }
