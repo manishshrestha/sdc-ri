@@ -69,7 +69,7 @@ public class TestSdcClient extends IntegrationTestPeer {
                         if (CIDetector.isRunningInCi()) {
                             var httpTimeouts = Duration.ofSeconds(120);
                             var futureTimeouts = Duration.ofSeconds(30);
-                            LOG.info("CI detected, setting relaxed http client timeouts of {}s",
+                            LOG.info("CI detected, setting relaxed HTTP client timeouts of {}s",
                                     httpTimeouts.toSeconds());
                             bind(DpwsConfig.HTTP_CLIENT_CONNECT_TIMEOUT,
                                     Duration.class,

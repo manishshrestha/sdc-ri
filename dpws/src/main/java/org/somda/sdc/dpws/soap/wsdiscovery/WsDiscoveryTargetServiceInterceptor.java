@@ -158,7 +158,7 @@ public class WsDiscoveryTargetServiceInterceptor implements WsDiscoveryTargetSer
                     resolveType.getEndpointReference().getAddress().getValue(),
                     endpointReference.getAddress().getValue()
             );
-            throw new RuntimeException("EndpointReference Address does not match in incoming Resolve.");
+            throw new RuntimeException("EndpointReference address does not match in incoming Resolve.");
         }
 
         ResolveMatchType resolveMatchType = wsdFactory.createResolveMatchType();

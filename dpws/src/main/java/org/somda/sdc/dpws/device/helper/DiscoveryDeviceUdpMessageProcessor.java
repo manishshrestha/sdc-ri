@@ -84,7 +84,7 @@ public class DiscoveryDeviceUdpMessageProcessor implements UdpMessageQueueObserv
         //  Remove once proper UDP notification handling is in place.
         var action = response.getWsAddressingHeader().getAction();
         if (action.isEmpty() || action.get().getValue().isBlank()) {
-            LOG.debug("Not sending a response, no response with an action generated for message {}.", SoapDebug.get(request));
+            LOG.debug("Not sending a response, no response with an action generated for message {}", SoapDebug.get(request));
             return;
         }
 

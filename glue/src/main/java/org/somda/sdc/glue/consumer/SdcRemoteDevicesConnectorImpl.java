@@ -271,7 +271,7 @@ public class SdcRemoteDevicesConnectorImpl implements SdcRemoteDevicesConnector,
                             final AbstractReport report = soapUtil.getBody(notificationObject.getNotification(),
                                     AbstractReport.class).orElseThrow(() -> new RuntimeException(
                                     String.format("Received unexpected report message from service %s", serviceId)));
-                            LOG.debug("Incoming SOAP/HTTP Notification: {}", report);
+                            LOG.debug("Incoming SOAP/HTTP notification: {}", report);
                             if (report instanceof OperationInvokedReport) {
                                 if (scoController != null) {
                                     scoController.processOperationInvokedReport((OperationInvokedReport) report);

@@ -125,11 +125,11 @@ public class UdpBindingServiceMock extends AbstractIdleService implements UdpBin
             var message = new UdpMessage(udpMessage.getMessage().getData(), udpMessage.getMessage().getLength(),
                     udpMessage.getSenderAddress(), udpMessage.getSenderPort());
             LOG.debug(
-                    "Incoming UDP message from sender {}:{} was directed at me!",
+                    "Incoming UDP message from sender {}:{} was directed at me",
                     udpMessage.getSenderAddress(),
                     udpMessage.getSenderPort()
             );
-            LOG.trace("Received incoming udp message {}", message);
+            LOG.trace("Received incoming UDP message: {}", message);
             udpMessageReceiver.receive(message);
         }
     }

@@ -58,9 +58,9 @@ class InterceptorProcessor {
                 callbackMethod.invoke(interceptorInfo.getCallbackObject(), callbackParam);
             } catch (IllegalAccessException e) {
                 LOG.warn(e.getMessage());
-                LOG.trace("Error while calling Interceptor", e);
+                LOG.trace("Error while calling interceptor", e);
             } catch (InvocationTargetException e) {
-                LOG.trace("Error while calling Interceptor", e);
+                LOG.trace("Error while calling interceptor", e);
                 throw new InterceptorException("Exception thrown by interceptor " +
                         interceptorInfo.getCallbackObject().toString(),
                         interceptorInfo.getCallbackObject(), e.getTargetException());
