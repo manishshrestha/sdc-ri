@@ -276,7 +276,7 @@ public class DeviceImpl extends AbstractIdleService implements Device, Service, 
     }
 
     private List<String> scopesAsStrs(Collection<URI> scopes) {
-        return scopes.parallelStream().map(URI::toString).collect(Collectors.toList());
+        return scopes.stream().map(URI::toString).collect(Collectors.toList());
     }
 
     @Override
@@ -322,7 +322,7 @@ public class DeviceImpl extends AbstractIdleService implements Device, Service, 
 
         // If no EPR addresses are given already, create one/some from hosting service
         if (hostedService.getType().getEndpointReference().isEmpty()) {
-            List<URI> uris = hostingService.getXAddrs().parallelStream()
+            List<URI> uris = hostingService.getXAddrs().stream()
                     .map(uri -> URI.create(uri.toString() + contextPathPart))
                     .collect(Collectors.toList());
 

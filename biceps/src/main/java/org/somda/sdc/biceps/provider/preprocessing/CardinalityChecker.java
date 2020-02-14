@@ -69,12 +69,11 @@ public class CardinalityChecker implements DescriptionPreprocessingSegment {
     private boolean isSameTypeInModifications(MdibDescriptionModifications modifications,
                                               AbstractDescriptor descriptor,
                                               String parentHandle) {
-        return modifications.getModifications().parallelStream()
+        return modifications.getModifications().stream()
                 .filter(mod -> mod.getModificationType() == MdibDescriptionModification.Type.INSERT)
                 .filter(mod -> !mod.getDescriptor().getHandle().equals(descriptor.getHandle()))
                 .filter(mod -> mod.getParentHandle().isPresent() && mod.getParentHandle().get().equals(parentHandle))
-                .filter(mod -> mod.getDescriptor().getClass().equals(descriptor.getClass()))
-                .findAny().isPresent();
+                .anyMatch(mod -> mod.getDescriptor().getClass().equals(descriptor.getClass()));
     }
 
     private void throwException(AbstractDescriptor descriptor) throws CardinalityException {

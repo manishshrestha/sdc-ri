@@ -40,7 +40,7 @@ public class LocalAddressResolverImpl implements LocalAddressResolver {
 //                    continue;
 //                }
 //
-//                localAddress = Collections.list(networkInterface.getInetAddresses()).parallelStream()
+//                localAddress = Collections.list(networkInterface.getInetAddresses()).stream()
 //                        .filter(inetAddress -> {
 //                            try {
 //                                if (!inetAddress.isReachable(2000)) {

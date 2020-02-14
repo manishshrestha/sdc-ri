@@ -92,9 +92,9 @@ public class MdibTypeValidator {
     public <D extends AbstractDescriptor, S extends AbstractState> boolean match(D descriptor, List<S> states) {
         boolean singleStateOk = isSingleStateDescriptor(descriptor) && states.size() == 1;
         boolean multiStateOk = isMultiStateDescriptor(descriptor);
-        boolean typesAndHandleRefsOk = !states.parallelStream().filter(s ->
+        boolean typesAndHandleRefsOk = states.stream().noneMatch(s ->
                 !descriptor.getHandle().equals(s.getDescriptorHandle()) ||
-                        !match(descriptor.getClass(), s.getClass())).findAny().isPresent();
+                        !match(descriptor.getClass(), s.getClass()));
         return typesAndHandleRefsOk && (singleStateOk || multiStateOk);
     }
 

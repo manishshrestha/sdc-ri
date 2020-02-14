@@ -43,7 +43,7 @@ public class HostedServiceImpl implements HostedService {
                       WsAddressingUtil wsaUtil) throws IOException {
         this.serviceId = serviceId;
         this.types = types;
-        this.eprs = eprAddresses.parallelStream()
+        this.eprs = eprAddresses.stream()
                 .map(wsaUtil::createEprWithAddress)
                 .collect(Collectors.toList());
         this.webService = webService;
