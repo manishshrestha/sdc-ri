@@ -33,6 +33,8 @@ import org.somda.sdc.dpws.soap.SoapConstants;
 import org.somda.sdc.dpws.soap.TransportInfo;
 import org.somda.sdc.dpws.soap.exception.MarshallingException;
 import org.somda.sdc.dpws.soap.exception.TransportException;
+import org.somda.sdc.dpws.http.jetty.factory.JettyHttpServerHandlerFactory;
+import org.somda.sdc.dpws.http.jetty.JettyHttpServerHandler;
 
 import javax.annotation.Nullable;
 import javax.servlet.http.HttpServletRequest;
@@ -55,9 +57,11 @@ import java.util.concurrent.locks.ReentrantLock;
  */
 public class JettyHttpServerRegistry extends AbstractIdleService implements HttpServerRegistry {
     private static final Logger LOG = LoggerFactory.getLogger(JettyHttpServerRegistry.class);
+    
+    @Inject private JettyHttpServerHandlerFactory jettyHttpServerHandlerFactory;
 
     private final Map<String, Server> serverRegistry;
-    private final Map<String, MyHandler> handlerRegistry;
+    private final Map<String, JettyHttpServerHandler> handlerRegistry;
     private final Map<String, ContextHandler> contextWrapperRegistry;
     private final Map<Server, ContextHandlerCollection> contextHandlerMap;
     private final Lock registryLock;
@@ -182,7 +186,8 @@ public class JettyHttpServerRegistry extends AbstractIdleService implements Http
                 throw new RuntimeException("Unexpected URI conversion error");
             }
             URI mapKeyUri = URI.create(mapKey);
-            MyHandler endpointHandler = new MyHandler(mediaType, handler, mapKeyUri.toString());
+
+            JettyHttpServerHandler endpointHandler = this.jettyHttpServerHandlerFactory.create(mediaType, handler);
 
             ContextHandler context = new ContextHandler(contextPath);
             context.setHandler(endpointHandler);
@@ -365,52 +370,5 @@ public class JettyHttpServerRegistry extends AbstractIdleService implements Http
 
     private String makeMapKey(URI uri, String contextPath) throws UnknownHostException {
         return makeMapKey(uri) + contextPath;
-    }
-
-    private class MyHandler extends AbstractHandler {
-
-        private final String mediaType;
-        private final HttpHandler handler;
-        private final String requestedUri;
-
-        MyHandler(String mediaType,
-                  HttpHandler handler,
-                  String requestedUri) {
-            this.mediaType = mediaType;
-            this.handler = handler;
-            this.requestedUri = requestedUri;
-        }
-
-        @Override
-        public void handle(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response) throws IOException {
-
-            LOG.debug("Request to {}", request.getRequestURL());
-
-            InputStream input = communicationLog.logHttpMessage(CommunicationLogImpl.HttpDirection.INBOUND_REQUEST,
-                    request.getRemoteHost(), request.getRemotePort(), request.getInputStream());
-
-            response.setStatus(HttpStatus.OK_200);
-            response.setContentType(mediaType);
-
-            OutputStream output = communicationLog.logHttpMessage(CommunicationLogImpl.HttpDirection.OUTBOUND_RESPONSE,
-                    request.getRemoteHost(), request.getRemotePort(), response.getOutputStream());
-
-            try {
-
-                handler.process(input, output,
-                        new TransportInfo(request.getScheme(), request.getLocalAddr(), request.getLocalPort()));
-
-            } catch (TransportException | MarshallingException | ClassCastException e) {
-                LOG.error("", e);
-                response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR_500);
-                output.write(e.getMessage().getBytes());
-                output.flush();
-                output.close();
-            } finally {
-                baseRequest.setHandled(true);
-            }
-
-
-        }
     }
 }
