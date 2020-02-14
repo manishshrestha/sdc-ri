@@ -40,9 +40,10 @@ public class ClientTransportBinding implements TransportBinding {
     private final SoapUtil soapUtil;
     private HttpClient client;
     private final URI clientUri;
+    private CommunicationLog communicationLog;
 
     @Inject
-    ClientTransportBinding(CommunicationLog communicationLog,
+    public ClientTransportBinding(CommunicationLog communicationLog,
             @Assisted HttpClient client, @Assisted URI clientUri, @Assisted SoapMarshalling marshalling,
             @Assisted SoapUtil soapUtil) {
         LOG.debug("Creating HttpClientTransportBinding for {}", clientUri);
@@ -50,6 +51,7 @@ public class ClientTransportBinding implements TransportBinding {
         this.clientUri = clientUri;
         this.marshalling = marshalling;
         this.soapUtil = soapUtil;
+        this.communicationLog = communicationLog;
     }
 
     @Override
@@ -121,7 +123,7 @@ public class ClientTransportBinding implements TransportBinding {
 
         try (InputStream initialInputStream = new ByteArrayInputStream(bytes);
                 InputStream inputStream = communicationLog.logHttpMessage(
-                        CommunicationLogImpl.HttpDirection.OUTBOUND_RESPONSE, this.clientUri.getHost(),
+                        CommunicationLogImpl.HttpDirection.INBOUND_RESPONSE, this.clientUri.getHost(),
                         this.clientUri.getPort(), initialInputStream);) {
             try {
                 if (inputStream.available() > 0) {
