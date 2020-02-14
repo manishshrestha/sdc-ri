@@ -1,23 +1,26 @@
 package org.somda.sdc.dpws.http.grizzly;
 
-import com.google.common.collect.Iterables;
-import com.google.common.util.concurrent.AbstractIdleService;
-import com.google.inject.Inject;
-import com.google.inject.name.Named;
+import java.io.IOException;
+import java.net.InetAddress;
+import java.net.URI;
+import java.net.UnknownHostException;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
+
+import javax.annotation.Nullable;
+
 import org.glassfish.grizzly.http.CompressionConfig;
 import org.glassfish.grizzly.http.server.HttpServer;
 import org.glassfish.grizzly.http.server.NetworkListener;
-import org.glassfish.grizzly.http.server.Request;
-import org.glassfish.grizzly.http.server.Response;
-import org.glassfish.grizzly.http.util.HttpStatus;
 import org.glassfish.grizzly.ssl.SSLContextConfigurator;
 import org.glassfish.grizzly.ssl.SSLEngineConfigurator;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpContainer;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.somda.sdc.dpws.CommunicationLog;
-import org.somda.sdc.dpws.CommunicationLogImpl;
 import org.somda.sdc.dpws.DpwsConfig;
 import org.somda.sdc.dpws.crypto.CryptoConfig;
 import org.somda.sdc.dpws.crypto.CryptoConfigurator;
@@ -27,20 +30,11 @@ import org.somda.sdc.dpws.http.HttpServerRegistry;
 import org.somda.sdc.dpws.http.HttpUriBuilder;
 import org.somda.sdc.dpws.http.grizzly.factory.GrizzlyHttpHandlerBrokerFactory;
 import org.somda.sdc.dpws.soap.SoapConstants;
-import org.somda.sdc.dpws.soap.TransportInfo;
 
-import javax.annotation.Nullable;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.InetAddress;
-import java.net.URI;
-import java.net.UnknownHostException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
+import com.google.common.collect.Iterables;
+import com.google.common.util.concurrent.AbstractIdleService;
+import com.google.inject.Inject;
+import com.google.inject.name.Named;
 
 /**
  * {@linkplain HttpServerRegistry} implementation based on Grizzly HTTP servers.
@@ -54,7 +48,6 @@ public class GrizzlyHttpServerRegistry extends AbstractIdleService implements Ht
     private final Map<String, GrizzlyHttpHandlerBroker> handlerRegistry;
     private final Lock registryLock;
     private final HttpUriBuilder uriBuilder;
-    private final CommunicationLog communicationLog;
     private final int minCompressionSize;
     private final boolean enableGzipCompression;
     private SSLContextConfigurator sslContextConfigurator; // null => no support for SSL enabled/configured
@@ -63,11 +56,9 @@ public class GrizzlyHttpServerRegistry extends AbstractIdleService implements Ht
     GrizzlyHttpServerRegistry(HttpUriBuilder uriBuilder,
                               CryptoConfigurator cryptoConfigurator,
                               @Nullable @Named(CryptoConfig.CRYPTO_SETTINGS) CryptoSettings cryptoSettings,
-                              CommunicationLog communicationLog,
                               @Named(DpwsConfig.HTTP_GZIP_COMPRESSION) boolean enableGzipCompression,
                               @Named(DpwsConfig.HTTP_RESPONSE_COMPRESSION_MIN_SIZE) int minCompressionSize) {
         this.uriBuilder = uriBuilder;
-        this.communicationLog = communicationLog;
         this.minCompressionSize = minCompressionSize;
         serverRegistry = new HashMap<>();
         handlerRegistry = new HashMap<>();
