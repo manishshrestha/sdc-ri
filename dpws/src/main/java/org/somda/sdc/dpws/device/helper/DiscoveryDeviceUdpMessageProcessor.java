@@ -80,6 +80,15 @@ public class DiscoveryDeviceUdpMessageProcessor implements UdpMessageQueueObserv
             return;
         }
 
+        // TODO: Workaround for Providers responding to Hello messages with empty messages, see #87
+        //  Remove once proper UDP notification handling is in place.
+        var action = response.getWsAddressingHeader().getAction();
+        if (action.isEmpty() || action.get().getValue().isBlank()) {
+            LOG.debug("Not sending a response, no response with an action generated for message {}.", SoapDebug.get(request));
+            return;
+        }
+
+
         if (LOG.isDebugEnabled()) {
             LOG.debug("Outgoing SOAP/UDP message: {}", SoapDebug.get(response));
         }
