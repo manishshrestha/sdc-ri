@@ -1,13 +1,20 @@
 package org.somda.sdc.glue.common;
 
-import org.somda.sdc.biceps.model.participant.*;
-import org.somda.sdc.glue.common.helper.UrlUtf8;
-
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import org.somda.sdc.biceps.model.participant.AbstractContextState;
+import org.somda.sdc.biceps.model.participant.EnsembleContextState;
+import org.somda.sdc.biceps.model.participant.InstanceIdentifier;
+import org.somda.sdc.biceps.model.participant.LocationContextState;
+import org.somda.sdc.biceps.model.participant.MeansContextState;
+import org.somda.sdc.biceps.model.participant.OperatorContextState;
+import org.somda.sdc.biceps.model.participant.PatientContextState;
+import org.somda.sdc.biceps.model.participant.WorkflowContextState;
+import org.somda.sdc.glue.common.helper.UrlUtf8;
 
 /**
  * Utility class to map between context-based URIs and instance identifiers.
@@ -17,11 +24,12 @@ import java.util.regex.Pattern;
 public class ContextIdentificationMapper {
     private static final String NULL_FLAVOR_ROOT = "biceps.uri.unk";
     private static final String SCHEME_PREFIX = "sdc.ctxt.";
+    private static final String ALLOWED_CHARS = "[a-zA-Z0-9-._~!$&\'()*+,;=:@]";
+    private static final String segmentRegex = "(?:(?:%[a-fA-f0-9]{2})+|(?:" + ALLOWED_CHARS + ")+)";
 
-    private static final Pattern PATTERN = Pattern.compile("^(?<contextsource>sdc\\.ctxt\\..+?)\\:\\/" +
-                    "(?<root>.*?)\\/" +
-                    "(?<extension>.*?)$",
-            Pattern.CASE_INSENSITIVE);
+    private static final Pattern PATTERN = Pattern
+            .compile("(?<contextsource>sdc.ctxt.(loc|pat|ens|wfl|opr|mns)?):/(?<root>" + segmentRegex
+                    + "+)/(?<extension>" + segmentRegex + "*$)");
 
     /**
      * Converts from an instance identifier to an URI.
@@ -30,9 +38,9 @@ public class ContextIdentificationMapper {
      * @param contextSource      the type of context to create a scheme for.
      * @return an URI that reflects the instance identifier.
      */
-    public static URI fromInstanceIdentifier(InstanceIdentifier instanceIdentifier,
-                                             ContextSource contextSource) {
-        final String root = instanceIdentifier.getRootName() == null ? NULL_FLAVOR_ROOT : UrlUtf8.encode(instanceIdentifier.getRootName());
+    public static URI fromInstanceIdentifier(InstanceIdentifier instanceIdentifier, ContextSource contextSource) {
+        final String root = instanceIdentifier.getRootName() == null ? NULL_FLAVOR_ROOT
+                : UrlUtf8.encode(instanceIdentifier.getRootName());
         final String extension = UrlUtf8.encode(instanceIdentifier.getExtensionName());
         return URI.create(contextSource.getSourceString() + ":/" + root + "/" + extension);
     }
@@ -42,21 +50,19 @@ public class ContextIdentificationMapper {
      *
      * @param contextIdentificationUri the URI to parse.
      * @param expectedContextSource    the expected context source.
-     * @return the converted instance identifier or {@link Optional#empty()} if either there was a parsing error or
-     * the scheme did not match the expected context source.
+     * @return the converted instance identifier or {@link Optional#empty()} if
+     *         either there was a parsing error or the scheme did not match the
+     *         expected context source.
      */
     public static Optional<InstanceIdentifier> fromUri(String contextIdentificationUri,
-                                                       ContextSource expectedContextSource) {
+            ContextSource expectedContextSource) {
         Matcher matcher = PATTERN.matcher(contextIdentificationUri);
         if (matcher.matches()) {
             final String contextSource = matcher.group("contextsource");
             final String root = matcher.group("root");
             final String extension = matcher.group("extension");
-            if (contextSource == null ||
-                    root == null ||
-                    extension == null ||
-                    root.isEmpty() ||
-                    !contextSource.equals(expectedContextSource.getSourceString())) {
+            if (contextSource == null || root == null || extension == null || root.isEmpty()
+                    || !contextSource.equals(expectedContextSource.getSourceString())) {
                 return Optional.empty();
             }
 
@@ -84,14 +90,15 @@ public class ContextIdentificationMapper {
      * @see #fromUri(String, ContextSource)
      */
     public static Optional<InstanceIdentifier> fromUri(URI contextIdentificationUri,
-                                                       ContextSource expectedContextSource) {
+            ContextSource expectedContextSource) {
         return fromUri(contextIdentificationUri.toString(), expectedContextSource);
     }
 
     /**
      * Defines the context instance identifier URI type.
      * <p>
-     * This type reflects the scheme of the URI, which is according to the IEEE 11073-20701
+     * This type reflects the scheme of the URI, which is according to the IEEE
+     * 11073-20701
      * <ul>
      * <li>sdc.ctxt.loc for {@link #Location}
      * <li>sdc.ctxt.pat for {@link #Patient}
