@@ -3,16 +3,13 @@ package org.somda.sdc.dpws.http.jetty;
 import com.google.common.util.concurrent.AbstractIdleService;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
-import org.eclipse.jetty.http.HttpStatus;
 import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.HttpConfiguration;
 import org.eclipse.jetty.server.HttpConnectionFactory;
-import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.SecureRequestCustomizer;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.server.SslConnectionFactory;
-import org.eclipse.jetty.server.handler.AbstractHandler;
 import org.eclipse.jetty.server.handler.ContextHandler;
 import org.eclipse.jetty.server.handler.ContextHandlerCollection;
 import org.eclipse.jetty.server.handler.gzip.GzipHandler;
@@ -20,8 +17,6 @@ import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.glassfish.grizzly.ssl.SSLContextConfigurator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.somda.sdc.dpws.CommunicationLog;
-import org.somda.sdc.dpws.CommunicationLogImpl;
 import org.somda.sdc.dpws.DpwsConfig;
 import org.somda.sdc.dpws.crypto.CryptoConfig;
 import org.somda.sdc.dpws.crypto.CryptoConfigurator;
@@ -30,18 +25,10 @@ import org.somda.sdc.dpws.http.HttpHandler;
 import org.somda.sdc.dpws.http.HttpServerRegistry;
 import org.somda.sdc.dpws.http.HttpUriBuilder;
 import org.somda.sdc.dpws.soap.SoapConstants;
-import org.somda.sdc.dpws.soap.TransportInfo;
-import org.somda.sdc.dpws.soap.exception.MarshallingException;
-import org.somda.sdc.dpws.soap.exception.TransportException;
 import org.somda.sdc.dpws.http.jetty.factory.JettyHttpServerHandlerFactory;
 import org.somda.sdc.dpws.http.jetty.JettyHttpServerHandler;
 
 import javax.annotation.Nullable;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.URI;
@@ -66,7 +53,6 @@ public class JettyHttpServerRegistry extends AbstractIdleService implements Http
     private final Map<Server, ContextHandlerCollection> contextHandlerMap;
     private final Lock registryLock;
     private final HttpUriBuilder uriBuilder;
-    private final CommunicationLog communicationLog;
     private final boolean enableGzipCompression;
     private final int minCompressionSize;
     private SSLContextConfigurator sslContextConfigurator; // null => no support for SSL enabled/configured
@@ -75,11 +61,9 @@ public class JettyHttpServerRegistry extends AbstractIdleService implements Http
     JettyHttpServerRegistry(HttpUriBuilder uriBuilder,
                             CryptoConfigurator cryptoConfigurator,
                             @Nullable @Named(CryptoConfig.CRYPTO_SETTINGS) CryptoSettings cryptoSettings,
-                            CommunicationLog communicationLog,
                             @Named(DpwsConfig.HTTP_GZIP_COMPRESSION) boolean enableGzipCompression,
                             @Named(DpwsConfig.HTTP_RESPONSE_COMPRESSION_MIN_SIZE) int minCompressionSize) {
         this.uriBuilder = uriBuilder;
-        this.communicationLog = communicationLog;
         this.enableGzipCompression = enableGzipCompression;
         this.minCompressionSize = minCompressionSize;
         serverRegistry = new HashMap<>();
