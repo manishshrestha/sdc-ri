@@ -80,7 +80,8 @@ public class UdpMessageQueueServiceImpl extends AbstractIdleService implements S
                     } catch (IOException e) {
                         LOG.warn("[{}] Outgoing UdpMessageQueueService IO exception caught.", instanceId, e);
                     } catch (InterruptedException e) {
-                        LOG.info("[{}] Outgoing UdpMessageQueueService interrupted.", instanceId, e);
+                        LOG.info("[{}] Outgoing UdpMessageQueueService interrupted.", instanceId);
+                        LOG.debug("[{}] Outgoing UdpMessageQueueService interrupted.", instanceId, e);
                         break;
                     }
                 } while (true);
@@ -102,7 +103,8 @@ public class UdpMessageQueueServiceImpl extends AbstractIdleService implements S
                         LOG.trace("[{}] Incoming UdpMessageQueueService received UDP message, posting to EventBus: {}", instanceId, message);
                         eventBus.post(message);
                     } catch (InterruptedException e) {
-                        LOG.info("[{}] Incoming UdpMessageQueueService interrupted.", instanceId, e);
+                        LOG.info("[{}] Incoming UdpMessageQueueService interrupted.", instanceId);
+                        LOG.debug("[{}] Incoming UdpMessageQueueService interrupted.", instanceId, e);
                         break;
                     } catch (Exception e) {
                         LOG.warn("[{}] Incoming UdpMessageQueueService encountered an error on event dissemination", instanceId, e);
