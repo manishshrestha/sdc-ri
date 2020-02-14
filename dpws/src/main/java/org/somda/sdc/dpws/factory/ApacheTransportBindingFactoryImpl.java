@@ -62,14 +62,13 @@ public class ApacheTransportBindingFactoryImpl implements TransportBindingFactor
     private HttpClient securedClient; // if null => no cryptography configured/enabled
 
     @Inject
-    ApacheTransportBindingFactoryImpl(SoapMarshalling marshalling,
-                                      SoapUtil soapUtil,
-                                      CryptoConfigurator cryptoConfigurator,
-                                      @Nullable @Named(CryptoConfig.CRYPTO_SETTINGS) CryptoSettings cryptoSettings,
-                                      CommunicationLog communicationLog,
-                                      @Named(DpwsConfig.HTTP_CLIENT_CONNECT_TIMEOUT) Duration clientConnectTimeout,
-                                      @Named(DpwsConfig.HTTP_CLIENT_READ_TIMEOUT) Duration clientReadTimeout,
-                                      @Named(DpwsConfig.HTTP_GZIP_COMPRESSION) boolean enableGzipCompression) {
+    ApacheTransportBindingFactoryImpl(SoapMarshalling marshalling, SoapUtil soapUtil,
+            CryptoConfigurator cryptoConfigurator,
+            @Nullable @Named(CryptoConfig.CRYPTO_SETTINGS) CryptoSettings cryptoSettings,
+            CommunicationLog communicationLog,
+            @Named(DpwsConfig.HTTP_CLIENT_CONNECT_TIMEOUT) Duration clientConnectTimeout,
+            @Named(DpwsConfig.HTTP_CLIENT_READ_TIMEOUT) Duration clientReadTimeout,
+            @Named(DpwsConfig.HTTP_GZIP_COMPRESSION) boolean enableGzipCompression) {
         this.marshalling = marshalling;
         this.soapUtil = soapUtil;
         this.clientConnectTimeout = clientConnectTimeout;
@@ -82,19 +81,14 @@ public class ApacheTransportBindingFactoryImpl implements TransportBindingFactor
     }
 
     private HttpClientBuilder buildBaseClient() {
-        var socketConfig = SocketConfig.custom()
-                .setTcpNoDelay(true)
-                .build();
+        var socketConfig = SocketConfig.custom().setTcpNoDelay(true).build();
 
         // set the timeout for all requests
-        var requestConfig = RequestConfig.custom()
-                .setConnectionRequestTimeout((int) clientReadTimeout.toMillis())
+        var requestConfig = RequestConfig.custom().setConnectionRequestTimeout((int) clientReadTimeout.toMillis())
                 .setConnectTimeout((int) clientConnectTimeout.toMillis())
-                .setSocketTimeout((int) clientConnectTimeout.toMillis())
-                .build();
+                .setSocketTimeout((int) clientConnectTimeout.toMillis()).build();
 
-        var clientBuilder = HttpClients.custom()
-                .setDefaultSocketConfig(socketConfig)
+        var clientBuilder = HttpClients.custom().setDefaultSocketConfig(socketConfig)
                 .setDefaultRequestConfig(requestConfig)
                 // only allow one connection per host
                 .setMaxConnPerRoute(1)
@@ -109,7 +103,8 @@ public class ApacheTransportBindingFactoryImpl implements TransportBindingFactor
         return clientBuilder;
     }
 
-    private void configureSecuredClient(CryptoConfigurator cryptoConfigurator, @Nullable CryptoSettings cryptoSettings) {
+    private void configureSecuredClient(CryptoConfigurator cryptoConfigurator,
+            @Nullable CryptoSettings cryptoSettings) {
         if (cryptoSettings == null) {
             securedClient = null;
             return;
@@ -123,27 +118,29 @@ public class ApacheTransportBindingFactoryImpl implements TransportBindingFactor
             sslContext = cryptoConfigurator.createSslContextFromSystemProperties();
         }
 
-        this.securedClient = buildBaseClient()
-                .setSSLContext(sslContext)
-                .setSSLHostnameVerifier((s, sslSession) -> true)
+        this.securedClient = buildBaseClient().setSSLContext(sslContext).setSSLHostnameVerifier((s, sslSession) -> true)
                 .build();
     }
 
     @Override
     public TransportBinding createTransportBinding(URI endpointUri) throws UnsupportedOperationException {
-        // To keep things simple, this method directly checks if there is a SOAP-UDP or HTTP(S) binding
-        // No plug-and-play feature is implemented that dispatches, based on the URI scheme, to endpoint processor
+        // To keep things simple, this method directly checks if there is a SOAP-UDP or
+        // HTTP(S) binding
+        // No plug-and-play feature is implemented that dispatches, based on the URI
+        // scheme, to endpoint processor
         // factories
 
         String scheme = endpointUri.getScheme();
         if (scheme.equalsIgnoreCase(SCHEME_SOAP_OVER_UDP)) {
-            throw new UnsupportedOperationException("SOAP-over-UDP is currently not supported by the TransportBindingFactory");
+            throw new UnsupportedOperationException(
+                    "SOAP-over-UDP is currently not supported by the TransportBindingFactory");
         } else if (scheme.equalsIgnoreCase(SCHEME_HTTP)) {
             return createHttpBinding(endpointUri);
         } else if (scheme.equalsIgnoreCase(SCHEME_HTTPS)) {
             return createHttpBinding(endpointUri);
         } else {
-            throw new UnsupportedOperationException(String.format("Unsupported transport binding requested: %s", scheme));
+            throw new UnsupportedOperationException(
+                    String.format("Unsupported transport binding requested: %s", scheme));
         }
     }
 
@@ -156,7 +153,8 @@ public class ApacheTransportBindingFactoryImpl implements TransportBindingFactor
             return new HttpClientTransportBinding(securedClient, endpointUri, marshalling, soapUtil);
         }
 
-        throw new UnsupportedOperationException(String.format("Binding with scheme %s is currently not supported", endpointUri.getScheme()));
+        throw new UnsupportedOperationException(
+                String.format("Binding with scheme %s is currently not supported", endpointUri.getScheme()));
     }
 
     private class HttpClientTransportBinding implements TransportBinding {
@@ -165,10 +163,7 @@ public class ApacheTransportBindingFactoryImpl implements TransportBindingFactor
         private HttpClient client;
         private final URI clientUri;
 
-        HttpClientTransportBinding(HttpClient client,
-                                   URI clientUri,
-                                   SoapMarshalling marshalling,
-                                   SoapUtil soapUtil) {
+        HttpClientTransportBinding(HttpClient client, URI clientUri, SoapMarshalling marshalling, SoapUtil soapUtil) {
             LOG.debug("Creating HttpClientTransportBinding for {}", clientUri);
             this.client = client;
             this.clientUri = clientUri;
@@ -183,21 +178,19 @@ public class ApacheTransportBindingFactoryImpl implements TransportBindingFactor
                 onRequestResponse(notification);
             } catch (SoapFaultException e) {
                 // Swallow exception, rationale:
-                // we assume that notifications have no response and therefore no soap exception that could be thrown
+                // we assume that notifications have no response and therefore no soap exception
+                // that could be thrown
             }
         }
 
         @Override
         public SoapMessage onRequestResponse(SoapMessage request) throws TransportBindingException, SoapFaultException {
             ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-            
+
             OutputStream outputStream = communicationLog.logHttpMessage(
-            		CommunicationLogImpl.HttpDirection.OUTBOUND_REQUEST, 
-            		this.clientUri.getHost(), 
-            		this.clientUri.getPort(), 
-            		byteArrayOutputStream
-            		);
-            
+                    CommunicationLogImpl.HttpDirection.OUTBOUND_REQUEST, this.clientUri.getHost(),
+                    this.clientUri.getPort(), byteArrayOutputStream);
+
             try {
                 marshalling.marshal(request.getEnvelopeWithMappedHeaders(), outputStream);
             } catch (JAXBException e) {
@@ -232,58 +225,51 @@ public class ApacheTransportBindingFactoryImpl implements TransportBindingFactor
             }
 
             if (response.getStatusLine().getStatusCode() >= 300) {
-                throw new TransportBindingException(
-                        String.format(
-                                "Endpoint was not able to process request. HTTP status code: %s",
-                                response.getStatusLine()
-                        )
-                );
+                throw new TransportBindingException(String.format(
+                        "Endpoint was not able to process request. HTTP status code: %s", response.getStatusLine()));
             }
 
             HttpEntity entity = response.getEntity();
-            InputStream inputStream;
-            try {
-                inputStream = entity.getContent();
-                final byte[] bytes = ByteStreams.toByteArray(inputStream);
-                inputStream = new ByteArrayInputStream(bytes);
+            byte[] bytes;
+
+            try (InputStream contentStream = entity.getContent();) {
+                bytes = ByteStreams.toByteArray(contentStream);
             } catch (IOException e) {
                 LOG.error("Couldn't read response", e);
-                inputStream = new ByteArrayInputStream(new byte[0]);
+                bytes = new byte[0];
             }
-            inputStream = communicationLog.logHttpMessage(
-                    CommunicationLogImpl.HttpDirection.OUTBOUND_RESPONSE,
-                    this.clientUri.getHost(),
-                    this.clientUri.getPort(),
-                    inputStream
-            );
-            try {
-                if (inputStream.available() > 0) {
-                    SoapMessage msg = soapUtil.createMessage(marshalling.unmarshal(inputStream));
-                    if (msg.isFault()) {
-                        throw new SoapFaultException(msg);
-                    }
 
-                    return msg;
-                }
-            } catch (JAXBException e) {
-                LOG.debug("Unmarshalling of a message failed: {}", e.getMessage());
-                LOG.trace("Unmarshalling of a message failed.", e);
-                throw new TransportBindingException(
-                        String.format(
-                                "Receiving of a response failed due to unmarshalling problem: %s",
-                                e.getMessage()
-                        )
-                );
-            } catch (IOException e) {
-                LOG.debug("Error occurred while processing response: {}", e.getMessage());
-                LOG.trace("Error occurred while processing response", e);
-            } finally {
+            try (InputStream initialInputStream = new ByteArrayInputStream(bytes);
+                    InputStream inputStream = communicationLog.logHttpMessage(
+                            CommunicationLogImpl.HttpDirection.OUTBOUND_RESPONSE, this.clientUri.getHost(),
+                            this.clientUri.getPort(), initialInputStream);) {
                 try {
-                    // ensure the entire response was consumed, just in case
-                    EntityUtils.consume(response.getEntity());
+                    if (inputStream.available() > 0) {
+                        SoapMessage msg = soapUtil.createMessage(marshalling.unmarshal(inputStream));
+                        if (msg.isFault()) {
+                            throw new SoapFaultException(msg);
+                        }
+
+                        return msg;
+                    }
+                } catch (JAXBException e) {
+                    LOG.debug("Unmarshalling of a message failed: {}", e.getMessage());
+                    LOG.trace("Unmarshalling of a message failed.", e);
+                    throw new TransportBindingException(String
+                            .format("Receiving of a response failed due to unmarshalling problem: %s", e.getMessage()));
                 } catch (IOException e) {
-                    // if this fails, we will either all die or it doesn't matter at all...
+                    LOG.debug("Error occurred while processing response: {}", e.getMessage());
+                    LOG.trace("Error occurred while processing response", e);
+                } finally {
+                    try {
+                        // ensure the entire response was consumed, just in case
+                        EntityUtils.consume(response.getEntity());
+                    } catch (IOException e) {
+                        // if this fails, we will either all die or it doesn't matter at all...
+                    }
                 }
+            } catch (IOException e) {
+
             }
 
             return soapUtil.createMessage();
@@ -294,6 +280,5 @@ public class ApacheTransportBindingFactoryImpl implements TransportBindingFactor
             // no action on HTTP
         }
     }
-
 
 }
