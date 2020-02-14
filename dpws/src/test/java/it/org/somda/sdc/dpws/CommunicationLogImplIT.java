@@ -56,7 +56,7 @@ import org.somda.sdc.dpws.soap.exception.TransportException;
 import org.somda.sdc.dpws.soap.model.Envelope;
 
 /**
- * Tests {@linkplain CommunicationLogImpl}.
+ * Tests the usage of {@linkplain CommunicationLogImpl}.
  */
 public class CommunicationLogImplIT extends DpwsTest {
 

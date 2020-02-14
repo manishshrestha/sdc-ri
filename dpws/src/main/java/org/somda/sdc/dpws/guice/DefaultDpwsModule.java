@@ -1,10 +1,9 @@
 package org.somda.sdc.dpws.guice;
 
-import com.google.common.util.concurrent.ListeningExecutorService;
-import com.google.common.util.concurrent.MoreExecutors;
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import com.google.inject.AbstractModule;
-import com.google.inject.assistedinject.FactoryModuleBuilder;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+
 import org.somda.sdc.dpws.CommunicationLog;
 import org.somda.sdc.dpws.CommunicationLogImpl;
 import org.somda.sdc.dpws.CommunicationLogSink;
@@ -23,6 +22,7 @@ import org.somda.sdc.dpws.device.factory.DeviceFactory;
 import org.somda.sdc.dpws.device.helper.DiscoveryDeviceUdpMessageProcessor;
 import org.somda.sdc.dpws.device.helper.factory.DeviceHelperFactory;
 import org.somda.sdc.dpws.factory.ApacheTransportBindingFactoryImpl;
+import org.somda.sdc.dpws.factory.ClientTranportBindingFactory;
 import org.somda.sdc.dpws.factory.DpwsFrameworkFactory;
 import org.somda.sdc.dpws.factory.TransportBindingFactory;
 import org.somda.sdc.dpws.helper.NotificationSourceUdpCallback;
@@ -33,12 +33,31 @@ import org.somda.sdc.dpws.http.jetty.JettyHttpServerRegistry;
 import org.somda.sdc.dpws.http.jetty.factory.JettyHttpServerHandlerFactory;
 import org.somda.sdc.dpws.network.LocalAddressResolver;
 import org.somda.sdc.dpws.network.LocalAddressResolverImpl;
-import org.somda.sdc.dpws.service.*;
+import org.somda.sdc.dpws.service.HostedService;
+import org.somda.sdc.dpws.service.HostedServiceImpl;
+import org.somda.sdc.dpws.service.HostedServiceInterceptor;
+import org.somda.sdc.dpws.service.HostedServiceProxy;
+import org.somda.sdc.dpws.service.HostedServiceProxyImpl;
+import org.somda.sdc.dpws.service.HostedServiceTransportBinding;
+import org.somda.sdc.dpws.service.HostingService;
+import org.somda.sdc.dpws.service.HostingServiceInterceptor;
+import org.somda.sdc.dpws.service.HostingServiceProxy;
+import org.somda.sdc.dpws.service.HostingServiceProxyImpl;
 import org.somda.sdc.dpws.service.factory.HostedServiceFactory;
 import org.somda.sdc.dpws.service.factory.HostedServiceInterceptorFactory;
 import org.somda.sdc.dpws.service.factory.HostedServiceTransportBindingFactory;
 import org.somda.sdc.dpws.service.factory.HostingServiceFactory;
-import org.somda.sdc.dpws.soap.*;
+import org.somda.sdc.dpws.soap.JaxbSoapMarshalling;
+import org.somda.sdc.dpws.soap.NotificationSink;
+import org.somda.sdc.dpws.soap.NotificationSinkImpl;
+import org.somda.sdc.dpws.soap.NotificationSource;
+import org.somda.sdc.dpws.soap.NotificationSourceImpl;
+import org.somda.sdc.dpws.soap.RequestResponseClient;
+import org.somda.sdc.dpws.soap.RequestResponseClientImpl;
+import org.somda.sdc.dpws.soap.RequestResponseServer;
+import org.somda.sdc.dpws.soap.RequestResponseServerImpl;
+import org.somda.sdc.dpws.soap.SoapMarshalling;
+import org.somda.sdc.dpws.soap.SoapMessage;
 import org.somda.sdc.dpws.soap.factory.NotificationSourceFactory;
 import org.somda.sdc.dpws.soap.factory.RequestResponseClientFactory;
 import org.somda.sdc.dpws.soap.factory.SoapMessageFactory;
@@ -50,7 +69,14 @@ import org.somda.sdc.dpws.soap.wsdiscovery.WsDiscoveryTargetService;
 import org.somda.sdc.dpws.soap.wsdiscovery.WsDiscoveryTargetServiceInterceptor;
 import org.somda.sdc.dpws.soap.wsdiscovery.factory.WsDiscoveryClientFactory;
 import org.somda.sdc.dpws.soap.wsdiscovery.factory.WsDiscoveryTargetServiceFactory;
-import org.somda.sdc.dpws.soap.wseventing.*;
+import org.somda.sdc.dpws.soap.wseventing.EventSink;
+import org.somda.sdc.dpws.soap.wseventing.EventSinkImpl;
+import org.somda.sdc.dpws.soap.wseventing.EventSource;
+import org.somda.sdc.dpws.soap.wseventing.EventSourceInterceptor;
+import org.somda.sdc.dpws.soap.wseventing.SinkSubscriptionManager;
+import org.somda.sdc.dpws.soap.wseventing.SinkSubscriptionManagerImpl;
+import org.somda.sdc.dpws.soap.wseventing.SourceSubscriptionManager;
+import org.somda.sdc.dpws.soap.wseventing.SourceSubscriptionManagerImpl;
 import org.somda.sdc.dpws.soap.wseventing.factory.SubscriptionManagerFactory;
 import org.somda.sdc.dpws.soap.wseventing.factory.WsEventingEventSinkFactory;
 import org.somda.sdc.dpws.soap.wsmetadataexchange.GetMetadataClient;
@@ -63,9 +89,11 @@ import org.somda.sdc.dpws.udp.UdpMessageQueueService;
 import org.somda.sdc.dpws.udp.UdpMessageQueueServiceImpl;
 import org.somda.sdc.dpws.udp.factory.UdpBindingServiceFactory;
 
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
+import com.google.common.util.concurrent.ListeningExecutorService;
+import com.google.common.util.concurrent.MoreExecutors;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import com.google.inject.AbstractModule;
+import com.google.inject.assistedinject.FactoryModuleBuilder;
 
 /**
  * Default Guice module to bind all interfaces and factories used by the DPWS implementation.
@@ -110,6 +138,9 @@ public class DefaultDpwsModule extends AbstractModule {
         
         install(new FactoryModuleBuilder()
                 .build(JettyHttpServerHandlerFactory.class));
+        
+        install(new FactoryModuleBuilder()
+                .build(ClientTranportBindingFactory.class));
         
         bind(CommunicationLogSink.class).to(CommunicationLogSinkImpl.class).asEagerSingleton();
 

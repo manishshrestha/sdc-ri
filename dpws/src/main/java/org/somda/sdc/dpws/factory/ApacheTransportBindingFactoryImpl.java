@@ -41,8 +41,9 @@ public class ApacheTransportBindingFactoryImpl implements TransportBindingFactor
 
     private final HttpClient client;
     private HttpClient securedClient; // if null => no cryptography configured/enabled
-    
-    @Inject private ClientTranportBindingFactory clientTranportBindingFactory;
+
+    @Inject
+    private ClientTranportBindingFactory clientTranportBindingFactory;
 
     @Inject
     ApacheTransportBindingFactoryImpl(SoapMarshalling marshalling, SoapUtil soapUtil,

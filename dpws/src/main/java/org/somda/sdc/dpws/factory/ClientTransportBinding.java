@@ -35,7 +35,7 @@ import com.google.inject.assistedinject.Assisted;
 
 public class ClientTransportBinding implements TransportBinding {
     private static final Logger LOG = LoggerFactory.getLogger(ClientTransportBinding.class);
-    
+
     private final SoapMarshalling marshalling;
     private final SoapUtil soapUtil;
     private HttpClient client;
@@ -43,9 +43,8 @@ public class ClientTransportBinding implements TransportBinding {
     private CommunicationLog communicationLog;
 
     @Inject
-    public ClientTransportBinding(CommunicationLog communicationLog,
-            @Assisted HttpClient client, @Assisted URI clientUri, @Assisted SoapMarshalling marshalling,
-            @Assisted SoapUtil soapUtil) {
+    public ClientTransportBinding(CommunicationLog communicationLog, @Assisted HttpClient client,
+            @Assisted URI clientUri, @Assisted SoapMarshalling marshalling, @Assisted SoapUtil soapUtil) {
         LOG.debug("Creating HttpClientTransportBinding for {}", clientUri);
         this.client = client;
         this.clientUri = clientUri;
