@@ -1,25 +1,99 @@
 package it.org.somda.glue.consumer;
 
+import com.google.common.util.concurrent.ListeningExecutorService;
+import com.google.common.util.concurrent.MoreExecutors;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.inject.Injector;
 import it.org.somda.glue.common.IntegrationTestPeer;
+import it.org.somda.sdc.dpws.MockedUdpBindingModule;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.somda.sdc.dpws.DpwsConfig;
 import org.somda.sdc.dpws.DpwsFramework;
 import org.somda.sdc.dpws.client.Client;
 import org.somda.sdc.dpws.factory.DpwsFrameworkFactory;
+import org.somda.sdc.dpws.guice.NetworkJobThreadPool;
+import org.somda.sdc.dpws.guice.WsDiscovery;
+import org.somda.sdc.dpws.soap.wsdiscovery.WsDiscoveryConfig;
 import org.somda.sdc.glue.consumer.SdcRemoteDevicesConnector;
+import org.somda.sdc.glue.guice.GlueDpwsConfigModule;
+import test.org.somda.common.CIDetector;
 
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
+import java.time.Duration;
 import java.util.Collections;
+import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class TestSdcClient extends IntegrationTestPeer {
+    private static final Logger LOG = LoggerFactory.getLogger(TestSdcClient.class);
+
     private final Client client;
     private final SdcRemoteDevicesConnector connector;
     private DpwsFramework dpwsFramework;
 
 
     public TestSdcClient() {
-        setupInjector(Collections.emptyList());
+        setupInjector(List.of(
+                new MockedUdpBindingModule(),
+                new GlueDpwsConfigModule() {
+                    @Override
+                    protected void customConfigure() {
+                        super.customConfigure();
+
+                        // bump network pool size because of parallelism tests
+                        bind(ListeningExecutorService.class)
+                                .annotatedWith(NetworkJobThreadPool.class)
+                                .toInstance(MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(
+                                        30,
+                                        new ThreadFactoryBuilder()
+                                                .setNameFormat("NetworkJobThreadPool-thread-%d")
+                                                .setDaemon(true)
+                                                .build()
+                                )));
+
+                        bind(ExecutorService.class)
+                                .annotatedWith(WsDiscovery.class)
+                                .toInstance(Executors.newFixedThreadPool(
+                                        30,
+                                        new ThreadFactoryBuilder()
+                                                .setNameFormat("WsDiscovery-thread-%d")
+                                                .setDaemon(true)
+                                                .build()
+                                ));
+
+
+                        if (CIDetector.isRunningInCi()) {
+                            var httpTimeouts = Duration.ofSeconds(120);
+                            var futureTimeouts = Duration.ofSeconds(30);
+                            LOG.info("CI detected, setting relaxed http client timeouts of {}s",
+                                    httpTimeouts.toSeconds());
+                            bind(DpwsConfig.HTTP_CLIENT_CONNECT_TIMEOUT,
+                                    Duration.class,
+                                    httpTimeouts);
+
+                            bind(DpwsConfig.HTTP_CLIENT_READ_TIMEOUT,
+                                    Duration.class,
+                                    httpTimeouts);
+
+                            List<String> increasedTimeouts = List.of(
+                                    DpwsConfig.MAX_WAIT_FOR_FUTURES,
+                                    WsDiscoveryConfig.MAX_WAIT_FOR_PROBE_MATCHES,
+                                    WsDiscoveryConfig.MAX_WAIT_FOR_RESOLVE_MATCHES
+                            );
+                            increasedTimeouts.forEach(item -> {
+                                LOG.info("CI detected, setting {} to {}s", item, futureTimeouts.toSeconds());
+                                bind(item,
+                                        Duration.class,
+                                        futureTimeouts);
+                            });
+                        }
+                    }
+                }
+        ));
 
         final Injector injector = getInjector();
         this.client = injector.getInstance(Client.class);

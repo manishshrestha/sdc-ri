@@ -193,6 +193,7 @@ public class ClientImpl extends AbstractIdleService implements Client, Service, 
                 try {
                     hspFuture.set(connect(discoveredDevice).get(maxWaitForFutures.toMillis(), TimeUnit.MILLISECONDS));
                 } catch (Exception e) {
+                    LOG.debug("Connecting to {} failed", eprAddress, e);
                     throw new RuntimeException(String.format("Connect of %s failed", eprAddress));
                 }
             }

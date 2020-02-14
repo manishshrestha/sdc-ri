@@ -169,6 +169,7 @@ public class WriteUtil {
     }
 
     private void acquireWriteLock() {
+        LOG.debug("Trying to acquire write lock");
         if (readWriteLock.getReadHoldCount() > 0) {
             throw new IllegalThreadStateException(
                     "Tried to invoke write operation with read lock held by the current thread present. " +

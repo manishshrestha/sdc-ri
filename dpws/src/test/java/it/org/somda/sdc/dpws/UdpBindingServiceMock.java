@@ -1,8 +1,10 @@
 package it.org.somda.sdc.dpws;
 
+import com.google.common.eventbus.AsyncEventBus;
 import com.google.common.eventbus.EventBus;
 import com.google.common.eventbus.Subscribe;
 import com.google.common.util.concurrent.AbstractIdleService;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
 import org.somda.sdc.dpws.udp.UdpBindingService;
@@ -17,6 +19,8 @@ import java.net.NetworkInterface;
 import java.util.HashSet;
 import java.util.Random;
 import java.util.Set;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 
 public class UdpBindingServiceMock extends AbstractIdleService implements UdpBindingService {
     private static final Logger LOG = LoggerFactory.getLogger(UdpBindingServiceMock.class);
@@ -24,7 +28,15 @@ public class UdpBindingServiceMock extends AbstractIdleService implements UdpBin
     private static final int MAX_PORT = 65535;
     private static final Random RANDOM = new Random();
     private static final Set<Integer> ACTIVE_PORTS = new HashSet<>();
-    private static final EventBus UDP_BUS = new EventBus();
+    private static final EventBus UDP_BUS = new AsyncEventBus(
+            Executors.newFixedThreadPool(
+                    10,
+                    new ThreadFactoryBuilder()
+                            .setNameFormat("UDP_BUS-thread-%d")
+                            .setDaemon(true)
+                            .build()
+            )
+    );
 
     private final String selfAddress;
     private final Integer selfPort;
@@ -60,6 +72,7 @@ public class UdpBindingServiceMock extends AbstractIdleService implements UdpBin
             message = new UdpMessage(message.getData(), message.getLength(), multicastAddress, multicastPort);
         }
 
+        LOG.trace("Posting message from {}:{} to bus\n{}", selfAddress, selfPort, message);
         UDP_BUS.post(new UdpEvent(message, selfAddress, selfPort));
     }
 
@@ -99,13 +112,25 @@ public class UdpBindingServiceMock extends AbstractIdleService implements UdpBin
 
     @Subscribe
     private void receiveUdpMessage(UdpEvent udpMessage) {
+        LOG.debug(
+                "Received message from sender {}:{}",
+                udpMessage.getSenderAddress(),
+                udpMessage.getSenderPort()
+        );
         boolean isReceiverSelf = udpMessage.getMessage().getHost().equals(selfAddress) &&
                 udpMessage.getMessage().getPort().equals(selfPort);
         boolean isReceiverMyMulticast = udpMessage.getMessage().getHost().equals(multicastAddress) &&
                 udpMessage.getMessage().getPort().equals(multicastPort);
         if (isReceiverSelf || isReceiverMyMulticast) {
-            udpMessageReceiver.receive(new UdpMessage(udpMessage.getMessage().getData(), udpMessage.getMessage().getLength(),
-                    udpMessage.getSenderAddress(), udpMessage.getSenderPort()));
+            var message = new UdpMessage(udpMessage.getMessage().getData(), udpMessage.getMessage().getLength(),
+                    udpMessage.getSenderAddress(), udpMessage.getSenderPort());
+            LOG.debug(
+                    "Incoming UDP message from sender {}:{} was directed at me!",
+                    udpMessage.getSenderAddress(),
+                    udpMessage.getSenderPort()
+            );
+            LOG.trace("Received incoming udp message {}", message);
+            udpMessageReceiver.receive(message);
         }
     }
 

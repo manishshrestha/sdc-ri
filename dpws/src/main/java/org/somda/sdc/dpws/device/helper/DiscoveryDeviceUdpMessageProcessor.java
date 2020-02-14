@@ -54,6 +54,7 @@ public class DiscoveryDeviceUdpMessageProcessor implements UdpMessageQueueObserv
 
     @Subscribe
     private void receiveUdpMessage(UdpMessage msg) {
+        LOG.trace("Receive UDP message called with message: {}", msg);
         SoapMessage response = soapUtil.createMessage();
         SoapMessage request;
 

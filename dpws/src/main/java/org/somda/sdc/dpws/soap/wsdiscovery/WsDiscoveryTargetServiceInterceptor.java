@@ -3,6 +3,8 @@ package org.somda.sdc.dpws.soap.wsdiscovery;
 import com.google.common.primitives.UnsignedInteger;
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.somda.sdc.dpws.soap.NotificationSource;
 import org.somda.sdc.dpws.soap.SoapMessage;
 import org.somda.sdc.dpws.soap.SoapUtil;
@@ -34,6 +36,8 @@ import java.util.concurrent.locks.ReentrantLock;
  * Default implementation of the {@linkplain WsDiscoveryTargetService}.
  */
 public class WsDiscoveryTargetServiceInterceptor implements WsDiscoveryTargetService {
+    private static final Logger LOG = LoggerFactory.getLogger(WsDiscoveryTargetServiceInterceptor.class);
+
     private final ObjectFactory wsdFactory;
     private final SoapFaultFactory soapFaultFactory;
     private final WsDiscoveryFaultFactory wsdFaultFactory;
@@ -149,7 +153,12 @@ public class WsDiscoveryTargetServiceInterceptor implements WsDiscoveryTargetSer
 
         if (!URI.create(resolveType.getEndpointReference().getAddress().getValue())
                 .equals(URI.create(endpointReference.getAddress().getValue()))) {
-            throw new RuntimeException("Scopes and Types do not match in incoming Resolve.");
+            LOG.debug("Incoming ResolveMatches message had an EPR address not matching this device." +
+                            " Message EPR address is {}, device EPR address is {}",
+                    resolveType.getEndpointReference().getAddress().getValue(),
+                    endpointReference.getAddress().getValue()
+            );
+            throw new RuntimeException("EndpointReference Address does not match in incoming Resolve.");
         }
 
         ResolveMatchType resolveMatchType = wsdFactory.createResolveMatchType();
