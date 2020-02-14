@@ -82,6 +82,12 @@ class ContextIdentificationMapperTest {
                     ContextIdentificationMapper.ContextSource.Patient);
             assertTrue(actualInstanceIdentifier.isEmpty());
         }
+        
+        {
+            Optional<InstanceIdentifier> actualInstanceIdentifier = ContextIdentificationMapper.fromUri("sdc.ctxt.loc:/http%3A%2F%2Froot//ext%2Fen%C3%96sion%3F",
+                    ContextIdentificationMapper.ContextSource.Location);
+            assertTrue(actualInstanceIdentifier.isEmpty());
+        }
     }
 
     private InstanceIdentifier createInstanceIdentifier(@Nullable String root, @Nullable String extension) {
