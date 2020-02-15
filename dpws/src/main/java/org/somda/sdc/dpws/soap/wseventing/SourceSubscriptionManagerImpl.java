@@ -162,6 +162,7 @@ public class SourceSubscriptionManagerImpl extends AbstractExecutionThreadServic
                     LOG.info("Source subscription manager '{}' received stop signal and is about to shut down", subscriptionId);
                     break;
                 }
+                LOG.debug("Sending notification to {} - {}", notifyToUri, queueItem.getNotification().getPayload());
                 notifyToSender.sendNotification(queueItem.getNotification().getPayload());
             } catch (Exception e) {
                 LOG.info("Source subscription manager '{}' ended unexpectedly", subscriptionId);

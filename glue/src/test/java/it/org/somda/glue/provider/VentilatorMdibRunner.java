@@ -53,6 +53,10 @@ public class VentilatorMdibRunner extends AbstractIdleService {
         mdibAccess.writeDescription(modifications);
     }
 
+    @Override
+    protected void shutDown() {
+    }
+
     public void changeLocation(LocationDetail newLocation) throws PreprocessingException {
         final InstanceIdentifier identifier = FallbackInstanceIdentifier.create(newLocation).orElseThrow(() ->
                 new IllegalStateException(String.format("Could not create fallback instance identifier from location %s",
@@ -142,6 +146,7 @@ public class VentilatorMdibRunner extends AbstractIdleService {
 
         final AbstractMetricValue.MetricQuality metricQuality = new AbstractMetricValue.MetricQuality();
         metricQuality.setMode(GenerationMode.DEMO);
+        metricQuality.setValidity(MeasurementValidity.INV);
         StringMetricValue metricValue = state.getMetricValue();
         if (metricValue == null) {
             metricValue = new StringMetricValue();
@@ -160,6 +165,7 @@ public class VentilatorMdibRunner extends AbstractIdleService {
 
         final AbstractMetricValue.MetricQuality metricQuality = new AbstractMetricValue.MetricQuality();
         metricQuality.setMode(GenerationMode.DEMO);
+        metricQuality.setValidity(MeasurementValidity.INV);
         NumericMetricValue metricValue = state.getMetricValue();
         if (metricValue == null) {
             metricValue = new NumericMetricValue();
@@ -169,10 +175,6 @@ public class VentilatorMdibRunner extends AbstractIdleService {
         metricValue.setMetricQuality(metricQuality);
         state.setMetricValue(metricValue);
         modifications.add(state);
-    }
-
-    @Override
-    protected void shutDown() {
     }
 
     public enum VentilatorMode {
