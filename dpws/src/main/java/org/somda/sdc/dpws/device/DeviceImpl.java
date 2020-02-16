@@ -31,7 +31,10 @@ import org.somda.sdc.dpws.service.factory.HostingServiceFactory;
 import org.somda.sdc.dpws.soap.NotificationSource;
 import org.somda.sdc.dpws.soap.RequestResponseServer;
 import org.somda.sdc.dpws.soap.SoapConstants;
+import org.somda.sdc.dpws.soap.exception.MarshallingException;
+import org.somda.sdc.dpws.soap.exception.TransportException;
 import org.somda.sdc.dpws.soap.factory.NotificationSourceFactory;
+import org.somda.sdc.dpws.soap.interception.InterceptorException;
 import org.somda.sdc.dpws.soap.wsaddressing.WsAddressingUtil;
 import org.somda.sdc.dpws.soap.wsaddressing.model.EndpointReferenceType;
 import org.somda.sdc.dpws.soap.wsdiscovery.WsDiscoveryTargetService;
@@ -272,6 +275,17 @@ public class DeviceImpl extends AbstractIdleService implements Device, Service, 
             wsdTargetService.setScopes(scopesAsStrs(scopes));
         } else {
             scopesOnStartup = scopes;
+        }
+    }
+
+    @Override
+    public void sendHello() {
+        if (isRunning()) {
+            try {
+                wsdTargetService.sendHello(false);
+            } catch (MarshallingException | TransportException | InterceptorException e) {
+                LOG.warn("Send Hello failed.", e);
+            }
         }
     }
 
