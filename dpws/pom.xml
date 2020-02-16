@@ -1,104 +1,118 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
-		 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-		 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-	<parent>
-		<artifactId>sdc-ri</artifactId>
-		<groupId>org.somda.sdc</groupId>
-		<version>1.0-SNAPSHOT</version>
-	</parent>
-	<modelVersion>4.0.0</modelVersion>
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <artifactId>sdc-ri</artifactId>
+        <groupId>org.somda.sdc</groupId>
+        <version>1.0-SNAPSHOT</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
 
-	<artifactId>dpws</artifactId>
+    <artifactId>dpws</artifactId>
 
-	<properties>
-		<directories.sourceFiles>${project.basedir}/src/main/java</directories.sourceFiles>
-		<it.somda.sdc.dpws.xmlSchemaDirectory>${basedir}/src/test/resources/it/org/somda/sdc/dpws</it.somda.sdc.dpws.xmlSchemaDirectory>
-		<it.somda.sdc.dpws.generatedSources>${project.build.directory}/generated-sources</it.somda.sdc.dpws.generatedSources>
-		<it.somda.sdc.dpws.serviceSchema>TestServiceSchema.xsd</it.somda.sdc.dpws.serviceSchema>
-	</properties>
+    <properties>
+        <directories.sourceFiles>${project.basedir}/src/main/java</directories.sourceFiles>
+        <it.somda.sdc.dpws.xmlSchemaDirectory>${basedir}/src/test/resources/it/org/somda/sdc/dpws
+        </it.somda.sdc.dpws.xmlSchemaDirectory>
+        <it.somda.sdc.dpws.generatedSources>${project.build.directory}/generated-sources
+        </it.somda.sdc.dpws.generatedSources>
+        <it.somda.sdc.dpws.serviceSchema>TestServiceSchema.xsd</it.somda.sdc.dpws.serviceSchema>
+    </properties>
 
-	<dependencies>
-		<dependency>
-			<groupId>org.somda.sdc</groupId>
-			<artifactId>dpws-model</artifactId>
-			<version>1.0-SNAPSHOT</version>
-		</dependency>
-		<dependency>
-			<groupId>org.somda.sdc</groupId>
-			<artifactId>common</artifactId>
-			<version>1.0-SNAPSHOT</version>
-		</dependency>
-		<dependency>
-			<groupId>org.somda.sdc</groupId>
-			<artifactId>test</artifactId>
-			<version>1.0-SNAPSHOT</version>
-			<scope>test</scope>
-		</dependency>
+    <dependencies>
+        <dependency>
+            <groupId>org.somda.sdc</groupId>
+            <artifactId>dpws-model</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>org.somda.sdc</groupId>
+            <artifactId>common</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>org.somda.sdc</groupId>
+            <artifactId>test</artifactId>
+            <version>1.0-SNAPSHOT</version>
+            <scope>test</scope>
+        </dependency>
 
-		<!-- https://mvnrepository.com/artifact/org.glassfish.grizzly/grizzly-framework -->
-		<dependency>
-			<groupId>org.glassfish.grizzly</groupId>
-			<artifactId>grizzly-framework</artifactId>
-			<version>2.4.4</version>
-		</dependency>
-		<!-- https://mvnrepository.com/artifact/org.glassfish.grizzly/grizzly-http-server -->
-		<dependency>
-			<groupId>org.glassfish.grizzly</groupId>
-			<artifactId>grizzly-http-server</artifactId>
-			<version>2.4.4</version>
-		</dependency>
-		<!-- https://mvnrepository.com/artifact/org.glassfish.jersey.containers/jersey-container-grizzly2-http -->
-		<dependency>
-			<groupId>org.glassfish.jersey.containers</groupId>
-			<artifactId>jersey-container-grizzly2-http</artifactId>
-			<version>2.30</version>
-		</dependency>
+        <!-- https://mvnrepository.com/artifact/org.glassfish.grizzly/grizzly-framework -->
+        <dependency>
+            <groupId>org.glassfish.grizzly</groupId>
+            <artifactId>grizzly-framework</artifactId>
+            <version>2.4.4</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/org.glassfish.grizzly/grizzly-http-server -->
+        <dependency>
+            <groupId>org.glassfish.grizzly</groupId>
+            <artifactId>grizzly-http-server</artifactId>
+            <version>2.4.4</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/org.glassfish.jersey.containers/jersey-container-grizzly2-http -->
+        <dependency>
+            <groupId>org.glassfish.jersey.containers</groupId>
+            <artifactId>jersey-container-grizzly2-http</artifactId>
+            <version>2.30</version>
+        </dependency>
 
-		<!-- https://mvnrepository.com/artifact/org.apache.httpcomponents/httpclient -->
-		<dependency>
-			<groupId>org.apache.httpcomponents</groupId>
-			<artifactId>httpclient</artifactId>
-			<version>4.5.11</version>
-		</dependency>
-		<!-- https://mvnrepository.com/artifact/commons-io/commons-io -->
-		<dependency>
-		    <groupId>commons-io</groupId>
-		    <artifactId>commons-io</artifactId>
-		    <version>2.6</version>
-		</dependency>
-		
-		<!-- https://mvnrepository.com/artifact/org.eclipse.jetty/jetty-server -->
-		<dependency>
-			<groupId>org.eclipse.jetty</groupId>
-			<artifactId>jetty-server</artifactId>
-			<version>9.4.26.v20200117</version>
-		</dependency>
-		<!-- https://mvnrepository.com/artifact/org.eclipse.jetty/jetty-servlet -->
-		<dependency>
-			<groupId>org.eclipse.jetty</groupId>
-			<artifactId>jetty-servlet</artifactId>
-			<version>9.4.26.v20200117</version>
-		</dependency>
+        <!-- https://mvnrepository.com/artifact/org.apache.httpcomponents/httpclient -->
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpclient</artifactId>
+            <version>4.5.11</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/commons-io/commons-io -->
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <version>2.6</version>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/org.eclipse.jetty/jetty-server -->
+        <dependency>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-server</artifactId>
+            <version>9.4.26.v20200117</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/org.eclipse.jetty/jetty-servlet -->
+        <dependency>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-servlet</artifactId>
+            <version>9.4.26.v20200117</version>
+        </dependency>
 
 
-	</dependencies>
+    </dependencies>
 
-	<build>
-		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-failsafe-plugin</artifactId>
-				<version>3.0.0-M3</version>
-				<executions>
-					<execution>
-						<goals>
-							<goal>integration-test</goal>
-							<goal>verify</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
-		</plugins>
-	</build>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>2.4</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>test-jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-failsafe-plugin</artifactId>
+                <version>3.0.0-M3</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>integration-test</goal>
+                            <goal>verify</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
 </project>
