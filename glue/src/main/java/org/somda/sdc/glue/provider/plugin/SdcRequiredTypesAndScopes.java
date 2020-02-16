@@ -1,5 +1,7 @@
 package org.somda.sdc.glue.provider.plugin;
 
+import com.google.common.base.Joiner;
+import com.google.common.eventbus.Subscribe;
 import com.google.inject.Inject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,11 +25,17 @@ import java.net.URI;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class SdcRequiredTypesAndScopes implements SdcDevicePlugin, MdibAccessObserver {
+/**
+ * Maps all WS-Disccovery Types and Scopes required by SDC and sends Hellos respectively.
+ * <p>
+ * In order to append custom scopes please consider using the {@link ScopesDecorator}.
+ */
+public class SdcRequiredTypesAndScopes implements SdcDevicePlugin, MdibAccessObserver, ScopesDecorator {
     private static final Logger LOG = LoggerFactory.getLogger(SdcRequiredTypesAndScopes.class);
 
     private Device device;
 
+    private Set<URI> allScopes;
     private Set<URI> locationContexts;
     private Set<URI> mdsTypes;
 
@@ -35,6 +43,7 @@ public class SdcRequiredTypesAndScopes implements SdcDevicePlugin, MdibAccessObs
 
     @Inject
     SdcRequiredTypesAndScopes() {
+        this.allScopes = new HashSet<>();
         this.locationContexts = new HashSet<>();
         this.mdsTypes = new HashSet<>();
         this.seenMdibVersion = null;
@@ -42,6 +51,8 @@ public class SdcRequiredTypesAndScopes implements SdcDevicePlugin, MdibAccessObs
 
     @Override
     public void beforeStartUp(SdcDeviceContext context) {
+        LOG.info("Startup of automatic required types and scopes updating for device with EPR address {}",
+                context.getDevice().getEprAddress());
         device = context.getDevice();
         device.getDiscoveryAccess().setTypes(Collections.singletonList(CommonConstants.MEDICAL_DEVICE_TYPE));
         device.getDiscoveryAccess().setScopes(Collections.singletonList(GlueConstants.SCOPE_SDC_PROVIDER));
@@ -49,18 +60,116 @@ public class SdcRequiredTypesAndScopes implements SdcDevicePlugin, MdibAccessObs
         context.getLocalMdibAccess().registerObserver(this);
     }
 
-    void onContextChange(ContextStateModificationMessage message) {
-        // This avoids sending context hellos twice if been communicated by description report already
-        var olderMdibVersion = isSeenMdibVersionOlderThan(message.getMdibAccess().getMdibVersion());
-        if (olderMdibVersion.isEmpty() || olderMdibVersion.get() >= 0) {
+    @Override
+    public void afterShutDown(SdcDeviceContext context) {
+        LOG.info("Automatic required types and scopes updating for device with EPR address {} stopped",
+                context.getDevice().getEprAddress());
+    }
+
+    @Override
+    public void appendScopesAndSendHello(Set<URI> scopes) {
+        // Setup new scopes based from scopes from outside plus required scopes from this class
+        var newScopes = new HashSet<URI>(locationContexts.size() + mdsTypes.size() + scopes.size());
+        newScopes.add(GlueConstants.SCOPE_SDC_PROVIDER);
+        newScopes.addAll(locationContexts);
+        newScopes.addAll(mdsTypes);
+        newScopes.addAll(scopes);
+
+        // If latest scopes and new scopes sizes are equal
+        if (allScopes.size() == newScopes.size()) {
+            // Remove latest scopes from new scopes
+            var newScopesCopy = new HashSet<>(newScopes);
+            newScopesCopy.removeAll(allScopes);
+
+            // If there are no scopes left from the new scopes set, this indicates there was no change at all
+            // => return without sending Hello
+            if (newScopesCopy.isEmpty()) {
+                return;
+            }
+        }
+
+        allScopes = newScopes;
+        device.getDiscoveryAccess().setScopes(newScopes);
+        device.getDiscoveryAccess().sendHello();
+    }
+
+    @Override
+    public final boolean mdibVersionSeenBefore(MdibVersion mdibVersion) {
+        if (seenMdibVersion == null) {
+            seenMdibVersion = mdibVersion;
+            return false;
+        }
+
+        var result = seenMdibVersion.compareTo(mdibVersion).orElse(-1) >= 0;
+        seenMdibVersion = mdibVersion;
+        return result;
+    }
+
+
+    @Override
+    public void updateContexts(ContextStateModificationMessage message) {
+        if (mdibVersionSeenBefore(message.getMdibAccess().getMdibVersion())) {
+            LOG.info("MDIB version {} of context modification has been seen already; skip",
+                    message.getMdibAccess().getMdibVersion());
             return;
         }
 
-        var newLocationContexts = extractAssociatedLocationContextStateIdentifiers(
+        var locationContextsBefore = locationContexts;
+        locationContexts = extractAssociatedLocationContextStateIdentifiers(
                 message.getMdibAccess().findContextStatesByType(LocationContextState.class));
 
-        // check if there are changes to the current associated location contexts
-        // only send hello if changes ensued
+        LOG.info("Location context scopes updated from [{}] to [{}]",
+                Joiner.on(",").join(locationContextsBefore),
+                Joiner.on(",").join(locationContexts));
+    }
+
+    @Subscribe
+    private void onContextChange(ContextStateModificationMessage message) {
+        LOG.info("Context modification received");
+        var locationsBefore = locationContexts;
+        updateContexts(message);
+        if (locationsBefore != locationContexts) {
+            // Only trigger Hello if location contexts have actually been replaced
+            appendScopesAndSendHello(Collections.emptySet());
+        }
+    }
+
+
+    @Override
+    public void updateDescription(DescriptionModificationMessage message) {
+        var locationContextsBefore = locationContexts;
+        locationContexts = extractAssociatedLocationContextStateIdentifiers(
+                message.getMdibAccess().findContextStatesByType(LocationContextState.class));
+        LOG.info("Location context scopes updated from [{}] to [{}]",
+                Joiner.on(",").join(locationContextsBefore),
+                Joiner.on(",").join(locationContexts));
+
+        var mdsTypesBefore = mdsTypes;
+        mdsTypes = extractMdsTypes(message.getMdibAccess().findEntitiesByType(MdsDescriptor.class));
+        LOG.info("MDS type scopes updated from [{}] to [{}]",
+                Joiner.on(",").join(mdsTypesBefore),
+                Joiner.on(",").join(mdsTypes));
+    }
+
+    @Subscribe
+    private void onDescriptionChange(DescriptionModificationMessage message) {
+        LOG.info("Description modification received");
+        updateDescription(message);
+        appendScopesAndSendHello(Collections.emptySet());
+    }
+
+    private Set<URI> extractMdsTypes(Collection<MdibEntity> entities) {
+        var mdsDescriptors = entities.stream()
+                .filter(mdibEntity -> mdibEntity.getDescriptor(MdsDescriptor.class).isPresent())
+                .map(mdibEntity -> mdibEntity.getDescriptor(MdsDescriptor.class).get())
+                .collect(Collectors.toList());
+
+        var uris = new HashSet<URI>(mdsDescriptors.size());
+        for (MdsDescriptor mdsDescriptor : mdsDescriptors) {
+            ComplexDeviceComponentMapper.fromComplexDeviceComponent(mdsDescriptor).ifPresent(uris::add);
+        }
+
+        return uris;
     }
 
     private Set<URI> extractAssociatedLocationContextStateIdentifiers(List<LocationContextState> contextStates) {
@@ -78,46 +187,5 @@ public class SdcRequiredTypesAndScopes implements SdcDevicePlugin, MdibAccessObs
                     ContextIdentificationMapper.ContextSource.Location));
         }
         return uris;
-    }
-
-    void onDescriptionChange(DescriptionModificationMessage message) {
-        locationContexts = extractAssociatedLocationContextStateIdentifiers(
-                message.getMdibAccess().findContextStatesByType(LocationContextState.class));
-        mdsTypes = extractMdsTypes(message.getMdibAccess().findEntitiesByType(MdsDescriptor.class));
-
-        // check if there are changes to the current associated location contexts or MDS types
-        // only send hello if changes ensued
-    }
-
-    private Set<URI> extractMdsTypes(Collection<MdibEntity> entities) {
-        var mdsDescriptors = entities.stream()
-                .filter(mdibEntity -> mdibEntity.getDescriptor(MdsDescriptor.class).isPresent())
-                .map(mdibEntity -> mdibEntity.getDescriptor(MdsDescriptor.class).get())
-                .collect(Collectors.toList());
-
-        var uris = new HashSet<URI>(mdsDescriptors.size());
-        for (MdsDescriptor mdsDescriptor : mdsDescriptors) {
-            ComplexDeviceComponentMapper.fromComplexDeviceComponent(mdsDescriptor).ifPresent(uris::add);
-        }
-
-        return uris;
-    }
-
-    private void reassignScopes() {
-        var scopes = new HashSet<URI>(locationContexts.size() + mdsTypes.size());
-        scopes.add(GlueConstants.SCOPE_SDC_PROVIDER);
-        scopes.addAll(locationContexts);
-        scopes.addAll(mdsTypes);
-        device.getDiscoveryAccess().setScopes(scopes);
-        // todo There is currently no mechanism to re-send hellos; this is unacceptable and needs to be refactored
-    }
-
-    private Optional<Integer> isSeenMdibVersionOlderThan(MdibVersion mdibVersion) {
-        if (seenMdibVersion == null) {
-            seenMdibVersion = mdibVersion;
-            return Optional.of(-1);
-        }
-
-        return seenMdibVersion.compareTo(mdibVersion);
     }
 }
