@@ -41,7 +41,7 @@ public class CodedValueFactory {
      * @param code                the code.
      * @return a new instance.
      */
-    public CodedValue createCodedValue(@Nullable String codingSystem,
+    public static CodedValue createCodedValue(@Nullable String codingSystem,
                                        @Nullable String codingSystemVersion,
                                        @Nullable String code) {
         return createCodedValue(codingSystem, codingSystemVersion, code, null);
