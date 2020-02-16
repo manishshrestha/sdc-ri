@@ -3,6 +3,7 @@ package org.somda.sdc.glue.common;
 import org.junit.jupiter.api.Test;
 import org.somda.sdc.biceps.model.participant.CodedValue;
 import org.somda.sdc.biceps.model.participant.MdsDescriptor;
+import org.somda.sdc.biceps.model.participant.factory.CodedValueFactory;
 
 import javax.annotation.Nullable;
 import java.net.URI;
@@ -31,6 +32,22 @@ class ComplexDeviceComponentMapperTest {
             String expectedUri = "sdc.cdc.type:/foo/bar/fii";
             assertTrue(actualUri.isPresent());
             assertEquals(expectedUri, actualUri.get().toString());
+        }
+    }
+
+    @Test
+    void fromCodedValue() {
+        {
+            var actualUri = ComplexDeviceComponentMapper.fromCodedValue(
+                    CodedValueFactory.createCodedValue(null, "bar", null));
+            String expectedUri = "sdc.cdc.type://bar/";
+            assertEquals(expectedUri, actualUri.toString());
+        }
+        {
+            var actualUri = ComplexDeviceComponentMapper.fromCodedValue(
+                    CodedValueFactory.createCodedValue("foo", "bar", "fii"));
+            String expectedUri = "sdc.cdc.type:/foo/bar/fii";
+            assertEquals(expectedUri, actualUri.toString());
         }
     }
 

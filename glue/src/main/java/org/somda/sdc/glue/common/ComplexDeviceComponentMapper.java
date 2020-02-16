@@ -47,6 +47,24 @@ public class ComplexDeviceComponentMapper {
     }
 
     /**
+     * Given a coded value that belongs to an abstract complex component descriptor, this function creates the URI representation.
+     *
+     * @param codedValue a complex device component's type.
+     * @return the mapped URI.
+     */
+    public static URI fromCodedValue(CodedValue codedValue) {
+        String codingSystem = codedValue.getCodingSystem();
+        if ("urn:oid:1.2.840.10004.1.1.1.0.0.1".equals(codingSystem)) {
+            codingSystem = null;
+        }
+
+        return URI.create(SCHEME + ":" +
+                "/" + UrlUtf8.encode(codingSystem) +
+                "/" + UrlUtf8.encode(codedValue.getCodingSystemVersion()) +
+                "/" + UrlUtf8.encode(codedValue.getCode()));
+    }
+
+    /**
      * Maps a complex device component type URI to coded value.
      *
      * @param complexDeviceComponentTypeUri the URI to parse.
