@@ -22,6 +22,8 @@ import javax.annotation.Nullable;
 import javax.xml.bind.JAXBElement;
 import javax.xml.namespace.QName;
 import java.net.URI;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -342,11 +344,20 @@ public class WsDiscoveryTargetServiceInterceptor implements WsDiscoveryTargetSer
     }
 
     private UnsignedInteger getNewMetadataVersion(@Nullable UnsignedInteger currentVersion) {
+        // Metadata version is calculated from timestamp in seconds
+        var newVersion = UnsignedInteger.valueOf(ZonedDateTime.now(ZoneOffset.UTC).toInstant().toEpochMilli() / 1000L);
         if (currentVersion == null) {
-            return UnsignedInteger.valueOf((System.currentTimeMillis() / 1000L));
+            return newVersion;
         }
 
-        return currentVersion.plus(UnsignedInteger.ONE);
+        // If there is more than one metadata version increment within one second just increment the current version.
+        // This approach does not scale if there are tons of changes to the metadata version in a short time.
+        // For this unlikely scenario an implementation is required that can persist metadata versions
+        if (newVersion.compareTo(currentVersion) <= 0) {
+            return currentVersion.plus(UnsignedInteger.ONE);
+        }
+
+        return newVersion;
     }
 
     private void sendMulticast(String action, JAXBElement<?> body) throws MarshallingException, TransportException, InterceptorException {
