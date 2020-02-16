@@ -155,8 +155,7 @@ public class MdibVersion {
             return Optional.empty();
         }
 
-        if (this.getInstanceId().compareTo(rhs.getInstanceId()) < 0 ||
-                this.getInstanceId().equals(rhs.getInstanceId()) && this.getVersion().compareTo(rhs.getVersion()) < 0) {
+        if (this.getInstanceId().compareTo(rhs.getInstanceId()) < 0) {
             return Optional.of(-1);
         }
 
@@ -164,8 +163,7 @@ public class MdibVersion {
             return Optional.of(this.getVersion().compareTo(rhs.getVersion()));
         }
 
-        if (this.getInstanceId().compareTo(rhs.getInstanceId()) > 0 ||
-                this.getInstanceId().equals(rhs.getInstanceId()) && this.getVersion().compareTo(rhs.getVersion()) > 0) {
+        if (this.getInstanceId().compareTo(rhs.getInstanceId()) > 0) {
             return Optional.of(1);
         }
 
