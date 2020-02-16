@@ -117,6 +117,11 @@ public class SdcDevice extends AbstractIdleService implements Device, EventSourc
                 dpwsDevice.getDiscoveryAccess().setScopes(scopes);
 
             }
+
+            @Override
+            public void sendHello() {
+                dpwsDevice.getDiscoveryAccess().sendHello();
+            }
         };
     }
 
