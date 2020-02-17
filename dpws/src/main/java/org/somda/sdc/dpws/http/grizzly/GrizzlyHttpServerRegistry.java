@@ -42,7 +42,7 @@ import com.google.inject.name.Named;
 public class GrizzlyHttpServerRegistry extends AbstractIdleService implements HttpServerRegistry {
     private static final Logger LOG = LoggerFactory.getLogger(GrizzlyHttpServerRegistry.class);
     
-    @Inject private GrizzlyHttpHandlerBrokerFactory grizzlyHttpHandlerBrokerFactory;
+   private GrizzlyHttpHandlerBrokerFactory grizzlyHttpHandlerBrokerFactory;
 
     private final Map<String, HttpServer> serverRegistry;
     private final Map<String, GrizzlyHttpHandlerBroker> handlerRegistry;
@@ -56,9 +56,11 @@ public class GrizzlyHttpServerRegistry extends AbstractIdleService implements Ht
     GrizzlyHttpServerRegistry(HttpUriBuilder uriBuilder,
                               CryptoConfigurator cryptoConfigurator,
                               @Nullable @Named(CryptoConfig.CRYPTO_SETTINGS) CryptoSettings cryptoSettings,
+                              GrizzlyHttpHandlerBrokerFactory grizzlyHttpHandlerBrokerFactory,
                               @Named(DpwsConfig.HTTP_GZIP_COMPRESSION) boolean enableGzipCompression,
                               @Named(DpwsConfig.HTTP_RESPONSE_COMPRESSION_MIN_SIZE) int minCompressionSize) {
         this.uriBuilder = uriBuilder;
+        this.grizzlyHttpHandlerBrokerFactory = grizzlyHttpHandlerBrokerFactory;
         this.minCompressionSize = minCompressionSize;
         serverRegistry = new HashMap<>();
         handlerRegistry = new HashMap<>();

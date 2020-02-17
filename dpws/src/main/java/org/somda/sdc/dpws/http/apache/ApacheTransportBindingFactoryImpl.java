@@ -43,21 +43,22 @@ public class ApacheTransportBindingFactoryImpl implements TransportBindingFactor
     private final HttpClient client;
     private HttpClient securedClient; // if null => no cryptography configured/enabled
 
-    @Inject
     private ClientTransportBindingFactory clientTransportBindingFactory;
 
     @Inject
     ApacheTransportBindingFactoryImpl(SoapMarshalling marshalling, SoapUtil soapUtil,
-            CryptoConfigurator cryptoConfigurator,
-            @Nullable @Named(CryptoConfig.CRYPTO_SETTINGS) CryptoSettings cryptoSettings,
-            @Named(DpwsConfig.HTTP_CLIENT_CONNECT_TIMEOUT) Duration clientConnectTimeout,
-            @Named(DpwsConfig.HTTP_CLIENT_READ_TIMEOUT) Duration clientReadTimeout,
-            @Named(DpwsConfig.HTTP_GZIP_COMPRESSION) boolean enableGzipCompression) {
+                                      CryptoConfigurator cryptoConfigurator,
+                                      @Nullable @Named(CryptoConfig.CRYPTO_SETTINGS) CryptoSettings cryptoSettings,
+                                      @Named(DpwsConfig.HTTP_CLIENT_CONNECT_TIMEOUT) Duration clientConnectTimeout,
+                                      @Named(DpwsConfig.HTTP_CLIENT_READ_TIMEOUT) Duration clientReadTimeout,
+                                      @Named(DpwsConfig.HTTP_GZIP_COMPRESSION) boolean enableGzipCompression,
+                                      ClientTransportBindingFactory clientTransportBindingFactory) {
         this.marshalling = marshalling;
         this.soapUtil = soapUtil;
         this.clientConnectTimeout = clientConnectTimeout;
         this.clientReadTimeout = clientReadTimeout;
         this.enableGzipCompression = enableGzipCompression;
+        this.clientTransportBindingFactory = clientTransportBindingFactory;
         this.client = buildBaseClient().build();
 
         configureSecuredClient(cryptoConfigurator, cryptoSettings);

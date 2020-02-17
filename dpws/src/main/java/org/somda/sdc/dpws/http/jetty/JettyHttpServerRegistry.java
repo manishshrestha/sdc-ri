@@ -26,7 +26,6 @@ import org.somda.sdc.dpws.http.HttpServerRegistry;
 import org.somda.sdc.dpws.http.HttpUriBuilder;
 import org.somda.sdc.dpws.soap.SoapConstants;
 import org.somda.sdc.dpws.http.jetty.factory.JettyHttpServerHandlerFactory;
-import org.somda.sdc.dpws.http.jetty.JettyHttpServerHandler;
 
 import javax.annotation.Nullable;
 import java.net.InetAddress;
@@ -45,7 +44,7 @@ import java.util.concurrent.locks.ReentrantLock;
 public class JettyHttpServerRegistry extends AbstractIdleService implements HttpServerRegistry {
     private static final Logger LOG = LoggerFactory.getLogger(JettyHttpServerRegistry.class);
     
-    @Inject private JettyHttpServerHandlerFactory jettyHttpServerHandlerFactory;
+    private JettyHttpServerHandlerFactory jettyHttpServerHandlerFactory;
 
     private final Map<String, Server> serverRegistry;
     private final Map<String, JettyHttpServerHandler> handlerRegistry;
@@ -61,9 +60,11 @@ public class JettyHttpServerRegistry extends AbstractIdleService implements Http
     JettyHttpServerRegistry(HttpUriBuilder uriBuilder,
                             CryptoConfigurator cryptoConfigurator,
                             @Nullable @Named(CryptoConfig.CRYPTO_SETTINGS) CryptoSettings cryptoSettings,
+                            JettyHttpServerHandlerFactory jettyHttpServerHandlerFactory,
                             @Named(DpwsConfig.HTTP_GZIP_COMPRESSION) boolean enableGzipCompression,
                             @Named(DpwsConfig.HTTP_RESPONSE_COMPRESSION_MIN_SIZE) int minCompressionSize) {
         this.uriBuilder = uriBuilder;
+        this.jettyHttpServerHandlerFactory = jettyHttpServerHandlerFactory;
         this.enableGzipCompression = enableGzipCompression;
         this.minCompressionSize = minCompressionSize;
         serverRegistry = new HashMap<>();
