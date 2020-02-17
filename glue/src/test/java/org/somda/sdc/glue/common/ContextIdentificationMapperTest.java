@@ -1,15 +1,14 @@
 package org.somda.sdc.glue.common;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.junit.jupiter.api.Test;
+import org.somda.sdc.biceps.model.participant.InstanceIdentifier;
 
+import javax.annotation.Nullable;
 import java.net.URI;
 import java.util.Optional;
 
-import javax.annotation.Nullable;
-
-import org.junit.jupiter.api.Test;
-import org.somda.sdc.biceps.model.participant.InstanceIdentifier;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ContextIdentificationMapperTest {
 
