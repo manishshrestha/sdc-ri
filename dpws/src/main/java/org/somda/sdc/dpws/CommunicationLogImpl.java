@@ -31,10 +31,10 @@ public class CommunicationLogImpl implements CommunicationLog {
     public TeeOutputStream logHttpMessage(HttpDirection direction, String address, Integer port,
             OutputStream httpMessage) {
 
-        OutputStream log_file = this.logSink.createBranch(CommunicationLogSink.BranchPath.HTTP,
+        OutputStream logFile = this.logSink.createBranch(CommunicationLogSink.BranchPath.HTTP,
                 makeName(direction.toString(), address, port));
 
-        return new TeeOutputStream(httpMessage, log_file);
+        return new TeeOutputStream(httpMessage, logFile);
 
     }
 

@@ -11,7 +11,7 @@ import org.somda.sdc.dpws.soap.SoapUtil;
 /**
  * Creates {@linkplain ClientTransportBinding} instances.
  */
-public interface ClientTranportBindingFactory {
+public interface ClientTransportBindingFactory {
 
     /*
      * Instantiates ClientTransportBinding with the given objects and injected objects.

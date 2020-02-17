@@ -25,7 +25,7 @@ public class CommunicationLogSinkImpl implements CommunicationLogSink {
     private EnumMap<BranchPath, File> dirMapping;
 
     @Inject
-    CommunicationLogSinkImpl(@Named(DpwsConfig.COMMUNICATION_LOG_DIRECTORY) File logDirectory) {
+    CommunicationLogSinkImpl(@Named(DpwsConfig.COMMUNICATION_LOG_SINK_DIRECTORY) File logDirectory) {
         
         this.dirMapping = new EnumMap<BranchPath, File>(BranchPath.class);
 

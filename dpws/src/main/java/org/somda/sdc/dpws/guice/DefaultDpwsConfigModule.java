@@ -8,7 +8,6 @@ import org.somda.sdc.dpws.crypto.CryptoConfig;
 import org.somda.sdc.dpws.crypto.CryptoSettings;
 import org.somda.sdc.dpws.device.DeviceConfig;
 import org.somda.sdc.dpws.soap.SoapConfig;
-import org.somda.sdc.dpws.soap.SoapConstants;
 import org.somda.sdc.dpws.soap.wsaddressing.WsAddressingConfig;
 import org.somda.sdc.dpws.soap.wsdiscovery.WsDiscoveryConfig;
 import org.somda.sdc.dpws.soap.wseventing.WsEventingConfig;
@@ -54,7 +53,7 @@ public class DefaultDpwsConfigModule extends AbstractConfigurationModule {
                 Integer.class,
                 DpwsConstants.MAX_ENVELOPE_SIZE);
 
-        bind(DpwsConfig.COMMUNICATION_LOG_DIRECTORY,
+        bind(DpwsConfig.COMMUNICATION_LOG_SINK_DIRECTORY,
                 File.class,
                 new File("commlog"));
 

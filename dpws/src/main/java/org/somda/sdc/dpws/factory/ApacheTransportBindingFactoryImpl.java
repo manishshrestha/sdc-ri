@@ -43,7 +43,7 @@ public class ApacheTransportBindingFactoryImpl implements TransportBindingFactor
     private HttpClient securedClient; // if null => no cryptography configured/enabled
 
     @Inject
-    private ClientTranportBindingFactory clientTranportBindingFactory;
+    private ClientTransportBindingFactory clientTransportBindingFactory;
 
     @Inject
     ApacheTransportBindingFactoryImpl(SoapMarshalling marshalling, SoapUtil soapUtil,
@@ -129,10 +129,10 @@ public class ApacheTransportBindingFactoryImpl implements TransportBindingFactor
     @Override
     public TransportBinding createHttpBinding(URI endpointUri) throws UnsupportedOperationException {
         if (client != null && endpointUri.getScheme().equalsIgnoreCase("http")) {
-            return this.clientTranportBindingFactory.create(client, endpointUri, marshalling, soapUtil);
+            return this.clientTransportBindingFactory.create(client, endpointUri, marshalling, soapUtil);
         }
         if (securedClient != null && endpointUri.getScheme().equalsIgnoreCase("https")) {
-            return this.clientTranportBindingFactory.create(securedClient, endpointUri, marshalling, soapUtil);
+            return this.clientTransportBindingFactory.create(securedClient, endpointUri, marshalling, soapUtil);
         }
 
         throw new UnsupportedOperationException(
