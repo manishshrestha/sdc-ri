@@ -18,10 +18,12 @@ public class ContextIdentificationMapper {
     private static final String NULL_FLAVOR_ROOT = "biceps.uri.unk";
     private static final String SCHEME_PREFIX = "sdc.ctxt.";
 
-    private static final Pattern PATTERN = Pattern.compile("^(?<contextsource>sdc\\.ctxt\\..+?)\\:\\/" +
-                    "(?<root>.*?)\\/" +
-                    "(?<extension>.*?)$",
-            Pattern.CASE_INSENSITIVE);
+    private static final String ALLOWED_CHARS = "[a-zA-Z0-9-._~!$&'()*+,;=:@]";
+    private static final String segmentRegex = "(?:(?:%[a-fA-f0-9]{2})+|(?:" + ALLOWED_CHARS + ")+)";
+
+    private static final Pattern PATTERN = Pattern
+            .compile("(?<contextsource>sdc.ctxt.(loc|pat|ens|wfl|opr|mns)?):/(?<root>" + segmentRegex
+                    + "+)/(?<extension>" + segmentRegex + "*$)");
 
     /**
      * Converts from an instance identifier to an URI.
