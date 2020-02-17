@@ -1,9 +1,8 @@
-package org.somda.sdc.dpws.factory;
+package org.somda.sdc.dpws.http.apache;
 
 import java.net.URI;
 
 import org.apache.http.client.HttpClient;
-import org.somda.sdc.dpws.TransportBinding;
 import org.somda.sdc.dpws.soap.SoapMarshalling;
 import org.somda.sdc.dpws.soap.SoapUtil;
 

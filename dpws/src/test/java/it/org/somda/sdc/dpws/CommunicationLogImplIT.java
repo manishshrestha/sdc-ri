@@ -42,7 +42,7 @@ import org.somda.sdc.dpws.CommunicationLogSink;
 import org.somda.sdc.dpws.CommunicationLogSinkImpl;
 import org.somda.sdc.dpws.DpwsTest;
 import org.somda.sdc.dpws.TransportBindingException;
-import org.somda.sdc.dpws.factory.ClientTransportBinding;
+import org.somda.sdc.dpws.http.apache.ClientTransportBinding;
 import org.somda.sdc.dpws.http.HttpHandler;
 import org.somda.sdc.dpws.http.grizzly.GrizzlyHttpHandlerBroker;
 import org.somda.sdc.dpws.http.jetty.JettyHttpServerHandler;

@@ -1,4 +1,4 @@
-package org.somda.sdc.dpws.factory;
+package org.somda.sdc.dpws.http.apache;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
