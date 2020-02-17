@@ -43,7 +43,7 @@ public class ClientTransportBinding implements TransportBinding {
     private CommunicationLog communicationLog;
 
     @Inject
-    public ClientTransportBinding(CommunicationLog communicationLog, @Assisted HttpClient client,
+    ClientTransportBinding(CommunicationLog communicationLog, @Assisted HttpClient client,
             @Assisted URI clientUri, @Assisted SoapMarshalling marshalling, @Assisted SoapUtil soapUtil) {
         LOG.debug("Creating HttpClientTransportBinding for {}", clientUri);
         this.client = client;

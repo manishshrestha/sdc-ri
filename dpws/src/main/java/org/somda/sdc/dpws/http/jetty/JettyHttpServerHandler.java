@@ -31,7 +31,7 @@ public class JettyHttpServerHandler extends AbstractHandler {
     private final CommunicationLog communicationLog;
 
     @Inject
-    public JettyHttpServerHandler(CommunicationLog communicationLog, @Assisted String mediaType,
+    JettyHttpServerHandler(CommunicationLog communicationLog, @Assisted String mediaType,
               @Assisted HttpHandler handler) {
         this.mediaType = mediaType;
         this.handler = handler;

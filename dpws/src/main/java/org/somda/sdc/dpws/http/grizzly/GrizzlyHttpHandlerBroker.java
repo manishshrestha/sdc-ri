@@ -27,7 +27,7 @@ public class GrizzlyHttpHandlerBroker extends org.glassfish.grizzly.http.server.
     private final CommunicationLog communicationLog;
 
     @Inject
-    public GrizzlyHttpHandlerBroker(CommunicationLog communicationLog, @Assisted("mediaType") String mediaType,
+    GrizzlyHttpHandlerBroker(CommunicationLog communicationLog, @Assisted("mediaType") String mediaType,
             @Assisted HttpHandler handler, @Assisted("requestedUri") String requestedUri) {
         this.mediaType = mediaType;
         this.handler = handler;
