@@ -6,7 +6,6 @@ import com.google.inject.name.Named;
 import org.slf4j.Logger;
 import org.somda.sdc.biceps.model.message.AbstractSetResponse;
 import org.somda.sdc.biceps.model.message.OperationInvokedReport;
-import org.somda.sdc.common.util.AutoLock;
 import org.somda.sdc.dpws.service.HostingServiceProxy;
 import org.somda.sdc.glue.consumer.ConsumerConfig;
 import org.somda.sdc.glue.consumer.helper.LogPrepender;
@@ -20,14 +19,12 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * Helper class to dispatch incoming operation invoked report parts to {@linkplain ScoTransaction} objects.
  */
 public class OperationInvocationDispatcher {
     private final Logger LOG;
-    private final ReentrantLock reportLock;
     private final ScoUtil scoUtil;
     private final Duration awaitingTransactionTimeout;
 
@@ -37,11 +34,9 @@ public class OperationInvocationDispatcher {
 
     @Inject
     OperationInvocationDispatcher(@Assisted HostingServiceProxy hostingServiceProxy,
-                                  ReentrantLock reportLock,
                                   ScoUtil scoUtil,
                                   @Named(ConsumerConfig.AWAITING_TRANSACTION_TIMEOUT) Duration awaitingTransactionTimeout) {
         this.LOG = LogPrepender.getLogger(hostingServiceProxy, OperationInvocationDispatcher.class);
-        this.reportLock = reportLock;
         this.scoUtil = scoUtil;
         this.awaitingTransactionTimeout = awaitingTransactionTimeout;
         this.pendingReports = new HashMap<>();
@@ -71,56 +66,50 @@ public class OperationInvocationDispatcher {
      *
      * @param transaction the transaction to
      */
-    public void registerTransaction(ScoTransactionImpl<? extends AbstractSetResponse> transaction) {
+    synchronized public void registerTransaction(ScoTransactionImpl<? extends AbstractSetResponse> transaction) {
         long transactionId = transaction.getTransactionId();
-        BlockingQueue<OperationInvokedReport.ReportPart> reportPartsQueue;
-        try (AutoLock ignored = AutoLock.lock(reportLock)) {
-            final ScoTransaction runningTransaction = runningTransactions.get(transactionId);
-            if (runningTransaction != null) {
-                LOG.warn("Try to add transaction {} twice, which is not permitted", transactionId);
-                return;
-            }
+        final ScoTransaction<? extends AbstractSetResponse> runningTransaction = runningTransactions.get(transactionId);
+        if (runningTransaction != null) {
+            LOG.warn("Try to add transaction {} twice, which is not permitted", transactionId);
+            return;
+        }
 
-            awaitingTransactions.remove(transactionId);
-            runningTransactions.put(transaction.getTransactionId(), transaction);
-            reportPartsQueue = pendingReports.get(transactionId);
+        awaitingTransactions.remove(transactionId);
+        runningTransactions.put(transaction.getTransactionId(), transaction);
+        BlockingQueue<OperationInvokedReport.ReportPart> reportPartsQueue = pendingReports.get(transactionId);
 
-            if (reportPartsQueue != null) {
-                applyReportsOnTransaction(reportPartsQueue, transaction);
-            }
+        if (reportPartsQueue != null) {
+            applyReportsOnTransaction(reportPartsQueue, transaction);
         }
     }
 
-    private void dispatchReport(OperationInvokedReport.ReportPart reportPart) {
-        BlockingQueue<OperationInvokedReport.ReportPart> reportPartsQueue;
-        ScoTransactionImpl transaction;
+    synchronized private void dispatchReport(OperationInvokedReport.ReportPart reportPart) {
 
         final long transactionId = reportPart.getInvocationInfo().getTransactionId();
 
-        try (AutoLock ignored = AutoLock.lock(reportLock)) {
-            sanitizeAwaitingTransactions();
+        sanitizeAwaitingTransactions();
 
-            final BlockingQueue<OperationInvokedReport.ReportPart> guardedQueue = pendingReports.get(transactionId);
-            if (guardedQueue == null) {
-                reportPartsQueue = new LinkedBlockingQueue<>(3); // 3 bc 1 wait, one started, one finished
-                pendingReports.put(transactionId, reportPartsQueue);
-                awaitingTransactions.put(transactionId, Instant.now());
-            } else {
-                reportPartsQueue = guardedQueue;
-            }
+        final BlockingQueue<OperationInvokedReport.ReportPart> guardedQueue = pendingReports.get(transactionId);
+        BlockingQueue<OperationInvokedReport.ReportPart> reportPartsQueue;
+        if (guardedQueue == null) {
+            reportPartsQueue = new LinkedBlockingQueue<>(3); // 3 bc 1 wait, one started, one finished
+            pendingReports.put(transactionId, reportPartsQueue);
+            awaitingTransactions.put(transactionId, Instant.now());
+        } else {
+            reportPartsQueue = guardedQueue;
+        }
 
-            transaction = runningTransactions.get(transactionId);
-            if (scoUtil.isFinalReport(reportPart)) {
-                runningTransactions.remove(transactionId);
-            }
-            if (!reportPartsQueue.offer(reportPart)) {
-                LOG.warn("Too many reports received for transaction {}", transactionId);
-                return;
-            }
+        ScoTransactionImpl<? extends AbstractSetResponse> transaction = runningTransactions.get(transactionId);
+        if (scoUtil.isFinalReport(reportPart)) {
+            runningTransactions.remove(transactionId);
+        }
+        if (!reportPartsQueue.offer(reportPart)) {
+            LOG.warn("Too many reports received for transaction {}", transactionId);
+            return;
+        }
 
-            if (transaction != null) {
-                applyReportsOnTransaction(reportPartsQueue, transaction);
-            }
+        if (transaction != null) {
+            applyReportsOnTransaction(reportPartsQueue, transaction);
         }
     }
 
