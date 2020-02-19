@@ -25,6 +25,7 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 
 /**
  * Adds SDC services to a DPWS device and manages incoming set service requests.
@@ -103,7 +104,7 @@ public class SdcDevice extends AbstractIdleService implements Device, EventSourc
                     tmpTypes.add(DpwsConstants.DEVICE_TYPE);
                 }
                 tmpTypes.addAll(types);
-                dpwsDevice.getDiscoveryAccess().setTypes(types);
+                dpwsDevice.getDiscoveryAccess().setTypes(tmpTypes);
             }
 
             @Override
@@ -114,8 +115,7 @@ public class SdcDevice extends AbstractIdleService implements Device, EventSourc
                     tmpScopes.add(GlueConstants.SCOPE_SDC_PROVIDER);
                 }
                 tmpScopes.addAll(scopes);
-                dpwsDevice.getDiscoveryAccess().setScopes(scopes);
-
+                dpwsDevice.getDiscoveryAccess().setScopes(tmpScopes);
             }
 
             @Override

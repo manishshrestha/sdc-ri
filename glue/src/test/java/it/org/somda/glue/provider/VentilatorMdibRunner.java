@@ -34,12 +34,15 @@ public class VentilatorMdibRunner extends AbstractIdleService {
     private final ModificationsBuilderFactory modificationsBuilderFactory;
     private final LocalMdibAccess mdibAccess;
 
+    private int locationContextHandleSuffixCounter;
+
     public VentilatorMdibRunner(MdibXmlIo mdibXmlIo,
                                 ModificationsBuilderFactory modificationsBuilderFactory,
                                 LocalMdibAccess mdibAccess) {
         this.mdibXmlIo = mdibXmlIo;
         this.modificationsBuilderFactory = modificationsBuilderFactory;
         this.mdibAccess = mdibAccess;
+        this.locationContextHandleSuffixCounter = 0;
     }
 
     @Override
@@ -83,6 +86,8 @@ public class VentilatorMdibRunner extends AbstractIdleService {
         locationContextState.setContextAssociation(ContextAssociation.ASSOC);
         locationContextState.setLocationDetail(newLocation);
         locationContextState.getIdentification().add(identifier);
+        locationContextState.setDescriptorHandle(HANDLE_LOCATIONCONTEXT);
+        locationContextState.setHandle(HANDLE_LOCATIONCONTEXT + "_state" + locationContextHandleSuffixCounter++);
         InstanceIdentifier validator = new InstanceIdentifier();
         validator.setRootName("urn:validator:demo");
         locationContextState.getValidator().add(validator);

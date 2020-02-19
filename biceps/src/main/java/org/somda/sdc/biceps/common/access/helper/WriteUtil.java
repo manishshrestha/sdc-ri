@@ -106,7 +106,7 @@ public class WriteUtil {
         }
 
         if (LOG.isDebugEnabled()) {
-            LOG.debug("Distributing changes {} took {} ms",
+            LOG.debug("Distributing changes with {} took {} ms",
                     modificationResult.getMdibVersion(),
                     System.currentTimeMillis() - endTime);
         }
