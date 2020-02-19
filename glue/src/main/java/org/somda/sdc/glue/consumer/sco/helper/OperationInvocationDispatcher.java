@@ -84,10 +84,10 @@ public class OperationInvocationDispatcher {
             awaitingTransactions.remove(transactionId);
             runningTransactions.put(transaction.getTransactionId(), transaction);
             reportPartsQueue = pendingReports.get(transactionId);
-        }
 
-        if (reportPartsQueue != null) {
-            applyReportsOnTransaction(reportPartsQueue, transaction);
+            if (reportPartsQueue != null) {
+                applyReportsOnTransaction(reportPartsQueue, transaction);
+            }
         }
     }
 
@@ -117,10 +117,10 @@ public class OperationInvocationDispatcher {
                 LOG.warn("Too many reports received for transaction {}", transactionId);
                 return;
             }
-        }
 
-        if (transaction != null) {
-            applyReportsOnTransaction(reportPartsQueue, transaction);
+            if (transaction != null) {
+                applyReportsOnTransaction(reportPartsQueue, transaction);
+            }
         }
     }
 
