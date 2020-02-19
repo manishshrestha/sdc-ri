@@ -200,14 +200,6 @@ public class Provider extends AbstractIdleService {
         this.currentLocation = (LocationDetail) location.clone();
     }
 
-    private void addMetricQuality(AbstractMetricValue val) {
-        if (val.getMetricQuality() == null) {
-            var qual = new AbstractMetricValue.MetricQuality();
-            qual.setMode(GenerationMode.DEMO);
-            qual.setValidity(MeasurementValidity.VLD);
-            val.setMetricQuality(qual);
-        }
-    }
 
     /**
      * Adds a sine wave to the data of a waveform
@@ -270,7 +262,7 @@ public class Provider extends AbstractIdleService {
         }
         val.setDeterminationTime(Instant.now());
 
-        addMetricQuality(val);
+        ProviderUtil.addMetricQualityDemo(val);
 
         state.setMetricValue(val);
         mdibAccess.writeStates(MdibStateModifications.create(MdibStateModifications.Type.METRIC).add(state));
@@ -299,7 +291,7 @@ public class Provider extends AbstractIdleService {
         }
         val.setDeterminationTime(Instant.now());
 
-        addMetricQuality(val);
+        ProviderUtil.addMetricQualityDemo(val);
 
         state.setMetricValue(val);
         mdibAccess.writeStates(MdibStateModifications.create(MdibStateModifications.Type.METRIC).add(state));
@@ -347,7 +339,7 @@ public class Provider extends AbstractIdleService {
             val.setValue(allowedValue.get(0));
         }
         val.setDeterminationTime(Instant.now());
-        addMetricQuality(val);
+        ProviderUtil.addMetricQualityDemo(val);
         state.setMetricValue(val);
         mdibAccess.writeStates(MdibStateModifications.create(MdibStateModifications.Type.METRIC).add(state));
     }
