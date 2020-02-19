@@ -8,6 +8,9 @@ import org.apache.logging.log4j.core.config.Configurator;
 import org.apache.logging.log4j.core.config.DefaultConfiguration;
 import org.somda.sdc.biceps.guice.DefaultBicepsConfigModule;
 import org.somda.sdc.biceps.guice.DefaultBicepsModule;
+import org.somda.sdc.biceps.model.participant.AbstractMetricValue;
+import org.somda.sdc.biceps.model.participant.GenerationMode;
+import org.somda.sdc.biceps.model.participant.MeasurementValidity;
 import org.somda.sdc.common.guice.DefaultHelperModule;
 import org.somda.sdc.dpws.crypto.CryptoConfig;
 import org.somda.sdc.dpws.crypto.CryptoSettings;
@@ -53,5 +56,14 @@ public class ProviderUtil {
 
     public Injector getInjector() {
         return injector;
+    }
+
+    public static void addMetricQualityDemo(AbstractMetricValue val) {
+        if (val.getMetricQuality() == null) {
+            var qual = new AbstractMetricValue.MetricQuality();
+            qual.setMode(GenerationMode.DEMO);
+            qual.setValidity(MeasurementValidity.VLD);
+            val.setMetricQuality(qual);
+        }
     }
 }

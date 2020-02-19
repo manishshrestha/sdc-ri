@@ -106,6 +106,7 @@ public class OperationHandler implements OperationInvocationReceiver {
         }
         targetState.getMetricValue().setValue(data);
         targetState.getMetricValue().setDeterminationTime(Instant.now());
+        ProviderUtil.addMetricQualityDemo(targetState.getMetricValue());
 
         final MdibStateModifications mod = MdibStateModifications.create(MdibStateModifications.Type.METRIC);
 
@@ -172,6 +173,7 @@ public class OperationHandler implements OperationInvocationReceiver {
         }
         targetState.getMetricValue().setValue(data);
         targetState.getMetricValue().setDeterminationTime(Instant.now());
+        ProviderUtil.addMetricQualityDemo(targetState.getMetricValue());
 
         final MdibStateModifications mod = MdibStateModifications.create(MdibStateModifications.Type.METRIC);
         mod.add(targetState);
