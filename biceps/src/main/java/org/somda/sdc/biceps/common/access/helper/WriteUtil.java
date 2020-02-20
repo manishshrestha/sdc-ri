@@ -61,12 +61,12 @@ public class WriteUtil {
      */
     public WriteDescriptionResult writeDescription(Function<MdibDescriptionModifications, WriteDescriptionResult> lockedWriteDescription,
                                                    MdibDescriptionModifications descriptionModifications) throws PreprocessingException {
-        acquireWriteLock();
-
         if (descriptionModifications.getModifications().isEmpty()) {
             return new WriteDescriptionResult(mdibAccess.getMdibVersion(),
                     Collections.emptyList(), Collections.emptyList(), Collections.emptyList());
         }
+
+        acquireWriteLock();
 
         long startTime = 0;
         if (LOG.isDebugEnabled()) {
@@ -127,11 +127,11 @@ public class WriteUtil {
      */
     public WriteStateResult writeStates(Function<MdibStateModifications, WriteStateResult> lockedWriteStates,
                                         MdibStateModifications stateModifications) throws PreprocessingException {
-        acquireWriteLock();
-
         if (stateModifications.getStates().isEmpty()) {
             return new WriteStateResult(mdibAccess.getMdibVersion(), Collections.emptyList());
         }
+
+        acquireWriteLock();
 
         long startTime = 0;
         if (LOG.isDebugEnabled()) {
