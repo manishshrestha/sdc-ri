@@ -158,9 +158,8 @@ public class WsDiscoveryTargetServiceInterceptor implements WsDiscoveryTargetSer
             LOG.debug("Incoming ResolveMatches message had an EPR address not matching this device." +
                             " Message EPR address is {}, device EPR address is {}",
                     resolveType.getEndpointReference().getAddress().getValue(),
-                    endpointReference.getAddress().getValue()
-            );
-            throw new RuntimeException("EndpointReference address does not match in incoming Resolve.");
+                    endpointReference.getAddress().getValue());
+            return;
         }
 
         ResolveMatchType resolveMatchType = wsdFactory.createResolveMatchType();
