@@ -20,9 +20,7 @@ import org.somda.sdc.dpws.device.DeviceSettings;
 import org.somda.sdc.dpws.factory.DpwsFrameworkFactory;
 import org.somda.sdc.dpws.soap.wsaddressing.WsAddressingUtil;
 import org.somda.sdc.dpws.soap.wsaddressing.model.EndpointReferenceType;
-import org.somda.sdc.glue.GlueConstants;
 import org.somda.sdc.glue.common.FallbackInstanceIdentifier;
-import org.somda.sdc.glue.common.LocationDetailQueryMapper;
 import org.somda.sdc.glue.common.MdibXmlIo;
 import org.somda.sdc.glue.common.factory.ModificationsBuilderFactory;
 import org.somda.sdc.glue.provider.SdcDevice;
@@ -162,7 +160,6 @@ public class Provider extends AbstractIdleService {
                     this.instanceIdentifier = ii;
                     LOG.info("Updated instanceIdentifier to {}", ii.getRootName());
                 });
-        LOG.info("Updating location scopes");
         if (this.isRunning() || this.state() == State.STARTING) {
             LOG.info("Updating location context");
             final MdibStateModifications locMod = MdibStateModifications.create(MdibStateModifications.Type.CONTEXT);
