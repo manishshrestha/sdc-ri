@@ -142,7 +142,7 @@ public class DpwsFrameworkImpl extends AbstractIdleService implements DpwsFramew
         return this;
     }
 
-    public void registerService(Collection<Service> services) {
+    synchronized public void registerService(Collection<Service> services) {
         // don't add any duplicates
         services.forEach(
                 service -> {
@@ -156,9 +156,11 @@ public class DpwsFrameworkImpl extends AbstractIdleService implements DpwsFramew
         if (isRunning() || state().equals(State.STARTING)) {
             services.forEach(
                     service -> {
-                        if (!isRunning()) {
+                        if (service.state().equals(State.NEW)) {
                             LOG.info("Delayed start of service {}", service);
                             service.startAsync().awaitRunning();
+                        } else {
+                            service.awaitRunning();
                         }
                     }
             );
