@@ -3,7 +3,6 @@ package org.somda.sdc.dpws;
 import com.google.common.util.concurrent.AbstractIdleService;
 import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.common.util.concurrent.Service;
-import com.google.common.util.concurrent.ServiceManager;
 import com.google.inject.Inject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,7 +40,6 @@ public class DpwsFrameworkImpl extends AbstractIdleService implements DpwsFramew
     private final HttpServerRegistry httpServerRegistry;
     private final SoapMarshalling soapMarshalling;
 
-    private ServiceManager serviceManager;
     private final List<Service> registeredServices;
     private UdpBindingService udpBindingService;
     private boolean wasStarted;
@@ -86,8 +84,7 @@ public class DpwsFrameworkImpl extends AbstractIdleService implements DpwsFramew
                 // dpws services
                 udpBindingService, udpMessageQueueService, httpServerRegistry, soapMarshalling
         ));
-        serviceManager = new ServiceManager(registeredServices);
-        serviceManager.startAsync().awaitHealthy();
+        registeredServices.forEach(service -> service.startAsync().awaitRunning());
         this.wasStarted = true;
         LOG.info("SDCri DPWS framework is ready for use");
     }
@@ -114,7 +111,7 @@ public class DpwsFrameworkImpl extends AbstractIdleService implements DpwsFramew
     @Override
     protected void shutDown() {
         LOG.info("Shut down SDCri DPWS framework");
-        serviceManager.stopAsync().awaitStopped();
+        registeredServices.forEach(service -> service.stopAsync().awaitTerminated());
         LOG.info("SDCri DPWS framework shut down");
     }
 
@@ -146,10 +143,6 @@ public class DpwsFrameworkImpl extends AbstractIdleService implements DpwsFramew
     }
 
     public void registerService(Collection<Service> services) {
-        if (isRunning()) {
-            LOG.error("Cannot handle registering services during runtime");
-            throw new RuntimeException("Cannot handle registering services during runtime");
-        }
         // don't add any duplicates
         services.forEach(
                 service -> {
@@ -158,5 +151,17 @@ public class DpwsFrameworkImpl extends AbstractIdleService implements DpwsFramew
                     }
                 }
         );
+
+        // if we're already running, we need to start the service now
+        if (isRunning() || state().equals(State.STARTING)) {
+            services.forEach(
+                    service -> {
+                        if (!isRunning()) {
+                            LOG.info("Delayed start of service {}", service);
+                            service.startAsync().awaitRunning();
+                        }
+                    }
+            );
+        }
     }
 }
