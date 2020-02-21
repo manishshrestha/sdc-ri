@@ -14,7 +14,7 @@ import java.util.concurrent.TimeUnit;
  * Wrapping {@linkplain ExecutorService}s into guava services allows orchestrating thread pool instances, especially
  * shutting them down properly when shutting down a {@linkplain org.somda.sdc.dpws.DpwsFramework} instance.
  *
- * @param <T> actual type of the {@linkplain ExecutorService}
+ * @param <T> actual type of the {@linkplain ExecutorService}.
  */
 public class ExecutorWrapperService<T extends ExecutorService> extends AbstractIdleService {
     private static Logger LOG = LoggerFactory.getLogger(ExecutorWrapperService.class);
@@ -39,7 +39,7 @@ public class ExecutorWrapperService<T extends ExecutorService> extends AbstractI
      * Create a wrapper around an {@linkplain ExecutorService}.
      *
      * @param serviceCreator Callable which returns an {@linkplain ExecutorService}.
-     * @param serviceName name for the service
+     * @param serviceName name for the service, used in logging.
      */
     public ExecutorWrapperService(Callable<T> serviceCreator, String serviceName) {
         this.serviceCreator = serviceCreator;
@@ -71,8 +71,8 @@ public class ExecutorWrapperService<T extends ExecutorService> extends AbstractI
      * <p>
      * <em>Only ever access this once the service has been started!</em>
      *
-     * @return {@linkplain ExecutorService} instance
-     * @throws RuntimeException when the service isn't running yet
+     * @return wrapped {@linkplain ExecutorService} instance.
+     * @throws RuntimeException when the service isn't running yet.
      */
     public T get() {
         if (isRunning()) {

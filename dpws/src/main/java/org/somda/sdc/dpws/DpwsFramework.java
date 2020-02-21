@@ -23,8 +23,8 @@ public interface DpwsFramework extends Service {
      * <p>
      * <em>This may only be set while the framework isn't running.</em>
      *
-     * @param networkInterface a network interface
-     * @return the {@linkplain DpwsFramework} instance
+     * @param networkInterface a network interface.
+     * @return the {@linkplain DpwsFramework} instance.
      */
     DpwsFramework setNetworkInterface(NetworkInterface networkInterface);
 
@@ -37,7 +37,7 @@ public interface DpwsFramework extends Service {
      * <em>Services registered when the framework is running may not be stopped together with the framework,
      * depending on implementation.</em>
      *
-     * @param services {@linkplain Service}s to register for startup and shutdown
+     * @param services {@linkplain Service}s to register for startup and shutdown.
      */
     void registerService(Collection<Service> services);
 }
