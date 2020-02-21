@@ -104,7 +104,7 @@ public class EventSinkImpl implements EventSink {
     public ListenableFuture<SubscribeResult> subscribe(List<String> actions,
                                                        @Nullable Duration expires,
                                                        NotificationSink notificationSink) {
-        return executorService.getExecutorService().submit(() -> {
+        return executorService.get().submit(() -> {
             //final URI httpServerBase = URI.create()
             // Create unique context path suffix
             String contextSuffix = UUID.randomUUID().toString();
@@ -176,7 +176,7 @@ public class EventSinkImpl implements EventSink {
     @Override
     public ListenableFuture<Duration> renew(String subscriptionId,
                                             Duration expires) {
-        return executorService.getExecutorService().submit(() -> {
+        return executorService.get().submit(() -> {
             // Search for subscription to renew
             SinkSubscriptionManager subMan = getSubscriptionManagerProxy(subscriptionId);
 
@@ -207,7 +207,7 @@ public class EventSinkImpl implements EventSink {
     @Override
     public ListenableFuture<Duration> getStatus(String subscriptionId) {
 
-        return executorService.getExecutorService().submit(() -> {
+        return executorService.get().submit(() -> {
             // Search for subscription to get status from
             SinkSubscriptionManager subMan = getSubscriptionManagerProxy(subscriptionId);
 
@@ -237,7 +237,7 @@ public class EventSinkImpl implements EventSink {
     public ListenableFuture<Object> unsubscribe(String subscriptionId) {
         SinkSubscriptionManager subMan = getSubscriptionManagerProxy(subscriptionId);
 
-        return executorService.getExecutorService().submit(() -> {
+        return executorService.get().submit(() -> {
             Unsubscribe unsubscribe = wseFactory.createUnsubscribe();
             String subManAddress = wsaUtil.getAddressUriAsString(subMan.getSubscriptionManagerEpr()).orElseThrow(() ->
                     new RuntimeException("No subscription manager EPR found"));

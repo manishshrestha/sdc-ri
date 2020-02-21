@@ -164,7 +164,7 @@ public class ClientImpl extends AbstractIdleService implements Client, Service, 
                     LOG.trace("Resolve failed.", throwable);
                     deviceSettableFuture.setException(throwable);
                 }
-            }, executorService.getExecutorService());
+            }, executorService.get());
 
             return deviceSettableFuture;
         } catch (MarshallingException e) {
@@ -213,7 +213,7 @@ public class ClientImpl extends AbstractIdleService implements Client, Service, 
                 LOG.trace("Connecting to endpoint {} failed", eprAddress, throwable);
                 hspFuture.setException(throwable);
             }
-        }, executorService.getExecutorService());
+        }, executorService.get());
 
         return hspFuture;
     }

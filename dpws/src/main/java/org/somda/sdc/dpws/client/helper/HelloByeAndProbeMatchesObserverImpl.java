@@ -63,7 +63,7 @@ public class HelloByeAndProbeMatchesObserverImpl implements HelloByeAndProbeMatc
 
     @Subscribe
     void onHello(HelloMessage helloMessage) {
-        ListenableFuture<Optional<DiscoveredDevice>> future = networkJobExecutor.getExecutorService().submit(() ->
+        ListenableFuture<Optional<DiscoveredDevice>> future = networkJobExecutor.get().submit(() ->
                 discoveredDeviceResolver.resolve(helloMessage));
         Futures.addCallback(future, new FutureCallback<>() {
             @SuppressWarnings("OptionalAssignedToNull")
@@ -81,7 +81,7 @@ public class HelloByeAndProbeMatchesObserverImpl implements HelloByeAndProbeMatc
             public void onFailure(Throwable throwable) {
                 LOG.trace("Error while processing Hello message.", throwable);
             }
-        }, networkJobExecutor.getExecutorService());
+        }, networkJobExecutor.get());
     }
 
     @Subscribe
@@ -95,7 +95,7 @@ public class HelloByeAndProbeMatchesObserverImpl implements HelloByeAndProbeMatc
      */
     @Subscribe
     void onProbeMatches(ProbeMatchesMessage probeMatchesMessage) {
-        ListenableFuture<Optional<DiscoveredDevice>> future = networkJobExecutor.getExecutorService().submit(() ->
+        ListenableFuture<Optional<DiscoveredDevice>> future = networkJobExecutor.get().submit(() ->
                 discoveredDeviceResolver.resolve(probeMatchesMessage));
         Futures.addCallback(future, new FutureCallback<>() {
             @SuppressWarnings("OptionalAssignedToNull")
@@ -114,7 +114,7 @@ public class HelloByeAndProbeMatchesObserverImpl implements HelloByeAndProbeMatc
             public void onFailure(Throwable throwable) {
                 // nothing to do here - log messages were created by DiscoveredDeviceResolver util
             }
-        }, networkJobExecutor.getExecutorService());
+        }, networkJobExecutor.get());
     }
 
     @Subscribe

@@ -117,7 +117,7 @@ public class HostingServiceResolver {
      * @return Future with resolved hosting service and hosted service information.
      */
     public ListenableFuture<HostingServiceProxy> resolveHostingService(DiscoveredDevice discoveredDevice) {
-        return networkJobExecutor.getExecutorService().submit(() -> {
+        return networkJobExecutor.get().submit(() -> {
             if (discoveredDevice.getXAddrs().isEmpty()) {
                 throw new IllegalArgumentException("Given device proxy has no XAddrs. Connection aborted.");
             }

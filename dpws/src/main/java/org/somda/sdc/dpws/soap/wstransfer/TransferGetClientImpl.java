@@ -25,7 +25,7 @@ public class TransferGetClientImpl implements TransferGetClient {
 
     @Override
     public ListenableFuture<SoapMessage> sendTransferGet(RequestResponseClient requestResponseClient, String wsaTo) {
-        return executorService.getExecutorService().submit(() -> requestResponseClient.sendRequestResponse(
+        return executorService.get().submit(() -> requestResponseClient.sendRequestResponse(
                 soapUtil.createMessage(WsTransferConstants.WSA_ACTION_GET, wsaTo)));
     }
 }

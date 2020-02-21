@@ -31,6 +31,8 @@ public interface DpwsFramework extends Service {
      * Register a service to attach to the frameworks lifecycle.
      * <p>
      * Starts and shuts down registered services when starting and stopping the framework.
+     * Whenever a constructor (outside of the dpws package) receives a wrapped thread pool, it must register the
+     * service using this method to ensure it is properly cleaned up when shutting down the device but not the jvm.
      * <em>Services registered when the framework is running may not be stopped together with the framework,
      * depending on implementation.</em>
      * @param services {@linkplain Service}s

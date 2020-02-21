@@ -103,8 +103,7 @@ public class SdcRemoteDevicesConnectorImpl implements SdcRemoteDevicesConnector,
                                   MdibVersionUtil mdibVersionUtil,
                                   SdcRemoteDeviceFactory sdcRemoteDeviceFactory,
                                   SdcRemoteDeviceWatchdogFactory watchdogFactory,
-                                  DpwsFramework dpwsFramework,
-                                  @WatchdogScheduledExecutor ExecutorWrapperService<ScheduledExecutorService> watchdogService) {
+                                  DpwsFramework dpwsFramework) {
         this.executorService = executorService;
         this.sdcRemoteDevices = sdcRemoteDevices;
         this.eventBus = eventBus;
@@ -120,7 +119,7 @@ public class SdcRemoteDevicesConnectorImpl implements SdcRemoteDevicesConnector,
         this.sdcRemoteDeviceFactory = sdcRemoteDeviceFactory;
         this.watchdogFactory = watchdogFactory;
 
-        dpwsFramework.registerService(List.of(executorService, watchdogService));
+        dpwsFramework.registerService(List.of(executorService));
     }
 
     @Override
@@ -132,7 +131,7 @@ public class SdcRemoteDevicesConnectorImpl implements SdcRemoteDevicesConnector,
         // precheck: necessary services present?
         checkRequiredServices(hostingServiceProxy, connectConfiguration.getRequiredPortTypes());
 
-        return executorService.getExecutorService().submit(() -> {
+        return executorService.get().submit(() -> {
             try {
                 final Logger tempLog = LogPrepender.getLogger(hostingServiceProxy, SdcRemoteDevicesConnectorImpl.class);
                 tempLog.info("Start connecting");
@@ -224,7 +223,7 @@ public class SdcRemoteDevicesConnectorImpl implements SdcRemoteDevicesConnector,
     public ListenableFuture<?> disconnect(URI eprAddress) {
         SdcRemoteDevice sdcRemoteDevice = sdcRemoteDevices.remove(eprAddress);
         if (sdcRemoteDevice != null) {
-            return executorService.getExecutorService().submit(() -> {
+            return executorService.get().submit(() -> {
                 // invalidate sdcRemoteDevice
                 // unsubscribe everything
                 sdcRemoteDevice.stopAsync().awaitTerminated();

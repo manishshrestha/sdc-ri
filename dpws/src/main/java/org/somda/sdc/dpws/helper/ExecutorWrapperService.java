@@ -74,7 +74,7 @@ public class ExecutorWrapperService<T extends ExecutorService> extends AbstractI
      * @return {@linkplain ExecutorService} instance
      * @throws RuntimeException when the service isn't running yet
      */
-    public T getExecutorService() {
+    public T get() {
         if (isRunning()) {
             return executorService;
         } else {

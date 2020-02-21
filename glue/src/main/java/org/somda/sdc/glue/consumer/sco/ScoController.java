@@ -71,7 +71,7 @@ public class ScoController implements SetServiceAccess {
             T setRequest,
             @Nullable java.util.function.Consumer<OperationInvokedReport.ReportPart> reportListener,
             Class<V> responseClass) {
-        return executorService.getExecutorService().submit(() -> {
+        return executorService.get().submit(() -> {
             LOG.debug("Invoke {} operation with payload: {}", setRequest.getClass().getSimpleName(), setRequest.toString());
             final V response = responseClass.cast(sendMessage(setRequest, responseClass));
             LOG.debug("Received {} message with payload: {}", response.getClass().getSimpleName(), response.toString());

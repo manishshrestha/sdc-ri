@@ -123,7 +123,7 @@ public class SourceSubscriptionManagerImpl extends AbstractExecutionThreadServic
             return;
         }
 
-        networkJobExecutor.getExecutorService().submit(() -> {
+        networkJobExecutor.get().submit(() -> {
             try {
                 endToSender.sendNotification(endToMessage);
             } catch (Exception e) {

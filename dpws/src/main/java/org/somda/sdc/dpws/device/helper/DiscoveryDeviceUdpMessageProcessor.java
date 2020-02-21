@@ -113,7 +113,7 @@ public class DiscoveryDeviceUdpMessageProcessor implements UdpMessageQueueObserv
         byte[] bytes = os.toByteArray();
 
         int wait = randomNumbers.nextInt((int) WsDiscoveryConstants.APP_MAX_DELAY.toMillis() + 1);
-        scheduledExecutorService.getExecutorService().schedule(() ->
+        scheduledExecutorService.get().schedule(() ->
                         udpMessageQueueService.sendMessage(new UdpMessage(bytes, bytes.length, msg.getHost(), msg.getPort())),
                 wait, TimeUnit.MILLISECONDS);
     }

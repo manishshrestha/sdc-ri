@@ -162,7 +162,7 @@ public class WsDiscoveryClientInterceptor implements WsDiscoveryClient {
     public ListenableFuture<ProbeMatchesType> sendDirectedProbe(RequestResponseClient rrClient,
                                                                 List<QName> types,
                                                                 List<String> scopes) {
-        return executorService.getExecutorService().submit(() -> {
+        return executorService.get().submit(() -> {
             SoapMessage response = rrClient.sendRequestResponse(createProbeMessage(types, scopes));
             return soapUtil.getBody(response, ProbeMatchesType.class)
                     .orElseThrow(() -> new RuntimeException("SOAP message body malformed"));
@@ -178,7 +178,7 @@ public class WsDiscoveryClientInterceptor implements WsDiscoveryClient {
         AttributedURIType msgId = wsaUtil.createAttributedURIType(msgIdUri);
         probeMsg.getWsAddressingHeader().setMessageId(msgId);
 
-        ListenableFuture<Integer> future = executorService.getExecutorService().submit(new ProbeRunnable(probeId, maxResults,
+        ListenableFuture<Integer> future = executorService.get().submit(new ProbeRunnable(probeId, maxResults,
                 maxWaitForProbeMatches, msgIdUri.toString(), probeLock, probeCondition, getProbeMatchesBuffer(),
                 soapUtil, helloByeProbeEvents));
 
@@ -206,7 +206,7 @@ public class WsDiscoveryClientInterceptor implements WsDiscoveryClient {
         AttributedURIType msgId = wsaUtil.createAttributedURIType(msgIdUri);
         resolveMsg.getWsAddressingHeader().setMessageId(msgId);
 
-        ListenableFuture<ResolveMatchesType> future = executorService.getExecutorService().submit(
+        ListenableFuture<ResolveMatchesType> future = executorService.get().submit(
                 new ResolveCallable(maxWaitForResolveMatches, msgIdUri.toString(), resolveLock, resolveCondition,
                         getResolveMatchesBuffer(), soapUtil));
 

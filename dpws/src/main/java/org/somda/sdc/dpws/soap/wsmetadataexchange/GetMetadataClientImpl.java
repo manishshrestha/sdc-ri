@@ -29,7 +29,7 @@ public class GetMetadataClientImpl implements GetMetadataClient{
 
     @Override
     public ListenableFuture<SoapMessage> sendGetMetadata(RequestResponseClient requestResponseClient) {
-        return executorService.getExecutorService().submit(() -> requestResponseClient.sendRequestResponse(
+        return executorService.get().submit(() -> requestResponseClient.sendRequestResponse(
                 soapUtil.createMessage(WsMetadataExchangeConstants.WSA_ACTION_GET_METADATA_REQUEST,
                         wsmexFactory.createGetMetadata())));
     }
