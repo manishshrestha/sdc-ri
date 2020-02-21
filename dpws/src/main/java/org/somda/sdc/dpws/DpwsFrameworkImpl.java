@@ -138,7 +138,7 @@ public class DpwsFrameworkImpl extends AbstractIdleService implements DpwsFramew
 
     public DpwsFramework setNetworkInterface(NetworkInterface networkInterface) {
         if (isRunning()) {
-            LOG.warn("Framework is already running, cannot change network interface.");
+            LOG.warn("Framework is already running, cannot change network interface");
             return this;
         }
         this.networkInterface = networkInterface;
@@ -147,8 +147,8 @@ public class DpwsFrameworkImpl extends AbstractIdleService implements DpwsFramew
 
     public void registerService(Collection<Service> services) {
         if (isRunning()) {
-            LOG.error("Cannot handle registering services during runtime!");
-            throw new RuntimeException("Cannot handle registering services during runtime!");
+            LOG.error("Cannot handle registering services during runtime");
+            throw new RuntimeException("Cannot handle registering services during runtime");
         }
         // don't add any duplicates
         services.forEach(
