@@ -8,20 +8,21 @@ import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.inject.Inject;
 import com.google.inject.assistedinject.Assisted;
-import org.somda.sdc.dpws.client.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.somda.sdc.dpws.client.DiscoveredDevice;
 import org.somda.sdc.dpws.client.event.DeviceEnteredMessage;
 import org.somda.sdc.dpws.client.event.DeviceLeftMessage;
 import org.somda.sdc.dpws.client.event.DeviceProbeTimeoutMessage;
 import org.somda.sdc.dpws.client.event.ProbedDeviceFoundMessage;
 import org.somda.sdc.dpws.guice.NetworkJobThreadPool;
+import org.somda.sdc.dpws.helper.ExecutorWrapperService;
 import org.somda.sdc.dpws.soap.wsaddressing.WsAddressingUtil;
-import org.somda.sdc.dpws.soap.wsdiscovery.*;
+import org.somda.sdc.dpws.soap.wsdiscovery.HelloByeAndProbeMatchesObserver;
 import org.somda.sdc.dpws.soap.wsdiscovery.event.ByeMessage;
 import org.somda.sdc.dpws.soap.wsdiscovery.event.HelloMessage;
 import org.somda.sdc.dpws.soap.wsdiscovery.event.ProbeMatchesMessage;
 import org.somda.sdc.dpws.soap.wsdiscovery.event.ProbeTimeoutMessage;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
 import java.net.URI;
@@ -34,13 +35,13 @@ public class HelloByeAndProbeMatchesObserverImpl implements HelloByeAndProbeMatc
     private static final Logger LOG = LoggerFactory.getLogger(HelloByeAndProbeMatchesObserverImpl.class);
 
     private final DiscoveredDeviceResolver discoveredDeviceResolver;
-    private final ListeningExecutorService networkJobExecutor;
+    private final ExecutorWrapperService<ListeningExecutorService> networkJobExecutor;
     private final WsAddressingUtil wsaUtil;
     private final EventBus discoveryBus;
 
     @Inject
     HelloByeAndProbeMatchesObserverImpl(@Assisted DiscoveredDeviceResolver discoveredDeviceResolver,
-                                        @NetworkJobThreadPool ListeningExecutorService networkJobExecutor,
+                                        @NetworkJobThreadPool ExecutorWrapperService<ListeningExecutorService> networkJobExecutor,
                                         WsAddressingUtil wsaUtil) {
         this.discoveredDeviceResolver = discoveredDeviceResolver;
         this.networkJobExecutor = networkJobExecutor;
@@ -62,7 +63,7 @@ public class HelloByeAndProbeMatchesObserverImpl implements HelloByeAndProbeMatc
 
     @Subscribe
     void onHello(HelloMessage helloMessage) {
-        ListenableFuture<Optional<DiscoveredDevice>> future = networkJobExecutor.submit(() ->
+        ListenableFuture<Optional<DiscoveredDevice>> future = networkJobExecutor.getExecutorService().submit(() ->
                 discoveredDeviceResolver.resolve(helloMessage));
         Futures.addCallback(future, new FutureCallback<>() {
             @SuppressWarnings("OptionalAssignedToNull")
@@ -80,7 +81,7 @@ public class HelloByeAndProbeMatchesObserverImpl implements HelloByeAndProbeMatc
             public void onFailure(Throwable throwable) {
                 LOG.trace("Error while processing Hello message.", throwable);
             }
-        }, networkJobExecutor);
+        }, networkJobExecutor.getExecutorService());
     }
 
     @Subscribe
@@ -94,7 +95,7 @@ public class HelloByeAndProbeMatchesObserverImpl implements HelloByeAndProbeMatc
      */
     @Subscribe
     void onProbeMatches(ProbeMatchesMessage probeMatchesMessage) {
-        ListenableFuture<Optional<DiscoveredDevice>> future = networkJobExecutor.submit(() ->
+        ListenableFuture<Optional<DiscoveredDevice>> future = networkJobExecutor.getExecutorService().submit(() ->
                 discoveredDeviceResolver.resolve(probeMatchesMessage));
         Futures.addCallback(future, new FutureCallback<>() {
             @SuppressWarnings("OptionalAssignedToNull")
@@ -113,7 +114,7 @@ public class HelloByeAndProbeMatchesObserverImpl implements HelloByeAndProbeMatc
             public void onFailure(Throwable throwable) {
                 // nothing to do here - log messages were created by DiscoveredDeviceResolver util
             }
-        }, networkJobExecutor);
+        }, networkJobExecutor.getExecutorService());
     }
 
     @Subscribe

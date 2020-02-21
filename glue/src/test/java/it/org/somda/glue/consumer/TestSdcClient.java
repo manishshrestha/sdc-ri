@@ -4,6 +4,7 @@ import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.inject.Injector;
+import com.google.inject.TypeLiteral;
 import it.org.somda.glue.common.IntegrationTestPeer;
 import it.org.somda.sdc.dpws.MockedUdpBindingModule;
 import org.slf4j.Logger;
@@ -11,9 +12,9 @@ import org.slf4j.LoggerFactory;
 import org.somda.sdc.dpws.DpwsConfig;
 import org.somda.sdc.dpws.DpwsFramework;
 import org.somda.sdc.dpws.client.Client;
-import org.somda.sdc.dpws.factory.DpwsFrameworkFactory;
 import org.somda.sdc.dpws.guice.NetworkJobThreadPool;
 import org.somda.sdc.dpws.guice.WsDiscovery;
+import org.somda.sdc.dpws.helper.ExecutorWrapperService;
 import org.somda.sdc.dpws.soap.wsdiscovery.WsDiscoveryConfig;
 import org.somda.sdc.glue.consumer.SdcRemoteDevicesConnector;
 import org.somda.sdc.glue.guice.GlueDpwsConfigModule;
@@ -23,9 +24,8 @@ import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.time.Duration;
-import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
 
 public class TestSdcClient extends IntegrationTestPeer {
@@ -45,26 +45,37 @@ public class TestSdcClient extends IntegrationTestPeer {
                         super.customConfigure();
 
                         // bump network pool size because of parallelism tests
-                        bind(ListeningExecutorService.class)
-                                .annotatedWith(NetworkJobThreadPool.class)
-                                .toInstance(MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(
-                                        30,
-                                        new ThreadFactoryBuilder()
-                                                .setNameFormat("NetworkJobThreadPool-thread-%d")
-                                                .setDaemon(true)
-                                                .build()
-                                )));
+                        {
+                            Callable<ListeningExecutorService> executor = () -> MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(
+                                    30,
+                                    new ThreadFactoryBuilder()
+                                            .setNameFormat("NetworkJobThreadPool-thread-%d")
+                                            .setDaemon(true)
+                                            .build()
+                            ));
+                            var annotation = NetworkJobThreadPool.class;
 
-                        bind(ExecutorService.class)
-                                .annotatedWith(WsDiscovery.class)
-                                .toInstance(Executors.newFixedThreadPool(
-                                        30,
-                                        new ThreadFactoryBuilder()
-                                                .setNameFormat("WsDiscovery-thread-%d")
-                                                .setDaemon(true)
-                                                .build()
-                                ));
+                            var executorWrapper = new ExecutorWrapperService<>(executor, annotation.getSimpleName());
+                            bind(new TypeLiteral<ExecutorWrapperService<ListeningExecutorService>>() {
+                            })
+                                    .annotatedWith(annotation)
+                                    .toInstance(executorWrapper);
+                        }
+                        {
+                            Callable<ListeningExecutorService> executor = () -> MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(
+                                    30,
+                                    new ThreadFactoryBuilder()
+                                            .setNameFormat("WsDiscovery-thread-%d")
+                                            .setDaemon(true)
+                                            .build()
+                            ));
+                            var annotation = WsDiscovery.class;
 
+                            var executorWrapper = new ExecutorWrapperService<>(executor, annotation.getSimpleName());
+                            bind(new TypeLiteral<ExecutorWrapperService<ListeningExecutorService>>(){})
+                                    .annotatedWith(annotation)
+                                    .toInstance(executorWrapper);
+                        }
 
                         if (CIDetector.isRunningInCi()) {
                             var httpTimeouts = Duration.ofSeconds(120);
@@ -110,8 +121,8 @@ public class TestSdcClient extends IntegrationTestPeer {
 
     @Override
     protected void startUp() throws SocketException {
-        this.dpwsFramework = getInjector().getInstance(DpwsFrameworkFactory.class)
-                .createDpwsFramework(NetworkInterface.getByInetAddress(InetAddress.getLoopbackAddress()));
+        this.dpwsFramework = getInjector().getInstance(DpwsFramework.class)
+                .setNetworkInterface(NetworkInterface.getByInetAddress(InetAddress.getLoopbackAddress()));
         dpwsFramework.startAsync().awaitRunning();
         client.startAsync().awaitRunning();
     }

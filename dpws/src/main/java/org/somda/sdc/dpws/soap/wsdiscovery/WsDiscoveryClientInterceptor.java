@@ -5,11 +5,11 @@ import com.google.common.eventbus.EventBus;
 import com.google.common.primitives.UnsignedInteger;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListeningExecutorService;
-import com.google.common.util.concurrent.MoreExecutors;
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
 import com.google.inject.name.Named;
 import org.somda.sdc.dpws.guice.WsDiscovery;
+import org.somda.sdc.dpws.helper.ExecutorWrapperService;
 import org.somda.sdc.dpws.soap.NotificationSource;
 import org.somda.sdc.dpws.soap.RequestResponseClient;
 import org.somda.sdc.dpws.soap.SoapMessage;
@@ -26,14 +26,25 @@ import org.somda.sdc.dpws.soap.wsdiscovery.event.ByeMessage;
 import org.somda.sdc.dpws.soap.wsdiscovery.event.HelloMessage;
 import org.somda.sdc.dpws.soap.wsdiscovery.event.ProbeMatchesMessage;
 import org.somda.sdc.dpws.soap.wsdiscovery.event.ProbeTimeoutMessage;
-import org.somda.sdc.dpws.soap.wsdiscovery.model.*;
+import org.somda.sdc.dpws.soap.wsdiscovery.model.AppSequenceType;
+import org.somda.sdc.dpws.soap.wsdiscovery.model.ByeType;
+import org.somda.sdc.dpws.soap.wsdiscovery.model.HelloType;
+import org.somda.sdc.dpws.soap.wsdiscovery.model.ObjectFactory;
+import org.somda.sdc.dpws.soap.wsdiscovery.model.ProbeMatchesType;
+import org.somda.sdc.dpws.soap.wsdiscovery.model.ProbeType;
+import org.somda.sdc.dpws.soap.wsdiscovery.model.ResolveMatchesType;
+import org.somda.sdc.dpws.soap.wsdiscovery.model.ResolveType;
+import org.somda.sdc.dpws.soap.wsdiscovery.model.ScopesType;
 
 import javax.xml.namespace.QName;
 import java.net.URI;
 import java.time.Duration;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
@@ -52,7 +63,7 @@ public class WsDiscoveryClientInterceptor implements WsDiscoveryClient {
     private final Integer resolveMatchesBufferSize;
     private final WsDiscoveryUtil wsdUtil;
     private final UnsignedInteger instanceId;
-    private final ListeningExecutorService executorService;
+    private final ExecutorWrapperService<ListeningExecutorService> executorService;
     private final NotificationSource notificationSource;
     private final ObjectFactory wsdFactory;
     private final SoapUtil soapUtil;
@@ -76,7 +87,7 @@ public class WsDiscoveryClientInterceptor implements WsDiscoveryClient {
                                  @Named(WsDiscoveryConfig.PROBE_MATCHES_BUFFER_SIZE) Integer probeMatchesBufferSize,
                                  @Named(WsDiscoveryConfig.RESOLVE_MATCHES_BUFFER_SIZE) Integer resolveMatchesBufferSize,
                                  WsDiscoveryUtil wsdUtil,
-                                 @WsDiscovery ExecutorService executorService,
+                                 @WsDiscovery ExecutorWrapperService<ListeningExecutorService> executorService,
                                  ObjectFactory wsdFactory,
                                  SoapUtil soapUtil,
                                  EventBus helloByeProbeEvents,
@@ -86,7 +97,7 @@ public class WsDiscoveryClientInterceptor implements WsDiscoveryClient {
         this.probeMatchesBufferSize = probeMatchesBufferSize;
         this.resolveMatchesBufferSize = resolveMatchesBufferSize;
         this.wsdUtil = wsdUtil;
-        this.executorService = MoreExecutors.listeningDecorator(executorService);
+        this.executorService = executorService;
         this.notificationSource = notificationSource;
         this.wsdFactory = wsdFactory;
         this.soapUtil = soapUtil;
@@ -151,7 +162,7 @@ public class WsDiscoveryClientInterceptor implements WsDiscoveryClient {
     public ListenableFuture<ProbeMatchesType> sendDirectedProbe(RequestResponseClient rrClient,
                                                                 List<QName> types,
                                                                 List<String> scopes) {
-        return executorService.submit(() -> {
+        return executorService.getExecutorService().submit(() -> {
             SoapMessage response = rrClient.sendRequestResponse(createProbeMessage(types, scopes));
             return soapUtil.getBody(response, ProbeMatchesType.class)
                     .orElseThrow(() -> new RuntimeException("SOAP message body malformed"));
@@ -167,7 +178,7 @@ public class WsDiscoveryClientInterceptor implements WsDiscoveryClient {
         AttributedURIType msgId = wsaUtil.createAttributedURIType(msgIdUri);
         probeMsg.getWsAddressingHeader().setMessageId(msgId);
 
-        ListenableFuture<Integer> future = executorService.submit(new ProbeRunnable(probeId, maxResults,
+        ListenableFuture<Integer> future = executorService.getExecutorService().submit(new ProbeRunnable(probeId, maxResults,
                 maxWaitForProbeMatches, msgIdUri.toString(), probeLock, probeCondition, getProbeMatchesBuffer(),
                 soapUtil, helloByeProbeEvents));
 
@@ -195,7 +206,7 @@ public class WsDiscoveryClientInterceptor implements WsDiscoveryClient {
         AttributedURIType msgId = wsaUtil.createAttributedURIType(msgIdUri);
         resolveMsg.getWsAddressingHeader().setMessageId(msgId);
 
-        ListenableFuture<ResolveMatchesType> future = executorService.submit(
+        ListenableFuture<ResolveMatchesType> future = executorService.getExecutorService().submit(
                 new ResolveCallable(maxWaitForResolveMatches, msgIdUri.toString(), resolveLock, resolveCondition,
                         getResolveMatchesBuffer(), soapUtil));
 

@@ -1,26 +1,33 @@
 package org.somda.sdc.dpws;
 
 import com.google.common.util.concurrent.AbstractIdleService;
+import com.google.common.util.concurrent.ListeningExecutorService;
+import com.google.common.util.concurrent.Service;
 import com.google.common.util.concurrent.ServiceManager;
-import com.google.inject.assistedinject.Assisted;
-import com.google.inject.assistedinject.AssistedInject;
+import com.google.inject.Inject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.somda.sdc.dpws.guice.AppDelayExecutor;
 import org.somda.sdc.dpws.guice.DiscoveryUdpQueue;
-import org.somda.sdc.dpws.udp.factory.UdpBindingServiceFactory;
+import org.somda.sdc.dpws.guice.NetworkJobThreadPool;
+import org.somda.sdc.dpws.guice.WsDiscovery;
+import org.somda.sdc.dpws.helper.ExecutorWrapperService;
 import org.somda.sdc.dpws.http.HttpServerRegistry;
 import org.somda.sdc.dpws.soap.SoapMarshalling;
 import org.somda.sdc.dpws.soap.wsdiscovery.WsDiscoveryConstants;
 import org.somda.sdc.dpws.udp.UdpBindingService;
 import org.somda.sdc.dpws.udp.UdpMessageQueueService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.somda.sdc.dpws.udp.factory.UdpBindingServiceFactory;
 
-import javax.annotation.Nullable;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.net.UnknownHostException;
-import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
+import java.util.concurrent.ScheduledExecutorService;
 
 /**
  * Default implementation of {@link DpwsFramework}.
@@ -35,50 +42,59 @@ public class DpwsFrameworkImpl extends AbstractIdleService implements DpwsFramew
     private final SoapMarshalling soapMarshalling;
 
     private ServiceManager serviceManager;
+    private final List<Service> registeredServices;
     private UdpBindingService udpBindingService;
+    private boolean wasStarted;
 
-    @AssistedInject
+    @Inject
     DpwsFrameworkImpl(@DiscoveryUdpQueue UdpMessageQueueService udpMessageQueueService,
                       UdpBindingServiceFactory udpBindingServiceFactory,
                       HttpServerRegistry httpServerRegistry,
-                      SoapMarshalling soapMarshalling) {
-        this(null, udpMessageQueueService, udpBindingServiceFactory, httpServerRegistry, soapMarshalling);
-    }
-
-    @AssistedInject
-    DpwsFrameworkImpl(@Assisted @Nullable NetworkInterface networkInterface,
-                      @DiscoveryUdpQueue UdpMessageQueueService udpMessageQueueService,
-                      UdpBindingServiceFactory udpBindingServiceFactory,
-                      HttpServerRegistry httpServerRegistry,
-                      SoapMarshalling soapMarshalling) {
-        this.networkInterface = networkInterface;
+                      SoapMarshalling soapMarshalling,
+                      @AppDelayExecutor ExecutorWrapperService<ScheduledExecutorService> appDelayExecutor,
+                      @NetworkJobThreadPool ExecutorWrapperService<ListeningExecutorService> networkJobExecutor,
+                      @WsDiscovery ExecutorWrapperService<ListeningExecutorService> wsDiscoveryExecutor) {
         this.udpMessageQueueService = udpMessageQueueService;
         this.udpBindingServiceFactory = udpBindingServiceFactory;
         this.httpServerRegistry = httpServerRegistry;
         this.soapMarshalling = soapMarshalling;
+        this.wasStarted = false;
+        this.registeredServices = new ArrayList<>();
+        registeredServices.addAll(List.of(
+                // dpws thread pools
+                appDelayExecutor, networkJobExecutor, wsDiscoveryExecutor
+        ));
     }
 
     @Override
     protected void startUp() throws SocketException, UnknownHostException {
+        if (!isRunning() && wasStarted) {
+            LOG.error("DPWS framework cannot be restarted after a shutdown!");
+            throw new RuntimeException("DPWS framework cannot be restarted after a shutdown!");
+        }
         LOG.info("Start SDCri DPWS framework");
 
         if (networkInterface == null) {
             networkInterface = NetworkInterface.getByInetAddress(InetAddress.getLoopbackAddress());
+            LOG.info("Initializing dpws framework with loopback interface {}", networkInterface);
         }
 
         printNetworkInterfaceInformation();
 
         configureDiscovery();
-        serviceManager = new ServiceManager(Arrays.asList(udpBindingService, udpMessageQueueService,
-                httpServerRegistry, soapMarshalling));
+        registeredServices.addAll(List.of(
+                // dpws services
+                udpBindingService, udpMessageQueueService, httpServerRegistry, soapMarshalling
+        ));
+        serviceManager = new ServiceManager(registeredServices);
         serviceManager.startAsync().awaitHealthy();
+        this.wasStarted = true;
         LOG.info("SDCri DPWS framework is ready for use");
     }
 
     private void printNetworkInterfaceInformation() throws SocketException {
         Iterator<NetworkInterface> networkInterfaceIterator = NetworkInterface.getNetworkInterfaces().asIterator();
-        while (networkInterfaceIterator.hasNext())
-        {
+        while (networkInterfaceIterator.hasNext()) {
             NetworkInterface networkInterface = networkInterfaceIterator.next();
             LOG.info("Found network interface: [{};isUp={};isLoopBack={},supportsMulticast={},MTU={},isVirtual={}]",
                     networkInterface,
@@ -89,8 +105,7 @@ public class DpwsFrameworkImpl extends AbstractIdleService implements DpwsFramew
                     networkInterface.isVirtual());
             Iterator<InetAddress> inetAddressIterator = networkInterface.getInetAddresses().asIterator();
             int i = 0;
-            while (inetAddressIterator.hasNext())
-            {
+            while (inetAddressIterator.hasNext()) {
                 LOG.info("{}.address[{}]: {}", networkInterface.getName(), i++, inetAddressIterator.next());
             }
         }
@@ -119,5 +134,29 @@ public class DpwsFrameworkImpl extends AbstractIdleService implements DpwsFramew
                 DpwsConstants.MAX_UDP_ENVELOPE_SIZE);
         udpMessageQueueService.setUdpBinding(udpBindingService);
         udpBindingService.setMessageReceiver(udpMessageQueueService);
+    }
+
+    public DpwsFramework setNetworkInterface(NetworkInterface networkInterface) {
+        if (isRunning()) {
+            LOG.warn("Framework is already running, cannot change network interface.");
+            return this;
+        }
+        this.networkInterface = networkInterface;
+        return this;
+    }
+
+    public void registerService(Collection<Service> services) {
+        if (isRunning()) {
+            LOG.error("Cannot handle registering services during runtime!");
+            throw new RuntimeException("Cannot handle registering services during runtime!");
+        }
+        // don't add any duplicates
+        services.forEach(
+                service -> {
+                    if (!registeredServices.contains(service)) {
+                        registeredServices.add(service);
+                    }
+                }
+        );
     }
 }

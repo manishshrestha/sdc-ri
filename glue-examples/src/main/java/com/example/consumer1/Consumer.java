@@ -5,10 +5,23 @@ import com.google.common.eventbus.Subscribe;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.SettableFuture;
 import com.google.inject.Injector;
-import org.apache.commons.cli.*;
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.CommandLineParser;
+import org.apache.commons.cli.DefaultParser;
+import org.apache.commons.cli.HelpFormatter;
+import org.apache.commons.cli.Option;
+import org.apache.commons.cli.Options;
+import org.apache.commons.cli.ParseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.somda.sdc.biceps.model.message.*;
+import org.somda.sdc.biceps.model.message.Activate;
+import org.somda.sdc.biceps.model.message.ActivateResponse;
+import org.somda.sdc.biceps.model.message.InvocationState;
+import org.somda.sdc.biceps.model.message.OperationInvokedReport;
+import org.somda.sdc.biceps.model.message.SetString;
+import org.somda.sdc.biceps.model.message.SetStringResponse;
+import org.somda.sdc.biceps.model.message.SetValue;
+import org.somda.sdc.biceps.model.message.SetValueResponse;
 import org.somda.sdc.biceps.model.participant.AbstractContextState;
 import org.somda.sdc.biceps.model.participant.LocationContextState;
 import org.somda.sdc.biceps.model.participant.PatientContextState;
@@ -17,19 +30,31 @@ import org.somda.sdc.dpws.client.Client;
 import org.somda.sdc.dpws.client.DiscoveredDevice;
 import org.somda.sdc.dpws.client.DiscoveryObserver;
 import org.somda.sdc.dpws.client.event.ProbedDeviceFoundMessage;
-import org.somda.sdc.dpws.factory.DpwsFrameworkFactory;
 import org.somda.sdc.dpws.service.HostingServiceProxy;
 import org.somda.sdc.dpws.soap.exception.TransportException;
 import org.somda.sdc.dpws.soap.interception.InterceptorException;
-import org.somda.sdc.glue.consumer.*;
+import org.somda.sdc.glue.consumer.ConnectConfiguration;
+import org.somda.sdc.glue.consumer.PrerequisitesException;
+import org.somda.sdc.glue.consumer.SdcDiscoveryFilterBuilder;
+import org.somda.sdc.glue.consumer.SdcRemoteDevice;
+import org.somda.sdc.glue.consumer.SdcRemoteDevicesConnector;
+import org.somda.sdc.glue.consumer.SetServiceAccess;
 import org.somda.sdc.glue.consumer.sco.ScoTransaction;
 
 import javax.annotation.Nullable;
 import javax.net.ssl.HttpsURLConnection;
 import java.math.BigDecimal;
-import java.net.*;
+import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.net.SocketException;
+import java.net.URI;
+import java.net.UnknownHostException;
 import java.time.Duration;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -100,8 +125,7 @@ public class Consumer {
 
     protected void startUp() throws SocketException {
         // provide the name of your network adapter
-        this.dpwsFramework = injector.getInstance(DpwsFrameworkFactory.class)
-                .createDpwsFramework(networkInterface);
+        this.dpwsFramework = injector.getInstance(DpwsFramework.class).setNetworkInterface(networkInterface);
         dpwsFramework.startAsync().awaitRunning();
         client.startAsync().awaitRunning();
     }

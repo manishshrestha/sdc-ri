@@ -4,6 +4,8 @@ import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.somda.sdc.common.util.JaxbUtil;
 import org.somda.sdc.dpws.DpwsConfig;
 import org.somda.sdc.dpws.DpwsConstants;
@@ -11,8 +13,13 @@ import org.somda.sdc.dpws.TransportBinding;
 import org.somda.sdc.dpws.client.DiscoveredDevice;
 import org.somda.sdc.dpws.factory.TransportBindingFactory;
 import org.somda.sdc.dpws.guice.NetworkJobThreadPool;
+import org.somda.sdc.dpws.helper.ExecutorWrapperService;
 import org.somda.sdc.dpws.http.HttpUriBuilder;
-import org.somda.sdc.dpws.model.*;
+import org.somda.sdc.dpws.model.HostServiceType;
+import org.somda.sdc.dpws.model.HostedServiceType;
+import org.somda.sdc.dpws.model.Relationship;
+import org.somda.sdc.dpws.model.ThisDeviceType;
+import org.somda.sdc.dpws.model.ThisModelType;
 import org.somda.sdc.dpws.network.LocalAddressResolver;
 import org.somda.sdc.dpws.service.HostedServiceProxy;
 import org.somda.sdc.dpws.service.HostingServiceProxy;
@@ -32,14 +39,16 @@ import org.somda.sdc.dpws.soap.wsmetadataexchange.GetMetadataClient;
 import org.somda.sdc.dpws.soap.wsmetadataexchange.model.Metadata;
 import org.somda.sdc.dpws.soap.wsmetadataexchange.model.MetadataSection;
 import org.somda.sdc.dpws.soap.wstransfer.TransferGetClient;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
 import javax.xml.namespace.QName;
 import java.net.URI;
 import java.time.Duration;
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -48,7 +57,7 @@ import java.util.concurrent.TimeUnit;
 public class HostingServiceResolver {
     private static final Logger LOG = LoggerFactory.getLogger(HostingServiceResolver.class);
 
-    private final ListeningExecutorService networkJobExecutor;
+    private final ExecutorWrapperService<ListeningExecutorService> networkJobExecutor;
     private final LocalAddressResolver localAddressResolver;
     private final TransportBindingFactory transportBindingFactory;
     private final RequestResponseClientFactory requestResponseClientFactory;
@@ -65,7 +74,7 @@ public class HostingServiceResolver {
 
     @Inject
     HostingServiceResolver(@Named(DpwsConfig.MAX_WAIT_FOR_FUTURES) Duration maxWaitForFutures,
-                           @NetworkJobThreadPool ListeningExecutorService networkJobExecutor,
+                           @NetworkJobThreadPool ExecutorWrapperService<ListeningExecutorService> networkJobExecutor,
                            LocalAddressResolver localAddressResolver,
                            TransportBindingFactory transportBindingFactory,
                            RequestResponseClientFactory requestResponseClientFactory,
@@ -108,7 +117,7 @@ public class HostingServiceResolver {
      * @return Future with resolved hosting service and hosted service information.
      */
     public ListenableFuture<HostingServiceProxy> resolveHostingService(DiscoveredDevice discoveredDevice) {
-        return networkJobExecutor.submit(() -> {
+        return networkJobExecutor.getExecutorService().submit(() -> {
             if (discoveredDevice.getXAddrs().isEmpty()) {
                 throw new IllegalArgumentException("Given device proxy has no XAddrs. Connection aborted.");
             }

@@ -7,6 +7,7 @@ import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
 import org.slf4j.Logger;
 import org.somda.sdc.dpws.client.Client;
+import org.somda.sdc.dpws.helper.ExecutorWrapperService;
 import org.somda.sdc.dpws.service.HostedServiceProxy;
 import org.somda.sdc.dpws.service.HostingServiceProxy;
 import org.somda.sdc.dpws.soap.wsdiscovery.model.ProbeMatchesType;
@@ -46,7 +47,7 @@ public class SdcRemoteDeviceWatchdog extends AbstractIdleService {
     private final Logger LOG;
     private final HostingServiceProxy hostingServiceProxy;
     private final Map<String, SubscribeResult> subscriptions;
-    private final ScheduledExecutorService watchdogExecutor;
+    private final ExecutorWrapperService<ScheduledExecutorService> watchdogExecutor;
     private final Duration watchdogPeriod;
     private final Duration requestedExpires;
     private final EventBus eventBus;
@@ -56,7 +57,7 @@ public class SdcRemoteDeviceWatchdog extends AbstractIdleService {
     SdcRemoteDeviceWatchdog(@Assisted HostingServiceProxy hostingServiceProxy,
                             @Assisted Map<String, SubscribeResult> subscriptions,
                             @Assisted @Nullable WatchdogObserver initialWatchdogObserver,
-                            @WatchdogScheduledExecutor ScheduledExecutorService watchdogExecutor,
+                            @WatchdogScheduledExecutor ExecutorWrapperService<ScheduledExecutorService> watchdogExecutor,
                             @Named(ConsumerConfig.WATCHDOG_PERIOD) Duration watchdogPeriod,
                             EventBus eventBus,
                             Client client) {
@@ -94,7 +95,7 @@ public class SdcRemoteDeviceWatchdog extends AbstractIdleService {
 
     @Override
     protected void startUp() {
-        watchdogExecutor.schedule(new WatchdogJob(), watchdogPeriod.toMillis(), TimeUnit.MILLISECONDS);
+        watchdogExecutor.getExecutorService().schedule(new WatchdogJob(), watchdogPeriod.toMillis(), TimeUnit.MILLISECONDS);
     }
 
     @Override
@@ -166,7 +167,7 @@ public class SdcRemoteDeviceWatchdog extends AbstractIdleService {
             }
 
             if (isRunning()) {
-                watchdogExecutor.schedule(new WatchdogJob(), timeout.toMillis(), TimeUnit.MILLISECONDS);
+                watchdogExecutor.getExecutorService().schedule(new WatchdogJob(), timeout.toMillis(), TimeUnit.MILLISECONDS);
             }
         }
     }

@@ -14,7 +14,6 @@ import org.somda.sdc.biceps.testutil.Handles;
 import org.somda.sdc.biceps.testutil.MockEntryFactory;
 import org.somda.sdc.dpws.DpwsFramework;
 import org.somda.sdc.dpws.device.DeviceSettings;
-import org.somda.sdc.dpws.factory.DpwsFrameworkFactory;
 import org.somda.sdc.dpws.soap.wsaddressing.WsAddressingUtil;
 import org.somda.sdc.dpws.soap.wsaddressing.model.EndpointReferenceType;
 import org.somda.sdc.glue.common.MdibMapper;
@@ -41,7 +40,7 @@ public class RunTestSdcDevice {
 
         final NetworkInterface networkInterface = NetworkInterface.getByName("eth0"); // "wlan1");//InetAddress.getLocalHost());
 
-        final DpwsFramework dpwsFramework = injector.getInstance(DpwsFrameworkFactory.class).createDpwsFramework(networkInterface);
+        final DpwsFramework dpwsFramework = injector.getInstance(DpwsFramework.class).setNetworkInterface(networkInterface);
 
         BaseTreeModificationsSet baseTreeModificationsSet = new BaseTreeModificationsSet(new MockEntryFactory(
                 injector.getInstance(MdibTypeValidator.class)));
@@ -93,6 +92,7 @@ public class RunTestSdcDevice {
 
         System.in.read();
 
+        thread.interrupt();
         sdcDevice.stopAsync().awaitTerminated();
         dpwsFramework.stopAsync().awaitTerminated();
     }

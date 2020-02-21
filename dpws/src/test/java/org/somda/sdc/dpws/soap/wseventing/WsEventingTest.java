@@ -1,7 +1,10 @@
 package org.somda.sdc.dpws.soap.wseventing;
 
 import com.google.common.util.concurrent.ListenableFuture;
+import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.inject.AbstractModule;
+import com.google.inject.Key;
+import com.google.inject.TypeLiteral;
 import com.google.inject.name.Names;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -10,12 +13,18 @@ import org.somda.sdc.dpws.HttpServerRegistryMock;
 import org.somda.sdc.dpws.LocalAddressResolverMock;
 import org.somda.sdc.dpws.TransportBindingFactoryMock;
 import org.somda.sdc.dpws.factory.TransportBindingFactory;
+import org.somda.sdc.dpws.guice.NetworkJobThreadPool;
+import org.somda.sdc.dpws.helper.ExecutorWrapperService;
 import org.somda.sdc.dpws.http.HttpServerRegistry;
 import org.somda.sdc.dpws.model.HostedServiceType;
 import org.somda.sdc.dpws.model.ObjectFactory;
 import org.somda.sdc.dpws.network.LocalAddressResolver;
 import org.somda.sdc.dpws.service.factory.HostedServiceFactory;
-import org.somda.sdc.dpws.soap.*;
+import org.somda.sdc.dpws.soap.MarshallingService;
+import org.somda.sdc.dpws.soap.NotificationSink;
+import org.somda.sdc.dpws.soap.RequestResponseClient;
+import org.somda.sdc.dpws.soap.RequestResponseServer;
+import org.somda.sdc.dpws.soap.SoapMarshalling;
 import org.somda.sdc.dpws.soap.factory.RequestResponseClientFactory;
 import org.somda.sdc.dpws.soap.wsaddressing.WsAddressingUtil;
 import org.somda.sdc.dpws.soap.wseventing.factory.WsEventingEventSinkFactory;
@@ -25,7 +34,9 @@ import java.time.Duration;
 import java.util.Collections;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.greaterThan;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.lessThan;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
@@ -46,6 +57,12 @@ public class WsEventingTest extends DpwsTest {
     public void setUp() throws Exception {
         overrideBindings(new DpwsModuleReplacements());
         super.setUp();
+
+        // start required thread pool(s)
+        getInjector().getInstance(Key.get(
+                new TypeLiteral<ExecutorWrapperService<ListeningExecutorService>>(){},
+                NetworkJobThreadPool.class
+        )).startAsync().awaitRunning();
 
         getInjector().getInstance(SoapMarshalling.class).startAsync().awaitRunning();
 

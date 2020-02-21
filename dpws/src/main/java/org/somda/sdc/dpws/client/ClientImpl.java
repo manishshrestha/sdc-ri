@@ -1,15 +1,27 @@
 package org.somda.sdc.dpws.client;
 
-import com.google.common.util.concurrent.*;
+import com.google.common.util.concurrent.AbstractIdleService;
+import com.google.common.util.concurrent.FutureCallback;
+import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.ListenableFuture;
+import com.google.common.util.concurrent.ListeningExecutorService;
+import com.google.common.util.concurrent.Service;
+import com.google.common.util.concurrent.SettableFuture;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
-import org.somda.sdc.dpws.guice.DiscoveryUdpQueue;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.somda.sdc.dpws.DpwsConfig;
 import org.somda.sdc.dpws.TransportBinding;
-import org.somda.sdc.dpws.client.helper.*;
+import org.somda.sdc.dpws.client.helper.DiscoveredDeviceResolver;
+import org.somda.sdc.dpws.client.helper.DiscoveryClientUdpProcessor;
+import org.somda.sdc.dpws.client.helper.HelloByeAndProbeMatchesObserverImpl;
+import org.somda.sdc.dpws.client.helper.HostingServiceResolver;
 import org.somda.sdc.dpws.client.helper.factory.ClientHelperFactory;
 import org.somda.sdc.dpws.factory.TransportBindingFactory;
+import org.somda.sdc.dpws.guice.DiscoveryUdpQueue;
 import org.somda.sdc.dpws.guice.NetworkJobThreadPool;
+import org.somda.sdc.dpws.helper.ExecutorWrapperService;
 import org.somda.sdc.dpws.helper.NotificationSourceUdpCallback;
 import org.somda.sdc.dpws.helper.factory.DpwsHelperFactory;
 import org.somda.sdc.dpws.service.HostingServiceProxy;
@@ -29,8 +41,6 @@ import org.somda.sdc.dpws.soap.wsdiscovery.model.ProbeMatchesType;
 import org.somda.sdc.dpws.soap.wsdiscovery.model.ResolveMatchType;
 import org.somda.sdc.dpws.soap.wsdiscovery.model.ResolveMatchesType;
 import org.somda.sdc.dpws.udp.UdpMessageQueueService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
 import java.net.URI;
@@ -51,7 +61,7 @@ public class ClientImpl extends AbstractIdleService implements Client, Service, 
     private final DiscoveryClientUdpProcessor msgProcessor;
     private final HelloByeAndProbeMatchesObserverImpl helloByeAndProbeMatchesObserverImpl;
     private final WsDiscoveryClient wsDiscoveryClient;
-    private final ListeningExecutorService executorService;
+    private final ExecutorWrapperService<ListeningExecutorService> executorService;
     private final WsAddressingUtil wsAddressingUtil;
     private final TransportBindingFactory transportBindingFactory;
     private final RequestResponseClientFactory requestResponseClientFactory;
@@ -65,7 +75,7 @@ public class ClientImpl extends AbstractIdleService implements Client, Service, 
                @DiscoveryUdpQueue UdpMessageQueueService discoveryMessageQueue,
                NotificationSink notificationSink,
                ClientHelperFactory clientHelperFactory,
-               @NetworkJobThreadPool ListeningExecutorService executorService,
+               @NetworkJobThreadPool ExecutorWrapperService<ListeningExecutorService> executorService,
                WsAddressingUtil wsAddressingUtil,
                TransportBindingFactory transportBindingFactory,
                RequestResponseClientFactory requestResponseClientFactory,
@@ -154,7 +164,7 @@ public class ClientImpl extends AbstractIdleService implements Client, Service, 
                     LOG.trace("Resolve failed.", throwable);
                     deviceSettableFuture.setException(throwable);
                 }
-            }, executorService);
+            }, executorService.getExecutorService());
 
             return deviceSettableFuture;
         } catch (MarshallingException e) {
@@ -203,7 +213,7 @@ public class ClientImpl extends AbstractIdleService implements Client, Service, 
                 LOG.trace("Connecting to endpoint {} failed", eprAddress, throwable);
                 hspFuture.setException(throwable);
             }
-        }, executorService);
+        }, executorService.getExecutorService());
 
         return hspFuture;
     }
