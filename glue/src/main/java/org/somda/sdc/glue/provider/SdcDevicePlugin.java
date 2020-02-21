@@ -5,13 +5,15 @@ import org.somda.sdc.dpws.device.Device;
 import org.somda.sdc.glue.provider.sco.OperationInvocationReceiver;
 
 /**
- * Definition of a plugin for {@linkplain SdcDevice} that is called back during different stages of startup and shutdown.
+ * Definition of a plugin for {@linkplain SdcDevice} that is called back on different stages of startup and shutdown.
  * <p>
  * Every callback provides full control of {@link Device}.
  * There is also access to the {@link LocalMdibAccess} and {@link OperationInvocationReceiver} collection passed to
  * the {@link SdcDevice} constructor via {@link org.somda.sdc.glue.provider.factory.SdcDeviceFactory}.
  * <p>
  * All of the previously mentioned data is accessible through {@link SdcDeviceContext}.
+ * <p>
+ * The plugin mechanism can be used in order to run {@link LocalMdibAccess} controllers.
  */
 public interface SdcDevicePlugin {
     /**

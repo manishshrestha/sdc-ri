@@ -138,7 +138,7 @@ public class MdibVersion {
      * As the MDIB version is a triple consisting of at least one non-trivially comparable data type, it cannot be
      * compared the classical way.
      * Hence there is a set of rules that define what to expect depending on the data of that triple.
-     * For that reason this compare function introduces a forth result state, which is {@linkplain Optional#empty()},
+     * For that reason this compare function introduces a fourth result state, which is {@linkplain Optional#empty()},
      * in case that the non-trivially comparable sequence ids are not equal.
      *
      * @param rhs right hand side to compare.
@@ -150,7 +150,7 @@ public class MdibVersion {
      * <li>1 if {@code lhs.instanceId > rhs.instanceId || lhs.instanceId == rhs.instanceId && lhs.version > rhs.version}
      * </ul>
      */
-    public Optional<Integer> compareTo(@Nullable MdibVersion rhs) {
+    public Optional<Integer> compareToMdibVersion(@Nullable MdibVersion rhs) {
         if (rhs == null || !this.getSequenceId().equals(rhs.getSequenceId())) {
             return Optional.empty();
         }

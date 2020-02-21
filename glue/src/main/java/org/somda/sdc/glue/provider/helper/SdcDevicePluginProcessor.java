@@ -1,6 +1,5 @@
 package org.somda.sdc.glue.provider.helper;
 
-import jdk.jshell.spi.ExecutionControl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.somda.sdc.glue.provider.SdcDeviceContext;

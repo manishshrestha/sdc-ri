@@ -1,6 +1,7 @@
 package org.somda.sdc.glue.provider;
 
 import com.google.common.util.concurrent.AbstractIdleService;
+import com.google.inject.Provider;
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
 import org.somda.sdc.biceps.provider.access.LocalMdibAccess;
@@ -14,6 +15,7 @@ import org.somda.sdc.dpws.soap.wseventing.model.WsEventingStatus;
 import org.somda.sdc.glue.GlueConstants;
 import org.somda.sdc.glue.common.WsdlConstants;
 import org.somda.sdc.glue.provider.helper.SdcDevicePluginProcessor;
+import org.somda.sdc.glue.provider.plugin.SdcRequiredTypesAndScopes;
 import org.somda.sdc.glue.provider.sco.OperationInvocationReceiver;
 import org.somda.sdc.glue.provider.services.HighPriorityServices;
 import org.somda.sdc.glue.provider.services.factory.ServicesFactory;
@@ -46,9 +48,16 @@ public class SdcDevice extends AbstractIdleService implements Device, EventSourc
               @Assisted LocalMdibAccess mdibAccess,
               @Assisted("operationInvocationReceivers") Collection<OperationInvocationReceiver> operationInvocationReceivers,
               @Assisted("plugins") Collection<SdcDevicePlugin> plugins,
+              Provider<SdcRequiredTypesAndScopes> sdcRequiredTypesAndScopesProvider,
               DeviceFactory deviceFactory,
               ServicesFactory servicesFactory,
               HostedServiceFactory hostedServiceFactory) {
+
+        // Always support the minimally required types and scopes
+        if (plugins.isEmpty()) {
+            plugins = Collections.singleton(sdcRequiredTypesAndScopesProvider.get());
+        }
+
         this.mdibAccess = mdibAccess;
         this.plugins = plugins;
         this.dpwsDevice = deviceFactory.createDevice(deviceSettings);

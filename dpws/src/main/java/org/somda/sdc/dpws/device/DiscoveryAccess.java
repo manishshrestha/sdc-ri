@@ -25,9 +25,11 @@ public interface DiscoveryAccess {
     void setScopes(Collection<URI> scopes);
 
     /**
-     * Sends a Hello message if types or scopes have been reassigned.
+     * Sends a Hello message to the network.
      * <p>
-     * It is sufficient to only reset types or scopes no matter if the lists really changed.
+     * The Hello message will be sent only if {@link #setScopes(Collection)} or {@link #setTypes(Collection)} has been
+     * called prior to this function.
+     * This needs to be repeated for every Hello to be sent.
      */
     void sendHello();
 }

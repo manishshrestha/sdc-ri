@@ -26,7 +26,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 /**
- * Maps all WS-Disccovery Types and Scopes required by SDC and sends Hellos respectively.
+ * Maps all WS-Discovery Types and Scopes required by SDC and sends Hellos respectively.
  * <p>
  * In order to append custom scopes please consider using the {@link ScopesDecorator}.
  */

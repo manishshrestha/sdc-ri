@@ -296,6 +296,7 @@ public class SdcRequiredTypesAndScopesIT {
             this.scopesDecorator = scopesDecorator;
         }
 
+        @Override
         public void beforeStartUp(SdcDeviceContext context) throws Exception {
             scopesDecorator.init(context, Collections.emptySet());
             context.getLocalMdibAccess().registerObserver(this);
