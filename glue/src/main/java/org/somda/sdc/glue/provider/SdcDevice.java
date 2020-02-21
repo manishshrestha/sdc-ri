@@ -97,10 +97,11 @@ public class SdcDevice extends AbstractIdleService implements Device, EventSourc
      *
      * <em>Please note that the discovery access is managed by this class.
      * Overwriting types and/or scopes can cause negative side-effects.</em>
+     * <p>
+     * <em>It is recommended to use plugins to get access to the discovery access.</em>
      *
      * @return the discovery access.
      * @see Device#getDiscoveryAccess()
-     * @deprecated Use plugins to get access to discovery information
      */
     @Override
     @Deprecated
@@ -136,10 +137,11 @@ public class SdcDevice extends AbstractIdleService implements Device, EventSourc
 
     /**
      * Gets the hosting service access.
+     * <p>
+     * <em>It is recommended to use plugins to get access to hosting service information.</em>
      *
      * @return the hosting service access.
      * @see Device#getHostingServiceAccess()
-     * @deprecated Use plugins to get access to hosting service information
      */
     @Override
     @Deprecated
