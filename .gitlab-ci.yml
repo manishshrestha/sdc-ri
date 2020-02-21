@@ -46,3 +46,6 @@ deploy_snapshot:
     url: https://oss.sonatype.org/content/repositories/snapshots
   only:
     - develop
+  except:
+    variables:
+      - $NIGHTLY_TEST
