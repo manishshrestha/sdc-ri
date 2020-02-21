@@ -8,6 +8,14 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * Wraps an {@linkplain ExecutorService} into a guava {@linkplain AbstractIdleService}.
+ * <p>
+ * Wrapping {@linkplain ExecutorService}s into guava services allows orchestrating thread pool instances, especially
+ * shutting them down properly when shutting down a {@linkplain org.somda.sdc.dpws.DpwsFramework} instance.
+ *
+ * @param <T> actual type of the {@linkplain ExecutorService}
+ */
 public class ExecutorWrapperService<T extends ExecutorService> extends AbstractIdleService {
     private static Logger LOG = LoggerFactory.getLogger(ExecutorWrapperService.class);
     private static long STOP_TIMEOUT = 5;
@@ -17,11 +25,22 @@ public class ExecutorWrapperService<T extends ExecutorService> extends AbstractI
     private final String serviceName;
     private T executorService;
 
+
+    /**
+     * Create a wrapper around an {@linkplain ExecutorService}.
+     *
+     * @param serviceCreator Callable which returns an {@linkplain ExecutorService}.
+     */
     public ExecutorWrapperService(Callable<T> serviceCreator) {
-        this.serviceCreator = serviceCreator;
-        this.serviceName = "unknown service";
+        this(serviceCreator, "UNKNOWN");
     }
 
+    /**
+     * Create a wrapper around an {@linkplain ExecutorService}.
+     *
+     * @param serviceCreator Callable which returns an {@linkplain ExecutorService}.
+     * @param serviceName name for the service
+     */
     public ExecutorWrapperService(Callable<T> serviceCreator, String serviceName) {
         this.serviceCreator = serviceCreator;
         this.serviceName = serviceName;
@@ -47,6 +66,14 @@ public class ExecutorWrapperService<T extends ExecutorService> extends AbstractI
         }
     }
 
+    /**
+     * Get the {@linkplain ExecutorService} instance when service is running.
+     * <p>
+     * <em>Only ever access this once the service has been started!</em>
+     *
+     * @return {@linkplain ExecutorService} instance
+     * @throws RuntimeException when the service isn't running yet
+     */
     public T getExecutorService() {
         if (isRunning()) {
             return executorService;
