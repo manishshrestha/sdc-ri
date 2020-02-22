@@ -20,7 +20,9 @@ import org.somda.sdc.dpws.soap.wsaddressing.WsAddressingUtil;
 import org.somda.sdc.dpws.soap.wsaddressing.model.EndpointReferenceType;
 import org.somda.sdc.glue.guice.GlueDpwsConfigModule;
 import org.somda.sdc.glue.provider.SdcDevice;
+import org.somda.sdc.glue.provider.SdcDevicePlugin;
 import org.somda.sdc.glue.provider.factory.SdcDeviceFactory;
+import org.somda.sdc.glue.provider.plugin.SdcRequiredTypesAndScopes;
 import org.somda.sdc.glue.provider.sco.OperationInvocationReceiver;
 import test.org.somda.common.CIDetector;
 
@@ -40,10 +42,46 @@ public class TestSdcDevice extends IntegrationTestPeer {
     private static final Logger LOG = LoggerFactory.getLogger(TestSdcDevice.class);
 
     private DpwsFramework dpwsFramework;
-    private final SdcDevice sdcDevice;
+    private SdcDevice sdcDevice;
+
+    public TestSdcDevice(Collection<OperationInvocationReceiver> operationInvocationReceivers,
+                         Collection<SdcDevicePlugin> sdcDevicePlugins) {
+        setupInjector();
+        setupSdcDevice(operationInvocationReceivers, sdcDevicePlugins);
+    }
 
     public TestSdcDevice(Collection<OperationInvocationReceiver> operationInvocationReceivers) {
-        setupInjector(List.of(
+        setupInjector();
+        setupSdcDevice(operationInvocationReceivers,
+                Collections.singleton(getInjector().getInstance(SdcRequiredTypesAndScopes.class)));
+    }
+
+    public TestSdcDevice() {
+        setupInjector();
+        setupSdcDevice(Collections.emptyList(),
+                Collections.singleton(getInjector().getInstance(SdcRequiredTypesAndScopes.class)));
+    }
+
+    @Override
+    protected void startUp() throws SocketException {
+        this.dpwsFramework = getInjector().getInstance(DpwsFrameworkFactory.class)
+                .createDpwsFramework(NetworkInterface.getByInetAddress(InetAddress.getLoopbackAddress()));
+        dpwsFramework.startAsync().awaitRunning();
+        sdcDevice.startAsync().awaitRunning();
+    }
+
+    @Override
+    protected void shutDown() {
+        sdcDevice.stopAsync().awaitTerminated();
+        dpwsFramework.stopAsync().awaitTerminated();
+    }
+
+    public SdcDevice getSdcDevice() {
+        return sdcDevice;
+    }
+
+    private void setupInjector() {
+        super.setupInjector(List.of(
                 new MockedUdpBindingModule(),
                 new GlueDpwsConfigModule() {
                     @Override
@@ -93,7 +131,10 @@ public class TestSdcDevice extends IntegrationTestPeer {
                     }
                 }
         ));
+    }
 
+    private void setupSdcDevice(Collection<OperationInvocationReceiver> operationInvocationReceivers,
+                                Collection<SdcDevicePlugin> sdcDevicePlugins) {
         final Injector injector = getInjector();
         final URI eprAddress = injector.getInstance(SoapUtil.class).createUriFromUuid(UUID.randomUUID());
         final WsAddressingUtil wsaUtil = injector.getInstance(WsAddressingUtil.class);
@@ -117,28 +158,7 @@ public class TestSdcDevice extends IntegrationTestPeer {
         this.sdcDevice = injector.getInstance(SdcDeviceFactory.class).createSdcDevice(
                 deviceSettings,
                 injector.getInstance(LocalMdibAccessFactory.class).createLocalMdibAccess(),
-                operationInvocationReceivers);
-    }
-
-    public TestSdcDevice() {
-        this(Collections.emptyList());
-    }
-
-    @Override
-    protected void startUp() throws SocketException {
-        this.dpwsFramework = getInjector().getInstance(DpwsFrameworkFactory.class)
-                .createDpwsFramework(NetworkInterface.getByInetAddress(InetAddress.getLoopbackAddress()));
-        dpwsFramework.startAsync().awaitRunning();
-        sdcDevice.startAsync().awaitRunning();
-    }
-
-    @Override
-    protected void shutDown() {
-        sdcDevice.stopAsync().awaitTerminated();
-        dpwsFramework.stopAsync().awaitTerminated();
-    }
-
-    public SdcDevice getSdcDevice() {
-        return sdcDevice;
+                operationInvocationReceivers,
+                sdcDevicePlugins);
     }
 }

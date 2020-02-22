@@ -20,14 +20,12 @@ import org.somda.sdc.dpws.device.DeviceSettings;
 import org.somda.sdc.dpws.factory.DpwsFrameworkFactory;
 import org.somda.sdc.dpws.soap.wsaddressing.WsAddressingUtil;
 import org.somda.sdc.dpws.soap.wsaddressing.model.EndpointReferenceType;
-import org.somda.sdc.glue.GlueConstants;
 import org.somda.sdc.glue.common.FallbackInstanceIdentifier;
-import org.somda.sdc.glue.common.LocationDetailQueryMapper;
 import org.somda.sdc.glue.common.MdibXmlIo;
 import org.somda.sdc.glue.common.factory.ModificationsBuilderFactory;
 import org.somda.sdc.glue.provider.SdcDevice;
 import org.somda.sdc.glue.provider.factory.SdcDeviceFactory;
-import org.somda.sdc.mdpws.common.CommonConstants;
+import org.somda.sdc.glue.provider.plugin.SdcRequiredTypesAndScopes;
 
 import javax.net.ssl.HttpsURLConnection;
 import java.io.IOException;
@@ -38,10 +36,7 @@ import java.math.RoundingMode;
 import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.time.Instant;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -97,10 +92,7 @@ public class Provider extends AbstractIdleService {
             public NetworkInterface getNetworkInterface() {
                 return networkInterface;
             }
-        }, this.mdibAccess, List.of(handler));
-
-        // set SDC types
-        this.sdcDevice.getDiscoveryAccess().setTypes(List.of(CommonConstants.MEDICAL_DEVICE_TYPE));
+        }, this.mdibAccess, List.of(handler), Collections.singleton(injector.getInstance(SdcRequiredTypesAndScopes.class)));
 
         this.instanceIdentifier = new InstanceIdentifier();
         this.instanceIdentifier.setRootName("AwesomeExampleInstance");
@@ -168,13 +160,6 @@ public class Provider extends AbstractIdleService {
                     this.instanceIdentifier = ii;
                     LOG.info("Updated instanceIdentifier to {}", ii.getRootName());
                 });
-        LOG.info("Updating location scopes");
-        sdcDevice.getDiscoveryAccess().setScopes(
-                List.of(
-                        LocationDetailQueryMapper.createWithLocationDetailQuery(this.instanceIdentifier, location),
-                        GlueConstants.SCOPE_SDC_PROVIDER
-                )
-        );
         if (this.isRunning() || this.state() == State.STARTING) {
             LOG.info("Updating location context");
             final MdibStateModifications locMod = MdibStateModifications.create(MdibStateModifications.Type.CONTEXT);

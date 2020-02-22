@@ -14,10 +14,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import test.org.somda.common.TestLogging;
 
-import java.lang.reflect.InvocationTargetException;
 import java.math.BigInteger;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 import static org.hamcrest.CoreMatchers.is;
@@ -30,14 +28,14 @@ public class MdibStorageImplTest {
     private MdibStorage mdibStorage;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         TestLogging.configure();
         Injector injector = UT.getInjector();
         mdibStorage = injector.getInstance(MdibStorageFactory.class).createMdibStorage();
     }
 
     private void applyDescriptionWithVersion(MdibDescriptionModification.Type type,
-                                             BigInteger version) throws InstantiationException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
+                                             BigInteger version) {
         final MdibDescriptionModifications modifications = MdibDescriptionModifications.create();
         modifications.add(type,
                 MockModelFactory.createDescriptor(Handles.MDS_0, version, MdsDescriptor.class),
@@ -70,6 +68,16 @@ public class MdibStorageImplTest {
                 ),
                 Handles.SYSTEMCONTEXT_0);
 
+        modifications.add(type,
+                MockModelFactory.createDescriptor(Handles.CONTEXTDESCRIPTOR_1,
+                        version,
+                        LocationContextDescriptor.class),
+                Arrays.asList(
+                        MockModelFactory.createContextState(Handles.CONTEXT_2, Handles.CONTEXTDESCRIPTOR_1,
+                                version, version, LocationContextState.class)
+                ),
+                Handles.SYSTEMCONTEXT_0);
+
         mdibStorage.apply(mock(MdibVersion.class), mock(BigInteger.class), mock(BigInteger.class), modifications);
     }
 
@@ -78,16 +86,16 @@ public class MdibStorageImplTest {
     }
 
     private void testWithVersion(List<String> testedHandles, BigInteger descrVersion, BigInteger stateVersion) {
-        testedHandles.stream().forEach(handle -> {
+        testedHandles.forEach(handle -> {
             assertThat(mdibStorage.getEntity(handle).isPresent(), is(true));
             assertThat(mdibStorage.getEntity(handle).get().getDescriptor().getDescriptorVersion(), is(descrVersion));
-            mdibStorage.getEntity(handle).get().getStates().stream().forEach(state ->
+            mdibStorage.getEntity(handle).get().getStates().forEach(state ->
                     assertThat(state.getStateVersion(), is(stateVersion)));
         });
     }
 
     @Test
-    public void writeDescription() throws InstantiationException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
+    void writeDescription() {
         List<String> testedHandles = Arrays.asList(
                 Handles.MDS_0,
                 Handles.SYSTEMCONTEXT_0,
@@ -110,7 +118,7 @@ public class MdibStorageImplTest {
     }
 
     @Test
-    public void mdibAccess() throws InstantiationException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
+    void mdibAccess() {
         applyDescriptionWithVersion(MdibDescriptionModification.Type.INSERT, BigInteger.ZERO);
         assertThat(mdibStorage.getEntity(Handles.UNKNOWN).isPresent(), is(false));
         assertThat(mdibStorage.getEntity(Handles.MDS_0).isPresent(), is(true));
@@ -123,10 +131,13 @@ public class MdibStorageImplTest {
         assertThat(mdibStorage.getContextStates(Handles.VMD_0, PatientContextState.class).isEmpty(), is(true));
         assertThat(mdibStorage.getContextStates(Handles.CONTEXTDESCRIPTOR_0, LocationContextState.class).isEmpty(), is(true));
         assertThat(mdibStorage.getContextStates(Handles.CONTEXTDESCRIPTOR_0, PatientContextState.class).size(), is(2));
+
+        assertThat(mdibStorage.findContextStatesByType(PatientContextState.class).size(), is(2));
+        assertThat(mdibStorage.findContextStatesByType(LocationContextState.class).size(), is(1));
     }
 
     @Test
-    public void writeStates() throws IllegalAccessException, InstantiationException, NoSuchMethodException, InvocationTargetException {
+    void writeStates() {
         List<String> testedHandles = Arrays.asList(
                 Handles.ALERTSYSTEM_0,
                 Handles.ALERTCONDITION_0,
@@ -171,7 +182,7 @@ public class MdibStorageImplTest {
         try {
             stateModifications.add(MockModelFactory.createState(Handles.MDS_0, BigInteger.ONE, MdsState.class));
             Assertions.fail("Could add MDS to alert state change set");
-        } catch (Exception e) {
+        } catch (Exception ignored) {
         }
 
         mdibStorage.apply(mock(MdibVersion.class), mock(BigInteger.class), stateModifications);
@@ -198,6 +209,5 @@ public class MdibStorageImplTest {
         stateModifications.add(MockModelFactory.createContextState(Handles.CONTEXT_3, Handles.CONTEXTDESCRIPTOR_1, BigInteger.ONE, LocationContextState.class));
         mdibStorage.apply(mock(MdibVersion.class), mock(BigInteger.class), stateModifications);
         assertThat(mdibStorage.getContextStates(Handles.CONTEXTDESCRIPTOR_1, LocationContextState.class).size(), is(2));
-
     }
 }

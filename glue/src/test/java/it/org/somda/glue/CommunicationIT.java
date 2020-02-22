@@ -1,6 +1,5 @@
 package it.org.somda.glue;
 
-import com.google.common.util.concurrent.AbstractIdleService;
 import com.google.common.util.concurrent.ListenableFuture;
 import it.org.somda.glue.consumer.ReportListenerSpy;
 import it.org.somda.glue.consumer.TestSdcClient;
@@ -10,6 +9,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.somda.sdc.biceps.common.event.AbstractMdibAccessMessage;
@@ -30,6 +30,7 @@ import org.somda.sdc.glue.provider.sco.IncomingSetServiceRequest;
 import org.somda.sdc.glue.provider.sco.InvocationResponse;
 import org.somda.sdc.glue.provider.sco.OperationInvocationReceiver;
 import test.org.somda.common.CIDetector;
+import test.org.somda.common.LoggingTestWatcher;
 
 import java.math.BigDecimal;
 import java.net.URI;
@@ -43,6 +44,7 @@ import java.util.concurrent.TimeUnit;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+@ExtendWith(LoggingTestWatcher.class)
 public class CommunicationIT {
     private static final Logger LOG = LoggerFactory.getLogger(CommunicationIT.class);
     private static final IntegrationTestUtil IT = new IntegrationTestUtil();
@@ -51,6 +53,7 @@ public class CommunicationIT {
     private TestSdcClient testClient;
 
     private static int WAIT_IN_SECONDS = 60;
+
     static {
         if (CIDetector.isRunningInCi()) {
             WAIT_IN_SECONDS = 180;

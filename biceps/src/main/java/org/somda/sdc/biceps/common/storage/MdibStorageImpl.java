@@ -2,14 +2,14 @@ package org.somda.sdc.biceps.common.storage;
 
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.somda.sdc.biceps.common.*;
 import org.somda.sdc.biceps.common.access.WriteDescriptionResult;
 import org.somda.sdc.biceps.common.access.WriteStateResult;
 import org.somda.sdc.biceps.common.factory.MdibEntityFactory;
 import org.somda.sdc.biceps.common.storage.helper.MdibStorageUtil;
 import org.somda.sdc.biceps.model.participant.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
 import java.math.BigInteger;
@@ -168,6 +168,17 @@ public class MdibStorageImpl implements MdibStorage {
     }
 
     @Override
+    public <T extends AbstractContextState> List<T> findContextStatesByType(Class<T> stateClass) {
+        var result = new ArrayList<T>();
+        contextStates.forEach((handle, state) -> {
+            if (stateClass.isAssignableFrom(state.getClass())) {
+                result.add(stateClass.cast(state));
+            }
+        });
+        return result;
+    }
+
+    @Override
     public WriteDescriptionResult apply(MdibVersion mdibVersion,
                                         @Nullable BigInteger mdDescriptionVersion,
                                         @Nullable BigInteger mdStateVersion,
@@ -264,7 +275,7 @@ public class MdibStorageImpl implements MdibStorage {
         if (mdibEntity.getDescriptor() instanceof AbstractContextDescriptor) {
             contextStates.putAll(mdibEntity.getStates().stream()
                     .map(state -> (AbstractContextState) state)
-                    .collect(Collectors.toMap(state -> state.getHandle(), state -> state)));
+                    .collect(Collectors.toMap(AbstractMultiState::getHandle, state -> state)));
         }
 
         insertedEntities.add(mdibEntity);
@@ -294,7 +305,6 @@ public class MdibStorageImpl implements MdibStorage {
                 try {
                     descr = typeValidator.resolveDescriptorType(modification.getClass())
                             .getConstructor().newInstance();
-
                 } catch (Exception e) {
                     LOG.warn(String.format("Ignore modification. Reason: could not instantiate descriptor type for handle %s",
                             modification.getDescriptorHandle()), e);
@@ -309,7 +319,7 @@ public class MdibStorageImpl implements MdibStorage {
                                 entities.put(mdibEntity.getHandle(),
                                         entityFactory.replaceStates(mdibEntity, Collections.singletonList(modification))))
                         .orElse(states -> {
-                            final List<AbstractState> newStates = new ArrayList<>();
+                            final List<AbstractMultiState> newStates = new ArrayList<>();
                             typeValidator.toMultiState(modification).ifPresent(modifiedMultiState ->
                             {
                                 AtomicBoolean found = new AtomicBoolean(false);
@@ -329,6 +339,12 @@ public class MdibStorageImpl implements MdibStorage {
                             });
                             entities.put(mdibEntity.getHandle(), entityFactory.replaceStates(mdibEntity,
                                     Collections.unmodifiableList(newStates)));
+                            newStates.stream()
+                                    .filter(abstractMultiState -> abstractMultiState instanceof AbstractContextState)
+                                    .map(abstractMultiState -> (AbstractContextState) abstractMultiState)
+                                    .collect(Collectors.toList())
+                                    .forEach(abstractContextState ->
+                                            contextStates.put(abstractContextState.getHandle(), abstractContextState));
                         });
             }
         }

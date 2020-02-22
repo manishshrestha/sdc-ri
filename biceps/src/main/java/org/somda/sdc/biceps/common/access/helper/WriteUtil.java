@@ -10,6 +10,7 @@ import org.somda.sdc.biceps.common.event.Distributor;
 import org.somda.sdc.biceps.common.storage.MdibStoragePreprocessingChain;
 import org.somda.sdc.biceps.common.storage.PreprocessingException;
 
+import java.util.Collections;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.Function;
 
@@ -60,6 +61,11 @@ public class WriteUtil {
      */
     public WriteDescriptionResult writeDescription(Function<MdibDescriptionModifications, WriteDescriptionResult> lockedWriteDescription,
                                                    MdibDescriptionModifications descriptionModifications) throws PreprocessingException {
+        if (descriptionModifications.getModifications().isEmpty()) {
+            return new WriteDescriptionResult(mdibAccess.getMdibVersion(),
+                    Collections.emptyList(), Collections.emptyList(), Collections.emptyList());
+        }
+
         acquireWriteLock();
 
         long startTime = 0;
@@ -100,7 +106,7 @@ public class WriteUtil {
         }
 
         if (LOG.isDebugEnabled()) {
-            LOG.debug("Distributing changes {} took {} ms",
+            LOG.debug("Distributing changes with {} took {} ms",
                     modificationResult.getMdibVersion(),
                     System.currentTimeMillis() - endTime);
         }
@@ -121,6 +127,10 @@ public class WriteUtil {
      */
     public WriteStateResult writeStates(Function<MdibStateModifications, WriteStateResult> lockedWriteStates,
                                         MdibStateModifications stateModifications) throws PreprocessingException {
+        if (stateModifications.getStates().isEmpty()) {
+            return new WriteStateResult(mdibAccess.getMdibVersion(), Collections.emptyList());
+        }
+
         acquireWriteLock();
 
         long startTime = 0;
@@ -173,7 +183,7 @@ public class WriteUtil {
         if (readWriteLock.getReadHoldCount() > 0) {
             throw new IllegalThreadStateException(
                     "Tried to invoke write operation with read lock held by the current thread present. " +
-                    "Check if a write description or state function has been executed within a read transaction context."
+                            "Check if a write description or state function has been executed within a read transaction context."
             );
         }
 

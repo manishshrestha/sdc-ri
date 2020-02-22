@@ -100,7 +100,8 @@ public class JaxbSoapMarshalling extends AbstractIdleService implements SoapMars
 
     private void checkRunning() {
         if (!isRunning()) {
-            throw new RuntimeException("Try to marshal, but marshalling service is not running");
+            throw new RuntimeException("Try to marshal, but marshalling service is not running. " +
+                    "Please check if the DPWS framework is up and running.");
         }
     }
 
