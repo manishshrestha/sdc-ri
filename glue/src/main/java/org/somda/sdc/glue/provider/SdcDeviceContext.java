@@ -35,5 +35,10 @@ public interface SdcDeviceContext {
      */
     Collection<OperationInvocationReceiver> getOperationInvocationReceivers();
 
+    /**
+     * Gets the enclosing {@link SdcDevice} service state.
+     *
+     * @return {@link SdcDevice#state()} of the enclosing SDC device.
+     */
     Service.State getServiceState();
 }
