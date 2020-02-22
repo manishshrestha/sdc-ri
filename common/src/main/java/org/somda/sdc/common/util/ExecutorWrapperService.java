@@ -27,18 +27,18 @@ public class ExecutorWrapperService<T extends ExecutorService> extends AbstractI
 
 
     /**
-     * Create a wrapper around an {@linkplain ExecutorService}.
+     * Creates a wrapper around an {@linkplain ExecutorService}.
      *
-     * @param serviceCreator Callable which returns an {@linkplain ExecutorService}.
+     * @param serviceCreator {@linkplain Callable} which returns an {@linkplain ExecutorService}.
      */
     public ExecutorWrapperService(Callable<T> serviceCreator) {
         this(serviceCreator, "UNKNOWN");
     }
 
     /**
-     * Create a wrapper around an {@linkplain ExecutorService}.
+     * Creates a wrapper around an {@linkplain ExecutorService}.
      *
-     * @param serviceCreator Callable which returns an {@linkplain ExecutorService}.
+     * @param serviceCreator {@linkplain Callable} which returns an {@linkplain ExecutorService}.
      * @param serviceName name for the service, used in logging.
      */
     public ExecutorWrapperService(Callable<T> serviceCreator, String serviceName) {
@@ -67,7 +67,7 @@ public class ExecutorWrapperService<T extends ExecutorService> extends AbstractI
     }
 
     /**
-     * Get the {@linkplain ExecutorService} instance when service is running.
+     * Gets the {@linkplain ExecutorService} instance when service is running.
      * <p>
      * <em>Only ever access this once the service has been started!</em>
      *
@@ -78,9 +78,9 @@ public class ExecutorWrapperService<T extends ExecutorService> extends AbstractI
         if (isRunning()) {
             return executorService;
         } else {
-            LOG.error("[{}] getExecutorService was called before the service was running.", serviceName);
+            LOG.error("[{}] get was called before the service was running.", serviceName);
             throw new RuntimeException(String.format(
-                    "getExecutorService called before startup of %s has finished",
+                    "get called before startup of %s has finished",
                     serviceName
             ));
         }

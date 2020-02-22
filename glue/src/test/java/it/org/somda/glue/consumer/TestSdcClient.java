@@ -121,8 +121,8 @@ public class TestSdcClient extends IntegrationTestPeer {
 
     @Override
     protected void startUp() throws SocketException {
-        this.dpwsFramework = getInjector().getInstance(DpwsFramework.class)
-                .setNetworkInterface(NetworkInterface.getByInetAddress(InetAddress.getLoopbackAddress()));
+        this.dpwsFramework = getInjector().getInstance(DpwsFramework.class);
+        this.dpwsFramework.setNetworkInterface(NetworkInterface.getByInetAddress(InetAddress.getLoopbackAddress()));
         dpwsFramework.startAsync().awaitRunning();
         client.startAsync().awaitRunning();
     }

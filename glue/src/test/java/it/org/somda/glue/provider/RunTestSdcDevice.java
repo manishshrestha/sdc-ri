@@ -40,7 +40,8 @@ public class RunTestSdcDevice {
 
         final NetworkInterface networkInterface = NetworkInterface.getByName("eth0"); // "wlan1");//InetAddress.getLocalHost());
 
-        final DpwsFramework dpwsFramework = injector.getInstance(DpwsFramework.class).setNetworkInterface(networkInterface);
+        final DpwsFramework dpwsFramework = injector.getInstance(DpwsFramework.class);
+        dpwsFramework.setNetworkInterface(networkInterface);
 
         BaseTreeModificationsSet baseTreeModificationsSet = new BaseTreeModificationsSet(new MockEntryFactory(
                 injector.getInstance(MdibTypeValidator.class)));

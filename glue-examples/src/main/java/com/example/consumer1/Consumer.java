@@ -125,7 +125,8 @@ public class Consumer {
 
     protected void startUp() throws SocketException {
         // provide the name of your network adapter
-        this.dpwsFramework = injector.getInstance(DpwsFramework.class).setNetworkInterface(networkInterface);
+        this.dpwsFramework = injector.getInstance(DpwsFramework.class);
+        this.dpwsFramework.setNetworkInterface(networkInterface);
         dpwsFramework.startAsync().awaitRunning();
         client.startAsync().awaitRunning();
     }

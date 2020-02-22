@@ -24,18 +24,17 @@ public interface DpwsFramework extends Service {
      * <em>This may only be set while the framework isn't running.</em>
      *
      * @param networkInterface a network interface.
-     * @return the {@linkplain DpwsFramework} instance.
      */
-    DpwsFramework setNetworkInterface(NetworkInterface networkInterface);
+    void setNetworkInterface(NetworkInterface networkInterface);
 
     /**
-     * Registers a service to attach to the frameworks lifecycle.
+     * Registers a service to attach to the framework's lifecycle.
      * <p>
      * Starts and shuts down registered services when starting and stopping the framework.
      * Whenever a constructor (outside of the dpws package) receives a wrapped thread pool, it must register the
-     * service using this method to ensure it is properly cleaned up when shutting down the device but not the jvm.
-     * <em>Services registered when the framework is running may not be stopped together with the framework,
-     * depending on implementation.</em>
+     * service using this method to ensure it is properly cleaned up when shutting down the device but not the JVM.
+     * <p>
+     * <em>Services registered when the framework is already running will be started.</em>
      *
      * @param services {@linkplain Service}s to register for startup and shutdown.
      */
