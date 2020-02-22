@@ -8,7 +8,7 @@ import com.google.inject.assistedinject.AssistedInject;
 import org.slf4j.Logger;
 import org.somda.sdc.dpws.DpwsFramework;
 import org.somda.sdc.dpws.client.Client;
-import org.somda.sdc.dpws.helper.ExecutorWrapperService;
+import org.somda.sdc.common.util.ExecutorWrapperService;
 import org.somda.sdc.dpws.service.HostedServiceProxy;
 import org.somda.sdc.dpws.service.HostingServiceProxy;
 import org.somda.sdc.dpws.soap.wsdiscovery.model.ProbeMatchesType;

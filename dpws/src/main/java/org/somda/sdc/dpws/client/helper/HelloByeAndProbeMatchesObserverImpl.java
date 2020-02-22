@@ -16,7 +16,7 @@ import org.somda.sdc.dpws.client.event.DeviceLeftMessage;
 import org.somda.sdc.dpws.client.event.DeviceProbeTimeoutMessage;
 import org.somda.sdc.dpws.client.event.ProbedDeviceFoundMessage;
 import org.somda.sdc.dpws.guice.NetworkJobThreadPool;
-import org.somda.sdc.dpws.helper.ExecutorWrapperService;
+import org.somda.sdc.common.util.ExecutorWrapperService;
 import org.somda.sdc.dpws.soap.wsaddressing.WsAddressingUtil;
 import org.somda.sdc.dpws.soap.wsdiscovery.HelloByeAndProbeMatchesObserver;
 import org.somda.sdc.dpws.soap.wsdiscovery.event.ByeMessage;

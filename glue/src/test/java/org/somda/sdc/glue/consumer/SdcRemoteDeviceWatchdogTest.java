@@ -11,7 +11,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.somda.sdc.dpws.client.Client;
-import org.somda.sdc.dpws.helper.ExecutorWrapperService;
+import org.somda.sdc.common.util.ExecutorWrapperService;
 import org.somda.sdc.dpws.model.ThisDeviceType;
 import org.somda.sdc.dpws.model.ThisModelType;
 import org.somda.sdc.dpws.service.EventSinkAccess;

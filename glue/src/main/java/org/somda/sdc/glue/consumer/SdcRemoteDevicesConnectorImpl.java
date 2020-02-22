@@ -20,7 +20,7 @@ import org.somda.sdc.biceps.model.message.ObjectFactory;
 import org.somda.sdc.biceps.model.message.OperationInvokedReport;
 import org.somda.sdc.biceps.model.participant.Mdib;
 import org.somda.sdc.dpws.DpwsFramework;
-import org.somda.sdc.dpws.helper.ExecutorWrapperService;
+import org.somda.sdc.common.util.ExecutorWrapperService;
 import org.somda.sdc.dpws.service.HostedServiceProxy;
 import org.somda.sdc.dpws.service.HostingServiceProxy;
 import org.somda.sdc.dpws.soap.SoapMessage;
@@ -49,7 +49,6 @@ import org.somda.sdc.glue.consumer.report.ReportProcessor;
 import org.somda.sdc.glue.consumer.sco.ScoController;
 import org.somda.sdc.glue.consumer.sco.factory.ScoControllerFactory;
 import org.somda.sdc.glue.guice.Consumer;
-import org.somda.sdc.glue.guice.WatchdogScheduledExecutor;
 
 import javax.annotation.Nullable;
 import javax.inject.Inject;
@@ -66,7 +65,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 

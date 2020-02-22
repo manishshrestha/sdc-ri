@@ -1,4 +1,4 @@
-package org.somda.sdc.dpws.helper;
+package org.somda.sdc.common.util;
 
 import com.google.common.util.concurrent.AbstractIdleService;
 import org.slf4j.Logger;
@@ -12,7 +12,7 @@ import java.util.concurrent.TimeUnit;
  * Wraps an {@linkplain ExecutorService} into a guava {@linkplain AbstractIdleService}.
  * <p>
  * Wrapping {@linkplain ExecutorService}s into guava services allows orchestrating thread pool instances, especially
- * shutting them down properly when shutting down a {@linkplain org.somda.sdc.dpws.DpwsFramework} instance.
+ * shutting them down properly when shutting down a parent service instance.
  *
  * @param <T> actual type of the {@linkplain ExecutorService}.
  */
