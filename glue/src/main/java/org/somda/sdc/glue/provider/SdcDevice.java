@@ -80,6 +80,11 @@ public class SdcDevice extends AbstractIdleService implements Device, EventSourc
             public Collection<OperationInvocationReceiver> getOperationInvocationReceivers() {
                 return operationInvocationReceivers;
             }
+
+            @Override
+            public State getServiceState() {
+                return SdcDevice.this.state();
+            }
         });
     }
 

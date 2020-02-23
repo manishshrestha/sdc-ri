@@ -25,6 +25,7 @@ import org.somda.sdc.glue.common.factory.ModificationsBuilderFactory;
 import org.somda.sdc.glue.consumer.ConnectConfiguration;
 import org.somda.sdc.glue.consumer.SdcRemoteDevice;
 import org.somda.sdc.glue.consumer.sco.ScoTransaction;
+import org.somda.sdc.glue.provider.plugin.SdcRequiredTypesAndScopes;
 import org.somda.sdc.glue.provider.sco.Context;
 import org.somda.sdc.glue.provider.sco.IncomingSetServiceRequest;
 import org.somda.sdc.glue.provider.sco.InvocationResponse;
@@ -35,10 +36,7 @@ import test.org.somda.common.LoggingTestWatcher;
 import java.math.BigDecimal;
 import java.net.URI;
 import java.time.Duration;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -68,6 +66,10 @@ public class CommunicationIT {
     @BeforeEach
     void beforeEach(TestInfo testInfo) {
         LOG.info("Running test case {}", testInfo.getDisplayName());
+        ventilatorMdibRunner = new VentilatorMdibRunner(
+                IT.getInjector().getInstance(MdibXmlIo.class),
+                IT.getInjector().getInstance(ModificationsBuilderFactory.class));
+
         testDevice = new TestSdcDevice(Collections.singletonList(new OperationInvocationReceiver() {
             @IncomingSetServiceRequest(operationHandle = VentilatorMdibRunner.HANDLE_SET_MDC_DEV_SYS_PT_VENT_VMD)
             public InvocationResponse onSet(Context context, String requestedValue) throws PreprocessingException {
@@ -90,25 +92,19 @@ public class CommunicationIT {
                 context.sendSuccessfulReport(InvocationState.FIN);
                 return context.createSuccessfulResponse(InvocationState.FIN);
             }
-        }));
+        }), Arrays.asList(ventilatorMdibRunner, IT.getInjector().getInstance(SdcRequiredTypesAndScopes.class)));
         testClient = new TestSdcClient();
-        ventilatorMdibRunner = new VentilatorMdibRunner(
-                IT.getInjector().getInstance(MdibXmlIo.class),
-                IT.getInjector().getInstance(ModificationsBuilderFactory.class),
-                testDevice.getSdcDevice().getMdibAccess());
     }
 
     @AfterEach
     void afterEach(TestInfo testInfo) {
         LOG.info("Done with test case {}", testInfo.getDisplayName());
-        ventilatorMdibRunner.stopAsync().awaitTerminated();
         testDevice.stopAsync().awaitTerminated();
         testClient.stopAsync().awaitTerminated();
     }
 
     @Test
     void connectOneClientAndTransferData() throws Exception {
-        ventilatorMdibRunner.startAsync().awaitRunning(WAIT_IN_SECONDS, WAIT_TIME_UNIT);
         testDevice.startAsync().awaitRunning(WAIT_IN_SECONDS, WAIT_TIME_UNIT);
         testClient.startAsync().awaitRunning(WAIT_IN_SECONDS, WAIT_TIME_UNIT);
 
@@ -214,8 +210,6 @@ public class CommunicationIT {
         int numberMessages = 100;
         int numberClients = 10;
 
-
-        ventilatorMdibRunner.startAsync().awaitRunning(WAIT_IN_SECONDS, WAIT_TIME_UNIT);
         testDevice.startAsync().awaitRunning(WAIT_IN_SECONDS, WAIT_TIME_UNIT);
 
         List<TestSdcClient> testSdcClients = new ArrayList<>(numberClients);
@@ -287,8 +281,17 @@ public class CommunicationIT {
         List<TestSdcDevice> testSdcDevices = new ArrayList<>(numberDevices);
         List<MdibAccessObserverSpy> mdibSpies = new ArrayList<>(numberDevices);
         try {
+            List<VentilatorMdibRunner> ventilatorMdibRunners = new ArrayList<>(numberDevices);
             for (int i = 0; i < numberDevices; ++i) {
-                TestSdcDevice testSdcDevice = new TestSdcDevice();
+                final VentilatorMdibRunner ventilatorMdibRunner = new VentilatorMdibRunner(
+                        IT.getInjector().getInstance(MdibXmlIo.class),
+                        IT.getInjector().getInstance(ModificationsBuilderFactory.class));
+                ventilatorMdibRunners.add(ventilatorMdibRunner);
+            }
+
+            for (int i = 0; i < numberDevices; ++i) {
+                TestSdcDevice testSdcDevice = new TestSdcDevice(Collections.emptyList(),
+                        Arrays.asList(ventilatorMdibRunners.get(i), IT.getInjector().getInstance(SdcRequiredTypesAndScopes.class)));
                 testSdcDevices.add(testSdcDevice);
                 testSdcDevice.startAsync();
                 mdibSpies.add(new MdibAccessObserverSpy());
@@ -296,17 +299,6 @@ public class CommunicationIT {
 
             for (TestSdcDevice device : testSdcDevices) {
                 device.awaitRunning(WAIT_IN_SECONDS, WAIT_TIME_UNIT);
-            }
-
-            List<VentilatorMdibRunner> ventilatorMdibRunners = new ArrayList<>(numberDevices);
-            for (TestSdcDevice sdcDevice : testSdcDevices) {
-                sdcDevice.awaitRunning();
-                final VentilatorMdibRunner ventilatorMdibRunner = new VentilatorMdibRunner(
-                        IT.getInjector().getInstance(MdibXmlIo.class),
-                        IT.getInjector().getInstance(ModificationsBuilderFactory.class),
-                        sdcDevice.getSdcDevice().getMdibAccess());
-                ventilatorMdibRunners.add(ventilatorMdibRunner);
-                ventilatorMdibRunner.startAsync().awaitRunning(WAIT_IN_SECONDS, WAIT_TIME_UNIT);
             }
 
             List<HostingServiceProxy> hostingServiceProxies = new ArrayList<>(numberDevices);
