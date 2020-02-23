@@ -10,6 +10,9 @@ import java.lang.reflect.Method;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ScheduledExecutorService;
 
+/**
+ * Utilities for creating and using {@linkplain ExecutorWrapperService} with guice's {@linkplain AbstractModule}.
+ */
 public class ExecutorWrapperUtil {
 
     /**
