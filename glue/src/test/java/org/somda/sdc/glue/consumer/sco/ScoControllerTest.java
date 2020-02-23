@@ -1,13 +1,17 @@
 package org.somda.sdc.glue.consumer.sco;
 
 import com.google.common.util.concurrent.ListenableFuture;
+import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.inject.AbstractModule;
 import com.google.inject.Injector;
+import com.google.inject.Key;
+import com.google.inject.TypeLiteral;
 import com.google.inject.assistedinject.Assisted;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.somda.sdc.biceps.model.message.*;
+import org.somda.sdc.common.util.ExecutorWrapperService;
 import org.somda.sdc.dpws.model.ThisDeviceType;
 import org.somda.sdc.dpws.model.ThisModelType;
 import org.somda.sdc.dpws.service.HostedServiceProxy;
@@ -38,7 +42,9 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.function.Consumer;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -85,6 +91,12 @@ class ScoControllerTest {
         scoController = injector.getInstance(ScoControllerFactory.class).createScoController(hostingServiceProxy,
                 setServiceMock,
                 contextServiceMock);
+
+        // start required thread pool(s)
+        injector.getInstance(Key.get(
+                new TypeLiteral<ExecutorWrapperService<ListeningExecutorService>>(){},
+                org.somda.sdc.glue.guice.Consumer.class
+        )).startAsync().awaitRunning();
     }
 
     @Test

@@ -17,7 +17,6 @@ import org.somda.sdc.biceps.provider.access.factory.LocalMdibAccessFactory;
 import org.somda.sdc.dpws.DpwsFramework;
 import org.somda.sdc.dpws.DpwsUtil;
 import org.somda.sdc.dpws.device.DeviceSettings;
-import org.somda.sdc.dpws.factory.DpwsFrameworkFactory;
 import org.somda.sdc.dpws.soap.wsaddressing.WsAddressingUtil;
 import org.somda.sdc.dpws.soap.wsaddressing.model.EndpointReferenceType;
 import org.somda.sdc.glue.common.FallbackInstanceIdentifier;
@@ -77,7 +76,8 @@ public class Provider extends AbstractIdleService {
     public Provider(String networkAdapterName, String eprAddress) throws SocketException {
         this.injector = IT.getInjector();
         final NetworkInterface networkInterface = NetworkInterface.getByName(networkAdapterName);
-        this.dpwsFramework = injector.getInstance(DpwsFrameworkFactory.class).createDpwsFramework(networkInterface);
+        this.dpwsFramework = injector.getInstance(DpwsFramework.class);
+        this.dpwsFramework.setNetworkInterface(networkInterface);
         this.mdibAccess = injector.getInstance(LocalMdibAccessFactory.class).createLocalMdibAccess();
 
         var handler = new OperationHandler(this.mdibAccess);

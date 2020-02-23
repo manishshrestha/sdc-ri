@@ -76,17 +76,15 @@ public class SdcRequiredTypesAndScopesIT {
 
     @BeforeEach
     void beforeEach() {
-        setupDevice();
-        testClient = new TestSdcClient();
         ventilatorMdibRunner = new VentilatorMdibRunner(
                 IT.getInjector().getInstance(MdibXmlIo.class),
-                IT.getInjector().getInstance(ModificationsBuilderFactory.class),
-                testDevice.getSdcDevice().getMdibAccess());
+                IT.getInjector().getInstance(ModificationsBuilderFactory.class));
+        setupDevice();
+        testClient = new TestSdcClient();
     }
 
     @Test
     void checkRequiredTypesAndScopesOnUpdate() throws Exception {
-        ventilatorMdibRunner.startAsync().awaitRunning();
         testDevice.startAsync().awaitRunning();
         testClient.startAsync().awaitRunning();
 
@@ -153,14 +151,12 @@ public class SdcRequiredTypesAndScopesIT {
     @Test
     void checkAdditionalScopesOnUpdate() throws PreprocessingException {
         // Overwrite device and ventilator runner
-        setupDevice(Collections.singleton(new MyScopesUpdater(IT.getInjector()
-                .getInstance(SdcRequiredTypesAndScopes.class))));
         ventilatorMdibRunner = new VentilatorMdibRunner(
                 IT.getInjector().getInstance(MdibXmlIo.class),
-                IT.getInjector().getInstance(ModificationsBuilderFactory.class),
-                testDevice.getSdcDevice().getMdibAccess());
+                IT.getInjector().getInstance(ModificationsBuilderFactory.class));
+        setupDevice(Collections.singleton(new MyScopesUpdater(IT.getInjector()
+                .getInstance(SdcRequiredTypesAndScopes.class))));
 
-        ventilatorMdibRunner.startAsync().awaitRunning();
         testDevice.startAsync().awaitRunning();
         testClient.startAsync().awaitRunning();
 
@@ -217,8 +213,12 @@ public class SdcRequiredTypesAndScopesIT {
     }
 
     private void setupDevice(@Nullable Collection<SdcDevicePlugin> sdcDevicePlugins) {
+        var customizedPlugins = new ArrayList<SdcDevicePlugin>();
+        customizedPlugins.add(ventilatorMdibRunner);
         if (sdcDevicePlugins == null) {
-            sdcDevicePlugins = Collections.singleton(IT.getInjector().getInstance(SdcRequiredTypesAndScopes.class));
+            customizedPlugins.add(IT.getInjector().getInstance(SdcRequiredTypesAndScopes.class));
+        } else {
+            customizedPlugins.addAll(sdcDevicePlugins);
         }
 
         testDevice = new TestSdcDevice(Collections.singletonList(new OperationInvocationReceiver() {
@@ -243,7 +243,7 @@ public class SdcRequiredTypesAndScopesIT {
                 context.sendSuccessfulReport(InvocationState.FIN);
                 return context.createSuccessfulResponse(InvocationState.FIN);
             }
-        }), sdcDevicePlugins);
+        }), customizedPlugins);
     }
 
     private <T> void verifyCollection(Collection<T> expectedCollection, Collection<T> actualCollection) {

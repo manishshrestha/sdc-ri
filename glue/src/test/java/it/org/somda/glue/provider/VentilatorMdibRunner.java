@@ -1,6 +1,7 @@
 package it.org.somda.glue.provider;
 
 import com.google.common.util.concurrent.AbstractIdleService;
+import com.google.common.util.concurrent.Service;
 import org.somda.sdc.biceps.common.MdibDescriptionModifications;
 import org.somda.sdc.biceps.common.MdibStateModifications;
 import org.somda.sdc.biceps.common.access.ReadTransaction;
@@ -10,6 +11,8 @@ import org.somda.sdc.biceps.provider.access.LocalMdibAccess;
 import org.somda.sdc.glue.common.FallbackInstanceIdentifier;
 import org.somda.sdc.glue.common.MdibXmlIo;
 import org.somda.sdc.glue.common.factory.ModificationsBuilderFactory;
+import org.somda.sdc.glue.provider.SdcDeviceContext;
+import org.somda.sdc.glue.provider.SdcDevicePlugin;
 
 import javax.annotation.Nullable;
 import java.io.InputStream;
@@ -17,7 +20,7 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.Arrays;
 
-public class VentilatorMdibRunner extends AbstractIdleService {
+public class VentilatorMdibRunner implements SdcDevicePlugin {
     public static final String HANDLE_MDC_DEV_SYS_PT_VENT_MDS = "handle_MDC_DEV_SYS_PT_VENT_MDS";
     public static final String HANDLE_CLOCK = "handle_Clock";
     public static final String HANDLE_SYSTEMCONTEXT = "handle_SystemContext";
@@ -32,32 +35,30 @@ public class VentilatorMdibRunner extends AbstractIdleService {
 
     private final MdibXmlIo mdibXmlIo;
     private final ModificationsBuilderFactory modificationsBuilderFactory;
-    private final LocalMdibAccess mdibAccess;
+    private LocalMdibAccess mdibAccess;
+    private SdcDeviceContext sdcDeviceContext;
 
     private int locationContextHandleSuffixCounter;
 
     public VentilatorMdibRunner(MdibXmlIo mdibXmlIo,
-                                ModificationsBuilderFactory modificationsBuilderFactory,
-                                LocalMdibAccess mdibAccess) {
+                                ModificationsBuilderFactory modificationsBuilderFactory) {
         this.mdibXmlIo = mdibXmlIo;
         this.modificationsBuilderFactory = modificationsBuilderFactory;
-        this.mdibAccess = mdibAccess;
         this.locationContextHandleSuffixCounter = 0;
     }
 
     @Override
-    protected void startUp() throws Exception {
-        final ClassLoader classLoader = getClass().getClassLoader();
-        final InputStream mdibAsStream = classLoader.getResourceAsStream("it/org/somda/sdc/glue/VentilatorMdib.xml");
+    public void beforeStartUp(SdcDeviceContext context) throws Exception {
+        sdcDeviceContext = context;
+        mdibAccess = context.getLocalMdibAccess();
+
+        var classLoader = getClass().getClassLoader();
+        var mdibAsStream = classLoader.getResourceAsStream("it/org/somda/sdc/glue/VentilatorMdib.xml");
         assert mdibAsStream != null;
+        var mdib = mdibXmlIo.readMdib(mdibAsStream);
+        var modifications = modificationsBuilderFactory.createModificationsBuilder(mdib).get();
 
-        final Mdib mdib = mdibXmlIo.readMdib(mdibAsStream);
-        final MdibDescriptionModifications modifications = modificationsBuilderFactory.createModificationsBuilder(mdib).get();
         mdibAccess.writeDescription(modifications);
-    }
-
-    @Override
-    protected void shutDown() {
     }
 
     public void changeLocation(LocationDetail newLocation) throws PreprocessingException {
@@ -126,7 +127,7 @@ public class VentilatorMdibRunner extends AbstractIdleService {
 
     public void changeMetrics(@Nullable VentilatorMode ventilatorMode,
                               @Nullable BigDecimal peep) throws PreprocessingException {
-        if (!isRunning()) {
+        if (!(isRunning())) {
             return;
         }
 
@@ -142,6 +143,10 @@ public class VentilatorMdibRunner extends AbstractIdleService {
         }
 
         mdibAccess.writeStates(modifications);
+    }
+
+    private boolean isRunning() {
+        return sdcDeviceContext != null && sdcDeviceContext.getServiceState().equals(Service.State.RUNNING);
     }
 
     private void changeVentilatorModeValue(ReadTransaction readTransaction, MdibStateModifications modifications, VentilatorMode ventilatorMode) {

@@ -131,11 +131,13 @@ public class EventSourceInterceptor extends AbstractIdleService implements Event
 
     @Override
     public void subscriptionEndToAll(WsEventingStatus status) {
-        subscriptionRegistry.getSubscriptions().forEach((uri, subMan) ->
+        subscriptionRegistry.getSubscriptions().forEach((uri, subMan) -> {
                 subMan.getEndTo().ifPresent(endTo -> {
                     SoapMessage endToMessage = createForEndTo(status, subMan, endTo);
                     subMan.sendToEndTo(endToMessage);
-                }));
+                });
+                subMan.stopAsync().awaitTerminated();
+        });
     }
 
     @MessageInterceptor(value = WsEventingConstants.WSE_ACTION_SUBSCRIBE, direction = Direction.REQUEST)
@@ -291,6 +293,7 @@ public class EventSourceInterceptor extends AbstractIdleService implements Event
                 } finally {
                     subscribedActionsLock.unlock();
                 }
+                subMan.stopAsync();
                 LOG.info("Remove expired subscription: {}", entry.getKey());
             }
         });

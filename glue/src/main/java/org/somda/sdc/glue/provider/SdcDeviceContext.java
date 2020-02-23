@@ -1,5 +1,6 @@
 package org.somda.sdc.glue.provider;
 
+import com.google.common.util.concurrent.Service;
 import org.somda.sdc.biceps.provider.access.LocalMdibAccess;
 import org.somda.sdc.dpws.device.Device;
 import org.somda.sdc.glue.provider.sco.OperationInvocationReceiver;
@@ -33,4 +34,11 @@ public interface SdcDeviceContext {
      * @return an unmodifiable {@link OperationInvocationReceiver} collection.
      */
     Collection<OperationInvocationReceiver> getOperationInvocationReceivers();
+
+    /**
+     * Gets the enclosing {@link SdcDevice} service state.
+     *
+     * @return {@link SdcDevice#state()} of the enclosing SDC device.
+     */
+    Service.State getServiceState();
 }

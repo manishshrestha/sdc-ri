@@ -1,15 +1,20 @@
 package org.somda.sdc.dpws.soap.wseventing;
 
 import com.google.common.util.concurrent.ListenableFuture;
+import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.inject.AbstractModule;
+import com.google.inject.Key;
+import com.google.inject.TypeLiteral;
 import com.google.inject.name.Names;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.somda.sdc.common.util.ExecutorWrapperService;
 import org.somda.sdc.dpws.DpwsTest;
 import org.somda.sdc.dpws.HttpServerRegistryMock;
 import org.somda.sdc.dpws.LocalAddressResolverMock;
 import org.somda.sdc.dpws.TransportBindingFactoryMock;
 import org.somda.sdc.dpws.factory.TransportBindingFactory;
+import org.somda.sdc.dpws.guice.NetworkJobThreadPool;
 import org.somda.sdc.dpws.http.HttpServerRegistry;
 import org.somda.sdc.dpws.model.HostedServiceType;
 import org.somda.sdc.dpws.model.ObjectFactory;
@@ -48,6 +53,13 @@ public class WsEventingTest extends DpwsTest {
     public void setUp() throws Exception {
         overrideBindings(new DpwsModuleReplacements());
         super.setUp();
+
+        // start required thread pool(s)
+        getInjector().getInstance(Key.get(
+                new TypeLiteral<ExecutorWrapperService<ListeningExecutorService>>() {
+                },
+                NetworkJobThreadPool.class
+        )).startAsync().awaitRunning();
 
         getInjector().getInstance(SoapMarshalling.class).startAsync().awaitRunning();
 

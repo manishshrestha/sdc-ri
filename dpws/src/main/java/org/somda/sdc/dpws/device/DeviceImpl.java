@@ -87,6 +87,7 @@ public class DeviceImpl extends AbstractIdleService implements Device, Service, 
     private ThisDeviceType thisDeviceOnStartup;
     private ThisModelType thisModelOnStartup;
     private DiscoveryDeviceUdpMessageProcessor udpMsgProcessor;
+    private List<EventSource> eventSources;
 
     @AssistedInject
     DeviceImpl(@Assisted DeviceSettings deviceSettings,
@@ -128,6 +129,7 @@ public class DeviceImpl extends AbstractIdleService implements Device, Service, 
         this.unsecuredEndpoint = unsecuredEndpoint;
         this.securedEndpoint = securedEndpoint;
         this.hostedServicesOnStartup = new ArrayList<>();
+        this.eventSources = new ArrayList<>();
 
         this.eprAddress = wsaUtil.getAddressUri(deviceSettings.getEndpointReference()).orElseThrow(() ->
                 new RuntimeException("No valid endpoint reference found in device deviceSettings"));
@@ -224,6 +226,7 @@ public class DeviceImpl extends AbstractIdleService implements Device, Service, 
     protected void shutDown() throws Exception {
         LOG.info("Shut down device {}", hostingService);
         wsdTargetService.sendBye();
+        eventSources.forEach(source -> source.stopAsync().awaitTerminated());
         hostingService.getHostedServices().forEach(hostedService ->
                 hostedService.getWebService().stopAsync().awaitTerminated());
         httpServerRegistry.stopAsync().awaitTerminated();
@@ -332,6 +335,7 @@ public class DeviceImpl extends AbstractIdleService implements Device, Service, 
     private void addHostedServiceToHostingService(HostedService hostedService) {
         // Create event source
         EventSource eventSource = eventSourceProvider.get();
+        eventSources.add(eventSource);
         // Inject event source to Web Service
         hostedService.getWebService().setEventSource(eventSource);
         // Create request response handler interceptor specific to the added hosted service

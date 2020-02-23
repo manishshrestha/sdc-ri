@@ -5,7 +5,6 @@ import org.junit.jupiter.api.Test;
 import org.somda.sdc.biceps.provider.access.LocalMdibAccess;
 import org.somda.sdc.dpws.DpwsFramework;
 import org.somda.sdc.dpws.device.DeviceSettings;
-import org.somda.sdc.dpws.factory.DpwsFrameworkFactory;
 import org.somda.sdc.dpws.soap.SoapUtil;
 import org.somda.sdc.dpws.soap.wsaddressing.WsAddressingUtil;
 import org.somda.sdc.dpws.soap.wsaddressing.model.EndpointReferenceType;
@@ -52,7 +51,7 @@ class SdcDeviceTest {
                     }
                 }, mdibAccess, operationInvocationReceivers, Collections.singletonList(plugin));
 
-        dpwsFramework = injector.getInstance(DpwsFrameworkFactory.class).createDpwsFramework();
+        dpwsFramework = injector.getInstance(DpwsFramework.class);
         dpwsFramework.startAsync().awaitRunning();
     }
 

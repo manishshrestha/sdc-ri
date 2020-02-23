@@ -11,8 +11,13 @@ import org.somda.sdc.common.util.JaxbUtil;
 import org.somda.sdc.dpws.DpwsConfig;
 import org.somda.sdc.dpws.DpwsConstants;
 import org.somda.sdc.dpws.guice.NetworkJobThreadPool;
+import org.somda.sdc.common.util.ExecutorWrapperService;
 import org.somda.sdc.dpws.http.HttpServerRegistry;
-import org.somda.sdc.dpws.soap.*;
+import org.somda.sdc.dpws.soap.NotificationSink;
+import org.somda.sdc.dpws.soap.RequestResponseClient;
+import org.somda.sdc.dpws.soap.SoapMarshalling;
+import org.somda.sdc.dpws.soap.SoapMessage;
+import org.somda.sdc.dpws.soap.SoapUtil;
 import org.somda.sdc.dpws.soap.exception.MalformedSoapMessageException;
 import org.somda.sdc.dpws.soap.exception.MarshallingException;
 import org.somda.sdc.dpws.soap.exception.TransportException;
@@ -31,7 +36,12 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URI;
 import java.time.Duration;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -57,7 +67,7 @@ public class EventSinkImpl implements EventSink {
     private final SoapMarshalling marshalling;
     private final SoapUtil soapUtil;
     private final JaxbUtil jaxbUtil;
-    private final ListeningExecutorService executorService;
+    private final ExecutorWrapperService<ListeningExecutorService> executorService;
     private final SubscriptionManagerFactory subscriptionManagerFactory;
     private final Map<String, SinkSubscriptionManager> subscriptionManagers;
     private final Lock subscriptionsLock;
@@ -73,7 +83,7 @@ public class EventSinkImpl implements EventSink {
                   SoapMarshalling marshalling,
                   SoapUtil soapUtil,
                   JaxbUtil jaxbUtil,
-                  @NetworkJobThreadPool ListeningExecutorService executorService,
+                  @NetworkJobThreadPool ExecutorWrapperService<ListeningExecutorService> executorService,
                   SubscriptionManagerFactory subscriptionManagerFactory) {
         this.requestResponseClient = requestResponseClient;
         this.hostAddress = hostAddress;
@@ -94,7 +104,7 @@ public class EventSinkImpl implements EventSink {
     public ListenableFuture<SubscribeResult> subscribe(List<String> actions,
                                                        @Nullable Duration expires,
                                                        NotificationSink notificationSink) {
-        return executorService.submit(() -> {
+        return executorService.get().submit(() -> {
             //final URI httpServerBase = URI.create()
             // Create unique context path suffix
             String contextSuffix = UUID.randomUUID().toString();
@@ -166,7 +176,7 @@ public class EventSinkImpl implements EventSink {
     @Override
     public ListenableFuture<Duration> renew(String subscriptionId,
                                             Duration expires) {
-        return executorService.submit(() -> {
+        return executorService.get().submit(() -> {
             // Search for subscription to renew
             SinkSubscriptionManager subMan = getSubscriptionManagerProxy(subscriptionId);
 
@@ -197,7 +207,7 @@ public class EventSinkImpl implements EventSink {
     @Override
     public ListenableFuture<Duration> getStatus(String subscriptionId) {
 
-        return executorService.submit(() -> {
+        return executorService.get().submit(() -> {
             // Search for subscription to get status from
             SinkSubscriptionManager subMan = getSubscriptionManagerProxy(subscriptionId);
 
@@ -227,7 +237,7 @@ public class EventSinkImpl implements EventSink {
     public ListenableFuture<Object> unsubscribe(String subscriptionId) {
         SinkSubscriptionManager subMan = getSubscriptionManagerProxy(subscriptionId);
 
-        return executorService.submit(() -> {
+        return executorService.get().submit(() -> {
             Unsubscribe unsubscribe = wseFactory.createUnsubscribe();
             String subManAddress = wsaUtil.getAddressUriAsString(subMan.getSubscriptionManagerEpr()).orElseThrow(() ->
                     new RuntimeException("No subscription manager EPR found"));

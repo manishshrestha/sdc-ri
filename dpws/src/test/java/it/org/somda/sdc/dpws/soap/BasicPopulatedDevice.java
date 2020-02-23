@@ -6,7 +6,6 @@ import it.org.somda.sdc.dpws.TestServiceMetadata;
 import org.somda.sdc.dpws.DpwsFramework;
 import org.somda.sdc.dpws.DpwsUtil;
 import org.somda.sdc.dpws.device.DeviceSettings;
-import org.somda.sdc.dpws.factory.DpwsFrameworkFactory;
 import org.somda.sdc.dpws.guice.DefaultDpwsConfigModule;
 import org.somda.sdc.dpws.service.factory.HostedServiceFactory;
 import org.somda.sdc.dpws.soap.SoapConfig;
@@ -48,7 +47,7 @@ public class BasicPopulatedDevice extends DevicePeer {
                         TestServiceMetadata.JAXB_CONTEXT_PATH);
             }
         }, deviceSettings, overridingModule);
-        dpwsFramework = getInjector().getInstance(DpwsFrameworkFactory.class).createDpwsFramework();
+        dpwsFramework = getInjector().getInstance(DpwsFramework.class);
     }
 
     public BasicPopulatedDevice(@Nullable AbstractModule overridingModule) {
@@ -61,7 +60,7 @@ public class BasicPopulatedDevice extends DevicePeer {
         configModule.bind(SoapConfig.JAXB_CONTEXT_PATH, String.class,
                 TestServiceMetadata.JAXB_CONTEXT_PATH);
         setup(configModule, deviceSettings, overridingModule);
-        dpwsFramework = getInjector().getInstance(DpwsFrameworkFactory.class).createDpwsFramework();
+        dpwsFramework = getInjector().getInstance(DpwsFramework.class);
     }
 
     public DpwsTestService1 getService1() {

@@ -2,6 +2,9 @@ package org.somda.sdc.dpws;
 
 import com.google.common.util.concurrent.Service;
 
+import java.net.NetworkInterface;
+import java.util.Collection;
+
 /**
  * Interface that supplies DPWS core functions.
  * <p>
@@ -14,4 +17,26 @@ import com.google.common.util.concurrent.Service;
  * Do not forget to stop the DPWS framework for a graceful shutdown.
  */
 public interface DpwsFramework extends Service {
+
+    /**
+     * Sets the network interface to be used by the framework.
+     * <p>
+     * <em>This may only be set while the framework isn't running.</em>
+     *
+     * @param networkInterface a network interface.
+     */
+    void setNetworkInterface(NetworkInterface networkInterface);
+
+    /**
+     * Registers a service to attach to the framework's lifecycle.
+     * <p>
+     * Starts and shuts down registered services when starting and stopping the framework.
+     * Whenever a constructor (outside of the dpws package) receives a wrapped thread pool, it must register the
+     * service using this method to ensure it is properly cleaned up when shutting down the device but not the JVM.
+     * <p>
+     * <em>Services registered when the framework is already running will be started.</em>
+     *
+     * @param services {@linkplain Service}s to register for startup and shutdown.
+     */
+    void registerService(Collection<Service> services);
 }
