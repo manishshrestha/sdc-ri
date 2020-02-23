@@ -1,11 +1,13 @@
 package org.somda.sdc.dpws.soap;
 
 import org.somda.sdc.dpws.DpwsTest;
+import org.somda.sdc.dpws.soap.factory.NotificationSinkFactory;
 import org.somda.sdc.dpws.soap.factory.SoapMessageFactory;
 import org.somda.sdc.dpws.soap.model.Envelope;
 import org.somda.sdc.dpws.soap.interception.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.somda.sdc.dpws.soap.wsaddressing.WsAddressingServerInterceptor;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,7 +29,8 @@ public class NotificationSinkImplTest extends DpwsTest {
     public void receiveRequestResponse() throws Exception {
         SoapMarshalling unmarshaller = getInjector().getInstance(SoapMarshalling.class);
 
-        NotificationSink nSink = getInjector().getInstance(NotificationSink.class);
+        NotificationSink nSink = getInjector().getInstance(NotificationSinkFactory.class).createNotificationSink(
+                getInjector().getInstance(WsAddressingServerInterceptor.class));
         Envelope soapEnv = unmarshaller.unmarshal(getClass().getResourceAsStream("soap-envelope.xml"));
 
         SoapMessageFactory soapMessageFactory = getInjector().getInstance(SoapMessageFactory.class);

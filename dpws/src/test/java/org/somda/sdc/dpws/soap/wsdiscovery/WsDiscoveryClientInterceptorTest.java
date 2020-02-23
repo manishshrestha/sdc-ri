@@ -11,10 +11,12 @@ import org.somda.sdc.dpws.soap.NotificationSource;
 import org.somda.sdc.dpws.soap.SoapMessage;
 import org.somda.sdc.dpws.soap.SoapUtil;
 import org.somda.sdc.dpws.soap.factory.EnvelopeFactory;
+import org.somda.sdc.dpws.soap.factory.NotificationSinkFactory;
 import org.somda.sdc.dpws.soap.factory.NotificationSourceFactory;
 import org.somda.sdc.dpws.soap.factory.SoapMessageFactory;
 import org.somda.sdc.dpws.soap.model.Envelope;
 import org.somda.sdc.dpws.soap.wsaddressing.WsAddressingClientInterceptor;
+import org.somda.sdc.dpws.soap.wsaddressing.WsAddressingServerInterceptor;
 import org.somda.sdc.dpws.soap.wsaddressing.WsAddressingUtil;
 import org.somda.sdc.dpws.soap.wsaddressing.model.AttributedURIType;
 import org.somda.sdc.dpws.soap.wsaddressing.model.EndpointReferenceType;
@@ -60,7 +62,8 @@ public class WsDiscoveryClientInterceptorTest extends DpwsTest {
         sentSoapMessages = new ArrayList<>();
         notificationSource = nSourceFactory.createNotificationSource(notification -> sentSoapMessages.add(notification));
 
-        notificationSink = getInjector().getInstance(NotificationSink.class);
+        notificationSink = getInjector().getInstance(NotificationSinkFactory.class).createNotificationSink(
+                getInjector().getInstance(WsAddressingServerInterceptor.class));
 
         WsAddressingUtil wsaUtil = getInjector().getInstance(WsAddressingUtil.class);
 
