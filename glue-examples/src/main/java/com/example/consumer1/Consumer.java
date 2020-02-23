@@ -369,8 +369,7 @@ public class Consumer {
         Thread.sleep(REPORT_TIMEOUT);
 
         // expected number of reports given 5 second interval
-
-        int minNumberReports = ((int)(REPORT_TIMEOUT / 5) - 1);
+        int minNumberReports = ((int)(REPORT_TIMEOUT / Duration.ofSeconds(5).toMillis()) - 1);
 
         // verify the number of reports for the expected metrics is at least five during the timeout
         var metricChangesOk = reportObs.numMetricChanges >= minNumberReports;
