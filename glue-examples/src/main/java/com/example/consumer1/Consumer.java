@@ -88,7 +88,7 @@ public class Consumer {
     private static final Duration MAX_WAIT = Duration.ofSeconds(11);
     private static final long MAX_WAIT_SEC = MAX_WAIT.getSeconds();
 
-    private static final long REPORT_TIMEOUT = Duration.ofSeconds(30).toMillis();
+    private static final long REPORT_TIMEOUT = Duration.ofSeconds(300).toMillis();
 
     private final Client client;
     private final SdcRemoteDevicesConnector connector;
@@ -368,10 +368,14 @@ public class Consumer {
         // wait for incoming reports
         Thread.sleep(REPORT_TIMEOUT);
 
+        // expected number of reports given 5 second interval
+
+        int minNumberReports = ((int)(REPORT_TIMEOUT / 5) - 1);
+
         // verify the number of reports for the expected metrics is at least five during the timeout
-        var metricChangesOk = reportObs.numMetricChanges >= 5;
+        var metricChangesOk = reportObs.numMetricChanges >= minNumberReports;
         resultMap.put(7, metricChangesOk);
-        var conditionChangesOk = reportObs.numConditionChanges >= 5;
+        var conditionChangesOk = reportObs.numConditionChanges >= minNumberReports;
         resultMap.put(8, conditionChangesOk);
 
 

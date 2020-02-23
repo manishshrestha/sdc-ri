@@ -156,7 +156,8 @@ public class SdcRemoteDevicesConnectorImpl implements SdcRemoteDevicesConnector,
                 }
 
                 tempLog.info("Start watchdog");
-                watchdogFactory.createSdcRemoteDeviceWatchdog(hostingServiceProxy, subscribeResults, this);
+                var watchdog = watchdogFactory.createSdcRemoteDeviceWatchdog(hostingServiceProxy, subscribeResults, this);
+                watchdog.startAsync().awaitRunning();
 
                 tempLog.info("Create and run remote device structure");
                 final SdcRemoteDevice sdcRemoteDevice = sdcRemoteDeviceFactory.createSdcRemoteDevice(
