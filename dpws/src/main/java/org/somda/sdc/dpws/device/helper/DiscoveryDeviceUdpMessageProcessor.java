@@ -88,7 +88,6 @@ public class DiscoveryDeviceUdpMessageProcessor implements UdpMessageQueueObserv
             return;
         }
 
-
         if (LOG.isDebugEnabled()) {
             LOG.debug("Outgoing SOAP/UDP message: {}", SoapDebug.get(response));
         }

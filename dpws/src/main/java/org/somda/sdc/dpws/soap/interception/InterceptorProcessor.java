@@ -28,6 +28,10 @@ class InterceptorProcessor {
                                InterceptorRegistry interceptorRegistry,
                                @Nullable String action,
                                InterceptorCallbackType callbackData) throws InterceptorException {
+        if (action == null) {
+            return;
+        }
+        
         // First apply default interceptors
         invokeInterceptors(direction, callbackData, interceptorRegistry.getDefaultInterceptors());
 

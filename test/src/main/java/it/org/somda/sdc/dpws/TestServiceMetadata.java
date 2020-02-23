@@ -27,4 +27,10 @@ public class TestServiceMetadata {
     public static final String ACTION_NOTIFICATION_3 = PORT_TYPE_3 + "/TestNotification";
 
     public static final String JAXB_CONTEXT_PATH = "dpws_test_service.messages._2017._05._10";
+
+    public static final String SERVICE_ID_1 = "TestService1";
+    public static final String SERVICE_ID_2 = "TestService2";
+
+    public static final String SERVICE_ID_1_RESOURCE_PATH = "it/org/somda/sdc/dpws/TestService1.wsdl";
+    public static final String SERVICE_ID_2_RESOURCE_PATH = "it/org/somda/sdc/dpws/TestService2.wsdl";
 }

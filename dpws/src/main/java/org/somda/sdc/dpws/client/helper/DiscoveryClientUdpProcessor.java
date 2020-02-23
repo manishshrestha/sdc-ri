@@ -8,7 +8,6 @@ import org.somda.sdc.dpws.soap.NotificationSink;
 import org.somda.sdc.dpws.soap.SoapDebug;
 import org.somda.sdc.dpws.soap.SoapMessage;
 import org.somda.sdc.dpws.soap.exception.MarshallingException;
-import org.somda.sdc.dpws.soap.exception.TransportException;
 import org.somda.sdc.dpws.udp.UdpMessage;
 import org.somda.sdc.dpws.udp.UdpMessageQueueObserver;
 import org.somda.sdc.dpws.udp.UdpMessageQueueService;

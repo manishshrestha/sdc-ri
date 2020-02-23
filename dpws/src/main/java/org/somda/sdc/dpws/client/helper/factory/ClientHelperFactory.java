@@ -20,7 +20,6 @@ public interface ClientHelperFactory {
      */
     DiscoveredDeviceResolver createDiscoveredDeviceResolver(@Assisted WsDiscoveryClient wsDiscoveryClient);
 
-
     /**
      * Creates a {@linkplain DiscoveryClientUdpProcessor} instance.
      *

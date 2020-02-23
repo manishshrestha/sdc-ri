@@ -39,7 +39,7 @@ public class InterceptorRegistry {
      */
     public void addInterceptor(Interceptor interceptor) {
         List<Method> actionCallbackMethods = getCallbackMethods(interceptor);
-        actionCallbackMethods.forEach(method -> {
+        for (Method method : actionCallbackMethods) {
             MessageInterceptor annotation = method.getAnnotation(MessageInterceptor.class);
             InterceptorInfo interceptorInfo = new InterceptorInfo(interceptor, method, annotation.sequenceNumber());
             Direction direction = annotation.direction();
@@ -54,7 +54,7 @@ public class InterceptorRegistry {
             List<InterceptorInfo> interceptorInfoList = getInterceptorInfoList(direction, action);
             interceptorInfoList.add(interceptorInfo);
             Collections.sort(interceptorInfoList);
-        });
+        }
     }
 
     /**
