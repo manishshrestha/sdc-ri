@@ -8,14 +8,12 @@ import dpws_test_service.messages._2017._05._10.TestOperationResponse;
 import it.org.somda.sdc.dpws.IntegrationTestPeer;
 import it.org.somda.sdc.dpws.MockedUdpBindingModule;
 import it.org.somda.sdc.dpws.TestServiceMetadata;
-import org.somda.sdc.dpws.DpwsConfig;
 import org.somda.sdc.dpws.DpwsFramework;
 import org.somda.sdc.dpws.DpwsUtil;
 import org.somda.sdc.dpws.client.Client;
 import org.somda.sdc.dpws.device.Device;
 import org.somda.sdc.dpws.device.DeviceSettings;
 import org.somda.sdc.dpws.device.factory.DeviceFactory;
-import org.somda.sdc.dpws.factory.DpwsFrameworkFactory;
 import org.somda.sdc.dpws.guice.DefaultDpwsConfigModule;
 import org.somda.sdc.dpws.service.HostedServiceProxy;
 import org.somda.sdc.dpws.service.factory.HostedServiceFactory;
@@ -28,7 +26,6 @@ import org.somda.sdc.dpws.soap.interception.MessageInterceptor;
 import org.somda.sdc.dpws.soap.interception.NotificationObject;
 import org.somda.sdc.dpws.soap.wsaddressing.WsAddressingUtil;
 import org.somda.sdc.dpws.soap.wsaddressing.model.EndpointReferenceType;
-import org.somda.sdc.dpws.soap.wsdiscovery.WsDiscoveryConfig;
 import test.org.somda.common.TimedWait;
 
 import javax.xml.namespace.QName;
@@ -97,7 +94,7 @@ public class DeviceAndClientPeer extends IntegrationTestPeer {
             }
         };
 
-        this.dpwsFramework = getInjector().getInstance(DpwsFrameworkFactory.class).createDpwsFramework();
+        this.dpwsFramework = getInjector().getInstance(DpwsFramework.class);
         this.localDeviceEprAddress = localDeviceEprAddress;
         this.client = getInjector().getInstance(Client.class);
         this.device = getInjector().getInstance(DeviceFactory.class).createDevice(deviceSettings);
@@ -140,7 +137,7 @@ public class DeviceAndClientPeer extends IntegrationTestPeer {
                     notification.setParam2(100);
                     service1.sendNotification(notification);
                     Thread.sleep(100);
-                } catch(InterruptedException e) {
+                } catch (InterruptedException e) {
                     break;
                 } catch (MarshallingException | TransportException e) {
                     e.printStackTrace();
