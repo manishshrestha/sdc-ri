@@ -3,10 +3,9 @@ package org.somda.sdc.dpws.guice;
 import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import com.google.inject.AbstractModule;
 import com.google.inject.Singleton;
-import com.google.inject.TypeLiteral;
 import com.google.inject.assistedinject.FactoryModuleBuilder;
+import org.somda.sdc.common.guice.BaseAbstractModule;
 import org.somda.sdc.dpws.CommunicationLog;
 import org.somda.sdc.dpws.CommunicationLogImpl;
 import org.somda.sdc.dpws.DpwsFramework;
@@ -24,7 +23,6 @@ import org.somda.sdc.dpws.device.helper.DiscoveryDeviceUdpMessageProcessor;
 import org.somda.sdc.dpws.device.helper.factory.DeviceHelperFactory;
 import org.somda.sdc.dpws.factory.ApacheTransportBindingFactoryImpl;
 import org.somda.sdc.dpws.factory.TransportBindingFactory;
-import org.somda.sdc.common.util.ExecutorWrapperService;
 import org.somda.sdc.dpws.helper.NotificationSourceUdpCallback;
 import org.somda.sdc.dpws.helper.factory.DpwsHelperFactory;
 import org.somda.sdc.dpws.http.HttpServerRegistry;
@@ -75,7 +73,7 @@ import java.util.concurrent.ScheduledExecutorService;
 /**
  * Default Guice module to bind all interfaces and factories used by the DPWS implementation.
  */
-public class DefaultDpwsModule extends AbstractModule {
+public class DefaultDpwsModule extends BaseAbstractModule {
     @Override
     protected void configure() {
         configureMarshalling();
@@ -151,12 +149,7 @@ public class DefaultDpwsModule extends AbstractModule {
                         .setDaemon(true)
                         .build()
         );
-        var annotation = AppDelayExecutor.class;
-
-        var executorWrapper = new ExecutorWrapperService<>(executor, annotation.getSimpleName());
-        bind(new TypeLiteral<ExecutorWrapperService<ScheduledExecutorService>>(){})
-                .annotatedWith(annotation)
-                .toInstance(executorWrapper);
+        bindScheduledExecutor(executor, AppDelayExecutor.class);
 
         install(new FactoryModuleBuilder()
                 .implement(DiscoveryDeviceUdpMessageProcessor.class, DiscoveryDeviceUdpMessageProcessor.class)
@@ -183,12 +176,8 @@ public class DefaultDpwsModule extends AbstractModule {
                                 .setDaemon(true)
                                 .build()
                 ));
-        var annotation = NetworkJobThreadPool.class;
 
-        var executorWrapper = new ExecutorWrapperService<>(executor, annotation.getSimpleName());
-        bind(new TypeLiteral<ExecutorWrapperService<ListeningExecutorService>>(){})
-                .annotatedWith(annotation)
-                .toInstance(executorWrapper);
+        bindListeningExecutor(executor, NetworkJobThreadPool.class);
 
     }
 
@@ -211,12 +200,7 @@ public class DefaultDpwsModule extends AbstractModule {
                                 .setDaemon(true)
                                 .build()
                 ));
-        var annotation = WsDiscovery.class;
-
-        var executorWrapper = new ExecutorWrapperService<>(executor, annotation.getSimpleName());
-        bind(new TypeLiteral<ExecutorWrapperService<ListeningExecutorService>>(){})
-                .annotatedWith(annotation)
-                .toInstance(executorWrapper);
+        bindListeningExecutor(executor, WsDiscovery.class);
 
         bind(UdpMessageQueueService.class)
                 .annotatedWith(DiscoveryUdpQueue.class)

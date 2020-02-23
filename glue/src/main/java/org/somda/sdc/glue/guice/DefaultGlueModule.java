@@ -6,6 +6,7 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.inject.AbstractModule;
 import com.google.inject.TypeLiteral;
 import com.google.inject.assistedinject.FactoryModuleBuilder;
+import org.somda.sdc.common.guice.BaseAbstractModule;
 import org.somda.sdc.common.util.ExecutorWrapperService;
 import org.somda.sdc.glue.common.MdibMapper;
 import org.somda.sdc.glue.common.ModificationsBuilder;
@@ -38,7 +39,7 @@ import java.util.concurrent.ScheduledExecutorService;
 /**
  * Default Glue module.
  */
-public class DefaultGlueModule extends AbstractModule {
+public class DefaultGlueModule extends BaseAbstractModule {
     @Override
     protected void configure() {
         configureCommon();
@@ -65,12 +66,7 @@ public class DefaultGlueModule extends AbstractModule {
                             .setDaemon(true)
                             .build()
             ));
-            var annotation = Consumer.class;
-
-            var executorWrapper = new ExecutorWrapperService<>(executor, annotation.getSimpleName());
-            bind(new TypeLiteral<ExecutorWrapperService<ListeningExecutorService>>() {})
-                    .annotatedWith(annotation)
-                    .toInstance(executorWrapper);
+            bindListeningExecutor(executor, Consumer.class);
         }
 
         {
@@ -81,12 +77,7 @@ public class DefaultGlueModule extends AbstractModule {
                             .setDaemon(true)
                             .build()
             );
-            var annotation = WatchdogScheduledExecutor.class;
-
-            var executorWrapper = new ExecutorWrapperService<>(executor, annotation.getSimpleName());
-            bind(new TypeLiteral<ExecutorWrapperService<ScheduledExecutorService>>() {})
-                    .annotatedWith(annotation)
-                    .toInstance(executorWrapper);
+            bindScheduledExecutor(executor, WatchdogScheduledExecutor.class);
         }
 
         bind(SdcRemoteDevicesConnector.class).to(SdcRemoteDevicesConnectorImpl.class);

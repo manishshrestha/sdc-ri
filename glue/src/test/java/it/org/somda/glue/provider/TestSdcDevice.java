@@ -10,6 +10,7 @@ import it.org.somda.sdc.dpws.MockedUdpBindingModule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.somda.sdc.biceps.provider.access.factory.LocalMdibAccessFactory;
+import org.somda.sdc.common.guice.BaseAbstractModule;
 import org.somda.sdc.dpws.DpwsConfig;
 import org.somda.sdc.dpws.DpwsFramework;
 import org.somda.sdc.dpws.device.DeviceSettings;
@@ -90,36 +91,6 @@ public class TestSdcDevice extends IntegrationTestPeer {
                         super.customConfigure();
 
                         // bump network pool size because of parallelism tests
-                        {
-                            Callable<ListeningExecutorService> executor = () -> MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(
-                                    30,
-                                    new ThreadFactoryBuilder()
-                                            .setNameFormat("NetworkJobThreadPool-thread-%d")
-                                            .setDaemon(true)
-                                            .build()
-                            ));
-                            var annotation = NetworkJobThreadPool.class;
-
-                            var executorWrapper = new ExecutorWrapperService<>(executor, annotation.getSimpleName());
-                            bind(new TypeLiteral<ExecutorWrapperService<ListeningExecutorService>>(){})
-                                    .annotatedWith(annotation)
-                                    .toInstance(executorWrapper);
-                        }
-                        {
-                            Callable<ListeningExecutorService> executor = () -> MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(
-                                    30,
-                                    new ThreadFactoryBuilder()
-                                            .setNameFormat("WsDiscovery-thread-%d")
-                                            .setDaemon(true)
-                                            .build()
-                            ));
-                            var annotation = WsDiscovery.class;
-
-                            var executorWrapper = new ExecutorWrapperService<>(executor, annotation.getSimpleName());
-                            bind(new TypeLiteral<ExecutorWrapperService<ListeningExecutorService>>(){})
-                                    .annotatedWith(annotation)
-                                    .toInstance(executorWrapper);
-                        }
                         if (CIDetector.isRunningInCi()) {
                             var httpTimeouts = Duration.ofSeconds(120);
                             var futureTimeouts = Duration.ofSeconds(30);
@@ -138,6 +109,33 @@ public class TestSdcDevice extends IntegrationTestPeer {
                                     Duration.class,
                                     futureTimeouts);
 
+                        }
+                    }
+                },
+                new BaseAbstractModule() {
+                    @Override
+                    protected void configure() {
+                        super.configure();
+                        // bump network pool size because of parallelism tests
+                        {
+                            Callable<ListeningExecutorService> executor = () -> MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(
+                                    30,
+                                    new ThreadFactoryBuilder()
+                                            .setNameFormat("NetworkJobThreadPool-thread-%d")
+                                            .setDaemon(true)
+                                            .build()
+                            ));
+                            bindListeningExecutor(executor, NetworkJobThreadPool.class);
+                        }
+                        {
+                            Callable<ListeningExecutorService> executor = () -> MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(
+                                    30,
+                                    new ThreadFactoryBuilder()
+                                            .setNameFormat("WsDiscovery-thread-%d")
+                                            .setDaemon(true)
+                                            .build()
+                            ));
+                            bindListeningExecutor(executor, WsDiscovery.class);
                         }
                     }
                 }
