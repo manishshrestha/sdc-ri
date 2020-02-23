@@ -5,11 +5,16 @@ import com.google.common.util.concurrent.MoreExecutors;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.inject.AbstractModule;
 import com.google.inject.assistedinject.FactoryModuleBuilder;
+import org.somda.sdc.common.util.ExecutorWrapperUtil;
 import org.somda.sdc.glue.common.MdibMapper;
 import org.somda.sdc.glue.common.ModificationsBuilder;
 import org.somda.sdc.glue.common.factory.MdibMapperFactory;
 import org.somda.sdc.glue.common.factory.ModificationsBuilderFactory;
-import org.somda.sdc.glue.consumer.*;
+import org.somda.sdc.glue.consumer.SdcRemoteDevice;
+import org.somda.sdc.glue.consumer.SdcRemoteDeviceImpl;
+import org.somda.sdc.glue.consumer.SdcRemoteDeviceWatchdog;
+import org.somda.sdc.glue.consumer.SdcRemoteDevicesConnector;
+import org.somda.sdc.glue.consumer.SdcRemoteDevicesConnectorImpl;
 import org.somda.sdc.glue.consumer.factory.SdcRemoteDeviceFactory;
 import org.somda.sdc.glue.consumer.factory.SdcRemoteDeviceWatchdogFactory;
 import org.somda.sdc.glue.consumer.sco.factory.OperationInvocationDispatcherFactory;
@@ -25,6 +30,7 @@ import org.somda.sdc.glue.provider.services.factory.ServicesFactory;
 import org.somda.sdc.glue.provider.services.helper.ReportGenerator;
 import org.somda.sdc.glue.provider.services.helper.factory.ReportGeneratorFactory;
 
+import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
@@ -49,24 +55,28 @@ public class DefaultGlueModule extends AbstractModule {
     }
 
     private void configureConsumer() {
-        bind(ListeningExecutorService.class)
-                .annotatedWith(Consumer.class)
-                .toInstance(MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(
-                        10,
-                        new ThreadFactoryBuilder()
-                                .setNameFormat("Consumer-thread-%d")
-                                .setDaemon(true)
-                                .build()
-                        )));
-        bind(ScheduledExecutorService.class)
-                .annotatedWith(WatchdogScheduledExecutor.class)
-                .toInstance(Executors.newScheduledThreadPool(
-                        10,
-                        new ThreadFactoryBuilder()
-                                .setNameFormat("WatchdogScheduledExecutor-thread-%d")
-                                .setDaemon(true)
-                                .build()
-                        ));
+
+        {
+            Callable<ListeningExecutorService> executor = () -> MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(
+                    10,
+                    new ThreadFactoryBuilder()
+                            .setNameFormat("Consumer-thread-%d")
+                            .setDaemon(true)
+                            .build()
+            ));
+            ExecutorWrapperUtil.bindListeningExecutor(this, executor, Consumer.class);
+        }
+
+        {
+            Callable<ScheduledExecutorService> executor = () -> Executors.newScheduledThreadPool(
+                    10,
+                    new ThreadFactoryBuilder()
+                            .setNameFormat("WatchdogScheduledExecutor-thread-%d")
+                            .setDaemon(true)
+                            .build()
+            );
+            ExecutorWrapperUtil.bindScheduledExecutor(this, executor, WatchdogScheduledExecutor.class);
+        }
 
         bind(SdcRemoteDevicesConnector.class).to(SdcRemoteDevicesConnectorImpl.class);
 

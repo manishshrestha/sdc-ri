@@ -6,7 +6,9 @@ import com.google.common.util.concurrent.ListenableFuture;
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
 import org.slf4j.Logger;
+import org.somda.sdc.dpws.DpwsFramework;
 import org.somda.sdc.dpws.client.Client;
+import org.somda.sdc.common.util.ExecutorWrapperService;
 import org.somda.sdc.dpws.service.HostedServiceProxy;
 import org.somda.sdc.dpws.service.HostingServiceProxy;
 import org.somda.sdc.dpws.soap.wsdiscovery.model.ProbeMatchesType;
@@ -20,6 +22,7 @@ import javax.inject.Named;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -46,7 +49,7 @@ public class SdcRemoteDeviceWatchdog extends AbstractIdleService {
     private final Logger LOG;
     private final HostingServiceProxy hostingServiceProxy;
     private final Map<String, SubscribeResult> subscriptions;
-    private final ScheduledExecutorService watchdogExecutor;
+    private final ExecutorWrapperService<ScheduledExecutorService> watchdogExecutor;
     private final Duration watchdogPeriod;
     private final Duration requestedExpires;
     private final EventBus eventBus;
@@ -56,8 +59,9 @@ public class SdcRemoteDeviceWatchdog extends AbstractIdleService {
     SdcRemoteDeviceWatchdog(@Assisted HostingServiceProxy hostingServiceProxy,
                             @Assisted Map<String, SubscribeResult> subscriptions,
                             @Assisted @Nullable WatchdogObserver initialWatchdogObserver,
-                            @WatchdogScheduledExecutor ScheduledExecutorService watchdogExecutor,
+                            @WatchdogScheduledExecutor ExecutorWrapperService<ScheduledExecutorService> watchdogExecutor,
                             @Named(ConsumerConfig.WATCHDOG_PERIOD) Duration watchdogPeriod,
+                            DpwsFramework dpwsFramework,
                             EventBus eventBus,
                             Client client) {
         this.LOG = LogPrepender.getLogger(hostingServiceProxy, SdcRemoteDeviceWatchdog.class);
@@ -68,6 +72,7 @@ public class SdcRemoteDeviceWatchdog extends AbstractIdleService {
         this.requestedExpires = watchdogPeriod.multipliedBy(3);
         this.eventBus = eventBus;
         this.client = client;
+        dpwsFramework.registerService(List.of(watchdogExecutor));
 
         if (initialWatchdogObserver != null) {
             registerObserver(initialWatchdogObserver);
@@ -94,7 +99,7 @@ public class SdcRemoteDeviceWatchdog extends AbstractIdleService {
 
     @Override
     protected void startUp() {
-        watchdogExecutor.schedule(new WatchdogJob(), watchdogPeriod.toMillis(), TimeUnit.MILLISECONDS);
+        watchdogExecutor.get().schedule(new WatchdogJob(), watchdogPeriod.toMillis(), TimeUnit.MILLISECONDS);
     }
 
     @Override
@@ -166,7 +171,7 @@ public class SdcRemoteDeviceWatchdog extends AbstractIdleService {
             }
 
             if (isRunning()) {
-                watchdogExecutor.schedule(new WatchdogJob(), timeout.toMillis(), TimeUnit.MILLISECONDS);
+                watchdogExecutor.get().schedule(new WatchdogJob(), timeout.toMillis(), TimeUnit.MILLISECONDS);
             }
         }
     }

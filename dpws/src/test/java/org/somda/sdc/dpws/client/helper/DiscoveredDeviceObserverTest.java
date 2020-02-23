@@ -3,28 +3,33 @@ package org.somda.sdc.dpws.client.helper;
 import com.google.common.eventbus.Subscribe;
 import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.common.util.concurrent.MoreExecutors;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.somda.sdc.dpws.DpwsTest;
-import org.somda.sdc.dpws.client.*;
+import org.somda.sdc.dpws.client.DiscoveredDevice;
 import org.somda.sdc.dpws.client.event.DeviceEnteredMessage;
 import org.somda.sdc.dpws.client.event.DeviceLeftMessage;
 import org.somda.sdc.dpws.client.event.DeviceProbeTimeoutMessage;
 import org.somda.sdc.dpws.client.event.ProbedDeviceFoundMessage;
+import org.somda.sdc.common.util.ExecutorWrapperService;
 import org.somda.sdc.dpws.soap.wsaddressing.WsAddressingUtil;
 import org.somda.sdc.dpws.soap.wsaddressing.model.EndpointReferenceType;
 import org.somda.sdc.dpws.soap.wsdiscovery.event.ByeMessage;
 import org.somda.sdc.dpws.soap.wsdiscovery.event.HelloMessage;
 import org.somda.sdc.dpws.soap.wsdiscovery.event.ProbeMatchesMessage;
 import org.somda.sdc.dpws.soap.wsdiscovery.event.ProbeTimeoutMessage;
-import org.somda.sdc.dpws.soap.wsdiscovery.model.*;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.somda.sdc.dpws.soap.wsdiscovery.model.ByeType;
+import org.somda.sdc.dpws.soap.wsdiscovery.model.HelloType;
+import org.somda.sdc.dpws.soap.wsdiscovery.model.ObjectFactory;
+import org.somda.sdc.dpws.soap.wsdiscovery.model.ProbeMatchType;
+import org.somda.sdc.dpws.soap.wsdiscovery.model.ProbeMatchesType;
 
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -42,7 +47,10 @@ public class DiscoveredDeviceObserverTest extends DpwsTest {
     public void setUp() throws Exception {
         super.setUp();
         WsAddressingUtil wsaUtil = getInjector().getInstance(WsAddressingUtil.class);
-        ListeningExecutorService execService = MoreExecutors.newDirectExecutorService();
+        ExecutorWrapperService<ListeningExecutorService> execService = new ExecutorWrapperService<>(
+                MoreExecutors::newDirectExecutorService, "execService"
+        );
+        execService.startAsync().awaitRunning();
         discoveredDeviceResolver = mock(DiscoveredDeviceResolver.class);
         expectedUri = URI.create("http://expectedUri");
         expectedEpr = wsaUtil.createEprWithAddress(expectedUri);

@@ -5,11 +5,13 @@ import com.google.common.util.concurrent.Futures;
 import com.google.inject.AbstractModule;
 import com.google.inject.Injector;
 import com.google.inject.Key;
+import com.google.inject.TypeLiteral;
 import com.google.inject.name.Names;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.somda.sdc.dpws.client.Client;
+import org.somda.sdc.common.util.ExecutorWrapperService;
 import org.somda.sdc.dpws.model.ThisDeviceType;
 import org.somda.sdc.dpws.model.ThisModelType;
 import org.somda.sdc.dpws.service.EventSinkAccess;
@@ -61,13 +63,19 @@ class SdcRemoteDeviceWatchdogTest {
         injector = new UnitTestUtil().createInjectorWithOverrides(new AbstractModule() {
             @Override
             protected void configure() {
-                bind(ScheduledExecutorService.class)
+                bind(new TypeLiteral<ExecutorWrapperService<ScheduledExecutorService>>(){})
                         .annotatedWith(WatchdogScheduledExecutor.class)
-                        .toInstance(mockExecutor);
+                        .toInstance(new ExecutorWrapperService<>(() -> mockExecutor, "WatchdogScheduledExecutorMock"));
                 bind(Client.class)
                         .toInstance(mockClient);
             }
         });
+
+        // start required thread pool(s)
+        injector.getInstance(Key.get(
+                new TypeLiteral<ExecutorWrapperService<ScheduledExecutorService>>(){},
+                WatchdogScheduledExecutor.class
+        )).startAsync().awaitRunning();
 
         hostedServiceProxy1 = mock(HostedServiceProxy.class);
         mockEventSinkAccess1 = mock(EventSinkAccess.class);

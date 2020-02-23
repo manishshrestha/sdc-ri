@@ -9,6 +9,7 @@ import org.somda.sdc.biceps.model.message.AbstractSet;
 import org.somda.sdc.biceps.model.message.AbstractSetResponse;
 import org.somda.sdc.biceps.model.message.OperationInvokedReport;
 import org.somda.sdc.biceps.model.message.SetContextState;
+import org.somda.sdc.common.util.ExecutorWrapperService;
 import org.somda.sdc.dpws.service.HostedServiceProxy;
 import org.somda.sdc.dpws.service.HostingServiceProxy;
 import org.somda.sdc.dpws.soap.SoapMessage;
@@ -19,8 +20,8 @@ import org.somda.sdc.dpws.soap.exception.TransportException;
 import org.somda.sdc.dpws.soap.interception.InterceptorException;
 import org.somda.sdc.glue.common.ActionConstants;
 import org.somda.sdc.glue.common.WsdlConstants;
-import org.somda.sdc.glue.consumer.helper.LogPrepender;
 import org.somda.sdc.glue.consumer.SetServiceAccess;
+import org.somda.sdc.glue.consumer.helper.LogPrepender;
 import org.somda.sdc.glue.consumer.sco.factory.OperationInvocationDispatcherFactory;
 import org.somda.sdc.glue.consumer.sco.factory.ScoTransactionFactory;
 import org.somda.sdc.glue.consumer.sco.helper.OperationInvocationDispatcher;
@@ -36,7 +37,7 @@ public class ScoController implements SetServiceAccess {
     private final HostedServiceProxy setServiceProxy;
     private final HostedServiceProxy contextServiceProxy;
     private final OperationInvocationDispatcher operationInvocationDispatcher;
-    private final ListeningExecutorService executorService;
+    private final ExecutorWrapperService<ListeningExecutorService> executorService;
     private final SoapUtil soapUtil;
     private final ScoTransactionFactory scoTransactionFactory;
 
@@ -45,7 +46,7 @@ public class ScoController implements SetServiceAccess {
                   @Assisted("setServiceProxy") @Nullable HostedServiceProxy setServiceProxy,
                   @Assisted("contextServiceProxy") @Nullable HostedServiceProxy contextServiceProxy,
                   OperationInvocationDispatcherFactory operationInvocationDispatcherFactory,
-                  @Consumer ListeningExecutorService executorService,
+                  @Consumer ExecutorWrapperService<ListeningExecutorService> executorService,
                   SoapUtil soapUtil,
                   ScoTransactionFactory scoTransactionFactory) {
         this.LOG = LogPrepender.getLogger(hostingServiceProxy, ScoController.class);
@@ -70,7 +71,7 @@ public class ScoController implements SetServiceAccess {
             T setRequest,
             @Nullable java.util.function.Consumer<OperationInvokedReport.ReportPart> reportListener,
             Class<V> responseClass) {
-        return executorService.submit(() -> {
+        return executorService.get().submit(() -> {
             LOG.debug("Invoke {} operation with payload: {}", setRequest.getClass().getSimpleName(), setRequest.toString());
             final V response = responseClass.cast(sendMessage(setRequest, responseClass));
             LOG.debug("Received {} message with payload: {}", response.getClass().getSimpleName(), response.toString());
