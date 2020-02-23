@@ -4,10 +4,8 @@ import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.inject.AbstractModule;
-import com.google.inject.TypeLiteral;
 import com.google.inject.assistedinject.FactoryModuleBuilder;
-import org.somda.sdc.common.guice.BaseAbstractModule;
-import org.somda.sdc.common.util.ExecutorWrapperService;
+import org.somda.sdc.common.util.ExecutorWrapperUtil;
 import org.somda.sdc.glue.common.MdibMapper;
 import org.somda.sdc.glue.common.ModificationsBuilder;
 import org.somda.sdc.glue.common.factory.MdibMapperFactory;
@@ -39,7 +37,7 @@ import java.util.concurrent.ScheduledExecutorService;
 /**
  * Default Glue module.
  */
-public class DefaultGlueModule extends BaseAbstractModule {
+public class DefaultGlueModule extends AbstractModule {
     @Override
     protected void configure() {
         configureCommon();
@@ -66,7 +64,7 @@ public class DefaultGlueModule extends BaseAbstractModule {
                             .setDaemon(true)
                             .build()
             ));
-            bindListeningExecutor(executor, Consumer.class);
+            ExecutorWrapperUtil.bindListeningExecutor(this, executor, Consumer.class);
         }
 
         {
@@ -77,7 +75,7 @@ public class DefaultGlueModule extends BaseAbstractModule {
                             .setDaemon(true)
                             .build()
             );
-            bindScheduledExecutor(executor, WatchdogScheduledExecutor.class);
+            ExecutorWrapperUtil.bindScheduledExecutor(this, executor, WatchdogScheduledExecutor.class);
         }
 
         bind(SdcRemoteDevicesConnector.class).to(SdcRemoteDevicesConnectorImpl.class);

@@ -3,20 +3,19 @@ package it.org.somda.glue.provider;
 import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import com.google.inject.AbstractModule;
 import com.google.inject.Injector;
-import com.google.inject.TypeLiteral;
 import it.org.somda.glue.common.IntegrationTestPeer;
 import it.org.somda.sdc.dpws.MockedUdpBindingModule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.somda.sdc.biceps.provider.access.factory.LocalMdibAccessFactory;
-import org.somda.sdc.common.guice.BaseAbstractModule;
+import org.somda.sdc.common.util.ExecutorWrapperUtil;
 import org.somda.sdc.dpws.DpwsConfig;
 import org.somda.sdc.dpws.DpwsFramework;
 import org.somda.sdc.dpws.device.DeviceSettings;
 import org.somda.sdc.dpws.guice.NetworkJobThreadPool;
 import org.somda.sdc.dpws.guice.WsDiscovery;
-import org.somda.sdc.common.util.ExecutorWrapperService;
 import org.somda.sdc.dpws.soap.SoapUtil;
 import org.somda.sdc.dpws.soap.wsaddressing.WsAddressingUtil;
 import org.somda.sdc.dpws.soap.wsaddressing.model.EndpointReferenceType;
@@ -112,7 +111,7 @@ public class TestSdcDevice extends IntegrationTestPeer {
                         }
                     }
                 },
-                new BaseAbstractModule() {
+                new AbstractModule() {
                     @Override
                     protected void configure() {
                         super.configure();
@@ -125,7 +124,7 @@ public class TestSdcDevice extends IntegrationTestPeer {
                                             .setDaemon(true)
                                             .build()
                             ));
-                            bindListeningExecutor(executor, NetworkJobThreadPool.class);
+                            ExecutorWrapperUtil.bindListeningExecutor(this, executor, NetworkJobThreadPool.class);
                         }
                         {
                             Callable<ListeningExecutorService> executor = () -> MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(
@@ -135,7 +134,7 @@ public class TestSdcDevice extends IntegrationTestPeer {
                                             .setDaemon(true)
                                             .build()
                             ));
-                            bindListeningExecutor(executor, WsDiscovery.class);
+                            ExecutorWrapperUtil.bindListeningExecutor(this, executor, WsDiscovery.class);
                         }
                     }
                 }

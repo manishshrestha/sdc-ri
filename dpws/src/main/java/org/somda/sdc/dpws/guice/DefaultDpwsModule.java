@@ -3,9 +3,10 @@ package org.somda.sdc.dpws.guice;
 import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import com.google.inject.AbstractModule;
 import com.google.inject.Singleton;
 import com.google.inject.assistedinject.FactoryModuleBuilder;
-import org.somda.sdc.common.guice.BaseAbstractModule;
+import org.somda.sdc.common.util.ExecutorWrapperUtil;
 import org.somda.sdc.dpws.CommunicationLog;
 import org.somda.sdc.dpws.CommunicationLogImpl;
 import org.somda.sdc.dpws.DpwsFramework;
@@ -73,7 +74,7 @@ import java.util.concurrent.ScheduledExecutorService;
 /**
  * Default Guice module to bind all interfaces and factories used by the DPWS implementation.
  */
-public class DefaultDpwsModule extends BaseAbstractModule {
+public class DefaultDpwsModule extends AbstractModule {
     @Override
     protected void configure() {
         configureMarshalling();
@@ -149,7 +150,7 @@ public class DefaultDpwsModule extends BaseAbstractModule {
                         .setDaemon(true)
                         .build()
         );
-        bindScheduledExecutor(executor, AppDelayExecutor.class);
+        ExecutorWrapperUtil.bindScheduledExecutor(this, executor, AppDelayExecutor.class);
 
         install(new FactoryModuleBuilder()
                 .implement(DiscoveryDeviceUdpMessageProcessor.class, DiscoveryDeviceUdpMessageProcessor.class)
@@ -177,7 +178,7 @@ public class DefaultDpwsModule extends BaseAbstractModule {
                                 .build()
                 ));
 
-        bindListeningExecutor(executor, NetworkJobThreadPool.class);
+        ExecutorWrapperUtil.bindListeningExecutor(this, executor, NetworkJobThreadPool.class);
 
     }
 
@@ -200,7 +201,7 @@ public class DefaultDpwsModule extends BaseAbstractModule {
                                 .setDaemon(true)
                                 .build()
                 ));
-        bindListeningExecutor(executor, WsDiscovery.class);
+        ExecutorWrapperUtil.bindListeningExecutor(this, executor, WsDiscovery.class);
 
         bind(UdpMessageQueueService.class)
                 .annotatedWith(DiscoveryUdpQueue.class)
