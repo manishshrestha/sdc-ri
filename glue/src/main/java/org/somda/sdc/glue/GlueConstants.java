@@ -64,4 +64,12 @@ public class GlueConstants {
      * This scope, encoded in accordance with SDC Glue clause 9.3, claims conformance with IEEE 11073-20701, published 2018.
      */
     public static URI SCOPE_SDC_PROVIDER;
+
+    /**
+     * SegmentNz and Segment regex definitions.
+     */
+    private static final String ALLOWED_CHARS = "[a-zA-Z0-9-._~!$&'()*+,;=:@]";
+    private static final String ALLOWED_CHARS_WITH_PERCENT_ENCODING = "(?:(?:%[a-fA-f0-9]{2})+|(?:" + ALLOWED_CHARS + ")+)";
+    public static final String SEGMENT_NZ_REGEX = ALLOWED_CHARS_WITH_PERCENT_ENCODING + "+";
+    public static final String SEGMENT_REGEX = ALLOWED_CHARS_WITH_PERCENT_ENCODING + "*$";
 }

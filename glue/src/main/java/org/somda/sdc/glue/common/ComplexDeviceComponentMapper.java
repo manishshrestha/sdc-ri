@@ -2,6 +2,7 @@ package org.somda.sdc.glue.common;
 
 import org.somda.sdc.biceps.model.participant.AbstractComplexDeviceComponentDescriptor;
 import org.somda.sdc.biceps.model.participant.CodedValue;
+import org.somda.sdc.glue.GlueConstants;
 import org.somda.sdc.glue.common.helper.UrlUtf8;
 
 import java.net.URI;
@@ -17,11 +18,13 @@ import java.util.regex.Pattern;
 public class ComplexDeviceComponentMapper {
     private static final String SCHEME = "sdc.cdc.type";
 
-    private static final Pattern pattern = Pattern.compile("^sdc\\.cdc\\.type\\:\\/" +
-                    "(?<codingsystem>.*?)\\/" +
-                    "(?<codingsystemversion>.*?)\\/" +
-                    "(?<code>.*?)$",
-            Pattern.CASE_INSENSITIVE);
+    private static final Pattern PATTERN = Pattern
+            .compile(
+                    "(?i:sdc.cdc.type):/" +
+                            "(?<codingsystem>" + GlueConstants.SEGMENT_REGEX + ")/" +
+                            "(?<codingsystemversion>" + GlueConstants.SEGMENT_REGEX + ")/" +
+                            "(?<code>" + GlueConstants.SEGMENT_NZ_REGEX + ")"
+            );
 
     /**
      * Maps an abstract complex component descriptor to URI representation.
@@ -71,7 +74,7 @@ public class ComplexDeviceComponentMapper {
      * @return a coded value if pattern of URI matches or {@linkplain Optional#empty()} otherwise.
      */
     public static Optional<CodedValue> fromUri(URI complexDeviceComponentTypeUri) {
-        Matcher matcher = pattern.matcher(complexDeviceComponentTypeUri.toString());
+        Matcher matcher = PATTERN.matcher(complexDeviceComponentTypeUri.toString());
         if (matcher.matches()) {
             final String codingSystem = UrlUtf8.decode(matcher.group("codingsystem"));
             final String codingSystemVersion = UrlUtf8.decode(matcher.group("codingsystemversion"));
