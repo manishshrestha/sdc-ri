@@ -29,7 +29,7 @@ public class CryptoConfig {
      * Hostname verifier called on new connections in the http client
      *
      * <ul>
-     * <li>Data type: array of {@link javax.net.ssl.HostnameVerifier}
+     * <li>Data type: {@link javax.net.ssl.HostnameVerifier}
      * <li>Use: optional
      * </ul>
      */
@@ -39,7 +39,7 @@ public class CryptoConfig {
      * Hostname verifier called on new connections in the http server
      *
      * <ul>
-     * <li>Data type: array of {@link javax.net.ssl.HostnameVerifier}
+     * <li>Data type: {@link javax.net.ssl.HostnameVerifier}
      * <li>Use: optional
      * </ul>
      */
