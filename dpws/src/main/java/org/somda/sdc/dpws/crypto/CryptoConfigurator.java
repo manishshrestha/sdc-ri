@@ -76,7 +76,7 @@ public class CryptoConfigurator {
     /**
      * Accepts a {@link CryptoSettings} object and creates an {@linkplain SSLContextConfigurator} object.
      * <p>
-     * The {@linkplain SSLContextConfigurator} object can be used, e.g., with Grizzly servers.
+     * The {@linkplain SSLContextConfigurator} object can be used, e.g., with Jetty servers.
      *
      * @param cryptoSettings the crypto settings.
      *                       Please note that key store files take precedence over key store streams.
@@ -119,7 +119,7 @@ public class CryptoConfigurator {
     /**
      * Creates a default {@linkplain SSLContextConfigurator} object based on system properties.
      * <p>
-     * The {@linkplain SSLContextConfigurator} object can be used, e.g., with Grizzly servers.
+     * The {@linkplain SSLContextConfigurator} object can be used, e.g., with Jetty servers.
      *
      * @return configured {@linkplain SSLContextConfigurator} instance.
      */
