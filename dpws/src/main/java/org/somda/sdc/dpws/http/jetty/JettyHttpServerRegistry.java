@@ -452,7 +452,6 @@ public class JettyHttpServerRegistry extends AbstractIdleService implements Http
 
         private Collection<X509Certificate> getX509Certificates(HttpServletRequest request) throws IOException {
             var anonymousCertificates = request.getAttribute("javax.servlet.request.X509Certificate");
-            Collection<X509Certificate> x509Certificates = Collections.emptyList();
             if (sslContextConfigurator != null) {
                 if (anonymousCertificates == null) {
                     LOG.error("Certificate information is missing from HTTP request data");
@@ -467,7 +466,7 @@ public class JettyHttpServerRegistry extends AbstractIdleService implements Http
                     }
                 }
             }
-            return x509Certificates;
+            return Collections.emptyList();
         }
     }
 }
