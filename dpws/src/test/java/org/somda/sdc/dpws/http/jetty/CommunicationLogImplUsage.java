@@ -49,7 +49,7 @@ public class CommunicationLogImplUsage {
 
             CommunicationLogImpl communicationLogImpl = new CommunicationLogImpl(communicationLogSinkImplMock);
 
-            JettyHttpServerHandler jettyHttpServerHandler = new JettyHttpServerHandler("_",
+            JettyHttpServerHandler jettyHttpServerHandler = new JettyHttpServerHandler(false,"_",
                     httpHandlerMock, communicationLogImpl);
 
             doAnswer(i -> {
