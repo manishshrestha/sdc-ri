@@ -1,5 +1,7 @@
 package org.somda.sdc.dpws.udp;
 
+import javax.annotation.Nullable;
+
 /**
  * Raw UDP message packed as a byte array plus a length attribute and receiver information.
  */
@@ -17,7 +19,7 @@ public class UdpMessage {
      * @param host   the message receiver's host.
      * @param port   the message receiver's port.
      */
-    public UdpMessage(byte[] data, int length, String host, Integer port) {
+    public UdpMessage(byte[] data, int length, @Nullable String host, @Nullable Integer port) {
         this.data = data;
         this.length = length;
         this.host = host;
@@ -33,10 +35,7 @@ public class UdpMessage {
      * @param length the actual message length.
      */
     public UdpMessage(byte[] data, int length) {
-        this.data = data;
-        this.length = length;
-        this.host = null;
-        this.port = null;
+        this(data, length, null, null);
     }
 
     /**

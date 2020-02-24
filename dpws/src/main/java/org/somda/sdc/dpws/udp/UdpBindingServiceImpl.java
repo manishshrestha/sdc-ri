@@ -9,6 +9,7 @@ import org.somda.sdc.dpws.CommunicationLog;
 import org.somda.sdc.dpws.CommunicationLogImpl;
 import org.somda.sdc.dpws.DpwsConstants;
 import org.somda.sdc.dpws.network.NetworkInterfaceUtil;
+import org.somda.sdc.dpws.soap.exception.TransportException;
 
 import javax.annotation.Nullable;
 import java.io.IOException;
@@ -97,8 +98,11 @@ public class UdpBindingServiceImpl extends AbstractIdleService implements UdpBin
                         continue;
                     }
 
-                    UdpMessage message = new UdpMessage(packet.getData(), packet.getLength(),
-                            packet.getAddress().getHostAddress(), packet.getPort());
+                    UdpMessage message = new UdpMessage(
+                            packet.getData(),
+                            packet.getLength(),
+                            packet.getAddress().getHostAddress(),
+                            packet.getPort());
                     communicationLog.logUdpMessage(CommunicationLogImpl.UdpDirection.INBOUND, packet.getAddress().getHostAddress(), packet.getPort(), message);
                     receiver.receive(message);
                 }
@@ -115,8 +119,11 @@ public class UdpBindingServiceImpl extends AbstractIdleService implements UdpBin
                         continue;
                     }
 
-                    UdpMessage message = new UdpMessage(packet.getData(), packet.getLength(),
-                            packet.getAddress().getHostAddress(), packet.getPort());
+                    UdpMessage message = new UdpMessage(
+                            packet.getData(),
+                            packet.getLength(),
+                            packet.getAddress().getHostAddress(),
+                            packet.getPort());
                     communicationLog.logUdpMessage(CommunicationLogImpl.UdpDirection.INBOUND, packet.getAddress().getHostAddress(), packet.getPort(), message);
                     receiver.receive(message);
                 }
@@ -152,7 +159,7 @@ public class UdpBindingServiceImpl extends AbstractIdleService implements UdpBin
     }
 
     @Override
-    public void sendMessage(UdpMessage message) throws IOException {
+    public void sendMessage(UdpMessage message) throws IOException, TransportException {
         if (!isRunning()) {
             LOG.warn("Try to send message, but service is not running. Skip.");
             return;
@@ -170,6 +177,11 @@ public class UdpBindingServiceImpl extends AbstractIdleService implements UdpBin
             packet.setAddress(InetAddress.getByName(message.getHost()));
             packet.setPort(message.getPort());
         } else {
+            if (multicastGroup == null) {
+                throw new TransportException(
+                        String.format("No transport data in UDP message, which is required as no multicast group is available. Message: %s",
+                                message.toString()));
+            }
             communicationLog.logUdpMessage(CommunicationLogImpl.UdpDirection.OUTBOUND, multicastGroup.getHostAddress(), socketPort, message);
             packet.setAddress(multicastGroup);
             packet.setPort(socketPort);

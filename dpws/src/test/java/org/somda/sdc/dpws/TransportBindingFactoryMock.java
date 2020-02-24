@@ -16,6 +16,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.URI;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -31,7 +32,14 @@ public class TransportBindingFactoryMock implements TransportBindingFactory {
                                 SoapMessageFactory soapMessageFactory) {
         this.soapMarshalling = soapMarshalling;
         this.soapMessageFactory = soapMessageFactory;
-        this.mockTransportInfo = new TransportInfo("mock.scheme", "localhost", 123);
+        this.mockTransportInfo = new TransportInfo(
+                "mock.scheme",
+                "localhost",
+                123,
+                "remotehost",
+                456,
+                Collections.emptyList()
+        );
     }
 
     public static void setHandlerRegistry(Map<URI, HttpHandler> handlerRegistry) {

@@ -85,7 +85,7 @@ public class InvocationIT {
     public void requestResponse() throws Exception {
         final int COUNT = 100;
 
-        final HostedServiceProxy srv1 = hostingServiceProxy.getHostedServices().get(BasicPopulatedDevice.SERVICE_ID_1);
+        final HostedServiceProxy srv1 = hostingServiceProxy.getHostedServices().get(TestServiceMetadata.SERVICE_ID_1);
         assertNotNull(srv1);
 
         final String testString = "test";
@@ -135,7 +135,7 @@ public class InvocationIT {
     public void notification() throws Exception {
         final int COUNT = 100;
         final SettableFuture<List<TestNotification>> notificationFuture = SettableFuture.create();
-        final HostedServiceProxy srv1 = hostingServiceProxy.getHostedServices().get(BasicPopulatedDevice.SERVICE_ID_1);
+        final HostedServiceProxy srv1 = hostingServiceProxy.getHostedServices().get(TestServiceMetadata.SERVICE_ID_1);
         final ListenableFuture<SubscribeResult> subscribe = srv1.getEventSinkAccess()
                 .subscribe(Collections.singletonList(TestServiceMetadata.ACTION_NOTIFICATION_1), Duration.ofMinutes(1),
                         new Interceptor() {
@@ -176,8 +176,8 @@ public class InvocationIT {
         final SettableFuture<List<TestNotification>> notificationFuture1 = SettableFuture.create();
         final SettableFuture<List<TestNotification>> notificationFuture2 = SettableFuture.create();
         final SettableFuture<List<TestNotification>> notificationFuture3 = SettableFuture.create();
-        final HostedServiceProxy srv1 = hostingServiceProxy.getHostedServices().get(BasicPopulatedDevice.SERVICE_ID_1);
-        final HostedServiceProxy srv2 = hostingServiceProxy.getHostedServices().get(BasicPopulatedDevice.SERVICE_ID_2);
+        final HostedServiceProxy srv1 = hostingServiceProxy.getHostedServices().get(TestServiceMetadata.SERVICE_ID_1);
+        final HostedServiceProxy srv2 = hostingServiceProxy.getHostedServices().get(TestServiceMetadata.SERVICE_ID_2);
         final ListenableFuture<SubscribeResult> subscribe1 = srv1.getEventSinkAccess()
                 .subscribe(Collections.singletonList(TestServiceMetadata.ACTION_NOTIFICATION_1), Duration.ofMinutes(1),
                         new Interceptor() {
@@ -259,7 +259,7 @@ public class InvocationIT {
     public void notificationSubscribeMultipleActions() throws Exception {
         final int COUNT = 100;
         final SettableFuture<List<TestNotification>> notificationFuture = SettableFuture.create();
-        final HostedServiceProxy srv1 = hostingServiceProxy.getHostedServices().get(BasicPopulatedDevice.SERVICE_ID_1);
+        final HostedServiceProxy srv1 = hostingServiceProxy.getHostedServices().get(TestServiceMetadata.SERVICE_ID_1);
         final ListenableFuture<SubscribeResult> subscribe = srv1.getEventSinkAccess()
                 .subscribe(Arrays.asList(TestServiceMetadata.ACTION_NOTIFICATION_1, TestServiceMetadata.ACTION_NOTIFICATION_2), Duration.ofMinutes(1),
                         new Interceptor() {
