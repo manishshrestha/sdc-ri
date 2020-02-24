@@ -1,16 +1,11 @@
 package org.somda.sdc.dpws.client;
 
-import com.google.common.util.concurrent.AbstractIdleService;
-import com.google.common.util.concurrent.FutureCallback;
-import com.google.common.util.concurrent.Futures;
-import com.google.common.util.concurrent.ListenableFuture;
-import com.google.common.util.concurrent.ListeningExecutorService;
-import com.google.common.util.concurrent.Service;
-import com.google.common.util.concurrent.SettableFuture;
+import com.google.common.util.concurrent.*;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.somda.sdc.common.util.ExecutorWrapperService;
 import org.somda.sdc.dpws.DpwsConfig;
 import org.somda.sdc.dpws.TransportBinding;
 import org.somda.sdc.dpws.client.helper.DiscoveredDeviceResolver;
@@ -19,20 +14,21 @@ import org.somda.sdc.dpws.client.helper.HelloByeAndProbeMatchesObserverImpl;
 import org.somda.sdc.dpws.client.helper.HostingServiceResolver;
 import org.somda.sdc.dpws.client.helper.factory.ClientHelperFactory;
 import org.somda.sdc.dpws.factory.TransportBindingFactory;
+import org.somda.sdc.dpws.guice.ClientSpecific;
 import org.somda.sdc.dpws.guice.DiscoveryUdpQueue;
 import org.somda.sdc.dpws.guice.NetworkJobThreadPool;
-import org.somda.sdc.common.util.ExecutorWrapperService;
 import org.somda.sdc.dpws.helper.NotificationSourceUdpCallback;
 import org.somda.sdc.dpws.helper.factory.DpwsHelperFactory;
 import org.somda.sdc.dpws.service.HostingServiceProxy;
-import org.somda.sdc.dpws.soap.NotificationSink;
 import org.somda.sdc.dpws.soap.NotificationSource;
 import org.somda.sdc.dpws.soap.RequestResponseClient;
 import org.somda.sdc.dpws.soap.exception.MarshallingException;
 import org.somda.sdc.dpws.soap.exception.TransportException;
+import org.somda.sdc.dpws.soap.factory.NotificationSinkFactory;
 import org.somda.sdc.dpws.soap.factory.NotificationSourceFactory;
 import org.somda.sdc.dpws.soap.factory.RequestResponseClientFactory;
 import org.somda.sdc.dpws.soap.interception.InterceptorException;
+import org.somda.sdc.dpws.soap.wsaddressing.WsAddressingServerInterceptor;
 import org.somda.sdc.dpws.soap.wsaddressing.WsAddressingUtil;
 import org.somda.sdc.dpws.soap.wsdiscovery.HelloByeAndProbeMatchesObserver;
 import org.somda.sdc.dpws.soap.wsdiscovery.WsDiscoveryClient;
@@ -73,13 +69,14 @@ public class ClientImpl extends AbstractIdleService implements Client, Service, 
                NotificationSourceFactory notificationSourceFactory,
                DpwsHelperFactory dpwsHelperFactory,
                @DiscoveryUdpQueue UdpMessageQueueService discoveryMessageQueue,
-               NotificationSink notificationSink,
+               NotificationSinkFactory notificationSinkFactory,
                ClientHelperFactory clientHelperFactory,
                @NetworkJobThreadPool ExecutorWrapperService<ListeningExecutorService> executorService,
                WsAddressingUtil wsAddressingUtil,
                TransportBindingFactory transportBindingFactory,
                RequestResponseClientFactory requestResponseClientFactory,
-               HostingServiceResolver hostingServiceResolver) {
+               HostingServiceResolver hostingServiceResolver,
+               @ClientSpecific WsAddressingServerInterceptor wsAddressingServerInterceptor) {
         this.maxWaitForFutures = maxWaitForFutures;
         this.discoveryMessageQueue = discoveryMessageQueue;
         this.hostingServiceResolver = hostingServiceResolver;
@@ -95,6 +92,9 @@ public class ClientImpl extends AbstractIdleService implements Client, Service, 
         NotificationSource notificationSource = notificationSourceFactory.createNotificationSource(callback);
         // Connect that notification source to a WS-Discovery client
         wsDiscoveryClient = discoveryClientFactory.createWsDiscoveryClient(notificationSource);
+
+        // Create notification sink for WS-Discovery dedicated to the client side
+        var notificationSink = notificationSinkFactory.createNotificationSink(wsAddressingServerInterceptor);
 
         // Create binding between a notification sink and incoming UDP messages to receive hello, bye, probeMatches and
         // resolveMatches

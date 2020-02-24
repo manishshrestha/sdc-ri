@@ -1,6 +1,8 @@
 package org.somda.sdc.dpws.soap;
 
 import com.google.inject.Inject;
+import com.google.inject.assistedinject.Assisted;
+import org.somda.sdc.dpws.guice.ClientSpecific;
 import org.somda.sdc.dpws.soap.exception.SoapFaultException;
 import org.somda.sdc.dpws.soap.interception.*;
 import org.somda.sdc.dpws.soap.wsaddressing.WsAddressingServerInterceptor;
@@ -17,9 +19,9 @@ public class NotificationSinkImpl implements NotificationSink {
     private final ServerDispatcher serverDispatcher;
 
     @Inject
-    NotificationSinkImpl(ServerDispatcher serverDispatcher,
-                         InterceptorRegistry interceptorRegistry,
-                         WsAddressingServerInterceptor wsaServerInterceptor) {
+    NotificationSinkImpl(@Assisted WsAddressingServerInterceptor wsaServerInterceptor,
+                         ServerDispatcher serverDispatcher,
+                         InterceptorRegistry interceptorRegistry) {
         this.serverDispatcher = serverDispatcher;
         this.interceptorRegistry = interceptorRegistry;
         register(wsaServerInterceptor);

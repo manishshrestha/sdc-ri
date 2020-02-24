@@ -1,6 +1,7 @@
 package org.somda.sdc.dpws.soap;
 
 import com.google.inject.Inject;
+import org.somda.sdc.dpws.guice.DeviceSpecific;
 import org.somda.sdc.dpws.soap.exception.SoapFaultException;
 import org.somda.sdc.dpws.soap.interception.*;
 import org.somda.sdc.dpws.soap.wsaddressing.WsAddressingServerInterceptor;
@@ -19,7 +20,7 @@ public class RequestResponseServerImpl implements RequestResponseServer {
     @Inject
     RequestResponseServerImpl(ServerDispatcher serverDispatcher,
                               InterceptorRegistry interceptorRegistry,
-                              WsAddressingServerInterceptor wsaServerInterceptor) {
+                              @DeviceSpecific WsAddressingServerInterceptor wsaServerInterceptor) {
         this.serverDispatcher = serverDispatcher;
         this.interceptorRegistry = interceptorRegistry;
         register(wsaServerInterceptor);

@@ -5,6 +5,7 @@ import com.google.inject.Provider;
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
 import org.somda.sdc.common.util.ObjectUtil;
+import org.somda.sdc.dpws.guice.ClientSpecific;
 import org.somda.sdc.dpws.model.HostedServiceType;
 import org.somda.sdc.dpws.soap.NotificationSink;
 import org.somda.sdc.dpws.soap.RequestResponseClient;
@@ -12,8 +13,10 @@ import org.somda.sdc.dpws.soap.SoapMessage;
 import org.somda.sdc.dpws.soap.exception.MarshallingException;
 import org.somda.sdc.dpws.soap.exception.SoapFaultException;
 import org.somda.sdc.dpws.soap.exception.TransportException;
+import org.somda.sdc.dpws.soap.factory.NotificationSinkFactory;
 import org.somda.sdc.dpws.soap.interception.Interceptor;
 import org.somda.sdc.dpws.soap.interception.InterceptorException;
+import org.somda.sdc.dpws.soap.wsaddressing.WsAddressingServerInterceptor;
 import org.somda.sdc.dpws.soap.wseventing.EventSink;
 import org.somda.sdc.dpws.soap.wseventing.SubscribeResult;
 
@@ -29,7 +32,8 @@ public class HostedServiceProxyImpl implements HostedServiceProxy, EventSinkAcce
 
     private final EventSink eventSink;
     private final ObjectUtil objectUtil;
-    private final Provider<NotificationSink> notificationSinkProvider;
+    private final NotificationSinkFactory notificationSinkFactory;
+    private final WsAddressingServerInterceptor wsAddressingServerInterceptor;
 
     private final HostedServiceType hostedServiceType;
     private final RequestResponseClient requestResponseClient;
@@ -41,10 +45,12 @@ public class HostedServiceProxyImpl implements HostedServiceProxy, EventSinkAcce
                            @Assisted URI activeEprAddress,
                            @Assisted EventSink eventSink,
                            ObjectUtil objectUtil,
-                           Provider<NotificationSink> notificationSinkProvider) {
+                           NotificationSinkFactory notificationSinkFactory,
+                           @ClientSpecific WsAddressingServerInterceptor wsAddressingServerInterceptor) {
         this.eventSink = eventSink;
         this.objectUtil = objectUtil;
-        this.notificationSinkProvider = notificationSinkProvider;
+        this.notificationSinkFactory = notificationSinkFactory;
+        this.wsAddressingServerInterceptor = wsAddressingServerInterceptor;
         this.hostedServiceType = objectUtil.deepCopy(hostedServiceType);
         this.requestResponseClient = requestResponseClient;
         this.activeEprAddress = activeEprAddress;
@@ -82,7 +88,7 @@ public class HostedServiceProxyImpl implements HostedServiceProxy, EventSinkAcce
 
     @Override
     public ListenableFuture<SubscribeResult> subscribe(List<String> actions, @Nullable Duration expires, Interceptor notificationSink) {
-        final NotificationSink notifications = notificationSinkProvider.get();
+        final NotificationSink notifications = notificationSinkFactory.createNotificationSink(wsAddressingServerInterceptor);
         notifications.register(notificationSink);
         return eventSink.subscribe(actions, expires, notifications);
     }

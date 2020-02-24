@@ -36,6 +36,7 @@ import org.somda.sdc.dpws.service.factory.HostedServiceInterceptorFactory;
 import org.somda.sdc.dpws.service.factory.HostedServiceTransportBindingFactory;
 import org.somda.sdc.dpws.service.factory.HostingServiceFactory;
 import org.somda.sdc.dpws.soap.*;
+import org.somda.sdc.dpws.soap.factory.NotificationSinkFactory;
 import org.somda.sdc.dpws.soap.factory.NotificationSourceFactory;
 import org.somda.sdc.dpws.soap.factory.RequestResponseClientFactory;
 import org.somda.sdc.dpws.soap.factory.SoapMessageFactory;
@@ -219,9 +220,10 @@ public class DefaultDpwsModule extends AbstractModule {
     private void configureSoapEngine() {
         bind(RequestResponseServer.class)
                 .to(RequestResponseServerImpl.class);
-        bind(NotificationSink.class)
-                .to(NotificationSinkImpl.class);
 
+        install(new FactoryModuleBuilder()
+                .implement(NotificationSink.class, NotificationSinkImpl.class)
+                .build(NotificationSinkFactory.class));
         install(new FactoryModuleBuilder()
                 .implement(SoapMessage.class, SoapMessage.class)
                 .build(SoapMessageFactory.class));
@@ -235,7 +237,14 @@ public class DefaultDpwsModule extends AbstractModule {
 
     private void configureWsAddressing() {
         bind(WsAddressingClientInterceptor.class).asEagerSingleton();
-        bind(WsAddressingServerInterceptor.class).asEagerSingleton();
+        bind(WsAddressingServerInterceptor.class)
+                .annotatedWith(DeviceSpecific.class)
+                .to(WsAddressingServerInterceptor.class)
+                .asEagerSingleton();
+        bind(WsAddressingServerInterceptor.class)
+                .annotatedWith(ClientSpecific.class)
+                .to(WsAddressingServerInterceptor.class)
+                .asEagerSingleton();
     }
 
     private void configureWsEventing() {
