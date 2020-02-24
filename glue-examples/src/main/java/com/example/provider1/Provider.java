@@ -46,12 +46,6 @@ import java.util.stream.IntStream;
  * functionality and features.
  */
 public class Provider extends AbstractIdleService {
-    static {
-        // TODO: Workaround for
-        //  javax.net.ssl.SSLHandshakeException: No subject alternative names present
-        //  when using the jersey client
-        HttpsURLConnection.setDefaultHostnameVerifier((hostname, session) -> true);
-    }
 
     private static final ProviderUtil IT = new ProviderUtil();
     private static final Logger LOG = LoggerFactory.getLogger(Provider.class);
