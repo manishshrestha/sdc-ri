@@ -40,10 +40,12 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
@@ -100,6 +102,7 @@ public class CryptoIT {
                 bind(DeviceConfig.UNSECURED_ENDPOINT, Boolean.class, false);
                 bind(DeviceConfig.SECURED_ENDPOINT, Boolean.class, true);
                 bind(CryptoConfig.CRYPTO_DEVICE_HOSTNAME_VERIFIER, HostnameVerifier.class, verifier);
+                bind(CryptoConfig.CRYPTO_TLS_ENABLED_VERSIONS, String[].class, new String[]{"TLSv1.3"});
             }
         }, new MockedUdpBindingModule());
 
@@ -113,6 +116,7 @@ public class CryptoIT {
                     bind(CryptoConfig.CRYPTO_SETTINGS, CryptoSettings.class, clientCryptoSettings);
                     bind(SoapConfig.JAXB_CONTEXT_PATH, String.class,
                             TestServiceMetadata.JAXB_CONTEXT_PATH);
+                    bind(CryptoConfig.CRYPTO_TLS_ENABLED_VERSIONS, String[].class, new String[]{"TLSv1.3"});
                 }
             }, new MockedUdpBindingModule());
         } catch (Exception e) {
@@ -216,5 +220,39 @@ public class CryptoIT {
 
         // hostname verifier must becalled exactly once for the connection
         verify(verifier, times(1)).verify(any(), any());
+    }
+
+    @Test
+    void testConfigureTlsVersionServer() throws Exception {
+        final CryptoSettings clientCryptoSettings = Ssl.setupClient();
+        clientPeer = new ClientPeer(new DefaultDpwsConfigModule() {
+            @Override
+            public void customConfigure() {
+                bind(WsDiscoveryConfig.MAX_WAIT_FOR_PROBE_MATCHES, Duration.class,
+                        Duration.ofSeconds(MAX_WAIT_TIME.getSeconds() / 2));
+                bind(CryptoConfig.CRYPTO_SETTINGS, CryptoSettings.class, clientCryptoSettings);
+                bind(SoapConfig.JAXB_CONTEXT_PATH, String.class,
+                        TestServiceMetadata.JAXB_CONTEXT_PATH);
+                bind(CryptoConfig.CRYPTO_TLS_ENABLED_VERSIONS, String[].class, new String[]{"TLSv1.2"});
+            }
+        }, new MockedUdpBindingModule());
+
+        devicePeer.startAsync().awaitRunning();
+        clientPeer.startAsync().awaitRunning();
+
+        // When the DUT's physical addresses are resolved
+        final DiscoveredDevice discoveredDevice = clientPeer.getClient().resolve(devicePeer.getEprAddress())
+                .get(MAX_WAIT_TIME.getSeconds(), TimeUnit.SECONDS);
+        final List<String> xAddrs = discoveredDevice.getXAddrs();
+        assertFalse(xAddrs.isEmpty());
+        final URI uri = URI.create(xAddrs.get(0));
+
+        // Then expect the EPR address returned by a directed probe to be the DUT's EPR address
+        final String expectedEprAddress = devicePeer.getEprAddress().toString();
+
+        // this should throw because we're incompatible
+        assertThrows(ExecutionException.class, () -> clientPeer.getClient().directedProbe(uri)
+                .get(MAX_WAIT_TIME.getSeconds(), TimeUnit.SECONDS)
+                .getProbeMatch().get(0).getEndpointReference().getAddress().getValue());
     }
 }
