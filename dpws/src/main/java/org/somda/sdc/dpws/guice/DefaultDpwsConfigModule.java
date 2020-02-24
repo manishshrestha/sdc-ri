@@ -12,6 +12,7 @@ import org.somda.sdc.dpws.soap.wsaddressing.WsAddressingConfig;
 import org.somda.sdc.dpws.soap.wsdiscovery.WsDiscoveryConfig;
 import org.somda.sdc.dpws.soap.wseventing.WsEventingConfig;
 
+import javax.net.ssl.HostnameVerifier;
 import java.io.File;
 import java.time.Duration;
 
@@ -70,6 +71,18 @@ public class DefaultDpwsConfigModule extends AbstractConfigurationModule {
         bind(CryptoConfig.CRYPTO_SETTINGS,
                 CryptoSettings.class,
                 null);
+
+        bind(CryptoConfig.CRYPTO_TLS_ENABLED_VERSIONS,
+                String[].class,
+                new String[]{"TLSv1.2", "TLSv1.3"});
+
+        bind(CryptoConfig.CRYPTO_CLIENT_HOSTNAME_VERIFIER,
+                HostnameVerifier.class,
+                (hostname, session) -> true);
+
+        bind(CryptoConfig.CRYPTO_DEVICE_HOSTNAME_VERIFIER,
+                HostnameVerifier.class,
+                (hostname, session) -> true);
     }
 
     private void configureClientConfig() {

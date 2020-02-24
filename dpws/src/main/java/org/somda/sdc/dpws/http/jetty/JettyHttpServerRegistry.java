@@ -3,7 +3,18 @@ package org.somda.sdc.dpws.http.jetty;
 import com.google.common.util.concurrent.AbstractIdleService;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
-import org.eclipse.jetty.server.*;
+import org.eclipse.jetty.http.HttpStatus;
+import org.eclipse.jetty.io.EndPoint;
+import org.eclipse.jetty.io.ssl.SslConnection;
+import org.eclipse.jetty.server.Connector;
+import org.eclipse.jetty.server.HttpConfiguration;
+import org.eclipse.jetty.server.HttpConnectionFactory;
+import org.eclipse.jetty.server.Request;
+import org.eclipse.jetty.server.SecureRequestCustomizer;
+import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.server.ServerConnector;
+import org.eclipse.jetty.server.SslConnectionFactory;
+import org.eclipse.jetty.server.handler.AbstractHandler;
 import org.eclipse.jetty.server.handler.ContextHandler;
 import org.eclipse.jetty.server.handler.ContextHandlerCollection;
 import org.eclipse.jetty.server.handler.gzip.GzipHandler;
@@ -33,6 +44,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.locks.Lock;
@@ -54,6 +66,8 @@ public class JettyHttpServerRegistry extends AbstractIdleService implements Http
     private final HttpUriBuilder uriBuilder;
     private final boolean enableGzipCompression;
     private final int minCompressionSize;
+    private final String[] tlsProtocols;
+    private final HostnameVerifier hostnameVerifier;
     private SSLContext sslContext;
 
     @Inject
@@ -62,11 +76,15 @@ public class JettyHttpServerRegistry extends AbstractIdleService implements Http
                             @Nullable @Named(CryptoConfig.CRYPTO_SETTINGS) CryptoSettings cryptoSettings,
                             JettyHttpServerHandlerFactory jettyHttpServerHandlerFactory,
                             @Named(DpwsConfig.HTTP_GZIP_COMPRESSION) boolean enableGzipCompression,
-                            @Named(DpwsConfig.HTTP_RESPONSE_COMPRESSION_MIN_SIZE) int minCompressionSize) {
+                            @Named(DpwsConfig.HTTP_RESPONSE_COMPRESSION_MIN_SIZE) int minCompressionSize,
+                            @Named(CryptoConfig.CRYPTO_TLS_ENABLED_VERSIONS) String[] tlsProtocols,
+                            @Named(CryptoConfig.CRYPTO_DEVICE_HOSTNAME_VERIFIER) HostnameVerifier hostnameVerifier) {
         this.uriBuilder = uriBuilder;
         this.jettyHttpServerHandlerFactory = jettyHttpServerHandlerFactory;
         this.enableGzipCompression = enableGzipCompression;
         this.minCompressionSize = minCompressionSize;
+        this.tlsProtocols = tlsProtocols;
+        this.hostnameVerifier = hostnameVerifier;
         serverRegistry = new HashMap<>();
         handlerRegistry = new HashMap<>();
         contextHandlerMap = new HashMap<>();
@@ -329,10 +347,42 @@ public class JettyHttpServerRegistry extends AbstractIdleService implements Http
             SslContextFactory.Server fac = new SslContextFactory.Server();
             fac.setSslContext(sslContext);
             fac.setNeedClientAuth(true);
-            fac.setHostnameVerifier((a, b) -> true);
+
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Enabled protocols: {}", List.of(tlsProtocols));
+            }
+            fac.setIncludeProtocols(tlsProtocols);
+            // reset excluded protocols to force only included protocols
+            fac.setExcludeProtocols();
 
             HttpConfiguration httpsConfig = new HttpConfiguration(httpConfig);
             SecureRequestCustomizer src = new SecureRequestCustomizer();
+            var clientVerifier = new HttpConfiguration.Customizer() {
+                @Override
+                public void customize(Connector connector, HttpConfiguration channelConfig, Request request) {
+                    var numRequest = request.getHttpChannel().getRequests();
+                    if (numRequest != 1) {
+                        LOG.debug("Connection already verified");
+                        return;
+                    }
+                    EndPoint endp = request.getHttpChannel().getEndPoint();
+                    if (endp instanceof SslConnection.DecryptedEndPoint) {
+                        SslConnection.DecryptedEndPoint sslEndp = (SslConnection.DecryptedEndPoint) endp;
+                        SslConnection sslConnection = sslEndp.getSslConnection();
+                        SSLEngine sslEngine = sslConnection.getSSLEngine();
+
+                        var session = sslEngine.getSession();
+                        endp.getLocalAddress().getHostName();
+
+                        if (!hostnameVerifier.verify(sslEndp.getLocalAddress().getHostName(), session)) {
+                            LOG.debug("HostnameVerifier has filtered request, marking request as handled and aborting request");
+                            request.setHandled(true);
+                            request.getHttpChannel().abort(new Exception("HostnameVerifier has rejected request"));
+                        }
+                    }
+                }
+            };
+            httpsConfig.addCustomizer(clientVerifier);
             httpsConfig.addCustomizer(src);
 
             ServerConnector httpsConnector = new ServerConnector(server,
