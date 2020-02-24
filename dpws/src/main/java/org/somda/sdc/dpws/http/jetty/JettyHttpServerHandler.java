@@ -1,12 +1,7 @@
 package org.somda.sdc.dpws.http.jetty;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
+import com.google.inject.Inject;
+import com.google.inject.assistedinject.Assisted;
 import org.eclipse.jetty.http.HttpStatus;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.handler.AbstractHandler;
@@ -19,10 +14,16 @@ import org.somda.sdc.dpws.soap.TransportInfo;
 import org.somda.sdc.dpws.soap.exception.MarshallingException;
 import org.somda.sdc.dpws.soap.exception.TransportException;
 
-import com.google.inject.Inject;
-import com.google.inject.assistedinject.Assisted;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 
 
+/**
+ * {@linkplain AbstractHandler} implementation based on Jetty HTTP servers.
+ */
 public class JettyHttpServerHandler extends AbstractHandler {
     private static final Logger LOG = LoggerFactory.getLogger(JettyHttpServerHandler.class);
 
@@ -31,8 +32,9 @@ public class JettyHttpServerHandler extends AbstractHandler {
     private final CommunicationLog communicationLog;
 
     @Inject
-    JettyHttpServerHandler(CommunicationLog communicationLog, @Assisted String mediaType,
-              @Assisted HttpHandler handler) {
+    JettyHttpServerHandler(@Assisted String mediaType,
+                           @Assisted HttpHandler handler,
+                           CommunicationLog communicationLog) {
         this.mediaType = mediaType;
         this.handler = handler;
         this.communicationLog = communicationLog;

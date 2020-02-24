@@ -3,18 +3,11 @@ package org.somda.sdc.dpws.http.jetty;
 import com.google.common.util.concurrent.AbstractIdleService;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
-import org.eclipse.jetty.server.Connector;
-import org.eclipse.jetty.server.HttpConfiguration;
-import org.eclipse.jetty.server.HttpConnectionFactory;
-import org.eclipse.jetty.server.SecureRequestCustomizer;
-import org.eclipse.jetty.server.Server;
-import org.eclipse.jetty.server.ServerConnector;
-import org.eclipse.jetty.server.SslConnectionFactory;
+import org.eclipse.jetty.server.*;
 import org.eclipse.jetty.server.handler.ContextHandler;
 import org.eclipse.jetty.server.handler.ContextHandlerCollection;
 import org.eclipse.jetty.server.handler.gzip.GzipHandler;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
-import org.glassfish.grizzly.ssl.SSLContextConfigurator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.somda.sdc.dpws.DpwsConfig;
@@ -24,14 +17,21 @@ import org.somda.sdc.dpws.crypto.CryptoSettings;
 import org.somda.sdc.dpws.http.HttpHandler;
 import org.somda.sdc.dpws.http.HttpServerRegistry;
 import org.somda.sdc.dpws.http.HttpUriBuilder;
-import org.somda.sdc.dpws.soap.SoapConstants;
 import org.somda.sdc.dpws.http.jetty.factory.JettyHttpServerHandlerFactory;
+import org.somda.sdc.dpws.soap.SoapConstants;
 
 import javax.annotation.Nullable;
+import javax.net.ssl.SSLContext;
+import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.URI;
 import java.net.UnknownHostException;
+import java.security.KeyManagementException;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.UnrecoverableKeyException;
+import java.security.cert.CertificateException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -39,11 +39,11 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
- * {@linkplain HttpServerRegistry} implementation based on Apache HttpComponents HTTP servers.
+ * {@linkplain HttpServerRegistry} implementation based on Jetty HTTP servers.
  */
 public class JettyHttpServerRegistry extends AbstractIdleService implements HttpServerRegistry {
     private static final Logger LOG = LoggerFactory.getLogger(JettyHttpServerRegistry.class);
-    
+
     private JettyHttpServerHandlerFactory jettyHttpServerHandlerFactory;
 
     private final Map<String, Server> serverRegistry;
@@ -54,7 +54,7 @@ public class JettyHttpServerRegistry extends AbstractIdleService implements Http
     private final HttpUriBuilder uriBuilder;
     private final boolean enableGzipCompression;
     private final int minCompressionSize;
-    private SSLContextConfigurator sslContextConfigurator; // null => no support for SSL enabled/configured
+    private SSLContext sslContext;
 
     @Inject
     JettyHttpServerRegistry(HttpUriBuilder uriBuilder,
@@ -241,15 +241,21 @@ public class JettyHttpServerRegistry extends AbstractIdleService implements Http
     private void configureSsl(CryptoConfigurator cryptoConfigurator,
                               @Nullable CryptoSettings cryptoSettings) {
         if (cryptoSettings == null) {
-            sslContextConfigurator = null;
+            sslContext = null;
             return;
         }
 
         try {
-            sslContextConfigurator = cryptoConfigurator.createSslContextConfiguratorFromCryptoConfig(cryptoSettings);
-        } catch (IllegalArgumentException e) {
+            sslContext = cryptoConfigurator.createSslContextFromCryptoConfig(cryptoSettings);
+        } catch (IllegalArgumentException |
+                KeyStoreException |
+                UnrecoverableKeyException |
+                CertificateException |
+                NoSuchAlgorithmException |
+                IOException |
+                KeyManagementException e) {
             LOG.warn("Could not read server crypto config, fallback to system properties");
-            sslContextConfigurator = cryptoConfigurator.createSslContextConfiguratorSystemProperties();
+            sslContext = cryptoConfigurator.createSslContextFromSystemProperties();
         }
     }
 
@@ -319,9 +325,9 @@ public class JettyHttpServerRegistry extends AbstractIdleService implements Http
             server.setHandler(gzipHandler);
         }
 
-        if (sslContextConfigurator != null && uri.getScheme().equalsIgnoreCase("https")) {
+        if (sslContext != null && uri.getScheme().equalsIgnoreCase("https")) {
             SslContextFactory.Server fac = new SslContextFactory.Server();
-            fac.setSslContext(sslContextConfigurator.createSSLContext(true));
+            fac.setSslContext(sslContext);
             fac.setNeedClientAuth(true);
             fac.setHostnameVerifier((a, b) -> true);
 
