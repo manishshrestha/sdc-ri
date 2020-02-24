@@ -11,6 +11,6 @@ public interface JettyHttpServerHandlerFactory {
     /*
      * Instantiates {@linkplain JettyHttpServerHandlerFactory} with the given objects and injected objects.
      */
-    JettyHttpServerHandler create(String mediaType, HttpHandler handler);
+    JettyHttpServerHandler create(Boolean expectTLS, String mediaType, HttpHandler handler);
 
 }

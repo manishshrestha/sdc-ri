@@ -183,7 +183,8 @@ public class JettyHttpServerRegistry extends AbstractIdleService implements Http
             }
             URI mapKeyUri = URI.create(mapKey);
 
-            JettyHttpServerHandler endpointHandler = this.jettyHttpServerHandlerFactory.create(mediaType, handler);
+            JettyHttpServerHandler endpointHandler = this.jettyHttpServerHandlerFactory.create(
+                    this.sslContext != null, mediaType, handler);
 
             ContextHandler context = new ContextHandler(contextPath);
             context.setHandler(endpointHandler);

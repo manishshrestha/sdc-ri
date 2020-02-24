@@ -18,6 +18,10 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.security.cert.X509Certificate;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 
 
 /**
@@ -29,14 +33,17 @@ public class JettyHttpServerHandler extends AbstractHandler {
     private final String mediaType;
     private final HttpHandler handler;
     private final CommunicationLog communicationLog;
+    private final Boolean expectTLS;
 
     @Inject
-    JettyHttpServerHandler(@Assisted String mediaType,
+    JettyHttpServerHandler(@Assisted Boolean expectTLS,
+                           @Assisted String mediaType,
                            @Assisted HttpHandler handler,
                            CommunicationLog communicationLog) {
         this.mediaType = mediaType;
         this.handler = handler;
         this.communicationLog = communicationLog;
+        this.expectTLS = expectTLS;
     }
 
     @Override
@@ -60,7 +67,13 @@ public class JettyHttpServerHandler extends AbstractHandler {
         try {
 
             handler.process(input, output,
-                    new TransportInfo(request.getScheme(), request.getLocalAddr(), request.getLocalPort()));
+                    new TransportInfo(
+                            request.getScheme(),
+                            request.getLocalAddr(),
+                            request.getLocalPort(),
+                            request.getRemoteAddr(),
+                            request.getRemotePort(),
+                            getX509Certificates(request)));
 
         } catch (TransportException | MarshallingException | ClassCastException e) {
             LOG.error("", e);
@@ -71,7 +84,25 @@ public class JettyHttpServerHandler extends AbstractHandler {
         } finally {
             baseRequest.setHandled(true);
         }
+    }
 
+    private Collection<X509Certificate> getX509Certificates(HttpServletRequest request) throws IOException {
+        var anonymousCertificates = request.getAttribute("javax.servlet.request.X509Certificate");
+        if (this.expectTLS) {
+            if (anonymousCertificates == null) {
+                LOG.error("Certificate information is missing from HTTP request data");
+                throw new IOException("Certificate information is missing from HTTP request data");
+            } else {
+                if (anonymousCertificates instanceof X509Certificate[]) {
+                    return List.of((X509Certificate[]) anonymousCertificates);
+                } else {
+                    LOG.error("Certificate information is of an unexpected type: {}", anonymousCertificates.getClass());
+                    throw new IOException(String.format("Certificate information is of an unexpected type: %s",
+                            anonymousCertificates.getClass()));
+                }
+            }
+        }
+        return Collections.emptyList();
 
     }
 }

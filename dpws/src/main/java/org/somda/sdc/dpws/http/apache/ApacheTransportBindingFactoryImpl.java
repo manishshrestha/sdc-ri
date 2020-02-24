@@ -12,6 +12,7 @@ import org.apache.http.impl.client.HttpClients;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.somda.sdc.dpws.DpwsConfig;
+import org.somda.sdc.dpws.DpwsConstants;
 import org.somda.sdc.dpws.TransportBinding;
 import org.somda.sdc.dpws.crypto.CryptoConfig;
 import org.somda.sdc.dpws.crypto.CryptoConfigurator;
@@ -30,7 +31,7 @@ public class ApacheTransportBindingFactoryImpl implements TransportBindingFactor
 
     private static final Logger LOG = LoggerFactory.getLogger(TransportBinding.class);
 
-    private static final String SCHEME_SOAP_OVER_UDP = "soap.udp";
+    private static final String SCHEME_SOAP_OVER_UDP = DpwsConstants.URI_SCHEME_SOAP_OVER_UDP;
     private static final String SCHEME_HTTP = "http";
     private static final String SCHEME_HTTPS = "https";
 
