@@ -1,71 +1,104 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
-		 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-		 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-	<parent>
-		<artifactId>sdc-ri</artifactId>
-		<groupId>org.somda.sdc</groupId>
-		<version>1.0-SNAPSHOT</version>
-	</parent>
-	<modelVersion>4.0.0</modelVersion>
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <artifactId>sdc-ri</artifactId>
+        <groupId>org.somda.sdc</groupId>
+        <version>1.0-SNAPSHOT</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
 
-	<artifactId>common</artifactId>
+    <artifactId>common</artifactId>
 
-	<build>
-		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<version>3.8.1</version>
-				<configuration>
-					<release>11</release>
-				</configuration>
-			</plugin>
-		</plugins>
-	</build>
+    <name>Common</name>
+    <description>
+        SDCri is a set of Java libraries that implements a network communication framework conforming
+        with the IEEE 11073 SDC specifications. This project implements common functionality used for SDCri.
+    </description>
+    <url>http://www.somda.org</url>
+
+    <licenses>
+        <license>
+            <name>MIT License</name>
+            <url>http://www.opensource.org/licenses/mit-license.php</url>
+        </license>
+    </licenses>
+
+    <developers>
+        <developer>
+            <name>David Gregorczyk</name>
+            <email>david.gregorczyk@web.de</email>
+            <organizationUrl>https://gitlab.com/d.gregorczyk</organizationUrl>
+        </developer>
+        <developer>
+            <name>Lukas Deichmann</name>
+            <email>lukasdeichmann@gmail.com</email>
+            <organizationUrl>https://gitlab.com/ldeichmann</organizationUrl>
+        </developer>
+    </developers>
+
+    <scm>
+        <connection>scm:git:git://gitlab.com/sdc-suite/sdc-ri.git</connection>
+        <developerConnection>scm:git:git://gitlab.com/sdc-suite/sdc-ri.git</developerConnection>
+        <url>https://gitlab.com/sdc-suite/sdc-ri/-/tree/develop</url>
+    </scm>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.8.1</version>
+                <configuration>
+                    <release>11</release>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 
 
-	<dependencies>
-		<!-- Deep copy utility -->
-		<!-- https://mvnrepository.com/artifact/io.github.kostaskougios/cloning -->
-		<dependency>
-			<groupId>io.github.kostaskougios</groupId>
-			<artifactId>cloning</artifactId>
-			<version>1.10.1</version>
-		</dependency>
+    <dependencies>
+        <!-- Deep copy utility -->
+        <!-- https://mvnrepository.com/artifact/io.github.kostaskougios/cloning -->
+        <dependency>
+            <groupId>io.github.kostaskougios</groupId>
+            <artifactId>cloning</artifactId>
+            <version>1.10.1</version>
+        </dependency>
 
-		<!-- Immutable facade utility -->
-		<!-- https://mvnrepository.com/artifact/com.javax0/immutator -->
-		<dependency>
-			<artifactId>immutator</artifactId>
-			<groupId>com.javax0</groupId>
-			<version>1.0.1</version>
-		</dependency>
+        <!-- Immutable facade utility -->
+        <!-- https://mvnrepository.com/artifact/com.javax0/immutator -->
+        <dependency>
+            <artifactId>immutator</artifactId>
+            <groupId>com.javax0</groupId>
+            <version>1.0.1</version>
+        </dependency>
 
-		<!-- https://mvnrepository.com/artifact/javax.xml.bind/jaxb-api -->
-		<dependency>
-			<artifactId>jaxb-api</artifactId>
-			<groupId>javax.xml.bind</groupId>
-			<version>2.3.1</version>
-		</dependency>
-		<dependency>
-		<!-- https://mvnrepository.com/artifact/com.sun.xml.bind/jaxb-core -->
-			<artifactId>jaxb-core</artifactId>
-			<groupId>com.sun.xml.bind</groupId>
-			<version>2.3.0.1</version>
-		<!-- https://mvnrepository.com/artifact/com.sun.xml.bind/jaxb-impl -->
-		</dependency>
-		<dependency>
-			<groupId>com.sun.xml.bind</groupId>
-			<artifactId>jaxb-impl</artifactId>
-			<version>2.3.2</version>
-		</dependency>
+        <!-- https://mvnrepository.com/artifact/javax.xml.bind/jaxb-api -->
+        <dependency>
+            <artifactId>jaxb-api</artifactId>
+            <groupId>javax.xml.bind</groupId>
+            <version>2.3.1</version>
+        </dependency>
+        <dependency>
+            <!-- https://mvnrepository.com/artifact/com.sun.xml.bind/jaxb-core -->
+            <artifactId>jaxb-core</artifactId>
+            <groupId>com.sun.xml.bind</groupId>
+            <version>2.3.0.1</version>
+            <!-- https://mvnrepository.com/artifact/com.sun.xml.bind/jaxb-impl -->
+        </dependency>
+        <dependency>
+            <groupId>com.sun.xml.bind</groupId>
+            <artifactId>jaxb-impl</artifactId>
+            <version>2.3.2</version>
+        </dependency>
 
-		<dependency>
-			<groupId>org.somda.sdc</groupId>
-			<artifactId>test</artifactId>
-			<version>1.0-SNAPSHOT</version>
-			<scope>test</scope>
-		</dependency>
-	</dependencies>
+        <dependency>
+            <groupId>org.somda.sdc</groupId>
+            <artifactId>test</artifactId>
+            <version>1.0-SNAPSHOT</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
 </project>

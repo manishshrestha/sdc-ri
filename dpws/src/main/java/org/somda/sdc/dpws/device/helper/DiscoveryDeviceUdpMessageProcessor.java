@@ -3,16 +3,22 @@ package org.somda.sdc.dpws.device.helper;
 import com.google.common.eventbus.Subscribe;
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.somda.sdc.dpws.guice.AppDelayExecutor;
-import org.somda.sdc.dpws.soap.*;
+import org.somda.sdc.common.util.ExecutorWrapperService;
+import org.somda.sdc.dpws.soap.MarshallingService;
+import org.somda.sdc.dpws.soap.RequestResponseServer;
+import org.somda.sdc.dpws.soap.SoapDebug;
+import org.somda.sdc.dpws.soap.SoapMessage;
+import org.somda.sdc.dpws.soap.SoapUtil;
+import org.somda.sdc.dpws.soap.TransportInfo;
 import org.somda.sdc.dpws.soap.exception.MarshallingException;
 import org.somda.sdc.dpws.soap.exception.SoapFaultException;
 import org.somda.sdc.dpws.soap.wsdiscovery.WsDiscoveryConstants;
 import org.somda.sdc.dpws.udp.UdpMessage;
 import org.somda.sdc.dpws.udp.UdpMessageQueueObserver;
 import org.somda.sdc.dpws.udp.UdpMessageQueueService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -34,7 +40,7 @@ public class DiscoveryDeviceUdpMessageProcessor implements UdpMessageQueueObserv
     private final UdpMessageQueueService udpMessageQueueService;
     private final MarshallingService marshallingService;
     private final SoapUtil soapUtil;
-    private final ScheduledExecutorService scheduledExecutorService;
+    private final ExecutorWrapperService<ScheduledExecutorService> scheduledExecutorService;
     private final Random randomNumbers;
 
     @AssistedInject
@@ -42,7 +48,7 @@ public class DiscoveryDeviceUdpMessageProcessor implements UdpMessageQueueObserv
                                        @Assisted UdpMessageQueueService udpMessageQueueService,
                                        MarshallingService marshallingService,
                                        SoapUtil soapUtil,
-                                       @AppDelayExecutor ScheduledExecutorService scheduledExecutorService,
+                                       @AppDelayExecutor ExecutorWrapperService<ScheduledExecutorService> scheduledExecutorService,
                                        Random randomNumbers) {
         this.requestResponseServer = requestResponseServer;
         this.udpMessageQueueService = udpMessageQueueService;
@@ -54,6 +60,7 @@ public class DiscoveryDeviceUdpMessageProcessor implements UdpMessageQueueObserv
 
     @Subscribe
     private void receiveUdpMessage(UdpMessage msg) {
+        LOG.trace("Receive UDP message called with message: {}", msg);
         SoapMessage response = soapUtil.createMessage();
         SoapMessage request;
 
@@ -79,6 +86,14 @@ public class DiscoveryDeviceUdpMessageProcessor implements UdpMessageQueueObserv
             return;
         }
 
+        // TODO: Workaround for Providers responding to Hello messages with empty messages, see #87
+        //  Remove once proper UDP notification handling is in place.
+        var action = response.getWsAddressingHeader().getAction();
+        if (action.isEmpty() || action.get().getValue().isBlank()) {
+            LOG.debug("Not sending a response, no response with an action generated for message {}", SoapDebug.get(request));
+            return;
+        }
+
         if (LOG.isDebugEnabled()) {
             LOG.debug("Outgoing SOAP/UDP message: {}", SoapDebug.get(response));
         }
@@ -97,7 +112,7 @@ public class DiscoveryDeviceUdpMessageProcessor implements UdpMessageQueueObserv
         byte[] bytes = os.toByteArray();
 
         int wait = randomNumbers.nextInt((int) WsDiscoveryConstants.APP_MAX_DELAY.toMillis() + 1);
-        scheduledExecutorService.schedule(() ->
+        scheduledExecutorService.get().schedule(() ->
                         udpMessageQueueService.sendMessage(new UdpMessage(bytes, bytes.length, msg.getHost(), msg.getPort())),
                 wait, TimeUnit.MILLISECONDS);
     }

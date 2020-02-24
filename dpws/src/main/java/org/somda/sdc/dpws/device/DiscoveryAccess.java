@@ -23,4 +23,13 @@ public interface DiscoveryAccess {
      * @see <a href="http://docs.oasis-open.org/ws-dd/discovery/1.1/os/wsdd-discovery-1.1-spec-os.html#_Toc234231830">Matching Types and Scopes</a>
      */
     void setScopes(Collection<URI> scopes);
+
+    /**
+     * Sends a Hello message to the network.
+     * <p>
+     * The Hello message will be sent only if {@link #setScopes(Collection)} or {@link #setTypes(Collection)} has been
+     * called prior to this function.
+     * This needs to be repeated for every Hello to be sent.
+     */
+    void sendHello();
 }

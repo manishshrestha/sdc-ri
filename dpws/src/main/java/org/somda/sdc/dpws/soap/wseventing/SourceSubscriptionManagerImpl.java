@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.somda.sdc.dpws.factory.TransportBindingFactory;
 import org.somda.sdc.dpws.guice.NetworkJobThreadPool;
+import org.somda.sdc.common.util.ExecutorWrapperService;
 import org.somda.sdc.dpws.soap.NotificationSource;
 import org.somda.sdc.dpws.soap.SoapMessage;
 import org.somda.sdc.dpws.soap.factory.NotificationSourceFactory;
@@ -38,7 +39,7 @@ public class SourceSubscriptionManagerImpl extends AbstractExecutionThreadServic
     private final NotificationSourceFactory notificationSourceFactory;
     private final TransportBindingFactory transportBindingFactory;
     private final WsAddressingUtil wsaUtil;
-    private final ListeningExecutorService networkJobExecutor;
+    private final ExecutorWrapperService<ListeningExecutorService> networkJobExecutor;
 
     private NotificationSource notifyToSender;
     private NotificationSource endToSender;
@@ -56,7 +57,7 @@ public class SourceSubscriptionManagerImpl extends AbstractExecutionThreadServic
                                   NotificationSourceFactory notificationSourceFactory,
                                   TransportBindingFactory transportBindingFactory,
                                   WsAddressingUtil wsaUtil,
-                                  @NetworkJobThreadPool ListeningExecutorService networkJobExecutor) {
+                                  @NetworkJobThreadPool ExecutorWrapperService<ListeningExecutorService> networkJobExecutor) {
         this.notificationSourceFactory = notificationSourceFactory;
         this.transportBindingFactory = transportBindingFactory;
         this.wsaUtil = wsaUtil;
@@ -122,7 +123,7 @@ public class SourceSubscriptionManagerImpl extends AbstractExecutionThreadServic
             return;
         }
 
-        networkJobExecutor.submit(() -> {
+        networkJobExecutor.get().submit(() -> {
             try {
                 endToSender.sendNotification(endToMessage);
             } catch (Exception e) {
@@ -162,6 +163,7 @@ public class SourceSubscriptionManagerImpl extends AbstractExecutionThreadServic
                     LOG.info("Source subscription manager '{}' received stop signal and is about to shut down", subscriptionId);
                     break;
                 }
+                LOG.debug("Sending notification to {} - {}", notifyToUri, queueItem.getNotification().getPayload());
                 notifyToSender.sendNotification(queueItem.getNotification().getPayload());
             } catch (Exception e) {
                 LOG.info("Source subscription manager '{}' ended unexpectedly", subscriptionId);

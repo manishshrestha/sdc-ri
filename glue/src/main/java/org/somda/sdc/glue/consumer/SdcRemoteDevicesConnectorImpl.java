@@ -13,8 +13,14 @@ import org.slf4j.LoggerFactory;
 import org.somda.sdc.biceps.common.storage.PreprocessingException;
 import org.somda.sdc.biceps.consumer.access.RemoteMdibAccess;
 import org.somda.sdc.biceps.consumer.access.factory.RemoteMdibAccessFactory;
-import org.somda.sdc.biceps.model.message.*;
+import org.somda.sdc.biceps.model.message.AbstractReport;
+import org.somda.sdc.biceps.model.message.GetContextStatesResponse;
+import org.somda.sdc.biceps.model.message.GetMdibResponse;
+import org.somda.sdc.biceps.model.message.ObjectFactory;
+import org.somda.sdc.biceps.model.message.OperationInvokedReport;
 import org.somda.sdc.biceps.model.participant.Mdib;
+import org.somda.sdc.dpws.DpwsFramework;
+import org.somda.sdc.common.util.ExecutorWrapperService;
 import org.somda.sdc.dpws.service.HostedServiceProxy;
 import org.somda.sdc.dpws.service.HostingServiceProxy;
 import org.somda.sdc.dpws.soap.SoapMessage;
@@ -27,7 +33,11 @@ import org.somda.sdc.dpws.soap.interception.InterceptorException;
 import org.somda.sdc.dpws.soap.interception.MessageInterceptor;
 import org.somda.sdc.dpws.soap.interception.NotificationObject;
 import org.somda.sdc.dpws.soap.wseventing.SubscribeResult;
-import org.somda.sdc.glue.common.*;
+import org.somda.sdc.glue.common.ActionConstants;
+import org.somda.sdc.glue.common.MdibVersionUtil;
+import org.somda.sdc.glue.common.ModificationsBuilder;
+import org.somda.sdc.glue.common.SubscribableActionsMapping;
+import org.somda.sdc.glue.common.WsdlConstants;
 import org.somda.sdc.glue.common.factory.ModificationsBuilderFactory;
 import org.somda.sdc.glue.consumer.event.RemoteDeviceConnectedMessage;
 import org.somda.sdc.glue.consumer.event.WatchdogMessage;
@@ -46,7 +56,13 @@ import javax.inject.Named;
 import javax.xml.namespace.QName;
 import java.net.URI;
 import java.time.Duration;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -55,7 +71,7 @@ import java.util.concurrent.TimeoutException;
 public class SdcRemoteDevicesConnectorImpl implements SdcRemoteDevicesConnector, WatchdogObserver {
     private static final Logger LOG = LoggerFactory.getLogger(SdcRemoteDevicesConnectorImpl.class);
 
-    private ListeningExecutorService executorService;
+    private ExecutorWrapperService<ListeningExecutorService> executorService;
     private Map<URI, SdcRemoteDevice> sdcRemoteDevices;
     private EventBus eventBus;
     private final Provider<ReportProcessor> reportProcessorProvider;
@@ -71,8 +87,8 @@ public class SdcRemoteDevicesConnectorImpl implements SdcRemoteDevicesConnector,
     private final SdcRemoteDeviceWatchdogFactory watchdogFactory;
 
     @Inject
-    SdcRemoteDevicesConnectorImpl(@Consumer ListeningExecutorService executorService,
-                                  ConcurrentHashMap sdcRemoteDevices,
+    SdcRemoteDevicesConnectorImpl(@Consumer ExecutorWrapperService<ListeningExecutorService> executorService,
+                                  ConcurrentHashMap<URI, SdcRemoteDevice> sdcRemoteDevices,
                                   EventBus eventBus,
                                   Provider<ReportProcessor> reportProcessorProvider,
                                   ScoControllerFactory scoControllerFactory,
@@ -84,7 +100,8 @@ public class SdcRemoteDevicesConnectorImpl implements SdcRemoteDevicesConnector,
                                   ObjectFactory messageModelFactory,
                                   MdibVersionUtil mdibVersionUtil,
                                   SdcRemoteDeviceFactory sdcRemoteDeviceFactory,
-                                  SdcRemoteDeviceWatchdogFactory watchdogFactory) {
+                                  SdcRemoteDeviceWatchdogFactory watchdogFactory,
+                                  DpwsFramework dpwsFramework) {
         this.executorService = executorService;
         this.sdcRemoteDevices = sdcRemoteDevices;
         this.eventBus = eventBus;
@@ -99,6 +116,8 @@ public class SdcRemoteDevicesConnectorImpl implements SdcRemoteDevicesConnector,
         this.mdibVersionUtil = mdibVersionUtil;
         this.sdcRemoteDeviceFactory = sdcRemoteDeviceFactory;
         this.watchdogFactory = watchdogFactory;
+
+        dpwsFramework.registerService(List.of(executorService));
     }
 
     @Override
@@ -110,7 +129,7 @@ public class SdcRemoteDevicesConnectorImpl implements SdcRemoteDevicesConnector,
         // precheck: necessary services present?
         checkRequiredServices(hostingServiceProxy, connectConfiguration.getRequiredPortTypes());
 
-        return executorService.submit(() -> {
+        return executorService.get().submit(() -> {
             try {
                 final Logger tempLog = LogPrepender.getLogger(hostingServiceProxy, SdcRemoteDevicesConnectorImpl.class);
                 tempLog.info("Start connecting");
@@ -137,7 +156,8 @@ public class SdcRemoteDevicesConnectorImpl implements SdcRemoteDevicesConnector,
                 }
 
                 tempLog.info("Start watchdog");
-                watchdogFactory.createSdcRemoteDeviceWatchdog(hostingServiceProxy, subscribeResults, this);
+                var watchdog = watchdogFactory.createSdcRemoteDeviceWatchdog(hostingServiceProxy, subscribeResults, this);
+                watchdog.startAsync().awaitRunning();
 
                 tempLog.info("Create and run remote device structure");
                 final SdcRemoteDevice sdcRemoteDevice = sdcRemoteDeviceFactory.createSdcRemoteDevice(
@@ -202,7 +222,7 @@ public class SdcRemoteDevicesConnectorImpl implements SdcRemoteDevicesConnector,
     public ListenableFuture<?> disconnect(URI eprAddress) {
         SdcRemoteDevice sdcRemoteDevice = sdcRemoteDevices.remove(eprAddress);
         if (sdcRemoteDevice != null) {
-            return executorService.submit(() -> {
+            return executorService.get().submit(() -> {
                 // invalidate sdcRemoteDevice
                 // unsubscribe everything
                 sdcRemoteDevice.stopAsync().awaitTerminated();
@@ -271,6 +291,7 @@ public class SdcRemoteDevicesConnectorImpl implements SdcRemoteDevicesConnector,
                             final AbstractReport report = soapUtil.getBody(notificationObject.getNotification(),
                                     AbstractReport.class).orElseThrow(() -> new RuntimeException(
                                     String.format("Received unexpected report message from service %s", serviceId)));
+                            LOG.debug("Incoming SOAP/HTTP notification: {}", report);
                             if (report instanceof OperationInvokedReport) {
                                 if (scoController != null) {
                                     scoController.processOperationInvokedReport((OperationInvokedReport) report);

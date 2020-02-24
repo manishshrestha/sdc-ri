@@ -1,22 +1,29 @@
 package org.somda.sdc.dpws.soap.wseventing;
 
 import com.google.common.util.concurrent.ListenableFuture;
+import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.inject.AbstractModule;
+import com.google.inject.Key;
+import com.google.inject.TypeLiteral;
 import com.google.inject.name.Names;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.somda.sdc.common.util.ExecutorWrapperService;
 import org.somda.sdc.dpws.DpwsTest;
 import org.somda.sdc.dpws.HttpServerRegistryMock;
 import org.somda.sdc.dpws.LocalAddressResolverMock;
 import org.somda.sdc.dpws.TransportBindingFactoryMock;
 import org.somda.sdc.dpws.factory.TransportBindingFactory;
+import org.somda.sdc.dpws.guice.NetworkJobThreadPool;
 import org.somda.sdc.dpws.http.HttpServerRegistry;
 import org.somda.sdc.dpws.model.HostedServiceType;
 import org.somda.sdc.dpws.model.ObjectFactory;
 import org.somda.sdc.dpws.network.LocalAddressResolver;
 import org.somda.sdc.dpws.service.factory.HostedServiceFactory;
 import org.somda.sdc.dpws.soap.*;
+import org.somda.sdc.dpws.soap.factory.NotificationSinkFactory;
 import org.somda.sdc.dpws.soap.factory.RequestResponseClientFactory;
+import org.somda.sdc.dpws.soap.wsaddressing.WsAddressingServerInterceptor;
 import org.somda.sdc.dpws.soap.wsaddressing.WsAddressingUtil;
 import org.somda.sdc.dpws.soap.wseventing.factory.WsEventingEventSinkFactory;
 
@@ -47,6 +54,13 @@ public class WsEventingTest extends DpwsTest {
         overrideBindings(new DpwsModuleReplacements());
         super.setUp();
 
+        // start required thread pool(s)
+        getInjector().getInstance(Key.get(
+                new TypeLiteral<ExecutorWrapperService<ListeningExecutorService>>() {
+                },
+                NetworkJobThreadPool.class
+        )).startAsync().awaitRunning();
+
         getInjector().getInstance(SoapMarshalling.class).startAsync().awaitRunning();
 
         WsAddressingUtil wsaUtil = getInjector().getInstance(WsAddressingUtil.class);
@@ -55,7 +69,8 @@ public class WsEventingTest extends DpwsTest {
         EventSource wseSource = getInjector().getInstance(EventSource.class);
         RequestResponseServer reqResSrv = getInjector().getInstance(RequestResponseServer.class);
         reqResSrv.register(wseSource);
-        notificationSink = getInjector().getInstance(NotificationSink.class);
+        notificationSink = getInjector().getInstance(NotificationSinkFactory.class).createNotificationSink(
+                getInjector().getInstance(WsAddressingServerInterceptor.class));
 
         HttpServerRegistry httpSrvRegisty = getInjector().getInstance(HttpServerRegistry.class);
 

@@ -17,7 +17,6 @@ import org.somda.sdc.dpws.soap.interception.MessageInterceptor;
 import org.somda.sdc.dpws.soap.interception.RequestResponseObject;
 import org.somda.sdc.dpws.soap.wsaddressing.WsAddressingUtil;
 import org.somda.sdc.glue.common.ActionConstants;
-import org.somda.sdc.glue.common.WsdlConstants;
 import org.somda.sdc.glue.provider.sco.IncomingSetServiceRequest;
 import org.somda.sdc.glue.provider.sco.InvocationResponse;
 import org.somda.sdc.glue.provider.sco.OperationInvocationReceiver;

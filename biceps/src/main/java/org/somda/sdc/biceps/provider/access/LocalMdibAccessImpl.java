@@ -198,6 +198,13 @@ public class LocalMdibAccessImpl implements LocalMdibAccess {
     }
 
     @Override
+    public <T extends AbstractContextState> List<T> findContextStatesByType(Class<T> stateClass) {
+        try (ReadTransaction transaction = startTransaction()) {
+            return transaction.findContextStatesByType(stateClass);
+        }
+    }
+
+    @Override
     public <T extends AbstractDescriptor> Collection<MdibEntity> findEntitiesByType(Class<T> type) {
         try (ReadTransaction transaction = startTransaction()) {
             return transaction.findEntitiesByType(type);

@@ -54,7 +54,7 @@ public class GlueConstants {
             // to something malformed. A separate unit test covers this (GlueConstantsTest::staticInitialization())
             SCOPE_SDC_PROVIDER = ParticipantKeyPurposeMapper.fromOid(new Oid(OID_KEY_PURPOSE_SDC_SERVICE_PROVIDER));
         } catch (Exception e) {
-            e.printStackTrace();
+            throw new RuntimeException(e);
         }
     }
 

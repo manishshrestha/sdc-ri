@@ -1,13 +1,12 @@
 image: maven:3-jdk-11
 
 variables:
-  MAVEN_CLI_OPTS: "--batch-mode"
+  MAVEN_CLI_OPTS: "-s .m2/settings.xml --batch-mode"
   MAVEN_OPTS: "-Dmaven.repo.local=.m2/repository"
 
 cache:
   paths:
     - .m2/repository/
-    - target/
 
 build:
   stage: build
@@ -34,3 +33,19 @@ test:
       junit:
         - ./**/target/surefire-reports/TEST-*.xml
         - ./**/target/failsafe-reports/TEST-*.xml
+
+deploy_snapshot:
+  stage: deploy
+  before_script:
+    - ./ci/setup_gpg.sh
+  script:
+    # skipTests compiles the tests, but does not execute them
+    - mvn $MAVEN_CLI_OPTS -DskipTests=true install deploy -Pdeploy
+  environment:
+    name: ossrh_snapshots
+    url: https://oss.sonatype.org/content/repositories/snapshots
+  only:
+    - develop
+  except:
+    variables:
+      - $NIGHTLY_TEST

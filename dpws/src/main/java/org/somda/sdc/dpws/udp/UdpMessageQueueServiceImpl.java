@@ -56,69 +56,84 @@ public class UdpMessageQueueServiceImpl extends AbstractIdleService implements S
 
     @Override
     protected void startUp() throws Exception {
-        LOG.info("Start UDP message queue for binding {}", udpBinding);
+        LOG.info("[{}] Start UDP message queue for binding {}", instanceId, udpBinding);
         if (udpBinding == null) {
             String msg = "Cannot startup without UDP binding";
-            LOG.warn(msg);
+            LOG.warn("[{}] {}", instanceId, msg);
             throw new Exception(msg);
         }
 
         startProcessingOfIncomingMessages();
         startProcessingOfOutgoingMessages();
 
-        LOG.info("UDP message queue for binding {} is running", udpBinding);
+        LOG.info("[{}] UDP message queue for binding {} is running", instanceId, udpBinding);
     }
 
     private void startProcessingOfOutgoingMessages() {
         outgoingThread = new Thread(() -> {
-            do {
-                try {
-                    UdpMessage message = outgoingMessageQueue.take();
-                    udpBinding.sendMessage(message);
-                } catch (IOException e) {
-                    LOG.warn("IO exception caught: {}", e.getMessage());
-                    e.printStackTrace();
-                } catch (InterruptedException e) {
-                    break;
-                }
-            } while (isRunning());
+            try {
+                do {
+                    try {
+                        UdpMessage message = outgoingMessageQueue.take();
+                        LOG.trace("[{}] Outgoing UdpMessageQueueService received UDP message, sending: {}", instanceId, message);
+                        udpBinding.sendMessage(message);
+                    } catch (IOException e) {
+                        LOG.warn("[{}] Outgoing UdpMessageQueueService IO exception caught", instanceId, e);
+                    } catch (InterruptedException e) {
+                        LOG.info("[{}] Outgoing UdpMessageQueueService interrupted", instanceId);
+                        LOG.trace("[{}] Outgoing UdpMessageQueueService interrupted", instanceId, e);
+                        break;
+                    }
+                } while (true);
+            } finally {
+            LOG.error("[{}] Outgoing UdpMessageQueueService ended", instanceId);
+            }
         });
-        outgoingThread.setName(String.format("[%s] Outgoing UdpMessageQueueService", Integer.toString(instanceId)));
+        outgoingThread.setName(String.format("[%s] Outgoing UdpMessageQueueService", instanceId));
+        outgoingThread.setDaemon(true);
         outgoingThread.start();
     }
 
     private void startProcessingOfIncomingMessages() {
         incomingThread = new Thread(() -> {
-            do {
-                try {
-                    UdpMessage message = incomingMessageQueue.take();
-                    eventBus.post(message);
-                } catch (InterruptedException e) {
-                    break;
-                } catch (Exception e) {
-                    LOG.info("Error on event dissemination", e);
-                }
-
-            } while (isRunning());
+            try {
+                do {
+                    try {
+                        UdpMessage message = incomingMessageQueue.take();
+                        LOG.trace("[{}] Incoming UdpMessageQueueService received UDP message, posting to EventBus: {}", instanceId, message);
+                        eventBus.post(message);
+                    } catch (InterruptedException e) {
+                        LOG.info("[{}] Incoming UdpMessageQueueService interrupted", instanceId);
+                        LOG.trace("[{}] Incoming UdpMessageQueueService interrupted", instanceId, e);
+                        break;
+                    } catch (Exception e) {
+                        LOG.warn("[{}] Incoming UdpMessageQueueService encountered an error on event dissemination", instanceId, e);
+                    }
+                } while (true);
+            } finally {
+                LOG.error("[{}] Incoming UdpMessageQueueService ended", instanceId);
+            }
         });
-        incomingThread.setName(String.format("[%s] Incoming UdpMessageQueueService", Integer.toString(instanceId)));
+        incomingThread.setName(String.format("[%s] Incoming UdpMessageQueueService", instanceId));
+        incomingThread.setDaemon(true);
         incomingThread.start();
     }
 
     @Override
     protected void shutDown() {
-        LOG.info("Shut down UDP message queue for binding {}", udpBinding);
+        LOG.info("[{}] Shut down UDP message queue for binding {}", instanceId, udpBinding);
         incomingMessageQueue.clear();
         outgoingMessageQueue.clear();
         incomingThread.interrupt();
         outgoingThread.interrupt();
-        LOG.info("UDP message queue for binding {} shut down", udpBinding);
+        LOG.info("[{}] UDP message queue for binding {} shut down", instanceId, udpBinding);
     }
 
     @Override
     public void receive(UdpMessage udpMessage) {
+        LOG.debug("[{}] Received UDP message, adding to queue", instanceId);
         if (!incomingMessageQueue.offer(udpMessage)) {
-            LOG.info("Lost incoming UDP message in message queue");
+            LOG.error("[{}] Lost incoming UDP message in message queue: {}", instanceId, udpMessage);
         }
     }
 }

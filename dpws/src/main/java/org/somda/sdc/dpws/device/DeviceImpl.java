@@ -31,7 +31,10 @@ import org.somda.sdc.dpws.service.factory.HostingServiceFactory;
 import org.somda.sdc.dpws.soap.NotificationSource;
 import org.somda.sdc.dpws.soap.RequestResponseServer;
 import org.somda.sdc.dpws.soap.SoapConstants;
+import org.somda.sdc.dpws.soap.exception.MarshallingException;
+import org.somda.sdc.dpws.soap.exception.TransportException;
 import org.somda.sdc.dpws.soap.factory.NotificationSourceFactory;
+import org.somda.sdc.dpws.soap.interception.InterceptorException;
 import org.somda.sdc.dpws.soap.wsaddressing.WsAddressingUtil;
 import org.somda.sdc.dpws.soap.wsaddressing.model.EndpointReferenceType;
 import org.somda.sdc.dpws.soap.wsdiscovery.WsDiscoveryTargetService;
@@ -39,14 +42,12 @@ import org.somda.sdc.dpws.soap.wsdiscovery.factory.WsDiscoveryTargetServiceFacto
 import org.somda.sdc.dpws.soap.wseventing.EventSource;
 import org.somda.sdc.dpws.udp.UdpMessageQueueService;
 
+import javax.annotation.Nullable;
 import javax.xml.namespace.QName;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -86,6 +87,7 @@ public class DeviceImpl extends AbstractIdleService implements Device, Service, 
     private ThisDeviceType thisDeviceOnStartup;
     private ThisModelType thisModelOnStartup;
     private DiscoveryDeviceUdpMessageProcessor udpMsgProcessor;
+    private List<EventSource> eventSources;
 
     @AssistedInject
     DeviceImpl(@Assisted DeviceSettings deviceSettings,
@@ -127,6 +129,7 @@ public class DeviceImpl extends AbstractIdleService implements Device, Service, 
         this.unsecuredEndpoint = unsecuredEndpoint;
         this.securedEndpoint = securedEndpoint;
         this.hostedServicesOnStartup = new ArrayList<>();
+        this.eventSources = new ArrayList<>();
 
         this.eprAddress = wsaUtil.getAddressUri(deviceSettings.getEndpointReference()).orElseThrow(() ->
                 new RuntimeException("No valid endpoint reference found in device deviceSettings"));
@@ -135,7 +138,7 @@ public class DeviceImpl extends AbstractIdleService implements Device, Service, 
     @Override
     protected void startUp() throws Exception {
         EndpointReferenceType deviceEpr = deviceSettings.getEndpointReference();
-        LOG.info("Start device with URN '{}'", deviceEpr.getAddress().getValue());
+        LOG.info("Start device with EPR address '{}'", deviceEpr.getAddress().getValue());
 
         String hostingServerCtxtPath = buildContextPathBase(eprAddress);
 
@@ -192,10 +195,9 @@ public class DeviceImpl extends AbstractIdleService implements Device, Service, 
                 hostingService.setThisDevice(thisDeviceType));
         Optional.ofNullable(thisModelOnStartup).ifPresent(thisModelType ->
                 hostingService.setThisModel(thisModelType));
-        Optional.ofNullable(typesOnStartup).ifPresent(qNames ->
-                wsdTargetService.setTypes(qNames));
-        Optional.ofNullable(scopesOnStartup).ifPresent(uris ->
-                wsdTargetService.setScopes(scopesAsStrs(uris)));
+
+        wsdTargetService.setTypes(appendDpwsType(typesOnStartup));
+        wsdTargetService.setScopes(scopesAsStrs(scopesOnStartup));
 
         LOG.info("Device {} is running", hostingService);
 
@@ -224,6 +226,7 @@ public class DeviceImpl extends AbstractIdleService implements Device, Service, 
     protected void shutDown() throws Exception {
         LOG.info("Shut down device {}", hostingService);
         wsdTargetService.sendBye();
+        eventSources.forEach(source -> source.stopAsync().awaitTerminated());
         hostingService.getHostedServices().forEach(hostedService ->
                 hostedService.getWebService().stopAsync().awaitTerminated());
         httpServerRegistry.stopAsync().awaitTerminated();
@@ -254,16 +257,24 @@ public class DeviceImpl extends AbstractIdleService implements Device, Service, 
 
     @Override
     public void setTypes(Collection<QName> types) {
-        ArrayList<QName> tmpTypes = new ArrayList<>();
+        var typesWithDpwsQName = appendDpwsType(types);
+        if (isRunning()) {
+            wsdTargetService.setTypes(typesWithDpwsQName);
+        } else {
+            typesOnStartup = typesWithDpwsQName;
+        }
+    }
+
+    private List<QName> appendDpwsType(@Nullable Collection<QName> types) {
+        if (types == null) {
+            types = Collections.emptyList();
+        }
+        var tmpTypes = new ArrayList<QName>(types.size() + 1);
         if (types.stream().filter(qName -> qName.equals(DpwsConstants.DEVICE_TYPE)).findAny().isEmpty()) {
             tmpTypes.add(DpwsConstants.DEVICE_TYPE);
         }
         tmpTypes.addAll(types);
-        if (isRunning()) {
-            wsdTargetService.setTypes(tmpTypes);
-        } else {
-            typesOnStartup = tmpTypes;
-        }
+        return tmpTypes;
     }
 
     @Override
@@ -275,7 +286,21 @@ public class DeviceImpl extends AbstractIdleService implements Device, Service, 
         }
     }
 
-    private List<String> scopesAsStrs(Collection<URI> scopes) {
+    @Override
+    public void sendHello() {
+        if (isRunning()) {
+            try {
+                wsdTargetService.sendHello(false);
+            } catch (MarshallingException | TransportException | InterceptorException e) {
+                LOG.warn("Send Hello failed.", e);
+            }
+        }
+    }
+
+    private List<String> scopesAsStrs(@Nullable Collection<URI> scopes) {
+        if (scopes == null) {
+            scopes = Collections.emptyList();
+        }
         return scopes.stream().map(URI::toString).collect(Collectors.toList());
     }
 
@@ -310,6 +335,7 @@ public class DeviceImpl extends AbstractIdleService implements Device, Service, 
     private void addHostedServiceToHostingService(HostedService hostedService) {
         // Create event source
         EventSource eventSource = eventSourceProvider.get();
+        eventSources.add(eventSource);
         // Inject event source to Web Service
         hostedService.getWebService().setEventSource(eventSource);
         // Create request response handler interceptor specific to the added hosted service

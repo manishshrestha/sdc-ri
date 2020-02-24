@@ -3,24 +3,32 @@ package org.somda.sdc.dpws.client;
 import com.google.common.util.concurrent.*;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
-import org.somda.sdc.dpws.guice.DiscoveryUdpQueue;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.somda.sdc.common.util.ExecutorWrapperService;
 import org.somda.sdc.dpws.DpwsConfig;
 import org.somda.sdc.dpws.TransportBinding;
-import org.somda.sdc.dpws.client.helper.*;
+import org.somda.sdc.dpws.client.helper.DiscoveredDeviceResolver;
+import org.somda.sdc.dpws.client.helper.DiscoveryClientUdpProcessor;
+import org.somda.sdc.dpws.client.helper.HelloByeAndProbeMatchesObserverImpl;
+import org.somda.sdc.dpws.client.helper.HostingServiceResolver;
 import org.somda.sdc.dpws.client.helper.factory.ClientHelperFactory;
 import org.somda.sdc.dpws.factory.TransportBindingFactory;
+import org.somda.sdc.dpws.guice.ClientSpecific;
+import org.somda.sdc.dpws.guice.DiscoveryUdpQueue;
 import org.somda.sdc.dpws.guice.NetworkJobThreadPool;
 import org.somda.sdc.dpws.helper.NotificationSourceUdpCallback;
 import org.somda.sdc.dpws.helper.factory.DpwsHelperFactory;
 import org.somda.sdc.dpws.service.HostingServiceProxy;
-import org.somda.sdc.dpws.soap.NotificationSink;
 import org.somda.sdc.dpws.soap.NotificationSource;
 import org.somda.sdc.dpws.soap.RequestResponseClient;
 import org.somda.sdc.dpws.soap.exception.MarshallingException;
 import org.somda.sdc.dpws.soap.exception.TransportException;
+import org.somda.sdc.dpws.soap.factory.NotificationSinkFactory;
 import org.somda.sdc.dpws.soap.factory.NotificationSourceFactory;
 import org.somda.sdc.dpws.soap.factory.RequestResponseClientFactory;
 import org.somda.sdc.dpws.soap.interception.InterceptorException;
+import org.somda.sdc.dpws.soap.wsaddressing.WsAddressingServerInterceptor;
 import org.somda.sdc.dpws.soap.wsaddressing.WsAddressingUtil;
 import org.somda.sdc.dpws.soap.wsdiscovery.HelloByeAndProbeMatchesObserver;
 import org.somda.sdc.dpws.soap.wsdiscovery.WsDiscoveryClient;
@@ -29,8 +37,6 @@ import org.somda.sdc.dpws.soap.wsdiscovery.model.ProbeMatchesType;
 import org.somda.sdc.dpws.soap.wsdiscovery.model.ResolveMatchType;
 import org.somda.sdc.dpws.soap.wsdiscovery.model.ResolveMatchesType;
 import org.somda.sdc.dpws.udp.UdpMessageQueueService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
 import java.net.URI;
@@ -51,7 +57,7 @@ public class ClientImpl extends AbstractIdleService implements Client, Service, 
     private final DiscoveryClientUdpProcessor msgProcessor;
     private final HelloByeAndProbeMatchesObserverImpl helloByeAndProbeMatchesObserverImpl;
     private final WsDiscoveryClient wsDiscoveryClient;
-    private final ListeningExecutorService executorService;
+    private final ExecutorWrapperService<ListeningExecutorService> executorService;
     private final WsAddressingUtil wsAddressingUtil;
     private final TransportBindingFactory transportBindingFactory;
     private final RequestResponseClientFactory requestResponseClientFactory;
@@ -63,13 +69,14 @@ public class ClientImpl extends AbstractIdleService implements Client, Service, 
                NotificationSourceFactory notificationSourceFactory,
                DpwsHelperFactory dpwsHelperFactory,
                @DiscoveryUdpQueue UdpMessageQueueService discoveryMessageQueue,
-               NotificationSink notificationSink,
+               NotificationSinkFactory notificationSinkFactory,
                ClientHelperFactory clientHelperFactory,
-               @NetworkJobThreadPool ListeningExecutorService executorService,
+               @NetworkJobThreadPool ExecutorWrapperService<ListeningExecutorService> executorService,
                WsAddressingUtil wsAddressingUtil,
                TransportBindingFactory transportBindingFactory,
                RequestResponseClientFactory requestResponseClientFactory,
-               HostingServiceResolver hostingServiceResolver) {
+               HostingServiceResolver hostingServiceResolver,
+               @ClientSpecific WsAddressingServerInterceptor wsAddressingServerInterceptor) {
         this.maxWaitForFutures = maxWaitForFutures;
         this.discoveryMessageQueue = discoveryMessageQueue;
         this.hostingServiceResolver = hostingServiceResolver;
@@ -85,6 +92,9 @@ public class ClientImpl extends AbstractIdleService implements Client, Service, 
         NotificationSource notificationSource = notificationSourceFactory.createNotificationSource(callback);
         // Connect that notification source to a WS-Discovery client
         wsDiscoveryClient = discoveryClientFactory.createWsDiscoveryClient(notificationSource);
+
+        // Create notification sink for WS-Discovery dedicated to the client side
+        var notificationSink = notificationSinkFactory.createNotificationSink(wsAddressingServerInterceptor);
 
         // Create binding between a notification sink and incoming UDP messages to receive hello, bye, probeMatches and
         // resolveMatches
@@ -154,7 +164,7 @@ public class ClientImpl extends AbstractIdleService implements Client, Service, 
                     LOG.trace("Resolve failed.", throwable);
                     deviceSettableFuture.setException(throwable);
                 }
-            }, executorService);
+            }, executorService.get());
 
             return deviceSettableFuture;
         } catch (MarshallingException e) {
@@ -193,6 +203,7 @@ public class ClientImpl extends AbstractIdleService implements Client, Service, 
                 try {
                     hspFuture.set(connect(discoveredDevice).get(maxWaitForFutures.toMillis(), TimeUnit.MILLISECONDS));
                 } catch (Exception e) {
+                    LOG.debug("Connecting to {} failed", eprAddress, e);
                     throw new RuntimeException(String.format("Connect of %s failed", eprAddress));
                 }
             }
@@ -202,7 +213,7 @@ public class ClientImpl extends AbstractIdleService implements Client, Service, 
                 LOG.trace("Connecting to endpoint {} failed", eprAddress, throwable);
                 hspFuture.setException(throwable);
             }
-        }, executorService);
+        }, executorService.get());
 
         return hspFuture;
     }

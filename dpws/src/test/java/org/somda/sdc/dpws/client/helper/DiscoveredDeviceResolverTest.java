@@ -1,18 +1,18 @@
 package org.somda.sdc.dpws.client.helper;
 
 import com.google.common.util.concurrent.Futures;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.somda.sdc.dpws.DpwsTest;
 import org.somda.sdc.dpws.client.DiscoveredDevice;
 import org.somda.sdc.dpws.soap.wsaddressing.WsAddressingUtil;
 import org.somda.sdc.dpws.soap.wsaddressing.model.EndpointReferenceType;
-import org.somda.sdc.dpws.soap.wsdiscovery.event.HelloMessage;
 import org.somda.sdc.dpws.soap.wsdiscovery.WsDiscoveryClient;
+import org.somda.sdc.dpws.soap.wsdiscovery.event.HelloMessage;
 import org.somda.sdc.dpws.soap.wsdiscovery.model.HelloType;
 import org.somda.sdc.dpws.soap.wsdiscovery.model.ObjectFactory;
 import org.somda.sdc.dpws.soap.wsdiscovery.model.ResolveMatchType;
 import org.somda.sdc.dpws.soap.wsdiscovery.model.ResolveMatchesType;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 
 import java.net.URI;
 import java.time.Duration;

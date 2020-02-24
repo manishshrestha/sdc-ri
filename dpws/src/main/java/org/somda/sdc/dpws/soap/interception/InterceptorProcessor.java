@@ -1,8 +1,8 @@
 package org.somda.sdc.dpws.soap.interception;
 
-import org.somda.sdc.dpws.soap.exception.SoapFaultException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.somda.sdc.dpws.soap.exception.SoapFaultException;
 
 import javax.annotation.Nullable;
 import java.lang.reflect.InvocationTargetException;
@@ -25,9 +25,14 @@ class InterceptorProcessor {
      * @throws SoapFaultException if a SOAP fault comes up.
      */
     void dispatch(Direction direction,
-                               InterceptorRegistry interceptorRegistry,
-                               @Nullable String action,
-                               InterceptorCallbackType callbackData) throws InterceptorException {
+                  InterceptorRegistry interceptorRegistry,
+                  @Nullable String action,
+                  InterceptorCallbackType callbackData) throws InterceptorException {
+        if (action == null) {
+            LOG.debug("Try to dispatch without action, cancel");
+            return;
+        }
+
         // First apply default interceptors
         invokeInterceptors(direction, callbackData, interceptorRegistry.getDefaultInterceptors());
 
@@ -58,7 +63,9 @@ class InterceptorProcessor {
                 callbackMethod.invoke(interceptorInfo.getCallbackObject(), callbackParam);
             } catch (IllegalAccessException e) {
                 LOG.warn(e.getMessage());
+                LOG.trace("Error while calling interceptor", e);
             } catch (InvocationTargetException e) {
+                LOG.trace("Error while calling interceptor", e);
                 throw new InterceptorException("Exception thrown by interceptor " +
                         interceptorInfo.getCallbackObject().toString(),
                         interceptorInfo.getCallbackObject(), e.getTargetException());

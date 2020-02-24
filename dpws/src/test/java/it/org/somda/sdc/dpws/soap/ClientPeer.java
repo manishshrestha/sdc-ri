@@ -4,7 +4,6 @@ import com.google.inject.AbstractModule;
 import it.org.somda.sdc.dpws.IntegrationTestPeer;
 import org.somda.sdc.dpws.DpwsFramework;
 import org.somda.sdc.dpws.client.Client;
-import org.somda.sdc.dpws.factory.DpwsFrameworkFactory;
 import org.somda.sdc.dpws.guice.DefaultDpwsConfigModule;
 
 import javax.annotation.Nullable;
@@ -19,7 +18,7 @@ public class ClientPeer extends IntegrationTestPeer {
 
     public ClientPeer(DefaultDpwsConfigModule configModule, @Nullable AbstractModule overridingModule) {
         setupInjector(configModule, overridingModule);
-        this.dpwsFramework = getInjector().getInstance(DpwsFrameworkFactory.class).createDpwsFramework();
+        this.dpwsFramework = getInjector().getInstance(DpwsFramework.class);
         this.client = getInjector().getInstance(Client.class);
     }
 
