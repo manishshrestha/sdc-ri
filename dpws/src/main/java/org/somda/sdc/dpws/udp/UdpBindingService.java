@@ -1,6 +1,7 @@
 package org.somda.sdc.dpws.udp;
 
 import com.google.common.util.concurrent.Service;
+import org.somda.sdc.dpws.soap.exception.TransportException;
 
 import java.io.IOException;
 
@@ -25,6 +26,7 @@ public interface UdpBindingService extends Service {
      * @param message the message to send. The message shall contain host and port of the receiver in case of unicast;
      *                multicast does not need transport information as those are stored in the binding service.
      * @throws IOException on any IO problem.
+	 * @throws TransportException in case the message lacks address information and no multicast socket is found.
      */
-    void sendMessage(UdpMessage message) throws IOException;
+    void sendMessage(UdpMessage message) throws IOException, TransportException;
 }

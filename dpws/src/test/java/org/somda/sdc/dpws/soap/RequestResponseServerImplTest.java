@@ -10,6 +10,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -22,7 +23,13 @@ public class RequestResponseServerImplTest extends DpwsTest {
     @BeforeEach
     public void setUp() throws Exception {
         super.setUp();
-        mockTransportInfo = new TransportInfo("mock.scheme", "localhost", 123);
+        mockTransportInfo = new TransportInfo(
+                "mock.scheme",
+                "localhost",
+                123,
+                "remotehost",
+                456,
+                Collections.emptyList());
 
         getInjector().getInstance(SoapMarshalling.class).startAsync().awaitRunning();
         dispatchedSequence = new ArrayList<>();

@@ -9,18 +9,18 @@ import org.somda.sdc.dpws.device.DeviceSettings;
 import org.somda.sdc.dpws.guice.DefaultDpwsConfigModule;
 import org.somda.sdc.dpws.service.factory.HostedServiceFactory;
 import org.somda.sdc.dpws.soap.SoapConfig;
+import org.somda.sdc.dpws.soap.TransportInfo;
 
 import javax.annotation.Nullable;
 import javax.xml.namespace.QName;
 import java.io.InputStream;
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 
 public class BasicPopulatedDevice extends DevicePeer {
-    public static final String SERVICE_ID_1 = "TestServiceId1";
-    public static final String SERVICE_ID_2 = "TestServiceId2";
-
     public static final URI SCOPE_1 = URI.create("http://integration-test-scope1");
     public static final URI SCOPE_2 = URI.create("http://integration-test-scope2");
 
@@ -32,12 +32,11 @@ public class BasicPopulatedDevice extends DevicePeer {
     private DpwsTestService1 service1;
     private DpwsTestService2 service2;
 
-
+    List<TransportInfo> transportInfos;
 
     public BasicPopulatedDevice() {
         this(null, null);
     }
-
 
     public BasicPopulatedDevice(@Nullable DeviceSettings deviceSettings, @Nullable AbstractModule overridingModule) {
         setup(new DefaultDpwsConfigModule() {
@@ -48,6 +47,7 @@ public class BasicPopulatedDevice extends DevicePeer {
             }
         }, deviceSettings, overridingModule);
         dpwsFramework = getInjector().getInstance(DpwsFramework.class);
+        transportInfos = new ArrayList<>();
     }
 
     public BasicPopulatedDevice(@Nullable AbstractModule overridingModule) {
@@ -61,13 +61,19 @@ public class BasicPopulatedDevice extends DevicePeer {
                 TestServiceMetadata.JAXB_CONTEXT_PATH);
         setup(configModule, deviceSettings, overridingModule);
         dpwsFramework = getInjector().getInstance(DpwsFramework.class);
+        transportInfos = new ArrayList<>();
     }
 
     public DpwsTestService1 getService1() {
         return service1;
     }
+
     public DpwsTestService2 getService2() {
         return service2;
+    }
+
+    public List<TransportInfo> getTransportInfosReceivedFromService1() {
+        return transportInfos;
     }
 
     @Override
@@ -82,6 +88,7 @@ public class BasicPopulatedDevice extends DevicePeer {
 
         HostedServiceFactory hostedServiceFactory = getInjector().getInstance(HostedServiceFactory.class);
         service1 = getInjector().getInstance(DpwsTestService1.class);
+        service1.setTransportInfoCallback(transportInfos::add);
         service2 = getInjector().getInstance(DpwsTestService2.class);
 
         final ClassLoader classLoader = getClass().getClassLoader();
@@ -89,17 +96,17 @@ public class BasicPopulatedDevice extends DevicePeer {
         InputStream wsdlResource2 = classLoader.getResourceAsStream("it/org/somda/sdc/dpws/TestService2.wsdl");
         assert wsdlResource1 != null;
         getDevice().getHostingServiceAccess().addHostedService(hostedServiceFactory.createHostedService(
-                DevicePeerMetadata.SERVICE_ID_1,
+                TestServiceMetadata.SERVICE_ID_1,
                 Arrays.asList(
-                        new QName(DevicePeerMetadata.NAMESPACE_SRV, DevicePeerMetadata.PORT_TYPE_NAME_1),
-                        new QName(DevicePeerMetadata.NAMESPACE_SRV, DevicePeerMetadata.PORT_TYPE_NAME_2)),
+                        new QName(TestServiceMetadata.NAMESPACE_SRV, TestServiceMetadata.PORT_TYPE_NAME_1),
+                        new QName(TestServiceMetadata.NAMESPACE_SRV, TestServiceMetadata.PORT_TYPE_NAME_2)),
                 service1,
                 wsdlResource1));
 
         assert wsdlResource2 != null;
         getDevice().getHostingServiceAccess().addHostedService(hostedServiceFactory.createHostedService(
-                DevicePeerMetadata.SERVICE_ID_2,
-                Collections.singletonList(new QName(DevicePeerMetadata.NAMESPACE_SRV, DevicePeerMetadata.PORT_TYPE_NAME_3)),
+                TestServiceMetadata.SERVICE_ID_2,
+                Collections.singletonList(new QName(TestServiceMetadata.NAMESPACE_SRV, TestServiceMetadata.PORT_TYPE_NAME_3)),
                 service2,
                 wsdlResource2));
 

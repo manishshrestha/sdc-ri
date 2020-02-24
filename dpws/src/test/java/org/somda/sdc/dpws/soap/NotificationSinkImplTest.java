@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.mock;
 
 public class NotificationSinkImplTest extends DpwsTest {
     private List<String> dispatchedSequence;
@@ -26,7 +27,7 @@ public class NotificationSinkImplTest extends DpwsTest {
     }
 
     @Test
-    public void receiveRequestResponse() throws Exception {
+    public void receiveNotification() throws Exception {
         SoapMarshalling unmarshaller = getInjector().getInstance(SoapMarshalling.class);
 
         NotificationSink nSink = getInjector().getInstance(NotificationSinkFactory.class).createNotificationSink(
@@ -81,7 +82,7 @@ public class NotificationSinkImplTest extends DpwsTest {
             }
         });
 
-        nSink.receiveNotification(notification);
+        nSink.receiveNotification(notification, mock(TransportInfo.class));
 
         assertEquals(3, dispatchedSequence.size());
         assertEquals("NOTIFICATION(5)", dispatchedSequence.get(0));

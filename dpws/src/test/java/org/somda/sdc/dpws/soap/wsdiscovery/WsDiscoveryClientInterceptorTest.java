@@ -13,10 +13,7 @@ import org.junit.jupiter.api.Test;
 import org.somda.sdc.dpws.DpwsTest;
 import org.somda.sdc.dpws.guice.WsDiscovery;
 import org.somda.sdc.common.util.ExecutorWrapperService;
-import org.somda.sdc.dpws.soap.NotificationSink;
-import org.somda.sdc.dpws.soap.NotificationSource;
-import org.somda.sdc.dpws.soap.SoapMessage;
-import org.somda.sdc.dpws.soap.SoapUtil;
+import org.somda.sdc.dpws.soap.*;
 import org.somda.sdc.dpws.soap.factory.EnvelopeFactory;
 import org.somda.sdc.dpws.soap.factory.NotificationSinkFactory;
 import org.somda.sdc.dpws.soap.factory.NotificationSourceFactory;
@@ -46,6 +43,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
+import static org.mockito.Mockito.mock;
 
 public class WsDiscoveryClientInterceptorTest extends DpwsTest {
     private List<SoapMessage> sentSoapMessages;
@@ -158,7 +156,7 @@ public class WsDiscoveryClientInterceptorTest extends DpwsTest {
         ListenableFuture<Integer> future = wsDiscoveryClient.sendProbe(searchId, expectedTypes,
                 expectedScopes, 1);
         assertEquals(1, sentSoapMessages.size());
-        notificationSink.receiveNotification(createProbeMatches(sentSoapMessages.get(0)));
+        notificationSink.receiveNotification(createProbeMatches(sentSoapMessages.get(0)), mock(TransportInfo.class));
 
         assertEquals(Integer.valueOf(1), future.get());
     }
@@ -171,7 +169,7 @@ public class WsDiscoveryClientInterceptorTest extends DpwsTest {
 
         ListenableFuture<ResolveMatchesType> result = wsDiscoveryClient.sendResolve(expectedEpr);
         assertEquals(1, sentSoapMessages.size());
-        notificationSink.receiveNotification(createResolveMatches(sentSoapMessages.get(0)));
+        notificationSink.receiveNotification(createResolveMatches(sentSoapMessages.get(0)), mock(TransportInfo.class));
 
         Futures.addCallback(result, new FutureCallback<>() {
             @Override

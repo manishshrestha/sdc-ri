@@ -6,6 +6,7 @@ import com.google.common.util.concurrent.Service;
 import com.google.inject.Inject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.somda.sdc.dpws.soap.exception.TransportException;
 
 import java.io.IOException;
 import java.util.concurrent.LinkedBlockingDeque;
@@ -83,6 +84,8 @@ public class UdpMessageQueueServiceImpl extends AbstractIdleService implements S
                         LOG.info("[{}] Outgoing UdpMessageQueueService interrupted", instanceId);
                         LOG.trace("[{}] Outgoing UdpMessageQueueService interrupted", instanceId, e);
                         break;
+                    } catch (TransportException e) {
+                        LOG.info("[{}] Outgoing UdpMessageQueueService transport exception caught", instanceId, e);
                     }
                 } while (true);
             } finally {

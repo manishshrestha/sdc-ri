@@ -37,6 +37,7 @@ import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.URI;
 import java.net.UnknownHostException;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -312,7 +313,13 @@ public class GrizzlyHttpServerRegistry extends AbstractIdleService implements Ht
             try {
             	
             	handler.process(input, output,
-                        new TransportInfo(request.getScheme(), request.getLocalAddr(), request.getLocalPort()));
+                        new TransportInfo(
+                                request.getScheme(),
+                                request.getLocalAddr(),
+                                request.getLocalPort(),
+                                null,
+                                null,
+                                Collections.emptyList()));
             	
             } catch (Exception e) {
                 response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR_500);

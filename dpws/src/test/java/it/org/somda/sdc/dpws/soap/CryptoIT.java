@@ -4,6 +4,7 @@ import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.SettableFuture;
 import dpws_test_service.messages._2017._05._10.ObjectFactory;
 import dpws_test_service.messages._2017._05._10.TestNotification;
+import dpws_test_service.messages._2017._05._10.TestOperationRequest;
 import it.org.somda.sdc.dpws.IntegrationTestUtil;
 import it.org.somda.sdc.dpws.MockedUdpBindingModule;
 import it.org.somda.sdc.dpws.TestServiceMetadata;
@@ -41,8 +42,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.*;
 
 @ExtendWith(LoggingTestWatcher.class)
 public class CryptoIT {
@@ -55,12 +55,12 @@ public class CryptoIT {
     private BasicPopulatedDevice devicePeer;
     private ClientPeer clientPeer;
 
-    public CryptoIT() {
+    CryptoIT() {
         IntegrationTestUtil.preferIpV4Usage();
     }
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         TestLogging.configure();
         final CryptoSettings serverCryptoSettings = Ssl.setupServer();
 
@@ -80,7 +80,6 @@ public class CryptoIT {
                     throw new RuntimeException(e);
                 }
             }
-
         }, new DefaultDpwsConfigModule() {
             @Override
             public void customConfigure() {
@@ -108,13 +107,13 @@ public class CryptoIT {
     }
 
     @AfterEach
-    public void tearDown() {
+    void tearDown() {
         this.devicePeer.stopAsync().awaitTerminated();
         this.clientPeer.stopAsync().awaitTerminated();
     }
 
     @Test
-    public void directedProbeSecured() throws Exception {
+    void directedProbeSecured() throws Exception {
         // Given a device under test (DUT) and a client up and running
         devicePeer.startAsync().awaitRunning();
         clientPeer.startAsync().awaitRunning();
@@ -135,7 +134,28 @@ public class CryptoIT {
     }
 
     @Test
-    public void notificationSecured() throws Exception {
+    void transportInfoInRequestResponse() throws Exception {
+        devicePeer.startAsync().awaitRunning();
+        clientPeer.startAsync().awaitRunning();
+
+        var connectFuture = clientPeer.getClient().connect(devicePeer.getEprAddress());
+        var hostingServiceProxy = connectFuture.get(MAX_WAIT_TIME.getSeconds(), TimeUnit.SECONDS);
+        var hostedServiceProxy = hostingServiceProxy.getHostedServices().get(TestServiceMetadata.SERVICE_ID_1);
+        assertNotNull(hostedServiceProxy);
+
+        final TestOperationRequest request = new TestOperationRequest();
+        request.setParam1("testString");
+        request.setParam2(11);
+
+        var reqMsg = clientPeer.getInjector().getInstance(SoapUtil.class)
+                .createMessage(TestServiceMetadata.ACTION_OPERATION_REQUEST_1, request);
+        hostedServiceProxy.getRequestResponseClient().sendRequestResponse(reqMsg);
+        assertEquals(1, devicePeer.getTransportInfosReceivedFromService1().size());
+        assertFalse(devicePeer.getTransportInfosReceivedFromService1().get(0).getX509Certificates().isEmpty());
+    }
+
+    @Test
+    void notificationSecured() throws Exception {
         // Given a device under test (DUT) and a client up and running
         devicePeer.startAsync().awaitRunning();
         clientPeer.startAsync().awaitRunning();
@@ -143,7 +163,7 @@ public class CryptoIT {
                 .get(MAX_WAIT_TIME.getSeconds(), TimeUnit.SECONDS);
         final int COUNT = 100;
         final SettableFuture<List<TestNotification>> notificationFuture = SettableFuture.create();
-        final HostedServiceProxy srv1 = hostingServiceProxy.getHostedServices().get(BasicPopulatedDevice.SERVICE_ID_1);
+        final HostedServiceProxy srv1 = hostingServiceProxy.getHostedServices().get(TestServiceMetadata.SERVICE_ID_1);
         final ListenableFuture<SubscribeResult> subscribe = srv1.getEventSinkAccess()
                 .subscribe(Collections.singletonList(TestServiceMetadata.ACTION_NOTIFICATION_1), Duration.ofMinutes(1),
                         new Interceptor() {
@@ -151,6 +171,8 @@ public class CryptoIT {
 
                             @MessageInterceptor(value = TestServiceMetadata.ACTION_NOTIFICATION_1)
                             void onNotification(NotificationObject message) {
+                                assertTrue(message.getTransportInfo().isPresent());
+                                assertFalse(message.getTransportInfo().get().getX509Certificates().isEmpty());
                                 receivedNotifications.add(
                                         soapUtil.getBody(message.getNotification(), TestNotification.class)
                                                 .orElseThrow(() -> new RuntimeException("TestNotification could not be converted")));

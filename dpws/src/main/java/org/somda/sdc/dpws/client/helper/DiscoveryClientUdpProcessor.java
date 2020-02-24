@@ -3,10 +3,8 @@ package org.somda.sdc.dpws.client.helper;
 import com.google.common.eventbus.Subscribe;
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
-import org.somda.sdc.dpws.soap.MarshallingService;
-import org.somda.sdc.dpws.soap.NotificationSink;
-import org.somda.sdc.dpws.soap.SoapDebug;
-import org.somda.sdc.dpws.soap.SoapMessage;
+import org.somda.sdc.dpws.DpwsConstants;
+import org.somda.sdc.dpws.soap.*;
 import org.somda.sdc.dpws.soap.exception.MarshallingException;
 import org.somda.sdc.dpws.udp.UdpMessage;
 import org.somda.sdc.dpws.udp.UdpMessageQueueObserver;
@@ -15,6 +13,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayInputStream;
+import java.util.Collections;
 
 /**
  * Receives WS-Discovery SOAP messages via UDP.
@@ -52,6 +51,12 @@ public class DiscoveryClientUdpProcessor implements UdpMessageQueueObserver {
         }
 
         // Forward SOAP message to given notification interceptor chain
-        notificationSink.receiveNotification(notification);
+        notificationSink.receiveNotification(notification, new TransportInfo(
+                DpwsConstants.URI_SCHEME_SOAP_OVER_UDP,
+                null,
+                null,
+                msg.getHost(),
+                msg.getPort(),
+                Collections.emptyList()));
     }
 }

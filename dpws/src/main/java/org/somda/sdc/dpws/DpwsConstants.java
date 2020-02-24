@@ -118,4 +118,9 @@ public class DpwsConstants {
      * Defines the DPWS device type that is required to identify a DPWS compliant device during discovery.
      */
     public static final QName DEVICE_TYPE = new QName(NAMESPACE, "Device");
+
+    /**
+     * URI scheme for SOAP-over-UDP.
+     */
+    public static final String URI_SCHEME_SOAP_OVER_UDP = "soap.udp";
 }

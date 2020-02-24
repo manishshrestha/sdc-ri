@@ -4,14 +4,7 @@ import com.google.common.util.concurrent.AbstractIdleService;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import org.eclipse.jetty.http.HttpStatus;
-import org.eclipse.jetty.server.Connector;
-import org.eclipse.jetty.server.HttpConfiguration;
-import org.eclipse.jetty.server.HttpConnectionFactory;
-import org.eclipse.jetty.server.Request;
-import org.eclipse.jetty.server.SecureRequestCustomizer;
-import org.eclipse.jetty.server.Server;
-import org.eclipse.jetty.server.ServerConnector;
-import org.eclipse.jetty.server.SslConnectionFactory;
+import org.eclipse.jetty.server.*;
 import org.eclipse.jetty.server.handler.AbstractHandler;
 import org.eclipse.jetty.server.handler.ContextHandler;
 import org.eclipse.jetty.server.handler.ContextHandlerCollection;
@@ -44,9 +37,8 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.URI;
 import java.net.UnknownHostException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.security.cert.X509Certificate;
+import java.util.*;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -383,8 +375,9 @@ public class JettyHttpServerRegistry extends AbstractIdleService implements Http
 
         @Override
         public void handle(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response) throws IOException {
-
             LOG.debug("Request to {}", request.getRequestURL());
+
+            var certificates = getX509Certificates(request);
 
             InputStream input = communicationLog.logHttpMessage(CommunicationLogImpl.HttpDirection.INBOUND_REQUEST,
                     request.getRemoteHost(), request.getRemotePort(), request.getInputStream());
@@ -396,10 +389,14 @@ public class JettyHttpServerRegistry extends AbstractIdleService implements Http
                     request.getRemoteHost(), request.getRemotePort(), response.getOutputStream());
 
             try {
-
                 handler.process(input, output,
-                        new TransportInfo(request.getScheme(), request.getLocalAddr(), request.getLocalPort()));
-
+                        new TransportInfo(
+                                request.getScheme(),
+                                request.getLocalAddr(),
+                                request.getLocalPort(),
+                                request.getRemoteAddr(),
+                                request.getRemotePort(),
+                                certificates));
             } catch (TransportException | MarshallingException | ClassCastException e) {
                 LOG.error("", e);
                 response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR_500);
@@ -409,8 +406,26 @@ public class JettyHttpServerRegistry extends AbstractIdleService implements Http
             } finally {
                 baseRequest.setHandled(true);
             }
+        }
 
-
+        private Collection<X509Certificate> getX509Certificates(HttpServletRequest request) throws IOException {
+            var anonymousCertificates = request.getAttribute("javax.servlet.request.X509Certificate");
+            Collection<X509Certificate> x509Certificates = Collections.emptyList();
+            if (sslContextConfigurator != null) {
+                if (anonymousCertificates == null) {
+                    LOG.error("Certificate information is missing from HTTP request data");
+                    throw new IOException("Certificate information is missing from HTTP request data");
+                } else {
+                    if (anonymousCertificates instanceof X509Certificate[]) {
+                        return List.of((X509Certificate[]) anonymousCertificates);
+                    } else {
+                        LOG.error("Certificate information is of an unexpected type: {}", anonymousCertificates.getClass());
+                        throw new IOException(String.format("Certificate information is of an unexpected type: %s",
+                                anonymousCertificates.getClass()));
+                    }
+                }
+            }
+            return x509Certificates;
         }
     }
 }

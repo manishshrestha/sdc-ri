@@ -17,6 +17,7 @@ import org.junit.jupiter.api.Test;
 
 import javax.xml.namespace.QName;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -42,7 +43,14 @@ public class WsDiscoveryDiscoveryAccessInterceptorTest extends DpwsTest {
     @BeforeEach
     public void setUp() throws Exception {
         super.setUp();
-        mockTransportInfo = new TransportInfo("mock.scheme", "localhost", 123);
+        mockTransportInfo = new TransportInfo(
+                "mock.scheme",
+                "localhost",
+                123,
+                "remotehost",
+                456,
+                Collections.emptyList()
+        );
 
         sentSoapMessages = new ArrayList<>();
 
