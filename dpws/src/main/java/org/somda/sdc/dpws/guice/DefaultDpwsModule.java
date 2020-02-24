@@ -108,7 +108,7 @@ public class DefaultDpwsModule extends AbstractModule {
 
         bind(CommunicationLogSink.class).to(CommunicationLogSinkImpl.class).asEagerSingleton();
 
-        bind(CommunicationLog.class).to(CommunicationLogIdentity.class).asEagerSingleton();
+        bind(CommunicationLog.class).to(CommunicationLogDummyImpl.class).asEagerSingleton();
 
     }
 

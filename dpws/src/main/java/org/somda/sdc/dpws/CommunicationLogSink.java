@@ -5,7 +5,7 @@ import java.io.OutputStream;
 import org.somda.sdc.dpws.CommunicationLogSinkImpl;
 
 /**
- * Communication log interface.
+ * Communication log sink interface.
  */
 public interface CommunicationLogSink {
     

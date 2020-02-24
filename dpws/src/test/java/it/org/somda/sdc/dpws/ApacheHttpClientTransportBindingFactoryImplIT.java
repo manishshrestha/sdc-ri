@@ -86,7 +86,7 @@ public class ApacheHttpClientTransportBindingFactoryImplIT extends DpwsTest {
         var inetSocketAddress = new InetSocketAddress(baseUri.getHost(), baseUri.getPort());
         var server = spawnHttpServer(inetSocketAddress, handler);
 
-        // replace the port, lazy way
+        // replace the port
         baseUri = new URI(
                 baseUri.getScheme(),
                 baseUri.getUserInfo(),
