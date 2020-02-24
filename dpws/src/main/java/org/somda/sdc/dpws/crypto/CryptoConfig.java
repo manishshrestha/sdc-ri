@@ -26,7 +26,7 @@ public class CryptoConfig {
     public static final String CRYPTO_TLS_ENABLED_VERSIONS = "Dpws.Crypto.TlsEnabledVersions";
 
     /**
-     * Hostname verifier called on new connections in the http client
+     * Hostname verifier called on new connections in the http client.
      *
      * <ul>
      * <li>Data type: {@link javax.net.ssl.HostnameVerifier}
@@ -36,7 +36,7 @@ public class CryptoConfig {
     public static final String CRYPTO_CLIENT_HOSTNAME_VERIFIER = "Dpws.Crypto.ClientHostnameVerifier";
 
     /**
-     * Hostname verifier called on new connections in the http server
+     * Hostname verifier called on new connections in the http server.
      *
      * <ul>
      * <li>Data type: {@link javax.net.ssl.HostnameVerifier}

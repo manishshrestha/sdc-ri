@@ -49,6 +49,7 @@ import java.net.InetSocketAddress;
 import java.net.URI;
 import java.net.UnknownHostException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.locks.Lock;
@@ -344,7 +345,9 @@ public class JettyHttpServerRegistry extends AbstractIdleService implements Http
             fac.setSslContext(sslContextConfigurator.createSSLContext(true));
             fac.setNeedClientAuth(true);
 
-            LOG.debug("Enabled protocols: {}", tlsProtocols);
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Enabled protocols: {}", List.of(tlsProtocols));
+            }
             fac.setIncludeProtocols(tlsProtocols);
             // reset excluded protocols to force only included protocols
             fac.setExcludeProtocols();

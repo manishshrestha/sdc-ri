@@ -65,7 +65,7 @@ public class ConsumerUtil {
                                         final X509Certificate x509 = (X509Certificate) peerCerts[0];
                                         List<String> extendedKeyUsage = x509.getExtendedKeyUsage();
                                         if (extendedKeyUsage == null || extendedKeyUsage.isEmpty()) {
-                                            LOG.warn("No EKU in peer certificate.");
+                                            LOG.warn("No EKU in peer certificate");
                                             return true;
                                         }
 
@@ -74,7 +74,7 @@ public class ConsumerUtil {
                                             try {
                                                 URI keyUri = URI.create(key);
                                                 if (keyUri.equals(GlueConstants.URI_KEY_PURPOSE_SDC_SERVICE_PROVIDER)) {
-                                                    LOG.debug("SDC Service Provider PKP found!");
+                                                    LOG.debug("SDC Service Provider PKP found");
                                                     return true;
                                                 }
                                             } catch (IllegalArgumentException e) {
