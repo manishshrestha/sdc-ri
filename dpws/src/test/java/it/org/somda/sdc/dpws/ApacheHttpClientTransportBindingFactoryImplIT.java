@@ -21,7 +21,6 @@ import org.somda.sdc.dpws.soap.factory.EnvelopeFactory;
 import org.somda.sdc.dpws.soap.factory.SoapMessageFactory;
 import test.org.somda.common.LoggingTestWatcher;
 
-import javax.ws.rs.core.UriBuilder;
 import javax.xml.bind.JAXBElement;
 import javax.xml.namespace.QName;
 import java.io.ByteArrayOutputStream;
@@ -88,7 +87,14 @@ public class ApacheHttpClientTransportBindingFactoryImplIT extends DpwsTest {
         var server = spawnHttpServer(inetSocketAddress, handler);
 
         // replace the port, lazy way
-        baseUri = UriBuilder.fromUri(baseUri).port(server.getAddress().getPort()).build();
+        baseUri = new URI(
+                baseUri.getScheme(),
+                baseUri.getUserInfo(),
+                baseUri.getHost(),
+                server.getAddress().getPort(),
+                baseUri.getPath(),
+                baseUri.getQuery(),
+                baseUri.getFragment());
 
         // make request to our server
         TransportBinding httpBinding1 = transportBindingFactory.createHttpBinding(baseUri);
