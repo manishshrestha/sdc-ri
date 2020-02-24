@@ -28,8 +28,8 @@ public class CommunicationLogImpl implements CommunicationLog {
     }
 
     @Override
-    public TeeOutputStream logHttpMessage(HttpDirection direction, String address, Integer port,
-            OutputStream httpMessage) {
+    public TeeOutputStream logMessage(HttpDirection direction, String address, Integer port,
+                                      OutputStream httpMessage) {
 
         OutputStream logFile = this.logSink.createBranch(CommunicationLogSink.BranchPath.HTTP,
                 makeName(direction.toString(), address, port));
@@ -39,7 +39,7 @@ public class CommunicationLogImpl implements CommunicationLog {
     }
 
     @Override
-    public InputStream logHttpMessage(HttpDirection direction, String address, Integer port, InputStream httpMessage) {
+    public InputStream logMessage(HttpDirection direction, String address, Integer port, InputStream httpMessage) {
         return writeLogFile(CommunicationLogSink.BranchPath.HTTP, makeName(direction.toString(), address, port),
                 httpMessage);
     }

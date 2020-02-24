@@ -72,7 +72,7 @@ public class ClientTransportBinding implements TransportBinding {
     public SoapMessage onRequestResponse(SoapMessage request) throws TransportBindingException, SoapFaultException {
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
 
-        OutputStream outputStream = communicationLog.logHttpMessage(CommunicationLogImpl.HttpDirection.OUTBOUND_REQUEST,
+        OutputStream outputStream = communicationLog.logMessage(CommunicationLogImpl.HttpDirection.OUTBOUND_REQUEST,
                 this.clientUri.getHost(), this.clientUri.getPort(), byteArrayOutputStream);
 
         try {
@@ -124,7 +124,7 @@ public class ClientTransportBinding implements TransportBinding {
         }
 
         try (InputStream initialInputStream = new ByteArrayInputStream(bytes);
-             InputStream inputStream = communicationLog.logHttpMessage(
+             InputStream inputStream = communicationLog.logMessage(
                      CommunicationLogImpl.HttpDirection.INBOUND_RESPONSE, this.clientUri.getHost(),
                      this.clientUri.getPort(), initialInputStream);) {
             try {

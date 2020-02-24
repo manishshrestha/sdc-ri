@@ -20,7 +20,7 @@ public interface CommunicationLog {
      * @return an output stream, that streams to the original output stream and optionally streams to another stream 
  * 				similarly to the tee Unix command. The other stream can be a log file stream.
      */
-    OutputStream logHttpMessage(CommunicationLogImpl.HttpDirection direction, String address, Integer port, OutputStream httpMessage);
+    OutputStream logMessage(CommunicationLogImpl.HttpDirection direction, String address, Integer port, OutputStream httpMessage);
 
     /**
      * Logs an HTTP message based on an {@linkplain InputStream}.
@@ -33,7 +33,7 @@ public interface CommunicationLog {
      *                    further processing; see return value.
      * @return a new input stream that mirrors the data from the httpMessage input data.
      */
-    InputStream logHttpMessage(CommunicationLogImpl.HttpDirection direction, String address, Integer port, InputStream httpMessage);
+    InputStream logMessage(CommunicationLogImpl.HttpDirection direction, String address, Integer port, InputStream httpMessage);
 
     /**
      * Logs a UDP message based on an {@linkplain UdpMessage}.

@@ -11,12 +11,12 @@ import java.io.OutputStream;
 public class CommunicationLogDummyImpl implements CommunicationLog {
     
     @Override
-    public OutputStream logHttpMessage(CommunicationLogImpl.HttpDirection direction, String address, Integer port, OutputStream httpMessage) {
+    public OutputStream logMessage(CommunicationLogImpl.HttpDirection direction, String address, Integer port, OutputStream httpMessage) {
         return httpMessage;
     } 
 
     @Override
-    public InputStream logHttpMessage(CommunicationLogImpl.HttpDirection direction, String address, Integer port, InputStream httpMessage) {
+    public InputStream logMessage(CommunicationLogImpl.HttpDirection direction, String address, Integer port, InputStream httpMessage) {
         return httpMessage;
     }
 

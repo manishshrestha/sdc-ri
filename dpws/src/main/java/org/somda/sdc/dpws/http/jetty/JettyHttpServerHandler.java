@@ -45,13 +45,13 @@ public class JettyHttpServerHandler extends AbstractHandler {
 
         LOG.debug("Request to {}", request.getRequestURL());
 
-        InputStream input = communicationLog.logHttpMessage(CommunicationLogImpl.HttpDirection.INBOUND_REQUEST,
+        InputStream input = communicationLog.logMessage(CommunicationLogImpl.HttpDirection.INBOUND_REQUEST,
                 request.getRemoteHost(), request.getRemotePort(), request.getInputStream());
 
         response.setStatus(HttpStatus.OK_200);
         response.setContentType(mediaType);
 
-        OutputStream output = communicationLog.logHttpMessage(CommunicationLogImpl.HttpDirection.OUTBOUND_RESPONSE,
+        OutputStream output = communicationLog.logMessage(CommunicationLogImpl.HttpDirection.OUTBOUND_RESPONSE,
                 request.getRemoteHost(), request.getRemotePort(), response.getOutputStream());
 
         try {

@@ -1,9 +1,6 @@
 package org.somda.sdc.dpws;
 
 import org.junit.jupiter.api.Test;
-import org.somda.sdc.dpws.CommunicationLogImpl;
-import org.somda.sdc.dpws.CommunicationLogSinkImpl;
-import org.somda.sdc.dpws.CommunicationLogSink;
 import org.somda.sdc.dpws.udp.UdpMessage;
 
 import java.io.OutputStream;
@@ -49,14 +46,14 @@ public class CommunicationLogImplTest extends DpwsTest {
             CommunicationLogImpl communicationLogImpl = new CommunicationLogImpl(communicationLogSinkImplMock);
 
             InputStream resultingInputStream = communicationLogImpl
-                    .logHttpMessage(CommunicationLogImpl.HttpDirection.OUTBOUND_REQUEST, "_", 0, inputTestInputStream);
+                    .logMessage(CommunicationLogImpl.HttpDirection.OUTBOUND_REQUEST, "_", 0, inputTestInputStream);
 
             assertThat(resultingInputStream.readAllBytes(), is(content));
             assertThat(httpMockOutputStream.toByteArray(), is(content));
 
             httpMockOutputStream.reset();
 
-            OutputStream resultingOutputStream = communicationLogImpl.logHttpMessage(
+            OutputStream resultingOutputStream = communicationLogImpl.logMessage(
                     CommunicationLogImpl.HttpDirection.OUTBOUND_REQUEST, "_", 0, outputTestOutputStream);
 
             resultingOutputStream.write(content);
@@ -88,8 +85,8 @@ public class CommunicationLogImplTest extends DpwsTest {
                 when(communicationLogSinkImplMock.createBranch(any(CommunicationLogSink.BranchPath.class), anyString()))
                         .thenReturn(OutputStream.nullOutputStream());
 
-                communicationLogImpl.logHttpMessage(httpDir, "_", 0, inputStream);
-                communicationLogImpl.logHttpMessage(httpDir, "_", 0, OutputStream.nullOutputStream());
+                communicationLogImpl.logMessage(httpDir, "_", 0, inputStream);
+                communicationLogImpl.logMessage(httpDir, "_", 0, OutputStream.nullOutputStream());
                 verify(communicationLogSinkImplMock, times(2)).createBranch(eq(CommunicationLogSink.BranchPath.HTTP),
                         anyString());
             }
