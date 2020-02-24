@@ -38,6 +38,11 @@ public class TransportInfo {
         this.x509Certificates = x509Certificates;
     }
 
+    /**
+     * Gets the scheme that identifies the context of this transport information.
+     *
+     * @return the scheme; always present.
+     */
     public String getScheme() {
         return scheme;
     }
