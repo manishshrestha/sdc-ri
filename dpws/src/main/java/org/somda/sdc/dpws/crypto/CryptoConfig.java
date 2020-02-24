@@ -14,4 +14,15 @@ public class CryptoConfig {
      * </ul>
      */
     public static final String CRYPTO_SETTINGS = "Dpws.Crypto.Settings";
+
+    /**
+     * Protocols enabled for secure communication, support may depend on used libraries.
+     *
+     * <ul>
+     * <li>Data type: {@linkplain String[]}
+     * <li>Use: optional
+     * </ul>
+     */
+    public static final String CRYPTO_TLS_ENABLED_VERSIONS = "Dpws.Crypto.TlsEnabledVersions";
+
 }

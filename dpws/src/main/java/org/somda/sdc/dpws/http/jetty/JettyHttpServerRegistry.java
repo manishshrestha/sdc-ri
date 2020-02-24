@@ -65,6 +65,7 @@ public class JettyHttpServerRegistry extends AbstractIdleService implements Http
     private final CommunicationLog communicationLog;
     private final boolean enableGzipCompression;
     private final int minCompressionSize;
+    private final String[] tlsProtocols;
     private SSLContextConfigurator sslContextConfigurator; // null => no support for SSL enabled/configured
 
     @Inject
@@ -73,11 +74,13 @@ public class JettyHttpServerRegistry extends AbstractIdleService implements Http
                             @Nullable @Named(CryptoConfig.CRYPTO_SETTINGS) CryptoSettings cryptoSettings,
                             CommunicationLog communicationLog,
                             @Named(DpwsConfig.HTTP_GZIP_COMPRESSION) boolean enableGzipCompression,
-                            @Named(DpwsConfig.HTTP_RESPONSE_COMPRESSION_MIN_SIZE) int minCompressionSize) {
+                            @Named(DpwsConfig.HTTP_RESPONSE_COMPRESSION_MIN_SIZE) int minCompressionSize,
+                            @Named(CryptoConfig.CRYPTO_TLS_ENABLED_VERSIONS) String[] tlsProtocols) {
         this.uriBuilder = uriBuilder;
         this.communicationLog = communicationLog;
         this.enableGzipCompression = enableGzipCompression;
         this.minCompressionSize = minCompressionSize;
+        this.tlsProtocols = tlsProtocols;
         serverRegistry = new HashMap<>();
         handlerRegistry = new HashMap<>();
         contextHandlerMap = new HashMap<>();
@@ -334,6 +337,10 @@ public class JettyHttpServerRegistry extends AbstractIdleService implements Http
             fac.setSslContext(sslContextConfigurator.createSSLContext(true));
             fac.setNeedClientAuth(true);
             fac.setHostnameVerifier((a, b) -> true);
+            LOG.debug("Enabled protocols: {}", (Object[]) tlsProtocols);
+            fac.setIncludeProtocols(tlsProtocols);
+            // reset excluded protocols to force only included protocols
+            fac.setExcludeProtocols();
 
             HttpConfiguration httpsConfig = new HttpConfiguration(httpConfig);
             SecureRequestCustomizer src = new SecureRequestCustomizer();

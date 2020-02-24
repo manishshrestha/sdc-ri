@@ -70,6 +70,10 @@ public class DefaultDpwsConfigModule extends AbstractConfigurationModule {
         bind(CryptoConfig.CRYPTO_SETTINGS,
                 CryptoSettings.class,
                 null);
+
+        bind(CryptoConfig.CRYPTO_TLS_ENABLED_VERSIONS,
+                String[].class,
+                new String[]{"TLSv1.2", "TLSv1.3"});
     }
 
     private void configureClientConfig() {
