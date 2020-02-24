@@ -19,10 +19,30 @@ public class CryptoConfig {
      * Protocols enabled for secure communication, support may depend on used libraries.
      *
      * <ul>
-     * <li>Data type: {@linkplain String[]}
+     * <li>Data type: array of {@link String}
      * <li>Use: optional
      * </ul>
      */
     public static final String CRYPTO_TLS_ENABLED_VERSIONS = "Dpws.Crypto.TlsEnabledVersions";
+
+    /**
+     * Hostname verifier called on new connections in the http client
+     *
+     * <ul>
+     * <li>Data type: array of {@link javax.net.ssl.HostnameVerifier}
+     * <li>Use: optional
+     * </ul>
+     */
+    public static final String CRYPTO_CLIENT_HOSTNAME_VERIFIER = "Dpws.Crypto.ClientHostnameVerifier";
+
+    /**
+     * Hostname verifier called on new connections in the http server
+     *
+     * <ul>
+     * <li>Data type: array of {@link javax.net.ssl.HostnameVerifier}
+     * <li>Use: optional
+     * </ul>
+     */
+    public static final String CRYPTO_DEVICE_HOSTNAME_VERIFIER = "Dpws.Crypto.DeviceHostnameVerifier";
 
 }

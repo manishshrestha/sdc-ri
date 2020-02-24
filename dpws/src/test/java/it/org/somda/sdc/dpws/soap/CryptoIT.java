@@ -31,6 +31,7 @@ import org.somda.sdc.dpws.soap.wseventing.SubscribeResult;
 import test.org.somda.common.LoggingTestWatcher;
 import test.org.somda.common.TestLogging;
 
+import javax.net.ssl.HostnameVerifier;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.URI;
@@ -43,6 +44,12 @@ import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(LoggingTestWatcher.class)
 public class CryptoIT {
@@ -54,6 +61,7 @@ public class CryptoIT {
 
     private BasicPopulatedDevice devicePeer;
     private ClientPeer clientPeer;
+    private HostnameVerifier verifier;
 
     public CryptoIT() {
         IntegrationTestUtil.preferIpV4Usage();
@@ -63,6 +71,10 @@ public class CryptoIT {
     public void setUp() {
         TestLogging.configure();
         final CryptoSettings serverCryptoSettings = Ssl.setupServer();
+
+        // add custom hostname verifier
+        this.verifier = mock(HostnameVerifier.class);
+        when(verifier.verify(anyString(), any())).thenReturn(true);
 
         this.devicePeer = new BasicPopulatedDevice(new DeviceSettings() {
             final EndpointReferenceType epr = wsaUtil.createEprWithAddress(soapUtil.createUriFromUuid(UUID.randomUUID()));
@@ -87,6 +99,7 @@ public class CryptoIT {
                 bind(CryptoConfig.CRYPTO_SETTINGS, CryptoSettings.class, serverCryptoSettings);
                 bind(DeviceConfig.UNSECURED_ENDPOINT, Boolean.class, false);
                 bind(DeviceConfig.SECURED_ENDPOINT, Boolean.class, true);
+                bind(CryptoConfig.CRYPTO_DEVICE_HOSTNAME_VERIFIER, HostnameVerifier.class, verifier);
             }
         }, new MockedUdpBindingModule());
 
@@ -177,5 +190,31 @@ public class CryptoIT {
             assertEquals(Integer.toString(i), notification.getParam1());
             assertEquals(i, notification.getParam2());
         }
+    }
+
+    @Test
+    void testDeviceHostnameVerifierCalled() throws Exception {
+        devicePeer.startAsync().awaitRunning();
+        clientPeer.startAsync().awaitRunning();
+
+        // When the DUT's physical addresses are resolved
+        final DiscoveredDevice discoveredDevice = clientPeer.getClient().resolve(devicePeer.getEprAddress())
+                .get(MAX_WAIT_TIME.getSeconds(), TimeUnit.SECONDS);
+        final List<String> xAddrs = discoveredDevice.getXAddrs();
+        assertFalse(xAddrs.isEmpty());
+        final URI uri = URI.create(xAddrs.get(0));
+
+        // Then expect the EPR address returned by a directed probe to be the DUT's EPR address
+        final String expectedEprAddress = devicePeer.getEprAddress().toString();
+
+        // make five requests using this connection
+        for (int i = 0; i < 5; i++) {
+            assertEquals(expectedEprAddress, clientPeer.getClient().directedProbe(uri)
+                    .get(MAX_WAIT_TIME.getSeconds(), TimeUnit.SECONDS)
+                    .getProbeMatch().get(0).getEndpointReference().getAddress().getValue());
+        }
+
+        // hostname verifier must becalled exactly once for the connection
+        verify(verifier, times(1)).verify(any(), any());
     }
 }

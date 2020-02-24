@@ -76,12 +76,6 @@ import java.util.stream.Collectors;
  * 9. execute operations (Activate, SetString, SetValue) as specified and check that result is “finished”
  */
 public class Consumer {
-    static {
-        // TODO: Workaround for
-        //  javax.net.ssl.SSLHandshakeException: No subject alternative names present
-        //  when using the jersey client
-        HttpsURLConnection.setDefaultHostnameVerifier((hostname, session) -> true);
-    }
 
     private static final Logger LOG = LoggerFactory.getLogger(Consumer.class);
     private static final ConsumerUtil IT = new ConsumerUtil();

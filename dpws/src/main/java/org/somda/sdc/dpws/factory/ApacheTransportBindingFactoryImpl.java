@@ -33,6 +33,7 @@ import org.somda.sdc.dpws.soap.SoapUtil;
 import org.somda.sdc.dpws.soap.exception.SoapFaultException;
 
 import javax.annotation.Nullable;
+import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
 import javax.xml.bind.JAXBException;
 import java.io.ByteArrayInputStream;
@@ -61,6 +62,7 @@ public class ApacheTransportBindingFactoryImpl implements TransportBindingFactor
 
     private final HttpClient client;
     private final String[] tlsProtocols;
+    private final HostnameVerifier hostnameVerifier;
     private HttpClient securedClient; // if null => no cryptography configured/enabled
 
     @Inject
@@ -72,7 +74,8 @@ public class ApacheTransportBindingFactoryImpl implements TransportBindingFactor
                                       @Named(DpwsConfig.HTTP_CLIENT_CONNECT_TIMEOUT) Duration clientConnectTimeout,
                                       @Named(DpwsConfig.HTTP_CLIENT_READ_TIMEOUT) Duration clientReadTimeout,
                                       @Named(DpwsConfig.HTTP_GZIP_COMPRESSION) boolean enableGzipCompression,
-                                      @Named(CryptoConfig.CRYPTO_TLS_ENABLED_VERSIONS) String[] tlsProtocols
+                                      @Named(CryptoConfig.CRYPTO_TLS_ENABLED_VERSIONS) String[] tlsProtocols,
+                                      @Named(CryptoConfig.CRYPTO_CLIENT_HOSTNAME_VERIFIER) HostnameVerifier hostnameVerifier
                                       ) {
         this.marshalling = marshalling;
         this.soapUtil = soapUtil;
@@ -82,6 +85,7 @@ public class ApacheTransportBindingFactoryImpl implements TransportBindingFactor
         this.enableGzipCompression = enableGzipCompression;
         this.client = buildBaseClient().build();
         this.tlsProtocols = tlsProtocols;
+        this.hostnameVerifier = hostnameVerifier;
 
         configureSecuredClient(cryptoConfigurator, cryptoSettings);
     }
@@ -132,12 +136,11 @@ public class ApacheTransportBindingFactoryImpl implements TransportBindingFactor
                 sslContext,
                 tlsProtocols,
                 null,
-                (s, sslSession) -> true
+                hostnameVerifier
         );
 
         this.securedClient = buildBaseClient()
                 .setSSLContext(sslContext)
-                .setSSLHostnameVerifier((s, sslSession) -> true)
                 .setSSLSocketFactory(socketFactory)
                 .build();
     }
@@ -203,14 +206,14 @@ public class ApacheTransportBindingFactoryImpl implements TransportBindingFactor
         @Override
         public SoapMessage onRequestResponse(SoapMessage request) throws TransportBindingException, SoapFaultException {
             ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-            
+
             OutputStream outputStream = communicationLog.logHttpMessage(
-            		CommunicationLogImpl.HttpDirection.OUTBOUND_REQUEST, 
-            		this.clientUri.getHost(), 
-            		this.clientUri.getPort(), 
+            		CommunicationLogImpl.HttpDirection.OUTBOUND_REQUEST,
+            		this.clientUri.getHost(),
+            		this.clientUri.getPort(),
             		byteArrayOutputStream
             		);
-            
+
             try {
                 marshalling.marshal(request.getEnvelopeWithMappedHeaders(), outputStream);
             } catch (JAXBException e) {
