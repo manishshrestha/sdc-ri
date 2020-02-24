@@ -33,8 +33,8 @@ public class NotificationSinkImpl implements NotificationSink {
     }
 
     @Override
-    public void receiveNotification(SoapMessage notification) {
-        NotificationObject nObj = new NotificationObject(notification);
+    public void receiveNotification(SoapMessage notification, TransportInfo transportInfo) {
+        NotificationObject nObj = new NotificationObject(notification, transportInfo);
         try {
             serverDispatcher.invokeDispatcher(Direction.NOTIFICATION, interceptorRegistry, notification, nObj);
         } catch (SoapFaultException e) {

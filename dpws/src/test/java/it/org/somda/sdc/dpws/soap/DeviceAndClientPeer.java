@@ -52,7 +52,6 @@ public class DeviceAndClientPeer extends IntegrationTestPeer {
 
     private ListeningExecutorService executorService;
 
-    private URI localDeviceEprAddress;
     private Device device;
     private Client client;
     private DpwsFramework dpwsFramework;
@@ -95,7 +94,6 @@ public class DeviceAndClientPeer extends IntegrationTestPeer {
         };
 
         this.dpwsFramework = getInjector().getInstance(DpwsFramework.class);
-        this.localDeviceEprAddress = localDeviceEprAddress;
         this.client = getInjector().getInstance(Client.class);
         this.device = getInjector().getInstance(DeviceFactory.class).createDevice(deviceSettings);
 

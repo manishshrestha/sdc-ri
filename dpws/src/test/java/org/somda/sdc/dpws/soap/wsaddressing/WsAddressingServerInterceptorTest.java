@@ -17,6 +17,7 @@ import org.somda.sdc.dpws.soap.model.Envelope;
 import org.somda.sdc.dpws.soap.wsaddressing.model.AttributedURIType;
 
 import java.io.InputStream;
+import java.util.Collections;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -31,7 +32,14 @@ public class WsAddressingServerInterceptorTest extends DpwsTest {
     @BeforeEach
     public void setUp() throws Exception {
         super.setUp();
-        mockTransportInfo = new TransportInfo("http", "localhost", 123);
+        mockTransportInfo = new TransportInfo(
+                "mock.scheme",
+                "localhost",
+                123,
+                "remotehost",
+                456,
+                Collections.emptyList()
+        );
 
         InputStream soapStrm = getClass().getResourceAsStream("soap-envelope.xml");
         getInjector().getInstance(SoapMarshalling.class).startAsync().awaitRunning();

@@ -132,11 +132,11 @@ public class EventSourceInterceptor extends AbstractIdleService implements Event
     @Override
     public void subscriptionEndToAll(WsEventingStatus status) {
         subscriptionRegistry.getSubscriptions().forEach((uri, subMan) -> {
-                subMan.getEndTo().ifPresent(endTo -> {
-                    SoapMessage endToMessage = createForEndTo(status, subMan, endTo);
-                    subMan.sendToEndTo(endToMessage);
-                });
-                subMan.stopAsync().awaitTerminated();
+            subMan.getEndTo().ifPresent(endTo -> {
+                SoapMessage endToMessage = createForEndTo(status, subMan, endTo);
+                subMan.sendToEndTo(endToMessage);
+            });
+            subMan.stopAsync().awaitTerminated();
         });
     }
 
@@ -167,9 +167,15 @@ public class EventSourceInterceptor extends AbstractIdleService implements Event
         Duration grantedExpires = grantExpires(validateExpires(subscribe.getExpires()));
 
         // Create subscription
-        TransportInfo transportInfo = rrObj.getTransportInfo().orElseThrow(() ->
+        var transportInfo = rrObj.getTransportInfo().orElseThrow(() ->
                 new RuntimeException("Fatal error. Missing transport information."));
-        EndpointReferenceType epr = createSubscriptionManagerEprAndRegisterHttpHandler(transportInfo);
+        EndpointReferenceType epr = createSubscriptionManagerEprAndRegisterHttpHandler(
+                transportInfo.getScheme(),
+                transportInfo.getLocalAddress().orElseThrow(() ->
+                        new RuntimeException("Fatal error. Missing local address in transport information.")),
+                transportInfo.getLocalPort().orElseThrow(() ->
+                        new RuntimeException("Fatal error. Missing local port in transport information."))
+        );
         SourceSubscriptionManager subMan = subscriptionManagerFactory.createSourceSubscriptionManager(
                 epr,
                 grantedExpires,
@@ -299,9 +305,11 @@ public class EventSourceInterceptor extends AbstractIdleService implements Event
         });
     }
 
-    private EndpointReferenceType createSubscriptionManagerEprAndRegisterHttpHandler(TransportInfo transportInfo) {
+    private EndpointReferenceType createSubscriptionManagerEprAndRegisterHttpHandler(String scheme,
+                                                                                     String address,
+                                                                                     Integer port) {
         final URI hostPart = httpUriBuilder.buildUri(
-                transportInfo.getScheme(), transportInfo.getLocalAddress(), transportInfo.getLocalPort());
+                scheme, address, port);
         String contextPath = "/" + UUID.randomUUID().toString() + "/" + subscriptionManagerPath;
         String eprAddress = hostPart + contextPath;
 

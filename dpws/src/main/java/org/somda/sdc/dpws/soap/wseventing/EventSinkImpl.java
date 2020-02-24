@@ -13,11 +13,7 @@ import org.somda.sdc.dpws.DpwsConstants;
 import org.somda.sdc.dpws.guice.NetworkJobThreadPool;
 import org.somda.sdc.common.util.ExecutorWrapperService;
 import org.somda.sdc.dpws.http.HttpServerRegistry;
-import org.somda.sdc.dpws.soap.NotificationSink;
-import org.somda.sdc.dpws.soap.RequestResponseClient;
-import org.somda.sdc.dpws.soap.SoapMarshalling;
-import org.somda.sdc.dpws.soap.SoapMessage;
-import org.somda.sdc.dpws.soap.SoapUtil;
+import org.somda.sdc.dpws.soap.*;
 import org.somda.sdc.dpws.soap.exception.MalformedSoapMessageException;
 import org.somda.sdc.dpws.soap.exception.MarshallingException;
 import org.somda.sdc.dpws.soap.exception.TransportException;
@@ -112,12 +108,12 @@ public class EventSinkImpl implements EventSink {
             // Create unique end-to context path and create proper handler
             String endToContext = EVENT_SINK_END_TO_CONTEXT_PREFIX + contextSuffix;
             URI endToUri = httpServerRegistry.registerContext(hostAddress, endToContext,
-                    (req, res, ti) -> processIncomingNotification(notificationSink, req, res));
+                    (req, res, ti) -> processIncomingNotification(notificationSink, req, res, ti));
 
             // Create unique notify-to context path and create proper handler
             String notifyToContext = EVENT_SINK_NOTIFY_TO_CONTEXT_PREFIX + contextSuffix;
             URI notifyToUri = httpServerRegistry.registerContext(hostAddress, notifyToContext,
-                    (req, res, ti) -> processIncomingNotification(notificationSink, req, res));
+                    (req, res, ti) -> processIncomingNotification(notificationSink, req, res, ti));
 
             // Create subscribe body, include formerly created end-to and notify-to endpoint addresses
             // Populate rest of the request
@@ -299,18 +295,19 @@ public class EventSinkImpl implements EventSink {
     }
 
     private void processIncomingNotification(NotificationSink notificationSink,
-                                             InputStream in,
-                                             OutputStream out) throws MarshallingException, TransportException {
+                                             InputStream inputStream,
+                                             OutputStream outputStream,
+                                             TransportInfo transportInfo) throws MarshallingException, TransportException {
         try {
-            SoapMessage soapMsg = soapUtil.createMessage(marshalling.unmarshal(in));
-            in.close();
+            SoapMessage soapMsg = soapUtil.createMessage(marshalling.unmarshal(inputStream));
+            inputStream.close();
             LOG.debug("Received incoming notification {}", soapMsg);
-            notificationSink.receiveNotification(soapMsg);
+            notificationSink.receiveNotification(soapMsg, transportInfo);
 
             // Only close the output stream when the notification has been processed
             // as closing allows the server do dispatch the next request, which will cause concurrency problems
             // for the ultimate receiver of the notifications
-            out.close();
+            outputStream.close();
         } catch (IOException e) {
             throw new TransportException(e);
         } catch (JAXBException e) {

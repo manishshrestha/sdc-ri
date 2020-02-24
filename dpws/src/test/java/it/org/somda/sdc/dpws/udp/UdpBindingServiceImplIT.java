@@ -130,7 +130,7 @@ public class UdpBindingServiceImplIT {
                 Thread t = new Thread(() -> {
                     try {
                         senderReceiver2.sendMessage(new UdpMessage(expectedResponseBytes, expectedResponseBytes.length, udpMessage.getHost(), udpMessage.getPort()));
-                    } catch (IOException e) {
+                    } catch (Exception e) {
                         fail();
                     }
                 });
@@ -144,7 +144,7 @@ public class UdpBindingServiceImplIT {
         Thread t = new Thread(() -> {
             try {
                 senderReceiver1.sendMessage(new UdpMessage(expectedRequestBytes, expectedRequestBytes.length));
-            } catch (IOException e) {
+            } catch (Exception e) {
                 fail();
             }
         });

@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 import org.somda.sdc.dpws.CommunicationLog;
 import org.somda.sdc.dpws.DpwsConstants;
 import org.somda.sdc.dpws.network.NetworkInterfaceUtil;
+import org.somda.sdc.dpws.soap.exception.TransportException;
 
 import javax.annotation.Nullable;
 import java.io.ByteArrayInputStream;
@@ -152,7 +153,7 @@ public class UdpBindingServiceImpl extends AbstractIdleService implements UdpBin
     }
 
     @Override
-    public void sendMessage(UdpMessage message) throws IOException {
+    public void sendMessage(UdpMessage message) throws IOException, TransportException {
         if (!isRunning()) {
             LOG.warn("Try to send message, but service is not running. Skip.");
             return;
@@ -170,6 +171,11 @@ public class UdpBindingServiceImpl extends AbstractIdleService implements UdpBin
             packet.setPort(message.getPort());
             this.logUdpPacket(CommunicationLog.Direction.OUTBOUND, packet);
         } else {
+            if (multicastGroup == null) {
+                throw new TransportException(
+                        String.format("No transport data in UDP message, which is required as no multicast group is available. Message: %s",
+                                message.toString()));
+            }
             packet.setAddress(multicastGroup);
             packet.setPort(socketPort);
             this.logUdpPacket(CommunicationLog.Direction.OUTBOUND, packet);
