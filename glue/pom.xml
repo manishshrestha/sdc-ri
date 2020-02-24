@@ -10,6 +10,40 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>glue</artifactId>
+
+    <name>SDC Glue</name>
+    <description>
+        SDCri is a set of Java libraries that implements a network communication framework conforming
+        with the IEEE 11073 SDC specifications. This project implements the 11073-20702 SDC glue binding.
+    </description>
+    <url>http://www.somda.org</url>
+
+    <licenses>
+        <license>
+            <name>MIT License</name>
+            <url>http://www.opensource.org/licenses/mit-license.php</url>
+        </license>
+    </licenses>
+
+    <developers>
+        <developer>
+            <name>David Gregorczyk</name>
+            <email>david.gregorczyk@web.de</email>
+            <organizationUrl>https://gitlab.com/d.gregorczyk</organizationUrl>
+        </developer>
+        <developer>
+            <name>Lukas Deichmann</name>
+            <email>lukasdeichmann@gmail.com</email>
+            <organizationUrl>https://gitlab.com/ldeichmann</organizationUrl>
+        </developer>
+    </developers>
+
+    <scm>
+        <connection>scm:git:git://gitlab.com/sdc-suite/sdc-ri.git</connection>
+        <developerConnection>scm:git:git://gitlab.com/sdc-suite/sdc-ri.git</developerConnection>
+        <url>https://gitlab.com/sdc-suite/sdc-ri/-/tree/develop</url>
+    </scm>
+
     <build>
         <plugins>
             <plugin>
