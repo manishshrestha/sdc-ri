@@ -1,14 +1,11 @@
 package org.somda.sdc.dpws.http.apache;
 
-import java.net.URI;
-import java.time.Duration;
-
-import javax.annotation.Nullable;
-import javax.net.ssl.SSLContext;
-
+import com.google.inject.Inject;
+import com.google.inject.name.Named;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.config.SocketConfig;
+import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.impl.client.DefaultHttpRequestRetryHandler;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
@@ -23,8 +20,11 @@ import org.somda.sdc.dpws.factory.TransportBindingFactory;
 import org.somda.sdc.dpws.soap.SoapMarshalling;
 import org.somda.sdc.dpws.soap.SoapUtil;
 
-import com.google.inject.Inject;
-import com.google.inject.name.Named;
+import javax.annotation.Nullable;
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.SSLContext;
+import java.net.URI;
+import java.time.Duration;
 
 public class ApacheTransportBindingFactoryImpl implements TransportBindingFactory {
 
@@ -41,6 +41,9 @@ public class ApacheTransportBindingFactoryImpl implements TransportBindingFactor
     private final Duration clientReadTimeout;
 
     private final HttpClient client;
+
+    private final String[] tlsProtocols;
+    private final HostnameVerifier hostnameVerifier;
     private HttpClient securedClient; // if null => no cryptography configured/enabled
 
     private ClientTransportBindingFactory clientTransportBindingFactory;
@@ -52,7 +55,9 @@ public class ApacheTransportBindingFactoryImpl implements TransportBindingFactor
                                       @Named(DpwsConfig.HTTP_CLIENT_CONNECT_TIMEOUT) Duration clientConnectTimeout,
                                       @Named(DpwsConfig.HTTP_CLIENT_READ_TIMEOUT) Duration clientReadTimeout,
                                       @Named(DpwsConfig.HTTP_GZIP_COMPRESSION) boolean enableGzipCompression,
-                                      ClientTransportBindingFactory clientTransportBindingFactory) {
+                                      ClientTransportBindingFactory clientTransportBindingFactory,
+                                      @Named(CryptoConfig.CRYPTO_TLS_ENABLED_VERSIONS) String[] tlsProtocols,
+                                      @Named(CryptoConfig.CRYPTO_CLIENT_HOSTNAME_VERIFIER) HostnameVerifier hostnameVerifier) {
         this.marshalling = marshalling;
         this.soapUtil = soapUtil;
         this.clientConnectTimeout = clientConnectTimeout;
@@ -60,6 +65,8 @@ public class ApacheTransportBindingFactoryImpl implements TransportBindingFactor
         this.enableGzipCompression = enableGzipCompression;
         this.clientTransportBindingFactory = clientTransportBindingFactory;
         this.client = buildBaseClient().build();
+        this.tlsProtocols = tlsProtocols;
+        this.hostnameVerifier = hostnameVerifier;
 
         configureSecuredClient(cryptoConfigurator, cryptoSettings);
     }
@@ -102,7 +109,16 @@ public class ApacheTransportBindingFactoryImpl implements TransportBindingFactor
             sslContext = cryptoConfigurator.createSslContextFromSystemProperties();
         }
 
-        this.securedClient = buildBaseClient().setSSLContext(sslContext).setSSLHostnameVerifier((s, sslSession) -> true)
+        SSLConnectionSocketFactory socketFactory = new SSLConnectionSocketFactory(
+                sslContext,
+                tlsProtocols,
+                null,
+                hostnameVerifier
+        );
+
+        this.securedClient = buildBaseClient()
+                .setSSLContext(sslContext)
+                .setSSLSocketFactory(socketFactory)
                 .build();
     }
 
