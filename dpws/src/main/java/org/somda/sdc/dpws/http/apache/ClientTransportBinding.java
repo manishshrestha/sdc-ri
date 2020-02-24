@@ -20,7 +20,6 @@ import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.somda.sdc.dpws.CommunicationLog;
-import org.somda.sdc.dpws.CommunicationLogImpl;
 import org.somda.sdc.dpws.TransportBinding;
 import org.somda.sdc.dpws.TransportBindingException;
 import org.somda.sdc.dpws.soap.SoapConstants;
@@ -72,7 +71,8 @@ public class ClientTransportBinding implements TransportBinding {
     public SoapMessage onRequestResponse(SoapMessage request) throws TransportBindingException, SoapFaultException {
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
 
-        OutputStream outputStream = communicationLog.logMessage(CommunicationLogImpl.HttpDirection.OUTBOUND_REQUEST,
+        OutputStream outputStream = communicationLog.logMessage(CommunicationLog.Direction.OUTBOUND,
+                CommunicationLog.TransportType.HTTP,
                 this.clientUri.getHost(), this.clientUri.getPort(), byteArrayOutputStream);
 
         try {
@@ -125,7 +125,7 @@ public class ClientTransportBinding implements TransportBinding {
 
         try (InputStream initialInputStream = new ByteArrayInputStream(bytes);
              InputStream inputStream = communicationLog.logMessage(
-                     CommunicationLogImpl.HttpDirection.INBOUND_RESPONSE, this.clientUri.getHost(),
+                     CommunicationLog.Direction.INBOUND, CommunicationLog.TransportType.HTTP, this.clientUri.getHost(),
                      this.clientUri.getPort(), initialInputStream);) {
             try {
                 if (inputStream.available() > 0) {

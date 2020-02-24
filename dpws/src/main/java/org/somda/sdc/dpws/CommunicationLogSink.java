@@ -16,25 +16,6 @@ public interface CommunicationLogSink {
      * @param key  key that shall map to the output branch
      * @return an {@linkplain OutputStream}, that represents the branch to write to.
      */
-    OutputStream createBranch(CommunicationLogSinkImpl.BranchPath path, String key);
-    
-    
-    /**
-     * Defines the paths for which branches can be created.
-     */
-    public enum BranchPath {
-        UDP("udp"), HTTP("http");
-
-        private final String stringRepresentation;
-
-        BranchPath(String stringRepresentation) {
-            this.stringRepresentation = stringRepresentation;
-        }
-
-        @Override
-        public String toString() {
-            return stringRepresentation;
-        }
-    }
+    OutputStream createBranch(CommunicationLog.TransportType path, String key);
     
 }

@@ -4,7 +4,6 @@ import com.google.common.io.ByteStreams;
 import com.google.inject.Inject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.somda.sdc.dpws.udp.UdpMessage;
 import org.apache.commons.io.output.TeeOutputStream;
 
 import java.io.*;
@@ -28,10 +27,10 @@ public class CommunicationLogImpl implements CommunicationLog {
     }
 
     @Override
-    public TeeOutputStream logMessage(HttpDirection direction, String address, Integer port,
+    public TeeOutputStream logMessage(Direction direction, TransportType transportType, String address, Integer port,
                                       OutputStream httpMessage) {
 
-        OutputStream logFile = this.logSink.createBranch(CommunicationLogSink.BranchPath.HTTP,
+        OutputStream logFile = this.logSink.createBranch(transportType,
                 makeName(direction.toString(), address, port));
 
         return new TeeOutputStream(httpMessage, logFile);
@@ -39,26 +38,19 @@ public class CommunicationLogImpl implements CommunicationLog {
     }
 
     @Override
-    public InputStream logMessage(HttpDirection direction, String address, Integer port, InputStream httpMessage) {
-        return writeLogFile(CommunicationLogSink.BranchPath.HTTP, makeName(direction.toString(), address, port),
+    public InputStream logMessage(Direction direction, TransportType transportType,
+                                  String address, Integer port, InputStream httpMessage) {
+        return writeLogFile(transportType, makeName(direction.toString(), address, port),
                 httpMessage);
     }
 
-    @Override
-    public void logUdpMessage(UdpDirection direction, String destinationAddress, Integer destinationPort,
-            UdpMessage udpMessage) {
-        writeLogFile(CommunicationLogSink.BranchPath.UDP,
-                makeName(direction.toString(), destinationAddress, destinationPort),
-                new ByteArrayInputStream(udpMessage.getData(), 0, udpMessage.getLength()));
-    }
-
-    private InputStream writeLogFile(CommunicationLogSink.BranchPath branchpath, String filename,
+    private InputStream writeLogFile(TransportType transportType, String filename,
             InputStream inputStream) {
 
         try {
             final byte[] bytes = ByteStreams.toByteArray(inputStream);
 
-            new ByteArrayInputStream(bytes).transferTo(this.logSink.createBranch(branchpath, filename));
+            new ByteArrayInputStream(bytes).transferTo(this.logSink.createBranch(transportType, filename));
 
             return new ByteArrayInputStream(bytes);
 
@@ -74,42 +66,5 @@ public class CommunicationLogImpl implements CommunicationLog {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH-mm-ss-SSS");
         return System.nanoTime() + SEPARATOR + date.format(formatter) + SEPARATOR + direction + SEPARATOR
                 + destinationAddress + SEPARATOR + destinationPort;
-    }
-
-    /**
-     * UDP direction enumeration.
-     */
-    public enum UdpDirection {
-        INBOUND("ibound-udp"), OUTBOUND("obound-udp");
-
-        private final String stringRepresentation;
-
-        UdpDirection(String stringRepresentation) {
-            this.stringRepresentation = stringRepresentation;
-        }
-
-        @Override
-        public String toString() {
-            return stringRepresentation;
-        }
-    }
-
-    /**
-     * HTTP direction enumeration.
-     */
-    public enum HttpDirection {
-        INBOUND_REQUEST("ibound-http-request"), INBOUND_RESPONSE("ibound-http-response"),
-        OUTBOUND_REQUEST("obound-http-request"), OUTBOUND_RESPONSE("obound-http-response");
-
-        private final String stringRepresentation;
-
-        HttpDirection(String stringRepresentation) {
-            this.stringRepresentation = stringRepresentation;
-        }
-
-        @Override
-        public String toString() {
-            return stringRepresentation;
-        }
     }
 }

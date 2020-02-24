@@ -6,8 +6,8 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
+import org.somda.sdc.dpws.CommunicationLog;
 import org.somda.sdc.dpws.CommunicationLogImpl;
-import org.somda.sdc.dpws.CommunicationLogSink;
 import org.somda.sdc.dpws.CommunicationLogSinkImpl;
 import org.somda.sdc.dpws.TransportBindingException;
 import org.somda.sdc.dpws.soap.SoapMarshalling;
@@ -55,7 +55,7 @@ public class CommunicationLogImplUsage {
             when(httpResponseMock.getEntity()).thenReturn(httpEntityMock);
             when(httpClient.execute(any(HttpPost.class))).thenReturn(httpResponseMock);
 
-            when(communicationLogSinkImplMock.createBranch(eq(CommunicationLogSink.BranchPath.HTTP), anyString()))
+            when(communicationLogSinkImplMock.createBranch(eq(CommunicationLog.TransportType.HTTP), anyString()))
                     .thenReturn(logOutputStream);
 
             ArgumentCaptor<OutputStream> argument = ArgumentCaptor.forClass(OutputStream.class);

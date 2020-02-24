@@ -1,7 +1,5 @@
 package org.somda.sdc.dpws;
 
-import org.somda.sdc.dpws.udp.UdpMessage;
-
 import java.io.InputStream;
 import java.io.OutputStream;
 
@@ -13,35 +11,70 @@ public interface CommunicationLog {
     /**
      * Logs an HTTP message based on an {@linkplain OutputStream}.
      *
-     * @param direction   direction used for filename.
-     * @param address     address information used for filename.
-     * @param port        port information used for filename.
-     * @param httpMessage the output stream to branch to the log file.
-     * @return an output stream, that streams to the original output stream and optionally streams to another stream 
+     * It does not block i.e. it can return before data is written to the output.
+     *
+     * @param direction     direction used for filename.
+     * @param transportType the transport protocol used i.e. udp, http, etc.
+     * @param address       address information used for filename.
+     * @param port          port information used for filename.
+     * @param httpMessage   the output stream to branch to the log file.
+     * @return an output stream, that streams to the original output stream and optionally streams to another stream
  * 				similarly to the tee Unix command. The other stream can be a log file stream.
      */
-    OutputStream logMessage(CommunicationLogImpl.HttpDirection direction, String address, Integer port, OutputStream httpMessage);
+    OutputStream logMessage(Direction direction, TransportType transportType, String address, Integer port,
+                            OutputStream httpMessage);
 
     /**
      * Logs an HTTP message based on an {@linkplain InputStream}.
      *
-     * @param direction   direction used for filename.
-     * @param address     address information used for filename.
-     * @param port        port information used for filename.
-     * @param httpMessage the message to log as input stream.
-     *                    As the input stream might be unusable after reading, another one is created to be used for
-     *                    further processing; see return value.
+     * It blocks until everything has been read.
+     *
+     * @param direction     direction used for filename.
+     * @param transportType the transport protocol used i.e. udp, http, etc.
+     * @param address       address information used for filename.
+     * @param port          port information used for filename.
+     * @param httpMessage   the message to log as input stream.
+     *                      As the input stream might be unusable after reading, another one is created to be used for
+     *                      further processing; see return value.
      * @return a new input stream that mirrors the data from the httpMessage input data.
      */
-    InputStream logMessage(CommunicationLogImpl.HttpDirection direction, String address, Integer port, InputStream httpMessage);
+    InputStream logMessage(Direction direction, TransportType transportType, String address, Integer port,
+                           InputStream httpMessage);
+
 
     /**
-     * Logs a UDP message based on an {@linkplain UdpMessage}.
-     *
-     * @param direction  direction used for filename.
-     * @param address    address information used for filename.
-     * @param port       port information used for filename.
-     * @param udpMessage the UDP message to log.
+     * Direction enumeration.
      */
-    void logUdpMessage(CommunicationLogImpl.UdpDirection direction, String address, Integer port, UdpMessage udpMessage);
+    enum Direction {
+        INBOUND("ibound"), OUTBOUND("obound");
+
+        private final String stringRepresentation;
+
+        Direction(String stringRepresentation) {
+            this.stringRepresentation = stringRepresentation;
+        }
+
+        @Override
+        public String toString() {
+            return stringRepresentation;
+        }
+    }
+
+    /**
+     * Defines the transport type.
+     */
+    enum TransportType {
+        UDP("udp"), HTTP("http");
+
+        private final String stringRepresentation;
+
+        TransportType(String stringRepresentation) {
+            this.stringRepresentation = stringRepresentation;
+        }
+
+        @Override
+        public String toString() {
+            return stringRepresentation;
+        }
+    }
 }

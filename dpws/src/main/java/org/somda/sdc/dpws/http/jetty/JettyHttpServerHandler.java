@@ -8,7 +8,6 @@ import org.eclipse.jetty.server.handler.AbstractHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.somda.sdc.dpws.CommunicationLog;
-import org.somda.sdc.dpws.CommunicationLogImpl;
 import org.somda.sdc.dpws.http.HttpHandler;
 import org.somda.sdc.dpws.soap.TransportInfo;
 import org.somda.sdc.dpws.soap.exception.MarshallingException;
@@ -45,13 +44,17 @@ public class JettyHttpServerHandler extends AbstractHandler {
 
         LOG.debug("Request to {}", request.getRequestURL());
 
-        InputStream input = communicationLog.logMessage(CommunicationLogImpl.HttpDirection.INBOUND_REQUEST,
+        InputStream input = communicationLog.logMessage(
+                CommunicationLog.Direction.INBOUND,
+                CommunicationLog.TransportType.HTTP,
                 request.getRemoteHost(), request.getRemotePort(), request.getInputStream());
 
         response.setStatus(HttpStatus.OK_200);
         response.setContentType(mediaType);
 
-        OutputStream output = communicationLog.logMessage(CommunicationLogImpl.HttpDirection.OUTBOUND_RESPONSE,
+        OutputStream output = communicationLog.logMessage(
+                CommunicationLog.Direction.OUTBOUND,
+                CommunicationLog.TransportType.HTTP,
                 request.getRemoteHost(), request.getRemotePort(), response.getOutputStream());
 
         try {

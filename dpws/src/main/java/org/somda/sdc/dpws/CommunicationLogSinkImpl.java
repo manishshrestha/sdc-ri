@@ -22,31 +22,31 @@ public class CommunicationLogSinkImpl implements CommunicationLogSink {
 
     private static final String SUFFIX = ".xml";
 
-    private EnumMap<BranchPath, File> dirMapping;
+    private EnumMap<CommunicationLog.TransportType, File> dirMapping;
 
     @Inject
     CommunicationLogSinkImpl(@Named(DpwsConfig.COMMUNICATION_LOG_SINK_DIRECTORY) File logDirectory) {
         
-        this.dirMapping = new EnumMap<BranchPath, File>(BranchPath.class);
+        this.dirMapping = new EnumMap<>(CommunicationLog.TransportType.class);
 
-        for (BranchPath subDir : BranchPath.values()) {
-            File subDirFile = new File(logDirectory, subDir.toString());
+        for (CommunicationLog.TransportType transportType : CommunicationLog.TransportType.values()) {
+            File subDirFile = new File(logDirectory, transportType.toString());
 
             if (!subDirFile.exists() && !subDirFile.mkdirs()) {
-                this.dirMapping.put(subDir, null);
+                this.dirMapping.put(transportType, null);
 
                 LOG.warn("Could not create the communication log directory '{}{}{}'.", logDirectory.getAbsolutePath(),
                         File.separator, subDirFile.getName());
             } else {
-                this.dirMapping.put(subDir, subDirFile);
+                this.dirMapping.put(transportType, subDirFile);
             }
         }
 
     }
 
-    public OutputStream createBranch(BranchPath path, String key) {
+    public OutputStream createBranch(CommunicationLog.TransportType transportType, String key) {
 
-        File dir = dirMapping.get(path);
+        File dir = dirMapping.get(transportType);
 
         if (dir != null) {
             try {
