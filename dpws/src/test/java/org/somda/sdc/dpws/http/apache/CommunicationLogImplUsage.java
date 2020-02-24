@@ -62,8 +62,8 @@ public class CommunicationLogImplUsage {
 
             CommunicationLogImpl communicationLogImpl = new CommunicationLogImpl(communicationLogSinkImplMock);
 
-            try (ClientTransportBinding clientTransportBinding = new ClientTransportBinding(communicationLogImpl,
-                    httpClient, URI.create("/xyz/xyz"), soapMarshallingMock, soapUtilMock);) {
+            try (ClientTransportBinding clientTransportBinding = new ClientTransportBinding(
+                    httpClient, URI.create("/xyz/xyz"), soapMarshallingMock, soapUtilMock, communicationLogImpl);) {
 
                 clientTransportBinding.onRequestResponse(soapMessageMock);
 

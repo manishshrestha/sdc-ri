@@ -49,8 +49,8 @@ public class CommunicationLogImplUsage {
 
             CommunicationLogImpl communicationLogImpl = new CommunicationLogImpl(communicationLogSinkImplMock);
 
-            JettyHttpServerHandler jettyHttpServerHandler = new JettyHttpServerHandler(communicationLogImpl, "_",
-                    httpHandlerMock);
+            JettyHttpServerHandler jettyHttpServerHandler = new JettyHttpServerHandler("_",
+                    httpHandlerMock, communicationLogImpl);
 
             doAnswer(i -> {
                 return serviceInputStream.read(i.getArgument(0), i.getArgument(1), i.getArgument(2));
