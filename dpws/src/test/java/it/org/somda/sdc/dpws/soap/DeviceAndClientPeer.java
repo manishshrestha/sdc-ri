@@ -59,7 +59,7 @@ public class DeviceAndClientPeer extends IntegrationTestPeer {
 
     private DpwsTestService1 service1;
 
-    private final Duration defaultMaxWait = Duration.ofSeconds(5000);
+    private final Duration defaultMaxWait = Duration.ofSeconds(10);
 
     private final SoapUtil soapUtil;
     private Thread notificationThread;
