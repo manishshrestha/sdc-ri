@@ -129,21 +129,19 @@ public class DefaultDpwsConfigModule extends AbstractConfigurationModule {
     }
 
     private void configureWsEventingConfig() {
+        // TODO: What does this do?
         bind(WsEventingConfig.NOTIFICATION_STALE_DURATION,
                 Duration.class,
                 Duration.ofSeconds(10));
         bind(WsEventingConfig.SOURCE_MAX_EXPIRES,
                 Duration.class,
                 Duration.ofHours(1));
-        bind(WsEventingConfig.SOURCE_MAX_RETRIES_ON_DELIVERY_FAILURE,
-                Integer.class,
-                3);
         bind(WsEventingConfig.SOURCE_SUBSCRIPTION_MANAGER_PATH,
                 String.class,
                 "SubscriptionManager");
         bind(WsEventingConfig.NOTIFICATION_QUEUE_CAPACITY,
                 Integer.class,
-                Integer.valueOf(500));
+                500);
     }
 
     private void configureSoapConfig() {

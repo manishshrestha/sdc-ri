@@ -16,24 +16,6 @@ public class ClientConfig {
     public static final String MAX_WAIT_FOR_RESOLVE_MATCHES = "Dpws.Client.MaxWaitForResolveMatches";
 
     /**
-     * Enables (true) or disables (false) watchdog for hosting services.
-     * <ul>
-     * <li>Data type: {@linkplain Boolean}
-     * <li>Use: optional
-     * </ul>
-     */
-    public static final String ENABLE_WATCHDOG = "Dpws.Client.EnableWatchdog";
-
-    /**
-     * Configures the period for watchdog jobs.
-     * <ul>
-     * <li>Data type: {@linkplain java.time.Duration}
-     * <li>Use: optional
-     * </ul>
-     */
-    public static final String WATCHDOG_PERIOD = "Dpws.Client.WatchdogPeriod";
-
-    /**
      * Configures auto-resolve for probes and hellos without XAddrs.
      * <ul>
      * <li>Data type: {@linkplain Boolean}

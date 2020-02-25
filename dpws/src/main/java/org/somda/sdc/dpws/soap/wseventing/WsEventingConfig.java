@@ -32,17 +32,6 @@ public class WsEventingConfig {
     public static final String SOURCE_SUBSCRIPTION_MANAGER_PATH = "WsEventing.Source.SubscriptionManagerPath";
 
     /**
-     * Provides the retry count for notification delivery failures.
-     * <p>
-     * After retry count is reached, the subscription is automatically ended.
-     * <ul>
-     * <li>Data type: {@linkplain Integer}
-     * <li>Use: optional
-     * </ul>
-     */
-    public static final String SOURCE_MAX_RETRIES_ON_DELIVERY_FAILURE = "WsEventing.Source.MaxRetriesOnDeliveryFailure";
-
-    /**
      * Duration after a notification in the outgoing notification queue of a WS-Eventing notification source is stale.
      * <ul>
      * <li>Data type: {@linkplain java.time.Duration}
