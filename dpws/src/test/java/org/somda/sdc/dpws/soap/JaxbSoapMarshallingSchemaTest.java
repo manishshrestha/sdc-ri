@@ -1,20 +1,21 @@
 package org.somda.sdc.dpws.soap;
 
-import com.google.inject.AbstractModule;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.somda.sdc.common.guice.AbstractConfigurationModule;
 import org.somda.sdc.dpws.DpwsTest;
 import org.somda.sdc.dpws.NetworkSinkMock;
 import org.somda.sdc.dpws.soap.factory.EnvelopeFactory;
 import org.somda.sdc.dpws.soap.factory.SoapFaultFactory;
 import org.somda.sdc.dpws.soap.model.Envelope;
+import org.somda.sdc.dpws.soap.wsaddressing.model.EndpointReferenceType;
 import org.somda.sdc.dpws.soap.wsdiscovery.WsDiscoveryConstants;
 import org.somda.sdc.dpws.soap.wsdiscovery.model.HelloType;
 import org.somda.sdc.dpws.soap.wsdiscovery.model.ObjectFactory;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
+import javax.xml.bind.MarshalException;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -24,30 +25,39 @@ import java.util.List;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class JaxbSoapMarshallingTest extends DpwsTest {
+public class JaxbSoapMarshallingSchemaTest extends DpwsTest {
     @Override
     @BeforeEach
     public void setUp() throws Exception {
         overrideBindings(new AbstractConfigurationModule() {
             @Override
             protected void defaultConfigure() {
-                // no need for validation as tests to test general marshalling
                 bind(SoapConfig.VALIDATE_SOAP_MESSAGES,
                         Boolean.class,
-                        false);
+                        true);
             }
         });
         super.setUp();
         getInjector().getInstance(SoapMarshalling.class).startAsync().awaitRunning();
     }
 
-    @SuppressWarnings("unchecked")
     @Test
-    public void marshallCompositeSoapMessage() throws JAXBException, IOException {
+    public void marshallValidMessage() throws Exception {
         ObjectFactory wsdFactory = getInjector().getInstance(ObjectFactory.class);
+        // create a hello message with EndpointReference present
         HelloType helloType = wsdFactory.createHelloType();
+
+        var wsaFactory = getInjector().getInstance(org.somda.sdc.dpws.soap.wsaddressing.model.ObjectFactory.class);
+        var expectedEpr = wsaFactory.createEndpointReferenceType();
+        var eprAddress = wsaFactory.createAttributedURIType();
+        eprAddress.setValue("http://test-xAddr1");
+        expectedEpr.setAddress(eprAddress);
+        helloType.setEndpointReference(expectedEpr);
+
         List<String> xAddrs = new ArrayList<>();
         xAddrs.add("http://test-xAddr1");
         xAddrs.add("http://test-xAddr2");
@@ -64,26 +74,33 @@ public class JaxbSoapMarshallingTest extends DpwsTest {
         try (OutputStream os = mockNetworkSink.createOutputStream()) {
             marshalling.marshal(expectedEnvelope, os);
         }
-
-        try (InputStream inputStreams = mockNetworkSink.getLatest()) {
-            Envelope actualEnvelope = marshalling.unmarshal(inputStreams);
-            assertEquals(1, actualEnvelope.getBody().getAny().size());
-
-            JAXBElement<HelloType> actualHello = (JAXBElement<HelloType>) actualEnvelope.getBody().getAny().get(0);
-            assertThat(expectedHello.getValue().getXAddrs(), is(actualHello.getValue().getXAddrs()));
-        }
     }
+
 
     @Test
-    public void marshalFault() throws Exception {
-        SoapFaultFactory sff = getInjector().getInstance(SoapFaultFactory.class);
-        SoapMessage faultMsg = sff.createReceiverFault("Test");
-        SoapMarshalling marshalling = getInjector().getInstance(SoapMarshalling.class);
+    public void marshallInvalidMessage() throws Exception {
+        ObjectFactory wsdFactory = getInjector().getInstance(ObjectFactory.class);
 
-        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        Envelope envelopeWithMappedHeaders = faultMsg.getEnvelopeWithMappedHeaders();
-        marshalling.marshal(envelopeWithMappedHeaders, bos);
-        System.out.println(bos.toString());
-        assertTrue(true);
+        // create a hello message with missing EndpointReference, which should trigger a marshalling error
+        HelloType helloType = wsdFactory.createHelloType();
+        List<String> xAddrs = new ArrayList<>();
+        xAddrs.add("http://test-xAddr1");
+        xAddrs.add("http://test-xAddr2");
+        helloType.setXAddrs(xAddrs);
+        JAXBElement<HelloType> expectedHello = wsdFactory.createHello(helloType);
+
+        EnvelopeFactory envelopeFactory = getInjector().getInstance(EnvelopeFactory.class);
+        Envelope expectedEnvelope = envelopeFactory.createEnvelope(WsDiscoveryConstants.WSA_ACTION_HELLO,
+                WsDiscoveryConstants.WSA_UDP_TO, expectedHello);
+
+        SoapMarshalling marshalling = getInjector().getInstance(SoapMarshalling.class);
+        NetworkSinkMock mockNetworkSink = getInjector().getInstance(NetworkSinkMock.class);
+
+        assertThrows(MarshalException.class, () -> {
+            try (OutputStream os = mockNetworkSink.createOutputStream()) {
+                marshalling.marshal(expectedEnvelope, os);
+            }
+        });
     }
+    
 }
