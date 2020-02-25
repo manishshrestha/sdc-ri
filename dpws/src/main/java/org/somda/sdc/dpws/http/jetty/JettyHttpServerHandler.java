@@ -80,7 +80,6 @@ public class JettyHttpServerHandler extends AbstractHandler {
                 response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR_500);
                 output.write(e.getMessage().getBytes());
                 output.flush();
-                output.close();
             } finally {
                 baseRequest.setHandled(true);
             }
