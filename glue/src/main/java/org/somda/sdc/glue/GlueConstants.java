@@ -69,7 +69,7 @@ public class GlueConstants {
      * SegmentNz and Segment regex definitions.
      */
     private static final String ALLOWED_CHARS = "[a-zA-Z0-9-._~!$&'()*+,;=:@]";
-    private static final String ALLOWED_CHARS_WITH_PERCENT_ENCODING = "(?:(?:%[a-fA-f0-9]{2})+|(?:" + ALLOWED_CHARS + ")+)";
+    private static final String ALLOWED_CHARS_WITH_PERCENT_ENCODING = "(?:(?:%[a-fA-F0-9]{2})+|(?:" + ALLOWED_CHARS + ")+)";
     public static final String SEGMENT_NZ_REGEX = ALLOWED_CHARS_WITH_PERCENT_ENCODING + "+";
     public static final String SEGMENT_REGEX = ALLOWED_CHARS_WITH_PERCENT_ENCODING + "*";
 }
