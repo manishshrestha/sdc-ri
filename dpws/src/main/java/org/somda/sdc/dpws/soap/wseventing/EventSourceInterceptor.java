@@ -40,6 +40,7 @@ import java.util.*;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 /**
  * Interceptor that handles an event source's incoming subscription requests and facilitates sending notifications.
@@ -417,6 +418,11 @@ public class EventSourceInterceptor extends AbstractIdleService implements Event
         Optional.ofNullable(wsaTo).ifPresent(to ->
                 msg.getWsAddressingHeader().setTo(wsaUtil.createAttributedURIType(to)));
         return msg;
+    }
+
+    public Map<String, SubscriptionManager> getActiveSubscriptions() {
+        return subscriptionRegistry.getSubscriptions().entrySet()
+                .stream().collect(Collectors.toMap(Map.Entry::getKey, e -> (SubscriptionManager) e.getValue()));
     }
 
     @Override

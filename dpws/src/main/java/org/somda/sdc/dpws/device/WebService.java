@@ -7,8 +7,10 @@ import org.slf4j.LoggerFactory;
 import org.somda.sdc.dpws.service.HostedService;
 import org.somda.sdc.dpws.soap.interception.Interceptor;
 import org.somda.sdc.dpws.soap.wseventing.EventSource;
+import org.somda.sdc.dpws.soap.wseventing.SubscriptionManager;
 import org.somda.sdc.dpws.soap.wseventing.model.WsEventingStatus;
 
+import java.util.Map;
 import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
 
@@ -90,6 +92,13 @@ public abstract class WebService extends AbstractIdleService implements EventSou
             public void subscriptionEndToAll(WsEventingStatus status) {
                 LOG.info("No handler for subscriptionEndToAll configured yet. " +
                         "Skip sending subscriptionEndToAll with status: {}", status.getUri());
+            }
+
+            @Override
+            public Map<String, SubscriptionManager> getActiveSubscriptions() {
+                LOG.info("No handler for getActiveSubscriptions configured yet. " +
+                        "Returning an empty Map instead.");
+                return Map.of();
             }
         };
     }

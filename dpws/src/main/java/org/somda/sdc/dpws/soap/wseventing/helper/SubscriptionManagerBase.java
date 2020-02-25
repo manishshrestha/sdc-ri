@@ -72,7 +72,6 @@ public class SubscriptionManagerBase implements SubscriptionManager {
         return subscriptionManagerEpr;
     }
 
-    @Override
     public void renew(Duration expires) {
         try (AutoLock ignored = AutoLock.lock(expiresLock)){
             this.expires = expires;
