@@ -53,8 +53,10 @@ Example: `MdibVersion(sequenceId=<VALUE>;instanceId=<VALUE>;version=<VALUE>)` fo
 
 SDCri utilizes Google Guice for dependency injection.
 
-- In general, every class that exhibits logic **shall** be injected by using Google Guise.
+- In general, every class that exhibits logic **shall** be injected by using Google Guice.
 - Simple data containers or local helper classes **may** be used without dependency injection.
+- Assisted parameters **shall** appear before any other parameters.
+- Field injection **shall** not be used.
 
 ### Class bindings with default modules
 

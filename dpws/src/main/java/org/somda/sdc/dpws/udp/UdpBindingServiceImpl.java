@@ -6,12 +6,12 @@ import com.google.inject.assistedinject.AssistedInject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.somda.sdc.dpws.CommunicationLog;
-import org.somda.sdc.dpws.CommunicationLogImpl;
 import org.somda.sdc.dpws.DpwsConstants;
 import org.somda.sdc.dpws.network.NetworkInterfaceUtil;
 import org.somda.sdc.dpws.soap.exception.TransportException;
 
 import javax.annotation.Nullable;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.net.*;
 import java.util.Random;
@@ -98,12 +98,9 @@ public class UdpBindingServiceImpl extends AbstractIdleService implements UdpBin
                         continue;
                     }
 
-                    UdpMessage message = new UdpMessage(
-                            packet.getData(),
-                            packet.getLength(),
-                            packet.getAddress().getHostAddress(),
-                            packet.getPort());
-                    communicationLog.logUdpMessage(CommunicationLogImpl.UdpDirection.INBOUND, packet.getAddress().getHostAddress(), packet.getPort(), message);
+                    UdpMessage message = new UdpMessage(packet.getData(), packet.getLength(),
+                            packet.getAddress().getHostAddress(), packet.getPort());
+                    this.logUdpPacket(CommunicationLog.Direction.INBOUND, packet);
                     receiver.receive(message);
                 }
             });
@@ -119,12 +116,9 @@ public class UdpBindingServiceImpl extends AbstractIdleService implements UdpBin
                         continue;
                     }
 
-                    UdpMessage message = new UdpMessage(
-                            packet.getData(),
-                            packet.getLength(),
-                            packet.getAddress().getHostAddress(),
-                            packet.getPort());
-                    communicationLog.logUdpMessage(CommunicationLogImpl.UdpDirection.INBOUND, packet.getAddress().getHostAddress(), packet.getPort(), message);
+                    UdpMessage message = new UdpMessage(packet.getData(), packet.getLength(),
+                            packet.getAddress().getHostAddress(), packet.getPort());
+                    this.logUdpPacket(CommunicationLog.Direction.INBOUND, packet);
                     receiver.receive(message);
                 }
             });
@@ -173,18 +167,18 @@ public class UdpBindingServiceImpl extends AbstractIdleService implements UdpBin
         DatagramPacket packet = new DatagramPacket(message.getData(), message.getLength());
 
         if (message.hasTransportData()) {
-            communicationLog.logUdpMessage(CommunicationLogImpl.UdpDirection.OUTBOUND, message.getHost(), message.getPort(), message);
             packet.setAddress(InetAddress.getByName(message.getHost()));
             packet.setPort(message.getPort());
+            this.logUdpPacket(CommunicationLog.Direction.OUTBOUND, packet);
         } else {
             if (multicastGroup == null) {
                 throw new TransportException(
                         String.format("No transport data in UDP message, which is required as no multicast group is available. Message: %s",
                                 message.toString()));
             }
-            communicationLog.logUdpMessage(CommunicationLogImpl.UdpDirection.OUTBOUND, multicastGroup.getHostAddress(), socketPort, message);
             packet.setAddress(multicastGroup);
             packet.setPort(socketPort);
+            this.logUdpPacket(CommunicationLog.Direction.OUTBOUND, packet);
         }
 
         sendMessageWithRetry(packet);
@@ -238,5 +232,21 @@ public class UdpBindingServiceImpl extends AbstractIdleService implements UdpBin
                 incomingSocket.getLocalPort(),
                 outgoingSocket.getLocalPort(),
                 multicast);
+    }
+
+    private void logUdpPacket(CommunicationLog.Direction direction, DatagramPacket packet) {
+
+        try (ByteArrayInputStream messageData = new ByteArrayInputStream(packet.getData())) {
+            communicationLog.logMessage(
+                    direction,
+                    CommunicationLog.TransportType.UDP,
+                    packet.getAddress().getHostAddress(),
+                    packet.getPort(),
+                    messageData
+            );
+        } catch (IOException e) {
+            LOG.warn("Could not log udp message though the communication log", e);
+        }
+
     }
 }

@@ -54,7 +54,7 @@ public class DefaultDpwsConfigModule extends AbstractConfigurationModule {
                 Integer.class,
                 DpwsConstants.MAX_ENVELOPE_SIZE);
 
-        bind(DpwsConfig.COMMUNICATION_LOG_DIRECTORY,
+        bind(DpwsConfig.COMMUNICATION_LOG_SINK_DIRECTORY,
                 File.class,
                 new File("commlog"));
 
