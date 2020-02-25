@@ -40,6 +40,7 @@ import org.somda.sdc.dpws.soap.wsaddressing.model.EndpointReferenceType;
 import org.somda.sdc.dpws.soap.wsdiscovery.WsDiscoveryTargetService;
 import org.somda.sdc.dpws.soap.wsdiscovery.factory.WsDiscoveryTargetServiceFactory;
 import org.somda.sdc.dpws.soap.wseventing.EventSource;
+import org.somda.sdc.dpws.soap.wseventing.SubscriptionManager;
 import org.somda.sdc.dpws.udp.UdpMessageQueueService;
 
 import javax.annotation.Nullable;
@@ -232,6 +233,14 @@ public class DeviceImpl extends AbstractIdleService implements Device, Service, 
         httpServerRegistry.stopAsync().awaitTerminated();
         discoveryMessageQueue.unregisterUdpMessageQueueObserver(udpMsgProcessor);
         LOG.info("Device {} shut down", hostingService);
+    }
+
+    @Override
+    public Map<String, SubscriptionManager> getActiveSubscriptions() {
+        // merge all subscriptions
+        return eventSources.stream()
+                .flatMap(source -> source.getActiveSubscriptions().entrySet().stream())
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 
     @Override

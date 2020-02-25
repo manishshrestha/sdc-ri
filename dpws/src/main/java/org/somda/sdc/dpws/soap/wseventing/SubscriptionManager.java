@@ -21,13 +21,4 @@ public interface SubscriptionManager {
     Duration getExpires();
 
     EndpointReferenceType getSubscriptionManagerEpr();
-
-    /**
-     * Resets the expires duration.
-     * <p>
-     * This will also affect {@link #getExpiresTimeout()}.
-     *
-     * @param expires the duration to reset.
-     */
-    void renew(Duration expires);
 }

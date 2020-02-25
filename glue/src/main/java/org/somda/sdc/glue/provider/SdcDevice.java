@@ -11,6 +11,7 @@ import org.somda.sdc.dpws.device.factory.DeviceFactory;
 import org.somda.sdc.dpws.service.factory.HostedServiceFactory;
 import org.somda.sdc.dpws.soap.exception.MarshallingException;
 import org.somda.sdc.dpws.soap.exception.TransportException;
+import org.somda.sdc.dpws.soap.wseventing.SubscriptionManager;
 import org.somda.sdc.dpws.soap.wseventing.model.WsEventingStatus;
 import org.somda.sdc.glue.GlueConstants;
 import org.somda.sdc.glue.common.WsdlConstants;
@@ -28,6 +29,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Map;
 
 /**
  * Adds SDC services to a DPWS device and manages incoming set service requests.
@@ -95,6 +97,11 @@ public class SdcDevice extends AbstractIdleService implements Device, EventSourc
     @Override
     public URI getEprAddress() {
         return dpwsDevice.getEprAddress();
+    }
+
+    @Override
+    public Map<String, SubscriptionManager> getActiveSubscriptions() {
+        return dpwsDevice.getActiveSubscriptions();
     }
 
     /**
