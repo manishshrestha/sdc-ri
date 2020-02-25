@@ -17,12 +17,12 @@ public interface CommunicationLog {
      * @param transportType the transport protocol used i.e. udp, http, etc.
      * @param address       address information used for filename.
      * @param port          port information used for filename.
-     * @param httpMessage   the output stream to branch to the log file.
+     * @param message   the output stream to branch to the log file.
      * @return an output stream, that streams to the original output stream and optionally streams to another stream
  * 				similarly to the tee Unix command. The other stream can be a log file stream.
      */
     OutputStream logMessage(Direction direction, TransportType transportType, String address, Integer port,
-                            OutputStream httpMessage);
+                            OutputStream message);
 
     /**
      * Logs an HTTP message based on an {@linkplain InputStream}.
@@ -33,13 +33,13 @@ public interface CommunicationLog {
      * @param transportType the transport protocol used i.e. udp, http, etc.
      * @param address       address information used for filename.
      * @param port          port information used for filename.
-     * @param httpMessage   the message to log as input stream.
+     * @param message   the message to log as input stream.
      *                      As the input stream might be unusable after reading, another one is created to be used for
      *                      further processing; see return value.
-     * @return a new input stream that mirrors the data from the httpMessage input data.
+     * @return a new input stream that mirrors the data from the message input data.
      */
     InputStream logMessage(Direction direction, TransportType transportType, String address, Integer port,
-                           InputStream httpMessage);
+                           InputStream message);
 
 
     /**

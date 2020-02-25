@@ -239,12 +239,13 @@ public class UdpBindingServiceImpl extends AbstractIdleService implements UdpBin
         try (ByteArrayInputStream messageData = new ByteArrayInputStream(packet.getData())) {
             communicationLog.logMessage(
                     direction,
-                    CommunicationLog.TransportType.UDP, packet.getAddress().getHostAddress(),
+                    CommunicationLog.TransportType.UDP,
+                    packet.getAddress().getHostAddress(),
                     packet.getPort(),
                     messageData
             );
         } catch (IOException e) {
-            LOG.warn("Could not log udp message though the communication log.");
+            LOG.warn("Could not log udp message though the communication log", e);
         }
 
     }

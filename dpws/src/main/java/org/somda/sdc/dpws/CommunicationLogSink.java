@@ -12,10 +12,10 @@ public interface CommunicationLogSink {
     /**
      * Creates a branch based on the given key and path.
      * 
-     * @param path path to save the key to branch mapping in
-     * @param key  key that shall map to the output branch
+     * @param path path to save the key to branch mapping in.
+     * @param key  key that shall map to the output branch.
      * @return an {@linkplain OutputStream}, that represents the branch to write to.
      */
-    OutputStream createBranch(CommunicationLog.TransportType path, String key);
+    OutputStream getTargetStream(CommunicationLog.TransportType path, String key);
     
 }

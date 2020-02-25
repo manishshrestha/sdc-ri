@@ -59,30 +59,31 @@ public class JettyHttpServerHandler extends AbstractHandler {
         response.setStatus(HttpStatus.OK_200);
         response.setContentType(mediaType);
 
-        OutputStream output = communicationLog.logMessage(
+        try (OutputStream output = communicationLog.logMessage(
                 CommunicationLog.Direction.OUTBOUND,
                 CommunicationLog.TransportType.HTTP,
-                request.getRemoteHost(), request.getRemotePort(), response.getOutputStream());
+                request.getRemoteHost(), request.getRemotePort(), response.getOutputStream())) {
 
-        try {
+            try {
 
-            handler.process(input, output,
-                    new TransportInfo(
-                            request.getScheme(),
-                            request.getLocalAddr(),
-                            request.getLocalPort(),
-                            request.getRemoteAddr(),
-                            request.getRemotePort(),
-                            getX509Certificates(request)));
+                handler.process(input, output,
+                        new TransportInfo(
+                                request.getScheme(),
+                                request.getLocalAddr(),
+                                request.getLocalPort(),
+                                request.getRemoteAddr(),
+                                request.getRemotePort(),
+                                getX509Certificates(request)));
 
-        } catch (TransportException | MarshallingException | ClassCastException e) {
-            LOG.error("", e);
-            response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR_500);
-            output.write(e.getMessage().getBytes());
-            output.flush();
-            output.close();
-        } finally {
-            baseRequest.setHandled(true);
+            } catch (TransportException | MarshallingException | ClassCastException e) {
+                LOG.error("", e);
+                response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR_500);
+                output.write(e.getMessage().getBytes());
+                output.flush();
+                output.close();
+            } finally {
+                baseRequest.setHandled(true);
+            }
         }
     }
 

@@ -35,7 +35,7 @@ public class CommunicationLogSinkImpl implements CommunicationLogSink {
             if (!subDirFile.exists() && !subDirFile.mkdirs()) {
                 this.dirMapping.put(transportType, null);
 
-                LOG.warn("Could not create the communication log directory '{}{}{}'.", logDirectory.getAbsolutePath(),
+                LOG.warn("Could not create the communication log directory '{}{}{}'", logDirectory.getAbsolutePath(),
                         File.separator, subDirFile.getName());
             } else {
                 this.dirMapping.put(transportType, subDirFile);
@@ -44,7 +44,7 @@ public class CommunicationLogSinkImpl implements CommunicationLogSink {
 
     }
 
-    public OutputStream createBranch(CommunicationLog.TransportType transportType, String key) {
+    public OutputStream getTargetStream(CommunicationLog.TransportType transportType, String key) {
 
         File dir = dirMapping.get(transportType);
 
@@ -53,9 +53,11 @@ public class CommunicationLogSinkImpl implements CommunicationLogSink {
                 return new FileOutputStream(dir.getAbsolutePath() + File.separator + key + SUFFIX);
 
             } catch (FileNotFoundException e) {
-                LOG.warn("Could not open communication log file.", e);
+                LOG.warn("Could not open communication log file", e);
             }
         }
+
+        LOG.warn("The directory for the given transport type was not configured.");
 
         return OutputStream.nullOutputStream();
 

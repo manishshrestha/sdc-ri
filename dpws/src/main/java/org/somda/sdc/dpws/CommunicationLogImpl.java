@@ -28,20 +28,20 @@ public class CommunicationLogImpl implements CommunicationLog {
 
     @Override
     public TeeOutputStream logMessage(Direction direction, TransportType transportType, String address, Integer port,
-                                      OutputStream httpMessage) {
+                                      OutputStream message) {
 
-        OutputStream logFile = this.logSink.createBranch(transportType,
+        OutputStream logFile = this.logSink.getTargetStream(transportType,
                 makeName(direction.toString(), address, port));
 
-        return new TeeOutputStream(httpMessage, logFile);
+        return new TeeOutputStream(message, logFile);
 
     }
 
     @Override
     public InputStream logMessage(Direction direction, TransportType transportType,
-                                  String address, Integer port, InputStream httpMessage) {
+                                  String address, Integer port, InputStream message) {
         return writeLogFile(transportType, makeName(direction.toString(), address, port),
-                httpMessage);
+                message);
     }
 
     private InputStream writeLogFile(TransportType transportType, String filename,
@@ -50,7 +50,7 @@ public class CommunicationLogImpl implements CommunicationLog {
         try {
             final byte[] bytes = ByteStreams.toByteArray(inputStream);
 
-            new ByteArrayInputStream(bytes).transferTo(this.logSink.createBranch(transportType, filename));
+            new ByteArrayInputStream(bytes).transferTo(this.logSink.getTargetStream(transportType, filename));
 
             return new ByteArrayInputStream(bytes);
 

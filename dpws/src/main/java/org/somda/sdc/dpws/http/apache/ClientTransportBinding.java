@@ -47,7 +47,7 @@ public class ClientTransportBinding implements TransportBinding {
                            @Assisted SoapMarshalling marshalling,
                            @Assisted SoapUtil soapUtil,
                            CommunicationLog communicationLog) {
-        LOG.debug("Creating HttpClientTransportBinding for {}", clientUri);
+        LOG.debug("Creating ClientTransportBinding for {}", clientUri);
         this.client = client;
         this.clientUri = clientUri;
         this.marshalling = marshalling;
@@ -71,13 +71,13 @@ public class ClientTransportBinding implements TransportBinding {
     public SoapMessage onRequestResponse(SoapMessage request) throws TransportBindingException, SoapFaultException {
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
 
-        OutputStream outputStream = communicationLog.logMessage(CommunicationLog.Direction.OUTBOUND,
+        try (OutputStream outputStream = communicationLog.logMessage(CommunicationLog.Direction.OUTBOUND,
                 CommunicationLog.TransportType.HTTP,
-                this.clientUri.getHost(), this.clientUri.getPort(), byteArrayOutputStream);
+                this.clientUri.getHost(), this.clientUri.getPort(), byteArrayOutputStream);) {
 
-        try {
             marshalling.marshal(request.getEnvelopeWithMappedHeaders(), outputStream);
-        } catch (JAXBException e) {
+
+        } catch (IOException | JAXBException e) {
             LOG.warn("Marshalling of a message failed: {}", e.getMessage());
             LOG.trace("Marshalling of a message failed", e);
             throw new TransportBindingException(

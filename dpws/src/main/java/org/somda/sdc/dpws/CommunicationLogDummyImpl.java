@@ -9,12 +9,12 @@ import java.io.OutputStream;
 public class CommunicationLogDummyImpl implements CommunicationLog {
     
     @Override
-    public OutputStream logMessage(Direction direction, TransportType transportType, String address, Integer port, OutputStream httpMessage) {
-        return httpMessage;
+    public OutputStream logMessage(Direction direction, TransportType transportType, String address, Integer port, OutputStream message) {
+        return message;
     } 
 
     @Override
-    public InputStream logMessage(Direction direction, TransportType transportType, String address, Integer port, InputStream httpMessage) {
-        return httpMessage;
+    public InputStream logMessage(Direction direction, TransportType transportType, String address, Integer port, InputStream message) {
+        return message;
     }
 }

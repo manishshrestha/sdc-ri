@@ -5,14 +5,11 @@ import org.junit.jupiter.api.Test;
 import java.io.*;
 import java.util.UUID;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
-/**
- * Tests {@linkplain CommunicationLogImpl}.
- */
+
 public class CommunicationLogImplTest extends DpwsTest {
 
     @Test
@@ -26,7 +23,7 @@ public class CommunicationLogImplTest extends DpwsTest {
              ByteArrayInputStream inputTestInputStream = new ByteArrayInputStream(content);
              ByteArrayOutputStream outputTestOutputStream = new ByteArrayOutputStream();) {
 
-            when(communicationLogSinkImplMock.createBranch(eq(CommunicationLog.TransportType.HTTP), anyString()))
+            when(communicationLogSinkImplMock.getTargetStream(eq(CommunicationLog.TransportType.HTTP), anyString()))
                     .thenReturn(mockOutputStream);
 
             CommunicationLogImpl communicationLogImpl = new CommunicationLogImpl(communicationLogSinkImplMock);
@@ -35,20 +32,21 @@ public class CommunicationLogImplTest extends DpwsTest {
                     .logMessage(CommunicationLog.Direction.OUTBOUND, CommunicationLog.TransportType.HTTP,
                             "_", 0, inputTestInputStream);
 
-            assertThat(resultingInputStream.readAllBytes(), is(content));
-            assertThat(mockOutputStream.toByteArray(), is(content));
+            assertArrayEquals(resultingInputStream.readAllBytes(), content);
+            assertArrayEquals(mockOutputStream.toByteArray(), content);
 
             mockOutputStream.reset();
 
-            OutputStream resultingOutputStream = communicationLogImpl.logMessage(
+            try(OutputStream resultingOutputStream = communicationLogImpl.logMessage(
                     CommunicationLog.Direction.OUTBOUND, CommunicationLog.TransportType.HTTP,
-                    "_", 0, outputTestOutputStream);
+                    "_", 0, outputTestOutputStream);) {
 
-            resultingOutputStream.write(content);
-            resultingOutputStream.flush();
+                resultingOutputStream.write(content);
+                resultingOutputStream.flush();
+            }
 
-            assertThat(outputTestOutputStream.toByteArray(), is(content));
-            assertThat(mockOutputStream.toByteArray(), is(content));
+            assertArrayEquals(outputTestOutputStream.toByteArray(), content);
+            assertArrayEquals(mockOutputStream.toByteArray(), content);
         }
     }
 
@@ -65,7 +63,7 @@ public class CommunicationLogImplTest extends DpwsTest {
             for (CommunicationLog.Direction dir : CommunicationLog.Direction.values()) {
                 reset(communicationLogSinkImplMock);
 
-                when(communicationLogSinkImplMock.createBranch(any(CommunicationLog.TransportType.class), anyString()))
+                when(communicationLogSinkImplMock.getTargetStream(any(CommunicationLog.TransportType.class), anyString()))
                         .thenReturn(OutputStream.nullOutputStream());
 
                 communicationLogImpl.logMessage(dir, CommunicationLog.TransportType.HTTP, "_", 0,
@@ -73,7 +71,7 @@ public class CommunicationLogImplTest extends DpwsTest {
                 communicationLogImpl.logMessage(dir, CommunicationLog.TransportType.HTTP, "_", 0,
                         OutputStream.nullOutputStream());
                 verify(communicationLogSinkImplMock, times(2)).
-                        createBranch(eq(CommunicationLog.TransportType.HTTP), anyString());
+                        getTargetStream(eq(CommunicationLog.TransportType.HTTP), anyString());
             }
         }
     }
