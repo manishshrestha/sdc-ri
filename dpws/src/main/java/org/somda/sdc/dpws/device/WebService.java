@@ -96,7 +96,9 @@ public abstract class WebService extends AbstractIdleService implements EventSou
 
             @Override
             public Map<String, SubscriptionManager> getActiveSubscriptions() {
-                return null;
+                LOG.info("No handler for getActiveSubscriptions configured yet. " +
+                        "Returning an empty Map instead.");
+                return Map.of();
             }
         };
     }
