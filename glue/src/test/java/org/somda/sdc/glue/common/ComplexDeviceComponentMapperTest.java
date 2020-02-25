@@ -60,6 +60,42 @@ class ComplexDeviceComponentMapperTest {
             assertTrue(ComplexDeviceComponentMapper.fromUri(URI.create("sdc.cdc.type:/foo/bar")).isEmpty());
         }
         {
+            assertTrue(ComplexDeviceComponentMapper.fromUri(URI.create("sdc.cdc.type:/foo/bar/")).isEmpty());
+        }
+        {
+            assertTrue(ComplexDeviceComponentMapper.fromUri(URI.create("sdc.cdc.type:///")).isEmpty());
+        }
+        {
+            assertTrue(ComplexDeviceComponentMapper.fromUri(URI.create("sdc.cdc.type://@@/1")).isEmpty());
+        }
+        {
+            assertTrue(ComplexDeviceComponentMapper.fromUri(URI.create("sdc.cdc.type://@host@/1")).isEmpty());
+        }
+        {
+            assertTrue(ComplexDeviceComponentMapper.fromUri(URI.create("sdc.cdc.type://@host:NoPort/1")).isEmpty());
+        }
+        {
+            assertTrue(ComplexDeviceComponentMapper.fromUri(URI.create("sdc.cdc.type://@@host/1")).isEmpty());
+        }
+        {
+            assertTrue(ComplexDeviceComponentMapper.fromUri(URI.create("sdc.cdc.type:/c///1")).isEmpty());
+        }
+        {
+            assertTrue(ComplexDeviceComponentMapper.fromUri(URI.create("sdc.cdc.type://:@:1/2")).isEmpty());
+        }
+        {
+            Optional<CodedValue> actualCodedValue = ComplexDeviceComponentMapper.fromUri(URI.create("sdc.cdc.type://@host:/1"));
+            assertTrue(actualCodedValue.isPresent());
+            CodedValue expectedCodedValue = createCodedValue(null, "@host:", "1");
+            compare(expectedCodedValue, actualCodedValue.get());
+        }
+        {
+            Optional<CodedValue> actualCodedValue = ComplexDeviceComponentMapper.fromUri(URI.create("sdc.cdc.type://:@host/1"));
+            assertTrue(actualCodedValue.isPresent());
+            CodedValue expectedCodedValue = createCodedValue(null, ":@host", "1");
+            compare(expectedCodedValue, actualCodedValue.get());
+        }
+        {
             Optional<CodedValue> actualCodedValue = ComplexDeviceComponentMapper.fromUri(URI.create("sdc.cdc.type:/foo/bar/fii"));
             assertTrue(actualCodedValue.isPresent());
             CodedValue expectedCodedValue = createCodedValue("foo", "bar", "fii");
@@ -72,9 +108,9 @@ class ComplexDeviceComponentMapperTest {
             compare(expectedCodedValue, actualCodedValue.get());
         }
         {
-            Optional<CodedValue> actualCodedValue = ComplexDeviceComponentMapper.fromUri(URI.create("sdc.cdc.type:///"));
+            Optional<CodedValue> actualCodedValue = ComplexDeviceComponentMapper.fromUri(URI.create("sdc.cdc.type:///1"));
             assertTrue(actualCodedValue.isPresent());
-            CodedValue expectedCodedValue = createCodedValue(null, null, null);
+            CodedValue expectedCodedValue = createCodedValue(null, null, "1");
             compare(expectedCodedValue, actualCodedValue.get());
         }
     }

@@ -1,6 +1,7 @@
 package org.somda.sdc.glue.common;
 
 import org.somda.sdc.biceps.model.participant.*;
+import org.somda.sdc.glue.GlueConstants;
 import org.somda.sdc.glue.common.helper.UrlUtf8;
 
 import java.net.URI;
@@ -18,12 +19,12 @@ public class ContextIdentificationMapper {
     private static final String NULL_FLAVOR_ROOT = "biceps.uri.unk";
     private static final String SCHEME_PREFIX = "sdc.ctxt.";
 
-    private static final String ALLOWED_CHARS = "[a-zA-Z0-9-._~!$&'()*+,;=:@]";
-    private static final String segmentRegex = "(?:(?:%[a-fA-f0-9]{2})+|(?:" + ALLOWED_CHARS + ")+)";
-
     private static final Pattern PATTERN = Pattern
-            .compile("(?<contextsource>sdc.ctxt.(loc|pat|ens|wfl|opr|mns)?):/(?<root>" + segmentRegex
-                    + "+)/(?<extension>" + segmentRegex + "*$)");
+            .compile(
+                    "(?i:(?<contextsource>sdc.ctxt.(loc|pat|ens|wfl|opr|mns))):/" +
+                            "(?<root>" + GlueConstants.SEGMENT_NZ_REGEX + ")/" +
+                            "(?<extension>" + GlueConstants.SEGMENT_REGEX + "$)"
+            );
 
     /**
      * Converts from an instance identifier to an URI.
