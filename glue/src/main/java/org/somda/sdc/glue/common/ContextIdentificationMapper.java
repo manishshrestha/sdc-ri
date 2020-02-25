@@ -23,7 +23,7 @@ public class ContextIdentificationMapper {
             .compile(
                     "(?i:<contextsource>sdc.ctxt.(loc|pat|ens|wfl|opr|mns)?):/" +
                             "(?<root>" + GlueConstants.SEGMENT_NZ_REGEX + ")/" +
-                            "(?<extension>" + GlueConstants.SEGMENT_REGEX + ")"
+                            "(?<extension>" + GlueConstants.SEGMENT_REGEX + "$)"
             );
 
     /**
