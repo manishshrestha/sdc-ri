@@ -26,9 +26,9 @@ public interface EventSource extends Interceptor, Service {
     void subscriptionEndToAll(WsEventingStatus status);
 
     /**
-     * Returns all active subscription ids with their {@linkplain SubscriptionManager}
+     * Returns all active subscription ids with their {@linkplain SubscriptionManager}.
      *
-     * @return Map of subscription ids and {@linkplain SubscriptionManager}s
+     * @return Map of subscription ids and {@linkplain SubscriptionManager}s.
      */
     Map<String, SubscriptionManager> getActiveSubscriptions();
 

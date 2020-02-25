@@ -7,7 +7,7 @@ import java.time.Duration;
  */
 public interface SinkSubscriptionManager extends SubscriptionManager {
     /**
-     * Renews the subscription
+     * Resets the expires duration.
      * <p>
      * This will also affect {@link #getExpiresTimeout()}.
      *
