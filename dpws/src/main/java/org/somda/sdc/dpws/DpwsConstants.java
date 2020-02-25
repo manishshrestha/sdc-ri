@@ -37,6 +37,10 @@ public class DpwsConstants {
     /**
      * Defines the maximum size for envelopes transmitted over TCP.
      * <p>
+     * The maximum envelope size is currently not verified, i.e., SOAP messages of any size are neither
+     * detected nor rejected.
+     * CAVEAT: lower layer protocol implementations may have some restrictions that are out of scope for this constant.
+     * <p>
      * Unit: octets.
      */
     public static final int MAX_ENVELOPE_SIZE = 32_767;
