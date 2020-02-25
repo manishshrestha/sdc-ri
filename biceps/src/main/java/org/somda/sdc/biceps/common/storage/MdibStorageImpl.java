@@ -14,7 +14,6 @@ import org.somda.sdc.biceps.model.participant.*;
 import javax.annotation.Nullable;
 import java.math.BigInteger;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 /**
@@ -191,6 +190,15 @@ public class MdibStorageImpl implements MdibStorage {
         final List<MdibEntity> updatedEntities = new ArrayList<>();
         final List<MdibEntity> deletedEntities = new ArrayList<>();
         for (MdibDescriptionModification modification : descriptionModifications.getModifications()) {
+            var notAssociatedContextStates = new ArrayList<AbstractState>();
+            for (AbstractState state : modification.getStates()) {
+                if (state instanceof AbstractContextState &&
+                        ContextAssociation.NO.equals(((AbstractContextState) state).getContextAssociation())) {
+                    notAssociatedContextStates.add(state);
+                }
+            }
+            modification.getStates().removeAll(notAssociatedContextStates);
+
             switch (modification.getModificationType()) {
                 case INSERT:
                     insertEntity(modification, insertedEntities);
@@ -295,9 +303,24 @@ public class MdibStorageImpl implements MdibStorage {
             if (LOG.isDebugEnabled()) {
                 LOG.debug("[{}] Update state: {}", mdibVersion.getSequenceId(), modification);
             }
+
+
             modifiedStates.add(modification);
+
             final MdibEntity mdibEntity = entities.get(modification.getDescriptorHandle());
             if (mdibEntity == null) {
+                // Do not store context states when not associated
+                if (modification instanceof AbstractContextState) {
+                    var contextState = (AbstractContextState) modification;
+                    if (ContextAssociation.NO.equals(contextState.getContextAssociation())) {
+                        LOG.debug("Found update on context state {} with association=not-associated; do not store in MDIB",
+                                contextState.getHandle());
+                        continue;
+                    }
+                }
+
+                // this will insert states even if no descriptor/MDIB entity exists
+                // to be used in remote MDIBS in case
                 if (descriptionModifications == null) {
                     descriptionModifications = MdibDescriptionModifications.create();
                 }
@@ -306,7 +329,7 @@ public class MdibStorageImpl implements MdibStorage {
                     descr = typeValidator.resolveDescriptorType(modification.getClass())
                             .getConstructor().newInstance();
                 } catch (Exception e) {
-                    LOG.warn(String.format("Ignore modification. Reason: could not instantiate descriptor type for handle %s",
+                    LOG.warn(String.format("Ignore modification. Reason: could not instantiate descriptor type for handle %s.",
                             modification.getDescriptorHandle()), e);
                     continue;
                 }
@@ -322,21 +345,30 @@ public class MdibStorageImpl implements MdibStorage {
                             final List<AbstractMultiState> newStates = new ArrayList<>();
                             typeValidator.toMultiState(modification).ifPresent(modifiedMultiState ->
                             {
-                                AtomicBoolean found = new AtomicBoolean(false);
-                                states.forEach(multiState -> {
+                                boolean found = false;
+                                for (AbstractMultiState multiState : states) {
+                                    if (multiState instanceof AbstractContextState) {
+                                        if (ContextAssociation.NO.equals(((AbstractContextState) multiState).getContextAssociation())) {
+                                            LOG.debug("Found update on context state {} with association=not-associated; delete from MDIB",
+                                                    multiState.getHandle());
+                                            contextStates.remove(multiState.getHandle());
+                                            continue;
+                                        }
+                                    }
                                     if (multiState.getHandle().equals(modifiedMultiState.getHandle())) {
                                         LOG.debug("Replacing already present MultiState {}", multiState.getHandle());
                                         newStates.add(modifiedMultiState);
-                                        found.set(true);
+                                        found = true;
                                     } else {
                                         newStates.add(multiState);
                                     }
-                                });
-                                if (!found.get()) {
+                                }
+                                if (!found) {
                                     LOG.debug("Adding new MultiState {}", modifiedMultiState.getHandle());
                                     newStates.add(modifiedMultiState);
                                 }
                             });
+
                             entities.put(mdibEntity.getHandle(), entityFactory.replaceStates(mdibEntity,
                                     Collections.unmodifiableList(newStates)));
                             newStates.stream()
@@ -349,8 +381,11 @@ public class MdibStorageImpl implements MdibStorage {
             }
         }
 
-        Optional.ofNullable(descriptionModifications).ifPresent(mods ->
-                apply(mdibVersion, null, null, mods));
+        // Only relevant to remote MDIBs where entities need to be present even if only states are subscribed
+        // (an unlikely use-case, but should be supported nevertheless)
+        if (descriptionModifications != null) {
+            apply(mdibVersion, null, null, descriptionModifications);
+        }
 
         return new WriteStateResult(mdibVersion, modifiedStates);
     }
