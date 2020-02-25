@@ -64,15 +64,7 @@
         <dependency>
             <groupId>io.github.kostaskougios</groupId>
             <artifactId>cloning</artifactId>
-            <version>1.10.1</version>
-        </dependency>
-
-        <!-- Immutable facade utility -->
-        <!-- https://mvnrepository.com/artifact/com.javax0/immutator -->
-        <dependency>
-            <artifactId>immutator</artifactId>
-            <groupId>com.javax0</groupId>
-            <version>1.0.1</version>
+            <version>1.10.2</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/javax.xml.bind/jaxb-api -->

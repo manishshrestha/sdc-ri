@@ -58,19 +58,4 @@ public class ObjectUtilImplTest {
 
         assertThat(listCpy.get(1).getStr(), is("test2"));
     }
-
-    @Test
-    public void immutableFacade() {
-        String expectedStr = "test";
-        StandalonePojoClass obj = new StandalonePojoClass(expectedStr, 13, Arrays.asList("entry1", "entry2"));
-        StandalonePojoClass immutableFacade = objectUtil.immutableFacade(obj);
-
-        assertThat(immutableFacade.getStr(), is(expectedStr));
-        try {
-            immutableFacade.setStr(expectedStr + expectedStr);
-            Assertions.fail("Class ought to be mutable, but is not.");
-        } catch (RuntimeException e) {
-        }
-        assertThat(immutableFacade.getStr(), is(expectedStr));
-    }
 }

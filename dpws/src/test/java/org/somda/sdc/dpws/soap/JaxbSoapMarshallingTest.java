@@ -33,7 +33,7 @@ public class JaxbSoapMarshallingTest extends DpwsTest {
         overrideBindings(new AbstractConfigurationModule() {
             @Override
             protected void defaultConfigure() {
-                // no need for valiation as tests to test general marshalling
+                // no need for validation as tests to test general marshalling
                 bind(SoapConfig.VALIDATE_SOAP_MESSAGES,
                         Boolean.class,
                         false);
