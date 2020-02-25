@@ -21,7 +21,7 @@ public class ContextIdentificationMapper {
 
     private static final Pattern PATTERN = Pattern
             .compile(
-                    "(?i:<contextsource>sdc.ctxt.(loc|pat|ens|wfl|opr|mns)?):/" +
+                    "(?i:(?<contextsource>sdc.ctxt.(loc|pat|ens|wfl|opr|mns))):/" +
                             "(?<root>" + GlueConstants.SEGMENT_NZ_REGEX + ")/" +
                             "(?<extension>" + GlueConstants.SEGMENT_REGEX + "$)"
             );
