@@ -127,33 +127,30 @@ public class ClientTransportBinding implements TransportBinding {
              InputStream inputStream = communicationLog.logMessage(
                      CommunicationLog.Direction.INBOUND, CommunicationLog.TransportType.HTTP, this.clientUri.getHost(),
                      this.clientUri.getPort(), initialInputStream);) {
-            try {
-                if (inputStream.available() > 0) {
-                    SoapMessage msg = soapUtil.createMessage(marshalling.unmarshal(inputStream));
-                    if (msg.isFault()) {
-                        throw new SoapFaultException(msg);
-                    }
+            if (inputStream.available() > 0) {
+                SoapMessage msg = soapUtil.createMessage(marshalling.unmarshal(inputStream));
+                if (msg.isFault()) {
+                    throw new SoapFaultException(msg);
+                }
 
-                    return msg;
-                }
-            } catch (JAXBException e) {
-                LOG.debug("Unmarshalling of a message failed: {}", e.getMessage());
-                LOG.trace("Unmarshalling of a message failed.", e);
-                throw new TransportBindingException(String
-                        .format("Receiving of a response failed due to unmarshalling problem: %s", e.getMessage()));
-            } catch (IOException e) {
-                LOG.debug("Error occurred while processing response: {}", e.getMessage());
-                LOG.trace("Error occurred while processing response", e);
-            } finally {
-                try {
-                    // ensure the entire response was consumed, just in case
-                    EntityUtils.consume(response.getEntity());
-                } catch (IOException e) {
-                    // if this fails, we will either all die or it doesn't matter at all...
-                }
+                return msg;
             }
-        } catch (IOException e) {
 
+        } catch (JAXBException e) {
+            LOG.debug("Unmarshalling of a message failed: {}", e.getMessage());
+            LOG.trace("Unmarshalling of a message failed.", e);
+            throw new TransportBindingException(String
+                    .format("Receiving of a response failed due to unmarshalling problem: %s", e.getMessage()));
+        } catch (IOException e) {
+            LOG.debug("Error occurred while processing response: {}", e.getMessage());
+            LOG.trace("Error occurred while processing response", e);
+        } finally {
+            try {
+                // ensure the entire response was consumed, just in case
+                EntityUtils.consume(response.getEntity());
+            } catch (IOException e) {
+                // if this fails, we will either all die or it doesn't matter at all...
+            }
         }
 
         return soapUtil.createMessage();
