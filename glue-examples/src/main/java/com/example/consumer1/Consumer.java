@@ -81,7 +81,7 @@ public class Consumer {
     private static final Duration MAX_WAIT = Duration.ofSeconds(11);
     private static final long MAX_WAIT_SEC = MAX_WAIT.getSeconds();
 
-    private static final long REPORT_TIMEOUT = Duration.ofSeconds(1200).toMillis();
+    private static final long REPORT_TIMEOUT = Duration.ofSeconds(30).toMillis();
 
     private final Client client;
     private final SdcRemoteDevicesConnector connector;
