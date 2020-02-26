@@ -32,15 +32,6 @@ public class WsEventingConfig {
     public static final String SOURCE_SUBSCRIPTION_MANAGER_PATH = "WsEventing.Source.SubscriptionManagerPath";
 
     /**
-     * Duration after a notification in the outgoing notification queue of a WS-Eventing notification source is stale.
-     * <ul>
-     * <li>Data type: {@linkplain java.time.Duration}
-     * <li>Use: optional
-     * </ul>
-     */
-    public static final String NOTIFICATION_STALE_DURATION = "WsEventing.Source.NotificationStaleDuration";
-
-    /**
      * Configuration of the notification queue size used for WS-Eventing.
      *
      * <ul>

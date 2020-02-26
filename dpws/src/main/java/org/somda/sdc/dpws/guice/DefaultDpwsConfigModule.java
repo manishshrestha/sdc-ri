@@ -129,10 +129,6 @@ public class DefaultDpwsConfigModule extends AbstractConfigurationModule {
     }
 
     private void configureWsEventingConfig() {
-        // TODO: What does this do?
-        bind(WsEventingConfig.NOTIFICATION_STALE_DURATION,
-                Duration.class,
-                Duration.ofSeconds(10));
         bind(WsEventingConfig.SOURCE_MAX_EXPIRES,
                 Duration.class,
                 Duration.ofHours(1));
