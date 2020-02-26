@@ -27,7 +27,7 @@ public class CommunicationLogHttpResponseInterceptor implements HttpResponseInte
 
     @Override
     public void process(HttpResponse response, HttpContext context) throws HttpException, IOException {
-        LOG.warn("Processing response");
+        LOG.debug("Processing response");
 
         HttpHost target = (HttpHost) context.getAttribute(
                 HttpCoreContext.HTTP_TARGET_HOST);
@@ -55,6 +55,6 @@ public class CommunicationLogHttpResponseInterceptor implements HttpResponseInte
 
         response.setEntity(new CommunicationLogEntity(oldMessageEntity, commlogStream));
 
-        LOG.warn("Processing response done");
+        LOG.debug("Processing response done");
     }
 }

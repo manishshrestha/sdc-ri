@@ -27,7 +27,7 @@ public class CommunicationLogHttpRequestInterceptor implements HttpRequestInterc
 
     @Override
     public void process(HttpRequest request, HttpContext context) throws HttpException, IOException {
-        LOG.warn("Processing request");
+        LOG.debug("Processing request");
 
         HttpHost target = (HttpHost) context.getAttribute(
                 HttpCoreContext.HTTP_TARGET_HOST);
@@ -62,6 +62,6 @@ public class CommunicationLogHttpRequestInterceptor implements HttpRequestInterc
         entityRequest.setEntity(new CommunicationLogEntity(oldMessageEntity, commlogStream));
 
 
-        LOG.warn("Processing request done");
+        LOG.debug("Processing request done");
     }
 };
