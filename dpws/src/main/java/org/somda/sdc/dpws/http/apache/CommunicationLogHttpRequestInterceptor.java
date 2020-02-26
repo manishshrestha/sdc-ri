@@ -1,6 +1,7 @@
 package org.somda.sdc.dpws.http.apache;
 
 import com.google.inject.Inject;
+import org.apache.http.HttpEntity;
 import org.apache.http.HttpEntityEnclosingRequest;
 import org.apache.http.HttpException;
 import org.apache.http.HttpHost;
@@ -45,14 +46,7 @@ public class CommunicationLogHttpRequestInterceptor implements HttpRequestInterc
         }
 
         var entityRequest = (HttpEntityEnclosingRequest) request;
-        var oldMessageEntity = entityRequest.getEntity();
-        var messageData = oldMessageEntity.getContent();
-        var os = new ByteArrayOutputStream();
-        messageData.transferTo(os);
-
-        // reset attached payload
-        var requestEntity = new ByteArrayEntity(os.toByteArray());
-        entityRequest.setEntity(requestEntity);
+        HttpEntity oldMessageEntity = entityRequest.getEntity();
 
         var requestHttpApplicationInfo = new HttpApplicationInfo(
                 ClientTransportBinding.allHeadersToMap(request.getAllHeaders())
@@ -70,10 +64,12 @@ public class CommunicationLogHttpRequestInterceptor implements HttpRequestInterc
 
         var requestCommContext = new CommunicationContext(requestHttpApplicationInfo, requestTransportInfo);
 
-        try(OutputStream commlogStream = commlog.logMessage(CommunicationLog.Direction.OUTBOUND, CommunicationLog.TransportType.HTTP,
-                requestCommContext, OutputStream.nullOutputStream())) {
-            os.writeTo(commlogStream);
-        }
+        OutputStream commlogStream = commlog.logMessage(CommunicationLog.Direction.OUTBOUND, CommunicationLog.TransportType.HTTP,
+                requestCommContext, OutputStream.nullOutputStream());
+
+        entityRequest.setEntity(new CommunicationLogEntity(oldMessageEntity, commlogStream));
+
+
         LOG.warn("Processing request done");
     }
 };
