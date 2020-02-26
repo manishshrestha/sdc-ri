@@ -1,14 +1,7 @@
 package org.somda.sdc.dpws.http.apache;
 
 import com.google.inject.Inject;
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpEntityEnclosingRequest;
-import org.apache.http.HttpException;
-import org.apache.http.HttpHost;
-import org.apache.http.HttpRequest;
-import org.apache.http.HttpRequestInterceptor;
-import org.apache.http.client.methods.HttpUriRequest;
-import org.apache.http.entity.ByteArrayEntity;
+import org.apache.http.*;
 import org.apache.http.protocol.HttpContext;
 import org.apache.http.protocol.HttpCoreContext;
 import org.slf4j.Logger;
@@ -18,7 +11,6 @@ import org.somda.sdc.dpws.soap.CommunicationContext;
 import org.somda.sdc.dpws.soap.HttpApplicationInfo;
 import org.somda.sdc.dpws.soap.TransportInfo;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Collections;
@@ -65,7 +57,7 @@ public class CommunicationLogHttpRequestInterceptor implements HttpRequestInterc
         var requestCommContext = new CommunicationContext(requestHttpApplicationInfo, requestTransportInfo);
 
         OutputStream commlogStream = commlog.logMessage(CommunicationLog.Direction.OUTBOUND, CommunicationLog.TransportType.HTTP,
-                requestCommContext, OutputStream.nullOutputStream());
+                requestCommContext);
 
         entityRequest.setEntity(new CommunicationLogEntity(oldMessageEntity, commlogStream));
 

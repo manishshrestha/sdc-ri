@@ -13,7 +13,12 @@ public class CommunicationLogDummyImpl implements CommunicationLog {
     @Override
     public OutputStream logMessage(Direction direction, TransportType transportType, CommunicationContext communicationContext, OutputStream message) {
         return message;
-    } 
+    }
+
+    @Override
+    public OutputStream logMessage(Direction direction, TransportType transportType, CommunicationContext communicationContext) {
+        return OutputStream.nullOutputStream();
+    }
 
     @Override
     public InputStream logMessage(Direction direction, TransportType transportType, CommunicationContext communicationContext, InputStream message) {

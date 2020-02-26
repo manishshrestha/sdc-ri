@@ -4,7 +4,6 @@ import com.google.inject.Inject;
 import org.eclipse.jetty.server.HttpOutput;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.handler.HandlerWrapper;
-import org.eclipse.jetty.server.handler.gzip.GzipHttpInputInterceptor;
 import org.somda.sdc.dpws.CommunicationLog;
 import org.somda.sdc.dpws.soap.CommunicationContext;
 import org.somda.sdc.dpws.soap.HttpApplicationInfo;
@@ -13,9 +12,7 @@ import org.somda.sdc.dpws.soap.TransportInfo;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.Map;
@@ -61,7 +58,7 @@ public class CommunicationLogHandlerWrapper extends HandlerWrapper {
         try (OutputStream input = commLog.logMessage(
                 CommunicationLog.Direction.INBOUND,
                 CommunicationLog.TransportType.HTTP,
-                requestCommContext, OutputStream.nullOutputStream());
+                requestCommContext);
              OutputStream output = commLog.logMessage(
                      CommunicationLog.Direction.OUTBOUND,
                      CommunicationLog.TransportType.HTTP,
@@ -82,7 +79,6 @@ public class CommunicationLogHandlerWrapper extends HandlerWrapper {
                     out.setInterceptor(previousInterceptor);
             }
         }
-
 
 
     }

@@ -34,10 +34,10 @@ public class CommunicationLogImplTest extends DpwsTest {
             var requestCommContext = new CommunicationContext(
                     null,
                     new TransportInfo(
-                        "",
-                        null, null,
-                        "_", 0,
-                        Collections.emptyList()
+                            "",
+                            null, null,
+                            "_", 0,
+                            Collections.emptyList()
                     )
             );
 
@@ -50,7 +50,7 @@ public class CommunicationLogImplTest extends DpwsTest {
 
             mockOutputStream.reset();
 
-            try(OutputStream resultingOutputStream = communicationLogImpl.logMessage(
+            try (OutputStream resultingOutputStream = communicationLogImpl.logMessage(
                     CommunicationLog.Direction.OUTBOUND, CommunicationLog.TransportType.HTTP,
                     requestCommContext, outputTestOutputStream);) {
 

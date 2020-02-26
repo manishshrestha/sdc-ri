@@ -26,6 +26,17 @@ public interface CommunicationLog {
                             OutputStream message);
 
     /**
+     * Creates an {@linkplain OutputStream} to write the log message into.
+     *
+     * @param direction            direction used for filename.
+     * @param transportType        the transport protocol used i.e. udp, http, etc.
+     * @param communicationContext communication information such as target address and port.
+     * @return an output stream to write the log message into.
+     */
+    OutputStream logMessage(Direction direction, TransportType transportType, CommunicationContext communicationContext);
+
+
+    /**
      * Logs an HTTP message based on an {@linkplain InputStream}.
      * <p>
      * It blocks until everything has been read.
