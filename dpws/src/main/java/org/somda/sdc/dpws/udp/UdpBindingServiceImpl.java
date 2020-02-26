@@ -102,8 +102,19 @@ public class UdpBindingServiceImpl extends AbstractIdleService implements UdpBin
                         continue;
                     }
 
-                    UdpMessage message = new UdpMessage(packet.getData(), packet.getLength(),
-                            packet.getAddress().getHostAddress(), packet.getPort());
+                    var ctxt = new CommunicationContext(
+                            new ApplicationInfo(),
+                            new TransportInfo(
+                                    DpwsConstants.URI_SCHEME_SOAP_OVER_UDP,
+                                    incomingSocket.getLocalAddress().getHostAddress(),
+                                    incomingSocket.getLocalPort(),
+                                    packet.getAddress().getHostAddress(),
+                                    packet.getPort(),
+                                    Collections.emptyList()
+                            )
+                    );
+
+                    UdpMessage message = new UdpMessage(packet.getData(), packet.getLength(), ctxt);
                     this.logUdpPacket(CommunicationLog.Direction.INBOUND, packet);
                     receiver.receive(message);
                 }
@@ -120,8 +131,19 @@ public class UdpBindingServiceImpl extends AbstractIdleService implements UdpBin
                         continue;
                     }
 
-                    UdpMessage message = new UdpMessage(packet.getData(), packet.getLength(),
-                            packet.getAddress().getHostAddress(), packet.getPort());
+                    var ctxt = new CommunicationContext(
+                            new ApplicationInfo(),
+                            new TransportInfo(
+                                    DpwsConstants.URI_SCHEME_SOAP_OVER_UDP,
+                                    outgoingSocket.getLocalAddress().getHostAddress(),
+                                    outgoingSocket.getLocalPort(),
+                                    packet.getAddress().getHostAddress(),
+                                    packet.getPort(),
+                                    Collections.emptyList()
+                            )
+                    );
+
+                    UdpMessage message = new UdpMessage(packet.getData(), packet.getLength(), ctxt);
                     this.logUdpPacket(CommunicationLog.Direction.INBOUND, packet);
                     receiver.receive(message);
                 }

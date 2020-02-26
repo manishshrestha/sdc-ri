@@ -3,6 +3,9 @@ package it.org.somda.sdc.dpws.udp;
 import com.google.common.util.concurrent.SettableFuture;
 import it.org.somda.sdc.dpws.IntegrationTestUtil;
 import org.somda.sdc.dpws.DpwsConstants;
+import org.somda.sdc.dpws.soap.ApplicationInfo;
+import org.somda.sdc.dpws.soap.CommunicationContext;
+import org.somda.sdc.dpws.soap.TransportInfo;
 import org.somda.sdc.dpws.soap.wsdiscovery.WsDiscoveryConstants;
 import org.somda.sdc.dpws.udp.UdpBindingService;
 import org.somda.sdc.dpws.udp.UdpMessage;
@@ -16,6 +19,7 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
@@ -129,7 +133,16 @@ public class UdpBindingServiceImplIT {
             if (udpMessage.toString().equals(expectedRequestStr)) {
                 Thread t = new Thread(() -> {
                     try {
-                        senderReceiver2.sendMessage(new UdpMessage(expectedResponseBytes, expectedResponseBytes.length, udpMessage.getHost(), udpMessage.getPort()));
+                        var ctxt = new CommunicationContext(
+                                new ApplicationInfo(),
+                                new TransportInfo(
+                                        DpwsConstants.URI_SCHEME_SOAP_OVER_UDP,
+                                        null, null,
+                                        udpMessage.getHost(), udpMessage.getPort(),
+                                        Collections.emptyList()
+                                )
+                        );
+                        senderReceiver2.sendMessage(new UdpMessage(expectedResponseBytes, expectedResponseBytes.length, ctxt));
                     } catch (Exception e) {
                         fail();
                     }
