@@ -50,45 +50,35 @@ public class JettyHttpServerHandler extends AbstractHandler {
     public void handle(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response) throws IOException {
 
         LOG.debug("Request to {}", request.getRequestURL());
-
-        InputStream input = communicationLog.logMessage(
-                CommunicationLog.Direction.INBOUND,
-                CommunicationLog.TransportType.HTTP,
-                request.getRemoteHost(), request.getRemotePort(), request.getInputStream());
-
         response.setStatus(HttpStatus.OK_200);
         response.setContentType(mediaType);
 
-        try (OutputStream output = communicationLog.logMessage(
-                CommunicationLog.Direction.OUTBOUND,
-                CommunicationLog.TransportType.HTTP,
-                request.getRemoteHost(), request.getRemotePort(), response.getOutputStream())) {
+        var input = request.getInputStream();
+        var output = response.getOutputStream();
 
-            try {
+        try {
+            handler.process(input, output,
+                    new TransportInfo(
+                            request.getScheme(),
+                            request.getLocalAddr(),
+                            request.getLocalPort(),
+                            request.getRemoteAddr(),
+                            request.getRemotePort(),
+                            getX509Certificates(request, expectTLS)));
 
-                handler.process(input, output,
-                        new TransportInfo(
-                                request.getScheme(),
-                                request.getLocalAddr(),
-                                request.getLocalPort(),
-                                request.getRemoteAddr(),
-                                request.getRemotePort(),
-                                getX509Certificates(request)));
-
-            } catch (TransportException | MarshallingException | ClassCastException e) {
-                LOG.error("", e);
-                response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR_500);
-                output.write(e.getMessage().getBytes());
-                output.flush();
-            } finally {
-                baseRequest.setHandled(true);
-            }
+        } catch (TransportException | MarshallingException | ClassCastException e) {
+            LOG.error("", e);
+            response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR_500);
+            output.write(e.getMessage().getBytes());
+            output.flush();
+        } finally {
+            baseRequest.setHandled(true);
         }
     }
 
-    private Collection<X509Certificate> getX509Certificates(HttpServletRequest request) throws IOException {
+    public static Collection<X509Certificate> getX509Certificates(HttpServletRequest request, boolean expectTLS) throws IOException {
         var anonymousCertificates = request.getAttribute("javax.servlet.request.X509Certificate");
-        if (this.expectTLS) {
+        if (expectTLS) {
             if (anonymousCertificates == null) {
                 LOG.error("Certificate information is missing from HTTP request data");
                 throw new IOException("Certificate information is missing from HTTP request data");

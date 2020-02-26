@@ -7,25 +7,38 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.SocketException;
 import java.net.URI;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
 
 import javax.xml.bind.JAXBException;
 
+import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHeaders;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.ByteArrayEntity;
+import org.apache.http.impl.client.AbstractHttpClient;
+import org.apache.http.protocol.HttpCoreContext;
 import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.somda.sdc.dpws.CommunicationLog;
 import org.somda.sdc.dpws.TransportBinding;
 import org.somda.sdc.dpws.TransportBindingException;
+import org.somda.sdc.dpws.soap.ApplicationInfo;
+import org.somda.sdc.dpws.soap.CommunicationContext;
+import org.somda.sdc.dpws.soap.HttpApplicationInfo;
 import org.somda.sdc.dpws.soap.SoapConstants;
 import org.somda.sdc.dpws.soap.SoapMarshalling;
 import org.somda.sdc.dpws.soap.SoapMessage;
 import org.somda.sdc.dpws.soap.SoapUtil;
+import org.somda.sdc.dpws.soap.TransportInfo;
 import org.somda.sdc.dpws.soap.exception.SoapFaultException;
 
 import com.google.common.io.ByteStreams;
@@ -71,23 +84,19 @@ public class ClientTransportBinding implements TransportBinding {
     public SoapMessage onRequestResponse(SoapMessage request) throws TransportBindingException, SoapFaultException {
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
 
-        try (OutputStream outputStream = communicationLog.logMessage(CommunicationLog.Direction.OUTBOUND,
-                CommunicationLog.TransportType.HTTP,
-                this.clientUri.getHost(), this.clientUri.getPort(), byteArrayOutputStream);) {
+        // create post request and set content type to SOAP
+        HttpPost post = new HttpPost(this.clientUri);
+        post.setHeader(HttpHeaders.ACCEPT, SoapConstants.MEDIA_TYPE_SOAP);
+        post.setHeader(HttpHeaders.CONTENT_TYPE, SoapConstants.MEDIA_TYPE_SOAP);
 
-            marshalling.marshal(request.getEnvelopeWithMappedHeaders(), outputStream);
-
-        } catch (IOException | JAXBException e) {
+        try {
+            marshalling.marshal(request.getEnvelopeWithMappedHeaders(), byteArrayOutputStream);
+        } catch (JAXBException e) {
             LOG.warn("Marshalling of a message failed: {}", e.getMessage());
             LOG.trace("Marshalling of a message failed", e);
             throw new TransportBindingException(
                     String.format("Sending of a request failed due to marshalling problem: %s", e.getMessage()));
         }
-
-        // create post request and set content type to SOAP
-        HttpPost post = new HttpPost(this.clientUri);
-        post.setHeader(HttpHeaders.ACCEPT, SoapConstants.MEDIA_TYPE_SOAP);
-        post.setHeader(HttpHeaders.CONTENT_TYPE, SoapConstants.MEDIA_TYPE_SOAP);
 
         // attach payload
         var requestEntity = new ByteArrayEntity(byteArrayOutputStream.toByteArray());
@@ -103,7 +112,7 @@ public class ClientTransportBinding implements TransportBinding {
             LOG.error("No response received in request to {}", this.clientUri, e);
             throw new TransportBindingException(e);
         } catch (IOException e) {
-            LOG.error("Unexpected IO exception on request to {}", this.clientUri);
+            LOG.error("Unexpected IO exception on request to {}", this.clientUri, e);
             LOG.trace("Unexpected IO exception on request to {}", this.clientUri, e);
             throw new TransportBindingException("No response received");
         }
@@ -116,17 +125,14 @@ public class ClientTransportBinding implements TransportBinding {
         HttpEntity entity = response.getEntity();
         byte[] bytes;
 
-        try (InputStream contentStream = entity.getContent();) {
+        try (InputStream contentStream = entity.getContent()) {
             bytes = ByteStreams.toByteArray(contentStream);
         } catch (IOException e) {
             LOG.error("Couldn't read response", e);
             bytes = new byte[0];
         }
 
-        try (InputStream initialInputStream = new ByteArrayInputStream(bytes);
-             InputStream inputStream = communicationLog.logMessage(
-                     CommunicationLog.Direction.INBOUND, CommunicationLog.TransportType.HTTP, this.clientUri.getHost(),
-                     this.clientUri.getPort(), initialInputStream);) {
+        try (InputStream inputStream = new ByteArrayInputStream(bytes)) {
             if (inputStream.available() > 0) {
                 SoapMessage msg = soapUtil.createMessage(marshalling.unmarshal(inputStream));
                 if (msg.isFault()) {
@@ -135,7 +141,6 @@ public class ClientTransportBinding implements TransportBinding {
 
                 return msg;
             }
-
         } catch (JAXBException e) {
             LOG.debug("Unmarshalling of a message failed: {}", e.getMessage());
             LOG.trace("Unmarshalling of a message failed.", e);
@@ -154,6 +159,19 @@ public class ClientTransportBinding implements TransportBinding {
         }
 
         return soapUtil.createMessage();
+    }
+
+    public static Map<String, String> allHeadersToMap(Header[] allHeaders) {
+        Map<String, String> mappedHeaders = new HashMap<>();
+        Arrays.stream(allHeaders).forEach(header -> Arrays.stream(header.getElements()).forEach(
+                element -> {
+                    mappedHeaders.put(
+                            element.getName(),
+                            element.getValue()
+                    );
+                }
+        ));
+        return mappedHeaders;
     }
 
     @Override

@@ -1,5 +1,7 @@
 package org.somda.sdc.dpws;
 
+import org.somda.sdc.dpws.soap.CommunicationContext;
+
 import java.io.InputStream;
 import java.io.OutputStream;
 
@@ -9,12 +11,12 @@ import java.io.OutputStream;
 public class CommunicationLogDummyImpl implements CommunicationLog {
     
     @Override
-    public OutputStream logMessage(Direction direction, TransportType transportType, String address, Integer port, OutputStream message) {
+    public OutputStream logMessage(Direction direction, TransportType transportType, CommunicationContext communicationContext, OutputStream message) {
         return message;
     } 
 
     @Override
-    public InputStream logMessage(Direction direction, TransportType transportType, String address, Integer port, InputStream message) {
+    public InputStream logMessage(Direction direction, TransportType transportType, CommunicationContext communicationContext, InputStream message) {
         return message;
     }
 }

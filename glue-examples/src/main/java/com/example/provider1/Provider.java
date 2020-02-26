@@ -375,8 +375,8 @@ public class Provider extends AbstractIdleService {
             while (true) {
                 try {
                     Thread.sleep(100);
-                    provider.changeWaveform(ProviderMdibConstants.HANDLE_WAVEFORM);
-                } catch (InterruptedException | PreprocessingException e) {
+//                    provider.changeWaveform(ProviderMdibConstants.HANDLE_WAVEFORM);
+                } catch (Exception e) {
                     LOG.error("Thread loop stopping", e);
                     break;
                 }

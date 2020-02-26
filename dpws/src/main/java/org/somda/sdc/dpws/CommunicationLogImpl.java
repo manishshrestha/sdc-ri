@@ -5,6 +5,7 @@ import com.google.inject.Inject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.commons.io.output.TeeOutputStream;
+import org.somda.sdc.dpws.soap.CommunicationContext;
 
 import java.io.*;
 import java.time.LocalTime;
@@ -27,8 +28,11 @@ public class CommunicationLogImpl implements CommunicationLog {
     }
 
     @Override
-    public TeeOutputStream logMessage(Direction direction, TransportType transportType, String address, Integer port,
+    public TeeOutputStream logMessage(Direction direction, TransportType transportType, CommunicationContext communicationContext,
                                       OutputStream message) {
+
+        var address = communicationContext.getTransportInfo().getRemoteAddress().get();
+        var port = communicationContext.getTransportInfo().getRemotePort().get();
 
         OutputStream logFile = this.logSink.getTargetStream(transportType,
                 makeName(direction.toString(), address, port));
@@ -39,7 +43,10 @@ public class CommunicationLogImpl implements CommunicationLog {
 
     @Override
     public InputStream logMessage(Direction direction, TransportType transportType,
-                                  String address, Integer port, InputStream message) {
+                                  CommunicationContext communicationContext, InputStream message) {
+        var address = communicationContext.getTransportInfo().getRemoteAddress().get();
+        var port = communicationContext.getTransportInfo().getRemotePort().get();
+
         return writeLogFile(transportType, makeName(direction.toString(), address, port),
                 message);
     }

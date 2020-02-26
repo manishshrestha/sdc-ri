@@ -37,7 +37,7 @@ public class ConsumerUtil {
 
     public ConsumerUtil() {
         Configurator.initialize(new DefaultConfiguration());
-        Configurator.setRootLevel(Level.INFO);
+        Configurator.setRootLevel(Level.DEBUG);
 
         injector = Guice.createInjector(
                 new DefaultGlueModule(),
