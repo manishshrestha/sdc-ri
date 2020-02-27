@@ -5,16 +5,20 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.somda.sdc.biceps.model.participant.InstanceIdentifier;
 import org.somda.sdc.biceps.model.participant.LocationDetail;
+import org.somda.sdc.glue.GlueConstants;
 import org.somda.sdc.glue.common.helper.UrlUtf8;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.regex.Pattern;
 
 /**
  * Utility class to map location detail to and from URIs in accordance with SDC Glue section 9.4.1.2.
  */
 public class LocationDetailQueryMapper {
     private static final Logger LOG = LoggerFactory.getLogger(LocationDetailQueryMapper.class);
+
+    private static final Pattern PATTERN = Pattern.compile("");
 
     /**
      * Creates a URI out of a location context instance identifier and location detail.
@@ -78,7 +82,7 @@ public class LocationDetailQueryMapper {
 //
 //        return locationDetail;
 //    }
-
+//
 //    private static Map<String, List<String>> splitQuery(String uri) {
 //        final Map<String, List<String>> queryPairs = new LinkedHashMap<>();
 //        // TODO: use regex parser to split
