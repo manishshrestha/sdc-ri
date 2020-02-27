@@ -286,8 +286,8 @@ public class SdcRequiredTypesAndScopesIT {
     private static class MyScopesUpdater implements SdcDevicePlugin, MdibAccessObserver {
         private final ScopesDecorator scopesDecorator;
 
-        static final URI SCOPE_ON_CONTEXT_UPDATE = URI.create("http://context-update");
-        static final URI SCOPE_ON_DESCRIPTION_UPDATE = URI.create("http://description-update");
+        static final String SCOPE_ON_CONTEXT_UPDATE = "http://context-update";
+        static final String SCOPE_ON_DESCRIPTION_UPDATE = "http://description-update";
 
         MyScopesUpdater(ScopesDecorator scopesDecorator) {
             this.scopesDecorator = scopesDecorator;

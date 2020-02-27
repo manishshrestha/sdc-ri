@@ -16,31 +16,31 @@ class ContextIdentificationMapperTest {
     @Test
     void fromInstanceIdentifier() {
         {
-            URI actualUri = ContextIdentificationMapper.fromInstanceIdentifier(createInstanceIdentifier(null, null),
+            String actualUri = ContextIdentificationMapper.fromInstanceIdentifier(createInstanceIdentifier(null, null),
                     ContextIdentificationMapper.ContextSource.Location);
             String expectedUri = "sdc.ctxt.loc:/biceps.uri.unk/";
-            assertEquals(expectedUri, actualUri.toString());
+            assertEquals(expectedUri, actualUri);
         }
 
         {
-            URI actualUri = ContextIdentificationMapper.fromInstanceIdentifier(createInstanceIdentifier("http://root", null),
+            String actualUri = ContextIdentificationMapper.fromInstanceIdentifier(createInstanceIdentifier("http://root", null),
                     ContextIdentificationMapper.ContextSource.Location);
             String expectedUri = "sdc.ctxt.loc:/http%3A%2F%2Froot/";
-            assertEquals(expectedUri, actualUri.toString());
+            assertEquals(expectedUri, actualUri);
         }
 
         {
-            URI actualUri = ContextIdentificationMapper.fromInstanceIdentifier(createInstanceIdentifier("http://root", "extension"),
+            String actualUri = ContextIdentificationMapper.fromInstanceIdentifier(createInstanceIdentifier("http://root", "extension"),
                     ContextIdentificationMapper.ContextSource.Patient);
             String expectedUri = "sdc.ctxt.pat:/http%3A%2F%2Froot/extension";
-            assertEquals(expectedUri, actualUri.toString());
+            assertEquals(expectedUri, actualUri);
         }
 
         {
-            URI actualUri = ContextIdentificationMapper.fromInstanceIdentifier(createInstanceIdentifier("http://root", "ext/enÖsion?"),
+            String actualUri = ContextIdentificationMapper.fromInstanceIdentifier(createInstanceIdentifier("http://root", "ext/enÖsion?"),
                     ContextIdentificationMapper.ContextSource.Ensemble);
             String expectedUri = "sdc.ctxt.ens:/http%3A%2F%2Froot/ext%2Fen%C3%96sion%3F";
-            assertEquals(expectedUri, actualUri.toString());
+            assertEquals(expectedUri, actualUri);
         }
     }
 

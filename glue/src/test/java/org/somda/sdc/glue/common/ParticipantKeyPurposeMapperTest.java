@@ -14,12 +14,12 @@ class ParticipantKeyPurposeMapperTest {
     @Test
     void fromOid() throws Exception {
         {
-            URI actualUri = ParticipantKeyPurposeMapper.fromOid(new Oid("1.2.840.10004.20701.1.1"));
+            String actualUri = ParticipantKeyPurposeMapper.fromOid(new Oid("1.2.840.10004.20701.1.1"));
             String expectedUri = "sdc.mds.pkp:1.2.840.10004.20701.1.1";
             assertEquals(expectedUri, actualUri.toString());
         }
         {
-            URI actualUri = ParticipantKeyPurposeMapper.fromOid(new Oid("1.3.6.1.4.1"));
+            String actualUri = ParticipantKeyPurposeMapper.fromOid(new Oid("1.3.6.1.4.1"));
             String expectedUri = "sdc.mds.pkp:1.3.6.1.4.1";
             assertEquals(expectedUri, actualUri.toString());
         }
