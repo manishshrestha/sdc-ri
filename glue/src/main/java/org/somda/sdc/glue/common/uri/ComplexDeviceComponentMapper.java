@@ -73,7 +73,10 @@ public class ComplexDeviceComponentMapper {
             fromString(uri);
         } catch (UriMapperParsingException e) {
             throw new UriMapperGenerationArgumentException(
-                    "No valid URI could be generated from the given CodedValue instance.");
+                    "No valid URI could be generated from the given CodedValue with " +
+                            "Code:" + codedValue.getCode() + ", " +
+                            "CodingSystem:" + codedValue.getCodingSystem() + ", " +
+                            "CodingSystemVersion:" + codedValue.getCodingSystemVersion());
         }
 
         return uri;
@@ -113,6 +116,6 @@ public class ComplexDeviceComponentMapper {
         }
 
         throw new UriMapperParsingException(
-                "Invalid URI for the mapper" + ComplexDeviceComponentMapper.class.toString() + ".");
+                "Invalid URI for the mapper " + ComplexDeviceComponentMapper.class.toString() );
     }
 }

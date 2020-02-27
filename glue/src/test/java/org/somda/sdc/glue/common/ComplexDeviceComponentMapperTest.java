@@ -67,6 +67,10 @@ class ComplexDeviceComponentMapperTest {
         }
         {
             assertThrows(UriMapperParsingException.class,
+                    () -> ComplexDeviceComponentMapper.fromString(""));
+        }
+        {
+            assertThrows(UriMapperParsingException.class,
                     () -> ComplexDeviceComponentMapper.fromString("sdc.BAD.SCHEME:/foo/bar/fii"));
         }
         {
