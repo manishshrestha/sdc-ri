@@ -160,7 +160,8 @@ public class SdcRequiredTypesAndScopes implements SdcDevicePlugin, MdibAccessObs
             try {
                 uris.add(ComplexDeviceComponentMapper.fromComplexDeviceComponent(mdsDescriptor));
             } catch (UriMapperGenerationArgumentException e) {
-                LOG.warn("The URI generation based on the given MdsDescriptor failed", e);
+                LOG.warn("The URI generation based on the given MdsDescriptor with the handle " +
+                        mdsDescriptor.getHandle() + "failed", e);
             }
         }
 
