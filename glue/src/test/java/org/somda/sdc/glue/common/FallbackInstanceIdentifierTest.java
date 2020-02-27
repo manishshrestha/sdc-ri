@@ -3,6 +3,7 @@ package org.somda.sdc.glue.common;
 import org.junit.jupiter.api.Test;
 import org.somda.sdc.biceps.model.participant.InstanceIdentifier;
 import org.somda.sdc.biceps.model.participant.LocationDetail;
+import org.somda.sdc.glue.common.uri.FallbackInstanceIdentifier;
 
 import javax.annotation.Nullable;
 import java.util.Optional;

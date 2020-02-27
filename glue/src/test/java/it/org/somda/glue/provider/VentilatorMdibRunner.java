@@ -1,21 +1,18 @@
 package it.org.somda.glue.provider;
 
-import com.google.common.util.concurrent.AbstractIdleService;
 import com.google.common.util.concurrent.Service;
-import org.somda.sdc.biceps.common.MdibDescriptionModifications;
 import org.somda.sdc.biceps.common.MdibStateModifications;
 import org.somda.sdc.biceps.common.access.ReadTransaction;
 import org.somda.sdc.biceps.common.storage.PreprocessingException;
 import org.somda.sdc.biceps.model.participant.*;
 import org.somda.sdc.biceps.provider.access.LocalMdibAccess;
-import org.somda.sdc.glue.common.FallbackInstanceIdentifier;
+import org.somda.sdc.glue.common.uri.FallbackInstanceIdentifier;
 import org.somda.sdc.glue.common.MdibXmlIo;
 import org.somda.sdc.glue.common.factory.ModificationsBuilderFactory;
 import org.somda.sdc.glue.provider.SdcDeviceContext;
 import org.somda.sdc.glue.provider.SdcDevicePlugin;
 
 import javax.annotation.Nullable;
-import java.io.InputStream;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.Arrays;

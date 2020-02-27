@@ -16,8 +16,9 @@ import org.somda.sdc.biceps.provider.access.LocalMdibAccess;
 import org.somda.sdc.dpws.device.Device;
 import org.somda.sdc.dpws.device.DiscoveryAccess;
 import org.somda.sdc.glue.GlueConstants;
-import org.somda.sdc.glue.common.ComplexDeviceComponentMapper;
-import org.somda.sdc.glue.common.ContextIdentificationMapper;
+import org.somda.sdc.glue.common.uri.ComplexDeviceComponentMapper;
+import org.somda.sdc.glue.common.uri.ContextIdentificationMapper;
+import org.somda.sdc.glue.common.uri.UriMapperGenerationArgumentException;
 import org.somda.sdc.glue.provider.SdcDeviceContext;
 import test.org.somda.common.LoggingTestWatcher;
 import test.org.somda.common.TestLogging;
@@ -163,7 +164,7 @@ class SdcRequiredTypesAndScopesTest {
     }
 
     @Test
-    void updateDescriptionShallGenerateCorrectScopeUris() {
+    void updateDescriptionShallGenerateCorrectScopeUris() throws UriMapperGenerationArgumentException {
         int setScopesInteractionCount = 3;
         int sendHelloInteractionCount = 1;
         int scopesCount = 3;
@@ -199,7 +200,7 @@ class SdcRequiredTypesAndScopesTest {
     }
 
     @Test
-    void eventBusShallTriggerDescriptionUpdatesWithSetScopesAndHello() {
+    void eventBusShallTriggerDescriptionUpdatesWithSetScopesAndHello() throws UriMapperGenerationArgumentException{
         int setScopesInteractionCount = 2;
         int sendHelloInteractionCount = 1;
         int scopesCount = 3;
