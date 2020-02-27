@@ -16,6 +16,7 @@ import org.somda.sdc.dpws.client.Client;
 import org.somda.sdc.dpws.guice.NetworkJobThreadPool;
 import org.somda.sdc.dpws.guice.WsDiscovery;
 import org.somda.sdc.dpws.soap.wsdiscovery.WsDiscoveryConfig;
+import org.somda.sdc.glue.consumer.ConsumerConfig;
 import org.somda.sdc.glue.consumer.SdcRemoteDevicesConnector;
 import org.somda.sdc.glue.guice.GlueDpwsConfigModule;
 import test.org.somda.common.CIDetector;
@@ -30,6 +31,7 @@ import java.util.concurrent.Executors;
 
 public class TestSdcClient extends IntegrationTestPeer {
     private static final Logger LOG = LoggerFactory.getLogger(TestSdcClient.class);
+    public static final Duration REQUESTED_EXPIRES = Duration.ofSeconds(20);
 
     private final Client client;
     private final SdcRemoteDevicesConnector connector;
@@ -43,6 +45,10 @@ public class TestSdcClient extends IntegrationTestPeer {
                     @Override
                     protected void customConfigure() {
                         super.customConfigure();
+
+                        bind(ConsumerConfig.REQUESTED_EXPIRES,
+                                Duration.class,
+                                REQUESTED_EXPIRES);
 
                         if (CIDetector.isRunningInCi()) {
                             var httpTimeouts = Duration.ofSeconds(120);

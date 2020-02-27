@@ -19,6 +19,7 @@ import org.somda.sdc.biceps.model.message.GetMdibResponse;
 import org.somda.sdc.biceps.model.message.ObjectFactory;
 import org.somda.sdc.biceps.model.message.OperationInvokedReport;
 import org.somda.sdc.biceps.model.participant.Mdib;
+import org.somda.sdc.dpws.DpwsConfig;
 import org.somda.sdc.dpws.DpwsFramework;
 import org.somda.sdc.common.util.ExecutorWrapperService;
 import org.somda.sdc.dpws.service.HostedServiceProxy;
@@ -93,7 +94,7 @@ public class SdcRemoteDevicesConnectorImpl implements SdcRemoteDevicesConnector,
                                   Provider<ReportProcessor> reportProcessorProvider,
                                   ScoControllerFactory scoControllerFactory,
                                   @Named(ConsumerConfig.REQUESTED_EXPIRES) Duration requestedExpires,
-                                  @Named(ConsumerConfig.RESPONSE_WAITING_TIME) Duration responseWaitingTime,
+                                  @Named(DpwsConfig.MAX_WAIT_FOR_FUTURES) Duration responseWaitingTime,
                                   SoapUtil soapUtil,
                                   ModificationsBuilderFactory modificationsBuilderFactory,
                                   RemoteMdibAccessFactory remoteMdibAccessFactory,

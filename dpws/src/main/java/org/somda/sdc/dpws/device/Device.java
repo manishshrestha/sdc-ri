@@ -1,9 +1,11 @@
 package org.somda.sdc.dpws.device;
 
 import com.google.common.util.concurrent.Service;
+import org.somda.sdc.dpws.soap.wseventing.SubscriptionManager;
 
 import javax.annotation.Nullable;
 import java.net.URI;
+import java.util.Map;
 
 /**
  * Core class to create a device that exposes itself to the network.
@@ -33,4 +35,6 @@ public interface Device extends Service {
     HostingServiceAccess getHostingServiceAccess();
 
     URI getEprAddress();
+
+    Map<String, SubscriptionManager> getActiveSubscriptions();
 }

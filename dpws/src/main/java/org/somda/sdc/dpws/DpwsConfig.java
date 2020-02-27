@@ -35,7 +35,7 @@ public class DpwsConfig {
      * <li>Use: optional
      * </ul>
      */
-    public static final String COMMUNICATION_LOG_DIRECTORY = "Dpws.CommunicationLogDirectory";
+    public static final String COMMUNICATION_LOG_SINK_DIRECTORY = "Dpws.CommunicationLogSinkDirectory";
 
     /**
      * Defines the timeout the http client uses when connecting to an endpoint.

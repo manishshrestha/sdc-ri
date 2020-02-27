@@ -4,6 +4,8 @@ import com.google.common.util.concurrent.Service;
 import org.somda.sdc.dpws.soap.SoapMessage;
 import org.somda.sdc.dpws.soap.wseventing.model.Notification;
 
+import java.time.Duration;
+
 /**
  * Subscription manager interface that is used by event sources.
  */
@@ -30,4 +32,13 @@ public interface SourceSubscriptionManager extends SubscriptionManager, Service 
      * @param endToMessage the message to send. This message is supposed to be a valid end-to message.
      */
     void sendToEndTo(SoapMessage endToMessage);
+
+    /**
+     * Resets the expires duration.
+     * <p>
+     * This will also affect {@link #getExpiresTimeout()}.
+     *
+     * @param expires the duration to reset.
+     */
+    void renew(Duration expires);
 }

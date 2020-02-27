@@ -54,7 +54,7 @@ public class DefaultDpwsConfigModule extends AbstractConfigurationModule {
                 Integer.class,
                 DpwsConstants.MAX_ENVELOPE_SIZE);
 
-        bind(DpwsConfig.COMMUNICATION_LOG_DIRECTORY,
+        bind(DpwsConfig.COMMUNICATION_LOG_SINK_DIRECTORY,
                 File.class,
                 new File("commlog"));
 
@@ -129,21 +129,15 @@ public class DefaultDpwsConfigModule extends AbstractConfigurationModule {
     }
 
     private void configureWsEventingConfig() {
-        bind(WsEventingConfig.NOTIFICATION_STALE_DURATION,
-                Duration.class,
-                Duration.ofSeconds(10));
         bind(WsEventingConfig.SOURCE_MAX_EXPIRES,
                 Duration.class,
                 Duration.ofHours(1));
-        bind(WsEventingConfig.SOURCE_MAX_RETRIES_ON_DELIVERY_FAILURE,
-                Integer.class,
-                3);
         bind(WsEventingConfig.SOURCE_SUBSCRIPTION_MANAGER_PATH,
                 String.class,
                 "SubscriptionManager");
         bind(WsEventingConfig.NOTIFICATION_QUEUE_CAPACITY,
                 Integer.class,
-                Integer.valueOf(500));
+                500);
     }
 
     private void configureSoapConfig() {

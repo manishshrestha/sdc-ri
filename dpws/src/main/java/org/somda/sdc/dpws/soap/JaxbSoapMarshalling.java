@@ -95,6 +95,9 @@ public class JaxbSoapMarshalling extends AbstractIdleService implements SoapMars
         checkRunning();
         final Marshaller marshaller = jaxbContext.createMarshaller();
         marshaller.setProperty(NamespacePrefixMapperConverter.JAXB_MARSHALLER_PROPERTY_KEY, namespacePrefixMapper);
+        if (schema != null) {
+            marshaller.setSchema(schema);
+        }
         marshaller.marshal(soapFactory.createEnvelope(envelope), outputStream);
     }
 

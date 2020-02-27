@@ -3,20 +3,15 @@ package org.somda.sdc.dpws.http.jetty;
 import com.google.common.util.concurrent.AbstractIdleService;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
-import org.eclipse.jetty.http.HttpStatus;
 import org.eclipse.jetty.io.EndPoint;
 import org.eclipse.jetty.io.ssl.SslConnection;
 import org.eclipse.jetty.server.*;
-import org.eclipse.jetty.server.handler.AbstractHandler;
 import org.eclipse.jetty.server.handler.ContextHandler;
 import org.eclipse.jetty.server.handler.ContextHandlerCollection;
 import org.eclipse.jetty.server.handler.gzip.GzipHandler;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
-import org.glassfish.grizzly.ssl.SSLContextConfigurator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.somda.sdc.dpws.CommunicationLog;
-import org.somda.sdc.dpws.CommunicationLogImpl;
 import org.somda.sdc.dpws.DpwsConfig;
 import org.somda.sdc.dpws.crypto.CryptoConfig;
 import org.somda.sdc.dpws.crypto.CryptoConfigurator;
@@ -24,58 +19,61 @@ import org.somda.sdc.dpws.crypto.CryptoSettings;
 import org.somda.sdc.dpws.http.HttpHandler;
 import org.somda.sdc.dpws.http.HttpServerRegistry;
 import org.somda.sdc.dpws.http.HttpUriBuilder;
+import org.somda.sdc.dpws.http.jetty.factory.JettyHttpServerHandlerFactory;
 import org.somda.sdc.dpws.soap.SoapConstants;
-import org.somda.sdc.dpws.soap.TransportInfo;
-import org.somda.sdc.dpws.soap.exception.MarshallingException;
-import org.somda.sdc.dpws.soap.exception.TransportException;
 
 import javax.annotation.Nullable;
 import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLEngine;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.URI;
 import java.net.UnknownHostException;
-import java.security.cert.X509Certificate;
-import java.util.*;
+import java.security.KeyManagementException;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.UnrecoverableKeyException;
+import java.security.cert.CertificateException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
- * {@linkplain HttpServerRegistry} implementation based on Apache HttpComponents HTTP servers.
+ * {@linkplain HttpServerRegistry} implementation based on Jetty HTTP servers.
  */
 public class JettyHttpServerRegistry extends AbstractIdleService implements HttpServerRegistry {
     private static final Logger LOG = LoggerFactory.getLogger(JettyHttpServerRegistry.class);
 
+    private JettyHttpServerHandlerFactory jettyHttpServerHandlerFactory;
+
     private final Map<String, Server> serverRegistry;
-    private final Map<String, MyHandler> handlerRegistry;
+    private final Map<String, JettyHttpServerHandler> handlerRegistry;
     private final Map<String, ContextHandler> contextWrapperRegistry;
     private final Map<Server, ContextHandlerCollection> contextHandlerMap;
     private final Lock registryLock;
     private final HttpUriBuilder uriBuilder;
-    private final CommunicationLog communicationLog;
     private final boolean enableGzipCompression;
     private final int minCompressionSize;
     private final String[] tlsProtocols;
     private final HostnameVerifier hostnameVerifier;
-    private SSLContextConfigurator sslContextConfigurator; // null => no support for SSL enabled/configured
+    private SSLContext sslContext;
 
     @Inject
     JettyHttpServerRegistry(HttpUriBuilder uriBuilder,
                             CryptoConfigurator cryptoConfigurator,
                             @Nullable @Named(CryptoConfig.CRYPTO_SETTINGS) CryptoSettings cryptoSettings,
-                            CommunicationLog communicationLog,
+                            JettyHttpServerHandlerFactory jettyHttpServerHandlerFactory,
                             @Named(DpwsConfig.HTTP_GZIP_COMPRESSION) boolean enableGzipCompression,
                             @Named(DpwsConfig.HTTP_RESPONSE_COMPRESSION_MIN_SIZE) int minCompressionSize,
                             @Named(CryptoConfig.CRYPTO_TLS_ENABLED_VERSIONS) String[] tlsProtocols,
                             @Named(CryptoConfig.CRYPTO_DEVICE_HOSTNAME_VERIFIER) HostnameVerifier hostnameVerifier) {
         this.uriBuilder = uriBuilder;
-        this.communicationLog = communicationLog;
+        this.jettyHttpServerHandlerFactory = jettyHttpServerHandlerFactory;
         this.enableGzipCompression = enableGzipCompression;
         this.minCompressionSize = minCompressionSize;
         this.tlsProtocols = tlsProtocols;
@@ -184,7 +182,9 @@ public class JettyHttpServerRegistry extends AbstractIdleService implements Http
                 throw new RuntimeException("Unexpected URI conversion error");
             }
             URI mapKeyUri = URI.create(mapKey);
-            MyHandler endpointHandler = new MyHandler(mediaType, handler, mapKeyUri.toString());
+
+            JettyHttpServerHandler endpointHandler = this.jettyHttpServerHandlerFactory.create(
+                    this.sslContext != null, mediaType, handler);
 
             ContextHandler context = new ContextHandler(contextPath);
             context.setHandler(endpointHandler);
@@ -253,15 +253,21 @@ public class JettyHttpServerRegistry extends AbstractIdleService implements Http
     private void configureSsl(CryptoConfigurator cryptoConfigurator,
                               @Nullable CryptoSettings cryptoSettings) {
         if (cryptoSettings == null) {
-            sslContextConfigurator = null;
+            sslContext = null;
             return;
         }
 
         try {
-            sslContextConfigurator = cryptoConfigurator.createSslContextConfiguratorFromCryptoConfig(cryptoSettings);
-        } catch (IllegalArgumentException e) {
+            sslContext = cryptoConfigurator.createSslContextFromCryptoConfig(cryptoSettings);
+        } catch (IllegalArgumentException |
+                KeyStoreException |
+                UnrecoverableKeyException |
+                CertificateException |
+                NoSuchAlgorithmException |
+                IOException |
+                KeyManagementException e) {
             LOG.warn("Could not read server crypto config, fallback to system properties");
-            sslContextConfigurator = cryptoConfigurator.createSslContextConfiguratorSystemProperties();
+            sslContext = cryptoConfigurator.createSslContextFromSystemProperties();
         }
     }
 
@@ -331,9 +337,9 @@ public class JettyHttpServerRegistry extends AbstractIdleService implements Http
             server.setHandler(gzipHandler);
         }
 
-        if (sslContextConfigurator != null && uri.getScheme().equalsIgnoreCase("https")) {
+        if (sslContext != null && uri.getScheme().equalsIgnoreCase("https")) {
             SslContextFactory.Server fac = new SslContextFactory.Server();
-            fac.setSslContext(sslContextConfigurator.createSSLContext(true));
+            fac.setSslContext(sslContext);
             fac.setNeedClientAuth(true);
 
             if (LOG.isDebugEnabled()) {
@@ -399,74 +405,5 @@ public class JettyHttpServerRegistry extends AbstractIdleService implements Http
 
     private String makeMapKey(URI uri, String contextPath) throws UnknownHostException {
         return makeMapKey(uri) + contextPath;
-    }
-
-    private class MyHandler extends AbstractHandler {
-
-        private final String mediaType;
-        private final HttpHandler handler;
-        private final String requestedUri;
-
-        MyHandler(String mediaType,
-                  HttpHandler handler,
-                  String requestedUri) {
-            this.mediaType = mediaType;
-            this.handler = handler;
-            this.requestedUri = requestedUri;
-        }
-
-        @Override
-        public void handle(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response) throws IOException {
-            LOG.debug("Request to {}", request.getRequestURL());
-
-            var certificates = getX509Certificates(request);
-
-            InputStream input = communicationLog.logHttpMessage(CommunicationLogImpl.HttpDirection.INBOUND_REQUEST,
-                    request.getRemoteHost(), request.getRemotePort(), request.getInputStream());
-
-            response.setStatus(HttpStatus.OK_200);
-            response.setContentType(mediaType);
-
-            OutputStream output = communicationLog.logHttpMessage(CommunicationLogImpl.HttpDirection.OUTBOUND_RESPONSE,
-                    request.getRemoteHost(), request.getRemotePort(), response.getOutputStream());
-
-            try {
-                handler.process(input, output,
-                        new TransportInfo(
-                                request.getScheme(),
-                                request.getLocalAddr(),
-                                request.getLocalPort(),
-                                request.getRemoteAddr(),
-                                request.getRemotePort(),
-                                certificates));
-            } catch (TransportException | MarshallingException | ClassCastException e) {
-                LOG.error("", e);
-                response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR_500);
-                output.write(e.getMessage().getBytes());
-                output.flush();
-                output.close();
-            } finally {
-                baseRequest.setHandled(true);
-            }
-        }
-
-        private Collection<X509Certificate> getX509Certificates(HttpServletRequest request) throws IOException {
-            var anonymousCertificates = request.getAttribute("javax.servlet.request.X509Certificate");
-            if (sslContextConfigurator != null) {
-                if (anonymousCertificates == null) {
-                    LOG.error("Certificate information is missing from HTTP request data");
-                    throw new IOException("Certificate information is missing from HTTP request data");
-                } else {
-                    if (anonymousCertificates instanceof X509Certificate[]) {
-                        return List.of((X509Certificate[]) anonymousCertificates);
-                    } else {
-                        LOG.error("Certificate information is of an unexpected type: {}", anonymousCertificates.getClass());
-                        throw new IOException(String.format("Certificate information is of an unexpected type: %s",
-                                anonymousCertificates.getClass()));
-                    }
-                }
-            }
-            return Collections.emptyList();
-        }
     }
 }

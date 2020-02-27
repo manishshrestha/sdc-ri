@@ -4,6 +4,8 @@ import com.google.common.util.concurrent.Service;
 import org.somda.sdc.dpws.soap.interception.Interceptor;
 import org.somda.sdc.dpws.soap.wseventing.model.WsEventingStatus;
 
+import java.util.Map;
+
 /**
  * Interface to provide WS-Eventing event source functions.
  */
@@ -22,4 +24,12 @@ public interface EventSource extends Interceptor, Service {
      * @param status the subscription end reason.
      */
     void subscriptionEndToAll(WsEventingStatus status);
+
+    /**
+     * Returns all active subscription ids with their {@linkplain SubscriptionManager}.
+     *
+     * @return Map of subscription ids and {@linkplain SubscriptionManager}s.
+     */
+    Map<String, SubscriptionManager> getActiveSubscriptions();
+
 }
