@@ -1,49 +1,33 @@
 package org.somda.sdc.dpws.http.apache;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.SocketException;
-import java.net.URI;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
-
-import javax.xml.bind.JAXBException;
-
-import org.apache.http.Header;
+import com.google.common.io.ByteStreams;
+import com.google.inject.Inject;
+import com.google.inject.assistedinject.Assisted;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHeaders;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.ByteArrayEntity;
-import org.apache.http.impl.client.AbstractHttpClient;
-import org.apache.http.protocol.HttpCoreContext;
 import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.somda.sdc.dpws.CommunicationLog;
 import org.somda.sdc.dpws.TransportBinding;
 import org.somda.sdc.dpws.TransportBindingException;
-import org.somda.sdc.dpws.soap.ApplicationInfo;
-import org.somda.sdc.dpws.soap.CommunicationContext;
-import org.somda.sdc.dpws.soap.HttpApplicationInfo;
 import org.somda.sdc.dpws.soap.SoapConstants;
 import org.somda.sdc.dpws.soap.SoapMarshalling;
 import org.somda.sdc.dpws.soap.SoapMessage;
 import org.somda.sdc.dpws.soap.SoapUtil;
-import org.somda.sdc.dpws.soap.TransportInfo;
 import org.somda.sdc.dpws.soap.exception.SoapFaultException;
 
-import com.google.common.io.ByteStreams;
-import com.google.inject.Inject;
-import com.google.inject.assistedinject.Assisted;
+import javax.xml.bind.JAXBException;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.SocketException;
+import java.net.URI;
 
 public class ClientTransportBinding implements TransportBinding {
     private static final Logger LOG = LoggerFactory.getLogger(ClientTransportBinding.class);
@@ -159,15 +143,6 @@ public class ClientTransportBinding implements TransportBinding {
         }
 
         return soapUtil.createMessage();
-    }
-
-    public static Map<String, String> allHeadersToMap(Header[] allHeaders) {
-        Map<String, String> mappedHeaders = new HashMap<>();
-        Arrays.stream(allHeaders).forEach(header -> mappedHeaders.put(
-                header.getName(),
-                header.getValue()
-        ));
-        return mappedHeaders;
     }
 
     @Override

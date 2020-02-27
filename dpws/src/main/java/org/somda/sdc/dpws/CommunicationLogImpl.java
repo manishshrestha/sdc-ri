@@ -6,7 +6,6 @@ import org.apache.commons.io.output.TeeOutputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.somda.sdc.dpws.soap.CommunicationContext;
-import org.somda.sdc.dpws.soap.HttpApplicationInfo;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;

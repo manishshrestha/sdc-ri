@@ -4,11 +4,15 @@ import org.apache.commons.io.input.TeeInputStream;
 import org.apache.commons.io.output.TeeOutputStream;
 import org.apache.http.HttpEntity;
 import org.apache.http.entity.HttpEntityWrapper;
+import org.somda.sdc.dpws.CommunicationLog;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+/**
+ * Entity wrapper to enable {@linkplain CommunicationLog} capabilities in the http client
+ */
 public class CommunicationLogEntity extends HttpEntityWrapper {
     private final OutputStream communicationLogStream;
     private InputStream content;
@@ -46,7 +50,7 @@ public class CommunicationLogEntity extends HttpEntityWrapper {
         return false;
     }
 
-    TeeInputStream getWrappedStream() throws IOException {
+    private TeeInputStream getWrappedStream() throws IOException {
         final InputStream in = wrappedEntity.getContent();
         return new TeeInputStream(in, communicationLogStream);
     }

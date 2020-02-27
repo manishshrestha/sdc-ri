@@ -1,12 +1,18 @@
 package org.somda.sdc.dpws.http.apache;
 
 import com.google.inject.Inject;
-import org.apache.http.*;
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpEntityEnclosingRequest;
+import org.apache.http.HttpException;
+import org.apache.http.HttpHost;
+import org.apache.http.HttpRequest;
+import org.apache.http.HttpRequestInterceptor;
 import org.apache.http.protocol.HttpContext;
 import org.apache.http.protocol.HttpCoreContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.somda.sdc.dpws.CommunicationLog;
+import org.somda.sdc.dpws.http.apache.helper.ApacheClientHelper;
 import org.somda.sdc.dpws.soap.CommunicationContext;
 import org.somda.sdc.dpws.soap.HttpApplicationInfo;
 import org.somda.sdc.dpws.soap.TransportInfo;
@@ -15,6 +21,9 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Collections;
 
+/**
+ * Request interceptor which writes the outgoing request message and headers into the {@linkplain CommunicationLog}
+ */
 public class CommunicationLogHttpRequestInterceptor implements HttpRequestInterceptor {
     private static final Logger LOG = LoggerFactory.getLogger(CommunicationLogHttpRequestInterceptor.class);
 
@@ -41,7 +50,7 @@ public class CommunicationLogHttpRequestInterceptor implements HttpRequestInterc
         HttpEntity oldMessageEntity = entityRequest.getEntity();
 
         var requestHttpApplicationInfo = new HttpApplicationInfo(
-                ClientTransportBinding.allHeadersToMap(request.getAllHeaders())
+                ApacheClientHelper.allHeadersToMap(request.getAllHeaders())
         );
 
         // collect information for TransportInfo

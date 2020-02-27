@@ -10,6 +10,9 @@ import java.io.OutputStream;
 import java.nio.channels.Channels;
 import java.nio.channels.WritableByteChannel;
 
+/**
+ * {@linkplain HttpInput.Interceptor} which logs messages to a stream
+ */
 public class CommunicationLogInputInterceptor implements HttpInput.Interceptor, Destroyable {
     private static final Logger LOG = LoggerFactory.getLogger(CommunicationLogInputInterceptor.class);
 

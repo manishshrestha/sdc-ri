@@ -12,11 +12,15 @@ import org.somda.sdc.dpws.soap.TransportInfo;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * {@linkplain HandlerWrapper} which enables {@linkplain CommunicationLog} capabilities for requests and responses
+ */
 public class CommunicationLogHandlerWrapper extends HandlerWrapper {
 
     private final CommunicationLog commLog;
@@ -31,20 +35,19 @@ public class CommunicationLogHandlerWrapper extends HandlerWrapper {
     @Override
     public void handle(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
 
-        // log request
         // collect information for HttpApplicationInfo
-        Map<String, String> headerMap = new HashMap<>();
+        Map<String, String> requestHeaderMap = new HashMap<>();
         request.getHeaderNames().asIterator().forEachRemaining(
-                headerName -> headerMap.put(headerName, request.getHeader(headerName))
+                headerName -> requestHeaderMap.put(headerName, request.getHeader(headerName))
         );
 
         var requestHttpApplicationInfo = new HttpApplicationInfo(
-                headerMap
+                requestHeaderMap
         );
 
         // collect information for TransportInfo
         var requestCertificates = JettyHttpServerHandler.getX509Certificates(request, expectTLS);
-        var requestTransportInfo = new TransportInfo(
+        var transportInfo = new TransportInfo(
                 request.getScheme(),
                 request.getLocalAddr(),
                 request.getLocalPort(),
@@ -53,26 +56,40 @@ public class CommunicationLogHandlerWrapper extends HandlerWrapper {
                 requestCertificates
         );
 
-        var requestCommContext = new CommunicationContext(requestHttpApplicationInfo, requestTransportInfo);
+        var requestCommContext = new CommunicationContext(requestHttpApplicationInfo, transportInfo);
 
         OutputStream input = commLog.logMessage(
                 CommunicationLog.Direction.INBOUND,
                 CommunicationLog.TransportType.HTTP,
                 requestCommContext);
-        OutputStream output = commLog.logMessage(
-                CommunicationLog.Direction.OUTBOUND,
-                CommunicationLog.TransportType.HTTP,
-                requestCommContext, response.getOutputStream());
         var out = baseRequest.getResponse().getHttpOutput();
 
-        // log requests
+        // attach interceptor to log request
         baseRequest.getHttpInput().addInterceptor(new CommunicationLogInputInterceptor(input));
-        // log responses
-        HttpOutput.Interceptor previousInterceptor = out.getInterceptor();
-        new CommunicationLogOutputInterceptor(output, previousInterceptor);
 
-        try {
+        HttpOutput.Interceptor previousInterceptor = out.getInterceptor();
+        try (ByteArrayOutputStream outputMessage = new ByteArrayOutputStream()) {
+            // attach interceptor to log response
+            new CommunicationLogOutputInterceptor(outputMessage, previousInterceptor);
+
+            // trigger request handling
             super.handle(target, baseRequest, request, response);
+
+            Map<String, String> responseHeaderMap = new HashMap<>();
+            request.getHeaderNames().asIterator().forEachRemaining(
+                    headerName -> responseHeaderMap.put(headerName, request.getHeader(headerName))
+            );
+
+            var responseHttpApplicationInfo = new HttpApplicationInfo(
+                    responseHeaderMap
+            );
+
+            var responseCommContext = new CommunicationContext(responseHttpApplicationInfo, transportInfo);
+
+            outputMessage.writeTo(commLog.logMessage(
+                    CommunicationLog.Direction.OUTBOUND,
+                    CommunicationLog.TransportType.HTTP,
+                    responseCommContext));
         } finally {
             // reset interceptor if request not handled
             if (!baseRequest.isHandled() && !baseRequest.isAsyncStarted())
