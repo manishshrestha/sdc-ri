@@ -55,31 +55,28 @@ public class CommunicationLogHandlerWrapper extends HandlerWrapper {
 
         var requestCommContext = new CommunicationContext(requestHttpApplicationInfo, requestTransportInfo);
 
-        try (OutputStream input = commLog.logMessage(
+        OutputStream input = commLog.logMessage(
                 CommunicationLog.Direction.INBOUND,
                 CommunicationLog.TransportType.HTTP,
                 requestCommContext);
-             OutputStream output = commLog.logMessage(
-                     CommunicationLog.Direction.OUTBOUND,
-                     CommunicationLog.TransportType.HTTP,
-                     requestCommContext, response.getOutputStream())) {
-            var out = baseRequest.getResponse().getHttpOutput();
+        OutputStream output = commLog.logMessage(
+                CommunicationLog.Direction.OUTBOUND,
+                CommunicationLog.TransportType.HTTP,
+                requestCommContext, response.getOutputStream());
+        var out = baseRequest.getResponse().getHttpOutput();
 
-            baseRequest.getHttpInput().addInterceptor(new CommunicationLogInputInterceptor(input));
+        // log requests
+        baseRequest.getHttpInput().addInterceptor(new CommunicationLogInputInterceptor(input));
+        // log responses
+        HttpOutput.Interceptor previousInterceptor = out.getInterceptor();
+        new CommunicationLogOutputInterceptor(output, previousInterceptor);
 
-            // log response handling
-            HttpOutput.Interceptor previousInterceptor = out.getInterceptor();
-            new CommunicationLogOutputInterceptor(output, previousInterceptor);
-
-            try {
-                super.handle(target, baseRequest, request, response);
-            } finally {
-                // reset interceptor if request not handled
-                if (!baseRequest.isHandled() && !baseRequest.isAsyncStarted())
-                    out.setInterceptor(previousInterceptor);
-            }
+        try {
+            super.handle(target, baseRequest, request, response);
+        } finally {
+            // reset interceptor if request not handled
+            if (!baseRequest.isHandled() && !baseRequest.isAsyncStarted())
+                out.setInterceptor(previousInterceptor);
         }
-
-
     }
 }

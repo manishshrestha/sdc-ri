@@ -31,16 +31,8 @@ public class CommunicationLogImpl implements CommunicationLog {
     @Override
     public TeeOutputStream logMessage(Direction direction, TransportType transportType, CommunicationContext communicationContext,
                                       OutputStream message) {
-
         OutputStream logFile = this.logSink.getTargetStream(transportType, direction, communicationContext);
-
-        if (communicationContext.getApplicationInfo() instanceof HttpApplicationInfo) {
-            var appInfo = (HttpApplicationInfo) communicationContext.getApplicationInfo();
-            LOG.warn("http headers in {} log message {}", direction.toString(), appInfo.getHttpHeaders());
-        }
-
         return new TeeOutputStream(message, logFile);
-
     }
 
     @Override
@@ -51,29 +43,19 @@ public class CommunicationLogImpl implements CommunicationLog {
     @Override
     public InputStream logMessage(Direction direction, TransportType transportType,
                                   CommunicationContext communicationContext, InputStream message) {
-
-        if (communicationContext.getApplicationInfo() instanceof HttpApplicationInfo) {
-            var appInfo = (HttpApplicationInfo) communicationContext.getApplicationInfo();
-            LOG.warn("http headers in {} log message {}", direction.toString(), appInfo.getHttpHeaders());
-        }
-
         return writeLogFile(transportType, direction, communicationContext, message);
     }
 
     private InputStream writeLogFile(TransportType transportType, Direction direction, CommunicationContext communicationContext,
                                      InputStream inputStream) {
-
         try {
             final byte[] bytes = ByteStreams.toByteArray(inputStream);
 
             new ByteArrayInputStream(bytes).transferTo(this.logSink.getTargetStream(transportType, direction, communicationContext));
-
             return new ByteArrayInputStream(bytes);
-
         } catch (IOException e) {
             LOG.warn("Could not write to communication log file", e);
         }
-
         return inputStream;
     }
 
