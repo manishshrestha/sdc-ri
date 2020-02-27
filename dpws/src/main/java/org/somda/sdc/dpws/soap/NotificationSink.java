@@ -9,8 +9,8 @@ public interface NotificationSink extends InterceptorHandler {
     /**
      * Starts processing of an incoming SOAP notification message.
      *
-     * @param notification incoming request message.
-     * @param transportInfo transport layer information (addresses, security, etc).
+     * @param notification         incoming request message.
+     * @param communicationContext transport and application layer information (addresses, security, etc).
      */
-    void receiveNotification(SoapMessage notification, TransportInfo transportInfo);
+    void receiveNotification(SoapMessage notification, CommunicationContext communicationContext);
 }

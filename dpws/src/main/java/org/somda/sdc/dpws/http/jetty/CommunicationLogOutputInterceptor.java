@@ -11,7 +11,6 @@ import org.somda.sdc.dpws.soap.CommunicationContext;
 import org.somda.sdc.dpws.soap.HttpApplicationInfo;
 import org.somda.sdc.dpws.soap.TransportInfo;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
@@ -26,7 +25,6 @@ import java.util.Map;
 public class CommunicationLogOutputInterceptor implements HttpOutput.Interceptor, Destroyable {
     private static final Logger LOG = LoggerFactory.getLogger(CommunicationLogOutputInterceptor.class);
 
-    private final ByteArrayOutputStream bufferStream;
     private final HttpChannel channel;
     private final CommunicationLog communicationLog;
     private final TransportInfo transportInfo;
@@ -39,7 +37,6 @@ public class CommunicationLogOutputInterceptor implements HttpOutput.Interceptor
         this.communicationLog = communicationLog;
         this.nextInterceptor = nextInterceptor;
         this.transportInfo = transportInfo;
-        this.bufferStream = new ByteArrayOutputStream();
         this.commlogStream = null;
     }
 
@@ -98,7 +95,6 @@ public class CommunicationLogOutputInterceptor implements HttpOutput.Interceptor
     @Override
     public void destroy() {
         try {
-            this.bufferStream.close();
             this.commlogStream.close();
         } catch (IOException e) {
             LOG.error("Error while closing commlog stream", e);

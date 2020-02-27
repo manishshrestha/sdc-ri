@@ -47,7 +47,10 @@ import java.util.concurrent.TimeUnit;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(LoggingTestWatcher.class)
 public class CryptoIT {
@@ -184,8 +187,8 @@ public class CryptoIT {
 
                             @MessageInterceptor(value = TestServiceMetadata.ACTION_NOTIFICATION_1)
                             void onNotification(NotificationObject message) {
-                                assertTrue(message.getTransportInfo().isPresent());
-                                assertFalse(message.getTransportInfo().get().getX509Certificates().isEmpty());
+                                assertTrue(message.getCommunicationContext().isPresent());
+                                assertFalse(message.getCommunicationContext().get().getTransportInfo().getX509Certificates().isEmpty());
                                 receivedNotifications.add(
                                         soapUtil.getBody(message.getNotification(), TestNotification.class)
                                                 .orElseThrow(() -> new RuntimeException("TestNotification could not be converted")));

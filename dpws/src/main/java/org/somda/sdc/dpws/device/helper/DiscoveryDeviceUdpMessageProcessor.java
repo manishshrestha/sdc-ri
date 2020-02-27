@@ -8,7 +8,14 @@ import org.slf4j.LoggerFactory;
 import org.somda.sdc.common.util.ExecutorWrapperService;
 import org.somda.sdc.dpws.DpwsConstants;
 import org.somda.sdc.dpws.guice.AppDelayExecutor;
-import org.somda.sdc.dpws.soap.*;
+import org.somda.sdc.dpws.soap.ApplicationInfo;
+import org.somda.sdc.dpws.soap.CommunicationContext;
+import org.somda.sdc.dpws.soap.MarshallingService;
+import org.somda.sdc.dpws.soap.RequestResponseServer;
+import org.somda.sdc.dpws.soap.SoapDebug;
+import org.somda.sdc.dpws.soap.SoapMessage;
+import org.somda.sdc.dpws.soap.SoapUtil;
+import org.somda.sdc.dpws.soap.TransportInfo;
 import org.somda.sdc.dpws.soap.exception.MarshallingException;
 import org.somda.sdc.dpws.soap.exception.SoapFaultException;
 import org.somda.sdc.dpws.soap.wsdiscovery.WsDiscoveryConstants;
@@ -75,7 +82,7 @@ public class DiscoveryDeviceUdpMessageProcessor implements UdpMessageQueueObserv
 
         // Forward SOAP message to given request response interceptor chain
         try {
-            requestResponseServer.receiveRequestResponse(request, response, msg.getCommunicationContext().getTransportInfo());
+            requestResponseServer.receiveRequestResponse(request, response, msg.getCommunicationContext());
         } catch (SoapFaultException e) {
             LOG.debug("SOAP fault thrown [{}]", e.getMessage());
             return;

@@ -9,6 +9,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.somda.sdc.dpws.CommunicationLog;
 import org.somda.sdc.dpws.http.HttpHandler;
+import org.somda.sdc.dpws.soap.CommunicationContext;
+import org.somda.sdc.dpws.soap.HttpApplicationInfo;
 import org.somda.sdc.dpws.soap.TransportInfo;
 import org.somda.sdc.dpws.soap.exception.MarshallingException;
 import org.somda.sdc.dpws.soap.exception.TransportException;
@@ -19,7 +21,9 @@ import java.io.IOException;
 import java.security.cert.X509Certificate;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 
 /**
@@ -57,15 +61,29 @@ public class JettyHttpServerHandler extends AbstractHandler {
         var input = request.getInputStream();
         var output = response.getOutputStream();
 
+        // collect information for HttpApplicationInfo
+        Map<String, String> requestHeaderMap = new HashMap<>();
+        request.getHeaderNames().asIterator().forEachRemaining(
+                headerName -> requestHeaderMap.put(headerName, request.getHeader(headerName))
+        );
+
+        var requestHttpApplicationInfo = new HttpApplicationInfo(
+                requestHeaderMap
+        );
+
         try {
             handler.process(input, output,
-                    new TransportInfo(
-                            request.getScheme(),
-                            request.getLocalAddr(),
-                            request.getLocalPort(),
-                            request.getRemoteAddr(),
-                            request.getRemotePort(),
-                            getX509Certificates(request, expectTLS)));
+                    new CommunicationContext(requestHttpApplicationInfo,
+                            new TransportInfo(
+                                    request.getScheme(),
+                                    request.getLocalAddr(),
+                                    request.getLocalPort(),
+                                    request.getRemoteAddr(),
+                                    request.getRemotePort(),
+                                    getX509Certificates(request, expectTLS)
+                            )
+                    )
+            );
 
         } catch (TransportException | MarshallingException | ClassCastException e) {
             LOG.error("", e);

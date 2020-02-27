@@ -15,7 +15,6 @@ import org.somda.sdc.dpws.http.HttpServerRegistry;
 import org.somda.sdc.dpws.http.HttpUriBuilder;
 import org.somda.sdc.dpws.soap.SoapMessage;
 import org.somda.sdc.dpws.soap.SoapUtil;
-import org.somda.sdc.dpws.soap.TransportInfo;
 import org.somda.sdc.dpws.soap.exception.SoapFaultException;
 import org.somda.sdc.dpws.soap.factory.EnvelopeFactory;
 import org.somda.sdc.dpws.soap.factory.SoapMessageFactory;
@@ -36,7 +35,14 @@ import javax.annotation.Nullable;
 import java.net.URI;
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Supplier;
@@ -168,8 +174,8 @@ public class EventSourceInterceptor extends AbstractIdleService implements Event
         Duration grantedExpires = grantExpires(validateExpires(subscribe.getExpires()));
 
         // Create subscription
-        var transportInfo = rrObj.getTransportInfo().orElseThrow(() ->
-                new RuntimeException("Fatal error. Missing transport information."));
+        var transportInfo = rrObj.getCommunicationContext().orElseThrow(() ->
+                new RuntimeException("Fatal error. Missing transport information.")).getTransportInfo();
         EndpointReferenceType epr = createSubscriptionManagerEprAndRegisterHttpHandler(
                 transportInfo.getScheme(),
                 transportInfo.getLocalAddress().orElseThrow(() ->

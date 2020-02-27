@@ -1,9 +1,19 @@
 package org.somda.sdc.dpws.soap.wsdiscovery;
 
 import com.google.common.primitives.UnsignedInteger;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.somda.sdc.dpws.DpwsTest;
-import org.somda.sdc.dpws.soap.factory.SoapMessageFactory;
+import org.somda.sdc.dpws.soap.ApplicationInfo;
+import org.somda.sdc.dpws.soap.CommunicationContext;
+import org.somda.sdc.dpws.soap.NotificationSource;
+import org.somda.sdc.dpws.soap.RequestResponseServer;
+import org.somda.sdc.dpws.soap.SoapMarshalling;
+import org.somda.sdc.dpws.soap.SoapMessage;
+import org.somda.sdc.dpws.soap.SoapUtil;
+import org.somda.sdc.dpws.soap.TransportInfo;
 import org.somda.sdc.dpws.soap.factory.NotificationSourceFactory;
+import org.somda.sdc.dpws.soap.factory.SoapMessageFactory;
 import org.somda.sdc.dpws.soap.model.Envelope;
 import org.somda.sdc.dpws.soap.wsaddressing.model.AttributedURIType;
 import org.somda.sdc.dpws.soap.wsaddressing.model.EndpointReferenceType;
@@ -11,9 +21,6 @@ import org.somda.sdc.dpws.soap.wsaddressing.model.ObjectFactory;
 import org.somda.sdc.dpws.soap.wsdiscovery.factory.WsDiscoveryTargetServiceFactory;
 import org.somda.sdc.dpws.soap.wsdiscovery.model.ByeType;
 import org.somda.sdc.dpws.soap.wsdiscovery.model.HelloType;
-import org.somda.sdc.dpws.soap.*;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 
 import javax.xml.namespace.QName;
 import java.util.ArrayList;
@@ -37,19 +44,22 @@ public class WsDiscoveryDiscoveryAccessInterceptorTest extends DpwsTest {
     private SoapMarshalling unmarshaller;
     private RequestResponseServer reqResServer;
     private SoapMessageFactory soapMessageFactory;
-    private TransportInfo mockTransportInfo;
+    private CommunicationContext mockCommunicationContext;
 
     @Override
     @BeforeEach
     public void setUp() throws Exception {
         super.setUp();
-        mockTransportInfo = new TransportInfo(
-                "mock.scheme",
-                "localhost",
-                123,
-                "remotehost",
-                456,
-                Collections.emptyList()
+        mockCommunicationContext = new CommunicationContext(
+                new ApplicationInfo(),
+                new TransportInfo(
+                        "mock.scheme",
+                        "localhost",
+                        123,
+                        "remotehost",
+                        456,
+                        Collections.emptyList()
+                )
         );
 
         sentSoapMessages = new ArrayList<>();
@@ -143,7 +153,7 @@ public class WsDiscoveryDiscoveryAccessInterceptorTest extends DpwsTest {
 
         SoapMessage response = soapUtil.createMessage();
         assertEquals(0, response.getOriginalEnvelope().getBody().getAny().size());
-        reqResServer.receiveRequestResponse(probe, response, mockTransportInfo);
+        reqResServer.receiveRequestResponse(probe, response, mockCommunicationContext);
         assertEquals(1, response.getOriginalEnvelope().getBody().getAny().size());
     }
 
@@ -154,7 +164,7 @@ public class WsDiscoveryDiscoveryAccessInterceptorTest extends DpwsTest {
 
         SoapMessage response = soapUtil.createMessage();
         assertEquals(0, response.getOriginalEnvelope().getBody().getAny().size());
-        reqResServer.receiveRequestResponse(resolve, response, mockTransportInfo);
+        reqResServer.receiveRequestResponse(resolve, response, mockCommunicationContext);
         assertEquals(1, response.getOriginalEnvelope().getBody().getAny().size());
     }
 }

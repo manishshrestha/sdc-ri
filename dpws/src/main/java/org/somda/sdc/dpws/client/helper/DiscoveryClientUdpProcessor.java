@@ -52,6 +52,6 @@ public class DiscoveryClientUdpProcessor implements UdpMessageQueueObserver {
         }
 
         // Forward SOAP message to given notification interceptor chain
-        notificationSink.receiveNotification(notification, msg.getCommunicationContext().getTransportInfo());
+        notificationSink.receiveNotification(notification, msg.getCommunicationContext());
     }
 }

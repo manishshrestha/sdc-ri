@@ -20,7 +20,7 @@ public class UdpMessage {
      *
      * @param data                 the payload of the UDP message.
      * @param length               the actual message length.
-     * @param communicationContext message transport and application information
+     * @param communicationContext message transport and application information.
      */
     public UdpMessage(byte[] data, int length, CommunicationContext communicationContext) {
         this.data = data;
@@ -83,9 +83,9 @@ public class UdpMessage {
     }
 
     /**
-     * Returns the communication context stored in this message
+     * Returns the communication context stored in this message.
      *
-     * @return communication context containing transport information and more
+     * @return communication context containing transport information and more.
      */
     public CommunicationContext getCommunicationContext() {
         return communicationContext;

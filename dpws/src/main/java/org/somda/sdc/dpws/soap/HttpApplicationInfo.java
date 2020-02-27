@@ -3,6 +3,9 @@ package org.somda.sdc.dpws.soap;
 import java.util.Map;
 import java.util.TreeMap;
 
+/**
+ * Utility class to provide application layer information for http.
+ */
 public class HttpApplicationInfo extends ApplicationInfo {
 
     private final Map<String, String> httpHeaders;

@@ -100,7 +100,7 @@ public class ClientTransportBinding implements TransportBinding {
             LOG.error("No response received in request to {}", this.clientUri, e);
             throw new TransportBindingException(e);
         } catch (IOException e) {
-            LOG.error("Unexpected IO exception on request to {}", this.clientUri, e);
+            LOG.error("Unexpected IO exception on request to {}", this.clientUri);
             LOG.trace("Unexpected IO exception on request to {}", this.clientUri, e);
             throw new TransportBindingException("No response received");
         }
