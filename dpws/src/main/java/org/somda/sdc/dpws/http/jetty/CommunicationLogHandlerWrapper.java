@@ -18,14 +18,13 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * {@linkplain HandlerWrapper} which enables {@linkplain CommunicationLog} capabilities for requests and responses
+ * {@linkplain HandlerWrapper} which enables {@linkplain CommunicationLog} capabilities for requests and responses.
  */
 public class CommunicationLogHandlerWrapper extends HandlerWrapper {
 
     private final CommunicationLog commLog;
     private final boolean expectTLS;
 
-    @Inject
     CommunicationLogHandlerWrapper(CommunicationLog commLog, boolean expectTLS) {
         this.commLog = commLog;
         this.expectTLS = expectTLS;

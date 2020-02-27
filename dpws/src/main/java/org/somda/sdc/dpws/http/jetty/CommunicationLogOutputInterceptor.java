@@ -21,7 +21,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * {@linkplain HttpOutput.Interceptor} which logs messages to a stream
+ * {@linkplain HttpOutput.Interceptor} which logs messages to a stream.
  */
 public class CommunicationLogOutputInterceptor implements HttpOutput.Interceptor, Destroyable {
     private static final Logger LOG = LoggerFactory.getLogger(CommunicationLogOutputInterceptor.class);

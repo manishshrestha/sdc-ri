@@ -21,14 +21,13 @@ import java.io.OutputStream;
 import java.util.Collections;
 
 /**
- * Response interceptor which writes the incoming response message and headers into the {@linkplain CommunicationLog}
+ * Response interceptor which writes the incoming response message and headers into the {@linkplain CommunicationLog}.
  */
 public class CommunicationLogHttpResponseInterceptor implements HttpResponseInterceptor {
     private static final Logger LOG = LoggerFactory.getLogger(CommunicationLogHttpResponseInterceptor.class);
 
     private final CommunicationLog commlog;
 
-    @Inject
     CommunicationLogHttpResponseInterceptor(CommunicationLog communicationLog) {
         this.commlog = communicationLog;
     }

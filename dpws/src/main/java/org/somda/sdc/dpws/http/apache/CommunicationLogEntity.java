@@ -11,7 +11,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 /**
- * Entity wrapper to enable {@linkplain CommunicationLog} capabilities in the http client
+ * Entity wrapper to enable {@linkplain CommunicationLog} capabilities in the http client.
  */
 public class CommunicationLogEntity extends HttpEntityWrapper {
     private final OutputStream communicationLogStream;
@@ -21,7 +21,7 @@ public class CommunicationLogEntity extends HttpEntityWrapper {
      * Creates a new entity wrapper.
      *
      * @param wrappedEntity          the entity to wrap.
-     * @param communicationLogStream the stream to also write the content to
+     * @param communicationLogStream the stream to also write the content to.
      */
     public CommunicationLogEntity(HttpEntity wrappedEntity, OutputStream communicationLogStream) {
         super(wrappedEntity);
