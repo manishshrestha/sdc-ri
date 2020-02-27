@@ -4,6 +4,12 @@ import com.google.inject.AbstractModule;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import org.apache.http.HttpHeaders;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.ByteArrayEntity;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.util.EntityUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -13,10 +19,12 @@ import org.slf4j.LoggerFactory;
 import org.somda.sdc.dpws.CommunicationLog;
 import org.somda.sdc.dpws.CommunicationLogImpl;
 import org.somda.sdc.dpws.CommunicationLogSink;
+import org.somda.sdc.dpws.DpwsConfig;
 import org.somda.sdc.dpws.DpwsTest;
 import org.somda.sdc.dpws.TransportBinding;
 import org.somda.sdc.dpws.factory.TransportBindingFactory;
-import org.somda.sdc.dpws.guice.DefaultDpwsModule;
+import org.somda.sdc.dpws.guice.DefaultDpwsConfigModule;
+import org.somda.sdc.dpws.http.jetty.JettyHttpServerRegistry;
 import org.somda.sdc.dpws.soap.CommunicationContext;
 import org.somda.sdc.dpws.soap.HttpApplicationInfo;
 import org.somda.sdc.dpws.soap.SoapConstants;
@@ -34,7 +42,9 @@ import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -49,9 +59,17 @@ public class CommunicationLogIT extends DpwsTest {
     private EnvelopeFactory envelopeFactory;
     private SoapMarshalling marshalling;
     private TestCommLogSink logSink;
+    private JettyHttpServerRegistry httpServerRegistry;
 
     @BeforeEach
     public void setUp() throws Exception {
+        var dpwsOverride = new DefaultDpwsConfigModule() {
+            @Override
+            public void customConfigure() {
+                // ensure commlog works with compression enabled and doesn't store compressed messages
+                bind(DpwsConfig.HTTP_GZIP_COMPRESSION, Boolean.class, true);
+            }
+        };
         var override = new AbstractModule() {
             @Override
             protected void configure() {
@@ -59,8 +77,10 @@ public class CommunicationLogIT extends DpwsTest {
                 bind(CommunicationLog.class).to(CommunicationLogImpl.class).asEagerSingleton();
             }
         };
-        this.overrideBindings(override);
+        this.overrideBindings(List.of(dpwsOverride, override));
         super.setUp();
+
+        httpServerRegistry = getInjector().getInstance(JettyHttpServerRegistry.class);
         transportBindingFactory = getInjector().getInstance(TransportBindingFactory.class);
         soapMessageFactory = getInjector().getInstance(SoapMessageFactory.class);
         envelopeFactory = getInjector().getInstance(EnvelopeFactory.class);
@@ -124,37 +144,102 @@ public class CommunicationLogIT extends DpwsTest {
             ByteArrayOutputStream actualResponseStream = new ByteArrayOutputStream();
             marshalling.marshal(response.getEnvelopeWithMappedHeaders(), actualResponseStream);
 
-            // response bytes should exactly match our expected bytes, transparently decompressed
+            // response bytes should exactly match our expected bytes
             assertArrayEquals(expectedResponseStream.toByteArray(), actualResponseStream.toByteArray());
 
             // requests must contain our message
-            var req = logSink.getRequests().get(0);
-            var resp = logSink.getResponses().get(0);
+            var req = logSink.getOutbound().get(0);
+            var resp = logSink.getInbound().get(0);
 
             assertArrayEquals(actualRequestStream.toByteArray(), req.toByteArray());
             assertArrayEquals(expectedResponseStream.toByteArray(), resp.toByteArray());
 
+            // ensure response headers are logged
             assertEquals(
                     ResponseHandler.TEST_HEADER_VALUE,
-                    logSink.getResponseHeaders().get(0).get(ResponseHandler.TEST_HEADER_KEY)
+                    logSink.getInboundHeaders().get(0).get(ResponseHandler.TEST_HEADER_KEY)
             );
 
             logSink.clear();
         }
     }
 
+    @Test
+    void testServerCommlog() throws Exception {
+        URI baseUri = URI.create("http://127.0.0.1:0");
+        final String contextPath = "/ctxt/path1";
+
+        final String expectedRequest = "The quick brown fox jumps over the lazy dog";
+        final String expectedResponse = "Franz jagt im komplett verwahrlosten Taxi quer durch Bayern";
+        AtomicReference<String> resultString = new AtomicReference<>();
+
+        httpServerRegistry.startAsync().awaitRunning();
+        URI srvUri1 = httpServerRegistry.registerContext(
+                baseUri, contextPath, (req, res, ti) -> {
+                    try {
+                        byte[] bytes = req.readAllBytes();
+                        resultString.set(new String(bytes));
+
+                        // write response
+                        res.write(expectedResponse.getBytes());
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
+                });
+
+        // as we explicitly want to set http headers and avoid the commlog, we build our own client
+        HttpClient client = HttpClients.custom().setMaxConnPerRoute(1).build();
+
+        // create post request and set custom header
+        HttpPost post = new HttpPost(srvUri1);
+        String customHeaderKey = "thecustomheader";
+        String customHeaderValue = "theCUSTOMvalue";
+        post.setHeader(customHeaderKey, customHeaderValue);
+
+        // attach payload
+        var requestEntity = new ByteArrayEntity(expectedRequest.getBytes());
+        post.setEntity(requestEntity);
+
+        for (int i = 0; i < 10; i++) {
+            HttpResponse response = client.execute(post);
+            var responseBytes = response.getEntity().getContent().readAllBytes();
+
+            // slurp up any leftover data
+            EntityUtils.consume(response.getEntity());
+
+            // writing the response is asynchronous and might happen later, wait a second
+            Thread.sleep(100);
+
+            assertEquals(expectedRequest, resultString.get());
+            assertArrayEquals(expectedResponse.getBytes(), responseBytes);
+
+            var req = logSink.getInbound().get(0);
+            var resp = logSink.getOutbound().get(0);
+
+            assertArrayEquals(expectedRequest.getBytes(), req.toByteArray());
+            assertArrayEquals(expectedResponse.getBytes(), resp.toByteArray());
+
+            // ensure request headers are logged
+            assertEquals(
+                    customHeaderValue,
+                    logSink.getInboundHeaders().get(0).get(customHeaderKey)
+            );
+            logSink.clear();
+        }
+    }
+
     static class TestCommLogSink implements CommunicationLogSink {
 
-        private final ArrayList<ByteArrayOutputStream> requests;
-        private final ArrayList<ByteArrayOutputStream> responses;
-        private final ArrayList<Map<String, String>> requestHeaders;
-        private final ArrayList<Map<String, String>> responseHeaders;
+        private final ArrayList<ByteArrayOutputStream> inbound;
+        private final ArrayList<ByteArrayOutputStream> outbound;
+        private final ArrayList<Map<String, String>> inboundHeaders;
+        private final ArrayList<Map<String, String>> outboundHeaders;
 
         TestCommLogSink() {
-            this.requests = new ArrayList<>();
-            this.responses = new ArrayList<>();
-            this.requestHeaders = new ArrayList<>();
-            this.responseHeaders = new ArrayList<>();
+            this.inbound = new ArrayList<>();
+            this.outbound = new ArrayList<>();
+            this.inboundHeaders = new ArrayList<>();
+            this.outboundHeaders = new ArrayList<>();
         }
 
         @Override
@@ -162,36 +247,36 @@ public class CommunicationLogIT extends DpwsTest {
             var os = new ByteArrayOutputStream();
             var appInfo = (HttpApplicationInfo) communicationContext.getApplicationInfo();
             if (CommunicationLog.Direction.INBOUND.equals(direction)) {
-                responses.add(os);
-                responseHeaders.add(appInfo.getHttpHeaders());
+                inbound.add(os);
+                inboundHeaders.add(appInfo.getHttpHeaders());
             } else {
-                requests.add(os);
-                requestHeaders.add(appInfo.getHttpHeaders());
+                outbound.add(os);
+                outboundHeaders.add(appInfo.getHttpHeaders());
             }
             return os;
         }
 
-        public ArrayList<ByteArrayOutputStream> getRequests() {
-            return requests;
+        public ArrayList<ByteArrayOutputStream> getInbound() {
+            return inbound;
         }
 
-        public ArrayList<ByteArrayOutputStream> getResponses() {
-            return responses;
+        public ArrayList<ByteArrayOutputStream> getOutbound() {
+            return outbound;
         }
 
-        public ArrayList<Map<String, String>> getRequestHeaders() {
-            return requestHeaders;
+        public ArrayList<Map<String, String>> getInboundHeaders() {
+            return inboundHeaders;
         }
 
-        public ArrayList<Map<String, String>> getResponseHeaders() {
-            return responseHeaders;
+        public ArrayList<Map<String, String>> getOutboundHeaders() {
+            return outboundHeaders;
         }
 
         public void clear() {
-            responses.clear();
-            requests.clear();
-            requestHeaders.clear();
-            responseHeaders.clear();
+            outbound.clear();
+            inbound.clear();
+            inboundHeaders.clear();
+            outboundHeaders.clear();
         }
     }
 

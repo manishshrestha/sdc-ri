@@ -70,7 +70,8 @@ public class CommunicationLogHandlerWrapper extends HandlerWrapper {
         HttpOutput.Interceptor previousInterceptor = out.getInterceptor();
         try (ByteArrayOutputStream outputMessage = new ByteArrayOutputStream()) {
             // attach interceptor to log response
-            new CommunicationLogOutputInterceptor(outputMessage, previousInterceptor);
+            var outInterceptor = new CommunicationLogOutputInterceptor(previousInterceptor);
+            out.setInterceptor(outInterceptor);
 
             // trigger request handling
             super.handle(target, baseRequest, request, response);
@@ -86,10 +87,11 @@ public class CommunicationLogHandlerWrapper extends HandlerWrapper {
 
             var responseCommContext = new CommunicationContext(responseHttpApplicationInfo, transportInfo);
 
-            outputMessage.writeTo(commLog.logMessage(
+            outInterceptor.setCommlogStream(commLog.logMessage(
                     CommunicationLog.Direction.OUTBOUND,
                     CommunicationLog.TransportType.HTTP,
-                    responseCommContext));
+                    responseCommContext)
+            );
         } finally {
             // reset interceptor if request not handled
             if (!baseRequest.isHandled() && !baseRequest.isAsyncStarted())
