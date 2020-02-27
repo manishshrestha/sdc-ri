@@ -23,10 +23,9 @@ import org.somda.sdc.glue.provider.SdcDeviceContext;
 import test.org.somda.common.LoggingTestWatcher;
 import test.org.somda.common.TestLogging;
 
-import java.net.URI;
 import java.util.*;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(LoggingTestWatcher.class)

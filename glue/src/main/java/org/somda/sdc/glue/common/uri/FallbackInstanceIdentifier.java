@@ -4,9 +4,6 @@ import org.somda.sdc.biceps.model.participant.InstanceIdentifier;
 import org.somda.sdc.biceps.model.participant.LocationDetail;
 import org.somda.sdc.glue.common.helper.UrlUtf8;
 
-import javax.annotation.Nullable;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 
 /**

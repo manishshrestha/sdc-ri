@@ -9,7 +9,6 @@ import org.somda.sdc.glue.common.uri.UriMapperGenerationArgumentException;
 import org.somda.sdc.glue.common.uri.UriMapperParsingException;
 
 import javax.annotation.Nullable;
-import java.net.URI;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;

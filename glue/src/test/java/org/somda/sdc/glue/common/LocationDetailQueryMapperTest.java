@@ -8,7 +8,6 @@ import org.somda.sdc.glue.common.uri.LocationDetailQueryMapper;
 import javax.annotation.Nullable;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
 
 class LocationDetailQueryMapperTest {
     @Test

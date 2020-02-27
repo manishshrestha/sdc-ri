@@ -1,5 +1,8 @@
 package org.somda.sdc.glue.provider.sco;
 
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.somda.sdc.biceps.model.message.InvocationError;
 import org.somda.sdc.biceps.model.message.InvocationState;
 import org.somda.sdc.biceps.model.message.OperationInvokedReport;
@@ -13,9 +16,6 @@ import org.somda.sdc.dpws.soap.exception.TransportException;
 import org.somda.sdc.glue.UnitTestUtil;
 import org.somda.sdc.glue.common.ActionConstants;
 import org.somda.sdc.glue.provider.sco.factory.ContextFactory;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
 
 import java.util.ArrayList;
 import java.util.List;
