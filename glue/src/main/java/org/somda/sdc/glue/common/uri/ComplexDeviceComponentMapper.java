@@ -31,7 +31,7 @@ public class ComplexDeviceComponentMapper {
                             "(?<nonAuthorityCode>" + GlueConstants.SEGMENT_NZ_REGEX + ")|" +
                             "((?i:sdc.cdc.type)://" +
                             "(?<authorityCodingsystemVersion>(" + GlueConstants.AUTHORITY + "))/" +
-                            "(?<authorityCode>" + GlueConstants.SEGMENT_NZ_REGEX + ")|" +
+                            "(?<authorityCode>" + GlueConstants.SEGMENT_NZ_REGEX + ")" +
                             ")" +
                             ")$"
             );
