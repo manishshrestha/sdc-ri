@@ -21,9 +21,9 @@ public class ContextIdentificationMapper {
 
     private static final Pattern PATTERN = Pattern
             .compile(
-                    "(?i:(?<contextsource>sdc.ctxt.(loc|pat|ens|wfl|opr|mns))):/" +
+                    "^(?i:(?<contextsource>sdc.ctxt.(loc|pat|ens|wfl|opr|mns))):/" +
                             "(?<root>" + GlueConstants.SEGMENT_NZ_REGEX + ")/" +
-                            "(?<extension>" + GlueConstants.SEGMENT_REGEX + "$)"
+                            "(?<extension>" + GlueConstants.SEGMENT_REGEX + ")$"
             );
 
     /**
@@ -33,11 +33,11 @@ public class ContextIdentificationMapper {
      * @param contextSource      the type of context to create a scheme for.
      * @return an URI that reflects the instance identifier.
      */
-    public static URI fromInstanceIdentifier(InstanceIdentifier instanceIdentifier,
-                                             ContextSource contextSource) {
+    public static String fromInstanceIdentifier(InstanceIdentifier instanceIdentifier,
+                                                ContextSource contextSource) {
         final String root = instanceIdentifier.getRootName() == null ? NULL_FLAVOR_ROOT : UrlUtf8.encode(instanceIdentifier.getRootName());
         final String extension = UrlUtf8.encode(instanceIdentifier.getExtensionName());
-        return URI.create(contextSource.getSourceString() + ":/" + root + "/" + extension);
+        return contextSource.getSourceString() + ":/" + root + "/" + extension;
     }
 
     /**

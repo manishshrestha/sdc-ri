@@ -90,7 +90,7 @@ public class SdcDiscoveryFilterBuilder {
     public <T extends AbstractComplexDeviceComponentDescriptor> SdcDiscoveryFilterBuilder addDeviceComponent(T component) {
 
         try {
-            addScope(ComplexDeviceComponentMapper.fromComplexDeviceComponent(component).toString());
+            addScope(ComplexDeviceComponentMapper.fromComplexDeviceComponent(component));
         } catch (UriMapperGenerationArgumentException e) {
             LOG.warn("The URI generation based on the given component failed", e);
         }

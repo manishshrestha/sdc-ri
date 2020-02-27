@@ -83,7 +83,7 @@ public class DeviceImpl extends AbstractIdleService implements Device, Service, 
     private WsDiscoveryTargetService wsdTargetService;
     private HostingService hostingService;
     private final List<HostedService> hostedServicesOnStartup;
-    private Collection<URI> scopesOnStartup;
+    private Collection<String> scopesOnStartup;
     private List<QName> typesOnStartup;
     private ThisDeviceType thisDeviceOnStartup;
     private ThisModelType thisModelOnStartup;
@@ -287,7 +287,7 @@ public class DeviceImpl extends AbstractIdleService implements Device, Service, 
     }
 
     @Override
-    public void setScopes(Collection<URI> scopes) {
+    public void setScopes(Collection<String> scopes) {
         if (isRunning()) {
             wsdTargetService.setScopes(scopesAsStrs(scopes));
         } else {
@@ -306,11 +306,11 @@ public class DeviceImpl extends AbstractIdleService implements Device, Service, 
         }
     }
 
-    private List<String> scopesAsStrs(@Nullable Collection<URI> scopes) {
+    private List<String> scopesAsStrs(@Nullable Collection<String> scopes) {
         if (scopes == null) {
             scopes = Collections.emptyList();
         }
-        return scopes.stream().map(URI::toString).collect(Collectors.toList());
+        return new ArrayList<>(scopes);
     }
 
     @Override

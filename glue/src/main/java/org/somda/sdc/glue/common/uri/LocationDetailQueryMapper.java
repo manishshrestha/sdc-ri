@@ -29,7 +29,7 @@ public class LocationDetailQueryMapper {
      * @return a URI with appended location detail parameters or the URI if something went wrong during URI re-construction.
      */
     public static URI createWithLocationDetailQuery(InstanceIdentifier instanceIdentifier, LocationDetail locationDetail) {
-        final URI uri = ContextIdentificationMapper.fromInstanceIdentifier(instanceIdentifier,
+        final String uri = ContextIdentificationMapper.fromInstanceIdentifier(instanceIdentifier,
                 ContextIdentificationMapper.ContextSource.Location);
         StringBuilder queryParams = new StringBuilder("?");
         int count = 0;
@@ -53,7 +53,7 @@ public class LocationDetailQueryMapper {
         }
 
         final String queryParamsString = queryParams.toString();
-        return URI.create(uri.getScheme() + ":" + uri.getRawSchemeSpecificPart() +
+        return URI.create(uri +
                 (queryParamsString.equals("?") ? "" : queryParamsString));
     }
 

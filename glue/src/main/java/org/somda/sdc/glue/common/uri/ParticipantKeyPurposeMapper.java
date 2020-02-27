@@ -23,8 +23,8 @@ public class ParticipantKeyPurposeMapper {
      * @param oid the OID to convert.
      * @return the converted URI.
      */
-    public static URI fromOid(Oid oid) {
-        return URI.create(SCHEME + ":" + oid.toString());
+    public static String fromOid(Oid oid) {
+        return SCHEME + ":" + oid.toString();
     }
 
     /**
