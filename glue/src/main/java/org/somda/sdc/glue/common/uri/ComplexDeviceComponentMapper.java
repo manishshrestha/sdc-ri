@@ -116,6 +116,6 @@ public class ComplexDeviceComponentMapper {
         }
 
         throw new UriMapperParsingException(
-                "Invalid URI for the mapper " + ComplexDeviceComponentMapper.class.toString() );
+                "Invalid URI for the mapper " + ComplexDeviceComponentMapper.class.toString());
     }
 }

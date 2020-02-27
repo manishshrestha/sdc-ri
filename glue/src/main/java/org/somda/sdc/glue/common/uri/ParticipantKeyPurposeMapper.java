@@ -6,6 +6,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Utility class to map between Participant Key Purpose URIs and OIDs.
@@ -15,6 +17,16 @@ import java.util.Optional;
 public class ParticipantKeyPurposeMapper {
     private static final Logger LOG = LoggerFactory.getLogger(ParticipantKeyPurposeMapper.class);
     private static final String SCHEME = "sdc.mds.pkp";
+    private static final String NO_LEADING_ZERO_EXCEPT_FOR_SINGLE_DIGIT = "(0|([1-9][0-9]*))";
+    private static final String OID_SEGMENT =
+            "(" +
+                    "(" +
+                    "(" + NO_LEADING_ZERO_EXCEPT_FOR_SINGLE_DIGIT + ".)*" +
+                    "(" + NO_LEADING_ZERO_EXCEPT_FOR_SINGLE_DIGIT + "." + NO_LEADING_ZERO_EXCEPT_FOR_SINGLE_DIGIT + ")" +
+                    "(." + NO_LEADING_ZERO_EXCEPT_FOR_SINGLE_DIGIT + ")*" +
+                    ")|" +
+                    NO_LEADING_ZERO_EXCEPT_FOR_SINGLE_DIGIT + ")";
+    private static final Pattern PATTERN = Pattern.compile("^((?i:" + SCHEME + "):(?<oid>" + OID_SEGMENT + "))$");
 
     /**
      * Creates a Participant Key Purpose URI out of an OID.
@@ -22,8 +34,17 @@ public class ParticipantKeyPurposeMapper {
      * @param oid the OID to convert.
      * @return the converted URI.
      */
-    public static String fromOid(Oid oid) {
-        return SCHEME + ":" + oid.toString();
+    public static String fromOid(Oid oid) throws UriMapperGenerationArgumentException {
+        final String uri = SCHEME + ":" + oid.toString();
+
+        try {
+            fromString(uri);
+        } catch (UriMapperParsingException e) {
+            throw new UriMapperGenerationArgumentException("No valid URI could be generated from the given OID: " +
+                    oid.toString());
+        }
+
+        return uri;
     }
 
     /**
@@ -32,19 +53,21 @@ public class ParticipantKeyPurposeMapper {
      * @param uri the URI to convert.
      * @return the converted OID or {@link Optional#empty()} if something went wrong.
      */
-    public static Optional<Oid> fromString(String uri) {
-        // TODO: add validating parser
-        if (uri.startsWith(SCHEME)) {
-            LOG.info("Unrecognized URI scheme. Expected '{}', actual is '{}'", SCHEME, uri);
-            return Optional.empty();
+    public static Oid fromString(String uri) throws UriMapperParsingException {
+
+        Matcher matcher = PATTERN.matcher(uri);
+
+        if (matcher.matches()) {
+            try {
+                return new Oid(matcher.group("oid"));
+            } catch (GSSException e) {
+                throw new UriMapperParsingException(
+                        "Invalid URI for the mapper " + ParticipantKeyPurposeMapper.class.toString() +
+                                " due to GSSException " + e.toString());
+            }
         }
 
-        try {
-            Oid oid = new Oid(uri);
-            return Optional.of(oid);
-        } catch (GSSException e) {
-            LOG.info("Received malformed participant key purpose URI: {}", uri);
-            return Optional.empty();
-        }
+        throw new UriMapperParsingException(
+                "Invalid URI for the mapper " + ParticipantKeyPurposeMapper.class.toString());
     }
 }
