@@ -4,47 +4,56 @@ import org.junit.jupiter.api.Test;
 import org.somda.sdc.biceps.model.participant.CodedValue;
 import org.somda.sdc.biceps.model.participant.MdsDescriptor;
 import org.somda.sdc.biceps.model.participant.factory.CodedValueFactory;
+import org.somda.sdc.glue.common.uri.ComplexDeviceComponentMapper;
+import org.somda.sdc.glue.common.uri.UriMapperGenerationArgumentException;
+import org.somda.sdc.glue.common.uri.UriMapperParsingException;
 
 import javax.annotation.Nullable;
 import java.net.URI;
-import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class ComplexDeviceComponentMapperTest {
 
     @Test
-    void fromComplexDeviceComponent() {
+    void fromComplexDeviceComponent() throws UriMapperGenerationArgumentException {
         {
-            assertTrue(ComplexDeviceComponentMapper.fromComplexDeviceComponent(new MdsDescriptor()).isEmpty());
+            assertThrows(
+                    UriMapperGenerationArgumentException.class,
+                    () -> ComplexDeviceComponentMapper.fromComplexDeviceComponent(new MdsDescriptor())
+            );
         }
         {
-            final Optional<URI> actualUri = ComplexDeviceComponentMapper.fromComplexDeviceComponent(
-                    createComponent(null, "bar", null));
-            String expectedUri = "sdc.cdc.type://bar/";
-            assertTrue(actualUri.isPresent());
-            assertEquals(expectedUri, actualUri.get().toString());
+            final URI actualUri = ComplexDeviceComponentMapper.fromComplexDeviceComponent(
+                    createComponent(null, "bar", "1"));
+            String expectedUri = "sdc.cdc.type://bar/1";
+            assertEquals(expectedUri, actualUri.toString());
         }
         {
-            final Optional<URI> actualUri = ComplexDeviceComponentMapper.fromComplexDeviceComponent(
+            final URI actualUri = ComplexDeviceComponentMapper.fromComplexDeviceComponent(
                     createComponent("foo", "bar", "fii"));
             String expectedUri = "sdc.cdc.type:/foo/bar/fii";
-            assertTrue(actualUri.isPresent());
-            assertEquals(expectedUri, actualUri.get().toString());
+            assertEquals(expectedUri, actualUri.toString());
         }
     }
 
     @Test
-    void fromCodedValue() {
+    void fromCodedValue() throws UriMapperGenerationArgumentException {
         {
-            var actualUri = ComplexDeviceComponentMapper.fromCodedValue(
-                    CodedValueFactory.createCodedValue(null, "bar", null));
-            String expectedUri = "sdc.cdc.type://bar/";
+            URI actualUri = ComplexDeviceComponentMapper.fromCodedValue(
+                    CodedValueFactory.createCodedValue(null, "bar", "1"));
+            String expectedUri = "sdc.cdc.type://bar/1";
             assertEquals(expectedUri, actualUri.toString());
         }
         {
-            var actualUri = ComplexDeviceComponentMapper.fromCodedValue(
+            URI actualUri = ComplexDeviceComponentMapper.fromCodedValue(
+                    CodedValueFactory.createCodedValue(null, "@:", "1"));
+            String expectedUri = "sdc.cdc.type://%40%3A/1";
+            assertEquals(expectedUri, actualUri.toString());
+        }
+        {
+            URI actualUri = ComplexDeviceComponentMapper.fromCodedValue(
                     CodedValueFactory.createCodedValue("foo", "bar", "fii"));
             String expectedUri = "sdc.cdc.type:/foo/bar/fii";
             assertEquals(expectedUri, actualUri.toString());
@@ -52,66 +61,92 @@ class ComplexDeviceComponentMapperTest {
     }
 
     @Test
-    void fromUri() {
+    void fromUri() throws UriMapperParsingException {
         {
-            assertTrue(ComplexDeviceComponentMapper.fromUri(URI.create("sdc.BAD.SCHEME:/foo/bar/fii")).isEmpty());
+            assertThrows(UriMapperParsingException.class,
+                    () -> ComplexDeviceComponentMapper.fromUri(URI.create("")));
         }
         {
-            assertTrue(ComplexDeviceComponentMapper.fromUri(URI.create("sdc.cdc.type:/foo/bar")).isEmpty());
+            assertThrows(UriMapperParsingException.class,
+                    () -> ComplexDeviceComponentMapper.fromUri(URI.create("sdc.BAD.SCHEME:/foo/bar/fii")));
         }
         {
-            assertTrue(ComplexDeviceComponentMapper.fromUri(URI.create("sdc.cdc.type:/foo/bar/")).isEmpty());
+            assertThrows(UriMapperParsingException.class,
+                    () -> ComplexDeviceComponentMapper.fromUri(URI.create("sdc.cdc.type:/foo/bar"))
+            );
         }
         {
-            assertTrue(ComplexDeviceComponentMapper.fromUri(URI.create("sdc.cdc.type:///")).isEmpty());
+            assertThrows(
+                    UriMapperParsingException.class,
+                    () -> ComplexDeviceComponentMapper.fromUri(URI.create("sdc.cdc.type:/foo/bar/"))
+            );
         }
         {
-            assertTrue(ComplexDeviceComponentMapper.fromUri(URI.create("sdc.cdc.type://@@/1")).isEmpty());
+            assertThrows(
+                    UriMapperParsingException.class,
+                    () -> ComplexDeviceComponentMapper.fromUri(URI.create("sdc.cdc.type:///"))
+            );
         }
         {
-            assertTrue(ComplexDeviceComponentMapper.fromUri(URI.create("sdc.cdc.type://@host@/1")).isEmpty());
+            assertThrows(
+                    UriMapperParsingException.class,
+                    () -> ComplexDeviceComponentMapper.fromUri(URI.create("sdc.cdc.type://@@/1"))
+            );
         }
         {
-            assertTrue(ComplexDeviceComponentMapper.fromUri(URI.create("sdc.cdc.type://@host:NoPort/1")).isEmpty());
+            assertThrows(
+                    UriMapperParsingException.class,
+                    () -> ComplexDeviceComponentMapper.fromUri(URI.create("sdc.cdc.type://@host@/1"))
+            );
         }
         {
-            assertTrue(ComplexDeviceComponentMapper.fromUri(URI.create("sdc.cdc.type://@@host/1")).isEmpty());
+            assertThrows(
+                    UriMapperParsingException.class,
+                    () -> ComplexDeviceComponentMapper.fromUri(URI.create("sdc.cdc.type://@host:NoPort/1"))
+            );
         }
         {
-            assertTrue(ComplexDeviceComponentMapper.fromUri(URI.create("sdc.cdc.type:/c///1")).isEmpty());
+            assertThrows(
+                    UriMapperParsingException.class,
+                    () -> ComplexDeviceComponentMapper.fromUri(URI.create("sdc.cdc.type://@@host/1"))
+            );
         }
         {
-            assertTrue(ComplexDeviceComponentMapper.fromUri(URI.create("sdc.cdc.type://:@:1/2")).isEmpty());
+            assertThrows(
+                    UriMapperParsingException.class,
+                    () -> ComplexDeviceComponentMapper.fromUri(URI.create("sdc.cdc.type:/c///1"))
+            );
         }
         {
-            Optional<CodedValue> actualCodedValue = ComplexDeviceComponentMapper.fromUri(URI.create("sdc.cdc.type://@host:/1"));
-            assertTrue(actualCodedValue.isPresent());
+            assertThrows(
+                    UriMapperParsingException.class,
+                    () -> ComplexDeviceComponentMapper.fromUri(URI.create("sdc.cdc.type://user@user@:1/2"))
+            );
+        }
+        {
+            CodedValue actualCodedValue = ComplexDeviceComponentMapper.fromUri(URI.create("sdc.cdc.type://@host:/1"));
             CodedValue expectedCodedValue = createCodedValue(null, "@host:", "1");
-            compare(expectedCodedValue, actualCodedValue.get());
+            compare(expectedCodedValue, actualCodedValue);
         }
         {
-            Optional<CodedValue> actualCodedValue = ComplexDeviceComponentMapper.fromUri(URI.create("sdc.cdc.type://:@host/1"));
-            assertTrue(actualCodedValue.isPresent());
+            CodedValue actualCodedValue = ComplexDeviceComponentMapper.fromUri(URI.create("sdc.cdc.type://:@host/1"));
             CodedValue expectedCodedValue = createCodedValue(null, ":@host", "1");
-            compare(expectedCodedValue, actualCodedValue.get());
+            compare(expectedCodedValue, actualCodedValue);
         }
         {
-            Optional<CodedValue> actualCodedValue = ComplexDeviceComponentMapper.fromUri(URI.create("sdc.cdc.type:/foo/bar/fii"));
-            assertTrue(actualCodedValue.isPresent());
+            CodedValue actualCodedValue = ComplexDeviceComponentMapper.fromUri(URI.create("sdc.cdc.type:/foo/bar/fii"));
             CodedValue expectedCodedValue = createCodedValue("foo", "bar", "fii");
-            compare(expectedCodedValue, actualCodedValue.get());
+            compare(expectedCodedValue, actualCodedValue);
         }
         {
-            Optional<CodedValue> actualCodedValue = ComplexDeviceComponentMapper.fromUri(URI.create("sdc.cdc.type://bar/fii"));
-            assertTrue(actualCodedValue.isPresent());
+            CodedValue actualCodedValue = ComplexDeviceComponentMapper.fromUri(URI.create("sdc.cdc.type://bar/fii"));
             CodedValue expectedCodedValue = createCodedValue(null, "bar", "fii");
-            compare(expectedCodedValue, actualCodedValue.get());
+            compare(expectedCodedValue, actualCodedValue);
         }
         {
-            Optional<CodedValue> actualCodedValue = ComplexDeviceComponentMapper.fromUri(URI.create("sdc.cdc.type:///1"));
-            assertTrue(actualCodedValue.isPresent());
+            CodedValue actualCodedValue = ComplexDeviceComponentMapper.fromUri(URI.create("sdc.cdc.type:///1"));
             CodedValue expectedCodedValue = createCodedValue(null, null, "1");
-            compare(expectedCodedValue, actualCodedValue.get());
+            compare(expectedCodedValue, actualCodedValue);
         }
     }
 

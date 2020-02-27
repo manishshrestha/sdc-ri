@@ -15,8 +15,9 @@ import org.somda.sdc.biceps.model.participant.LocationContextState;
 import org.somda.sdc.biceps.model.participant.MdsDescriptor;
 import org.somda.sdc.dpws.device.Device;
 import org.somda.sdc.glue.GlueConstants;
-import org.somda.sdc.glue.common.ComplexDeviceComponentMapper;
-import org.somda.sdc.glue.common.ContextIdentificationMapper;
+import org.somda.sdc.glue.common.uri.ComplexDeviceComponentMapper;
+import org.somda.sdc.glue.common.uri.ContextIdentificationMapper;
+import org.somda.sdc.glue.common.uri.UriMapperGenerationArgumentException;
 import org.somda.sdc.glue.provider.SdcDeviceContext;
 import org.somda.sdc.glue.provider.SdcDevicePlugin;
 import org.somda.sdc.mdpws.common.CommonConstants;
@@ -154,9 +155,14 @@ public class SdcRequiredTypesAndScopes implements SdcDevicePlugin, MdibAccessObs
                 .map(mdibEntity -> mdibEntity.getDescriptor(MdsDescriptor.class).get())
                 .collect(Collectors.toList());
 
-        var uris = new HashSet<URI>(mdsDescriptors.size());
+        HashSet<URI> uris = new HashSet<>(mdsDescriptors.size());
         for (MdsDescriptor mdsDescriptor : mdsDescriptors) {
-            ComplexDeviceComponentMapper.fromComplexDeviceComponent(mdsDescriptor).ifPresent(uris::add);
+            try {
+                uris.add(ComplexDeviceComponentMapper.fromComplexDeviceComponent(mdsDescriptor));
+            } catch (UriMapperGenerationArgumentException e) {
+                LOG.warn("The URI generation based on the given MdsDescriptor with the handle " +
+                        mdsDescriptor.getHandle() + " failed", e);
+            }
         }
 
         return uris;

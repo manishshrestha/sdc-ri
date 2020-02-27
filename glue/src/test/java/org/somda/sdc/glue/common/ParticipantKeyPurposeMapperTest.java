@@ -2,6 +2,7 @@ package org.somda.sdc.glue.common;
 
 import org.ietf.jgss.Oid;
 import org.junit.jupiter.api.Test;
+import org.somda.sdc.glue.common.uri.ParticipantKeyPurposeMapper;
 
 import java.net.URI;
 import java.util.Optional;

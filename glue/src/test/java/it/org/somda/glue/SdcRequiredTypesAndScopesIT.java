@@ -25,11 +25,12 @@ import org.somda.sdc.dpws.client.DiscoveredDevice;
 import org.somda.sdc.dpws.client.DiscoveryObserver;
 import org.somda.sdc.dpws.client.event.DeviceEnteredMessage;
 import org.somda.sdc.glue.GlueConstants;
-import org.somda.sdc.glue.common.ComplexDeviceComponentMapper;
-import org.somda.sdc.glue.common.ContextIdentificationMapper;
-import org.somda.sdc.glue.common.FallbackInstanceIdentifier;
+import org.somda.sdc.glue.common.uri.ComplexDeviceComponentMapper;
+import org.somda.sdc.glue.common.uri.ContextIdentificationMapper;
+import org.somda.sdc.glue.common.uri.FallbackInstanceIdentifier;
 import org.somda.sdc.glue.common.MdibXmlIo;
 import org.somda.sdc.glue.common.factory.ModificationsBuilderFactory;
+import org.somda.sdc.glue.common.uri.UriMapperGenerationArgumentException;
 import org.somda.sdc.glue.provider.SdcDeviceContext;
 import org.somda.sdc.glue.provider.SdcDevicePlugin;
 import org.somda.sdc.glue.provider.plugin.ScopesDecorator;
@@ -101,7 +102,6 @@ public class SdcRequiredTypesAndScopesIT {
         var mds = mdibAccess.getDescriptor(VentilatorMdibRunner.HANDLE_MDC_DEV_SYS_PT_VENT_MDS, MdsDescriptor.class);
         assertTrue(mds.isPresent());
         var expectedMdsScope = ComplexDeviceComponentMapper.fromComplexDeviceComponent(mds.get());
-        assertTrue(expectedMdsScope.isPresent());
 
         {
             // Test initial types and scopes
@@ -112,7 +112,7 @@ public class SdcRequiredTypesAndScopesIT {
 
             var expectedTypes = Arrays.asList(DpwsConstants.DEVICE_TYPE, CommonConstants.MEDICAL_DEVICE_TYPE);
             var expectedScopes = Arrays.asList(GlueConstants.SCOPE_SDC_PROVIDER.toString(),
-                    expectedMdsScope.get().toString());
+                    expectedMdsScope.toString());
 
             verifyCollection(expectedTypes, actualTypes);
             verifyCollection(expectedScopes, actualScopes);
@@ -124,7 +124,7 @@ public class SdcRequiredTypesAndScopesIT {
             assertTrue(discoveryObserverSpy.waitForEnteredDevices(1));
 
             var expectedScopes = Arrays.asList(GlueConstants.SCOPE_SDC_PROVIDER.toString(),
-                    expectedLocationScope.toString(), expectedMdsScope.get().toString());
+                    expectedLocationScope.toString(), expectedMdsScope.toString());
             var actualScopes = discoveryObserverSpy.getEnteredDevices().get(0).getScopes();
             verifyCollection(expectedScopes, actualScopes);
         }
@@ -140,16 +140,15 @@ public class SdcRequiredTypesAndScopesIT {
             assertTrue(discoveryObserverSpy.waitForEnteredDevices(2));
 
             expectedMdsScope = ComplexDeviceComponentMapper.fromComplexDeviceComponent(mds.get());
-            assertTrue(expectedMdsScope.isPresent());
             var expectedScopes = Arrays.asList(GlueConstants.SCOPE_SDC_PROVIDER.toString(),
-                    expectedLocationScope.toString(), expectedMdsScope.get().toString());
+                    expectedLocationScope.toString(), expectedMdsScope.toString());
             var actualScopes = discoveryObserverSpy.getEnteredDevices().get(1).getScopes();
             verifyCollection(expectedScopes, actualScopes);
         }
     }
 
     @Test
-    void checkAdditionalScopesOnUpdate() throws PreprocessingException {
+    void checkAdditionalScopesOnUpdate() throws PreprocessingException, UriMapperGenerationArgumentException {
         // Overwrite device and ventilator runner
         ventilatorMdibRunner = new VentilatorMdibRunner(
                 IT.getInjector().getInstance(MdibXmlIo.class),
@@ -173,7 +172,6 @@ public class SdcRequiredTypesAndScopesIT {
         var mds = mdibAccess.getDescriptor(VentilatorMdibRunner.HANDLE_MDC_DEV_SYS_PT_VENT_MDS, MdsDescriptor.class);
         assertTrue(mds.isPresent());
         var expectedMdsScope = ComplexDeviceComponentMapper.fromComplexDeviceComponent(mds.get());
-        assertTrue(expectedMdsScope.isPresent());
 
         {
             ventilatorMdibRunner.changeLocation(locationDetail);
@@ -182,7 +180,7 @@ public class SdcRequiredTypesAndScopesIT {
                     () -> "Count for entered devices was " + discoveryObserverSpy.getEnteredDevices().size());
 
             var expectedScopes = Arrays.asList(GlueConstants.SCOPE_SDC_PROVIDER.toString(),
-                    expectedLocationScope.toString(), expectedMdsScope.get().toString(),
+                    expectedLocationScope.toString(), expectedMdsScope.toString(),
                     MyScopesUpdater.SCOPE_ON_CONTEXT_UPDATE.toString());
             var actualScopes = discoveryObserverSpy.getEnteredDevices().get(0).getScopes();
             verifyCollection(expectedScopes, actualScopes);
@@ -199,9 +197,8 @@ public class SdcRequiredTypesAndScopesIT {
             assertTrue(discoveryObserverSpy.waitForEnteredDevices(2));
 
             expectedMdsScope = ComplexDeviceComponentMapper.fromComplexDeviceComponent(mds.get());
-            assertTrue(expectedMdsScope.isPresent());
             var expectedScopes = Arrays.asList(GlueConstants.SCOPE_SDC_PROVIDER.toString(),
-                    expectedLocationScope.toString(), expectedMdsScope.get().toString(),
+                    expectedLocationScope.toString(), expectedMdsScope.toString(),
                     MyScopesUpdater.SCOPE_ON_DESCRIPTION_UPDATE.toString());
             var actualScopes = discoveryObserverSpy.getEnteredDevices().get(1).getScopes();
             verifyCollection(expectedScopes, actualScopes);
@@ -263,7 +260,7 @@ public class SdcRequiredTypesAndScopesIT {
     }
 
 
-    private class DiscoveryObserverSpy implements DiscoveryObserver {
+    private static class DiscoveryObserverSpy implements DiscoveryObserver {
         private final List<DiscoveredDevice> enteredDevices = new ArrayList<>();
         private final TimedWait<List<DiscoveredDevice>> timedWait;
 
