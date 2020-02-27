@@ -32,6 +32,9 @@ import java.net.URI;
 public class ClientTransportBinding implements TransportBinding {
     private static final Logger LOG = LoggerFactory.getLogger(ClientTransportBinding.class);
 
+    public static final String USER_AGENT_KEY = "X-User-Agent";
+    public static final String USER_AGENT_VALUE = "SDCri";
+
     private final SoapMarshalling marshalling;
     private final SoapUtil soapUtil;
     private HttpClient client;
@@ -72,6 +75,7 @@ public class ClientTransportBinding implements TransportBinding {
         HttpPost post = new HttpPost(this.clientUri);
         post.setHeader(HttpHeaders.ACCEPT, SoapConstants.MEDIA_TYPE_SOAP);
         post.setHeader(HttpHeaders.CONTENT_TYPE, SoapConstants.MEDIA_TYPE_SOAP);
+        post.setHeader(USER_AGENT_KEY, USER_AGENT_VALUE);
 
         try {
             marshalling.marshal(request.getEnvelopeWithMappedHeaders(), byteArrayOutputStream);

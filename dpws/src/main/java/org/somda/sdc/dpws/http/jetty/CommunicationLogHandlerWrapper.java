@@ -12,7 +12,6 @@ import org.somda.sdc.dpws.soap.TransportInfo;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.HashMap;
@@ -68,30 +67,18 @@ public class CommunicationLogHandlerWrapper extends HandlerWrapper {
         baseRequest.getHttpInput().addInterceptor(new CommunicationLogInputInterceptor(input));
 
         HttpOutput.Interceptor previousInterceptor = out.getInterceptor();
-        try (ByteArrayOutputStream outputMessage = new ByteArrayOutputStream()) {
+        try {
             // attach interceptor to log response
-            var outInterceptor = new CommunicationLogOutputInterceptor(previousInterceptor);
+            var outInterceptor = new CommunicationLogOutputInterceptor(
+                    baseRequest.getHttpChannel(),
+                    previousInterceptor,
+                    commLog,
+                    transportInfo
+            );
             out.setInterceptor(outInterceptor);
 
             // trigger request handling
             super.handle(target, baseRequest, request, response);
-
-            Map<String, String> responseHeaderMap = new HashMap<>();
-            request.getHeaderNames().asIterator().forEachRemaining(
-                    headerName -> responseHeaderMap.put(headerName, request.getHeader(headerName))
-            );
-
-            var responseHttpApplicationInfo = new HttpApplicationInfo(
-                    responseHeaderMap
-            );
-
-            var responseCommContext = new CommunicationContext(responseHttpApplicationInfo, transportInfo);
-
-            outInterceptor.setCommlogStream(commLog.logMessage(
-                    CommunicationLog.Direction.OUTBOUND,
-                    CommunicationLog.TransportType.HTTP,
-                    responseCommContext)
-            );
         } finally {
             // reset interceptor if request not handled
             if (!baseRequest.isHandled() && !baseRequest.isAsyncStarted())

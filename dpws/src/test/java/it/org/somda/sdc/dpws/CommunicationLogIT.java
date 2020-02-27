@@ -24,6 +24,8 @@ import org.somda.sdc.dpws.DpwsTest;
 import org.somda.sdc.dpws.TransportBinding;
 import org.somda.sdc.dpws.factory.TransportBindingFactory;
 import org.somda.sdc.dpws.guice.DefaultDpwsConfigModule;
+import org.somda.sdc.dpws.http.apache.ClientTransportBinding;
+import org.somda.sdc.dpws.http.jetty.JettyHttpServerHandler;
 import org.somda.sdc.dpws.http.jetty.JettyHttpServerRegistry;
 import org.somda.sdc.dpws.soap.CommunicationContext;
 import org.somda.sdc.dpws.soap.HttpApplicationInfo;
@@ -48,7 +50,6 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @ExtendWith(LoggingTestWatcher.class)
 public class CommunicationLogIT extends DpwsTest {
@@ -154,6 +155,11 @@ public class CommunicationLogIT extends DpwsTest {
             assertArrayEquals(actualRequestStream.toByteArray(), req.toByteArray());
             assertArrayEquals(expectedResponseStream.toByteArray(), resp.toByteArray());
 
+            // ensure request headers are logged
+            assertEquals(
+                    ClientTransportBinding.USER_AGENT_VALUE,
+                    logSink.getOutboundHeaders().get(0).get(ClientTransportBinding.USER_AGENT_KEY)
+            );
             // ensure response headers are logged
             assertEquals(
                     ResponseHandler.TEST_HEADER_VALUE,
@@ -200,15 +206,12 @@ public class CommunicationLogIT extends DpwsTest {
         var requestEntity = new ByteArrayEntity(expectedRequest.getBytes());
         post.setEntity(requestEntity);
 
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < 100; i++) {
             HttpResponse response = client.execute(post);
             var responseBytes = response.getEntity().getContent().readAllBytes();
 
             // slurp up any leftover data
             EntityUtils.consume(response.getEntity());
-
-            // writing the response is asynchronous and might happen later, wait a second
-            Thread.sleep(100);
 
             assertEquals(expectedRequest, resultString.get());
             assertArrayEquals(expectedResponse.getBytes(), responseBytes);
@@ -223,6 +226,11 @@ public class CommunicationLogIT extends DpwsTest {
             assertEquals(
                     customHeaderValue,
                     logSink.getInboundHeaders().get(0).get(customHeaderKey)
+            );
+            // ensure response headers are logged
+            assertEquals(
+                    JettyHttpServerHandler.SERVER_HEADER_VALUE,
+                    logSink.getOutboundHeaders().get(0).get(JettyHttpServerHandler.SERVER_HEADER_KEY)
             );
             logSink.clear();
         }

@@ -27,6 +27,8 @@ import java.util.List;
  */
 public class JettyHttpServerHandler extends AbstractHandler {
     private static final Logger LOG = LoggerFactory.getLogger(JettyHttpServerHandler.class);
+    public static final String SERVER_HEADER_KEY = "X-Server";
+    public static final String SERVER_HEADER_VALUE = "SDCri";
 
     private final String mediaType;
     private final HttpHandler handler;
@@ -50,6 +52,7 @@ public class JettyHttpServerHandler extends AbstractHandler {
         LOG.debug("Request to {}", request.getRequestURL());
         response.setStatus(HttpStatus.OK_200);
         response.setContentType(mediaType);
+        response.setHeader(SERVER_HEADER_KEY, SERVER_HEADER_VALUE);
 
         var input = request.getInputStream();
         var output = response.getOutputStream();
