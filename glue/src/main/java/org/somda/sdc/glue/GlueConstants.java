@@ -64,7 +64,7 @@ public class GlueConstants {
      * <p>
      * This scope, encoded in accordance with SDC Glue clause 9.3, claims conformance with IEEE 11073-20701, published 2018.
      */
-    public static URI SCOPE_SDC_PROVIDER;
+    public static String SCOPE_SDC_PROVIDER;
 
     /**
      * SegmentNz and Segment regex definitions.

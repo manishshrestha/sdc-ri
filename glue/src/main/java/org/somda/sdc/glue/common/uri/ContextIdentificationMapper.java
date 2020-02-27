@@ -4,8 +4,6 @@ import org.somda.sdc.biceps.model.participant.*;
 import org.somda.sdc.glue.GlueConstants;
 import org.somda.sdc.glue.common.helper.UrlUtf8;
 
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -21,9 +19,9 @@ public class ContextIdentificationMapper {
 
     private static final Pattern PATTERN = Pattern
             .compile(
-                    "(?i:(?<contextsource>sdc.ctxt.(loc|pat|ens|wfl|opr|mns))):/" +
+                    "^(?i:(?<contextsource>sdc.ctxt.(loc|pat|ens|wfl|opr|mns))):/" +
                             "(?<root>" + GlueConstants.SEGMENT_NZ_REGEX + ")/" +
-                            "(?<extension>" + GlueConstants.SEGMENT_REGEX + "$)"
+                            "(?<extension>" + GlueConstants.SEGMENT_REGEX + ")$"
             );
 
     /**
@@ -33,11 +31,11 @@ public class ContextIdentificationMapper {
      * @param contextSource      the type of context to create a scheme for.
      * @return an URI that reflects the instance identifier.
      */
-    public static URI fromInstanceIdentifier(InstanceIdentifier instanceIdentifier,
-                                             ContextSource contextSource) {
+    public static String fromInstanceIdentifier(InstanceIdentifier instanceIdentifier,
+                                                ContextSource contextSource) {
         final String root = instanceIdentifier.getRootName() == null ? NULL_FLAVOR_ROOT : UrlUtf8.encode(instanceIdentifier.getRootName());
         final String extension = UrlUtf8.encode(instanceIdentifier.getExtensionName());
-        return URI.create(contextSource.getSourceString() + ":/" + root + "/" + extension);
+        return contextSource.getSourceString() + ":/" + root + "/" + extension;
     }
 
     /**
@@ -48,8 +46,8 @@ public class ContextIdentificationMapper {
      * @return the converted instance identifier or {@link Optional#empty()} if either there was a parsing error or
      * the scheme did not match the expected context source.
      */
-    public static Optional<InstanceIdentifier> fromUri(String contextIdentificationUri,
-                                                       ContextSource expectedContextSource) {
+    public static Optional<InstanceIdentifier> fromString(String contextIdentificationUri,
+                                                          ContextSource expectedContextSource) {
         Matcher matcher = PATTERN.matcher(contextIdentificationUri);
         if (matcher.matches()) {
             final String contextSource = matcher.group("contextsource");
@@ -63,32 +61,15 @@ public class ContextIdentificationMapper {
                 return Optional.empty();
             }
 
-            try {
-                final InstanceIdentifier instanceIdentifier = new InstanceIdentifier();
-                final String decodedRoot = new URI(UrlUtf8.decode(root)).toString();
-                instanceIdentifier.setRootName(decodedRoot.equals(NULL_FLAVOR_ROOT) ? null : decodedRoot);
-                final String decodedExtension = UrlUtf8.decode(extension);
-                instanceIdentifier.setExtensionName(decodedExtension.isEmpty() ? null : decodedExtension);
-                return Optional.of(instanceIdentifier);
-            } catch (URISyntaxException uriSyntaxException) {
-                return Optional.empty();
-            }
+            final InstanceIdentifier instanceIdentifier = new InstanceIdentifier();
+            final String decodedRoot = UrlUtf8.decode(root);
+            instanceIdentifier.setRootName(decodedRoot.equals(NULL_FLAVOR_ROOT) ? null : decodedRoot);
+            final String decodedExtension = UrlUtf8.decode(extension);
+            instanceIdentifier.setExtensionName(decodedExtension.isEmpty() ? null : decodedExtension);
+            return Optional.of(instanceIdentifier);
         }
 
         return Optional.empty();
-    }
-
-    /**
-     * Converts from an URI to an instance identifier.
-     *
-     * @param contextIdentificationUri the URI.
-     * @param expectedContextSource    the context source.
-     * @return the converted instance identifier.
-     * @see #fromUri(String, ContextSource)
-     */
-    public static Optional<InstanceIdentifier> fromUri(URI contextIdentificationUri,
-                                                       ContextSource expectedContextSource) {
-        return fromUri(contextIdentificationUri.toString(), expectedContextSource);
     }
 
     /**

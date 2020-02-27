@@ -5,7 +5,6 @@ import org.ietf.jgss.Oid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.net.URI;
 import java.util.Optional;
 
 /**
@@ -23,8 +22,8 @@ public class ParticipantKeyPurposeMapper {
      * @param oid the OID to convert.
      * @return the converted URI.
      */
-    public static URI fromOid(Oid oid) {
-        return URI.create(SCHEME + ":" + oid.toString());
+    public static String fromOid(Oid oid) {
+        return SCHEME + ":" + oid.toString();
     }
 
     /**
@@ -33,14 +32,15 @@ public class ParticipantKeyPurposeMapper {
      * @param uri the URI to convert.
      * @return the converted OID or {@link Optional#empty()} if something went wrong.
      */
-    public static Optional<Oid> fromUri(URI uri) {
-        if (!uri.getScheme().equals(SCHEME)) {
-            LOG.info("Unrecognized URI scheme. Expected '{}', actual is '{}'", SCHEME, uri.getScheme());
+    public static Optional<Oid> fromString(String uri) {
+        // TODO: add validating parser
+        if (uri.startsWith(SCHEME)) {
+            LOG.info("Unrecognized URI scheme. Expected '{}', actual is '{}'", SCHEME, uri);
             return Optional.empty();
         }
 
         try {
-            Oid oid = new Oid(uri.getSchemeSpecificPart());
+            Oid oid = new Oid(uri);
             return Optional.of(oid);
         } catch (GSSException e) {
             LOG.info("Received malformed participant key purpose URI: {}", uri);

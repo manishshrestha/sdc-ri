@@ -5,7 +5,6 @@ import org.somda.sdc.biceps.model.participant.CodedValue;
 import org.somda.sdc.glue.GlueConstants;
 import org.somda.sdc.glue.common.helper.UrlUtf8;
 
-import java.net.URI;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -42,7 +41,7 @@ public class ComplexDeviceComponentMapper {
      * @param descriptor the device component where to access the type.
      * @return the mapped URI or {@linkplain Optional#empty()} if type of descriptor was null.
      */
-    public static URI fromComplexDeviceComponent(AbstractComplexDeviceComponentDescriptor descriptor)
+    public static String fromComplexDeviceComponent(AbstractComplexDeviceComponentDescriptor descriptor)
             throws UriMapperGenerationArgumentException {
         final CodedValue codedValue = descriptor.getType();
         if (codedValue == null) {
@@ -59,19 +58,19 @@ public class ComplexDeviceComponentMapper {
      * @param codedValue a complex device component's type.
      * @return the mapped URI.
      */
-    public static URI fromCodedValue(CodedValue codedValue) throws UriMapperGenerationArgumentException {
+    public static String fromCodedValue(CodedValue codedValue) throws UriMapperGenerationArgumentException {
         String codingSystem = codedValue.getCodingSystem();
         if ("urn:oid:1.2.840.10004.1.1.1.0.0.1".equals(codingSystem)) {
             codingSystem = null;
         }
 
-        URI uri = URI.create(SCHEME + ":" +
+        String uri = SCHEME + ":" +
                 "/" + UrlUtf8.encode(codingSystem) +
                 "/" + UrlUtf8.encode(codedValue.getCodingSystemVersion()) +
-                "/" + UrlUtf8.encode(codedValue.getCode()));
+                "/" + UrlUtf8.encode(codedValue.getCode());
 
         try {
-            fromUri(uri);
+            fromString(uri);
         } catch (UriMapperParsingException e) {
             throw new UriMapperGenerationArgumentException(
                     "No valid URI could be generated from the given CodedValue with " +
@@ -84,12 +83,12 @@ public class ComplexDeviceComponentMapper {
     }
 
     /**
-     * Maps a complex device component type URI to coded value.
+     * Maps a complex device component type URI string to a coded value.
      *
      * @param complexDeviceComponentTypeUri the URI to parse.
      * @return a coded value if pattern of URI matches or {@linkplain Optional#empty()} otherwise.
      */
-    public static CodedValue fromUri(URI complexDeviceComponentTypeUri) throws UriMapperParsingException {
+    public static CodedValue fromString(String complexDeviceComponentTypeUri) throws UriMapperParsingException {
 
         Matcher matcher = PATTERN.matcher(complexDeviceComponentTypeUri.toString());
         if (matcher.matches()) {
