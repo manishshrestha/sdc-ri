@@ -85,6 +85,7 @@ public class ApacheTransportBindingFactoryImpl implements TransportBindingFactor
                 .setSocketTimeout((int) clientConnectTimeout.toMillis()).build();
 
         var clientBuilder = HttpClients.custom().setDefaultSocketConfig(socketConfig)
+                // attach interceptors to enable communication log capabilities including message headers
                 .addInterceptorLast(new CommunicationLogHttpRequestInterceptor(communicationLog))
                 .addInterceptorLast(new CommunicationLogHttpResponseInterceptor(communicationLog))
                 .setDefaultRequestConfig(requestConfig)

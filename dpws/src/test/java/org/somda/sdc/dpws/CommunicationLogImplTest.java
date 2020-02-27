@@ -26,7 +26,7 @@ public class CommunicationLogImplTest extends DpwsTest {
              ByteArrayInputStream inputTestInputStream = new ByteArrayInputStream(content);
              ByteArrayOutputStream outputTestOutputStream = new ByteArrayOutputStream();) {
 
-            when(communicationLogSinkImplMock.getTargetStream(eq(CommunicationLog.TransportType.HTTP), anyString()))
+            when(communicationLogSinkImplMock.getTargetStream(eq(CommunicationLog.TransportType.HTTP), any(), any()))
                     .thenReturn(mockOutputStream);
 
             CommunicationLogImpl communicationLogImpl = new CommunicationLogImpl(communicationLogSinkImplMock);
@@ -86,7 +86,7 @@ public class CommunicationLogImplTest extends DpwsTest {
             for (CommunicationLog.Direction dir : CommunicationLog.Direction.values()) {
                 reset(communicationLogSinkImplMock);
 
-                when(communicationLogSinkImplMock.getTargetStream(any(CommunicationLog.TransportType.class), anyString()))
+                when(communicationLogSinkImplMock.getTargetStream(any(CommunicationLog.TransportType.class), any(), any()))
                         .thenReturn(OutputStream.nullOutputStream());
 
                 communicationLogImpl.logMessage(dir, CommunicationLog.TransportType.HTTP, requestCommContext,
@@ -94,7 +94,7 @@ public class CommunicationLogImplTest extends DpwsTest {
                 communicationLogImpl.logMessage(dir, CommunicationLog.TransportType.HTTP, requestCommContext,
                         OutputStream.nullOutputStream());
                 verify(communicationLogSinkImplMock, times(2)).
-                        getTargetStream(eq(CommunicationLog.TransportType.HTTP), anyString());
+                        getTargetStream(eq(CommunicationLog.TransportType.HTTP), any(), any());
             }
         }
     }

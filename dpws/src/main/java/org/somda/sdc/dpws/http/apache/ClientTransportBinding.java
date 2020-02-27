@@ -163,13 +163,9 @@ public class ClientTransportBinding implements TransportBinding {
 
     public static Map<String, String> allHeadersToMap(Header[] allHeaders) {
         Map<String, String> mappedHeaders = new HashMap<>();
-        Arrays.stream(allHeaders).forEach(header -> Arrays.stream(header.getElements()).forEach(
-                element -> {
-                    mappedHeaders.put(
-                            element.getName(),
-                            element.getValue()
-                    );
-                }
+        Arrays.stream(allHeaders).forEach(header -> mappedHeaders.put(
+                header.getName(),
+                header.getValue()
         ));
         return mappedHeaders;
     }
