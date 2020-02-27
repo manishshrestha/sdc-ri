@@ -7,19 +7,23 @@ import com.google.common.util.concurrent.AbstractIdleService;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.somda.sdc.dpws.DpwsConstants;
+import org.somda.sdc.dpws.soap.ApplicationInfo;
+import org.somda.sdc.dpws.soap.CommunicationContext;
+import org.somda.sdc.dpws.soap.TransportInfo;
 import org.somda.sdc.dpws.udp.UdpBindingService;
 import org.somda.sdc.dpws.udp.UdpMessage;
 import org.somda.sdc.dpws.udp.UdpMessageReceiverCallback;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Random;
 import java.util.Set;
-import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
 public class UdpBindingServiceMock extends AbstractIdleService implements UdpBindingService {
@@ -69,7 +73,16 @@ public class UdpBindingServiceMock extends AbstractIdleService implements UdpBin
     @Override
     public void sendMessage(UdpMessage message) {
         if (!message.hasTransportData()) {
-            message = new UdpMessage(message.getData(), message.getLength(), multicastAddress, multicastPort);
+            var ctxt = new CommunicationContext(
+                    new ApplicationInfo(),
+                    new TransportInfo(
+                            DpwsConstants.URI_SCHEME_SOAP_OVER_UDP,
+                            null, null,
+                            multicastAddress, multicastPort,
+                            Collections.emptyList()
+                    )
+            );
+            message = new UdpMessage(message.getData(), message.getLength(), ctxt);
         }
 
         LOG.debug("Posting message from {}:{} to {}:{}", selfAddress, selfPort, message.getHost(), message.getPort());
@@ -125,8 +138,16 @@ public class UdpBindingServiceMock extends AbstractIdleService implements UdpBin
         boolean isReceiverMyMulticast = udpMessage.getMessage().getHost().equals(multicastAddress) &&
                 udpMessage.getMessage().getPort().equals(multicastPort);
         if (isReceiverSelf || isReceiverMyMulticast) {
-            var message = new UdpMessage(udpMessage.getMessage().getData(), udpMessage.getMessage().getLength(),
-                    udpMessage.getSenderAddress(), udpMessage.getSenderPort());
+            var ctxt = new CommunicationContext(
+                    new ApplicationInfo(),
+                    new TransportInfo(
+                            DpwsConstants.URI_SCHEME_SOAP_OVER_UDP,
+                            null, null,
+                            udpMessage.getSenderAddress(), udpMessage.getSenderPort(),
+                            Collections.emptyList()
+                    )
+            );
+            var message = new UdpMessage(udpMessage.getMessage().getData(), udpMessage.getMessage().getLength(), ctxt);
             LOG.debug(
                     "Incoming UDP message from sender {}:{} was directed at me",
                     udpMessage.getSenderAddress(),

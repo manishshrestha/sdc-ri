@@ -5,13 +5,21 @@ import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import org.eclipse.jetty.io.EndPoint;
 import org.eclipse.jetty.io.ssl.SslConnection;
-import org.eclipse.jetty.server.*;
+import org.eclipse.jetty.server.Connector;
+import org.eclipse.jetty.server.HttpConfiguration;
+import org.eclipse.jetty.server.HttpConnectionFactory;
+import org.eclipse.jetty.server.Request;
+import org.eclipse.jetty.server.SecureRequestCustomizer;
+import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.server.ServerConnector;
+import org.eclipse.jetty.server.SslConnectionFactory;
 import org.eclipse.jetty.server.handler.ContextHandler;
 import org.eclipse.jetty.server.handler.ContextHandlerCollection;
 import org.eclipse.jetty.server.handler.gzip.GzipHandler;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.somda.sdc.dpws.CommunicationLog;
 import org.somda.sdc.dpws.DpwsConfig;
 import org.somda.sdc.dpws.crypto.CryptoConfig;
 import org.somda.sdc.dpws.crypto.CryptoConfigurator;
@@ -51,6 +59,7 @@ public class JettyHttpServerRegistry extends AbstractIdleService implements Http
 
     private JettyHttpServerHandlerFactory jettyHttpServerHandlerFactory;
 
+    private final CommunicationLog communicationLog;
     private final Map<String, Server> serverRegistry;
     private final Map<String, JettyHttpServerHandler> handlerRegistry;
     private final Map<String, ContextHandler> contextWrapperRegistry;
@@ -71,13 +80,15 @@ public class JettyHttpServerRegistry extends AbstractIdleService implements Http
                             @Named(DpwsConfig.HTTP_GZIP_COMPRESSION) boolean enableGzipCompression,
                             @Named(DpwsConfig.HTTP_RESPONSE_COMPRESSION_MIN_SIZE) int minCompressionSize,
                             @Named(CryptoConfig.CRYPTO_TLS_ENABLED_VERSIONS) String[] tlsProtocols,
-                            @Named(CryptoConfig.CRYPTO_DEVICE_HOSTNAME_VERIFIER) HostnameVerifier hostnameVerifier) {
+                            @Named(CryptoConfig.CRYPTO_DEVICE_HOSTNAME_VERIFIER) HostnameVerifier hostnameVerifier,
+                            CommunicationLog communicationLog) {
         this.uriBuilder = uriBuilder;
         this.jettyHttpServerHandlerFactory = jettyHttpServerHandlerFactory;
         this.enableGzipCompression = enableGzipCompression;
         this.minCompressionSize = minCompressionSize;
         this.tlsProtocols = tlsProtocols;
         this.hostnameVerifier = hostnameVerifier;
+        this.communicationLog = communicationLog;
         serverRegistry = new HashMap<>();
         handlerRegistry = new HashMap<>();
         contextHandlerMap = new HashMap<>();
@@ -323,12 +334,16 @@ public class JettyHttpServerRegistry extends AbstractIdleService implements Http
         server.setHandler(context);
         this.contextHandlerMap.put(server, context);
 
+        CommunicationLogHandlerWrapper commlogHandler = new CommunicationLogHandlerWrapper(communicationLog, sslContext != null);
+        commlogHandler.setHandler(server.getHandler());
+        server.setHandler(commlogHandler);
+
         // wrap the context handler in a gzip handler
         if (this.enableGzipCompression) {
             GzipHandler gzipHandler = new GzipHandler();
             gzipHandler.setIncludedMethods("PUT", "POST", "GET");
             gzipHandler.setInflateBufferSize(2048);
-            gzipHandler.setHandler(context);
+            gzipHandler.setHandler(server.getHandler());
             gzipHandler.setMinGzipSize(minCompressionSize);
             gzipHandler.setIncludedMimeTypes(
                     "text/plain", "text/html",

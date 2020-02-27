@@ -1,12 +1,16 @@
 package org.somda.sdc.dpws.soap;
 
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.somda.sdc.dpws.DpwsTest;
 import org.somda.sdc.dpws.soap.factory.NotificationSinkFactory;
 import org.somda.sdc.dpws.soap.factory.SoapMessageFactory;
+import org.somda.sdc.dpws.soap.interception.Direction;
+import org.somda.sdc.dpws.soap.interception.Interceptor;
+import org.somda.sdc.dpws.soap.interception.MessageInterceptor;
+import org.somda.sdc.dpws.soap.interception.NotificationObject;
+import org.somda.sdc.dpws.soap.interception.RequestObject;
 import org.somda.sdc.dpws.soap.model.Envelope;
-import org.somda.sdc.dpws.soap.interception.*;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 import org.somda.sdc.dpws.soap.wsaddressing.WsAddressingServerInterceptor;
 
 import java.util.ArrayList;
@@ -82,7 +86,7 @@ public class NotificationSinkImplTest extends DpwsTest {
             }
         });
 
-        nSink.receiveNotification(notification, mock(TransportInfo.class));
+        nSink.receiveNotification(notification, mock(CommunicationContext.class));
 
         assertEquals(3, dispatchedSequence.size());
         assertEquals("NOTIFICATION(5)", dispatchedSequence.get(0));

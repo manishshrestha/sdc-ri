@@ -84,7 +84,7 @@ public class ApacheHttpClientTransportBindingFactoryImplIT extends DpwsTest {
         // spawn the http server
         GzipResponseHandler handler = new GzipResponseHandler(responseBytes);
         var inetSocketAddress = new InetSocketAddress(baseUri.getHost(), baseUri.getPort());
-        var server = spawnHttpServer(inetSocketAddress, handler);
+        var server = HttpServerUtil.spawnHttpServer(inetSocketAddress, handler);
 
         // replace the port
         baseUri = new URI(
@@ -135,14 +135,6 @@ public class ApacheHttpClientTransportBindingFactoryImplIT extends DpwsTest {
             os.write(compressedResponse);
             os.close();
         }
-    }
-
-    HttpServer spawnHttpServer(InetSocketAddress addr, HttpHandler httpHandler) throws IOException {
-        HttpServer server = HttpServer.create(addr, 0);
-        server.createContext("/", httpHandler);
-        server.setExecutor(null); // creates a default executor
-        server.start();
-        return server;
     }
 
     private SoapMessage createASoapMessage() {

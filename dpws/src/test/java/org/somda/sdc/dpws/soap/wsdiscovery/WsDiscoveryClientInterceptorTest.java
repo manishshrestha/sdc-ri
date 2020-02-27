@@ -10,10 +10,14 @@ import com.google.inject.Key;
 import com.google.inject.TypeLiteral;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.somda.sdc.common.util.ExecutorWrapperService;
 import org.somda.sdc.dpws.DpwsTest;
 import org.somda.sdc.dpws.guice.WsDiscovery;
-import org.somda.sdc.common.util.ExecutorWrapperService;
-import org.somda.sdc.dpws.soap.*;
+import org.somda.sdc.dpws.soap.CommunicationContext;
+import org.somda.sdc.dpws.soap.NotificationSink;
+import org.somda.sdc.dpws.soap.NotificationSource;
+import org.somda.sdc.dpws.soap.SoapMessage;
+import org.somda.sdc.dpws.soap.SoapUtil;
 import org.somda.sdc.dpws.soap.factory.EnvelopeFactory;
 import org.somda.sdc.dpws.soap.factory.NotificationSinkFactory;
 import org.somda.sdc.dpws.soap.factory.NotificationSourceFactory;
@@ -65,7 +69,8 @@ public class WsDiscoveryClientInterceptorTest extends DpwsTest {
 
         // start required thread pool(s)
         getInjector().getInstance(Key.get(
-                new TypeLiteral<ExecutorWrapperService<ListeningExecutorService>>(){},
+                new TypeLiteral<ExecutorWrapperService<ListeningExecutorService>>() {
+                },
                 WsDiscovery.class
         )).startAsync().awaitRunning();
 
@@ -119,7 +124,7 @@ public class WsDiscoveryClientInterceptorTest extends DpwsTest {
         processProbeOrResolveRequestWithCallback(() -> {
             try {
                 wsDiscoveryClient.sendResolve(expectedEpr);
-            } catch (Exception e){
+            } catch (Exception e) {
                 throw new RuntimeException(e);
             }
         });
@@ -156,7 +161,7 @@ public class WsDiscoveryClientInterceptorTest extends DpwsTest {
         ListenableFuture<Integer> future = wsDiscoveryClient.sendProbe(searchId, expectedTypes,
                 expectedScopes, 1);
         assertEquals(1, sentSoapMessages.size());
-        notificationSink.receiveNotification(createProbeMatches(sentSoapMessages.get(0)), mock(TransportInfo.class));
+        notificationSink.receiveNotification(createProbeMatches(sentSoapMessages.get(0)), mock(CommunicationContext.class));
 
         assertEquals(Integer.valueOf(1), future.get());
     }
@@ -169,7 +174,7 @@ public class WsDiscoveryClientInterceptorTest extends DpwsTest {
 
         ListenableFuture<ResolveMatchesType> result = wsDiscoveryClient.sendResolve(expectedEpr);
         assertEquals(1, sentSoapMessages.size());
-        notificationSink.receiveNotification(createResolveMatches(sentSoapMessages.get(0)), mock(TransportInfo.class));
+        notificationSink.receiveNotification(createResolveMatches(sentSoapMessages.get(0)), mock(CommunicationContext.class));
 
         Futures.addCallback(result, new FutureCallback<>() {
             @Override

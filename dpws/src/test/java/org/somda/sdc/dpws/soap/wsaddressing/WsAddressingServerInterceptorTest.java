@@ -3,6 +3,8 @@ package org.somda.sdc.dpws.soap.wsaddressing;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.somda.sdc.dpws.DpwsTest;
+import org.somda.sdc.dpws.soap.ApplicationInfo;
+import org.somda.sdc.dpws.soap.CommunicationContext;
 import org.somda.sdc.dpws.soap.RequestResponseServer;
 import org.somda.sdc.dpws.soap.SoapMarshalling;
 import org.somda.sdc.dpws.soap.SoapMessage;
@@ -19,26 +21,30 @@ import org.somda.sdc.dpws.soap.wsaddressing.model.AttributedURIType;
 import java.io.InputStream;
 import java.util.Collections;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class WsAddressingServerInterceptorTest extends DpwsTest {
 
     private SoapMessage request;
     private SoapMessage response;
     private RequestResponseServer server;
-    private TransportInfo mockTransportInfo;
+    private CommunicationContext mockCommunicationContext;
 
     @Override
     @BeforeEach
     public void setUp() throws Exception {
         super.setUp();
-        mockTransportInfo = new TransportInfo(
-                "mock.scheme",
-                "localhost",
-                123,
-                "remotehost",
-                456,
-                Collections.emptyList()
+        mockCommunicationContext = new CommunicationContext(
+                new ApplicationInfo(),
+                new TransportInfo(
+                        "mock.scheme",
+                        "localhost",
+                        123,
+                        "remotehost",
+                        456,
+                        Collections.emptyList()
+                )
         );
 
         InputStream soapStrm = getClass().getResourceAsStream("soap-envelope.xml");
@@ -63,9 +69,9 @@ public class WsAddressingServerInterceptorTest extends DpwsTest {
 
     @Test
     public void testMessageIdDuplicationDetection() throws SoapFaultException {
-        assertDoesNotThrow(() -> server.receiveRequestResponse(request, response, mockTransportInfo));
+        assertDoesNotThrow(() -> server.receiveRequestResponse(request, response, mockCommunicationContext));
         assertThrows(SoapFaultException.class, () ->
-                server.receiveRequestResponse(request, response, mockTransportInfo));
+                server.receiveRequestResponse(request, response, mockCommunicationContext));
     }
 
 }
