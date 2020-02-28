@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 import org.somda.sdc.common.util.NamespacePrefixMapperConverter;
 import org.somda.sdc.common.util.PrefixNamespaceMappingParser;
 import org.somda.sdc.dpws.DpwsConstants;
+import org.somda.sdc.dpws.FrameworkMetadata;
 import org.somda.sdc.dpws.soap.model.Envelope;
 import org.somda.sdc.dpws.soap.model.ObjectFactory;
 import org.somda.sdc.dpws.soap.wsaddressing.WsAddressingConstants;
@@ -40,11 +41,14 @@ public class JaxbSoapMarshalling extends AbstractIdleService implements SoapMars
 
     private static final String PKG_DELIM = ":";
     private static final String SCHEMA_DELIM = ":";
+    private static final String XML_PROLOG = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
 
     private final NamespacePrefixMapper namespacePrefixMapper;
     private final String schemaPath;
     private final Boolean validateSoapMessages;
     private final ObjectFactory soapFactory;
+    private final FrameworkMetadata metadata;
+    private final Boolean metadataComment;
 
 
     private String contextPackages;
@@ -56,13 +60,17 @@ public class JaxbSoapMarshalling extends AbstractIdleService implements SoapMars
                         @Named(SoapConfig.NAMESPACE_MAPPINGS) String namespaceMappings,
                         @Named(SoapConfig.JAXB_SCHEMA_PATH) String schemaPath,
                         @Named(SoapConfig.VALIDATE_SOAP_MESSAGES) Boolean validateSoapMessages,
+                        @Named(SoapConfig.METADATA_COMMENT) Boolean metadataComment,
                         PrefixNamespaceMappingParser namespaceMappingParser,
                         NamespacePrefixMapperConverter namespacePrefixMapperConverter,
-                        ObjectFactory soapFactory) {
+                        ObjectFactory soapFactory,
+                        FrameworkMetadata metadata) {
         this.contextPackages = contextPackages;
         this.schemaPath = schemaPath;
         this.validateSoapMessages = validateSoapMessages;
+        this.metadataComment = metadataComment;
         this.soapFactory = soapFactory;
+        this.metadata = metadata;
 
         // Append internal mappings
         namespaceMappings += SoapConstants.NAMESPACE_PREFIX_MAPPINGS;
@@ -98,6 +106,20 @@ public class JaxbSoapMarshalling extends AbstractIdleService implements SoapMars
         marshaller.setProperty(NamespacePrefixMapperConverter.JAXB_MARSHALLER_PROPERTY_KEY, namespacePrefixMapper);
         if (schema != null) {
             marshaller.setSchema(schema);
+        }
+        if (metadataComment) {
+            // don't generate document level events (i.e. the XML prolog)
+            marshaller.setProperty(Marshaller.JAXB_FRAGMENT, true);
+
+            var version = metadata.getFrameworkVersion();
+            var versionString = "<!-- Generated with SDCri " + version + " -->";
+            LOG.debug("Attaching metadata comment: {}", versionString);
+            try {
+                outputStream.write(XML_PROLOG.getBytes(StandardCharsets.UTF_8));
+                outputStream.write(versionString.getBytes(StandardCharsets.UTF_8));
+            } catch (IOException e) {
+                LOG.error("Error while writing SDCri metadata to message");
+            }
         }
         marshaller.marshal(soapFactory.createEnvelope(envelope), outputStream);
     }

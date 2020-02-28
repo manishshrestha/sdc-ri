@@ -65,6 +65,7 @@ public class DefaultDpwsConfigModule extends AbstractConfigurationModule {
         bind(DpwsConfig.HTTP_RESPONSE_COMPRESSION_MIN_SIZE,
                 Integer.class,
                 32);
+
     }
 
     private void configureCryptoConfig() {
@@ -153,5 +154,8 @@ public class DefaultDpwsConfigModule extends AbstractConfigurationModule {
         bind(SoapConfig.JAXB_SCHEMA_PATH,
                 String.class,
                 "");
+        bind(SoapConfig.METADATA_COMMENT,
+                Boolean.class,
+                true);
     }
 }

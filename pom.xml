@@ -106,6 +106,49 @@
                 <artifactId>maven-site-plugin</artifactId>
                 <version>3.8.2</version>
             </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>buildnumber-maven-plugin</artifactId>
+                <version>1.4</version>
+                <executions>
+                    <execution>
+                        <phase>validate</phase>
+                        <goals><goal>create</goal></goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <getRevisionOnlyOnce>true</getRevisionOnlyOnce>
+                    <shortRevisionLength>8</shortRevisionLength>
+                    <attach>true</attach>
+                    <addOutputDirectoryToResources>true</addOutputDirectoryToResources>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>3.2.0</version>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+                            <addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
+                        </manifest>
+                        <manifestEntries>
+                            <Build-Time>${maven.build.timestamp}</Build-Time>
+                        </manifestEntries>
+                        <manifestSections>
+                            <manifestSection>
+                                <name>Versions</name>
+                                <manifestEntries>
+                                    <Implementation-Version>${project.version}</Implementation-Version>
+                                    <Implementation-SCM-Revision>${buildNumber}</Implementation-SCM-Revision>
+                                    <Implementation-SCM-Branch>${scmBranch}</Implementation-SCM-Branch>
+                                </manifestEntries>
+                            </manifestSection>
+                        </manifestSections>
+                    </archive>
+                </configuration>
+            </plugin>
         </plugins>
         <pluginManagement>
             <plugins>
