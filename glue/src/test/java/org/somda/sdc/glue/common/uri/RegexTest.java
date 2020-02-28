@@ -53,8 +53,6 @@ public class RegexTest {
         {
             Matcher matcher = URI_PATTERN.matcher("scheme://@@");
             matcher.matches();
-            System.out.println(matcher.group("path"));
-            System.out.println(matcher.group("authority"));
             assertFalse(matcher.matches());
         }
         {
