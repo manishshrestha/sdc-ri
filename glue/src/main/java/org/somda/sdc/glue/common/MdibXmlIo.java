@@ -67,12 +67,14 @@ public class MdibXmlIo {
      *
      * @param getMdibResponseFile the file to read from.
      * @return the parsed {@link Mdib}.
-     * @throws JAXBException         in case JAXB cannot parse the input stream.
-     * @throws ClassCastException    if something unexpected was read in.
-     * @throws FileNotFoundException if the object tried to access a file that does not exist.
+     * @throws JAXBException      in case JAXB cannot parse the input stream.
+     * @throws ClassCastException if something unexpected was read in.
+     * @throws IOException        if any IO issues come up, e.g., the object tried to access a file that does not exist.
      */
-    public Mdib readMdib(File getMdibResponseFile) throws JAXBException, ClassCastException, FileNotFoundException {
-        return readMdib(new FileInputStream(getMdibResponseFile));
+    public Mdib readMdib(File getMdibResponseFile) throws JAXBException, ClassCastException, IOException {
+        try (InputStream fis = new FileInputStream(getMdibResponseFile)) {
+            return readMdib(fis);
+        }
     }
 
     /**
@@ -106,11 +108,13 @@ public class MdibXmlIo {
      *
      * @param mdib       the MDIB to write.
      * @param outputFile the output file where to write the marshalled XML to.
-     * @throws JAXBException         in case the marshaller throws an exception.
-     * @throws FileNotFoundException in case the file cannot be created.
+     * @throws JAXBException in case the marshaller throws an exception.
+     * @throws IOException   in case any IO issue comes up, e.g. the file cannot be created.
      */
-    public void writeMdib(Mdib mdib, File outputFile) throws JAXBException, FileNotFoundException {
-        writeMdib(mdib, new FileOutputStream(outputFile));
+    public void writeMdib(Mdib mdib, File outputFile) throws JAXBException, IOException {
+        try (OutputStream fos = new FileOutputStream(outputFile)) {
+            writeMdib(mdib, fos);
+        }
     }
 
     private void initJaxb() {

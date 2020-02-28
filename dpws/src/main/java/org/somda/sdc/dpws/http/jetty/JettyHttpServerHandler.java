@@ -19,11 +19,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.security.cert.X509Certificate;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 
 /**
@@ -52,7 +48,6 @@ public class JettyHttpServerHandler extends AbstractHandler {
 
     @Override
     public void handle(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response) throws IOException {
-
         LOG.debug("Request to {}", request.getRequestURL());
         response.setStatus(HttpStatus.OK_200);
         response.setContentType(mediaType);

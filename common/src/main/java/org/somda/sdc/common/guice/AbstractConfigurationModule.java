@@ -115,7 +115,7 @@ public abstract class AbstractConfigurationModule extends AbstractModule {
         private final String caption;
     }
 
-    private class ConfigurationValue {
+    private static class ConfigurationValue {
         private final ValueOrigin valueOrigin;
         private final Runnable binder;
         private final Object value;
