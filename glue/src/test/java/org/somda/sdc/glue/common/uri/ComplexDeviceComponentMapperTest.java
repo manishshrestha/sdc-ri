@@ -4,9 +4,6 @@ import org.junit.jupiter.api.Test;
 import org.somda.sdc.biceps.model.participant.CodedValue;
 import org.somda.sdc.biceps.model.participant.MdsDescriptor;
 import org.somda.sdc.biceps.model.participant.factory.CodedValueFactory;
-import org.somda.sdc.glue.common.uri.ComplexDeviceComponentMapper;
-import org.somda.sdc.glue.common.uri.UriMapperGenerationArgumentException;
-import org.somda.sdc.glue.common.uri.UriMapperParsingException;
 
 import javax.annotation.Nullable;
 
@@ -33,6 +30,23 @@ class ComplexDeviceComponentMapperTest {
             final String actualUri = ComplexDeviceComponentMapper.fromComplexDeviceComponent(
                     createComponent("foo", "bar", "fii"));
             String expectedUri = "sdc.cdc.type:/foo/bar/fii";
+            assertEquals(expectedUri, actualUri);
+        }
+        {
+            final String actualUri = ComplexDeviceComponentMapper.fromComplexDeviceComponent(
+                    createComponent("foo%2F%2F", "bar", "fii"));
+            String expectedUri = "sdc.cdc.type:/foo%252F%252F/bar/fii";
+            assertEquals(expectedUri, actualUri);
+        }
+        {
+            assertThrows(UriMapperGenerationArgumentException.class,
+                    () -> ComplexDeviceComponentMapper.fromComplexDeviceComponent(
+                    createComponent("foo%2F%2F", "bar", null)));
+        }
+        {
+            final String actualUri = ComplexDeviceComponentMapper.fromComplexDeviceComponent(
+                    createComponent("", "@:NoPort", "1"));
+            String expectedUri = "sdc.cdc.type://%40%3ANoPort/1";
             assertEquals(expectedUri, actualUri);
         }
     }
