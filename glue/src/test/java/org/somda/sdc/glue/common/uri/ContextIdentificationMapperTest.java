@@ -83,11 +83,43 @@ class ContextIdentificationMapperTest {
                             "sdc.ctxt.loc:/http%3A%2F%2Froot//ext%2Fen%C3%96sion%3F",
                             ContextIdentificationMapper.ContextSource.Location));
         }
+        {
+            assertThrows(UriMapperParsingException.class,
+                    () -> ContextIdentificationMapper.fromString(
+                            "sdc.ctxt.loc://http%3A%2F%2Froot/ext%2Fen%C3%96sion%3F",
+                            ContextIdentificationMapper.ContextSource.Location));
+        }
+        {
+            assertThrows(UriMapperParsingException.class,
+                    () -> ContextIdentificationMapper.fromString(
+                            "sdc.ctxt.loc://ext%2Fen%C3%96sion%3F",
+                            ContextIdentificationMapper.ContextSource.Location));
+        }
+        {
+            assertThrows(UriMapperParsingException.class,
+                    () -> ContextIdentificationMapper.fromString(
+                            "sdc.ctxt.loc:/a/b?ä?",
+                            ContextIdentificationMapper.ContextSource.Location));
+        }
+        {
+            assertThrows(UriMapperParsingException.class,
+                    () -> ContextIdentificationMapper.fromString(
+                            "sdc.ctxt.loc:/a/ä",
+                            ContextIdentificationMapper.ContextSource.Location));
+        }
+        {
+            assertThrows(UriMapperParsingException.class,
+                    () -> ContextIdentificationMapper.fromString(
+                            "sdc.ctxt.loc:/a#/b",
+                            ContextIdentificationMapper.ContextSource.Location));
+        }
 
         {
-            InstanceIdentifier actualInstanceIdentifier = ContextIdentificationMapper.fromString("sdc.ctxt.ens:/http%3A%2F%2Froot/ext%2Fen%C3%96sion%3F?query#fragment",
+            InstanceIdentifier actualInstanceIdentifier = ContextIdentificationMapper.fromString(
+                    "sdc.ctxt.ens:/http%3A%2F%2Froot/ext%2Fen%C3%96sion%3F?query#fragment",
                     ContextIdentificationMapper.ContextSource.Ensemble);
-            InstanceIdentifier expectedInstanceIdentifier = createInstanceIdentifier("http://root", "ext/enÖsion?");
+            InstanceIdentifier expectedInstanceIdentifier =
+                    createInstanceIdentifier("http://root", "ext/enÖsion?");
             compare(expectedInstanceIdentifier, actualInstanceIdentifier);
         }
     }
