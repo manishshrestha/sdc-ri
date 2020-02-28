@@ -2,6 +2,8 @@ package org.somda.sdc.dpws;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -9,6 +11,7 @@ import java.io.InputStreamReader;
 
 @Singleton
 public class FrameworkMetadata {
+    private static final Logger LOG = LoggerFactory.getLogger(FrameworkMetadata);
     private String frameworkVersion;
     private String javaVersion;
     private String javaVendor;
@@ -64,11 +67,11 @@ public class FrameworkMetadata {
             if (exitVal == 0) {
                 return " " + output.toString();
             } else {
-                return "";
+                LOG.error("Could not call git to determine revision, exit code was {}", exitVal);
             }
         } catch (IOException | InterruptedException e) {
-            return "";
+            LOG.error("Could not call git to determine revision", e);
         }
-
+        return " unknown revision";
     }
 }
