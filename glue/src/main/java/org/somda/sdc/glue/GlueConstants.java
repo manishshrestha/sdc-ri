@@ -1,6 +1,5 @@
 package org.somda.sdc.glue;
 
-import jregex.Pattern;
 import org.ietf.jgss.Oid;
 import org.somda.sdc.glue.common.uri.ParticipantKeyPurposeMapper;
 
@@ -11,8 +10,7 @@ import java.util.Collections;
  * Any constants relevant to SDC Glue.
  */
 public class GlueConstants {
-    // TODO: this is not a valid URI scheme
-    private static String URI_SCHEME_OID = "urn:oid:";
+    private static String URN_SCHEME_AND_PARTIAL_PATH = "urn:oid:";
 
     /**
      * JAXB context paths used to let JAXB recognize the BICEPS model.
@@ -41,14 +39,14 @@ public class GlueConstants {
      *
      * @see #OID_KEY_PURPOSE_SDC_SERVICE_PROVIDER
      */
-    public static final URI URI_KEY_PURPOSE_SDC_SERVICE_PROVIDER = URI.create(URI_SCHEME_OID + OID_KEY_PURPOSE_SDC_SERVICE_PROVIDER);
+    public static final URI URI_KEY_PURPOSE_SDC_SERVICE_PROVIDER = URI.create(URN_SCHEME_AND_PARTIAL_PATH + OID_KEY_PURPOSE_SDC_SERVICE_PROVIDER);
 
     /**
      * Key purpose OID as URI an SDC service consumer.
      *
      * @see #OID_KEY_PURPOSE_SDC_SERVICE_CONSUMER
      */
-    public static final URI URI_KEY_PURPOSE_SDC_SERVICE_CONSUMER = URI.create(URI_SCHEME_OID + OID_KEY_PURPOSE_SDC_SERVICE_CONSUMER);
+    public static final URI URI_KEY_PURPOSE_SDC_SERVICE_CONSUMER = URI.create(URN_SCHEME_AND_PARTIAL_PATH + OID_KEY_PURPOSE_SDC_SERVICE_CONSUMER);
 
     static {
         try {

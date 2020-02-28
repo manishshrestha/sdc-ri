@@ -158,7 +158,6 @@ public class SdcRequiredTypesAndScopes implements SdcDevicePlugin, MdibAccessObs
         HashSet<String> uris = new HashSet<>(mdsDescriptors.size());
         for (MdsDescriptor mdsDescriptor : mdsDescriptors) {
             try {
-                // TODO: change to string set
                 uris.add(ComplexDeviceComponentMapper.fromComplexDeviceComponent(mdsDescriptor));
             } catch (UriMapperGenerationArgumentException e) {
                 LOG.warn("The URI generation based on the given MdsDescriptor with the handle " +
