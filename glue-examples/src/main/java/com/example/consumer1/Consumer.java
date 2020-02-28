@@ -42,7 +42,6 @@ import org.somda.sdc.glue.consumer.SetServiceAccess;
 import org.somda.sdc.glue.consumer.sco.ScoTransaction;
 
 import javax.annotation.Nullable;
-import javax.net.ssl.HttpsURLConnection;
 import java.math.BigDecimal;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
@@ -82,7 +81,7 @@ public class Consumer {
     private static final Duration MAX_WAIT = Duration.ofSeconds(11);
     private static final long MAX_WAIT_SEC = MAX_WAIT.getSeconds();
 
-    private static final long REPORT_TIMEOUT = Duration.ofSeconds(300).toMillis();
+    private static final long REPORT_TIMEOUT = Duration.ofSeconds(30).toMillis();
 
     private final Client client;
     private final SdcRemoteDevicesConnector connector;

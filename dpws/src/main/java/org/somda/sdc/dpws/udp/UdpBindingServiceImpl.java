@@ -8,12 +8,16 @@ import org.slf4j.LoggerFactory;
 import org.somda.sdc.dpws.CommunicationLog;
 import org.somda.sdc.dpws.DpwsConstants;
 import org.somda.sdc.dpws.network.NetworkInterfaceUtil;
+import org.somda.sdc.dpws.soap.ApplicationInfo;
+import org.somda.sdc.dpws.soap.CommunicationContext;
+import org.somda.sdc.dpws.soap.TransportInfo;
 import org.somda.sdc.dpws.soap.exception.TransportException;
 
 import javax.annotation.Nullable;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.net.*;
+import java.util.Collections;
 import java.util.Random;
 
 /**
@@ -98,8 +102,19 @@ public class UdpBindingServiceImpl extends AbstractIdleService implements UdpBin
                         continue;
                     }
 
-                    UdpMessage message = new UdpMessage(packet.getData(), packet.getLength(),
-                            packet.getAddress().getHostAddress(), packet.getPort());
+                    var ctxt = new CommunicationContext(
+                            new ApplicationInfo(),
+                            new TransportInfo(
+                                    DpwsConstants.URI_SCHEME_SOAP_OVER_UDP,
+                                    incomingSocket.getLocalAddress().getHostAddress(),
+                                    incomingSocket.getLocalPort(),
+                                    packet.getAddress().getHostAddress(),
+                                    packet.getPort(),
+                                    Collections.emptyList()
+                            )
+                    );
+
+                    UdpMessage message = new UdpMessage(packet.getData(), packet.getLength(), ctxt);
                     this.logUdpPacket(CommunicationLog.Direction.INBOUND, packet);
                     receiver.receive(message);
                 }
@@ -116,8 +131,19 @@ public class UdpBindingServiceImpl extends AbstractIdleService implements UdpBin
                         continue;
                     }
 
-                    UdpMessage message = new UdpMessage(packet.getData(), packet.getLength(),
-                            packet.getAddress().getHostAddress(), packet.getPort());
+                    var ctxt = new CommunicationContext(
+                            new ApplicationInfo(),
+                            new TransportInfo(
+                                    DpwsConstants.URI_SCHEME_SOAP_OVER_UDP,
+                                    outgoingSocket.getLocalAddress().getHostAddress(),
+                                    outgoingSocket.getLocalPort(),
+                                    packet.getAddress().getHostAddress(),
+                                    packet.getPort(),
+                                    Collections.emptyList()
+                            )
+                    );
+
+                    UdpMessage message = new UdpMessage(packet.getData(), packet.getLength(), ctxt);
                     this.logUdpPacket(CommunicationLog.Direction.INBOUND, packet);
                     receiver.receive(message);
                 }
@@ -236,12 +262,23 @@ public class UdpBindingServiceImpl extends AbstractIdleService implements UdpBin
 
     private void logUdpPacket(CommunicationLog.Direction direction, DatagramPacket packet) {
 
+        var requestTransportInfo = new TransportInfo(
+                DpwsConstants.URI_SCHEME_SOAP_OVER_UDP,
+                outgoingSocket.getLocalAddress().getHostName(),
+                outgoingSocket.getPort(),
+                packet.getAddress().getHostAddress(),
+                packet.getPort(),
+                Collections.emptyList()
+        );
+
+        // no UDP specialization, create ApplicationInfo
+        var requestCommContext = new CommunicationContext(new ApplicationInfo(), requestTransportInfo);
+
         try (ByteArrayInputStream messageData = new ByteArrayInputStream(packet.getData())) {
             communicationLog.logMessage(
                     direction,
                     CommunicationLog.TransportType.UDP,
-                    packet.getAddress().getHostAddress(),
-                    packet.getPort(),
+                    requestCommContext,
                     messageData
             );
         } catch (IOException e) {

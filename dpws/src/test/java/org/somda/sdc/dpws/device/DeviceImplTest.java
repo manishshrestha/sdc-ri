@@ -60,7 +60,7 @@ public class DeviceImplTest implements Runnable {
 //        device.getHostingServiceAccess().addHostedService(testService);
 
         device.getDiscoveryAccess().setTypes(Collections.singletonList(new QName("http://test-type", "Device")));
-        device.getDiscoveryAccess().setScopes(Collections.singletonList(URI.create("http://test-scope/Scope")));
+        device.getDiscoveryAccess().setScopes(Collections.singletonList("http://test-scope/Scope"));
 
         DpwsUtil dpwsUtil = inj.getInstance(DpwsUtil.class);
         device.getHostingServiceAccess().setThisDevice(dpwsUtil.createDeviceBuilder()

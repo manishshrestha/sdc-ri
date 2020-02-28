@@ -57,8 +57,8 @@ public class DpwsTestService1 extends WebService {
         TestOperationRequest req = soapUtil.getBody(rrObj.getRequest(), TestOperationRequest.class).orElseThrow(() ->
                 new SoapFaultException(soapFaultFactory.createSenderFault("SOAP body is malformed.")));
 
-        if (transportInfoCallback != null && rrObj.getTransportInfo().isPresent()) {
-            transportInfoCallback.onRequest(rrObj.getTransportInfo().get());
+        if (transportInfoCallback != null && rrObj.getCommunicationContext().isPresent()) {
+            transportInfoCallback.onRequest(rrObj.getCommunicationContext().get().getTransportInfo());
         }
 
         TestOperationResponse res = objectFactory.createTestOperationResponse();
@@ -76,8 +76,8 @@ public class DpwsTestService1 extends WebService {
         TestOperationRequest req = soapUtil.getBody(rrObj.getRequest(), TestOperationRequest.class).orElseThrow(() ->
                 new SoapFaultException(soapFaultFactory.createSenderFault("SOAP body is malformed.")));
 
-        if (transportInfoCallback != null && rrObj.getTransportInfo().isPresent()) {
-            transportInfoCallback.onRequest(rrObj.getTransportInfo().get());
+        if (transportInfoCallback != null && rrObj.getCommunicationContext().isPresent()) {
+            transportInfoCallback.onRequest(rrObj.getCommunicationContext().get().getTransportInfo());
         }
 
         TestOperationResponse res = objectFactory.createTestOperationResponse();

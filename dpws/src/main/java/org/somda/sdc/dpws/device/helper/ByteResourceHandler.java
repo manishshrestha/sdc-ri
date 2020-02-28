@@ -1,8 +1,7 @@
 package org.somda.sdc.dpws.device.helper;
 
 import org.somda.sdc.dpws.http.HttpHandler;
-import org.somda.sdc.dpws.soap.TransportInfo;
-import org.somda.sdc.dpws.soap.exception.MarshallingException;
+import org.somda.sdc.dpws.soap.CommunicationContext;
 import org.somda.sdc.dpws.soap.exception.TransportException;
 
 import java.io.IOException;
@@ -25,7 +24,7 @@ public class ByteResourceHandler implements HttpHandler {
     }
 
     @Override
-    public void process(InputStream inStream, OutputStream outStream, TransportInfo transportInfo)
+    public void process(InputStream inStream, OutputStream outStream, CommunicationContext communicationContext)
             throws TransportException {
         try {
             outStream.write(resourceBytes);

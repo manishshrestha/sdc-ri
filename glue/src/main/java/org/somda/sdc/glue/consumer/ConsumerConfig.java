@@ -26,19 +26,6 @@ public class ConsumerConfig {
      */
     public static final String REQUESTED_EXPIRES = "SdcGlue.Consumer.RequestedExpires";
 
-
-    /**
-     * Configures the default waiting time for any responses in request-response patterns.
-     * <p>
-     * <em>Please note that internally only seconds-precision is supported. Fractional parts will be cut off.</em>
-     *
-     * <ul>
-     * <li>Data type: {@linkplain java.time.Duration}
-     * <li>Use: optional
-     * </ul>
-     */
-    public static final String RESPONSE_WAITING_TIME = "SdcGlue.Consumer.ResponseWaitingTime";
-
     /**
      * Default timeout for awaiting of transaction objects.
      * <p>

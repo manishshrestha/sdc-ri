@@ -5,9 +5,11 @@ import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.somda.sdc.common.util.ExecutorWrapperService;
 import org.somda.sdc.dpws.DpwsConstants;
 import org.somda.sdc.dpws.guice.AppDelayExecutor;
-import org.somda.sdc.common.util.ExecutorWrapperService;
+import org.somda.sdc.dpws.soap.ApplicationInfo;
+import org.somda.sdc.dpws.soap.CommunicationContext;
 import org.somda.sdc.dpws.soap.MarshallingService;
 import org.somda.sdc.dpws.soap.RequestResponseServer;
 import org.somda.sdc.dpws.soap.SoapDebug;
@@ -78,17 +80,9 @@ public class DiscoveryDeviceUdpMessageProcessor implements UdpMessageQueueObserv
             LOG.debug("Incoming SOAP/UDP message: {}", SoapDebug.get(request));
         }
 
-        TransportInfo tInfo = new TransportInfo(
-                DpwsConstants.URI_SCHEME_SOAP_OVER_UDP,
-                null,
-                null,
-                msg.getHost(),
-                msg.getPort(),
-                Collections.emptyList());
-
         // Forward SOAP message to given request response interceptor chain
         try {
-            requestResponseServer.receiveRequestResponse(request, response, tInfo);
+            requestResponseServer.receiveRequestResponse(request, response, msg.getCommunicationContext());
         } catch (SoapFaultException e) {
             LOG.debug("SOAP fault thrown [{}]", e.getMessage());
             return;
@@ -120,8 +114,19 @@ public class DiscoveryDeviceUdpMessageProcessor implements UdpMessageQueueObserv
         byte[] bytes = os.toByteArray();
 
         int wait = randomNumbers.nextInt((int) WsDiscoveryConstants.APP_MAX_DELAY.toMillis() + 1);
-        scheduledExecutorService.get().schedule(() ->
-                        udpMessageQueueService.sendMessage(new UdpMessage(bytes, bytes.length, msg.getHost(), msg.getPort())),
+        scheduledExecutorService.get().schedule(
+                () -> {
+                    var ctxt = new CommunicationContext(
+                            new ApplicationInfo(),
+                            new TransportInfo(
+                                    DpwsConstants.URI_SCHEME_SOAP_OVER_UDP,
+                                    null, null,
+                                    msg.getHost(), msg.getPort(),
+                                    Collections.emptyList()
+                            )
+                    );
+                    udpMessageQueueService.sendMessage(new UdpMessage(bytes, bytes.length, ctxt));
+                },
                 wait, TimeUnit.MILLISECONDS);
     }
 }

@@ -2,22 +2,22 @@ package org.somda.sdc.dpws.helper;
 
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.somda.sdc.dpws.soap.MarshallingService;
+import org.somda.sdc.dpws.soap.NotificationSource;
 import org.somda.sdc.dpws.soap.SoapDebug;
 import org.somda.sdc.dpws.soap.SoapMessage;
 import org.somda.sdc.dpws.soap.exception.MarshallingException;
 import org.somda.sdc.dpws.soap.interception.NotificationCallback;
 import org.somda.sdc.dpws.udp.UdpMessage;
 import org.somda.sdc.dpws.udp.UdpMessageQueueService;
-import org.somda.sdc.dpws.soap.NotificationSource;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayOutputStream;
 
 /**
  * Marshall {@link SoapMessage} and distribute them via {@link UdpMessageQueueService}.
- *
+ * <p>
  * {@linkplain NotificationSourceUdpCallback} implements {@link NotificationCallback} and is intended to be used by
  * a {@link NotificationSource} instance to be connected with a {@link UdpMessageQueueService}.
  */

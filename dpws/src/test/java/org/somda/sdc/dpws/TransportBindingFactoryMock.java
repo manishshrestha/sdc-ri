@@ -3,6 +3,8 @@ package org.somda.sdc.dpws;
 import com.google.inject.Inject;
 import org.somda.sdc.dpws.factory.TransportBindingFactory;
 import org.somda.sdc.dpws.http.HttpHandler;
+import org.somda.sdc.dpws.soap.ApplicationInfo;
+import org.somda.sdc.dpws.soap.CommunicationContext;
 import org.somda.sdc.dpws.soap.SoapMarshalling;
 import org.somda.sdc.dpws.soap.SoapMessage;
 import org.somda.sdc.dpws.soap.TransportInfo;
@@ -14,7 +16,6 @@ import org.somda.sdc.dpws.soap.model.Envelope;
 import javax.xml.bind.JAXBException;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.net.URI;
 import java.util.Collections;
 import java.util.HashMap;
@@ -25,20 +26,23 @@ public class TransportBindingFactoryMock implements TransportBindingFactory {
     private static Map<URI, HttpHandler> handlerRegistry;
     private final SoapMarshalling soapMarshalling;
     private final SoapMessageFactory soapMessageFactory;
-    private final TransportInfo mockTransportInfo;
+    private final CommunicationContext mockCommunicationContext;
 
     @Inject
     TransportBindingFactoryMock(SoapMarshalling soapMarshalling,
                                 SoapMessageFactory soapMessageFactory) {
         this.soapMarshalling = soapMarshalling;
         this.soapMessageFactory = soapMessageFactory;
-        this.mockTransportInfo = new TransportInfo(
-                "mock.scheme",
-                "localhost",
-                123,
-                "remotehost",
-                456,
-                Collections.emptyList()
+        mockCommunicationContext = new CommunicationContext(
+                new ApplicationInfo(),
+                new TransportInfo(
+                        "mock.scheme",
+                        "localhost",
+                        123,
+                        "remotehost",
+                        456,
+                        Collections.emptyList()
+                )
         );
     }
 
@@ -65,7 +69,7 @@ public class TransportBindingFactoryMock implements TransportBindingFactory {
                     soapMarshalling.marshal(notification.getEnvelopeWithMappedHeaders(), bos);
                     if (httpHandler.isPresent()) {
                         httpHandler.get().process(new ByteArrayInputStream(bos.toByteArray()),
-                                new ByteArrayOutputStream(), mockTransportInfo);
+                                new ByteArrayOutputStream(), mockCommunicationContext);
                     }
                 } catch (Exception e) {
                     throw new RuntimeException(e);
@@ -84,7 +88,7 @@ public class TransportBindingFactoryMock implements TransportBindingFactory {
 
                 ByteArrayOutputStream bosResponse = new ByteArrayOutputStream();
                 HttpHandler theHttpHandler = httpHandler.orElseThrow(() -> new TransportException("HTTP handler not set"));
-                theHttpHandler.process(new ByteArrayInputStream(bosRequest.toByteArray()), bosResponse, mockTransportInfo);
+                theHttpHandler.process(new ByteArrayInputStream(bosRequest.toByteArray()), bosResponse, mockCommunicationContext);
 
                 try {
                     Envelope env = soapMarshalling.unmarshal(new ByteArrayInputStream(bosResponse.toByteArray()));
