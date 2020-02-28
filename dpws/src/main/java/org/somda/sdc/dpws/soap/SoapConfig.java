@@ -90,4 +90,14 @@ public class SoapConfig {
      * </ul>
      */
     public static final String VALIDATE_SOAP_MESSAGES = "SoapConfig.ValidateSoapMessages";
+
+    /**
+     * Defines if outgoing messages should contain a comment with SDCri version information.
+     *
+     * <ul>
+     *  <li>Data type: {@linkplain Boolean}
+     *  <li>Use: optional
+     * </ul>
+     */
+    public static final String METADATA_COMMENT = "SoapConfig.MetadataComment";
 }

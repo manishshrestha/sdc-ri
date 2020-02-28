@@ -51,7 +51,6 @@ public class GlueConstants {
     public static final URI URI_KEY_PURPOSE_SDC_SERVICE_CONSUMER = URI.create(URI_SCHEME_OID + OID_KEY_PURPOSE_SDC_SERVICE_CONSUMER);
 
     static {
-        SCOPE_SDC_PROVIDER = null;
         try {
             // This assignment should never throw unless OID_KEY_PURPOSE_SDC_SERVICE_PROVIDER is modified
             // to something malformed. A separate unit test covers this (GlueConstantsTest::staticInitialization())
@@ -66,7 +65,7 @@ public class GlueConstants {
      * <p>
      * This scope, encoded in accordance with SDC Glue clause 9.3, claims conformance with IEEE 11073-20701, published 2018.
      */
-    public static String SCOPE_SDC_PROVIDER;
+    public static final String SCOPE_SDC_PROVIDER;
 
     /**
      * SegmentNz and Segment regex definitions.

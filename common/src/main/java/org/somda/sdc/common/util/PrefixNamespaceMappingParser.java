@@ -7,6 +7,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -83,6 +84,11 @@ public class PrefixNamespaceMappingParser {
             }
 
             return false;
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(prefix, namespace);
         }
     }
 }

@@ -1,9 +1,9 @@
 package org.somda.sdc.dpws.udp;
 
 import com.google.common.eventbus.Subscribe;
-import org.somda.sdc.dpws.DpwsTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.somda.sdc.dpws.DpwsTest;
 
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;

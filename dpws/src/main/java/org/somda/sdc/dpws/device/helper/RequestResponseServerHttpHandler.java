@@ -1,16 +1,21 @@
 package org.somda.sdc.dpws.device.helper;
 
 import com.google.inject.Inject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.somda.sdc.dpws.http.HttpHandler;
-import org.somda.sdc.dpws.soap.*;
+import org.somda.sdc.dpws.soap.CommunicationContext;
+import org.somda.sdc.dpws.soap.MarshallingService;
+import org.somda.sdc.dpws.soap.RequestResponseServer;
+import org.somda.sdc.dpws.soap.SoapDebug;
+import org.somda.sdc.dpws.soap.SoapMessage;
+import org.somda.sdc.dpws.soap.SoapUtil;
 import org.somda.sdc.dpws.soap.exception.MarshallingException;
 import org.somda.sdc.dpws.soap.exception.SoapFaultException;
 import org.somda.sdc.dpws.soap.exception.TransportException;
 import org.somda.sdc.dpws.soap.factory.SoapFaultFactory;
 import org.somda.sdc.dpws.soap.interception.Interceptor;
 import org.somda.sdc.dpws.soap.interception.InterceptorHandler;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -21,7 +26,7 @@ import java.io.OutputStream;
  * <p>
  * The handler is an {@link InterceptorHandler}.
  * All objects registered via {@link #register(Interceptor)} receive the requests delivered to
- * {@link HttpHandler#process(InputStream, OutputStream, TransportInfo)}.
+ * {@link HttpHandler#process(InputStream, OutputStream, CommunicationContext)}.
  */
 public class RequestResponseServerHttpHandler implements HttpHandler, InterceptorHandler {
     private static final Logger LOG = LoggerFactory.getLogger(RequestResponseServerHttpHandler.class);
@@ -42,7 +47,7 @@ public class RequestResponseServerHttpHandler implements HttpHandler, Intercepto
     }
 
     @Override
-    public void process(InputStream inStream, OutputStream outStream, TransportInfo transportInfo)
+    public void process(InputStream inStream, OutputStream outStream, CommunicationContext communicationContext)
             throws TransportException, MarshallingException {
         SoapMessage requestMsg = marshallingService.unmarshal(inStream);
         try {
@@ -57,7 +62,7 @@ public class RequestResponseServerHttpHandler implements HttpHandler, Intercepto
 
         SoapMessage responseMsg = soapUtil.createMessage();
         try {
-            reqResServer.receiveRequestResponse(requestMsg, responseMsg, transportInfo);
+            reqResServer.receiveRequestResponse(requestMsg, responseMsg, communicationContext);
         } catch (SoapFaultException e) {
             responseMsg = e.getFaultMessage();
         }

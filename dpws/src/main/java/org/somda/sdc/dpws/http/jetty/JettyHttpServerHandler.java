@@ -9,6 +9,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.somda.sdc.dpws.CommunicationLog;
 import org.somda.sdc.dpws.http.HttpHandler;
+import org.somda.sdc.dpws.soap.CommunicationContext;
+import org.somda.sdc.dpws.soap.HttpApplicationInfo;
 import org.somda.sdc.dpws.soap.TransportInfo;
 import org.somda.sdc.dpws.soap.exception.MarshallingException;
 import org.somda.sdc.dpws.soap.exception.TransportException;
@@ -16,12 +18,8 @@ import org.somda.sdc.dpws.soap.exception.TransportException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.security.cert.X509Certificate;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 
 /**
@@ -29,6 +27,8 @@ import java.util.List;
  */
 public class JettyHttpServerHandler extends AbstractHandler {
     private static final Logger LOG = LoggerFactory.getLogger(JettyHttpServerHandler.class);
+    public static final String SERVER_HEADER_KEY = "X-Server";
+    public static final String SERVER_HEADER_VALUE = "SDCri";
 
     private final String mediaType;
     private final HttpHandler handler;
@@ -48,47 +48,51 @@ public class JettyHttpServerHandler extends AbstractHandler {
 
     @Override
     public void handle(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response) throws IOException {
-
         LOG.debug("Request to {}", request.getRequestURL());
-
-        InputStream input = communicationLog.logMessage(
-                CommunicationLog.Direction.INBOUND,
-                CommunicationLog.TransportType.HTTP,
-                request.getRemoteHost(), request.getRemotePort(), request.getInputStream());
-
         response.setStatus(HttpStatus.OK_200);
         response.setContentType(mediaType);
+        response.setHeader(SERVER_HEADER_KEY, SERVER_HEADER_VALUE);
 
-        try (OutputStream output = communicationLog.logMessage(
-                CommunicationLog.Direction.OUTBOUND,
-                CommunicationLog.TransportType.HTTP,
-                request.getRemoteHost(), request.getRemotePort(), response.getOutputStream())) {
+        var input = request.getInputStream();
+        var output = response.getOutputStream();
 
-            try {
+        // collect information for HttpApplicationInfo
+        Map<String, String> requestHeaderMap = new HashMap<>();
+        request.getHeaderNames().asIterator().forEachRemaining(
+                headerName -> requestHeaderMap.put(headerName, request.getHeader(headerName))
+        );
 
-                handler.process(input, output,
-                        new TransportInfo(
-                                request.getScheme(),
-                                request.getLocalAddr(),
-                                request.getLocalPort(),
-                                request.getRemoteAddr(),
-                                request.getRemotePort(),
-                                getX509Certificates(request)));
+        var requestHttpApplicationInfo = new HttpApplicationInfo(
+                requestHeaderMap
+        );
 
-            } catch (TransportException | MarshallingException | ClassCastException e) {
-                LOG.error("", e);
-                response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR_500);
-                output.write(e.getMessage().getBytes());
-                output.flush();
-            } finally {
-                baseRequest.setHandled(true);
-            }
+        try {
+            handler.process(input, output,
+                    new CommunicationContext(requestHttpApplicationInfo,
+                            new TransportInfo(
+                                    request.getScheme(),
+                                    request.getLocalAddr(),
+                                    request.getLocalPort(),
+                                    request.getRemoteAddr(),
+                                    request.getRemotePort(),
+                                    getX509Certificates(request, expectTLS)
+                            )
+                    )
+            );
+
+        } catch (TransportException | MarshallingException | ClassCastException e) {
+            LOG.error("", e);
+            response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR_500);
+            output.write(e.getMessage().getBytes());
+            output.flush();
+        } finally {
+            baseRequest.setHandled(true);
         }
     }
 
-    private Collection<X509Certificate> getX509Certificates(HttpServletRequest request) throws IOException {
+    public static Collection<X509Certificate> getX509Certificates(HttpServletRequest request, boolean expectTLS) throws IOException {
         var anonymousCertificates = request.getAttribute("javax.servlet.request.X509Certificate");
-        if (this.expectTLS) {
+        if (expectTLS) {
             if (anonymousCertificates == null) {
                 LOG.error("Certificate information is missing from HTTP request data");
                 throw new IOException("Certificate information is missing from HTTP request data");

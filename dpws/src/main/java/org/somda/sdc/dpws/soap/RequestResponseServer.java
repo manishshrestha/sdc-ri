@@ -10,11 +10,11 @@ public interface RequestResponseServer extends InterceptorHandler {
     /**
      * Starts processing of an incoming SOAP request message.
      *
-     * @param request       incoming request message.
-     * @param response      outgoing response message.
-     * @param transportInfo transport information from transport layer (scheme, host, port).
+     * @param request              incoming request message.
+     * @param response             outgoing response message.
+     * @param communicationContext information from transport and application layer (scheme, host, port, ...).
      * @throws SoapFaultException if a SOAP fault comes up during processing.
      */
-    void receiveRequestResponse(SoapMessage request, SoapMessage response, TransportInfo transportInfo)
+    void receiveRequestResponse(SoapMessage request, SoapMessage response, CommunicationContext communicationContext)
             throws SoapFaultException;
 }

@@ -2,7 +2,6 @@ package org.somda.sdc.dpws.http;
 
 import com.google.common.util.concurrent.Service;
 import org.somda.sdc.dpws.soap.SoapConstants;
-import org.somda.sdc.dpws.soap.TransportInfo;
 
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -56,7 +55,7 @@ public interface HttpServerRegistry extends Service {
     /**
      * Removes a handler for the given scheme, authority and context path.
      * <p>
-     * {@link HttpHandler#process(InputStream, OutputStream, TransportInfo)} will not be called for
+     * {@link HttpHandler#process(InputStream, OutputStream, org.somda.sdc.dpws.soap.CommunicationContext)} will not be called for
      * any request destined to the corresponding handler.
      * Requests to the corresponding are answered with an HTTP 404.
      *
