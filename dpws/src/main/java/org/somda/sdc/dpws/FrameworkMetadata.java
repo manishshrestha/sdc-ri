@@ -11,7 +11,7 @@ import java.io.InputStreamReader;
 
 @Singleton
 public class FrameworkMetadata {
-    private static final Logger LOG = LoggerFactory.getLogger(FrameworkMetadata);
+    private static final Logger LOG = LoggerFactory.getLogger(FrameworkMetadata.class);
     private String frameworkVersion;
     private String javaVersion;
     private String javaVendor;
