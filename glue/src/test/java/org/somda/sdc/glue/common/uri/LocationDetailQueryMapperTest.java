@@ -16,6 +16,12 @@ class LocationDetailQueryMapperTest {
         instanceIdentifier.setRootName("http://root");
 
         {
+            var locationDetail = createLocationDetail("facility&", null,
+                    null, null, null, null);
+            assertThrows(UriMapperGenerationArgumentException.class,
+                    () -> LocationDetailQueryMapper.createWithLocationDetailQuery(instanceIdentifier, locationDetail));
+        }
+        {
             var locationDetail = createLocationDetail("facility1", "building1", "floor1", "poc1", "room1", "bed1");
             final String actualUri = LocationDetailQueryMapper.createWithLocationDetailQuery(instanceIdentifier, locationDetail);
 
@@ -89,6 +95,16 @@ class LocationDetailQueryMapperTest {
             assertNull(locationDetail.getPoC());
             assertNull(locationDetail.getFloor());
             assertNull(locationDetail.getRoom());
+            assertNull(locationDetail.getBed());
+        }
+        {
+            final String uri = "sdc.ctxt.loc:/http%3A%2F%2Froot/?rm=%C3%BC#";
+            final LocationDetail locationDetail = LocationDetailQueryMapper.readLocationDetailQuery(uri);
+            assertNull(locationDetail.getFacility());
+            assertNull(locationDetail.getBuilding());
+            assertNull(locationDetail.getPoC());
+            assertNull(locationDetail.getFloor());
+            assertEquals("ü", locationDetail.getRoom());
             assertNull(locationDetail.getBed());
         }
     }

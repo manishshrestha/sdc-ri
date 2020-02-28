@@ -109,7 +109,7 @@ public class GlueConstants {
 
     // Added negative lookahead for "//" to prevent authority from being interpreted as path
     private static final String PATH_ABEMPTY = "(/" + SEGMENT_REGEX + ")*";
-    private static final String PATH = "(" +
+    public static final String PATH = "(" +
             PATH_ABEMPTY + "|" +
             PATH_ABSOLUTE + "|" +
             PATH_NOSCHEME + "|" +
@@ -133,7 +133,7 @@ public class GlueConstants {
 
     // The "&" character had to be excluded from the "pchar" definition as it already is used a delimiter.
     // This is a bug in the GLUE standard. The "&" should not be allowed, except as a delimiter.
-    private static final String QUERY_ITEM_SEGMENT = "[a-zA-Z0-9-._~!$'()*+,;=:@]+";
+    private static final String QUERY_ITEM_SEGMENT = "(?:(?:%[a-fA-F0-9]{2})+|(?:[a-zA-Z0-9-._~!$'()*+,;=:@])+)";
     private static final String QUERY_ITEM = "((fac=" + QUERY_ITEM_SEGMENT + ")|" +
             "(bldng=" + QUERY_ITEM_SEGMENT + ")|" +
             "(poc=" + QUERY_ITEM_SEGMENT + ")|" +
@@ -141,6 +141,4 @@ public class GlueConstants {
             "(rm=" + QUERY_ITEM_SEGMENT + ")|" +
             "(bed=" + QUERY_ITEM_SEGMENT + "))";
     public static final String LOC_CTXT_QUERY = "^(" + QUERY_ITEM + "(&" + QUERY_ITEM + ")*)?$";
-    // TODO: use
-    public static final String INSTANCE_IDENTIFIER = "/({root}" + SEGMENT_NZ_REGEX + ")/({extension}" + SEGMENT_REGEX + ")";
 }
