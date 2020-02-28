@@ -118,7 +118,7 @@ public class CommunicationLogIT extends DpwsTest {
         var responseBytes = expectedResponseStream.toByteArray();
 
         // spawn the http server
-        var handler = new ResponseHandler(responseBytes);
+        var handler = new HttpServerUtil.GzipResponseHandler(responseBytes);
         var inetSocketAddress = new InetSocketAddress(baseUri.getHost(), baseUri.getPort());
         var server = HttpServerUtil.spawnHttpServer(inetSocketAddress, handler);
 
@@ -162,8 +162,8 @@ public class CommunicationLogIT extends DpwsTest {
             );
             // ensure response headers are logged
             assertEquals(
-                    ResponseHandler.TEST_HEADER_VALUE,
-                    logSink.getInboundHeaders().get(0).get(ResponseHandler.TEST_HEADER_KEY)
+                    HttpServerUtil.GzipResponseHandler.TEST_HEADER_VALUE,
+                    logSink.getInboundHeaders().get(0).get(HttpServerUtil.GzipResponseHandler.TEST_HEADER_KEY)
             );
 
             logSink.clear();
@@ -285,26 +285,6 @@ public class CommunicationLogIT extends DpwsTest {
             inbound.clear();
             inboundHeaders.clear();
             outboundHeaders.clear();
-        }
-    }
-
-    static class ResponseHandler implements HttpHandler {
-        private static final String TEST_HEADER_KEY = "SDCriTestHeader";
-        private static final String TEST_HEADER_VALUE = "anAmazingValue";
-        private final byte[] response;
-
-        ResponseHandler(byte[] response) throws IOException {
-            this.response = response;
-        }
-
-        @Override
-        public void handle(HttpExchange t) throws IOException {
-            t.getResponseHeaders().add(TEST_HEADER_KEY, TEST_HEADER_VALUE);
-            t.getResponseHeaders().add(HttpHeaders.CONTENT_TYPE, SoapConstants.MEDIA_TYPE_SOAP);
-            t.sendResponseHeaders(200, response.length);
-            OutputStream os = t.getResponseBody();
-            os.write(response);
-            os.close();
         }
     }
 
