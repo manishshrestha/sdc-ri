@@ -1,17 +1,16 @@
 package org.somda.sdc.glue.common.uri;
 
+import jregex.Matcher;
+import jregex.Pattern;
 import org.junit.jupiter.api.Test;
 import org.somda.sdc.glue.GlueConstants;
-
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 public class RegexTest {
 
-    private static final Pattern AUTHORITY_PATTERN = Pattern.compile("^" + GlueConstants.AUTHORITY + "$");
-    private static final Pattern URI_PATTERN = Pattern.compile(GlueConstants.URI_REGEX);
+    private static final Pattern AUTHORITY_PATTERN = new Pattern("^" + GlueConstants.AUTHORITY + "$");
+    private static final Pattern URI_PATTERN = new Pattern(GlueConstants.URI_REGEX);
 
     @Test
     void authority() {
@@ -53,7 +52,20 @@ public class RegexTest {
         }
         {
             Matcher matcher = URI_PATTERN.matcher("scheme://@@");
+            matcher.matches();
+            System.out.println(matcher.group("path"));
+            System.out.println(matcher.group("authority"));
             assertFalse(matcher.matches());
+        }
+        {
+            Matcher matcher = URI_PATTERN.matcher("scheme://user@%C3%A4:123/path?query?query#fragment");
+            assertTrue(matcher.matches());
+            assertEquals("user", matcher.group("userInfo"));
+            assertEquals("123", matcher.group("port"));
+            assertEquals("%C3%A4", matcher.group("host"));
+            assertEquals("/path", matcher.group("path"));
+            assertEquals("query?query", matcher.group("query"));
+            assertEquals("fragment", matcher.group("fragment"));
         }
     }
 }
