@@ -1,8 +1,8 @@
 package org.somda.sdc.glue.common.uri;
 
 import com.google.common.base.Strings;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import jregex.Matcher;
+import jregex.Pattern;
 import org.somda.sdc.biceps.model.participant.InstanceIdentifier;
 import org.somda.sdc.biceps.model.participant.LocationDetail;
 import org.somda.sdc.glue.GlueConstants;
@@ -15,13 +15,10 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import jregex.*;
-
 /**
  * Utility class to map location detail to and from URIs in accordance with SDC Glue section 9.4.1.2.
  */
 public class LocationDetailQueryMapper {
-    private static final Logger LOG = LoggerFactory.getLogger(LocationDetailQueryMapper.class);
 
     private static final Pattern PATTERN = new Pattern(GlueConstants.URI_REGEX);
     private static final Pattern QUERY_VALIDATOR = new Pattern(GlueConstants.LOC_CTXT_QUERY);
@@ -55,15 +52,25 @@ public class LocationDetailQueryMapper {
                 queryParams.append(key).append('=').append(UrlUtf8.encode(value));
             } catch (NoSuchMethodException | IllegalAccessException |
                     InvocationTargetException | ClassCastException e) {
-                // Ignore reflection exceptions
-                LOG.warn("Unexpected reflection exception occurred during location detail appending of field " +
-                        field.toString(), e);
+                throw new UriMapperGenerationArgumentException(
+                        "Unexpected reflection exception occurred during location detail appending of field " +
+                                field.toString());
             }
         }
 
         final String queryParamsString = queryParams.toString();
-        return uri +
+        final String resultingUri = uri +
                 (queryParamsString.equals("?") ? "" : queryParamsString);
+
+        try {
+            readLocationDetailQuery(resultingUri);
+        } catch (UriMapperParsingException e) {
+            throw new UriMapperGenerationArgumentException(
+                    "No valid URI could be generated from the given LocationDetail: '" + locationDetail.toString()
+                            + "' and InstanceIdentifier: '" + instanceIdentifier.toString() + "'");
+        }
+
+        return resultingUri;
     }
 
     /**
@@ -80,6 +87,9 @@ public class LocationDetailQueryMapper {
         if (uriMatcher.matches()) {
             String queryString = uriMatcher.group("query");
 
+            if (queryString == null) {
+                return new LocationDetail();
+            }
             Matcher queryMatcher = QUERY_VALIDATOR.matcher(queryString);
 
             if (queryMatcher.matches()) {

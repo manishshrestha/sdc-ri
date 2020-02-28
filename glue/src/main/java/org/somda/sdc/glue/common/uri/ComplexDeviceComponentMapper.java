@@ -1,13 +1,13 @@
 package org.somda.sdc.glue.common.uri;
 
+import jregex.Matcher;
+import jregex.Pattern;
 import org.somda.sdc.biceps.model.participant.AbstractComplexDeviceComponentDescriptor;
 import org.somda.sdc.biceps.model.participant.CodedValue;
 import org.somda.sdc.glue.GlueConstants;
 import org.somda.sdc.glue.common.helper.UrlUtf8;
 
 import java.util.Optional;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * Utility class to map from complex device component coded value to URI and back to coded value.
@@ -17,23 +17,20 @@ import java.util.regex.Pattern;
 public class ComplexDeviceComponentMapper {
     private static final String SCHEME = "sdc.cdc.type";
 
-    private static final Pattern PATTERN = Pattern
-            .compile(
-                    "^(" +
-                            "(?i:sdc.cdc.type):/" +
-                            // Warning: this intentionally differs from
-                            // the standard to distinguish between authority and path
-                            // Do not change the first of the following groups to SEGMENT_REGEX instead
-                            // of SEGMENT_NZ_REGEX
-                            "(?<nonAuthorityCodingsystem>" + GlueConstants.SEGMENT_NZ_REGEX + ")/" +
-                            "(?<nonAuthorityCodingsystemVersion>" + GlueConstants.SEGMENT_REGEX + ")/" +
-                            "(?<nonAuthorityCode>" + GlueConstants.SEGMENT_NZ_REGEX + ")|" +
-                            "((?i:sdc.cdc.type)://" +
-                            "(?<authorityCodingsystemVersion>(" + GlueConstants.AUTHORITY + "))/" +
-                            "(?<authorityCode>" + GlueConstants.SEGMENT_NZ_REGEX + ")" +
-                            ")" +
-                            ")$"
-            );
+    private static final Pattern PATTERN = new Pattern(
+            "^(" +
+                    "(?i:sdc.cdc.type):/" +
+                    // Warning: this intentionally differs from
+                    // the standard to distinguish between authority and path
+                    // Do not change the first of the following groups to "SEGMENT_REGEX" instead
+                    // of "SEGMENT_NZ_REGEX|"
+                    "(({codingSystem}" + GlueConstants.SEGMENT_NZ_REGEX + ")|)/" +
+                    "({codingSystemVersion}(?(codingSystem)" +
+                    GlueConstants.SEGMENT_REGEX + "|" +
+                    GlueConstants.AUTHORITY + "))/" +
+                    "({code}" + GlueConstants.SEGMENT_NZ_REGEX + ")" +
+                    ")$"
+    );
 
     /**
      * Maps an abstract complex component descriptor to URI representation.
@@ -93,20 +90,9 @@ public class ComplexDeviceComponentMapper {
         Matcher matcher = PATTERN.matcher(complexDeviceComponentTypeUri.toString());
         if (matcher.matches()) {
 
-            final String codingSystem;
-            final String codingSystemVersion;
-            final String code;
-
-            if (matcher.group("nonAuthorityCode") != null) {
-                codingSystem = UrlUtf8.decode(matcher.group("nonAuthorityCodingsystem"));
-                codingSystemVersion = UrlUtf8.decode(matcher.group("nonAuthorityCodingsystemVersion"));
-                code = UrlUtf8.decode(matcher.group("nonAuthorityCode"));
-            } else {
-                codingSystem = "";
-                codingSystemVersion = UrlUtf8.decode(matcher.group("authorityCodingsystemVersion"));
-                code = UrlUtf8.decode(matcher.group("authorityCode"));
-            }
-
+            final String codingSystem = UrlUtf8.decode(matcher.group("codingSystem"));
+            final String codingSystemVersion = UrlUtf8.decode(matcher.group("codingSystemVersion"));
+            final String code = UrlUtf8.decode(matcher.group("code"));
 
             CodedValue codedValue = new CodedValue();
             codedValue.setCodingSystem(codingSystem.isEmpty() ? null : codingSystem);

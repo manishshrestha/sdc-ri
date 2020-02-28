@@ -2,8 +2,6 @@ package org.somda.sdc.glue.common.uri;
 
 import org.ietf.jgss.GSSException;
 import org.ietf.jgss.Oid;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.Optional;
 import java.util.regex.Matcher;
@@ -15,7 +13,6 @@ import java.util.regex.Pattern;
  * This class implements the grammar defined in IEEE 11073-20701 section 9.3.
  */
 public class ParticipantKeyPurposeMapper {
-    private static final Logger LOG = LoggerFactory.getLogger(ParticipantKeyPurposeMapper.class);
     private static final String SCHEME = "sdc.mds.pkp";
     private static final String NO_LEADING_ZERO_EXCEPT_FOR_SINGLE_DIGIT = "(0|([1-9][0-9]*))";
     private static final String OID_SEGMENT =
