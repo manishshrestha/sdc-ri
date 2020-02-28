@@ -6,11 +6,11 @@ import com.google.common.util.concurrent.Service;
 import com.google.inject.Inject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.somda.sdc.common.util.ExecutorWrapperService;
 import org.somda.sdc.dpws.guice.AppDelayExecutor;
 import org.somda.sdc.dpws.guice.DiscoveryUdpQueue;
 import org.somda.sdc.dpws.guice.NetworkJobThreadPool;
 import org.somda.sdc.dpws.guice.WsDiscovery;
-import org.somda.sdc.common.util.ExecutorWrapperService;
 import org.somda.sdc.dpws.http.HttpServerRegistry;
 import org.somda.sdc.dpws.soap.SoapMarshalling;
 import org.somda.sdc.dpws.soap.wsdiscovery.WsDiscoveryConstants;
@@ -39,6 +39,7 @@ public class DpwsFrameworkImpl extends AbstractIdleService implements DpwsFramew
     private final UdpBindingServiceFactory udpBindingServiceFactory;
     private final HttpServerRegistry httpServerRegistry;
     private final SoapMarshalling soapMarshalling;
+    private final FrameworkMetadata metadata;
 
     private final List<Service> registeredServices;
     private UdpBindingService udpBindingService;
@@ -51,12 +52,14 @@ public class DpwsFrameworkImpl extends AbstractIdleService implements DpwsFramew
                       SoapMarshalling soapMarshalling,
                       @AppDelayExecutor ExecutorWrapperService<ScheduledExecutorService> appDelayExecutor,
                       @NetworkJobThreadPool ExecutorWrapperService<ListeningExecutorService> networkJobExecutor,
-                      @WsDiscovery ExecutorWrapperService<ListeningExecutorService> wsDiscoveryExecutor) {
+                      @WsDiscovery ExecutorWrapperService<ListeningExecutorService> wsDiscoveryExecutor,
+                      FrameworkMetadata metadata) {
         this.udpMessageQueueService = udpMessageQueueService;
         this.udpBindingServiceFactory = udpBindingServiceFactory;
         this.httpServerRegistry = httpServerRegistry;
         this.soapMarshalling = soapMarshalling;
         this.wasStarted = false;
+        this.metadata = metadata;
         this.registeredServices = new ArrayList<>();
         registeredServices.addAll(List.of(
                 // dpws thread pools
@@ -71,6 +74,7 @@ public class DpwsFrameworkImpl extends AbstractIdleService implements DpwsFramew
             throw new RuntimeException("DPWS framework cannot be restarted after a shutdown!");
         }
         LOG.info("Start SDCri DPWS framework");
+        logMetadata();
 
         if (networkInterface == null) {
             networkInterface = NetworkInterface.getByInetAddress(InetAddress.getLoopbackAddress());
@@ -165,4 +169,12 @@ public class DpwsFrameworkImpl extends AbstractIdleService implements DpwsFramew
             );
         }
     }
+
+    private void logMetadata() {
+        LOG.info("SDCri version:\t{}", metadata.getFrameworkVersion());
+        LOG.info("Java vendor:\t\t{}", metadata.getJavaVendor());
+        LOG.info("Java version:\t{}", metadata.getJavaVersion());
+        LOG.info("OS version:\t\t{}", metadata.getOsVersion());
+    }
+
 }
