@@ -57,20 +57,20 @@ public class MarshallingService {
     /**
      * Uses the given {@link RequestResponseServer} object to accept unmarshalled request data and marshalled response data.
      *
-     * @param srv           the request-response server where to call
-     *                      {@link RequestResponseServer#receiveRequestResponse(SoapMessage, SoapMessage, TransportInfo)}
-     * @param is            input stream that provides SOAP request message.
-     * @param os            output stream where to write SOAP response message to.
-     * @param transportInfo transport layer information.
+     * @param srv                  the request-response server where to call
+     *                             {@link RequestResponseServer#receiveRequestResponse(SoapMessage, SoapMessage, CommunicationContext)}
+     * @param is                   input stream that provides SOAP request message.
+     * @param os                   output stream where to write SOAP response message to.
+     * @param communicationContext transport and application layer information.
      * @throws MarshallingException if any exception occurs during marshalling or unmarshalling of SOAP messages.
      */
     public void handleRequestResponse(RequestResponseServer srv,
                                       InputStream is,
                                       OutputStream os,
-                                      TransportInfo transportInfo) throws MarshallingException {
+                                      CommunicationContext communicationContext) throws MarshallingException {
         SoapMessage responseMessage = soapUtil.createMessage();
         try {
-            srv.receiveRequestResponse(unmarshal(is), responseMessage, transportInfo);
+            srv.receiveRequestResponse(unmarshal(is), responseMessage, communicationContext);
         } catch (SoapFaultException e) {
             marshal(e.getFaultMessage(), os);
             return;

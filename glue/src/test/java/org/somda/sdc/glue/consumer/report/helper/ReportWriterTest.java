@@ -17,9 +17,7 @@ import org.somda.sdc.biceps.testutil.Handles;
 import org.somda.sdc.biceps.testutil.MockEntryFactory;
 import org.somda.sdc.glue.UnitTestUtil;
 import org.somda.sdc.glue.common.MdibVersionUtil;
-import org.somda.sdc.glue.consumer.report.ReportProcessingException;
 
-import java.lang.reflect.InvocationTargetException;
 import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.List;

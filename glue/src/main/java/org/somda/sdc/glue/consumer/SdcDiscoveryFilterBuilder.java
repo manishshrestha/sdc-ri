@@ -1,13 +1,16 @@
 package org.somda.sdc.glue.consumer;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.somda.sdc.biceps.model.participant.AbstractComplexDeviceComponentDescriptor;
 import org.somda.sdc.biceps.model.participant.AbstractContextState;
 import org.somda.sdc.biceps.model.participant.ContextAssociation;
 import org.somda.sdc.dpws.client.DiscoveryFilter;
 import org.somda.sdc.dpws.client.DiscoveryFilterBuilder;
 import org.somda.sdc.glue.GlueConstants;
-import org.somda.sdc.glue.common.ComplexDeviceComponentMapper;
-import org.somda.sdc.glue.common.ContextIdentificationMapper;
+import org.somda.sdc.glue.common.uri.ComplexDeviceComponentMapper;
+import org.somda.sdc.glue.common.uri.ContextIdentificationMapper;
+import org.somda.sdc.glue.common.uri.UriMapperGenerationArgumentException;
 import org.somda.sdc.mdpws.common.CommonConstants;
 
 import javax.annotation.Nullable;
@@ -26,6 +29,8 @@ import java.util.Optional;
  * @see GlueConstants#OID_KEY_PURPOSE_SDC_SERVICE_PROVIDER
  */
 public class SdcDiscoveryFilterBuilder {
+    private static final Logger LOG = LoggerFactory.getLogger(SdcDiscoveryFilterBuilder.class);
+
     private final DiscoveryFilterBuilder discoveryFilterBuilder;
 
     public static SdcDiscoveryFilterBuilder create() {
@@ -83,8 +88,12 @@ public class SdcDiscoveryFilterBuilder {
      * @return this object.
      */
     public <T extends AbstractComplexDeviceComponentDescriptor> SdcDiscoveryFilterBuilder addDeviceComponent(T component) {
-        ComplexDeviceComponentMapper.fromComplexDeviceComponent(component).ifPresent(scope ->
-                addScope(scope.toString()));
+
+        try {
+            addScope(ComplexDeviceComponentMapper.fromComplexDeviceComponent(component));
+        } catch (UriMapperGenerationArgumentException e) {
+            LOG.warn("The URI generation based on the given component failed", e);
+        }
         return this;
     }
 

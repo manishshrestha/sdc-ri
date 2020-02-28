@@ -14,7 +14,6 @@ import org.somda.sdc.glue.provider.sco.OperationInvocationReceiver;
 
 import java.net.InetAddress;
 import java.net.NetworkInterface;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 

@@ -1,13 +1,16 @@
 package org.somda.sdc.dpws.soap;
 
-import org.somda.sdc.dpws.DpwsTest;
-import org.somda.sdc.dpws.soap.factory.SoapMessageFactory;
-import org.somda.sdc.dpws.soap.model.Envelope;
-import org.somda.sdc.dpws.soap.interception.*;
-import org.somda.sdc.dpws.soap.wsaddressing.WsAddressingUtil;
-import org.somda.sdc.dpws.soap.wsaddressing.model.AttributedURIType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.somda.sdc.dpws.DpwsTest;
+import org.somda.sdc.dpws.soap.factory.SoapMessageFactory;
+import org.somda.sdc.dpws.soap.interception.Direction;
+import org.somda.sdc.dpws.soap.interception.Interceptor;
+import org.somda.sdc.dpws.soap.interception.MessageInterceptor;
+import org.somda.sdc.dpws.soap.interception.RequestResponseObject;
+import org.somda.sdc.dpws.soap.model.Envelope;
+import org.somda.sdc.dpws.soap.wsaddressing.WsAddressingUtil;
+import org.somda.sdc.dpws.soap.wsaddressing.model.AttributedURIType;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -17,19 +20,23 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class RequestResponseServerImplTest extends DpwsTest {
     private List<String> dispatchedSequence;
-    private TransportInfo mockTransportInfo;
+    private CommunicationContext mockCommunicationContext;
 
     @Override
     @BeforeEach
     public void setUp() throws Exception {
         super.setUp();
-        mockTransportInfo = new TransportInfo(
-                "mock.scheme",
-                "localhost",
-                123,
-                "remotehost",
-                456,
-                Collections.emptyList());
+        mockCommunicationContext = new CommunicationContext(
+                new ApplicationInfo(),
+                new TransportInfo(
+                        "mock.scheme",
+                        "localhost",
+                        123,
+                        "remotehost",
+                        456,
+                        Collections.emptyList()
+                )
+        );
 
         getInjector().getInstance(SoapMarshalling.class).startAsync().awaitRunning();
         dispatchedSequence = new ArrayList<>();
@@ -93,13 +100,13 @@ public class RequestResponseServerImplTest extends DpwsTest {
         });
 
         rrServer.register(new Interceptor() {
-            @MessageInterceptor(value = "http://response-action" , direction = Direction.RESPONSE)
+            @MessageInterceptor(value = "http://response-action", direction = Direction.RESPONSE)
             void onDelete(RequestResponseObject rrInfo) {
                 dispatchedSequence.add("RESPONSE(ACTION,MAX)");
             }
         });
 
-        rrServer.receiveRequestResponse(request, response, mockTransportInfo);
+        rrServer.receiveRequestResponse(request, response, mockCommunicationContext);
 
         assertEquals(5, dispatchedSequence.size());
         assertEquals("REQUEST(5)", dispatchedSequence.get(0));

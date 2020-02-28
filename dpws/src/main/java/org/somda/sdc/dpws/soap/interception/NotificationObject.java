@@ -1,5 +1,6 @@
 package org.somda.sdc.dpws.soap.interception;
 
+import org.somda.sdc.dpws.soap.CommunicationContext;
 import org.somda.sdc.dpws.soap.SoapMessage;
 import org.somda.sdc.dpws.soap.TransportInfo;
 
@@ -11,16 +12,16 @@ import java.util.Optional;
  */
 public class NotificationObject implements InterceptorCallbackType {
     private final SoapMessage notification;
-    private final TransportInfo transportInfo;
+    private final CommunicationContext communicationContext;
 
     public NotificationObject(SoapMessage notification) {
         this.notification = notification;
-        this.transportInfo = null;
+        this.communicationContext = null;
     }
 
-    public NotificationObject(SoapMessage notification, @Nullable TransportInfo transportInfo) {
+    public NotificationObject(SoapMessage notification, @Nullable CommunicationContext communicationContext) {
         this.notification = notification;
-        this.transportInfo = transportInfo;
+        this.communicationContext = communicationContext;
     }
 
     public SoapMessage getNotification() {
@@ -36,7 +37,7 @@ public class NotificationObject implements InterceptorCallbackType {
      * Once the notification was received by a server, transport information can be attached to this object and
      * non-existence is then a potential error.
      */
-    public Optional<TransportInfo> getTransportInfo() {
-        return Optional.ofNullable(transportInfo);
+    public Optional<CommunicationContext> getCommunicationContext() {
+        return Optional.ofNullable(communicationContext);
     }
 }
