@@ -50,6 +50,10 @@ public class RegexTest {
             Matcher matcher = AUTHORITY_PATTERN.matcher("user@@:123");
             assertFalse(matcher.matches());
         }
+    }
+
+    @Test
+    void uri() {
         {
             Matcher matcher = URI_PATTERN.matcher("scheme://@@");
             matcher.matches();
@@ -66,8 +70,18 @@ public class RegexTest {
             assertEquals("fragment", matcher.group("fragment"));
         }
         {
-            Matcher matcher = AUTHORITY_PATTERN.matcher("scheme://user@%C3%A4:123/path?#?query#fragment");
+            Matcher matcher = URI_PATTERN.matcher("scheme://user@%C3%A4:123/path?#?query#fragment");
             assertFalse(matcher.matches());
+        }
+        {
+            Matcher matcher = URI_PATTERN.matcher("urn:example:animal:ferret:nose");
+            assertTrue(matcher.matches());
+            assertEquals("example:animal:ferret:nose", matcher.group("path"));
+        }
+        {
+            Matcher matcher = URI_PATTERN.matcher("urn:%2A-");
+            assertTrue(matcher.matches());
+            assertEquals("%2A-", matcher.group("path"));
         }
     }
 }
