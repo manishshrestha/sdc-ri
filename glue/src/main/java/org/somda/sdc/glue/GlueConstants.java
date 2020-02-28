@@ -1,9 +1,10 @@
 package org.somda.sdc.glue;
 
 import org.ietf.jgss.Oid;
-import org.somda.sdc.glue.common.ParticipantKeyPurposeMapper;
+import org.somda.sdc.glue.common.uri.ParticipantKeyPurposeMapper;
 
 import java.net.URI;
+import java.util.Collections;
 
 /**
  * Any constants relevant to SDC Glue.
@@ -63,7 +64,7 @@ public class GlueConstants {
      * <p>
      * This scope, encoded in accordance with SDC Glue clause 9.3, claims conformance with IEEE 11073-20701, published 2018.
      */
-    public static URI SCOPE_SDC_PROVIDER;
+    public static String SCOPE_SDC_PROVIDER;
 
     /**
      * SegmentNz and Segment regex definitions.
@@ -72,4 +73,29 @@ public class GlueConstants {
     private static final String ALLOWED_CHARS_WITH_PERCENT_ENCODING = "(?:(?:%[a-fA-F0-9]{2})+|(?:" + ALLOWED_CHARS + ")+)";
     public static final String SEGMENT_NZ_REGEX = ALLOWED_CHARS_WITH_PERCENT_ENCODING + "+";
     public static final String SEGMENT_REGEX = ALLOWED_CHARS_WITH_PERCENT_ENCODING + "*";
+    private static final String DEC_OCTET = "(1[0-9][0-9])|(2[0-4][0-9])|(25[0-5]|[0-9])|([1-9][0-9])";
+    private static final String IPV4_ADDRESS = String.join(".", Collections.nCopies(4, DEC_OCTET));
+    private static final String REG_NAME = "(?:(?:%[a-fA-F0-9]{2})+|(?:" + "[a-zA-Z0-9-._~!$&'()*+,;=]" + ")+)*";
+    private static final String USER_INFO = "(?:(?:%[a-fA-F0-9]{2})+|(?:" + "[a-zA-Z0-9-._~!$&'()*+,;=:]" + ")+)*";
+    private static final String HEXDIG = "[a-fA-F0-9]";
+    private static final String IPV_FUTURE = "v" + HEXDIG + "." + "[a-zA-Z0-9-._~!$&'()*+,;=:]";
+    // The following might require an (?a) flag in other implementations than java.util.regex.Pattern
+    private static final String IPV6_ADDRESS = "\\s*((([0-9A-Fa-f]{1,4}:){7}([0-9A-Fa-f]{1,4}|:))|" +
+            "(([0-9A-Fa-f]{1,4}:){6}(:[0-9A-Fa-f]{1,4}|" +
+            "((25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)(\\.(25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)){3})|:))|" +
+            "(([0-9A-Fa-f]{1,4}:){5}(((:[0-9A-Fa-f]{1,4}){1,2})|" +
+            ":((25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)(\\.(25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)){3})|:))|" +
+            "(([0-9A-Fa-f]{1,4}:){4}(((:[0-9A-Fa-f]{1,4}){1,3})|" +
+            "((:[0-9A-Fa-f]{1,4})?:((25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)(\\.(25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)){3}))|" +
+            ":))|(([0-9A-Fa-f]{1,4}:){3}(((:[0-9A-Fa-f]{1,4}){1,4})|" +
+            "((:[0-9A-Fa-f]{1,4}){0,2}:((25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)(\\.(25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)){3}))|:))|" +
+            "(([0-9A-Fa-f]{1,4}:){2}(((:[0-9A-Fa-f]{1,4}){1,5})|" +
+            "((:[0-9A-Fa-f]{1,4}){0,3}:((25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)(\\.(25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)){3}))|:))|" +
+            "(([0-9A-Fa-f]{1,4}:){1}(((:[0-9A-Fa-f]{1,4}){1,6})|" +
+            "((:[0-9A-Fa-f]{1,4}){0,4}:((25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)(\\.(25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)){3}))|:))|" +
+            "(:(((:[0-9A-Fa-f]{1,4}){1,7})|" +
+            "((:[0-9A-Fa-f]{1,4}){0,5}:((25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)(\\.(25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)){3}))|:)))(%.+)?\\s*";
+    private static final String IP_LITERAL = "\\[" + "((" + IPV6_ADDRESS + ")|(" + IPV_FUTURE + "))" + "\\]";
+    private static final String HOST = "(?<host>(" + REG_NAME + "|" + IPV4_ADDRESS + "|" + IP_LITERAL + "))";
+    public static final String AUTHORITY = "((?<userInfo>" + USER_INFO + ")@){0,1}" + HOST + "(:(?<port>[0-9]*)){0,1}";
 }

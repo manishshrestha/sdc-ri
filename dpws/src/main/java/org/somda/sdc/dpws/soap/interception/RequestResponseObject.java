@@ -1,7 +1,7 @@
 package org.somda.sdc.dpws.soap.interception;
 
+import org.somda.sdc.dpws.soap.CommunicationContext;
 import org.somda.sdc.dpws.soap.SoapMessage;
-import org.somda.sdc.dpws.soap.TransportInfo;
 
 import java.util.Optional;
 
@@ -11,18 +11,18 @@ import java.util.Optional;
 public class RequestResponseObject implements InterceptorCallbackType {
     private final SoapMessage request;
     private final SoapMessage response;
-    private final TransportInfo transportInfo;
+    private final CommunicationContext communicationContext;
 
-    public RequestResponseObject(SoapMessage request, SoapMessage response, TransportInfo transportInfo) {
+    public RequestResponseObject(SoapMessage request, SoapMessage response, CommunicationContext communicationContext) {
         this.request = request;
         this.response = response;
-        this.transportInfo = transportInfo;
+        this.communicationContext = communicationContext;
     }
 
     public RequestResponseObject(SoapMessage request, SoapMessage response) {
         this.request = request;
         this.response = response;
-        this.transportInfo = null;
+        this.communicationContext = null;
     }
 
     public SoapMessage getRequest() {
@@ -33,8 +33,8 @@ public class RequestResponseObject implements InterceptorCallbackType {
         return response;
     }
 
-    public Optional<TransportInfo> getTransportInfo() {
-        return Optional.ofNullable(transportInfo);
+    public Optional<CommunicationContext> getCommunicationContext() {
+        return Optional.ofNullable(communicationContext);
     }
 
 }

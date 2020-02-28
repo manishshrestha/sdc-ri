@@ -1,8 +1,11 @@
 package org.somda.sdc.dpws;
 
 import org.junit.jupiter.api.Test;
+import org.somda.sdc.dpws.soap.CommunicationContext;
+import org.somda.sdc.dpws.soap.TransportInfo;
 
 import java.io.*;
+import java.util.Collections;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
@@ -23,23 +26,33 @@ public class CommunicationLogImplTest extends DpwsTest {
              ByteArrayInputStream inputTestInputStream = new ByteArrayInputStream(content);
              ByteArrayOutputStream outputTestOutputStream = new ByteArrayOutputStream();) {
 
-            when(communicationLogSinkImplMock.getTargetStream(eq(CommunicationLog.TransportType.HTTP), anyString()))
+            when(communicationLogSinkImplMock.getTargetStream(eq(CommunicationLog.TransportType.HTTP), any(), any()))
                     .thenReturn(mockOutputStream);
 
             CommunicationLogImpl communicationLogImpl = new CommunicationLogImpl(communicationLogSinkImplMock);
 
+            var requestCommContext = new CommunicationContext(
+                    null,
+                    new TransportInfo(
+                            "",
+                            null, null,
+                            "_", 0,
+                            Collections.emptyList()
+                    )
+            );
+
             InputStream resultingInputStream = communicationLogImpl
                     .logMessage(CommunicationLog.Direction.OUTBOUND, CommunicationLog.TransportType.HTTP,
-                            "_", 0, inputTestInputStream);
+                            requestCommContext, inputTestInputStream);
 
             assertArrayEquals(resultingInputStream.readAllBytes(), content);
             assertArrayEquals(mockOutputStream.toByteArray(), content);
 
             mockOutputStream.reset();
 
-            try(OutputStream resultingOutputStream = communicationLogImpl.logMessage(
+            try (OutputStream resultingOutputStream = communicationLogImpl.logMessage(
                     CommunicationLog.Direction.OUTBOUND, CommunicationLog.TransportType.HTTP,
-                    "_", 0, outputTestOutputStream);) {
+                    requestCommContext, outputTestOutputStream);) {
 
                 resultingOutputStream.write(content);
                 resultingOutputStream.flush();
@@ -59,19 +72,29 @@ public class CommunicationLogImplTest extends DpwsTest {
 
         CommunicationLogImpl communicationLogImpl = new CommunicationLogImpl(communicationLogSinkImplMock);
 
+        var requestCommContext = new CommunicationContext(
+                null,
+                new TransportInfo(
+                        "",
+                        null, null,
+                        "_", 0,
+                        Collections.emptyList()
+                )
+        );
+
         try (ByteArrayInputStream inputStream = new ByteArrayInputStream(content);) {
             for (CommunicationLog.Direction dir : CommunicationLog.Direction.values()) {
                 reset(communicationLogSinkImplMock);
 
-                when(communicationLogSinkImplMock.getTargetStream(any(CommunicationLog.TransportType.class), anyString()))
+                when(communicationLogSinkImplMock.getTargetStream(any(CommunicationLog.TransportType.class), any(), any()))
                         .thenReturn(OutputStream.nullOutputStream());
 
-                communicationLogImpl.logMessage(dir, CommunicationLog.TransportType.HTTP, "_", 0,
+                communicationLogImpl.logMessage(dir, CommunicationLog.TransportType.HTTP, requestCommContext,
                         inputStream);
-                communicationLogImpl.logMessage(dir, CommunicationLog.TransportType.HTTP, "_", 0,
+                communicationLogImpl.logMessage(dir, CommunicationLog.TransportType.HTTP, requestCommContext,
                         OutputStream.nullOutputStream());
                 verify(communicationLogSinkImplMock, times(2)).
-                        getTargetStream(eq(CommunicationLog.TransportType.HTTP), anyString());
+                        getTargetStream(eq(CommunicationLog.TransportType.HTTP), any(), any());
             }
         }
     }

@@ -129,9 +129,9 @@ public class SdcDevice extends AbstractIdleService implements Device, EventSourc
             }
 
             @Override
-            public void setScopes(Collection<URI> scopes) {
+            public void setScopes(Collection<String> scopes) {
                 // todo DGr track scopes from MDIB and update accordingly
-                ArrayList<URI> tmpScopes = new ArrayList<>();
+                ArrayList<String> tmpScopes = new ArrayList<>();
                 if (scopes.stream().filter(scope -> scope.equals(GlueConstants.SCOPE_SDC_PROVIDER)).findAny().isEmpty()) {
                     tmpScopes.add(GlueConstants.SCOPE_SDC_PROVIDER);
                 }

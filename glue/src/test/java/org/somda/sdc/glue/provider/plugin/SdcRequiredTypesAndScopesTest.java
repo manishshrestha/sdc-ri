@@ -16,16 +16,16 @@ import org.somda.sdc.biceps.provider.access.LocalMdibAccess;
 import org.somda.sdc.dpws.device.Device;
 import org.somda.sdc.dpws.device.DiscoveryAccess;
 import org.somda.sdc.glue.GlueConstants;
-import org.somda.sdc.glue.common.ComplexDeviceComponentMapper;
-import org.somda.sdc.glue.common.ContextIdentificationMapper;
+import org.somda.sdc.glue.common.uri.ComplexDeviceComponentMapper;
+import org.somda.sdc.glue.common.uri.ContextIdentificationMapper;
+import org.somda.sdc.glue.common.uri.UriMapperGenerationArgumentException;
 import org.somda.sdc.glue.provider.SdcDeviceContext;
 import test.org.somda.common.LoggingTestWatcher;
 import test.org.somda.common.TestLogging;
 
-import java.net.URI;
 import java.util.*;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(LoggingTestWatcher.class)
@@ -63,8 +63,8 @@ class SdcRequiredTypesAndScopesTest {
 
         {
             // Append scopes from outside
-            var scopes = new ArrayList<>(Arrays.asList(URI.create("urn:dummy:one"), URI.create("urn:dummy:two")));
-            sdcRequiredTypesAndScopes.appendScopesAndSendHello(new HashSet<>(scopes));
+            ArrayList<String> scopes = new ArrayList<>(Arrays.asList("urn:dummy:one", "urn:dummy:two"));
+            sdcRequiredTypesAndScopes.appendScopesAndSendHello(new HashSet<String>(scopes));
             var scopesCaptor = ArgumentCaptor.forClass(Collection.class);
             verify(discoveryAccessMock, times(setScopesInteractionCount)).setScopes(scopesCaptor.capture());
             assertEquals(setScopesInteractionCount, scopesCaptor.getAllValues().size());
@@ -75,7 +75,7 @@ class SdcRequiredTypesAndScopesTest {
 
         {
             // Scopes do not change
-            var scopes = new ArrayList<>(Arrays.asList(URI.create("urn:dummy:one"), URI.create("urn:dummy:two")));
+            List<String> scopes = List.of("urn:dummy:one", "urn:dummy:two");
             var scopesCaptor = ArgumentCaptor.forClass(Collection.class);
             sdcRequiredTypesAndScopes.appendScopesAndSendHello(new HashSet<>(scopes));
             // Expect no further interaction - times retains 2
@@ -85,8 +85,7 @@ class SdcRequiredTypesAndScopesTest {
 
         {
             // Scopes change, add duplicates
-            var scopes = new ArrayList<>(Arrays.asList(URI.create("urn:dummy:three"), URI.create("urn:dummy:two"),
-                    GlueConstants.SCOPE_SDC_PROVIDER)); // put this as a duplicate as the updater will insert it again
+            List<String> scopes = List.of("urn:dummy:three", "urn:dummy:two", GlueConstants.SCOPE_SDC_PROVIDER); // put this as a duplicate as the updater will insert it again
             var scopesCaptor = ArgumentCaptor.forClass(Collection.class);
             sdcRequiredTypesAndScopes.appendScopesAndSendHello(new HashSet<>(scopes));
             // Expect no further interaction - times retains 2
@@ -163,7 +162,7 @@ class SdcRequiredTypesAndScopesTest {
     }
 
     @Test
-    void updateDescriptionShallGenerateCorrectScopeUris() {
+    void updateDescriptionShallGenerateCorrectScopeUris() throws UriMapperGenerationArgumentException {
         int setScopesInteractionCount = 3;
         int sendHelloInteractionCount = 1;
         int scopesCount = 3;
@@ -199,7 +198,7 @@ class SdcRequiredTypesAndScopesTest {
     }
 
     @Test
-    void eventBusShallTriggerDescriptionUpdatesWithSetScopesAndHello() {
+    void eventBusShallTriggerDescriptionUpdatesWithSetScopesAndHello() throws UriMapperGenerationArgumentException{
         int setScopesInteractionCount = 2;
         int sendHelloInteractionCount = 1;
         int scopesCount = 3;
@@ -237,11 +236,11 @@ class SdcRequiredTypesAndScopesTest {
         verify(discoveryAccessMock, times(sendHelloInteractionCount)).sendHello();
     }
 
-    private void verifyScopes(Collection<URI> expectedScopes, Collection<URI> actualScopes) {
+    private void verifyScopes(Collection<String> expectedScopes, Collection<String> actualScopes) {
         assertEquals(expectedScopes.size(), actualScopes.size());
         int matchCount = 0;
-        for (URI expectedScope : expectedScopes) {
-            for (URI actualScope : actualScopes) {
+        for (String expectedScope : expectedScopes) {
+            for (String actualScope : actualScopes) {
                 matchCount += expectedScope.equals(actualScope) ? 1 : 0;
             }
         }

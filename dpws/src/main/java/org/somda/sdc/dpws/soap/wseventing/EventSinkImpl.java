@@ -7,13 +7,18 @@ import com.google.inject.assistedinject.AssistedInject;
 import com.google.inject.name.Named;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.somda.sdc.common.util.ExecutorWrapperService;
 import org.somda.sdc.common.util.JaxbUtil;
 import org.somda.sdc.dpws.DpwsConfig;
 import org.somda.sdc.dpws.DpwsConstants;
 import org.somda.sdc.dpws.guice.NetworkJobThreadPool;
-import org.somda.sdc.common.util.ExecutorWrapperService;
 import org.somda.sdc.dpws.http.HttpServerRegistry;
-import org.somda.sdc.dpws.soap.*;
+import org.somda.sdc.dpws.soap.CommunicationContext;
+import org.somda.sdc.dpws.soap.NotificationSink;
+import org.somda.sdc.dpws.soap.RequestResponseClient;
+import org.somda.sdc.dpws.soap.SoapMarshalling;
+import org.somda.sdc.dpws.soap.SoapMessage;
+import org.somda.sdc.dpws.soap.SoapUtil;
 import org.somda.sdc.dpws.soap.exception.MalformedSoapMessageException;
 import org.somda.sdc.dpws.soap.exception.MarshallingException;
 import org.somda.sdc.dpws.soap.exception.TransportException;
@@ -297,12 +302,12 @@ public class EventSinkImpl implements EventSink {
     private void processIncomingNotification(NotificationSink notificationSink,
                                              InputStream inputStream,
                                              OutputStream outputStream,
-                                             TransportInfo transportInfo) throws MarshallingException, TransportException {
+                                             CommunicationContext communicationContext) throws MarshallingException, TransportException {
         try {
             SoapMessage soapMsg = soapUtil.createMessage(marshalling.unmarshal(inputStream));
             inputStream.close();
             LOG.debug("Received incoming notification {}", soapMsg);
-            notificationSink.receiveNotification(soapMsg, transportInfo);
+            notificationSink.receiveNotification(soapMsg, communicationContext);
 
             // Only close the output stream when the notification has been processed
             // as closing allows the server do dispatch the next request, which will cause concurrency problems

@@ -2,12 +2,15 @@ package org.somda.sdc.dpws.soap;
 
 import com.google.inject.Inject;
 import com.google.inject.assistedinject.Assisted;
-import org.somda.sdc.dpws.guice.ClientSpecific;
-import org.somda.sdc.dpws.soap.exception.SoapFaultException;
-import org.somda.sdc.dpws.soap.interception.*;
-import org.somda.sdc.dpws.soap.wsaddressing.WsAddressingServerInterceptor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.somda.sdc.dpws.soap.exception.SoapFaultException;
+import org.somda.sdc.dpws.soap.interception.Direction;
+import org.somda.sdc.dpws.soap.interception.Interceptor;
+import org.somda.sdc.dpws.soap.interception.InterceptorRegistry;
+import org.somda.sdc.dpws.soap.interception.NotificationObject;
+import org.somda.sdc.dpws.soap.interception.ServerDispatcher;
+import org.somda.sdc.dpws.soap.wsaddressing.WsAddressingServerInterceptor;
 
 /**
  * Default implementation of {@linkplain NotificationSink}.
@@ -33,8 +36,8 @@ public class NotificationSinkImpl implements NotificationSink {
     }
 
     @Override
-    public void receiveNotification(SoapMessage notification, TransportInfo transportInfo) {
-        NotificationObject nObj = new NotificationObject(notification, transportInfo);
+    public void receiveNotification(SoapMessage notification, CommunicationContext communicationContext) {
+        NotificationObject nObj = new NotificationObject(notification, communicationContext);
         try {
             serverDispatcher.invokeDispatcher(Direction.NOTIFICATION, interceptorRegistry, notification, nObj);
         } catch (SoapFaultException e) {

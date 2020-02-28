@@ -11,6 +11,7 @@ import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.somda.sdc.dpws.CommunicationLog;
 import org.somda.sdc.dpws.DpwsConfig;
 import org.somda.sdc.dpws.DpwsConstants;
 import org.somda.sdc.dpws.TransportBinding;
@@ -48,6 +49,7 @@ public class ApacheTransportBindingFactoryImpl implements TransportBindingFactor
     private HttpClient securedClient; // if null => no cryptography configured/enabled
 
     private ClientTransportBindingFactory clientTransportBindingFactory;
+    private final CommunicationLog communicationLog;
 
     @Inject
     ApacheTransportBindingFactoryImpl(SoapMarshalling marshalling, SoapUtil soapUtil,
@@ -58,13 +60,15 @@ public class ApacheTransportBindingFactoryImpl implements TransportBindingFactor
                                       @Named(DpwsConfig.HTTP_GZIP_COMPRESSION) boolean enableGzipCompression,
                                       ClientTransportBindingFactory clientTransportBindingFactory,
                                       @Named(CryptoConfig.CRYPTO_TLS_ENABLED_VERSIONS) String[] tlsProtocols,
-                                      @Named(CryptoConfig.CRYPTO_CLIENT_HOSTNAME_VERIFIER) HostnameVerifier hostnameVerifier) {
+                                      @Named(CryptoConfig.CRYPTO_CLIENT_HOSTNAME_VERIFIER) HostnameVerifier hostnameVerifier,
+                                      CommunicationLog communicationLog) {
         this.marshalling = marshalling;
         this.soapUtil = soapUtil;
         this.clientConnectTimeout = clientConnectTimeout;
         this.clientReadTimeout = clientReadTimeout;
         this.enableGzipCompression = enableGzipCompression;
         this.clientTransportBindingFactory = clientTransportBindingFactory;
+        this.communicationLog = communicationLog;
         this.client = buildBaseClient().build();
         this.tlsProtocols = tlsProtocols;
         this.hostnameVerifier = hostnameVerifier;
@@ -81,6 +85,9 @@ public class ApacheTransportBindingFactoryImpl implements TransportBindingFactor
                 .setSocketTimeout((int) clientConnectTimeout.toMillis()).build();
 
         var clientBuilder = HttpClients.custom().setDefaultSocketConfig(socketConfig)
+                // attach interceptors to enable communication log capabilities including message headers
+                .addInterceptorLast(new CommunicationLogHttpRequestInterceptor(communicationLog))
+                .addInterceptorLast(new CommunicationLogHttpResponseInterceptor(communicationLog))
                 .setDefaultRequestConfig(requestConfig)
                 // only allow one connection per host
                 .setMaxConnPerRoute(1)
@@ -91,6 +98,7 @@ public class ApacheTransportBindingFactoryImpl implements TransportBindingFactor
         if (!enableGzipCompression) {
             // disable gzip compression
             clientBuilder.disableContentCompression();
+
         }
         return clientBuilder;
     }

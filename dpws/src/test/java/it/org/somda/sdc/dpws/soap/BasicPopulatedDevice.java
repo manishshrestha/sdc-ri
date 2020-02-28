@@ -14,15 +14,14 @@ import org.somda.sdc.dpws.soap.TransportInfo;
 import javax.annotation.Nullable;
 import javax.xml.namespace.QName;
 import java.io.InputStream;
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
 public class BasicPopulatedDevice extends DevicePeer {
-    public static final URI SCOPE_1 = URI.create("http://integration-test-scope1");
-    public static final URI SCOPE_2 = URI.create("http://integration-test-scope2");
+    public static final String SCOPE_1 = "http://integration-test-scope1";
+    public static final String SCOPE_2 = "http://integration-test-scope2";
 
     public static final QName QNAME_1 = new QName("http://type-ns", "integration-test-type1");
     public static final QName QNAME_2 = new QName("http://type-ns", "integration-test-type2");

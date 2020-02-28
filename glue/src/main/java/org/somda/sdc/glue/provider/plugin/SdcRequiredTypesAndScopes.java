@@ -15,8 +15,9 @@ import org.somda.sdc.biceps.model.participant.LocationContextState;
 import org.somda.sdc.biceps.model.participant.MdsDescriptor;
 import org.somda.sdc.dpws.device.Device;
 import org.somda.sdc.glue.GlueConstants;
-import org.somda.sdc.glue.common.ComplexDeviceComponentMapper;
-import org.somda.sdc.glue.common.ContextIdentificationMapper;
+import org.somda.sdc.glue.common.uri.ComplexDeviceComponentMapper;
+import org.somda.sdc.glue.common.uri.ContextIdentificationMapper;
+import org.somda.sdc.glue.common.uri.UriMapperGenerationArgumentException;
 import org.somda.sdc.glue.provider.SdcDeviceContext;
 import org.somda.sdc.glue.provider.SdcDevicePlugin;
 import org.somda.sdc.mdpws.common.CommonConstants;
@@ -36,9 +37,9 @@ public class SdcRequiredTypesAndScopes implements SdcDevicePlugin, MdibAccessObs
     private Device device;
     private MdibAccess mdibAccess;
 
-    private Set<URI> allScopes;
-    private Set<URI> locationContexts;
-    private Set<URI> mdsTypes;
+    private Set<String> allScopes;
+    private Set<String> locationContexts;
+    private Set<String> mdsTypes;
 
     private boolean initializing;
 
@@ -66,7 +67,7 @@ public class SdcRequiredTypesAndScopes implements SdcDevicePlugin, MdibAccessObs
     }
 
     @Override
-    public void init(SdcDeviceContext context, Set<URI> scopes) {
+    public void init(SdcDeviceContext context, Set<String> scopes) {
         device = context.getDevice();
         device.getDiscoveryAccess().setTypes(Collections.singletonList(CommonConstants.MEDICAL_DEVICE_TYPE));
         device.getDiscoveryAccess().setScopes(Collections.singletonList(GlueConstants.SCOPE_SDC_PROVIDER));
@@ -81,11 +82,11 @@ public class SdcRequiredTypesAndScopes implements SdcDevicePlugin, MdibAccessObs
     }
 
     @Override
-    public void appendScopesAndSendHello(Set<URI> scopes) {
+    public void appendScopesAndSendHello(Set<String> scopes) {
         updateScopes();
 
         // Setup new scopes based from scopes from outside plus recognized scopes from this class
-        var newScopes = new HashSet<URI>(locationContexts.size() + mdsTypes.size() + scopes.size());
+        var newScopes = new HashSet<String>(locationContexts.size() + mdsTypes.size() + scopes.size());
         newScopes.add(GlueConstants.SCOPE_SDC_PROVIDER);
         newScopes.addAll(locationContexts);
         newScopes.addAll(mdsTypes);
@@ -148,21 +149,27 @@ public class SdcRequiredTypesAndScopes implements SdcDevicePlugin, MdibAccessObs
                 Joiner.on(",").join(mdsTypes));
     }
 
-    private Set<URI> extractMdsTypes(Collection<MdibEntity> entities) {
+    private Set<String> extractMdsTypes(Collection<MdibEntity> entities) {
         var mdsDescriptors = entities.stream()
                 .filter(mdibEntity -> mdibEntity.getDescriptor(MdsDescriptor.class).isPresent())
                 .map(mdibEntity -> mdibEntity.getDescriptor(MdsDescriptor.class).get())
                 .collect(Collectors.toList());
 
-        var uris = new HashSet<URI>(mdsDescriptors.size());
+        HashSet<String> uris = new HashSet<>(mdsDescriptors.size());
         for (MdsDescriptor mdsDescriptor : mdsDescriptors) {
-            ComplexDeviceComponentMapper.fromComplexDeviceComponent(mdsDescriptor).ifPresent(uris::add);
+            try {
+                // TODO: change to string set
+                uris.add(ComplexDeviceComponentMapper.fromComplexDeviceComponent(mdsDescriptor));
+            } catch (UriMapperGenerationArgumentException e) {
+                LOG.warn("The URI generation based on the given MdsDescriptor with the handle " +
+                        mdsDescriptor.getHandle() + " failed", e);
+            }
         }
 
         return uris;
     }
 
-    private Set<URI> extractAssociatedLocationContextStateIdentifiers(List<LocationContextState> contextStates) {
+    private Set<String> extractAssociatedLocationContextStateIdentifiers(List<LocationContextState> contextStates) {
         var locationContextState = contextStates.stream()
                 .filter(contextState -> ContextAssociation.ASSOC.equals(contextState.getContextAssociation()))
                 .findFirst();
@@ -171,7 +178,7 @@ public class SdcRequiredTypesAndScopes implements SdcDevicePlugin, MdibAccessObs
             return Collections.emptySet();
         }
 
-        Set<URI> uris = new HashSet<>(locationContextState.get().getIdentification().size());
+        Set<String> uris = new HashSet<>(locationContextState.get().getIdentification().size());
         for (var instanceIdentifier : locationContextState.get().getIdentification()) {
             uris.add(ContextIdentificationMapper.fromInstanceIdentifier(instanceIdentifier,
                     ContextIdentificationMapper.ContextSource.Location));

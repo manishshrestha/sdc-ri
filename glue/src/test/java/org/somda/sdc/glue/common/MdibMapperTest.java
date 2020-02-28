@@ -1,5 +1,7 @@
 package org.somda.sdc.glue.common;
 
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.somda.sdc.biceps.common.MdibDescriptionModifications;
 import org.somda.sdc.biceps.common.MdibEntity;
 import org.somda.sdc.biceps.common.MdibTypeValidator;
@@ -12,8 +14,6 @@ import org.somda.sdc.biceps.testutil.Handles;
 import org.somda.sdc.biceps.testutil.MockEntryFactory;
 import org.somda.sdc.glue.UnitTestUtil;
 import org.somda.sdc.glue.common.factory.MdibMapperFactory;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 
 import java.math.BigInteger;
 import java.util.Arrays;
