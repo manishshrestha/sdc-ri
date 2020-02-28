@@ -18,10 +18,12 @@ public class ContextIdentificationMapper {
 
     private static final Pattern PATTERN = Pattern
             .compile(
-                    "^(?i:(?<contextsource>sdc.ctxt.(loc|pat|ens|wfl|opr|mns))):/" +
+                    "^(?i:(?<contextSource>sdc.ctxt.(loc|pat|ens|wfl|opr|mns))):/" +
                             "(?<root>" + GlueConstants.SEGMENT_NZ_REGEX + ")/" +
                             "(?<extension>" + GlueConstants.SEGMENT_REGEX + ")$"
             );
+
+    private static final Pattern SCHEME_VALIDATOR = Pattern.compile("^" + GlueConstants.SCHEME_SEGMENT + "$");
 
     /**
      * Converts from an instance identifier to an URI.
@@ -61,11 +63,18 @@ public class ContextIdentificationMapper {
                                                 ContextSource expectedContextSource)
             throws UriMapperParsingException {
 
-        Matcher matcher = PATTERN.matcher(contextIdentificationUri);
+        // In case the input will be changed in the future
+        Matcher expectedSourceMatcher = SCHEME_VALIDATOR.matcher(expectedContextSource.getSourceString());
+        if (!expectedSourceMatcher.matches()) {
+            throw new UriMapperParsingException("The expected context source: '" +
+                    expectedContextSource.getSourceString() + " is not valid.");
+        }
 
-        if (matcher.matches()) {
+        Matcher uriMatcher = PATTERN.matcher(contextIdentificationUri);
 
-            final String contextSource = matcher.group("contextsource");
+        if (uriMatcher.matches()) {
+
+            final String contextSource = uriMatcher.group("contextSource");
 
             if (!expectedContextSource.getSourceString().equals(contextSource)) {
                 throw new UriMapperParsingException(
@@ -74,8 +83,8 @@ public class ContextIdentificationMapper {
                         ContextIdentificationMapper.class.toString());
             }
 
-            final String root = matcher.group("root");
-            final String extension = matcher.group("extension");
+            final String root = uriMatcher.group("root");
+            final String extension = uriMatcher.group("extension");
 
             final InstanceIdentifier instanceIdentifier = new InstanceIdentifier();
             final String decodedRoot = UrlUtf8.decode(root);

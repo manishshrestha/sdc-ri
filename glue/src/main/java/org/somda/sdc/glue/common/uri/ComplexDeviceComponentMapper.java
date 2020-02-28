@@ -85,7 +85,7 @@ public class ComplexDeviceComponentMapper {
      */
     public static CodedValue fromString(String complexDeviceComponentTypeUri) throws UriMapperParsingException {
 
-        Matcher matcher = PATTERN.matcher(complexDeviceComponentTypeUri.toString());
+        Matcher matcher = PATTERN.matcher(complexDeviceComponentTypeUri);
         if (matcher.matches()) {
 
             final String codingSystem = UrlUtf8.decode(matcher.group("codingSystem"));
