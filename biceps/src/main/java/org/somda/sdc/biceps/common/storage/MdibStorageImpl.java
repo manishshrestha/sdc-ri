@@ -310,13 +310,11 @@ public class MdibStorageImpl implements MdibStorage {
             final MdibEntity mdibEntity = entities.get(modification.getDescriptorHandle());
             if (mdibEntity == null) {
                 // Do not store context states when not associated
-                if (modification instanceof AbstractContextState) {
-                    var contextState = (AbstractContextState) modification;
-                    if (ContextAssociation.NO.equals(contextState.getContextAssociation())) {
-                        LOG.debug("Found update on context state {} with association=not-associated; do not store in MDIB",
-                                contextState.getHandle());
-                        continue;
-                    }
+                var contextState = getNotAssociatedContextState(modification);
+                if (contextState.isEmpty()) {
+                    LOG.debug("Found update on context state {} with association=not-associated; do not store in MDIB",
+                            contextState.get().getHandle());
+                    continue;
                 }
 
                 // this will insert states even if no descriptor/MDIB entity exists
@@ -338,36 +336,38 @@ public class MdibStorageImpl implements MdibStorage {
                 descriptionModifications.insert(descr, modification);
             } else {
                 mdibEntity
-                        .doIfSingleState(state ->
-                                entities.put(mdibEntity.getHandle(),
-                                        entityFactory.replaceStates(mdibEntity, Collections.singletonList(modification))))
+                        .doIfSingleState(state -> {
+                            entities.put(mdibEntity.getHandle(),
+                                    entityFactory.replaceStates(mdibEntity, Collections.singletonList(modification)));
+                        })
                         .orElse(states -> {
-                            final List<AbstractMultiState> newStates = new ArrayList<>();
-                            typeValidator.toMultiState(modification).ifPresent(modifiedMultiState ->
-                            {
-                                boolean found = false;
-                                for (AbstractMultiState multiState : states) {
-                                    if (multiState instanceof AbstractContextState) {
-                                        if (ContextAssociation.NO.equals(((AbstractContextState) multiState).getContextAssociation())) {
-                                            LOG.debug("Found update on context state {} with association=not-associated; delete from MDIB",
-                                                    multiState.getHandle());
-                                            contextStates.remove(multiState.getHandle());
-                                            continue;
-                                        }
-                                    }
-                                    if (multiState.getHandle().equals(modifiedMultiState.getHandle())) {
-                                        LOG.debug("Replacing already present MultiState {}", multiState.getHandle());
-                                        newStates.add(modifiedMultiState);
-                                        found = true;
+                            var modificationAsMultiState = typeValidator.toMultiState(modification).orElseThrow(() ->
+                                    new RuntimeException(
+                                            String.format("Found a non-matching multi-state for multi-state entity update (descriptor handle: %s",
+                                                    mdibEntity.getHandle())));
+
+                            var newStates = new ArrayList<AbstractMultiState>();
+                            boolean found = false;
+                            for (AbstractMultiState multiState : states) {
+                                if (multiState.getHandle().equals(modificationAsMultiState.getHandle())) {
+                                    found = true;
+                                    if (getNotAssociatedContextState(modificationAsMultiState).isPresent()) {
+                                        LOG.debug("Found context state {} with association=not-associated; refuse storage in MDIB",
+                                                modificationAsMultiState.getHandle());
+                                        contextStates.remove(multiState.getHandle());
                                     } else {
-                                        newStates.add(multiState);
+                                        LOG.debug("Replacing already present multi-state {}", multiState.getHandle());
+                                        newStates.add(modificationAsMultiState);
                                     }
+                                } else {
+                                    newStates.add(multiState);
                                 }
-                                if (!found) {
-                                    LOG.debug("Adding new MultiState {}", modifiedMultiState.getHandle());
-                                    newStates.add(modifiedMultiState);
-                                }
-                            });
+                            }
+
+                            if (!found && getNotAssociatedContextState(modificationAsMultiState).isEmpty()) {
+                                LOG.debug("Adding new MultiState {}", modificationAsMultiState.getHandle());
+                                newStates.add(modificationAsMultiState);
+                            }
 
                             entities.put(mdibEntity.getHandle(), entityFactory.replaceStates(mdibEntity,
                                     Collections.unmodifiableList(newStates)));
@@ -403,5 +403,15 @@ public class MdibStorageImpl implements MdibStorage {
     @Override
     public BigInteger getMdStateVersion() {
         return mdStateVersion;
+    }
+
+    private Optional<AbstractContextState> getNotAssociatedContextState(AbstractState state) {
+        if (state instanceof AbstractContextState) {
+            var contextState = (AbstractContextState) state;
+            if (contextState.getContextAssociation() == null || ContextAssociation.NO.equals(contextState.getContextAssociation())) {
+                return Optional.of(contextState);
+            }
+        }
+        return Optional.empty();
     }
 }

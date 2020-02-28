@@ -1,8 +1,10 @@
 package org.somda.sdc.biceps.testutil;
 
+import org.checkerframework.checker.units.qual.C;
 import org.somda.sdc.biceps.model.participant.AbstractContextState;
 import org.somda.sdc.biceps.model.participant.AbstractDescriptor;
 import org.somda.sdc.biceps.model.participant.AbstractState;
+import org.somda.sdc.biceps.model.participant.ContextAssociation;
 
 import java.math.BigInteger;
 
@@ -74,6 +76,7 @@ public class MockModelFactory {
                                                                         Class<T> type) {
         try {
             T instance = type.getDeclaredConstructor().newInstance();
+            instance.setContextAssociation(ContextAssociation.DIS);
             instance.setHandle(handle);
             instance.setDescriptorHandle(descrHandle);
             instance.setStateVersion(stateVersion);
