@@ -4,9 +4,9 @@ import org.junit.jupiter.api.Test;
 import org.somda.sdc.biceps.model.participant.InstanceIdentifier;
 
 import javax.annotation.Nullable;
-import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class ContextIdentificationMapperTest {
 
@@ -77,12 +77,18 @@ class ContextIdentificationMapperTest {
                             "sdc.ctxt.loc:/http%3A%2F%2Froot/ext%2Fen%C3%96sion%3F",
                             ContextIdentificationMapper.ContextSource.Patient));
         }
-
         {
             assertThrows(UriMapperParsingException.class,
                     () -> ContextIdentificationMapper.fromString(
                             "sdc.ctxt.loc:/http%3A%2F%2Froot//ext%2Fen%C3%96sion%3F",
                             ContextIdentificationMapper.ContextSource.Location));
+        }
+
+        {
+            InstanceIdentifier actualInstanceIdentifier = ContextIdentificationMapper.fromString("sdc.ctxt.ens:/http%3A%2F%2Froot/ext%2Fen%C3%96sion%3F?query#fragment",
+                    ContextIdentificationMapper.ContextSource.Ensemble);
+            InstanceIdentifier expectedInstanceIdentifier = createInstanceIdentifier("http://root", "ext/enÖsion?");
+            compare(expectedInstanceIdentifier, actualInstanceIdentifier);
         }
     }
 

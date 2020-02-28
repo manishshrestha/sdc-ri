@@ -108,7 +108,7 @@ public class GlueConstants {
 
     // Added negative lookahead for "//" to prevent authority from being interpreted as path
     private static final String PATH_ABEMPTY = "(/" + SEGMENT_REGEX + ")*";
-    public static final String PATH = "(" +
+    private static final String PATH = "(" +
             PATH_ABEMPTY + "|" +
             PATH_ABSOLUTE + "|" +
             PATH_NOSCHEME + "|" +
