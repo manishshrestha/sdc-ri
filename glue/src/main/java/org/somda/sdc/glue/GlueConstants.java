@@ -103,8 +103,6 @@ public class GlueConstants {
     private static final String PATH_ROOTLESS = SEGMENT_NZ_REGEX + "(/" + SEGMENT_REGEX + ")*";
     private static final String PATH_NOSCHEME = "[a-zA-Z0-9\\-._~!$&'()*+,;=@]+" + "(/" + SEGMENT_REGEX+ ")*";
     private static final String PATH_ABSOLUTE= "/(" + SEGMENT_NZ_REGEX + "(/" + SEGMENT_REGEX+ ")*"+ ")*";
-
-    // Added negative lookahead for "//" to prevent authority from being interpreted as path
     private static final String PATH_ABEMPTY = "(/" + SEGMENT_REGEX + ")*";
     private static final String PATH = "(" +
             PATH_ABEMPTY + "|" +
@@ -115,6 +113,8 @@ public class GlueConstants {
             ")";
     private static final String QUERY = "(" + P_CHAR + "|/|\\?)*";
     private static final String FRAGMENT = QUERY;
+
+    // Added negative lookahead for "//" to prevent authority from being interpreted as path
     public static final String URI_REGEX = "^(" +
             "({scheme}" + SCHEME_SEGMENT + ")" +
             ":" +
