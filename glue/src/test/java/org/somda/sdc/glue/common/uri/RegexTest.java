@@ -12,6 +12,16 @@ public class RegexTest {
     private static final Pattern AUTHORITY_PATTERN = new Pattern("^" + GlueConstants.AUTHORITY + "$");
     private static final Pattern URI_PATTERN = new Pattern(GlueConstants.URI_REGEX);
 
+    private static final Pattern JREGEX_SEGMENT_PATTERN = new Pattern(GlueConstants.AUTHORITY);
+
+    @Test
+    void segment() {
+        {
+            Matcher matcher = JREGEX_SEGMENT_PATTERN.matcher("a%2A-&+");
+            assertTrue(matcher.matches());
+        }
+    }
+
     @Test
     void authority() {
         {
