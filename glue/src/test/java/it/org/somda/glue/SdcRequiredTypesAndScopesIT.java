@@ -27,7 +27,7 @@ import org.somda.sdc.dpws.client.event.DeviceEnteredMessage;
 import org.somda.sdc.glue.GlueConstants;
 import org.somda.sdc.glue.common.uri.ComplexDeviceComponentMapper;
 import org.somda.sdc.glue.common.uri.ContextIdentificationMapper;
-import org.somda.sdc.glue.common.uri.FallbackInstanceIdentifier;
+import org.somda.sdc.glue.common.FallbackInstanceIdentifier;
 import org.somda.sdc.glue.common.MdibXmlIo;
 import org.somda.sdc.glue.common.factory.ModificationsBuilderFactory;
 import org.somda.sdc.glue.common.uri.UriMapperGenerationArgumentException;
@@ -45,7 +45,6 @@ import test.org.somda.common.LoggingTestWatcher;
 import test.org.somda.common.TimedWait;
 
 import javax.annotation.Nullable;
-import java.net.URI;
 import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.TimeUnit;

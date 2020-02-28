@@ -3,7 +3,6 @@ package org.somda.sdc.glue.common.uri;
 import org.ietf.jgss.GSSException;
 import org.ietf.jgss.Oid;
 
-import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -48,7 +47,7 @@ public class ParticipantKeyPurposeMapper {
      * Creates an OID given a Participant Key Purpose encoded URI.
      *
      * @param uri the URI to convert.
-     * @return the converted OID or {@link Optional#empty()} if something went wrong.
+     * @return the converted OID.
      */
     public static Oid fromString(String uri) throws UriMapperParsingException {
 

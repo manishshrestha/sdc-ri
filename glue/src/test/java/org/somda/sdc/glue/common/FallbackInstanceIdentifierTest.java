@@ -1,9 +1,9 @@
-package org.somda.sdc.glue.common.uri;
+package org.somda.sdc.glue.common;
 
 import org.junit.jupiter.api.Test;
 import org.somda.sdc.biceps.model.participant.InstanceIdentifier;
 import org.somda.sdc.biceps.model.participant.LocationDetail;
-import org.somda.sdc.glue.common.uri.FallbackInstanceIdentifier;
+import org.somda.sdc.glue.common.FallbackInstanceIdentifier;
 
 import javax.annotation.Nullable;
 import java.util.Optional;

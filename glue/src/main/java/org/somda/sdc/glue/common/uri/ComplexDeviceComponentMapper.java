@@ -7,8 +7,6 @@ import org.somda.sdc.biceps.model.participant.CodedValue;
 import org.somda.sdc.glue.GlueConstants;
 import org.somda.sdc.glue.common.helper.UrlUtf8;
 
-import java.util.Optional;
-
 /**
  * Utility class to map from complex device component coded value to URI and back to coded value.
  * <p>
@@ -36,7 +34,7 @@ public class ComplexDeviceComponentMapper {
      * Maps an abstract complex component descriptor to URI representation.
      *
      * @param descriptor the device component where to access the type.
-     * @return the mapped URI or {@linkplain Optional#empty()} if type of descriptor was null.
+     * @return the mapped URI.
      */
     public static String fromComplexDeviceComponent(AbstractComplexDeviceComponentDescriptor descriptor)
             throws UriMapperGenerationArgumentException {
@@ -83,7 +81,7 @@ public class ComplexDeviceComponentMapper {
      * Maps a complex device component type URI string to a coded value.
      *
      * @param complexDeviceComponentTypeUri the URI to parse.
-     * @return a coded value if pattern of URI matches or {@linkplain Optional#empty()} otherwise.
+     * @return a coded value if pattern of URI matches.
      */
     public static CodedValue fromString(String complexDeviceComponentTypeUri) throws UriMapperParsingException {
 
