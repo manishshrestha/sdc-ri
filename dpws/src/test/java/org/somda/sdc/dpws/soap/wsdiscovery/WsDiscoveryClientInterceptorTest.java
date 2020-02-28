@@ -184,7 +184,7 @@ public class WsDiscoveryClientInterceptorTest extends DpwsTest {
 
             @Override
             public void onFailure(Throwable throwable) {
-                fail();
+                fail(throwable::getMessage);
             }
         }, MoreExecutors.directExecutor());
     }

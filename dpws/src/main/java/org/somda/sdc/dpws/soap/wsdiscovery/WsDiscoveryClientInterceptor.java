@@ -286,7 +286,7 @@ public class WsDiscoveryClientInterceptor implements WsDiscoveryClient {
                                 new RuntimeException("SOAP message body malformed"));
                     }
 
-                    if (condition.await(wait, TimeUnit.MILLISECONDS)) {
+                    if (!condition.await(wait, TimeUnit.MILLISECONDS)) {
                         break;
                     };
 
