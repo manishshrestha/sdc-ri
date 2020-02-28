@@ -43,5 +43,21 @@ class ParticipantKeyPurposeMapperTest {
             assertThrows(UriMapperParsingException.class,
                     () -> ParticipantKeyPurposeMapper.fromString("sdc.mds.pkp:3434.3.3434.34.555.1"));
         }
+        {
+            assertThrows(UriMapperParsingException.class,
+                    () -> ParticipantKeyPurposeMapper.fromString("sdc.mds.pkp://1.3.6.1.4.1"));
+        }
+        {
+            assertThrows(UriMapperParsingException.class,
+                    () -> ParticipantKeyPurposeMapper.fromString("sdc.mds.pkp:/1.3.6.1.4.1"));
+        }
+        {
+            assertThrows(UriMapperParsingException.class,
+                    () -> ParticipantKeyPurposeMapper.fromString("sdc.mds.pkp::1.3.6.1.4.1"));
+        }
+        {
+            assertThrows(UriMapperParsingException.class,
+                    () -> ParticipantKeyPurposeMapper.fromString("sdc.mds.pkp::1.3.6.1.4.1?fac=1"));
+        }
     }
 }

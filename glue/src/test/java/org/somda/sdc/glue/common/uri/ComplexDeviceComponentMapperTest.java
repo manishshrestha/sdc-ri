@@ -74,7 +74,7 @@ class ComplexDeviceComponentMapperTest {
     }
 
     @Test
-    void fromUri() throws UriMapperParsingException {
+    void fromString() throws UriMapperParsingException {
         {
             assertThrows(UriMapperParsingException.class,
                     () -> ComplexDeviceComponentMapper.fromString(""));
