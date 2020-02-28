@@ -1,5 +1,6 @@
 package org.somda.sdc.glue;
 
+import jregex.Pattern;
 import org.ietf.jgss.Oid;
 import org.somda.sdc.glue.common.uri.ParticipantKeyPurposeMapper;
 
@@ -10,6 +11,7 @@ import java.util.Collections;
  * Any constants relevant to SDC Glue.
  */
 public class GlueConstants {
+    // TODO: this is not a valid URI scheme
     private static String URI_SCHEME_OID = "urn:oid:";
 
     /**
@@ -104,6 +106,7 @@ public class GlueConstants {
     private static final String PATH_ROOTLESS = SEGMENT_NZ_REGEX + "(/" + SEGMENT_REGEX + ")*";
     private static final String PATH_NOSCHEME = "[a-zA-Z0-9-._~!$&'()*+,;=@]+" + "(/" + SEGMENT_REGEX+ ")*";
     private static final String PATH_ABSOLUTE= "/(" + SEGMENT_NZ_REGEX + "(/" + SEGMENT_REGEX+ ")*"+ ")*";
+
     // Added negative lookahead for "//" to prevent authority from being interpreted as path
     private static final String PATH_ABEMPTY = "(/" + SEGMENT_REGEX + ")*";
     private static final String PATH = "(" +
@@ -127,4 +130,17 @@ public class GlueConstants {
             "(\\?({query}" + QUERY + "))?" +
             "(#({fragment}" + FRAGMENT + "))?" +
             ")$";
+
+    // The "&" character had to be excluded from the "pchar" definition as it already is used a delimiter.
+    // This is a bug in the GLUE standard. The "&" should not be allowed, except as a delimiter.
+    private static final String QUERY_ITEM_SEGMENT = "[a-zA-Z0-9-._~!$'()*+,;=:@]+";
+    private static final String QUERY_ITEM = "((fac=" + QUERY_ITEM_SEGMENT + ")|" +
+            "(bldng=" + QUERY_ITEM_SEGMENT + ")|" +
+            "(poc=" + QUERY_ITEM_SEGMENT + ")|" +
+            "(flr=" + QUERY_ITEM_SEGMENT + ")|" +
+            "(rm=" + QUERY_ITEM_SEGMENT + ")|" +
+            "(bed=" + QUERY_ITEM_SEGMENT + "))";
+    public static final String LOC_CTXT_QUERY = "^(" + QUERY_ITEM + "(&" + QUERY_ITEM + ")*)?$";
+    // TODO: use
+    public static final String INSTANCE_IDENTIFIER = "/({root}" + SEGMENT_NZ_REGEX + ")/({extension}" + SEGMENT_REGEX + ")";
 }

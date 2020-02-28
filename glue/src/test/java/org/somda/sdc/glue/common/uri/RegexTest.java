@@ -67,5 +67,9 @@ public class RegexTest {
             assertEquals("query?query", matcher.group("query"));
             assertEquals("fragment", matcher.group("fragment"));
         }
+        {
+            Matcher matcher = AUTHORITY_PATTERN.matcher("scheme://user@%C3%A4:123/path?#?query#fragment");
+            assertFalse(matcher.matches());
+        }
     }
 }
