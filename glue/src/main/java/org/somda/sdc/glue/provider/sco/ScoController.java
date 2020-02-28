@@ -177,7 +177,7 @@ public class ScoController {
         }
     }
 
-    private class ReflectionInfo {
+    private static class ReflectionInfo {
         private final OperationInvocationReceiver receiver;
         private final Method callbackMethod;
         private final IncomingSetServiceRequest annotation;

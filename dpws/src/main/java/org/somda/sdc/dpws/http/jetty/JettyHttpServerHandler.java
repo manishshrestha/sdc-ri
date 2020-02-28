@@ -18,6 +18,8 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.security.cert.X509Certificate;
 import java.util.Collection;
 import java.util.Collections;
@@ -48,7 +50,6 @@ public class JettyHttpServerHandler extends AbstractHandler {
 
     @Override
     public void handle(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response) throws IOException {
-
         LOG.debug("Request to {}", request.getRequestURL());
 
         InputStream input = communicationLog.logMessage(
@@ -65,7 +66,6 @@ public class JettyHttpServerHandler extends AbstractHandler {
                 request.getRemoteHost(), request.getRemotePort(), response.getOutputStream())) {
 
             try {
-
                 handler.process(input, output,
                         new TransportInfo(
                                 request.getScheme(),
@@ -78,7 +78,7 @@ public class JettyHttpServerHandler extends AbstractHandler {
             } catch (TransportException | MarshallingException | ClassCastException e) {
                 LOG.error("", e);
                 response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR_500);
-                output.write(e.getMessage().getBytes());
+                output.write(e.getMessage().getBytes(StandardCharsets.UTF_8));
                 output.flush();
             } finally {
                 baseRequest.setHandled(true);

@@ -1,5 +1,7 @@
 package org.somda.sdc.biceps.common;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.somda.sdc.biceps.provider.preprocessing.HandleDuplicatedException;
 import org.somda.sdc.biceps.model.participant.AbstractDescriptor;
 import org.somda.sdc.biceps.model.participant.AbstractMultiState;
@@ -14,6 +16,8 @@ import java.util.*;
  * The {@linkplain MdibDescriptionModifications} is a fluent interface.
  */
 public class MdibDescriptionModifications {
+    private static final Logger LOG = LoggerFactory.getLogger(MdibDescriptionModifications.class);
+
     private List<MdibDescriptionModification> modifications;
     private Set<String> insertedHandles;
     private Set<String> updatedHandles;
@@ -128,8 +132,8 @@ public class MdibDescriptionModifications {
      */
     public MdibDescriptionModifications add(MdibDescriptionModification.Type modType,
                                             AbstractDescriptor descriptor,
-                                            @Nullable List<? extends AbstractMultiState> multiStates) {
-        multiStates.stream().forEach(state -> duplicateDetection(modType, state.getHandle()));
+                                            List<? extends AbstractMultiState> multiStates) {
+        multiStates.forEach(state -> duplicateDetection(modType, state.getHandle()));
         return addMdibModification(modType, descriptor, multiStates);
     }
 
@@ -146,9 +150,9 @@ public class MdibDescriptionModifications {
      */
     public MdibDescriptionModifications add(MdibDescriptionModification.Type modType,
                                             AbstractDescriptor descriptor,
-                                            @Nullable List<? extends AbstractMultiState> multiStates,
+                                            List<? extends AbstractMultiState> multiStates,
                                             @Nullable String parentHandle) {
-        multiStates.stream().forEach(state -> duplicateDetection(modType, state.getHandle()));
+        multiStates.forEach(state -> duplicateDetection(modType, state.getHandle()));
         return addMdibModification(modType, descriptor, multiStates, parentHandle);
     }
 
@@ -485,14 +489,20 @@ public class MdibDescriptionModifications {
     }
 
     private void duplicateDetection(MdibDescriptionModification.Type modType, String handle) {
-        Set<String> handleSet = insertedHandles;
+        Set<String> handleSet;
         switch (modType) {
+            case INSERT:
+                handleSet = insertedHandles;
+                break;
             case UPDATE:
                 handleSet = updatedHandles;
                 break;
             case DELETE:
                 handleSet = deletedHandles;
                 break;
+            default:
+                LOG.warn("Found invalid description modification type: {}", modType);
+                throw new RuntimeException("Found invalid description modification type");
         }
 
         if (handleSet.contains(handle)) {

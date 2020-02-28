@@ -116,7 +116,7 @@ public class ClientTransportBinding implements TransportBinding {
         HttpEntity entity = response.getEntity();
         byte[] bytes;
 
-        try (InputStream contentStream = entity.getContent();) {
+        try (InputStream contentStream = entity.getContent()) {
             bytes = ByteStreams.toByteArray(contentStream);
         } catch (IOException e) {
             LOG.error("Couldn't read response", e);

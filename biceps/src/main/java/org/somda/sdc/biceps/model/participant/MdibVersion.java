@@ -5,6 +5,7 @@ import org.somda.sdc.common.util.ObjectStringifier;
 import javax.annotation.Nullable;
 import java.math.BigInteger;
 import java.net.URI;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -130,6 +131,11 @@ public class MdibVersion {
         return this.sequenceId.equals(rhs.sequenceId)
                 && this.version.equals(rhs.version)
                 && this.instanceId.equals(rhs.instanceId);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(sequenceId, instanceId, version);
     }
 
     /**

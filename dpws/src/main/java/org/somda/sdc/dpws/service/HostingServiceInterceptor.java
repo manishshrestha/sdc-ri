@@ -208,12 +208,13 @@ public class HostingServiceInterceptor implements HostingService {
         if (text == null) {
             return null;
         }
-        if (text.getBytes(StandardCharsets.UTF_8).length >= size) {
+        var textBytes = text.getBytes(StandardCharsets.UTF_8);
+        if (textBytes.length >= size) {
             int maxLength = size - 1;
-            var newText = new String(Arrays.copyOf(text.getBytes(StandardCharsets.UTF_8), maxLength),
+            var newText = new String(Arrays.copyOf(textBytes, maxLength),
                     StandardCharsets.UTF_8);
             LOG.warn("The following text was cut due to DPWS length violations (allowed: {} octets, " +
-                    "actual: {} octets). '{}' is now '{}'", maxLength, text.getBytes().length, text, newText);
+                    "actual: {} octets). '{}' is now '{}'", maxLength, textBytes.length, text, newText);
             return newText;
         } else {
             return text;

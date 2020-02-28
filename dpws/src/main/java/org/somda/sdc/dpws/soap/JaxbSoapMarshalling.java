@@ -30,6 +30,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 
 /**
  * Creates XML input and output streams from {@link Envelope} instances by using JAXB.
@@ -188,7 +189,8 @@ public class JaxbSoapMarshalling extends AbstractIdleService implements SoapMars
         }
         stringBuilder.append(topLevelSchemaEnd);
         SchemaFactory schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
-        return schemaFactory.newSchema(new StreamSource(new ByteArrayInputStream(stringBuilder.toString().getBytes())));
+        return schemaFactory.newSchema(new StreamSource(new ByteArrayInputStream(stringBuilder.toString()
+                .getBytes(StandardCharsets.UTF_8))));
     }
 
     private String resolveTargetNamespace(URL url) throws IOException, ParserConfigurationException, SAXException {

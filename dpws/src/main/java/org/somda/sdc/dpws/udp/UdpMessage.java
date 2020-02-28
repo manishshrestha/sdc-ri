@@ -1,6 +1,7 @@
 package org.somda.sdc.dpws.udp;
 
 import javax.annotation.Nullable;
+import java.nio.charset.StandardCharsets;
 
 /**
  * Raw UDP message packed as a byte array plus a length attribute and receiver information.
@@ -72,6 +73,6 @@ public class UdpMessage {
 
     @Override
     public String toString() {
-        return new String(data, 0, length);
+        return new String(data, 0, length, StandardCharsets.UTF_8);
     }
 }
