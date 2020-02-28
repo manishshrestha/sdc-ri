@@ -52,10 +52,29 @@ class LocationDetailQueryMapperTest {
             var expectedUri = "sdc.ctxt.loc:/sdc.ctxt.loc.detail/%2F%2Flol";
             assertEquals(expectedUri, actualUri);
         }
+        {
+            instanceIdentifier.setRootName("sdc.ctxt.loc.detail");
+            instanceIdentifier.setExtensionName("%2F%2Flol");
+
+            var locationDetail = createLocationDetail(null, null, null, null, null, null);
+            final String actualUri = LocationDetailQueryMapper.createWithLocationDetailQuery(instanceIdentifier, locationDetail);
+
+            var expectedUri = "sdc.ctxt.loc:/sdc.ctxt.loc.detail/%252F%252Flol";
+            assertEquals(expectedUri, actualUri);
+        }
     }
 
     @Test
     void readLocationDetailQuery() throws UriMapperParsingException {
+
+        {
+            assertThrows(UriMapperParsingException.class,
+                    () -> LocationDetailQueryMapper.readLocationDetailQuery("sdc.ctxt.loc:?fac=1?"));
+        }
+        {
+            assertThrows(UriMapperParsingException.class,
+                    () -> LocationDetailQueryMapper.readLocationDetailQuery("sdc.ctxt.loc://@@host:NoPort?fac=1"));
+        }
         {
             LocationDetailQueryMapper.readLocationDetailQuery("sdc.ctxt.loc:?fac=123");
         }
