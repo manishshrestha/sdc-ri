@@ -5,6 +5,7 @@ import org.somda.sdc.dpws.soap.ApplicationInfo;
 import org.somda.sdc.dpws.soap.CommunicationContext;
 import org.somda.sdc.dpws.soap.TransportInfo;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 
 /**
@@ -93,6 +94,6 @@ public class UdpMessage {
 
     @Override
     public String toString() {
-        return new String(data, 0, length);
+        return new String(data, 0, length, StandardCharsets.UTF_8);
     }
 }

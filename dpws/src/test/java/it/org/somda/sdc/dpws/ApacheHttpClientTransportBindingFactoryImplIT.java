@@ -82,7 +82,7 @@ public class ApacheHttpClientTransportBindingFactoryImplIT extends DpwsTest {
         var responseBytes = expectedResponseStream.toByteArray();
 
         // spawn the http server
-        GzipResponseHandler handler = new GzipResponseHandler(responseBytes);
+        HttpServerUtil.GzipResponseHandler handler = new HttpServerUtil.GzipResponseHandler(responseBytes);
         var inetSocketAddress = new InetSocketAddress(baseUri.getHost(), baseUri.getPort());
         var server = HttpServerUtil.spawnHttpServer(inetSocketAddress, handler);
 
@@ -107,35 +107,6 @@ public class ApacheHttpClientTransportBindingFactoryImplIT extends DpwsTest {
         assertArrayEquals(expectedResponseStream.toByteArray(), actualResponseStream.toByteArray());
     }
 
-
-    static class GzipResponseHandler implements HttpHandler {
-        private final byte[] compressedResponse;
-
-        GzipResponseHandler(byte[] response) throws IOException {
-            ByteArrayOutputStream responseBais = new ByteArrayOutputStream();
-            try (GZIPOutputStream gzos = new GZIPOutputStream(responseBais)) {
-                gzos.write(response);
-            }
-            this.compressedResponse = responseBais.toByteArray();
-        }
-
-        @Override
-        public void handle(HttpExchange t) throws IOException {
-
-            List<String> strings = t.getRequestHeaders().get(HttpHeaders.ACCEPT_ENCODING);
-            if (strings.stream().noneMatch(x -> x.contains("gzip"))) {
-                LOG.error("No Accept-Encoding with value gzip in request header");
-                throw new RuntimeException("No Accept-Encoding with value gzip in request header");
-            }
-
-            t.getResponseHeaders().add(HttpHeaders.CONTENT_ENCODING, "gzip");
-            t.getResponseHeaders().add(HttpHeaders.CONTENT_TYPE, SoapConstants.MEDIA_TYPE_SOAP);
-            t.sendResponseHeaders(200, compressedResponse.length);
-            OutputStream os = t.getResponseBody();
-            os.write(compressedResponse);
-            os.close();
-        }
-    }
 
     private SoapMessage createASoapMessage() {
         return soapMessageFactory.createSoapMessage(envelopeFactory.createEnvelope());

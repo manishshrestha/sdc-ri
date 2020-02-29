@@ -305,7 +305,7 @@ public class HostingServiceResolver {
         return requestResponseClientFactory.createRequestResponseClient(tBinding);
     }
 
-    private class RelationshipData {
+    private static class RelationshipData {
         private URI eprAddress = null;
         private List<QName> types = null;
         private final Map<String, HostedServiceProxy> hostedServices = new HashMap<>();

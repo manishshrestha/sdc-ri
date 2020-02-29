@@ -286,7 +286,9 @@ public class WsDiscoveryClientInterceptor implements WsDiscoveryClient {
                                 new RuntimeException("SOAP message body malformed"));
                     }
 
-                    condition.await(wait, TimeUnit.MILLISECONDS);
+                    if (!condition.await(wait, TimeUnit.MILLISECONDS)) {
+                        break;
+                    };
 
                     msg = popMatches(messageQueue, wsaRelatesTo);
                     wait -= System.currentTimeMillis() - tStartInMillis;
@@ -352,7 +354,9 @@ public class WsDiscoveryClientInterceptor implements WsDiscoveryClient {
                         break;
                     }
 
-                    condition.await(wait, TimeUnit.MILLISECONDS);
+                    if (!condition.await(wait, TimeUnit.MILLISECONDS)) {
+                        break;
+                    }
 
                     wait -= System.currentTimeMillis() - tStartInMillis;
                     probeMatchesCount = fetchData(probeMatchesCount);
