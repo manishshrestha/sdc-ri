@@ -73,7 +73,7 @@ public class ConsumerUtil {
                                         for (String key : extendedKeyUsage) {
                                             try {
                                                 URI keyUri = URI.create(key);
-                                                if (keyUri.equals(GlueConstants.URI_KEY_PURPOSE_SDC_SERVICE_PROVIDER)) {
+                                                if (keyUri.equals(URI.create(GlueConstants.OID_KEY_PURPOSE_SDC_SERVICE_PROVIDER))) {
                                                     LOG.debug("SDC Service Provider PKP found");
                                                     return true;
                                                 }

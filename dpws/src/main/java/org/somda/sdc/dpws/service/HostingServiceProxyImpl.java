@@ -15,8 +15,8 @@ import org.somda.sdc.dpws.soap.exception.TransportException;
 import org.somda.sdc.dpws.soap.interception.Interceptor;
 import org.somda.sdc.dpws.soap.interception.InterceptorException;
 
+import javax.annotation.Nullable;
 import javax.xml.namespace.QName;
-import java.net.URI;
 import java.util.*;
 
 /**
@@ -27,9 +27,9 @@ public class HostingServiceProxyImpl implements HostingServiceProxy {
 
     private final RequestResponseClient requestResponseClient;
     @Stringified
-    private final URI activeXAddr;
+    private final String activeXAddr;
     @Stringified
-    private final URI endpointReferenceAddress;
+    private final String endpointReferenceAddress;
     private final List<QName> types;
     private final ThisDeviceType thisDevice;
     private final ThisModelType thisModel;
@@ -37,14 +37,14 @@ public class HostingServiceProxyImpl implements HostingServiceProxy {
     private final long metadataVersion;
 
     @AssistedInject
-    HostingServiceProxyImpl(@Assisted("eprAddress") URI endpointReferenceAddress,
+    HostingServiceProxyImpl(@Assisted("eprAddress") String endpointReferenceAddress,
                             @Assisted List<QName> types,
-                            @Assisted ThisDeviceType thisDevice,
-                            @Assisted ThisModelType thisModel,
+                            @Assisted @Nullable ThisDeviceType thisDevice,
+                            @Assisted @Nullable ThisModelType thisModel,
                             @Assisted Map<String, HostedServiceProxy> hostedServices,
                             @Assisted long metadataVersion,
                             @Assisted RequestResponseClient requestResponseClient,
-                            @Assisted("activeXAddr") URI activeXAddr,
+                            @Assisted("activeXAddr") String activeXAddr,
                             ObjectUtil objectUtil) {
         this.metadataVersion = metadataVersion;
         this.requestResponseClient = requestResponseClient;
@@ -58,7 +58,7 @@ public class HostingServiceProxyImpl implements HostingServiceProxy {
     }
 
     @Override
-    public synchronized URI getEndpointReferenceAddress() {
+    public synchronized String getEndpointReferenceAddress() {
         return endpointReferenceAddress;
     }
 
@@ -83,7 +83,7 @@ public class HostingServiceProxyImpl implements HostingServiceProxy {
     }
 
     @Override
-    public URI getActiveXAddr() {
+    public String getActiveXAddr() {
         return activeXAddr;
     }
 

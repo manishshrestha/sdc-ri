@@ -4,8 +4,10 @@ import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
 import org.somda.sdc.dpws.service.helper.MetadataSectionUtil;
 import org.somda.sdc.dpws.soap.SoapUtil;
-import org.somda.sdc.dpws.soap.exception.SoapFaultException;
-import org.somda.sdc.dpws.soap.interception.*;
+import org.somda.sdc.dpws.soap.interception.Direction;
+import org.somda.sdc.dpws.soap.interception.Interceptor;
+import org.somda.sdc.dpws.soap.interception.MessageInterceptor;
+import org.somda.sdc.dpws.soap.interception.RequestResponseObject;
 import org.somda.sdc.dpws.soap.wsaddressing.WsAddressingUtil;
 import org.somda.sdc.dpws.soap.wsdiscovery.WsDiscoveryTargetService;
 import org.somda.sdc.dpws.soap.wsmetadataexchange.WsMetadataExchangeConstants;
@@ -14,7 +16,6 @@ import org.somda.sdc.dpws.soap.wsmetadataexchange.model.Metadata;
 import org.somda.sdc.dpws.soap.wsmetadataexchange.model.MetadataSection;
 import org.somda.sdc.dpws.soap.wsmetadataexchange.model.ObjectFactory;
 
-import java.net.URI;
 import java.util.Collections;
 import java.util.List;
 
@@ -68,10 +69,10 @@ public class HostedServiceInterceptor implements Interceptor {
         soapUtil.setBody(metadata, rrObj.getResponse());
     }
 
-    private MetadataSection createWsdlMetadataSection(URI uri) {
+    private MetadataSection createWsdlMetadataSection(String uri) {
         MetadataSection metadataSection = mexFactory.createMetadataSection();
         metadataSection.setDialect(WsMetadataExchangeConstants.DIALECT_WSDL);
-        metadataSection.setAny(mexFactory.createLocation(uri.toString()));
+        metadataSection.setAny(mexFactory.createLocation(uri));
         return metadataSection;
     }
 }

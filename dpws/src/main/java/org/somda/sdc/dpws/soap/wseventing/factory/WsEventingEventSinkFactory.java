@@ -4,8 +4,6 @@ import com.google.inject.assistedinject.Assisted;
 import org.somda.sdc.dpws.soap.RequestResponseClient;
 import org.somda.sdc.dpws.soap.wseventing.EventSink;
 
-import java.net.URI;
-
 /**
  * Creates {@link EventSink} instances.
  */
@@ -18,5 +16,5 @@ public interface WsEventingEventSinkFactory {
      * @return a new {@link EventSink} instance.
      */
     EventSink createWsEventingEventSink(@Assisted RequestResponseClient requestResponseClient,
-                                        @Assisted URI hostAddress);
+                                        @Assisted String hostAddress);
 }

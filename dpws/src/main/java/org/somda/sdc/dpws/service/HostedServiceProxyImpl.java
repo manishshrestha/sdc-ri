@@ -1,7 +1,6 @@
 package org.somda.sdc.dpws.service;
 
 import com.google.common.util.concurrent.ListenableFuture;
-import com.google.inject.Provider;
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
 import org.somda.sdc.common.util.ObjectUtil;
@@ -21,7 +20,6 @@ import org.somda.sdc.dpws.soap.wseventing.EventSink;
 import org.somda.sdc.dpws.soap.wseventing.SubscribeResult;
 
 import javax.annotation.Nullable;
-import java.net.URI;
 import java.time.Duration;
 import java.util.List;
 
@@ -37,12 +35,12 @@ public class HostedServiceProxyImpl implements HostedServiceProxy, EventSinkAcce
 
     private final HostedServiceType hostedServiceType;
     private final RequestResponseClient requestResponseClient;
-    private final URI activeEprAddress;
+    private final String activeEprAddress;
 
     @AssistedInject
     HostedServiceProxyImpl(@Assisted HostedServiceType hostedServiceType,
                            @Assisted RequestResponseClient requestResponseClient,
-                           @Assisted URI activeEprAddress,
+                           @Assisted String activeEprAddress,
                            @Assisted EventSink eventSink,
                            ObjectUtil objectUtil,
                            NotificationSinkFactory notificationSinkFactory,
@@ -72,7 +70,7 @@ public class HostedServiceProxyImpl implements HostedServiceProxy, EventSinkAcce
     }
 
     @Override
-    public URI getActiveEprAddress() {
+    public String getActiveEprAddress() {
         return activeEprAddress;
     }
 

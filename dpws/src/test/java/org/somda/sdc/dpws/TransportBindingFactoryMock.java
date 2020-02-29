@@ -3,11 +3,7 @@ package org.somda.sdc.dpws;
 import com.google.inject.Inject;
 import org.somda.sdc.dpws.factory.TransportBindingFactory;
 import org.somda.sdc.dpws.http.HttpHandler;
-import org.somda.sdc.dpws.soap.ApplicationInfo;
-import org.somda.sdc.dpws.soap.CommunicationContext;
-import org.somda.sdc.dpws.soap.SoapMarshalling;
-import org.somda.sdc.dpws.soap.SoapMessage;
-import org.somda.sdc.dpws.soap.TransportInfo;
+import org.somda.sdc.dpws.soap.*;
 import org.somda.sdc.dpws.soap.exception.MarshallingException;
 import org.somda.sdc.dpws.soap.exception.TransportException;
 import org.somda.sdc.dpws.soap.factory.SoapMessageFactory;
@@ -16,14 +12,13 @@ import org.somda.sdc.dpws.soap.model.Envelope;
 import javax.xml.bind.JAXBException;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.net.URI;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
 public class TransportBindingFactoryMock implements TransportBindingFactory {
-    private static Map<URI, HttpHandler> handlerRegistry;
+    private static Map<String, HttpHandler> handlerRegistry;
     private final SoapMarshalling soapMarshalling;
     private final SoapMessageFactory soapMessageFactory;
     private final CommunicationContext mockCommunicationContext;
@@ -46,12 +41,12 @@ public class TransportBindingFactoryMock implements TransportBindingFactory {
         );
     }
 
-    public static void setHandlerRegistry(Map<URI, HttpHandler> handlerRegistry) {
+    public static void setHandlerRegistry(Map<String, HttpHandler> handlerRegistry) {
         TransportBindingFactoryMock.handlerRegistry = handlerRegistry;
     }
 
     @Override
-    public TransportBinding createTransportBinding(URI endpointUri) {
+    public TransportBinding createTransportBinding(String endpointUri) {
         if (handlerRegistry == null) {
             handlerRegistry = new HashMap<>();
         }
@@ -101,7 +96,7 @@ public class TransportBindingFactoryMock implements TransportBindingFactory {
     }
 
     @Override
-    public TransportBinding createHttpBinding(URI endpointUri) {
+    public TransportBinding createHttpBinding(String endpointUri) {
         return createTransportBinding(endpointUri);
     }
 }

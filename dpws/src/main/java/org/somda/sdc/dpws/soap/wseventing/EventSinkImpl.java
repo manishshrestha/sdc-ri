@@ -8,17 +8,11 @@ import com.google.inject.name.Named;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.somda.sdc.common.util.ExecutorWrapperService;
-import org.somda.sdc.common.util.JaxbUtil;
 import org.somda.sdc.dpws.DpwsConfig;
 import org.somda.sdc.dpws.DpwsConstants;
 import org.somda.sdc.dpws.guice.NetworkJobThreadPool;
 import org.somda.sdc.dpws.http.HttpServerRegistry;
-import org.somda.sdc.dpws.soap.CommunicationContext;
-import org.somda.sdc.dpws.soap.NotificationSink;
-import org.somda.sdc.dpws.soap.RequestResponseClient;
-import org.somda.sdc.dpws.soap.SoapMarshalling;
-import org.somda.sdc.dpws.soap.SoapMessage;
-import org.somda.sdc.dpws.soap.SoapUtil;
+import org.somda.sdc.dpws.soap.*;
 import org.somda.sdc.dpws.soap.exception.MalformedSoapMessageException;
 import org.somda.sdc.dpws.soap.exception.MarshallingException;
 import org.somda.sdc.dpws.soap.exception.TransportException;
@@ -35,14 +29,8 @@ import javax.xml.bind.JAXBException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.URI;
 import java.time.Duration;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -61,13 +49,12 @@ public class EventSinkImpl implements EventSink {
     private static final String EVENT_SINK_NOTIFY_TO_CONTEXT_PREFIX = EVENT_SINK_CONTEXT_PREFIX + "NotifyTo/";
     private static final String EVENT_SINK_END_TO_CONTEXT_PREFIX = EVENT_SINK_CONTEXT_PREFIX + "EndTo/";
     private final RequestResponseClient requestResponseClient;
-    private final URI hostAddress;
+    private final String hostAddress;
     private final HttpServerRegistry httpServerRegistry;
     private final ObjectFactory wseFactory;
     private final WsAddressingUtil wsaUtil;
     private final SoapMarshalling marshalling;
     private final SoapUtil soapUtil;
-    private final JaxbUtil jaxbUtil;
     private final ExecutorWrapperService<ListeningExecutorService> executorService;
     private final SubscriptionManagerFactory subscriptionManagerFactory;
     private final Map<String, SinkSubscriptionManager> subscriptionManagers;
@@ -76,14 +63,13 @@ public class EventSinkImpl implements EventSink {
 
     @AssistedInject
     EventSinkImpl(@Assisted RequestResponseClient requestResponseClient,
-                  @Assisted URI hostAddress,
+                  @Assisted String hostAddress,
                   @Named(DpwsConfig.MAX_WAIT_FOR_FUTURES) Duration maxWaitForFutures,
                   HttpServerRegistry httpServerRegistry,
                   ObjectFactory wseFactory,
                   WsAddressingUtil wsaUtil,
                   SoapMarshalling marshalling,
                   SoapUtil soapUtil,
-                  JaxbUtil jaxbUtil,
                   @NetworkJobThreadPool ExecutorWrapperService<ListeningExecutorService> executorService,
                   SubscriptionManagerFactory subscriptionManagerFactory) {
         this.requestResponseClient = requestResponseClient;
@@ -94,7 +80,6 @@ public class EventSinkImpl implements EventSink {
         this.wsaUtil = wsaUtil;
         this.marshalling = marshalling;
         this.soapUtil = soapUtil;
-        this.jaxbUtil = jaxbUtil;
         this.executorService = executorService;
         this.subscriptionManagerFactory = subscriptionManagerFactory;
         this.subscriptionManagers = new ConcurrentHashMap<>();
@@ -112,12 +97,12 @@ public class EventSinkImpl implements EventSink {
 
             // Create unique end-to context path and create proper handler
             String endToContext = EVENT_SINK_END_TO_CONTEXT_PREFIX + contextSuffix;
-            URI endToUri = httpServerRegistry.registerContext(hostAddress, endToContext,
+            var endToUri = httpServerRegistry.registerContext(hostAddress, endToContext,
                     (req, res, ti) -> processIncomingNotification(notificationSink, req, res, ti));
 
             // Create unique notify-to context path and create proper handler
             String notifyToContext = EVENT_SINK_NOTIFY_TO_CONTEXT_PREFIX + contextSuffix;
-            URI notifyToUri = httpServerRegistry.registerContext(hostAddress, notifyToContext,
+            var notifyToUri = httpServerRegistry.registerContext(hostAddress, notifyToContext,
                     (req, res, ti) -> processIncomingNotification(notificationSink, req, res, ti));
 
             // Create subscribe body, include formerly created end-to and notify-to endpoint addresses
@@ -184,7 +169,7 @@ public class EventSinkImpl implements EventSink {
             // Create new request body
             Renew renew = wseFactory.createRenew();
             renew.setExpires(expires);
-            String subManAddress = wsaUtil.getAddressUriAsString(subMan.getSubscriptionManagerEpr()).orElseThrow(() ->
+            String subManAddress = wsaUtil.getAddressUri(subMan.getSubscriptionManagerEpr()).orElseThrow(() ->
                     new RuntimeException("No subscription manager EPR found"));
 
             // Create new message, put subscription manager EPR address as wsa:To
@@ -213,7 +198,7 @@ public class EventSinkImpl implements EventSink {
             SinkSubscriptionManager subMan = getSubscriptionManagerProxy(subscriptionId);
 
             GetStatus getStatus = wseFactory.createGetStatus();
-            String subManAddress = wsaUtil.getAddressUriAsString(subMan.getSubscriptionManagerEpr()).orElseThrow(() ->
+            String subManAddress = wsaUtil.getAddressUri(subMan.getSubscriptionManagerEpr()).orElseThrow(() ->
                     new RuntimeException("No subscription manager EPR found"));
 
             // Create new message, put subscription manager EPR address as wsa:To
@@ -240,7 +225,7 @@ public class EventSinkImpl implements EventSink {
 
         return executorService.get().submit(() -> {
             Unsubscribe unsubscribe = wseFactory.createUnsubscribe();
-            String subManAddress = wsaUtil.getAddressUriAsString(subMan.getSubscriptionManagerEpr()).orElseThrow(() ->
+            String subManAddress = wsaUtil.getAddressUri(subMan.getSubscriptionManagerEpr()).orElseThrow(() ->
                     new RuntimeException("No subscription manager EPR found"));
 
             // Create new message, put subscription manager EPR address as wsa:To

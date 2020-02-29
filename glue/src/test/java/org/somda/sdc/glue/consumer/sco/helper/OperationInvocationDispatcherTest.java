@@ -31,14 +31,14 @@ class OperationInvocationDispatcherTest {
     @BeforeEach
     void beforeEach() {
         hostingServiceProxy = UT.getInjector().getInstance(HostingServiceFactory.class).createHostingServiceProxy(
-                URI.create("urn:uuid:441dfbea-40e5-406e-b2c4-154d3b8430bf"),
+                "urn:uuid:441dfbea-40e5-406e-b2c4-154d3b8430bf",
                 Collections.emptyList(),
                 mock(ThisDeviceType.class),
                 mock(ThisModelType.class),
                 Collections.emptyMap(),
                 0,
                 mock(RequestResponseClient.class),
-                URI.create("http://xAddr/"));
+                "http://xAddr/");
 
         dispatcher = UT.getInjector()
                 .getInstance(OperationInvocationDispatcherFactory.class)

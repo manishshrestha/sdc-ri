@@ -14,7 +14,7 @@ public class UriBaseContextPath {
      *
      * @param uri the inspected URI.
      */
-    public UriBaseContextPath(URI uri) {
+    public UriBaseContextPath(String uri) {
         this.basePath = deriveFrom(uri);
     }
 
@@ -27,19 +27,20 @@ public class UriBaseContextPath {
         return basePath;
     }
 
-    private String deriveFrom(URI uri) {
+    private String deriveFrom(String uri) {
+        var parsedUri = URI.create(uri);
         final Optional<SupportedEprUriScheme> supportedUriScheme =
-                getSupportedScheme(uri.getScheme(), uri.getSchemeSpecificPart());
+                getSupportedScheme(parsedUri.getScheme(), parsedUri.getSchemeSpecificPart());
         if (supportedUriScheme.isEmpty()) {
             return "";
         }
         switch (supportedUriScheme.get()) {
             case HTTP:
             case HTTPS:
-                return uri.getPath().substring(1); // skip preceding slash
+                return parsedUri.getPath().substring(1); // skip preceding slash
             case URN_UUID:
             case URN_OID:
-                return uri.getSchemeSpecificPart().substring(supportedUriScheme.get().getSpecificPart().length() + 1);
+                return parsedUri.getSchemeSpecificPart().substring(supportedUriScheme.get().getSpecificPart().length() + 1);
             default:
                 return "";
         }

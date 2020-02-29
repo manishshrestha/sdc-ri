@@ -1,9 +1,6 @@
 package it.org.somda.sdc.dpws;
 
 import com.google.inject.AbstractModule;
-import com.sun.net.httpserver.HttpExchange;
-import com.sun.net.httpserver.HttpHandler;
-import org.apache.http.HttpHeaders;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
@@ -16,12 +13,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.somda.sdc.dpws.CommunicationLog;
-import org.somda.sdc.dpws.CommunicationLogImpl;
-import org.somda.sdc.dpws.CommunicationLogSink;
-import org.somda.sdc.dpws.DpwsConfig;
-import org.somda.sdc.dpws.DpwsTest;
-import org.somda.sdc.dpws.TransportBinding;
+import org.somda.sdc.dpws.*;
 import org.somda.sdc.dpws.factory.TransportBindingFactory;
 import org.somda.sdc.dpws.guice.DefaultDpwsConfigModule;
 import org.somda.sdc.dpws.http.apache.ClientTransportBinding;
@@ -29,7 +21,6 @@ import org.somda.sdc.dpws.http.jetty.JettyHttpServerHandler;
 import org.somda.sdc.dpws.http.jetty.JettyHttpServerRegistry;
 import org.somda.sdc.dpws.soap.CommunicationContext;
 import org.somda.sdc.dpws.soap.HttpApplicationInfo;
-import org.somda.sdc.dpws.soap.SoapConstants;
 import org.somda.sdc.dpws.soap.SoapMarshalling;
 import org.somda.sdc.dpws.soap.SoapMessage;
 import org.somda.sdc.dpws.soap.factory.EnvelopeFactory;
@@ -39,7 +30,6 @@ import test.org.somda.common.LoggingTestWatcher;
 import javax.xml.bind.JAXBElement;
 import javax.xml.namespace.QName;
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.net.URI;
@@ -133,7 +123,7 @@ public class CommunicationLogIT extends DpwsTest {
                 baseUri.getFragment());
 
         // make requests to our server
-        TransportBinding httpBinding1 = transportBindingFactory.createHttpBinding(baseUri);
+        TransportBinding httpBinding1 = transportBindingFactory.createHttpBinding(baseUri.toString());
         for (int i = 0; i < 100; i++) {
             var requestMessage = createASoapMessage();
 
@@ -172,15 +162,15 @@ public class CommunicationLogIT extends DpwsTest {
 
     @Test
     void testServerCommlog() throws Exception {
-        URI baseUri = URI.create("http://127.0.0.1:0");
-        final String contextPath = "/ctxt/path1";
+        var baseUri = "http://127.0.0.1:0";
+        var contextPath = "/ctxt/path1";
 
         final String expectedRequest = "The quick brown fox jumps over the lazy dog";
         final String expectedResponse = "Franz jagt im komplett verwahrlosten Taxi quer durch Bayern";
         AtomicReference<String> resultString = new AtomicReference<>();
 
         httpServerRegistry.startAsync().awaitRunning();
-        URI srvUri1 = httpServerRegistry.registerContext(
+        var srvUri1 = httpServerRegistry.registerContext(
                 baseUri, contextPath, (req, res, ti) -> {
                     try {
                         byte[] bytes = req.readAllBytes();

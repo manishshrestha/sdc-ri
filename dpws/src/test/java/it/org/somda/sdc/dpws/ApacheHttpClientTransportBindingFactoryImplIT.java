@@ -1,9 +1,5 @@
 package it.org.somda.sdc.dpws;
 
-import com.sun.net.httpserver.HttpExchange;
-import com.sun.net.httpserver.HttpHandler;
-import com.sun.net.httpserver.HttpServer;
-import org.apache.http.HttpHeaders;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -14,7 +10,6 @@ import org.somda.sdc.dpws.DpwsTest;
 import org.somda.sdc.dpws.TransportBinding;
 import org.somda.sdc.dpws.factory.TransportBindingFactory;
 import org.somda.sdc.dpws.guice.DefaultDpwsConfigModule;
-import org.somda.sdc.dpws.soap.SoapConstants;
 import org.somda.sdc.dpws.soap.SoapMarshalling;
 import org.somda.sdc.dpws.soap.SoapMessage;
 import org.somda.sdc.dpws.soap.factory.EnvelopeFactory;
@@ -24,18 +19,13 @@ import test.org.somda.common.LoggingTestWatcher;
 import javax.xml.bind.JAXBElement;
 import javax.xml.namespace.QName;
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.net.URI;
-import java.util.List;
-import java.util.zip.GZIPOutputStream;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 
 @ExtendWith(LoggingTestWatcher.class)
 public class ApacheHttpClientTransportBindingFactoryImplIT extends DpwsTest {
-
     private static final Logger LOG = LoggerFactory.getLogger(ApacheHttpClientTransportBindingFactoryImplIT.class);
 
     private TransportBindingFactory transportBindingFactory;
@@ -97,7 +87,7 @@ public class ApacheHttpClientTransportBindingFactoryImplIT extends DpwsTest {
                 baseUri.getFragment());
 
         // make request to our server
-        TransportBinding httpBinding1 = transportBindingFactory.createHttpBinding(baseUri);
+        TransportBinding httpBinding1 = transportBindingFactory.createHttpBinding(baseUri.toString());
         SoapMessage response = httpBinding1.onRequestResponse(createASoapMessage());
 
         ByteArrayOutputStream actualResponseStream = new ByteArrayOutputStream();

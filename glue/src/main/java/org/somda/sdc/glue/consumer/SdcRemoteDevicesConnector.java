@@ -48,7 +48,7 @@ public interface SdcRemoteDevicesConnector {
      * @return a listenable future that finishes once the remote device is disconnected (i.e., subscriptions are
      * unsubscribed). If there is no device to disconnect, an immediate cancelled future is returned.
      */
-    ListenableFuture<?> disconnect(URI eprAddress);
+    ListenableFuture<?> disconnect(String eprAddress);
 
     /**
      * Gets a copy of all connected devices at a certain point in time.
@@ -63,7 +63,7 @@ public interface SdcRemoteDevicesConnector {
      * @param eprAddress the endpoint reference address of the remote device to get.
      * @return an {@link SdcRemoteDevice} instance if connected, otherwise {@link Optional#empty()}.
      */
-    Optional<SdcRemoteDevice> getConnectedDevice(URI eprAddress);
+    Optional<SdcRemoteDevice> getConnectedDevice(String eprAddress);
 
     void registerObserver(SdcRemoteDevicesObserver observer);
 

@@ -7,7 +7,7 @@ import java.net.URI;
 /**
  * Message that is delivered to a {@linkplain org.somda.sdc.glue.consumer.WatchdogObserver} if something went wrong.
  */
-public class WatchdogMessage extends AbstractEventMessage<URI> {
+public class WatchdogMessage extends AbstractEventMessage<String> {
     private final Exception reason;
 
     /**
@@ -16,7 +16,7 @@ public class WatchdogMessage extends AbstractEventMessage<URI> {
      * @param payload the endpoint reference address this watchdog message belongs to
      * @param reason the reason the watchdog sends this message.
      */
-    public WatchdogMessage(URI payload, Exception reason) {
+    public WatchdogMessage(String payload, Exception reason) {
         super(payload);
         this.reason = reason;
     }

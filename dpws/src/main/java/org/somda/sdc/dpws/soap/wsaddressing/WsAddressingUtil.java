@@ -5,7 +5,6 @@ import org.somda.sdc.dpws.soap.wsaddressing.model.AttributedURIType;
 import org.somda.sdc.dpws.soap.wsaddressing.model.EndpointReferenceType;
 import org.somda.sdc.dpws.soap.wsaddressing.model.ObjectFactory;
 
-import javax.annotation.Nullable;
 import java.net.URI;
 import java.util.Optional;
 
@@ -43,24 +42,13 @@ public class WsAddressingUtil {
     }
 
     /**
-     * Gets the address URI of an endpoint reference as string.
-     *
-     * @param epr the endpoint reference.
-     * @return the endpoint reference or {@linkplain Optional#empty()} if there was no URI available.
-     */
-    public Optional<String> getAddressUriAsString(EndpointReferenceType epr) {
-        return Optional.ofNullable(epr.getAddress()).map(AttributedURIType::getValue);
-    }
-
-    /**
      * Gets the address URI of an endpoint reference.
      *
      * @param epr the endpoint reference.
      * @return the endpoint reference or {@linkplain Optional#empty()} if there was no URI available.
      */
-    public Optional<URI> getAddressUri(EndpointReferenceType epr) {
-        Optional<String> addressUriAsString = getAddressUriAsString(epr);
-        return addressUriAsString.map(URI::create);
+    public Optional<String> getAddressUri(EndpointReferenceType epr) {
+        return Optional.ofNullable(epr.getAddress()).map(AttributedURIType::getValue);
     }
 
     /**

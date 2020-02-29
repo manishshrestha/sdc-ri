@@ -5,7 +5,6 @@ import org.somda.sdc.dpws.model.ThisModelType;
 import org.somda.sdc.dpws.service.factory.HostedServiceFactory;
 import org.somda.sdc.dpws.soap.interception.Interceptor;
 
-import java.net.URI;
 import java.util.List;
 
 /**
@@ -19,10 +18,10 @@ public interface HostingService extends Interceptor {
      * <p>
      * As defined in dpws:R0004, the URI is a UUID IRI.
      *
-     * @return the EPR {@link URI}.
+     * @return the EPR address.
      * @see <a href="http://docs.oasis-open.org/ws-dd/dpws/1.1/os/wsdd-dpws-1.1-spec-os.html#_Toc228672089">WS-Addressing</a>
      */
-    URI getEndpointReferenceAddress();
+    String getEndpointReferenceAddress();
 
     /**
      * Gets the XAddrs list of the hosting service.
@@ -30,7 +29,7 @@ public interface HostingService extends Interceptor {
      * @return Physical addresses the hosting service is reachable from. Forwards addresses from WS-Discovery XAddr field.
      * @see <a href="http://docs.oasis-open.org/ws-dd/discovery/1.1/os/wsdd-discovery-1.1-spec-os.html#_Toc234231821">Hello</a>
      */
-    List<URI> getXAddrs();
+    List<String> getXAddrs();
 
     /**
      * Gets ThisModel information.
