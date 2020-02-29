@@ -1,10 +1,7 @@
 package org.somda.sdc.biceps.common;
 
 import com.google.inject.Inject;
-import org.somda.sdc.biceps.model.participant.AbstractContextDescriptor;
-import org.somda.sdc.biceps.model.participant.AbstractDescriptor;
-import org.somda.sdc.biceps.model.participant.AbstractMultiState;
-import org.somda.sdc.biceps.model.participant.AbstractState;
+import org.somda.sdc.biceps.model.participant.*;
 
 import java.util.Collections;
 import java.util.List;
@@ -137,37 +134,62 @@ public class MdibTypeValidator {
     }
 
     /**
-     * Checks if a descriptor is a multi state descriptor (true) or not (false).
+     * Checks if a descriptor is a multi-state descriptor (true) or not (false).
      *
      * @param descriptor the descriptor to test.
      * @param <T>        any descriptor class.
-     * @return true if the descriptor is a multi state descriptor, false otherwise.
+     * @return true if the descriptor is a multi-state descriptor, false otherwise.
      */
     public <T extends AbstractDescriptor> boolean isMultiStateDescriptor(T descriptor) {
         return descriptor instanceof AbstractContextDescriptor;
     }
 
     /**
-     * Checks if a state is a multi state (true) or not (false).
+     * Checks if a state is a multi-state (true) or not (false).
      *
      * @param state the state to test.
      * @param <T>   any state class.
-     * @return true if the state is a multi state, false otherwise.
+     * @return true if the state is a multi-state, false otherwise.
      */
     public <T extends AbstractState> boolean isMultiState(T state) {
         return state instanceof AbstractMultiState;
     }
 
     /**
-     * Tries to cast to a multi state.
+     * Checks if a state is a context state (true) or not (false).
+     *
+     * @param state the state to test.
+     * @param <T>   any state class.
+     * @return true if the state is a context state, false otherwise.
+     */
+    public <T extends AbstractState> boolean isContextState(T state) {
+        return state instanceof AbstractContextState;
+    }
+
+    /**
+     * Tries to cast to a multi-state.
      *
      * @param state the state to cast.
      * @param <T>   any state class.
-     * @return The cast multi state or {@linkplain Optional#empty()} if the state was not a multi state.
+     * @return The cast multi-state or {@linkplain Optional#empty()} if the state was not a multi-state.
      */
     public <T extends AbstractState> Optional<AbstractMultiState> toMultiState(T state) {
         if (isMultiState(state)) {
             return Optional.of((AbstractMultiState) state);
+        }
+        return Optional.empty();
+    }
+
+    /**
+     * Tries to cast to a context state.
+     *
+     * @param state the state to cast.
+     * @param <T>   any state class.
+     * @return The cast multi-state or {@linkplain Optional#empty()} if the state was not a multi-state.
+     */
+    public <T extends AbstractState> Optional<AbstractContextState> toContextState(T state) {
+        if (isContextState(state)) {
+            return Optional.of((AbstractContextState) state);
         }
         return Optional.empty();
     }
