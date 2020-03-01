@@ -61,11 +61,6 @@ public class WriteUtil {
      */
     public WriteDescriptionResult writeDescription(Function<MdibDescriptionModifications, WriteDescriptionResult> lockedWriteDescription,
                                                    MdibDescriptionModifications descriptionModifications) throws PreprocessingException {
-        if (descriptionModifications.getModifications().isEmpty()) {
-            return new WriteDescriptionResult(mdibAccess.getMdibVersion(),
-                    Collections.emptyList(), Collections.emptyList(), Collections.emptyList());
-        }
-
         acquireWriteLock();
 
         long startTime = 0;
@@ -78,6 +73,13 @@ public class WriteUtil {
         try {
             mdibAccessPreprocessing.processDescriptionModifications(descriptionModifications);
             modificationResult = lockedWriteDescription.apply(descriptionModifications);
+
+            // Return just here in order to apply MDIB version on remote MDIB writes
+            if (descriptionModifications.getModifications().isEmpty()) {
+                return new WriteDescriptionResult(mdibAccess.getMdibVersion(),
+                        Collections.emptyList(), Collections.emptyList(), Collections.emptyList());
+            }
+
             readWriteLock.readLock().lock();
         } catch (PreprocessingException e) {
             LOG.warn("Error while processing description modifications in chain segment {} on handle {}: {}",
@@ -127,10 +129,6 @@ public class WriteUtil {
      */
     public WriteStateResult writeStates(Function<MdibStateModifications, WriteStateResult> lockedWriteStates,
                                         MdibStateModifications stateModifications) throws PreprocessingException {
-        if (stateModifications.getStates().isEmpty()) {
-            return new WriteStateResult(mdibAccess.getMdibVersion(), Collections.emptyList());
-        }
-
         acquireWriteLock();
 
         long startTime = 0;
@@ -143,6 +141,12 @@ public class WriteUtil {
         try {
             mdibAccessPreprocessing.processStateModifications(stateModifications);
             modificationResult = lockedWriteStates.apply(stateModifications);
+
+            // Return just here in order to apply MDIB version on remote MDIB writes
+            if (stateModifications.getStates().isEmpty()) {
+                return new WriteStateResult(mdibAccess.getMdibVersion(), Collections.emptyList());
+            }
+
             readWriteLock.readLock().lock();
         } catch (PreprocessingException e) {
             LOG.warn("Error while processing state modifications in chain segment {} on handle {}: {}",
