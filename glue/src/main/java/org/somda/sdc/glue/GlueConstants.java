@@ -34,20 +34,6 @@ public class GlueConstants {
      */
     public static final String OID_KEY_PURPOSE_SDC_SERVICE_CONSUMER = "1.2.840.10004.20701.1.2";
 
-    /**
-     * Key purpose OID as URI an SDC service provider.
-     *
-     * @see #OID_KEY_PURPOSE_SDC_SERVICE_PROVIDER
-     */
-    public static final URI URI_KEY_PURPOSE_SDC_SERVICE_PROVIDER = URI.create(URI_SCHEME_OID + OID_KEY_PURPOSE_SDC_SERVICE_PROVIDER);
-
-    /**
-     * Key purpose OID as URI an SDC service consumer.
-     *
-     * @see #OID_KEY_PURPOSE_SDC_SERVICE_CONSUMER
-     */
-    public static final URI URI_KEY_PURPOSE_SDC_SERVICE_CONSUMER = URI.create(URI_SCHEME_OID + OID_KEY_PURPOSE_SDC_SERVICE_CONSUMER);
-
     static {
         try {
             // This assignment should never throw unless OID_KEY_PURPOSE_SDC_SERVICE_PROVIDER is modified

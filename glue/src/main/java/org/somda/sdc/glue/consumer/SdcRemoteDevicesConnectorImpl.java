@@ -73,7 +73,7 @@ public class SdcRemoteDevicesConnectorImpl implements SdcRemoteDevicesConnector,
     private static final Logger LOG = LoggerFactory.getLogger(SdcRemoteDevicesConnectorImpl.class);
 
     private ExecutorWrapperService<ListeningExecutorService> executorService;
-    private Map<URI, SdcRemoteDevice> sdcRemoteDevices;
+    private Map<String, SdcRemoteDevice> sdcRemoteDevices;
     private EventBus eventBus;
     private final Provider<ReportProcessor> reportProcessorProvider;
     private final ScoControllerFactory scoControllerFactory;
@@ -89,7 +89,7 @@ public class SdcRemoteDevicesConnectorImpl implements SdcRemoteDevicesConnector,
 
     @Inject
     SdcRemoteDevicesConnectorImpl(@Consumer ExecutorWrapperService<ListeningExecutorService> executorService,
-                                  ConcurrentHashMap<URI, SdcRemoteDevice> sdcRemoteDevices,
+                                  ConcurrentHashMap<String, SdcRemoteDevice> sdcRemoteDevices,
                                   EventBus eventBus,
                                   Provider<ReportProcessor> reportProcessorProvider,
                                   ScoControllerFactory scoControllerFactory,
@@ -220,7 +220,7 @@ public class SdcRemoteDevicesConnectorImpl implements SdcRemoteDevicesConnector,
     }
 
     @Override
-    public ListenableFuture<?> disconnect(URI eprAddress) {
+    public ListenableFuture<?> disconnect(String eprAddress) {
         SdcRemoteDevice sdcRemoteDevice = sdcRemoteDevices.remove(eprAddress);
         if (sdcRemoteDevice != null) {
             return executorService.get().submit(() -> {
@@ -239,7 +239,7 @@ public class SdcRemoteDevicesConnectorImpl implements SdcRemoteDevicesConnector,
     }
 
     @Override
-    public Optional<SdcRemoteDevice> getConnectedDevice(URI eprAddress) {
+    public Optional<SdcRemoteDevice> getConnectedDevice(String eprAddress) {
         return Optional.ofNullable(sdcRemoteDevices.get(eprAddress));
     }
 

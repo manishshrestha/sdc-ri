@@ -49,8 +49,8 @@ class SdcRemoteDeviceWatchdogTest {
     private String serviceId2;
     private HostedServiceProxy hostedServiceProxy2;
     private Client mockClient;
-    private URI eprAddress;
-    private URI xAddr;
+    private String eprAddress;
+    private String xAddr;
     private EventSinkAccess mockEventSinkAccess1;
     private EventSinkAccess mockEventSinkAccess2;
     private Duration watchdogPeriod;
@@ -90,8 +90,8 @@ class SdcRemoteDeviceWatchdogTest {
         serviceId2 = "hostedServiceProxy2";
         hostedServices.put(serviceId2, hostedServiceProxy2);
 
-        eprAddress = URI.create("urn:uuid:441dfbea-40e5-406e-b2c4-154d3b8430bf");
-        xAddr = URI.create("http://xAddr/");
+        eprAddress = "urn:uuid:441dfbea-40e5-406e-b2c4-154d3b8430bf";
+        xAddr = "http://xAddr/";
         hostingServiceProxy = injector.getInstance(HostingServiceFactory.class).createHostingServiceProxy(
                 eprAddress,
                 Collections.emptyList(),

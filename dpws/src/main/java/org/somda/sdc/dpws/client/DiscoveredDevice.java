@@ -1,7 +1,6 @@
 package org.somda.sdc.dpws.client;
 
 import javax.xml.namespace.QName;
-import java.net.URI;
 import java.util.List;
 
 /**
@@ -10,13 +9,13 @@ import java.util.List;
  * @see <a href="http://docs.oasis-open.org/ws-dd/discovery/1.1/wsdd-discovery-1.1-spec.html">WS-Discovery</a>
  */
 public class DiscoveredDevice {
-    private final URI eprAddress;
+    private final String eprAddress;
     private final List<QName> types;
     private final List<String> scopes;
     private final List<String> xAddrs;
     private final long metadataVersion;
 
-    public DiscoveredDevice(URI eprAddress,
+    public DiscoveredDevice(String eprAddress,
                             List<QName> types,
                             List<String> scopes,
                             List<String> xAddrs,
@@ -28,7 +27,7 @@ public class DiscoveredDevice {
         this.metadataVersion = metadataVersion;
     }
 
-    public URI getEprAddress() {
+    public String getEprAddress() {
         return eprAddress;
     }
 

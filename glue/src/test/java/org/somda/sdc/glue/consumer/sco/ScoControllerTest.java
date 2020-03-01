@@ -77,14 +77,14 @@ class ScoControllerTest {
         });
 
         hostingServiceProxy = injector.getInstance(HostingServiceFactory.class).createHostingServiceProxy(
-                URI.create("urn:uuid:441dfbea-40e5-406e-b2c4-154d3b8430bf"),
+                "urn:uuid:441dfbea-40e5-406e-b2c4-154d3b8430bf",
                 Collections.emptyList(),
                 mock(ThisDeviceType.class),
                 mock(ThisModelType.class),
                 Collections.emptyMap(), // no services needed as inject in SCO controller separately
                 0,
                 mock(RequestResponseClient.class),
-                URI.create("http://xAddr/"));
+                "http://xAddr/");
 
         scoController = injector.getInstance(ScoControllerFactory.class).createScoController(hostingServiceProxy,
                 setServiceMock,

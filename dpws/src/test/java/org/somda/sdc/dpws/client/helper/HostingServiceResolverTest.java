@@ -8,14 +8,10 @@ import com.google.inject.Key;
 import com.google.inject.TypeLiteral;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.somda.sdc.dpws.DpwsConstants;
-import org.somda.sdc.dpws.DpwsTest;
-import org.somda.sdc.dpws.LocalAddressResolverMock;
-import org.somda.sdc.dpws.ThisDeviceBuilder;
-import org.somda.sdc.dpws.ThisModelBuilder;
+import org.somda.sdc.common.util.ExecutorWrapperService;
+import org.somda.sdc.dpws.*;
 import org.somda.sdc.dpws.client.DiscoveredDevice;
 import org.somda.sdc.dpws.guice.NetworkJobThreadPool;
-import org.somda.sdc.common.util.ExecutorWrapperService;
 import org.somda.sdc.dpws.model.HostedServiceType;
 import org.somda.sdc.dpws.model.ThisDeviceType;
 import org.somda.sdc.dpws.model.ThisModelType;
@@ -37,19 +33,9 @@ import org.somda.sdc.dpws.soap.wsmetadataexchange.model.MetadataSection;
 import org.somda.sdc.dpws.soap.wstransfer.TransferGetClient;
 
 import javax.xml.namespace.QName;
-import java.net.URI;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.EmptyStackException;
-import java.util.List;
-import java.util.Map;
-import java.util.Stack;
+import java.util.*;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -57,7 +43,7 @@ public class HostingServiceResolverTest extends DpwsTest {
     private MockTransferGetClient mockTransferGetClient;
     private MockGetMetadataClient mockGetMetadataClient;
 
-    private URI expectedDeviceEprAddress;
+    private String expectedDeviceEprAddress;
     private List<QName> expectedHostingServiceQNameTypes;
     private String expectedSerialNumber;
     private ThisDeviceType expectedDeviceType;
@@ -105,7 +91,7 @@ public class HostingServiceResolverTest extends DpwsTest {
 
         hostingServiceFactory = getInjector().getInstance(HostingServiceFactory.class);
 
-        expectedDeviceEprAddress = URI.create("urn:uuid:71c219ae-3b55-404f-803b-1e72390f73ba");
+        expectedDeviceEprAddress = "urn:uuid:71c219ae-3b55-404f-803b-1e72390f73ba";
         expectedHostingServiceQNameTypes = Arrays.asList(new QName("http://device", "Type1"),
                 new QName("http://device", "Type2"));
 
@@ -177,7 +163,7 @@ public class HostingServiceResolverTest extends DpwsTest {
         return hs;
     }
 
-    private SoapMessage createTransferGetMessage(URI eprAddress,
+    private SoapMessage createTransferGetMessage(String eprAddress,
                                                  List<QName> types,
                                                  ThisModelType thisModel,
                                                  ThisDeviceType thisDevice,
@@ -221,7 +207,7 @@ public class HostingServiceResolverTest extends DpwsTest {
         return metadataSection;
     }
 
-    private DiscoveredDevice createDiscoveredDevice(URI deviceUuid, List<String> xAddrs, long version) {
+    private DiscoveredDevice createDiscoveredDevice(String deviceUuid, List<String> xAddrs, long version) {
         return new DiscoveredDevice(
                 deviceUuid,
                 mock(List.class),
@@ -230,7 +216,7 @@ public class HostingServiceResolverTest extends DpwsTest {
                 version);
     }
 
-    private HostingServiceProxy createHostingServiceProxy(URI deviceUuid, long version) {
+    private HostingServiceProxy createHostingServiceProxy(String deviceUuid, long version) {
         return hostingServiceFactory.createHostingServiceProxy(
                 deviceUuid,
                 mock(List.class),
@@ -239,13 +225,13 @@ public class HostingServiceResolverTest extends DpwsTest {
                 mock(Map.class),
                 version,
                 mock(RequestResponseClient.class),
-                mock(URI.class));
+                mock(String.class));
     }
 
     class MockTransferGetClient implements TransferGetClient {
         private final Stack<SoapMessage> transferGetMessages = new Stack<>();
 
-        public void setTransferGetMessages(Collection<SoapMessage> transferGetMessages) {
+        void setTransferGetMessages(Collection<SoapMessage> transferGetMessages) {
             this.transferGetMessages.addAll(transferGetMessages);
         }
 
@@ -262,7 +248,7 @@ public class HostingServiceResolverTest extends DpwsTest {
     class MockGetMetadataClient implements GetMetadataClient {
         private final Stack<SoapMessage> getMetadataMessages = new Stack<>();
 
-        public void setGetMetadataMessages(Collection<SoapMessage> getMetadataMessages) {
+        void setGetMetadataMessages(Collection<SoapMessage> getMetadataMessages) {
             this.getMetadataMessages.addAll(getMetadataMessages);
         }
 

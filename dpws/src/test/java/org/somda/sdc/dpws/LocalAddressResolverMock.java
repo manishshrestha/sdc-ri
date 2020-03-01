@@ -7,7 +7,7 @@ import java.util.Optional;
 
 public class LocalAddressResolverMock implements LocalAddressResolver {
     @Override
-    public Optional<String> getLocalAddress(URI remoteUri) {
-        return Optional.of(remoteUri.getHost() + "-local");
+    public Optional<String> getLocalAddress(String remoteUri) {
+        return Optional.of(URI.create(remoteUri).getHost() + "-local");
     }
 }

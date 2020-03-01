@@ -27,7 +27,6 @@ import org.somda.sdc.dpws.soap.wsaddressing.WsAddressingServerInterceptor;
 import org.somda.sdc.dpws.soap.wsaddressing.WsAddressingUtil;
 import org.somda.sdc.dpws.soap.wseventing.factory.WsEventingEventSinkFactory;
 
-import java.net.URI;
 import java.time.Duration;
 import java.util.Collections;
 
@@ -74,9 +73,9 @@ public class WsEventingTest extends DpwsTest {
 
         HttpServerRegistry httpSrvRegisty = getInjector().getInstance(HttpServerRegistry.class);
 
-        URI uri = URI.create("http://" + HOST + ":" + PORT);
+        var uri = "http://" + HOST + ":" + PORT;
         MarshallingService marshallingService = getInjector().getInstance(MarshallingService.class);
-        URI hostedServiceUri = httpSrvRegisty.registerContext(uri, HOSTED_SERVICE_PATH, (inStream, outStream, ti) ->
+        var hostedServiceUri = httpSrvRegisty.registerContext(uri, HOSTED_SERVICE_PATH, (inStream, outStream, ti) ->
                 marshallingService.handleRequestResponse(reqResSrv, inStream, outStream, ti));
 
         HostedServiceType hst = dpwsFactory.createHostedServiceType();
@@ -88,11 +87,11 @@ public class WsEventingTest extends DpwsTest {
                 tbFactory.createTransportBinding(hostedServiceUri));
 
         wseSink = getInjector().getInstance(WsEventingEventSinkFactory.class)
-                .createWsEventingEventSink(rrc, URI.create("http://localhost:1234"));
+                .createWsEventingEventSink(rrc, "http://localhost:1234");
     }
 
     @Test
-    public void subscribe() throws Exception {
+    void subscribe() throws Exception {
         Duration expectedExpires = MAX_EXPIRES;
 
         ListenableFuture<SubscribeResult> resInfo = wseSink.subscribe(Collections.singletonList(ACTION),
@@ -111,7 +110,7 @@ public class WsEventingTest extends DpwsTest {
     }
 
     @Test
-    public void renew() throws Exception {
+    void renew() throws Exception {
         Duration expectedExpires = Duration.ofHours(1);
         ListenableFuture<SubscribeResult> resInfo = wseSink.subscribe(Collections.singletonList(ACTION),
                 expectedExpires, notificationSink);
@@ -123,7 +122,7 @@ public class WsEventingTest extends DpwsTest {
     }
 
     @Test
-    public void getStatus() throws Exception {
+    void getStatus() throws Exception {
         Duration expectedExpires = Duration.ofHours(1);
         ListenableFuture<SubscribeResult> resInfo = wseSink.subscribe(Collections.singletonList(ACTION),
                 expectedExpires, notificationSink);
@@ -137,7 +136,7 @@ public class WsEventingTest extends DpwsTest {
     }
 
     @Test
-    public void unsubscribe() throws Exception {
+    void unsubscribe() throws Exception {
         Duration expectedExpires = Duration.ofHours(1);
         ListenableFuture<SubscribeResult> resInfo = wseSink.subscribe(Collections.singletonList(ACTION),
                 expectedExpires, notificationSink);

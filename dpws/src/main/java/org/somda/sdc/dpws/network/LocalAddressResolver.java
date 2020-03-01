@@ -1,6 +1,5 @@
 package org.somda.sdc.dpws.network;
 
-import java.net.URI;
 import java.util.Optional;
 
 /**
@@ -14,5 +13,5 @@ public interface LocalAddressResolver {
      * @param remoteUri the remote URI to test against.
      * @return the resolved address or {@linkplain Optional#empty()} if resolving failed.
      */
-    Optional<String> getLocalAddress(URI remoteUri);
+    Optional<String> getLocalAddress(String remoteUri);
 }

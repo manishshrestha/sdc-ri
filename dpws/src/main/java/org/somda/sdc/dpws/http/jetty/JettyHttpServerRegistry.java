@@ -156,7 +156,7 @@ public class JettyHttpServerRegistry extends AbstractIdleService implements Http
     }
 
     @Override
-    public URI initHttpServer(URI schemeAndAuthority) {
+    public String initHttpServer(String schemeAndAuthority) {
         registryLock.lock();
         try {
             var server = makeHttpServer(schemeAndAuthority);
@@ -164,19 +164,19 @@ public class JettyHttpServerRegistry extends AbstractIdleService implements Http
             if (uriString.endsWith("/")) {
                 uriString = uriString.substring(0, uriString.length() - 1);
             }
-            return URI.create(uriString);
+            return uriString;
         } finally {
             registryLock.unlock();
         }
     }
 
     @Override
-    public URI registerContext(URI schemeAndAuthority, String contextPath, HttpHandler handler) {
+    public String registerContext(String schemeAndAuthority, String contextPath, HttpHandler handler) {
         return registerContext(schemeAndAuthority, contextPath, SoapConstants.MEDIA_TYPE_SOAP, handler);
     }
 
     @Override
-    public URI registerContext(URI schemeAndAuthority, String contextPath, String mediaType, HttpHandler handler) {
+    public String registerContext(String schemeAndAuthority, String contextPath, String mediaType, HttpHandler handler) {
         if (!contextPath.startsWith("/")) {
             throw new RuntimeException(String.format("Context path needs to start with a slash, but is %s",
                     contextPath));
@@ -187,7 +187,7 @@ public class JettyHttpServerRegistry extends AbstractIdleService implements Http
             Server server = makeHttpServer(schemeAndAuthority);
             String mapKey;
             try {
-                mapKey = makeMapKey(server.getURI(), contextPath);
+                mapKey = makeMapKey(server.getURI().toString(), contextPath);
             } catch (UnknownHostException e) {
                 LOG.error("Unexpected URI conversion error", e);
                 throw new RuntimeException("Unexpected URI conversion error");
@@ -209,7 +209,7 @@ public class JettyHttpServerRegistry extends AbstractIdleService implements Http
 
             context.start();
 
-            return mapKeyUri;
+            return mapKeyUri.toString();
 
         } catch (Exception e) {
             LOG.error("Registering context {} failed.", contextPath, e);
@@ -220,7 +220,7 @@ public class JettyHttpServerRegistry extends AbstractIdleService implements Http
     }
 
     @Override
-    public void unregisterContext(URI schemeAndAuthority, String contextPath) {
+    public void unregisterContext(String schemeAndAuthority, String contextPath) {
         registryLock.lock();
         try {
             String serverRegistryKey;
@@ -282,7 +282,7 @@ public class JettyHttpServerRegistry extends AbstractIdleService implements Http
         }
     }
 
-    private Server makeHttpServer(URI uri) {
+    private Server makeHttpServer(String uri) {
         String mapKey;
         try {
             mapKey = makeMapKey(uri);
@@ -298,14 +298,14 @@ public class JettyHttpServerRegistry extends AbstractIdleService implements Http
         }
 
         LOG.debug("Init new HTTP server from URI: {}", uri);
-        Server httpServer = createHttpServer(uri);
+        Server httpServer = createHttpServer(URI.create(uri));
         try {
             httpServer.start();
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
 
-        URI serverUri = httpServer.getURI();
+        var serverUri = httpServer.getURI().toString();
 
         try {
             serverRegistry.put(makeMapKey(serverUri), httpServer);
@@ -413,12 +413,13 @@ public class JettyHttpServerRegistry extends AbstractIdleService implements Http
      *
      * throws UnknownHostException if host address cannot be resolved.
      */
-    private String makeMapKey(URI uri) throws UnknownHostException {
-        InetAddress address = InetAddress.getByName(uri.getHost());
-        return uriBuilder.buildUri(uri.getScheme().toLowerCase(), address.getHostAddress(), uri.getPort()).toString();
+    private String makeMapKey(String uri) throws UnknownHostException {
+        URI parsedUri = URI.create(uri);
+        InetAddress address = InetAddress.getByName(parsedUri.getHost());
+        return uriBuilder.buildUri(parsedUri.getScheme().toLowerCase(), address.getHostAddress(), parsedUri.getPort());
     }
 
-    private String makeMapKey(URI uri, String contextPath) throws UnknownHostException {
+    private String makeMapKey(String uri, String contextPath) throws UnknownHostException {
         return makeMapKey(uri) + contextPath;
     }
 }

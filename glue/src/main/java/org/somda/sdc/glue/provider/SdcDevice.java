@@ -42,7 +42,6 @@ public class SdcDevice extends AbstractIdleService implements Device, EventSourc
     private final HighPriorityServices highPriorityServices;
     private final Collection<OperationInvocationReceiver> operationInvocationReceivers;
     private final LocalMdibAccess mdibAccess;
-    private final Collection<SdcDevicePlugin> plugins;
     private final SdcDevicePluginProcessor pluginProcessor;
 
     @AssistedInject
@@ -61,7 +60,6 @@ public class SdcDevice extends AbstractIdleService implements Device, EventSourc
         }
 
         this.mdibAccess = mdibAccess;
-        this.plugins = plugins;
         this.dpwsDevice = deviceFactory.createDevice(deviceSettings);
         this.highPriorityServices = servicesFactory.createHighPriorityServices(mdibAccess);
         this.hostedServiceFactory = hostedServiceFactory;
@@ -95,7 +93,7 @@ public class SdcDevice extends AbstractIdleService implements Device, EventSourc
     }
 
     @Override
-    public URI getEprAddress() {
+    public String getEprAddress() {
         return dpwsDevice.getEprAddress();
     }
 

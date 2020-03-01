@@ -1,6 +1,7 @@
 package org.somda.sdc.biceps.model.participant;
 
 import org.somda.sdc.common.util.ObjectStringifier;
+import org.somda.sdc.common.util.UriUtil;
 
 import javax.annotation.Nullable;
 import java.math.BigInteger;
@@ -23,10 +24,9 @@ import java.util.UUID;
  * </ul>
  */
 public class MdibVersion {
-    private final URI sequenceId;
+    private final String sequenceId;
     private final BigInteger instanceId;
     private final BigInteger version;
-
 
     /**
      * Creates a new instance with a random sequence id.
@@ -34,7 +34,7 @@ public class MdibVersion {
      * @return a new instance.
      */
     public static MdibVersion create() {
-        return new MdibVersion(URI.create("urn:uuid:" + UUID.randomUUID().toString()));
+        return new MdibVersion(UriUtil.createUuid(UUID.randomUUID()));
     }
 
     /**
@@ -67,7 +67,7 @@ public class MdibVersion {
      *
      * @param sequenceId the sequence id to set.
      */
-    public MdibVersion(URI sequenceId) {
+    public MdibVersion(String sequenceId) {
         this.sequenceId = sequenceId;
         this.version = BigInteger.ZERO;
         this.instanceId = BigInteger.ZERO;
@@ -81,7 +81,7 @@ public class MdibVersion {
      * @param sequenceId the sequence id to set.
      * @param version the version counter to set.
      */
-    public MdibVersion(URI sequenceId, BigInteger version) {
+    public MdibVersion(String sequenceId, BigInteger version) {
         this.sequenceId = sequenceId;
         this.version = version;
         this.instanceId = BigInteger.ZERO;
@@ -94,13 +94,13 @@ public class MdibVersion {
      * @param version the version counter to set.
      * @param instanceId the instance id to set.
      */
-    public MdibVersion(URI sequenceId, BigInteger version, BigInteger instanceId) {
+    public MdibVersion(String sequenceId, BigInteger version, BigInteger instanceId) {
         this.sequenceId = sequenceId;
         this.version = version;
         this.instanceId = instanceId;
     }
 
-    public URI getSequenceId() {
+    public String getSequenceId() {
         return sequenceId;
     }
 
@@ -128,7 +128,7 @@ public class MdibVersion {
         }
 
         MdibVersion rhs = (MdibVersion) rhsObject;
-        return this.sequenceId.equals(rhs.sequenceId)
+        return URI.create(this.sequenceId).equals(URI.create(rhs.sequenceId))
                 && this.version.equals(rhs.version)
                 && this.instanceId.equals(rhs.instanceId);
     }
@@ -157,7 +157,7 @@ public class MdibVersion {
      * </ul>
      */
     public Optional<Integer> compareToMdibVersion(@Nullable MdibVersion rhs) {
-        if (rhs == null || !this.getSequenceId().equals(rhs.getSequenceId())) {
+        if (rhs == null || !URI.create(this.getSequenceId()).equals(URI.create(rhs.getSequenceId()))) {
             return Optional.empty();
         }
 

@@ -5,7 +5,6 @@ import org.somda.sdc.dpws.soap.SoapConstants;
 
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.URI;
 
 /**
  * Simple HTTP server registry service.
@@ -23,7 +22,7 @@ public interface HttpServerRegistry extends Service {
      *                           0, then a random open port is selected and will be part of the returned URI.
      * @return the actual assigned URI of the HTTP server.
      */
-    URI initHttpServer(URI schemeAndAuthority);
+    String initHttpServer(String schemeAndAuthority);
 
     /**
      * Registers a handler for SOAP messages for the given scheme, authority and context path.
@@ -35,9 +34,9 @@ public interface HttpServerRegistry extends Service {
      *                           <em>Important note: the context path needs to start with a slash.</em>
      * @param handler            the handler callback that is invoked on a request to the given context path.
      * @return the actual full path of the HTTP server address the given handler listens to.
-     * @see #initHttpServer(URI)
+     * @see #initHttpServer(String)
      */
-    URI registerContext(URI schemeAndAuthority, String contextPath, HttpHandler handler);
+    String registerContext(String schemeAndAuthority, String contextPath, HttpHandler handler);
 
     /**
      * Registers a handler for HTTP requests destined to the given scheme, authority and context path.
@@ -48,9 +47,9 @@ public interface HttpServerRegistry extends Service {
      * @param mediaType          the media type of the response the handler will produce.
      * @param handler            the handler callback that is invoked on a request to the given context path.
      * @return the actual full path of the HTTP server address the given handler listens to.
-     * @see #initHttpServer(URI)
+     * @see #initHttpServer(String)
      */
-    URI registerContext(URI schemeAndAuthority, String contextPath, String mediaType, HttpHandler handler);
+    String registerContext(String schemeAndAuthority, String contextPath, String mediaType, HttpHandler handler);
 
     /**
      * Removes a handler for the given scheme, authority and context path.
@@ -63,5 +62,5 @@ public interface HttpServerRegistry extends Service {
      * @param contextPath        the context path to remove.
      *                           <em>The context path needs to start with a slash.</em>
      */
-    void unregisterContext(URI schemeAndAuthority, String contextPath);
+    void unregisterContext(String schemeAndAuthority, String contextPath);
 }

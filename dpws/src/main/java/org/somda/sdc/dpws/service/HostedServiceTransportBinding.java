@@ -10,9 +10,6 @@ import org.somda.sdc.dpws.soap.exception.MarshallingException;
 import org.somda.sdc.dpws.soap.exception.SoapFaultException;
 import org.somda.sdc.dpws.soap.exception.TransportException;
 
-import java.io.IOException;
-import java.net.URI;
-
 /**
  * Static transport binding for hosted services.
  */
@@ -22,7 +19,7 @@ public class HostedServiceTransportBinding implements TransportBinding {
     @AssistedInject
     HostedServiceTransportBinding(@Assisted HostedServiceProxy hostedServiceProxy,
                                   TransportBindingFactory transportBindingFactory) {
-        URI activeEprAddress = hostedServiceProxy.getActiveEprAddress();
+        var activeEprAddress = hostedServiceProxy.getActiveEprAddress();
         this.transportBinding = transportBindingFactory.createTransportBinding(activeEprAddress);
     }
 

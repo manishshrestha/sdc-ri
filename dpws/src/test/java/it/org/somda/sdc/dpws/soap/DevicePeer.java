@@ -13,11 +13,10 @@ import org.somda.sdc.dpws.soap.wsaddressing.model.EndpointReferenceType;
 import javax.annotation.Nullable;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
-import java.net.URI;
 import java.util.UUID;
 
 public abstract class DevicePeer extends IntegrationTestPeer {
-    private URI eprAddress;
+    private String eprAddress;
     private Device device;
     private boolean isSetup;
 
@@ -48,7 +47,7 @@ public abstract class DevicePeer extends IntegrationTestPeer {
                 }
             };
         } else {
-            this.eprAddress = URI.create(deviceSettings.getEndpointReference().getAddress().getValue());
+            this.eprAddress = deviceSettings.getEndpointReference().getAddress().getValue();
         }
 
         this.device = getInjector().getInstance(DeviceFactory.class).createDevice(deviceSettings);
@@ -56,7 +55,7 @@ public abstract class DevicePeer extends IntegrationTestPeer {
         isSetup = true;
     }
 
-    public URI getEprAddress() {
+    public String getEprAddress() {
         checkSetup();
         return eprAddress;
     }

@@ -8,8 +8,8 @@ import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
 import com.google.inject.name.Named;
-import org.somda.sdc.dpws.guice.WsDiscovery;
 import org.somda.sdc.common.util.ExecutorWrapperService;
+import org.somda.sdc.dpws.guice.WsDiscovery;
 import org.somda.sdc.dpws.soap.NotificationSource;
 import org.somda.sdc.dpws.soap.RequestResponseClient;
 import org.somda.sdc.dpws.soap.SoapMessage;
@@ -26,24 +26,11 @@ import org.somda.sdc.dpws.soap.wsdiscovery.event.ByeMessage;
 import org.somda.sdc.dpws.soap.wsdiscovery.event.HelloMessage;
 import org.somda.sdc.dpws.soap.wsdiscovery.event.ProbeMatchesMessage;
 import org.somda.sdc.dpws.soap.wsdiscovery.event.ProbeTimeoutMessage;
-import org.somda.sdc.dpws.soap.wsdiscovery.model.AppSequenceType;
-import org.somda.sdc.dpws.soap.wsdiscovery.model.ByeType;
-import org.somda.sdc.dpws.soap.wsdiscovery.model.HelloType;
-import org.somda.sdc.dpws.soap.wsdiscovery.model.ObjectFactory;
-import org.somda.sdc.dpws.soap.wsdiscovery.model.ProbeMatchesType;
-import org.somda.sdc.dpws.soap.wsdiscovery.model.ProbeType;
-import org.somda.sdc.dpws.soap.wsdiscovery.model.ResolveMatchesType;
-import org.somda.sdc.dpws.soap.wsdiscovery.model.ResolveType;
-import org.somda.sdc.dpws.soap.wsdiscovery.model.ScopesType;
+import org.somda.sdc.dpws.soap.wsdiscovery.model.*;
 
 import javax.xml.namespace.QName;
-import java.net.URI;
 import java.time.Duration;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
@@ -174,12 +161,12 @@ public class WsDiscoveryClientInterceptor implements WsDiscoveryClient {
             throws MarshallingException, TransportException, InterceptorException {
         SoapMessage probeMsg = createProbeMessage(types, scopes);
 
-        URI msgIdUri = soapUtil.createUriFromUuid(UUID.randomUUID());
+        var msgIdUri = soapUtil.createUriFromUuid(UUID.randomUUID());
         AttributedURIType msgId = wsaUtil.createAttributedURIType(msgIdUri);
         probeMsg.getWsAddressingHeader().setMessageId(msgId);
 
         ListenableFuture<Integer> future = executorService.get().submit(new ProbeRunnable(probeId, maxResults,
-                maxWaitForProbeMatches, msgIdUri.toString(), probeLock, probeCondition, getProbeMatchesBuffer(),
+                maxWaitForProbeMatches, msgIdUri, probeLock, probeCondition, getProbeMatchesBuffer(),
                 soapUtil, helloByeProbeEvents));
 
         notificationSource.sendNotification(probeMsg);
@@ -202,12 +189,12 @@ public class WsDiscoveryClientInterceptor implements WsDiscoveryClient {
         SoapMessage resolveMsg = soapUtil.createMessage(WsDiscoveryConstants.WSA_ACTION_RESOLVE,
                 WsDiscoveryConstants.WSA_UDP_TO, wsdFactory.createResolve(resolveType));
 
-        URI msgIdUri = soapUtil.createUriFromUuid(UUID.randomUUID());
+        var msgIdUri = soapUtil.createUriFromUuid(UUID.randomUUID());
         AttributedURIType msgId = wsaUtil.createAttributedURIType(msgIdUri);
         resolveMsg.getWsAddressingHeader().setMessageId(msgId);
 
         ListenableFuture<ResolveMatchesType> future = executorService.get().submit(
-                new ResolveCallable(maxWaitForResolveMatches, msgIdUri.toString(), resolveLock, resolveCondition,
+                new ResolveCallable(maxWaitForResolveMatches, msgIdUri, resolveLock, resolveCondition,
                         getResolveMatchesBuffer(), soapUtil));
 
         notificationSource.sendNotification(resolveMsg);

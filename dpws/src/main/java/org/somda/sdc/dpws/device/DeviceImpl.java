@@ -47,7 +47,6 @@ import javax.annotation.Nullable;
 import javax.xml.namespace.QName;
 import java.io.IOException;
 import java.net.InetAddress;
-import java.net.URI;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -74,7 +73,7 @@ public class DeviceImpl extends AbstractIdleService implements Device, Service, 
     private final Provider<EventSource> eventSourceProvider;
     private final HostedServiceFactory hostedServiceFactory;
     private final HostedServiceInterceptorFactory hostedServiceInterceptorFactory;
-    private final URI eprAddress;
+    private final String eprAddress;
     private NetworkInterfaceUtil networkInterfaceUtil;
     private HttpUriBuilder httpUriBuilder;
     private Boolean unsecuredEndpoint;
@@ -144,7 +143,7 @@ public class DeviceImpl extends AbstractIdleService implements Device, Service, 
         String hostingServerCtxtPath = buildContextPathBase(eprAddress);
 
         // Initialize HTTP servers
-        List<URI> actualHostingServiceBindings = resolveHostingServiceBindings().stream()
+        List<String> actualHostingServiceBindings = resolveHostingServiceBindings().stream()
                 .map(httpServerRegistry::initHttpServer)
                 .collect(Collectors.toList());
 
@@ -205,12 +204,12 @@ public class DeviceImpl extends AbstractIdleService implements Device, Service, 
         wsdTargetService.sendHello();
     }
 
-    private List<URI> resolveHostingServiceBindings() {
+    private List<String> resolveHostingServiceBindings() {
         InetAddress address = networkInterfaceUtil.getFirstIpV4Address(deviceSettings.getNetworkInterface()).orElseThrow(() ->
                 new RuntimeException(String.format("No required IPv4 address found in configured network interface %s",
                         deviceSettings.getNetworkInterface())));
 
-        final List<URI> hostingServiceBindings = new ArrayList<>();
+        final List<String> hostingServiceBindings = new ArrayList<>();
 
         if (unsecuredEndpoint) {
             hostingServiceBindings.add(httpUriBuilder.buildUri(address.getHostAddress(), 0));
@@ -254,7 +253,7 @@ public class DeviceImpl extends AbstractIdleService implements Device, Service, 
     }
 
     @Override
-    public URI getEprAddress() {
+    public String getEprAddress() {
         return eprAddress;
     }
 
@@ -357,8 +356,8 @@ public class DeviceImpl extends AbstractIdleService implements Device, Service, 
 
         // If no EPR addresses are given already, create one/some from hosting service
         if (hostedService.getType().getEndpointReference().isEmpty()) {
-            List<URI> uris = hostingService.getXAddrs().stream()
-                    .map(uri -> URI.create(uri.toString() + contextPathPart))
+            List<String> uris = hostingService.getXAddrs().stream()
+                    .map(uri -> uri + contextPathPart)
                     .collect(Collectors.toList());
 
             hostedService = hostedServiceFactory.createHostedService(hostedService.getType().getServiceId(),
@@ -385,11 +384,11 @@ public class DeviceImpl extends AbstractIdleService implements Device, Service, 
             if (wsdlDocBytes.length == 0) {
                 throw new RuntimeException("Empty WSDL document detected");
             }
-            URI uri = wsaUtil.getAddressUri(epr).orElseThrow(() ->
+            var uri = wsaUtil.getAddressUri(epr).orElseThrow(() ->
                     new RuntimeException("Invalid EPR detected when trying to add hosted service"));
 
             httpServerRegistry.registerContext(uri, contextPath, hsReqResHandler);
-            URI wsdlLocation = httpServerRegistry.registerContext(uri, wsdlContextPath,
+            var wsdlLocation = httpServerRegistry.registerContext(uri, wsdlContextPath,
                     SoapConstants.MEDIA_TYPE_WSDL, new ByteResourceHandler(wsdlDocBytes));
             hostedService.getWsdlLocations().add(wsdlLocation);
         }
@@ -413,7 +412,7 @@ public class DeviceImpl extends AbstractIdleService implements Device, Service, 
         return "/" + serviceId;
     }
 
-    private String buildContextPathBase(URI uri) {
+    private String buildContextPathBase(String uri) {
         final String basePath = new UriBaseContextPath(uri).get();
         return basePath.isEmpty() ? "" : "/" + basePath;
     }
