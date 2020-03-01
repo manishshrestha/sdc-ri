@@ -46,7 +46,7 @@ public class MdibVersionUtil {
      * @return the converted MDIB version. Default values are transformed according to BICEPS's prose information.
      */
     public MdibVersion getMdibVersion(AbstractReport msg) {
-        return new MdibVersion(sequenceId(msg.getSequenceId()), defaultZero(msg.getMdibVersion()), defaultZero(msg.getInstanceId()));
+        return new MdibVersion(msg.getSequenceId(), defaultZero(msg.getMdibVersion()), defaultZero(msg.getInstanceId()));
     }
 
     /**
@@ -56,14 +56,10 @@ public class MdibVersionUtil {
      * @return the converted MDIB version. Default values are transformed according to BICEPS's prose information.
      */
     public MdibVersion getMdibVersion(AbstractGetResponse msg) {
-        return new MdibVersion(sequenceId(msg.getSequenceId()), defaultZero(msg.getMdibVersion()), defaultZero(msg.getInstanceId()));
+        return new MdibVersion(msg.getSequenceId(), defaultZero(msg.getMdibVersion()), defaultZero(msg.getInstanceId()));
     }
 
     private BigInteger defaultZero(@Nullable BigInteger instanceId) {
         return instanceId == null ? BigInteger.ZERO : instanceId;
-    }
-
-    private URI sequenceId(String sequenceId) {
-        return URI.create(sequenceId);
     }
 }

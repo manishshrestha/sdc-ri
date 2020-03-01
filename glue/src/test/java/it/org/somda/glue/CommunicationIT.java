@@ -313,7 +313,7 @@ public class CommunicationIT {
 
             List<HostingServiceProxy> hostingServiceProxies = new ArrayList<>(numberDevices);
             testSdcDevices.forEach(testSdcDevice -> {
-                final URI eprAddress = testSdcDevice.getSdcDevice().getEprAddress();
+                var eprAddress = testSdcDevice.getSdcDevice().getEprAddress();
                 try {
                     final ListenableFuture<HostingServiceProxy> hostingServiceFuture = testClient.getClient()
                             .connect(eprAddress);

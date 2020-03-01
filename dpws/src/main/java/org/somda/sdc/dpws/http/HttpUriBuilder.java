@@ -12,10 +12,10 @@ public class HttpUriBuilder {
      * @param scheme the scheme to insert into the URI.
      * @param host   the host to insert into the URI.
      * @param port   the port to insert into the URI.
-     * @return an {@link URI} instance.
+     * @return a URI as string.
      */
-    public URI buildUri(String scheme, String host, int port) {
-        return URI.create(scheme + "://" + host + ":" + port);
+    public String buildUri(String scheme, String host, int port) {
+        return URI.create(scheme + "://" + host + ":" + port).toString();
     }
 
     /**
@@ -23,9 +23,9 @@ public class HttpUriBuilder {
      *
      * @param host the host to insert into the URI.
      * @param port the port to insert into the URI.
-     * @return an {@link URI} instance.
+     * @return a URI as string.
      */
-    public URI buildUri(String host, int port) {
+    public String buildUri(String host, int port) {
         return buildUri("http", host, port);
     }
 
@@ -34,9 +34,9 @@ public class HttpUriBuilder {
      *
      * @param host the host to insert into the URI.
      * @param port the port to insert into the URI.
-     * @return an {@link URI} instance.
+     * @return a URI as string.
      */
-    public URI buildSecuredUri(String host, int port) {
+    public String buildSecuredUri(String host, int port) {
         return buildUri("https", host, port);
     }
 }

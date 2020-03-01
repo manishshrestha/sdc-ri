@@ -25,43 +25,43 @@ class MdibVersionTest {
             assertNotEquals(null, mdibVersion);
         }
         {
-            var lhs = new MdibVersion(URI.create("equal"));
-            var rhs = new MdibVersion(URI.create("equal"));
+            var lhs = new MdibVersion("equal");
+            var rhs = new MdibVersion("equal");
             assertEquals(lhs, rhs);
         }
         {
-            var lhs = new MdibVersion(URI.create("equal"));
-            var rhs = new MdibVersion(URI.create("unequal"));
+            var lhs = new MdibVersion("equal");
+            var rhs = new MdibVersion("unequal");
             assertNotEquals(lhs, rhs);
         }
         {
-            var lhs = new MdibVersion(URI.create("equal"), BigInteger.ONE);
-            var rhs = new MdibVersion(URI.create("equal"), BigInteger.ONE);
+            var lhs = new MdibVersion("equal", BigInteger.ONE);
+            var rhs = new MdibVersion("equal", BigInteger.ONE);
             assertEquals(lhs, rhs);
         }
         {
-            var lhs = new MdibVersion(URI.create("equal"), BigInteger.ONE);
-            var rhs = new MdibVersion(URI.create("equal"), BigInteger.ZERO);
+            var lhs = new MdibVersion("equal", BigInteger.ONE);
+            var rhs = new MdibVersion("equal", BigInteger.ZERO);
             assertNotEquals(lhs, rhs);
         }
         {
-            var lhs = new MdibVersion(URI.create("equal"), BigInteger.ONE, BigInteger.ONE);
-            var rhs = new MdibVersion(URI.create("equal"), BigInteger.ONE, BigInteger.ONE);
+            var lhs = new MdibVersion("equal", BigInteger.ONE, BigInteger.ONE);
+            var rhs = new MdibVersion("equal", BigInteger.ONE, BigInteger.ONE);
             assertEquals(lhs, rhs);
         }
         {
-            var lhs = new MdibVersion(URI.create("equal"), BigInteger.ONE, BigInteger.ZERO);
-            var rhs = new MdibVersion(URI.create("equal"), BigInteger.ONE, BigInteger.ONE);
+            var lhs = new MdibVersion("equal", BigInteger.ONE, BigInteger.ZERO);
+            var rhs = new MdibVersion("equal", BigInteger.ONE, BigInteger.ONE);
             assertNotEquals(lhs, rhs);
         }
         {
-            var lhs = new MdibVersion(URI.create("equal"), BigInteger.ZERO, BigInteger.ONE);
-            var rhs = new MdibVersion(URI.create("equal"), BigInteger.ONE, BigInteger.ONE);
+            var lhs = new MdibVersion("equal", BigInteger.ZERO, BigInteger.ONE);
+            var rhs = new MdibVersion("equal", BigInteger.ONE, BigInteger.ONE);
             assertNotEquals(lhs, rhs);
         }
         {
-            var lhs = new MdibVersion(URI.create("equal"), BigInteger.ONE, BigInteger.ONE);
-            var rhs = new MdibVersion(URI.create("unequal"), BigInteger.ONE, BigInteger.ONE);
+            var lhs = new MdibVersion("equal", BigInteger.ONE, BigInteger.ONE);
+            var rhs = new MdibVersion("unequal", BigInteger.ONE, BigInteger.ONE);
             assertNotEquals(lhs, rhs);
         }
     }
@@ -73,64 +73,64 @@ class MdibVersionTest {
             assertTrue(mdibVersion.compareToMdibVersion(null).isEmpty());
         }
         {
-            var lhs = new MdibVersion(URI.create("equal"));
-            var rhs = new MdibVersion(URI.create("equal"));
+            var lhs = new MdibVersion("equal");
+            var rhs = new MdibVersion("equal");
             assertTrue(lhs.compareToMdibVersion(rhs).isPresent());
             assertEquals(Integer.valueOf(0), lhs.compareToMdibVersion(rhs).get());
         }
         {
-            var lhs = new MdibVersion(URI.create("equal"));
-            var rhs = new MdibVersion(URI.create("unequal"));
+            var lhs = new MdibVersion("equal");
+            var rhs = new MdibVersion("unequal");
             assertTrue(lhs.compareToMdibVersion(rhs).isEmpty());
         }
         {
-            var lhs = new MdibVersion(URI.create("equal"), BigInteger.ONE);
-            var rhs = new MdibVersion(URI.create("equal"), BigInteger.ONE);
+            var lhs = new MdibVersion("equal", BigInteger.ONE);
+            var rhs = new MdibVersion("equal", BigInteger.ONE);
             assertTrue(lhs.compareToMdibVersion(rhs).isPresent());
             assertEquals(Integer.valueOf(0), lhs.compareToMdibVersion(rhs).get());
         }
         {
-            var lhs = new MdibVersion(URI.create("equal"), BigInteger.ONE, BigInteger.ONE);
-            var rhs = new MdibVersion(URI.create("equal"), BigInteger.ONE, BigInteger.ONE);
+            var lhs = new MdibVersion("equal", BigInteger.ONE, BigInteger.ONE);
+            var rhs = new MdibVersion("equal", BigInteger.ONE, BigInteger.ONE);
             assertTrue(lhs.compareToMdibVersion(rhs).isPresent());
             assertEquals(Integer.valueOf(0), lhs.compareToMdibVersion(rhs).get());
         }
 
         {
-            var lhs = new MdibVersion(URI.create("equal"), BigInteger.ZERO, BigInteger.ONE);
-            var rhs = new MdibVersion(URI.create("equal"), BigInteger.ONE, BigInteger.ONE);
+            var lhs = new MdibVersion("equal", BigInteger.ZERO, BigInteger.ONE);
+            var rhs = new MdibVersion("equal", BigInteger.ONE, BigInteger.ONE);
             assertTrue(lhs.compareToMdibVersion(rhs).isPresent());
             assertEquals(Integer.valueOf(-1), lhs.compareToMdibVersion(rhs).get());
         }
         {
-            var lhs = new MdibVersion(URI.create("equal"), BigInteger.ONE, BigInteger.ONE);
-            var rhs = new MdibVersion(URI.create("equal"), BigInteger.ZERO, BigInteger.ONE);
+            var lhs = new MdibVersion("equal", BigInteger.ONE, BigInteger.ONE);
+            var rhs = new MdibVersion("equal", BigInteger.ZERO, BigInteger.ONE);
             assertTrue(lhs.compareToMdibVersion(rhs).isPresent());
             assertEquals(Integer.valueOf(1), lhs.compareToMdibVersion(rhs).get());
         }
 
         {
-            var lhs = new MdibVersion(URI.create("equal"), BigInteger.ONE, BigInteger.ZERO);
-            var rhs = new MdibVersion(URI.create("equal"), BigInteger.ONE, BigInteger.ONE);
+            var lhs = new MdibVersion("equal", BigInteger.ONE, BigInteger.ZERO);
+            var rhs = new MdibVersion("equal", BigInteger.ONE, BigInteger.ONE);
             assertTrue(lhs.compareToMdibVersion(rhs).isPresent());
             assertEquals(Integer.valueOf(-1), lhs.compareToMdibVersion(rhs).get());
         }
         {
-            var lhs = new MdibVersion(URI.create("equal"), BigInteger.ONE, BigInteger.ONE);
-            var rhs = new MdibVersion(URI.create("equal"), BigInteger.ONE, BigInteger.ZERO);
+            var lhs = new MdibVersion("equal", BigInteger.ONE, BigInteger.ONE);
+            var rhs = new MdibVersion("equal", BigInteger.ONE, BigInteger.ZERO);
             assertTrue(lhs.compareToMdibVersion(rhs).isPresent());
             assertEquals(Integer.valueOf(1), lhs.compareToMdibVersion(rhs).get());
         }
 
         {
-            var lhs = new MdibVersion(URI.create("equal"), BigInteger.ONE, BigInteger.ZERO);
-            var rhs = new MdibVersion(URI.create("equal"), BigInteger.ZERO, BigInteger.ONE);
+            var lhs = new MdibVersion("equal", BigInteger.ONE, BigInteger.ZERO);
+            var rhs = new MdibVersion("equal", BigInteger.ZERO, BigInteger.ONE);
             assertTrue(lhs.compareToMdibVersion(rhs).isPresent());
             assertEquals(Integer.valueOf(-1), lhs.compareToMdibVersion(rhs).get());
         }
         {
-            var lhs = new MdibVersion(URI.create("equal"), BigInteger.ZERO, BigInteger.ONE);
-            var rhs = new MdibVersion(URI.create("equal"), BigInteger.ONE, BigInteger.ZERO);
+            var lhs = new MdibVersion("equal", BigInteger.ZERO, BigInteger.ONE);
+            var rhs = new MdibVersion("equal", BigInteger.ONE, BigInteger.ZERO);
             assertTrue(lhs.compareToMdibVersion(rhs).isPresent());
             assertEquals(Integer.valueOf(1), lhs.compareToMdibVersion(rhs).get());
         }

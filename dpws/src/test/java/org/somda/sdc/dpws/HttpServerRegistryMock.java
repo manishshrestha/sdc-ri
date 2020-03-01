@@ -10,7 +10,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class HttpServerRegistryMock extends AbstractIdleService implements HttpServerRegistry {
-    private static final Map<URI, HttpHandler> handlerRegistry = new HashMap<>();
+    private static final Map<String, HttpHandler> handlerRegistry = new HashMap<>();
 
     @Override
     protected void startUp() {
@@ -20,31 +20,31 @@ public class HttpServerRegistryMock extends AbstractIdleService implements HttpS
     protected void shutDown() {
     }
 
-    public static Map<URI, HttpHandler> getRegistry() {
+    public static Map<String, HttpHandler> getRegistry() {
         return handlerRegistry;
     }
 
     @Override
-    public URI initHttpServer(URI schemeAndAuthority) {
+    public String initHttpServer(String schemeAndAuthority) {
         return null;
     }
 
     @Override
-    public URI registerContext(URI host, @Nullable String contextPath, HttpHandler handler) {
+    public String registerContext(String host, @Nullable String contextPath, HttpHandler handler) {
         URI uri = URI.create(host + contextPath);
-        handlerRegistry.put(uri, handler);
-        return uri;
+        handlerRegistry.put(uri.toString(), handler);
+        return uri.toString();
     }
 
     @Override
-    public URI registerContext(URI host, String contextPath, String mediaType, HttpHandler handler) {
+    public String registerContext(String host, String contextPath, String mediaType, HttpHandler handler) {
         URI uri = URI.create(host + contextPath);
-        handlerRegistry.put(uri, handler);
-        return uri;
+        handlerRegistry.put(uri.toString(), handler);
+        return uri.toString();
     }
 
     @Override
-    public void unregisterContext(URI host, String contextPath) {
-        handlerRegistry.remove(URI.create(host + contextPath));
+    public void unregisterContext(String host, String contextPath) {
+        handlerRegistry.remove(URI.create(host + contextPath).toString());
     }
 }

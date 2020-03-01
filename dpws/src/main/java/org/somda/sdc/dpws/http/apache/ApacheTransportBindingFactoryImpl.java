@@ -132,14 +132,14 @@ public class ApacheTransportBindingFactoryImpl implements TransportBindingFactor
     }
 
     @Override
-    public TransportBinding createTransportBinding(URI endpointUri) throws UnsupportedOperationException {
+    public TransportBinding createTransportBinding(String endpointUri) throws UnsupportedOperationException {
         // To keep things simple, this method directly checks if there is a SOAP-UDP or
         // HTTP(S) binding
         // No plug-and-play feature is implemented that dispatches, based on the URI
         // scheme, to endpoint processor
         // factories
 
-        String scheme = endpointUri.getScheme();
+        String scheme = URI.create(endpointUri).getScheme();
         if (scheme.equalsIgnoreCase(SCHEME_SOAP_OVER_UDP)) {
             throw new UnsupportedOperationException(
                     "SOAP-over-UDP is currently not supported by the TransportBindingFactory");
@@ -154,16 +154,17 @@ public class ApacheTransportBindingFactoryImpl implements TransportBindingFactor
     }
 
     @Override
-    public TransportBinding createHttpBinding(URI endpointUri) throws UnsupportedOperationException {
-        if (client != null && endpointUri.getScheme().equalsIgnoreCase("http")) {
+    public TransportBinding createHttpBinding(String endpointUri) throws UnsupportedOperationException {
+        var scheme = URI.create(endpointUri).getScheme();
+        if (client != null && scheme.equalsIgnoreCase("http")) {
             return this.clientTransportBindingFactory.create(client, endpointUri, marshalling, soapUtil);
         }
-        if (securedClient != null && endpointUri.getScheme().equalsIgnoreCase("https")) {
+        if (securedClient != null && scheme.equalsIgnoreCase("https")) {
             return this.clientTransportBindingFactory.create(securedClient, endpointUri, marshalling, soapUtil);
         }
 
         throw new UnsupportedOperationException(
-                String.format("Binding with scheme %s is currently not supported", endpointUri.getScheme()));
+                String.format("Binding with scheme %s is currently not supported", scheme));
     }
 
 }

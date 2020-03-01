@@ -4,7 +4,6 @@ import org.somda.sdc.dpws.device.WebService;
 import org.somda.sdc.dpws.model.HostedServiceType;
 
 import java.io.InputStream;
-import java.net.URI;
 import java.util.List;
 
 /**
@@ -39,5 +38,5 @@ public interface HostedService {
      *
      * @return URIs that point to WSDL documents, preferably exactly one reference.
      */
-    List<URI> getWsdlLocations();
+    List<String> getWsdlLocations();
 }

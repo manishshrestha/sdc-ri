@@ -2,13 +2,13 @@ package org.somda.sdc.dpws.soap;
 
 import com.google.inject.Inject;
 import org.somda.sdc.common.util.JaxbUtil;
+import org.somda.sdc.common.util.UriUtil;
 import org.somda.sdc.dpws.soap.factory.EnvelopeFactory;
 import org.somda.sdc.dpws.soap.factory.SoapMessageFactory;
 import org.somda.sdc.dpws.soap.model.Envelope;
 import org.somda.sdc.dpws.soap.wsaddressing.WsAddressingUtil;
 
 import javax.annotation.Nullable;
-import java.net.URI;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -62,8 +62,8 @@ public class SoapUtil {
      * @param uuid the UUID to convert.
      * @return a UUID URN.
      */
-    public URI createUriFromUuid(UUID uuid) {
-        return URI.create("urn:uuid:" + uuid.toString());
+    public String createUriFromUuid(UUID uuid) {
+        return UriUtil.createUuid(uuid);
     }
 
     /**
@@ -73,8 +73,8 @@ public class SoapUtil {
      * @return the converted UUID.
      * @throws RuntimeException in case of misformatted URIs.
      */
-    public UUID createUuidFromUri(URI uri) {
-        return UUID.fromString(uri.toString().substring("urn:uuid:".length()));
+    public UUID createUuidFromUri(String uri) {
+        return UUID.fromString(uri.substring("urn:uuid:".length()));
     }
 
     /**
@@ -82,7 +82,7 @@ public class SoapUtil {
      *
      * @return the UUID URN.
      */
-    public URI createRandomUuidUri() {
+    public String createRandomUuidUri() {
         return createUriFromUuid(UUID.randomUUID());
     }
 

@@ -42,9 +42,7 @@ class ScoControllerTest {
         reportCaptor = ArgumentCaptor.forClass(OperationInvokedReport.class);
 
         mdibAccessMock = mock(LocalMdibAccess.class);
-        when(mdibAccessMock.getMdibVersion()).thenReturn(
-                new MdibVersion(URI.create("ABC"))
-        );
+        when(mdibAccessMock.getMdibVersion()).thenReturn(new MdibVersion("ABC"));
         receiver = new Receiver();
         scoController = IT.getInjector().getInstance(ScoControllerFactory.class).createScoController(eventSourceAccessMock, mdibAccessMock);
         scoController.addOperationInvocationReceiver(receiver);

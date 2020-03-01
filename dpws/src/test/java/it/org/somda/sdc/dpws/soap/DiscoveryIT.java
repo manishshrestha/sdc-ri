@@ -7,7 +7,13 @@ import com.google.common.util.concurrent.SettableFuture;
 import it.org.somda.sdc.dpws.IntegrationTestUtil;
 import it.org.somda.sdc.dpws.MockedUdpBindingModule;
 import it.org.somda.sdc.dpws.TestServiceMetadata;
-import org.somda.sdc.dpws.client.*;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.somda.sdc.dpws.client.DiscoveredDevice;
+import org.somda.sdc.dpws.client.DiscoveryFilterBuilder;
+import org.somda.sdc.dpws.client.DiscoveryObserver;
 import org.somda.sdc.dpws.client.event.DeviceEnteredMessage;
 import org.somda.sdc.dpws.client.event.DeviceProbeTimeoutMessage;
 import org.somda.sdc.dpws.client.event.ProbedDeviceFoundMessage;
@@ -15,14 +21,9 @@ import org.somda.sdc.dpws.guice.DefaultDpwsConfigModule;
 import org.somda.sdc.dpws.service.HostingServiceProxy;
 import org.somda.sdc.dpws.soap.SoapConfig;
 import org.somda.sdc.dpws.soap.wsdiscovery.WsDiscoveryConfig;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import test.org.somda.common.LoggingTestWatcher;
 import test.org.somda.common.TestLogging;
 
-import java.net.URI;
 import java.time.Duration;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -139,7 +140,7 @@ public class DiscoveryIT {
                 .get(MAX_WAIT_TIME.getSeconds(), TimeUnit.SECONDS);
         final List<String> xAddrs = discoveredDevice.getXAddrs();
         assertFalse(xAddrs.isEmpty());
-        final URI uri = URI.create(xAddrs.get(0));
+        var uri = xAddrs.get(0);
 
         // Then expect the EPR address returned by a directed probe to be the DUT's EPR address
         final String expectedEprAddress = devicePeer.getEprAddress().toString();

@@ -9,9 +9,7 @@ import org.somda.sdc.dpws.service.HostingServiceProxy;
 import org.somda.sdc.dpws.soap.RequestResponseClient;
 import org.somda.sdc.dpws.soap.wsdiscovery.WsDiscoveryTargetService;
 
-import javax.annotation.Nullable;
 import javax.xml.namespace.QName;
-import java.net.URI;
 import java.util.List;
 import java.util.Map;
 
@@ -40,12 +38,12 @@ public interface HostingServiceFactory {
      * @param activeXAddr physical address that was used to retrieve the hosting service proxy information.
      * @return a {@link HostingServiceProxy} instance.
      */
-    HostingServiceProxy createHostingServiceProxy(@Assisted("eprAddress") URI endpointReferenceAddress,
+    HostingServiceProxy createHostingServiceProxy(@Assisted("eprAddress") String endpointReferenceAddress,
                                                   @Assisted List<QName> types,
                                                   @Assisted ThisDeviceType thisDevice,
                                                   @Assisted ThisModelType thisModel,
                                                   @Assisted Map<String, HostedServiceProxy> hostedServices,
                                                   @Assisted long metadataVersion,
                                                   @Assisted RequestResponseClient requestResponseClient,
-                                                  @Assisted("activeXAddr") URI activeXAddr);
+                                                  @Assisted("activeXAddr") String activeXAddr);
 }

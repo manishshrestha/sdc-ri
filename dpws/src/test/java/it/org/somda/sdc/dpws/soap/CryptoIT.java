@@ -35,7 +35,6 @@ import test.org.somda.common.TestLogging;
 import javax.net.ssl.HostnameVerifier;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
-import java.net.URI;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -47,10 +46,7 @@ import java.util.concurrent.TimeUnit;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(LoggingTestWatcher.class)
 public class CryptoIT {
@@ -139,10 +135,10 @@ public class CryptoIT {
                 .get(MAX_WAIT_TIME.getSeconds(), TimeUnit.SECONDS);
         final List<String> xAddrs = discoveredDevice.getXAddrs();
         assertFalse(xAddrs.isEmpty());
-        final URI uri = URI.create(xAddrs.get(0));
+        var uri = xAddrs.get(0);
 
         // Then expect the EPR address returned by a directed probe to be the DUT's EPR address
-        final String expectedEprAddress = devicePeer.getEprAddress().toString();
+        final String expectedEprAddress = devicePeer.getEprAddress();
 
         assertEquals(expectedEprAddress, clientPeer.getClient().directedProbe(uri)
                 .get(MAX_WAIT_TIME.getSeconds(), TimeUnit.SECONDS)
@@ -227,7 +223,7 @@ public class CryptoIT {
                 .get(MAX_WAIT_TIME.getSeconds(), TimeUnit.SECONDS);
         final List<String> xAddrs = discoveredDevice.getXAddrs();
         assertFalse(xAddrs.isEmpty());
-        final URI uri = URI.create(xAddrs.get(0));
+        var uri = xAddrs.get(0);
 
         // Then expect the EPR address returned by a directed probe to be the DUT's EPR address
         final String expectedEprAddress = devicePeer.getEprAddress().toString();
@@ -266,10 +262,7 @@ public class CryptoIT {
                 .get(MAX_WAIT_TIME.getSeconds(), TimeUnit.SECONDS);
         final List<String> xAddrs = discoveredDevice.getXAddrs();
         assertFalse(xAddrs.isEmpty());
-        final URI uri = URI.create(xAddrs.get(0));
-
-        // Then expect the EPR address returned by a directed probe to be the DUT's EPR address
-        final String expectedEprAddress = devicePeer.getEprAddress().toString();
+        var uri = xAddrs.get(0);
 
         // this should throw because we're incompatible
         assertThrows(ExecutionException.class, () -> clientPeer.getClient().directedProbe(uri)

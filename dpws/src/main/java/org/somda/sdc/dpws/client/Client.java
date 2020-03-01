@@ -7,8 +7,6 @@ import org.somda.sdc.dpws.soap.exception.TransportException;
 import org.somda.sdc.dpws.soap.interception.InterceptorException;
 import org.somda.sdc.dpws.soap.wsdiscovery.model.ProbeMatchesType;
 
-import java.net.URI;
-
 /**
  * Core class to access DPWS client functionality.
  * <p>
@@ -42,7 +40,7 @@ public interface Client extends Service {
      * will be notified on found devices and probe ending.
      *
      * @param discoveryFilter types and scopes the discovery process shall filter against.
-     * @throws TransportException if probe cannot be sent.
+     * @throws TransportException   if probe cannot be sent.
      * @throws InterceptorException if one of the interceptors pops up with an error.
      */
     void probe(DiscoveryFilter discoveryFilter) throws TransportException, InterceptorException;
@@ -55,7 +53,7 @@ public interface Client extends Service {
      * @param xAddr the device's physical address.
      * @return a future that holds the result of the directed probe.
      */
-    ListenableFuture<ProbeMatchesType> directedProbe(URI xAddr);
+    ListenableFuture<ProbeMatchesType> directedProbe(String xAddr);
 
     /**
      * Resolves physical addresses (XAddrs) of a device.
@@ -66,7 +64,7 @@ public interface Client extends Service {
      * @return a future that holds the result of the resolve.
      * @throws InterceptorException if one of the interceptors pops up with an error.
      */
-    ListenableFuture<DiscoveredDevice> resolve(URI eprAddress) throws InterceptorException;
+    ListenableFuture<DiscoveredDevice> resolve(String eprAddress) throws InterceptorException;
 
     /**
      * Connects to a hosting service by using {@link DiscoveredDevice}.
@@ -84,11 +82,11 @@ public interface Client extends Service {
     /**
      * Connects to a hosting service by using an EPR address.
      * <p>
-     * Shortcut for first doing a {@link #resolve(URI)} followed by a {@link #connect(DiscoveredDevice)}.
+     * Shortcut for first doing a {@link #resolve(String)} followed by a {@link #connect(DiscoveredDevice)}.
      *
      * @param eprAddress the EPR address of a device.
      * @return a future that holds the result of the connect.
      * @throws InterceptorException if one of the interceptors pops up with an error.
      */
-    ListenableFuture<HostingServiceProxy> connect(URI eprAddress) throws InterceptorException;
+    ListenableFuture<HostingServiceProxy> connect(String eprAddress) throws InterceptorException;
 }

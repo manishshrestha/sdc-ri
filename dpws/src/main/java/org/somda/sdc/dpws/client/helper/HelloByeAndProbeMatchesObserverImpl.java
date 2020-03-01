@@ -10,13 +10,13 @@ import com.google.inject.Inject;
 import com.google.inject.assistedinject.Assisted;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.somda.sdc.common.util.ExecutorWrapperService;
 import org.somda.sdc.dpws.client.DiscoveredDevice;
 import org.somda.sdc.dpws.client.event.DeviceEnteredMessage;
 import org.somda.sdc.dpws.client.event.DeviceLeftMessage;
 import org.somda.sdc.dpws.client.event.DeviceProbeTimeoutMessage;
 import org.somda.sdc.dpws.client.event.ProbedDeviceFoundMessage;
 import org.somda.sdc.dpws.guice.NetworkJobThreadPool;
-import org.somda.sdc.common.util.ExecutorWrapperService;
 import org.somda.sdc.dpws.soap.wsaddressing.WsAddressingUtil;
 import org.somda.sdc.dpws.soap.wsdiscovery.HelloByeAndProbeMatchesObserver;
 import org.somda.sdc.dpws.soap.wsdiscovery.event.ByeMessage;
@@ -25,7 +25,6 @@ import org.somda.sdc.dpws.soap.wsdiscovery.event.ProbeMatchesMessage;
 import org.somda.sdc.dpws.soap.wsdiscovery.event.ProbeTimeoutMessage;
 
 import javax.annotation.Nullable;
-import java.net.URI;
 import java.util.Optional;
 
 /**
@@ -57,7 +56,7 @@ public class HelloByeAndProbeMatchesObserverImpl implements HelloByeAndProbeMatc
         discoveryBus.unregister(observer);
     }
 
-    public void publishDeviceLeft(URI deviceUuid, DeviceLeftMessage.TriggeredBy triggeredBy) {
+    public void publishDeviceLeft(String deviceUuid, DeviceLeftMessage.TriggeredBy triggeredBy) {
         discoveryBus.post(new DeviceLeftMessage(deviceUuid, triggeredBy));
     }
 

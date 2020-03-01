@@ -2,8 +2,6 @@ package org.somda.sdc.dpws.factory;
 
 import org.somda.sdc.dpws.TransportBinding;
 
-import java.net.URI;
-
 /**
  * Factory to create {@linkplain TransportBinding} instances.
  * <p>
@@ -21,7 +19,7 @@ public interface TransportBindingFactory {
      * @return a transport binding bound to endpointUri.
      * @throws UnsupportedOperationException if the URI scheme is not supported.
      */
-    TransportBinding createTransportBinding(URI endpointUri) throws UnsupportedOperationException;
+    TransportBinding createTransportBinding(String endpointUri) throws UnsupportedOperationException;
 
     /**
      * Creates an HTTP or HTTPS binding.
@@ -30,5 +28,5 @@ public interface TransportBindingFactory {
      * @return a transport binding bound to endpointUri.
      * @throws UnsupportedOperationException if the URI scheme type is not supported.
      */
-    TransportBinding createHttpBinding(URI endpointUri) throws UnsupportedOperationException;
+    TransportBinding createHttpBinding(String endpointUri) throws UnsupportedOperationException;
 }

@@ -31,7 +31,6 @@ import test.org.somda.common.TimedWait;
 import javax.xml.namespace.QName;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
-import java.net.URI;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -63,7 +62,7 @@ public class DeviceAndClientPeer extends IntegrationTestPeer {
     private final SoapUtil soapUtil;
     private Thread notificationThread;
 
-    public DeviceAndClientPeer(URI localDeviceEprAddress) {
+    public DeviceAndClientPeer(String localDeviceEprAddress) {
         setupInjector(new DefaultDpwsConfigModule() {
             @Override
             public void customConfigure() {
@@ -156,7 +155,7 @@ public class DeviceAndClientPeer extends IntegrationTestPeer {
         executorService.awaitTermination(defaultMaxWait.toSeconds(), TimeUnit.SECONDS);
     }
 
-    public void startInteraction(URI remoteEprAddress) throws Exception {
+    public void startInteraction(String remoteEprAddress) throws Exception {
         var future = client.connect(remoteEprAddress);
         var hostingServiceProxy = future.get(defaultMaxWait.toSeconds(), TimeUnit.SECONDS);
         var hostedServiceProxy = hostingServiceProxy.getHostedServices().get(TestServiceMetadata.SERVICE_ID_1);

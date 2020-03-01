@@ -3,15 +3,12 @@ package org.somda.sdc.dpws.soap.wseventing;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.common.util.concurrent.SettableFuture;
-import com.google.inject.AbstractModule;
-import com.google.inject.Inject;
-import com.google.inject.Key;
-import com.google.inject.Provider;
-import com.google.inject.TypeLiteral;
+import com.google.inject.*;
 import com.google.inject.name.Named;
 import com.google.inject.name.Names;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.somda.sdc.common.util.ExecutorWrapperService;
 import org.somda.sdc.common.util.JaxbUtil;
 import org.somda.sdc.dpws.DpwsTest;
 import org.somda.sdc.dpws.HttpServerRegistryMock;
@@ -20,18 +17,12 @@ import org.somda.sdc.dpws.TransportBindingFactoryMock;
 import org.somda.sdc.dpws.device.helper.RequestResponseServerHttpHandler;
 import org.somda.sdc.dpws.factory.TransportBindingFactory;
 import org.somda.sdc.dpws.guice.NetworkJobThreadPool;
-import org.somda.sdc.common.util.ExecutorWrapperService;
 import org.somda.sdc.dpws.http.HttpServerRegistry;
 import org.somda.sdc.dpws.http.HttpUriBuilder;
 import org.somda.sdc.dpws.model.HostedServiceType;
 import org.somda.sdc.dpws.model.ObjectFactory;
 import org.somda.sdc.dpws.network.LocalAddressResolver;
-import org.somda.sdc.dpws.soap.MarshallingService;
-import org.somda.sdc.dpws.soap.NotificationSink;
-import org.somda.sdc.dpws.soap.RequestResponseClient;
-import org.somda.sdc.dpws.soap.RequestResponseServer;
-import org.somda.sdc.dpws.soap.SoapMarshalling;
-import org.somda.sdc.dpws.soap.SoapUtil;
+import org.somda.sdc.dpws.soap.*;
 import org.somda.sdc.dpws.soap.exception.SoapFaultException;
 import org.somda.sdc.dpws.soap.factory.EnvelopeFactory;
 import org.somda.sdc.dpws.soap.factory.NotificationSinkFactory;
@@ -54,7 +45,6 @@ import org.w3c.dom.Element;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import java.net.URI;
 import java.time.Duration;
 import java.util.Collection;
 import java.util.Collections;
@@ -63,9 +53,7 @@ import java.util.concurrent.TimeUnit;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 
 public class WsEventingReferenceParametersTest extends DpwsTest {
@@ -105,9 +93,9 @@ public class WsEventingReferenceParametersTest extends DpwsTest {
 
         HttpServerRegistry httpSrvRegisty = getInjector().getInstance(HttpServerRegistry.class);
 
-        URI uri = URI.create("http://" + HOST + ":" + PORT);
+        var uri = "http://" + HOST + ":" + PORT;
         MarshallingService marshallingService = getInjector().getInstance(MarshallingService.class);
-        URI hostedServiceUri = httpSrvRegisty.registerContext(uri, HOSTED_SERVICE_PATH, (inStream, outStream, ti) ->
+        var hostedServiceUri = httpSrvRegisty.registerContext(uri, HOSTED_SERVICE_PATH, (inStream, outStream, ti) ->
                 marshallingService.handleRequestResponse(reqResSrv, inStream, outStream, ti));
 
         HostedServiceType hst = dpwsFactory.createHostedServiceType();
@@ -119,17 +107,18 @@ public class WsEventingReferenceParametersTest extends DpwsTest {
                 tbFactory.createTransportBinding(hostedServiceUri));
 
         wseSink = getInjector().getInstance(WsEventingEventSinkFactory.class)
-                .createWsEventingEventSink(rrc, URI.create("http://localhost:1234"));
+                .createWsEventingEventSink(rrc, "http://localhost:1234");
 
     }
 
-    public void verifyReferenceParam(SettableFuture<Collection<Element>> future) throws Exception {
+    void verifyReferenceParam(SettableFuture<Collection<Element>> future) throws Exception {
         Collection<Element> incomingRefParm;
         incomingRefParm = future.get(FUTURE_WAIT.toSeconds(), TimeUnit.SECONDS);
 
         assertEquals(1, incomingRefParm.size());
-
-        Element element = incomingRefParm.stream().findFirst().get();
+        var firstFind = incomingRefParm.stream().findFirst();
+        assertTrue(firstFind.isPresent());
+        Element element = firstFind.get();
 
         assertEquals(1, element.getChildNodes().getLength());
         assertEquals(REFERENCE, element.getTextContent());
@@ -141,7 +130,7 @@ public class WsEventingReferenceParametersTest extends DpwsTest {
     }
 
     @Test
-    public void referenceParameterInUnsubscribe() throws Exception {
+    void referenceParameterInUnsubscribe() throws Exception {
         assertFalse(EventSourceInterceptorMock.unsubscribeRefParam.isDone());
 
         Duration expectedExpires = Duration.ofHours(1);
@@ -157,7 +146,7 @@ public class WsEventingReferenceParametersTest extends DpwsTest {
     }
 
     @Test
-    public void referenceParameterInGetStatus() throws Exception {
+    void referenceParameterInGetStatus() throws Exception {
         assertFalse(EventSourceInterceptorMock.getStatusRefParam.isDone());
 
         Duration expectedExpires = Duration.ofHours(1);
@@ -173,7 +162,7 @@ public class WsEventingReferenceParametersTest extends DpwsTest {
     }
 
     @Test
-    public void referenceParameterInRenew() throws Exception {
+    void referenceParameterInRenew() throws Exception {
         assertFalse(EventSourceInterceptorMock.renewRefParam.isDone());
 
         Duration expectedExpires = Duration.ofHours(1);
@@ -192,9 +181,9 @@ public class WsEventingReferenceParametersTest extends DpwsTest {
 
     public static class EventSourceInterceptorMock extends EventSourceInterceptor {
 
-        public static SettableFuture<Collection<Element>> unsubscribeRefParam = SettableFuture.create();
-        public static SettableFuture<Collection<Element>> getStatusRefParam = SettableFuture.create();
-        public static SettableFuture<Collection<Element>> renewRefParam = SettableFuture.create();
+        static SettableFuture<Collection<Element>> unsubscribeRefParam = SettableFuture.create();
+        static SettableFuture<Collection<Element>> getStatusRefParam = SettableFuture.create();
+        static SettableFuture<Collection<Element>> renewRefParam = SettableFuture.create();
         private final SoapUtil soapUtil;
 
         @Inject

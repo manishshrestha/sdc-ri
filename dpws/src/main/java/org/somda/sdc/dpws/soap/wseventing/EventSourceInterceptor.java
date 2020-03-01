@@ -35,14 +35,7 @@ import javax.annotation.Nullable;
 import java.net.URI;
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Supplier;
@@ -63,7 +56,7 @@ public class EventSourceInterceptor extends AbstractIdleService implements Event
     private final SubscriptionRegistry subscriptionRegistry;
     private final SubscriptionManagerFactory subscriptionManagerFactory;
     private final HttpUriBuilder httpUriBuilder;
-    private final Multimap<URI, String> subscribedActionsToSubManIds;
+    private final Multimap<String, String> subscribedActionsToSubManIds;
     private final Lock subscribedActionsLock;
 
 
@@ -118,7 +111,7 @@ public class EventSourceInterceptor extends AbstractIdleService implements Event
         subscribedActionsLock.lock();
         Collection<String> affectedSubscriptionIds;
         try {
-            affectedSubscriptionIds = subscribedActionsToSubManIds.get(URI.create(action));
+            affectedSubscriptionIds = subscribedActionsToSubManIds.get(action);
             if (affectedSubscriptionIds.isEmpty()) {
                 return;
             }
@@ -168,7 +161,7 @@ public class EventSourceInterceptor extends AbstractIdleService implements Event
         EndpointReferenceType notifyTo = jaxbUtil.extractElement(subscribe.getDelivery().getContent().get(0),
                 WsEventingConstants.NOTIFY_TO, EndpointReferenceType.class).orElseThrow(soapFaultExceptionSupplier);
 
-        wsaUtil.getAddressUriAsString(notifyTo).orElseThrow(soapFaultExceptionSupplier);
+        wsaUtil.getAddressUri(notifyTo).orElseThrow(soapFaultExceptionSupplier);
 
         // Validate expires
         Duration grantedExpires = grantExpires(validateExpires(subscribe.getExpires()));
@@ -204,7 +197,7 @@ public class EventSourceInterceptor extends AbstractIdleService implements Event
 
         // Tie together given action filter map and subscription manager
         // Store subscription manager
-        List<URI> uris = explodeUriList(filterType);
+        List<String> uris = explodeUriList(filterType);
         subscribedActionsLock.lock();
         try {
             uris.forEach(uri -> subscribedActionsToSubManIds.put(uri, subMan.getSubscriptionId()));
@@ -226,7 +219,7 @@ public class EventSourceInterceptor extends AbstractIdleService implements Event
                         "Expiration in {} seconds",
                 Arrays.toString(uris.toArray()),
                 subMan.getSubscriptionId(),
-                wsaUtil.getAddressUriAsString(subMan.getNotifyTo()).orElse("<unknown>"),
+                wsaUtil.getAddressUri(subMan.getNotifyTo()).orElse("<unknown>"),
                 grantedExpires.getSeconds());
     }
 
@@ -300,7 +293,7 @@ public class EventSourceInterceptor extends AbstractIdleService implements Event
                 unregisterHttpHandler(subMan);
                 subscribedActionsLock.lock();
                 try {
-                    HashSet<URI> uris = new HashSet<>(subscribedActionsToSubManIds.keySet());
+                    HashSet<String> uris = new HashSet<>(subscribedActionsToSubManIds.keySet());
                     uris.forEach(uri ->
                             subscribedActionsToSubManIds.remove(uri, entry.getKey()));
                 } finally {
@@ -315,8 +308,7 @@ public class EventSourceInterceptor extends AbstractIdleService implements Event
     private EndpointReferenceType createSubscriptionManagerEprAndRegisterHttpHandler(String scheme,
                                                                                      String address,
                                                                                      Integer port) {
-        final URI hostPart = httpUriBuilder.buildUri(
-                scheme, address, port);
+        var hostPart = httpUriBuilder.buildUri(scheme, address, port);
         String contextPath = "/" + UUID.randomUUID().toString() + "/" + subscriptionManagerPath;
         String eprAddress = hostPart + contextPath;
 
@@ -328,8 +320,8 @@ public class EventSourceInterceptor extends AbstractIdleService implements Event
     }
 
     private void unregisterHttpHandler(SourceSubscriptionManager subMan) {
-        URI fullUri = URI.create(subMan.getSubscriptionManagerEpr().getAddress().getValue());
-        URI uriWithoutPath = httpUriBuilder.buildUri(fullUri.getScheme(), fullUri.getHost(), fullUri.getPort());
+        var fullUri = URI.create(subMan.getSubscriptionManagerEpr().getAddress().getValue());
+        var uriWithoutPath = httpUriBuilder.buildUri(fullUri.getScheme(), fullUri.getHost(), fullUri.getPort());
         httpServerRegistry.unregisterContext(uriWithoutPath, fullUri.getPath());
     }
 
@@ -367,8 +359,8 @@ public class EventSourceInterceptor extends AbstractIdleService implements Event
                         String.format("Subscription manager '%s' does not exist.", toUri.getValue()))));
     }
 
-    private List<URI> explodeUriList(FilterType filterType) {
-        List<URI> result = new ArrayList<>();
+    private List<String> explodeUriList(FilterType filterType) {
+        List<String> result = new ArrayList<>();
         if (filterType.getContent().size() != 1) {
             return result;
         }
@@ -378,7 +370,7 @@ public class EventSourceInterceptor extends AbstractIdleService implements Event
         }
 
         String listOfAnyUri = (String) filterType.getContent().get(0);
-        Arrays.asList(listOfAnyUri.split("\\s+")).forEach(s -> result.add(URI.create(s)));
+        Arrays.asList(listOfAnyUri.split("\\s+")).forEach(s -> result.add(s));
 
         return result;
     }
@@ -403,13 +395,13 @@ public class EventSourceInterceptor extends AbstractIdleService implements Event
         SubscriptionEnd subscriptionEnd = wseFactory.createSubscriptionEnd();
         subscriptionEnd.setSubscriptionManager(subMan.getSubscriptionManagerEpr());
         subscriptionEnd.setStatus(status.getUri());
-        String wsaTo = wsaUtil.getAddressUriAsString(endTo).orElse(null);
+        String wsaTo = wsaUtil.getAddressUri(endTo).orElse(null);
         return createNotification(WsEventingConstants.WSE_ACTION_SUBSCRIPTION_END, wsaTo, subscriptionEnd);
     }
 
     private SoapMessage createForNotifyTo(String wsaAction, Object payload, SourceSubscriptionManager subMan) {
         EndpointReferenceType notifyTo = subMan.getNotifyTo();
-        String wsaTo = wsaUtil.getAddressUriAsString(notifyTo).orElseThrow(() ->
+        String wsaTo = wsaUtil.getAddressUri(notifyTo).orElseThrow(() ->
                 new RuntimeException("Could not resolve URI from NotifyTo"));
         Envelope envelope = envelopeFactory.createEnvelope(wsaAction, wsaTo, payload);
         final ReferenceParametersType referenceParameters = notifyTo.getReferenceParameters();
