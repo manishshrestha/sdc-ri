@@ -28,6 +28,7 @@ public class ObjectUtilImpl implements ObjectUtil {
             return cloner.deepClone(obj);
         } catch (Exception e) {
             LOG.warn("Unable to deep-copy object due to: {}", e.getMessage());
+            LOG.trace("Unable to deep-copy object", e);
         }
         throw new RuntimeException("Fatal error on object deepp-copy");
     }
