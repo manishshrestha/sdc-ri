@@ -2,9 +2,14 @@ package org.somda.sdc.biceps.testutil;
 
 import org.somda.sdc.biceps.common.MdibDescriptionModifications;
 import org.somda.sdc.biceps.model.participant.*;
+import org.somda.sdc.biceps.model.participant.factory.CodedValueFactory;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.time.Duration;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.function.Consumer;
 
 public class BaseTreeModificationsSet {
     private final MockEntryFactory entryFactory;
@@ -18,34 +23,93 @@ public class BaseTreeModificationsSet {
     public MdibDescriptionModifications createBaseTree() {
         try {
             return MdibDescriptionModifications.create()
-                    .insert(entry(Handles.MDS_0, MdsDescriptor.class))
-                    .insert(entry(Handles.MDS_1, MdsDescriptor.class))
+                    .insert(entry(Handles.MDS_0, t -> t.setType(CodedValueFactory.createIeeeCodedValue("70001")), t -> {}, MdsDescriptor.class))
+                    .insert(entry(Handles.MDS_1, t -> t.setType(CodedValueFactory.createIeeeCodedValue("70002")), t -> {}, MdsDescriptor.class))
 
                     .insert(entry(Handles.VMD_0, VmdDescriptor.class, Handles.MDS_0))
                     .insert(entry(Handles.VMD_1, VmdDescriptor.class, Handles.MDS_0))
                     .insert(entry(Handles.VMD_2, VmdDescriptor.class, Handles.MDS_0))
                     .insert(entry(Handles.BATTERY_0, BatteryDescriptor.class, Handles.MDS_0))
                     .insert(entry(Handles.CLOCK_0, ClockDescriptor.class, Handles.MDS_0))
-                    .insert(entry(Handles.ALERTSYSTEM_0, AlertSystemDescriptor.class, Handles.MDS_0))
+                    .insert(entry(Handles.ALERTSYSTEM_0, AlertSystemDescriptor.class, t -> {}, t -> {
+                        ((AlertSystemState)t).setActivationState(AlertActivation.ON);
+                    }, Handles.MDS_0))
                     .insert(entry(Handles.SCO_0, ScoDescriptor.class, Handles.MDS_0))
                     .insert(entry(Handles.SYSTEMCONTEXT_0, SystemContextDescriptor.class, Handles.MDS_0))
 
                     .insert(entry(Handles.CHANNEL_0, ChannelDescriptor.class, Handles.VMD_0))
                     .insert(entry(Handles.CHANNEL_1, ChannelDescriptor.class, Handles.VMD_0))
 
-                    .insert(entry(Handles.METRIC_0, NumericMetricDescriptor.class, Handles.CHANNEL_0))
-                    .insert(entry(Handles.METRIC_1, StringMetricDescriptor.class, Handles.CHANNEL_0))
-                    .insert(entry(Handles.METRIC_2, EnumStringMetricDescriptor.class, Handles.CHANNEL_0))
-                    .insert(entry(Handles.METRIC_3, RealTimeSampleArrayMetricDescriptor.class, Handles.CHANNEL_0))
-                    .insert(entry(Handles.METRIC_4, DistributionSampleArrayMetricDescriptor.class, Handles.CHANNEL_0))
+                    .insert(entry(Handles.METRIC_0, NumericMetricDescriptor.class, t -> {
+                        t.setResolution(BigDecimal.ONE);
+                        t.setMetricCategory(MetricCategory.UNSPEC);
+                        t.setMetricAvailability(MetricAvailability.INTR);
+                        t.setUnit(CodedValueFactory.createIeeeCodedValue("500"));
+                    }, t -> {}, Handles.CHANNEL_0))
+                    .insert(entry(Handles.METRIC_1, StringMetricDescriptor.class, t -> {
+                        t.setMetricCategory(MetricCategory.UNSPEC);
+                        t.setMetricAvailability(MetricAvailability.INTR);
+                        t.setUnit(CodedValueFactory.createIeeeCodedValue("500"));
+                    }, t -> {}, Handles.CHANNEL_0))
+                    .insert(entry(Handles.METRIC_2, EnumStringMetricDescriptor.class, t -> {
+                        t.setMetricCategory(MetricCategory.UNSPEC);
+                        t.setMetricAvailability(MetricAvailability.INTR);
+                        t.setUnit(CodedValueFactory.createIeeeCodedValue("500"));
+                        var allowedValue = new EnumStringMetricDescriptor.AllowedValue();
+                        allowedValue.setValue("sample");
+                        t.setAllowedValue(Collections.singletonList(allowedValue));
+                    }, t -> {}, Handles.CHANNEL_0))
+                    .insert(entry(Handles.METRIC_3, RealTimeSampleArrayMetricDescriptor.class, t -> {
+                        t.setResolution(BigDecimal.ONE);
+                        t.setMetricCategory(MetricCategory.UNSPEC);
+                        t.setMetricAvailability(MetricAvailability.INTR);
+                        t.setUnit(CodedValueFactory.createIeeeCodedValue("500"));
+                        t.setSamplePeriod(Duration.ofSeconds(1));
+                    }, t -> {}, Handles.CHANNEL_0))
+                    .insert(entry(Handles.METRIC_4, DistributionSampleArrayMetricDescriptor.class, t -> {
+                        t.setResolution(BigDecimal.ONE);
+                        t.setMetricCategory(MetricCategory.UNSPEC);
+                        t.setMetricAvailability(MetricAvailability.INTR);
+                        t.setUnit(CodedValueFactory.createIeeeCodedValue("500"));
+                        t.setDomainUnit(CodedValueFactory.createIeeeCodedValue("1000"));
+                        t.setDistributionRange(new Range());
+                    }, t -> {}, Handles.CHANNEL_0))
 
-                    .insert(entry(Handles.OPERATION_0, ActivateOperationDescriptor.class, Handles.SCO_0))
-                    .insert(entry(Handles.OPERATION_1, SetStringOperationDescriptor.class, Handles.SCO_0))
-                    .insert(entry(Handles.OPERATION_2, SetValueOperationDescriptor.class, Handles.SCO_0))
-                    .insert(entry(Handles.OPERATION_3, SetComponentStateOperationDescriptor.class, Handles.SCO_0))
-                    .insert(entry(Handles.OPERATION_4, SetMetricStateOperationDescriptor.class, Handles.SCO_0))
-                    .insert(entry(Handles.OPERATION_5, SetAlertStateOperationDescriptor.class, Handles.SCO_0))
-                    .insert(entry(Handles.OPERATION_6, SetContextStateOperationDescriptor.class, Handles.SCO_0))
+                    .insert(entry(Handles.OPERATION_0, ActivateOperationDescriptor.class, t -> {
+                        t.setOperationTarget(Handles.MDS_0);
+                    }, t -> {
+                        ((AbstractOperationState)t).setOperatingMode(OperatingMode.EN);
+                    }, Handles.SCO_0))
+                    .insert(entry(Handles.OPERATION_1, SetStringOperationDescriptor.class, t -> {
+                        t.setOperationTarget(Handles.MDS_0);
+                    }, t -> {
+                        ((AbstractOperationState)t).setOperatingMode(OperatingMode.EN);
+                    },Handles.SCO_0))
+                    .insert(entry(Handles.OPERATION_2, SetValueOperationDescriptor.class, t -> {
+                        t.setOperationTarget(Handles.MDS_0);
+                    }, t -> {
+                        ((AbstractOperationState)t).setOperatingMode(OperatingMode.EN);
+                    },Handles.SCO_0))
+                    .insert(entry(Handles.OPERATION_3, SetComponentStateOperationDescriptor.class, t -> {
+                        t.setOperationTarget(Handles.MDS_0);
+                    }, t -> {
+                        ((AbstractOperationState)t).setOperatingMode(OperatingMode.EN);
+                    },Handles.SCO_0))
+                    .insert(entry(Handles.OPERATION_4, SetMetricStateOperationDescriptor.class, t -> {
+                        t.setOperationTarget(Handles.MDS_0);
+                    }, t -> {
+                        ((AbstractOperationState)t).setOperatingMode(OperatingMode.EN);
+                    },Handles.SCO_0))
+                    .insert(entry(Handles.OPERATION_5, SetAlertStateOperationDescriptor.class, t -> {
+                        t.setOperationTarget(Handles.MDS_0);
+                    }, t -> {
+                        ((AbstractOperationState)t).setOperatingMode(OperatingMode.EN);
+                    },Handles.SCO_0))
+                    .insert(entry(Handles.OPERATION_6, SetContextStateOperationDescriptor.class, t -> {
+                        t.setOperationTarget(Handles.MDS_0);
+                    }, t -> {
+                        ((AbstractOperationState)t).setOperatingMode(OperatingMode.EN);
+                    },Handles.SCO_0))
 
                     .insert(contextEntry(Handles.CONTEXTDESCRIPTOR_0, Handles.CONTEXT_0, PatientContextDescriptor.class, Handles.SYSTEMCONTEXT_0))
                     .insert(contextEntry(Handles.CONTEXTDESCRIPTOR_1, Handles.CONTEXT_1, LocationContextDescriptor.class, Handles.SYSTEMCONTEXT_0))
@@ -103,19 +167,43 @@ public class BaseTreeModificationsSet {
                 .insert(dataGenerator.setValueOperationDescriptor(Handles.OPERATION_9, Handles.METRIC_0), dataGenerator.setValueOperationState(), Handles.SCO_1)
                 .insert(dataGenerator.setComponentStateOperationDescriptor(Handles.OPERATION_10, Handles.VMD_0), dataGenerator.setComponentStateOperationState(), Handles.SCO_1)
                 .insert(dataGenerator.setMetricStateOperationDescriptor(Handles.OPERATION_11, Handles.METRIC_2), dataGenerator.setMetricStateOperationState(), Handles.SCO_1)
-                .insert(dataGenerator.setAlertStateOperationDescriptor(Handles.OPERATION_12, Handles.ALERTSIGNAL_7), dataGenerator.setAlertStateOperationState(), Handles.SCO_1)
-                ;
+                .insert(dataGenerator.setAlertStateOperationDescriptor(Handles.OPERATION_12, Handles.ALERTSIGNAL_7), dataGenerator.setAlertStateOperationState(), Handles.SCO_1);
     }
 
-    private <T extends AbstractDescriptor, V extends AbstractState> MdibDescriptionModifications.Entry entry(String handle, Class<T> descrClass) throws Exception {
-        return entry(handle, descrClass, null);
+    private <T extends AbstractDescriptor, V extends AbstractState> MdibDescriptionModifications.Entry entry(String handle,
+                                                                                                             Class<T> descrClass) throws Exception {
+        return entry(handle, descrClass, t -> {
+        }, t -> {
+        }, null);
     }
 
-    private <T extends AbstractDescriptor, V extends AbstractState> MdibDescriptionModifications.Entry entry(String handle, Class<T> descrClass, @Nullable String parentHandle) throws Exception {
-        return entryFactory.entry(handle, descrClass, parentHandle);
+    private <T extends AbstractDescriptor, V extends AbstractState> MdibDescriptionModifications.Entry entry(String handle,
+                                                                                                             Consumer<T> descrConsumer,
+                                                                                                             Consumer<V> stateConsumer,
+                                                                                                             Class<T> descrClass) throws Exception {
+        return entry(handle, descrClass, descrConsumer, stateConsumer, null);
     }
 
-    private <T extends AbstractDescriptor, V extends AbstractContextState> MdibDescriptionModifications.MultiStateEntry contextEntry(String handle, String stateHandle, Class<T> descrClass, String parentHandle) throws Exception {
+    private <T extends AbstractDescriptor, V extends AbstractState> MdibDescriptionModifications.Entry entry(String handle,
+                                                                                                             Class<T> descrClass,
+                                                                                                             @Nullable String parentHandle) throws Exception {
+        return entryFactory.entry(handle, descrClass, t -> {
+        }, t -> {
+        }, parentHandle);
+    }
+
+    private <T extends AbstractDescriptor, V extends AbstractState> MdibDescriptionModifications.Entry entry(String handle,
+                                                                                                             Class<T> descrClass,
+                                                                                                             Consumer<T> descrConsumer,
+                                                                                                             Consumer<V> stateConsumer,
+                                                                                                             @Nullable String parentHandle) throws Exception {
+        return entryFactory.entry(handle, descrClass, descrConsumer, stateConsumer, parentHandle);
+    }
+
+    private <T extends AbstractDescriptor, V extends AbstractContextState> MdibDescriptionModifications.MultiStateEntry contextEntry(String handle,
+                                                                                                                                     String stateHandle,
+                                                                                                                                     Class<T> descrClass,
+                                                                                                                                     String parentHandle) throws Exception {
         return entryFactory.contextEntry(handle, stateHandle, descrClass, parentHandle);
     }
 
