@@ -30,6 +30,7 @@ public class LocationDetailQueryMapper {
      * @param locationDetail     the location detail to append.
      * @return a URI with appended location detail parameters or
      * the URI if something went wrong during URI re-construction.
+     * @throws UriMapperGenerationArgumentException in case no valid URI could be generated from the input.
      */
     public static String createWithLocationDetailQuery(InstanceIdentifier instanceIdentifier,
                                                        LocationDetail locationDetail)
@@ -79,6 +80,7 @@ public class LocationDetailQueryMapper {
      * @param uri the URI to parse.
      * @return a {@link LocationDetail} instance in which every field is filled that has an existing location detail
      * query parameter in <em>uri</em>.
+     * @throws UriMapperParsingException in case no valid URI was given.
      */
     public static LocationDetail readLocationDetailQuery(String uri) throws UriMapperParsingException {
 

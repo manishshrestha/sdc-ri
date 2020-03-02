@@ -35,6 +35,7 @@ public class ComplexDeviceComponentMapper {
      *
      * @param descriptor the device component where to access the type.
      * @return the mapped URI.
+     * @throws UriMapperGenerationArgumentException in case no valid URI could be generated from the input.
      */
     public static String fromComplexDeviceComponent(AbstractComplexDeviceComponentDescriptor descriptor)
             throws UriMapperGenerationArgumentException {
@@ -52,6 +53,7 @@ public class ComplexDeviceComponentMapper {
      *
      * @param codedValue a complex device component's type.
      * @return the mapped URI.
+     * @throws UriMapperGenerationArgumentException in case no valid URI could be generated from the input.
      */
     public static String fromCodedValue(CodedValue codedValue) throws UriMapperGenerationArgumentException {
         String codingSystem = codedValue.getCodingSystem();
@@ -82,6 +84,7 @@ public class ComplexDeviceComponentMapper {
      *
      * @param complexDeviceComponentTypeUri the URI to parse.
      * @return a coded value if pattern of URI matches.
+     * @throws UriMapperParsingException in case no valid URI was given.
      */
     public static CodedValue fromString(String complexDeviceComponentTypeUri) throws UriMapperParsingException {
 

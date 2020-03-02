@@ -29,6 +29,7 @@ public class ParticipantKeyPurposeMapper {
      *
      * @param oid the OID to convert.
      * @return the converted URI.
+     * @throws UriMapperGenerationArgumentException in case no valid URI could be generated from the input.
      */
     public static String fromOid(Oid oid) throws UriMapperGenerationArgumentException {
         final String uri = SCHEME + ":" + oid.toString();
@@ -48,6 +49,7 @@ public class ParticipantKeyPurposeMapper {
      *
      * @param uri the URI to convert.
      * @return the converted OID.
+     * @throws UriMapperParsingException in case no valid URI was given.
      */
     public static Oid fromString(String uri) throws UriMapperParsingException {
 

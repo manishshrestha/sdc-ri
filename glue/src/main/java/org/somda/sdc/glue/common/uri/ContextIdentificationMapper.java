@@ -33,6 +33,7 @@ public class ContextIdentificationMapper {
      * @param instanceIdentifier the instance identifier to convert.
      * @param contextSource      the type of context to create a scheme for.
      * @return an URI that reflects the instance identifier.
+     * @throws UriMapperGenerationArgumentException in case no valid URI could be generated from the input.
      */
     public static String fromInstanceIdentifier(InstanceIdentifier instanceIdentifier,
                                                 ContextSource contextSource)
@@ -60,6 +61,7 @@ public class ContextIdentificationMapper {
      * @param contextIdentificationUri the URI to parse.
      * @param expectedContextSource    the expected context source.
      * @return the converted instance identifier.
+     * @throws UriMapperParsingException in case no valid URI was given.
      */
     public static InstanceIdentifier fromString(String contextIdentificationUri,
                                                 ContextSource expectedContextSource)
