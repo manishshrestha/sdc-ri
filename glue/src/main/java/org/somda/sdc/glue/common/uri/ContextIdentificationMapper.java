@@ -71,7 +71,7 @@ public class ContextIdentificationMapper {
         Matcher expectedSourceMatcher = SCHEME_VALIDATOR.matcher(expectedContextSource.getSourceString());
         if (!expectedSourceMatcher.matches()) {
             throw new UriMapperParsingException("The expected context source: '" +
-                    expectedContextSource.getSourceString() + " is not valid.");
+                    expectedContextSource.getSourceString() + " is not valid");
         }
 
         Matcher uriMatcher = URI_PATTERN.matcher(contextIdentificationUri);

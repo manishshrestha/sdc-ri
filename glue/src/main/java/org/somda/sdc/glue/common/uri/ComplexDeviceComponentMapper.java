@@ -41,7 +41,7 @@ public class ComplexDeviceComponentMapper {
             throws UriMapperGenerationArgumentException {
         final CodedValue codedValue = descriptor.getType();
         if (codedValue == null) {
-            throw new UriMapperGenerationArgumentException("No CodedValue was provided.");
+            throw new UriMapperGenerationArgumentException("No CodedValue was provided");
         }
 
         return fromCodedValue(codedValue);
