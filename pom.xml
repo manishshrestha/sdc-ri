@@ -149,6 +149,11 @@
                     </archive>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-release-plugin</artifactId>
+                <version>3.0.0-M1</version>
+            </plugin>
         </plugins>
         <pluginManagement>
             <plugins>
@@ -302,21 +307,22 @@
         </dependency>
     </dependencies>
     <distributionManagement>
-        <!--		<repository>-->
-        <!--			<id>ossrh</id>-->
-        <!--			<name>SDCri releases</name>-->
-        <!--			<url>${env.MAVEN_REPO_URL}/releases</url>-->
-        <!--		</repository>-->
+        <repository>
+            <id>ossrh</id>
+            <name>SDCri releases</name>
+            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2</url>
+        </repository>
         <snapshotRepository>
             <id>ossrh</id>
             <name>SDCri snapshots</name>
-            <url>${env.MAVEN_REPO_URL}/snapshots</url>
+            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
         </snapshotRepository>
-        <site>
-            <id>somda</id>
-            <name>somda</name>
-            <url>https://somda.org</url>
-        </site>
+<!-- enable this to generate a unified report, but don't check this in! -->
+<!--        <site>-->
+<!--            <id>somda</id>-->
+<!--            <name>somda</name>-->
+<!--            <url>https://somda.org</url>-->
+<!--        </site>-->
     </distributionManagement>
 
 </project>
