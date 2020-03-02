@@ -3,15 +3,12 @@ package org.somda.sdc.glue;
 import org.ietf.jgss.Oid;
 import org.somda.sdc.glue.common.uri.ParticipantKeyPurposeMapper;
 
-import java.net.URI;
 import java.util.Collections;
 
 /**
  * Any constants relevant to SDC Glue.
  */
 public class GlueConstants {
-    private static String URN_SCHEME_AND_PARTIAL_PATH = "urn:oid:";
-
     /**
      * JAXB context paths used to let JAXB recognize the BICEPS model.
      */
