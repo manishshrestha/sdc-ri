@@ -12,7 +12,6 @@ import org.somda.sdc.biceps.common.storage.helper.MdibStorageUtil;
 import org.somda.sdc.biceps.model.participant.*;
 
 import javax.annotation.Nullable;
-import javax.swing.text.html.Option;
 import java.math.BigInteger;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -209,7 +208,7 @@ public class MdibStorageImpl implements MdibStorage {
             }
         }
 
-        // Add updated parent entities to updatedEntities in case there are not part of the updatedEntities
+        // Add updated parent entities to updatedEntities in case they are not part of the updatedEntities
         // or insertedEntities list already
         for (var handle : updatedParentEntitiesDueToInsert) {
             if (updatedEntities.stream().noneMatch(mdibEntity -> handle.equals(mdibEntity.getHandle())) &&
@@ -371,8 +370,9 @@ public class MdibStorageImpl implements MdibStorage {
                     descr = typeValidator.resolveDescriptorType(modification.getClass())
                             .getConstructor().newInstance();
                 } catch (Exception e) {
-                    LOG.warn(String.format("Ignore modification. Reason: could not instantiate descriptor type for handle %s.",
-                            modification.getDescriptorHandle()), e);
+                    LOG.warn("Ignore modification. Reason: could not instantiate descriptor type for handle {}.",
+                            modification.getDescriptorHandle());
+                    LOG.trace("Ignore modification.", e);
                     continue;
                 }
                 descr.setHandle(modification.getDescriptorHandle());
