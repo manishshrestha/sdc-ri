@@ -297,7 +297,7 @@ public class MdibDescriptionModifications {
      * @return this object for fluent access.
      */
     public MdibDescriptionModifications update(AbstractDescriptor descriptor,
-                                               List<AbstractMultiState> multiStates) {
+                                               List<? extends AbstractMultiState> multiStates) {
         return add(MdibDescriptionModification.Type.UPDATE, descriptor, multiStates);
     }
 

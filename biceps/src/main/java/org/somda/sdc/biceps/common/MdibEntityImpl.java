@@ -104,7 +104,7 @@ public class MdibEntityImpl implements MdibEntity {
     @Override
     public StateAlternative<List<AbstractMultiState>> doIfSingleState(Consumer<AbstractState> consumer) {
         if (!getStates().isEmpty()) {
-            // if AbstractMultiState is a superclass of the state, it's a multistate
+            // if AbstractMultiState is a superclass of the state, it's a multi-state
             if (!AbstractMultiState.class.isAssignableFrom(getStates().get(0).getClass())) {
                 consumer.accept(getStates().get(0));
                 return stateAlternativeConsumer -> {

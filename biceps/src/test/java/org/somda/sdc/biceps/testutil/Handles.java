@@ -8,9 +8,10 @@ public class Handles {
     public static final String VMD_0 = "vmd_0";
     public static final String VMD_1 = "vmd_1";
     public static final String VMD_2 = "vmd_2";
-    public static final String CHANNEL_0 = "channe_0";
-    public static final String CHANNEL_1 = "channe_1";
-    public static final String CHANNEL_2 = "channe_2";
+    public static final String CHANNEL_0 = "channel_0";
+    public static final String CHANNEL_1 = "channel_1";
+    public static final String CHANNEL_2 = "channel_2";
+    public static final String CHANNEL_3 = "channel_3";
     public static final String METRIC_0 = "metric_0";
     public static final String METRIC_1 = "metric_1";
     public static final String METRIC_2 = "metric_2";

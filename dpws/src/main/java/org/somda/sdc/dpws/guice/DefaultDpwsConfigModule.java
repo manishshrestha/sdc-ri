@@ -13,6 +13,7 @@ import org.somda.sdc.dpws.soap.wsdiscovery.WsDiscoveryConfig;
 import org.somda.sdc.dpws.soap.wseventing.WsEventingConfig;
 
 import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.SSLSession;
 import java.io.File;
 import java.time.Duration;
 
@@ -77,13 +78,25 @@ public class DefaultDpwsConfigModule extends AbstractConfigurationModule {
                 String[].class,
                 new String[]{"TLSv1.2", "TLSv1.3"});
 
+        var defaultHostnameVerifier = new HostnameVerifier() {
+            @Override
+            public boolean verify(String s, SSLSession sslSession) {
+                return true;
+            }
+
+            @Override
+            public String toString() {
+                return "<accept every peer>";
+            }
+        };
+
         bind(CryptoConfig.CRYPTO_CLIENT_HOSTNAME_VERIFIER,
                 HostnameVerifier.class,
-                (hostname, session) -> true);
+                defaultHostnameVerifier);
 
         bind(CryptoConfig.CRYPTO_DEVICE_HOSTNAME_VERIFIER,
                 HostnameVerifier.class,
-                (hostname, session) -> true);
+                defaultHostnameVerifier);
     }
 
     private void configureClientConfig() {

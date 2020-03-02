@@ -14,7 +14,6 @@ import org.somda.sdc.biceps.model.participant.*;
 import javax.annotation.Nullable;
 import java.math.BigInteger;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 /**
@@ -190,13 +189,16 @@ public class MdibStorageImpl implements MdibStorage {
         final List<MdibEntity> insertedEntities = new ArrayList<>();
         final List<MdibEntity> updatedEntities = new ArrayList<>();
         final List<MdibEntity> deletedEntities = new ArrayList<>();
-        for (MdibDescriptionModification modification : descriptionModifications.getModifications()) {
+
+        var updatedParentEntitiesDueToInsert = new ArrayList<String>();
+        for (var modification : descriptionModifications.getModifications()) {
+            var sanitizedStates = removeNotAssociatedContextStates(modification.getStates());
             switch (modification.getModificationType()) {
                 case INSERT:
-                    insertEntity(modification, insertedEntities);
+                    insertEntity(modification, sanitizedStates, insertedEntities, updatedParentEntitiesDueToInsert);
                     break;
                 case UPDATE:
-                    updateEntity(modification, updatedEntities);
+                    updateEntity(modification, sanitizedStates, updatedEntities);
                     break;
                 case DELETE:
                     deleteEntity(modification, deletedEntities);
@@ -206,7 +208,24 @@ public class MdibStorageImpl implements MdibStorage {
             }
         }
 
+        // Add updated parent entities to updatedEntities in case they are not part of the updatedEntities
+        // or insertedEntities list already
+        for (var handle : updatedParentEntitiesDueToInsert) {
+            if (updatedEntities.stream().noneMatch(mdibEntity -> handle.equals(mdibEntity.getHandle())) &&
+                    insertedEntities.stream().noneMatch(mdibEntity -> handle.equals(mdibEntity.getHandle()))) {
+                updatedEntities.add(Optional.ofNullable(entities.get(handle)).orElseThrow());
+            }
+        }
+
         return new WriteDescriptionResult(mdibVersion, insertedEntities, updatedEntities, deletedEntities);
+    }
+
+    private List<AbstractState> removeNotAssociatedContextStates(List<AbstractState> states) {
+        var result = new LinkedList<>(states); // copy as the input might be immutable
+        result.removeIf(state ->
+                state instanceof AbstractContextState &&
+                        ContextAssociation.NO.equals(((AbstractContextState) state).getContextAssociation()));
+        return result;
     }
 
     private void deleteEntity(MdibDescriptionModification modification, List<MdibEntity> deletedEntities) {
@@ -234,20 +253,51 @@ public class MdibStorageImpl implements MdibStorage {
         deletedEntities.add(deletedEntity);
     }
 
-    private void updateEntity(MdibDescriptionModification modification, List<MdibEntity> updatedEntities) {
+    private void updateEntity(MdibDescriptionModification modification, List<AbstractState> sanitizedStates, List<MdibEntity> updatedEntities) {
         Optional.ofNullable(entities.get(modification.getHandle())).ifPresent(mdibEntity -> {
             LOG.debug("[{}] Update entity: {}", mdibVersion.getInstanceId(), modification.getDescriptor());
-            mdibEntity = entityFactory.replaceDescriptorAndStates(
+
+            entities.put(mdibEntity.getHandle(), entityFactory.replaceDescriptorAndStates(
                     mdibEntity,
                     modification.getDescriptor(),
-                    modification.getStates());
-            entities.put(mdibEntity.getHandle(), mdibEntity);
-            updatedEntities.add(mdibEntity);
+                    sanitizedStates));
+
+            updatedEntities.add(entityFactory.replaceDescriptorAndStates(
+                    mdibEntity,
+                    modification.getDescriptor(),
+                    modification.getStates()));
+
+            updateContextStatesMap(modification.getStates());
         });
     }
 
-    private void insertEntity(MdibDescriptionModification modification, List<MdibEntity> insertedEntities) {
-        final MdibEntity mdibEntity = entityFactory.createMdibEntity(
+    private void updateContextStatesMap(List<AbstractState> states) {
+        for (AbstractState state : states) {
+            var contextState = typeValidator.toContextState(state);
+            if (contextState.isEmpty()) {
+                continue;
+            }
+
+            if (getNotAssociatedContextState(state).isPresent()) {
+                contextStates.remove(contextState.get().getHandle());
+            } else {
+                contextStates.put(contextState.get().getHandle(), contextState.get());
+            }
+        }
+    }
+
+    private void insertEntity(MdibDescriptionModification modification,
+                              List<AbstractState> sanitizedStates,
+                              List<MdibEntity> insertedEntities,
+                              List<String> updatedEntityHandles) {
+        var mdibEntityForStorage = entityFactory.createMdibEntity(
+                modification.getParentHandle().orElse(null),
+                new ArrayList<>(),
+                modification.getDescriptor(),
+                sanitizedStates,
+                mdibVersion);
+
+        var mdibEntityForResultSet = entityFactory.createMdibEntity(
                 modification.getParentHandle().orElse(null),
                 new ArrayList<>(),
                 modification.getDescriptor(),
@@ -257,28 +307,30 @@ public class MdibStorageImpl implements MdibStorage {
         // Either add entity as child of a parent or expect it to be a root entity
         if (modification.getParentHandle().isPresent()) {
             Optional.ofNullable(entities.get(modification.getParentHandle().get())).ifPresent(parentEntity -> {
-                final List<String> children = new ArrayList<>(parentEntity.getChildren());
-                children.add(mdibEntity.getHandle());
+                var children = new ArrayList<>(parentEntity.getChildren());
+                children.add(mdibEntityForStorage.getHandle());
+
                 entities.put(parentEntity.getHandle(),
                         entityFactory.replaceChildren(parentEntity, Collections.unmodifiableList(children)));
+                updatedEntityHandles.add(parentEntity.getHandle());
             });
         } else {
-            rootEntities.add(mdibEntity.getHandle());
+            rootEntities.add(mdibEntityForStorage.getHandle());
         }
 
         // Add to entities list
-        entities.put(mdibEntity.getHandle(), mdibEntity);
+        entities.put(mdibEntityForStorage.getHandle(), mdibEntityForStorage);
 
-        LOG.debug("[{}] Insert entity: {}", mdibVersion.getInstanceId(), mdibEntity.getDescriptor());
+        LOG.debug("[{}] Insert entity: {}", mdibVersion.getInstanceId(), mdibEntityForStorage.getDescriptor());
 
         // Add to context states if context entity
-        if (mdibEntity.getDescriptor() instanceof AbstractContextDescriptor) {
-            contextStates.putAll(mdibEntity.getStates().stream()
+        if (mdibEntityForStorage.getDescriptor() instanceof AbstractContextDescriptor) {
+            contextStates.putAll(mdibEntityForStorage.getStates().stream()
                     .map(state -> (AbstractContextState) state)
                     .collect(Collectors.toMap(AbstractMultiState::getHandle, state -> state)));
         }
 
-        insertedEntities.add(mdibEntity);
+        insertedEntities.add(mdibEntityForResultSet);
     }
 
     @Override
@@ -295,9 +347,21 @@ public class MdibStorageImpl implements MdibStorage {
             if (LOG.isDebugEnabled()) {
                 LOG.debug("[{}] Update state: {}", mdibVersion.getSequenceId(), modification);
             }
+
             modifiedStates.add(modification);
+
             final MdibEntity mdibEntity = entities.get(modification.getDescriptorHandle());
             if (mdibEntity == null) {
+                // Do not store context states when not associated
+                var contextState = getNotAssociatedContextState(modification);
+                if (contextState.isPresent()) {
+                    LOG.debug("Found update on context state {} with association=not-associated; do not store in MDIB",
+                            contextState.get().getHandle());
+                    continue;
+                }
+
+                // this will insert states even if no descriptor/MDIB entity exists
+                // to be used in remote MDIBS in case
                 if (descriptionModifications == null) {
                     descriptionModifications = MdibDescriptionModifications.create();
                 }
@@ -306,8 +370,9 @@ public class MdibStorageImpl implements MdibStorage {
                     descr = typeValidator.resolveDescriptorType(modification.getClass())
                             .getConstructor().newInstance();
                 } catch (Exception e) {
-                    LOG.warn(String.format("Ignore modification. Reason: could not instantiate descriptor type for handle %s",
-                            modification.getDescriptorHandle()), e);
+                    LOG.warn("Ignore modification. Reason: could not instantiate descriptor type for handle {}.",
+                            modification.getDescriptorHandle());
+                    LOG.trace("Ignore modification", e);
                     continue;
                 }
                 descr.setHandle(modification.getDescriptorHandle());
@@ -315,28 +380,39 @@ public class MdibStorageImpl implements MdibStorage {
                 descriptionModifications.insert(descr, modification);
             } else {
                 mdibEntity
-                        .doIfSingleState(state ->
-                                entities.put(mdibEntity.getHandle(),
-                                        entityFactory.replaceStates(mdibEntity, Collections.singletonList(modification))))
+                        .doIfSingleState(state -> {
+                            entities.put(mdibEntity.getHandle(),
+                                    entityFactory.replaceStates(mdibEntity, Collections.singletonList(modification)));
+                        })
                         .orElse(states -> {
-                            final List<AbstractMultiState> newStates = new ArrayList<>();
-                            typeValidator.toMultiState(modification).ifPresent(modifiedMultiState ->
-                            {
-                                AtomicBoolean found = new AtomicBoolean(false);
-                                states.forEach(multiState -> {
-                                    if (multiState.getHandle().equals(modifiedMultiState.getHandle())) {
-                                        LOG.debug("Replacing already present MultiState {}", multiState.getHandle());
-                                        newStates.add(modifiedMultiState);
-                                        found.set(true);
+                            var modificationAsMultiState = typeValidator.toMultiState(modification).orElseThrow(() ->
+                                    new RuntimeException(
+                                            String.format("Found a non-matching multi-state for multi-state entity update (descriptor handle: %s",
+                                                    mdibEntity.getHandle())));
+
+                            var newStates = new ArrayList<AbstractMultiState>();
+                            boolean found = false;
+                            for (AbstractMultiState multiState : states) {
+                                if (multiState.getHandle().equals(modificationAsMultiState.getHandle())) {
+                                    found = true;
+                                    if (getNotAssociatedContextState(modificationAsMultiState).isPresent()) {
+                                        LOG.debug("Found context state {} with association=not-associated; refuse storage in MDIB",
+                                                modificationAsMultiState.getHandle());
+                                        contextStates.remove(multiState.getHandle());
                                     } else {
-                                        newStates.add(multiState);
+                                        LOG.debug("Replacing already present multi-state {}", multiState.getHandle());
+                                        newStates.add(modificationAsMultiState);
                                     }
-                                });
-                                if (!found.get()) {
-                                    LOG.debug("Adding new MultiState {}", modifiedMultiState.getHandle());
-                                    newStates.add(modifiedMultiState);
+                                } else {
+                                    newStates.add(multiState);
                                 }
-                            });
+                            }
+
+                            if (!found && getNotAssociatedContextState(modificationAsMultiState).isEmpty()) {
+                                LOG.debug("Adding new MultiState {}", modificationAsMultiState.getHandle());
+                                newStates.add(modificationAsMultiState);
+                            }
+
                             entities.put(mdibEntity.getHandle(), entityFactory.replaceStates(mdibEntity,
                                     Collections.unmodifiableList(newStates)));
                             newStates.stream()
@@ -349,8 +425,11 @@ public class MdibStorageImpl implements MdibStorage {
             }
         }
 
-        Optional.ofNullable(descriptionModifications).ifPresent(mods ->
-                apply(mdibVersion, null, null, mods));
+        // Only relevant to remote MDIBs where entities need to be present even if only states are subscribed
+        // (an unlikely use-case, but should be supported nevertheless)
+        if (descriptionModifications != null) {
+            apply(mdibVersion, null, null, descriptionModifications);
+        }
 
         return new WriteStateResult(mdibVersion, modifiedStates);
     }
@@ -368,5 +447,15 @@ public class MdibStorageImpl implements MdibStorage {
     @Override
     public BigInteger getMdStateVersion() {
         return mdStateVersion;
+    }
+
+    private Optional<AbstractContextState> getNotAssociatedContextState(AbstractState state) {
+        if (state instanceof AbstractContextState) {
+            var contextState = (AbstractContextState) state;
+            if (contextState.getContextAssociation() == null || ContextAssociation.NO.equals(contextState.getContextAssociation())) {
+                return Optional.of(contextState);
+            }
+        }
+        return Optional.empty();
     }
 }
