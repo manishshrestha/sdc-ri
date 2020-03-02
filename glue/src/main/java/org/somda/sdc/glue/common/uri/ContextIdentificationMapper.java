@@ -45,7 +45,7 @@ public class ContextIdentificationMapper {
         final String resultingUri = contextSource.getSourceString() + ":/" + root + "/" + extension;
 
         try {
-            fromString(resultingUri, contextSource);
+            fromUri(resultingUri, contextSource);
         } catch (UriMapperParsingException e) {
             throw new UriMapperGenerationArgumentException(
                     "No valid URI could be generated from the given instance identifier: " +
@@ -63,8 +63,8 @@ public class ContextIdentificationMapper {
      * @return the converted instance identifier.
      * @throws UriMapperParsingException in case no valid URI was given.
      */
-    public static InstanceIdentifier fromString(String contextIdentificationUri,
-                                                ContextSource expectedContextSource)
+    public static InstanceIdentifier fromUri(String contextIdentificationUri,
+                                             ContextSource expectedContextSource)
             throws UriMapperParsingException {
 
         // In case the input will be changed in the future

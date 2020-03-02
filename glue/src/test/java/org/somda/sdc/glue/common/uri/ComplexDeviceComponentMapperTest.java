@@ -74,81 +74,81 @@ class ComplexDeviceComponentMapperTest {
     }
 
     @Test
-    void fromString() throws UriMapperParsingException {
+    void fromUri() throws UriMapperParsingException {
         {
             assertThrows(UriMapperParsingException.class,
-                    () -> ComplexDeviceComponentMapper.fromString(""));
-        }
-        {
-            assertThrows(UriMapperParsingException.class,
-                    () -> ComplexDeviceComponentMapper.fromString("sdc.BAD.SCHEME:/foo/bar/fii"));
+                    () -> ComplexDeviceComponentMapper.fromUri(""));
         }
         {
             assertThrows(UriMapperParsingException.class,
-                    () -> ComplexDeviceComponentMapper.fromString("sdc.cdc.type:/foo/bar"));
+                    () -> ComplexDeviceComponentMapper.fromUri("sdc.BAD.SCHEME:/foo/bar/fii"));
+        }
+        {
+            assertThrows(UriMapperParsingException.class,
+                    () -> ComplexDeviceComponentMapper.fromUri("sdc.cdc.type:/foo/bar"));
         }
         {
             assertThrows(
                     UriMapperParsingException.class,
-                    () -> ComplexDeviceComponentMapper.fromString("sdc.cdc.type:/foo/bar/"));
+                    () -> ComplexDeviceComponentMapper.fromUri("sdc.cdc.type:/foo/bar/"));
         }
         {
             assertThrows(
                     UriMapperParsingException.class,
-                    () -> ComplexDeviceComponentMapper.fromString("sdc.cdc.type:///"));
+                    () -> ComplexDeviceComponentMapper.fromUri("sdc.cdc.type:///"));
         }
         {
             assertThrows(
                     UriMapperParsingException.class,
-                    () -> ComplexDeviceComponentMapper.fromString("sdc.cdc.type://@@/1"));
+                    () -> ComplexDeviceComponentMapper.fromUri("sdc.cdc.type://@@/1"));
         }
         {
             assertThrows(
                     UriMapperParsingException.class,
-                    () -> ComplexDeviceComponentMapper.fromString("sdc.cdc.type://@host@/1"));
+                    () -> ComplexDeviceComponentMapper.fromUri("sdc.cdc.type://@host@/1"));
         }
         {
             assertThrows(
                     UriMapperParsingException.class,
-                    () -> ComplexDeviceComponentMapper.fromString("sdc.cdc.type://@host:NoPort/1"));
+                    () -> ComplexDeviceComponentMapper.fromUri("sdc.cdc.type://@host:NoPort/1"));
         }
         {
             assertThrows(
                     UriMapperParsingException.class,
-                    () -> ComplexDeviceComponentMapper.fromString("sdc.cdc.type://@@host/1"));
+                    () -> ComplexDeviceComponentMapper.fromUri("sdc.cdc.type://@@host/1"));
         }
         {
             assertThrows(
                     UriMapperParsingException.class,
-                    () -> ComplexDeviceComponentMapper.fromString("sdc.cdc.type:/c///1"));
+                    () -> ComplexDeviceComponentMapper.fromUri("sdc.cdc.type:/c///1"));
         }
         {
             assertThrows(
                     UriMapperParsingException.class,
-                    () -> ComplexDeviceComponentMapper.fromString("sdc.cdc.type://user@user@:1/2"));
+                    () -> ComplexDeviceComponentMapper.fromUri("sdc.cdc.type://user@user@:1/2"));
         }
         {
-            CodedValue actualCodedValue = ComplexDeviceComponentMapper.fromString("sdc.cdc.type://@host:/1");
+            CodedValue actualCodedValue = ComplexDeviceComponentMapper.fromUri("sdc.cdc.type://@host:/1");
             CodedValue expectedCodedValue = createCodedValue(null, "@host:", "1");
             compare(expectedCodedValue, actualCodedValue);
         }
         {
-            CodedValue actualCodedValue = ComplexDeviceComponentMapper.fromString("sdc.cdc.type://:@host/1");
+            CodedValue actualCodedValue = ComplexDeviceComponentMapper.fromUri("sdc.cdc.type://:@host/1");
             CodedValue expectedCodedValue = createCodedValue(null, ":@host", "1");
             compare(expectedCodedValue, actualCodedValue);
         }
         {
-            CodedValue actualCodedValue = ComplexDeviceComponentMapper.fromString("sdc.cdc.type:/foo/bar/fii");
+            CodedValue actualCodedValue = ComplexDeviceComponentMapper.fromUri("sdc.cdc.type:/foo/bar/fii");
             CodedValue expectedCodedValue = createCodedValue("foo", "bar", "fii");
             compare(expectedCodedValue, actualCodedValue);
         }
         {
-            CodedValue actualCodedValue = ComplexDeviceComponentMapper.fromString("sdc.cdc.type://bar/fii");
+            CodedValue actualCodedValue = ComplexDeviceComponentMapper.fromUri("sdc.cdc.type://bar/fii");
             CodedValue expectedCodedValue = createCodedValue(null, "bar", "fii");
             compare(expectedCodedValue, actualCodedValue);
         }
         {
-            CodedValue actualCodedValue = ComplexDeviceComponentMapper.fromString("sdc.cdc.type:///1");
+            CodedValue actualCodedValue = ComplexDeviceComponentMapper.fromUri("sdc.cdc.type:///1");
             CodedValue expectedCodedValue = createCodedValue(null, null, "1");
             compare(expectedCodedValue, actualCodedValue);
         }

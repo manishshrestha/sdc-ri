@@ -67,7 +67,7 @@ public class ComplexDeviceComponentMapper {
                 "/" + UrlUtf8.encode(codedValue.getCode());
 
         try {
-            fromString(uri);
+            fromUri(uri);
         } catch (UriMapperParsingException e) {
             throw new UriMapperGenerationArgumentException(
                     "No valid URI could be generated from the given CodedValue with " +
@@ -86,7 +86,7 @@ public class ComplexDeviceComponentMapper {
      * @return a coded value if pattern of URI matches.
      * @throws UriMapperParsingException in case no valid URI was given.
      */
-    public static CodedValue fromString(String complexDeviceComponentTypeUri) throws UriMapperParsingException {
+    public static CodedValue fromUri(String complexDeviceComponentTypeUri) throws UriMapperParsingException {
 
         Matcher matcher = PATTERN.matcher(complexDeviceComponentTypeUri);
         if (matcher.matches()) {

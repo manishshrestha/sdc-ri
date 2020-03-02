@@ -35,7 +35,7 @@ public class ParticipantKeyPurposeMapper {
         final String uri = SCHEME + ":" + oid.toString();
 
         try {
-            fromString(uri);
+            fromUri(uri);
         } catch (UriMapperParsingException e) {
             throw new UriMapperGenerationArgumentException("No valid URI could be generated from the given OID: " +
                     oid.toString());
@@ -51,7 +51,7 @@ public class ParticipantKeyPurposeMapper {
      * @return the converted OID.
      * @throws UriMapperParsingException in case no valid URI was given.
      */
-    public static Oid fromString(String uri) throws UriMapperParsingException {
+    public static Oid fromUri(String uri) throws UriMapperParsingException {
 
         Matcher matcher = PATTERN.matcher(uri);
 
