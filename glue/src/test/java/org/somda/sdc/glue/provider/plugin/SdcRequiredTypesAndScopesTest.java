@@ -97,7 +97,7 @@ class SdcRequiredTypesAndScopesTest {
     }
 
     @Test
-    void updateContextsShallGenerateCorrectScopeUris() {
+    void updateContextsShallGenerateCorrectScopeUris() throws UriMapperGenerationArgumentException {
         int setScopesInteractionCount = 3;
         int sendHelloInteractionCount = 1;
         int scopesCount = 2;
@@ -128,7 +128,8 @@ class SdcRequiredTypesAndScopesTest {
     }
 
     @Test
-    void eventBusShallTriggerContextUpdatesWithSetScopesAndHello() {
+    void eventBusShallTriggerContextUpdatesWithSetScopesAndHello()
+            throws UriMapperGenerationArgumentException {
         int setScopesInteractionCount = 2;
         int sendHelloInteractionCount = 1;
 

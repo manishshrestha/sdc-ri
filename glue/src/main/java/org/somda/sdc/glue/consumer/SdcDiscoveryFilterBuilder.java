@@ -76,7 +76,11 @@ public class SdcDiscoveryFilterBuilder {
      * @return this object.
      */
     public <T extends AbstractContextState> SdcDiscoveryFilterBuilder addContext(T state) {
-        createScopeFromContext(state).ifPresent(scope -> addScope(scope));
+        try {
+            createScopeFromContext(state).ifPresent(scope -> addScope(scope));
+        } catch (UriMapperGenerationArgumentException e) {
+            LOG.warn("Context state could not be encoded as an URI", e);
+        }
         return this;
     }
 
@@ -109,7 +113,8 @@ public class SdcDiscoveryFilterBuilder {
 
     // Creates a scope for a context based on the grammar in IEEE 11073-20701 section 9.4
     // optional means: not associated or no identification found
-    private static Optional<String> createScopeFromContext(AbstractContextState contextState) {
+    private static Optional<String> createScopeFromContext(AbstractContextState contextState)
+            throws UriMapperGenerationArgumentException {
         if (!contextState.getContextAssociation().equals(ContextAssociation.ASSOC)) {
             return Optional.empty();
         }

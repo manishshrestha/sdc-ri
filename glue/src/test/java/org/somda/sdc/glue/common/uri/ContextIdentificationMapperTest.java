@@ -2,18 +2,16 @@ package org.somda.sdc.glue.common.uri;
 
 import org.junit.jupiter.api.Test;
 import org.somda.sdc.biceps.model.participant.InstanceIdentifier;
-import org.somda.sdc.glue.common.uri.ContextIdentificationMapper;
 
 import javax.annotation.Nullable;
-import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class ContextIdentificationMapperTest {
 
     @Test
-    void fromInstanceIdentifier() {
+    void fromInstanceIdentifier() throws UriMapperGenerationArgumentException {
         {
             String actualUri = ContextIdentificationMapper.fromInstanceIdentifier(createInstanceIdentifier(null, null),
                     ContextIdentificationMapper.ContextSource.Location);
@@ -44,49 +42,85 @@ class ContextIdentificationMapperTest {
     }
 
     @Test
-    void fromURI() {
+    void fromURI() throws UriMapperParsingException {
         {
-            Optional<InstanceIdentifier> actualInstanceIdentifier = ContextIdentificationMapper.fromString("sdc.ctxt.loc:/biceps.uri.unk/",
+            InstanceIdentifier actualInstanceIdentifier = ContextIdentificationMapper.fromUri("sdc.ctxt.loc:/biceps.uri.unk/",
                     ContextIdentificationMapper.ContextSource.Location);
-            assertTrue(actualInstanceIdentifier.isPresent());
             InstanceIdentifier expectedInstanceIdentifier = createInstanceIdentifier(null, null);
-            compare(expectedInstanceIdentifier, actualInstanceIdentifier.get());
+            compare(expectedInstanceIdentifier, actualInstanceIdentifier);
         }
 
         {
-            Optional<InstanceIdentifier> actualInstanceIdentifier = ContextIdentificationMapper.fromString("sdc.ctxt.loc:/http%3A%2F%2Froot/",
+            InstanceIdentifier actualInstanceIdentifier = ContextIdentificationMapper.fromUri("sdc.ctxt.loc:/http%3A%2F%2Froot/",
                     ContextIdentificationMapper.ContextSource.Location);
-            assertTrue(actualInstanceIdentifier.isPresent());
             InstanceIdentifier expectedInstanceIdentifier = createInstanceIdentifier("http://root", null);
-            compare(expectedInstanceIdentifier, actualInstanceIdentifier.get());
+            compare(expectedInstanceIdentifier, actualInstanceIdentifier);
         }
 
         {
-            Optional<InstanceIdentifier> actualInstanceIdentifier = ContextIdentificationMapper.fromString("sdc.ctxt.pat:/http%3A%2F%2Froot/extension",
+            InstanceIdentifier actualInstanceIdentifier = ContextIdentificationMapper.fromUri("sdc.ctxt.pat:/http%3A%2F%2Froot/extension",
                     ContextIdentificationMapper.ContextSource.Patient);
-            assertTrue(actualInstanceIdentifier.isPresent());
             InstanceIdentifier expectedInstanceIdentifier = createInstanceIdentifier("http://root", "extension");
-            compare(expectedInstanceIdentifier, actualInstanceIdentifier.get());
+            compare(expectedInstanceIdentifier, actualInstanceIdentifier);
         }
 
         {
-            Optional<InstanceIdentifier> actualInstanceIdentifier = ContextIdentificationMapper.fromString("sdc.ctxt.ens:/http%3A%2F%2Froot/ext%2Fen%C3%96sion%3F",
+            InstanceIdentifier actualInstanceIdentifier = ContextIdentificationMapper.fromUri("sdc.ctxt.ens:/http%3A%2F%2Froot/ext%2Fen%C3%96sion%3F",
                     ContextIdentificationMapper.ContextSource.Ensemble);
-            assertTrue(actualInstanceIdentifier.isPresent());
             InstanceIdentifier expectedInstanceIdentifier = createInstanceIdentifier("http://root", "ext/enÖsion?");
-            compare(expectedInstanceIdentifier, actualInstanceIdentifier.get());
+            compare(expectedInstanceIdentifier, actualInstanceIdentifier);
         }
 
         {
-            Optional<InstanceIdentifier> actualInstanceIdentifier = ContextIdentificationMapper.fromString("sdc.ctxt.loc:/http%3A%2F%2Froot/ext%2Fen%C3%96sion%3F",
-                    ContextIdentificationMapper.ContextSource.Patient);
-            assertTrue(actualInstanceIdentifier.isEmpty());
+            assertThrows(UriMapperParsingException.class,
+                    () -> ContextIdentificationMapper.fromUri(
+                            "sdc.ctxt.loc:/http%3A%2F%2Froot/ext%2Fen%C3%96sion%3F",
+                            ContextIdentificationMapper.ContextSource.Patient));
+        }
+        {
+            assertThrows(UriMapperParsingException.class,
+                    () -> ContextIdentificationMapper.fromUri(
+                            "sdc.ctxt.loc:/http%3A%2F%2Froot//ext%2Fen%C3%96sion%3F",
+                            ContextIdentificationMapper.ContextSource.Location));
+        }
+        {
+            assertThrows(UriMapperParsingException.class,
+                    () -> ContextIdentificationMapper.fromUri(
+                            "sdc.ctxt.loc://http%3A%2F%2Froot/ext%2Fen%C3%96sion%3F",
+                            ContextIdentificationMapper.ContextSource.Location));
+        }
+        {
+            assertThrows(UriMapperParsingException.class,
+                    () -> ContextIdentificationMapper.fromUri(
+                            "sdc.ctxt.loc://ext%2Fen%C3%96sion%3F",
+                            ContextIdentificationMapper.ContextSource.Location));
+        }
+        {
+            assertThrows(UriMapperParsingException.class,
+                    () -> ContextIdentificationMapper.fromUri(
+                            "sdc.ctxt.loc:/a/b?ä?",
+                            ContextIdentificationMapper.ContextSource.Location));
+        }
+        {
+            assertThrows(UriMapperParsingException.class,
+                    () -> ContextIdentificationMapper.fromUri(
+                            "sdc.ctxt.loc:/a/ä",
+                            ContextIdentificationMapper.ContextSource.Location));
+        }
+        {
+            assertThrows(UriMapperParsingException.class,
+                    () -> ContextIdentificationMapper.fromUri(
+                            "sdc.ctxt.loc:/a#/b",
+                            ContextIdentificationMapper.ContextSource.Location));
         }
 
         {
-            Optional<InstanceIdentifier> actualInstanceIdentifier = ContextIdentificationMapper.fromString("sdc.ctxt.loc:/http%3A%2F%2Froot//ext%2Fen%C3%96sion%3F",
-                    ContextIdentificationMapper.ContextSource.Location);
-            assertTrue(actualInstanceIdentifier.isEmpty());
+            InstanceIdentifier actualInstanceIdentifier = ContextIdentificationMapper.fromUri(
+                    "sdc.ctxt.ens:/http%3A%2F%2Froot/ext%2Fen%C3%96sion%3F?query#fragment",
+                    ContextIdentificationMapper.ContextSource.Ensemble);
+            InstanceIdentifier expectedInstanceIdentifier =
+                    createInstanceIdentifier("http://root", "ext/enÖsion?");
+            compare(expectedInstanceIdentifier, actualInstanceIdentifier);
         }
     }
 

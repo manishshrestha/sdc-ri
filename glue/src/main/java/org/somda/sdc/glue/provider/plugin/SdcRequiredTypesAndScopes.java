@@ -158,7 +158,6 @@ public class SdcRequiredTypesAndScopes implements SdcDevicePlugin, MdibAccessObs
         HashSet<String> uris = new HashSet<>(mdsDescriptors.size());
         for (MdsDescriptor mdsDescriptor : mdsDescriptors) {
             try {
-                // TODO: change to string set
                 uris.add(ComplexDeviceComponentMapper.fromComplexDeviceComponent(mdsDescriptor));
             } catch (UriMapperGenerationArgumentException e) {
                 LOG.warn("The URI generation based on the given MdsDescriptor with the handle " +
@@ -180,8 +179,12 @@ public class SdcRequiredTypesAndScopes implements SdcDevicePlugin, MdibAccessObs
 
         Set<String> uris = new HashSet<>(locationContextState.get().getIdentification().size());
         for (var instanceIdentifier : locationContextState.get().getIdentification()) {
-            uris.add(ContextIdentificationMapper.fromInstanceIdentifier(instanceIdentifier,
-                    ContextIdentificationMapper.ContextSource.Location));
+            try {
+                uris.add(ContextIdentificationMapper.fromInstanceIdentifier(instanceIdentifier,
+                        ContextIdentificationMapper.ContextSource.Location));
+            } catch (UriMapperGenerationArgumentException e) {
+                LOG.warn("Unable to encode to an URI", e);
+            }
         }
         return uris;
     }

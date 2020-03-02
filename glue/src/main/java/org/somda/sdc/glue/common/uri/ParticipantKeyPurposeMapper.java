@@ -2,10 +2,7 @@ package org.somda.sdc.glue.common.uri;
 
 import org.ietf.jgss.GSSException;
 import org.ietf.jgss.Oid;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -15,7 +12,6 @@ import java.util.regex.Pattern;
  * This class implements the grammar defined in IEEE 11073-20701 section 9.3.
  */
 public class ParticipantKeyPurposeMapper {
-    private static final Logger LOG = LoggerFactory.getLogger(ParticipantKeyPurposeMapper.class);
     private static final String SCHEME = "sdc.mds.pkp";
     private static final String NO_LEADING_ZERO_EXCEPT_FOR_SINGLE_DIGIT = "(0|([1-9][0-9]*))";
     private static final String OID_SEGMENT =
@@ -33,12 +29,13 @@ public class ParticipantKeyPurposeMapper {
      *
      * @param oid the OID to convert.
      * @return the converted URI.
+     * @throws UriMapperGenerationArgumentException in case no valid URI could be generated from the input.
      */
     public static String fromOid(Oid oid) throws UriMapperGenerationArgumentException {
         final String uri = SCHEME + ":" + oid.toString();
 
         try {
-            fromString(uri);
+            fromUri(uri);
         } catch (UriMapperParsingException e) {
             throw new UriMapperGenerationArgumentException("No valid URI could be generated from the given OID: " +
                     oid.toString());
@@ -51,9 +48,10 @@ public class ParticipantKeyPurposeMapper {
      * Creates an OID given a Participant Key Purpose encoded URI.
      *
      * @param uri the URI to convert.
-     * @return the converted OID or {@link Optional#empty()} if something went wrong.
+     * @return the converted OID.
+     * @throws UriMapperParsingException in case no valid URI was given.
      */
-    public static Oid fromString(String uri) throws UriMapperParsingException {
+    public static Oid fromUri(String uri) throws UriMapperParsingException {
 
         Matcher matcher = PATTERN.matcher(uri);
 

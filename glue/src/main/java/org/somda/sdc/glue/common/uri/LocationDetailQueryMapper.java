@@ -1,29 +1,40 @@
 package org.somda.sdc.glue.common.uri;
 
 import com.google.common.base.Strings;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import jregex.Matcher;
+import jregex.Pattern;
 import org.somda.sdc.biceps.model.participant.InstanceIdentifier;
 import org.somda.sdc.biceps.model.participant.LocationDetail;
+import org.somda.sdc.glue.GlueConstants;
 import org.somda.sdc.glue.common.helper.UrlUtf8;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Utility class to map location detail to and from URIs in accordance with SDC Glue section 9.4.1.2.
  */
 public class LocationDetailQueryMapper {
-    private static final Logger LOG = LoggerFactory.getLogger(LocationDetailQueryMapper.class);
+
+    private static final Pattern PATTERN = new Pattern(GlueConstants.URI_REGEX);
+    private static final Pattern QUERY_VALIDATOR = new Pattern(GlueConstants.LOC_CTXT_QUERY);
 
     /**
      * Creates a URI out of a location context instance identifier and location detail.
      *
      * @param instanceIdentifier a location context instance identifier.
      * @param locationDetail     the location detail to append.
-     * @return a URI with appended location detail parameters or the URI if something went wrong during URI re-construction.
+     * @return a URI with appended location detail parameters or
+     * the URI if something went wrong during URI re-construction.
+     * @throws UriMapperGenerationArgumentException in case no valid URI could be generated from the input.
      */
-    public static String createWithLocationDetailQuery(InstanceIdentifier instanceIdentifier, LocationDetail locationDetail) {
+    public static String createWithLocationDetailQuery(InstanceIdentifier instanceIdentifier,
+                                                       LocationDetail locationDetail)
+            throws UriMapperGenerationArgumentException {
         final String uri = ContextIdentificationMapper.fromInstanceIdentifier(instanceIdentifier,
                 ContextIdentificationMapper.ContextSource.Location);
         StringBuilder queryParams = new StringBuilder("?");
@@ -40,61 +51,101 @@ public class LocationDetailQueryMapper {
                     queryParams.append('&');
                 }
                 queryParams.append(key).append('=').append(UrlUtf8.encode(value));
-            } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException | ClassCastException e) {
-                // Ignore reflection exceptions
-                LOG.warn("Unexpected reflection exception occurred during location detail appending of field " +
-                        field.toString(), e);
+            } catch (NoSuchMethodException | IllegalAccessException |
+                    InvocationTargetException | ClassCastException e) {
+                throw new UriMapperGenerationArgumentException(
+                        "Unexpected reflection exception occurred during location detail appending of field " +
+                                field.toString());
             }
         }
 
         final String queryParamsString = queryParams.toString();
-        return uri +
+        final String resultingUri = uri +
                 (queryParamsString.equals("?") ? "" : queryParamsString);
+
+        try {
+            readLocationDetailQuery(resultingUri);
+        } catch (UriMapperParsingException e) {
+            throw new UriMapperGenerationArgumentException(
+                    "No valid URI could be generated from the given LocationDetail: '" + locationDetail.toString()
+                            + "' and InstanceIdentifier: '" + instanceIdentifier.toString() + "'");
+        }
+
+        return resultingUri;
     }
 
-//    /**
-//     * Reads location detail query parameters from the given URI.
-//     *
-//     * @param uri the URI to parse.
-//     * @return a {@link LocationDetail} instance in which every field is filled that has an existing location detail
-//     * query parameter in <em>uri</em>.
-//     */
-//    public static LocationDetail readLocationDetailQuery(String uri) {
-//        final var locationDetail = new LocationDetail();
-//        final var queryItems = splitQuery(uri);
-//        for (LocationDetailFields field : LocationDetailFields.values()) {
-//            final var values = queryItems.get(field.getQueryKey());
-//            if (values != null && !values.isEmpty()) {
-//                try {
-//                    final Method setter = field.getSetter();
-//                    setter.invoke(locationDetail, UrlUtf8.decode(values.get(0)));
-//                } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
-//                    // Ignore reflection exceptions
-//                    LOG.warn("Unexpected reflection exception occurred during location detail reading of field " +
-//                            field.toString(), e);
-//                }
-//            }
-//        }
-//
-//        return locationDetail;
-//    }
+    /**
+     * Reads location detail query parameters from the given URI.
+     *
+     * @param uri the URI to parse.
+     * @return a {@link LocationDetail} instance in which every field is filled that has an existing location detail
+     * query parameter in <em>uri</em>.
+     * @throws UriMapperParsingException in case no valid URI was given.
+     */
+    public static LocationDetail readLocationDetailQuery(String uri) throws UriMapperParsingException {
 
-//    private static Map<String, List<String>> splitQuery(String uri) {
-//        final Map<String, List<String>> queryPairs = new LinkedHashMap<>();
-//        // TODO: use regex parser to split
-//        final String[] keyValuePair = uri.split("&");
-//        for (String pair : keyValuePair) {
-//            final int equalCharIndex = pair.indexOf("=");
-//            final String key = equalCharIndex > 0 ? UrlUtf8.decode(pair.substring(0, equalCharIndex)) : pair;
-//            if (!queryPairs.containsKey(key)) {
-//                queryPairs.put(key, new LinkedList<>());
-//            }
-//            if (equalCharIndex > 0 && pair.length() > equalCharIndex + 1) {
-//                queryPairs.get(key).add(UrlUtf8.decode(pair.substring(equalCharIndex + 1)));
-//            }
-//        }
-//        return queryPairs;
-//    }
+        Matcher uriMatcher = PATTERN.matcher(uri);
+
+        if (uriMatcher.matches()) {
+            String queryString = uriMatcher.group("query");
+
+            if (queryString == null) {
+                return new LocationDetail();
+            }
+            Matcher queryMatcher = QUERY_VALIDATOR.matcher(queryString);
+
+            if (queryMatcher.matches()) {
+
+                final var locationDetail = new LocationDetail();
+                final var queryItems = splitQuery(queryString);
+                for (LocationDetailFields field : LocationDetailFields.values()) {
+                    final var values = queryItems.get(field.getQueryKey());
+                    if (values != null && !values.isEmpty()) {
+                        try {
+                            final Method setter = field.getSetter();
+                            setter.invoke(locationDetail, UrlUtf8.decode(values.get(0)));
+                        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+
+                            throw new UriMapperParsingException(
+                                    "Unexpected reflection exception occurred " +
+                                            "during location detail reading of field " +
+                                            "for the mapper " + LocationDetailQueryMapper.class.toString() + " " +
+                                            e.toString());
+                        }
+                    }
+                }
+                return locationDetail;
+
+            } else {
+                throw new UriMapperParsingException(
+                        "Invalid Query in the URI for the mapper " + LocationDetailQueryMapper.class.toString());
+            }
+        } else {
+            throw new UriMapperParsingException(
+                    "Invalid URI for the mapper " + LocationDetailQueryMapper.class.toString());
+        }
+
+
+    }
+
+    private static Map<String, List<String>> splitQuery(String query) throws UriMapperParsingException {
+        final Map<String, List<String>> queryPairs = new LinkedHashMap<>();
+        final String[] keyValuePair = query.split("&");
+        for (String pair : keyValuePair) {
+            final int equalCharIndex = pair.indexOf("=");
+            final String key = equalCharIndex > 0 ? UrlUtf8.decode(pair.substring(0, equalCharIndex)) : pair;
+            if (!queryPairs.containsKey(key)) {
+                queryPairs.put(key, new LinkedList<>());
+            } else {
+                throw new UriMapperParsingException(
+                        "More than one query segment with the key '" + key + "'");
+            }
+            if (equalCharIndex > 0 && pair.length() > equalCharIndex + 1) {
+                queryPairs.get(key).add(UrlUtf8.decode(pair.substring(equalCharIndex + 1)));
+            }
+        }
+        return queryPairs;
+    }
 
     private enum LocationDetailFields {
         FACILITY("fac", "Facility"),

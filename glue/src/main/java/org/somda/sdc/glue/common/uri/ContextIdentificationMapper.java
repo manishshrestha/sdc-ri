@@ -4,9 +4,7 @@ import org.somda.sdc.biceps.model.participant.*;
 import org.somda.sdc.glue.GlueConstants;
 import org.somda.sdc.glue.common.helper.UrlUtf8;
 
-import java.util.Optional;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import jregex.*;
 
 /**
  * Utility class to map between context-based URIs and instance identifiers.
@@ -17,12 +15,17 @@ public class ContextIdentificationMapper {
     private static final String NULL_FLAVOR_ROOT = "biceps.uri.unk";
     private static final String SCHEME_PREFIX = "sdc.ctxt.";
 
-    private static final Pattern PATTERN = Pattern
-            .compile(
-                    "^(?i:(?<contextsource>sdc.ctxt.(loc|pat|ens|wfl|opr|mns))):/" +
-                            "(?<root>" + GlueConstants.SEGMENT_NZ_REGEX + ")/" +
-                            "(?<extension>" + GlueConstants.SEGMENT_REGEX + ")$"
-            );
+    private static final Pattern URI_PATTERN = new Pattern(GlueConstants.URI_REGEX);
+
+    private static final Pattern CONTEXT_SOURCE_VALIDATOR = new Pattern(
+            "^(?i:sdc.ctxt.(loc|pat|ens|wfl|opr|mns))$");
+
+    private static final Pattern INSTANCE_IDENTIFIER_PATTERN = new Pattern(
+            "/({root}" + GlueConstants.SEGMENT_NZ_REGEX + ")/" +
+                    "({extension}" + GlueConstants.SEGMENT_REGEX + ")$"
+    );
+
+    private static final Pattern SCHEME_VALIDATOR = new Pattern("^" + GlueConstants.SCHEME_SEGMENT + "$");
 
     /**
      * Converts from an instance identifier to an URI.
@@ -30,12 +33,26 @@ public class ContextIdentificationMapper {
      * @param instanceIdentifier the instance identifier to convert.
      * @param contextSource      the type of context to create a scheme for.
      * @return an URI that reflects the instance identifier.
+     * @throws UriMapperGenerationArgumentException in case no valid URI could be generated from the input.
      */
     public static String fromInstanceIdentifier(InstanceIdentifier instanceIdentifier,
-                                                ContextSource contextSource) {
-        final String root = instanceIdentifier.getRootName() == null ? NULL_FLAVOR_ROOT : UrlUtf8.encode(instanceIdentifier.getRootName());
+                                                ContextSource contextSource)
+            throws UriMapperGenerationArgumentException {
+        final String root = instanceIdentifier.getRootName() == null ?
+                NULL_FLAVOR_ROOT : UrlUtf8.encode(instanceIdentifier.getRootName());
         final String extension = UrlUtf8.encode(instanceIdentifier.getExtensionName());
-        return contextSource.getSourceString() + ":/" + root + "/" + extension;
+
+        final String resultingUri = contextSource.getSourceString() + ":/" + root + "/" + extension;
+
+        try {
+            fromUri(resultingUri, contextSource);
+        } catch (UriMapperParsingException e) {
+            throw new UriMapperGenerationArgumentException(
+                    "No valid URI could be generated from the given instance identifier: " +
+                            instanceIdentifier.toString() + " and context source: " + contextSource.toString());
+        }
+
+        return resultingUri;
     }
 
     /**
@@ -43,33 +60,54 @@ public class ContextIdentificationMapper {
      *
      * @param contextIdentificationUri the URI to parse.
      * @param expectedContextSource    the expected context source.
-     * @return the converted instance identifier or {@link Optional#empty()} if either there was a parsing error or
-     * the scheme did not match the expected context source.
+     * @return the converted instance identifier.
+     * @throws UriMapperParsingException in case no valid URI was given.
      */
-    public static Optional<InstanceIdentifier> fromString(String contextIdentificationUri,
-                                                          ContextSource expectedContextSource) {
-        Matcher matcher = PATTERN.matcher(contextIdentificationUri);
-        if (matcher.matches()) {
-            final String contextSource = matcher.group("contextsource");
-            final String root = matcher.group("root");
-            final String extension = matcher.group("extension");
-            if (contextSource == null ||
-                    root == null ||
-                    extension == null ||
-                    root.isEmpty() ||
-                    !contextSource.equals(expectedContextSource.getSourceString())) {
-                return Optional.empty();
-            }
+    public static InstanceIdentifier fromUri(String contextIdentificationUri,
+                                             ContextSource expectedContextSource)
+            throws UriMapperParsingException {
 
-            final InstanceIdentifier instanceIdentifier = new InstanceIdentifier();
-            final String decodedRoot = UrlUtf8.decode(root);
-            instanceIdentifier.setRootName(decodedRoot.equals(NULL_FLAVOR_ROOT) ? null : decodedRoot);
-            final String decodedExtension = UrlUtf8.decode(extension);
-            instanceIdentifier.setExtensionName(decodedExtension.isEmpty() ? null : decodedExtension);
-            return Optional.of(instanceIdentifier);
+        // In case the input will be changed in the future
+        Matcher expectedSourceMatcher = SCHEME_VALIDATOR.matcher(expectedContextSource.getSourceString());
+        if (!expectedSourceMatcher.matches()) {
+            throw new UriMapperParsingException("The expected context source: '" +
+                    expectedContextSource.getSourceString() + " is not valid");
         }
 
-        return Optional.empty();
+        Matcher uriMatcher = URI_PATTERN.matcher(contextIdentificationUri);
+
+        if (uriMatcher.matches()) {
+
+            final String contextSource = uriMatcher.group("scheme");
+
+            if (!expectedContextSource.getSourceString().equals(contextSource)) {
+                throw new UriMapperParsingException(
+                        "The expected context source: '" + expectedContextSource.getSourceString() +
+                                "' does not match with the actual context source: '" + contextSource + "'" +
+                                ContextIdentificationMapper.class.toString());
+            }
+
+            Matcher instanceIdentifierMatcher = INSTANCE_IDENTIFIER_PATTERN.matcher(uriMatcher.group("path"));
+
+            if (instanceIdentifierMatcher.matches()) {
+                final String root = instanceIdentifierMatcher.group("root");
+                final String extension = instanceIdentifierMatcher.group("extension");
+
+                final InstanceIdentifier instanceIdentifier = new InstanceIdentifier();
+                final String decodedRoot = UrlUtf8.decode(root);
+                instanceIdentifier.setRootName(decodedRoot.equals(NULL_FLAVOR_ROOT) ? null : decodedRoot);
+                final String decodedExtension = UrlUtf8.decode(extension);
+                instanceIdentifier.setExtensionName(decodedExtension.isEmpty() ? null : decodedExtension);
+
+                return instanceIdentifier;
+            } else {
+                throw new UriMapperParsingException("Invalid encoding of InstanceIdentifier in the URI for the mapper " +
+                        ContextIdentificationMapper.class.toString());
+            }
+        } else {
+            throw new UriMapperParsingException("Invalid URI for the mapper " +
+                    ContextIdentificationMapper.class.toString());
+        }
     }
 
     /**

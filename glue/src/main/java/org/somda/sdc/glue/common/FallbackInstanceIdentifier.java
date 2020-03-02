@@ -1,4 +1,4 @@
-package org.somda.sdc.glue.common.uri;
+package org.somda.sdc.glue.common;
 
 import org.somda.sdc.biceps.model.participant.InstanceIdentifier;
 import org.somda.sdc.biceps.model.participant.LocationDetail;

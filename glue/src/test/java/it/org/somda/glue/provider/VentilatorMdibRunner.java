@@ -6,7 +6,7 @@ import org.somda.sdc.biceps.common.access.ReadTransaction;
 import org.somda.sdc.biceps.common.storage.PreprocessingException;
 import org.somda.sdc.biceps.model.participant.*;
 import org.somda.sdc.biceps.provider.access.LocalMdibAccess;
-import org.somda.sdc.glue.common.uri.FallbackInstanceIdentifier;
+import org.somda.sdc.glue.common.FallbackInstanceIdentifier;
 import org.somda.sdc.glue.common.MdibXmlIo;
 import org.somda.sdc.glue.common.factory.ModificationsBuilderFactory;
 import org.somda.sdc.glue.provider.SdcDeviceContext;

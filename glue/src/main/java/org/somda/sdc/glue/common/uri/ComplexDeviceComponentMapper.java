@@ -1,13 +1,11 @@
 package org.somda.sdc.glue.common.uri;
 
+import jregex.Matcher;
+import jregex.Pattern;
 import org.somda.sdc.biceps.model.participant.AbstractComplexDeviceComponentDescriptor;
 import org.somda.sdc.biceps.model.participant.CodedValue;
 import org.somda.sdc.glue.GlueConstants;
 import org.somda.sdc.glue.common.helper.UrlUtf8;
-
-import java.util.Optional;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * Utility class to map from complex device component coded value to URI and back to coded value.
@@ -17,35 +15,33 @@ import java.util.regex.Pattern;
 public class ComplexDeviceComponentMapper {
     private static final String SCHEME = "sdc.cdc.type";
 
-    private static final Pattern PATTERN = Pattern
-            .compile(
-                    "^(" +
-                            "(?i:sdc.cdc.type):/" +
-                            // Warning: this intentionally differs from
-                            // the standard to distinguish between authority and path
-                            // Do not change the first of the following groups to SEGMENT_REGEX instead
-                            // of SEGMENT_NZ_REGEX
-                            "(?<nonAuthorityCodingsystem>" + GlueConstants.SEGMENT_NZ_REGEX + ")/" +
-                            "(?<nonAuthorityCodingsystemVersion>" + GlueConstants.SEGMENT_REGEX + ")/" +
-                            "(?<nonAuthorityCode>" + GlueConstants.SEGMENT_NZ_REGEX + ")|" +
-                            "((?i:sdc.cdc.type)://" +
-                            "(?<authorityCodingsystemVersion>(" + GlueConstants.AUTHORITY + "))/" +
-                            "(?<authorityCode>" + GlueConstants.SEGMENT_NZ_REGEX + ")" +
-                            ")" +
-                            ")$"
-            );
+    private static final Pattern PATTERN = new Pattern(
+            "^(" +
+                    "(?i:sdc.cdc.type):/" +
+                    // Warning: this intentionally differs from
+                    // the standard to distinguish between authority and path
+                    // Do not change the first of the following groups to "SEGMENT_REGEX" instead
+                    // of "SEGMENT_NZ_REGEX|"
+                    "(({codingSystem}" + GlueConstants.SEGMENT_NZ_REGEX + ")|)/" +
+                    "({codingSystemVersion}(?(codingSystem)" +
+                    GlueConstants.SEGMENT_REGEX + "|" +
+                    GlueConstants.AUTHORITY + "))/" +
+                    "({code}" + GlueConstants.SEGMENT_NZ_REGEX + ")" +
+                    ")$"
+    );
 
     /**
      * Maps an abstract complex component descriptor to URI representation.
      *
      * @param descriptor the device component where to access the type.
-     * @return the mapped URI or {@linkplain Optional#empty()} if type of descriptor was null.
+     * @return the mapped URI.
+     * @throws UriMapperGenerationArgumentException in case no valid URI could be generated from the input.
      */
     public static String fromComplexDeviceComponent(AbstractComplexDeviceComponentDescriptor descriptor)
             throws UriMapperGenerationArgumentException {
         final CodedValue codedValue = descriptor.getType();
         if (codedValue == null) {
-            throw new UriMapperGenerationArgumentException("No CodedValue was provided.");
+            throw new UriMapperGenerationArgumentException("No CodedValue was provided");
         }
 
         return fromCodedValue(codedValue);
@@ -57,6 +53,7 @@ public class ComplexDeviceComponentMapper {
      *
      * @param codedValue a complex device component's type.
      * @return the mapped URI.
+     * @throws UriMapperGenerationArgumentException in case no valid URI could be generated from the input.
      */
     public static String fromCodedValue(CodedValue codedValue) throws UriMapperGenerationArgumentException {
         String codingSystem = codedValue.getCodingSystem();
@@ -70,7 +67,7 @@ public class ComplexDeviceComponentMapper {
                 "/" + UrlUtf8.encode(codedValue.getCode());
 
         try {
-            fromString(uri);
+            fromUri(uri);
         } catch (UriMapperParsingException e) {
             throw new UriMapperGenerationArgumentException(
                     "No valid URI could be generated from the given CodedValue with " +
@@ -86,27 +83,17 @@ public class ComplexDeviceComponentMapper {
      * Maps a complex device component type URI string to a coded value.
      *
      * @param complexDeviceComponentTypeUri the URI to parse.
-     * @return a coded value if pattern of URI matches or {@linkplain Optional#empty()} otherwise.
+     * @return a coded value if pattern of URI matches.
+     * @throws UriMapperParsingException in case no valid URI was given.
      */
-    public static CodedValue fromString(String complexDeviceComponentTypeUri) throws UriMapperParsingException {
+    public static CodedValue fromUri(String complexDeviceComponentTypeUri) throws UriMapperParsingException {
 
-        Matcher matcher = PATTERN.matcher(complexDeviceComponentTypeUri.toString());
+        Matcher matcher = PATTERN.matcher(complexDeviceComponentTypeUri);
         if (matcher.matches()) {
 
-            final String codingSystem;
-            final String codingSystemVersion;
-            final String code;
-
-            if (matcher.group("nonAuthorityCode") != null) {
-                codingSystem = UrlUtf8.decode(matcher.group("nonAuthorityCodingsystem"));
-                codingSystemVersion = UrlUtf8.decode(matcher.group("nonAuthorityCodingsystemVersion"));
-                code = UrlUtf8.decode(matcher.group("nonAuthorityCode"));
-            } else {
-                codingSystem = "";
-                codingSystemVersion = UrlUtf8.decode(matcher.group("authorityCodingsystemVersion"));
-                code = UrlUtf8.decode(matcher.group("authorityCode"));
-            }
-
+            final String codingSystem = UrlUtf8.decode(matcher.group("codingSystem"));
+            final String codingSystemVersion = UrlUtf8.decode(matcher.group("codingSystemVersion"));
+            final String code = UrlUtf8.decode(matcher.group("code"));
 
             CodedValue codedValue = new CodedValue();
             codedValue.setCodingSystem(codingSystem.isEmpty() ? null : codingSystem);
