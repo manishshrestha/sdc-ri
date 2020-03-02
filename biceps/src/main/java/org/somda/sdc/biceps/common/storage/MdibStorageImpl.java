@@ -372,7 +372,7 @@ public class MdibStorageImpl implements MdibStorage {
                 } catch (Exception e) {
                     LOG.warn("Ignore modification. Reason: could not instantiate descriptor type for handle {}.",
                             modification.getDescriptorHandle());
-                    LOG.trace("Ignore modification.", e);
+                    LOG.trace("Ignore modification", e);
                     continue;
                 }
                 descr.setHandle(modification.getDescriptorHandle());
