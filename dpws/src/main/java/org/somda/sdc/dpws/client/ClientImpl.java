@@ -39,7 +39,6 @@ import org.somda.sdc.dpws.soap.wsdiscovery.model.ResolveMatchesType;
 import org.somda.sdc.dpws.udp.UdpMessageQueueService;
 
 import javax.annotation.Nullable;
-import java.net.URI;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -123,7 +122,7 @@ public class ClientImpl extends AbstractIdleService implements Client, Service, 
     }
 
     @Override
-    public ListenableFuture<ProbeMatchesType> directedProbe(URI xAddr) {
+    public ListenableFuture<ProbeMatchesType> directedProbe(String xAddr) {
         checkRunning();
 
         TransportBinding tBinding = transportBindingFactory.createTransportBinding(xAddr);
@@ -132,7 +131,7 @@ public class ClientImpl extends AbstractIdleService implements Client, Service, 
     }
 
     @Override
-    public ListenableFuture<DiscoveredDevice> resolve(URI eprAddress) throws InterceptorException {
+    public ListenableFuture<DiscoveredDevice> resolve(String eprAddress) throws InterceptorException {
         checkRunning();
 
         try {
@@ -151,7 +150,7 @@ public class ClientImpl extends AbstractIdleService implements Client, Service, 
                             scopes = rm.getScopes().getValue();
                         }
                         deviceSettableFuture.set(new DiscoveredDevice(
-                                URI.create(rm.getEndpointReference().getAddress().getValue()),
+                                rm.getEndpointReference().getAddress().getValue(),
                                 rm.getTypes(),
                                 scopes,
                                 rm.getXAddrs(),
@@ -187,7 +186,7 @@ public class ClientImpl extends AbstractIdleService implements Client, Service, 
     }
 
     @Override
-    public ListenableFuture<HostingServiceProxy> connect(URI eprAddress) throws InterceptorException {
+    public ListenableFuture<HostingServiceProxy> connect(String eprAddress) throws InterceptorException {
         checkRunning();
 
         final ListenableFuture<DiscoveredDevice> resolveFuture = resolve(eprAddress);

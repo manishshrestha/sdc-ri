@@ -314,9 +314,9 @@ public class Consumer {
         }
         consumer.getClient().unregisterDiscoveryObserver(obs);
 
-        var device_uri = URI.create(targetEpr);
+        var deviceUri = targetEpr;
         LOG.info("Connecting to {}", targetEpr);
-        var hostingServiceFuture = consumer.getClient().connect(device_uri);
+        var hostingServiceFuture = consumer.getClient().connect(deviceUri);
 
         HostingServiceProxy hostingServiceProxy = null;
         try {
@@ -406,7 +406,7 @@ public class Consumer {
         sdcRemoteDevice.getMdibAccessObservable().unregisterObserver(reportObs);
         sdcRemoteDevice.stopAsync().awaitTerminated();
 
-        consumer.getConnector().disconnect(device_uri);
+        consumer.getConnector().disconnect(deviceUri);
         consumer.shutDown();
 
     }

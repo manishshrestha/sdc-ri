@@ -16,22 +16,22 @@ public class UriBaseContextPathTest {
     final URI testOid = URI.create("urn:" + expectedUrnOidSpecificPart);
 
     @Test
-    public void uriParts() {
+    void uriParts() {
         assertEquals(expectedUrlPath, testUrl.getPath());
         assertEquals(expectedUrnUuidSpecificPart, testUuid.getSchemeSpecificPart());
         assertEquals(expectedUrnOidSpecificPart, testOid.getSchemeSpecificPart());
     }
 
     @Test
-    public void basePathDerivation() {
+    void basePathDerivation() {
         final String expectedUrlBasePath = expectedUrlPath.substring(1);
         final String expectedUuidBasePath = expectedUrnUuidSpecificPart.substring("uuid:".length());
         final String expectedOidBasePath = expectedUrnOidSpecificPart.substring("oid:".length());
 
-        assertEquals(expectedUrlBasePath, new UriBaseContextPath(testUrl).get());
-        assertEquals(expectedUuidBasePath, new UriBaseContextPath(testUuid).get());
-        assertEquals(expectedOidBasePath, new UriBaseContextPath(testOid).get());
+        assertEquals(expectedUrlBasePath, new UriBaseContextPath(testUrl.toString()).get());
+        assertEquals(expectedUuidBasePath, new UriBaseContextPath(testUuid.toString()).get());
+        assertEquals(expectedOidBasePath, new UriBaseContextPath(testOid.toString()).get());
 
-        assertEquals("", new UriBaseContextPath(URI.create("urn:foo:bar:1234")).get());
+        assertEquals("", new UriBaseContextPath("urn:foo:bar:1234").get());
     }
 }

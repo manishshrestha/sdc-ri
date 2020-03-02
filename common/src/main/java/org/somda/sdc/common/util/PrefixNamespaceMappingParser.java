@@ -38,7 +38,8 @@ public class PrefixNamespaceMappingParser {
             final String prefix = matcher.group(1);
             final String uri = matcher.group(2);
             try {
-                mapping.put(uri, new PrefixNamespacePair(prefix, new URI(uri)));
+                // todo: DGr URI validation could be optimized; java.net.URI is too lax here
+                mapping.put(uri, new PrefixNamespacePair(prefix, (new URI(uri)).toString()));
             } catch (URISyntaxException e) {
                 LOG.warn("Given namespace in {} is not a valid URI: {}", prefixNamespaces, uri);
             }
@@ -52,9 +53,9 @@ public class PrefixNamespaceMappingParser {
      */
     public static class PrefixNamespacePair {
         private final String prefix;
-        private final URI namespace;
+        private final String namespace;
 
-        public PrefixNamespacePair(String prefix, URI namespace) {
+        public PrefixNamespacePair(String prefix, String namespace) {
             this.prefix = prefix;
             this.namespace = namespace;
         }
@@ -63,7 +64,7 @@ public class PrefixNamespaceMappingParser {
             return prefix;
         }
 
-        public URI getNamespace() {
+        public String getNamespace() {
             return namespace;
         }
 

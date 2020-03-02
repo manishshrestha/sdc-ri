@@ -94,7 +94,7 @@ public class DiscoveredDeviceResolver {
                                                List<String> scopes,
                                                List<String> xAddrs,
                                                long metadataVersion) {
-        if (wsaUtil.getAddressUriAsString(epr).isEmpty()) {
+        if (wsaUtil.getAddressUri(epr).isEmpty()) {
             LOG.info("Empty device endpoint reference found. Skip resolve");
             return Optional.empty();
         }
@@ -133,7 +133,7 @@ public class DiscoveredDeviceResolver {
         } catch (ExecutionException e) {
             LOG.info("Resolve of '{}' failed", epr, e.getCause());
         } catch (TimeoutException e) {
-            LOG.debug("Did not get resolve answer from '{}' within {} ms", wsaUtil.getAddressUriAsString(epr),
+            LOG.debug("Did not get resolve answer from '{}' within {} ms", wsaUtil.getAddressUri(epr),
                     maxWaitForResolveMatches.toMillis());
         } catch (InterceptorException e) {
             LOG.info(e.getMessage(), e.getCause());

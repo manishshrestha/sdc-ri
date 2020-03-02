@@ -3,10 +3,6 @@ package org.somda.sdc.dpws.device;
 import org.somda.sdc.dpws.soap.wsaddressing.model.EndpointReferenceType;
 
 import java.net.NetworkInterface;
-import java.net.SocketException;
-import java.net.URI;
-import java.net.UnknownHostException;
-import java.util.List;
 
 /**
  * Settings used in the setup process of a device.

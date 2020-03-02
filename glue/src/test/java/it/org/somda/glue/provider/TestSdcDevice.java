@@ -144,7 +144,7 @@ public class TestSdcDevice extends IntegrationTestPeer {
     private void setupSdcDevice(Collection<OperationInvocationReceiver> operationInvocationReceivers,
                                 Collection<SdcDevicePlugin> sdcDevicePlugins) {
         final Injector injector = getInjector();
-        final URI eprAddress = injector.getInstance(SoapUtil.class).createUriFromUuid(UUID.randomUUID());
+        final String eprAddress = injector.getInstance(SoapUtil.class).createUriFromUuid(UUID.randomUUID());
         final WsAddressingUtil wsaUtil = injector.getInstance(WsAddressingUtil.class);
         final EndpointReferenceType epr = wsaUtil.createEprWithAddress(eprAddress);
         final DeviceSettings deviceSettings = new DeviceSettings() {

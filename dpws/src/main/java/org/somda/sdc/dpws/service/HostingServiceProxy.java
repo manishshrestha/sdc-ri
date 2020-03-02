@@ -5,7 +5,6 @@ import org.somda.sdc.dpws.model.ThisModelType;
 import org.somda.sdc.dpws.soap.RequestResponseClient;
 
 import javax.xml.namespace.QName;
-import java.net.URI;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -19,7 +18,7 @@ public interface HostingServiceProxy extends RequestResponseClient {
      *
      * @return a resolvable URI (i.e., URL).
      */
-    URI getEndpointReferenceAddress();
+    String getEndpointReferenceAddress();
 
     /**
      * Gets types of the hosting service.
@@ -57,7 +56,7 @@ public interface HostingServiceProxy extends RequestResponseClient {
      *
      * @return the currently active EPR address.
      */
-    URI getActiveXAddr();
+    String getActiveXAddr();
 
     /**
      * Gets the metadata version.

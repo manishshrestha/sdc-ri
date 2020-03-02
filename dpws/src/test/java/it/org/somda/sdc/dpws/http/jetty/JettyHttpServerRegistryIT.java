@@ -72,13 +72,13 @@ public class JettyHttpServerRegistryIT extends DpwsTest {
     }
 
     @Test
-    public void registerContext() throws Exception {
-        final URI baseUri = URI.create("http://127.0.0.1:0");
+    void registerContext() throws Exception {
+        var baseUri = "http://127.0.0.1:0";
         final String ctxtPath = "/test/mulitple/path/segments";
         final AtomicBoolean isRequested = new AtomicBoolean(false);
 
         httpServerRegistry.startAsync().awaitRunning();
-        URI srvUri = httpServerRegistry.registerContext(baseUri, ctxtPath, (req, res, ti) -> isRequested.set(true));
+        var srvUri = httpServerRegistry.registerContext(baseUri, ctxtPath, (req, res, ti) -> isRequested.set(true));
 
         TransportBinding httpBinding = transportBindingFactory.createHttpBinding(srvUri);
         httpBinding.onRequestResponse(createASoapMessage());
@@ -87,13 +87,13 @@ public class JettyHttpServerRegistryIT extends DpwsTest {
     }
 
     @Test
-    public void unregisterContext() throws Exception {
-        final String ctxtPath = "/test";
-        final URI baseUri = URI.create("http://127.0.0.1:0");
-        final AtomicBoolean isRequested = new AtomicBoolean(false);
+    void unregisterContext() throws Exception {
+        var ctxtPath = "/test";
+        var baseUri = "http://127.0.0.1:0";
+        var isRequested = new AtomicBoolean(false);
 
         httpServerRegistry.startAsync().awaitRunning();
-        URI srvUri = httpServerRegistry.registerContext(baseUri, ctxtPath, (req, res, ti) -> isRequested.set(true));
+        var srvUri = httpServerRegistry.registerContext(baseUri, ctxtPath, (req, res, ti) -> isRequested.set(true));
 
         TransportBinding httpBinding = transportBindingFactory.createHttpBinding(srvUri);
         httpBinding.onNotification(createASoapMessage());
@@ -114,30 +114,30 @@ public class JettyHttpServerRegistryIT extends DpwsTest {
     }
 
     @Test
-    public void registerMultipleContextsOnOneServer() throws MarshallingException, TransportException {
-        URI baseUri = URI.create("http://127.0.0.1:0");
-        final String ctxtPath1 = "/ctxt/path1";
-        final String ctxtPath2 = "/ctxt/path2";
+    void registerMultipleContextsOnOneServer() throws MarshallingException, TransportException {
+        var baseUri = "http://127.0.0.1:0";
+        var ctxtPath1 = "/ctxt/path1";
+        var ctxtPath2 = "/ctxt/path2";
 
-        final AtomicBoolean isPath1Requested = new AtomicBoolean(false);
-        final AtomicBoolean isPath2Requested = new AtomicBoolean(false);
+        var isPath1Requested = new AtomicBoolean(false);
+        var isPath2Requested = new AtomicBoolean(false);
 
         httpServerRegistry.startAsync().awaitRunning();
-        URI srvUri1 = httpServerRegistry.registerContext(baseUri, ctxtPath1, (req, res, ti) ->
-                isPath1Requested.set(true));
+        var srvUri1 = URI.create(httpServerRegistry.registerContext(baseUri, ctxtPath1, (req, res, ti) ->
+                isPath1Requested.set(true)));
         // uri1 has found a free port, attach uri 2 to the same
-        baseUri = URI.create(String.format("%s:%s", srvUri1.getScheme(), srvUri1.getSchemeSpecificPart()));
-        URI srvUri2 = httpServerRegistry.registerContext(baseUri, ctxtPath2, (req, res, ti) ->
+        baseUri = String.format("%s:%s", srvUri1.getScheme(), srvUri1.getSchemeSpecificPart());
+        var srvUri2 = httpServerRegistry.registerContext(baseUri, ctxtPath2, (req, res, ti) ->
                 isPath2Requested.set(true));
 
-        TransportBinding httpBinding1 = transportBindingFactory.createHttpBinding(srvUri1);
+        TransportBinding httpBinding1 = transportBindingFactory.createHttpBinding(srvUri1.toString());
         TransportBinding httpBinding2 = transportBindingFactory.createHttpBinding(srvUri2);
         httpBinding1.onNotification(createASoapMessage());
         httpBinding2.onNotification(createASoapMessage());
         assertThat(isPath1Requested.get(), is(true));
         assertThat(isPath2Requested.get(), is(true));
 
-        httpServerRegistry.unregisterContext(srvUri1, srvUri1.getPath());
+        httpServerRegistry.unregisterContext(srvUri1.toString(), srvUri1.getPath());
 
         isPath1Requested.set(false);
         try {
@@ -162,10 +162,10 @@ public class JettyHttpServerRegistryIT extends DpwsTest {
     }
 
     @Test
-    public void registerMultipleServers() {
-        final String localhostUri = "http://127.0.0.1:0";
-        URI firstServer = httpServerRegistry.initHttpServer(URI.create(localhostUri));
-        URI secondServer = httpServerRegistry.initHttpServer(URI.create(localhostUri));
+    void registerMultipleServers() {
+        var localhostUri = "http://127.0.0.1:0";
+        var firstServer = URI.create(httpServerRegistry.initHttpServer(localhostUri));
+        var secondServer = URI.create(httpServerRegistry.initHttpServer(localhostUri));
         assertThat(firstServer.getPort(), is(not(secondServer.getPort())));
     }
 
@@ -184,7 +184,7 @@ public class JettyHttpServerRegistryIT extends DpwsTest {
 
     @Test
     public void gzipCompression() throws IOException {
-        URI baseUri = URI.create("http://127.0.0.1:0");
+        var baseUri = "http://127.0.0.1:0";
         final String compressedPath = "/ctxt/path1";
 
         final String expectedString = "The quick brown fox jumps over the lazy dog";
@@ -196,7 +196,7 @@ public class JettyHttpServerRegistryIT extends DpwsTest {
         AtomicReference<String> resultString = new AtomicReference<>();
 
         httpServerRegistry.startAsync().awaitRunning();
-        URI srvUri1 = httpServerRegistry.registerContext(
+        var srvUri1 = httpServerRegistry.registerContext(
                 baseUri, compressedPath, (req, res, ti) -> {
                     try {
                         // request should be decompressed transparently

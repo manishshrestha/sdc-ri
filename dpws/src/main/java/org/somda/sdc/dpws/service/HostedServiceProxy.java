@@ -3,8 +3,6 @@ package org.somda.sdc.dpws.service;
 import org.somda.sdc.dpws.model.HostedServiceType;
 import org.somda.sdc.dpws.soap.RequestResponseClient;
 
-import java.net.URI;
-
 /**
  * Hosted service proxy of a client.
  */
@@ -44,5 +42,5 @@ public interface HostedServiceProxy extends RequestResponseClient {
      *
      * @return the currently active EPR address.
      */
-    URI getActiveEprAddress();
+    String getActiveEprAddress();
 }

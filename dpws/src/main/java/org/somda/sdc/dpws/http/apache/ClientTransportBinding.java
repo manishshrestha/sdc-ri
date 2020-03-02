@@ -12,7 +12,6 @@ import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.somda.sdc.dpws.CommunicationLog;
 import org.somda.sdc.dpws.TransportBinding;
 import org.somda.sdc.dpws.TransportBindingException;
 import org.somda.sdc.dpws.soap.SoapConstants;
@@ -27,7 +26,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.SocketException;
-import java.net.URI;
 
 public class ClientTransportBinding implements TransportBinding {
     private static final Logger LOG = LoggerFactory.getLogger(ClientTransportBinding.class);
@@ -38,21 +36,18 @@ public class ClientTransportBinding implements TransportBinding {
     private final SoapMarshalling marshalling;
     private final SoapUtil soapUtil;
     private HttpClient client;
-    private final URI clientUri;
-    private CommunicationLog communicationLog;
+    private final String clientUri;
 
     @Inject
     ClientTransportBinding(@Assisted HttpClient client,
-                           @Assisted URI clientUri,
+                           @Assisted String clientUri,
                            @Assisted SoapMarshalling marshalling,
-                           @Assisted SoapUtil soapUtil,
-                           CommunicationLog communicationLog) {
+                           @Assisted SoapUtil soapUtil) {
         LOG.debug("Creating ClientTransportBinding for {}", clientUri);
         this.client = client;
         this.clientUri = clientUri;
         this.marshalling = marshalling;
         this.soapUtil = soapUtil;
-        this.communicationLog = communicationLog;
     }
 
     @Override

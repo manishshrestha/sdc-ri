@@ -10,7 +10,6 @@ import org.somda.sdc.dpws.soap.wseventing.EventSink;
 
 import javax.xml.namespace.QName;
 import java.io.InputStream;
-import java.net.URI;
 import java.util.List;
 
 /**
@@ -29,7 +28,7 @@ public interface HostedServiceFactory {
      */
     HostedService createHostedService(@Assisted String serviceId,
                                       @Assisted List<QName> types,
-                                      @Assisted List<URI> eprAddresses,
+                                      @Assisted List<String> eprAddresses,
                                       @Assisted WebService webService,
                                       @Assisted InputStream wsdlDocument);
 
@@ -60,6 +59,6 @@ public interface HostedServiceFactory {
      */
     HostedServiceProxy createHostedServiceProxy(@Assisted HostedServiceType hostedServiceType,
                                                 @Assisted RequestResponseClient rrClient,
-                                                @Assisted URI activeEprAddress,
+                                                @Assisted String activeEprAddress,
                                                 @Assisted EventSink eventSink);
 }

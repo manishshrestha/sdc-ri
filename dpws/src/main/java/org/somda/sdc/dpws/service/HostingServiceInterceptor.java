@@ -24,12 +24,10 @@ import org.somda.sdc.dpws.soap.wsmetadataexchange.model.ObjectFactory;
 import org.somda.sdc.dpws.soap.wstransfer.WsTransferConstants;
 
 import javax.annotation.Nullable;
-import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * Server interceptor for hosting services to serve WS-TransferGet requests.
@@ -52,10 +50,8 @@ public class HostingServiceInterceptor implements HostingService {
     private ThisDeviceType thisDevice;
 
     @Override
-    public List<URI> getXAddrs() {
-        return targetService.getXAddrs().stream()
-                .map(URI::create)
-                .collect(Collectors.toList());
+    public List<String> getXAddrs() {
+        return targetService.getXAddrs();
     }
 
     @AssistedInject
@@ -130,8 +126,8 @@ public class HostingServiceInterceptor implements HostingService {
     }
 
     @Override
-    public URI getEndpointReferenceAddress() {
-        return URI.create(targetService.getEndpointReference().getAddress().getValue());
+    public String getEndpointReferenceAddress() {
+        return targetService.getEndpointReference().getAddress().getValue();
     }
 
     @Override

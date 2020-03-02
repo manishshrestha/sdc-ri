@@ -5,26 +5,21 @@ import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.common.util.concurrent.MoreExecutors;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.somda.sdc.common.util.ExecutorWrapperService;
 import org.somda.sdc.dpws.DpwsTest;
 import org.somda.sdc.dpws.client.DiscoveredDevice;
 import org.somda.sdc.dpws.client.event.DeviceEnteredMessage;
 import org.somda.sdc.dpws.client.event.DeviceLeftMessage;
 import org.somda.sdc.dpws.client.event.DeviceProbeTimeoutMessage;
 import org.somda.sdc.dpws.client.event.ProbedDeviceFoundMessage;
-import org.somda.sdc.common.util.ExecutorWrapperService;
 import org.somda.sdc.dpws.soap.wsaddressing.WsAddressingUtil;
 import org.somda.sdc.dpws.soap.wsaddressing.model.EndpointReferenceType;
 import org.somda.sdc.dpws.soap.wsdiscovery.event.ByeMessage;
 import org.somda.sdc.dpws.soap.wsdiscovery.event.HelloMessage;
 import org.somda.sdc.dpws.soap.wsdiscovery.event.ProbeMatchesMessage;
 import org.somda.sdc.dpws.soap.wsdiscovery.event.ProbeTimeoutMessage;
-import org.somda.sdc.dpws.soap.wsdiscovery.model.ByeType;
-import org.somda.sdc.dpws.soap.wsdiscovery.model.HelloType;
-import org.somda.sdc.dpws.soap.wsdiscovery.model.ObjectFactory;
-import org.somda.sdc.dpws.soap.wsdiscovery.model.ProbeMatchType;
-import org.somda.sdc.dpws.soap.wsdiscovery.model.ProbeMatchesType;
+import org.somda.sdc.dpws.soap.wsdiscovery.model.*;
 
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Optional;
@@ -36,7 +31,7 @@ import static org.mockito.Mockito.when;
 public class DiscoveredDeviceObserverTest extends DpwsTest {
 
     private DiscoveredDeviceResolver discoveredDeviceResolver;
-    private URI expectedUri;
+    private String expectedUri;
     private EndpointReferenceType expectedEpr;
     private HelloByeAndProbeMatchesObserverImpl helloByeAndProbeMatchesObserverImpl;
     private ObjectFactory objFactory;
@@ -52,7 +47,7 @@ public class DiscoveredDeviceObserverTest extends DpwsTest {
         );
         execService.startAsync().awaitRunning();
         discoveredDeviceResolver = mock(DiscoveredDeviceResolver.class);
-        expectedUri = URI.create("http://expectedUri");
+        expectedUri = "http://expectedUri";
         expectedEpr = wsaUtil.createEprWithAddress(expectedUri);
         helloByeAndProbeMatchesObserverImpl = new HelloByeAndProbeMatchesObserverImpl(discoveredDeviceResolver, execService, wsaUtil);
         objFactory = new ObjectFactory();
@@ -60,7 +55,7 @@ public class DiscoveredDeviceObserverTest extends DpwsTest {
     }
 
     @Test
-    public void publishDeviceLeft() {
+    void publishDeviceLeft() {
         helloByeAndProbeMatchesObserverImpl.registerDiscoveryObserver(new org.somda.sdc.dpws.client.DiscoveryObserver() {
             @Subscribe
             void onDeviceLeft(DeviceLeftMessage deviceLeftMessage) {
@@ -74,7 +69,7 @@ public class DiscoveredDeviceObserverTest extends DpwsTest {
     }
 
     @Test
-    public void onHello() {
+    void onHello() {
         HelloType hType = objFactory.createHelloType();
         hType.setEndpointReference(expectedEpr);
         HelloMessage hMsg = new HelloMessage(hType);
@@ -100,7 +95,7 @@ public class DiscoveredDeviceObserverTest extends DpwsTest {
     }
 
     @Test
-    public void onBye() {
+    void onBye() {
         ByeType bType = objFactory.createByeType();
         bType.setEndpointReference(expectedEpr);
         ByeMessage bMsg = new ByeMessage(bType);
@@ -118,7 +113,7 @@ public class DiscoveredDeviceObserverTest extends DpwsTest {
     }
 
     @Test
-    public void onProbeMatches() {
+    void onProbeMatches() {
         ProbeMatchType pmType = objFactory.createProbeMatchType();
         pmType.setEndpointReference(expectedEpr);
         ProbeMatchesType pmsType = objFactory.createProbeMatchesType();
@@ -149,7 +144,7 @@ public class DiscoveredDeviceObserverTest extends DpwsTest {
     }
 
     @Test
-    public void onProbeTimeout() {
+    void onProbeTimeout() {
         Integer expectedDevicesCount = 10;
         String expectedId = "expectedId";
         ProbeTimeoutMessage ptMsg = new ProbeTimeoutMessage(expectedDevicesCount, expectedId);

@@ -2,7 +2,6 @@ package org.somda.sdc.common.util;
 
 import org.junit.jupiter.api.Test;
 
-import java.net.URI;
 import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -13,10 +12,10 @@ class PrefixNamespaceMappingParserTest {
     @Test
     void parse() {
         final Map<String, PrefixNamespaceMappingParser.PrefixNamespacePair> expectedMappings = Stream.of(new Object[][]{
-                {"http://namespace1", new PrefixNamespaceMappingParser.PrefixNamespacePair("prefix1", URI.create("http://namespace1"))},
-                {"http://namespace2", new PrefixNamespaceMappingParser.PrefixNamespacePair("prefix2", URI.create("http://namespace2"))},
-                {"http://namespace3", new PrefixNamespaceMappingParser.PrefixNamespacePair("prefix3", URI.create("http://namespace3"))},
-                {"http://namespace4", new PrefixNamespaceMappingParser.PrefixNamespacePair("prefix4", URI.create("http://namespace4"))}
+                {"http://namespace1", new PrefixNamespaceMappingParser.PrefixNamespacePair("prefix1", "http://namespace1")},
+                {"http://namespace2", new PrefixNamespaceMappingParser.PrefixNamespacePair("prefix2", "http://namespace2")},
+                {"http://namespace3", new PrefixNamespaceMappingParser.PrefixNamespacePair("prefix3", "http://namespace3")},
+                {"http://namespace4", new PrefixNamespaceMappingParser.PrefixNamespacePair("prefix4", "http://namespace4")}
         }).collect(Collectors.toMap(data -> (String) data[0], data -> (PrefixNamespaceMappingParser.PrefixNamespacePair) data[1]));
 
         final StringBuffer stringToParse = new StringBuffer();

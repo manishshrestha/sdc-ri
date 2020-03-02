@@ -124,10 +124,10 @@ public class HostingServiceResolver {
 
             RequestResponseClient rrClient = null;
             SoapMessage transferGetResponse = null;
-            URI activeXAddr = null;
+            String activeXAddr = null;
             for (String xAddr : discoveredDevice.getXAddrs()) {
                 try {
-                    activeXAddr = URI.create(xAddr);
+                    activeXAddr = xAddr;
                     rrClient = createRequestResponseClient(activeXAddr);
                     transferGetResponse = transferGetClient.sendTransferGet(rrClient, xAddr)
                             .get(maxWaitForFutures.toMillis(), TimeUnit.MILLISECONDS);
@@ -149,7 +149,7 @@ public class HostingServiceResolver {
                 throw new MalformedSoapMessageException("No metadata sections in TransferGet response");
             }
 
-            URI deviceEprAddress = discoveredDevice.getEprAddress();
+            String deviceEprAddress = discoveredDevice.getEprAddress();
             long metadataVersion = discoveredDevice.getMetadataVersion();
             return extractHostingServiceProxy(deviceMetadata, rrClient,
                     deviceEprAddress, metadataVersion, activeXAddr).orElseThrow(() -> new MalformedSoapMessageException(
@@ -160,9 +160,9 @@ public class HostingServiceResolver {
 
     private Optional<HostingServiceProxy> extractHostingServiceProxy(Metadata deviceMetadata,
                                                                      RequestResponseClient rrClient,
-                                                                     URI eprAddress,
+                                                                     String eprAddress,
                                                                      long metadataVersion,
-                                                                     URI xAddr) {
+                                                                     String xAddr) {
         Optional<ThisDeviceType> thisDevice = Optional.empty();
         Optional<ThisModelType> thisModel = Optional.empty();
         Optional<RelationshipData> relationshipData = Optional.empty();
@@ -225,7 +225,7 @@ public class HostingServiceResolver {
                 new MalformedSoapMessageException(String.format("No dpws:Relationship found for %s, but required",
                         eprAddress)));
 
-        final URI epr = rsDataFromOptional.getEprAddress().orElseThrow(() ->
+        final String epr = rsDataFromOptional.getEprAddress().orElseThrow(() ->
                 new MalformedSoapMessageException(String.format("Malformed relationship data. Missing expected EPR: %s",
                         eprAddress)));
         return Optional.of(hostingServiceFactory.createHostingServiceProxy(
@@ -239,7 +239,7 @@ public class HostingServiceResolver {
                 xAddr));
     }
 
-    private Optional<RelationshipData> extractRelationshipData(Relationship relationship, URI eprAddress) {
+    private Optional<RelationshipData> extractRelationshipData(Relationship relationship, String eprAddress) {
         RelationshipData result = new RelationshipData();
 
         for (Object potentialRelationship : relationship.getAny()) {
@@ -267,12 +267,12 @@ public class HostingServiceResolver {
     }
 
     private Optional<HostedServiceProxy> extractHostedServiceProxy(HostedServiceType host) {
-        URI activeHostedServiceEprAddress = null;
+        String activeHostedServiceEprAddress = null;
         RequestResponseClient rrClient = null;
         SoapMessage getMetadataResponse = null;
         for (EndpointReferenceType eprType : host.getEndpointReference()) {
             try {
-                activeHostedServiceEprAddress = URI.create(eprType.getAddress().getValue());
+                activeHostedServiceEprAddress = eprType.getAddress().getValue();
                 rrClient = createRequestResponseClient(activeHostedServiceEprAddress);
                 getMetadataResponse = getMetadataClient.sendGetMetadata(rrClient)
                         .get(maxWaitForFutures.toMillis(), TimeUnit.MILLISECONDS);
@@ -293,28 +293,28 @@ public class HostingServiceResolver {
             return Optional.empty();
         }
 
-        URI httpBinding = uriBuilder.buildUri(activeHostedServiceEprAddress.getScheme(), localAddress.get(), 0);
+        String httpBinding = uriBuilder.buildUri(URI.create(activeHostedServiceEprAddress).getScheme(), localAddress.get(), 0);
 
         final EventSink eventSink = eventSinkFactory.createWsEventingEventSink(rrClient, httpBinding);
         return Optional.of(hostedServiceFactory.createHostedServiceProxy(host, rrClient,
                 activeHostedServiceEprAddress, eventSink));
     }
 
-    private RequestResponseClient createRequestResponseClient(URI endpointAddress) {
+    private RequestResponseClient createRequestResponseClient(String endpointAddress) {
         TransportBinding tBinding = transportBindingFactory.createTransportBinding(endpointAddress);
         return requestResponseClientFactory.createRequestResponseClient(tBinding);
     }
 
     private static class RelationshipData {
-        private URI eprAddress = null;
+        private String eprAddress = null;
         private List<QName> types = null;
         private final Map<String, HostedServiceProxy> hostedServices = new HashMap<>();
 
-        Optional<URI> getEprAddress() {
+        Optional<String> getEprAddress() {
             return Optional.ofNullable(eprAddress);
         }
 
-        void setEprAddress(@Nullable URI eprAddress) {
+        void setEprAddress(@Nullable String eprAddress) {
             this.eprAddress = eprAddress;
         }
 

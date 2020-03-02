@@ -1,5 +1,7 @@
 package org.somda.sdc.common.util;
 
+import javax.annotation.Nullable;
+
 /**
  * Creates deep copies of arbitrary objects.
  */
@@ -11,7 +13,7 @@ public interface ObjectUtil {
      *
      * @param obj the object to copy.
      * @param <T> any copyable object.
-     * @return deep copy of given object.
+     * @return deep copy of given object or null if obj was null.
      */
-    <T> T deepCopy(T obj);
+    <T> T deepCopy(@Nullable T obj);
 }

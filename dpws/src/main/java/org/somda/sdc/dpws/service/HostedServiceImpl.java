@@ -14,7 +14,6 @@ import javax.xml.namespace.QName;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -30,12 +29,12 @@ public class HostedServiceImpl implements HostedService {
     private final InputStream wsdlDocument;
     private final ObjectFactory dpwsFactory;
     private final ObjectUtil objectUtil;
-    private final List<URI> wsdlLocations;
+    private final List<String> wsdlLocations;
 
     @AssistedInject
     HostedServiceImpl(@Assisted String serviceId,
                       @Assisted List<QName> types,
-                      @Assisted List<URI> eprAddresses,
+                      @Assisted List<String> eprAddresses,
                       @Assisted WebService webService,
                       @Assisted InputStream wsdlDocumentStream,
                       ObjectFactory dpwsFactory,
@@ -84,7 +83,7 @@ public class HostedServiceImpl implements HostedService {
     }
 
     @Override
-    public List<URI> getWsdlLocations() {
+    public List<String> getWsdlLocations() {
         return wsdlLocations;
     }
 }
