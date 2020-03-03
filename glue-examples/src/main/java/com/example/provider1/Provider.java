@@ -203,7 +203,7 @@ public class Provider extends AbstractIdleService {
 
             int minValue = 0;
             int maxValue = 50;
-            int sampleCapacity = 100;
+            int sampleCapacity = 10;
 
             // sine wave
             var values = new LinkedList<BigDecimal>();
