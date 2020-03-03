@@ -97,6 +97,7 @@ public class CryptoIT {
                 bind(DeviceConfig.SECURED_ENDPOINT, Boolean.class, true);
                 bind(CryptoConfig.CRYPTO_DEVICE_HOSTNAME_VERIFIER, HostnameVerifier.class, verifier);
                 bind(CryptoConfig.CRYPTO_TLS_ENABLED_VERSIONS, String[].class, new String[]{"TLSv1.3"});
+                bind(CryptoConfig.CRYPTO_TLS_ENABLED_CIPHERS, String[].class, new String[]{"TLS_AES_128_GCM_SHA256"});
             }
         }, new MockedUdpBindingModule());
 
@@ -111,6 +112,7 @@ public class CryptoIT {
                     bind(SoapConfig.JAXB_CONTEXT_PATH, String.class,
                             TestServiceMetadata.JAXB_CONTEXT_PATH);
                     bind(CryptoConfig.CRYPTO_TLS_ENABLED_VERSIONS, String[].class, new String[]{"TLSv1.3"});
+                    bind(CryptoConfig.CRYPTO_TLS_ENABLED_CIPHERS, String[].class, new String[]{"TLS_AES_128_GCM_SHA256"});
                 }
             }, new MockedUdpBindingModule());
         } catch (Exception e) {
@@ -268,5 +270,39 @@ public class CryptoIT {
         assertThrows(ExecutionException.class, () -> clientPeer.getClient().directedProbe(uri)
                 .get(MAX_WAIT_TIME.getSeconds(), TimeUnit.SECONDS)
                 .getProbeMatch().get(0).getEndpointReference().getAddress().getValue());
+    }
+
+    @Test
+    void testConfigureTlsCiphers() throws Exception {
+        final CryptoSettings clientCryptoSettings = Ssl.setupClient();
+        clientPeer = new ClientPeer(new DefaultDpwsConfigModule() {
+            @Override
+            public void customConfigure() {
+                bind(WsDiscoveryConfig.MAX_WAIT_FOR_PROBE_MATCHES, Duration.class,
+                        Duration.ofSeconds(MAX_WAIT_TIME.getSeconds() / 2));
+                bind(CryptoConfig.CRYPTO_SETTINGS, CryptoSettings.class, clientCryptoSettings);
+                bind(SoapConfig.JAXB_CONTEXT_PATH, String.class,
+                        TestServiceMetadata.JAXB_CONTEXT_PATH);
+                bind(CryptoConfig.CRYPTO_TLS_ENABLED_VERSIONS, String[].class, new String[]{"TLSv1.3"});
+                bind(CryptoConfig.CRYPTO_TLS_ENABLED_CIPHERS, String[].class, new String[]{"TLS_AES_256_GCM_SHA384"});
+            }
+        }, new MockedUdpBindingModule());
+
+        devicePeer.startAsync().awaitRunning();
+        clientPeer.startAsync().awaitRunning();
+
+        // When the DUT's physical addresses are resolved
+        final DiscoveredDevice discoveredDevice = clientPeer.getClient().resolve(devicePeer.getEprAddress())
+                .get(MAX_WAIT_TIME.getSeconds(), TimeUnit.SECONDS);
+        final List<String> xAddrs = discoveredDevice.getXAddrs();
+        assertFalse(xAddrs.isEmpty());
+        var uri = xAddrs.get(0);
+
+        // this should throw because we're incompatible
+        assertThrows(ExecutionException.class, () ->
+                clientPeer.getClient().directedProbe(uri)
+                .get(MAX_WAIT_TIME.getSeconds(), TimeUnit.SECONDS)
+                .getProbeMatch().get(0).getEndpointReference().getAddress().getValue()
+        );
     }
 }

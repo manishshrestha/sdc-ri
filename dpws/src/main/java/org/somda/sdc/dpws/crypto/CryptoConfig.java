@@ -26,6 +26,18 @@ public class CryptoConfig {
     public static final String CRYPTO_TLS_ENABLED_VERSIONS = "Dpws.Crypto.TlsEnabledVersions";
 
     /**
+     * Ciphers enabled for secure communication, support may depend on used libraries.
+     * <p>
+     * <em>Uses the IANA notation for ciphers!</em>
+     *
+     * <ul>
+     * <li>Data type: array of {@link String}
+     * <li>Use: optional
+     * </ul>
+     */
+    public static final String CRYPTO_TLS_ENABLED_CIPHERS = "Dpws.Crypto.TlsEnabledCiphers";
+
+    /**
      * Hostname verifier called on new connections in the http client.
      *
      * <ul>

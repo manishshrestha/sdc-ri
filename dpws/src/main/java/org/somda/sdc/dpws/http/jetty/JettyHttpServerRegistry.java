@@ -69,6 +69,7 @@ public class JettyHttpServerRegistry extends AbstractIdleService implements Http
     private final boolean enableGzipCompression;
     private final int minCompressionSize;
     private final String[] tlsProtocols;
+    private final String[] enabledCiphers;
     private final HostnameVerifier hostnameVerifier;
     private SSLContext sslContext;
 
@@ -80,6 +81,7 @@ public class JettyHttpServerRegistry extends AbstractIdleService implements Http
                             @Named(DpwsConfig.HTTP_GZIP_COMPRESSION) boolean enableGzipCompression,
                             @Named(DpwsConfig.HTTP_RESPONSE_COMPRESSION_MIN_SIZE) int minCompressionSize,
                             @Named(CryptoConfig.CRYPTO_TLS_ENABLED_VERSIONS) String[] tlsProtocols,
+                            @Named(CryptoConfig.CRYPTO_TLS_ENABLED_CIPHERS) String[] enabledCiphers,
                             @Named(CryptoConfig.CRYPTO_DEVICE_HOSTNAME_VERIFIER) HostnameVerifier hostnameVerifier,
                             CommunicationLog communicationLog) {
         this.uriBuilder = uriBuilder;
@@ -87,6 +89,7 @@ public class JettyHttpServerRegistry extends AbstractIdleService implements Http
         this.enableGzipCompression = enableGzipCompression;
         this.minCompressionSize = minCompressionSize;
         this.tlsProtocols = tlsProtocols;
+        this.enabledCiphers = enabledCiphers;
         this.hostnameVerifier = hostnameVerifier;
         this.communicationLog = communicationLog;
         serverRegistry = new HashMap<>();
@@ -360,9 +363,13 @@ public class JettyHttpServerRegistry extends AbstractIdleService implements Http
             if (LOG.isDebugEnabled()) {
                 LOG.debug("Enabled protocols: {}", List.of(tlsProtocols));
             }
-            fac.setIncludeProtocols(tlsProtocols);
             // reset excluded protocols to force only included protocols
             fac.setExcludeProtocols();
+            fac.setIncludeProtocols(tlsProtocols);
+
+            // reset excluded ciphers to force only included protocols
+            fac.setExcludeCipherSuites();
+            fac.setIncludeCipherSuites(enabledCiphers);
 
             HttpConfiguration httpsConfig = new HttpConfiguration(httpConfig);
             SecureRequestCustomizer src = new SecureRequestCustomizer();

@@ -46,6 +46,7 @@ public class ApacheTransportBindingFactoryImpl implements TransportBindingFactor
 
     private final String[] tlsProtocols;
     private final HostnameVerifier hostnameVerifier;
+    private final String[] enabledCiphers;
     private HttpClient securedClient; // if null => no cryptography configured/enabled
 
     private ClientTransportBindingFactory clientTransportBindingFactory;
@@ -60,6 +61,7 @@ public class ApacheTransportBindingFactoryImpl implements TransportBindingFactor
                                       @Named(DpwsConfig.HTTP_GZIP_COMPRESSION) boolean enableGzipCompression,
                                       ClientTransportBindingFactory clientTransportBindingFactory,
                                       @Named(CryptoConfig.CRYPTO_TLS_ENABLED_VERSIONS) String[] tlsProtocols,
+                                      @Named(CryptoConfig.CRYPTO_TLS_ENABLED_CIPHERS) String[] enabledCiphers,
                                       @Named(CryptoConfig.CRYPTO_CLIENT_HOSTNAME_VERIFIER) HostnameVerifier hostnameVerifier,
                                       CommunicationLog communicationLog) {
         this.marshalling = marshalling;
@@ -71,6 +73,7 @@ public class ApacheTransportBindingFactoryImpl implements TransportBindingFactor
         this.communicationLog = communicationLog;
         this.client = buildBaseClient().build();
         this.tlsProtocols = tlsProtocols;
+        this.enabledCiphers = enabledCiphers;
         this.hostnameVerifier = hostnameVerifier;
 
         configureSecuredClient(cryptoConfigurator, cryptoSettings);
@@ -121,7 +124,7 @@ public class ApacheTransportBindingFactoryImpl implements TransportBindingFactor
         SSLConnectionSocketFactory socketFactory = new SSLConnectionSocketFactory(
                 sslContext,
                 tlsProtocols,
-                null,
+                enabledCiphers,
                 hostnameVerifier
         );
 
