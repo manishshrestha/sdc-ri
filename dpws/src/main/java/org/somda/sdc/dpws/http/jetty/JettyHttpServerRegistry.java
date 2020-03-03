@@ -363,10 +363,11 @@ public class JettyHttpServerRegistry extends AbstractIdleService implements Http
             if (LOG.isDebugEnabled()) {
                 LOG.debug("Enabled protocols: {}", List.of(tlsProtocols));
             }
-            fac.setIncludeProtocols(tlsProtocols);
             // reset excluded protocols to force only included protocols
             fac.setExcludeProtocols();
+            fac.setIncludeProtocols(tlsProtocols);
 
+            // reset excluded ciphers to force only included protocols
             fac.setExcludeCipherSuites();
             fac.setIncludeCipherSuites(enabledCiphers);
 
