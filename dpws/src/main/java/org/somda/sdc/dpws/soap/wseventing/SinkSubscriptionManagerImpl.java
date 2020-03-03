@@ -7,6 +7,7 @@ import org.somda.sdc.dpws.soap.wseventing.helper.SubscriptionManagerBase;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.Collection;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -21,9 +22,10 @@ public class SinkSubscriptionManagerImpl implements SinkSubscriptionManager {
     SinkSubscriptionManagerImpl(@Assisted("SubscriptionManager") EndpointReferenceType subscriptionManagerEpr,
                                 @Assisted Duration expires,
                                 @Assisted("NotifyTo") EndpointReferenceType notifyTo,
-                                @Assisted("EntTo") EndpointReferenceType endTo) {
+                                @Assisted("EndTo") EndpointReferenceType endTo,
+                                @Assisted("Actions") Collection<String> actions) {
         final var subscriptionId = UUID.randomUUID().toString();
-        this.delegate = new SubscriptionManagerBase(notifyTo, endTo, subscriptionId, expires, subscriptionManagerEpr);
+        this.delegate = new SubscriptionManagerBase(notifyTo, endTo, subscriptionId, expires, subscriptionManagerEpr, actions);
     }
 
     @Override
@@ -54,6 +56,11 @@ public class SinkSubscriptionManagerImpl implements SinkSubscriptionManager {
     @Override
     public EndpointReferenceType getSubscriptionManagerEpr() {
         return delegate.getSubscriptionManagerEpr();
+    }
+
+    @Override
+    public Collection<String> getActions() {
+        return delegate.getActions();
     }
 
     @Override

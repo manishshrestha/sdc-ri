@@ -7,6 +7,8 @@ import org.somda.sdc.dpws.soap.wseventing.SubscriptionManager;
 import javax.annotation.Nullable;
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Optional;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -18,6 +20,7 @@ public class SubscriptionManagerBase implements SubscriptionManager {
 
     private final EndpointReferenceType notifyTo;
     private final EndpointReferenceType endTo;
+    private final Collection<String> actions;
     private LocalDateTime expiresTimeout;
     private final String subscriptionId;
     private Duration expires;
@@ -28,7 +31,8 @@ public class SubscriptionManagerBase implements SubscriptionManager {
                                    @Nullable EndpointReferenceType endTo,
                                    String subscriptionId,
                                    Duration expires,
-                                   EndpointReferenceType subscriptionManagerEpr) {
+                                   EndpointReferenceType subscriptionManagerEpr,
+                                   Collection<String> actions) {
         this.notifyTo = notifyTo;
         this.endTo = endTo;
         this.expiresTimeout = calculateTimeout(expires);
@@ -36,6 +40,7 @@ public class SubscriptionManagerBase implements SubscriptionManager {
         this.expires = expires;
         this.subscriptionManagerEpr = subscriptionManagerEpr;
         this.expiresLock = new ReentrantLock();
+        this.actions = actions;
     }
 
     @Override
@@ -70,6 +75,11 @@ public class SubscriptionManagerBase implements SubscriptionManager {
     @Override
     public EndpointReferenceType getSubscriptionManagerEpr() {
         return subscriptionManagerEpr;
+    }
+
+    @Override
+    public Collection<String> getActions() {
+        return Collections.unmodifiableCollection(actions);
     }
 
     public void renew(Duration expires) {

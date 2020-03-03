@@ -176,14 +176,6 @@ public class EventSourceInterceptor extends AbstractIdleService implements Event
                 transportInfo.getLocalPort().orElseThrow(() ->
                         new RuntimeException("Fatal error. Missing local port in transport information."))
         );
-        SourceSubscriptionManager subMan = subscriptionManagerFactory.createSourceSubscriptionManager(
-                epr,
-                grantedExpires,
-                notifyTo,
-                subscribe.getEndTo(),
-                epr.getAddress().getValue());
-
-        subMan.startAsync().awaitRunning();
 
         // Validate filter type
         FilterType filterType = Optional.ofNullable(subscribe.getFilter()).orElseThrow(() ->
@@ -195,9 +187,20 @@ public class EventSourceInterceptor extends AbstractIdleService implements Event
             throw new SoapFaultException(faultFactory.createFilteringRequestedUnavailable());
         }
 
+        List<String> uris = explodeUriList(filterType);
+
+        SourceSubscriptionManager subMan = subscriptionManagerFactory.createSourceSubscriptionManager(
+                epr,
+                grantedExpires,
+                notifyTo,
+                subscribe.getEndTo(),
+                epr.getAddress().getValue(),
+                Collections.unmodifiableList(uris)
+        );
+
+        subMan.startAsync().awaitRunning();
         // Tie together given action filter map and subscription manager
         // Store subscription manager
-        List<String> uris = explodeUriList(filterType);
         subscribedActionsLock.lock();
         try {
             uris.forEach(uri -> subscribedActionsToSubManIds.put(uri, subMan.getSubscriptionId()));

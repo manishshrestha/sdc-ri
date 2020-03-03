@@ -8,6 +8,7 @@ import org.somda.sdc.dpws.soap.wseventing.SubscriptionManager;
 
 import javax.annotation.Nullable;
 import java.time.Duration;
+import java.util.Collection;
 
 /**
  * Creates {@link SubscriptionManager} instances for event source and sink side.
@@ -27,8 +28,9 @@ public interface SubscriptionManagerFactory {
     SourceSubscriptionManager createSourceSubscriptionManager(@Assisted("SubscriptionManager") EndpointReferenceType subscriptionManagerEpr,
                                                               @Assisted Duration expires,
                                                               @Assisted("NotifyTo") EndpointReferenceType notifyTo,
-                                                              @Assisted("EntTo") @Nullable EndpointReferenceType endTo,
-                                                              @Assisted("SubscriptionId") String subscriptionId);
+                                                              @Assisted("EndTo") @Nullable EndpointReferenceType endTo,
+                                                              @Assisted("SubscriptionId") String subscriptionId,
+                                                              @Assisted("Actions") Collection<String> actions);
 
     /**
      * Creates a {@link SinkSubscriptionManager} instance.
@@ -44,5 +46,6 @@ public interface SubscriptionManagerFactory {
     SinkSubscriptionManager createSinkSubscriptionManager(@Assisted("SubscriptionManager") EndpointReferenceType subscriptionManagerEpr,
                                                           @Assisted Duration expires,
                                                           @Assisted("NotifyTo") EndpointReferenceType notifyTo,
-                                                          @Assisted("EntTo") EndpointReferenceType endTo);
+                                                          @Assisted("EndTo") EndpointReferenceType endTo,
+                                                          @Assisted("Actions") Collection<String> actions);
 }
