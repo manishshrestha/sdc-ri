@@ -27,6 +27,8 @@ public class CryptoConfig {
 
     /**
      * Ciphers enabled for secure communication, support may depend on used libraries.
+     * <p>
+     * <em>Uses the IANA notation for ciphers!</em>
      *
      * <ul>
      * <li>Data type: array of {@link String}
