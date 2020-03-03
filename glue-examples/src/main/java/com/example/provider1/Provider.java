@@ -130,13 +130,14 @@ public class Provider extends AbstractIdleService {
         final MdibDescriptionModifications modifications = modificationsBuilderFactory.createModificationsBuilder(mdib).get();
         mdibAccess.writeDescription(modifications);
 
-        dpwsFramework.startAsync().awaitRunning();
-        sdcDevice.startAsync().awaitRunning();
-
         if (currentLocation != null) {
             // update the location again to match mdib and scopes
             this.setLocation(currentLocation);
         }
+
+        dpwsFramework.startAsync().awaitRunning();
+        sdcDevice.startAsync().awaitRunning();
+
     }
 
     @Override
@@ -170,6 +171,7 @@ public class Provider extends AbstractIdleService {
                 locState.setBindingMdibVersion(mdibAccess.getMdibVersion().getVersion());
                 locState.setContextAssociation(ContextAssociation.ASSOC);
                 locState.getValidator().add(this.instanceIdentifier);
+                locState.getIdentification().add(this.instanceIdentifier);
 
                 locMod.add(locState);
             }
@@ -374,7 +376,7 @@ public class Provider extends AbstractIdleService {
             while (true) {
                 try {
                     Thread.sleep(100);
-//                    provider.changeWaveform(ProviderMdibConstants.HANDLE_WAVEFORM);
+                    provider.changeWaveform(ProviderMdibConstants.HANDLE_WAVEFORM);
                 } catch (Exception e) {
                     LOG.error("Thread loop stopping", e);
                     break;

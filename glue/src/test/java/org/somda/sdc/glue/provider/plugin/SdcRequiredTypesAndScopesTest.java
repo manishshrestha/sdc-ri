@@ -17,7 +17,7 @@ import org.somda.sdc.dpws.device.Device;
 import org.somda.sdc.dpws.device.DiscoveryAccess;
 import org.somda.sdc.glue.GlueConstants;
 import org.somda.sdc.glue.common.uri.ComplexDeviceComponentMapper;
-import org.somda.sdc.glue.common.uri.ContextIdentificationMapper;
+import org.somda.sdc.glue.common.uri.LocationDetailQueryMapper;
 import org.somda.sdc.glue.common.uri.UriMapperGenerationArgumentException;
 import org.somda.sdc.glue.provider.SdcDeviceContext;
 import test.org.somda.common.LoggingTestWatcher;
@@ -104,9 +104,10 @@ class SdcRequiredTypesAndScopesTest {
 
         // Verify that a context state change is reflected in the scopes
         var expectedInstanceIdentifier = InstanceIdentifierFactory.createInstanceIdentifier("urn:dummy:test");
-        var expectedScopeUri = ContextIdentificationMapper.fromInstanceIdentifier(expectedInstanceIdentifier,
-                ContextIdentificationMapper.ContextSource.Location);
-        var expectedContextState = createLocationContextState(expectedInstanceIdentifier);
+        var locationDetail = new LocationDetail();
+        locationDetail.setBed("KingSizeBed");
+        var expectedScopeUri = LocationDetailQueryMapper.createWithLocationDetailQuery(expectedInstanceIdentifier, locationDetail);
+        var expectedContextState = createLocationContextState(expectedInstanceIdentifier, locationDetail);
 
         var mdibVersion = MdibVersion.create();
         when(mdibAccessMock.getMdibVersion()).thenReturn(mdibVersion);
@@ -135,9 +136,10 @@ class SdcRequiredTypesAndScopesTest {
 
         // Verify that a context state change is reflected in the scopes
         var expectedInstanceIdentifier = InstanceIdentifierFactory.createInstanceIdentifier("urn:dummy:test");
-        var expectedScopeUri = ContextIdentificationMapper.fromInstanceIdentifier(expectedInstanceIdentifier,
-                ContextIdentificationMapper.ContextSource.Location);
-        var expectedContextState = createLocationContextState(expectedInstanceIdentifier);
+        var locationDetail = new LocationDetail();
+        locationDetail.setBed("KingSizeBed");
+        var expectedScopeUri = LocationDetailQueryMapper.createWithLocationDetailQuery(expectedInstanceIdentifier, locationDetail);
+        var expectedContextState = createLocationContextState(expectedInstanceIdentifier, locationDetail);
 
         var mdibVersion = MdibVersion.create();
         when(mdibAccessMock.getMdibVersion()).thenReturn(mdibVersion);
@@ -170,9 +172,10 @@ class SdcRequiredTypesAndScopesTest {
 
         // Verify that a description change is reflected in the scopes
         var expectedInstanceIdentifier = InstanceIdentifierFactory.createInstanceIdentifier("urn:dummy:test");
-        var expectedContextScopeUri = ContextIdentificationMapper.fromInstanceIdentifier(expectedInstanceIdentifier,
-                ContextIdentificationMapper.ContextSource.Location);
-        var expectedContextState = createLocationContextState(expectedInstanceIdentifier);
+        var locationDetail = new LocationDetail();
+        locationDetail.setBed("KingSizeBed");
+        var expectedContextScopeUri = LocationDetailQueryMapper.createWithLocationDetailQuery(expectedInstanceIdentifier, locationDetail);
+        var expectedContextState = createLocationContextState(expectedInstanceIdentifier, locationDetail);
 
         var expectedCodedValue = CodedValueFactory.createIeeeCodedValue("70001");
         var expectedMdsScopeUri = ComplexDeviceComponentMapper.fromCodedValue(expectedCodedValue);
@@ -206,9 +209,10 @@ class SdcRequiredTypesAndScopesTest {
 
         // Verify that a description change is reflected in the scopes
         var expectedInstanceIdentifier = InstanceIdentifierFactory.createInstanceIdentifier("urn:dummy:test");
-        var expectedContextScopeUri = ContextIdentificationMapper.fromInstanceIdentifier(expectedInstanceIdentifier,
-                ContextIdentificationMapper.ContextSource.Location);
-        var expectedContextState = createLocationContextState(expectedInstanceIdentifier);
+        var locationDetail = new LocationDetail();
+        locationDetail.setBed("QueenSizeBed");
+        var expectedContextScopeUri = LocationDetailQueryMapper.createWithLocationDetailQuery(expectedInstanceIdentifier, locationDetail);
+        var expectedContextState = createLocationContextState(expectedInstanceIdentifier, locationDetail);
 
         var expectedCodedValue = CodedValueFactory.createIeeeCodedValue("70001");
         var expectedMdsScopeUri = ComplexDeviceComponentMapper.fromCodedValue(expectedCodedValue);
@@ -248,11 +252,12 @@ class SdcRequiredTypesAndScopesTest {
         assertEquals(expectedScopes.size(), matchCount);
     }
 
-    private LocationContextState createLocationContextState(InstanceIdentifier instanceIdentifier) {
+    private LocationContextState createLocationContextState(InstanceIdentifier instanceIdentifier, LocationDetail locationDetail) {
         var locationContextState = new LocationContextState();
         locationContextState.setHandle("handle");
         locationContextState.setContextAssociation(ContextAssociation.ASSOC);
         locationContextState.getIdentification().add(instanceIdentifier);
+        locationContextState.setLocationDetail(locationDetail);
         return locationContextState;
     }
 
