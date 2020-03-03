@@ -84,7 +84,6 @@ public class DefaultDpwsConfigModule extends AbstractConfigurationModule {
                         // 2020-03-03: mozilla modern tls 1.3 ciphers
                         "TLS_AES_128_GCM_SHA256",
                         "TLS_AES_256_GCM_SHA384",
-                        "TLS_CHACHA20_POLY1305_SHA256",
                         // 2020-03-03: mozilla intermediate tls 1.2 ciphers (without ChaCha20)
                         "TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256",
                         "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256",
