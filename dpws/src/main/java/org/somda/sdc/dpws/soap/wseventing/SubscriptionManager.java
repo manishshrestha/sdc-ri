@@ -4,6 +4,7 @@ import org.somda.sdc.dpws.soap.wsaddressing.model.EndpointReferenceType;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.Collection;
 import java.util.Optional;
 
 /**
@@ -21,4 +22,6 @@ public interface SubscriptionManager {
     Duration getExpires();
 
     EndpointReferenceType getSubscriptionManagerEpr();
+
+    Collection<String> getActions();
 }

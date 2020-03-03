@@ -144,7 +144,8 @@ public class EventSinkImpl implements EventSink {
                     responseBody.getSubscriptionManager(),
                     responseBody.getExpires(),
                     notifyToEpr,
-                    endToEpr);
+                    endToEpr,
+                    Collections.unmodifiableList(actions));
 
             // Add sink subscription manager to internal registry
             subscriptionsLock.lock();

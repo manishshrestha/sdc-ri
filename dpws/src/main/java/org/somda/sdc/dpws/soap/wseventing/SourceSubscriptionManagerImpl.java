@@ -21,6 +21,7 @@ import javax.annotation.Nullable;
 import javax.inject.Named;
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.Collection;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.UUID;
@@ -50,8 +51,9 @@ public class SourceSubscriptionManagerImpl extends AbstractExecutionThreadServic
     SourceSubscriptionManagerImpl(@Assisted("SubscriptionManager") EndpointReferenceType subscriptionManagerEpr,
                                   @Assisted Duration expires,
                                   @Assisted("NotifyTo") EndpointReferenceType notifyTo,
-                                  @Assisted("EntTo") @Nullable EndpointReferenceType endTo,
+                                  @Assisted("EndTo") @Nullable EndpointReferenceType endTo,
                                   @Assisted("SubscriptionId") String subscriptionId,
+                                  @Assisted("Actions") Collection<String> actions,
                                   @Named(WsEventingConfig.NOTIFICATION_QUEUE_CAPACITY) Integer notificationQueueCapacity,
                                   NotificationSourceFactory notificationSourceFactory,
                                   TransportBindingFactory transportBindingFactory,
@@ -62,7 +64,7 @@ public class SourceSubscriptionManagerImpl extends AbstractExecutionThreadServic
         this.wsaUtil = wsaUtil;
         this.networkJobExecutor = networkJobExecutor;
         this.subscriptionId = UUID.randomUUID().toString();
-        this.delegate = new SubscriptionManagerBase(notifyTo, endTo, subscriptionId, expires, subscriptionManagerEpr);
+        this.delegate = new SubscriptionManagerBase(notifyTo, endTo, subscriptionId, expires, subscriptionManagerEpr, actions);
         this.notificationQueue = new ArrayBlockingQueue<>(notificationQueueCapacity);
 
         this.notifyToSender = null;
@@ -98,6 +100,11 @@ public class SourceSubscriptionManagerImpl extends AbstractExecutionThreadServic
     @Override
     public EndpointReferenceType getSubscriptionManagerEpr() {
         return delegate.getSubscriptionManagerEpr();
+    }
+
+    @Override
+    public Collection<String> getActions() {
+        return delegate.getActions();
     }
 
 

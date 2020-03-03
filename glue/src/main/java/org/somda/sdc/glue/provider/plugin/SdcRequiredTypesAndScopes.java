@@ -17,6 +17,7 @@ import org.somda.sdc.dpws.device.Device;
 import org.somda.sdc.glue.GlueConstants;
 import org.somda.sdc.glue.common.uri.ComplexDeviceComponentMapper;
 import org.somda.sdc.glue.common.uri.ContextIdentificationMapper;
+import org.somda.sdc.glue.common.uri.LocationDetailQueryMapper;
 import org.somda.sdc.glue.common.uri.UriMapperGenerationArgumentException;
 import org.somda.sdc.glue.provider.SdcDeviceContext;
 import org.somda.sdc.glue.provider.SdcDevicePlugin;
@@ -180,8 +181,8 @@ public class SdcRequiredTypesAndScopes implements SdcDevicePlugin, MdibAccessObs
         Set<String> uris = new HashSet<>(locationContextState.get().getIdentification().size());
         for (var instanceIdentifier : locationContextState.get().getIdentification()) {
             try {
-                uris.add(ContextIdentificationMapper.fromInstanceIdentifier(instanceIdentifier,
-                        ContextIdentificationMapper.ContextSource.Location));
+                uris.add(LocationDetailQueryMapper.createWithLocationDetailQuery(
+                        instanceIdentifier, locationContextState.get().getLocationDetail()));
             } catch (UriMapperGenerationArgumentException e) {
                 LOG.warn("Unable to encode to an URI", e);
             }

@@ -26,10 +26,10 @@ import org.somda.sdc.dpws.client.DiscoveryObserver;
 import org.somda.sdc.dpws.client.event.DeviceEnteredMessage;
 import org.somda.sdc.glue.GlueConstants;
 import org.somda.sdc.glue.common.uri.ComplexDeviceComponentMapper;
-import org.somda.sdc.glue.common.uri.ContextIdentificationMapper;
 import org.somda.sdc.glue.common.FallbackInstanceIdentifier;
 import org.somda.sdc.glue.common.MdibXmlIo;
 import org.somda.sdc.glue.common.factory.ModificationsBuilderFactory;
+import org.somda.sdc.glue.common.uri.LocationDetailQueryMapper;
 import org.somda.sdc.glue.common.uri.UriMapperGenerationArgumentException;
 import org.somda.sdc.glue.provider.SdcDeviceContext;
 import org.somda.sdc.glue.provider.SdcDevicePlugin;
@@ -94,8 +94,8 @@ public class SdcRequiredTypesAndScopesIT {
         locationDetail.setFacility("facility");
         var instanceIdentifier = FallbackInstanceIdentifier.create(locationDetail);
         assertTrue(instanceIdentifier.isPresent());
-        var expectedLocationScope = ContextIdentificationMapper.fromInstanceIdentifier(instanceIdentifier.get(),
-                ContextIdentificationMapper.ContextSource.Location);
+        var expectedLocationScope = LocationDetailQueryMapper.createWithLocationDetailQuery(instanceIdentifier.get(),
+                locationDetail);
 
         var mdibAccess = testDevice.getSdcDevice().getMdibAccess();
         var mds = mdibAccess.getDescriptor(VentilatorMdibRunner.HANDLE_MDC_DEV_SYS_PT_VENT_MDS, MdsDescriptor.class);
@@ -164,8 +164,8 @@ public class SdcRequiredTypesAndScopesIT {
         locationDetail.setFacility("facility");
         var instanceIdentifier = FallbackInstanceIdentifier.create(locationDetail);
         assertTrue(instanceIdentifier.isPresent());
-        var expectedLocationScope = ContextIdentificationMapper.fromInstanceIdentifier(instanceIdentifier.get(),
-                ContextIdentificationMapper.ContextSource.Location);
+        var expectedLocationScope = LocationDetailQueryMapper.createWithLocationDetailQuery(instanceIdentifier.get(),
+                locationDetail);
 
         var mdibAccess = testDevice.getSdcDevice().getMdibAccess();
         var mds = mdibAccess.getDescriptor(VentilatorMdibRunner.HANDLE_MDC_DEV_SYS_PT_VENT_MDS, MdsDescriptor.class);
