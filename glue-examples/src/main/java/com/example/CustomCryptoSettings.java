@@ -12,8 +12,8 @@ import java.util.regex.Pattern;
 
 public class CustomCryptoSettings implements CryptoSettings {
 
-    private static final String keyStorePath = "crypto/keystore.jks";
-    private static final String trustStorePath = "crypto/client-truststore.jks";
+    private static final String keyStorePath = "crypto/sdcparticipant.jks";
+    private static final String trustStorePath = "crypto/root.jks";
     private static final String keyStorePassword = "whatever";
     private static final String trustStorePassword = "whatever";
 
