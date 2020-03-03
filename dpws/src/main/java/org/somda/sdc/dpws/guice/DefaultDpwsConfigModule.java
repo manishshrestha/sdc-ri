@@ -78,6 +78,24 @@ public class DefaultDpwsConfigModule extends AbstractConfigurationModule {
                 String[].class,
                 new String[]{"TLSv1.2", "TLSv1.3"});
 
+        bind(CryptoConfig.CRYPTO_TLS_ENABLED_CIPHERS,
+                String[].class,
+                new String[]{
+                        // 2020-03-03: mozilla modern tls 1.3 ciphers
+                        "TLS_AES_128_GCM_SHA256",
+                        "TLS_AES_256_GCM_SHA384",
+                        "TLS_CHACHA20_POLY1305_SHA256",
+                        // 2020-03-03: mozilla intermediate tls 1.2 ciphers
+                        "ECDHE-ECDSA-AES128-GCM-SHA256",
+                        "ECDHE-RSA-AES128-GCM-SHA256",
+                        "ECDHE-ECDSA-AES256-GCM-SHA384",
+                        "ECDHE-RSA-AES256-GCM-SHA384",
+                        "ECDHE-ECDSA-CHACHA20-POLY1305",
+                        "ECDHE-RSA-CHACHA20-POLY1305",
+                        "DHE-RSA-AES128-GCM-SHA256",
+                        "DHE-RSA-AES256-GCM-SHA384"
+                });
+
         var defaultHostnameVerifier = new HostnameVerifier() {
             @Override
             public boolean verify(String s, SSLSession sslSession) {
