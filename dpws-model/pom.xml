@@ -49,6 +49,7 @@
         <directories.generatedSources>${project.build.directory}/generated-sources</directories.generatedSources>
         <directories.generatedResources>${project.build.directory}/generated-resources</directories.generatedResources>
     </properties>
+
     <dependencies>
         <dependency>
             <groupId>org.somda.sdc</groupId>

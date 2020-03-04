@@ -50,6 +50,7 @@
         <directories.generatedSources>${project.build.directory}/generated-sources</directories.generatedSources>
         <directories.generatedResources>${project.build.directory}/generated-resources</directories.generatedResources>
     </properties>
+
     <dependencies>
         <!-- https://mvnrepository.com/artifact/io.github.threeten-jaxb/threeten-jaxb-core -->
         <dependency>
