@@ -369,7 +369,7 @@ public class HighPriorityServices extends WebService {
             return response;
         } catch (Exception e) {
             throw new SoapFaultException(faultFactory.createReceiverFault(
-                    String.format("Response message could not be generated. Reason: ", e.getMessage())));
+                    String.format("Response message could not be generated. Reason: %s", e.getMessage())));
         }
     }
 
