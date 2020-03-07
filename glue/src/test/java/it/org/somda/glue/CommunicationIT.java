@@ -12,22 +12,13 @@ import org.junit.jupiter.api.TestInfo;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.somda.sdc.biceps.common.MdibStateModifications;
 import org.somda.sdc.biceps.common.event.AbstractMdibAccessMessage;
 import org.somda.sdc.biceps.common.event.AlertStateModificationMessage;
 import org.somda.sdc.biceps.common.event.MetricStateModificationMessage;
 import org.somda.sdc.biceps.common.storage.PreprocessingException;
-import org.somda.sdc.biceps.model.message.InvocationError;
-import org.somda.sdc.biceps.model.message.InvocationState;
-import org.somda.sdc.biceps.model.message.OperationInvokedReport;
-import org.somda.sdc.biceps.model.message.SetString;
-import org.somda.sdc.biceps.model.message.SetStringResponse;
-import org.somda.sdc.biceps.model.participant.AbstractAlertState;
-import org.somda.sdc.biceps.model.participant.AbstractMetricState;
-import org.somda.sdc.biceps.model.participant.AlertConditionState;
-import org.somda.sdc.biceps.model.participant.AlertSignalPresence;
-import org.somda.sdc.biceps.model.participant.AlertSignalState;
-import org.somda.sdc.biceps.model.participant.EnumStringMetricState;
-import org.somda.sdc.biceps.model.participant.NumericMetricState;
+import org.somda.sdc.biceps.model.message.*;
+import org.somda.sdc.biceps.model.participant.*;
 import org.somda.sdc.biceps.testutil.MdibAccessObserverSpy;
 import org.somda.sdc.dpws.service.HostingServiceProxy;
 import org.somda.sdc.glue.common.MdibXmlIo;
@@ -44,23 +35,21 @@ import test.org.somda.common.CIDetector;
 import test.org.somda.common.LoggingTestWatcher;
 
 import java.math.BigDecimal;
-import java.net.URI;
 import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 @ExtendWith(LoggingTestWatcher.class)
-public class CommunicationIT {
+class CommunicationIT {
     private static final Logger LOG = LoggerFactory.getLogger(CommunicationIT.class);
     private static final IntegrationTestUtil IT = new IntegrationTestUtil();
 
     private TestSdcDevice testDevice;
     private TestSdcClient testClient;
 
-    private static int WAIT_IN_SECONDS = 60;
+    private static int WAIT_IN_SECONDS = 10;
 
     static {
         if (CIDetector.isRunningInCi()) {
@@ -367,6 +356,52 @@ public class CommunicationIT {
             for (TestSdcDevice device : testSdcDevices) {
                 device.stopAsync().awaitTerminated(WAIT_IN_SECONDS, WAIT_TIME_UNIT);
             }
+        }
+    }
+
+    @Test
+    void connectOneClientAndTransferPeriodicEvents() throws Exception {
+        testDevice.startAsync().awaitRunning(WAIT_IN_SECONDS, WAIT_TIME_UNIT);
+        testClient.startAsync().awaitRunning(WAIT_IN_SECONDS, WAIT_TIME_UNIT);
+
+        var hostingServiceFuture = testClient.getClient()
+                .connect(testDevice.getSdcDevice().getEprAddress());
+        var hostingServiceProxy = hostingServiceFuture.get(WAIT_IN_SECONDS, WAIT_TIME_UNIT);
+
+        var remoteDeviceFuture = testClient.getConnector().connect(hostingServiceProxy,
+                ConnectConfiguration.create(ConnectConfiguration.ALL_PERIODIC_AND_WAVEFORM_REPORTS));
+
+        var sdcRemoteDevice = remoteDeviceFuture.get(WAIT_IN_SECONDS, WAIT_TIME_UNIT);
+        var mdibSpy = new MdibAccessObserverSpy();
+        sdcRemoteDevice.getMdibAccessObservable().registerObserver(mdibSpy);
+
+        int periodicChangeCount = 5;
+        new Thread(() -> {
+            for (int i = 0; i < periodicChangeCount; ++i) {
+                var modifications = MdibStateModifications.create(MdibStateModifications.Type.METRIC);
+                try (var readTransaction = testDevice.getSdcDevice().getLocalMdibAccess().startTransaction()) {
+                    VentilatorMdibRunner.changePeepValue(readTransaction, modifications, BigDecimal.valueOf(i));
+                }
+                assertDoesNotThrow(() -> {
+                    var result = testDevice.getSdcDevice().getLocalMdibAccess().writeStates(modifications);
+                    testDevice.getSdcDevice().sendPeriodicStateReport(result.getStates(), result.getMdibVersion());
+                    Thread.sleep(100);
+                });
+            }
+        }).start();
+
+        assertTrue(mdibSpy.waitForNumberOfRecordedMessages(periodicChangeCount, WAIT_DURATION),
+                String.format("Expected %s message(s), received %s", periodicChangeCount, mdibSpy.getRecordedMessages().size()));
+
+        for (int i = 0; i < periodicChangeCount; ++i) {
+            var recordedMessage = mdibSpy.getRecordedMessages().get(i);
+            assertTrue(recordedMessage instanceof MetricStateModificationMessage);
+            var metricStateMessage = (MetricStateModificationMessage) recordedMessage;
+            assertEquals(1, metricStateMessage.getStates().size());
+            var abstractMetricState = metricStateMessage.getStates().get(0);
+            assertTrue(abstractMetricState instanceof NumericMetricState);
+            var numericMetricState = (NumericMetricState) abstractMetricState;
+            assertEquals(BigDecimal.valueOf(i), numericMetricState.getMetricValue().getValue());
         }
     }
 }
