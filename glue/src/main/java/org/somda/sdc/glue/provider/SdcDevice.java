@@ -109,13 +109,13 @@ public class SdcDevice extends AbstractIdleService implements Device, EventSourc
      *
      * <em>Please note that the discovery access is managed by this class.
      * Overwriting types and/or scopes can cause negative side-effects.</em>
-     * <p>
-     * <em>It is recommended to use plugins to get access to the discovery access.</em>
      *
      * @return the discovery access.
      * @see Device#getDiscoveryAccess()
+     * @deprecated Use the {@link SdcRequiredTypesAndScopes} plugin to manage discovery.
      */
     @Override
+    @Deprecated
     public DiscoveryAccess getDiscoveryAccess() {
         return new DiscoveryAccess() {
             @Override
@@ -148,12 +148,15 @@ public class SdcDevice extends AbstractIdleService implements Device, EventSourc
     /**
      * Gets the hosting service access.
      * <p>
-     * <em>It is recommended to use plugins to get access to hosting service information.</em>
+     * As the BICEPS services are managed by this class, there should not be any need to access the hosting services.
+     * In case access is required though, consider creating a plugin that accesses the hosting services.
      *
      * @return the hosting service access.
      * @see Device#getHostingServiceAccess()
+     * @deprecated Prefer implementing a plugin to and use {@link Device#getHostingServiceAccess()} from {@link SdcDeviceContext#getDevice()}.
      */
     @Override
+    @Deprecated
     public HostingServiceAccess getHostingServiceAccess() {
         return dpwsDevice.getHostingServiceAccess();
     }
