@@ -17,14 +17,15 @@ import org.somda.sdc.dpws.soap.interception.MessageInterceptor;
 import org.somda.sdc.dpws.soap.interception.RequestResponseObject;
 import org.somda.sdc.dpws.soap.wsaddressing.WsAddressingUtil;
 import org.somda.sdc.glue.common.ActionConstants;
+import org.somda.sdc.glue.common.MdibMapper;
+import org.somda.sdc.glue.common.MdibVersionUtil;
+import org.somda.sdc.glue.common.factory.MdibMapperFactory;
 import org.somda.sdc.glue.provider.sco.IncomingSetServiceRequest;
 import org.somda.sdc.glue.provider.sco.InvocationResponse;
 import org.somda.sdc.glue.provider.sco.OperationInvocationReceiver;
 import org.somda.sdc.glue.provider.sco.ScoController;
 import org.somda.sdc.glue.provider.sco.factory.ScoControllerFactory;
-import org.somda.sdc.glue.common.MdibMapper;
-import org.somda.sdc.glue.common.MdibVersionUtil;
-import org.somda.sdc.glue.common.factory.MdibMapperFactory;
+import org.somda.sdc.glue.provider.services.helper.ReportGenerator;
 import org.somda.sdc.glue.provider.services.helper.factory.ReportGeneratorFactory;
 
 import javax.xml.bind.JAXBContext;
@@ -61,6 +62,7 @@ public class HighPriorityServices extends WebService {
     private final ScoController scoController;
 
     private final InstanceIdentifier anonymousSource;
+    private final ReportGenerator reportGenerator;
 
     @AssistedInject
     HighPriorityServices(@Assisted LocalMdibAccess mdibAccess,
@@ -82,12 +84,12 @@ public class HighPriorityServices extends WebService {
         this.mdibVersionUtil = mdibVersionUtil;
         this.wsaUtil = wsaUtil;
         this.scoController = scoControllerFactory.createScoController(this, mdibAccess);
-
+        this.reportGenerator = reportGeneratorFactory.createReportGenerator(this);
         anonymousSource = new InstanceIdentifier();
         anonymousSource.setExtensionName("TBD");
         anonymousSource.setRootName("TBD");
 
-        mdibAccess.registerObserver(reportGeneratorFactory.createReportGenerator(this));
+        mdibAccess.registerObserver(reportGenerator);
     }
 
     /**
@@ -98,6 +100,20 @@ public class HighPriorityServices extends WebService {
      */
     public void addOperationInvocationReceiver(OperationInvocationReceiver receiver) {
         scoController.addOperationInvocationReceiver(receiver);
+    }
+
+    /**
+     * Sends a periodic state report.
+     * <p>
+     * This function does not control periodicity.
+     * Periodicity has to be controlled by the calling function.
+     *
+     * @param states      the states that are supposed to be notified.
+     * @param mdibVersion the MDIB version the report belongs to.
+     * @param <T>         the state type.
+     */
+    public <T extends AbstractState> void sendPeriodicStateReport(List<T> states, MdibVersion mdibVersion) {
+        reportGenerator.sendPeriodicStateReport(states, mdibVersion);
     }
 
     @MessageInterceptor(ActionConstants.ACTION_GET_MDIB)
