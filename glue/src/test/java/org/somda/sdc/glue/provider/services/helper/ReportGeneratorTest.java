@@ -46,6 +46,12 @@ class ReportGeneratorTest {
     @Captor
     private ArgumentCaptor<Object> actualReport;
 
+    private List<AbstractAlertState> expectedAlertStates;
+    private List<AbstractDeviceComponentState> expectedComponentStates;
+    private List<AbstractContextState> expectedContextStates;
+    private List<AbstractMetricState> expectedMetricStates;
+    private List<AbstractOperationState> expectedOperationStates;
+
     @BeforeEach
     void beforeEach() {
         injector = IT.getInjector();
@@ -61,79 +67,128 @@ class ReportGeneratorTest {
 
         actualAction = ArgumentCaptor.forClass(String.class);
         actualReport = ArgumentCaptor.forClass(Object.class);
-    }
 
-    @Test
-    void onAlertChange() throws Exception {
-        final List<AbstractAlertState> expectedStates = Arrays.asList(
+        expectedAlertStates = List.of(
                 MockModelFactory.createState(Handles.ALERTCONDITION_0, AlertConditionState.class),
                 MockModelFactory.createState(Handles.ALERTCONDITION_1, AlertConditionState.class),
                 MockModelFactory.createState(Handles.ALERTSYSTEM_0, AlertSystemState.class)
         );
-        eventBus.post(new AlertStateModificationMessage(mdibAccess, expectedStates));
+        expectedComponentStates = List.of(
+                MockModelFactory.createState(Handles.MDS_0, MdsState.class),
+                MockModelFactory.createState(Handles.VMD_0, VmdState.class),
+                MockModelFactory.createState(Handles.BATTERY_0, BatteryState.class)
+        );
+        expectedContextStates = List.of(
+                MockModelFactory.createState(Handles.CONTEXT_0, PatientContextState.class),
+                MockModelFactory.createState(Handles.CONTEXT_1, LocationContextState.class),
+                MockModelFactory.createState(Handles.CONTEXT_2, EnsembleContextState.class)
+        );
+        expectedMetricStates = List.of(
+                MockModelFactory.createState(Handles.METRIC_0, NumericMetricState.class),
+                MockModelFactory.createState(Handles.METRIC_1, StringMetricState.class),
+                MockModelFactory.createState(Handles.METRIC_2, EnumStringMetricState.class)
+        );
+        expectedOperationStates = List.of(
+                MockModelFactory.createState(Handles.OPERATION_0, ActivateOperationState.class),
+                MockModelFactory.createState(Handles.OPERATION_1, SetStringOperationState.class),
+                MockModelFactory.createState(Handles.OPERATION_2, SetComponentStateOperationState.class)
+        );
+    }
+
+    @Test
+    void sendPeriodicReport() throws Exception {
+        {
+            reportGenerator.sendPeriodicStateReport(expectedAlertStates, expectedMdibVersion);
+            testStateReport(
+                    ActionConstants.ACTION_PERIODIC_ALERT_REPORT,
+                    expectedAlertStates,
+                    PeriodicAlertReport.class,
+                    "getAlertState");
+        }
+        {
+            reset(eventSourceAccess);
+            reportGenerator.sendPeriodicStateReport(expectedComponentStates, expectedMdibVersion);
+            testStateReport(
+                    ActionConstants.ACTION_PERIODIC_COMPONENT_REPORT,
+                    expectedComponentStates,
+                    PeriodicComponentReport.class,
+                    "getComponentState");
+        }
+        {
+            reset(eventSourceAccess);
+            reportGenerator.sendPeriodicStateReport(expectedContextStates, expectedMdibVersion);
+            testStateReport(
+                    ActionConstants.ACTION_PERIODIC_CONTEXT_REPORT,
+                    expectedContextStates,
+                    PeriodicContextReport.class,
+                    "getContextState");
+        }
+        {
+            reset(eventSourceAccess);
+            reportGenerator.sendPeriodicStateReport(expectedMetricStates, expectedMdibVersion);
+            testStateReport(
+                    ActionConstants.ACTION_PERIODIC_METRIC_REPORT,
+                    expectedMetricStates,
+                    PeriodicMetricReport.class,
+                    "getMetricState");
+        }
+        {
+            reset(eventSourceAccess);
+            reportGenerator.sendPeriodicStateReport(expectedOperationStates, expectedMdibVersion);
+            testStateReport(
+                    ActionConstants.ACTION_PERIODIC_OPERATIONAL_STATE_REPORT,
+                    expectedOperationStates,
+                    PeriodicOperationalStateReport.class,
+                    "getOperationState");
+        }
+    }
+
+    @Test
+    void onAlertChange() throws Exception {
+        eventBus.post(new AlertStateModificationMessage(mdibAccess, expectedAlertStates));
         testStateReport(
                 ActionConstants.ACTION_EPISODIC_ALERT_REPORT,
-                expectedStates,
+                expectedAlertStates,
                 EpisodicAlertReport.class,
                 "getAlertState");
     }
 
     @Test
     void onComponentChange() throws Exception {
-        final List<AbstractDeviceComponentState> expectedStates = Arrays.asList(
-                MockModelFactory.createState(Handles.MDS_0, MdsState.class),
-                MockModelFactory.createState(Handles.VMD_0, VmdState.class),
-                MockModelFactory.createState(Handles.BATTERY_0, BatteryState.class)
-        );
-        eventBus.post(new ComponentStateModificationMessage(mdibAccess, expectedStates));
+        eventBus.post(new ComponentStateModificationMessage(mdibAccess, expectedComponentStates));
         testStateReport(
                 ActionConstants.ACTION_EPISODIC_COMPONENT_REPORT,
-                expectedStates,
+                expectedComponentStates,
                 EpisodicComponentReport.class,
                 "getComponentState");
     }
 
     @Test
     void onContextChange() throws Exception {
-        final List<AbstractContextState> expectedStates = Arrays.asList(
-                MockModelFactory.createState(Handles.CONTEXT_0, PatientContextState.class),
-                MockModelFactory.createState(Handles.CONTEXT_1, LocationContextState.class),
-                MockModelFactory.createState(Handles.CONTEXT_2, EnsembleContextState.class)
-        );
-        eventBus.post(new ContextStateModificationMessage(mdibAccess, expectedStates));
+        eventBus.post(new ContextStateModificationMessage(mdibAccess, expectedContextStates));
         testStateReport(
                 ActionConstants.ACTION_EPISODIC_CONTEXT_REPORT,
-                expectedStates,
+                expectedContextStates,
                 EpisodicContextReport.class,
                 "getContextState");
     }
 
     @Test
     void onMetricChange() throws Exception {
-        final List<AbstractMetricState> expectedStates = Arrays.asList(
-                MockModelFactory.createState(Handles.METRIC_0, NumericMetricState.class),
-                MockModelFactory.createState(Handles.METRIC_1, StringMetricState.class),
-                MockModelFactory.createState(Handles.METRIC_2, EnumStringMetricState.class)
-        );
-        eventBus.post(new MetricStateModificationMessage(mdibAccess, expectedStates));
+        eventBus.post(new MetricStateModificationMessage(mdibAccess, expectedMetricStates));
         testStateReport(
                 ActionConstants.ACTION_EPISODIC_METRIC_REPORT,
-                expectedStates,
+                expectedMetricStates,
                 EpisodicMetricReport.class,
                 "getMetricState");
     }
 
     @Test
     void onOperationChange() throws Exception {
-        final List<AbstractOperationState> expectedStates = Arrays.asList(
-                MockModelFactory.createState(Handles.OPERATION_0, ActivateOperationState.class),
-                MockModelFactory.createState(Handles.OPERATION_1, SetStringOperationState.class),
-                MockModelFactory.createState(Handles.OPERATION_2, SetComponentStateOperationState.class)
-        );
-        eventBus.post(new OperationStateModificationMessage(mdibAccess, expectedStates));
+        eventBus.post(new OperationStateModificationMessage(mdibAccess, expectedOperationStates));
         testStateReport(
                 ActionConstants.ACTION_EPISODIC_OPERATIONAL_STATE_REPORT,
-                expectedStates,
+                expectedOperationStates,
                 EpisodicOperationalStateReport.class,
                 "getOperationState");
     }
@@ -312,7 +367,7 @@ class ReportGeneratorTest {
         final AbstractReport actualNotification = reportClass.cast(actualReport.getValue());
         assertEquals(expectedMdibVersion.getVersion(), actualNotification.getMdibVersion());
         assertEquals(expectedMdibVersion.getInstanceId(), actualNotification.getInstanceId());
-        assertEquals(expectedMdibVersion.getSequenceId().toString(), actualNotification.getSequenceId());
+        assertEquals(expectedMdibVersion.getSequenceId(), actualNotification.getSequenceId());
         return actualNotification;
     }
 
@@ -345,7 +400,7 @@ class ReportGeneratorTest {
                 parentHandle,
                 Collections.emptyList(),
                 theClass.getConstructor().newInstance(),
-                Arrays.asList(typeValidator.resolveStateType(theClass).getConstructor().newInstance()),
+                Collections.singletonList(typeValidator.resolveStateType(theClass).getConstructor().newInstance()),
                 MdibVersion.create());
     }
 }

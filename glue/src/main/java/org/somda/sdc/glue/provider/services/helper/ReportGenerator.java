@@ -5,6 +5,8 @@ import com.google.common.collect.Multimap;
 import com.google.common.eventbus.Subscribe;
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.somda.sdc.biceps.common.MdibEntity;
 import org.somda.sdc.biceps.common.access.MdibAccessObserver;
 import org.somda.sdc.biceps.common.event.*;
@@ -16,9 +18,8 @@ import org.somda.sdc.dpws.device.EventSourceAccess;
 import org.somda.sdc.dpws.soap.exception.MarshallingException;
 import org.somda.sdc.dpws.soap.exception.TransportException;
 import org.somda.sdc.glue.common.ActionConstants;
+import org.somda.sdc.glue.common.MdibVersionUtil;
 import org.somda.sdc.glue.common.ReportMappings;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
@@ -38,19 +39,41 @@ public class ReportGenerator implements MdibAccessObserver {
     private final EventSourceAccess eventSourceAccess;
     private final ObjectFactory bicepsMessageFactory;
     private final ReportMappings reportMappings;
+    private final MdibVersionUtil mdibVersionUtil;
 
     @AssistedInject
     ReportGenerator(@Assisted EventSourceAccess eventSourceAccess,
                     ObjectFactory bicepsMessageFactory,
-                    ReportMappings reportMappings) {
+                    ReportMappings reportMappings,
+                    MdibVersionUtil mdibVersionUtil) {
         this.eventSourceAccess = eventSourceAccess;
         this.bicepsMessageFactory = bicepsMessageFactory;
         this.reportMappings = reportMappings;
+        this.mdibVersionUtil = mdibVersionUtil;
+    }
+
+    /**
+     * Tries to send a periodic state event given states and an MDIB version.
+     *
+     * @param states      the states to put to the report.
+     * @param mdibVersion the MDIB version used for the report.
+     * @param <T>         the state type.
+     */
+    public <T extends AbstractState> void sendPeriodicStateReport(List<T> states, MdibVersion mdibVersion) {
+        if (states.isEmpty()) {
+            return;
+        }
+
+        var reportClass = reportMappings.getPeriodicReportClass(states.get(0).getClass());
+        sendStateChange(
+                mdibVersion,
+                states,
+                reportClass);
     }
 
     @Subscribe
     void onAlertChange(AlertStateModificationMessage modificationMessage) {
-        sendStateChange(ActionConstants.ACTION_EPISODIC_ALERT_REPORT,
+        sendStateChange(
                 modificationMessage.getMdibAccess().getMdibVersion(),
                 modificationMessage.getStates(),
                 EpisodicAlertReport.class);
@@ -58,7 +81,7 @@ public class ReportGenerator implements MdibAccessObserver {
 
     @Subscribe
     void onComponentChange(ComponentStateModificationMessage modificationMessage) {
-        sendStateChange(ActionConstants.ACTION_EPISODIC_COMPONENT_REPORT,
+        sendStateChange(
                 modificationMessage.getMdibAccess().getMdibVersion(),
                 modificationMessage.getStates(),
                 EpisodicComponentReport.class);
@@ -66,7 +89,7 @@ public class ReportGenerator implements MdibAccessObserver {
 
     @Subscribe
     void onContextChange(ContextStateModificationMessage modificationMessage) {
-        sendStateChange(ActionConstants.ACTION_EPISODIC_CONTEXT_REPORT,
+        sendStateChange(
                 modificationMessage.getMdibAccess().getMdibVersion(),
                 modificationMessage.getStates(),
                 EpisodicContextReport.class);
@@ -74,7 +97,7 @@ public class ReportGenerator implements MdibAccessObserver {
 
     @Subscribe
     void onMetricChange(MetricStateModificationMessage modificationMessage) {
-        sendStateChange(ActionConstants.ACTION_EPISODIC_METRIC_REPORT,
+        sendStateChange(
                 modificationMessage.getMdibAccess().getMdibVersion(),
                 modificationMessage.getStates(),
                 EpisodicMetricReport.class);
@@ -82,7 +105,7 @@ public class ReportGenerator implements MdibAccessObserver {
 
     @Subscribe
     void onOperationChange(OperationStateModificationMessage modificationMessage) {
-        sendStateChange(ActionConstants.ACTION_EPISODIC_OPERATIONAL_STATE_REPORT,
+        sendStateChange(
                 modificationMessage.getMdibAccess().getMdibVersion(),
                 modificationMessage.getStates(),
                 EpisodicOperationalStateReport.class);
@@ -94,9 +117,9 @@ public class ReportGenerator implements MdibAccessObserver {
         appendReport(report, DescriptionModificationType.DEL, modificationMessage.getDeletedEntities());
         appendReport(report, DescriptionModificationType.CRT, modificationMessage.getInsertedEntities());
         appendReport(report, DescriptionModificationType.UPT, modificationMessage.getUpdatedEntities());
-        populateMdibVersion(report, modificationMessage.getMdibAccess().getMdibVersion());
 
         try {
+            mdibVersionUtil.setMdibVersion(modificationMessage.getMdibAccess().getMdibVersion(), report);
             eventSourceAccess.sendNotification(ActionConstants.ACTION_DESCRIPTION_MODIFICATION_REPORT, report);
         } catch (MarshallingException e) {
             LOG.warn("Could not marshal message for description modification report with version {}: {}",
@@ -104,6 +127,8 @@ public class ReportGenerator implements MdibAccessObserver {
         } catch (TransportException e) {
             LOG.info("Failed to deliver notification for description modification report with version {}: {}",
                     modificationMessage.getMdibAccess().getMdibVersion(), e.getMessage());
+        } catch (ReflectiveOperationException e) {
+            LOG.warn(REFLECTION_ERROR_STRING, e);
         }
 
         dispatchStateEvents(modificationMessage.getMdibAccess().getMdibVersion(),
@@ -135,7 +160,6 @@ public class ReportGenerator implements MdibAccessObserver {
 
         for (Class<? extends AbstractReport> aClass : classifiedStates.keySet()) {
             sendStateChange(
-                    reportMappings.getEpisodicAction(aClass),
                     mdibVersion,
                     classifiedStates.get(aClass),
                     aClass);
@@ -168,12 +192,10 @@ public class ReportGenerator implements MdibAccessObserver {
             return;
         }
 
-        WaveformStream waveformStream = new WaveformStream();
-        populateMdibVersion(waveformStream, mdibVersion);
-
-        waveformStream.setState(states);
-
         try {
+            WaveformStream waveformStream = new WaveformStream();
+            mdibVersionUtil.setMdibVersion(mdibVersion, waveformStream);
+            waveformStream.setState(states);
             eventSourceAccess.sendNotification(ActionConstants.ACTION_WAVEFORM_STREAM, waveformStream);
         } catch (MarshallingException e) {
             LOG.warn("Could not marshal message for state action {} with version: {}. {}",
@@ -181,11 +203,12 @@ public class ReportGenerator implements MdibAccessObserver {
         } catch (TransportException e) {
             LOG.info("Failed to deliver notification for state action {} with version: {}. {}",
                     ActionConstants.ACTION_WAVEFORM_STREAM, mdibVersion, e.getMessage());
+        } catch (ReflectiveOperationException e) {
+            LOG.warn(REFLECTION_ERROR_STRING, e);
         }
     }
 
-    private <T, V extends AbstractReport> void sendStateChange(String action,
-                                                               MdibVersion mdibVersion,
+    private <T, V extends AbstractReport> void sendStateChange(MdibVersion mdibVersion,
                                                                Collection<T> states,
                                                                Class<V> reportClass) {
         // todo DGr add source MDS somewhere in this function if available
@@ -210,7 +233,7 @@ public class ReportGenerator implements MdibAccessObserver {
             }
             ((List) reportParts).add(reportPart);
 
-            populateMdibVersion(report, mdibVersion);
+            mdibVersionUtil.setMdibVersion(mdibVersion, report);
             findSetStateMethod(reportPartClass).invoke(reportPart, states);
 
         } catch (ReflectiveOperationException e) {
@@ -218,6 +241,7 @@ public class ReportGenerator implements MdibAccessObserver {
             return;
         }
 
+        var action = reportMappings.getAction(reportClass);
         try {
             eventSourceAccess.sendNotification(action, report);
         } catch (MarshallingException e) {
@@ -251,11 +275,5 @@ public class ReportGenerator implements MdibAccessObserver {
         }
         throw new NoSuchMethodException(String.format("No get-states function found on report part class %s",
                 reportPartClass.getName()));
-    }
-
-    void populateMdibVersion(AbstractReport report, MdibVersion mdibVersion) {
-        report.setSequenceId(mdibVersion.getSequenceId().toString());
-        report.setInstanceId(mdibVersion.getInstanceId());
-        report.setMdibVersion(mdibVersion.getVersion());
     }
 }
