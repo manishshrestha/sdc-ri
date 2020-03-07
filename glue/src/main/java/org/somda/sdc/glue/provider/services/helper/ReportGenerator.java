@@ -124,9 +124,11 @@ public class ReportGenerator implements MdibAccessObserver {
         } catch (MarshallingException e) {
             LOG.warn("Could not marshal message for description modification report with version {}: {}",
                     modificationMessage.getMdibAccess().getMdibVersion(), e.getMessage());
+            LOG.trace("Could not marshal message for description modification report", e);
         } catch (TransportException e) {
             LOG.info("Failed to deliver notification for description modification report with version {}: {}",
                     modificationMessage.getMdibAccess().getMdibVersion(), e.getMessage());
+            LOG.trace("Failed to deliver notification for description modification report", e);
         } catch (ReflectiveOperationException e) {
             LOG.warn(REFLECTION_ERROR_STRING, e);
         }
@@ -200,9 +202,11 @@ public class ReportGenerator implements MdibAccessObserver {
         } catch (MarshallingException e) {
             LOG.warn("Could not marshal message for state action {} with version: {}. {}",
                     ActionConstants.ACTION_WAVEFORM_STREAM, mdibVersion, e.getMessage());
+            LOG.trace("Could not marshal message for state action {}", ActionConstants.ACTION_WAVEFORM_STREAM, e);
         } catch (TransportException e) {
             LOG.info("Failed to deliver notification for state action {} with version: {}. {}",
                     ActionConstants.ACTION_WAVEFORM_STREAM, mdibVersion, e.getMessage());
+            LOG.trace("Failed to deliver notification for state action {}", ActionConstants.ACTION_WAVEFORM_STREAM, e);
         } catch (ReflectiveOperationException e) {
             LOG.warn(REFLECTION_ERROR_STRING, e);
         }
@@ -247,9 +251,12 @@ public class ReportGenerator implements MdibAccessObserver {
         } catch (MarshallingException e) {
             LOG.warn("Could not marshal message for state action {} with version: {}. {}",
                     action, mdibVersion, e.getMessage());
+            LOG.trace("Could not marshal message for state action {}",
+                    action, e);
         } catch (TransportException e) {
             LOG.info("Failed to deliver notification for state action {} with version: {}. {}",
                     action, mdibVersion, e.getMessage());
+            LOG.trace("Failed to deliver notification for state action {}", action, e);
         }
     }
 

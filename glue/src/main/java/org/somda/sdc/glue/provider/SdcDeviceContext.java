@@ -6,7 +6,6 @@ import org.somda.sdc.biceps.model.participant.MdibVersion;
 import org.somda.sdc.biceps.provider.access.LocalMdibAccess;
 import org.somda.sdc.dpws.device.Device;
 import org.somda.sdc.glue.provider.sco.OperationInvocationReceiver;
-import org.somda.sdc.glue.provider.services.HighPriorityServices;
 
 import java.util.Collection;
 import java.util.List;
@@ -51,6 +50,16 @@ public interface SdcDeviceContext {
      * <p>
      * This function does not control periodicity.
      * Periodicity has to be controlled by the calling function.
+     * <p>
+     * Note that only one report type is supported per call, e.g. it is not possible to mix metric and context states.
+     * In accordance with the SDC, the following state types have to be sent in separate reports:
+     * <ul>
+     * <li>Metric states (every subclass of {@link org.somda.sdc.biceps.model.participant.AbstractMetricState})
+     * <li>Alert states (every subclass of {@link org.somda.sdc.biceps.model.participant.AbstractAlertState})
+     * <li>Context states (every subclass of {@link org.somda.sdc.biceps.model.participant.AbstractContextState})
+     * <li>Operational states (every subclass of {@link org.somda.sdc.biceps.model.participant.AbstractOperationState})
+     * <li>Component states (every subclass of {@link org.somda.sdc.biceps.model.participant.AbstractDeviceComponentState})
+     * </ul>
      *
      * @param states      the states that are supposed to be notified.
      * @param mdibVersion the MDIB version the report belongs to.
