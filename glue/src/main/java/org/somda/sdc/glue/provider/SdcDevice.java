@@ -4,6 +4,8 @@ import com.google.common.util.concurrent.AbstractIdleService;
 import com.google.inject.Provider;
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
+import org.somda.sdc.biceps.model.participant.AbstractState;
+import org.somda.sdc.biceps.model.participant.MdibVersion;
 import org.somda.sdc.biceps.provider.access.LocalMdibAccess;
 import org.somda.sdc.dpws.DpwsConstants;
 import org.somda.sdc.dpws.device.*;
@@ -24,19 +26,14 @@ import org.somda.sdc.mdpws.common.CommonConstants;
 
 import javax.xml.namespace.QName;
 import java.io.InputStream;
-import java.net.URI;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Adds SDC services to a DPWS device and manages incoming set service requests.
  * <p>
  * The purpose of the {@linkplain SdcDevice} class is to provide SDC data on the network.
  */
-public class SdcDevice extends AbstractIdleService implements Device, EventSourceAccess {
+public class SdcDevice extends AbstractIdleService implements Device, EventSourceAccess, SdcDeviceContext {
     private final Device dpwsDevice;
     private final HostedServiceFactory hostedServiceFactory;
     private final HighPriorityServices highPriorityServices;
@@ -65,27 +62,7 @@ public class SdcDevice extends AbstractIdleService implements Device, EventSourc
         this.hostedServiceFactory = hostedServiceFactory;
         this.operationInvocationReceivers = operationInvocationReceivers;
 
-        this.pluginProcessor = new SdcDevicePluginProcessor(plugins, new SdcDeviceContext() {
-            @Override
-            public Device getDevice() {
-                return dpwsDevice;
-            }
-
-            @Override
-            public LocalMdibAccess getLocalMdibAccess() {
-                return mdibAccess;
-            }
-
-            @Override
-            public Collection<OperationInvocationReceiver> getOperationInvocationReceivers() {
-                return operationInvocationReceivers;
-            }
-
-            @Override
-            public State getServiceState() {
-                return SdcDevice.this.state();
-            }
-        });
+        this.pluginProcessor = new SdcDevicePluginProcessor(plugins, this);
     }
 
     public LocalMdibAccess getMdibAccess() {
@@ -100,6 +77,31 @@ public class SdcDevice extends AbstractIdleService implements Device, EventSourc
     @Override
     public Map<String, SubscriptionManager> getActiveSubscriptions() {
         return dpwsDevice.getActiveSubscriptions();
+    }
+
+    @Override
+    public Device getDevice() {
+        return dpwsDevice;
+    }
+
+    @Override
+    public LocalMdibAccess getLocalMdibAccess() {
+        return mdibAccess;
+    }
+
+    @Override
+    public Collection<OperationInvocationReceiver> getOperationInvocationReceivers() {
+        return operationInvocationReceivers;
+    }
+
+    @Override
+    public State getServiceState() {
+        return state();
+    }
+
+    @Override
+    public <T extends AbstractState> void sendPeriodicStateReport(List<T> states, MdibVersion mdibVersion) {
+        highPriorityServices.sendPeriodicStateReport(states, mdibVersion);
     }
 
     /**
@@ -128,7 +130,6 @@ public class SdcDevice extends AbstractIdleService implements Device, EventSourc
 
             @Override
             public void setScopes(Collection<String> scopes) {
-                // todo DGr track scopes from MDIB and update accordingly
                 ArrayList<String> tmpScopes = new ArrayList<>();
                 if (scopes.stream().filter(scope -> scope.equals(GlueConstants.SCOPE_SDC_PROVIDER)).findAny().isEmpty()) {
                     tmpScopes.add(GlueConstants.SCOPE_SDC_PROVIDER);

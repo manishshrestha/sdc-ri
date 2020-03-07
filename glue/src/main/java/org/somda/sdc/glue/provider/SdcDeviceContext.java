@@ -1,11 +1,15 @@
 package org.somda.sdc.glue.provider;
 
 import com.google.common.util.concurrent.Service;
+import org.somda.sdc.biceps.model.participant.AbstractState;
+import org.somda.sdc.biceps.model.participant.MdibVersion;
 import org.somda.sdc.biceps.provider.access.LocalMdibAccess;
 import org.somda.sdc.dpws.device.Device;
 import org.somda.sdc.glue.provider.sco.OperationInvocationReceiver;
+import org.somda.sdc.glue.provider.services.HighPriorityServices;
 
 import java.util.Collection;
+import java.util.List;
 
 /**
  * Context data passed to {@linkplain SdcDevicePlugin} in order to access {@linkplain SdcDevice} data.
@@ -41,4 +45,16 @@ public interface SdcDeviceContext {
      * @return {@link SdcDevice#state()} of the enclosing SDC device.
      */
     Service.State getServiceState();
+
+    /**
+     * Sends a periodic state report.
+     * <p>
+     * This function does not control periodicity.
+     * Periodicity has to be controlled by the calling function.
+     *
+     * @param states      the states that are supposed to be notified.
+     * @param mdibVersion the MDIB version the report belongs to.
+     * @param <T>         the state type that.
+     */
+    <T extends AbstractState> void sendPeriodicStateReport(List<T> states, MdibVersion mdibVersion);
 }
