@@ -54,18 +54,18 @@ public class ReportMappings {
                 AbstractOperationState.class);
 
         episodicReportActionMapping = Map.of(
-                AbstractAlertReport.class, ActionConstants.ACTION_EPISODIC_ALERT_REPORT,
-                AbstractComponentReport.class, ActionConstants.ACTION_EPISODIC_COMPONENT_REPORT,
-                AbstractContextReport.class, ActionConstants.ACTION_EPISODIC_CONTEXT_REPORT,
-                AbstractMetricReport.class, ActionConstants.ACTION_EPISODIC_METRIC_REPORT,
-                AbstractOperationalStateReport.class, ActionConstants.ACTION_EPISODIC_OPERATIONAL_STATE_REPORT);
+                EpisodicAlertReport.class, ActionConstants.ACTION_EPISODIC_ALERT_REPORT,
+                EpisodicComponentReport.class, ActionConstants.ACTION_EPISODIC_COMPONENT_REPORT,
+                EpisodicContextReport.class, ActionConstants.ACTION_EPISODIC_CONTEXT_REPORT,
+                EpisodicMetricReport.class, ActionConstants.ACTION_EPISODIC_METRIC_REPORT,
+                EpisodicOperationalStateReport.class, ActionConstants.ACTION_EPISODIC_OPERATIONAL_STATE_REPORT);
 
         periodicReportActionMapping = Map.of(
-                AbstractAlertReport.class, ActionConstants.ACTION_PERIODIC_ALERT_REPORT,
-                AbstractComponentReport.class, ActionConstants.ACTION_PERIODIC_COMPONENT_REPORT,
-                AbstractContextReport.class, ActionConstants.ACTION_PERIODIC_CONTEXT_REPORT,
-                AbstractMetricReport.class, ActionConstants.ACTION_PERIODIC_METRIC_REPORT,
-                AbstractOperationalStateReport.class, ActionConstants.ACTION_PERIODIC_OPERATIONAL_STATE_REPORT);
+                PeriodicAlertReport.class, ActionConstants.ACTION_PERIODIC_ALERT_REPORT,
+                PeriodicComponentReport.class, ActionConstants.ACTION_PERIODIC_COMPONENT_REPORT,
+                PeriodicContextReport.class, ActionConstants.ACTION_PERIODIC_CONTEXT_REPORT,
+                PeriodicMetricReport.class, ActionConstants.ACTION_PERIODIC_METRIC_REPORT,
+                PeriodicOperationalStateReport.class, ActionConstants.ACTION_PERIODIC_OPERATIONAL_STATE_REPORT);
     }
 
     public Class<? extends AbstractReport> getEpisodicReportClass(Class<? extends AbstractState> stateClass) {
@@ -100,20 +100,13 @@ public class ReportMappings {
     }
 
     public String getAction(Class<? extends AbstractReport> reportClass) {
-        return getAction(reportClass, episodicReportActionMapping).orElse(
+        return getAction(reportClass, episodicReportActionMapping).orElseGet(() ->
                 getAction(reportClass, periodicReportActionMapping).orElseThrow(() ->
                         new RuntimeException(String.format("Unknown report class found: %s", reportClass))));
     }
 
-    private Optional<String> getAction(Class<? extends AbstractReport> reportClass, Map<Class<? extends AbstractReport>, String> mapping) {
-        Class<?> superClass = reportClass;
-        while (superClass != null) {
-            final String action = mapping.get(superClass);
-            if (action != null) {
-                return Optional.of(action);
-            }
-            superClass = superClass.getSuperclass();
-        }
-        return Optional.empty();
+    private Optional<String> getAction(Class<? extends AbstractReport> reportClass,
+                                       Map<Class<? extends AbstractReport>, String> mapping) {
+        return Optional.ofNullable(mapping.get(reportClass));
     }
 }
