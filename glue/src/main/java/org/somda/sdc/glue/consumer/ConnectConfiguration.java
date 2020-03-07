@@ -21,7 +21,7 @@ public class ConnectConfiguration {
     /**
      * List of all port types shipped with SDC.
      */
-    public static final Collection<QName> PORT_TYPES = Collections.unmodifiableCollection(Arrays.asList(
+    public static final Collection<QName> PORT_TYPES = List.of(
             WsdlConstants.PORT_TYPE_GET_QNAME,
             WsdlConstants.PORT_TYPE_SET_QNAME,
             WsdlConstants.PORT_TYPE_DESCRIPTION_EVENT_QNAME,
@@ -30,39 +30,39 @@ public class ConnectConfiguration {
             WsdlConstants.PORT_TYPE_WAVEFORM_QNAME,
             WsdlConstants.PORT_TYPE_CONTAINMENT_TREE_QNAME,
             WsdlConstants.PORT_TYPE_ARCHIVE_QNAME,
-            WsdlConstants.PORT_TYPE_LOCALIZATION_QNAME));
+            WsdlConstants.PORT_TYPE_LOCALIZATION_QNAME);
 
     /**
      * List of all episodic report actions.
      */
-    public static final Collection<String> EPISODIC_REPORTS = Collections.unmodifiableCollection(Arrays.asList(
+    public static final Collection<String> EPISODIC_REPORTS = List.of(
             ActionConstants.ACTION_EPISODIC_ALERT_REPORT,
             ActionConstants.ACTION_EPISODIC_COMPONENT_REPORT,
             ActionConstants.ACTION_EPISODIC_CONTEXT_REPORT,
             ActionConstants.ACTION_EPISODIC_METRIC_REPORT,
             ActionConstants.ACTION_EPISODIC_OPERATIONAL_STATE_REPORT,
             ActionConstants.ACTION_DESCRIPTION_MODIFICATION_REPORT,
-            ActionConstants.ACTION_OPERATION_INVOKED_REPORT));
+            ActionConstants.ACTION_OPERATION_INVOKED_REPORT);
 
     /**
      * List of all periodic report actions.
      */
-    public static final Collection<String> PERIODIC_REPORTS = Collections.unmodifiableCollection(Arrays.asList(
+    public static final Collection<String> PERIODIC_REPORTS = List.of(
             ActionConstants.ACTION_PERIODIC_ALERT_REPORT,
             ActionConstants.ACTION_PERIODIC_COMPONENT_REPORT,
             ActionConstants.ACTION_PERIODIC_CONTEXT_REPORT,
             ActionConstants.ACTION_PERIODIC_METRIC_REPORT,
-            ActionConstants.ACTION_PERIODIC_OPERATIONAL_STATE_REPORT));
+            ActionConstants.ACTION_PERIODIC_OPERATIONAL_STATE_REPORT);
 
     /**
      * List of all streaming actions.
      */
-    public static final Collection<String> STREAMING_REPORTS = Collections.unmodifiableCollection(Arrays.asList(
+    public static final Collection<String> STREAMING_REPORTS = List.of(
             ActionConstants.ACTION_OBSERVED_VALUE_STREAM,
-            ActionConstants.ACTION_WAVEFORM_STREAM));
+            ActionConstants.ACTION_WAVEFORM_STREAM);
 
     /**
-     * Commonly used actions for remote SDC device synchronization.
+     * Commonly used episodic actions for remote SDC device synchronization.
      * <p>
      * Comprises all episodic reports plus waveforms.
      *
@@ -70,10 +70,22 @@ public class ConnectConfiguration {
      */
     public static final Collection<String> ALL_EPISODIC_AND_WAVEFORM_REPORTS;
 
+    /**
+     * Commonly used periodic actions for remote SDC device synchronization.
+     * <p>
+     * Comprises all periodic reports plus waveforms.
+     *
+     * @see #PERIODIC_REPORTS
+     */
+    public static final Collection<String> ALL_PERIODIC_AND_WAVEFORM_REPORTS;
+
     static {
-        ArrayList<String> allEpisodicAndWaveformReports = new ArrayList<>(EPISODIC_REPORTS);
+        var allEpisodicAndWaveformReports = new ArrayList<>(EPISODIC_REPORTS);
         allEpisodicAndWaveformReports.add(ActionConstants.ACTION_WAVEFORM_STREAM);
         ALL_EPISODIC_AND_WAVEFORM_REPORTS = Collections.unmodifiableCollection(allEpisodicAndWaveformReports);
+        var allPeriodicAndWaveformReports = new ArrayList<>(PERIODIC_REPORTS);
+        allPeriodicAndWaveformReports.add(ActionConstants.ACTION_WAVEFORM_STREAM);
+        ALL_PERIODIC_AND_WAVEFORM_REPORTS = Collections.unmodifiableCollection(allPeriodicAndWaveformReports);
     }
 
     /**
@@ -82,7 +94,7 @@ public class ConnectConfiguration {
      * This can be used in order to watch remote devices without receiving all of their data.
      * Note that this setup includes operation invoked reports by default.
      */
-    public static Collection<String> DESCRIPTION_AND_CONTEXTS =  Collections.unmodifiableCollection(Arrays.asList(
+    public static Collection<String> DESCRIPTION_AND_CONTEXTS = Collections.unmodifiableCollection(Arrays.asList(
             ActionConstants.ACTION_EPISODIC_CONTEXT_REPORT,
             ActionConstants.ACTION_DESCRIPTION_MODIFICATION_REPORT,
             ActionConstants.ACTION_OPERATION_INVOKED_REPORT));
