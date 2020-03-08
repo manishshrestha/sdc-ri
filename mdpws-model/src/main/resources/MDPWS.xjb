@@ -16,6 +16,9 @@
 		<xjb:bindings node="//xs:complexType[@name='DualChannelDefType']">
 			<xjb:class name="DualChannelDefinitionType"/>
 		</xjb:bindings>
+		<xjb:bindings node="//xs:complexType[@name='SafetyContextDefType']">
+			<xjb:class name="SafetyContextDefinitionType"/>
+		</xjb:bindings>
 		<xjb:bindings node="//xs:complexType[@name='SafetyReqAssertionType']">
 			<xjb:class name="SafetyRequirementsAssertionType"/>
 		</xjb:bindings>
