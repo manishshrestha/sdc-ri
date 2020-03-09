@@ -240,8 +240,13 @@ public class CommunicationLogIT extends DpwsTest {
             this.outboundHeaders = new ArrayList<>();
         }
 
-        @Override
+        @Deprecated
         public OutputStream getTargetStream(CommunicationLog.TransportType path, CommunicationLog.Direction direction, CommunicationContext communicationContext) {
+            return createTargetStream(path, direction, communicationContext);
+        }
+
+        @Override
+        public OutputStream createTargetStream(CommunicationLog.TransportType path, CommunicationLog.Direction direction, CommunicationContext communicationContext) {
             var os = new ByteArrayOutputStream();
             var appInfo = (HttpApplicationInfo) communicationContext.getApplicationInfo();
             if (CommunicationLog.Direction.INBOUND.equals(direction)) {
