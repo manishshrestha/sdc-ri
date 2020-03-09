@@ -30,13 +30,13 @@ public class CommunicationLogImpl implements CommunicationLog {
     @Override
     public TeeOutputStream logMessage(Direction direction, TransportType transportType, CommunicationContext communicationContext,
                                       OutputStream message) {
-        OutputStream logFile = this.logSink.getTargetStream(transportType, direction, communicationContext);
+        OutputStream logFile = this.logSink.createTargetStream(transportType, direction, communicationContext);
         return new TeeOutputStream(message, logFile);
     }
 
     @Override
     public OutputStream logMessage(Direction direction, TransportType transportType, CommunicationContext communicationContext) {
-        return this.logSink.getTargetStream(transportType, direction, communicationContext);
+        return this.logSink.createTargetStream(transportType, direction, communicationContext);
     }
 
     @Override
@@ -50,7 +50,7 @@ public class CommunicationLogImpl implements CommunicationLog {
         try {
             final byte[] bytes = ByteStreams.toByteArray(inputStream);
 
-            try (OutputStream targetStream = this.logSink.getTargetStream(transportType, direction, communicationContext)) {
+            try (OutputStream targetStream = this.logSink.createTargetStream(transportType, direction, communicationContext)) {
                 new ByteArrayInputStream(bytes).transferTo(targetStream);
             }
             return new ByteArrayInputStream(bytes);
