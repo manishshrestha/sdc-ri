@@ -22,7 +22,7 @@ public class CommunicationLogImplTest extends DpwsTest {
 
         byte[] content = UUID.randomUUID().toString().getBytes();
 
-        try (ByteArrayOutputStream mockOutputStream = new ByteArrayOutputStream();
+        try (ByteArrayOutputStream mockOutputStream = spy(new ByteArrayOutputStream());
              ByteArrayInputStream inputTestInputStream = new ByteArrayInputStream(content);
              ByteArrayOutputStream outputTestOutputStream = new ByteArrayOutputStream();) {
 
@@ -47,6 +47,7 @@ public class CommunicationLogImplTest extends DpwsTest {
 
             assertArrayEquals(resultingInputStream.readAllBytes(), content);
             assertArrayEquals(mockOutputStream.toByteArray(), content);
+            verify(mockOutputStream, times(1)).close();
 
             mockOutputStream.reset();
 

@@ -50,7 +50,9 @@ public class CommunicationLogImpl implements CommunicationLog {
         try {
             final byte[] bytes = ByteStreams.toByteArray(inputStream);
 
-            new ByteArrayInputStream(bytes).transferTo(this.logSink.getTargetStream(transportType, direction, communicationContext));
+            try (OutputStream targetStream = this.logSink.getTargetStream(transportType, direction, communicationContext)) {
+                new ByteArrayInputStream(bytes).transferTo(targetStream);
+            }
             return new ByteArrayInputStream(bytes);
         } catch (IOException e) {
             LOG.warn("Could not write to communication log file", e);
