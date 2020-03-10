@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>org.somda.sdc</groupId>
     <artifactId>sdc-ri</artifactId>
     <packaging>pom</packaging>
-    <version>1.1.0-SNAPSHOT</version>
+    <version>${revision}</version>
 
     <name>SDC Reference Implementation</name>
     <description>
@@ -38,8 +39,8 @@
         <connection>scm:git:git://gitlab.com/sdc-suite/sdc-ri.git</connection>
         <developerConnection>scm:git:git://gitlab.com/sdc-suite/sdc-ri.git</developerConnection>
         <url>https://gitlab.com/sdc-suite/sdc-ri/-/tree/develop</url>
-      <tag>sdc-ri-1.0.0</tag>
-  </scm>
+        <tag>sdc-ri-1.0.0</tag>
+    </scm>
 
     <modules>
         <module>common</module>
@@ -55,6 +56,7 @@
     </modules>
 
     <properties>
+        <revision>1.1.0-SNAPSHOT</revision>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
@@ -112,7 +114,9 @@
                 <executions>
                     <execution>
                         <phase>validate</phase>
-                        <goals><goal>create</goal></goals>
+                        <goals>
+                            <goal>create</goal>
+                        </goals>
                     </execution>
                 </executions>
                 <configuration>
@@ -154,6 +158,7 @@
                 <version>3.0.0-M1</version>
                 <configuration>
                     <pushChanges>false</pushChanges>
+                    <autoVersionSubmodules>true</autoVersionSubmodules>
                 </configuration>
             </plugin>
         </plugins>
@@ -319,12 +324,12 @@
             <name>SDCri snapshots</name>
             <url>https://oss.sonatype.org/content/repositories/snapshots</url>
         </snapshotRepository>
-<!-- enable this to generate a unified report, but don't check this in! -->
-<!--        <site>-->
-<!--            <id>somda</id>-->
-<!--            <name>somda</name>-->
-<!--            <url>https://somda.org</url>-->
-<!--        </site>-->
+        <!-- enable this to generate a unified report, but don't check this in! -->
+        <!--        <site>-->
+        <!--            <id>somda</id>-->
+        <!--            <name>somda</name>-->
+        <!--            <url>https://somda.org</url>-->
+        <!--        </site>-->
     </distributionManagement>
 
 </project>
