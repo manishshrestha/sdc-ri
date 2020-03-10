@@ -8,6 +8,8 @@ to Maven Central.
 
 ### 1. Check dependencies for updates
 
+_Skip this step for bugfix releases_.
+
 Walk through all Maven project dependencies and update to the latest version.
 Ship your changes to develop by means of a merge request.
 
@@ -49,6 +51,9 @@ is changed to
 - Foo
 - Bar
 ```
+
+When doing a _bugfix_ release, only add the new version and
+its changes to the changelog. 
 
 ### 4. Call Maven's release preparation to bump version numbers on the parent module and all submodules
 
@@ -129,3 +134,9 @@ git push origin sdc-ri-X.X.X
 Add a Gitlab release description that includes the changelog of the preceding release.
 Feel free to add further notes if they are of any public interest.
 See https://gitlab.com/help/user/project/releases/index to find more information on Gitlab release descriptions.
+
+### 9. Update develop changelog (_Bugfix release only_)
+
+When doing a bugfix release, the changelog in develop must be updated to include
+the new version as well. Add the entry you previously created in step 3 and remove
+changes included in your bugfix release from unreleased changes if applicable.
