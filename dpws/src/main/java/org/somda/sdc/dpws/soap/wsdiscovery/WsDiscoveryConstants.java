@@ -22,7 +22,7 @@ public class WsDiscoveryConstants {
      *
      * @see <a href="http://docs.oasis-open.org/ws-dd/discovery/1.1/os/wsdd-discovery-1.1-spec-os.html#_Toc234231804">XML Namespaces</a>
      */
-    public static final String NAMESPACE = "http://docs.oasis-open.org/ws-dd/ns/discovery/2009/01/";
+    public static final String NAMESPACE = "http://docs.oasis-open.org/ws-dd/ns/discovery/2009/01";
 
     /**
      * Defines the preferred prefix for the WS-Discovery 1.1 namespace
@@ -34,42 +34,42 @@ public class WsDiscoveryConstants {
      *
      * @see <a href="http://docs.oasis-open.org/ws-dd/discovery/1.1/os/wsdd-discovery-1.1-spec-os.html#_Toc234231831">Probe</a>
      */
-    public static final String WSA_ACTION_PROBE = NAMESPACE + "Probe";
+    public static final String WSA_ACTION_PROBE = NAMESPACE + "/Probe";
 
     /**
      * WS-Addressing ProbeMatches action.
      *
      * @see <a href="http://docs.oasis-open.org/ws-dd/discovery/1.1/os/wsdd-discovery-1.1-spec-os.html#_Toc234231835">Probe Match</a>
      */
-    public static final String WSA_ACTION_PROBE_MATCHES = NAMESPACE + "ProbeMatches";
+    public static final String WSA_ACTION_PROBE_MATCHES = NAMESPACE + "/ProbeMatches";
 
     /**
      * WS-Addressing Resolve action.
      *
      * @see <a href="http://docs.oasis-open.org/ws-dd/discovery/1.1/os/wsdd-discovery-1.1-spec-os.html#_Toc234231840">Resolve</a>
      */
-    public static final String WSA_ACTION_RESOLVE = NAMESPACE + "Resolve";
+    public static final String WSA_ACTION_RESOLVE = NAMESPACE + "/Resolve";
 
     /**
      * WS-Addressing ResolveMatches action.
      *
      * @see <a href="http://docs.oasis-open.org/ws-dd/discovery/1.1/os/wsdd-discovery-1.1-spec-os.html#_Toc234231844">Resolve Match</a>
      */
-    public static final String WSA_ACTION_RESOLVE_MATCHES = NAMESPACE + "ResolveMatches";
+    public static final String WSA_ACTION_RESOLVE_MATCHES = NAMESPACE + "/ResolveMatches";
 
     /**
      * WS-Addressing Hello action.
      *
      * @see <a href="http://docs.oasis-open.org/ws-dd/discovery/1.1/os/wsdd-discovery-1.1-spec-os.html#_Toc234231821">Hello</a>
      */
-    public static final String WSA_ACTION_HELLO = NAMESPACE + "Hello";
+    public static final String WSA_ACTION_HELLO = NAMESPACE + "/Hello";
 
     /**
      * WS-Addressing Bye action.
      *
      * @see <a href="http://docs.oasis-open.org/ws-dd/discovery/1.1/os/wsdd-discovery-1.1-spec-os.html#_Toc234231825">Bye</a>
      */
-    public static final String WSA_ACTION_BYE = NAMESPACE + "Bye";
+    public static final String WSA_ACTION_BYE = NAMESPACE + "/Bye";
 
     /**
      * WS-Addressing To-field for UDP multicast sinks.
@@ -115,7 +115,7 @@ public class WsDiscoveryConstants {
      *
      * @see <a href="http://docs.oasis-open.org/ws-dd/discovery/1.1/os/wsdd-discovery-1.1-spec-os.html#_Toc234231831">Probe</a>
      */
-    public static final String FAULT_ACTION = NAMESPACE + "fault";
+    public static final String FAULT_ACTION = NAMESPACE + "/fault";
 
     /**
      * Multicast address for IPv4 socket binding.
