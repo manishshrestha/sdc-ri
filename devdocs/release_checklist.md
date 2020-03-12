@@ -16,7 +16,7 @@ Ship your changes to develop by means of a merge request.
 
 ## 2.2 Setup release branch
 
-Create a new release branch from latest develop named `release/X.X` with `X.X` being the major and minor version of the
+Create a new release branch from latest develop named `release/X.Y` with `X.Y` being the major and minor version of the
 release.
 
 > Note that bug fix versions are not part of the release branch name as those are supposed to be merged into the release 
@@ -60,9 +60,19 @@ $ mvn release:prepare
 ```
 
 Always type in the three-fielded semantic version number when asked.
-The requested Git tag name shall have the format `sdc-ri-X.X.X` with `X.X.X` being the version number of the release.
+The requested Git tag name shall have the format `sdc-ri-X.Y.Z` with `X.Y.Z` being the version number of the release.
+
+The Maven release plugin creates two different commits:
+
+1. `[maven-release-plugin] prepare for next development iteration`, in the following `[develop-commit]`
+2. `[maven-release-plugin] prepare release sdc-ri-X.Y.Z`, in the following `[release-commit]`
+
+The first includes POMs with version numbers targeted to the next developed version, e.g. X.(Y+1).0-SNAPSHOT).
+The second includes POMs with version numbers targeted to the actual release, i.e. X.Y.Z.
 
 ## 2.5 Call Maven's project deployment command
+
+Make sure `[release-commit]` is checked out and call:
 
 ```
 $ mvn -DskipTests=true install deploy -Pdeploy 
@@ -98,25 +108,14 @@ See the following template:
 
 As an additional verification step before delivering to Maven Central, go to http://oss.sonatype.org, login and click
  _Staging Repositories_ from the left menu. 
-Double-check that everything is as expected, _Close_ the staged artifacts and _Release_ them.
+Double-check that everything is as expected, _Close_ the staged artifacts, which will take a while. 
+Once the _Release_ button is enabled, click to finally release.
 
 ## 2.7 Fast-forward to master and push to release, develop and master
 
-Assuming you are still in the release branch.
-The Maven release plugin has created two different commits:
+Checkout `[develop-commit]`, push to `origin/develop` and create a merge request for the next development iteration.
 
-1. `[maven-release-plugin] prepare for next development iteration`
-2. `[maven-release-plugin] prepare release sdc-ri-X.Y.Z`
-
-Commit 1. is HEAD.
-Push HEAD to `origin/develop` and create a merge request for the next development iteration.
-
-Checkout commit 2 and push changes to `origin/release`:
-
-```
-$ git push origin release/X.X
-```
-
+Checkout `[release-commit]` and push changes to `origin/release`.
 Fast-forward changes to master and push by calling:
 
 ```
@@ -141,9 +140,8 @@ See https://gitlab.com/help/user/project/releases/index to find more information
 
 ## 2.9 Update develop changelog (_Bugfix release only_)
 
-When doing a bugfix release, the changelog in develop must be updated to include
-the new version as well. Add the entry you previously created in step 3 and remove
-changes included in your bugfix release from unreleased changes if applicable.
+When doing a bugfix release, the changelog in `develop` must be updated to include the new version as well. Add the entry
+you previously created in step 3 and remove changes included in your bugfix release from unreleased changes if applicable.
 
 # 3 Bugfix release
 
@@ -203,13 +201,19 @@ This allows a reviewer to double-check if fixes have been applied correctly and 
 ### 3.6 Release preparation and actual deployment
 
 After the merge request is delivered, checkout the release branch and start the Maven release preparation and 
-deployment as described in sections  2.4, 2.5 and 2.6.
+deployment as described in sections 2.4, 2.5 and 2.6.
+
+As `[develop-commit]` is not used after preparation, it can safely be removed from the repository:
+
+```
+$ git reset --hard HEAD^
+``` 
 
 ### 3.7 Fast-forward to master and push to release and master
 
 Do the steps from section 2.7, but rather than pushing the next development version to `origin/develop`, update the 
 changelog in the develop branch such that it fits the previous release delivery, i.e. move the fixes and patches to an 
-appropriate section like
+appropriate section and create a merge request.
 
 ```
 ## [Unreleased]
