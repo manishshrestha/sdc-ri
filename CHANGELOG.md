@@ -19,6 +19,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Report processing on consumer side, which now compares MDIB sequence IDs by using URI compare instead of string compare.
 
+## [1.0.1] - 2020-03-11
+
 ### Fixed
 
 - `org.somda.sdc.dpws.CommunicationLogImpl.logMessage(Direction direction, TransportType transportType, CommunicationContext communicationContext, InputStream message)` did not close OutputStream and was logging trailing empty bytes (#126)
