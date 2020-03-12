@@ -5,7 +5,7 @@
     <groupId>org.somda.sdc</groupId>
     <artifactId>sdc-ri</artifactId>
     <packaging>pom</packaging>
-    <version>1.0.0</version>
+    <version>1.0.1-SNAPSHOT</version>
 
     <name>SDC Reference Implementation</name>
     <description>
@@ -154,6 +154,7 @@
                 <version>3.0.0-M1</version>
                 <configuration>
                     <pushChanges>false</pushChanges>
+                    <autoVersionSubmodules>true</autoVersionSubmodules>
                 </configuration>
             </plugin>
         </plugins>
