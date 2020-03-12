@@ -274,7 +274,7 @@ public class UdpBindingServiceImpl extends AbstractIdleService implements UdpBin
         // no UDP specialization, create ApplicationInfo
         var requestCommContext = new CommunicationContext(new ApplicationInfo(), requestTransportInfo);
 
-        try (ByteArrayInputStream messageData = new ByteArrayInputStream(packet.getData())) {
+        try (ByteArrayInputStream messageData = new ByteArrayInputStream(packet.getData(), packet.getOffset(), packet.getLength())) {
             communicationLog.logMessage(
                     direction,
                     CommunicationLog.TransportType.UDP,

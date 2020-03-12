@@ -3,7 +3,7 @@
     <parent>
         <artifactId>sdc-ri</artifactId>
         <groupId>org.somda.sdc</groupId>
-        <version>1.0.0</version>
+        <version>1.0.1-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -48,19 +48,19 @@
         <dependency>
             <groupId>org.somda.sdc</groupId>
             <artifactId>common</artifactId>
-            <version>1.0.0</version>
+            <version>1.0.1-SNAPSHOT</version>
         </dependency>
 
         <dependency>
             <groupId>org.somda.sdc</groupId>
             <artifactId>biceps-model</artifactId>
-            <version>1.0.0</version>
+            <version>1.0.1-SNAPSHOT</version>
         </dependency>
 
         <dependency>
             <groupId>org.somda.sdc</groupId>
             <artifactId>test</artifactId>
-            <version>1.0.0</version>
+            <version>1.0.1-SNAPSHOT</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
