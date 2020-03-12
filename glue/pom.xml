@@ -3,7 +3,7 @@
     <parent>
         <artifactId>sdc-ri</artifactId>
         <groupId>org.somda.sdc</groupId>
-        <version>1.0.1-SNAPSHOT</version>
+        <version>1.0.1</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -40,7 +40,7 @@
         <connection>scm:git:git://gitlab.com/sdc-suite/sdc-ri.git</connection>
         <developerConnection>scm:git:git://gitlab.com/sdc-suite/sdc-ri.git</developerConnection>
         <url>https://gitlab.com/sdc-suite/sdc-ri/-/tree/develop</url>
-      <tag>sdc-ri-1.0.0</tag>
+      <tag>sdc-ri-1.0.1</tag>
   </scm>
 
     <build>
@@ -77,13 +77,13 @@
         <dependency>
             <groupId>org.somda.sdc</groupId>
             <artifactId>dpws</artifactId>
-            <version>1.0.1-SNAPSHOT</version>
+            <version>1.0.1</version>
         </dependency>
 
         <dependency>
             <groupId>org.somda.sdc</groupId>
             <artifactId>dpws</artifactId>
-            <version>1.0.1-SNAPSHOT</version>
+            <version>1.0.1</version>
             <type>test-jar</type>
             <scope>test</scope>
         </dependency>
@@ -91,19 +91,19 @@
         <dependency>
             <groupId>org.somda.sdc</groupId>
             <artifactId>mdpws</artifactId>
-            <version>1.0.1-SNAPSHOT</version>
+            <version>1.0.1</version>
         </dependency>
 
         <dependency>
             <groupId>org.somda.sdc</groupId>
             <artifactId>biceps</artifactId>
-            <version>1.0.1-SNAPSHOT</version>
+            <version>1.0.1</version>
         </dependency>
 
         <dependency>
             <groupId>org.somda.sdc</groupId>
             <artifactId>biceps</artifactId>
-            <version>1.0.1-SNAPSHOT</version>
+            <version>1.0.1</version>
             <type>test-jar</type>
             <scope>test</scope>
         </dependency>
@@ -111,7 +111,7 @@
         <dependency>
             <groupId>org.somda.sdc</groupId>
             <artifactId>test</artifactId>
-            <version>1.0.1-SNAPSHOT</version>
+            <version>1.0.1</version>
             <scope>test</scope>
         </dependency>
 
