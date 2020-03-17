@@ -15,9 +15,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Deprecated
 - `org.somda.sdc.glue.provider.SdcDevice#getDiscoveryAccess()` and `#getHostingServiceAccess()`; see `SdcDevice` class comment for alternative access.
 - `org.somda.sdc.dpws.CommunicationLogSink.getTargetStream()`; see method comment for alternative
+
 ### Changed
 
 - Report processing on consumer side, which now compares MDIB sequence IDs by using URI compare instead of string compare.
+
+### Fixed
+
+- `org.somda.sdc.dpws.soap.SoapMessage#getEnvelopeWithMappedHeaders()` did not retain additional header set in the original envelope. (#131)
 
 ## [1.0.1] - 2020-03-11
 
