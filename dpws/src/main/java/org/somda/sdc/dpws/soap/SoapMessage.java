@@ -17,6 +17,14 @@ import java.util.List;
 
 /**
  * Modelling of a SOAP Message with convenient access to different headers.
+ * <p>
+ * {@linkplain SoapMessage} is a wrapper around an {@linkplain Envelope} which provides
+ * mappers for certain header elements in Ws-Addressing and Ws-Discovery.
+ * When additional headers are required, the original {@linkplain Envelope} can be accessed and
+ * modified through {@linkplain #getOriginalEnvelope()}.
+ * <em>There are no duplicate checks for any headers covered through the mappers, care is required.</em>
+ * @see WsAddressingHeader
+ * @see WsDiscoveryHeader
  */
 public class SoapMessage {
     private final WsDiscoveryHeader wsdHeader;
@@ -71,11 +79,15 @@ public class SoapMessage {
     /**
      * Gets the envelope that includes mapped headers.
      *
-     * @return new envelope with mapped convenience headers and body reference from {@link #getOriginalEnvelope()}.
+     * @return new envelope with mapped convenience headers as well as headers
+     * and the body reference from {@link #getOriginalEnvelope()}.
      */
     public Envelope getEnvelopeWithMappedHeaders() {
         Envelope mappedEnv = envelopeFactory.createEnvelopeFromBody(envelope.getBody());
         List<Object> tmpHeaderList = mappedEnv.getHeader().getAny();
+
+        // add all previous headers
+        mappedEnv.getHeader().getAny().addAll(envelope.getHeader().getAny());
 
         wsaMapper.mapToJaxbSoapHeader(wsaHeader, tmpHeaderList);
         wsdMapper.mapToJaxbSoapHeader(wsdHeader, tmpHeaderList);
