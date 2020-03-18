@@ -19,6 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Report processing on consumer side, which now compares MDIB sequence IDs by using URI compare instead of string compare.
+- Extracted namespace prefixes in `biceps` and `glue` package `CommonConstants`
 
 ### Fixed
 
