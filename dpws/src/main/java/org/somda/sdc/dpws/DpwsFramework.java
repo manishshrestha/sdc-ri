@@ -35,6 +35,8 @@ public interface DpwsFramework extends Service {
      * service using this method to ensure it is properly cleaned up when shutting down the device but not the JVM.
      * <p>
      * <em>Services registered when the framework is already running will be started.</em>
+     * <em>Services will be shutdown in the order they're registered in, i.e. the last service registered will
+     * be the first to shut down.</em>
      *
      * @param services {@linkplain Service}s to register for startup and shutdown.
      */

@@ -1,5 +1,6 @@
 package org.somda.sdc.dpws;
 
+import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.AbstractIdleService;
 import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.common.util.concurrent.Service;
@@ -115,7 +116,7 @@ public class DpwsFrameworkImpl extends AbstractIdleService implements DpwsFramew
     @Override
     protected void shutDown() {
         LOG.info("Shut down SDCri DPWS framework");
-        registeredServices.forEach(service -> service.stopAsync().awaitTerminated());
+        Lists.reverse(registeredServices).forEach(service -> service.stopAsync().awaitTerminated());
         LOG.info("SDCri DPWS framework shut down");
     }
 
