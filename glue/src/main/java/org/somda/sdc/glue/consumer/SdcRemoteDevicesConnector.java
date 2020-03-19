@@ -1,16 +1,16 @@
 package org.somda.sdc.glue.consumer;
 
 import com.google.common.util.concurrent.ListenableFuture;
+import com.google.common.util.concurrent.Service;
 import org.somda.sdc.dpws.service.HostingServiceProxy;
 
-import java.net.URI;
 import java.util.Collection;
 import java.util.Optional;
 
 /**
  * Central starting point to gain access to remote SDC devices.
  */
-public interface SdcRemoteDevicesConnector {
+public interface SdcRemoteDevicesConnector extends Service {
     /**
      * Tries to establish an SDC client connection to the given hosting service proxy (i.e., remote SDC device).
      * <p>

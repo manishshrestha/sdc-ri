@@ -44,7 +44,6 @@ public class DpwsFrameworkImpl extends AbstractIdleService implements DpwsFramew
 
     private final List<Service> registeredServices;
     private UdpBindingService udpBindingService;
-    private boolean wasStarted;
 
     @Inject
     DpwsFrameworkImpl(@DiscoveryUdpQueue UdpMessageQueueService udpMessageQueueService,
@@ -59,21 +58,18 @@ public class DpwsFrameworkImpl extends AbstractIdleService implements DpwsFramew
         this.udpBindingServiceFactory = udpBindingServiceFactory;
         this.httpServerRegistry = httpServerRegistry;
         this.soapMarshalling = soapMarshalling;
-        this.wasStarted = false;
         this.metadata = metadata;
         this.registeredServices = new ArrayList<>();
         registeredServices.addAll(List.of(
                 // dpws thread pools
-                appDelayExecutor, networkJobExecutor, wsDiscoveryExecutor
+                appDelayExecutor, networkJobExecutor, wsDiscoveryExecutor,
+                // dpws services
+                this.soapMarshalling, this.httpServerRegistry
         ));
     }
 
     @Override
     protected void startUp() throws SocketException, UnknownHostException {
-        if (!isRunning() && wasStarted) {
-            LOG.error("DPWS framework cannot be restarted after a shutdown!");
-            throw new RuntimeException("DPWS framework cannot be restarted after a shutdown!");
-        }
         LOG.info("Start SDCri DPWS framework");
         logMetadata();
 
@@ -86,11 +82,11 @@ public class DpwsFrameworkImpl extends AbstractIdleService implements DpwsFramew
 
         configureDiscovery();
         registeredServices.addAll(List.of(
-                // dpws services
-                udpBindingService, udpMessageQueueService, httpServerRegistry, soapMarshalling
+                // remaining dpws services which depend on the network interface being set,
+                // which is why they are added delayed
+                udpBindingService, udpMessageQueueService
         ));
         registeredServices.forEach(service -> service.startAsync().awaitRunning());
-        this.wasStarted = true;
         LOG.info("SDCri DPWS framework is ready for use");
     }
 
@@ -115,7 +111,7 @@ public class DpwsFrameworkImpl extends AbstractIdleService implements DpwsFramew
 
     @Override
     protected void shutDown() {
-        LOG.info("Shut down SDCri DPWS framework");
+        LOG.info("Shutting down SDCri DPWS framework");
         Lists.reverse(registeredServices).forEach(service -> service.stopAsync().awaitTerminated());
         LOG.info("SDCri DPWS framework shut down");
     }

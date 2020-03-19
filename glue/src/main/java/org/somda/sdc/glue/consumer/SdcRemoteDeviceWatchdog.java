@@ -170,8 +170,13 @@ public class SdcRemoteDeviceWatchdog extends AbstractIdleService {
                 }
             }
 
-            if (isRunning()) {
+            if (isRunning() && watchdogExecutor.isRunning()) {
                 watchdogExecutor.get().schedule(new WatchdogJob(), timeout.toMillis(), TimeUnit.MILLISECONDS);
+            } else {
+                LOG.info(
+                        "WatchdogJob has ended, SdcRemoteDeviceWatchdog ({}) or WatchdogExecutor ({}) have ended",
+                        state(), watchdogExecutor.state()
+                );
             }
         }
     }
