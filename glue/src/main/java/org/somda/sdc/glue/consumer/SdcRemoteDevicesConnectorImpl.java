@@ -223,12 +223,14 @@ public class SdcRemoteDevicesConnectorImpl implements SdcRemoteDevicesConnector,
     public ListenableFuture<?> disconnect(String eprAddress) {
         SdcRemoteDevice sdcRemoteDevice = sdcRemoteDevices.remove(eprAddress);
         if (sdcRemoteDevice != null) {
-            return executorService.get().submit(() -> {
-                // invalidate sdcRemoteDevice
-                // unsubscribe everything
-                sdcRemoteDevice.stopAsync().awaitTerminated();
+            if (sdcRemoteDevice.isRunning()) {
+                return executorService.get().submit(() -> {
+                    // invalidate sdcRemoteDevice
+                    // unsubscribe everything
+                    sdcRemoteDevice.stopAsync().awaitTerminated();
 
-            });
+                });
+            }
         }
         return Futures.immediateCancelledFuture();
     }
