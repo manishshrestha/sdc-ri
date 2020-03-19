@@ -34,10 +34,11 @@ public interface DpwsFramework extends Service {
      * Whenever a constructor (outside of the dpws package) receives a wrapped thread pool, it must register the
      * service using this method to ensure it is properly cleaned up when shutting down the device but not the JVM.
      * <p>
-     * <em>Services registered when the framework is already running will be started.</em>
-     * <em>Services will be shutdown in the order they're registered in, i.e. the last service registered will
-     * be the first to shut down.</em>
-     *
+     * <ul>
+     * <li><em>Services registered when the framework is already running will be started.</em></li>
+     * <li><em>Services will be shutdown in the inverse order they're registered in, i.e. the last service registered will
+     * be the first to shut down.</em></li>
+     * </ul>
      * @param services {@linkplain Service}s to register for startup and shutdown.
      */
     void registerService(Collection<Service> services);

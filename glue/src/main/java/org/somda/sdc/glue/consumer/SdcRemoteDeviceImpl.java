@@ -39,6 +39,22 @@ public class SdcRemoteDeviceImpl extends AbstractIdleService implements SdcRemot
     private final SdcRemoteDeviceWatchdog watchdog;
     private final Duration maxWait;
 
+    @Deprecated(since = "1.1.0", forRemoval = true)
+    @AssistedInject
+    SdcRemoteDeviceImpl(@Assisted HostingServiceProxy hostingServiceProxy,
+                        @Assisted RemoteMdibAccess remoteMdibAccess,
+                        @Assisted ReportProcessor reportProcessor,
+                        @Assisted @Nullable ScoController scoController,
+                        @Named(DpwsConfig.MAX_WAIT_FOR_FUTURES) Duration maxWait) {
+        LOG = LogPrepender.getLogger(hostingServiceProxy, SdcRemoteDeviceImpl.class);
+        this.remoteMdibAccess = remoteMdibAccess;
+        this.reportProcessor = reportProcessor;
+        this.scoController = scoController;
+        this.hostingServiceProxy = hostingServiceProxy;
+        this.watchdog = null;
+        this.maxWait = maxWait;
+    }
+
     @AssistedInject
     SdcRemoteDeviceImpl(@Assisted HostingServiceProxy hostingServiceProxy,
                         @Assisted RemoteMdibAccess remoteMdibAccess,
@@ -107,13 +123,25 @@ public class SdcRemoteDeviceImpl extends AbstractIdleService implements SdcRemot
 
     @Override
     protected void startUp() throws TimeoutException {
-        watchdog.startAsync().awaitRunning(maxWait.getSeconds(), TimeUnit.SECONDS);
+        if (this.watchdog != null) {
+            watchdog.startAsync().awaitRunning(maxWait.getSeconds(), TimeUnit.SECONDS);
+        }
     }
 
     @Override
-    protected void shutDown() throws TimeoutException {
-        watchdog.stopAsync().awaitTerminated(maxWait.getSeconds(), TimeUnit.SECONDS);
-        reportProcessor.stopAsync().awaitTerminated(maxWait.getSeconds(), TimeUnit.SECONDS);
+    protected void shutDown() {
+        if (this.watchdog != null) {
+            try {
+                watchdog.stopAsync().awaitTerminated(maxWait.getSeconds(), TimeUnit.SECONDS);
+            } catch (TimeoutException e) {
+                LOG.error("Could not stop the remote device watchdog", e);
+            }
+        }
+        try {
+            reportProcessor.stopAsync().awaitTerminated(maxWait.getSeconds(), TimeUnit.SECONDS);
+        } catch (TimeoutException e) {
+            LOG.error("Could not stop the report processor", e);
+        }
         final ArrayList<HostedServiceProxy> hostedServices = new ArrayList<>(hostingServiceProxy.getHostedServices().values());
         for (HostedServiceProxy hostedService : hostedServices) {
             hostedService.getEventSinkAccess().unsubscribeAll();

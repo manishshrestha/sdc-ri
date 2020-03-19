@@ -16,4 +16,10 @@ public interface SdcRemoteDeviceFactory {
                                           @Assisted ReportProcessor reportProcessor,
                                           @Assisted @Nullable ScoController scoController,
                                           @Assisted SdcRemoteDeviceWatchdog watchdog);
+
+    @Deprecated(since = "1.1.0", forRemoval = true)
+    SdcRemoteDevice createSdcRemoteDevice(@Assisted HostingServiceProxy hostingServiceProxy,
+                                          @Assisted RemoteMdibAccess remoteMdibAccess,
+                                          @Assisted ReportProcessor reportProcessor,
+                                          @Assisted @Nullable ScoController scoController);
 }
