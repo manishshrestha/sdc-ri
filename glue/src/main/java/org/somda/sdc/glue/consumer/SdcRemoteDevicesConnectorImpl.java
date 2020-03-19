@@ -158,14 +158,14 @@ public class SdcRemoteDevicesConnectorImpl implements SdcRemoteDevicesConnector,
 
                 tempLog.info("Start watchdog");
                 var watchdog = watchdogFactory.createSdcRemoteDeviceWatchdog(hostingServiceProxy, subscribeResults, this);
-                watchdog.startAsync().awaitRunning();
 
                 tempLog.info("Create and run remote device structure");
                 final SdcRemoteDevice sdcRemoteDevice = sdcRemoteDeviceFactory.createSdcRemoteDevice(
                         hostingServiceProxy,
                         mdibAccess,
                         reportProcessor,
-                        scoController.orElse(null));
+                        scoController.orElse(null),
+                        watchdog);
                 sdcRemoteDevice.startAsync().awaitRunning();
                 tempLog.info("Remote device is running");
 
@@ -175,8 +175,6 @@ public class SdcRemoteDevicesConnectorImpl implements SdcRemoteDevicesConnector,
                     throw new PrerequisitesException(String.format("A remote device with EPR address %s was already connected",
                             hostingServiceProxy.getEndpointReferenceAddress()));
                 }
-
-                // Connection established, starting new watchdog, subscribe to watchdog
 
                 return sdcRemoteDevice;
             } catch (Exception e) {

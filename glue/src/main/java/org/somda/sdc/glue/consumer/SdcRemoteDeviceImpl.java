@@ -5,12 +5,14 @@ import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
+import com.google.inject.name.Named;
 import org.slf4j.Logger;
 import org.somda.sdc.biceps.common.access.MdibAccessObservable;
 import org.somda.sdc.biceps.consumer.access.RemoteMdibAccess;
 import org.somda.sdc.biceps.model.message.AbstractSet;
 import org.somda.sdc.biceps.model.message.AbstractSetResponse;
 import org.somda.sdc.biceps.model.message.OperationInvokedReport;
+import org.somda.sdc.dpws.DpwsConfig;
 import org.somda.sdc.dpws.service.HostedServiceProxy;
 import org.somda.sdc.dpws.service.HostingServiceProxy;
 import org.somda.sdc.glue.consumer.helper.LogPrepender;
@@ -19,7 +21,10 @@ import org.somda.sdc.glue.consumer.sco.ScoController;
 import org.somda.sdc.glue.consumer.sco.ScoTransaction;
 
 import javax.annotation.Nullable;
+import java.time.Duration;
 import java.util.ArrayList;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.function.Consumer;
 
 /**
@@ -31,17 +36,23 @@ public class SdcRemoteDeviceImpl extends AbstractIdleService implements SdcRemot
     private final ReportProcessor reportProcessor;
     private final ScoController scoController;
     private final HostingServiceProxy hostingServiceProxy;
+    private final SdcRemoteDeviceWatchdog watchdog;
+    private final Duration maxWait;
 
     @AssistedInject
     SdcRemoteDeviceImpl(@Assisted HostingServiceProxy hostingServiceProxy,
                         @Assisted RemoteMdibAccess remoteMdibAccess,
                         @Assisted ReportProcessor reportProcessor,
-                        @Assisted @Nullable ScoController scoController) {
+                        @Assisted @Nullable ScoController scoController,
+                        @Assisted SdcRemoteDeviceWatchdog watchdog,
+                        @Named(DpwsConfig.MAX_WAIT_FOR_FUTURES) Duration maxWait) {
         LOG = LogPrepender.getLogger(hostingServiceProxy, SdcRemoteDeviceImpl.class);
         this.remoteMdibAccess = remoteMdibAccess;
         this.reportProcessor = reportProcessor;
         this.scoController = scoController;
         this.hostingServiceProxy = hostingServiceProxy;
+        this.watchdog = watchdog;
+        this.maxWait = maxWait;
     }
 
     @Override
@@ -95,12 +106,14 @@ public class SdcRemoteDeviceImpl extends AbstractIdleService implements SdcRemot
     }
 
     @Override
-    protected void startUp() {
+    protected void startUp() throws TimeoutException {
+        watchdog.startAsync().awaitRunning(maxWait.getSeconds(), TimeUnit.SECONDS);
     }
 
     @Override
-    protected void shutDown() {
-        reportProcessor.stopAsync().awaitTerminated();
+    protected void shutDown() throws TimeoutException {
+        watchdog.stopAsync().awaitTerminated(maxWait.getSeconds(), TimeUnit.SECONDS);
+        reportProcessor.stopAsync().awaitTerminated(maxWait.getSeconds(), TimeUnit.SECONDS);
         final ArrayList<HostedServiceProxy> hostedServices = new ArrayList<>(hostingServiceProxy.getHostedServices().values());
         for (HostedServiceProxy hostedService : hostedServices) {
             hostedService.getEventSinkAccess().unsubscribeAll();
@@ -110,7 +123,7 @@ public class SdcRemoteDeviceImpl extends AbstractIdleService implements SdcRemot
     private void checkRunning() {
         if (!isRunning()) {
             throw new RuntimeException(String.format("Tried to access a disconnected SDC remote device instance with EPR address %s",
-                    hostingServiceProxy.getEndpointReferenceAddress().toString()));
+                    hostingServiceProxy.getEndpointReferenceAddress()));
         }
     }
 }
