@@ -67,6 +67,17 @@ public class DefaultDpwsConfigModule extends AbstractConfigurationModule {
                 Integer.class,
                 32);
 
+        bind(DpwsConfig.HTTPS_SUPPORT,
+                Boolean.class,
+                false);
+
+        bind(DpwsConfig.HTTP_SUPPORT,
+                Boolean.class,
+                true);
+
+        bind(DpwsConfig.HTTP_SERVER_CONNECTION_TIMEOUT,
+                Duration.class,
+                Duration.ofSeconds(30));
     }
 
     private void configureCryptoConfig() {

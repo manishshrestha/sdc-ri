@@ -12,10 +12,10 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.somda.sdc.dpws.DpwsConfig;
 import org.somda.sdc.dpws.client.DiscoveredDevice;
 import org.somda.sdc.dpws.crypto.CryptoConfig;
 import org.somda.sdc.dpws.crypto.CryptoSettings;
-import org.somda.sdc.dpws.device.DeviceConfig;
 import org.somda.sdc.dpws.device.DeviceSettings;
 import org.somda.sdc.dpws.guice.DefaultDpwsConfigModule;
 import org.somda.sdc.dpws.service.HostedServiceProxy;
@@ -93,8 +93,8 @@ public class CryptoIT {
             @Override
             public void customConfigure() {
                 bind(CryptoConfig.CRYPTO_SETTINGS, CryptoSettings.class, serverCryptoSettings);
-                bind(DeviceConfig.UNSECURED_ENDPOINT, Boolean.class, false);
-                bind(DeviceConfig.SECURED_ENDPOINT, Boolean.class, true);
+                bind(DpwsConfig.HTTP_SUPPORT, Boolean.class, false);
+                bind(DpwsConfig.HTTPS_SUPPORT, Boolean.class, true);
                 bind(CryptoConfig.CRYPTO_DEVICE_HOSTNAME_VERIFIER, HostnameVerifier.class, verifier);
                 bind(CryptoConfig.CRYPTO_TLS_ENABLED_VERSIONS, String[].class, new String[]{"TLSv1.3"});
                 bind(CryptoConfig.CRYPTO_TLS_ENABLED_CIPHERS, String[].class, new String[]{"TLS_AES_128_GCM_SHA256"});
@@ -113,6 +113,8 @@ public class CryptoIT {
                             TestServiceMetadata.JAXB_CONTEXT_PATH);
                     bind(CryptoConfig.CRYPTO_TLS_ENABLED_VERSIONS, String[].class, new String[]{"TLSv1.3"});
                     bind(CryptoConfig.CRYPTO_TLS_ENABLED_CIPHERS, String[].class, new String[]{"TLS_AES_128_GCM_SHA256"});
+                    bind(DpwsConfig.HTTP_SUPPORT, Boolean.class, false);
+                    bind(DpwsConfig.HTTPS_SUPPORT, Boolean.class, true);
                 }
             }, new MockedUdpBindingModule());
         } catch (Exception e) {
@@ -127,7 +129,7 @@ public class CryptoIT {
     }
 
     @Test
-    void directedProbeSecured() throws Exception {
+    void testDirectedProbeSecured() throws Exception {
         // Given a device under test (DUT) and a client up and running
         devicePeer.startAsync().awaitRunning();
         clientPeer.startAsync().awaitRunning();
@@ -148,7 +150,7 @@ public class CryptoIT {
     }
 
     @Test
-    void transportInfoInRequestResponse() throws Exception {
+    void testTransportInfoInRequestResponse() throws Exception {
         devicePeer.startAsync().awaitRunning();
         clientPeer.startAsync().awaitRunning();
 
@@ -169,7 +171,7 @@ public class CryptoIT {
     }
 
     @Test
-    void notificationSecured() throws Exception {
+    void testNotificationSecured() throws Exception {
         // Given a device under test (DUT) and a client up and running
         devicePeer.startAsync().awaitRunning();
         clientPeer.startAsync().awaitRunning();
@@ -250,6 +252,8 @@ public class CryptoIT {
                 bind(WsDiscoveryConfig.MAX_WAIT_FOR_PROBE_MATCHES, Duration.class,
                         Duration.ofSeconds(MAX_WAIT_TIME.getSeconds() / 2));
                 bind(CryptoConfig.CRYPTO_SETTINGS, CryptoSettings.class, clientCryptoSettings);
+                bind(DpwsConfig.HTTP_SUPPORT, Boolean.class, false);
+                bind(DpwsConfig.HTTPS_SUPPORT, Boolean.class, true);
                 bind(SoapConfig.JAXB_CONTEXT_PATH, String.class,
                         TestServiceMetadata.JAXB_CONTEXT_PATH);
                 bind(CryptoConfig.CRYPTO_TLS_ENABLED_VERSIONS, String[].class, new String[]{"TLSv1.2"});
@@ -283,6 +287,8 @@ public class CryptoIT {
                 bind(CryptoConfig.CRYPTO_SETTINGS, CryptoSettings.class, clientCryptoSettings);
                 bind(SoapConfig.JAXB_CONTEXT_PATH, String.class,
                         TestServiceMetadata.JAXB_CONTEXT_PATH);
+                bind(DpwsConfig.HTTP_SUPPORT, Boolean.class, false);
+                bind(DpwsConfig.HTTPS_SUPPORT, Boolean.class, true);
                 bind(CryptoConfig.CRYPTO_TLS_ENABLED_VERSIONS, String[].class, new String[]{"TLSv1.3"});
                 bind(CryptoConfig.CRYPTO_TLS_ENABLED_CIPHERS, String[].class, new String[]{"TLS_AES_256_GCM_SHA384"});
             }
@@ -304,5 +310,98 @@ public class CryptoIT {
                 .get(MAX_WAIT_TIME.getSeconds(), TimeUnit.SECONDS)
                 .getProbeMatch().get(0).getEndpointReference().getAddress().getValue()
         );
+    }
+
+    @Test
+    void testClientPlainServerEncrypted() throws Exception {
+        final CryptoSettings clientCryptoSettings = Ssl.setupClient();
+        clientPeer = new ClientPeer(new DefaultDpwsConfigModule() {
+            @Override
+            public void customConfigure() {
+                bind(WsDiscoveryConfig.MAX_WAIT_FOR_PROBE_MATCHES, Duration.class,
+                        Duration.ofSeconds(MAX_WAIT_TIME.getSeconds() / 2));
+                bind(CryptoConfig.CRYPTO_SETTINGS, CryptoSettings.class, clientCryptoSettings);
+                bind(SoapConfig.JAXB_CONTEXT_PATH, String.class,
+                        TestServiceMetadata.JAXB_CONTEXT_PATH);
+                bind(DpwsConfig.HTTP_SUPPORT, Boolean.class, true);
+                bind(DpwsConfig.HTTPS_SUPPORT, Boolean.class, false);
+                bind(CryptoConfig.CRYPTO_TLS_ENABLED_VERSIONS, String[].class, new String[]{"TLSv1.3"});
+                bind(CryptoConfig.CRYPTO_TLS_ENABLED_CIPHERS, String[].class, new String[]{"TLS_AES_256_GCM_SHA384"});
+            }
+        }, new MockedUdpBindingModule());
+
+        devicePeer.startAsync().awaitRunning();
+        clientPeer.startAsync().awaitRunning();
+
+        // When the DUT's physical addresses are resolved
+        final DiscoveredDevice discoveredDevice = clientPeer.getClient().resolve(devicePeer.getEprAddress())
+                .get(MAX_WAIT_TIME.getSeconds(), TimeUnit.SECONDS);
+        final List<String> xAddrs = discoveredDevice.getXAddrs();
+        assertFalse(xAddrs.isEmpty());
+        var uri = xAddrs.get(0);
+
+        // this should throw because we're incompatible
+        assertThrows(ExecutionException.class, () ->
+                clientPeer.getClient().directedProbe(uri)
+                        .get(MAX_WAIT_TIME.getSeconds(), TimeUnit.SECONDS)
+                        .getProbeMatch().get(0).getEndpointReference().getAddress().getValue()
+        );
+    }
+
+    @Test
+    void testNotificationSecuredMixedModeClient() throws Exception {
+
+        this.clientPeer = new ClientPeer(new DefaultDpwsConfigModule() {
+            @Override
+            public void customConfigure() {
+                bind(WsDiscoveryConfig.MAX_WAIT_FOR_PROBE_MATCHES, Duration.class,
+                        Duration.ofSeconds(MAX_WAIT_TIME.getSeconds() / 2));
+                bind(CryptoConfig.CRYPTO_SETTINGS, CryptoSettings.class, Ssl.setupClient());
+                bind(SoapConfig.JAXB_CONTEXT_PATH, String.class,
+                        TestServiceMetadata.JAXB_CONTEXT_PATH);
+                bind(CryptoConfig.CRYPTO_TLS_ENABLED_VERSIONS, String[].class, new String[]{"TLSv1.3"});
+                bind(CryptoConfig.CRYPTO_TLS_ENABLED_CIPHERS, String[].class, new String[]{"TLS_AES_128_GCM_SHA256"});
+                bind(DpwsConfig.HTTP_SUPPORT, Boolean.class, true);
+                bind(DpwsConfig.HTTPS_SUPPORT, Boolean.class, true);
+            }
+        }, new MockedUdpBindingModule());
+
+        // don't fix what ain't broke
+        testNotificationSecured();
+    }
+
+
+    @Test
+    void testNotificationSecuredMixedModeServer() throws Exception {
+        this.devicePeer = new BasicPopulatedDevice(new DeviceSettings() {
+            final EndpointReferenceType epr = wsaUtil.createEprWithAddress(soapUtil.createUriFromUuid(UUID.randomUUID()));
+
+            @Override
+            public EndpointReferenceType getEndpointReference() {
+                return epr;
+            }
+
+            @Override
+            public NetworkInterface getNetworkInterface() {
+                try {
+                    return NetworkInterface.getByInetAddress(InetAddress.getLoopbackAddress());
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        }, new DefaultDpwsConfigModule() {
+            @Override
+            public void customConfigure() {
+                bind(CryptoConfig.CRYPTO_SETTINGS, CryptoSettings.class, Ssl.setupServer());
+                bind(DpwsConfig.HTTP_SUPPORT, Boolean.class, true);
+                bind(DpwsConfig.HTTPS_SUPPORT, Boolean.class, true);
+                bind(CryptoConfig.CRYPTO_DEVICE_HOSTNAME_VERIFIER, HostnameVerifier.class, verifier);
+                bind(CryptoConfig.CRYPTO_TLS_ENABLED_VERSIONS, String[].class, new String[]{"TLSv1.3"});
+                bind(CryptoConfig.CRYPTO_TLS_ENABLED_CIPHERS, String[].class, new String[]{"TLS_AES_128_GCM_SHA256"});
+            }
+        }, new MockedUdpBindingModule());
+
+        // don't fix what ain't broke
+        testNotificationSecured();
     }
 }

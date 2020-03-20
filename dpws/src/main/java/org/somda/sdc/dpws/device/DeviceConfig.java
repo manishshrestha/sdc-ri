@@ -15,6 +15,7 @@ public class DeviceConfig {
      * <li>Use: optional
      * </ul>
      */
+    @Deprecated(since = "1.1.0", forRemoval = true)
     public static final String UNSECURED_ENDPOINT = "Dpws.Device.UnsecuredEndpoint";
 
     /**
@@ -26,5 +27,6 @@ public class DeviceConfig {
      * <li>Use: optional
      * </ul>
      */
+    @Deprecated(since = "1.1.0", forRemoval = true)
     public static final String SECURED_ENDPOINT = "Dpws.Device.SecuredEndpoint";
 }
