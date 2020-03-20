@@ -4,6 +4,7 @@ import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.eventbus.EventBus;
 import com.google.common.eventbus.Subscribe;
+import com.google.common.util.concurrent.AbstractIdleService;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListeningExecutorService;
@@ -69,7 +70,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-public class SdcRemoteDevicesConnectorImpl implements SdcRemoteDevicesConnector, WatchdogObserver {
+public class SdcRemoteDevicesConnectorImpl extends AbstractIdleService implements SdcRemoteDevicesConnector, WatchdogObserver {
     private static final Logger LOG = LoggerFactory.getLogger(SdcRemoteDevicesConnectorImpl.class);
 
     private ExecutorWrapperService<ListeningExecutorService> executorService;
@@ -118,7 +119,7 @@ public class SdcRemoteDevicesConnectorImpl implements SdcRemoteDevicesConnector,
         this.sdcRemoteDeviceFactory = sdcRemoteDeviceFactory;
         this.watchdogFactory = watchdogFactory;
 
-        dpwsFramework.registerService(List.of(executorService));
+        dpwsFramework.registerService(List.of(executorService, this));
     }
 
     @Override
@@ -158,14 +159,14 @@ public class SdcRemoteDevicesConnectorImpl implements SdcRemoteDevicesConnector,
 
                 tempLog.info("Start watchdog");
                 var watchdog = watchdogFactory.createSdcRemoteDeviceWatchdog(hostingServiceProxy, subscribeResults, this);
-                watchdog.startAsync().awaitRunning();
 
                 tempLog.info("Create and run remote device structure");
                 final SdcRemoteDevice sdcRemoteDevice = sdcRemoteDeviceFactory.createSdcRemoteDevice(
                         hostingServiceProxy,
                         mdibAccess,
                         reportProcessor,
-                        scoController.orElse(null));
+                        scoController.orElse(null),
+                        watchdog);
                 sdcRemoteDevice.startAsync().awaitRunning();
                 tempLog.info("Remote device is running");
 
@@ -175,8 +176,6 @@ public class SdcRemoteDevicesConnectorImpl implements SdcRemoteDevicesConnector,
                     throw new PrerequisitesException(String.format("A remote device with EPR address %s was already connected",
                             hostingServiceProxy.getEndpointReferenceAddress()));
                 }
-
-                // Connection established, starting new watchdog, subscribe to watchdog
 
                 return sdcRemoteDevice;
             } catch (Exception e) {
@@ -223,12 +222,16 @@ public class SdcRemoteDevicesConnectorImpl implements SdcRemoteDevicesConnector,
     public ListenableFuture<?> disconnect(String eprAddress) {
         SdcRemoteDevice sdcRemoteDevice = sdcRemoteDevices.remove(eprAddress);
         if (sdcRemoteDevice != null) {
-            return executorService.get().submit(() -> {
-                // invalidate sdcRemoteDevice
-                // unsubscribe everything
-                sdcRemoteDevice.stopAsync().awaitTerminated();
+            if (sdcRemoteDevice.isRunning()) {
+                return executorService.get().submit(() -> {
+                    // invalidate sdcRemoteDevice
+                    // unsubscribe everything
+                    sdcRemoteDevice.stopAsync().awaitTerminated();
 
-            });
+                });
+            }
+        } else {
+            LOG.info("disconnect() called for unknown epr address {}, device already disconnected?", eprAddress);
         }
         return Futures.immediateCancelledFuture();
     }
@@ -409,6 +412,17 @@ public class SdcRemoteDevicesConnectorImpl implements SdcRemoteDevicesConnector,
         LOG.info("Lost connection to device {}. Reason: {}", watchdogMessage.getPayload(),
                 watchdogMessage.getReason().getMessage());
         disconnect(watchdogMessage.getPayload());
+    }
+
+    @Override
+    protected void startUp() throws Exception {
+        // nothing to do here
+    }
+
+    @Override
+    protected void shutDown() throws Exception {
+        LOG.info("Shutting down, disconnecting all devices");
+        List.copyOf(sdcRemoteDevices.keySet()).forEach(this::disconnect);
     }
 }
 
