@@ -22,7 +22,9 @@ public class ExecutorWrapperService<T extends ExecutorService> extends AbstractI
     private static TimeUnit STOP_TIMEUNIT = TimeUnit.SECONDS;
 
     private final Callable<T> serviceCreator;
+    @Stringified
     private final String serviceName;
+    @Stringified
     private T executorService;
 
 
@@ -88,9 +90,6 @@ public class ExecutorWrapperService<T extends ExecutorService> extends AbstractI
 
     @Override
     public String toString() {
-        return "ExecutorWrapperService{" +
-                "serviceName='" + serviceName + '\'' +
-                ", executorService=" + executorService +
-                '}';
+        return ObjectStringifier.stringify(this);
     }
 }
