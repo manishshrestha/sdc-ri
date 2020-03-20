@@ -271,7 +271,7 @@ public class EventSinkImpl implements EventSink {
                 future.get(maxWaitForFutures.toSeconds(), TimeUnit.SECONDS);
             } catch (InterruptedException | ExecutionException | TimeoutException e) {
                 LOG.warn("Subscription {} could not be unsubscribed. Ignore.", subscriptionManager.getSubscriptionId());
-                LOG.trace("Subscription {} could not be unsubscribed.", subscriptionManager.getSubscriptionId(), e);
+                LOG.trace("Subscription {} could not be unsubscribed", subscriptionManager.getSubscriptionId(), e);
             }
         }
     }

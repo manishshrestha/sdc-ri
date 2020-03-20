@@ -107,8 +107,6 @@ public class ShutdownIT {
         assertNotNull(testClient.getConnector().getConnectedDevice(testDevice.getSdcDevice().getEprAddress()));
         assertFalse(testDevice.getSdcDevice().getActiveSubscriptions().isEmpty());
 
-        Thread.sleep(1000);
-
         testClient.stopAsync().awaitTerminated(WAIT_TIME.getSeconds(), TimeUnit.SECONDS);
 
         assertTrue(testClient.getConnector().getConnectedDevices().isEmpty());
@@ -177,12 +175,10 @@ public class ShutdownIT {
         var remoteDeviceFuture = testClient.getConnector().connect(hostingServiceProxy,
                 ConnectConfiguration.create(ConnectConfiguration.ALL_PERIODIC_AND_WAVEFORM_REPORTS));
 
-        var sdcRemoteDevice = remoteDeviceFuture.get(WAIT_TIME.getSeconds(), TimeUnit.SECONDS);
+        remoteDeviceFuture.get(WAIT_TIME.getSeconds(), TimeUnit.SECONDS);
 
         assertNotNull(testClient.getConnector().getConnectedDevice(testDevice.getSdcDevice().getEprAddress()));
         assertFalse(testDevice.getSdcDevice().getActiveSubscriptions().isEmpty());
-
-        Thread.sleep(1000);
 
         testDevice.stopAsync().awaitTerminated(WAIT_TIME.getSeconds(), TimeUnit.SECONDS);
 
