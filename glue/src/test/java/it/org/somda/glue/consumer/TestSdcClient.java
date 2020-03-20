@@ -6,6 +6,7 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.inject.AbstractModule;
 import com.google.inject.Injector;
 import it.org.somda.glue.common.IntegrationTestPeer;
+import it.org.somda.glue.provider.TestSdcDevice;
 import it.org.somda.sdc.dpws.MockedUdpBindingModule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,9 +26,12 @@ import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.time.Duration;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class TestSdcClient extends IntegrationTestPeer {
     private static final Logger LOG = LoggerFactory.getLogger(TestSdcClient.class);
@@ -38,8 +42,9 @@ public class TestSdcClient extends IntegrationTestPeer {
     private DpwsFramework dpwsFramework;
 
 
-    public TestSdcClient() {
-        setupInjector(List.of(
+
+    public TestSdcClient(AbstractModule... modules) {
+        var defaultOverrides = List.of(
                 new MockedUdpBindingModule(),
                 new GlueDpwsConfigModule() {
                     @Override
@@ -104,8 +109,13 @@ public class TestSdcClient extends IntegrationTestPeer {
                         }
                     }
                 }
+        );
 
-        ));
+        List<AbstractModule> overrides = Stream
+                .concat(defaultOverrides.stream(), Arrays.stream(modules))
+                .collect(Collectors.toList());
+
+        setupInjector(overrides);
 
         final Injector injector = getInjector();
         this.client = injector.getInstance(Client.class);
