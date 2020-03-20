@@ -85,4 +85,12 @@ public class ExecutorWrapperService<T extends ExecutorService> extends AbstractI
             ));
         }
     }
+
+    @Override
+    public String toString() {
+        return "ExecutorWrapperService{" +
+                "serviceName='" + serviceName + '\'' +
+                ", executorService=" + executorService +
+                '}';
+    }
 }

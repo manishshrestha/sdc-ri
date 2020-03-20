@@ -108,7 +108,7 @@ public class SdcRemoteDeviceWatchdog extends AbstractIdleService {
 
     private void postWatchdogMessage(Exception reason) {
         if (isRunning()) {
-            eventBus.post(new WatchdogMessage(hostingServiceProxy.getActiveXAddr(), reason));
+            eventBus.post(new WatchdogMessage(hostingServiceProxy.getEndpointReferenceAddress(), reason));
         }
     }
 
