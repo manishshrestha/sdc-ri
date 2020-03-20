@@ -231,7 +231,7 @@ public class SdcRemoteDevicesConnectorImpl extends AbstractIdleService implement
                 });
             }
         } else {
-            LOG.info("disconnect() called for unknown epr {} address, device already disconnected?", eprAddress);
+            LOG.info("disconnect() called for unknown epr address {}, device already disconnected?", eprAddress);
         }
         return Futures.immediateCancelledFuture();
     }
