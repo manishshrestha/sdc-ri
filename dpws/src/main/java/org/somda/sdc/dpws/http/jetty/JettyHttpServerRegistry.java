@@ -405,6 +405,8 @@ public class JettyHttpServerRegistry extends AbstractIdleService implements Http
                     new SslConnectionFactory(fac, "http/1.1"),
                     new HttpConnectionFactory(httpsConfig));
             httpsConnector.setIdleTimeout(50000);
+            httpsConnector.setHost(uri.getHost());
+            httpsConnector.setPort(uri.getPort());
 
             server.setConnectors(new Connector[]{httpsConnector});
         }
