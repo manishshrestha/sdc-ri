@@ -27,6 +27,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `org.somda.sdc.dpws.soap.SoapMessage#getEnvelopeWithMappedHeaders()` did not retain additional header set in the original envelope. (#131)
 - `SdcRemoteDevicesConnectorImpl` did not register disconnecting providers
 - Services did not shut down in an orderly manner, causing issues when shutting down a consumer
+- Jetty server could select incorrect adapter when running https
 
 ## [1.0.1] - 2020-03-11
 
