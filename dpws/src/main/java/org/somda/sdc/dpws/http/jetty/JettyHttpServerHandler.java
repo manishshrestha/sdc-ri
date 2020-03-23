@@ -2,6 +2,7 @@ package org.somda.sdc.dpws.http.jetty;
 
 import com.google.inject.Inject;
 import com.google.inject.assistedinject.Assisted;
+import com.google.inject.assistedinject.AssistedInject;
 import org.eclipse.jetty.http.HttpStatus;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.handler.AbstractHandler;
@@ -31,17 +32,22 @@ public class JettyHttpServerHandler extends AbstractHandler {
     private final String mediaType;
     private final HttpHandler handler;
     private final CommunicationLog communicationLog;
-    private final Boolean expectTLS;
 
-    @Inject
+    @AssistedInject
     JettyHttpServerHandler(@Assisted Boolean expectTLS,
                            @Assisted String mediaType,
+                           @Assisted HttpHandler handler,
+                           CommunicationLog communicationLog) {
+        this(mediaType, handler, communicationLog);
+    }
+
+    @AssistedInject
+    JettyHttpServerHandler(@Assisted String mediaType,
                            @Assisted HttpHandler handler,
                            CommunicationLog communicationLog) {
         this.mediaType = mediaType;
         this.handler = handler;
         this.communicationLog = communicationLog;
-        this.expectTLS = expectTLS;
     }
 
     @Override
@@ -73,7 +79,7 @@ public class JettyHttpServerHandler extends AbstractHandler {
                                     request.getLocalPort(),
                                     request.getRemoteAddr(),
                                     request.getRemotePort(),
-                                    getX509Certificates(request, expectTLS)
+                                    getX509Certificates(request, baseRequest.isSecure())
                             )
                     )
             );

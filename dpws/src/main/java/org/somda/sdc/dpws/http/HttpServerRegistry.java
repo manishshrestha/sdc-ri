@@ -17,6 +17,8 @@ public interface HttpServerRegistry extends Service {
      * Creates an HTTP server at given URI.
      * <p>
      * If there was no running HTTP server found under the passed scheme and authority, this function starts a new one.
+     * <em>If the HTTP server supports both http and https schemes,
+     * the return value scheme will match the requested value.</em>
      *
      * @param schemeAndAuthority the scheme and authority where to access the HTTP server. If port number is
      *                           0, then a random open port is selected and will be part of the returned URI.
@@ -28,6 +30,8 @@ public interface HttpServerRegistry extends Service {
      * Registers a handler for SOAP messages for the given scheme, authority and context path.
      * <p>
      * SOAP messages use the HTTP media type {@link SoapConstants#MEDIA_TYPE_SOAP} for request and response messages.
+     * <em>If the HTTP server supports both http and https schemes,
+     * the return value scheme will match the requested value.</em>
      *
      * @param schemeAndAuthority scheme and authority used to start a new or re-use an existing HTTP server.
      * @param contextPath        the context path where the given registry shall listen to.<br>
@@ -40,6 +44,9 @@ public interface HttpServerRegistry extends Service {
 
     /**
      * Registers a handler for HTTP requests destined to the given scheme, authority and context path.
+     * <p>
+     * <em>If the HTTP server supports both http and https schemes,
+     * the return value scheme will match the requested value.</em>
      *
      * @param schemeAndAuthority scheme and authority used to start a new or re-use an existing HTTP server.
      * @param contextPath        the context path where the given registry shall listen to.<br>

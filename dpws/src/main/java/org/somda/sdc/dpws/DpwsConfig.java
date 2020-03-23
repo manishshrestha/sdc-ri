@@ -77,4 +77,34 @@ public class DpwsConfig {
      */
     public static final String HTTP_RESPONSE_COMPRESSION_MIN_SIZE = "Dpws.GzipCompressionMinSize";
 
+    /**
+     * Defines the timeout the http server uses for connections.
+     *
+     * <ul>
+     * <li>Data type: {@linkplain Boolean}
+     * <li>Use: optional
+     * </ul>
+     */
+    public static final String HTTP_SERVER_CONNECTION_TIMEOUT = "Dpws.HttpServerConnectionTimeout";
+
+    /**
+     * Enables Https communication for Client and Server.
+     *
+     * <ul>
+     * <li>Data type: {@linkplain Boolean}
+     * <li>Use: optional
+     * </ul>
+     */
+    public static final String HTTPS_SUPPORT = "Dpws.EnableHttps";
+
+    /**
+     * Enables plain Http communication for Client and Server.
+     *
+     * <ul>
+     * <li>Data type: {@linkplain Boolean}
+     * <li>Use: optional
+     * </ul>
+     */
+    public static final String HTTP_SUPPORT = "Dpws.EnableHttp";
+
 }
