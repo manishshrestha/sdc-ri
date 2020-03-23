@@ -235,7 +235,12 @@ public class DeviceImpl extends AbstractIdleService implements Device, Service, 
 
         final List<String> hostingServiceBindings = new ArrayList<>();
 
-        hostingServiceBindings.add(httpUriBuilder.buildUri(address.getHostAddress(), 0));
+        // prefer https over http
+        if (enableHttps) {
+            hostingServiceBindings.add(httpUriBuilder.buildSecuredUri(address.getHostAddress(), 0));
+        } else {
+            hostingServiceBindings.add(httpUriBuilder.buildUri(address.getHostAddress(), 0));
+        }
 
         return hostingServiceBindings;
     }
