@@ -174,7 +174,7 @@ public class Consumer {
      * @throws InterruptedException if retrieving the final OperationInvokedReport is interrupted
      * @throws TimeoutException     if retrieving the final OperationInvokedReport times out
      */
-    private static InvocationState invokeActivate(SetServiceAccess setServiceAccess, String handle, List<String> args) throws ExecutionException, InterruptedException, TimeoutException {
+    static InvocationState invokeActivate(SetServiceAccess setServiceAccess, String handle, List<String> args) throws ExecutionException, InterruptedException, TimeoutException {
         LOG.info("Invoking Activate for handle {} with arguments {}", handle, args);
 
         Activate activate = new Activate();
@@ -206,7 +206,7 @@ public class Consumer {
      * @throws InterruptedException if retrieving the final OperationInvokedReport is interrupted
      * @throws TimeoutException     if retrieving the final OperationInvokedReport times out
      */
-    private static InvocationState invokeSetValue(SetServiceAccess setServiceAccess, String handle, BigDecimal value) throws ExecutionException, InterruptedException, TimeoutException {
+    static InvocationState invokeSetValue(SetServiceAccess setServiceAccess, String handle, BigDecimal value) throws ExecutionException, InterruptedException, TimeoutException {
         LOG.info("Invoking SetValue for handle {} with value {}", handle, value);
         SetValue setValue = new SetValue();
         setValue.setOperationHandleRef(handle);
@@ -232,7 +232,7 @@ public class Consumer {
      * @throws InterruptedException if retrieving the final OperationInvokedReport is interrupted
      * @throws TimeoutException     if retrieving the final OperationInvokedReport times out
      */
-    private static InvocationState invokeSetString(SetServiceAccess setServiceAccess, String handle, String value) throws ExecutionException, InterruptedException, TimeoutException {
+    static InvocationState invokeSetString(SetServiceAccess setServiceAccess, String handle, String value) throws ExecutionException, InterruptedException, TimeoutException {
         LOG.info("Invoking SetString for handle {} with value {}", handle, value);
         SetString setString = new SetString();
         setString.setOperationHandleRef(handle);
@@ -249,6 +249,10 @@ public class Consumer {
         } else {
             throw new InterruptedException("No report parts received, help.");
         }
+    }
+
+    public Injector getInjector() {
+        return injector;
     }
 
     public static void main(String[] args) throws SocketException, UnknownHostException, InterceptorException, TransportException, InterruptedException {
@@ -408,7 +412,6 @@ public class Consumer {
 
         consumer.getConnector().disconnect(deviceUri);
         consumer.shutDown();
-
     }
 
 }

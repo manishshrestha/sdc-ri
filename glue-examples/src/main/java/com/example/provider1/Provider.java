@@ -4,6 +4,13 @@ import com.example.ProviderMdibConstants;
 import com.google.common.collect.Iterables;
 import com.google.common.util.concurrent.AbstractIdleService;
 import com.google.inject.Injector;
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.CommandLineParser;
+import org.apache.commons.cli.DefaultParser;
+import org.apache.commons.cli.HelpFormatter;
+import org.apache.commons.cli.Option;
+import org.apache.commons.cli.Options;
+import org.apache.commons.cli.ParseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.somda.sdc.biceps.common.MdibDescriptionModifications;
@@ -26,13 +33,16 @@ import org.somda.sdc.glue.provider.SdcDevice;
 import org.somda.sdc.glue.provider.factory.SdcDeviceFactory;
 import org.somda.sdc.glue.provider.plugin.SdcRequiredTypesAndScopes;
 
+import javax.annotation.Nullable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.RoundingMode;
+import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
+import java.net.UnknownHostException;
 import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -62,13 +72,20 @@ public class Provider extends AbstractIdleService {
     /**
      * Create an instance of an SDC Provider
      *
-     * @param networkAdapterName name of the adapter the provider bindes to, e.g. eth1
+     * @param networkAdapterName name of the adapter the provider binds to, e.g. eth1
      * @param eprAddress         WS-Addressing EndpointReference Address element
      * @throws SocketException thrown if network adapter cannot be set up
      */
-    public Provider(String networkAdapterName, String eprAddress) throws SocketException {
+    public Provider(@Nullable String networkAdapterName, String eprAddress) throws SocketException, UnknownHostException {
         this.injector = IT.getInjector();
-        final NetworkInterface networkInterface = NetworkInterface.getByName(networkAdapterName);
+
+        NetworkInterface networkInterface;
+        if (networkAdapterName != null && !networkAdapterName.isEmpty()) {
+            networkInterface = NetworkInterface.getByName(networkAdapterName);
+        } else {
+            // find some kind of default interface
+            networkInterface = NetworkInterface.getByInetAddress(InetAddress.getLocalHost());
+        }
         this.dpwsFramework = injector.getInstance(DpwsFramework.class);
         this.dpwsFramework.setNetworkInterface(networkInterface);
         this.mdibAccess = injector.getInstance(LocalMdibAccessFactory.class).createLocalMdibAccess();
@@ -354,18 +371,57 @@ public class Provider extends AbstractIdleService {
 
     }
 
+    /**
+     * Parse command line arguments for epr address and network interface
+     *
+     * @param args array of arguments, as passed to main
+     * @return instance of parsed command line arguments
+     */
+    public static CommandLine parseCommandLineArgs(String[] args) {
+        Options options = new Options();
+
+        Option epr = new Option("e", "epr", true, "epr address target provider, falls back to random uuid");
+        epr.setRequired(false);
+        options.addOption(epr);
+
+        Option networkInterface = new Option("i", "iface", true, "network interface to use");
+        networkInterface.setRequired(false);
+        options.addOption(networkInterface);
+
+        CommandLineParser parser = new DefaultParser();
+        HelpFormatter formatter = new HelpFormatter();
+        CommandLine cmd = null;
+
+        try {
+            cmd = parser.parse(options, args);
+        } catch (ParseException e) {
+            System.out.println(e.getMessage());
+            formatter.printHelp("utility-name", options);
+
+            System.exit(1);
+        }
+
+        return cmd;
+    }
 
     public static void main(String[] args) throws IOException, PreprocessingException {
 
+        var settings = parseCommandLineArgs(args);
+        var deviceEpr = settings.getOptionValue("epr");
+        if (deviceEpr == null) {
+            deviceEpr = "urn:uuid:+" + UUID.randomUUID().toString();
+        }
+        var networkInterface = settings.getOptionValue("iface", null);
+
         Provider provider = new Provider(
-                "eth1",
-                "urn:uuid:857bf583-8a51-475f-a77f-d0ca7de69b11"
+                networkInterface,
+                deviceEpr
         );
 
         // set a location for scopes
         var loc = new LocationDetail();
         loc.setBed("TopBunk");
-        loc.setPoC("LD1");
+        loc.setPoC("DontCare");
         loc.setFacility("sdcri");
         provider.setLocation(loc);
 
@@ -378,7 +434,7 @@ public class Provider extends AbstractIdleService {
                     Thread.sleep(100);
                     provider.changeWaveform(ProviderMdibConstants.HANDLE_WAVEFORM);
                 } catch (Exception e) {
-                    LOG.error("Thread loop stopping", e);
+                    LOG.warn("Thread loop stopping", e);
                     break;
                 }
             }
@@ -395,7 +451,7 @@ public class Provider extends AbstractIdleService {
                     provider.changeEnumStringMetric(ProviderMdibConstants.HANDLE_ENUM_DYNAMIC);
                     provider.changeAlertSignalAndConditionPresence(ProviderMdibConstants.HANDLE_ALERT_SIGNAL, ProviderMdibConstants.HANDLE_ALERT_CONDITION);
                 } catch (InterruptedException | PreprocessingException e) {
-                    LOG.error("Thread loop stopping", e);
+                    LOG.warn("Thread loop stopping", e);
                     break;
                 }
             }
@@ -403,7 +459,19 @@ public class Provider extends AbstractIdleService {
         t2.setDaemon(true);
         t2.start();
 
-        int read = System.in.read();
+        // graceful shutdown using sigterm
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            t1.interrupt();
+            t2.interrupt();
+
+            provider.stopAsync().awaitTerminated();
+        }));
+
+        try {
+            System.in.read();
+        } catch (IOException e) {
+            // pass and quit
+        }
 
         t1.interrupt();
         t2.interrupt();
