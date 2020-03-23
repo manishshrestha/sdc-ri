@@ -465,7 +465,7 @@ public class JettyHttpServerRegistry extends AbstractIdleService implements Http
 
     /*
      * Calculate http server map key:
-     * - scheme is replaced by httpx
+     * - scheme is replaced by httpx to compare entries independent of used scheme
      * - host address is used instead of DNS name.
      *
      * throws UnknownHostException if host address cannot be resolved.
