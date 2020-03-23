@@ -14,6 +14,7 @@ import org.somda.sdc.biceps.model.participant.AbstractMetricValue;
 import org.somda.sdc.biceps.model.participant.GenerationMode;
 import org.somda.sdc.biceps.model.participant.MeasurementValidity;
 import org.somda.sdc.common.guice.DefaultHelperModule;
+import org.somda.sdc.dpws.DpwsConfig;
 import org.somda.sdc.dpws.crypto.CryptoConfig;
 import org.somda.sdc.dpws.crypto.CryptoSettings;
 import org.somda.sdc.dpws.device.DeviceConfig;
@@ -57,8 +58,8 @@ public class ProviderUtil {
                                 CryptoSettings.class,
                                 new CustomCryptoSettings()
                         );
-                        bind(DeviceConfig.UNSECURED_ENDPOINT, Boolean.class, false);
-                        bind(DeviceConfig.SECURED_ENDPOINT, Boolean.class, true);
+                        bind(DpwsConfig.HTTPS_SUPPORT, Boolean.class, true);
+                        bind(DpwsConfig.HTTP_SUPPORT, Boolean.class, false);
                         bind(CryptoConfig.CRYPTO_DEVICE_HOSTNAME_VERIFIER,
                                 HostnameVerifier.class,
                                 (hostname, session) -> {

@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 import org.somda.sdc.biceps.guice.DefaultBicepsConfigModule;
 import org.somda.sdc.biceps.guice.DefaultBicepsModule;
 import org.somda.sdc.common.guice.DefaultHelperModule;
+import org.somda.sdc.dpws.DpwsConfig;
 import org.somda.sdc.dpws.crypto.CryptoConfig;
 import org.somda.sdc.dpws.crypto.CryptoSettings;
 import org.somda.sdc.dpws.guice.DefaultDpwsModule;
@@ -88,6 +89,8 @@ public class ConsumerUtil {
                                     }
                                     return false;
                                 });
+                        bind(DpwsConfig.HTTPS_SUPPORT, Boolean.class, true);
+                        bind(DpwsConfig.HTTP_SUPPORT, Boolean.class, false);
                     }
                 });
     }
