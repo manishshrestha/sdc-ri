@@ -198,8 +198,16 @@ public class JettyHttpServerRegistry extends AbstractIdleService implements Http
                 try {
                     serverUri = replaceScheme(serverUri, requestedUri.getScheme());
                 } catch (URISyntaxException e) {
-                    LOG.error("Unexpected error while creating server uri return value: {}", e.getMessage());
-                    LOG.trace("Unexpected error while creating server uri return value", e);
+                    LOG.error(
+                            "Unexpected error while creating server uri value with uri {} and new scheme {} value: {}",
+                            serverUri, requestedUri.getScheme(),
+                            e.getMessage()
+                    );
+                    LOG.trace(
+                            "Unexpected error while creating server uri value with uri {} and new scheme {} value",
+                            serverUri, requestedUri.getScheme(),
+                            e
+                    );
                 }
             }
             return serverUri.toString();
