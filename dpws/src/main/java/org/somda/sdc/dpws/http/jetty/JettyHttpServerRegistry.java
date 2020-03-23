@@ -182,6 +182,7 @@ public class JettyHttpServerRegistry extends AbstractIdleService implements Http
         }
     }
 
+    // TODO: 2.0.0 - return all created URIs, i.e. http and https
     @Override
     public String initHttpServer(String schemeAndAuthority) {
         registryLock.lock();
@@ -191,17 +192,28 @@ public class JettyHttpServerRegistry extends AbstractIdleService implements Http
             if (uriString.endsWith("/")) {
                 uriString = uriString.substring(0, uriString.length() - 1);
             }
-            return uriString;
+            var serverUri = URI.create(uriString);
+            var requestedUri = URI.create(schemeAndAuthority);
+            if (!serverUri.getScheme().equals(requestedUri.getScheme())) {
+                try {
+                    serverUri = replaceScheme(serverUri, requestedUri.getScheme());
+                } catch (URISyntaxException e) {
+                    LOG.error("Unexpected error while creating server uri return value");
+                }
+            }
+            return serverUri.toString();
         } finally {
             registryLock.unlock();
         }
     }
 
+    // TODO: 2.0.0 - return all created URIs, i.e. http and https
     @Override
     public String registerContext(String schemeAndAuthority, String contextPath, HttpHandler handler) {
         return registerContext(schemeAndAuthority, contextPath, SoapConstants.MEDIA_TYPE_SOAP, handler);
     }
 
+    // TODO: 2.0.0 - return all created URIs, i.e. http and https
     @Override
     public String registerContext(String schemeAndAuthority, String contextPath, String mediaType, HttpHandler handler) {
         if (!contextPath.startsWith("/")) {
@@ -345,8 +357,8 @@ public class JettyHttpServerRegistry extends AbstractIdleService implements Http
 
     private Server createHttpServer(URI uri) {
         LOG.info("Setup HTTP server for address '{}'", uri);
-        if (!uri.getScheme().toLowerCase().startsWith("http")) {
-            throw new RuntimeException(String.format("HTTP server setup failed. Unknown scheme: %s", uri.getScheme()));
+        if (!isSupportedScheme(uri)) {
+            throw new RuntimeException(String.format("HTTP server setup failed. Unsupported scheme: %s", uri.getScheme()));
 
         }
         HttpConfiguration httpConfig = new HttpConfiguration();
@@ -473,5 +485,10 @@ public class JettyHttpServerRegistry extends AbstractIdleService implements Http
                 baseUri.getHost(), baseUri.getPort(),
                 baseUri.getPath(), baseUri.getQuery(),
                 baseUri.getFragment());
+    }
+
+    private boolean isSupportedScheme(URI address) {
+        return (enableHttp && HttpScheme.HTTP.asString().equals(address.getScheme()))
+                || (enableHttps && HttpScheme.HTTPS.asString().equals(address.getScheme()));
     }
 }
