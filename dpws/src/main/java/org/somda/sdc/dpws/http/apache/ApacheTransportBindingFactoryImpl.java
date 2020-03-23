@@ -85,7 +85,7 @@ public class ApacheTransportBindingFactoryImpl implements TransportBindingFactor
         this.enableHttp = enableHttp;
 
         if (!this.enableHttp && !this.enableHttps) {
-            throw new RuntimeException("Http and https are disabled, cannot continue.");
+            throw new RuntimeException("Http and https are disabled, cannot continue");
         }
 
         this.client = buildClient(cryptoConfigurator, cryptoSettings);

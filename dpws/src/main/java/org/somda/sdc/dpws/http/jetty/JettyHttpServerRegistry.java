@@ -120,7 +120,7 @@ public class JettyHttpServerRegistry extends AbstractIdleService implements Http
         configureSsl(cryptoConfigurator, cryptoSettings);
 
         if (!this.enableHttp && !this.enableHttps) {
-            throw new RuntimeException("Http and https are disabled, cannot continue.");
+            throw new RuntimeException("Http and https are disabled, cannot continue");
         }
 
     }
@@ -198,7 +198,8 @@ public class JettyHttpServerRegistry extends AbstractIdleService implements Http
                 try {
                     serverUri = replaceScheme(serverUri, requestedUri.getScheme());
                 } catch (URISyntaxException e) {
-                    LOG.error("Unexpected error while creating server uri return value");
+                    LOG.error("Unexpected error while creating server uri return value: {}", e.getMessage());
+                    LOG.trace("Unexpected error while creating server uri return value", e);
                 }
             }
             return serverUri.toString();
@@ -455,7 +456,7 @@ public class JettyHttpServerRegistry extends AbstractIdleService implements Http
             httpsConnector.setIdleTimeout(connectionTimeout.toMillis());
             httpsConnector.setHost(uri.getHost());
             httpsConnector.setPort(uri.getPort());
-            
+
             server.setConnectors(new Connector[]{httpsConnector});
         }
 
@@ -488,7 +489,9 @@ public class JettyHttpServerRegistry extends AbstractIdleService implements Http
     }
 
     private boolean isSupportedScheme(URI address) {
-        return (enableHttp && HttpScheme.HTTP.asString().equals(address.getScheme()))
-                || (enableHttps && HttpScheme.HTTPS.asString().equals(address.getScheme()));
+        return (enableHttp && HttpScheme.HTTP.asString().toLowerCase()
+                .equals(address.getScheme().toLowerCase()))
+                || (enableHttps && HttpScheme.HTTPS.asString().toLowerCase()
+                .equals(address.getScheme().toLowerCase()));
     }
 }
