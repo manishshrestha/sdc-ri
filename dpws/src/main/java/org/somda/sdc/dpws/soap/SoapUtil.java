@@ -122,7 +122,9 @@ public class SoapUtil {
      * @return a new SOAP message.
      */
     public SoapMessage createMessage(String wsaAction) {
-        return soapMessageFactory.createSoapMessage(envelopeFactory.createEnvelope(wsaAction, null));
+        var message = soapMessageFactory.createSoapMessage(envelopeFactory.createEnvelope());
+        message.getWsAddressingHeader().setAction(wsaUtil.createAttributedURIType(wsaAction));
+        return message;
     }
 
     /**
@@ -133,7 +135,11 @@ public class SoapUtil {
      * @return a new SOAP message.
      */
     public SoapMessage createMessage(String wsaAction, @Nullable Object firstBodyElement) {
-        return soapMessageFactory.createSoapMessage(envelopeFactory.createEnvelope(wsaAction, firstBodyElement));
+        var message = soapMessageFactory.createSoapMessage(envelopeFactory.createEnvelope(
+                firstBodyElement
+        ));
+        message.getWsAddressingHeader().setAction(wsaUtil.createAttributedURIType(wsaAction));
+        return message;
     }
 
     /**
@@ -144,7 +150,10 @@ public class SoapUtil {
      * @return a new SOAP message.
      */
     public SoapMessage createMessage(String wsaAction, String wsaTo) {
-        return soapMessageFactory.createSoapMessage(envelopeFactory.createEnvelope(wsaAction, wsaTo, null));
+        var message = soapMessageFactory.createSoapMessage(envelopeFactory.createEnvelope());
+        message.getWsAddressingHeader().setAction(wsaUtil.createAttributedURIType(wsaAction));
+        message.getWsAddressingHeader().setTo(wsaUtil.createAttributedURIType(wsaTo));
+        return message;
     }
 
     /**
@@ -156,6 +165,9 @@ public class SoapUtil {
      * @return a new SOAP message.
      */
     public SoapMessage createMessage(String wsaAction, String wsaTo, @Nullable Object firstBodyElement) {
-        return soapMessageFactory.createSoapMessage(envelopeFactory.createEnvelope(wsaAction, wsaTo, firstBodyElement));
+        var message = soapMessageFactory.createSoapMessage(envelopeFactory.createEnvelope(firstBodyElement));
+        message.getWsAddressingHeader().setAction(wsaUtil.createAttributedURIType(wsaAction));
+        message.getWsAddressingHeader().setTo(wsaUtil.createAttributedURIType(wsaTo));
+        return message;
     }
 }

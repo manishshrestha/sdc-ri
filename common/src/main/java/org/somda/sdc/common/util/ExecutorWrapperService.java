@@ -80,9 +80,9 @@ public class ExecutorWrapperService<T extends ExecutorService> extends AbstractI
         if (isRunning()) {
             return executorService;
         } else {
-            LOG.error("[{}] get was called before the service was running", serviceName);
+            LOG.error("[{}] get was called on a service which was not running", serviceName);
             throw new RuntimeException(String.format(
-                    "get called before startup of %s has finished",
+                    "get called on %s service which was not running",
                     serviceName
             ));
         }
