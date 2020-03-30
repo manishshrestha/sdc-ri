@@ -111,7 +111,8 @@
                                 <arg>-Xsetters</arg>
                                 <arg>-Xsetters-mode=accessor</arg>
                                 <arg>-Xcopyable</arg>
-                                <!--<arg>-Xequals</arg>-->
+                                <arg>-XsimpleEquals</arg>
+                                <arg>-XsimpleHashCode</arg>
                                 <arg>-XtoString</arg>
                             </args>
                             <plugins>
