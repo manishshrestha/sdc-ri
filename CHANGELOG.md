@@ -29,6 +29,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `SdcRemoteDevicesConnectorImpl` did not register disconnecting providers
 - Services did not shut down in an orderly manner, causing issues when shutting down a consumer (#134)
 - Jetty server could select incorrect adapter when running https (#135)
+- `org.somda.sdc.dpws.soap.wsaddressing.WsAddressingMapper#mapToJaxbSoapHeader()` removes duplicate headers before adding its own (#140)
 
 ## [1.0.1] - 2020-03-11
 
