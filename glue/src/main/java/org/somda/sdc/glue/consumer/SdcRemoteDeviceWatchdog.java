@@ -108,7 +108,7 @@ public class SdcRemoteDeviceWatchdog extends AbstractIdleService {
 
     private void postWatchdogMessage(Exception reason) {
         if (isRunning()) {
-            eventBus.post(new WatchdogMessage(hostingServiceProxy.getActiveXAddr(), reason));
+            eventBus.post(new WatchdogMessage(hostingServiceProxy.getEndpointReferenceAddress(), reason));
         }
     }
 
@@ -170,8 +170,13 @@ public class SdcRemoteDeviceWatchdog extends AbstractIdleService {
                 }
             }
 
-            if (isRunning()) {
+            if (isRunning() && watchdogExecutor.isRunning()) {
                 watchdogExecutor.get().schedule(new WatchdogJob(), timeout.toMillis(), TimeUnit.MILLISECONDS);
+            } else {
+                LOG.info(
+                        "WatchdogJob has ended, SdcRemoteDeviceWatchdog ({}) or WatchdogExecutor ({}) have ended",
+                        state(), watchdogExecutor.state()
+                );
             }
         }
     }

@@ -3,11 +3,16 @@ package org.somda.sdc.dpws.http.jetty;
 import com.google.common.util.concurrent.AbstractIdleService;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
+import org.eclipse.jetty.http.HttpMethod;
+import org.eclipse.jetty.http.HttpScheme;
+import org.eclipse.jetty.http.HttpVersion;
 import org.eclipse.jetty.io.EndPoint;
 import org.eclipse.jetty.io.ssl.SslConnection;
+import org.eclipse.jetty.server.AbstractConnectionFactory;
 import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.HttpConfiguration;
 import org.eclipse.jetty.server.HttpConnectionFactory;
+import org.eclipse.jetty.server.OptionalSslConnectionFactory;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.SecureRequestCustomizer;
 import org.eclipse.jetty.server.Server;
@@ -24,6 +29,7 @@ import org.somda.sdc.dpws.DpwsConfig;
 import org.somda.sdc.dpws.crypto.CryptoConfig;
 import org.somda.sdc.dpws.crypto.CryptoConfigurator;
 import org.somda.sdc.dpws.crypto.CryptoSettings;
+import org.somda.sdc.dpws.device.DeviceConfig;
 import org.somda.sdc.dpws.http.HttpHandler;
 import org.somda.sdc.dpws.http.HttpServerRegistry;
 import org.somda.sdc.dpws.http.HttpUriBuilder;
@@ -38,12 +44,14 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.UnknownHostException;
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
+import java.time.Duration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -71,6 +79,9 @@ public class JettyHttpServerRegistry extends AbstractIdleService implements Http
     private final String[] tlsProtocols;
     private final String[] enabledCiphers;
     private final HostnameVerifier hostnameVerifier;
+    private final boolean enableHttp;
+    private final boolean enableHttps;
+    private final Duration connectionTimeout;
     private SSLContext sslContext;
 
     @Inject
@@ -83,6 +94,12 @@ public class JettyHttpServerRegistry extends AbstractIdleService implements Http
                             @Named(CryptoConfig.CRYPTO_TLS_ENABLED_VERSIONS) String[] tlsProtocols,
                             @Named(CryptoConfig.CRYPTO_TLS_ENABLED_CIPHERS) String[] enabledCiphers,
                             @Named(CryptoConfig.CRYPTO_DEVICE_HOSTNAME_VERIFIER) HostnameVerifier hostnameVerifier,
+                            @Named(DpwsConfig.HTTPS_SUPPORT) boolean enableHttps,
+                            @Named(DpwsConfig.HTTP_SUPPORT) boolean enableHttp,
+                            @Named(DpwsConfig.HTTP_SERVER_CONNECTION_TIMEOUT) Duration connectionTimeout,
+                            // TODO: Remove these for 2.0.0
+                            @Named(DeviceConfig.SECURED_ENDPOINT) boolean legacyEnableHttps,
+                            @Named(DeviceConfig.UNSECURED_ENDPOINT) boolean legacyEnableHttp,
                             CommunicationLog communicationLog) {
         this.uriBuilder = uriBuilder;
         this.jettyHttpServerHandlerFactory = jettyHttpServerHandlerFactory;
@@ -92,12 +109,19 @@ public class JettyHttpServerRegistry extends AbstractIdleService implements Http
         this.enabledCiphers = enabledCiphers;
         this.hostnameVerifier = hostnameVerifier;
         this.communicationLog = communicationLog;
+        this.enableHttps = enableHttps | legacyEnableHttps;
+        this.enableHttp = enableHttp | legacyEnableHttp;
+        this.connectionTimeout = connectionTimeout;
         serverRegistry = new HashMap<>();
         handlerRegistry = new HashMap<>();
         contextHandlerMap = new HashMap<>();
         contextWrapperRegistry = new HashMap<>();
         registryLock = new ReentrantLock();
         configureSsl(cryptoConfigurator, cryptoSettings);
+
+        if (!this.enableHttp && !this.enableHttps) {
+            throw new RuntimeException("Http and https are disabled, cannot continue");
+        }
 
     }
 
@@ -158,6 +182,7 @@ public class JettyHttpServerRegistry extends AbstractIdleService implements Http
         }
     }
 
+    // TODO: 2.0.0 - return all created URIs, i.e. http and https
     @Override
     public String initHttpServer(String schemeAndAuthority) {
         registryLock.lock();
@@ -167,17 +192,37 @@ public class JettyHttpServerRegistry extends AbstractIdleService implements Http
             if (uriString.endsWith("/")) {
                 uriString = uriString.substring(0, uriString.length() - 1);
             }
-            return uriString;
+            var serverUri = URI.create(uriString);
+            var requestedUri = URI.create(schemeAndAuthority);
+            if (!serverUri.getScheme().equals(requestedUri.getScheme())) {
+                try {
+                    serverUri = replaceScheme(serverUri, requestedUri.getScheme());
+                } catch (URISyntaxException e) {
+                    LOG.error(
+                            "Unexpected error while creating server uri value with uri {} and new scheme {} value: {}",
+                            serverUri, requestedUri.getScheme(),
+                            e.getMessage()
+                    );
+                    LOG.trace(
+                            "Unexpected error while creating server uri value with uri {} and new scheme {} value",
+                            serverUri, requestedUri.getScheme(),
+                            e
+                    );
+                }
+            }
+            return serverUri.toString();
         } finally {
             registryLock.unlock();
         }
     }
 
+    // TODO: 2.0.0 - return all created URIs, i.e. http and https
     @Override
     public String registerContext(String schemeAndAuthority, String contextPath, HttpHandler handler) {
         return registerContext(schemeAndAuthority, contextPath, SoapConstants.MEDIA_TYPE_SOAP, handler);
     }
 
+    // TODO: 2.0.0 - return all created URIs, i.e. http and https
     @Override
     public String registerContext(String schemeAndAuthority, String contextPath, String mediaType, HttpHandler handler) {
         if (!contextPath.startsWith("/")) {
@@ -197,8 +242,7 @@ public class JettyHttpServerRegistry extends AbstractIdleService implements Http
             }
             URI mapKeyUri = URI.create(mapKey);
 
-            JettyHttpServerHandler endpointHandler = this.jettyHttpServerHandlerFactory.create(
-                    this.sslContext != null, mediaType, handler);
+            JettyHttpServerHandler endpointHandler = this.jettyHttpServerHandlerFactory.create(mediaType, handler);
 
             ContextHandler context = new ContextHandler(contextPath);
             context.setHandler(endpointHandler);
@@ -212,8 +256,9 @@ public class JettyHttpServerRegistry extends AbstractIdleService implements Http
 
             context.start();
 
-            return mapKeyUri.toString();
-
+            // use requested scheme for response
+            var contextUri = replaceScheme(mapKeyUri, URI.create(schemeAndAuthority).getScheme());
+            return contextUri.toString();
         } catch (Exception e) {
             LOG.error("Registering context {} failed.", contextPath, e);
             throw new RuntimeException(e);
@@ -309,7 +354,6 @@ public class JettyHttpServerRegistry extends AbstractIdleService implements Http
         }
 
         var serverUri = httpServer.getURI().toString();
-
         try {
             serverRegistry.put(makeMapKey(serverUri), httpServer);
         } catch (UnknownHostException e) {
@@ -322,12 +366,12 @@ public class JettyHttpServerRegistry extends AbstractIdleService implements Http
 
     private Server createHttpServer(URI uri) {
         LOG.info("Setup HTTP server for address '{}'", uri);
-        if (!uri.getScheme().toLowerCase().startsWith("http")) {
-            throw new RuntimeException(String.format("HTTP server setup failed. Unknown scheme: %s", uri.getScheme()));
+        if (!isSupportedScheme(uri)) {
+            throw new RuntimeException(String.format("HTTP server setup failed. Unsupported scheme: %s", uri.getScheme()));
 
         }
         HttpConfiguration httpConfig = new HttpConfiguration();
-        httpConfig.setSecureScheme("https");
+        httpConfig.setSecureScheme(HttpScheme.HTTPS.asString());
 
         var server = new Server(new InetSocketAddress(
                 uri.getHost(),
@@ -344,7 +388,11 @@ public class JettyHttpServerRegistry extends AbstractIdleService implements Http
         // wrap the context handler in a gzip handler
         if (this.enableGzipCompression) {
             GzipHandler gzipHandler = new GzipHandler();
-            gzipHandler.setIncludedMethods("PUT", "POST", "GET");
+            gzipHandler.setIncludedMethods(
+                    HttpMethod.PUT.asString(),
+                    HttpMethod.POST.asString(),
+                    HttpMethod.GET.asString()
+            );
             gzipHandler.setInflateBufferSize(2048);
             gzipHandler.setHandler(server.getHandler());
             gzipHandler.setMinGzipSize(minCompressionSize);
@@ -355,21 +403,21 @@ public class JettyHttpServerRegistry extends AbstractIdleService implements Http
             server.setHandler(gzipHandler);
         }
 
-        if (sslContext != null && uri.getScheme().equalsIgnoreCase("https")) {
-            SslContextFactory.Server fac = new SslContextFactory.Server();
-            fac.setSslContext(sslContext);
-            fac.setNeedClientAuth(true);
+        if (sslContext != null && enableHttps) {
+            SslContextFactory.Server contextFactory = new SslContextFactory.Server();
+            contextFactory.setSslContext(sslContext);
+            contextFactory.setNeedClientAuth(true);
 
             if (LOG.isDebugEnabled()) {
                 LOG.debug("Enabled protocols: {}", List.of(tlsProtocols));
             }
             // reset excluded protocols to force only included protocols
-            fac.setExcludeProtocols();
-            fac.setIncludeProtocols(tlsProtocols);
+            contextFactory.setExcludeProtocols();
+            contextFactory.setIncludeProtocols(tlsProtocols);
 
             // reset excluded ciphers to force only included protocols
-            fac.setExcludeCipherSuites();
-            fac.setIncludeCipherSuites(enabledCiphers);
+            contextFactory.setExcludeCipherSuites();
+            contextFactory.setIncludeCipherSuites(enabledCiphers);
 
             HttpConfiguration httpsConfig = new HttpConfiguration(httpConfig);
             SecureRequestCustomizer src = new SecureRequestCustomizer();
@@ -401,10 +449,21 @@ public class JettyHttpServerRegistry extends AbstractIdleService implements Http
             httpsConfig.addCustomizer(clientVerifier);
             httpsConfig.addCustomizer(src);
 
-            ServerConnector httpsConnector = new ServerConnector(server,
-                    new SslConnectionFactory(fac, "http/1.1"),
-                    new HttpConnectionFactory(httpsConfig));
-            httpsConnector.setIdleTimeout(50000);
+            var connectionFactory = new SslConnectionFactory(contextFactory, HttpVersion.HTTP_1_1.asString());
+            ServerConnector httpsConnector;
+            if (enableHttp) {
+                httpsConnector = new ServerConnector(server,
+                        new OptionalSslConnectionFactory(connectionFactory, HttpVersion.HTTP_1_1.asString()),
+                        connectionFactory,
+                        new HttpConnectionFactory(httpsConfig));
+            } else {
+                httpsConnector = new ServerConnector(server,
+                        connectionFactory,
+                        new HttpConnectionFactory(httpsConfig));
+            }
+            httpsConnector.setIdleTimeout(connectionTimeout.toMillis());
+            httpsConnector.setHost(uri.getHost());
+            httpsConnector.setPort(uri.getPort());
 
             server.setConnectors(new Connector[]{httpsConnector});
         }
@@ -415,7 +474,7 @@ public class JettyHttpServerRegistry extends AbstractIdleService implements Http
 
     /*
      * Calculate http server map key:
-     * - scheme is transformed to lower case.
+     * - scheme is replaced by httpx to compare entries independent of used scheme
      * - host address is used instead of DNS name.
      *
      * throws UnknownHostException if host address cannot be resolved.
@@ -423,10 +482,24 @@ public class JettyHttpServerRegistry extends AbstractIdleService implements Http
     private String makeMapKey(String uri) throws UnknownHostException {
         URI parsedUri = URI.create(uri);
         InetAddress address = InetAddress.getByName(parsedUri.getHost());
-        return uriBuilder.buildUri(parsedUri.getScheme().toLowerCase(), address.getHostAddress(), parsedUri.getPort());
+        return uriBuilder.buildUri("httpx", address.getHostAddress(), parsedUri.getPort());
     }
 
     private String makeMapKey(String uri, String contextPath) throws UnknownHostException {
         return makeMapKey(uri) + contextPath;
+    }
+
+    private URI replaceScheme(URI baseUri, String scheme) throws URISyntaxException {
+        return new URI(scheme, baseUri.getUserInfo(),
+                baseUri.getHost(), baseUri.getPort(),
+                baseUri.getPath(), baseUri.getQuery(),
+                baseUri.getFragment());
+    }
+
+    private boolean isSupportedScheme(URI address) {
+        return (enableHttp && HttpScheme.HTTP.asString().toLowerCase()
+                .equals(address.getScheme().toLowerCase()))
+                || (enableHttps && HttpScheme.HTTPS.asString().toLowerCase()
+                .equals(address.getScheme().toLowerCase()));
     }
 }

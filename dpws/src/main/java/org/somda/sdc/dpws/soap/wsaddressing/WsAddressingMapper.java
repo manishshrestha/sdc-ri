@@ -9,6 +9,7 @@ import org.somda.sdc.dpws.soap.wsaddressing.model.ObjectFactory;
 import org.somda.sdc.dpws.soap.wsaddressing.model.RelatesToType;
 import org.w3c.dom.Element;
 
+import javax.xml.bind.JAXBElement;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -38,13 +39,16 @@ public class WsAddressingMapper {
      * @param dest The list of objects where to add the mapped JAXB element (typically the list of headers).
      */
     public void mapToJaxbSoapHeader(WsAddressingHeader src, List<Object> dest) {
-        src.getAction().ifPresent(attributedURIType -> dest.add(wsaFactory.createAction(attributedURIType)));
-        src.getMessageId().ifPresent(attributedURIType -> dest.add(wsaFactory.createMessageID(attributedURIType)));
-        src.getTo().ifPresent(attributedURIType -> dest.add(wsaFactory.createTo(attributedURIType)));
+        src.getAction().ifPresent(attributedURIType ->
+                addWithDuplicateCheck(wsaFactory.createAction(attributedURIType), dest));
+        src.getMessageId().ifPresent(attributedURIType ->
+                addWithDuplicateCheck(wsaFactory.createMessageID(attributedURIType), dest));
+        src.getTo().ifPresent(attributedURIType ->
+                addWithDuplicateCheck(wsaFactory.createTo(attributedURIType), dest));
         src.getRelatesTo().ifPresent(attributedURIType -> {
             RelatesToType relatesToType = wsaFactory.createRelatesToType();
             relatesToType.setValue(attributedURIType.getValue());
-            dest.add(wsaFactory.createRelatesTo(relatesToType));
+            addWithDuplicateCheck(wsaFactory.createRelatesTo(relatesToType), dest);
         });
         src.getMappedReferenceParameters().ifPresent(referenceParameters -> {
             referenceParameters.forEach(param -> {
@@ -53,9 +57,43 @@ public class WsAddressingMapper {
                         WsAddressingConstants.NAMESPACE_PREFIX + ":"
                                 + WsAddressingConstants.IS_REFERENCE_PARAMETER.getLocalPart(),
                         "true");
-                dest.add(param);
+                addWithDuplicateCheck(param, dest);
             });
         });
+    }
+
+    /**
+     * Duplicate check for adding new header elements.
+     * <p>
+     * Checks for duplicate {@linkplain JAXBElement} instances inside the dest list. When a duplicate is found, i.e.
+     * the name, type and scope are equal, it is replaced with the new value.
+     * <p>
+     * {@linkplain Element} is not checked for duplicates, as they are only passed through for reference parameters.
+     *
+     * @param obj to add to the list
+     * @param dest to add the new entry to
+     */
+    private void addWithDuplicateCheck(Object obj, List<Object> dest) {
+        if (obj instanceof JAXBElement) {
+            var jaxbObj = (JAXBElement<?>) obj;
+            for (Object element : dest) {
+                if (element instanceof JAXBElement) {
+
+                    var jaxbElement = (JAXBElement<?>) element;
+
+                    if (jaxbObj.getName().equals(jaxbElement.getName())
+                            && jaxbObj.getDeclaredType().equals(jaxbElement.getDeclaredType())
+                            && jaxbObj.getScope().equals(jaxbElement.getScope())) {
+                        LOG.warn("Envelope header already contains entry for JAXBElement {}."
+                                        + "Removing previously set element with value {} and replacing it with {}",
+                                obj, jaxbElement.getValue(), jaxbObj.getValue());
+                        dest.remove(jaxbElement);
+                        break;
+                    }
+                }
+            }
+        }
+        dest.add(obj);
     }
 
     /**

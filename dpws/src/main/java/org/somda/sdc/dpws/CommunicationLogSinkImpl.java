@@ -50,7 +50,12 @@ public class CommunicationLogSinkImpl implements CommunicationLogSink {
 
     }
 
+    @Deprecated
     public OutputStream getTargetStream(CommunicationLog.TransportType transportType, CommunicationLog.Direction direction, CommunicationContext communicationContext) {
+        return createTargetStream(transportType, direction, communicationContext);
+    }
+
+    public OutputStream createTargetStream(CommunicationLog.TransportType transportType, CommunicationLog.Direction direction, CommunicationContext communicationContext) {
 
         File dir = dirMapping.get(transportType);
 

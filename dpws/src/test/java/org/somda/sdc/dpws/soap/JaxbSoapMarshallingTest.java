@@ -1,6 +1,8 @@
 package org.somda.sdc.dpws.soap;
 
 import com.google.inject.AbstractModule;
+import org.apache.commons.lang3.StringUtils;
+import org.junit.jupiter.api.DisplayName;
 import org.somda.sdc.common.guice.AbstractConfigurationModule;
 import org.somda.sdc.dpws.DpwsTest;
 import org.somda.sdc.dpws.NetworkSinkMock;
@@ -19,6 +21,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -85,5 +88,23 @@ public class JaxbSoapMarshallingTest extends DpwsTest {
         marshalling.marshal(envelopeWithMappedHeaders, bos);
         System.out.println(bos.toString());
         assertTrue(true);
+    }
+
+    @Test
+    @DisplayName("Test whether a marshalled message created using SoapUtil contains the Action element only once")
+    public void testDuplicateHeaders() throws Exception {
+        var action = "ftp://somda.org/upload";
+        var soapUtil = getInjector().getInstance(SoapUtil.class);
+        SoapMarshalling marshalling = getInjector().getInstance(SoapMarshalling.class);
+
+        var message = soapUtil.createMessage(action);
+
+        var messageBaos = new ByteArrayOutputStream();
+        marshalling.marshal(message.getEnvelopeWithMappedHeaders(), messageBaos);
+
+        var messageString = messageBaos.toString(StandardCharsets.UTF_8);
+
+        // one opening and one closing tag
+        assertEquals(2, StringUtils.countMatches(messageString, ":Action>"));
     }
 }

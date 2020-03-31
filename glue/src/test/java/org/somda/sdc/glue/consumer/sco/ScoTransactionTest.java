@@ -53,7 +53,7 @@ class ScoTransactionTest {
         expectedReports.forEach(reportPart -> scoTransaction.receiveIncomingReport(reportPart));
 
         // reports are copied, they shall not be equal
-        assertNotEquals(expectedReports, scoTransaction.getReports());
+        assertNotSame(expectedReports, scoTransaction.getReports());
         assertEquals(expectedReports.size(), scoTransaction.getReports().size());
 
         // however, the report payloads shall be equal
@@ -74,7 +74,7 @@ class ScoTransactionTest {
                 expectedResponse, null);
 
         // response is copied, it shall not be equal
-        assertNotEquals(expectedResponse, scoTransaction.getResponse());
+        assertNotSame(expectedResponse, scoTransaction.getResponse());
 
         assertEquals(expectedResponse.getInvocationInfo().getTransactionId(),
                 scoTransaction.getResponse().getInvocationInfo().getTransactionId());
