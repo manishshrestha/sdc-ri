@@ -424,10 +424,8 @@ public class EventSourceInterceptor extends AbstractIdleService implements Event
         EndpointReferenceType notifyTo = subMan.getNotifyTo();
         String wsaTo = wsaUtil.getAddressUri(notifyTo).orElseThrow(() ->
                 new RuntimeException("Could not resolve URI from NotifyTo"));
-        SoapMessage soapMessage;
         final ReferenceParametersType referenceParameters = notifyTo.getReferenceParameters();
-        soapMessage = soapUtil.createMessage(wsaAction, wsaTo, payload, referenceParameters);
-        return soapMessage;
+        return soapUtil.createMessage(wsaAction, wsaTo, payload, referenceParameters);
     }
 
     private SoapMessage createNotification(String wsaAction, @Nullable String wsaTo, Object payload) {

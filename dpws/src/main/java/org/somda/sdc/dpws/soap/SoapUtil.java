@@ -179,7 +179,7 @@ public class SoapUtil {
     }
 
     /**
-     * Creates a SOAP message with a specific action, to , the first body element as well as reference parameters.
+     * Creates a SOAP message with a specific action, to, the first body element as well as reference parameters.
      *
      * @param wsaAction           the action header to set.
      * @param wsaTo               the to header to set.
@@ -202,7 +202,7 @@ public class SoapUtil {
                         boolean correctType = obj instanceof Element;
                         if (!correctType) {
                             LOG.warn(
-                                    "reference parameter couldn't be attached to outgoing message, wrong type!" +
+                                    "Reference parameter couldn't be attached to outgoing message, wrong type!" +
                                             "Type was {}", obj.getClass().getSimpleName()
                             );
                         }
