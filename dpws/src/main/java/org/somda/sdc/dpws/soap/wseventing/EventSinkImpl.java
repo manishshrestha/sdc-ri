@@ -12,17 +12,29 @@ import org.somda.sdc.dpws.DpwsConfig;
 import org.somda.sdc.dpws.DpwsConstants;
 import org.somda.sdc.dpws.guice.NetworkJobThreadPool;
 import org.somda.sdc.dpws.http.HttpServerRegistry;
-import org.somda.sdc.dpws.soap.*;
+import org.somda.sdc.dpws.soap.CommunicationContext;
+import org.somda.sdc.dpws.soap.NotificationSink;
+import org.somda.sdc.dpws.soap.RequestResponseClient;
+import org.somda.sdc.dpws.soap.SoapMarshalling;
+import org.somda.sdc.dpws.soap.SoapMessage;
+import org.somda.sdc.dpws.soap.SoapUtil;
 import org.somda.sdc.dpws.soap.exception.MalformedSoapMessageException;
 import org.somda.sdc.dpws.soap.exception.MarshallingException;
 import org.somda.sdc.dpws.soap.exception.TransportException;
 import org.somda.sdc.dpws.soap.wsaddressing.WsAddressingUtil;
 import org.somda.sdc.dpws.soap.wsaddressing.model.EndpointReferenceType;
-import org.somda.sdc.dpws.soap.wsaddressing.model.ReferenceParametersType;
 import org.somda.sdc.dpws.soap.wseventing.exception.SubscriptionNotFoundException;
 import org.somda.sdc.dpws.soap.wseventing.factory.SubscriptionManagerFactory;
-import org.somda.sdc.dpws.soap.wseventing.model.*;
-import org.w3c.dom.Element;
+import org.somda.sdc.dpws.soap.wseventing.model.DeliveryType;
+import org.somda.sdc.dpws.soap.wseventing.model.FilterType;
+import org.somda.sdc.dpws.soap.wseventing.model.GetStatus;
+import org.somda.sdc.dpws.soap.wseventing.model.GetStatusResponse;
+import org.somda.sdc.dpws.soap.wseventing.model.ObjectFactory;
+import org.somda.sdc.dpws.soap.wseventing.model.Renew;
+import org.somda.sdc.dpws.soap.wseventing.model.RenewResponse;
+import org.somda.sdc.dpws.soap.wseventing.model.Subscribe;
+import org.somda.sdc.dpws.soap.wseventing.model.SubscribeResponse;
+import org.somda.sdc.dpws.soap.wseventing.model.Unsubscribe;
 
 import javax.annotation.Nullable;
 import javax.xml.bind.JAXBException;
@@ -30,14 +42,18 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.time.Duration;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.stream.Collectors;
 
 /**
  * Default implementation of {@link EventSink}.
@@ -174,10 +190,12 @@ public class EventSinkImpl implements EventSink {
                     new RuntimeException("No subscription manager EPR found"));
 
             // Create new message, put subscription manager EPR address as wsa:To
-            SoapMessage renewMsg = soapUtil.createMessage(WsEventingConstants.WSE_ACTION_RENEW, subManAddress, renew);
-
-            // append wsa:ReferenceParameters elements to the header
-            attachReferenceParameters(subMan, renewMsg);
+            SoapMessage renewMsg = soapUtil.createMessage(
+                    WsEventingConstants.WSE_ACTION_RENEW,
+                    subManAddress,
+                    renew,
+                    subMan.getSubscriptionManagerEpr().getReferenceParameters()
+            );
 
             // Invoke request-response
             SoapMessage renewResMsg = requestResponseClient.sendRequestResponse(renewMsg);
@@ -203,11 +221,12 @@ public class EventSinkImpl implements EventSink {
                     new RuntimeException("No subscription manager EPR found"));
 
             // Create new message, put subscription manager EPR address as wsa:To
-            SoapMessage getStatusMsg = soapUtil.createMessage(WsEventingConstants.WSE_ACTION_GET_STATUS, subManAddress,
-                    getStatus);
-
-            // append wsa:ReferenceParameters elements to the header
-            attachReferenceParameters(subMan, getStatusMsg);
+            SoapMessage getStatusMsg = soapUtil.createMessage(
+                    WsEventingConstants.WSE_ACTION_GET_STATUS,
+                    subManAddress,
+                    getStatus,
+                    subMan.getSubscriptionManagerEpr().getReferenceParameters()
+            );
 
             // Invoke request-response
             SoapMessage getStatusResMsg = requestResponseClient.sendRequestResponse(getStatusMsg);
@@ -230,37 +249,17 @@ public class EventSinkImpl implements EventSink {
                     new RuntimeException("No subscription manager EPR found"));
 
             // Create new message, put subscription manager EPR address as wsa:To
-            SoapMessage unsubscribeMsg = soapUtil.createMessage(WsEventingConstants.WSE_ACTION_UNSUBSCRIBE, subManAddress,
-                    unsubscribe);
-
-            // append wsa:ReferenceParameters elements to the header
-            attachReferenceParameters(subMan, unsubscribeMsg);
+            SoapMessage unsubscribeMsg = soapUtil.createMessage(
+                    WsEventingConstants.WSE_ACTION_UNSUBSCRIBE,
+                    subManAddress,
+                    unsubscribe,
+                    subMan.getSubscriptionManagerEpr().getReferenceParameters()
+            );
 
             // Invoke request-response and ignore result
             requestResponseClient.sendRequestResponse(unsubscribeMsg);
             return new Object();
         });
-    }
-
-    private void attachReferenceParameters(SinkSubscriptionManager subMan, SoapMessage unsubscribeMsg) {
-        ReferenceParametersType referenceParameters = subMan.getSubscriptionManagerEpr().getReferenceParameters();
-        if (referenceParameters != null) {
-            List<Element> actualParameters = referenceParameters.getAny().stream()
-                    // we can only reliably attach wsa:IsReferenceParameter to Element instances
-                    .filter(obj -> {
-                        boolean correctType = obj instanceof Element;
-                        if (!correctType) {
-                            LOG.warn(
-                                    "reference parameter couldn't be attached to outgoing message, wrong type!" +
-                                            "Type was {}", obj.getClass().getSimpleName()
-                            );
-                        }
-                        return correctType;
-                    })
-                    .map(obj -> (Element) ((Element) obj).cloneNode(true))
-                    .collect(Collectors.toList());
-            unsubscribeMsg.getWsAddressingHeader().setMappedReferenceParameters(actualParameters);
-        }
     }
 
     @Override

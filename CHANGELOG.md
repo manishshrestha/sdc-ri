@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - _Releases_ and _How to get started_ sections to the project readme. (#125)
 - Feature from BICEPS to send and receive periodic reports. (#51)
 - Jetty server supports http and https connections on the same port (#107)
+- Additional utility method in `org.somda.sdc.dpws.soap.SoapUtil` to create new SoapMessage with reference parameters (#140)
 
 ### Deprecated
 - `org.somda.sdc.glue.provider.SdcDevice#getDiscoveryAccess()` and `#getHostingServiceAccess()`; see `SdcDevice` class comment for alternative access.
