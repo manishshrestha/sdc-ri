@@ -5,10 +5,10 @@ import com.google.inject.assistedinject.AssistedInject;
 import org.somda.sdc.biceps.common.MdibEntity;
 import org.somda.sdc.biceps.common.access.ReadTransaction;
 import org.somda.sdc.biceps.model.message.AbstractSet;
-import org.somda.sdc.biceps.model.message.ObjectFactory;
 import org.somda.sdc.biceps.model.message.*;
 import org.somda.sdc.biceps.model.participant.*;
 import org.somda.sdc.biceps.provider.access.LocalMdibAccess;
+import org.somda.sdc.common.util.JaxbUtil;
 import org.somda.sdc.dpws.device.WebService;
 import org.somda.sdc.dpws.soap.SoapUtil;
 import org.somda.sdc.dpws.soap.exception.SoapFaultException;
@@ -17,7 +17,6 @@ import org.somda.sdc.dpws.soap.interception.MessageInterceptor;
 import org.somda.sdc.dpws.soap.interception.RequestResponseObject;
 import org.somda.sdc.dpws.soap.wsaddressing.WsAddressingUtil;
 import org.somda.sdc.glue.common.ActionConstants;
-import org.somda.sdc.glue.common.MdibMapper;
 import org.somda.sdc.glue.common.MdibVersionUtil;
 import org.somda.sdc.glue.common.factory.MdibMapperFactory;
 import org.somda.sdc.glue.provider.sco.IncomingSetServiceRequest;
@@ -27,10 +26,9 @@ import org.somda.sdc.glue.provider.sco.ScoController;
 import org.somda.sdc.glue.provider.sco.factory.ScoControllerFactory;
 import org.somda.sdc.glue.provider.services.helper.ReportGenerator;
 import org.somda.sdc.glue.provider.services.helper.factory.ReportGeneratorFactory;
+import org.somda.sdc.mdpws.model.ContextValueType;
+import org.somda.sdc.mdpws.model.DualChannelValueType;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
-import javax.xml.namespace.QName;
 import java.util.*;
 import java.util.function.Function;
 
@@ -48,17 +46,15 @@ import java.util.function.Function;
  * <li>Containment tree service
  * </ul>
  * <p>
- * todo DGr tests are missing
  */
 public class HighPriorityServices extends WebService {
     private final LocalMdibAccess mdibAccess;
     private final SoapUtil soapUtil;
     private final SoapFaultFactory faultFactory;
-    private final ObjectFactory messageModelFactory;
-    private final org.somda.sdc.biceps.model.participant.ObjectFactory participantModelFactory;
     private final MdibMapperFactory mdibMapperFactory;
     private final MdibVersionUtil mdibVersionUtil;
     private final WsAddressingUtil wsaUtil;
+    private final JaxbUtil jaxbUtil;
     private final ScoController scoController;
 
     private final InstanceIdentifier anonymousSource;
@@ -69,20 +65,18 @@ public class HighPriorityServices extends WebService {
                          ReportGeneratorFactory reportGeneratorFactory,
                          SoapUtil soapUtil,
                          SoapFaultFactory faultFactory,
-                         ObjectFactory messageModelFactory,
-                         org.somda.sdc.biceps.model.participant.ObjectFactory participantModelFactory,
                          MdibMapperFactory mdibMapperFactory,
                          ScoControllerFactory scoControllerFactory,
                          MdibVersionUtil mdibVersionUtil,
-                         WsAddressingUtil wsaUtil) {
+                         WsAddressingUtil wsaUtil,
+                         JaxbUtil jaxbUtil) {
         this.mdibAccess = mdibAccess;
         this.soapUtil = soapUtil;
         this.faultFactory = faultFactory;
-        this.messageModelFactory = messageModelFactory;
-        this.participantModelFactory = participantModelFactory;
         this.mdibMapperFactory = mdibMapperFactory;
         this.mdibVersionUtil = mdibVersionUtil;
         this.wsaUtil = wsaUtil;
+        this.jaxbUtil = jaxbUtil;
         this.scoController = scoControllerFactory.createScoController(this, mdibAccess);
         this.reportGenerator = reportGeneratorFactory.createReportGenerator(this);
         anonymousSource = new InstanceIdentifier();
@@ -120,10 +114,10 @@ public class HighPriorityServices extends WebService {
     void getMdib(RequestResponseObject requestResponseObject) throws SoapFaultException {
         getRequest(requestResponseObject, GetMdib.class);
 
-        final GetMdibResponse getMdibResponse = messageModelFactory.createGetMdibResponse();
+        var getMdibResponse = new GetMdibResponse();
 
         try (ReadTransaction transaction = mdibAccess.startTransaction()) {
-            final MdibMapper mdibMapper = mdibMapperFactory.createMdibMapper(transaction);
+            var mdibMapper = mdibMapperFactory.createMdibMapper(transaction);
             getMdibResponse.setMdib(mdibMapper.mapMdib());
 
             setResponse(requestResponseObject, getMdibResponse, transaction.getMdibVersion(),
@@ -133,12 +127,12 @@ public class HighPriorityServices extends WebService {
 
     @MessageInterceptor(ActionConstants.ACTION_GET_MD_DESCRIPTION)
     void getMdDescription(RequestResponseObject requestResponseObject) throws SoapFaultException {
-        final GetMdDescription getMdDescription = getRequest(requestResponseObject, GetMdDescription.class);
+        var getMdDescription = getRequest(requestResponseObject, GetMdDescription.class);
 
-        final GetMdDescriptionResponse getMdDescriptionResponse = messageModelFactory.createGetMdDescriptionResponse();
+        var getMdDescriptionResponse = new GetMdDescriptionResponse();
 
         try (ReadTransaction transaction = mdibAccess.startTransaction()) {
-            final MdibMapper mdibMapper = mdibMapperFactory.createMdibMapper(transaction);
+            var mdibMapper = mdibMapperFactory.createMdibMapper(transaction);
             getMdDescriptionResponse.setMdDescription(mdibMapper.mapMdDescription(getMdDescription.getHandleRef()));
             setResponse(requestResponseObject, getMdDescriptionResponse, transaction.getMdibVersion(),
                     ActionConstants.getResponseAction(ActionConstants.ACTION_GET_MD_DESCRIPTION));
@@ -147,12 +141,12 @@ public class HighPriorityServices extends WebService {
 
     @MessageInterceptor(ActionConstants.ACTION_GET_MD_STATE)
     void getMdState(RequestResponseObject requestResponseObject) throws SoapFaultException {
-        final GetMdState getMdState = getRequest(requestResponseObject, GetMdState.class);
+        var getMdState = getRequest(requestResponseObject, GetMdState.class);
 
-        final GetMdStateResponse getMdStateResponse = messageModelFactory.createGetMdStateResponse();
+        var getMdStateResponse = new GetMdStateResponse();
 
         try (ReadTransaction transaction = mdibAccess.startTransaction()) {
-            final MdibMapper mdibMapper = mdibMapperFactory.createMdibMapper(transaction);
+            var mdibMapper = mdibMapperFactory.createMdibMapper(transaction);
             getMdStateResponse.setMdState(mdibMapper.mapMdState(getMdState.getHandleRef()));
             setResponse(requestResponseObject, getMdStateResponse, transaction.getMdibVersion(),
                     ActionConstants.getResponseAction(ActionConstants.ACTION_GET_MD_STATE));
@@ -171,19 +165,19 @@ public class HighPriorityServices extends WebService {
      * <p>
      * The following rule is currently not supported: If a HANDLE reference from the msg:GetContextStates/msg:HandleRef list does match an MDS descriptor, then all context states that are part of this MDS SHALL be included in the result list.
      * <p>
-     * todo DGr Implement missing rule
+     * todo DGr Implement missing rule once multi-MDS MDIBs are supported
      *
      * @param requestResponseObject the request response object that contains the request data
      * @throws SoapFaultException if something went wrong during processing.
      */
     @MessageInterceptor(ActionConstants.ACTION_GET_CONTEXT_STATES)
     void getContextStates(RequestResponseObject requestResponseObject) throws SoapFaultException {
-        final GetContextStates getContextStates = getRequest(requestResponseObject, GetContextStates.class);
+        var getContextStates = getRequest(requestResponseObject, GetContextStates.class);
 
-        final GetContextStatesResponse getContextStatesResponse = messageModelFactory.createGetContextStatesResponse();
+        var getContextStatesResponse = new GetContextStatesResponse();
 
         try (ReadTransaction transaction = mdibAccess.startTransaction()) {
-            final List<AbstractContextState> contextStates = transaction.getContextStates();
+            var contextStates = transaction.getContextStates();
             List<AbstractContextState> filteredContextStates = new ArrayList<>();
             if (getContextStates.getHandleRef().isEmpty()) {
                 filteredContextStates = contextStates;
@@ -266,9 +260,9 @@ public class HighPriorityServices extends WebService {
 
     @MessageInterceptor(ActionConstants.ACTION_GET_DESCRIPTOR)
     void getDescriptor(RequestResponseObject requestResponseObject) throws SoapFaultException {
-        final GetDescriptor getDescriptor = getRequest(requestResponseObject, GetDescriptor.class);
+        var getDescriptor = getRequest(requestResponseObject, GetDescriptor.class);
 
-        final GetDescriptorResponse getDescriptorResponse = messageModelFactory.createGetDescriptorResponse();
+        var getDescriptorResponse = new GetDescriptorResponse();
 
         try (ReadTransaction transaction = mdibAccess.startTransaction()) {
             for (String handle : getDescriptor.getHandleRef()) {
@@ -295,10 +289,10 @@ public class HighPriorityServices extends WebService {
      */
     @MessageInterceptor(ActionConstants.ACTION_GET_CONTAINMENT_TREE)
     void getContainmentTree(RequestResponseObject requestResponseObject) throws SoapFaultException {
-        final GetContainmentTree getContainmentTree = getRequest(requestResponseObject, GetContainmentTree.class);
-        final GetContainmentTreeResponse getContainmentTreeResponse = messageModelFactory.createGetContainmentTreeResponse();
-        final List<String> handleReferences = getContainmentTree.getHandleRef();
-        final ContainmentTree containmentTree = participantModelFactory.createContainmentTree();
+        var getContainmentTree = getRequest(requestResponseObject, GetContainmentTree.class);
+        var getContainmentTreeResponse = new GetContainmentTreeResponse();
+        var handleReferences = getContainmentTree.getHandleRef();
+        var containmentTree = new ContainmentTree();
 
         try (ReadTransaction transaction = mdibAccess.startTransaction()) {
             List<MdibEntity> filteredEntities;
@@ -326,20 +320,12 @@ public class HighPriorityServices extends WebService {
             }
 
             for (MdibEntity entity : filteredEntities) {
-                final ContainmentTreeEntry entry = participantModelFactory.createContainmentTreeEntry();
+                var entry = new ContainmentTreeEntry();
                 entry.setChildrenCount(entity.getChildren().size());
+                entry.setParentHandleRef(entity.getParent().orElse(null));
                 entry.setHandleRef(entity.getHandle());
                 entry.setType(entity.getDescriptor().getType());
-
-                try {
-                    final JAXBContext jaxbCtx = JAXBContext.newInstance(entity.getDescriptorClass());
-                    final QName qname = jaxbCtx.createJAXBIntrospector().getElementName(entity.getDescriptor());
-                    entry.setEntryType(qname);
-                } catch (JAXBException e) {
-                    throw new SoapFaultException(faultFactory.createReceiverFault(String.format(
-                            "Could not resolve entry type the requested descriptor %s. Operation aborted.", entity.getHandle())));
-                }
-
+                entry.setEntryType(jaxbUtil.getQualifiedName(entity.getDescriptor()).orElse(null));
                 containmentTree.getEntry().add(entry);
             }
 
@@ -372,7 +358,7 @@ public class HighPriorityServices extends WebService {
     private <T extends AbstractSetResponse> T getResponseObjectAsTypeOrThrow(InvocationResponse responseData, Class<T> type) throws SoapFaultException {
         try {
             final T response = type.getConstructor().newInstance();
-            response.setSequenceId(responseData.getMdibVersion().getSequenceId().toString());
+            response.setSequenceId(responseData.getMdibVersion().getSequenceId());
             response.setInstanceId(responseData.getMdibVersion().getInstanceId());
             response.setMdibVersion(responseData.getMdibVersion().getVersion());
 
@@ -395,10 +381,17 @@ public class HighPriorityServices extends WebService {
                                                                                                  String responseAction,
                                                                                                  Function<T, ?> getPayload) throws SoapFaultException {
         T request = getRequest(requestResponseObject, requestClass);
+        var dualChannelValues = resolveDualChannelValues(requestResponseObject);
+        var safetyContextValues = resolveSaferyContextValues(requestResponseObject);
+
         final InvocationResponse invocationResponse;
         try {
             invocationResponse = scoController.processIncomingSetOperation(
-                    request.getOperationHandleRef(), anonymousSource, getPayload.apply(request));
+                    request.getOperationHandleRef(),
+                    anonymousSource,
+                    getPayload.apply(request),
+                    dualChannelValues,
+                    safetyContextValues);
         } catch (Exception e) {
             throw new SoapFaultException(faultFactory.createReceiverFault(
                     String.format("Error while processing set service request: %s", e.getMessage())));
@@ -406,5 +399,27 @@ public class HighPriorityServices extends WebService {
 
         setResponse(requestResponseObject, getResponseObjectAsTypeOrThrow(invocationResponse, responseClass),
                 invocationResponse.getMdibVersion(), responseAction);
+    }
+
+    private Map<String, DualChannelValueType> resolveDualChannelValues(RequestResponseObject requestResponseObject) {
+        var values = new HashMap<String, DualChannelValueType>();
+        for (var object : requestResponseObject.getRequest().getOriginalEnvelope().getHeader().getAny()) {
+            if (object instanceof DualChannelValueType) {
+                var dualChannelValueType = (DualChannelValueType) object;
+                values.put(dualChannelValueType.getReferencedSelector(), dualChannelValueType);
+            }
+        }
+        return values;
+    }
+
+    private Map<String, ContextValueType> resolveSaferyContextValues(RequestResponseObject requestResponseObject) {
+        var values = new HashMap<String, ContextValueType>();
+        for (var object : requestResponseObject.getRequest().getOriginalEnvelope().getHeader().getAny()) {
+            if (object instanceof ContextValueType) {
+                var contextValueType = (ContextValueType) object;
+                values.put(contextValueType.getReferencedSelector(), contextValueType);
+            }
+        }
+        return values;
     }
 }

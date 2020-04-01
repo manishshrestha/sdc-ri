@@ -2,12 +2,12 @@ package org.somda.sdc.glue.common;
 
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.somda.sdc.biceps.common.MdibEntity;
 import org.somda.sdc.biceps.common.access.MdibAccess;
 import org.somda.sdc.biceps.model.participant.*;
 import org.somda.sdc.common.util.ObjectUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -106,8 +106,9 @@ public class MdibMapper {
         } else {
             List<MdibEntity> allRootEntities = mdibAccess.getRootEntities();
             rootEntities = allRootEntities.stream()
-                    .filter(mdibEntity -> handleFilterCopy.stream()
-                            .filter(handle -> mdibEntity.getHandle().equals(handle)).findAny().isPresent())
+                    .filter(mdibEntity ->
+                            handleFilterCopy.stream().anyMatch(handle ->
+                                    mdibEntity.getHandle().equals(handle)))
                     .collect(Collectors.toList());
             rootEntities.forEach(mdibEntity -> {
                 handleFilterCopy.remove(mdibEntity.getHandle());

@@ -22,7 +22,9 @@ import java.util.List;
  * mappers for certain header elements in Ws-Addressing and Ws-Discovery.
  * When additional headers are required, the original {@linkplain Envelope} can be accessed and
  * modified through {@linkplain #getOriginalEnvelope()}.
+ * <p>
  * <em>There are no duplicate checks for any headers covered through the mappers, care is required.</em>
+ *
  * @see WsAddressingHeader
  * @see WsDiscoveryHeader
  */

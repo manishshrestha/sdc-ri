@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.xml.bind.JAXBElement;
+import javax.xml.bind.annotation.XmlType;
 import javax.xml.namespace.QName;
 import java.util.List;
 import java.util.Optional;
@@ -93,5 +94,19 @@ public class JaxbUtilImpl implements JaxbUtil {
         }
 
         return Optional.empty();
+    }
+
+    @Override
+    public <T> Optional<QName> getQualifiedName(T object) {
+        QName qname = null;
+        for (var annotation : object.getClass().getAnnotations()) {
+            if (annotation.annotationType() == XmlType.class) {
+                var xmlType = ((XmlType) annotation);
+                qname = new QName(xmlType.namespace(), xmlType.name());
+                break;
+            }
+        }
+
+        return Optional.ofNullable(qname);
     }
 }

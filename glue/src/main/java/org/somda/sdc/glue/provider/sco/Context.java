@@ -2,6 +2,8 @@ package org.somda.sdc.glue.provider.sco;
 
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.somda.sdc.biceps.model.message.*;
 import org.somda.sdc.biceps.model.participant.InstanceIdentifier;
 import org.somda.sdc.biceps.model.participant.LocalizedText;
@@ -13,14 +15,16 @@ import org.somda.sdc.dpws.device.EventSourceAccess;
 import org.somda.sdc.dpws.soap.exception.MarshallingException;
 import org.somda.sdc.dpws.soap.exception.TransportException;
 import org.somda.sdc.glue.common.ActionConstants;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.somda.sdc.mdpws.model.ContextValueType;
+import org.somda.sdc.mdpws.model.DualChannelValueType;
 
 import javax.annotation.Nullable;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 /**
- * Transaction context to be used on incomibg set service requests in order to send reports and the initial response.
+ * Transaction context to be used on incoming set service requests in order to send reports and the initial response.
  *
  * @see InvocationResponse
  */
@@ -36,6 +40,8 @@ public class Context {
 
     private final EventSourceAccess eventSource;
     private final LocalMdibAccess mdibAccess;
+    private final Map<String, DualChannelValueType> dualChannelValues;
+    private final Map<String, ContextValueType> safetyContextValues;
     private final ObjectFactory messageModelFactory;
 
     // this is used to track whether the last OperationInvokedReport state
@@ -43,17 +49,39 @@ public class Context {
     private InvocationState currentReportInvocationState;
 
     @AssistedInject
+    @Deprecated(since = "1.1.0", forRemoval = true)
     Context(@Assisted long transactionId,
             @Assisted String operationHandle,
             @Assisted InstanceIdentifier invocationSource,
             @Assisted EventSourceAccess eventSource,
             @Assisted LocalMdibAccess mdibAccess,
             ObjectFactory messageModelFactory) {
+        this(transactionId,
+                operationHandle,
+                invocationSource,
+                eventSource,
+                mdibAccess,
+                Collections.emptyMap(),
+                Collections.emptyMap(),
+                messageModelFactory);
+    }
+
+    @AssistedInject
+    Context(@Assisted long transactionId,
+            @Assisted String operationHandle,
+            @Assisted InstanceIdentifier invocationSource,
+            @Assisted EventSourceAccess eventSource,
+            @Assisted LocalMdibAccess mdibAccess,
+            @Assisted("dualChannelValue") Map<String, DualChannelValueType> dualChannelValues,
+            @Assisted("safetyContextValue") Map<String, ContextValueType> safetyContextValues,
+            ObjectFactory messageModelFactory) {
         this.transactionId = transactionId;
         this.operationHandle = operationHandle;
         this.invocationSource = invocationSource;
         this.eventSource = eventSource;
         this.mdibAccess = mdibAccess;
+        this.dualChannelValues = dualChannelValues;
+        this.safetyContextValues = safetyContextValues;
         this.messageModelFactory = messageModelFactory;
         this.currentReportInvocationState = null;
     }
@@ -72,6 +100,14 @@ public class Context {
 
     public InstanceIdentifier getInvocationSource() {
         return invocationSource;
+    }
+
+    public Map<String, DualChannelValueType> getDualChannelValues() {
+        return dualChannelValues;
+    }
+
+    public Map<String, ContextValueType> getSafetyContextValues() {
+        return safetyContextValues;
     }
 
     /**

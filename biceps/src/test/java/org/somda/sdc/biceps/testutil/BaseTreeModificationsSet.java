@@ -23,16 +23,19 @@ public class BaseTreeModificationsSet {
     public MdibDescriptionModifications createBaseTree() {
         try {
             return MdibDescriptionModifications.create()
-                    .insert(entry(Handles.MDS_0, t -> t.setType(CodedValueFactory.createIeeeCodedValue("70001")), t -> {}, MdsDescriptor.class))
-                    .insert(entry(Handles.MDS_1, t -> t.setType(CodedValueFactory.createIeeeCodedValue("70002")), t -> {}, MdsDescriptor.class))
+                    .insert(entry(Handles.MDS_0, t -> t.setType(CodedValueFactory.createIeeeCodedValue("70001")), t -> {
+                    }, MdsDescriptor.class))
+                    .insert(entry(Handles.MDS_1, t -> t.setType(CodedValueFactory.createIeeeCodedValue("70002")), t -> {
+                    }, MdsDescriptor.class))
 
                     .insert(entry(Handles.VMD_0, VmdDescriptor.class, Handles.MDS_0))
                     .insert(entry(Handles.VMD_1, VmdDescriptor.class, Handles.MDS_0))
                     .insert(entry(Handles.VMD_2, VmdDescriptor.class, Handles.MDS_0))
                     .insert(entry(Handles.BATTERY_0, BatteryDescriptor.class, Handles.MDS_0))
                     .insert(entry(Handles.CLOCK_0, ClockDescriptor.class, Handles.MDS_0))
-                    .insert(entry(Handles.ALERTSYSTEM_0, AlertSystemDescriptor.class, t -> {}, t -> {
-                        ((AlertSystemState)t).setActivationState(AlertActivation.ON);
+                    .insert(entry(Handles.ALERTSYSTEM_0, AlertSystemDescriptor.class, t -> {
+                    }, t -> {
+                        ((AlertSystemState) t).setActivationState(AlertActivation.ON);
                     }, Handles.MDS_0))
                     .insert(entry(Handles.SCO_0, ScoDescriptor.class, Handles.MDS_0))
                     .insert(entry(Handles.SYSTEMCONTEXT_0, SystemContextDescriptor.class, Handles.MDS_0))
@@ -45,12 +48,14 @@ public class BaseTreeModificationsSet {
                         t.setMetricCategory(MetricCategory.UNSPEC);
                         t.setMetricAvailability(MetricAvailability.INTR);
                         t.setUnit(CodedValueFactory.createIeeeCodedValue("500"));
-                    }, t -> {}, Handles.CHANNEL_0))
+                    }, t -> {
+                    }, Handles.CHANNEL_0))
                     .insert(entry(Handles.METRIC_1, StringMetricDescriptor.class, t -> {
                         t.setMetricCategory(MetricCategory.UNSPEC);
                         t.setMetricAvailability(MetricAvailability.INTR);
                         t.setUnit(CodedValueFactory.createIeeeCodedValue("500"));
-                    }, t -> {}, Handles.CHANNEL_0))
+                    }, t -> {
+                    }, Handles.CHANNEL_0))
                     .insert(entry(Handles.METRIC_2, EnumStringMetricDescriptor.class, t -> {
                         t.setMetricCategory(MetricCategory.UNSPEC);
                         t.setMetricAvailability(MetricAvailability.INTR);
@@ -58,14 +63,16 @@ public class BaseTreeModificationsSet {
                         var allowedValue = new EnumStringMetricDescriptor.AllowedValue();
                         allowedValue.setValue("sample");
                         t.setAllowedValue(Collections.singletonList(allowedValue));
-                    }, t -> {}, Handles.CHANNEL_0))
+                    }, t -> {
+                    }, Handles.CHANNEL_0))
                     .insert(entry(Handles.METRIC_3, RealTimeSampleArrayMetricDescriptor.class, t -> {
                         t.setResolution(BigDecimal.ONE);
                         t.setMetricCategory(MetricCategory.UNSPEC);
                         t.setMetricAvailability(MetricAvailability.INTR);
                         t.setUnit(CodedValueFactory.createIeeeCodedValue("500"));
                         t.setSamplePeriod(Duration.ofSeconds(1));
-                    }, t -> {}, Handles.CHANNEL_0))
+                    }, t -> {
+                    }, Handles.CHANNEL_0))
                     .insert(entry(Handles.METRIC_4, DistributionSampleArrayMetricDescriptor.class, t -> {
                         t.setResolution(BigDecimal.ONE);
                         t.setMetricCategory(MetricCategory.UNSPEC);
@@ -73,43 +80,44 @@ public class BaseTreeModificationsSet {
                         t.setUnit(CodedValueFactory.createIeeeCodedValue("500"));
                         t.setDomainUnit(CodedValueFactory.createIeeeCodedValue("1000"));
                         t.setDistributionRange(new Range());
-                    }, t -> {}, Handles.CHANNEL_0))
+                    }, t -> {
+                    }, Handles.CHANNEL_0))
 
                     .insert(entry(Handles.OPERATION_0, ActivateOperationDescriptor.class, t -> {
                         t.setOperationTarget(Handles.MDS_0);
                     }, t -> {
-                        ((AbstractOperationState)t).setOperatingMode(OperatingMode.EN);
+                        ((AbstractOperationState) t).setOperatingMode(OperatingMode.EN);
                     }, Handles.SCO_0))
                     .insert(entry(Handles.OPERATION_1, SetStringOperationDescriptor.class, t -> {
                         t.setOperationTarget(Handles.MDS_0);
                     }, t -> {
-                        ((AbstractOperationState)t).setOperatingMode(OperatingMode.EN);
-                    },Handles.SCO_0))
+                        ((AbstractOperationState) t).setOperatingMode(OperatingMode.EN);
+                    }, Handles.SCO_0))
                     .insert(entry(Handles.OPERATION_2, SetValueOperationDescriptor.class, t -> {
                         t.setOperationTarget(Handles.MDS_0);
                     }, t -> {
-                        ((AbstractOperationState)t).setOperatingMode(OperatingMode.EN);
-                    },Handles.SCO_0))
+                        ((AbstractOperationState) t).setOperatingMode(OperatingMode.EN);
+                    }, Handles.SCO_0))
                     .insert(entry(Handles.OPERATION_3, SetComponentStateOperationDescriptor.class, t -> {
                         t.setOperationTarget(Handles.MDS_0);
                     }, t -> {
-                        ((AbstractOperationState)t).setOperatingMode(OperatingMode.EN);
-                    },Handles.SCO_0))
+                        ((AbstractOperationState) t).setOperatingMode(OperatingMode.EN);
+                    }, Handles.SCO_0))
                     .insert(entry(Handles.OPERATION_4, SetMetricStateOperationDescriptor.class, t -> {
                         t.setOperationTarget(Handles.MDS_0);
                     }, t -> {
-                        ((AbstractOperationState)t).setOperatingMode(OperatingMode.EN);
-                    },Handles.SCO_0))
+                        ((AbstractOperationState) t).setOperatingMode(OperatingMode.EN);
+                    }, Handles.SCO_0))
                     .insert(entry(Handles.OPERATION_5, SetAlertStateOperationDescriptor.class, t -> {
                         t.setOperationTarget(Handles.MDS_0);
                     }, t -> {
-                        ((AbstractOperationState)t).setOperatingMode(OperatingMode.EN);
-                    },Handles.SCO_0))
+                        ((AbstractOperationState) t).setOperatingMode(OperatingMode.EN);
+                    }, Handles.SCO_0))
                     .insert(entry(Handles.OPERATION_6, SetContextStateOperationDescriptor.class, t -> {
                         t.setOperationTarget(Handles.MDS_0);
                     }, t -> {
-                        ((AbstractOperationState)t).setOperatingMode(OperatingMode.EN);
-                    },Handles.SCO_0))
+                        ((AbstractOperationState) t).setOperatingMode(OperatingMode.EN);
+                    }, Handles.SCO_0))
 
                     .insert(contextEntry(Handles.CONTEXTDESCRIPTOR_0, Handles.CONTEXT_0, PatientContextDescriptor.class, Handles.SYSTEMCONTEXT_0))
                     .insert(contextEntry(Handles.CONTEXTDESCRIPTOR_1, Handles.CONTEXT_1, LocationContextDescriptor.class, Handles.SYSTEMCONTEXT_0))

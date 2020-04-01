@@ -2,16 +2,17 @@ package org.somda.sdc.glue.provider.sco;
 
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.somda.sdc.biceps.model.message.InvocationError;
 import org.somda.sdc.biceps.model.message.InvocationState;
 import org.somda.sdc.biceps.model.participant.InstanceIdentifier;
-import org.somda.sdc.biceps.model.participant.LocalizedText;
 import org.somda.sdc.biceps.model.participant.ObjectFactory;
 import org.somda.sdc.biceps.provider.access.LocalMdibAccess;
 import org.somda.sdc.dpws.device.EventSourceAccess;
 import org.somda.sdc.glue.provider.sco.factory.ContextFactory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.somda.sdc.mdpws.model.ContextValueType;
+import org.somda.sdc.mdpws.model.DualChannelValueType;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
@@ -48,7 +49,7 @@ public class ScoController {
     }
 
     /**
-     * Invokes processing of an incoming network set service call.
+     * Invokes processing of an incoming network set service call without safety information.
      *
      * @param handle  the handle of the operation that was called.
      * @param source  the instance identifier that represents the calling client.
@@ -57,11 +58,43 @@ public class ScoController {
      * @return the initial invocation info required for the response message. The initial invocation info is
      * requested by the callback that is going to be invoked. In case that no callback can be found, a fail state is
      * returned.
+     * @deprecated use {@link #processIncomingSetOperation(String, InstanceIdentifier, Object, Map, Map)} instead.
      */
-    public <T> InvocationResponse processIncomingSetOperation(String handle, InstanceIdentifier source, T payload) {
-        final Context context = contextFactory.createContext(transactionCounter++, handle, source, eventSourceAccess, mdibAccess);
+    @Deprecated(since = "1.1.0", forRemoval = true)
+    public <T> InvocationResponse processIncomingSetOperation(String handle,
+                                                              InstanceIdentifier source,
+                                                              T payload) {
+        return processIncomingSetOperation(handle, source, payload, Collections.emptyMap(), Collections.emptyMap());
+    }
 
-        final LocalizedText localizedText = participantModelFactory.createLocalizedText();
+    /**
+     * Invokes processing of an incoming network set service call.
+     *
+     * @param handle              the handle of the operation that was called.
+     * @param source              the instance identifier that represents the calling client.
+     * @param payload             the request data.
+     * @param dualChannelValues   all dual channel values that come as an input to the request
+     * @param safetyContextValues all safety context values that come as an input to the request.
+     * @param <T>                 type of the request data.
+     * @return the initial invocation info required for the response message. The initial invocation info is
+     * requested by the callback that is going to be invoked. In case that no callback can be found, a fail state is
+     * returned.
+     */
+    public <T> InvocationResponse processIncomingSetOperation(String handle,
+                                                              InstanceIdentifier source,
+                                                              T payload,
+                                                              Map<String, DualChannelValueType> dualChannelValues,
+                                                              Map<String, ContextValueType> safetyContextValues) {
+        var context = contextFactory.createContext(transactionCounter++,
+                handle,
+                source,
+                eventSourceAccess,
+                mdibAccess,
+                dualChannelValues,
+                safetyContextValues
+        );
+
+        var localizedText = participantModelFactory.createLocalizedText();
         localizedText.setLang("en");
         localizedText.setValue(String.format("There is no ultimate invocation processor available for operation %s", handle));
 
@@ -173,7 +206,9 @@ public class ScoController {
         }
 
         if (!annotationFound) {
-            LOG.warn("No callback function found in object {} of type {}", receiver.toString(), receiver.getClass().getName());
+            LOG.warn("No callback function found in object {} of type {}. Check if your callback functions have the " +
+                            "IncomingSetServiceRequest annotation and return an InvocationResponse object.",
+                    receiver.toString(), receiver.getClass().getName());
         }
     }
 

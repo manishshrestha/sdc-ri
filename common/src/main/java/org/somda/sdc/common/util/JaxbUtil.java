@@ -65,4 +65,13 @@ public interface JaxbUtil {
      * if the list is empty or an error occurred.
      */
     <T> Optional<T> extractFirstElementFromAny(List<Object> anyList, Class<T> typeClass);
+
+    /**
+     * Resolves the qualified name of an object that is an instantiated JAXB class.
+     *
+     * @param object the object to examine.
+     * @return {@linkplain Optional#empty()} if there is no JAXB annotation attached to the class of the given object or
+     * a qualified name based on the JAXB annotation of the class of the given object.
+     */
+    <T> Optional<QName> getQualifiedName(T object);
 }

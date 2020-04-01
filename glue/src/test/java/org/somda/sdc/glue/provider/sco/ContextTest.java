@@ -18,6 +18,7 @@ import org.somda.sdc.glue.common.ActionConstants;
 import org.somda.sdc.glue.provider.sco.factory.ContextFactory;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -39,7 +40,7 @@ class ContextTest {
         reportCaptor = ArgumentCaptor.forClass(OperationInvokedReport.class);
 
         context = UT.getInjector().getInstance(ContextFactory.class).createContext(0, "handle",
-                new InstanceIdentifier(), eventSourceAccess, mock(LocalMdibAccess.class));
+                new InstanceIdentifier(), eventSourceAccess, mock(LocalMdibAccess.class), Collections.emptyMap(), Collections.emptyMap());
     }
 
     @Test
