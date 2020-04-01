@@ -107,6 +107,13 @@
             <version>1.4</version>
         </dependency>
 
+        <!-- https://mvnrepository.com/artifact/org.junit.platform/junit-platform-launcher -->
+        <dependency>
+            <groupId>org.junit.platform</groupId>
+            <artifactId>junit-platform-launcher</artifactId>
+            <version>${junitPlatformVersion}</version>
+        </dependency>
+
         <!-- https://mvnrepository.com/artifact/org.junit.platform/junit-platform-engine -->
         <dependency>
             <groupId>org.junit.platform</groupId>

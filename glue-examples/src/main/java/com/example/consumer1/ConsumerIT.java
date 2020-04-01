@@ -6,6 +6,12 @@ import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.SettableFuture;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.platform.launcher.Launcher;
+import org.junit.platform.launcher.LauncherDiscoveryRequest;
+import org.junit.platform.launcher.core.LauncherDiscoveryRequestBuilder;
+import org.junit.platform.launcher.core.LauncherFactory;
+import org.junit.platform.launcher.listeners.SummaryGeneratingListener;
+import org.junit.platform.launcher.listeners.TestExecutionSummary;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.somda.sdc.biceps.model.participant.AbstractContextState;
@@ -42,18 +48,21 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.platform.engine.discovery.DiscoverySelectors.selectClass;
 
 public class ConsumerIT {
     private static final Logger LOG = LoggerFactory.getLogger(ConsumerIT.class);
     private static final Duration MAX_WAIT = Duration.ofSeconds(11);
+    private static String[] ARGS;
 
-    public static final String DEFAULT_FACILITY = "sdcri";
-    public static final String DEFAULT_BED = "TopBunk";
-    public static final String DEFAULT_POC = "DontCare";
+    public static final String DEFAULT_IP = "127.0.0.1";
+    public static final String DEFAULT_FACILITY = "r_fac";
+    public static final String DEFAULT_BED = "r_bed";
+    public static final String DEFAULT_POC = "r_poc";
     public static final String DEFAULT_REPORT_TIMEOUT = "30";
 
     private static Duration reportTimeout;
-    private static String iface;
+    private static String ipAddress;
     private static String targetFacility;
     private static String targetBed;
     private static String targetPoC;
@@ -61,11 +70,11 @@ public class ConsumerIT {
 
     @BeforeAll
     static void setUp() {
-        iface = System.getProperty("iface");
-        assertNotNull(iface);
-        targetFacility = System.getProperty("targetFacility", DEFAULT_FACILITY);
-        targetBed = System.getProperty("targetBed", DEFAULT_BED);
-        targetPoC = System.getProperty("targetPoC", DEFAULT_POC);
+        ipAddress = System.getenv().getOrDefault("ref_ip", DEFAULT_IP);
+        assertNotNull(ipAddress);
+        targetFacility = System.getenv().getOrDefault("ref_fac", DEFAULT_FACILITY);
+        targetBed = System.getenv().getOrDefault("ref_bed", DEFAULT_BED);
+        targetPoC = System.getenv().getOrDefault("ref_poc", DEFAULT_POC);
         reportTimeout = Duration.ofSeconds(
                 Long.parseLong(
                         System.getProperty("reportTimeout", DEFAULT_REPORT_TIMEOUT)
@@ -75,7 +84,8 @@ public class ConsumerIT {
 
     @Test
     void runIT() throws Exception {
-        var consumer = new Consumer(iface);
+        var settings = new ConsumerUtil(ARGS);
+        var consumer = new Consumer(settings, null, ipAddress);
         consumer.startUp();
 
         var targetEpr = discoverDevice(consumer);
@@ -89,7 +99,6 @@ public class ConsumerIT {
         remoteDevice.getMdibAccessObservable().unregisterObserver(reportObs);
         remoteDevice.stopAsync().awaitTerminated();
 
-        consumer.getConnector().disconnect(targetEpr);
         consumer.shutDown();
     }
 
@@ -260,4 +269,27 @@ public class ConsumerIT {
         LOG.info("Done, quitting");
     }
 
+    public static void main(String[] args) {
+
+        ARGS = args;
+
+        final LauncherDiscoveryRequest request =
+                LauncherDiscoveryRequestBuilder.request()
+                        .selectors(selectClass(ConsumerIT.class))
+                        .build();
+
+        final Launcher launcher = LauncherFactory.create();
+        final SummaryGeneratingListener listener = new SummaryGeneratingListener();
+
+        launcher.registerTestExecutionListeners(listener);
+        launcher.execute(request);
+
+        TestExecutionSummary summary = listener.getSummary();
+        long testFoundCount = summary.getTestsFoundCount();
+        List<TestExecutionSummary.Failure> failures = summary.getFailures();
+        LOG.info("getTestsSucceededCount() - {}", summary.getTestsSucceededCount());
+        failures.forEach(failure -> LOG.error("failure", failure.getException()));
+
+        System.exit(failures.size() > 0 ? 1 : 0);
+    }
 }

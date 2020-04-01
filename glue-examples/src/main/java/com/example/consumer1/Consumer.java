@@ -46,7 +46,6 @@ import java.math.BigDecimal;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
-import java.net.URI;
 import java.net.UnknownHostException;
 import java.time.Duration;
 import java.util.ArrayList;
@@ -77,12 +76,12 @@ import java.util.stream.Collectors;
 public class Consumer {
 
     private static final Logger LOG = LoggerFactory.getLogger(Consumer.class);
-    private static final ConsumerUtil IT = new ConsumerUtil();
     private static final Duration MAX_WAIT = Duration.ofSeconds(11);
     private static final long MAX_WAIT_SEC = MAX_WAIT.getSeconds();
 
     private static final long REPORT_TIMEOUT = Duration.ofSeconds(30).toMillis();
 
+    private final ConsumerUtil consumerUtil;
     private final Client client;
     private final SdcRemoteDevicesConnector connector;
     private DpwsFramework dpwsFramework;
@@ -93,18 +92,25 @@ public class Consumer {
      * Creates an SDC Consumer instance.
      *
      * @param adapterName Optional adapter name to bind to, otherwise localhost default interface is chosen
+     * @param ipAddress Optional ip address to bind to. If an adapter is set, this is ignored.
      * @throws SocketException      if network adapter couldn't be bound
      * @throws UnknownHostException if localhost couldn't be determined
      */
-    public Consumer(@Nullable String adapterName) throws SocketException, UnknownHostException {
-        this.injector = IT.getInjector();
+    public Consumer(ConsumerUtil consumerUtil, @Nullable String adapterName, @Nullable String ipAddress) throws SocketException, UnknownHostException {
+        this.consumerUtil = consumerUtil;
+        this.injector = consumerUtil.getInjector();
         this.client = injector.getInstance(Client.class);
         this.connector = injector.getInstance(SdcRemoteDevicesConnector.class);
-        if (adapterName != null && !adapterName.isEmpty()) {
+        if (adapterName != null && !adapterName.isBlank()) {
             this.networkInterface = NetworkInterface.getByName(adapterName);
         } else {
-            // find some kind of default interface
-            this.networkInterface = NetworkInterface.getByInetAddress(InetAddress.getLocalHost());
+            if (ipAddress != null && !ipAddress.isBlank()) {
+                // bind to adapter matching ip
+                this.networkInterface = NetworkInterface.getByInetAddress(InetAddress.getByName(ipAddress));
+            } else {
+                // find some kind of default interface
+                this.networkInterface = NetworkInterface.getByInetAddress(InetAddress.getLocalHost());
+            }
         }
     }
 
@@ -127,40 +133,6 @@ public class Consumer {
     protected void shutDown() {
         client.stopAsync().awaitTerminated();
         dpwsFramework.stopAsync().awaitTerminated();
-    }
-
-    /**
-     * Parse command line arguments for epr address and network interface
-     *
-     * @param args array of arguments, as passed to main
-     * @return instance of parsed command line arguments
-     */
-    public static CommandLine parseCommandLineArgs(String[] args) {
-        Options options = new Options();
-
-        Option epr = new Option("e", "epr", true, "epr address of target provider");
-        epr.setRequired(true);
-        options.addOption(epr);
-
-        Option networkInterface = new Option("i", "iface", true, "network interface to use");
-        networkInterface.setRequired(false);
-        options.addOption(networkInterface);
-
-
-        CommandLineParser parser = new DefaultParser();
-        HelpFormatter formatter = new HelpFormatter();
-        CommandLine cmd = null;
-
-        try {
-            cmd = parser.parse(options, args);
-        } catch (ParseException e) {
-            System.out.println(e.getMessage());
-            formatter.printHelp("utility-name", options);
-
-            System.exit(1);
-        }
-
-        return cmd;
     }
 
     /**
@@ -257,11 +229,10 @@ public class Consumer {
 
     public static void main(String[] args) throws SocketException, UnknownHostException, InterceptorException, TransportException, InterruptedException {
 
-        var settings = parseCommandLineArgs(args);
-        var targetEpr = settings.getOptionValue("epr");
-        var networkInterface = settings.getOptionValue("iface", null);
+        var settings = new ConsumerUtil(args);
+        var targetEpr = settings.getEpr();
 
-        var consumer = new Consumer(networkInterface);
+        var consumer = new Consumer(settings, settings.getIface(), null);
         consumer.startUp();
 
         // this map is used to track the outcome of each of the nine steps listed for this class
@@ -295,7 +266,7 @@ public class Consumer {
             @Subscribe
             void deviceFound(ProbedDeviceFoundMessage message) {
                 DiscoveredDevice payload = message.getPayload();
-                if (payload.getEprAddress().toString().equals(targetEpr)) {
+                if (payload.getEprAddress().equals(targetEpr)) {
                     LOG.info("Found device with epr {}", payload.getEprAddress());
                     xAddrs.set(payload.getXAddrs());
                 } else {

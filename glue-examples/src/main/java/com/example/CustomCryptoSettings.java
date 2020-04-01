@@ -1,21 +1,44 @@
 package com.example;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.somda.sdc.dpws.crypto.CryptoSettings;
 
 import java.io.File;
-import java.io.IOException;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
-import java.util.Base64;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Objects;
 import java.util.Optional;
-import java.util.regex.Pattern;
 
 public class CustomCryptoSettings implements CryptoSettings {
+    private static final Logger LOG = LoggerFactory.getLogger(CustomCryptoSettings.class);
 
-    private static final String keyStorePath = "crypto/sdcparticipant.jks";
-    private static final String trustStorePath = "crypto/root.jks";
-    private static final String keyStorePassword = "whatever";
-    private static final String trustStorePassword = "whatever";
+    private static final String DEFAULT_KEYSTORE = "crypto/keystore.pfx";
+    private static final String DEFAULT_TRUSTSTORE = "crypto/client-truststore.jks";
+    private static final String DEFAULT_KEYSTORE_PASSWORD = "whatever";
+    private static final String DEFAULT_TRUSTSTORE_PASSWORD = "whatever";
+
+    private File keyStorePath = null;
+    private File trustStorePath = null;
+    private String keyStorePassword = null;
+    private String trustStorePassword = null;
+
+    public CustomCryptoSettings(
+            String keyStorePath,
+            String trustStorePath,
+            String keyStorePassword,
+            String trustStorePassword) {
+        this.keyStorePath = new File(keyStorePath);
+        this.trustStorePath = new File(trustStorePath);
+        this.keyStorePassword = keyStorePassword;
+        this.trustStorePassword = trustStorePassword;
+    }
+
+    public CustomCryptoSettings() {
+    }
 
     @Override
     public Optional<File> getKeyStoreFile() {
@@ -24,12 +47,20 @@ public class CustomCryptoSettings implements CryptoSettings {
 
     @Override
     public Optional<InputStream> getKeyStoreStream() {
-        return Optional.ofNullable(getClass().getClassLoader().getResourceAsStream(keyStorePath));
+        if (keyStorePath != null) {
+            try {
+                return Optional.of(new FileInputStream(keyStorePath.getPath()));
+            } catch (FileNotFoundException e) {
+                LOG.error("Specified keystore file could not be found", e);
+                throw new RuntimeException("Specified keystore file could not be found", e);
+            }
+        }
+        return Optional.ofNullable(getClass().getClassLoader().getResourceAsStream(DEFAULT_KEYSTORE));
     }
 
     @Override
     public String getKeyStorePassword() {
-        return keyStorePassword;
+        return Objects.requireNonNullElse(this.keyStorePassword, DEFAULT_KEYSTORE_PASSWORD);
     }
 
     @Override
@@ -39,11 +70,20 @@ public class CustomCryptoSettings implements CryptoSettings {
 
     @Override
     public Optional<InputStream> getTrustStoreStream() {
-        return Optional.ofNullable(getClass().getClassLoader().getResourceAsStream(trustStorePath));
+        if (trustStorePath != null) {
+            try {
+                return Optional.of(new FileInputStream(trustStorePath.getPath()));
+            } catch (FileNotFoundException e) {
+                LOG.error("Specified truststore file could not be found", e);
+                throw new RuntimeException("Specified truststore file could not be found", e);
+            }
+
+        }
+        return Optional.ofNullable(getClass().getClassLoader().getResourceAsStream(DEFAULT_TRUSTSTORE));
     }
 
     @Override
     public String getTrustStorePassword() {
-        return trustStorePassword;
+        return Objects.requireNonNullElse(trustStorePassword, DEFAULT_TRUSTSTORE_PASSWORD);
     }
 }
