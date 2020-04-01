@@ -4,16 +4,10 @@ import com.google.inject.Inject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.somda.sdc.dpws.http.HttpHandler;
-import org.somda.sdc.dpws.soap.CommunicationContext;
-import org.somda.sdc.dpws.soap.MarshallingService;
-import org.somda.sdc.dpws.soap.RequestResponseServer;
-import org.somda.sdc.dpws.soap.SoapDebug;
-import org.somda.sdc.dpws.soap.SoapMessage;
-import org.somda.sdc.dpws.soap.SoapUtil;
+import org.somda.sdc.dpws.soap.*;
 import org.somda.sdc.dpws.soap.exception.MarshallingException;
 import org.somda.sdc.dpws.soap.exception.SoapFaultException;
 import org.somda.sdc.dpws.soap.exception.TransportException;
-import org.somda.sdc.dpws.soap.factory.SoapFaultFactory;
 import org.somda.sdc.dpws.soap.interception.Interceptor;
 import org.somda.sdc.dpws.soap.interception.InterceptorHandler;
 
@@ -33,16 +27,14 @@ public class RequestResponseServerHttpHandler implements HttpHandler, Intercepto
 
     private final RequestResponseServer reqResServer;
     private final MarshallingService marshallingService;
-    private final SoapFaultFactory soapFaultFactory;
     private final SoapUtil soapUtil;
 
     @Inject
     RequestResponseServerHttpHandler(RequestResponseServer reqResServer,
                                      MarshallingService marshallingService,
-                                     SoapFaultFactory soapFaultFactory, SoapUtil soapUtil) {
+                                     SoapUtil soapUtil) {
         this.reqResServer = reqResServer;
         this.marshallingService = marshallingService;
-        this.soapFaultFactory = soapFaultFactory;
         this.soapUtil = soapUtil;
     }
 

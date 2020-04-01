@@ -184,7 +184,7 @@ public class SoapUtil {
      * @param wsaAction           the action header to set.
      * @param wsaTo               the to header to set.
      * @param firstBodyElement    the first child of the body element.
-     * @param referenceParameters reference parameters to attach to the message
+     * @param referenceParameters reference parameters to attach to the message.
      * @return a new SOAP message.
      */
     public SoapMessage createMessage(
