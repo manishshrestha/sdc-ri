@@ -11,16 +11,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - _Releases_ and _How to get started_ sections to the project readme. (#125)
 - Feature from BICEPS to send and receive periodic reports. (#51)
-- Jetty server supports http and https connections on the same port (#107)
-- Additional utility method in `org.somda.sdc.dpws.soap.SoapUtil` to create new SoapMessage with reference parameters (#140)
+- Jetty server supports http and https connections on the same port. (#107)
+- Additional utility method in `org.somda.sdc.dpws.soap.SoapUtil` to create new SoapMessage with reference parameters. (#140)
 - Jetty server supports http and https connections on the same port. (#107)
 - Additional utility method in `org.somda.sdc.dpws.soap.SoapUtil` to create new SoapMessage with reference parameters. (#140)
 - Jetty server supports http and https connections on the same port (#107)
-- Additional utility method in `org.somda.sdc.dpws.soap.SoapUtil` to create new SoapMessage with reference parameters (#140)
+- Additional utility method in `org.somda.sdc.dpws.soap.SoapUtil` to create new SoapMessage with reference parameters. (#140)
 - Jetty server supports http and https connections on the same port. (#107)
 - Additional utility method in `org.somda.sdc.dpws.soap.SoapUtil` to create new SoapMessage with reference parameters. (#140)
 - Additional utility methods `org.somda.sdc.dpws.soap.wsaddressing.WsAddressingUtil#createAttributedQNameType()` and `org.somda.sdc.dpws.soap.wsaddressing.WsAddressingUtil#getAddressUriString()`.
-- WS Addressing constant `org.somda.sdc.dpws.soap.wsaddressing.WsAddressingConstants#QNAME_ACTION` that describes the fully qualified name for action type.
+- WS Addressing constant `org.somda.sdc.dpws.soap.wsaddressing.WsAddressingConstants#QNAME_ACTION` that describes the fully qualified name for the action type.
 
 ### Deprecated
 - `org.somda.sdc.glue.provider.SdcDevice#getDiscoveryAccess()` and `#getHostingServiceAccess()`; see `SdcDevice` class comment for alternative access.
@@ -36,10 +36,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - `org.somda.sdc.dpws.soap.SoapMessage#getEnvelopeWithMappedHeaders()` did not retain additional header set in the original envelope. (#131)
-- `SdcRemoteDevicesConnectorImpl` did not register disconnecting providers
-- Services did not shut down in an orderly manner, causing issues when shutting down a consumer (#134)
-- Jetty server could select incorrect adapter when running https (#135)
-- `org.somda.sdc.dpws.soap.wsaddressing.WsAddressingMapper#mapToJaxbSoapHeader()` could cause duplicate header entries, e.g. Action elements (#140)
+- `SdcRemoteDevicesConnectorImpl` did not register disconnecting providers.
+- Services did not shut down in an orderly manner, causing issues when shutting down a consumer. (#134)
+- Jetty server could select incorrect adapter when running HTTPS. (#135)
+- `org.somda.sdc.dpws.soap.wsaddressing.WsAddressingMapper#mapToJaxbSoapHeader()` could cause duplicate header entries, e.g. Action elements. (#140)
+- SOAP engine did not respond with appropriate faults in case the action header was missing or the action was unknown. (#143)
 
 ## [1.0.1] - 2020-03-11
 
