@@ -13,17 +13,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Feature from BICEPS to send and receive periodic reports. (#51)
 - Jetty server supports http and https connections on the same port (#107)
 - Additional utility method in `org.somda.sdc.dpws.soap.SoapUtil` to create new SoapMessage with reference parameters (#140)
+- Jetty server supports http and https connections on the same port. (#107)
+- Additional utility method in `org.somda.sdc.dpws.soap.SoapUtil` to create new SoapMessage with reference parameters. (#140)
+- Jetty server supports http and https connections on the same port (#107)
+- Additional utility method in `org.somda.sdc.dpws.soap.SoapUtil` to create new SoapMessage with reference parameters (#140)
+- Jetty server supports http and https connections on the same port. (#107)
+- Additional utility method in `org.somda.sdc.dpws.soap.SoapUtil` to create new SoapMessage with reference parameters. (#140)
+- Additional utility methods `org.somda.sdc.dpws.soap.wsaddressing.WsAddressingUtil#createAttributedQNameType()` and `org.somda.sdc.dpws.soap.wsaddressing.WsAddressingUtil#getAddressUriString()`.
+- WS Addressing constant `org.somda.sdc.dpws.soap.wsaddressing.WsAddressingConstants#QNAME_ACTION` that describes the fully qualified name for action type.
 
 ### Deprecated
 - `org.somda.sdc.glue.provider.SdcDevice#getDiscoveryAccess()` and `#getHostingServiceAccess()`; see `SdcDevice` class comment for alternative access.
-- `org.somda.sdc.dpws.CommunicationLogSink.getTargetStream()`; see method comment for alternative
-- `org.somda.sdc.glue.consumer.factory.SdcRemoteDeviceFactory#createSdcRemoteDevice()` without watchdog argument
+- `org.somda.sdc.dpws.CommunicationLogSink.getTargetStream()`; see method comment for alternative.
+- `org.somda.sdc.glue.consumer.factory.SdcRemoteDeviceFactory#createSdcRemoteDevice()` without watchdog argument.
 
 ### Changed
 
 - Report processing on consumer side, which now compares MDIB sequence IDs by using URI compare instead of string compare.
-- Extracted namespace prefixes in `biceps` and `glue` package `CommonConstants`
-- Enable generating equals and hashcode for all models (#140)
+- Extracted namespace prefixes in `biceps` and `glue` package `CommonConstants`.
+- Enable generating equals and hashcode for all models. (#140)
 
 ### Fixed
 
