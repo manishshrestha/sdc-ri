@@ -57,14 +57,13 @@ public class UdpBindingServiceImpl extends AbstractIdleService implements UdpBin
         this.maxMessageSize = maxMessageSize;
         this.networkInterfaceUtil = networkInterfaceUtil;
         this.communicationLog = communicationLog;
+        this.multicastAddress = new InetSocketAddress(multicastGroup, socketPort);
         this.multicastSocket = null;
-        this.multicastAddress = null;
         this.networkInterfaceAddress = null;
     }
 
     @Override
     protected void startUp() throws Exception {
-        multicastAddress = new InetSocketAddress(multicastGroup, socketPort);
         LOG.info("Start UDP binding on network interface {}", this);
         // try to get first available address from network interface
         networkInterfaceAddress = networkInterfaceUtil.getFirstIpV4Address(networkInterface).orElseThrow(() ->
