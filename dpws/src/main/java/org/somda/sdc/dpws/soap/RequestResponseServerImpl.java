@@ -65,7 +65,8 @@ public class RequestResponseServerImpl implements RequestResponseServer {
                     ))));
         }
 
-        if (interceptorRegistry.getInterceptors(Direction.REQUEST, action).isEmpty()) {
+        if (interceptorRegistry.getInterceptors(Direction.REQUEST, action).isEmpty() &&
+                interceptorRegistry.getInterceptors(Direction.ANY, action).isEmpty()) {
             // Action not supported as no matching interceptor handler could be found, hence throw SOAP fault
             // according to https://www.w3.org/TR/ws-addr-soap/#actionfault
             var problemActionType = wsaObjectFactory.createProblemActionType();
