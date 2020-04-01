@@ -203,7 +203,7 @@ public class SoapUtil {
                         if (!correctType) {
                             LOG.warn(
                                     "Reference parameter couldn't be attached to outgoing message, wrong type!" +
-                                            "Type was {}", obj.getClass().getSimpleName()
+                                            " Type was {}", obj.getClass().getSimpleName()
                             );
                         }
                         return correctType;
