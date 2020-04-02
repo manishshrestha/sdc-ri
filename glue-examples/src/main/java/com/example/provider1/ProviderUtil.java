@@ -1,7 +1,6 @@
 package com.example.provider1;
 
 import com.example.BaseUtil;
-import com.example.CustomCryptoSettings;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import org.apache.logging.log4j.Level;
@@ -18,7 +17,6 @@ import org.somda.sdc.common.guice.DefaultHelperModule;
 import org.somda.sdc.dpws.DpwsConfig;
 import org.somda.sdc.dpws.crypto.CryptoConfig;
 import org.somda.sdc.dpws.crypto.CryptoSettings;
-import org.somda.sdc.dpws.device.DeviceConfig;
 import org.somda.sdc.dpws.guice.DefaultDpwsModule;
 import org.somda.sdc.glue.GlueConstants;
 import org.somda.sdc.glue.guice.DefaultGlueConfigModule;

@@ -1,16 +1,8 @@
 package com.example.consumer1;
 
 import com.example.BaseUtil;
-import com.example.CustomCryptoSettings;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
-import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.CommandLineParser;
-import org.apache.commons.cli.DefaultParser;
-import org.apache.commons.cli.HelpFormatter;
-import org.apache.commons.cli.Option;
-import org.apache.commons.cli.Options;
-import org.apache.commons.cli.ParseException;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.core.config.Configurator;
 import org.apache.logging.log4j.core.config.DefaultConfiguration;
