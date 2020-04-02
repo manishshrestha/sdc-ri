@@ -3,6 +3,7 @@ package org.somda.sdc.dpws.device.helper;
 import com.google.inject.Inject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.somda.sdc.dpws.http.HttpException;
 import org.somda.sdc.dpws.http.HttpHandler;
 import org.somda.sdc.dpws.soap.*;
 import org.somda.sdc.dpws.soap.exception.MarshallingException;
@@ -40,8 +41,15 @@ public class RequestResponseServerHttpHandler implements HttpHandler, Intercepto
 
     @Override
     public void process(InputStream inStream, OutputStream outStream, CommunicationContext communicationContext)
-            throws TransportException, MarshallingException {
-        SoapMessage requestMsg = marshallingService.unmarshal(inStream);
+            throws TransportException, HttpException {
+
+        SoapMessage requestMsg;
+        try {
+            requestMsg = marshallingService.unmarshal(inStream);
+        } catch (MarshallingException e) {
+            throw new HttpException(500, String.format("Error unmarshalling HTTP input stream: %s", e.getMessage()));
+        }
+
         try {
             inStream.close();
         } catch (IOException e) {
@@ -53,16 +61,18 @@ public class RequestResponseServerHttpHandler implements HttpHandler, Intercepto
         }
 
         SoapMessage responseMsg = soapUtil.createMessage();
+        HttpException httpExceptionToThrow = null;
         try {
             reqResServer.receiveRequestResponse(requestMsg, responseMsg, communicationContext);
         } catch (SoapFaultException e) {
             responseMsg = e.getFaultMessage();
+            httpExceptionToThrow = new HttpException(SoapFaultHttpStatusCodeMapping.get(e.getFault()));
         }
 
         try {
             marshallingService.marshal(responseMsg, outStream);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+        } catch (MarshallingException e) {
+            throw new HttpException(500, String.format("Error marshalling HTTP output stream: %s", e.getMessage()));
         }
 
         if (LOG.isDebugEnabled()) {
@@ -73,6 +83,10 @@ public class RequestResponseServerHttpHandler implements HttpHandler, Intercepto
             outStream.close();
         } catch (IOException e) {
             throw new TransportException("IO error closing HTTP output stream", e);
+        }
+
+        if (httpExceptionToThrow != null) {
+            throw httpExceptionToThrow;
         }
     }
 

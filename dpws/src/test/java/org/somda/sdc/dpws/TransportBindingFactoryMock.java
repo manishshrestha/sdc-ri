@@ -2,6 +2,7 @@ package org.somda.sdc.dpws;
 
 import com.google.inject.Inject;
 import org.somda.sdc.dpws.factory.TransportBindingFactory;
+import org.somda.sdc.dpws.http.HttpException;
 import org.somda.sdc.dpws.http.HttpHandler;
 import org.somda.sdc.dpws.soap.*;
 import org.somda.sdc.dpws.soap.exception.MarshallingException;
@@ -83,7 +84,11 @@ public class TransportBindingFactoryMock implements TransportBindingFactory {
 
                 ByteArrayOutputStream bosResponse = new ByteArrayOutputStream();
                 HttpHandler theHttpHandler = httpHandler.orElseThrow(() -> new TransportException("HTTP handler not set"));
-                theHttpHandler.process(new ByteArrayInputStream(bosRequest.toByteArray()), bosResponse, mockCommunicationContext);
+                try {
+                    theHttpHandler.process(new ByteArrayInputStream(bosRequest.toByteArray()), bosResponse, mockCommunicationContext);
+                } catch (HttpException e) {
+                    throw new TransportException(e);
+                }
 
                 try {
                     Envelope env = soapMarshalling.unmarshal(new ByteArrayInputStream(bosResponse.toByteArray()));

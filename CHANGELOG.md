@@ -15,6 +15,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Additional utility method in `org.somda.sdc.dpws.soap.SoapUtil` to create new SoapMessage with reference parameters. (#140)
 - Additional utility methods `org.somda.sdc.dpws.soap.wsaddressing.WsAddressingUtil#createAttributedQNameType()` and `org.somda.sdc.dpws.soap.wsaddressing.WsAddressingUtil#getAddressUriString()`.
 - WS Addressing constant `org.somda.sdc.dpws.soap.wsaddressing.WsAddressingConstants#QNAME_ACTION` that describes the fully qualified name for the action type.
+- `org.somda.sdc.dpws.http.HttpException` in order to transport HTTP status codes on SOAP faults. (#143)
+- `org.somda.sdc.dpws.soap.SoapFaultHttpStatusCodeMapping` to map from SOAP faults to HTTP status codes. (#143)
+- SOAP constants for VersionMismatch, MustUnderstand and DataEncodingUnknown SOAP Fault codes.
 
 ### Deprecated
 - `org.somda.sdc.glue.provider.SdcDevice#getDiscoveryAccess()` and `#getHostingServiceAccess()`; see `SdcDevice` class comment for alternative access.

@@ -11,13 +11,9 @@ import org.somda.sdc.common.util.ExecutorWrapperService;
 import org.somda.sdc.dpws.DpwsConfig;
 import org.somda.sdc.dpws.DpwsConstants;
 import org.somda.sdc.dpws.guice.NetworkJobThreadPool;
+import org.somda.sdc.dpws.http.HttpException;
 import org.somda.sdc.dpws.http.HttpServerRegistry;
-import org.somda.sdc.dpws.soap.CommunicationContext;
-import org.somda.sdc.dpws.soap.NotificationSink;
-import org.somda.sdc.dpws.soap.RequestResponseClient;
-import org.somda.sdc.dpws.soap.SoapMarshalling;
-import org.somda.sdc.dpws.soap.SoapMessage;
-import org.somda.sdc.dpws.soap.SoapUtil;
+import org.somda.sdc.dpws.soap.*;
 import org.somda.sdc.dpws.soap.exception.MalformedSoapMessageException;
 import org.somda.sdc.dpws.soap.exception.MarshallingException;
 import org.somda.sdc.dpws.soap.exception.TransportException;
@@ -25,16 +21,7 @@ import org.somda.sdc.dpws.soap.wsaddressing.WsAddressingUtil;
 import org.somda.sdc.dpws.soap.wsaddressing.model.EndpointReferenceType;
 import org.somda.sdc.dpws.soap.wseventing.exception.SubscriptionNotFoundException;
 import org.somda.sdc.dpws.soap.wseventing.factory.SubscriptionManagerFactory;
-import org.somda.sdc.dpws.soap.wseventing.model.DeliveryType;
-import org.somda.sdc.dpws.soap.wseventing.model.FilterType;
-import org.somda.sdc.dpws.soap.wseventing.model.GetStatus;
-import org.somda.sdc.dpws.soap.wseventing.model.GetStatusResponse;
-import org.somda.sdc.dpws.soap.wseventing.model.ObjectFactory;
-import org.somda.sdc.dpws.soap.wseventing.model.Renew;
-import org.somda.sdc.dpws.soap.wseventing.model.RenewResponse;
-import org.somda.sdc.dpws.soap.wseventing.model.Subscribe;
-import org.somda.sdc.dpws.soap.wseventing.model.SubscribeResponse;
-import org.somda.sdc.dpws.soap.wseventing.model.Unsubscribe;
+import org.somda.sdc.dpws.soap.wseventing.model.*;
 
 import javax.annotation.Nullable;
 import javax.xml.bind.JAXBException;
@@ -42,12 +29,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.time.Duration;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -114,12 +96,24 @@ public class EventSinkImpl implements EventSink {
             // Create unique end-to context path and create proper handler
             String endToContext = EVENT_SINK_END_TO_CONTEXT_PREFIX + contextSuffix;
             var endToUri = httpServerRegistry.registerContext(hostAddress, endToContext,
-                    (req, res, ti) -> processIncomingNotification(notificationSink, req, res, ti));
+                    (req, res, ti) -> {
+                        try {
+                            processIncomingNotification(notificationSink, req, res, ti);
+                        } catch (MarshallingException e) {
+                            throw new HttpException(500, String.format("Error unmarshalling HTTP input stream: %s", e.getMessage()));
+                        }
+                    });
 
             // Create unique notify-to context path and create proper handler
             String notifyToContext = EVENT_SINK_NOTIFY_TO_CONTEXT_PREFIX + contextSuffix;
             var notifyToUri = httpServerRegistry.registerContext(hostAddress, notifyToContext,
-                    (req, res, ti) -> processIncomingNotification(notificationSink, req, res, ti));
+                    (req, res, ti) -> {
+                        try {
+                            processIncomingNotification(notificationSink, req, res, ti);
+                        } catch (MarshallingException e) {
+                            throw new HttpException(500, String.format("Error unmarshalling HTTP input stream: %s", e.getMessage()));
+                        }
+                    });
 
             // Create subscribe body, include formerly created end-to and notify-to endpoint addresses
             // Populate rest of the request

@@ -1,7 +1,6 @@
 package org.somda.sdc.dpws.http;
 
 import org.somda.sdc.dpws.soap.CommunicationContext;
-import org.somda.sdc.dpws.soap.exception.MarshallingException;
 import org.somda.sdc.dpws.soap.exception.TransportException;
 
 import java.io.InputStream;
@@ -25,10 +24,10 @@ public interface HttpHandler {
      * @param outStream            stream of the outgoing SOAP response. Do not forget to call {@linkplain
      *                             OutputStream#close()} when the message is ready to be sent back.
      * @param communicationContext information from the transport and application layer, e.g., local address, local port, certificate data etc.
-     * @throws TransportException   if any transport-related exception occurs during processing. This will hinder the
-     *                              response from being sent.
-     * @throws MarshallingException if any exception occurs during marshalling or unmarshalling of SOAP messages.
+     * @throws TransportException if any transport-related exception occurs during processing. This will hinder the
+     *                            response from being sent.
+     * @throws HttpException      if there is a SOAP fault thrown that is supposed to cause the HTTP layer to attach a status code other than 200.
      */
     void process(InputStream inStream, OutputStream outStream, CommunicationContext communicationContext)
-            throws TransportException, MarshallingException;
+            throws TransportException, HttpException;
 }

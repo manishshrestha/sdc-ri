@@ -15,18 +15,23 @@ import org.somda.sdc.dpws.LocalAddressResolverMock;
 import org.somda.sdc.dpws.TransportBindingFactoryMock;
 import org.somda.sdc.dpws.factory.TransportBindingFactory;
 import org.somda.sdc.dpws.guice.NetworkJobThreadPool;
+import org.somda.sdc.dpws.http.HttpException;
 import org.somda.sdc.dpws.http.HttpServerRegistry;
 import org.somda.sdc.dpws.model.HostedServiceType;
 import org.somda.sdc.dpws.model.ObjectFactory;
 import org.somda.sdc.dpws.network.LocalAddressResolver;
 import org.somda.sdc.dpws.service.factory.HostedServiceFactory;
 import org.somda.sdc.dpws.soap.*;
+import org.somda.sdc.dpws.soap.exception.MarshallingException;
+import org.somda.sdc.dpws.soap.exception.SoapFaultException;
 import org.somda.sdc.dpws.soap.factory.NotificationSinkFactory;
 import org.somda.sdc.dpws.soap.factory.RequestResponseClientFactory;
 import org.somda.sdc.dpws.soap.wsaddressing.WsAddressingServerInterceptor;
 import org.somda.sdc.dpws.soap.wsaddressing.WsAddressingUtil;
 import org.somda.sdc.dpws.soap.wseventing.factory.WsEventingEventSinkFactory;
 
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.time.Duration;
 import java.util.Collections;
 
@@ -74,9 +79,14 @@ public class WsEventingTest extends DpwsTest {
         HttpServerRegistry httpSrvRegisty = getInjector().getInstance(HttpServerRegistry.class);
 
         var uri = "http://" + HOST + ":" + PORT;
-        MarshallingService marshallingService = getInjector().getInstance(MarshallingService.class);
         var hostedServiceUri = httpSrvRegisty.registerContext(uri, HOSTED_SERVICE_PATH, (inStream, outStream, ti) ->
-                marshallingService.handleRequestResponse(reqResSrv, inStream, outStream, ti));
+        {
+            try {
+                MarshallingHelper.handleRequestResponse(getInjector(), reqResSrv, inStream, outStream, ti);
+            } catch (MarshallingException e) {
+                throw new HttpException(500, e.getMessage());
+            }
+        });
 
         HostedServiceType hst = dpwsFactory.createHostedServiceType();
         hst.getEndpointReference().add(wsaUtil.createEprWithAddress(hostedServiceUri));

@@ -17,12 +17,14 @@ import org.somda.sdc.dpws.TransportBindingFactoryMock;
 import org.somda.sdc.dpws.device.helper.RequestResponseServerHttpHandler;
 import org.somda.sdc.dpws.factory.TransportBindingFactory;
 import org.somda.sdc.dpws.guice.NetworkJobThreadPool;
+import org.somda.sdc.dpws.http.HttpException;
 import org.somda.sdc.dpws.http.HttpServerRegistry;
 import org.somda.sdc.dpws.http.HttpUriBuilder;
 import org.somda.sdc.dpws.model.HostedServiceType;
 import org.somda.sdc.dpws.model.ObjectFactory;
 import org.somda.sdc.dpws.network.LocalAddressResolver;
 import org.somda.sdc.dpws.soap.*;
+import org.somda.sdc.dpws.soap.exception.MarshallingException;
 import org.somda.sdc.dpws.soap.exception.SoapFaultException;
 import org.somda.sdc.dpws.soap.factory.EnvelopeFactory;
 import org.somda.sdc.dpws.soap.factory.NotificationSinkFactory;
@@ -78,7 +80,8 @@ public class WsEventingReferenceParametersTest extends DpwsTest {
 
         // start required thread pool(s)
         getInjector().getInstance(Key.get(
-                new TypeLiteral<ExecutorWrapperService<ListeningExecutorService>>(){},
+                new TypeLiteral<ExecutorWrapperService<ListeningExecutorService>>() {
+                },
                 NetworkJobThreadPool.class
         )).startAsync().awaitRunning();
         getInjector().getInstance(SoapMarshalling.class).startAsync().awaitRunning();
@@ -94,9 +97,14 @@ public class WsEventingReferenceParametersTest extends DpwsTest {
         HttpServerRegistry httpSrvRegisty = getInjector().getInstance(HttpServerRegistry.class);
 
         var uri = "http://" + HOST + ":" + PORT;
-        MarshallingService marshallingService = getInjector().getInstance(MarshallingService.class);
         var hostedServiceUri = httpSrvRegisty.registerContext(uri, HOSTED_SERVICE_PATH, (inStream, outStream, ti) ->
-                marshallingService.handleRequestResponse(reqResSrv, inStream, outStream, ti));
+        {
+            try {
+                MarshallingHelper.handleRequestResponse(getInjector(), reqResSrv, inStream, outStream, ti);
+            } catch (MarshallingException e) {
+                throw new HttpException(500, e.getMessage());
+            }
+        });
 
         HostedServiceType hst = dpwsFactory.createHostedServiceType();
         hst.getEndpointReference().add(wsaUtil.createEprWithAddress(hostedServiceUri));
@@ -289,4 +297,5 @@ public class WsEventingReferenceParametersTest extends DpwsTest {
             bind(LocalAddressResolver.class).to(LocalAddressResolverMock.class);
         }
     }
+
 }

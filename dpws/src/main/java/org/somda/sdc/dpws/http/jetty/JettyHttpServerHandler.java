@@ -1,6 +1,5 @@
 package org.somda.sdc.dpws.http.jetty;
 
-import com.google.inject.Inject;
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
 import org.eclipse.jetty.http.HttpStatus;
@@ -9,10 +8,12 @@ import org.eclipse.jetty.server.handler.AbstractHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.somda.sdc.dpws.CommunicationLog;
+import org.somda.sdc.dpws.http.HttpException;
 import org.somda.sdc.dpws.http.HttpHandler;
 import org.somda.sdc.dpws.soap.CommunicationContext;
 import org.somda.sdc.dpws.soap.HttpApplicationInfo;
 import org.somda.sdc.dpws.soap.TransportInfo;
+import org.somda.sdc.dpws.soap.exception.TransportException;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -84,9 +85,17 @@ public class JettyHttpServerHandler extends AbstractHandler {
                     )
             );
 
-        } catch (Exception e) {
-            LOG.error("An exception occurred during HTTP request processing: {}", e.getMessage());
-            LOG.trace("An exception occurred during HTTP request processing", e);
+        } catch (HttpException e) {
+            LOG.debug("An application layer specific HTTP exception occurred during HTTP request processing: {}", e.getMessage());
+            LOG.trace("An application layer specific HTTP exception occurred during HTTP request processing", e);
+            response.setStatus(e.getStatusCode());
+            if (!e.getMessage().isEmpty()) {
+                output.write(e.getMessage().getBytes());
+                output.flush();
+            }
+        } catch (TransportException e) {
+            LOG.error("A non-specific transport exception occurred during HTTP request processing: {}", e.getMessage());
+            LOG.trace("A non-specific transport exception occurred during HTTP request processing", e);
             response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR_500);
             output.write(e.getMessage().getBytes());
             output.flush();
@@ -95,7 +104,7 @@ public class JettyHttpServerHandler extends AbstractHandler {
         }
     }
 
-    public static Collection<X509Certificate> getX509Certificates(HttpServletRequest request, boolean expectTLS) throws IOException {
+    static Collection<X509Certificate> getX509Certificates(HttpServletRequest request, boolean expectTLS) throws IOException {
         var anonymousCertificates = request.getAttribute("javax.servlet.request.X509Certificate");
         if (expectTLS) {
             if (anonymousCertificates == null) {
