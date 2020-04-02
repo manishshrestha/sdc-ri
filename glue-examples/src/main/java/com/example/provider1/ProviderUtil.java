@@ -1,5 +1,6 @@
 package com.example.provider1;
 
+import com.example.BaseUtil;
 import com.example.CustomCryptoSettings;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
@@ -35,11 +36,12 @@ import java.util.List;
  * Overwriting configuration steps allows customizing the behavior of the framework through
  * injection.
  */
-public class ProviderUtil {
+public class ProviderUtil extends BaseUtil {
     private static final Logger LOG = LoggerFactory.getLogger(ProviderUtil.class);
     private final Injector injector;
 
-    public ProviderUtil() {
+    public ProviderUtil(String[] args) {
+        super(args);
         Configurator.initialize(new DefaultConfiguration());
         Configurator.setRootLevel(Level.INFO);
 
@@ -56,10 +58,10 @@ public class ProviderUtil {
                         super.customConfigure();
                         bind(CryptoConfig.CRYPTO_SETTINGS,
                                 CryptoSettings.class,
-                                new CustomCryptoSettings()
+                                createCustomCryptoSettings()
                         );
-                        bind(DpwsConfig.HTTPS_SUPPORT, Boolean.class, true);
-                        bind(DpwsConfig.HTTP_SUPPORT, Boolean.class, false);
+                        bind(DpwsConfig.HTTPS_SUPPORT, Boolean.class, isUseTls());
+                        bind(DpwsConfig.HTTP_SUPPORT, Boolean.class, !isUseTls());
                         bind(CryptoConfig.CRYPTO_DEVICE_HOSTNAME_VERIFIER,
                                 HostnameVerifier.class,
                                 (hostname, session) -> {

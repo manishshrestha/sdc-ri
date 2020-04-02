@@ -1,16 +1,9 @@
 package com.example.provider1;
 
-import com.example.ProviderMdibConstants;
+import com.example.Constants;
 import com.google.common.collect.Iterables;
 import com.google.common.util.concurrent.AbstractIdleService;
 import com.google.inject.Injector;
-import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.CommandLineParser;
-import org.apache.commons.cli.DefaultParser;
-import org.apache.commons.cli.HelpFormatter;
-import org.apache.commons.cli.Option;
-import org.apache.commons.cli.Options;
-import org.apache.commons.cli.ParseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.somda.sdc.biceps.common.MdibDescriptionModifications;
@@ -33,7 +26,6 @@ import org.somda.sdc.glue.provider.SdcDevice;
 import org.somda.sdc.glue.provider.factory.SdcDeviceFactory;
 import org.somda.sdc.glue.provider.plugin.SdcRequiredTypesAndScopes;
 
-import javax.annotation.Nullable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigDecimal;
@@ -44,7 +36,11 @@ import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.time.Instant;
-import java.util.*;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -56,7 +52,6 @@ import java.util.stream.IntStream;
  */
 public class Provider extends AbstractIdleService {
 
-    private static final ProviderUtil IT = new ProviderUtil();
     private static final Logger LOG = LoggerFactory.getLogger(Provider.class);
 
     private static final int MAX_ENUM_ITERATIONS = 17;
@@ -72,20 +67,30 @@ public class Provider extends AbstractIdleService {
     /**
      * Create an instance of an SDC Provider
      *
-     * @param networkAdapterName name of the adapter the provider binds to, e.g. eth1
-     * @param eprAddress         WS-Addressing EndpointReference Address element
+     * @param providerUtil options and configured injector
      * @throws SocketException thrown if network adapter cannot be set up
      */
-    public Provider(@Nullable String networkAdapterName, String eprAddress) throws SocketException, UnknownHostException {
-        this.injector = IT.getInjector();
+    public Provider(ProviderUtil providerUtil) throws SocketException, UnknownHostException {
+        this.injector = providerUtil.getInjector();
 
         NetworkInterface networkInterface;
-        if (networkAdapterName != null && !networkAdapterName.isEmpty()) {
-            networkInterface = NetworkInterface.getByName(networkAdapterName);
+        if (providerUtil.getIface() != null && !providerUtil.getIface().isEmpty()) {
+            LOG.info("Starting with interface {}", providerUtil.getIface());
+            networkInterface = NetworkInterface.getByName(providerUtil.getIface());
         } else {
-            // find some kind of default interface
-            networkInterface = NetworkInterface.getByInetAddress(InetAddress.getLocalHost());
+            if (providerUtil.getAddress() != null && !providerUtil.getAddress().isBlank()) {
+                // bind to adapter matching ip
+                LOG.info("Starting with address {}", providerUtil.getAddress());
+                networkInterface = NetworkInterface.getByInetAddress(
+                        InetAddress.getByName(providerUtil.getAddress())
+                );
+            } else {
+                // find loopback interface for fallback
+                networkInterface = NetworkInterface.getByInetAddress(InetAddress.getLoopbackAddress());
+                LOG.info("Starting with fallback default adapter {}", networkInterface);
+            }
         }
+        assert networkInterface != null;
         this.dpwsFramework = injector.getInstance(DpwsFramework.class);
         this.dpwsFramework.setNetworkInterface(networkInterface);
         this.mdibAccess = injector.getInstance(LocalMdibAccessFactory.class).createLocalMdibAccess();
@@ -95,7 +100,7 @@ public class Provider extends AbstractIdleService {
             @Override
             public EndpointReferenceType getEndpointReference() {
                 return injector.getInstance(WsAddressingUtil.class)
-                        .createEprWithAddress(eprAddress);
+                        .createEprWithAddress(providerUtil.getEpr());
             }
 
             @Override
@@ -176,8 +181,8 @@ public class Provider extends AbstractIdleService {
             final MdibStateModifications locMod = MdibStateModifications.create(MdibStateModifications.Type.CONTEXT);
             // update location state
             try (ReadTransaction readTransaction = mdibAccess.startTransaction()) {
-                final var locDesc = readTransaction.getDescriptor(ProviderMdibConstants.HANDLE_LOCATIONCONTEXT, LocationContextDescriptor.class).orElseThrow(() ->
-                        new RuntimeException(String.format("Could not find state for handle %s", ProviderMdibConstants.HANDLE_LOCATIONCONTEXT)));
+                final var locDesc = readTransaction.getDescriptor(Constants.HANDLE_LOCATIONCONTEXT, LocationContextDescriptor.class).orElseThrow(() ->
+                        new RuntimeException(String.format("Could not find state for handle %s", Constants.HANDLE_LOCATIONCONTEXT)));
 
                 var locState = new LocationContextState();
                 locState.setLocationDetail(location);
@@ -371,58 +376,21 @@ public class Provider extends AbstractIdleService {
 
     }
 
-    /**
-     * Parse command line arguments for epr address and network interface
-     *
-     * @param args array of arguments, as passed to main
-     * @return instance of parsed command line arguments
-     */
-    public static CommandLine parseCommandLineArgs(String[] args) {
-        Options options = new Options();
-
-        Option epr = new Option("e", "epr", true, "epr address target provider, falls back to random uuid");
-        epr.setRequired(false);
-        options.addOption(epr);
-
-        Option networkInterface = new Option("i", "iface", true, "network interface to use");
-        networkInterface.setRequired(false);
-        options.addOption(networkInterface);
-
-        CommandLineParser parser = new DefaultParser();
-        HelpFormatter formatter = new HelpFormatter();
-        CommandLine cmd = null;
-
-        try {
-            cmd = parser.parse(options, args);
-        } catch (ParseException e) {
-            System.out.println(e.getMessage());
-            formatter.printHelp("utility-name", options);
-
-            System.exit(1);
-        }
-
-        return cmd;
-    }
-
     public static void main(String[] args) throws IOException, PreprocessingException {
 
-        var settings = parseCommandLineArgs(args);
-        var deviceEpr = settings.getOptionValue("epr");
-        if (deviceEpr == null) {
-            deviceEpr = "urn:uuid:+" + UUID.randomUUID().toString();
-        }
-        var networkInterface = settings.getOptionValue("iface", null);
+        var util = new ProviderUtil(args);
 
-        Provider provider = new Provider(
-                networkInterface,
-                deviceEpr
-        );
+        var targetFacility = System.getenv().getOrDefault("ref_fac", Constants.DEFAULT_FACILITY);
+        var targetBed = System.getenv().getOrDefault("ref_bed", Constants.DEFAULT_BED);
+        var targetPoC = System.getenv().getOrDefault("ref_poc", Constants.DEFAULT_POC);
+
+        Provider provider = new Provider(util);
 
         // set a location for scopes
         var loc = new LocationDetail();
-        loc.setBed("TopBunk");
-        loc.setPoC("DontCare");
-        loc.setFacility("sdcri");
+        loc.setBed(targetBed);
+        loc.setPoC(targetPoC);
+        loc.setFacility(targetFacility);
         provider.setLocation(loc);
 
         provider.startAsync().awaitRunning();
@@ -432,7 +400,7 @@ public class Provider extends AbstractIdleService {
             while (true) {
                 try {
                     Thread.sleep(100);
-                    provider.changeWaveform(ProviderMdibConstants.HANDLE_WAVEFORM);
+                    provider.changeWaveform(Constants.HANDLE_WAVEFORM);
                 } catch (Exception e) {
                     LOG.warn("Thread loop stopping", e);
                     break;
@@ -446,10 +414,10 @@ public class Provider extends AbstractIdleService {
             while (true) {
                 try {
                     Thread.sleep(5000);
-                    provider.changeNumericMetric(ProviderMdibConstants.HANDLE_NUMERIC_DYNAMIC);
-                    provider.changeStringMetric(ProviderMdibConstants.HANDLE_STRING_DYNAMIC);
-                    provider.changeEnumStringMetric(ProviderMdibConstants.HANDLE_ENUM_DYNAMIC);
-                    provider.changeAlertSignalAndConditionPresence(ProviderMdibConstants.HANDLE_ALERT_SIGNAL, ProviderMdibConstants.HANDLE_ALERT_CONDITION);
+                    provider.changeNumericMetric(Constants.HANDLE_NUMERIC_DYNAMIC);
+                    provider.changeStringMetric(Constants.HANDLE_STRING_DYNAMIC);
+                    provider.changeEnumStringMetric(Constants.HANDLE_ENUM_DYNAMIC);
+                    provider.changeAlertSignalAndConditionPresence(Constants.HANDLE_ALERT_SIGNAL, Constants.HANDLE_ALERT_CONDITION);
                 } catch (InterruptedException | PreprocessingException e) {
                     LOG.warn("Thread loop stopping", e);
                     break;

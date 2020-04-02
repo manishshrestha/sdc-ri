@@ -1,17 +1,10 @@
 package com.example.consumer1;
 
-import com.example.ProviderMdibConstants;
+import com.example.Constants;
 import com.google.common.eventbus.Subscribe;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.SettableFuture;
 import com.google.inject.Injector;
-import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.CommandLineParser;
-import org.apache.commons.cli.DefaultParser;
-import org.apache.commons.cli.HelpFormatter;
-import org.apache.commons.cli.Option;
-import org.apache.commons.cli.Options;
-import org.apache.commons.cli.ParseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.somda.sdc.biceps.model.message.Activate;
@@ -41,7 +34,6 @@ import org.somda.sdc.glue.consumer.SdcRemoteDevicesConnector;
 import org.somda.sdc.glue.consumer.SetServiceAccess;
 import org.somda.sdc.glue.consumer.sco.ScoTransaction;
 
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
@@ -91,25 +83,29 @@ public class Consumer {
     /**
      * Creates an SDC Consumer instance.
      *
-     * @param adapterName Optional adapter name to bind to, otherwise localhost default interface is chosen
-     * @param ipAddress Optional ip address to bind to. If an adapter is set, this is ignored.
+     * @param consumerUtil utility containing injector and settings
      * @throws SocketException      if network adapter couldn't be bound
      * @throws UnknownHostException if localhost couldn't be determined
      */
-    public Consumer(ConsumerUtil consumerUtil, @Nullable String adapterName, @Nullable String ipAddress) throws SocketException, UnknownHostException {
+    public Consumer(ConsumerUtil consumerUtil) throws SocketException, UnknownHostException {
         this.consumerUtil = consumerUtil;
         this.injector = consumerUtil.getInjector();
         this.client = injector.getInstance(Client.class);
         this.connector = injector.getInstance(SdcRemoteDevicesConnector.class);
-        if (adapterName != null && !adapterName.isBlank()) {
-            this.networkInterface = NetworkInterface.getByName(adapterName);
+        if (consumerUtil.getIface() != null && !consumerUtil.getIface().isBlank()) {
+            LOG.info("Starting with interface {}", consumerUtil.getIface());
+            this.networkInterface = NetworkInterface.getByName(consumerUtil.getIface());
         } else {
-            if (ipAddress != null && !ipAddress.isBlank()) {
+            if (consumerUtil.getAddress() != null && !consumerUtil.getAddress().isBlank()) {
                 // bind to adapter matching ip
-                this.networkInterface = NetworkInterface.getByInetAddress(InetAddress.getByName(ipAddress));
+                LOG.info("Starting with address {}", consumerUtil.getAddress());
+                this.networkInterface = NetworkInterface.getByInetAddress(
+                        InetAddress.getByName(consumerUtil.getAddress())
+                );
             } else {
-                // find some kind of default interface
-                this.networkInterface = NetworkInterface.getByInetAddress(InetAddress.getLocalHost());
+                // find loopback interface for fallback
+                networkInterface = NetworkInterface.getByInetAddress(InetAddress.getLoopbackAddress());
+                LOG.info("Starting with fallback default adapter {}", networkInterface);
             }
         }
     }
@@ -232,7 +228,7 @@ public class Consumer {
         var settings = new ConsumerUtil(args);
         var targetEpr = settings.getEpr();
 
-        var consumer = new Consumer(settings, settings.getIface(), null);
+        var consumer = new Consumer(settings);
         consumer.startUp();
 
         // this map is used to track the outcome of each of the nine steps listed for this class
@@ -337,7 +333,7 @@ public class Consumer {
         Thread.sleep(REPORT_TIMEOUT);
 
         // expected number of reports given 5 second interval
-        int minNumberReports = ((int)(REPORT_TIMEOUT / Duration.ofSeconds(5).toMillis()) - 1);
+        int minNumberReports = ((int) (REPORT_TIMEOUT / Duration.ofSeconds(5).toMillis()) - 1);
 
         // verify the number of reports for the expected metrics is at least five during the timeout
         var metricChangesOk = reportObs.numMetricChanges >= minNumberReports;
@@ -351,28 +347,28 @@ public class Consumer {
 
         boolean operationFailed = false;
         try {
-            invokeSetString(setServiceAccess, ProviderMdibConstants.HANDLE_SET_STRING, "SDCri was here");
+            invokeSetString(setServiceAccess, Constants.HANDLE_SET_STRING, "SDCri was here");
         } catch (ExecutionException | TimeoutException e) {
             operationFailed = true;
-            LOG.error("Could not invoke {}", ProviderMdibConstants.HANDLE_SET_STRING, e);
+            LOG.error("Could not invoke {}", Constants.HANDLE_SET_STRING, e);
         }
         try {
-            invokeSetString(setServiceAccess, ProviderMdibConstants.HANDLE_SET_STRING_ENUM, "OFF");
+            invokeSetString(setServiceAccess, Constants.HANDLE_SET_STRING_ENUM, "OFF");
         } catch (ExecutionException | TimeoutException e) {
             operationFailed = true;
-            LOG.error("Could not invoke {}", ProviderMdibConstants.HANDLE_SET_STRING_ENUM, e);
+            LOG.error("Could not invoke {}", Constants.HANDLE_SET_STRING_ENUM, e);
         }
         try {
-            invokeSetValue(setServiceAccess, ProviderMdibConstants.HANDLE_SET_VALUE, BigDecimal.valueOf(20));
+            invokeSetValue(setServiceAccess, Constants.HANDLE_SET_VALUE, BigDecimal.valueOf(20));
         } catch (ExecutionException | TimeoutException e) {
             operationFailed = true;
-            LOG.error("Could not invoke {}", ProviderMdibConstants.HANDLE_SET_VALUE, e);
+            LOG.error("Could not invoke {}", Constants.HANDLE_SET_VALUE, e);
         }
         try {
-            invokeActivate(setServiceAccess, ProviderMdibConstants.HANDLE_ACTIVATE, Collections.emptyList());
+            invokeActivate(setServiceAccess, Constants.HANDLE_ACTIVATE, Collections.emptyList());
         } catch (ExecutionException | TimeoutException e) {
             operationFailed = true;
-            LOG.error("Could not invoke {}", ProviderMdibConstants.HANDLE_ACTIVATE, e);
+            LOG.error("Could not invoke {}", Constants.HANDLE_ACTIVATE, e);
         }
         resultMap.put(9, !operationFailed);
 

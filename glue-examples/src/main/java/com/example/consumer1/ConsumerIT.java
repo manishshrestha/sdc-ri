@@ -1,6 +1,6 @@
 package com.example.consumer1;
 
-import com.example.ProviderMdibConstants;
+import com.example.Constants;
 import com.google.common.eventbus.Subscribe;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.SettableFuture;
@@ -50,19 +50,15 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.junit.platform.engine.discovery.DiscoverySelectors.selectClass;
 
+/**
+ * This consumer is meant to be used for integration tests with other SDC libraries.
+ */
 public class ConsumerIT {
     private static final Logger LOG = LoggerFactory.getLogger(ConsumerIT.class);
     private static final Duration MAX_WAIT = Duration.ofSeconds(11);
     private static String[] ARGS;
 
-    public static final String DEFAULT_IP = "127.0.0.1";
-    public static final String DEFAULT_FACILITY = "r_fac";
-    public static final String DEFAULT_BED = "r_bed";
-    public static final String DEFAULT_POC = "r_poc";
-    public static final String DEFAULT_REPORT_TIMEOUT = "30";
-
     private static Duration reportTimeout;
-    private static String ipAddress;
     private static String targetFacility;
     private static String targetBed;
     private static String targetPoC;
@@ -70,14 +66,12 @@ public class ConsumerIT {
 
     @BeforeAll
     static void setUp() {
-        ipAddress = System.getenv().getOrDefault("ref_ip", DEFAULT_IP);
-        assertNotNull(ipAddress);
-        targetFacility = System.getenv().getOrDefault("ref_fac", DEFAULT_FACILITY);
-        targetBed = System.getenv().getOrDefault("ref_bed", DEFAULT_BED);
-        targetPoC = System.getenv().getOrDefault("ref_poc", DEFAULT_POC);
+        targetFacility = System.getenv().getOrDefault("ref_fac", Constants.DEFAULT_FACILITY);
+        targetBed = System.getenv().getOrDefault("ref_bed", Constants.DEFAULT_BED);
+        targetPoC = System.getenv().getOrDefault("ref_poc", Constants.DEFAULT_POC);
         reportTimeout = Duration.ofSeconds(
                 Long.parseLong(
-                        System.getProperty("reportTimeout", DEFAULT_REPORT_TIMEOUT)
+                        System.getProperty("reportTimeout", Constants.DEFAULT_REPORT_TIMEOUT)
                 )
         );
     }
@@ -85,7 +79,7 @@ public class ConsumerIT {
     @Test
     void runIT() throws Exception {
         var settings = new ConsumerUtil(ARGS);
-        var consumer = new Consumer(settings, null, ipAddress);
+        var consumer = new Consumer(settings);
         consumer.startUp();
 
         var targetEpr = discoverDevice(consumer);
@@ -241,28 +235,28 @@ public class ConsumerIT {
 
         boolean operationFailed = false;
         try {
-            invokeSetString(setServiceAccess, ProviderMdibConstants.HANDLE_SET_STRING, "SDCri was here");
+            invokeSetString(setServiceAccess, Constants.HANDLE_SET_STRING, "SDCri was here");
         } catch (ExecutionException | TimeoutException | InterruptedException e) {
             operationFailed = true;
-            LOG.error("Could not invoke {}", ProviderMdibConstants.HANDLE_SET_STRING, e);
+            LOG.error("Could not invoke {}", Constants.HANDLE_SET_STRING, e);
         }
         try {
-            invokeSetString(setServiceAccess, ProviderMdibConstants.HANDLE_SET_STRING_ENUM, "OFF");
+            invokeSetString(setServiceAccess, Constants.HANDLE_SET_STRING_ENUM, "OFF");
         } catch (ExecutionException | TimeoutException | InterruptedException e) {
             operationFailed = true;
-            LOG.error("Could not invoke {}", ProviderMdibConstants.HANDLE_SET_STRING_ENUM, e);
+            LOG.error("Could not invoke {}", Constants.HANDLE_SET_STRING_ENUM, e);
         }
         try {
-            invokeSetValue(setServiceAccess, ProviderMdibConstants.HANDLE_SET_VALUE, BigDecimal.valueOf(20));
+            invokeSetValue(setServiceAccess, Constants.HANDLE_SET_VALUE, BigDecimal.valueOf(20));
         } catch (ExecutionException | TimeoutException | InterruptedException e) {
             operationFailed = true;
-            LOG.error("Could not invoke {}", ProviderMdibConstants.HANDLE_SET_VALUE, e);
+            LOG.error("Could not invoke {}", Constants.HANDLE_SET_VALUE, e);
         }
         try {
-            invokeActivate(setServiceAccess, ProviderMdibConstants.HANDLE_ACTIVATE, Collections.emptyList());
+            invokeActivate(setServiceAccess, Constants.HANDLE_ACTIVATE, Collections.emptyList());
         } catch (ExecutionException | TimeoutException | InterruptedException e) {
             operationFailed = true;
-            LOG.error("Could not invoke {}", ProviderMdibConstants.HANDLE_ACTIVATE, e);
+            LOG.error("Could not invoke {}", Constants.HANDLE_ACTIVATE, e);
         }
         assertFalse(operationFailed, "Operation invocation failed unexpectedly, check the log");
 

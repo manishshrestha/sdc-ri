@@ -1,6 +1,6 @@
 package com.example.consumer1;
 
-import com.example.ProviderMdibConstants;
+import com.example.Constants;
 import com.google.common.eventbus.Subscribe;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,9 +30,9 @@ public class ConsumerReportProcessor implements MdibAccessObserver {
         modificationMessage.getStates().forEach(
                 state -> {
                     LOG.info(state.toString());
-                    if (state.getDescriptorHandle().equals(ProviderMdibConstants.HANDLE_NUMERIC_DYNAMIC)) {
+                    if (state.getDescriptorHandle().equals(Constants.HANDLE_NUMERIC_DYNAMIC)) {
                         numMetricChanges++;
-                        LOG.info("{} has changed", ProviderMdibConstants.HANDLE_NUMERIC_DYNAMIC);
+                        LOG.info("{} has changed", Constants.HANDLE_NUMERIC_DYNAMIC);
                     }
                 }
         );
@@ -52,9 +52,9 @@ public class ConsumerReportProcessor implements MdibAccessObserver {
     void onAlertChange(AlertStateModificationMessage modificationMessage) {
         LOG.info("onAlertChange");
         modificationMessage.getStates().forEach(state -> {
-            if (state.getDescriptorHandle().equals(ProviderMdibConstants.HANDLE_ALERT_CONDITION)) {
+            if (state.getDescriptorHandle().equals(Constants.HANDLE_ALERT_CONDITION)) {
                 numConditionChanges++;
-                LOG.info("{} has changed", ProviderMdibConstants.HANDLE_ALERT_CONDITION);
+                LOG.info("{} has changed", Constants.HANDLE_ALERT_CONDITION);
             }
         });
     }
