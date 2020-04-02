@@ -51,9 +51,9 @@ public class RequestResponseServerImpl implements RequestResponseServer {
     public void receiveRequestResponse(SoapMessage request,
                                        SoapMessage response,
                                        CommunicationContext communicationContext) throws SoapFaultException {
-        var action = wsAddressingUtil.getAddressUriString(request.getWsAddressingHeader().getAction()
-                .orElse(new AttributedURIType()));
-        if (action.isEmpty()) {
+
+        var actionHeader = request.getWsAddressingHeader().getAction();
+        if (actionHeader.isEmpty()) {
             // See https://www.w3.org/TR/ws-addr-soap/#missingmapfault
             throw new SoapFaultException(soapFaultFactory.createFault(
                     WsAddressingConstants.FAULT_ACTION,
@@ -65,6 +65,7 @@ public class RequestResponseServerImpl implements RequestResponseServer {
                     ))));
         }
 
+        var action = wsAddressingUtil.getAddressUriString(actionHeader.orElse(new AttributedURIType()));
         if (interceptorRegistry.getInterceptors(Direction.REQUEST, action).isEmpty() &&
                 interceptorRegistry.getInterceptors(Direction.ANY, action).isEmpty()) {
             // Action not supported as no matching interceptor handler could be found, hence throw SOAP fault
