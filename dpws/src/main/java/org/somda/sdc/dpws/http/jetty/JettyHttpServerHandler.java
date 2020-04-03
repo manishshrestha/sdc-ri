@@ -104,23 +104,34 @@ public class JettyHttpServerHandler extends AbstractHandler {
         }
     }
 
-    static Collection<X509Certificate> getX509Certificates(HttpServletRequest request, boolean expectTLS) throws IOException {
+    /**
+     * Static helper function to get X509 certificate information from an HTTP servlet.
+     *
+     * @param request   servlet request data.
+     * @param expectTLS causes this function to return an empty list if set to false.
+     * @return a collection of {@link X509Certificate} containers.
+     * @throws IOException
+     * @deprecated this function is deprecated as it was supposed to be used internally only. The visibility of this
+     * function will be degraded to package private with SDCri 2.0.
+     */
+    @Deprecated(since = "1.1.0", forRemoval = false)
+    public static Collection<X509Certificate> getX509Certificates(HttpServletRequest request, boolean expectTLS) throws IOException {
+        if (!expectTLS) {
+            return Collections.emptyList();
+        }
+
         var anonymousCertificates = request.getAttribute("javax.servlet.request.X509Certificate");
-        if (expectTLS) {
-            if (anonymousCertificates == null) {
-                LOG.error("Certificate information is missing from HTTP request data");
-                throw new IOException("Certificate information is missing from HTTP request data");
+        if (anonymousCertificates == null) {
+            LOG.error("Certificate information is missing from HTTP request data");
+            throw new IOException("Certificate information is missing from HTTP request data");
+        } else {
+            if (anonymousCertificates instanceof X509Certificate[]) {
+                return List.of((X509Certificate[]) anonymousCertificates);
             } else {
-                if (anonymousCertificates instanceof X509Certificate[]) {
-                    return List.of((X509Certificate[]) anonymousCertificates);
-                } else {
-                    LOG.error("Certificate information is of an unexpected type: {}", anonymousCertificates.getClass());
-                    throw new IOException(String.format("Certificate information is of an unexpected type: %s",
-                            anonymousCertificates.getClass()));
-                }
+                LOG.error("Certificate information is of an unexpected type: {}", anonymousCertificates.getClass());
+                throw new IOException(String.format("Certificate information is of an unexpected type: %s",
+                        anonymousCertificates.getClass()));
             }
         }
-        return Collections.emptyList();
-
     }
 }

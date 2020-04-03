@@ -24,6 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `org.somda.sdc.dpws.CommunicationLogSink.getTargetStream()`; see method comment for alternative.
 - `org.somda.sdc.glue.consumer.factory.SdcRemoteDeviceFactory#createSdcRemoteDevice()` without watchdog argument.
 - `org.somda.sdc.dpws.soap.MarshallingService#handleRequestResponse()` as this function was only used by tests.
+- `org.somda.sdc.dpws.http.jetty.JettyHttpServerHandler#getX509Certificates()` as it is supposed to be an internal function only.
 
 ### Changed
 
