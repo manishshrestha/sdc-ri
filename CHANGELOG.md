@@ -18,6 +18,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `org.somda.sdc.dpws.http.HttpException` in order to transport HTTP status codes on SOAP faults. (#143)
 - `org.somda.sdc.dpws.soap.SoapFaultHttpStatusCodeMapping` to map from SOAP faults to HTTP status codes. (#143)
 - SOAP constants for VersionMismatch, MustUnderstand and DataEncodingUnknown SOAP Fault codes.
+- `org.somda.sdc.dpws.soap.HttpApplicationInfo` supports HTTP status code. (#143)
+- `org.somda.sdc.dpws.soap.exception.SoapFaultException`: constructor that accepts a throwable cause. (#143)
 
 ### Deprecated
 - `org.somda.sdc.glue.provider.SdcDevice#getDiscoveryAccess()` and `#getHostingServiceAccess()`; see `SdcDevice` class comment for alternative access.

@@ -18,13 +18,13 @@ import org.somda.sdc.dpws.device.helper.RequestResponseServerHttpHandler;
 import org.somda.sdc.dpws.factory.TransportBindingFactory;
 import org.somda.sdc.dpws.guice.NetworkJobThreadPool;
 import org.somda.sdc.dpws.http.HttpException;
+import org.somda.sdc.dpws.http.HttpHandler;
 import org.somda.sdc.dpws.http.HttpServerRegistry;
 import org.somda.sdc.dpws.http.HttpUriBuilder;
 import org.somda.sdc.dpws.model.HostedServiceType;
 import org.somda.sdc.dpws.model.ObjectFactory;
 import org.somda.sdc.dpws.network.LocalAddressResolver;
 import org.somda.sdc.dpws.soap.*;
-import org.somda.sdc.dpws.soap.exception.MarshallingException;
 import org.somda.sdc.dpws.soap.exception.SoapFaultException;
 import org.somda.sdc.dpws.soap.factory.EnvelopeFactory;
 import org.somda.sdc.dpws.soap.factory.NotificationSinkFactory;
@@ -47,6 +47,8 @@ import org.w3c.dom.Element;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.time.Duration;
 import java.util.Collection;
 import java.util.Collections;
@@ -97,12 +99,10 @@ public class WsEventingReferenceParametersTest extends DpwsTest {
         HttpServerRegistry httpSrvRegisty = getInjector().getInstance(HttpServerRegistry.class);
 
         var uri = "http://" + HOST + ":" + PORT;
-        var hostedServiceUri = httpSrvRegisty.registerContext(uri, HOSTED_SERVICE_PATH, (inStream, outStream, ti) ->
-        {
-            try {
-                MarshallingHelper.handleRequestResponse(getInjector(), reqResSrv, inStream, outStream, ti);
-            } catch (MarshallingException e) {
-                throw new HttpException(500, e.getMessage());
+        var hostedServiceUri = httpSrvRegisty.registerContext(uri, HOSTED_SERVICE_PATH, new HttpHandler() {
+            @Override
+            public void handle(InputStream inStream, OutputStream outStream, CommunicationContext communicationContext) throws HttpException {
+                MarshallingHelper.handleRequestResponse(getInjector(), reqResSrv, inStream, outStream, communicationContext);
             }
         });
 

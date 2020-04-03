@@ -13,7 +13,6 @@ import org.somda.sdc.dpws.http.HttpHandler;
 import org.somda.sdc.dpws.soap.CommunicationContext;
 import org.somda.sdc.dpws.soap.HttpApplicationInfo;
 import org.somda.sdc.dpws.soap.TransportInfo;
-import org.somda.sdc.dpws.soap.exception.TransportException;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -72,7 +71,7 @@ public class JettyHttpServerHandler extends AbstractHandler {
         );
 
         try {
-            handler.process(input, output,
+            handler.handle(input, output,
                     new CommunicationContext(requestHttpApplicationInfo,
                             new TransportInfo(
                                     request.getScheme(),
@@ -86,21 +85,25 @@ public class JettyHttpServerHandler extends AbstractHandler {
             );
 
         } catch (HttpException e) {
-            LOG.debug("An application layer specific HTTP exception occurred during HTTP request processing: {}", e.getMessage());
-            LOG.trace("An application layer specific HTTP exception occurred during HTTP request processing", e);
+            LOG.debug("An HTTP exception occurred during HTTP request processing: {}", e.getMessage());
+            LOG.trace("An HTTP exception occurred during HTTP request processing", e);
             response.setStatus(e.getStatusCode());
             if (!e.getMessage().isEmpty()) {
                 output.write(e.getMessage().getBytes());
-                output.flush();
             }
-        } catch (TransportException e) {
-            LOG.error("A non-specific transport exception occurred during HTTP request processing: {}", e.getMessage());
-            LOG.trace("A non-specific transport exception occurred during HTTP request processing", e);
-            response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR_500);
-            output.write(e.getMessage().getBytes());
-            output.flush();
         } finally {
             baseRequest.setHandled(true);
+        }
+
+        try {
+            input.close();
+            output.flush();
+            output.close();
+        } catch (IOException e) {
+            LOG.error("Could not close input/output streams from incoming HTTP request to {}. Reason: {}",
+                    request.getRequestURL(), e.getMessage());
+            LOG.trace("Could not close input/output streams from incoming HTTP request to {}",
+                    request.getRequestURL(), e);
         }
     }
 

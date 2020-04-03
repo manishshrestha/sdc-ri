@@ -16,6 +16,7 @@ import org.somda.sdc.dpws.TransportBindingFactoryMock;
 import org.somda.sdc.dpws.factory.TransportBindingFactory;
 import org.somda.sdc.dpws.guice.NetworkJobThreadPool;
 import org.somda.sdc.dpws.http.HttpException;
+import org.somda.sdc.dpws.http.HttpHandler;
 import org.somda.sdc.dpws.http.HttpServerRegistry;
 import org.somda.sdc.dpws.model.HostedServiceType;
 import org.somda.sdc.dpws.model.ObjectFactory;
@@ -79,12 +80,10 @@ public class WsEventingTest extends DpwsTest {
         HttpServerRegistry httpSrvRegisty = getInjector().getInstance(HttpServerRegistry.class);
 
         var uri = "http://" + HOST + ":" + PORT;
-        var hostedServiceUri = httpSrvRegisty.registerContext(uri, HOSTED_SERVICE_PATH, (inStream, outStream, ti) ->
-        {
-            try {
-                MarshallingHelper.handleRequestResponse(getInjector(), reqResSrv, inStream, outStream, ti);
-            } catch (MarshallingException e) {
-                throw new HttpException(500, e.getMessage());
+        var hostedServiceUri = httpSrvRegisty.registerContext(uri, HOSTED_SERVICE_PATH, new HttpHandler() {
+            @Override
+            public void handle(InputStream inStream, OutputStream outStream, CommunicationContext communicationContext) throws HttpException {
+                MarshallingHelper.handleRequestResponse(getInjector(), reqResSrv, inStream, outStream, communicationContext);
             }
         });
 

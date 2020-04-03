@@ -1,6 +1,8 @@
 package org.somda.sdc.dpws.soap.wseventing;
 
 import com.google.inject.Injector;
+import org.eclipse.jetty.http.HttpStatus;
+import org.somda.sdc.dpws.http.HttpException;
 import org.somda.sdc.dpws.soap.CommunicationContext;
 import org.somda.sdc.dpws.soap.MarshallingService;
 import org.somda.sdc.dpws.soap.RequestResponseServer;
@@ -16,15 +18,19 @@ class MarshallingHelper {
                                       RequestResponseServer srv,
                                       InputStream is,
                                       OutputStream os,
-                                      CommunicationContext communicationContext) throws MarshallingException {
-        var responseMessage = injector.getInstance(SoapUtil.class).createMessage();
-        var marshallingService = injector.getInstance(MarshallingService.class);
+                                      CommunicationContext communicationContext) throws HttpException {
         try {
-            srv.receiveRequestResponse(marshallingService.unmarshal(is), responseMessage, communicationContext);
-        } catch (SoapFaultException e) {
-            marshallingService.marshal(e.getFaultMessage(), os);
-            return;
+            var responseMessage = injector.getInstance(SoapUtil.class).createMessage();
+            var marshallingService = injector.getInstance(MarshallingService.class);
+            try {
+                srv.receiveRequestResponse(marshallingService.unmarshal(is), responseMessage, communicationContext);
+            } catch (SoapFaultException e) {
+                marshallingService.marshal(e.getFaultMessage(), os);
+                return;
+            }
+            marshallingService.marshal(responseMessage, os);
+        } catch (MarshallingException e) {
+            throw new HttpException(HttpStatus.INTERNAL_SERVER_ERROR_500, e.getMessage());
         }
-        marshallingService.marshal(responseMessage, os);
     }
 }

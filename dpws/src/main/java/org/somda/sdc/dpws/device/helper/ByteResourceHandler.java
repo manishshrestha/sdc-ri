@@ -1,5 +1,7 @@
 package org.somda.sdc.dpws.device.helper;
 
+import org.eclipse.jetty.http.HttpStatus;
+import org.somda.sdc.dpws.http.HttpException;
 import org.somda.sdc.dpws.http.HttpHandler;
 import org.somda.sdc.dpws.soap.CommunicationContext;
 import org.somda.sdc.dpws.soap.exception.TransportException;
@@ -25,12 +27,12 @@ public class ByteResourceHandler implements HttpHandler {
     }
 
     @Override
-    public void process(InputStream inStream, OutputStream outStream, CommunicationContext communicationContext)
-            throws TransportException {
+    public void handle(InputStream inStream, OutputStream outStream, CommunicationContext communicationContext)
+            throws HttpException {
         try {
             outStream.write(resourceBytes);
         } catch (IOException e) {
-            throw new TransportException(e);
+            throw new HttpException(HttpStatus.NOT_FOUND_404, e.getMessage());
         }
     }
 }

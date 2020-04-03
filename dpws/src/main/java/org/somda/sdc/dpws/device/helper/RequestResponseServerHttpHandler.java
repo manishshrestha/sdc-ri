@@ -1,6 +1,7 @@
 package org.somda.sdc.dpws.device.helper;
 
 import com.google.inject.Inject;
+import org.eclipse.jetty.http.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.somda.sdc.dpws.http.HttpException;
@@ -21,7 +22,7 @@ import java.io.OutputStream;
  * <p>
  * The handler is an {@link InterceptorHandler}.
  * All objects registered via {@link #register(Interceptor)} receive the requests delivered to
- * {@link HttpHandler#process(InputStream, OutputStream, CommunicationContext)}.
+ * {@link HttpHandler#handle(InputStream, OutputStream, CommunicationContext)}.
  */
 public class RequestResponseServerHttpHandler implements HttpHandler, InterceptorHandler {
     private static final Logger LOG = LoggerFactory.getLogger(RequestResponseServerHttpHandler.class);
@@ -41,15 +42,8 @@ public class RequestResponseServerHttpHandler implements HttpHandler, Intercepto
 
     @Override
     public void process(InputStream inStream, OutputStream outStream, CommunicationContext communicationContext)
-            throws TransportException, HttpException {
-
-        SoapMessage requestMsg;
-        try {
-            requestMsg = marshallingService.unmarshal(inStream);
-        } catch (MarshallingException e) {
-            throw new HttpException(500, String.format("Error unmarshalling HTTP input stream: %s", e.getMessage()));
-        }
-
+            throws TransportException, MarshallingException {
+        SoapMessage requestMsg = marshallingService.unmarshal(inStream);
         try {
             inStream.close();
         } catch (IOException e) {
@@ -61,6 +55,47 @@ public class RequestResponseServerHttpHandler implements HttpHandler, Intercepto
         }
 
         SoapMessage responseMsg = soapUtil.createMessage();
+        try {
+            reqResServer.receiveRequestResponse(requestMsg, responseMsg, communicationContext);
+        } catch (SoapFaultException e) {
+            responseMsg = e.getFaultMessage();
+        }
+
+        try {
+            marshallingService.marshal(responseMsg, outStream);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("Outgoing SOAP/HTTP response: {}", SoapDebug.get(responseMsg));
+        }
+
+        try {
+            outStream.close();
+        } catch (IOException e) {
+            throw new TransportException("IO error closing HTTP output stream", e);
+        }
+    }
+
+    @Override
+    public void handle(InputStream inStream, OutputStream outStream, CommunicationContext communicationContext)
+            throws HttpException {
+        SoapMessage requestMsg;
+        try {
+            requestMsg = marshallingService.unmarshal(inStream);
+        } catch (MarshallingException e) {
+            throw new HttpException(HttpStatus.BAD_REQUEST_400,
+                    String.format("Error unmarshalling HTTP input stream: %s", e.getMessage()));
+        }
+
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("Incoming SOAP/HTTP request: {}", SoapDebug.get(requestMsg));
+        }
+
+        SoapMessage responseMsg = soapUtil.createMessage();
+
+        //  Postpone throw of exception to print marshal response and make debug output in case of a SoapFaultException
         HttpException httpExceptionToThrow = null;
         try {
             reqResServer.receiveRequestResponse(requestMsg, responseMsg, communicationContext);
@@ -72,17 +107,12 @@ public class RequestResponseServerHttpHandler implements HttpHandler, Intercepto
         try {
             marshallingService.marshal(responseMsg, outStream);
         } catch (MarshallingException e) {
-            throw new HttpException(500, String.format("Error marshalling HTTP output stream: %s", e.getMessage()));
+            throw new HttpException(HttpStatus.INTERNAL_SERVER_ERROR_500,
+                    String.format("Error marshalling HTTP output stream: %s", e.getMessage()));
         }
 
         if (LOG.isDebugEnabled()) {
             LOG.debug("Outgoing SOAP/HTTP response: {}", SoapDebug.get(responseMsg));
-        }
-
-        try {
-            outStream.close();
-        } catch (IOException e) {
-            throw new TransportException("IO error closing HTTP output stream", e);
         }
 
         if (httpExceptionToThrow != null) {

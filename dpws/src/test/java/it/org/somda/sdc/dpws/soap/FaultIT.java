@@ -4,11 +4,13 @@ import dpws_test_service.messages._2017._05._10.ObjectFactory;
 import it.org.somda.sdc.dpws.IntegrationTestUtil;
 import it.org.somda.sdc.dpws.MockedUdpBindingModule;
 import it.org.somda.sdc.dpws.TestServiceMetadata;
+import org.eclipse.jetty.http.HttpStatus;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.somda.sdc.dpws.guice.DefaultDpwsConfigModule;
+import org.somda.sdc.dpws.http.HttpException;
 import org.somda.sdc.dpws.service.HostedServiceProxy;
 import org.somda.sdc.dpws.service.HostingServiceProxy;
 import org.somda.sdc.dpws.soap.SoapConfig;
@@ -29,7 +31,7 @@ import java.util.concurrent.TimeUnit;
 import static org.junit.jupiter.api.Assertions.*;
 
 @ExtendWith(LoggingTestWatcher.class)
-public class FaultIT {
+class FaultIT {
     private static final Duration MAX_WAIT_TIME = IntegrationTestUtil.MAX_WAIT_TIME;
 
     private final IntegrationTestUtil IT = new IntegrationTestUtil();
@@ -38,7 +40,6 @@ public class FaultIT {
     private ClientPeer clientPeer;
 
     private HostingServiceProxy hostingServiceProxy;
-    private ObjectFactory factory;
     private final SoapUtil soapUtil = IT.getInjector().getInstance(SoapUtil.class);
 
     FaultIT() {
@@ -48,8 +49,6 @@ public class FaultIT {
     @BeforeEach
     void setUp() throws Exception {
         TestLogging.configure();
-
-        factory = new ObjectFactory();
 
         devicePeer = new BasicPopulatedDevice(new MockedUdpBindingModule());
         clientPeer = new ClientPeer(new DefaultDpwsConfigModule() {
@@ -91,6 +90,11 @@ public class FaultIT {
                 assertEquals(1, e.getFault().getDetail().getAny().size());
                 var detail = (JAXBElement<AttributedQNameType>)e.getFault().getDetail().getAny().get(0);
                 assertEquals(WsAddressingConstants.QNAME_ACTION, detail.getValue().getValue());
+
+                // Check HTTP status code
+                assertNotNull(e.getCause());
+                assertTrue(e.getCause() instanceof HttpException);
+                assertEquals(HttpStatus.BAD_REQUEST_400, ((HttpException)e.getCause()).getStatusCode());
             }
         }
 
@@ -107,6 +111,11 @@ public class FaultIT {
                 assertEquals(1, e.getFault().getDetail().getAny().size());
                 var detail = (JAXBElement<ProblemActionType>)e.getFault().getDetail().getAny().get(0);
                 assertEquals(expectedUnknownAction, detail.getValue().getAction().getValue());
+
+                // Check HTTP status code
+                assertNotNull(e.getCause());
+                assertTrue(e.getCause() instanceof HttpException);
+                assertEquals(HttpStatus.BAD_REQUEST_400, ((HttpException)e.getCause()).getStatusCode());
             }
         }
     }

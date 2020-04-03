@@ -64,7 +64,7 @@ public class TransportBindingFactoryMock implements TransportBindingFactory {
                 try {
                     soapMarshalling.marshal(notification.getEnvelopeWithMappedHeaders(), bos);
                     if (httpHandler.isPresent()) {
-                        httpHandler.get().process(new ByteArrayInputStream(bos.toByteArray()),
+                        httpHandler.get().handle(new ByteArrayInputStream(bos.toByteArray()),
                                 new ByteArrayOutputStream(), mockCommunicationContext);
                     }
                 } catch (Exception e) {
@@ -85,7 +85,7 @@ public class TransportBindingFactoryMock implements TransportBindingFactory {
                 ByteArrayOutputStream bosResponse = new ByteArrayOutputStream();
                 HttpHandler theHttpHandler = httpHandler.orElseThrow(() -> new TransportException("HTTP handler not set"));
                 try {
-                    theHttpHandler.process(new ByteArrayInputStream(bosRequest.toByteArray()), bosResponse, mockCommunicationContext);
+                    theHttpHandler.handle(new ByteArrayInputStream(bosRequest.toByteArray()), bosResponse, mockCommunicationContext);
                 } catch (HttpException e) {
                     throw new TransportException(e);
                 }
