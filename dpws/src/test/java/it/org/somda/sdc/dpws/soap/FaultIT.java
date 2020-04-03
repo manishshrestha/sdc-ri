@@ -105,7 +105,6 @@ public class FaultIT {
                 assertEquals(SoapConstants.SENDER, e.getFault().getCode().getValue());
                 assertEquals(WsAddressingConstants.ACTION_NOT_SUPPORTED, e.getFault().getCode().getSubcode().getValue());
                 assertEquals(1, e.getFault().getDetail().getAny().size());
-                assertEquals(1, e.getFault().getDetail().getAny().size());
                 var detail = (JAXBElement<ProblemActionType>)e.getFault().getDetail().getAny().get(0);
                 assertEquals(expectedUnknownAction, detail.getValue().getAction().getValue());
             }
