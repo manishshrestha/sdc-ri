@@ -133,8 +133,9 @@ public class ClientTransportBinding implements TransportBinding {
                 }
             }
         } catch (JAXBException e) {
-            LOG.debug("Unmarshalling of a message failed: {}", e.getMessage());
-            LOG.trace("Unmarshalling of a message failed.", e);
+            LOG.debug("Unmarshalling of a message failed: {}. Response payload:\n{}", e.getMessage(),
+                    new String(bytes, StandardCharsets.UTF_8));
+            LOG.trace("Unmarshalling of a message failed. ", e);
             throw new TransportBindingException(String
                     .format("Receiving of a response failed due to unmarshalling problem: %s", e.getMessage()),
                     new MarshallingException(e));
