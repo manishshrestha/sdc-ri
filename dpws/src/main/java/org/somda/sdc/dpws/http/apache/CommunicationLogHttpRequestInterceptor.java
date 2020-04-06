@@ -1,6 +1,5 @@
 package org.somda.sdc.dpws.http.apache;
 
-import com.google.inject.Inject;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpEntityEnclosingRequest;
 import org.apache.http.HttpException;
@@ -49,7 +48,7 @@ public class CommunicationLogHttpRequestInterceptor implements HttpRequestInterc
         HttpEntity oldMessageEntity = entityRequest.getEntity();
 
         var requestHttpApplicationInfo = new HttpApplicationInfo(
-                ApacheClientHelper.allHeadersToMap(request.getAllHeaders())
+                ApacheClientHelper.allHeadersToMultimap(request.getAllHeaders())
         );
 
         // collect information for TransportInfo
