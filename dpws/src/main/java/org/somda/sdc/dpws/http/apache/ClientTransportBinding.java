@@ -29,6 +29,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.SocketException;
+import java.nio.charset.StandardCharsets;
 
 public class ClientTransportBinding implements TransportBinding {
     private static final Logger LOG = LoggerFactory.getLogger(ClientTransportBinding.class);
@@ -127,7 +128,8 @@ public class ClientTransportBinding implements TransportBinding {
                 if (response.getStatusLine().getStatusCode() >= 300) {
                     throw new TransportBindingException(String.format(
                             "Endpoint was not able to process request. HTTP status code: %s", response.getStatusLine()),
-                            new TransportException(new HttpException(response.getStatusLine().getStatusCode())));
+                            new TransportException(new HttpException(response.getStatusLine().getStatusCode(),
+                                    new String(bytes, StandardCharsets.UTF_8))));
                 }
             }
         } catch (JAXBException e) {

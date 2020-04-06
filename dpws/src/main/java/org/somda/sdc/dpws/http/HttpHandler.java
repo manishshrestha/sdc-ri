@@ -1,5 +1,6 @@
 package org.somda.sdc.dpws.http;
 
+import org.eclipse.jetty.http.HttpStatus;
 import org.somda.sdc.dpws.soap.CommunicationContext;
 import org.somda.sdc.dpws.soap.exception.MarshallingException;
 import org.somda.sdc.dpws.soap.exception.TransportException;
@@ -37,6 +38,8 @@ public interface HttpHandler {
     default void process(InputStream inStream, OutputStream outStream, CommunicationContext communicationContext)
             throws TransportException, MarshallingException
     {
+        throw new UnsupportedOperationException("The process() callback is not implemented. As process() is " +
+                "deprecated, implement handle() instead");
     }
 
     /**
@@ -57,5 +60,10 @@ public interface HttpHandler {
     default void handle(InputStream inStream, OutputStream outStream, CommunicationContext communicationContext)
             throws HttpException
     {
+        try {
+            process(inStream, outStream, communicationContext);
+        } catch (Exception e) {
+            throw new HttpException(HttpStatus.INTERNAL_SERVER_ERROR_500, e.getMessage());
+        }
     }
 }
