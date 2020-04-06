@@ -13,11 +13,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Feature from BICEPS to send and receive periodic reports. (#51)
 - Jetty server supports http and https connections on the same port (#107)
 - Additional utility method in `org.somda.sdc.dpws.soap.SoapUtil` to create new SoapMessage with reference parameters (#140)
+- `org.somda.sdc.dpws.soap.HttpApplicationInfo#getHeaders` to retrieve headers as a Multimap. (#147)
 
 ### Deprecated
 - `org.somda.sdc.glue.provider.SdcDevice#getDiscoveryAccess()` and `#getHostingServiceAccess()`; see `SdcDevice` class comment for alternative access.
 - `org.somda.sdc.dpws.CommunicationLogSink.getTargetStream()`; see method comment for alternative
 - `org.somda.sdc.glue.consumer.factory.SdcRemoteDeviceFactory#createSdcRemoteDevice()` without watchdog argument
+- `org.somda.sdc.dpws.soap.HttpApplicationInfo(Map<String, String>)` and `org.somda.sdc.dpws.soap.HttpApplicationInfo#getHttpHeaders()`; use Multimap versions instead. (#147)
 
 ### Changed
 
@@ -32,6 +34,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Services did not shut down in an orderly manner, causing issues when shutting down a consumer (#134)
 - Jetty server could select incorrect adapter when running https (#135)
 - `org.somda.sdc.dpws.soap.wsaddressing.WsAddressingMapper#mapToJaxbSoapHeader()` could cause duplicate header entries, e.g. Action elements (#140)
+- Http headers which occurred multiple times would only return the last value. (#146)
 
 ## [1.0.1] - 2020-03-11
 
