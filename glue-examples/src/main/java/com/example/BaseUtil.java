@@ -34,7 +34,7 @@ public class BaseUtil {
      * @param args array of arguments, as passed to main
      */
     public BaseUtil(String[] args) {
-        this.parsedArgs = parseCommandLineArgs(args);
+        this.parsedArgs = parseCommandLineArgs(args, configureOptions());
         this.epr = parsedArgs.getOptionValue(OPT_EPR);
         this.iface = parsedArgs.getOptionValue(OPT_IFACE);
         this.useTls = !parsedArgs.hasOption(OPT_NO_TLS);
@@ -42,16 +42,15 @@ public class BaseUtil {
     }
 
     /**
-     * Parses command line arguments for epr address and network interface.
+     * Configures the available command line flags.
      *
-     * @param args array of arguments, as passed to main
-     * @return instance of parsed command line arguments
+     * @return configured command line flags
      */
-    public static CommandLine parseCommandLineArgs(String[] args) {
+    public Options configureOptions() {
         Options options = new Options();
 
         {
-            Option epr = new Option("e", OPT_EPR, true, "epr address of target provider");
+            Option epr = new Option("e", OPT_EPR, true, "epr address of provider");
             epr.setRequired(false);
             options.addOption(epr);
         }
@@ -74,26 +73,36 @@ public class BaseUtil {
             options.addOption(tls);
         }
         {
-            Option keyStorePath = new Option("ks", OPT_KEYSTORE_PATH, true, "keystore path");
+            Option keyStorePath = new Option(null, OPT_KEYSTORE_PATH, true, "keystore path");
             keyStorePath.setRequired(false);
             options.addOption(keyStorePath);
         }
         {
-            Option trustStorePath = new Option("ts", OPT_TRUSTSTORE_PATH, true, "truststore path");
+            Option trustStorePath = new Option(null, OPT_TRUSTSTORE_PATH, true, "truststore path");
             trustStorePath.setRequired(false);
             options.addOption(trustStorePath);
         }
         {
-            Option keyStorePassword = new Option("ksp", OPT_KEYSTORE_PASSWORD, true, "keystore password");
+            Option keyStorePassword = new Option(null, OPT_KEYSTORE_PASSWORD, true, "keystore password");
             keyStorePassword.setRequired(false);
             options.addOption(keyStorePassword);
         }
         {
-            Option keystorePath = new Option("tsp", OPT_TRUSTSTORE_PASSWORD, true, "truststore password");
+            Option keystorePath = new Option(null, OPT_TRUSTSTORE_PASSWORD, true, "truststore password");
             keystorePath.setRequired(false);
             options.addOption(keystorePath);
         }
 
+        return options;
+    }
+
+    /**
+     * Parses command line arguments for epr address and network interface.
+     *
+     * @param args array of arguments, as passed to main
+     * @return instance of parsed command line arguments
+     */
+    public CommandLine parseCommandLineArgs(String[] args, Options options) {
         CommandLineParser parser = new DefaultParser();
         HelpFormatter formatter = new HelpFormatter();
         CommandLine cmd = null;
@@ -120,6 +129,10 @@ public class BaseUtil {
             return new CustomCryptoSettings(keyPath, trustPath, keyPass, trustPass);
         }
         return new CustomCryptoSettings();
+    }
+
+    public CommandLine getParsedArgs() {
+        return parsedArgs;
     }
 
     public String getEpr() {

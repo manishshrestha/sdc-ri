@@ -3,6 +3,8 @@ package com.example.provider1;
 import com.example.BaseUtil;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
+import org.apache.commons.cli.Option;
+import org.apache.commons.cli.Options;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.core.config.Configurator;
 import org.apache.logging.log4j.core.config.DefaultConfiguration;
@@ -26,6 +28,7 @@ import org.somda.sdc.glue.guice.GlueDpwsConfigModule;
 import javax.net.ssl.HostnameVerifier;
 import java.net.URI;
 import java.security.cert.X509Certificate;
+import java.time.Duration;
 import java.util.List;
 
 /**
@@ -36,12 +39,29 @@ import java.util.List;
  */
 public class ProviderUtil extends BaseUtil {
     private static final Logger LOG = LoggerFactory.getLogger(ProviderUtil.class);
+    public static final String OPT_REPORT_INTERVAL = "report_interval";
+    public static final String OPT_WAVEFORMS_INTERVAL = "waveform_interval";
+
+    private static final String DEFAULT_REPORT_INTERVAL = "5000"; // millis
+    private static final String DEFAULT_WAVEFORM_INTERVAL = "100"; // millis
+
     private final Injector injector;
+    private final Duration reportInterval;
+    private final Duration waveformInterval;
 
     public ProviderUtil(String[] args) {
         super(args);
         Configurator.initialize(new DefaultConfiguration());
         Configurator.setRootLevel(Level.INFO);
+
+        reportInterval = Duration.ofMillis(
+                Long.parseLong(getParsedArgs().getOptionValue(OPT_REPORT_INTERVAL, DEFAULT_REPORT_INTERVAL))
+        );
+
+        waveformInterval = Duration.ofMillis(
+                Long.parseLong(getParsedArgs().getOptionValue(OPT_WAVEFORMS_INTERVAL, DEFAULT_WAVEFORM_INTERVAL))
+        );
+
 
         injector = Guice.createInjector(
                 new DefaultGlueModule(),
@@ -110,5 +130,39 @@ public class ProviderUtil extends BaseUtil {
             qual.setValidity(MeasurementValidity.VLD);
             val.setMetricQuality(qual);
         }
+    }
+
+    @Override
+    public Options configureOptions() {
+        var options = super.configureOptions();
+
+        {
+            String message = "Interval in ms in which reports are being generated."
+                    + " Default: " + DEFAULT_REPORT_INTERVAL;
+            Option reportIntervalOpt = new Option(null, OPT_REPORT_INTERVAL,
+                    true, message);
+            reportIntervalOpt.setType(Long.class);
+            options.addOption(reportIntervalOpt);
+        }
+
+        {
+
+            String message = "Interval in ms in which waveforms are being generated."
+                    + " Default: " + DEFAULT_WAVEFORM_INTERVAL;
+            Option waveformIntervalOpt = new Option(null, OPT_WAVEFORMS_INTERVAL,
+                    true, message);
+            waveformIntervalOpt.setType(Long.class);
+            options.addOption(waveformIntervalOpt);
+        }
+
+        return options;
+    }
+
+    public Duration getReportInterval() {
+        return reportInterval;
+    }
+
+    public Duration getWaveformInterval() {
+        return waveformInterval;
     }
 }

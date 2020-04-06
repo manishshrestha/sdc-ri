@@ -41,6 +41,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -95,12 +96,19 @@ public class Provider extends AbstractIdleService {
         this.dpwsFramework.setNetworkInterface(networkInterface);
         this.mdibAccess = injector.getInstance(LocalMdibAccessFactory.class).createLocalMdibAccess();
 
+        var epr = providerUtil.getEpr();
+        if (epr == null) {
+            epr = "urn:uuid:" + UUID.randomUUID().toString();
+            LOG.info("No epr address provided, generated random epr {}", epr);
+        }
+
         var handler = new OperationHandler(this.mdibAccess);
+        String finalEpr = epr;
         this.sdcDevice = injector.getInstance(SdcDeviceFactory.class).createSdcDevice(new DeviceSettings() {
             @Override
             public EndpointReferenceType getEndpointReference() {
                 return injector.getInstance(WsAddressingUtil.class)
-                        .createEprWithAddress(providerUtil.getEpr());
+                        .createEprWithAddress(finalEpr);
             }
 
             @Override
@@ -396,10 +404,12 @@ public class Provider extends AbstractIdleService {
         provider.startAsync().awaitRunning();
 
         // generate some data
+        var waveformInterval = util.getWaveformInterval().toMillis();
+        LOG.info("Sending waveforms every {}ms", waveformInterval);
         var t1 = new Thread(() -> {
             while (true) {
                 try {
-                    Thread.sleep(100);
+                    Thread.sleep(waveformInterval);
                     provider.changeWaveform(Constants.HANDLE_WAVEFORM);
                 } catch (Exception e) {
                     LOG.warn("Thread loop stopping", e);
@@ -410,10 +420,12 @@ public class Provider extends AbstractIdleService {
         t1.setDaemon(true);
         t1.start();
 
+        var reportInterval = util.getReportInterval().toMillis();
+        LOG.info("Sending reports every {}ms", reportInterval);
         var t2 = new Thread(() -> {
             while (true) {
                 try {
-                    Thread.sleep(5000);
+                    Thread.sleep(reportInterval);
                     provider.changeNumericMetric(Constants.HANDLE_NUMERIC_DYNAMIC);
                     provider.changeStringMetric(Constants.HANDLE_STRING_DYNAMIC);
                     provider.changeEnumStringMetric(Constants.HANDLE_ENUM_DYNAMIC);
