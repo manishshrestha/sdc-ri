@@ -128,8 +128,7 @@ public class ClientTransportBinding implements TransportBinding {
                 if (response.getStatusLine().getStatusCode() >= 300) {
                     throw new TransportBindingException(String.format(
                             "Endpoint was not able to process request. HTTP status code: %s", response.getStatusLine()),
-                            new TransportException(new HttpException(response.getStatusLine().getStatusCode(),
-                                    new String(bytes, StandardCharsets.UTF_8))));
+                            new TransportException(new HttpException(response.getStatusLine().getStatusCode())));
                 }
             }
         } catch (JAXBException e) {
