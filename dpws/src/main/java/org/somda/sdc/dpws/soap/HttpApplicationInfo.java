@@ -46,7 +46,7 @@ public class HttpApplicationInfo extends ApplicationInfo {
      * For each header key with multiple entries, the content will be merged into a comma separated list.
      * All keys are lower case.
      *
-     * @return Map of all headers
+     * @return {@linkplain Map} of all headers
      */
     @Deprecated(since = "1.1.0", forRemoval = true)
     public Map<String, String> getHttpHeaders() {
@@ -66,7 +66,7 @@ public class HttpApplicationInfo extends ApplicationInfo {
      * Each value seen for a key will be added to the list of values for said key.
      * All keys are lower case.
      *
-     * @return Map of all headers
+     * @return {@linkplain ListMultimap} of all headers
      */
     public ListMultimap<String, String> getHeaders() {
         return ArrayListMultimap.create(headers);

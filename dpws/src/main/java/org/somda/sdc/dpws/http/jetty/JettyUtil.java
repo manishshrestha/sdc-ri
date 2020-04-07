@@ -11,10 +11,10 @@ import java.util.stream.Stream;
  */
 public class JettyUtil {
     /**
-     * Returns all available headers from an incoming request
+     * Returns all available headers from an incoming request.
      *
-     * @param request to extract headers from
-     * @return extracted headers as a multimap, without duplicates
+     * @param request to extract headers from.
+     * @return extracted headers as a multimap, without duplicates.
      */
     static ListMultimap<String, String> getRequestHeaders(HttpServletRequest request) {
         ListMultimap<String, String> requestHeaderMap = ArrayListMultimap.create();
