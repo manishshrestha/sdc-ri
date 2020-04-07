@@ -2,7 +2,11 @@ package org.somda.sdc.biceps.provider.access;
 
 import org.somda.sdc.biceps.common.MdibDescriptionModifications;
 import org.somda.sdc.biceps.common.MdibStateModifications;
-import org.somda.sdc.biceps.common.access.*;
+import org.somda.sdc.biceps.common.access.MdibAccess;
+import org.somda.sdc.biceps.common.access.MdibAccessObservable;
+import org.somda.sdc.biceps.common.access.ReadTransactionProvider;
+import org.somda.sdc.biceps.common.access.WriteDescriptionResult;
+import org.somda.sdc.biceps.common.access.WriteStateResult;
 import org.somda.sdc.biceps.common.storage.PreprocessingException;
 
 /**
@@ -22,7 +26,8 @@ public interface LocalMdibAccess extends MdibAccess, ReadTransactionProvider, Md
      * @throws PreprocessingException if something goes wrong during preprocessing, i.e., the consistency of the MDIB
      *                                would be violated.
      */
-    WriteDescriptionResult writeDescription(MdibDescriptionModifications mdibDescriptionModifications) throws PreprocessingException;
+    WriteDescriptionResult writeDescription(MdibDescriptionModifications mdibDescriptionModifications)
+            throws PreprocessingException;
 
     /**
      * Processes the state modifications object, stores the data internally and triggers an event.

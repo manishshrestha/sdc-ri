@@ -1,7 +1,19 @@
 package org.somda.sdc.biceps.common;
 
-import org.somda.sdc.biceps.common.event.*;
-import org.somda.sdc.biceps.model.participant.*;
+import org.somda.sdc.biceps.common.event.AlertStateModificationMessage;
+import org.somda.sdc.biceps.common.event.ComponentStateModificationMessage;
+import org.somda.sdc.biceps.common.event.ContextStateModificationMessage;
+import org.somda.sdc.biceps.common.event.MetricStateModificationMessage;
+import org.somda.sdc.biceps.common.event.OperationStateModificationMessage;
+import org.somda.sdc.biceps.common.event.StateModificationMessage;
+import org.somda.sdc.biceps.common.event.WaveformStateModificationMessage;
+import org.somda.sdc.biceps.model.participant.AbstractAlertState;
+import org.somda.sdc.biceps.model.participant.AbstractContextState;
+import org.somda.sdc.biceps.model.participant.AbstractDeviceComponentState;
+import org.somda.sdc.biceps.model.participant.AbstractMetricState;
+import org.somda.sdc.biceps.model.participant.AbstractOperationState;
+import org.somda.sdc.biceps.model.participant.AbstractState;
+import org.somda.sdc.biceps.model.participant.RealTimeSampleArrayMetricState;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -15,6 +27,16 @@ import java.util.List;
 public class MdibStateModifications {
     private final MdibStateModifications.Type changeType;
     private List<AbstractState> states;
+
+    private MdibStateModifications(Type changeType) {
+        this.changeType = changeType;
+        this.states = new ArrayList<>();
+    }
+
+    private MdibStateModifications(Type changeType, int initialCapacity) {
+        this.changeType = changeType;
+        this.states = new ArrayList<>(initialCapacity);
+    }
 
     /**
      * Creates a set.
@@ -42,7 +64,8 @@ public class MdibStateModifications {
      *
      * @param state the state to add.
      * @return this object for fluent access.
-     * @throws ClassCastException if the element does not match the change type that has been set on {@link #create(Type)}.
+     * @throws ClassCastException if the element does not match the change type that
+     * has been set on {@link #create(Type)}.
      */
     public MdibStateModifications add(AbstractState state) {
         if (!changeType.getChangeBaseClass().isAssignableFrom(state.getClass())) {
@@ -61,7 +84,8 @@ public class MdibStateModifications {
      * @param states the states to set.
      * @param <T>    any state type.
      * @return this object for fluent access.
-     * @throws ClassCastException if at least one of the elements does not match the change type that has been set on {@link #create(Type)}.
+     * @throws ClassCastException if at least one of the elements does not match the change type that
+     * has been set on {@link #create(Type)}.
      */
     public <T extends AbstractState> MdibStateModifications addAll(Collection<T> states) {
         states.stream().forEach(state -> add(state));
@@ -119,15 +143,5 @@ public class MdibStateModifications {
         public Class<? extends StateModificationMessage<?>> getEventMessageClass() {
             return eventMessageClass;
         }
-    }
-
-    private MdibStateModifications(Type changeType) {
-        this.changeType = changeType;
-        this.states = new ArrayList<>();
-    }
-
-    private MdibStateModifications(Type changeType, int initialCapacity) {
-        this.changeType = changeType;
-        this.states = new ArrayList<>(initialCapacity);
     }
 }

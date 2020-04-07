@@ -1,12 +1,15 @@
 package org.somda.sdc.biceps.common;
 
 import com.google.common.collect.HashMultimap;
-import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.apache.commons.lang3.tuple.Pair;
+// CHECKSTYLE.OFF: AvoidStarImport
+// this is just too much to import without a star
 import org.somda.sdc.biceps.model.participant.*;
+// CHECKSTYLE.ON: AvoidStarImport
 
 import javax.inject.Inject;
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Utility class to verify cardinality and parent-child type correctness.
@@ -28,7 +31,7 @@ public class MdibTreeValidator {
      * Checks if a descriptor is allowed to appear many times as a child.
      *
      * @param child the descriptor to check.
-     * @param <T> a descriptor type.
+     * @param <T>   a descriptor type.
      * @return true if it is allowed to appear more than once, false otherwise.
      */
     public <T extends AbstractDescriptor> boolean isManyAllowed(T child) {
@@ -64,7 +67,10 @@ public class MdibTreeValidator {
         allowedParents.put(EnumStringMetricDescriptor.class, ChannelDescriptor.class);
         allowedParents.put(RealTimeSampleArrayMetricDescriptor.class, ChannelDescriptor.class);
         allowedParents.put(DistributionSampleArrayMetricDescriptor.class, ChannelDescriptor.class);
-        allowedParents.replaceValues(AlertSystemDescriptor.class, Arrays.asList(MdsDescriptor.class, VmdDescriptor.class));
+        allowedParents.replaceValues(
+                AlertSystemDescriptor.class,
+                Arrays.asList(MdsDescriptor.class, VmdDescriptor.class)
+        );
         allowedParents.put(AlertConditionDescriptor.class, AlertSystemDescriptor.class);
         allowedParents.put(LimitAlertConditionDescriptor.class, AlertSystemDescriptor.class);
         allowedParents.put(AlertSignalDescriptor.class, AlertSystemDescriptor.class);

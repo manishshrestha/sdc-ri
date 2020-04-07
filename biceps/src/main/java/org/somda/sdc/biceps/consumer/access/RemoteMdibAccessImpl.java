@@ -27,7 +27,10 @@ import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
 import java.math.BigInteger;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
@@ -69,7 +72,8 @@ public class RemoteMdibAccessImpl implements RemoteMdibAccess {
     public WriteDescriptionResult writeDescription(MdibVersion mdibVersion,
                                                    @Nullable BigInteger mdDescriptionVersion,
                                                    @Nullable BigInteger mdStateVersion,
-                                                   MdibDescriptionModifications mdibDescriptionModifications) throws PreprocessingException {
+                                                   MdibDescriptionModifications mdibDescriptionModifications)
+            throws PreprocessingException {
         // No copy of mdibDescriptionModifications here as data is read from network source
         // SDCri takes over responsibility to not change elements after write
         return writeUtil.writeDescription(descriptionModifications ->

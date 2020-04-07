@@ -7,7 +7,8 @@ public class CommonConstants {
     /**
      * Namespace string of the BICEPS Extension Model.
      */
-    public static final String NAMESPACE_EXTENSION = "http://standards.ieee.org/downloads/11073/11073-10207-2017/extension";
+    public static final String NAMESPACE_EXTENSION =
+            "http://standards.ieee.org/downloads/11073/11073-10207-2017/extension";
 
     /**
      * Prefix used for the namespace of the BICEPS Extension Model.
@@ -17,7 +18,8 @@ public class CommonConstants {
     /**
      * Namespace string of the BICEPS Participant Model.
      */
-    public static final String NAMESPACE_PARTICIPANT = "http://standards.ieee.org/downloads/11073/11073-10207-2017/participant";
+    public static final String NAMESPACE_PARTICIPANT =
+            "http://standards.ieee.org/downloads/11073/11073-10207-2017/participant";
 
     /**
      * Prefix used for the namespace of the BICEPS Participant Model.

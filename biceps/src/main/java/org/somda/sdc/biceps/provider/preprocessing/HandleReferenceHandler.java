@@ -8,7 +8,8 @@ import org.somda.sdc.biceps.common.storage.MdibStorage;
 /**
  * Preprocessing segment that appends descriptor references to states.
  * <p>
- * This segment allows the user to spare calling {@link org.somda.sdc.biceps.model.participant.AbstractState#setDescriptorHandle(String)}
+ * This segment allows the user to spare calling
+ * {@link org.somda.sdc.biceps.model.participant.AbstractState#setDescriptorHandle(String)}
  * by automatically setting the descriptor reference at each state.
  */
 public class HandleReferenceHandler implements DescriptionPreprocessingSegment {

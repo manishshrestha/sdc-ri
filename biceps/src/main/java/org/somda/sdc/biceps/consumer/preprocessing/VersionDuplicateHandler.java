@@ -8,15 +8,16 @@ import org.somda.sdc.biceps.common.storage.StatePreprocessingSegment;
 import org.somda.sdc.biceps.model.participant.AbstractMultiState;
 import org.somda.sdc.biceps.model.participant.AbstractState;
 
-import javax.print.DocFlavor;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 /**
- * Preprocessing segment that removes changes from modification sets that have already been applied on the MDIB storage before.
+ * Preprocessing segment that removes changes from modification sets that have already
+ * been applied on the MDIB storage before.
  * <p>
- * This typically happens after a description change when states are sent out in addition to the description modification message.
+ * This typically happens after a description change when states are sent out in addition
+ * to the description modification message.
  * Those additional elements will be thrown away.
  */
 public class VersionDuplicateHandler implements StatePreprocessingSegment {
