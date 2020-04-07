@@ -1,13 +1,21 @@
 package com.example.provider1;
 
-import com.example.ProviderMdibConstants;
+import com.example.Constants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.somda.sdc.biceps.common.MdibStateModifications;
 import org.somda.sdc.biceps.common.storage.PreprocessingException;
 import org.somda.sdc.biceps.model.message.InvocationError;
 import org.somda.sdc.biceps.model.message.InvocationState;
-import org.somda.sdc.biceps.model.participant.*;
+import org.somda.sdc.biceps.model.participant.EnumStringMetricDescriptor;
+import org.somda.sdc.biceps.model.participant.LocalizedText;
+import org.somda.sdc.biceps.model.participant.NumericMetricDescriptor;
+import org.somda.sdc.biceps.model.participant.NumericMetricState;
+import org.somda.sdc.biceps.model.participant.NumericMetricValue;
+import org.somda.sdc.biceps.model.participant.SetStringOperationDescriptor;
+import org.somda.sdc.biceps.model.participant.SetValueOperationDescriptor;
+import org.somda.sdc.biceps.model.participant.StringMetricState;
+import org.somda.sdc.biceps.model.participant.StringMetricValue;
 import org.somda.sdc.biceps.provider.access.LocalMdibAccess;
 import org.somda.sdc.glue.provider.sco.Context;
 import org.somda.sdc.glue.provider.sco.IncomingSetServiceRequest;
@@ -190,25 +198,25 @@ public class OperationHandler implements OperationInvocationReceiver {
         }
     }
 
-    @IncomingSetServiceRequest(operationHandle = ProviderMdibConstants.HANDLE_SET_VALUE)
+    @IncomingSetServiceRequest(operationHandle = Constants.HANDLE_SET_VALUE)
     InvocationResponse setSettableNumericMetric(Context context, BigDecimal data) {
         return genericSetValue(context, data);
     }
 
-    @IncomingSetServiceRequest(operationHandle = ProviderMdibConstants.HANDLE_SET_STRING)
+    @IncomingSetServiceRequest(operationHandle = Constants.HANDLE_SET_STRING)
     InvocationResponse setSettableStringMetric(Context context, String data) {
         return genericSetString(context, data, false);
     }
 
-    @IncomingSetServiceRequest(operationHandle = ProviderMdibConstants.HANDLE_SET_STRING_ENUM)
+    @IncomingSetServiceRequest(operationHandle = Constants.HANDLE_SET_STRING_ENUM)
     InvocationResponse setSettableEnumMetric(Context context, String data) {
         return genericSetString(context, data, true);
     }
 
-    @IncomingSetServiceRequest(operationHandle = ProviderMdibConstants.HANDLE_ACTIVATE, listType = String.class)
+    @IncomingSetServiceRequest(operationHandle = Constants.HANDLE_ACTIVATE, listType = String.class)
     InvocationResponse activateExample(Context context, List<String> args) {
         context.sendSuccessfulReport(InvocationState.START);
-        LOG.debug("Received Activate for {}", ProviderMdibConstants.HANDLE_ACTIVATE);
+        LOG.debug("Received Activate for {}", Constants.HANDLE_ACTIVATE);
 
         context.sendSuccessfulReport(InvocationState.FIN);
         return context.createSuccessfulResponse(mdibAccess.getMdibVersion(), InvocationState.FIN);

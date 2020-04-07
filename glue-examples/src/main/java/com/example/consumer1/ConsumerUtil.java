@@ -1,6 +1,6 @@
 package com.example.consumer1;
 
-import com.example.CustomCryptoSettings;
+import com.example.BaseUtil;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import org.apache.logging.log4j.Level;
@@ -21,7 +21,6 @@ import org.somda.sdc.glue.guice.DefaultGlueModule;
 import org.somda.sdc.glue.guice.GlueDpwsConfigModule;
 
 import javax.net.ssl.HostnameVerifier;
-import javax.net.ssl.SSLSession;
 import java.net.URI;
 import java.security.cert.X509Certificate;
 import java.util.List;
@@ -32,11 +31,14 @@ import java.util.List;
  * Overwriting configuration steps allows customizing the behavior of the framework through
  * injection.
  */
-public class ConsumerUtil {
+public class ConsumerUtil extends BaseUtil {
     private static final Logger LOG = LoggerFactory.getLogger(ConsumerUtil.class);
+
     private final Injector injector;
 
-    public ConsumerUtil() {
+    public ConsumerUtil(String[] args) {
+        super(args);
+
         Configurator.initialize(new DefaultConfiguration());
         Configurator.setRootLevel(Level.INFO);
 
@@ -53,8 +55,10 @@ public class ConsumerUtil {
                         super.customConfigure();
                         bind(CryptoConfig.CRYPTO_SETTINGS,
                                 CryptoSettings.class,
-                                new CustomCryptoSettings()
+                                createCustomCryptoSettings()
                         );
+                        bind(DpwsConfig.HTTPS_SUPPORT, Boolean.class, isUseTls());
+                        bind(DpwsConfig.HTTP_SUPPORT, Boolean.class, !isUseTls());
                         bind(CryptoConfig.CRYPTO_CLIENT_HOSTNAME_VERIFIER,
                                 HostnameVerifier.class,
                                 (hostname, session) -> {
@@ -89,8 +93,6 @@ public class ConsumerUtil {
                                     }
                                     return false;
                                 });
-                        bind(DpwsConfig.HTTPS_SUPPORT, Boolean.class, true);
-                        bind(DpwsConfig.HTTP_SUPPORT, Boolean.class, false);
                     }
                 });
     }
@@ -98,4 +100,5 @@ public class ConsumerUtil {
     public Injector getInjector() {
         return injector;
     }
+
 }

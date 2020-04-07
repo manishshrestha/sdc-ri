@@ -1,6 +1,6 @@
 package com.example;
 
-public class ProviderMdibConstants {
+public class Constants {
 
     public static final String HANDLE_LOCATIONCONTEXT = "LC.mds0";
     public static final String HANDLE_PATIENTCONTEXT = "PC.mds0";
@@ -21,5 +21,11 @@ public class ProviderMdibConstants {
     public static final String HANDLE_NUMERIC_SETTABLE = "numeric.ch0.vmd1";
     public static final String HANDLE_ENUM_SETTABLE = "enumstring.ch0.vmd1";
     public static final String HANDLE_STRING_SETTABLE = "string.ch0.vmd1";
+
+    public static final String DEFAULT_IP = "127.0.0.1";
+    public static final String DEFAULT_FACILITY = "r_fac";
+    public static final String DEFAULT_BED = "r_bed";
+    public static final String DEFAULT_POC = "r_poc";
+    public static final String DEFAULT_REPORT_TIMEOUT = "30";
 
 }

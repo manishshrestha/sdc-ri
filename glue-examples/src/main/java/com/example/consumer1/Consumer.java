@@ -1,17 +1,10 @@
 package com.example.consumer1;
 
-import com.example.ProviderMdibConstants;
+import com.example.Constants;
 import com.google.common.eventbus.Subscribe;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.SettableFuture;
 import com.google.inject.Injector;
-import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.CommandLineParser;
-import org.apache.commons.cli.DefaultParser;
-import org.apache.commons.cli.HelpFormatter;
-import org.apache.commons.cli.Option;
-import org.apache.commons.cli.Options;
-import org.apache.commons.cli.ParseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.somda.sdc.biceps.model.message.Activate;
@@ -41,12 +34,10 @@ import org.somda.sdc.glue.consumer.SdcRemoteDevicesConnector;
 import org.somda.sdc.glue.consumer.SetServiceAccess;
 import org.somda.sdc.glue.consumer.sco.ScoTransaction;
 
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
-import java.net.URI;
 import java.net.UnknownHostException;
 import java.time.Duration;
 import java.util.ArrayList;
@@ -77,12 +68,12 @@ import java.util.stream.Collectors;
 public class Consumer {
 
     private static final Logger LOG = LoggerFactory.getLogger(Consumer.class);
-    private static final ConsumerUtil IT = new ConsumerUtil();
     private static final Duration MAX_WAIT = Duration.ofSeconds(11);
     private static final long MAX_WAIT_SEC = MAX_WAIT.getSeconds();
 
     private static final long REPORT_TIMEOUT = Duration.ofSeconds(30).toMillis();
 
+    private final ConsumerUtil consumerUtil;
     private final Client client;
     private final SdcRemoteDevicesConnector connector;
     private DpwsFramework dpwsFramework;
@@ -92,19 +83,30 @@ public class Consumer {
     /**
      * Creates an SDC Consumer instance.
      *
-     * @param adapterName Optional adapter name to bind to, otherwise localhost default interface is chosen
+     * @param consumerUtil utility containing injector and settings
      * @throws SocketException      if network adapter couldn't be bound
      * @throws UnknownHostException if localhost couldn't be determined
      */
-    public Consumer(@Nullable String adapterName) throws SocketException, UnknownHostException {
-        this.injector = IT.getInjector();
+    public Consumer(ConsumerUtil consumerUtil) throws SocketException, UnknownHostException {
+        this.consumerUtil = consumerUtil;
+        this.injector = consumerUtil.getInjector();
         this.client = injector.getInstance(Client.class);
         this.connector = injector.getInstance(SdcRemoteDevicesConnector.class);
-        if (adapterName != null && !adapterName.isEmpty()) {
-            this.networkInterface = NetworkInterface.getByName(adapterName);
+        if (consumerUtil.getIface() != null && !consumerUtil.getIface().isBlank()) {
+            LOG.info("Starting with interface {}", consumerUtil.getIface());
+            this.networkInterface = NetworkInterface.getByName(consumerUtil.getIface());
         } else {
-            // find some kind of default interface
-            this.networkInterface = NetworkInterface.getByInetAddress(InetAddress.getLocalHost());
+            if (consumerUtil.getAddress() != null && !consumerUtil.getAddress().isBlank()) {
+                // bind to adapter matching ip
+                LOG.info("Starting with address {}", consumerUtil.getAddress());
+                this.networkInterface = NetworkInterface.getByInetAddress(
+                        InetAddress.getByName(consumerUtil.getAddress())
+                );
+            } else {
+                // find loopback interface for fallback
+                networkInterface = NetworkInterface.getByInetAddress(InetAddress.getLoopbackAddress());
+                LOG.info("Starting with fallback default adapter {}", networkInterface);
+            }
         }
     }
 
@@ -130,40 +132,6 @@ public class Consumer {
     }
 
     /**
-     * Parse command line arguments for epr address and network interface
-     *
-     * @param args array of arguments, as passed to main
-     * @return instance of parsed command line arguments
-     */
-    public static CommandLine parseCommandLineArgs(String[] args) {
-        Options options = new Options();
-
-        Option epr = new Option("e", "epr", true, "epr address of target provider");
-        epr.setRequired(true);
-        options.addOption(epr);
-
-        Option networkInterface = new Option("i", "iface", true, "network interface to use");
-        networkInterface.setRequired(false);
-        options.addOption(networkInterface);
-
-
-        CommandLineParser parser = new DefaultParser();
-        HelpFormatter formatter = new HelpFormatter();
-        CommandLine cmd = null;
-
-        try {
-            cmd = parser.parse(options, args);
-        } catch (ParseException e) {
-            System.out.println(e.getMessage());
-            formatter.printHelp("utility-name", options);
-
-            System.exit(1);
-        }
-
-        return cmd;
-    }
-
-    /**
      * Synchronously invokes an ActivateOperation on a given SetService using the provided handle and arguments
      *
      * @param setServiceAccess SetService to call Activate on
@@ -174,7 +142,7 @@ public class Consumer {
      * @throws InterruptedException if retrieving the final OperationInvokedReport is interrupted
      * @throws TimeoutException     if retrieving the final OperationInvokedReport times out
      */
-    private static InvocationState invokeActivate(SetServiceAccess setServiceAccess, String handle, List<String> args) throws ExecutionException, InterruptedException, TimeoutException {
+    static InvocationState invokeActivate(SetServiceAccess setServiceAccess, String handle, List<String> args) throws ExecutionException, InterruptedException, TimeoutException {
         LOG.info("Invoking Activate for handle {} with arguments {}", handle, args);
 
         Activate activate = new Activate();
@@ -206,7 +174,7 @@ public class Consumer {
      * @throws InterruptedException if retrieving the final OperationInvokedReport is interrupted
      * @throws TimeoutException     if retrieving the final OperationInvokedReport times out
      */
-    private static InvocationState invokeSetValue(SetServiceAccess setServiceAccess, String handle, BigDecimal value) throws ExecutionException, InterruptedException, TimeoutException {
+    static InvocationState invokeSetValue(SetServiceAccess setServiceAccess, String handle, BigDecimal value) throws ExecutionException, InterruptedException, TimeoutException {
         LOG.info("Invoking SetValue for handle {} with value {}", handle, value);
         SetValue setValue = new SetValue();
         setValue.setOperationHandleRef(handle);
@@ -232,7 +200,7 @@ public class Consumer {
      * @throws InterruptedException if retrieving the final OperationInvokedReport is interrupted
      * @throws TimeoutException     if retrieving the final OperationInvokedReport times out
      */
-    private static InvocationState invokeSetString(SetServiceAccess setServiceAccess, String handle, String value) throws ExecutionException, InterruptedException, TimeoutException {
+    static InvocationState invokeSetString(SetServiceAccess setServiceAccess, String handle, String value) throws ExecutionException, InterruptedException, TimeoutException {
         LOG.info("Invoking SetString for handle {} with value {}", handle, value);
         SetString setString = new SetString();
         setString.setOperationHandleRef(handle);
@@ -251,13 +219,16 @@ public class Consumer {
         }
     }
 
+    public Injector getInjector() {
+        return injector;
+    }
+
     public static void main(String[] args) throws SocketException, UnknownHostException, InterceptorException, TransportException, InterruptedException {
 
-        var settings = parseCommandLineArgs(args);
-        var targetEpr = settings.getOptionValue("epr");
-        var networkInterface = settings.getOptionValue("iface", null);
+        var settings = new ConsumerUtil(args);
+        var targetEpr = settings.getEpr();
 
-        var consumer = new Consumer(networkInterface);
+        var consumer = new Consumer(settings);
         consumer.startUp();
 
         // this map is used to track the outcome of each of the nine steps listed for this class
@@ -291,7 +262,7 @@ public class Consumer {
             @Subscribe
             void deviceFound(ProbedDeviceFoundMessage message) {
                 DiscoveredDevice payload = message.getPayload();
-                if (payload.getEprAddress().toString().equals(targetEpr)) {
+                if (payload.getEprAddress().equals(targetEpr)) {
                     LOG.info("Found device with epr {}", payload.getEprAddress());
                     xAddrs.set(payload.getXAddrs());
                 } else {
@@ -362,7 +333,7 @@ public class Consumer {
         Thread.sleep(REPORT_TIMEOUT);
 
         // expected number of reports given 5 second interval
-        int minNumberReports = ((int)(REPORT_TIMEOUT / Duration.ofSeconds(5).toMillis()) - 1);
+        int minNumberReports = ((int) (REPORT_TIMEOUT / Duration.ofSeconds(5).toMillis()) - 1);
 
         // verify the number of reports for the expected metrics is at least five during the timeout
         var metricChangesOk = reportObs.numMetricChanges >= minNumberReports;
@@ -376,28 +347,28 @@ public class Consumer {
 
         boolean operationFailed = false;
         try {
-            invokeSetString(setServiceAccess, ProviderMdibConstants.HANDLE_SET_STRING, "SDCri was here");
+            invokeSetString(setServiceAccess, Constants.HANDLE_SET_STRING, "SDCri was here");
         } catch (ExecutionException | TimeoutException e) {
             operationFailed = true;
-            LOG.error("Could not invoke {}", ProviderMdibConstants.HANDLE_SET_STRING, e);
+            LOG.error("Could not invoke {}", Constants.HANDLE_SET_STRING, e);
         }
         try {
-            invokeSetString(setServiceAccess, ProviderMdibConstants.HANDLE_SET_STRING_ENUM, "OFF");
+            invokeSetString(setServiceAccess, Constants.HANDLE_SET_STRING_ENUM, "OFF");
         } catch (ExecutionException | TimeoutException e) {
             operationFailed = true;
-            LOG.error("Could not invoke {}", ProviderMdibConstants.HANDLE_SET_STRING_ENUM, e);
+            LOG.error("Could not invoke {}", Constants.HANDLE_SET_STRING_ENUM, e);
         }
         try {
-            invokeSetValue(setServiceAccess, ProviderMdibConstants.HANDLE_SET_VALUE, BigDecimal.valueOf(20));
+            invokeSetValue(setServiceAccess, Constants.HANDLE_SET_VALUE, BigDecimal.valueOf(20));
         } catch (ExecutionException | TimeoutException e) {
             operationFailed = true;
-            LOG.error("Could not invoke {}", ProviderMdibConstants.HANDLE_SET_VALUE, e);
+            LOG.error("Could not invoke {}", Constants.HANDLE_SET_VALUE, e);
         }
         try {
-            invokeActivate(setServiceAccess, ProviderMdibConstants.HANDLE_ACTIVATE, Collections.emptyList());
+            invokeActivate(setServiceAccess, Constants.HANDLE_ACTIVATE, Collections.emptyList());
         } catch (ExecutionException | TimeoutException e) {
             operationFailed = true;
-            LOG.error("Could not invoke {}", ProviderMdibConstants.HANDLE_ACTIVATE, e);
+            LOG.error("Could not invoke {}", Constants.HANDLE_ACTIVATE, e);
         }
         resultMap.put(9, !operationFailed);
 
@@ -408,7 +379,6 @@ public class Consumer {
 
         consumer.getConnector().disconnect(deviceUri);
         consumer.shutDown();
-
     }
 
 }
