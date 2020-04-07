@@ -1,5 +1,7 @@
 package org.somda.sdc.dpws.http.jetty;
 
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.ListMultimap;
 import org.eclipse.jetty.server.HttpChannel;
 import org.eclipse.jetty.server.HttpOutput;
 import org.eclipse.jetty.util.Callback;
@@ -16,8 +18,6 @@ import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
 import java.nio.channels.WritableByteChannel;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * {@linkplain HttpOutput.Interceptor} which logs messages to a stream.
@@ -65,10 +65,19 @@ public class CommunicationLogOutputInterceptor implements HttpOutput.Interceptor
 
     private OutputStream getCommlogStream() {
         var response = channel.getResponse();
-        Map<String, String> responseHeaderMap = new HashMap<>();
-        response.getHeaderNames().forEach(
-                headerName -> responseHeaderMap.put(headerName, response.getHeader(headerName))
-        );
+        ListMultimap<String, String> responseHeaderMap = ArrayListMultimap.create();
+        response.getHeaderNames().stream()
+                .map(String::toLowerCase)
+                // filter duplicates which occur because of capitalization
+                .distinct()
+                .forEach(
+                        headerName -> {
+                            var headers = response.getHeaders(headerName);
+                            headers.forEach(header ->
+                                    responseHeaderMap.put(headerName, header)
+                            );
+                        }
+                );
 
         var responseHttpApplicationInfo = new HttpApplicationInfo(
                 responseHeaderMap

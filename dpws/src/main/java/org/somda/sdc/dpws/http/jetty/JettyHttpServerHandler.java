@@ -18,7 +18,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.security.cert.X509Certificate;
-import java.util.*;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 
 
 /**
@@ -60,14 +62,8 @@ public class JettyHttpServerHandler extends AbstractHandler {
         var input = request.getInputStream();
         var output = response.getOutputStream();
 
-        // collect information for HttpApplicationInfo
-        Map<String, String> requestHeaderMap = new HashMap<>();
-        request.getHeaderNames().asIterator().forEachRemaining(
-                headerName -> requestHeaderMap.put(headerName, request.getHeader(headerName))
-        );
-
         var requestHttpApplicationInfo = new HttpApplicationInfo(
-                requestHeaderMap
+                JettyUtil.getRequestHeaders(request)
         );
 
         try {

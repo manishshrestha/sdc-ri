@@ -1,6 +1,5 @@
 package org.somda.sdc.dpws.http.jetty;
 
-import com.google.inject.Inject;
 import org.eclipse.jetty.server.HttpOutput;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.handler.HandlerWrapper;
@@ -14,8 +13,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * {@linkplain HandlerWrapper} which enables {@linkplain CommunicationLog} capabilities for requests and responses.
@@ -33,14 +30,8 @@ public class CommunicationLogHandlerWrapper extends HandlerWrapper {
     @Override
     public void handle(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
 
-        // collect information for HttpApplicationInfo
-        Map<String, String> requestHeaderMap = new HashMap<>();
-        request.getHeaderNames().asIterator().forEachRemaining(
-                headerName -> requestHeaderMap.put(headerName, request.getHeader(headerName))
-        );
-
         var requestHttpApplicationInfo = new HttpApplicationInfo(
-                requestHeaderMap
+                JettyUtil.getRequestHeaders(request)
         );
 
         // collect information for TransportInfo
