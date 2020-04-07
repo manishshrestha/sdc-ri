@@ -133,7 +133,7 @@ public class ProviderUtil extends BaseUtil {
     }
 
     @Override
-    public Options configureOptions() {
+    protected Options configureOptions() {
         var options = super.configureOptions();
 
         {
