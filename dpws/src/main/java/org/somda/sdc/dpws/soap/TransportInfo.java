@@ -2,7 +2,9 @@ package org.somda.sdc.dpws.soap;
 
 import javax.annotation.Nullable;
 import java.security.cert.X509Certificate;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -22,14 +24,31 @@ public class TransportInfo {
     private final Integer localPort;
     private final String remoteAddress;
     private final Integer remotePort;
-    private Collection<X509Certificate> x509Certificates;
+    private List<X509Certificate> x509Certificates;
 
+    @Deprecated(since = "1.1.0", forRemoval = true)
     public TransportInfo(String scheme,
                          @Nullable String localAddress,
                          @Nullable Integer localPort,
                          @Nullable String remoteAddress,
                          @Nullable Integer remotePort,
                          Collection<X509Certificate> x509Certificates) {
+        this.scheme = scheme;
+        this.localAddress = localAddress;
+        this.localPort = localPort;
+        this.remoteAddress = remoteAddress;
+        this.remotePort = remotePort;
+        // convert provided collection into a list
+        this.x509Certificates = new ArrayList<>();
+        this.x509Certificates.addAll(x509Certificates);
+    }
+
+    public TransportInfo(String scheme,
+                         @Nullable String localAddress,
+                         @Nullable Integer localPort,
+                         @Nullable String remoteAddress,
+                         @Nullable Integer remotePort,
+                         List<X509Certificate> x509Certificates) {
         this.scheme = scheme;
         this.localAddress = localAddress;
         this.localPort = localPort;
@@ -86,9 +105,9 @@ public class TransportInfo {
     /**
      * Any transport-layer specific X509 certificates.
      *
-     * @return a collection of certificates that can be empty if no transport-layer security is activated.
+     * @return a list of certificates that can be empty if no transport-layer security is activated.
      */
-    public Collection<X509Certificate> getX509Certificates() {
+    public List<X509Certificate> getX509Certificates() {
         return x509Certificates;
     }
 }

@@ -112,14 +112,14 @@ public class JettyHttpServerHandler extends AbstractHandler {
      *
      * @param request   servlet request data.
      * @param expectTLS causes this function to return an empty list if set to false.
-     * @return a collection of {@link X509Certificate} containers.
+     * @return a list of {@link X509Certificate} containers.
      * @throws IOException in case the certificate information does not match the expected type, which is an array of
      *                     {@link X509Certificate}.
      * @deprecated this function is deprecated as it was supposed to be used internally only. The visibility of this
      * function will be degraded to package private with SDCri 2.0.
      */
     @Deprecated(since = "1.1.0", forRemoval = false)
-    public static Collection<X509Certificate> getX509Certificates(HttpServletRequest request, boolean expectTLS) throws IOException {
+    public static List<X509Certificate> getX509Certificates(HttpServletRequest request, boolean expectTLS) throws IOException {
         if (!expectTLS) {
             return Collections.emptyList();
         }

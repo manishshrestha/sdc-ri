@@ -26,12 +26,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `org.somda.sdc.glue.consumer.factory.SdcRemoteDeviceFactory#createSdcRemoteDevice()` without watchdog argument.
 - `org.somda.sdc.dpws.soap.MarshallingService#handleRequestResponse()` as this function was only used by tests.
 - `org.somda.sdc.dpws.http.jetty.JettyHttpServerHandler#getX509Certificates()` as it is supposed to be an internal function only.
+- `org.somda.sdc.dpws.soap.TransportInfo` constructor using a collection. (#147)
 
 ### Changed
 
 - Report processing on consumer side, which now compares MDIB sequence IDs by using URI compare instead of string compare.
 - Extracted namespace prefixes in `biceps` and `glue` package `CommonConstants`.
 - Enable generating equals and hashcode for all models. (#140)
+- `org.somda.sdc.dpws.soap.TransportInfo` provides a  `List` of certificates instead of a `Collection`. (#147)
 
 ### Fixed
 
