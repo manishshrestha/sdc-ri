@@ -46,7 +46,7 @@ public class BaseUtil {
      *
      * @return configured command line flags
      */
-    public Options configureOptions() {
+    protected Options configureOptions() {
         Options options = new Options();
 
         {
@@ -97,12 +97,12 @@ public class BaseUtil {
     }
 
     /**
-     * Parses command line arguments for epr address and network interface.
+     * Parses command line arguments, prints a help text and exits on error.
      *
      * @param args array of arguments, as passed to main
      * @return instance of parsed command line arguments
      */
-    public CommandLine parseCommandLineArgs(String[] args, Options options) {
+    private CommandLine parseCommandLineArgs(String[] args, Options options) {
         CommandLineParser parser = new DefaultParser();
         HelpFormatter formatter = new HelpFormatter();
         CommandLine cmd = null;
@@ -111,7 +111,7 @@ public class BaseUtil {
             cmd = parser.parse(options, args);
         } catch (ParseException e) {
             System.out.println(e.getMessage());
-            formatter.printHelp("utility-name", options);
+            formatter.printHelp("COMMAND", options);
 
             System.exit(1);
         }
