@@ -70,6 +70,7 @@ public class Provider extends AbstractIdleService {
      *
      * @param providerUtil options and configured injector
      * @throws SocketException thrown if network adapter cannot be set up
+     * @throws UnknownHostException if provided address cannot be resolved to an adapter
      */
     public Provider(ProviderUtil providerUtil) throws SocketException, UnknownHostException {
         this.injector = providerUtil.getInjector();
