@@ -5,49 +5,29 @@ import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
 import com.google.inject.name.Named;
+import org.eclipse.jetty.http.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.somda.sdc.common.util.ExecutorWrapperService;
 import org.somda.sdc.dpws.DpwsConfig;
 import org.somda.sdc.dpws.DpwsConstants;
 import org.somda.sdc.dpws.guice.NetworkJobThreadPool;
+import org.somda.sdc.dpws.http.HttpException;
+import org.somda.sdc.dpws.http.HttpHandler;
 import org.somda.sdc.dpws.http.HttpServerRegistry;
-import org.somda.sdc.dpws.soap.CommunicationContext;
-import org.somda.sdc.dpws.soap.NotificationSink;
-import org.somda.sdc.dpws.soap.RequestResponseClient;
-import org.somda.sdc.dpws.soap.SoapMarshalling;
-import org.somda.sdc.dpws.soap.SoapMessage;
-import org.somda.sdc.dpws.soap.SoapUtil;
+import org.somda.sdc.dpws.soap.*;
 import org.somda.sdc.dpws.soap.exception.MalformedSoapMessageException;
-import org.somda.sdc.dpws.soap.exception.MarshallingException;
-import org.somda.sdc.dpws.soap.exception.TransportException;
 import org.somda.sdc.dpws.soap.wsaddressing.WsAddressingUtil;
 import org.somda.sdc.dpws.soap.wsaddressing.model.EndpointReferenceType;
 import org.somda.sdc.dpws.soap.wseventing.exception.SubscriptionNotFoundException;
 import org.somda.sdc.dpws.soap.wseventing.factory.SubscriptionManagerFactory;
-import org.somda.sdc.dpws.soap.wseventing.model.DeliveryType;
-import org.somda.sdc.dpws.soap.wseventing.model.FilterType;
-import org.somda.sdc.dpws.soap.wseventing.model.GetStatus;
-import org.somda.sdc.dpws.soap.wseventing.model.GetStatusResponse;
-import org.somda.sdc.dpws.soap.wseventing.model.ObjectFactory;
-import org.somda.sdc.dpws.soap.wseventing.model.Renew;
-import org.somda.sdc.dpws.soap.wseventing.model.RenewResponse;
-import org.somda.sdc.dpws.soap.wseventing.model.Subscribe;
-import org.somda.sdc.dpws.soap.wseventing.model.SubscribeResponse;
-import org.somda.sdc.dpws.soap.wseventing.model.Unsubscribe;
+import org.somda.sdc.dpws.soap.wseventing.model.*;
 
 import javax.annotation.Nullable;
-import javax.xml.bind.JAXBException;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.time.Duration;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -113,13 +93,21 @@ public class EventSinkImpl implements EventSink {
 
             // Create unique end-to context path and create proper handler
             String endToContext = EVENT_SINK_END_TO_CONTEXT_PREFIX + contextSuffix;
-            var endToUri = httpServerRegistry.registerContext(hostAddress, endToContext,
-                    (req, res, ti) -> processIncomingNotification(notificationSink, req, res, ti));
+            var endToUri = httpServerRegistry.registerContext(hostAddress, endToContext, new HttpHandler() {
+                @Override
+                public void handle(InputStream inStream, OutputStream outStream, CommunicationContext communicationContext) throws HttpException {
+                    processIncomingNotification(notificationSink, inStream, outStream, communicationContext);
+                }
+            });
 
             // Create unique notify-to context path and create proper handler
             String notifyToContext = EVENT_SINK_NOTIFY_TO_CONTEXT_PREFIX + contextSuffix;
-            var notifyToUri = httpServerRegistry.registerContext(hostAddress, notifyToContext,
-                    (req, res, ti) -> processIncomingNotification(notificationSink, req, res, ti));
+            var notifyToUri = httpServerRegistry.registerContext(hostAddress, notifyToContext, new HttpHandler() {
+                @Override
+                public void handle(InputStream inStream, OutputStream outStream, CommunicationContext communicationContext) throws HttpException {
+                    processIncomingNotification(notificationSink, inStream, outStream, communicationContext);
+                }
+            });
 
             // Create subscribe body, include formerly created end-to and notify-to endpoint addresses
             // Populate rest of the request
@@ -288,7 +276,7 @@ public class EventSinkImpl implements EventSink {
     private void processIncomingNotification(NotificationSink notificationSink,
                                              InputStream inputStream,
                                              OutputStream outputStream,
-                                             CommunicationContext communicationContext) throws MarshallingException, TransportException {
+                                             CommunicationContext communicationContext) throws HttpException {
         try {
             SoapMessage soapMsg = soapUtil.createMessage(marshalling.unmarshal(inputStream));
             inputStream.close();
@@ -299,10 +287,8 @@ public class EventSinkImpl implements EventSink {
             // as closing allows the server do dispatch the next request, which will cause concurrency problems
             // for the ultimate receiver of the notifications
             outputStream.close();
-        } catch (IOException e) {
-            throw new TransportException(e);
-        } catch (JAXBException e) {
-            throw new MarshallingException(e);
+        } catch (Exception e) {
+            throw new HttpException(HttpStatus.INTERNAL_SERVER_ERROR_500, e.getMessage());
         }
     }
 

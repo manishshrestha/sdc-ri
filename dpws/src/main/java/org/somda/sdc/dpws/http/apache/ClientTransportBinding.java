@@ -14,11 +14,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.somda.sdc.dpws.TransportBinding;
 import org.somda.sdc.dpws.TransportBindingException;
+import org.somda.sdc.dpws.http.HttpException;
 import org.somda.sdc.dpws.soap.SoapConstants;
 import org.somda.sdc.dpws.soap.SoapMarshalling;
 import org.somda.sdc.dpws.soap.SoapMessage;
 import org.somda.sdc.dpws.soap.SoapUtil;
+import org.somda.sdc.dpws.soap.exception.MarshallingException;
 import org.somda.sdc.dpws.soap.exception.SoapFaultException;
+import org.somda.sdc.dpws.soap.exception.TransportException;
 
 import javax.xml.bind.JAXBException;
 import java.io.ByteArrayInputStream;
@@ -26,6 +29,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.SocketException;
+import java.nio.charset.StandardCharsets;
 
 public class ClientTransportBinding implements TransportBinding {
     private static final Logger LOG = LoggerFactory.getLogger(ClientTransportBinding.class);
@@ -78,7 +82,8 @@ public class ClientTransportBinding implements TransportBinding {
             LOG.warn("Marshalling of a message failed: {}", e.getMessage());
             LOG.trace("Marshalling of a message failed", e);
             throw new TransportBindingException(
-                    String.format("Sending of a request failed due to marshalling problem: %s", e.getMessage()));
+                    String.format("Sending of a request failed due to marshalling problem: %s", e.getMessage()),
+                    new MarshallingException(e));
         }
 
         // attach payload
@@ -100,11 +105,6 @@ public class ClientTransportBinding implements TransportBinding {
             throw new TransportBindingException("No response received");
         }
 
-        if (response.getStatusLine().getStatusCode() >= 300) {
-            throw new TransportBindingException(String.format(
-                    "Endpoint was not able to process request. HTTP status code: %s", response.getStatusLine()));
-        }
-
         HttpEntity entity = response.getEntity();
         byte[] bytes;
 
@@ -113,22 +113,31 @@ public class ClientTransportBinding implements TransportBinding {
         } catch (IOException e) {
             LOG.error("Couldn't read response", e);
             bytes = new byte[0];
+
         }
 
         try (InputStream inputStream = new ByteArrayInputStream(bytes)) {
             if (inputStream.available() > 0) {
                 SoapMessage msg = soapUtil.createMessage(marshalling.unmarshal(inputStream));
                 if (msg.isFault()) {
-                    throw new SoapFaultException(msg);
+                    throw new SoapFaultException(msg, new HttpException(response.getStatusLine().getStatusCode()));
                 }
 
                 return msg;
+            } else {
+                if (response.getStatusLine().getStatusCode() >= 300) {
+                    throw new TransportBindingException(String.format(
+                            "Endpoint was not able to process request. HTTP status code: %s", response.getStatusLine()),
+                            new TransportException(new HttpException(response.getStatusLine().getStatusCode())));
+                }
             }
         } catch (JAXBException e) {
-            LOG.debug("Unmarshalling of a message failed: {}", e.getMessage());
-            LOG.trace("Unmarshalling of a message failed.", e);
+            LOG.debug("Unmarshalling of a message failed: {}. Response payload:\n{}", e.getMessage(),
+                    new String(bytes, StandardCharsets.UTF_8));
+            LOG.trace("Unmarshalling of a message failed. ", e);
             throw new TransportBindingException(String
-                    .format("Receiving of a response failed due to unmarshalling problem: %s", e.getMessage()));
+                    .format("Receiving of a response failed due to unmarshalling problem: %s", e.getMessage()),
+                    new MarshallingException(e));
         } catch (IOException e) {
             LOG.debug("Error occurred while processing response: {}", e.getMessage());
             LOG.trace("Error occurred while processing response", e);

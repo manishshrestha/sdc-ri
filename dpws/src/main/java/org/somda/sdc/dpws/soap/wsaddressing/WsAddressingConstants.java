@@ -101,4 +101,9 @@ public class WsAddressingConstants {
      */
     public static final QName IS_REFERENCE_PARAMETER = new QName(NAMESPACE, "IsReferenceParameter");
 
+    /**
+     * QName of the WS-Addressing Action element.
+     */
+    public static final QName QNAME_ACTION = new QName(NAMESPACE, "Action");
+
 }

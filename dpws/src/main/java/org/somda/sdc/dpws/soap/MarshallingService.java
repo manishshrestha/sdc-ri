@@ -63,7 +63,9 @@ public class MarshallingService {
      * @param os                   output stream where to write SOAP response message to.
      * @param communicationContext transport and application layer information.
      * @throws MarshallingException if any exception occurs during marshalling or unmarshalling of SOAP messages.
+     * @deprecated only used by tests. Do not use this function as it is misplaced in the {@linkplain MarshallingService}.
      */
+    @Deprecated(since = "1.1.0", forRemoval = true)
     public void handleRequestResponse(RequestResponseServer srv,
                                       InputStream is,
                                       OutputStream os,

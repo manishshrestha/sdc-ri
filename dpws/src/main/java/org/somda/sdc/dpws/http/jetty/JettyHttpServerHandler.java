@@ -1,6 +1,5 @@
 package org.somda.sdc.dpws.http.jetty;
 
-import com.google.inject.Inject;
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
 import org.eclipse.jetty.http.HttpStatus;
@@ -9,6 +8,7 @@ import org.eclipse.jetty.server.handler.AbstractHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.somda.sdc.dpws.CommunicationLog;
+import org.somda.sdc.dpws.http.HttpException;
 import org.somda.sdc.dpws.http.HttpHandler;
 import org.somda.sdc.dpws.soap.CommunicationContext;
 import org.somda.sdc.dpws.soap.HttpApplicationInfo;
@@ -71,7 +71,7 @@ public class JettyHttpServerHandler extends AbstractHandler {
         );
 
         try {
-            handler.process(input, output,
+            handler.handle(input, output,
                     new CommunicationContext(requestHttpApplicationInfo,
                             new TransportInfo(
                                     request.getScheme(),
@@ -84,34 +84,58 @@ public class JettyHttpServerHandler extends AbstractHandler {
                     )
             );
 
-        } catch (Exception e) {
-            LOG.error("An exception occurred during HTTP request processing: {}", e.getMessage());
-            LOG.trace("An exception occurred during HTTP request processing", e);
-            response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR_500);
-            output.write(e.getMessage().getBytes());
-            output.flush();
+        } catch (HttpException e) {
+            LOG.debug("An HTTP exception occurred during HTTP request processing: {}", e.getMessage());
+            LOG.trace("An HTTP exception occurred during HTTP request processing", e);
+            response.setStatus(e.getStatusCode());
+            if (!e.getMessage().isEmpty()) {
+                output.write(e.getMessage().getBytes());
+            }
         } finally {
             baseRequest.setHandled(true);
         }
+
+        try {
+            input.close();
+            output.flush();
+            output.close();
+        } catch (IOException e) {
+            LOG.error("Could not close input/output streams from incoming HTTP request to {}. Reason: {}",
+                    request.getRequestURL(), e.getMessage());
+            LOG.trace("Could not close input/output streams from incoming HTTP request to {}",
+                    request.getRequestURL(), e);
+        }
     }
 
+    /**
+     * Static helper function to get X509 certificate information from an HTTP servlet.
+     *
+     * @param request   servlet request data.
+     * @param expectTLS causes this function to return an empty list if set to false.
+     * @return a collection of {@link X509Certificate} containers.
+     * @throws IOException in case the certificate information does not match the expected type, which is an array of
+     *                     {@link X509Certificate}.
+     * @deprecated this function is deprecated as it was supposed to be used internally only. The visibility of this
+     * function will be degraded to package private with SDCri 2.0.
+     */
+    @Deprecated(since = "1.1.0", forRemoval = false)
     public static Collection<X509Certificate> getX509Certificates(HttpServletRequest request, boolean expectTLS) throws IOException {
+        if (!expectTLS) {
+            return Collections.emptyList();
+        }
+
         var anonymousCertificates = request.getAttribute("javax.servlet.request.X509Certificate");
-        if (expectTLS) {
-            if (anonymousCertificates == null) {
-                LOG.error("Certificate information is missing from HTTP request data");
-                throw new IOException("Certificate information is missing from HTTP request data");
+        if (anonymousCertificates == null) {
+            LOG.error("Certificate information is missing from HTTP request data");
+            throw new IOException("Certificate information is missing from HTTP request data");
+        } else {
+            if (anonymousCertificates instanceof X509Certificate[]) {
+                return List.of((X509Certificate[]) anonymousCertificates);
             } else {
-                if (anonymousCertificates instanceof X509Certificate[]) {
-                    return List.of((X509Certificate[]) anonymousCertificates);
-                } else {
-                    LOG.error("Certificate information is of an unexpected type: {}", anonymousCertificates.getClass());
-                    throw new IOException(String.format("Certificate information is of an unexpected type: %s",
-                            anonymousCertificates.getClass()));
-                }
+                LOG.error("Certificate information is of an unexpected type: {}", anonymousCertificates.getClass());
+                throw new IOException(String.format("Certificate information is of an unexpected type: %s",
+                        anonymousCertificates.getClass()));
             }
         }
-        return Collections.emptyList();
-
     }
 }

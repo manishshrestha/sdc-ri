@@ -1,10 +1,12 @@
 package org.somda.sdc.dpws.soap.wsaddressing;
 
 import com.google.inject.Inject;
+import org.somda.sdc.dpws.soap.wsaddressing.model.AttributedQNameType;
 import org.somda.sdc.dpws.soap.wsaddressing.model.AttributedURIType;
 import org.somda.sdc.dpws.soap.wsaddressing.model.EndpointReferenceType;
 import org.somda.sdc.dpws.soap.wsaddressing.model.ObjectFactory;
 
+import javax.xml.namespace.QName;
 import java.net.URI;
 import java.util.Optional;
 
@@ -32,6 +34,18 @@ public class WsAddressingUtil {
     }
 
     /**
+     * Shorthand method to create an {@linkplain AttributedQNameType} from a QName.
+     *
+     * @param qName the {@link QName} to add.
+     * @return an {@link AttributedQNameType} instance.
+     */
+    public AttributedQNameType createAttributedQNameType(QName qName) {
+        var attributedQNameType = wsaFactory.createAttributedQNameType();
+        attributedQNameType.setValue(qName);
+        return attributedQNameType;
+    }
+
+    /**
      * Shorthand method to create an {@link AttributedURIType} from an URI.
      *
      * @param uri the URI.
@@ -49,6 +63,16 @@ public class WsAddressingUtil {
      */
     public Optional<String> getAddressUri(EndpointReferenceType epr) {
         return Optional.ofNullable(epr.getAddress()).map(AttributedURIType::getValue);
+    }
+
+    /**
+     * Gets the address URI string of an {@link AttributedURIType}.
+     *
+     * @param attributedURIType the attributed URI type where to extract the URI string.
+     * @return the URI or an empty string if {@link AttributedURIType#getValue()} returned null.
+     */
+    public String getAddressUriString(AttributedURIType attributedURIType) {
+        return attributedURIType.getValue() == null ? "" : attributedURIType.getValue();
     }
 
     /**

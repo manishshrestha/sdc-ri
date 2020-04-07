@@ -17,6 +17,8 @@ import org.somda.sdc.dpws.TransportBindingFactoryMock;
 import org.somda.sdc.dpws.device.helper.RequestResponseServerHttpHandler;
 import org.somda.sdc.dpws.factory.TransportBindingFactory;
 import org.somda.sdc.dpws.guice.NetworkJobThreadPool;
+import org.somda.sdc.dpws.http.HttpException;
+import org.somda.sdc.dpws.http.HttpHandler;
 import org.somda.sdc.dpws.http.HttpServerRegistry;
 import org.somda.sdc.dpws.http.HttpUriBuilder;
 import org.somda.sdc.dpws.model.HostedServiceType;
@@ -45,6 +47,8 @@ import org.w3c.dom.Element;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.time.Duration;
 import java.util.Collection;
 import java.util.Collections;
@@ -78,7 +82,8 @@ public class WsEventingReferenceParametersTest extends DpwsTest {
 
         // start required thread pool(s)
         getInjector().getInstance(Key.get(
-                new TypeLiteral<ExecutorWrapperService<ListeningExecutorService>>(){},
+                new TypeLiteral<ExecutorWrapperService<ListeningExecutorService>>() {
+                },
                 NetworkJobThreadPool.class
         )).startAsync().awaitRunning();
         getInjector().getInstance(SoapMarshalling.class).startAsync().awaitRunning();
@@ -94,9 +99,12 @@ public class WsEventingReferenceParametersTest extends DpwsTest {
         HttpServerRegistry httpSrvRegisty = getInjector().getInstance(HttpServerRegistry.class);
 
         var uri = "http://" + HOST + ":" + PORT;
-        MarshallingService marshallingService = getInjector().getInstance(MarshallingService.class);
-        var hostedServiceUri = httpSrvRegisty.registerContext(uri, HOSTED_SERVICE_PATH, (inStream, outStream, ti) ->
-                marshallingService.handleRequestResponse(reqResSrv, inStream, outStream, ti));
+        var hostedServiceUri = httpSrvRegisty.registerContext(uri, HOSTED_SERVICE_PATH, new HttpHandler() {
+            @Override
+            public void handle(InputStream inStream, OutputStream outStream, CommunicationContext communicationContext) throws HttpException {
+                MarshallingHelper.handleRequestResponse(getInjector(), reqResSrv, inStream, outStream, communicationContext);
+            }
+        });
 
         HostedServiceType hst = dpwsFactory.createHostedServiceType();
         hst.getEndpointReference().add(wsaUtil.createEprWithAddress(hostedServiceUri));
@@ -289,4 +297,5 @@ public class WsEventingReferenceParametersTest extends DpwsTest {
             bind(LocalAddressResolver.class).to(LocalAddressResolverMock.class);
         }
     }
+
 }

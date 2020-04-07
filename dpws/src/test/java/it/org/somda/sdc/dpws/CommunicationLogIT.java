@@ -16,6 +16,8 @@ import org.slf4j.LoggerFactory;
 import org.somda.sdc.dpws.*;
 import org.somda.sdc.dpws.factory.TransportBindingFactory;
 import org.somda.sdc.dpws.guice.DefaultDpwsConfigModule;
+import org.somda.sdc.dpws.http.HttpException;
+import org.somda.sdc.dpws.http.HttpHandler;
 import org.somda.sdc.dpws.http.apache.ClientTransportBinding;
 import org.somda.sdc.dpws.http.jetty.JettyHttpServerHandler;
 import org.somda.sdc.dpws.http.jetty.JettyHttpServerRegistry;
@@ -30,6 +32,7 @@ import test.org.somda.common.LoggingTestWatcher;
 import javax.xml.bind.JAXBElement;
 import javax.xml.namespace.QName;
 import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.net.URI;
@@ -171,15 +174,18 @@ public class CommunicationLogIT extends DpwsTest {
 
         httpServerRegistry.startAsync().awaitRunning();
         var srvUri1 = httpServerRegistry.registerContext(
-                baseUri, contextPath, (req, res, ti) -> {
-                    try {
-                        byte[] bytes = req.readAllBytes();
-                        resultString.set(new String(bytes));
+                baseUri, contextPath, new HttpHandler() {
+                    @Override
+                    public void handle(InputStream inStream, OutputStream outStream, CommunicationContext communicationContext) throws HttpException {
+                        try {
+                            byte[] bytes = inStream.readAllBytes();
+                            resultString.set(new String(bytes));
 
-                        // write response
-                        res.write(expectedResponse.getBytes());
-                    } catch (Exception e) {
-                        throw new RuntimeException(e);
+                            // write response
+                            outStream.write(expectedResponse.getBytes());
+                        } catch (Exception e) {
+                            throw new RuntimeException(e);
+                        }
                     }
                 });
 
