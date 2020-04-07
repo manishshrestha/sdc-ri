@@ -277,15 +277,18 @@ public class CommunicationLogIT extends DpwsTest {
 
         httpServerRegistry.startAsync().awaitRunning();
         var srvUri1 = httpServerRegistry.registerContext(
-                baseUri, contextPath, (req, res, ti) -> {
-                    try {
-                        byte[] bytes = req.readAllBytes();
-                        resultString.set(new String(bytes));
+                baseUri, contextPath, new HttpHandler() {
+                    @Override
+                    public void handle(InputStream inStream, OutputStream outStream, CommunicationContext communicationContext) throws HttpException {
+                        try {
+                            byte[] bytes = inStream.readAllBytes();
+                            resultString.set(new String(bytes));
 
-                        // write response
-                        res.write(expectedResponse.getBytes());
-                    } catch (Exception e) {
-                        throw new RuntimeException(e);
+                            // write response
+                            outStream.write(expectedResponse.getBytes());
+                        } catch (Exception e) {
+                            throw new RuntimeException(e);
+                        }
                     }
                 });
 
