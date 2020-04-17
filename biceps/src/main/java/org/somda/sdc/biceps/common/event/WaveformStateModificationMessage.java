@@ -1,7 +1,6 @@
 package org.somda.sdc.biceps.common.event;
 
 import org.somda.sdc.biceps.common.access.MdibAccess;
-import org.somda.sdc.biceps.model.participant.AbstractMetricState;
 import org.somda.sdc.biceps.model.participant.RealTimeSampleArrayMetricState;
 
 import java.util.List;
@@ -14,7 +13,7 @@ public class WaveformStateModificationMessage extends StateModificationMessage<R
      * Constructor.
      *
      * @param mdibAccess the MDIB access for {@link AbstractMdibAccessMessage}.
-     * @param states the states of the message.
+     * @param states     the states of the message.
      */
     public WaveformStateModificationMessage(MdibAccess mdibAccess, List<RealTimeSampleArrayMetricState> states) {
         super(mdibAccess, states);

@@ -1,7 +1,11 @@
 package org.somda.sdc.biceps.provider.preprocessing;
 
 import com.google.inject.Inject;
-import org.somda.sdc.biceps.common.*;
+import org.somda.sdc.biceps.common.MdibDescriptionModification;
+import org.somda.sdc.biceps.common.MdibDescriptionModifications;
+import org.somda.sdc.biceps.common.MdibEntity;
+import org.somda.sdc.biceps.common.MdibStateModifications;
+import org.somda.sdc.biceps.common.MdibTypeValidator;
 import org.somda.sdc.biceps.common.storage.DescriptionPreprocessingSegment;
 import org.somda.sdc.biceps.common.storage.MdibStorage;
 import org.somda.sdc.biceps.common.storage.StatePreprocessingSegment;
@@ -13,7 +17,13 @@ import org.somda.sdc.biceps.provider.preprocessing.helper.VersionPair;
 import org.somda.sdc.common.util.ObjectUtil;
 
 import java.math.BigInteger;
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -72,7 +82,11 @@ public class VersionHandler implements DescriptionPreprocessingSegment, StatePre
                         MdibStorage storage) throws VersioningException {
         switch (modification.getModificationType()) {
             case INSERT:
-                processInsert(modifications, modification.getDescriptor(), modification.getStates(), modification.getParentHandle(), storage);
+                processInsert(
+                        modifications, modification.getDescriptor(),
+                        modification.getStates(), modification.getParentHandle(),
+                        storage
+                );
                 break;
             case UPDATE:
                 processUpdate(modification.getDescriptor(), modification.getStates(), storage);
@@ -80,11 +94,17 @@ public class VersionHandler implements DescriptionPreprocessingSegment, StatePre
             case DELETE:
                 processDelete(modification.getDescriptor(), storage);
                 break;
+            default:
+                throw new VersioningException(String.format(
+                        "Default clause reached in process, modification %s was unknown",
+                        modification.getModificationType()
+                ));
         }
     }
 
     @Override
-    public void process(MdibStateModifications modifications, AbstractState state, MdibStorage storage) throws VersioningException {
+    public void process(MdibStateModifications modifications, AbstractState state, MdibStorage storage)
+            throws VersioningException {
         final Optional<AbstractMultiState> multiState = mdibTypeValidator.toMultiState(state);
         if (multiState.isPresent()) {
             VersionPair versionPair;
@@ -92,8 +112,10 @@ public class VersionHandler implements DescriptionPreprocessingSegment, StatePre
             if (multiStateVersionPair.isPresent()) {
                 versionPair = multiStateVersionPair.get();
             } else {
-                VersionPair versionPairFromDescr = getVersionPair(multiState.get().getDescriptorHandle()).orElseThrow(() ->
-                        new VersioningException("Multi-state descriptor was missing during multi state update"));
+                VersionPair versionPairFromDescr = getVersionPair(multiState.get().getDescriptorHandle())
+                        .orElseThrow(() ->
+                                new VersioningException("Multi-state descriptor was missing during multi state update")
+                        );
                 versionPair = new VersionPair(versionPairFromDescr.getDescriptorVersion(), BigInteger.valueOf(-1));
             }
 
@@ -137,18 +159,19 @@ public class VersionHandler implements DescriptionPreprocessingSegment, StatePre
             return;
         }
 
+        var statesRef = states;
         if (mdibTypeValidator.isMultiStateDescriptor(descriptor)) {
-            processUpdateWithMultiState(descriptor, states, storage);
+            processUpdateWithMultiState(descriptor, statesRef, storage);
         } else {
-            if (states.isEmpty()) {
+            if (statesRef.isEmpty()) {
                 Optional<AbstractState> state = storage.getState(descriptor.getHandle());
                 if (state.isEmpty()) {
                     throw new VersioningException("State is missing to complete the update operation");
                 } else {
-                    states = Collections.singletonList(state.get());
+                    statesRef = Collections.singletonList(state.get());
                 }
             }
-            processUpdateWithSingleState(descriptor, states.get(0));
+            processUpdateWithSingleState(descriptor, statesRef.get(0));
         }
 
         setUpdated(descriptor);
@@ -166,7 +189,7 @@ public class VersionHandler implements DescriptionPreprocessingSegment, StatePre
         final Map<String, AbstractMultiState> multiStatesFromStorage = storage.getMultiStates(descriptor.getHandle())
                 .stream().collect(Collectors.toMap(o -> o.getHandle(), o -> o));
 
-        Consumer<AbstractMultiState> replaceVersions = (multiState) -> {
+        Consumer<AbstractMultiState> replaceVersions = multiState -> {
             final VersionPair stateVersionPair = getVersionPair(multiState).orElse(new VersionPair());
             multiState.setDescriptorVersion(descriptor.getDescriptorVersion());
             multiState.setStateVersion(stateVersionPair.getStateVersion().add(BigInteger.ONE));
@@ -187,7 +210,8 @@ public class VersionHandler implements DescriptionPreprocessingSegment, StatePre
         }
     }
 
-    private void processUpdateWithSingleState(AbstractDescriptor descriptor, AbstractState state) throws VersioningException {
+    private void processUpdateWithSingleState(AbstractDescriptor descriptor, AbstractState state)
+            throws VersioningException {
         final VersionPair versionPair = getVersionPair(descriptor).orElseThrow(() ->
                 new VersioningException("Expected existing version on update, but none found"));
         descriptor.setDescriptorVersion(versionPair.getDescriptorVersion().add(BigInteger.ONE));
@@ -232,7 +256,8 @@ public class VersionHandler implements DescriptionPreprocessingSegment, StatePre
         putVersionPair(descriptor, state);
     }
 
-    private void processInsertWithMultiState(AbstractDescriptor descriptor, List<? extends AbstractState> states) throws VersioningException {
+    private void processInsertWithMultiState(AbstractDescriptor descriptor, List<? extends AbstractState> states)
+            throws VersioningException {
         final VersionPair versionPair = getVersionPair(descriptor).orElse(new VersionPair());
         descriptor.setDescriptorVersion(versionPair.getDescriptorVersion().add(BigInteger.ONE));
         putVersionPair(descriptor);
@@ -256,7 +281,10 @@ public class VersionHandler implements DescriptionPreprocessingSegment, StatePre
     }
 
     private void putVersionPair(VersionPair versionPair, AbstractState state) {
-        versionsWorkingCopy.put(state.getDescriptorHandle(), new VersionPair(versionPair.getDescriptorVersion(), state.getStateVersion()));
+        versionsWorkingCopy.put(
+                state.getDescriptorHandle(),
+                new VersionPair(versionPair.getDescriptorVersion(), state.getStateVersion())
+        );
     }
 
     private void putVersionPair(AbstractDescriptor descriptor) {
@@ -264,11 +292,17 @@ public class VersionHandler implements DescriptionPreprocessingSegment, StatePre
     }
 
     private void putVersionPair(AbstractDescriptor descriptor, AbstractState state) {
-        versionsWorkingCopy.put(descriptor.getHandle(), new VersionPair(descriptor.getDescriptorVersion(), state.getStateVersion()));
+        versionsWorkingCopy.put(
+                descriptor.getHandle(),
+                new VersionPair(descriptor.getDescriptorVersion(), state.getStateVersion())
+        );
     }
 
     private void putVersionPair(AbstractMultiState state) {
-        versionsWorkingCopy.put(state.getHandle(), new VersionPair(state.getDescriptorVersion(), state.getStateVersion()));
+        versionsWorkingCopy.put(
+                state.getHandle(),
+                new VersionPair(state.getDescriptorVersion(), state.getStateVersion())
+        );
     }
 
     private Optional<VersionPair> getVersionPair(String handle) {

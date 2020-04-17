@@ -1,7 +1,11 @@
 package org.somda.sdc.biceps.common;
 
 import com.google.inject.Inject;
-import org.somda.sdc.biceps.model.participant.*;
+import org.somda.sdc.biceps.model.participant.AbstractContextDescriptor;
+import org.somda.sdc.biceps.model.participant.AbstractContextState;
+import org.somda.sdc.biceps.model.participant.AbstractDescriptor;
+import org.somda.sdc.biceps.model.participant.AbstractMultiState;
+import org.somda.sdc.biceps.model.participant.AbstractState;
 
 import java.util.Collections;
 import java.util.List;
@@ -13,8 +17,8 @@ import java.util.Optional;
 public class MdibTypeValidator {
     private static final String ABSTRACT_PREFIX = "Abstract";
 
-    private static String DESCRIPTOR_SUFFIX = "Descriptor";
-    private static int DESCRIPTOR_SUFFIX_LENGTH = DESCRIPTOR_SUFFIX.length();
+    private static final String DESCRIPTOR_SUFFIX = "Descriptor";
+    private static final int DESCRIPTOR_SUFFIX_LENGTH = DESCRIPTOR_SUFFIX.length();
 
     private static final String STATE_SUFFIX = "State";
     private static final int STATE_SUFFIX_LENGTH = STATE_SUFFIX.length();
@@ -194,15 +198,33 @@ public class MdibTypeValidator {
         return Optional.empty();
     }
 
-    public <T extends AbstractState, V extends AbstractDescriptor> Class<V> resolveDescriptorType(Class<T> stateClass) throws ClassNotFoundException {
+    /**
+     * Resolves the descriptor type belonging to a state type.
+     * @param stateClass to resolve the descriptor type for
+     * @param <T> a state type
+     * @param <V> a descriptor type
+     * @return the descriptor type matching the passed state
+     * @throws ClassNotFoundException if no matching descriptor class has been found
+     */
+    public <T extends AbstractState, V extends AbstractDescriptor> Class<V> resolveDescriptorType(Class<T> stateClass)
+            throws ClassNotFoundException {
         final String baseName = stateClass.getCanonicalName()
                 .substring(0, stateClass.getCanonicalName().length() - STATE_SUFFIX_LENGTH);
-        return (Class<V>)Class.forName(baseName + DESCRIPTOR_SUFFIX);
+        return (Class<V>) Class.forName(baseName + DESCRIPTOR_SUFFIX);
     }
 
-    public <T extends AbstractDescriptor, V extends AbstractState> Class<V> resolveStateType(Class<T> descriptorClass) throws ClassNotFoundException {
+    /**
+     * Resolves the state type belonging to a descriptor type.
+     * @param descriptorClass to resolve the state type for
+     * @param <T> a descriptor type
+     * @param <V> a state type
+     * @return the state type matching the passed descriptor
+     * @throws ClassNotFoundException if no matching state class has been found
+     */
+    public <T extends AbstractDescriptor, V extends AbstractState> Class<V> resolveStateType(Class<T> descriptorClass)
+            throws ClassNotFoundException {
         final String baseName = descriptorClass.getCanonicalName()
                 .substring(0, descriptorClass.getCanonicalName().length() - DESCRIPTOR_SUFFIX_LENGTH);
-        return (Class<V>)Class.forName(baseName + STATE_SUFFIX);
+        return (Class<V>) Class.forName(baseName + STATE_SUFFIX);
     }
 }

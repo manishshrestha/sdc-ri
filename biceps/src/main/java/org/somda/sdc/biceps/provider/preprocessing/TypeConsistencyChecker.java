@@ -1,7 +1,9 @@
 package org.somda.sdc.biceps.provider.preprocessing;
 
 import com.google.common.base.Joiner;
-import org.somda.sdc.biceps.common.*;
+import org.somda.sdc.biceps.common.MdibDescriptionModification;
+import org.somda.sdc.biceps.common.MdibDescriptionModifications;
+import org.somda.sdc.biceps.common.MdibTreeValidator;
 import org.somda.sdc.biceps.common.storage.DescriptionPreprocessingSegment;
 import org.somda.sdc.biceps.common.storage.MdibStorage;
 import org.somda.sdc.biceps.model.participant.AbstractDescriptor;
@@ -35,8 +37,10 @@ public class TypeConsistencyChecker implements DescriptionPreprocessingSegment {
                 return;
             }
 
-            throw new TypeConsistencyException(String.format("Inserted entities other than MDS require a parent handle. " +
-                    "Handle is %s, type is %s", descriptor.getHandle(), descriptor.getClass()));
+            throw new TypeConsistencyException(String.format(
+                    "Inserted entities other than MDS require a parent handle. Handle is %s, type is %s",
+                    descriptor.getHandle(), descriptor.getClass()
+            ));
         } else {
             if (descriptor instanceof MdsDescriptor) {
                 throw new TypeConsistencyException(String.format("MDS shall not possess a parent handle. Handle is %s",
@@ -44,7 +48,9 @@ public class TypeConsistencyChecker implements DescriptionPreprocessingSegment {
             }
         }
 
-        Optional<AbstractDescriptor> parentFromStorage = storage.getDescriptor(currentModification.getParentHandle().get());
+        Optional<AbstractDescriptor> parentFromStorage = storage.getDescriptor(
+                currentModification.getParentHandle().get()
+        );
         AbstractDescriptor parentDescriptor;
         if (parentFromStorage.isPresent()) {
             parentDescriptor = parentFromStorage.get();
@@ -59,7 +65,8 @@ public class TypeConsistencyChecker implements DescriptionPreprocessingSegment {
         }
 
         if (!treeValidator.isValidParent(parentDescriptor, descriptor)) {
-            throw new TypeConsistencyException(String.format("Parent descriptor of %s is invalid: %s. Valid parents: [%s].",
+            throw new TypeConsistencyException(String.format(
+                    "Parent descriptor of %s is invalid: %s. Valid parents: [%s].",
                     descriptor.getClass(),
                     parentDescriptor.getClass(),
                     Joiner.on(", ").join(treeValidator.allowedParents(descriptor))));

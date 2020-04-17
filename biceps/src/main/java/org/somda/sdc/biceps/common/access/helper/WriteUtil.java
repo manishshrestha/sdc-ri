@@ -20,7 +20,7 @@ import java.util.function.Function;
  * <em>Remark: The operations do not copy descriptors or states.</em>
  */
 public class WriteUtil {
-    private final Logger LOG;
+    private final Logger log;
 
     private final Distributor eventDistributor;
     private final MdibStoragePreprocessingChain mdibAccessPreprocessing;
@@ -41,7 +41,7 @@ public class WriteUtil {
                      MdibStoragePreprocessingChain mdibAccessPreprocessing,
                      ReentrantReadWriteLock readWriteLock,
                      MdibAccess mdibAccess) {
-        this.LOG = logger;
+        this.log = logger;
         this.eventDistributor = eventDistributor;
         this.mdibAccessPreprocessing = mdibAccessPreprocessing;
         this.readWriteLock = readWriteLock;
@@ -59,14 +59,16 @@ public class WriteUtil {
      * @return a write description result that contains inserted, updated and deleted entities.
      * @throws PreprocessingException in case a consistency check or modifier fails.
      */
-    public WriteDescriptionResult writeDescription(Function<MdibDescriptionModifications, WriteDescriptionResult> lockedWriteDescription,
-                                                   MdibDescriptionModifications descriptionModifications) throws PreprocessingException {
+    public WriteDescriptionResult writeDescription(
+            Function<MdibDescriptionModifications, WriteDescriptionResult> lockedWriteDescription,
+            MdibDescriptionModifications descriptionModifications
+    ) throws PreprocessingException {
         acquireWriteLock();
 
         long startTime = 0;
-        if (LOG.isDebugEnabled()) {
+        if (log.isDebugEnabled()) {
             startTime = System.currentTimeMillis();
-            LOG.debug("Start writing description");
+            log.debug("Start writing description");
         }
 
         WriteDescriptionResult modificationResult;
@@ -82,7 +84,7 @@ public class WriteUtil {
 
             readWriteLock.readLock().lock();
         } catch (PreprocessingException e) {
-            LOG.warn("Error while processing description modifications in chain segment {} on handle {}: {}",
+            log.warn("Error while processing description modifications in chain segment {} on handle {}: {}",
                     e.getSegment(), e.getHandle(), e.getMessage());
             throw e;
         } finally {
@@ -90,9 +92,9 @@ public class WriteUtil {
         }
 
         long endTime = System.currentTimeMillis();
-        if (LOG.isDebugEnabled()) {
+        if (log.isDebugEnabled()) {
 
-            LOG.debug("MDIB version {} written in {} ms",
+            log.debug("MDIB version {} written in {} ms",
                     modificationResult.getMdibVersion(),
                     endTime - startTime);
         }
@@ -107,8 +109,8 @@ public class WriteUtil {
             readWriteLock.readLock().unlock();
         }
 
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("Distributing changes with {} took {} ms",
+        if (log.isDebugEnabled()) {
+            log.debug("Distributing changes with {} took {} ms",
                     modificationResult.getMdibVersion(),
                     System.currentTimeMillis() - endTime);
         }
@@ -132,9 +134,9 @@ public class WriteUtil {
         acquireWriteLock();
 
         long startTime = 0;
-        if (LOG.isDebugEnabled()) {
+        if (log.isDebugEnabled()) {
             startTime = System.currentTimeMillis();
-            LOG.debug("Start writing states");
+            log.debug("Start writing states");
         }
 
         WriteStateResult modificationResult;
@@ -149,7 +151,7 @@ public class WriteUtil {
 
             readWriteLock.readLock().lock();
         } catch (PreprocessingException e) {
-            LOG.warn("Error while processing state modifications in chain segment {} on handle {}: {}",
+            log.warn("Error while processing state modifications in chain segment {} on handle {}: {}",
                     e.getSegment(), e.getHandle(), e.getMessage());
             throw e;
         } finally {
@@ -157,9 +159,9 @@ public class WriteUtil {
         }
 
         long endTime = System.currentTimeMillis();
-        if (LOG.isDebugEnabled()) {
+        if (log.isDebugEnabled()) {
 
-            LOG.debug("MDIB version {} written in {} ms",
+            log.debug("MDIB version {} written in {} ms",
                     modificationResult.getMdibVersion(),
                     endTime - startTime);
         }
@@ -173,8 +175,8 @@ public class WriteUtil {
             readWriteLock.readLock().unlock();
         }
 
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("Distributing changes {} took {} ms",
+        if (log.isDebugEnabled()) {
+            log.debug("Distributing changes {} took {} ms",
                     modificationResult.getMdibVersion(),
                     System.currentTimeMillis() - endTime);
         }
@@ -183,11 +185,12 @@ public class WriteUtil {
     }
 
     private void acquireWriteLock() {
-        LOG.debug("Trying to acquire write lock");
+        log.debug("Trying to acquire write lock");
         if (readWriteLock.getReadHoldCount() > 0) {
             throw new IllegalThreadStateException(
-                    "Tried to invoke write operation with read lock held by the current thread present. " +
-                            "Check if a write description or state function has been executed within a read transaction context."
+                    "Tried to invoke write operation with read lock held by the current thread present."
+                            + " Check if a write description or state function has been executed within"
+                            + " a read transaction context."
             );
         }
 

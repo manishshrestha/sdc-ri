@@ -29,38 +29,6 @@ public class MdibVersion {
     private final BigInteger version;
 
     /**
-     * Creates a new instance with a random sequence id.
-     *
-     * @return a new instance.
-     */
-    public static MdibVersion create() {
-        return new MdibVersion(UriUtil.createUuid(UUID.randomUUID()));
-    }
-
-    /**
-     * Accepts an existing instance and increments the version counter.
-     *
-     * @param mdibVersion the version base.
-     * @return a new instance with same sequence and instance id as in {@code mdibVersion} plus a version counter
-     * incremented by one.
-     */
-    public static MdibVersion increment(MdibVersion mdibVersion) {
-        return new MdibVersion(mdibVersion.getSequenceId(), mdibVersion.getVersion().add(BigInteger.ONE),
-                mdibVersion.getInstanceId());
-    }
-
-    /**
-     * Accepts an existing instance and resets the version counter to the given number
-     * @param mdibVersion the version base.
-     * @param versionCounter the version counter number to replace.
-     * @return a new instance with same sequence and instance id as in {@code mdibVersion} plus a version counter
-     * incremented by {@code versionCounter}.
-     */
-    public static MdibVersion setVersionCounter(MdibVersion mdibVersion, BigInteger versionCounter) {
-        return new MdibVersion(mdibVersion.getSequenceId(), versionCounter, mdibVersion.getInstanceId());
-    }
-
-    /**
      * Constructor that sets a given sequence id.
      * <p>
      * Instance id and version counter are initialized with 0.
@@ -98,6 +66,38 @@ public class MdibVersion {
         this.sequenceId = sequenceId;
         this.version = version;
         this.instanceId = instanceId;
+    }
+
+    /**
+     * Creates a new instance with a random sequence id.
+     *
+     * @return a new instance.
+     */
+    public static MdibVersion create() {
+        return new MdibVersion(UriUtil.createUuid(UUID.randomUUID()));
+    }
+
+    /**
+     * Accepts an existing instance and increments the version counter.
+     *
+     * @param mdibVersion the version base.
+     * @return a new instance with same sequence and instance id as in {@code mdibVersion} plus a version counter
+     * incremented by one.
+     */
+    public static MdibVersion increment(MdibVersion mdibVersion) {
+        return new MdibVersion(mdibVersion.getSequenceId(), mdibVersion.getVersion().add(BigInteger.ONE),
+                mdibVersion.getInstanceId());
+    }
+
+    /**
+     * Accepts an existing instance and resets the version counter to the given number.
+     * @param mdibVersion the version base.
+     * @param versionCounter the version counter number to replace.
+     * @return a new instance with same sequence and instance id as in {@code mdibVersion} plus a version counter
+     * incremented by {@code versionCounter}.
+     */
+    public static MdibVersion setVersionCounter(MdibVersion mdibVersion, BigInteger versionCounter) {
+        return new MdibVersion(mdibVersion.getSequenceId(), versionCounter, mdibVersion.getInstanceId());
     }
 
     public String getSequenceId() {
@@ -151,7 +151,8 @@ public class MdibVersion {
      * @return depending on the fields of the MDIB version triple:
      * <ul>
      * <li>{@linkplain Optional#empty()} if sequence ids differ from each other
-     * <li>-1 if {@code lhs.instanceId < rhs.instanceId || lhs.instanceId == rhs.instanceId && lhs.version < rhs.version}
+     * <li>-1 if {@code lhs.instanceId < rhs.instanceId
+     *      || lhs.instanceId == rhs.instanceId && lhs.version < rhs.version}
      * <li>the result of {@code lhs.version.compareTo(rhs.version)} if {@code lhs.instanceId == rhs.instanceId}
      * <li>1 if {@code lhs.instanceId > rhs.instanceId || lhs.instanceId == rhs.instanceId && lhs.version > rhs.version}
      * </ul>
