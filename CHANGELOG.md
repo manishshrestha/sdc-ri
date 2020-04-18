@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## 1.1.0 - 2020-04-18
+
 ### Added
 
 - _Releases_ and _How to get started_ sections to the project readme. (#125)
@@ -21,6 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `org.somda.sdc.dpws.soap.exception.SoapFaultException`: constructor that accepts a throwable cause. (#143)
 
 ### Deprecated
+
 - `org.somda.sdc.glue.provider.SdcDevice#getDiscoveryAccess()` and `#getHostingServiceAccess()`; see `SdcDevice` class comment for alternative access.
 - `org.somda.sdc.dpws.CommunicationLogSink.getTargetStream()`; see method comment for alternative.
 - `org.somda.sdc.glue.consumer.factory.SdcRemoteDeviceFactory#createSdcRemoteDevice()` without watchdog argument.
@@ -33,6 +36,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `org.somda.sdc.biceps.common.preprocessing.DescriptorChildRemover#removeChildren(MdsDescriptor)` as this was not intended to be public. (#149)
 
 ### Deprecated
+
 - `org.somda.sdc.glue.provider.SdcDevice#getDiscoveryAccess()` and `#getHostingServiceAccess()`; see `SdcDevice` class comment for alternative access.
 - `org.somda.sdc.dpws.CommunicationLogSink.getTargetStream()`; see method comment for alternative
 - `org.somda.sdc.glue.consumer.factory.SdcRemoteDeviceFactory#createSdcRemoteDevice()` without watchdog argument
