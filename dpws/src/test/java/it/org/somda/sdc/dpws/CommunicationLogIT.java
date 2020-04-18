@@ -1,5 +1,6 @@
 package it.org.somda.sdc.dpws;
 
+import com.google.common.collect.ListMultimap;
 import com.google.inject.AbstractModule;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
@@ -13,9 +14,16 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.somda.sdc.dpws.*;
+import org.somda.sdc.dpws.CommunicationLog;
+import org.somda.sdc.dpws.CommunicationLogImpl;
+import org.somda.sdc.dpws.CommunicationLogSink;
+import org.somda.sdc.dpws.DpwsConfig;
+import org.somda.sdc.dpws.DpwsTest;
+import org.somda.sdc.dpws.TransportBinding;
 import org.somda.sdc.dpws.factory.TransportBindingFactory;
 import org.somda.sdc.dpws.guice.DefaultDpwsConfigModule;
+import org.somda.sdc.dpws.http.HttpException;
+import org.somda.sdc.dpws.http.HttpHandler;
 import org.somda.sdc.dpws.http.apache.ClientTransportBinding;
 import org.somda.sdc.dpws.http.jetty.JettyHttpServerHandler;
 import org.somda.sdc.dpws.http.jetty.JettyHttpServerRegistry;
@@ -30,6 +38,7 @@ import test.org.somda.common.LoggingTestWatcher;
 import javax.xml.bind.JAXBElement;
 import javax.xml.namespace.QName;
 import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.net.URI;
@@ -40,6 +49,8 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @ExtendWith(LoggingTestWatcher.class)
 public class CommunicationLogIT extends DpwsTest {
@@ -146,14 +157,28 @@ public class CommunicationLogIT extends DpwsTest {
             assertArrayEquals(expectedResponseStream.toByteArray(), resp.toByteArray());
 
             // ensure request headers are logged
-            assertEquals(
-                    ClientTransportBinding.USER_AGENT_VALUE,
-                    logSink.getOutboundHeaders().get(0).get(ClientTransportBinding.USER_AGENT_KEY)
+            assertTrue(
+                    logSink.getOutboundHeaders().get(0)
+                            .get(ClientTransportBinding.USER_AGENT_KEY.toLowerCase())
+                            .contains(ClientTransportBinding.USER_AGENT_VALUE)
             );
             // ensure response headers are logged
-            assertEquals(
-                    HttpServerUtil.GzipResponseHandler.TEST_HEADER_VALUE,
-                    logSink.getInboundHeaders().get(0).get(HttpServerUtil.GzipResponseHandler.TEST_HEADER_KEY)
+            assertTrue(
+                    logSink.getInboundHeaders().get(0)
+                            .get(HttpServerUtil.GzipResponseHandler.TEST_HEADER_KEY.toLowerCase())
+                            .contains(HttpServerUtil.GzipResponseHandler.TEST_HEADER_VALUE)
+            );
+
+            // all headers must've been converted to lower case, these must be false
+            assertFalse(
+                    logSink.getOutboundHeaders().get(0)
+                            .get(ClientTransportBinding.USER_AGENT_KEY)
+                            .contains(ClientTransportBinding.USER_AGENT_VALUE)
+            );
+            assertFalse(
+                    logSink.getInboundHeaders().get(0)
+                            .get(HttpServerUtil.GzipResponseHandler.TEST_HEADER_KEY)
+                            .contains(HttpServerUtil.GzipResponseHandler.TEST_HEADER_VALUE)
             );
 
             logSink.clear();
@@ -171,15 +196,18 @@ public class CommunicationLogIT extends DpwsTest {
 
         httpServerRegistry.startAsync().awaitRunning();
         var srvUri1 = httpServerRegistry.registerContext(
-                baseUri, contextPath, (req, res, ti) -> {
-                    try {
-                        byte[] bytes = req.readAllBytes();
-                        resultString.set(new String(bytes));
+                baseUri, contextPath, new HttpHandler() {
+                    @Override
+                    public void handle(InputStream inStream, OutputStream outStream, CommunicationContext communicationContext) throws HttpException {
+                        try {
+                            byte[] bytes = inStream.readAllBytes();
+                            resultString.set(new String(bytes));
 
-                        // write response
-                        res.write(expectedResponse.getBytes());
-                    } catch (Exception e) {
-                        throw new RuntimeException(e);
+                            // write response
+                            outStream.write(expectedResponse.getBytes());
+                        } catch (Exception e) {
+                            throw new RuntimeException(e);
+                        }
                     }
                 });
 
@@ -213,43 +241,145 @@ public class CommunicationLogIT extends DpwsTest {
             assertArrayEquals(expectedResponse.getBytes(), resp.toByteArray());
 
             // ensure request headers are logged
-            assertEquals(
-                    customHeaderValue,
+            assertTrue(
                     logSink.getInboundHeaders().get(0).get(customHeaderKey)
+                            .contains(customHeaderValue)
             );
             // ensure response headers are logged
-            assertEquals(
-                    JettyHttpServerHandler.SERVER_HEADER_VALUE,
-                    logSink.getOutboundHeaders().get(0).get(JettyHttpServerHandler.SERVER_HEADER_KEY)
+            assertTrue(
+                    logSink.getOutboundHeaders().get(0)
+                            .get(JettyHttpServerHandler.SERVER_HEADER_KEY.toLowerCase())
+                            .contains(JettyHttpServerHandler.SERVER_HEADER_VALUE)
+            );
+
+            // all headers must've been converted to lower case, these must be false
+            assertFalse(
+                    logSink.getInboundHeaders().get(0).get(customHeaderKey.toUpperCase())
+                            .contains(customHeaderValue)
+            );
+            assertFalse(
+                    logSink.getOutboundHeaders().get(0)
+                            .get(JettyHttpServerHandler.SERVER_HEADER_KEY)
+                            .contains(JettyHttpServerHandler.SERVER_HEADER_VALUE)
             );
             logSink.clear();
         }
     }
 
+    @Test
+    void testServerCommlogDuplicateKeys() throws Exception {
+        var baseUri = "http://127.0.0.1:0";
+        var contextPath = "/ctxt/path1";
+
+        final String expectedRequest = "The quick brown fox jumps over the lazy dog";
+        final String expectedResponse = "Franz jagt im komplett verwahrlosten Taxi quer durch Bayern";
+        AtomicReference<String> resultString = new AtomicReference<>();
+
+        httpServerRegistry.startAsync().awaitRunning();
+        var srvUri1 = httpServerRegistry.registerContext(
+                baseUri, contextPath, new HttpHandler() {
+                    @Override
+                    public void handle(InputStream inStream, OutputStream outStream, CommunicationContext communicationContext) throws HttpException {
+                        try {
+                            byte[] bytes = inStream.readAllBytes();
+                            resultString.set(new String(bytes));
+
+                            // write response
+                            outStream.write(expectedResponse.getBytes());
+                        } catch (Exception e) {
+                            throw new RuntimeException(e);
+                        }
+                    }
+                });
+
+        // as we explicitly want to set http headers and avoid the commlog, we build our own client
+        HttpClient client = HttpClients.custom().setMaxConnPerRoute(1).build();
+
+        // create post request and set custom header
+        HttpPost post = new HttpPost(srvUri1);
+        String customHeaderKey = "thecustomheader";
+        String customHeaderValue = "theCUSTOMvalue";
+        String customHeaderValue2 = "theCUSTOMvalue2";
+        post.setHeader(customHeaderKey, customHeaderValue);
+        // ensure an upper case value will be mapped to the same key
+        post.addHeader(customHeaderKey.toUpperCase(), customHeaderValue2);
+
+        // attach payload
+        var requestEntity = new ByteArrayEntity(expectedRequest.getBytes());
+        post.setEntity(requestEntity);
+
+        for (int i = 0; i < 100; i++) {
+            HttpResponse response = client.execute(post);
+            var responseBytes = response.getEntity().getContent().readAllBytes();
+
+            // slurp up any leftover data
+            EntityUtils.consume(response.getEntity());
+
+            assertEquals(expectedRequest, resultString.get());
+            assertArrayEquals(expectedResponse.getBytes(), responseBytes);
+
+            var req = logSink.getInbound().get(0);
+            var resp = logSink.getOutbound().get(0);
+
+            assertArrayEquals(expectedRequest.getBytes(), req.toByteArray());
+            assertArrayEquals(expectedResponse.getBytes(), resp.toByteArray());
+
+            // ensure request headers are logged
+            assertEquals(
+                    2,
+                    logSink.getInboundHeaders().get(0).get(customHeaderKey).size()
+            );
+            assertTrue(
+                    logSink.getInboundHeaders().get(0).get(customHeaderKey)
+                            .contains(customHeaderValue)
+            );
+            assertTrue(
+                    logSink.getInboundHeaders().get(0).get(customHeaderKey)
+                            .contains(customHeaderValue2)
+            );
+            // assert classic behavior does concat
+            assertEquals(customHeaderValue + "," + customHeaderValue2,
+                    logSink.inboundHeadersOld.get(0).get(customHeaderKey.toLowerCase()));
+            logSink.clear();
+        }
+    }
+
+
     static class TestCommLogSink implements CommunicationLogSink {
 
         private final ArrayList<ByteArrayOutputStream> inbound;
         private final ArrayList<ByteArrayOutputStream> outbound;
-        private final ArrayList<Map<String, String>> inboundHeaders;
-        private final ArrayList<Map<String, String>> outboundHeaders;
+        private final ArrayList<ListMultimap<String, String>> inboundHeaders;
+        private final ArrayList<ListMultimap<String, String>> outboundHeaders;
+        private final ArrayList<Map<String, String>> inboundHeadersOld;
+        private final ArrayList<Map<String, String>> outboundHeadersOld;
 
         TestCommLogSink() {
             this.inbound = new ArrayList<>();
             this.outbound = new ArrayList<>();
             this.inboundHeaders = new ArrayList<>();
             this.outboundHeaders = new ArrayList<>();
+            this.inboundHeadersOld = new ArrayList<>();
+            this.outboundHeadersOld = new ArrayList<>();
+        }
+
+        @Deprecated
+        public OutputStream getTargetStream(CommunicationLog.TransportType path, CommunicationLog.Direction direction, CommunicationContext communicationContext) {
+            return createTargetStream(path, direction, communicationContext);
         }
 
         @Override
-        public OutputStream getTargetStream(CommunicationLog.TransportType path, CommunicationLog.Direction direction, CommunicationContext communicationContext) {
+        public OutputStream createTargetStream(CommunicationLog.TransportType path, CommunicationLog.Direction direction, CommunicationContext communicationContext) {
             var os = new ByteArrayOutputStream();
             var appInfo = (HttpApplicationInfo) communicationContext.getApplicationInfo();
             if (CommunicationLog.Direction.INBOUND.equals(direction)) {
                 inbound.add(os);
-                inboundHeaders.add(appInfo.getHttpHeaders());
+                inboundHeaders.add(appInfo.getHeaders());
+                inboundHeadersOld.add(appInfo.getHttpHeaders());
             } else {
                 outbound.add(os);
-                outboundHeaders.add(appInfo.getHttpHeaders());
+                outboundHeaders.add(appInfo.getHeaders());
+                outboundHeadersOld.add(appInfo.getHttpHeaders());
             }
             return os;
         }
@@ -262,12 +392,20 @@ public class CommunicationLogIT extends DpwsTest {
             return outbound;
         }
 
-        public ArrayList<Map<String, String>> getInboundHeaders() {
+        public ArrayList<ListMultimap<String, String>> getInboundHeaders() {
             return inboundHeaders;
         }
 
-        public ArrayList<Map<String, String>> getOutboundHeaders() {
+        public ArrayList<ListMultimap<String, String>> getOutboundHeaders() {
             return outboundHeaders;
+        }
+
+        public ArrayList<Map<String, String>> getInboundHeadersOld() {
+            return inboundHeadersOld;
+        }
+
+        public ArrayList<Map<String, String>> getOutboundHeadersOld() {
+            return outboundHeadersOld;
         }
 
         public void clear() {
@@ -275,6 +413,8 @@ public class CommunicationLogIT extends DpwsTest {
             inbound.clear();
             inboundHeaders.clear();
             outboundHeaders.clear();
+            inboundHeadersOld.clear();
+            outboundHeadersOld.clear();
         }
     }
 

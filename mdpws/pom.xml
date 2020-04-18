@@ -3,7 +3,7 @@
     <parent>
         <artifactId>sdc-ri</artifactId>
         <groupId>org.somda.sdc</groupId>
-        <version>1.0.1</version>
+        <version>1.1.0</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -40,19 +40,19 @@
         <connection>scm:git:git://gitlab.com/sdc-suite/sdc-ri.git</connection>
         <developerConnection>scm:git:git://gitlab.com/sdc-suite/sdc-ri.git</developerConnection>
         <url>https://gitlab.com/sdc-suite/sdc-ri/-/tree/develop</url>
-      <tag>sdc-ri-1.0.1</tag>
+      <tag>sdc-ri-1.1.0</tag>
   </scm>
 
     <dependencies>
         <dependency>
             <groupId>org.somda.sdc</groupId>
             <artifactId>common</artifactId>
-            <version>1.0.1</version>
+            <version>1.1.0</version>
         </dependency>
         <dependency>
             <groupId>org.somda.sdc</groupId>
             <artifactId>dpws</artifactId>
-            <version>1.0.1</version>
+            <version>1.1.0</version>
         </dependency>
     </dependencies>
 </project>

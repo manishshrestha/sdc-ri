@@ -8,7 +8,11 @@ import org.somda.sdc.biceps.model.participant.AbstractMultiState;
 import org.somda.sdc.biceps.model.participant.AbstractState;
 
 import javax.annotation.Nullable;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Container to collect changes supposed to be applied on an MDIB.
@@ -22,6 +26,13 @@ public class MdibDescriptionModifications {
     private Set<String> insertedHandles;
     private Set<String> updatedHandles;
     private Set<String> deletedHandles;
+
+    private MdibDescriptionModifications() {
+        this.modifications = new ArrayList<>();
+        this.insertedHandles = new HashSet<>();
+        this.updatedHandles = new HashSet<>();
+        this.deletedHandles = new HashSet<>();
+    }
 
     /**
      * Creates a set.
@@ -63,7 +74,8 @@ public class MdibDescriptionModifications {
      *
      * @param modType      the modification type.
      * @param descriptor   the descriptor to add.
-     * @param parentHandle the parent handle, allowed to be null in case of MDS or if it can be derived during preprocessing.
+     * @param parentHandle the parent handle, allowed to be null in case of MDS or
+     *                     if it can be derived during preprocessing.
      * @return this object for fluent access.
      */
     public MdibDescriptionModifications add(MdibDescriptionModification.Type modType,
@@ -163,7 +175,10 @@ public class MdibDescriptionModifications {
      * @return this object for fluent access.
      */
     public MdibDescriptionModifications insert(Entry entry) {
-        return add(MdibDescriptionModification.Type.INSERT, entry.getDescriptor(), entry.getState(), entry.getParentHandle());
+        return add(
+                MdibDescriptionModification.Type.INSERT, entry.getDescriptor(),
+                entry.getState(), entry.getParentHandle()
+        );
     }
 
     /**
@@ -173,7 +188,10 @@ public class MdibDescriptionModifications {
      * @return this object for fluent access.
      */
     public MdibDescriptionModifications insert(MultiStateEntry entry) {
-        return add(MdibDescriptionModification.Type.INSERT, entry.getDescriptor(), entry.getStates(), entry.getParentHandle());
+        return add(
+                MdibDescriptionModification.Type.INSERT, entry.getDescriptor(),
+                entry.getStates(), entry.getParentHandle()
+        );
     }
 
     /**
@@ -255,7 +273,10 @@ public class MdibDescriptionModifications {
      * @return this object for fluent access.
      */
     public MdibDescriptionModifications update(Entry entry) {
-        return add(MdibDescriptionModification.Type.UPDATE, entry.getDescriptor(), entry.getState(), entry.getParentHandle());
+        return add(
+                MdibDescriptionModification.Type.UPDATE, entry.getDescriptor(),
+                entry.getState(), entry.getParentHandle()
+        );
     }
 
     /**
@@ -265,7 +286,10 @@ public class MdibDescriptionModifications {
      * @return this object for fluent access.
      */
     public MdibDescriptionModifications update(MultiStateEntry entry) {
-        return add(MdibDescriptionModification.Type.UPDATE, entry.getDescriptor(), entry.getStates(), entry.getParentHandle());
+        return add(
+                MdibDescriptionModification.Type.UPDATE, entry.getDescriptor(),
+                entry.getStates(), entry.getParentHandle()
+        );
     }
 
     /**
@@ -446,7 +470,10 @@ public class MdibDescriptionModifications {
          * @param parentHandle the affected parent handle for this entry.
          * @see Entry
          */
-        public MultiStateEntry(AbstractDescriptor descriptor, List<? extends AbstractMultiState> states, String parentHandle) {
+        public MultiStateEntry(
+                AbstractDescriptor descriptor, List<? extends AbstractMultiState> states,
+                String parentHandle
+        ) {
             this.descriptor = descriptor;
             this.states = states;
             this.parentHandle = parentHandle;
@@ -464,13 +491,6 @@ public class MdibDescriptionModifications {
         String getParentHandle() {
             return parentHandle;
         }
-    }
-
-    private MdibDescriptionModifications() {
-        this.modifications = new ArrayList<>();
-        this.insertedHandles = new HashSet<>();
-        this.updatedHandles = new HashSet<>();
-        this.deletedHandles = new HashSet<>();
     }
 
     private MdibDescriptionModifications addMdibModification(MdibDescriptionModification.Type modType,

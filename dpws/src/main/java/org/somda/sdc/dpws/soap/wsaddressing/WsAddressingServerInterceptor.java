@@ -3,6 +3,8 @@ package org.somda.sdc.dpws.soap.wsaddressing;
 import com.google.common.collect.EvictingQueue;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
+import org.somda.sdc.dpws.DpwsConstants;
+import org.somda.sdc.dpws.soap.CommunicationContext;
 import org.somda.sdc.dpws.soap.SoapMessage;
 import org.somda.sdc.dpws.soap.SoapUtil;
 import org.somda.sdc.dpws.soap.exception.SoapFaultException;
@@ -13,7 +15,9 @@ import org.somda.sdc.dpws.soap.wsaddressing.model.AttributedURIType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nullable;
 import java.util.Optional;
+import java.util.function.Consumer;
 
 /**
  * Implements a WS-Addressing server interceptor to check WS-Addressing header information.
@@ -52,7 +56,8 @@ public class WsAddressingServerInterceptor implements Interceptor {
 
     @MessageInterceptor(direction = Direction.REQUEST)
     void processMessage(RequestResponseObject rrInfo) throws SoapFaultException {
-        processMessage(rrInfo.getRequest());
+        var logMissingMessageId = resolveLogCallForMissingMessageIds(rrInfo.getCommunicationContext().orElse(null));
+        processMessage(rrInfo.getRequest(), logMissingMessageId);
             rrInfo.getResponse().getWsAddressingHeader().setRelatesTo(
                     rrInfo.getRequest().getWsAddressingHeader().getMessageId().orElse(null));
             rrInfo.getResponse().getWsAddressingHeader().setMessageId(wsaUtil.createAttributedURIType(
@@ -61,12 +66,13 @@ public class WsAddressingServerInterceptor implements Interceptor {
 
     @MessageInterceptor
     void processMessage(NotificationObject nInfo) throws SoapFaultException {
-        processMessage(nInfo.getNotification());
+        var logMissingMessageId = resolveLogCallForMissingMessageIds(nInfo.getCommunicationContext().orElse(null));
+        processMessage(nInfo.getNotification(), logMissingMessageId);
     }
 
-    private void processMessage(SoapMessage msg) throws SoapFaultException {
+    private void processMessage(SoapMessage msg, Consumer<SoapMessage> logMissingMessageId) throws SoapFaultException {
         processAction(msg);
-        processMessageId(msg);
+        processMessageId(msg, logMissingMessageId);
     }
 
     private void processAction(SoapMessage msg) throws SoapFaultException {
@@ -85,14 +91,14 @@ public class WsAddressingServerInterceptor implements Interceptor {
 
     // note the synchronized keyword as the server interceptor is shared between different requests in order to
     // facilitate duplicate detection
-    private synchronized void processMessageId(SoapMessage msg) {
+    private synchronized void processMessageId(SoapMessage msg, Consumer<SoapMessage> logMissingMessageId) {
         if (ignoreMessageIds) {
             return;
         }
 
         Optional<AttributedURIType> messageId = msg.getWsAddressingHeader().getMessageId();
         if (messageId.isEmpty()) {
-            LOG.warn("Incoming message {} had no MessageID element in its header", msg);
+            logMissingMessageId.accept(msg);
             return;
         }
 
@@ -110,7 +116,21 @@ public class WsAddressingServerInterceptor implements Interceptor {
             LOG.debug(faultMsg);
             throw new RuntimeException(faultMsg);
         }
-
         messageIdCache.add(messageId.get().getValue());
+    }
+
+    private Consumer<SoapMessage> resolveLogCallForMissingMessageIds(@Nullable CommunicationContext communicationContext) {
+        var logMsg = "Incoming message {} had no MessageID element in its header";
+
+        // Typically missing message IDs are ok as long as the enclosing SOAP messages are conveyed using a
+        // connection-agnostic protocol (e.g. TCP)
+        Consumer<SoapMessage> logCall = soapMessage -> LOG.debug(logMsg, soapMessage);
+        if (communicationContext != null &&
+                communicationContext.getTransportInfo().getScheme().equalsIgnoreCase(DpwsConstants.URI_SCHEME_SOAP_OVER_UDP)) {
+            // In DPWS only UDP SOAP messages are required to enclose message IDs - promote missing message IDs to warn here
+            logCall = soapMessage -> LOG.warn(logMsg, soapMessage);
+        }
+
+        return logCall;
     }
 }

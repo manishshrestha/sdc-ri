@@ -3,7 +3,7 @@
     <parent>
         <artifactId>sdc-ri</artifactId>
         <groupId>org.somda.sdc</groupId>
-        <version>1.0.1</version>
+        <version>1.1.0</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -41,7 +41,7 @@
         <connection>scm:git:git://gitlab.com/sdc-suite/sdc-ri.git</connection>
         <developerConnection>scm:git:git://gitlab.com/sdc-suite/sdc-ri.git</developerConnection>
         <url>https://gitlab.com/sdc-suite/sdc-ri/-/tree/develop</url>
-      <tag>sdc-ri-1.0.1</tag>
+      <tag>sdc-ri-1.1.0</tag>
   </scm>
 
     <properties>
@@ -55,7 +55,7 @@
         <dependency>
             <groupId>org.somda.sdc</groupId>
             <artifactId>common</artifactId>
-            <version>1.0.1</version>
+            <version>1.1.0</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/io.github.threeten-jaxb/threeten-jaxb-core -->
@@ -68,7 +68,7 @@
         <dependency>
             <groupId>org.jvnet.jaxb2_commons</groupId>
             <artifactId>jaxb2-basics</artifactId>
-            <version>1.11.1</version>
+            <version>${jaxbBasicsVersion}</version>
         </dependency>
         <!-- https://mvnrepository.com/artifact/javax.xml.bind/jaxb-api -->
         <dependency>
@@ -111,14 +111,15 @@
                                 <arg>-Xsetters</arg>
                                 <arg>-Xsetters-mode=accessor</arg>
                                 <arg>-Xcopyable</arg>
-                                <!--<arg>-Xequals</arg>-->
+                                <arg>-XsimpleEquals</arg>
+                                <arg>-XsimpleHashCode</arg>
                                 <arg>-XtoString</arg>
                             </args>
                             <plugins>
                                 <plugin>
                                     <groupId>org.jvnet.jaxb2_commons</groupId>
                                     <artifactId>jaxb2-basics</artifactId>
-                                    <version>1.11.1</version>
+                                    <version>${jaxbBasicsVersion}</version>
                                 </plugin>
                             </plugins>
                         </configuration>

@@ -155,7 +155,8 @@ class ScoControllerTest {
             final ListenableFuture<? extends ScoTransaction<? extends AbstractSetResponse>> future =
                     scoController.invoke(testSet.expectedRequest, reportConsumer, testSet.expectedResponseClass);
             final ScoTransaction<? extends AbstractSetResponse> transaction = future.get(2, TimeUnit.SECONDS);
-            assertNotEquals(testSet.expectedResponse, transaction.getResponse());
+            // response must be a copy
+            assertNotSame(testSet.expectedResponse, transaction.getResponse());
             assertEquals(testSet.expectedResponse.getInvocationInfo().getTransactionId(),
                     transaction.getResponse().getInvocationInfo().getTransactionId());
 

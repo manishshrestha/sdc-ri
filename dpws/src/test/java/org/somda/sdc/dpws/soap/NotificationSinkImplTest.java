@@ -18,6 +18,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class NotificationSinkImplTest extends DpwsTest {
     private List<String> dispatchedSequence;
@@ -86,7 +87,12 @@ public class NotificationSinkImplTest extends DpwsTest {
             }
         });
 
-        nSink.receiveNotification(notification, mock(CommunicationContext.class));
+        var commMock = mock(CommunicationContext.class);
+        var transportInfoMock = mock(TransportInfo.class);
+        when(commMock.getTransportInfo()).thenReturn(transportInfoMock);
+        when(transportInfoMock.getScheme()).thenReturn("any");
+
+        nSink.receiveNotification(notification, commMock);
 
         assertEquals(3, dispatchedSequence.size());
         assertEquals("NOTIFICATION(5)", dispatchedSequence.get(0));

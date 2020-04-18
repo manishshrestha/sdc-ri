@@ -5,28 +5,25 @@ import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
 import com.google.inject.name.Named;
+import org.eclipse.jetty.http.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.somda.sdc.common.util.ExecutorWrapperService;
 import org.somda.sdc.dpws.DpwsConfig;
 import org.somda.sdc.dpws.DpwsConstants;
 import org.somda.sdc.dpws.guice.NetworkJobThreadPool;
+import org.somda.sdc.dpws.http.HttpException;
+import org.somda.sdc.dpws.http.HttpHandler;
 import org.somda.sdc.dpws.http.HttpServerRegistry;
 import org.somda.sdc.dpws.soap.*;
 import org.somda.sdc.dpws.soap.exception.MalformedSoapMessageException;
-import org.somda.sdc.dpws.soap.exception.MarshallingException;
-import org.somda.sdc.dpws.soap.exception.TransportException;
 import org.somda.sdc.dpws.soap.wsaddressing.WsAddressingUtil;
 import org.somda.sdc.dpws.soap.wsaddressing.model.EndpointReferenceType;
-import org.somda.sdc.dpws.soap.wsaddressing.model.ReferenceParametersType;
 import org.somda.sdc.dpws.soap.wseventing.exception.SubscriptionNotFoundException;
 import org.somda.sdc.dpws.soap.wseventing.factory.SubscriptionManagerFactory;
 import org.somda.sdc.dpws.soap.wseventing.model.*;
-import org.w3c.dom.Element;
 
 import javax.annotation.Nullable;
-import javax.xml.bind.JAXBException;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.time.Duration;
@@ -37,7 +34,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.stream.Collectors;
 
 /**
  * Default implementation of {@link EventSink}.
@@ -97,13 +93,21 @@ public class EventSinkImpl implements EventSink {
 
             // Create unique end-to context path and create proper handler
             String endToContext = EVENT_SINK_END_TO_CONTEXT_PREFIX + contextSuffix;
-            var endToUri = httpServerRegistry.registerContext(hostAddress, endToContext,
-                    (req, res, ti) -> processIncomingNotification(notificationSink, req, res, ti));
+            var endToUri = httpServerRegistry.registerContext(hostAddress, endToContext, new HttpHandler() {
+                @Override
+                public void handle(InputStream inStream, OutputStream outStream, CommunicationContext communicationContext) throws HttpException {
+                    processIncomingNotification(notificationSink, inStream, outStream, communicationContext);
+                }
+            });
 
             // Create unique notify-to context path and create proper handler
             String notifyToContext = EVENT_SINK_NOTIFY_TO_CONTEXT_PREFIX + contextSuffix;
-            var notifyToUri = httpServerRegistry.registerContext(hostAddress, notifyToContext,
-                    (req, res, ti) -> processIncomingNotification(notificationSink, req, res, ti));
+            var notifyToUri = httpServerRegistry.registerContext(hostAddress, notifyToContext, new HttpHandler() {
+                @Override
+                public void handle(InputStream inStream, OutputStream outStream, CommunicationContext communicationContext) throws HttpException {
+                    processIncomingNotification(notificationSink, inStream, outStream, communicationContext);
+                }
+            });
 
             // Create subscribe body, include formerly created end-to and notify-to endpoint addresses
             // Populate rest of the request
@@ -174,10 +178,12 @@ public class EventSinkImpl implements EventSink {
                     new RuntimeException("No subscription manager EPR found"));
 
             // Create new message, put subscription manager EPR address as wsa:To
-            SoapMessage renewMsg = soapUtil.createMessage(WsEventingConstants.WSE_ACTION_RENEW, subManAddress, renew);
-
-            // append wsa:ReferenceParameters elements to the header
-            attachReferenceParameters(subMan, renewMsg);
+            SoapMessage renewMsg = soapUtil.createMessage(
+                    WsEventingConstants.WSE_ACTION_RENEW,
+                    subManAddress,
+                    renew,
+                    subMan.getSubscriptionManagerEpr().getReferenceParameters()
+            );
 
             // Invoke request-response
             SoapMessage renewResMsg = requestResponseClient.sendRequestResponse(renewMsg);
@@ -203,11 +209,12 @@ public class EventSinkImpl implements EventSink {
                     new RuntimeException("No subscription manager EPR found"));
 
             // Create new message, put subscription manager EPR address as wsa:To
-            SoapMessage getStatusMsg = soapUtil.createMessage(WsEventingConstants.WSE_ACTION_GET_STATUS, subManAddress,
-                    getStatus);
-
-            // append wsa:ReferenceParameters elements to the header
-            attachReferenceParameters(subMan, getStatusMsg);
+            SoapMessage getStatusMsg = soapUtil.createMessage(
+                    WsEventingConstants.WSE_ACTION_GET_STATUS,
+                    subManAddress,
+                    getStatus,
+                    subMan.getSubscriptionManagerEpr().getReferenceParameters()
+            );
 
             // Invoke request-response
             SoapMessage getStatusResMsg = requestResponseClient.sendRequestResponse(getStatusMsg);
@@ -230,37 +237,17 @@ public class EventSinkImpl implements EventSink {
                     new RuntimeException("No subscription manager EPR found"));
 
             // Create new message, put subscription manager EPR address as wsa:To
-            SoapMessage unsubscribeMsg = soapUtil.createMessage(WsEventingConstants.WSE_ACTION_UNSUBSCRIBE, subManAddress,
-                    unsubscribe);
-
-            // append wsa:ReferenceParameters elements to the header
-            attachReferenceParameters(subMan, unsubscribeMsg);
+            SoapMessage unsubscribeMsg = soapUtil.createMessage(
+                    WsEventingConstants.WSE_ACTION_UNSUBSCRIBE,
+                    subManAddress,
+                    unsubscribe,
+                    subMan.getSubscriptionManagerEpr().getReferenceParameters()
+            );
 
             // Invoke request-response and ignore result
             requestResponseClient.sendRequestResponse(unsubscribeMsg);
             return new Object();
         });
-    }
-
-    private void attachReferenceParameters(SinkSubscriptionManager subMan, SoapMessage unsubscribeMsg) {
-        ReferenceParametersType referenceParameters = subMan.getSubscriptionManagerEpr().getReferenceParameters();
-        if (referenceParameters != null) {
-            List<Element> actualParameters = referenceParameters.getAny().stream()
-                    // we can only reliably attach wsa:IsReferenceParameter to Element instances
-                    .filter(obj -> {
-                        boolean correctType = obj instanceof Element;
-                        if (!correctType) {
-                            LOG.warn(
-                                    "reference parameter couldn't be attached to outgoing message, wrong type!" +
-                                            "Type was {}", obj.getClass().getSimpleName()
-                            );
-                        }
-                        return correctType;
-                    })
-                    .map(obj -> (Element) ((Element) obj).cloneNode(true))
-                    .collect(Collectors.toList());
-            unsubscribeMsg.getWsAddressingHeader().setMappedReferenceParameters(actualParameters);
-        }
     }
 
     @Override
@@ -271,6 +258,7 @@ public class EventSinkImpl implements EventSink {
                 future.get(maxWaitForFutures.toSeconds(), TimeUnit.SECONDS);
             } catch (InterruptedException | ExecutionException | TimeoutException e) {
                 LOG.warn("Subscription {} could not be unsubscribed. Ignore.", subscriptionManager.getSubscriptionId());
+                LOG.trace("Subscription {} could not be unsubscribed", subscriptionManager.getSubscriptionId(), e);
             }
         }
     }
@@ -288,7 +276,7 @@ public class EventSinkImpl implements EventSink {
     private void processIncomingNotification(NotificationSink notificationSink,
                                              InputStream inputStream,
                                              OutputStream outputStream,
-                                             CommunicationContext communicationContext) throws MarshallingException, TransportException {
+                                             CommunicationContext communicationContext) throws HttpException {
         try {
             SoapMessage soapMsg = soapUtil.createMessage(marshalling.unmarshal(inputStream));
             inputStream.close();
@@ -299,10 +287,8 @@ public class EventSinkImpl implements EventSink {
             // as closing allows the server do dispatch the next request, which will cause concurrency problems
             // for the ultimate receiver of the notifications
             outputStream.close();
-        } catch (IOException e) {
-            throw new TransportException(e);
-        } catch (JAXBException e) {
-            throw new MarshallingException(e);
+        } catch (Exception e) {
+            throw new HttpException(HttpStatus.INTERNAL_SERVER_ERROR_500, e.getMessage());
         }
     }
 

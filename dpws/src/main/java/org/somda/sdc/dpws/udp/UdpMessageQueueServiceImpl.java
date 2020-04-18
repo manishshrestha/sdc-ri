@@ -89,7 +89,7 @@ public class UdpMessageQueueServiceImpl extends AbstractIdleService implements S
                     }
                 } while (true);
             } finally {
-            LOG.error("[{}] Outgoing UdpMessageQueueService ended", instanceId);
+            LOG.info("[{}] Outgoing UdpMessageQueueService ended", instanceId);
             }
         });
         outgoingThread.setName(String.format("[%s] Outgoing UdpMessageQueueService", instanceId));
@@ -114,7 +114,7 @@ public class UdpMessageQueueServiceImpl extends AbstractIdleService implements S
                     }
                 } while (true);
             } finally {
-                LOG.error("[{}] Incoming UdpMessageQueueService ended", instanceId);
+                LOG.info("[{}] Incoming UdpMessageQueueService ended", instanceId);
             }
         });
         incomingThread.setName(String.format("[%s] Incoming UdpMessageQueueService", instanceId));

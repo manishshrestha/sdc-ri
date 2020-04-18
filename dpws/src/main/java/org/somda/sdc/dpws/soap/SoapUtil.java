@@ -1,21 +1,28 @@
 package org.somda.sdc.dpws.soap;
 
 import com.google.inject.Inject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.somda.sdc.common.util.JaxbUtil;
 import org.somda.sdc.common.util.UriUtil;
 import org.somda.sdc.dpws.soap.factory.EnvelopeFactory;
 import org.somda.sdc.dpws.soap.factory.SoapMessageFactory;
 import org.somda.sdc.dpws.soap.model.Envelope;
 import org.somda.sdc.dpws.soap.wsaddressing.WsAddressingUtil;
+import org.somda.sdc.dpws.soap.wsaddressing.model.ReferenceParametersType;
+import org.w3c.dom.Element;
 
 import javax.annotation.Nullable;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 /**
  * SOAP utility functions.
  */
 public class SoapUtil {
+    private static final Logger LOG = LoggerFactory.getLogger(SoapUtil.class);
     private final WsAddressingUtil wsaUtil;
     private final SoapMessageFactory soapMessageFactory;
     private final EnvelopeFactory envelopeFactory;
@@ -122,7 +129,9 @@ public class SoapUtil {
      * @return a new SOAP message.
      */
     public SoapMessage createMessage(String wsaAction) {
-        return soapMessageFactory.createSoapMessage(envelopeFactory.createEnvelope(wsaAction, null));
+        var message = soapMessageFactory.createSoapMessage(envelopeFactory.createEnvelope());
+        message.getWsAddressingHeader().setAction(wsaUtil.createAttributedURIType(wsaAction));
+        return message;
     }
 
     /**
@@ -133,7 +142,11 @@ public class SoapUtil {
      * @return a new SOAP message.
      */
     public SoapMessage createMessage(String wsaAction, @Nullable Object firstBodyElement) {
-        return soapMessageFactory.createSoapMessage(envelopeFactory.createEnvelope(wsaAction, firstBodyElement));
+        var message = soapMessageFactory.createSoapMessage(envelopeFactory.createEnvelope(
+                firstBodyElement
+        ));
+        message.getWsAddressingHeader().setAction(wsaUtil.createAttributedURIType(wsaAction));
+        return message;
     }
 
     /**
@@ -144,7 +157,10 @@ public class SoapUtil {
      * @return a new SOAP message.
      */
     public SoapMessage createMessage(String wsaAction, String wsaTo) {
-        return soapMessageFactory.createSoapMessage(envelopeFactory.createEnvelope(wsaAction, wsaTo, null));
+        var message = soapMessageFactory.createSoapMessage(envelopeFactory.createEnvelope());
+        message.getWsAddressingHeader().setAction(wsaUtil.createAttributedURIType(wsaAction));
+        message.getWsAddressingHeader().setTo(wsaUtil.createAttributedURIType(wsaTo));
+        return message;
     }
 
     /**
@@ -156,6 +172,47 @@ public class SoapUtil {
      * @return a new SOAP message.
      */
     public SoapMessage createMessage(String wsaAction, String wsaTo, @Nullable Object firstBodyElement) {
-        return soapMessageFactory.createSoapMessage(envelopeFactory.createEnvelope(wsaAction, wsaTo, firstBodyElement));
+        var message = soapMessageFactory.createSoapMessage(envelopeFactory.createEnvelope(firstBodyElement));
+        message.getWsAddressingHeader().setAction(wsaUtil.createAttributedURIType(wsaAction));
+        message.getWsAddressingHeader().setTo(wsaUtil.createAttributedURIType(wsaTo));
+        return message;
+    }
+
+    /**
+     * Creates a SOAP message with a specific action, to, the first body element as well as reference parameters.
+     *
+     * @param wsaAction           the action header to set.
+     * @param wsaTo               the to header to set.
+     * @param firstBodyElement    the first child of the body element.
+     * @param referenceParameters reference parameters to attach to the message.
+     * @return a new SOAP message.
+     */
+    public SoapMessage createMessage(
+            String wsaAction, String wsaTo,
+            @Nullable Object firstBodyElement,
+            @Nullable ReferenceParametersType referenceParameters) {
+        var message = soapMessageFactory.createSoapMessage(envelopeFactory.createEnvelope(firstBodyElement));
+        message.getWsAddressingHeader().setAction(wsaUtil.createAttributedURIType(wsaAction));
+        message.getWsAddressingHeader().setTo(wsaUtil.createAttributedURIType(wsaTo));
+
+        if (referenceParameters != null) {
+            List<Element> actualParameters = referenceParameters.getAny().stream()
+                    // we can only reliably attach wsa:IsReferenceParameter to Element instances
+                    .filter(obj -> {
+                        boolean correctType = obj instanceof Element;
+                        if (!correctType) {
+                            LOG.warn(
+                                    "Reference parameter couldn't be attached to outgoing message, wrong type!" +
+                                            " Type was {}", obj.getClass().getSimpleName()
+                            );
+                        }
+                        return correctType;
+                    })
+                    .map(obj -> (Element) ((Element) obj).cloneNode(true))
+                    .collect(Collectors.toList());
+            message.getWsAddressingHeader().setMappedReferenceParameters(actualParameters);
+        }
+
+        return message;
     }
 }

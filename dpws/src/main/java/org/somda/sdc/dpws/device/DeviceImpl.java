@@ -9,6 +9,7 @@ import com.google.inject.assistedinject.AssistedInject;
 import com.google.inject.name.Named;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.somda.sdc.dpws.DpwsConfig;
 import org.somda.sdc.dpws.DpwsConstants;
 import org.somda.sdc.dpws.device.helper.ByteResourceHandler;
 import org.somda.sdc.dpws.device.helper.DiscoveryDeviceUdpMessageProcessor;
@@ -47,6 +48,8 @@ import javax.annotation.Nullable;
 import javax.xml.namespace.QName;
 import java.io.IOException;
 import java.net.InetAddress;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -74,10 +77,11 @@ public class DeviceImpl extends AbstractIdleService implements Device, Service, 
     private final HostedServiceFactory hostedServiceFactory;
     private final HostedServiceInterceptorFactory hostedServiceInterceptorFactory;
     private final String eprAddress;
+    private final boolean enableHttps;
+    private final boolean enableHttp;
     private NetworkInterfaceUtil networkInterfaceUtil;
     private HttpUriBuilder httpUriBuilder;
-    private Boolean unsecuredEndpoint;
-    private Boolean securedEndpoint;
+
 
     private WsDiscoveryTargetService wsdTargetService;
     private HostingService hostingService;
@@ -107,8 +111,8 @@ public class DeviceImpl extends AbstractIdleService implements Device, Service, 
                HostedServiceInterceptorFactory hostedServiceInterceptorFactory,
                NetworkInterfaceUtil networkInterfaceUtil,
                HttpUriBuilder httpUriBuilder,
-               @Named(DeviceConfig.UNSECURED_ENDPOINT) Boolean unsecuredEndpoint,
-               @Named(DeviceConfig.SECURED_ENDPOINT) Boolean securedEndpoint) {
+               @Named(DpwsConfig.HTTPS_SUPPORT) boolean enableHttps,
+               @Named(DpwsConfig.HTTP_SUPPORT) boolean enableHttp) {
         this.deviceSettings = deviceSettings;
         this.targetServiceFactory = targetServiceFactory;
         this.defaultConfigProvider = defaultConfigProvider;
@@ -126,10 +130,10 @@ public class DeviceImpl extends AbstractIdleService implements Device, Service, 
         this.hostedServiceInterceptorFactory = hostedServiceInterceptorFactory;
         this.networkInterfaceUtil = networkInterfaceUtil;
         this.httpUriBuilder = httpUriBuilder;
-        this.unsecuredEndpoint = unsecuredEndpoint;
-        this.securedEndpoint = securedEndpoint;
         this.hostedServicesOnStartup = new ArrayList<>();
         this.eventSources = new ArrayList<>();
+        this.enableHttps = enableHttps;
+        this.enableHttp = enableHttp;
 
         this.eprAddress = wsaUtil.getAddressUri(deviceSettings.getEndpointReference()).orElseThrow(() ->
                 new RuntimeException("No valid endpoint reference found in device deviceSettings"));
@@ -145,6 +149,26 @@ public class DeviceImpl extends AbstractIdleService implements Device, Service, 
         // Initialize HTTP servers
         List<String> actualHostingServiceBindings = resolveHostingServiceBindings().stream()
                 .map(httpServerRegistry::initHttpServer)
+                // create http and https prefixed versions if needed
+                .flatMap(uri -> {
+                    var baseUri = URI.create(uri);
+                    var resultUris = new ArrayList<String>(2);
+                    if (enableHttps) {
+                        try {
+                            resultUris.add(replaceScheme(baseUri, "https"));
+                        } catch (URISyntaxException e) {
+                            LOG.error("Error while creating https URI", e);
+                        }
+                    }
+                    if (enableHttp) {
+                        try {
+                            resultUris.add(replaceScheme(baseUri, "http"));
+                        } catch (URISyntaxException e) {
+                            LOG.error("Error while creating http URI", e);
+                        }
+                    }
+                    return resultUris.stream();
+                })
                 .collect(Collectors.toList());
 
         /*
@@ -211,12 +235,11 @@ public class DeviceImpl extends AbstractIdleService implements Device, Service, 
 
         final List<String> hostingServiceBindings = new ArrayList<>();
 
-        if (unsecuredEndpoint) {
-            hostingServiceBindings.add(httpUriBuilder.buildUri(address.getHostAddress(), 0));
-        }
-
-        if (securedEndpoint) {
+        // prefer https over http
+        if (enableHttps) {
             hostingServiceBindings.add(httpUriBuilder.buildSecuredUri(address.getHostAddress(), 0));
+        } else {
+            hostingServiceBindings.add(httpUriBuilder.buildUri(address.getHostAddress(), 0));
         }
 
         return hostingServiceBindings;
@@ -415,5 +438,12 @@ public class DeviceImpl extends AbstractIdleService implements Device, Service, 
     private String buildContextPathBase(String uri) {
         final String basePath = new UriBaseContextPath(uri).get();
         return basePath.isEmpty() ? "" : "/" + basePath;
+    }
+
+    private String replaceScheme(URI baseUri, String scheme) throws URISyntaxException {
+        return new URI(scheme, baseUri.getUserInfo(),
+                baseUri.getHost(), baseUri.getPort(),
+                baseUri.getPath(), baseUri.getQuery(),
+                baseUri.getFragment()).toString();
     }
 }

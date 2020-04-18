@@ -21,7 +21,6 @@ import org.somda.sdc.dpws.soap.factory.SoapMessageFactory;
 import org.somda.sdc.dpws.soap.interception.Direction;
 import org.somda.sdc.dpws.soap.interception.MessageInterceptor;
 import org.somda.sdc.dpws.soap.interception.RequestResponseObject;
-import org.somda.sdc.dpws.soap.model.Envelope;
 import org.somda.sdc.dpws.soap.wsaddressing.WsAddressingUtil;
 import org.somda.sdc.dpws.soap.wsaddressing.model.AttributedURIType;
 import org.somda.sdc.dpws.soap.wsaddressing.model.EndpointReferenceType;
@@ -29,13 +28,32 @@ import org.somda.sdc.dpws.soap.wsaddressing.model.ReferenceParametersType;
 import org.somda.sdc.dpws.soap.wseventing.factory.SubscriptionManagerFactory;
 import org.somda.sdc.dpws.soap.wseventing.factory.WsEventingFaultFactory;
 import org.somda.sdc.dpws.soap.wseventing.helper.SubscriptionRegistry;
-import org.somda.sdc.dpws.soap.wseventing.model.*;
+import org.somda.sdc.dpws.soap.wseventing.model.FilterType;
+import org.somda.sdc.dpws.soap.wseventing.model.GetStatus;
+import org.somda.sdc.dpws.soap.wseventing.model.GetStatusResponse;
+import org.somda.sdc.dpws.soap.wseventing.model.Notification;
+import org.somda.sdc.dpws.soap.wseventing.model.ObjectFactory;
+import org.somda.sdc.dpws.soap.wseventing.model.Renew;
+import org.somda.sdc.dpws.soap.wseventing.model.RenewResponse;
+import org.somda.sdc.dpws.soap.wseventing.model.Subscribe;
+import org.somda.sdc.dpws.soap.wseventing.model.SubscribeResponse;
+import org.somda.sdc.dpws.soap.wseventing.model.SubscriptionEnd;
+import org.somda.sdc.dpws.soap.wseventing.model.Unsubscribe;
+import org.somda.sdc.dpws.soap.wseventing.model.WsEventingStatus;
 
 import javax.annotation.Nullable;
 import java.net.URI;
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Supplier;
@@ -406,16 +424,12 @@ public class EventSourceInterceptor extends AbstractIdleService implements Event
         EndpointReferenceType notifyTo = subMan.getNotifyTo();
         String wsaTo = wsaUtil.getAddressUri(notifyTo).orElseThrow(() ->
                 new RuntimeException("Could not resolve URI from NotifyTo"));
-        Envelope envelope = envelopeFactory.createEnvelope(wsaAction, wsaTo, payload);
         final ReferenceParametersType referenceParameters = notifyTo.getReferenceParameters();
-        if (referenceParameters != null) {
-            referenceParameters.getAny().forEach(refParam -> envelope.getHeader().getAny().add(refParam));
-        }
-        return soapMessageFactory.createSoapMessage(envelope);
+        return soapUtil.createMessage(wsaAction, wsaTo, payload, referenceParameters);
     }
 
     private SoapMessage createNotification(String wsaAction, @Nullable String wsaTo, Object payload) {
-        SoapMessage msg = soapMessageFactory.createSoapMessage(envelopeFactory.createEnvelope(wsaAction, payload));
+        SoapMessage msg = soapUtil.createMessage(wsaAction, payload);
         Optional.ofNullable(wsaTo).ifPresent(to ->
                 msg.getWsAddressingHeader().setTo(wsaUtil.createAttributedURIType(to)));
         return msg;

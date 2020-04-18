@@ -45,7 +45,10 @@ public class MdibEntityImpl implements MdibEntity {
         try {
             this.stateClass = typeValidator.resolveStateType(descriptor.getClass());
         } catch (ClassNotFoundException e) {
-            throw new RuntimeException(String.format("Unexpected descriptor class with no matching state class found: %s", descriptor.getClass()));
+            throw new RuntimeException(String.format(
+                    "Unexpected descriptor class with no matching state class found: %s",
+                    descriptor.getClass()
+            ));
         }
     }
 
@@ -66,7 +69,8 @@ public class MdibEntityImpl implements MdibEntity {
 
     @Override
     public <T extends AbstractDescriptor> Optional<T> getDescriptor(Class<T> theClass) {
-        return theClass.isAssignableFrom(descriptor.getClass()) ? Optional.of(theClass.cast(getDescriptor())) : Optional.empty();
+        return theClass.isAssignableFrom(descriptor.getClass())
+                ? Optional.of(theClass.cast(getDescriptor())) : Optional.empty();
     }
 
     @Override

@@ -7,8 +7,12 @@ import java.util.concurrent.atomic.AtomicInteger;
  * Utility to create handles.
  */
 public class HandleGenerator {
+    private static final AtomicInteger HANDLE_COUNTER = new AtomicInteger(0);
     private final String prefix;
-    private static final AtomicInteger handleCounter = new AtomicInteger(0);
+
+    private HandleGenerator(String prefix) {
+        this.prefix = prefix;
+    }
 
     /**
      * Creates instance that generates handles with a fixed prefix.
@@ -27,7 +31,7 @@ public class HandleGenerator {
      * @return handle name in the format: prefix + non-negative integer.
      */
     public static String createOne(String prefix) {
-        return concatHandle(prefix, handleCounter.incrementAndGet());
+        return concatHandle(prefix, HANDLE_COUNTER.incrementAndGet());
     }
 
     /**
@@ -45,11 +49,7 @@ public class HandleGenerator {
      * @return handle name in the format: prefix + non-negative integer.
      */
     public String next() {
-        return concatHandle(prefix, handleCounter.incrementAndGet());
-    }
-
-    private HandleGenerator(String prefix) {
-        this.prefix = prefix;
+        return concatHandle(prefix, HANDLE_COUNTER.incrementAndGet());
     }
 
     private static String concatHandle(String prefix, int suffix) {

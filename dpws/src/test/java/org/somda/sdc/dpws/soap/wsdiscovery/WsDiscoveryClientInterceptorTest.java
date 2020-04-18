@@ -36,6 +36,7 @@ import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class WsDiscoveryClientInterceptorTest extends DpwsTest {
     private List<SoapMessage> sentSoapMessages;
@@ -49,6 +50,7 @@ public class WsDiscoveryClientInterceptorTest extends DpwsTest {
     private SoapMessageFactory soapMessageFactory;
     private EnvelopeFactory envelopeFactory;
     private NotificationSink notificationSink;
+    private CommunicationContext communicationContextMock;
 
     @Override
     @BeforeEach
@@ -61,6 +63,11 @@ public class WsDiscoveryClientInterceptorTest extends DpwsTest {
                 },
                 WsDiscovery.class
         )).startAsync().awaitRunning();
+
+        communicationContextMock = mock(CommunicationContext.class);
+        var transportInfoMock = mock(TransportInfo.class);
+        when(communicationContextMock.getTransportInfo()).thenReturn(transportInfoMock);
+        when(transportInfoMock.getScheme()).thenReturn("any");
 
         soapMessageFactory = getInjector().getInstance(SoapMessageFactory.class);
         NotificationSourceFactory nSourceFactory = getInjector().getInstance(NotificationSourceFactory.class);
@@ -149,7 +156,8 @@ public class WsDiscoveryClientInterceptorTest extends DpwsTest {
         ListenableFuture<Integer> future = wsDiscoveryClient.sendProbe(searchId, expectedTypes,
                 expectedScopes, 1);
         assertEquals(1, sentSoapMessages.size());
-        notificationSink.receiveNotification(createProbeMatches(sentSoapMessages.get(0)), mock(CommunicationContext.class));
+
+        notificationSink.receiveNotification(createProbeMatches(sentSoapMessages.get(0)), communicationContextMock);
 
         assertEquals(Integer.valueOf(1), future.get());
     }
@@ -162,7 +170,7 @@ public class WsDiscoveryClientInterceptorTest extends DpwsTest {
 
         ListenableFuture<ResolveMatchesType> result = wsDiscoveryClient.sendResolve(expectedEpr);
         assertEquals(1, sentSoapMessages.size());
-        notificationSink.receiveNotification(createResolveMatches(sentSoapMessages.get(0)), mock(CommunicationContext.class));
+        notificationSink.receiveNotification(createResolveMatches(sentSoapMessages.get(0)), communicationContextMock);
 
         Futures.addCallback(result, new FutureCallback<>() {
             @Override

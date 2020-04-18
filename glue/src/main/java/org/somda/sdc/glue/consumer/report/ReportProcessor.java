@@ -15,6 +15,7 @@ import org.somda.sdc.glue.common.MdibVersionUtil;
 import org.somda.sdc.glue.consumer.report.helper.ReportWriter;
 
 import javax.annotation.Nullable;
+import java.net.URI;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
@@ -179,7 +180,7 @@ public class ReportProcessor extends AbstractIdleService {
         }
 
         final MdibVersion mdibVersion = mdibAccess.getMdibVersion();
-        if (!mdibVersion.getSequenceId().toString().equals(contextStatesResponse.getSequenceId()) ||
+        if (!URI.create(mdibVersion.getSequenceId()).equals(URI.create(contextStatesResponse.getSequenceId())) ||
                 !mdibVersion.getInstanceId().equals(contextStatesResponse.getInstanceId())) {
             throw new ReportProcessingException(String.format("Received context state report belongs to different MDIB sequence/instance. Expected: %s, actual: %s",
                     mdibVersionUtil.getMdibVersion(contextStatesResponse), mdibVersion));

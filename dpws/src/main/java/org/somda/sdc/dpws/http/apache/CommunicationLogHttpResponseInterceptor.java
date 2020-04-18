@@ -1,6 +1,5 @@
 package org.somda.sdc.dpws.http.apache;
 
-import com.google.inject.Inject;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpException;
 import org.apache.http.HttpHost;
@@ -42,7 +41,7 @@ public class CommunicationLogHttpResponseInterceptor implements HttpResponseInte
         HttpEntity oldMessageEntity = response.getEntity();
 
         var requestHttpApplicationInfo = new HttpApplicationInfo(
-                ApacheClientHelper.allHeadersToMap(response.getAllHeaders())
+                ApacheClientHelper.allHeadersToMultimap(response.getAllHeaders())
         );
 
         // collect information for TransportInfo

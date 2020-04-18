@@ -42,6 +42,7 @@ public class UdpBindingServiceImpl extends AbstractIdleService implements UdpBin
     private final CommunicationLog communicationLog;
     private UdpMessageReceiverCallback receiver;
     private InetAddress networkInterfaceAddress;
+    private InetSocketAddress multicastAddress;
 
     @AssistedInject
     UdpBindingServiceImpl(@Assisted NetworkInterface networkInterface,
@@ -56,13 +57,13 @@ public class UdpBindingServiceImpl extends AbstractIdleService implements UdpBin
         this.maxMessageSize = maxMessageSize;
         this.networkInterfaceUtil = networkInterfaceUtil;
         this.communicationLog = communicationLog;
+        this.multicastAddress = new InetSocketAddress(multicastGroup, socketPort);
         this.multicastSocket = null;
         this.networkInterfaceAddress = null;
     }
 
     @Override
     protected void startUp() throws Exception {
-        InetSocketAddress address = new InetSocketAddress(multicastGroup, socketPort);
         LOG.info("Start UDP binding on network interface {}", this);
         // try to get first available address from network interface
         networkInterfaceAddress = networkInterfaceUtil.getFirstIpV4Address(networkInterface).orElseThrow(() ->
@@ -78,8 +79,8 @@ public class UdpBindingServiceImpl extends AbstractIdleService implements UdpBin
             }
 
             multicastSocket = new MulticastSocket(socketPort);
-            LOG.info("Join to UDP multicast address group {}", address);
-            multicastSocket.joinGroup(address, networkInterface);
+            LOG.info("Join to UDP multicast address group {}", multicastAddress);
+            multicastSocket.joinGroup(multicastAddress, networkInterface);
             incomingSocket = multicastSocket;
         } else {
             incomingSocket = new DatagramSocket(0, networkInterfaceAddress);
@@ -165,8 +166,8 @@ public class UdpBindingServiceImpl extends AbstractIdleService implements UdpBin
         LOG.info("Shut down UDP binding {}", this);
         multicastSocketRunner.interrupt();
         unicastSocketRunner.interrupt();
-        if (multicastSocket != null) {
-            multicastSocket.leaveGroup(multicastGroup);
+        if (multicastSocket != null && multicastGroup != null && multicastAddress != null) {
+            multicastSocket.leaveGroup(multicastAddress, networkInterface);
         }
         incomingSocket.close();
         outgoingSocket.close();

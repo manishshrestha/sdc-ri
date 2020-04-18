@@ -1,12 +1,12 @@
 package org.somda.sdc.dpws.soap.interception;
 
 import com.google.inject.Inject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.somda.sdc.dpws.soap.SoapMessage;
 import org.somda.sdc.dpws.soap.exception.SoapFaultException;
 import org.somda.sdc.dpws.soap.factory.SoapFaultFactory;
 import org.somda.sdc.dpws.soap.wsaddressing.model.AttributedURIType;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.Optional;
 
@@ -36,9 +36,9 @@ public class ServerDispatcher {
      * @throws SoapFaultException if the interceptor was cancelled (in order to communicate this as an error to the client).
      */
     public void invokeDispatcher(Direction direction,
-                                              InterceptorRegistry registry,
-                                              SoapMessage soapMessage,
-                                              InterceptorCallbackType interceptorCallbackObject) throws SoapFaultException {
+                                 InterceptorRegistry registry,
+                                 SoapMessage soapMessage,
+                                 InterceptorCallbackType interceptorCallbackObject) throws SoapFaultException {
         Optional<AttributedURIType> action = soapMessage.getWsAddressingHeader().getAction();
         String actionUri = null;
         if (action.isPresent()) {
@@ -48,6 +48,7 @@ public class ServerDispatcher {
         try {
             interceptorProcessor.dispatch(direction, registry, actionUri, interceptorCallbackObject);
         } catch (InterceptorException e) {
+            LOG.debug("Caught interceptor exception from {} with message: {}", e.getInterceptor(), e.getMessage());
             if (e.getCause() instanceof SoapFaultException) {
                 throw (SoapFaultException) e.getCause();
             }

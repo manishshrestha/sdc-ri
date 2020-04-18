@@ -2,7 +2,11 @@ package org.somda.sdc.biceps.consumer.access;
 
 import org.somda.sdc.biceps.common.MdibDescriptionModifications;
 import org.somda.sdc.biceps.common.MdibStateModifications;
-import org.somda.sdc.biceps.common.access.*;
+import org.somda.sdc.biceps.common.access.MdibAccess;
+import org.somda.sdc.biceps.common.access.MdibAccessObservable;
+import org.somda.sdc.biceps.common.access.ReadTransactionProvider;
+import org.somda.sdc.biceps.common.access.WriteDescriptionResult;
+import org.somda.sdc.biceps.common.access.WriteStateResult;
 import org.somda.sdc.biceps.common.storage.PreprocessingException;
 import org.somda.sdc.biceps.model.participant.MdibVersion;
 
@@ -32,7 +36,8 @@ public interface RemoteMdibAccess extends MdibAccess, ReadTransactionProvider, M
     WriteDescriptionResult writeDescription(MdibVersion mdibVersion,
                                             @Nullable BigInteger mdDescriptionVersion,
                                             @Nullable BigInteger mdStateVersion,
-                                            MdibDescriptionModifications mdibDescriptionModifications) throws PreprocessingException;
+                                            MdibDescriptionModifications mdibDescriptionModifications)
+            throws PreprocessingException;
 
     /**
      * Processes the state modifications object, stores the data internally and triggers an event.

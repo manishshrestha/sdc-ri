@@ -66,6 +66,27 @@ public class SoapConstants {
     public static final QName SENDER = new QName(NAMESPACE, "Sender");
 
     /**
+     * SOAP fault code "VersionMismatch".
+     *
+     * @see <a href="https://www.w3.org/TR/2007/REC-soap12-part1-20070427/#faultcodes">SOAP Fault Codes</a>
+     */
+    public static final QName VERSION_MISMATCH = new QName(NAMESPACE, "VersionMismatch");
+
+    /**
+     * SOAP fault code "MustUnderstand".
+     *
+     * @see <a href="https://www.w3.org/TR/2007/REC-soap12-part1-20070427/#faultcodes">SOAP Fault Codes</a>
+     */
+    public static final QName MUST_UNDERSTAND = new QName(NAMESPACE, "MustUnderstand");
+
+    /**
+     * SOAP fault code "DataEncodingUnknown".
+     *
+     * @see <a href="https://www.w3.org/TR/2007/REC-soap12-part1-20070427/#faultcodes">SOAP Fault Codes</a>
+     */
+    public static final QName DATA_ENCODING_UNKNOWN = new QName(NAMESPACE, "DataEncodingUnknown");
+
+    /**
      * Default sub-code.
      */
     public static final QName DEFAULT_SUBCODE = new QName(NAMESPACE, "Unknown");

@@ -29,14 +29,33 @@ public class HostedServiceTransportBinding implements TransportBinding {
     }
 
     @Override
-    public void onNotification(SoapMessage notification) throws MarshallingException, TransportException,
-            TransportBindingException {
-        transportBinding.onNotification(notification);
+    public void onNotification(SoapMessage notification) throws MarshallingException, TransportException {
+        try {
+            transportBinding.onNotification(notification);
+        } catch (TransportBindingException e) {
+            dispatchException(e);
+            throw e;
+        }
     }
 
     @Override
-    public SoapMessage onRequestResponse(SoapMessage request) throws SoapFaultException, TransportException,
-            TransportBindingException, MarshallingException {
-        return transportBinding.onRequestResponse(request);
+    public SoapMessage onRequestResponse(SoapMessage request) throws SoapFaultException, TransportException, MarshallingException {
+        try {
+            return transportBinding.onRequestResponse(request);
+        } catch (TransportBindingException e) {
+            dispatchException(e);
+            throw e;
+        }
+    }
+
+    private void dispatchException(TransportBindingException exception) throws TransportException, MarshallingException {
+        var cause = exception.getCause();
+        if (cause instanceof MarshallingException) {
+            throw (MarshallingException) cause;
+        } else {
+            if (cause instanceof TransportException) {
+                throw (TransportException) cause;
+            }
+        }
     }
 }

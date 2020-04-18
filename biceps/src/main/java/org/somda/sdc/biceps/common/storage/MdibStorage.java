@@ -6,7 +6,11 @@ import org.somda.sdc.biceps.common.MdibStateModifications;
 import org.somda.sdc.biceps.common.access.MdibAccess;
 import org.somda.sdc.biceps.common.access.WriteDescriptionResult;
 import org.somda.sdc.biceps.common.access.WriteStateResult;
-import org.somda.sdc.biceps.model.participant.*;
+import org.somda.sdc.biceps.model.participant.AbstractContextState;
+import org.somda.sdc.biceps.model.participant.AbstractDescriptor;
+import org.somda.sdc.biceps.model.participant.AbstractMultiState;
+import org.somda.sdc.biceps.model.participant.AbstractState;
+import org.somda.sdc.biceps.model.participant.MdibVersion;
 
 import javax.annotation.Nullable;
 import java.math.BigInteger;
@@ -15,7 +19,8 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * Registry-based access to {@linkplain MdibEntity} instances derived from an {@linkplain org.somda.sdc.biceps.model.participant.Mdib}.
+ * Registry-based access to {@linkplain MdibEntity} instances derived
+ * from an {@linkplain org.somda.sdc.biceps.model.participant.Mdib}.
  * <p>
  * In this case "registry-based" means that there is fast (hash map) access to any {@link MdibEntity} instance if
  * not mentioned otherwise.

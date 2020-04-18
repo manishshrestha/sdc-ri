@@ -2,7 +2,8 @@ package org.somda.sdc.biceps.guice;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.assistedinject.FactoryModuleBuilder;
-import org.somda.sdc.biceps.common.*;
+import org.somda.sdc.biceps.common.MdibEntity;
+import org.somda.sdc.biceps.common.MdibEntityImpl;
 import org.somda.sdc.biceps.common.access.ReadTransaction;
 import org.somda.sdc.biceps.common.access.ReadTransactionImpl;
 import org.somda.sdc.biceps.common.access.factory.ReadTransactionFactory;

@@ -165,7 +165,7 @@ public class VentilatorMdibRunner implements SdcDevicePlugin {
         modifications.add(state);
     }
 
-    private void changePeepValue(ReadTransaction readTransaction, MdibStateModifications modifications, BigDecimal peep) {
+    public static void changePeepValue(ReadTransaction readTransaction, MdibStateModifications modifications, BigDecimal peep) {
         final NumericMetricState state = readTransaction.getState(HANDLE_MDC_PRESS_AWAY_END_EXP_POS, NumericMetricState.class)
                 .orElseThrow(() ->
                         new RuntimeException(String.format("Could not find state for handle %s", HANDLE_MDC_VENT_MODE)));

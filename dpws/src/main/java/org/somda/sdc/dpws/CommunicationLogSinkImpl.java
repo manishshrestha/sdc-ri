@@ -50,7 +50,12 @@ public class CommunicationLogSinkImpl implements CommunicationLogSink {
 
     }
 
+    @Deprecated
     public OutputStream getTargetStream(CommunicationLog.TransportType transportType, CommunicationLog.Direction direction, CommunicationContext communicationContext) {
+        return createTargetStream(transportType, direction, communicationContext);
+    }
+
+    public OutputStream createTargetStream(CommunicationLog.TransportType transportType, CommunicationLog.Direction direction, CommunicationContext communicationContext) {
 
         File dir = dirMapping.get(transportType);
 
@@ -65,7 +70,7 @@ public class CommunicationLogSinkImpl implements CommunicationLogSink {
                 if (communicationContext.getApplicationInfo() instanceof HttpApplicationInfo) {
                     var appInfo = (HttpApplicationInfo) communicationContext.getApplicationInfo();
                     try (OutputStream headerFile = new FileOutputStream(basePath + HEADER_SUFFIX)) {
-                        for (Map.Entry<String, String> entry : appInfo.getHttpHeaders().entrySet()) {
+                        for (Map.Entry<String, String> entry : appInfo.getHeaders().entries()) {
                             String targetString;
                             if (entry.getValue() == null) {
                                 targetString = String.format("%s\n", entry.getKey());

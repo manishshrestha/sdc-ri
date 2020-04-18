@@ -39,7 +39,7 @@ public class DefaultDpwsConfigModule extends AbstractConfigurationModule {
     private void configureDeviceConfig() {
         bind(DeviceConfig.UNSECURED_ENDPOINT,
                 Boolean.class,
-                true);
+                false);
 
         bind(DeviceConfig.SECURED_ENDPOINT,
                 Boolean.class,
@@ -67,6 +67,17 @@ public class DefaultDpwsConfigModule extends AbstractConfigurationModule {
                 Integer.class,
                 32);
 
+        bind(DpwsConfig.HTTPS_SUPPORT,
+                Boolean.class,
+                false);
+
+        bind(DpwsConfig.HTTP_SUPPORT,
+                Boolean.class,
+                true);
+
+        bind(DpwsConfig.HTTP_SERVER_CONNECTION_TIMEOUT,
+                Duration.class,
+                Duration.ofSeconds(30));
     }
 
     private void configureCryptoConfig() {

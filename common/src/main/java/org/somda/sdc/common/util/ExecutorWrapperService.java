@@ -22,7 +22,9 @@ public class ExecutorWrapperService<T extends ExecutorService> extends AbstractI
     private static TimeUnit STOP_TIMEUNIT = TimeUnit.SECONDS;
 
     private final Callable<T> serviceCreator;
+    @Stringified
     private final String serviceName;
+    @Stringified
     private T executorService;
 
 
@@ -78,11 +80,16 @@ public class ExecutorWrapperService<T extends ExecutorService> extends AbstractI
         if (isRunning()) {
             return executorService;
         } else {
-            LOG.error("[{}] get was called before the service was running", serviceName);
+            LOG.error("[{}] get was called on a service which was not running", serviceName);
             throw new RuntimeException(String.format(
-                    "get called before startup of %s has finished",
+                    "get called on %s service which was not running",
                     serviceName
             ));
         }
+    }
+
+    @Override
+    public String toString() {
+        return ObjectStringifier.stringify(this);
     }
 }

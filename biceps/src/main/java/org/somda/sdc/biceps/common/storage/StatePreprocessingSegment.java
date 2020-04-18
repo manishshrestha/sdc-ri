@@ -26,7 +26,8 @@ public interface StatePreprocessingSegment {
      * @param storage       the MDIB storage for access.
      * @throws Exception an arbitrary exception if something goes wrong.
      */
-    void process(MdibStateModifications modifications, AbstractState modification, MdibStorage storage) throws Exception;
+    void process(MdibStateModifications modifications, AbstractState modification, MdibStorage storage)
+            throws Exception;
 
     /**
      * Function that is invoked after the last modification in the processing chain has been applied.

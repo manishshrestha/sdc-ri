@@ -24,6 +24,7 @@ import java.time.Instant;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
@@ -54,6 +55,7 @@ public class SdcRemoteDeviceWatchdog extends AbstractIdleService {
     private final Duration requestedExpires;
     private final EventBus eventBus;
     private final Client client;
+    private Future<?> currentJob = null;
 
     @AssistedInject
     SdcRemoteDeviceWatchdog(@Assisted HostingServiceProxy hostingServiceProxy,
@@ -99,16 +101,19 @@ public class SdcRemoteDeviceWatchdog extends AbstractIdleService {
 
     @Override
     protected void startUp() {
-        watchdogExecutor.get().schedule(new WatchdogJob(), watchdogPeriod.toMillis(), TimeUnit.MILLISECONDS);
+        currentJob = watchdogExecutor.get().schedule(new WatchdogJob(), watchdogPeriod.toMillis(), TimeUnit.MILLISECONDS);
     }
 
     @Override
     protected void shutDown() {
+        if (currentJob != null && !currentJob.isDone()) {
+            currentJob.cancel(true);
+        }
     }
 
     private void postWatchdogMessage(Exception reason) {
         if (isRunning()) {
-            eventBus.post(new WatchdogMessage(hostingServiceProxy.getActiveXAddr(), reason));
+            eventBus.post(new WatchdogMessage(hostingServiceProxy.getEndpointReferenceAddress(), reason));
         }
     }
 
@@ -170,8 +175,14 @@ public class SdcRemoteDeviceWatchdog extends AbstractIdleService {
                 }
             }
 
-            if (isRunning()) {
-                watchdogExecutor.get().schedule(new WatchdogJob(), timeout.toMillis(), TimeUnit.MILLISECONDS);
+            if (isRunning() && watchdogExecutor.isRunning()) {
+                currentJob = watchdogExecutor.get().schedule(new WatchdogJob(), timeout.toMillis(), TimeUnit.MILLISECONDS);
+            } else {
+                currentJob = null;
+                LOG.info(
+                        "WatchdogJob has ended, SdcRemoteDeviceWatchdog ({}) or WatchdogExecutor ({}) have ended",
+                        state(), watchdogExecutor.state()
+                );
             }
         }
     }

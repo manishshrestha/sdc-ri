@@ -1,7 +1,5 @@
 package org.somda.sdc.biceps.provider.preprocessing;
 
-import org.somda.sdc.biceps.provider.preprocessing.TypeConsistencyChecker;
-
 /**
  * Exception that is thrown during preprocessing of {@linkplain TypeConsistencyChecker}.
  */
@@ -21,7 +19,10 @@ public class TypeConsistencyException extends Exception{
         super(cause);
     }
 
-    public TypeConsistencyException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
+    public TypeConsistencyException(
+            String message, Throwable cause,
+            boolean enableSuppression, boolean writableStackTrace
+    ) {
         super(message, cause, enableSuppression, writableStackTrace);
     }
 }

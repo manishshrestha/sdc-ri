@@ -19,15 +19,27 @@ public class SoapFaultException extends Exception {
 
     /**
      * Constructor that requires an wrapped SOAP fault message.
-     * <p>
-     * todo DGr design flaw: implementation requires knowledge of JAXB.
+     *
      * @param faultMessage SOAP message that shall include a {@linkplain JAXBElement} with {@link Fault} body.
      *                     Otherwise, a {@linkplain ClassCastException} is thrown.
      */
     @SuppressWarnings("unchecked")
     public SoapFaultException(SoapMessage faultMessage) {
         this.faultMessage = faultMessage;
-        this.fault = ((JAXBElement<Fault>)faultMessage.getOriginalEnvelope().getBody().getAny().get(0)).getValue();
+        this.fault = ((JAXBElement<Fault>) faultMessage.getOriginalEnvelope().getBody().getAny().get(0)).getValue();
+    }
+
+    /**
+     * Constructor that requires a wrapped SOAP fault message plus a nested cause.
+     *
+     * @param faultMessage SOAP message that shall include a {@linkplain JAXBElement} with {@link Fault} body.
+     *                     Otherwise, a {@linkplain ClassCastException} is thrown.
+     * @param throwable    extended information, e.g. transport layer info.
+     */
+    public SoapFaultException(SoapMessage faultMessage, Throwable throwable) {
+        super(throwable);
+        this.faultMessage = faultMessage;
+        this.fault = ((JAXBElement<Fault>) faultMessage.getOriginalEnvelope().getBody().getAny().get(0)).getValue();
     }
 
     public SoapMessage getFaultMessage() {
