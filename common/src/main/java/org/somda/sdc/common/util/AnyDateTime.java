@@ -21,7 +21,7 @@ public class AnyDateTime {
     /**
      * Creates an instance with local date and time.
      *
-     * @param local the local time to set.
+     * @param local the local date and time to set.
      * @return a new instance.
      */
     public static AnyDateTime create(LocalDateTime local) {
