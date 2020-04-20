@@ -4,7 +4,6 @@ import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
 import org.somda.sdc.biceps.common.MdibEntity;
 import org.somda.sdc.biceps.common.access.ReadTransaction;
-import org.somda.sdc.biceps.model.message.AbstractSet;
 import org.somda.sdc.biceps.model.message.ObjectFactory;
 import org.somda.sdc.biceps.model.message.*;
 import org.somda.sdc.biceps.model.participant.*;
@@ -28,10 +27,13 @@ import org.somda.sdc.glue.provider.sco.factory.ScoControllerFactory;
 import org.somda.sdc.glue.provider.services.helper.ReportGenerator;
 import org.somda.sdc.glue.provider.services.helper.factory.ReportGeneratorFactory;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
+import javax.xml.bind.annotation.XmlType;
 import javax.xml.namespace.QName;
-import java.util.*;
+import java.lang.annotation.Annotation;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.function.Function;
 
 /**
@@ -284,9 +286,11 @@ public class HighPriorityServices extends WebService {
     /**
      * Answers the incoming GetContainmentTree request.
      * <p>
-     * The folowing rules apply:
+     * The following rules apply based on meaningful/individual interpretation of BICEPS:
      * <ul>
-     * <li>The result shall contain containment tree information of all elements that are matched by msg:GetContainmentTree/msg:HandleRef.
+     * <li>The result shall contain containment tree information of all child elements of the particular parent that is
+     * matched by the first entry of msg:GetContainmentTree/msg:HandleRef. Others are ignored as they cannot be put to
+     * the response message
      * <li>If no handle reference is provided, all containment tree elements on MDS level SHALL be returned.
      * </ul>
      *
@@ -301,45 +305,34 @@ public class HighPriorityServices extends WebService {
         final ContainmentTree containmentTree = participantModelFactory.createContainmentTree();
 
         try (ReadTransaction transaction = mdibAccess.startTransaction()) {
+            // Collect entities
             List<MdibEntity> filteredEntities;
             if (handleReferences.isEmpty()) {
                 filteredEntities = transaction.getRootEntities();
             } else {
-                filteredEntities = new ArrayList<>(handleReferences.size());
-                Optional<String> parent = null;
-                for (String handleReference : handleReferences) {
-                    final Optional<MdibEntity> entity = transaction.getEntity(handleReference);
-                    if (entity.isPresent()) {
-                        if (parent == null) {
-                            parent = entity.get().getParent();
-                        } else {
-                            if (!parent.equals(entity.get().getParent())) {
-                                throw new SoapFaultException(faultFactory.createSenderFault(
-                                        "Multiple parent handle references found for " +
-                                                "requested containment tree, which violates biceps:R5030"));
-                            }
-                        }
+                // Only consider first handle as others cannot be answered due to XML Schema limitations
+                filteredEntities = new ArrayList<>();
+                var parentEntity = transaction.getEntity(handleReferences.get(0));
+                if (parentEntity.isPresent()) {
+                    var entity = parentEntity.get();
+                    containmentTree.setChildrenCount(entity.getChildren().size());
+                    containmentTree.setHandleRef(entity.getHandle());
+                    entity.getParent().ifPresent(containmentTree::setParentHandleRef);
+                    containmentTree.setEntryType(getContainmentTreeEntryType(entity));
 
-                        filteredEntities.add(entity.get());
-                    }
+                    entity.getChildren().forEach(childHandle ->
+                            transaction.getEntity(childHandle).ifPresent(filteredEntities::add));
                 }
             }
 
+            // Prepare response
             for (MdibEntity entity : filteredEntities) {
                 final ContainmentTreeEntry entry = participantModelFactory.createContainmentTreeEntry();
                 entry.setChildrenCount(entity.getChildren().size());
                 entry.setHandleRef(entity.getHandle());
+                entity.getParent().ifPresent(entry::setParentHandleRef);
                 entry.setType(entity.getDescriptor().getType());
-
-                try {
-                    final JAXBContext jaxbCtx = JAXBContext.newInstance(entity.getDescriptorClass());
-                    final QName qname = jaxbCtx.createJAXBIntrospector().getElementName(entity.getDescriptor());
-                    entry.setEntryType(qname);
-                } catch (JAXBException e) {
-                    throw new SoapFaultException(faultFactory.createReceiverFault(String.format(
-                            "Could not resolve entry type the requested descriptor %s. Operation aborted.", entity.getHandle())));
-                }
-
+                entry.setEntryType(getContainmentTreeEntryType(entity));
                 containmentTree.getEntry().add(entry);
             }
 
@@ -406,5 +399,15 @@ public class HighPriorityServices extends WebService {
 
         setResponse(requestResponseObject, getResponseObjectAsTypeOrThrow(invocationResponse, responseClass),
                 invocationResponse.getMdibVersion(), responseAction);
+    }
+
+    private QName getContainmentTreeEntryType(MdibEntity entity) throws SoapFaultException {
+        for (Annotation annotation : entity.getDescriptorClass().getAnnotations()) {
+            if (annotation.annotationType() == XmlType.class) {
+                return new QName(((XmlType) annotation).namespace(), ((XmlType) annotation).name());
+            }
+        }
+        throw new SoapFaultException(faultFactory.createReceiverFault(String.format(
+                "Could not resolve entry type the requested descriptor %s. Operation aborted.", entity.getHandle())));
     }
 }
