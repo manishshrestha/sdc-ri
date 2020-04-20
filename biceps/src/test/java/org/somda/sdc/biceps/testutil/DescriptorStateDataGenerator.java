@@ -2,6 +2,7 @@ package org.somda.sdc.biceps.testutil;
 
 import org.somda.sdc.biceps.model.message.RetrievabilityMethod;
 import org.somda.sdc.biceps.model.participant.*;
+import org.somda.sdc.common.util.AnyDateTime;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -27,9 +28,9 @@ public class DescriptorStateDataGenerator {
 
         mdsDescriptor.setApprovedJurisdictions(baseTypes.approvedJurisdictions());
         final MdsDescriptor.MetaData mdsDescriptorMetaData = participantFactory.createMdsDescriptorMetaData();
-        mdsDescriptorMetaData.setExpirationDate(baseTypes.localDateTime());
+        mdsDescriptorMetaData.setExpirationDate(AnyDateTime.create(baseTypes.localDateTime()));
         mdsDescriptorMetaData.setLotNumber("lot-number");
-        mdsDescriptorMetaData.setManufactureDate(baseTypes.localDateTime());
+        mdsDescriptorMetaData.setManufactureDate(AnyDateTime.create(baseTypes.localDateTime()));
         mdsDescriptorMetaData.setManufacturer(baseTypes.localizedTexts());
         mdsDescriptorMetaData.setModelName(baseTypes.localizedTexts());
         mdsDescriptorMetaData.setModelNumber("model-number");

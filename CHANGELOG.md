@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- `org.somda.sdc.common.util.AnyDateTime` and `org.somda.sdc.common.util.AnyDateTimeAdapter` to fully support XML Schema DateTime. (#151)
+
+### Changed
+
+- Use of `io.github.threetenjaxb.core.LocalDateTimeXmlAdapter` to `org.somda.sdc.common.util.AnyDateTimeAdapter` for any XML Schema DateTime in module `biceps-model`. (#151)
+
 ## 1.1.0 - 2020-04-18
 
 ### Added
