@@ -55,7 +55,7 @@ class AnyDateTimeAdapterTest {
                 "2004-04-1213:20:00",
                 "99-04-12T13:00",
                 "2004-04-12",
-                // "2004-04-12T13:20:00-05:", // Java's parser accepts this and sets offset minutes to 0 implicitly
+                // "2004-04-12T13:20:00-05", // Java's parser accepts this and sets offset minutes to 0 implicitly
                 "2004-04-12T13:20:00-05:",
                 "2004-04-12Z"
         );
