@@ -4,34 +4,17 @@ import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.somda.sdc.biceps.common.MdibDescriptionModification;
-import org.somda.sdc.biceps.common.MdibDescriptionModifications;
-import org.somda.sdc.biceps.common.MdibEntity;
-import org.somda.sdc.biceps.common.MdibStateModifications;
-import org.somda.sdc.biceps.common.MdibTypeValidator;
+import org.somda.sdc.biceps.common.*;
 import org.somda.sdc.biceps.common.access.WriteDescriptionResult;
 import org.somda.sdc.biceps.common.access.WriteStateResult;
 import org.somda.sdc.biceps.common.factory.MdibEntityFactory;
 import org.somda.sdc.biceps.common.storage.helper.MdibStorageUtil;
-import org.somda.sdc.biceps.model.participant.AbstractContextDescriptor;
-import org.somda.sdc.biceps.model.participant.AbstractContextState;
-import org.somda.sdc.biceps.model.participant.AbstractDescriptor;
-import org.somda.sdc.biceps.model.participant.AbstractMultiState;
-import org.somda.sdc.biceps.model.participant.AbstractState;
-import org.somda.sdc.biceps.model.participant.ContextAssociation;
-import org.somda.sdc.biceps.model.participant.MdibVersion;
+import org.somda.sdc.biceps.model.participant.*;
 
 import javax.annotation.Nullable;
 import java.lang.reflect.InvocationTargetException;
 import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -274,10 +257,9 @@ public class MdibStorageImpl implements MdibStorage {
         deletedEntities.add(deletedEntity);
     }
 
-    private void updateEntity(
-            MdibDescriptionModification modification,
-            List<AbstractState> sanitizedStates,
-            List<MdibEntity> updatedEntities
+    private void updateEntity(MdibDescriptionModification modification,
+                              List<AbstractState> sanitizedStates,
+                              List<MdibEntity> updatedEntities
     ) {
         Optional.ofNullable(entities.get(modification.getHandle())).ifPresent(mdibEntity -> {
             LOG.debug("[{}] Update entity: {}", mdibVersion.getInstanceId(), modification.getDescriptor());
@@ -415,9 +397,9 @@ public class MdibStorageImpl implements MdibStorage {
                         .orElse(states -> {
                             var modificationAsMultiState = typeValidator.toMultiState(modification).orElseThrow(() ->
                                     new RuntimeException(String.format(
-                                                    "Found a non-matching multi-state for multi-state entity update"
-                                                            + " (descriptor handle: %s)",
-                                                    mdibEntity.getHandle())
+                                            "Found a non-matching multi-state for multi-state entity update"
+                                                    + " (descriptor handle: %s)",
+                                            mdibEntity.getHandle())
                                     ));
 
                             var newStates = new ArrayList<AbstractMultiState>();
