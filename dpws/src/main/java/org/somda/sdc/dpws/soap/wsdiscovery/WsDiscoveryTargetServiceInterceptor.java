@@ -5,6 +5,7 @@ import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.somda.sdc.common.util.ObjectUtilImpl;
 import org.somda.sdc.dpws.soap.NotificationSource;
 import org.somda.sdc.dpws.soap.SoapMessage;
 import org.somda.sdc.dpws.soap.SoapUtil;
@@ -12,20 +13,21 @@ import org.somda.sdc.dpws.soap.exception.MarshallingException;
 import org.somda.sdc.dpws.soap.exception.SoapFaultException;
 import org.somda.sdc.dpws.soap.exception.TransportException;
 import org.somda.sdc.dpws.soap.factory.SoapFaultFactory;
-import org.somda.sdc.dpws.soap.interception.*;
+import org.somda.sdc.dpws.soap.interception.Direction;
+import org.somda.sdc.dpws.soap.interception.InterceptorException;
+import org.somda.sdc.dpws.soap.interception.MessageInterceptor;
+import org.somda.sdc.dpws.soap.interception.RequestResponseObject;
 import org.somda.sdc.dpws.soap.wsaddressing.WsAddressingHeader;
 import org.somda.sdc.dpws.soap.wsaddressing.WsAddressingUtil;
 import org.somda.sdc.dpws.soap.wsaddressing.model.EndpointReferenceType;
 import org.somda.sdc.dpws.soap.wsdiscovery.factory.WsDiscoveryFaultFactory;
-import org.somda.sdc.common.util.ObjectUtilImpl;
 import org.somda.sdc.dpws.soap.wsdiscovery.model.*;
 
 import javax.annotation.Nullable;
 import javax.xml.bind.JAXBElement;
 import javax.xml.namespace.QName;
 import java.net.URI;
-import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -353,7 +355,7 @@ public class WsDiscoveryTargetServiceInterceptor implements WsDiscoveryTargetSer
 
     private UnsignedInteger getNewMetadataVersion(@Nullable UnsignedInteger currentVersion) {
         // Metadata version is calculated from timestamp in seconds
-        var newVersion = UnsignedInteger.valueOf(ZonedDateTime.now(ZoneOffset.UTC).toInstant().toEpochMilli() / 1000L);
+        var newVersion = UnsignedInteger.valueOf(Instant.now().toEpochMilli() / 1000L);
         if (currentVersion == null) {
             return newVersion;
         }
