@@ -2,7 +2,7 @@ package org.somda.sdc.common.util;
 
 import javax.xml.bind.annotation.adapters.XmlAdapter;
 import java.time.LocalDateTime;
-import java.time.ZonedDateTime;
+import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 
@@ -11,12 +11,12 @@ import java.time.format.DateTimeParseException;
  */
 public class AnyDateTimeAdapter extends XmlAdapter<String, AnyDateTime> {
     private static final DateTimeFormatter LOCAL_FORMATTER = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
-    private static final DateTimeFormatter ZONED_FORMATTER = DateTimeFormatter.ISO_OFFSET_DATE_TIME;
+    private static final DateTimeFormatter OFFSET_FORMATTER = DateTimeFormatter.ISO_OFFSET_DATE_TIME;
 
     @Override
     public AnyDateTime unmarshal(String v) {
         try {
-            return AnyDateTime.create(ZONED_FORMATTER.parse(v, ZonedDateTime::from));
+            return AnyDateTime.create(OFFSET_FORMATTER.parse(v, OffsetDateTime::from));
         } catch (DateTimeParseException e) {
             return AnyDateTime.create(LOCAL_FORMATTER.parse(v, LocalDateTime::from));
         }
@@ -24,12 +24,12 @@ public class AnyDateTimeAdapter extends XmlAdapter<String, AnyDateTime> {
 
     @Override
     public String marshal(AnyDateTime v) {
-        if (v.getZoned().isPresent()) {
-            return ZONED_FORMATTER.format(v.getZoned().get());
+        if (v.getOffset().isPresent()) {
+            return OFFSET_FORMATTER.format(v.getOffset().get());
         } else {
             return LOCAL_FORMATTER.format(v.getLocal().orElseThrow(
                     () -> new RuntimeException(
-                            "Could not marshal AnyDateTimeObject as it misses a zoned and local part")));
+                            "Could not marshal AnyDateTimeObject as it misses a offset and local part")));
         }
     }
 }

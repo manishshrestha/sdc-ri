@@ -1,22 +1,22 @@
 package org.somda.sdc.common.util;
 
 import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Consumer;
 
 /**
- * Date-time object that supports local and zoned time depending on construction parameters.
+ * Date-time object that supports local and offset time depending on construction parameters.
  * <p>
- * Required as both local and zoned representation are supported by XML Schema DateTime.
+ * Required as both local and offset representation are supported by XML Schema DateTime.
  */
 public class AnyDateTime {
-    private final static ZoneId DEFAULT_ZONE = ZoneId.systemDefault();
+    private final static ZoneOffset DEFAULT_OFFSET = OffsetDateTime.now().getOffset();
 
     private LocalDateTime local;
-    private ZonedDateTime zoned;
+    private OffsetDateTime offset;
 
     /**
      * Creates an instance with local date and time.
@@ -29,78 +29,78 @@ public class AnyDateTime {
     }
 
     /**
-     * Creates an instance with zoned date and time.
+     * Creates an instance with offset date and time.
      *
-     * @param zoned the zoned date and time to set.
+     * @param offset the offset date and time to set.
      * @return a new instance.
      */
-    public static AnyDateTime create(ZonedDateTime zoned) {
-        return new AnyDateTime(zoned);
+    public static AnyDateTime create(OffsetDateTime offset) {
+        return new AnyDateTime(offset);
     }
 
     /**
-     * Gets the zoned date and time.
+     * Gets the offset date and time.
      *
-     * @return the zoned time or {@link Optional#empty()} if local time was given on construction.
+     * @return the offset time or {@link Optional#empty()} if local time was given on construction.
      */
-    public Optional<ZonedDateTime> getZoned() {
-        return Optional.ofNullable(zoned);
+    public Optional<OffsetDateTime> getOffset() {
+        return Optional.ofNullable(offset);
     }
 
     /**
      * Gets the local date and time.
      *
-     * @return the local date and time or {@link Optional#empty()} if zoned date and time was given on construction.
+     * @return the local date and time or {@link Optional#empty()} if offset date and time was given on construction.
      */
     public Optional<LocalDateTime> getLocal() {
         return Optional.ofNullable(local);
     }
 
     /**
-     * Returns a zoned date and time no matter if a local time was given on construction.
+     * Returns a offset date and time no matter if a local time was given on construction.
      *
-     * @return the zoned date and time given on construction or a zoned date and time based on the local date and time
+     * @return the offset date and time given on construction or a offset date and time based on the local date and time
      * and default-derived timezone.
      */
-    public ZonedDateTime forceZoned() {
-        return forceZoned(DEFAULT_ZONE);
+    public OffsetDateTime forceOffset() {
+        return forceOffset(DEFAULT_OFFSET);
     }
 
     /**
-     * Returns a zoned date and time no matter if a local date and time was given on construction.
+     * Returns a offset date and time no matter if a local date and time was given on construction.
      *
      * @param localOffset the time zone offset to use in case this objects stores local time.
-     * @return the zoned time given on construction or a zoned time based on the local time and given timezone.
+     * @return the offset time given on construction or a offset time based on the local time and given timezone.
      */
-    public ZonedDateTime forceZoned(ZoneId localOffset) {
-        return Objects.requireNonNullElseGet(zoned, () -> ZonedDateTime.of(local, localOffset));
+    public OffsetDateTime forceOffset(ZoneOffset localOffset) {
+        return Objects.requireNonNullElseGet(offset, () -> OffsetDateTime.of(local, localOffset));
     }
 
     /**
      * Convenience function to be called if object was created with local date and time.
      *
      * @param consumer the consumer for the local date and time.
-     * @return an alternative call, i.e. in case zoned date and time was given.
+     * @return an alternative call, i.e. in case offset date and time was given.
      */
-    public Else<ZonedDateTime> doIfLocal(Consumer<LocalDateTime> consumer) {
+    public Else<OffsetDateTime> doIfLocal(Consumer<LocalDateTime> consumer) {
         if (local != null) {
             consumer.accept(local);
             return elseConsumer -> {
             };
         }
 
-        return elseConsumer -> elseConsumer.accept(zoned);
+        return elseConsumer -> elseConsumer.accept(offset);
     }
 
     /**
-     * Convenience function to be called if object was created with zoned date and time.
+     * Convenience function to be called if object was created with offset date and time.
      *
-     * @param consumer the consumer for the zoned date and time.
+     * @param consumer the consumer for the offset date and time.
      * @return an alternative call, i.e. in case local date and time was given.
      */
-    public Else<LocalDateTime> doIfZoned(Consumer<ZonedDateTime> consumer) {
-        if (zoned != null) {
-            consumer.accept(zoned);
+    public Else<LocalDateTime> doIfOffset(Consumer<OffsetDateTime> consumer) {
+        if (offset != null) {
+            consumer.accept(offset);
             return elseConsumer -> {
             };
         }
@@ -113,7 +113,7 @@ public class AnyDateTime {
      *
      * @param <T> the date-time type to accept.
      * @see #doIfLocal(Consumer)
-     * @see #doIfZoned(Consumer)
+     * @see #doIfOffset(Consumer)
      */
     public interface Else<T> {
         void orElse(Consumer<T> consumer);
@@ -123,7 +123,7 @@ public class AnyDateTime {
         this.local = local;
     }
 
-    private AnyDateTime(ZonedDateTime zoned) {
-        this.zoned = zoned;
+    private AnyDateTime(OffsetDateTime offset) {
+        this.offset = offset;
     }
 }

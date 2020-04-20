@@ -3,21 +3,20 @@ package org.somda.sdc.common.util;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
+import java.time.OffsetDateTime;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 class AnyDateTimeTest {
     @Test
-    void forceZoned() {
-        var defaultZone = ZoneId.systemDefault();
+    void forceOffset() {
+        var defaultOffset = OffsetDateTime.now().getOffset();
         var localDateTime = LocalDateTime.now();
         var localDateTimeAsAny = AnyDateTime.create(localDateTime);
-        var expectedZonedDateTime = ZonedDateTime.of(localDateTime, defaultZone);
-        var actualZonedDateTime = localDateTimeAsAny.forceZoned();
-        assertEquals(expectedZonedDateTime, actualZonedDateTime);
+        var expectedOffsetDateTime = OffsetDateTime.of(localDateTime, defaultOffset);
+        var actualOffsetDateTime = localDateTimeAsAny.forceOffset();
+        assertEquals(expectedOffsetDateTime, actualOffsetDateTime);
     }
 
     @Test
@@ -25,7 +24,7 @@ class AnyDateTimeTest {
         var localDateTime = LocalDateTime.now();
         var localDateTimeAsAny = AnyDateTime.create(localDateTime);
         assertTrue(localDateTimeAsAny.getLocal().isPresent());
-        assertTrue(localDateTimeAsAny.getZoned().isEmpty());
+        assertTrue(localDateTimeAsAny.getOffset().isEmpty());
 
         {
             var triggered = new AtomicBoolean(false);
@@ -34,13 +33,13 @@ class AnyDateTimeTest {
                         assertEquals(localDateTime, actualDateTime);
                         triggered.set(true);
                     })
-                    .orElse(zonedDateTime -> fail("Triggered zoned although object is local"));
+                    .orElse(offsetDateTime -> fail("Triggered offset although object is local"));
             assertTrue(triggered.get());
         }
         {
             var triggered = new AtomicBoolean(false);
             localDateTimeAsAny
-                    .doIfZoned(zonedDateTime -> fail("Triggered zoned although object is local"))
+                    .doIfOffset(offsetDateTime -> fail("Triggered offset although object is local"))
                     .orElse(actualDateTime -> {
                         assertEquals(localDateTime, actualDateTime);
                         triggered.set(true);
@@ -50,30 +49,30 @@ class AnyDateTimeTest {
     }
 
     @Test
-    void doIfZoned() {
-        var zonedDateTime = ZonedDateTime.now();
-        var zonedDateTimeAsAny = AnyDateTime.create(zonedDateTime);
-        assertTrue(zonedDateTimeAsAny.getLocal().isEmpty());
-        assertTrue(zonedDateTimeAsAny.getZoned().isPresent());
+    void doIfOffset() {
+        var offsetDateTime = OffsetDateTime.now();
+        var offsetDateTimeAsAny = AnyDateTime.create(offsetDateTime);
+        assertTrue(offsetDateTimeAsAny.getLocal().isEmpty());
+        assertTrue(offsetDateTimeAsAny.getOffset().isPresent());
 
         {
             var triggered = new AtomicBoolean(false);
-            zonedDateTimeAsAny
-                    .doIfLocal(localDateTime -> fail("Triggered local although object is zoned"))
+            offsetDateTimeAsAny
+                    .doIfLocal(localDateTime -> fail("Triggered local although object is offset"))
                     .orElse(actualDateTime -> {
-                        assertEquals(zonedDateTime, actualDateTime);
+                        assertEquals(offsetDateTime, actualDateTime);
                         triggered.set(true);
                     });
             assertTrue(triggered.get());
         }
         {
             var triggered = new AtomicBoolean(false);
-            zonedDateTimeAsAny
-                    .doIfZoned(actualDateTime -> {
-                        assertEquals(zonedDateTime, actualDateTime);
+            offsetDateTimeAsAny
+                    .doIfOffset(actualDateTime -> {
+                        assertEquals(offsetDateTime, actualDateTime);
                         triggered.set(true);
                     })
-                    .orElse(localDateTime -> fail("Triggered local although object is zoned"));
+                    .orElse(localDateTime -> fail("Triggered local although object is offset"));
             assertTrue(triggered.get());
         }
     }
