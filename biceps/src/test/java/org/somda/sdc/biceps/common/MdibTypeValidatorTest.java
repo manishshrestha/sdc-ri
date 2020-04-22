@@ -1,16 +1,19 @@
 package org.somda.sdc.biceps.common;
 
 import com.google.common.collect.ImmutableMap;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.somda.sdc.biceps.model.participant.*;
 import org.somda.sdc.biceps.testutil.MockModelFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import test.org.somda.common.LoggingTestWatcher;
 
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+@ExtendWith(LoggingTestWatcher.class)
 public class MdibTypeValidatorTest {
     private MdibTypeValidator matcher;
 

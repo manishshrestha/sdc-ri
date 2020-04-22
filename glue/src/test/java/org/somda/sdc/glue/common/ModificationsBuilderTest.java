@@ -1,15 +1,18 @@
 package org.somda.sdc.glue.common;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.somda.sdc.biceps.common.MdibDescriptionModifications;
 import org.somda.sdc.biceps.model.participant.*;
 import org.somda.sdc.biceps.testutil.Handles;
 import org.somda.sdc.biceps.testutil.MockModelFactory;
 import org.somda.sdc.glue.UnitTestUtil;
 import org.somda.sdc.glue.common.factory.ModificationsBuilderFactory;
+import test.org.somda.common.LoggingTestWatcher;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@ExtendWith(LoggingTestWatcher.class)
 class ModificationsBuilderTest {
     private static final UnitTestUtil UT = new UnitTestUtil();
 

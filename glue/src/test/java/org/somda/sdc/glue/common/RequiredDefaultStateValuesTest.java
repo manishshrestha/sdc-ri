@@ -1,11 +1,14 @@
 package org.somda.sdc.glue.common;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.somda.sdc.biceps.model.participant.*;
 import org.somda.sdc.glue.common.helper.DefaultStateValuesDispatcher;
+import test.org.somda.common.LoggingTestWatcher;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@ExtendWith(LoggingTestWatcher.class)
 class RequiredDefaultStateValuesTest {
     @Test
     void requiredValuesPopulated() throws Exception {

@@ -3,10 +3,12 @@ package org.somda.sdc.biceps.common;
 import com.google.inject.Injector;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.somda.sdc.biceps.UnitTestUtil;
 import org.somda.sdc.biceps.common.factory.MdibEntityFactory;
 import org.somda.sdc.biceps.model.participant.*;
 import org.somda.sdc.biceps.testutil.MockModelFactory;
+import test.org.somda.common.LoggingTestWatcher;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -18,6 +20,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+@ExtendWith(LoggingTestWatcher.class)
 public class MdibEntityImplTest {
     private static final UnitTestUtil UT = new UnitTestUtil();
 

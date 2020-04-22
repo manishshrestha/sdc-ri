@@ -1,5 +1,6 @@
 package org.somda.sdc.biceps.common;
 
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.somda.sdc.biceps.model.participant.AbstractState;
 import org.somda.sdc.biceps.model.participant.AlertSignalState;
 import org.somda.sdc.biceps.model.participant.NumericMetricState;
@@ -9,6 +10,7 @@ import org.somda.sdc.biceps.testutil.MockModelFactory;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import test.org.somda.common.LoggingTestWatcher;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
@@ -16,6 +18,7 @@ import java.util.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 
+@ExtendWith(LoggingTestWatcher.class)
 public class MdibStateModificationsTest {
     private HandleGenerator handleGenerator;
 

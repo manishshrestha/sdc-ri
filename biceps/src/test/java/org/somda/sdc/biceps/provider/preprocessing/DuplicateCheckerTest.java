@@ -1,5 +1,6 @@
 package org.somda.sdc.biceps.provider.preprocessing;
 
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.somda.sdc.biceps.common.MdibDescriptionModifications;
 import org.somda.sdc.biceps.common.MdibEntity;
 import org.somda.sdc.biceps.common.storage.MdibStorage;
@@ -10,9 +11,11 @@ import org.somda.sdc.biceps.testutil.MockModelFactory;
 import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
+import test.org.somda.common.LoggingTestWatcher;
 
 import java.util.Optional;
 
+@ExtendWith(LoggingTestWatcher.class)
 class DuplicateCheckerTest {
     @Test
     void process() throws Exception {

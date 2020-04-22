@@ -1,13 +1,16 @@
 package org.somda.sdc.glue.common.uri;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.somda.sdc.biceps.model.participant.InstanceIdentifier;
+import test.org.somda.common.LoggingTestWatcher;
 
 import javax.annotation.Nullable;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+@ExtendWith(LoggingTestWatcher.class)
 class ContextIdentificationMapperTest {
 
     @Test

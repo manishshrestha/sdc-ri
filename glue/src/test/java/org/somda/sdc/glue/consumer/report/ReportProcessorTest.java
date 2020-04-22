@@ -4,6 +4,7 @@ import com.google.inject.AbstractModule;
 import com.google.inject.Injector;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.somda.sdc.biceps.common.MdibStateModifications;
 import org.somda.sdc.biceps.common.storage.PreprocessingException;
@@ -15,12 +16,14 @@ import org.somda.sdc.biceps.model.participant.MdibVersion;
 import org.somda.sdc.glue.UnitTestUtil;
 import org.somda.sdc.glue.common.MdibVersionUtil;
 import org.somda.sdc.glue.consumer.report.helper.ReportWriter;
+import test.org.somda.common.LoggingTestWatcher;
 
 import java.math.BigInteger;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 
+@ExtendWith(LoggingTestWatcher.class)
 class ReportProcessorTest {
     private static final UnitTestUtil UT = new UnitTestUtil();
 

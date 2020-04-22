@@ -4,6 +4,7 @@ import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.util.Modules;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.somda.sdc.dpws.guice.DefaultDpwsConfigModule;
@@ -11,6 +12,7 @@ import org.somda.sdc.dpws.guice.DefaultDpwsModule;
 import org.somda.sdc.common.guice.DefaultHelperModule;
 import org.somda.sdc.dpws.soap.wsdiscovery.WsDiscoveryConfig;
 import test.org.somda.common.CIDetector;
+import test.org.somda.common.LoggingTestWatcher;
 import test.org.somda.common.TestLogging;
 
 import java.time.Duration;
@@ -19,6 +21,7 @@ import java.util.List;
 /**
  * Test base class to provide common test functionality.
  */
+@ExtendWith(LoggingTestWatcher.class)
 public class DpwsTest {
     private static final Logger LOG = LoggerFactory.getLogger(DpwsTest.class);
 
@@ -34,8 +37,6 @@ public class DpwsTest {
     }
 
     protected void setUp() throws Exception {
-        TestLogging.configure();
-
         var dpwsConfigOverride = new DefaultDpwsConfigModule() {
             @Override
             protected void customConfigure() {
