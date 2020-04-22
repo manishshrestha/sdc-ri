@@ -1,5 +1,6 @@
 package org.somda.sdc.biceps.common.preprocessing;
 
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.somda.sdc.biceps.UnitTestUtil;
 import org.somda.sdc.biceps.common.MdibDescriptionModification;
 import org.somda.sdc.biceps.common.MdibDescriptionModifications;
@@ -10,6 +11,7 @@ import org.somda.sdc.biceps.provider.preprocessing.TypeConsistencyChecker;
 import org.somda.sdc.biceps.testutil.MockModelFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import test.org.somda.common.LoggingTestWatcher;
 
 import java.lang.reflect.InvocationTargetException;
 import java.math.BigInteger;
@@ -17,6 +19,7 @@ import java.math.BigInteger;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 
+@ExtendWith(LoggingTestWatcher.class)
 class TypeConsistencyCheckerTest {
     private static final UnitTestUtil UT = new UnitTestUtil();
 

@@ -5,6 +5,7 @@ import com.google.common.eventbus.EventBus;
 import com.google.inject.Injector;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.somda.sdc.biceps.common.MdibEntity;
@@ -20,6 +21,7 @@ import org.somda.sdc.dpws.device.EventSourceAccess;
 import org.somda.sdc.glue.UnitTestUtil;
 import org.somda.sdc.glue.common.ActionConstants;
 import org.somda.sdc.glue.provider.services.helper.factory.ReportGeneratorFactory;
+import test.org.somda.common.LoggingTestWatcher;
 
 import javax.annotation.Nullable;
 import java.lang.reflect.Method;
@@ -31,6 +33,7 @@ import java.util.Set;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+@ExtendWith(LoggingTestWatcher.class)
 class ReportGeneratorTest {
     private static final UnitTestUtil IT = new UnitTestUtil();
 

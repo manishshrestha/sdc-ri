@@ -3,6 +3,7 @@ package org.somda.sdc.glue.consumer.report.helper;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.somda.sdc.biceps.common.MdibDescriptionModification;
 import org.somda.sdc.biceps.common.MdibDescriptionModifications;
@@ -17,6 +18,7 @@ import org.somda.sdc.biceps.testutil.Handles;
 import org.somda.sdc.biceps.testutil.MockEntryFactory;
 import org.somda.sdc.glue.UnitTestUtil;
 import org.somda.sdc.glue.common.MdibVersionUtil;
+import test.org.somda.common.LoggingTestWatcher;
 
 import java.math.BigInteger;
 import java.util.Arrays;
@@ -28,6 +30,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
+@ExtendWith(LoggingTestWatcher.class)
 class ReportWriterTest {
     private static final UnitTestUtil UT = new UnitTestUtil();
     private ReportWriter reportWriter;

@@ -2,10 +2,13 @@ package org.somda.sdc.glue.common.uri;
 
 import org.ietf.jgss.Oid;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import test.org.somda.common.LoggingTestWatcher;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+@ExtendWith(LoggingTestWatcher.class)
 class ParticipantKeyPurposeMapperTest {
     @Test
     void fromOid() throws Exception {

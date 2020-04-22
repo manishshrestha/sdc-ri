@@ -3,6 +3,7 @@ package org.somda.sdc.glue.common;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.inject.Injector;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.somda.sdc.biceps.common.MdibDescriptionModifications;
 import org.somda.sdc.biceps.common.MdibTypeValidator;
 import org.somda.sdc.biceps.common.storage.PreprocessingException;
@@ -14,6 +15,7 @@ import org.somda.sdc.biceps.testutil.BaseTreeModificationsSet;
 import org.somda.sdc.biceps.testutil.MockEntryFactory;
 import org.somda.sdc.glue.UnitTestUtil;
 import org.somda.sdc.glue.common.factory.MdibMapperFactory;
+import test.org.somda.common.LoggingTestWatcher;
 
 import javax.xml.bind.JAXBException;
 import java.io.ByteArrayInputStream;
@@ -22,6 +24,7 @@ import java.io.ByteArrayOutputStream;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 
+@ExtendWith(LoggingTestWatcher.class)
 class MdibXmlIoTest {
     private static final UnitTestUtil UT = new UnitTestUtil();
 

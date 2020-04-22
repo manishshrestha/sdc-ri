@@ -1,6 +1,5 @@
 package it.org.somda.sdc.dpws.soap;
 
-import dpws_test_service.messages._2017._05._10.ObjectFactory;
 import it.org.somda.sdc.dpws.IntegrationTestUtil;
 import it.org.somda.sdc.dpws.MockedUdpBindingModule;
 import it.org.somda.sdc.dpws.TestServiceMetadata;
@@ -22,13 +21,15 @@ import org.somda.sdc.dpws.soap.wsaddressing.WsAddressingConstants;
 import org.somda.sdc.dpws.soap.wsaddressing.model.AttributedQNameType;
 import org.somda.sdc.dpws.soap.wsaddressing.model.ProblemActionType;
 import test.org.somda.common.LoggingTestWatcher;
-import test.org.somda.common.TestLogging;
 
 import javax.xml.bind.JAXBElement;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 @ExtendWith(LoggingTestWatcher.class)
 class FaultIT {
@@ -48,8 +49,6 @@ class FaultIT {
 
     @BeforeEach
     void setUp() throws Exception {
-        TestLogging.configure();
-
         devicePeer = new BasicPopulatedDevice(new MockedUdpBindingModule());
         clientPeer = new ClientPeer(new DefaultDpwsConfigModule() {
             @Override

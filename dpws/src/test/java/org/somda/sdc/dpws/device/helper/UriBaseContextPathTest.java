@@ -1,11 +1,14 @@
 package org.somda.sdc.dpws.device.helper;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import test.org.somda.common.LoggingTestWatcher;
 
 import java.net.URI;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+@ExtendWith(LoggingTestWatcher.class)
 public class UriBaseContextPathTest {
     final String expectedUrlPath = "/context/path";
     final String expectedUrnUuidSpecificPart = "uuid:550e8400-e29b-11d4-a716-446655440000";

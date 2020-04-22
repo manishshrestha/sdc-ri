@@ -11,11 +11,13 @@ import org.somda.sdc.dpws.guice.DefaultDpwsConfigModule;
 import org.somda.sdc.dpws.guice.DefaultDpwsModule;
 import org.somda.sdc.glue.guice.DefaultGlueConfigModule;
 import org.somda.sdc.glue.guice.DefaultGlueModule;
+import test.org.somda.common.TestLogging;
 
 public class UnitTestUtil {
     private final Injector injector;
 
     public UnitTestUtil() {
+        TestLogging.configure();
         injector = Guice.createInjector(
                 new DefaultGlueModule(),
                 new DefaultGlueConfigModule(),

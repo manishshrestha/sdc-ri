@@ -1,9 +1,11 @@
 package org.somda.sdc.glue.common;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.somda.sdc.biceps.model.participant.InstanceIdentifier;
 import org.somda.sdc.biceps.model.participant.LocationDetail;
 import org.somda.sdc.glue.common.FallbackInstanceIdentifier;
+import test.org.somda.common.LoggingTestWatcher;
 
 import javax.annotation.Nullable;
 import java.util.Optional;
@@ -11,6 +13,7 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+@ExtendWith(LoggingTestWatcher.class)
 class FallbackInstanceIdentifierTest {
     private static final String EXPECTED_ROOT = "sdc.ctxt.loc.detail";
 

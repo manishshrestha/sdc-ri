@@ -1,12 +1,11 @@
 package org.somda.sdc.dpws.soap;
 
-import org.somda.sdc.dpws.DpwsTest;
-import org.somda.sdc.dpws.soap.model.Envelope;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.somda.sdc.dpws.DpwsTest;
+import org.somda.sdc.dpws.soap.model.Envelope;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-
 
 public class DefaultEnvelopeUnmarshallerTest extends DpwsTest {
     @Override

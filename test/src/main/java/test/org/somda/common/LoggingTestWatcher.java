@@ -9,6 +9,10 @@ import org.slf4j.LoggerFactory;
 
 public class LoggingTestWatcher implements TestWatcher {
 
+    static {
+        TestLogging.configure();
+    }
+
     private static final Logger LOG = LoggerFactory.getLogger(LoggingTestWatcher.class);
 
     @Override

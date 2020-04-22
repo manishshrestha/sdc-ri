@@ -9,7 +9,11 @@ import com.google.inject.TypeLiteral;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.somda.sdc.common.util.ExecutorWrapperService;
-import org.somda.sdc.dpws.*;
+import org.somda.sdc.dpws.DpwsConstants;
+import org.somda.sdc.dpws.DpwsTest;
+import org.somda.sdc.dpws.LocalAddressResolverMock;
+import org.somda.sdc.dpws.ThisDeviceBuilder;
+import org.somda.sdc.dpws.ThisModelBuilder;
 import org.somda.sdc.dpws.client.DiscoveredDevice;
 import org.somda.sdc.dpws.guice.NetworkJobThreadPool;
 import org.somda.sdc.dpws.model.HostedServiceType;
@@ -33,9 +37,18 @@ import org.somda.sdc.dpws.soap.wsmetadataexchange.model.MetadataSection;
 import org.somda.sdc.dpws.soap.wstransfer.TransferGetClient;
 
 import javax.xml.namespace.QName;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.EmptyStackException;
+import java.util.List;
+import java.util.Map;
+import java.util.Stack;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -79,7 +92,8 @@ public class HostingServiceResolverTest extends DpwsTest {
 
         // start required thread pool(s)
         getInjector().getInstance(Key.get(
-                new TypeLiteral<ExecutorWrapperService<ListeningExecutorService>>(){},
+                new TypeLiteral<ExecutorWrapperService<ListeningExecutorService>>() {
+                },
                 NetworkJobThreadPool.class
         )).startAsync().awaitRunning();
 
