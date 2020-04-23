@@ -28,13 +28,18 @@ public class CommunicationLogInputInterceptor implements HttpInput.Interceptor, 
             // why is this a thing?
             return null;
         }
+
         int oldPosition = content.getByteBuffer().position();
         try {
             WritableByteChannel writableByteChannel = Channels.newChannel(commlogStream);
             writableByteChannel.write(content.getByteBuffer());
+            if (content instanceof HttpInput.EofContent) {
+                commlogStream.close();
+            }
         } catch (IOException e) {
             LOG.error("Error while writing to communication log stream", e);
         }
+
         // rewind the bytebuffer we just went through
         content.getByteBuffer().position(oldPosition);
         return new HttpInput.Content(content.getByteBuffer());

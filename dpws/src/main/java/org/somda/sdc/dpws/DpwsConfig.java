@@ -29,6 +29,9 @@ public class DpwsConfig {
 
     /**
      * Defines the sink for communication log messages in case a communication logger is enabled.
+     * <p>
+     * Implementations of {@link CommunicationLogSink} may ignore this configuration item as not every sink
+     * write to files.
      *
      * <ul>
      * <li>Data type: {@linkplain java.io.File}
@@ -36,6 +39,18 @@ public class DpwsConfig {
      * </ul>
      */
     public static final String COMMUNICATION_LOG_SINK_DIRECTORY = "Dpws.CommunicationLogSinkDirectory";
+
+    /**
+     * Defines if the communication log shall include HTTP header information.
+     * <p>
+     * Implementations of {@link CommunicationLogSink} may ignore this configuration item.
+     *
+     * <ul>
+     * <li>Data type: {@linkplain Boolean}
+     * <li>Use: optional
+     * </ul>
+     */
+    public static final String COMMUNICATION_LOG_WITH_HTTP_HEADERS = "Dpws.CommunicationLogWithHttpHeaders";
 
     /**
      * Defines the timeout the http client uses when connecting to an endpoint.
@@ -106,5 +121,4 @@ public class DpwsConfig {
      * </ul>
      */
     public static final String HTTP_SUPPORT = "Dpws.EnableHttp";
-
 }

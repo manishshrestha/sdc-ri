@@ -1,7 +1,6 @@
 package org.somda.sdc.dpws.http.apache;
 
 import org.apache.http.HttpEntity;
-import org.apache.http.HttpException;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpResponseInterceptor;
@@ -15,7 +14,6 @@ import org.somda.sdc.dpws.soap.CommunicationContext;
 import org.somda.sdc.dpws.soap.HttpApplicationInfo;
 import org.somda.sdc.dpws.soap.TransportInfo;
 
-import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Collections;
 
@@ -32,7 +30,7 @@ public class CommunicationLogHttpResponseInterceptor implements HttpResponseInte
     }
 
     @Override
-    public void process(HttpResponse response, HttpContext context) throws HttpException, IOException {
+    public void process(HttpResponse response, HttpContext context) {
         LOG.debug("Processing response");
 
         HttpHost target = (HttpHost) context.getAttribute(
@@ -56,7 +54,9 @@ public class CommunicationLogHttpResponseInterceptor implements HttpResponseInte
 
         var requestCommContext = new CommunicationContext(requestHttpApplicationInfo, requestTransportInfo);
 
-        OutputStream commlogStream = commlog.logMessage(CommunicationLog.Direction.INBOUND, CommunicationLog.TransportType.HTTP,
+        OutputStream commlogStream = commlog.logMessage(
+                CommunicationLog.Direction.INBOUND,
+                CommunicationLog.TransportType.HTTP,
                 requestCommContext);
 
         response.setEntity(new CommunicationLogEntity(oldMessageEntity, commlogStream));

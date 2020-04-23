@@ -18,7 +18,6 @@ import java.io.OutputStream;
 public class CommunicationLogImpl implements CommunicationLog {
     private static final Logger LOG = LoggerFactory.getLogger(CommunicationLogImpl.class);
 
-
     private final CommunicationLogSink logSink;
 
     @Inject
@@ -28,24 +27,32 @@ public class CommunicationLogImpl implements CommunicationLog {
     }
 
     @Override
-    public TeeOutputStream logMessage(Direction direction, TransportType transportType, CommunicationContext communicationContext,
+    public TeeOutputStream logMessage(Direction direction,
+                                      TransportType transportType,
+                                      CommunicationContext communicationContext,
                                       OutputStream message) {
         OutputStream logFile = this.logSink.createTargetStream(transportType, direction, communicationContext);
         return new TeeOutputStream(message, logFile);
     }
 
     @Override
-    public OutputStream logMessage(Direction direction, TransportType transportType, CommunicationContext communicationContext) {
+    public OutputStream logMessage(Direction direction,
+                                   TransportType transportType,
+                                   CommunicationContext communicationContext) {
         return this.logSink.createTargetStream(transportType, direction, communicationContext);
     }
 
     @Override
-    public InputStream logMessage(Direction direction, TransportType transportType,
-                                  CommunicationContext communicationContext, InputStream message) {
+    public InputStream logMessage(Direction direction,
+                                  TransportType transportType,
+                                  CommunicationContext communicationContext,
+                                  InputStream message) {
         return writeLogFile(transportType, direction, communicationContext, message);
     }
 
-    private InputStream writeLogFile(TransportType transportType, Direction direction, CommunicationContext communicationContext,
+    private InputStream writeLogFile(TransportType transportType,
+                                     Direction direction,
+                                     CommunicationContext communicationContext,
                                      InputStream inputStream) {
         try {
             final byte[] bytes = ByteStreams.toByteArray(inputStream);
@@ -59,5 +66,4 @@ public class CommunicationLogImpl implements CommunicationLog {
         }
         return inputStream;
     }
-
 }

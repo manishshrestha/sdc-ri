@@ -18,8 +18,10 @@ public interface CommunicationLogSink {
      * @return an {@linkplain OutputStream}, that represents the branch to write to.
      * @deprecated will be removed in 2.0 because of incorrect naming, use {@linkplain #createTargetStream(CommunicationLog.TransportType, CommunicationLog.Direction, CommunicationContext)} instead.
      */
-    @Deprecated
-    OutputStream getTargetStream(CommunicationLog.TransportType path, CommunicationLog.Direction direction, CommunicationContext communicationContext);
+    @Deprecated(since = "1.1.0", forRemoval = true)
+    OutputStream getTargetStream(CommunicationLog.TransportType path,
+                                 CommunicationLog.Direction direction,
+                                 CommunicationContext communicationContext);
 
 
     /**
@@ -30,6 +32,7 @@ public interface CommunicationLogSink {
      * @param communicationContext context which can be used to derive storage information.
      * @return an {@linkplain OutputStream}, that represents the branch to write to.
      */
-    OutputStream createTargetStream(CommunicationLog.TransportType path, CommunicationLog.Direction direction, CommunicationContext communicationContext);
-
+    OutputStream createTargetStream(CommunicationLog.TransportType path,
+                                    CommunicationLog.Direction direction,
+                                    CommunicationContext communicationContext);
 }

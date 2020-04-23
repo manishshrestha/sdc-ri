@@ -3,17 +3,16 @@ package org.somda.sdc.dpws;
 import com.google.inject.Inject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.somda.sdc.dpws.helper.CommunicationLogFileName;
+import org.somda.sdc.dpws.helper.CommunicationLogFileOutputStream;
 import org.somda.sdc.dpws.soap.CommunicationContext;
 import org.somda.sdc.dpws.soap.HttpApplicationInfo;
 
 import javax.inject.Named;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.time.LocalTime;
-import java.time.format.DateTimeFormatter;
 import java.util.EnumMap;
 import java.util.Map;
 
@@ -21,17 +20,15 @@ import java.util.Map;
  * Default implementation of {@linkplain CommunicationLogSink}.
  */
 public class CommunicationLogSinkImpl implements CommunicationLogSink {
-
     private static final Logger LOG = LoggerFactory.getLogger(CommunicationLogSinkImpl.class);
-
-    private static final String SEPARATOR = "_";
-    private static final String SUFFIX = ".xml";
-    private static final String HEADER_SUFFIX = SEPARATOR + "HEADER.txt";
+    private final Boolean createHttpHeaders;
 
     private EnumMap<CommunicationLog.TransportType, File> dirMapping;
 
     @Inject
-    CommunicationLogSinkImpl(@Named(DpwsConfig.COMMUNICATION_LOG_SINK_DIRECTORY) File logDirectory) {
+    CommunicationLogSinkImpl(@Named(DpwsConfig.COMMUNICATION_LOG_SINK_DIRECTORY) File logDirectory,
+                             @Named(DpwsConfig.COMMUNICATION_LOG_WITH_HTTP_HEADERS) Boolean createHttpHeaders) {
+        this.createHttpHeaders = createHttpHeaders;
 
         this.dirMapping = new EnumMap<>(CommunicationLog.TransportType.class);
 
@@ -51,56 +48,50 @@ public class CommunicationLogSinkImpl implements CommunicationLogSink {
     }
 
     @Deprecated
-    public OutputStream getTargetStream(CommunicationLog.TransportType transportType, CommunicationLog.Direction direction, CommunicationContext communicationContext) {
+    public OutputStream getTargetStream(CommunicationLog.TransportType transportType,
+                                        CommunicationLog.Direction direction,
+                                        CommunicationContext communicationContext) {
         return createTargetStream(transportType, direction, communicationContext);
     }
 
-    public OutputStream createTargetStream(CommunicationLog.TransportType transportType, CommunicationLog.Direction direction, CommunicationContext communicationContext) {
+    @Override
+    public OutputStream createTargetStream(CommunicationLog.TransportType transportType,
+                                           CommunicationLog.Direction direction,
+                                           CommunicationContext communicationContext) {
+        var outputStream = OutputStream.nullOutputStream();
 
-        File dir = dirMapping.get(transportType);
+        var dir = dirMapping.get(transportType);
+        if (dir == null) {
+            LOG.warn("The directory for the given transport type was not configured.");
+            return outputStream;
+        }
 
-        var destAddr = communicationContext.getTransportInfo().getRemoteAddress().orElse("UNKNOWN_ADDRESS");
-        var destPort = communicationContext.getTransportInfo().getRemotePort().orElse(-1);
+        var fileNamePrefix = CommunicationLogFileName.create(direction.toString(), communicationContext);
 
-        if (dir != null) {
-            try {
-                var basePath = dir.getAbsolutePath() + File.separator + makeName(direction.toString(), destAddr, destPort);
+        if (createHttpHeaders) {
+            var headerPath = CommunicationLogFileName.appendHttpHeaderSuffix(dir.getAbsolutePath() +
+                    File.separator + fileNamePrefix);
 
-                // if message is http, we can store header info too
-                if (communicationContext.getApplicationInfo() instanceof HttpApplicationInfo) {
-                    var appInfo = (HttpApplicationInfo) communicationContext.getApplicationInfo();
-                    try (OutputStream headerFile = new FileOutputStream(basePath + HEADER_SUFFIX)) {
-                        for (Map.Entry<String, String> entry : appInfo.getHeaders().entries()) {
-                            String targetString;
-                            if (entry.getValue() == null) {
-                                targetString = String.format("%s\n", entry.getKey());
-                            } else {
-                                targetString = String.format("%s = %s\n", entry.getKey(), entry.getValue());
-                            }
-                            headerFile.write(targetString.getBytes());
+            // if message is http, we can store header info too
+            if (communicationContext.getApplicationInfo() instanceof HttpApplicationInfo) {
+                var appInfo = (HttpApplicationInfo) communicationContext.getApplicationInfo();
+                try (OutputStream headerFile = new FileOutputStream(headerPath)) {
+                    for (Map.Entry<String, String> entry : appInfo.getHeaders().entries()) {
+                        String targetString;
+                        if (entry.getValue() == null) {
+                            targetString = String.format("%s\n", entry.getKey());
+                        } else {
+                            targetString = String.format("%s = %s\n", entry.getKey(), entry.getValue());
                         }
-                    } catch (IOException e) {
-                        LOG.error("Could not write headers to header file {}", basePath + HEADER_SUFFIX);
+                        headerFile.write(targetString.getBytes());
                     }
+                } catch (IOException e) {
+                    LOG.error("Could not write headers to header file {}",
+                            CommunicationLogFileName.appendHttpHeaderSuffix(headerPath));
                 }
-
-                return new FileOutputStream(basePath + SUFFIX);
-
-            } catch (FileNotFoundException e) {
-                LOG.warn("Could not open communication log file", e);
             }
         }
 
-        LOG.warn("The directory for the given transport type was not configured.");
-
-        return OutputStream.nullOutputStream();
-
-    }
-
-    private String makeName(String direction, String destinationAddress, Integer destinationPort) {
-        LocalTime date = LocalTime.now();
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH-mm-ss-SSS");
-        return System.nanoTime() + SEPARATOR + date.format(formatter) + SEPARATOR + direction + SEPARATOR
-                + destinationAddress + SEPARATOR + destinationPort;
+        return new CommunicationLogFileOutputStream(dir, fileNamePrefix);
     }
 }
