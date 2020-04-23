@@ -6,6 +6,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.file.Path;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -55,9 +56,9 @@ public class CommunicationLogFileOutputStream extends OutputStream {
 
         var xmlDoc = SOAP_UTILS.prettyPrint(outputStream.toByteArray());
         var name = SOAP_UTILS.makeNameElement(xmlDoc);
-
-        try (var fileOutputStream = new FileOutputStream(targetDirectory.getAbsolutePath() + File.separator +
-                CommunicationLogFileName.appendSoapSuffix(CommunicationLogFileName.append(fileNamePrefix, name)))) {
+        var commLogFile = Path.of(targetDirectory.getAbsolutePath(),
+                CommunicationLogFileName.appendSoapSuffix(CommunicationLogFileName.append(fileNamePrefix, name)));
+        try (var fileOutputStream = new FileOutputStream(commLogFile.toFile())) {
             fileOutputStream.write(xmlDoc);
         }
     }
