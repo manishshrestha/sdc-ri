@@ -26,6 +26,9 @@ import java.io.ByteArrayOutputStream;
  * This separate class exists only to improve testability.
  */
 class CommunicationLogSoapXmlUtils {
+    private static final String EMPTY_XML = "[empty]";
+    private static final String ACTION_UNKNOWN = "[unknown]";
+    
     /**
      * Short version {@link #moreReadable(String)} applied on {@link #findAction(byte[])}.
      *
@@ -45,7 +48,7 @@ class CommunicationLogSoapXmlUtils {
      */
     String findAction(byte[] xmlDocument) {
         if (xmlDocument.length == 0) {
-            return "[empty]";
+            return EMPTY_XML;
         }
         try {
             XMLInputFactory factory = XMLInputFactory.newInstance();
@@ -75,7 +78,7 @@ class CommunicationLogSoapXmlUtils {
             // Left empty on purpose - it's uncritical if an exception is thrown
         }
 
-        return "[unknown]";
+        return ACTION_UNKNOWN;
     }
 
     /**
@@ -91,6 +94,10 @@ class CommunicationLogSoapXmlUtils {
      */
     String moreReadable(String action) {
         switch (action) {
+            case ACTION_UNKNOWN:
+            case EMPTY_XML:
+                return action;
+
             // WS-Eventing
             case WsEventingConstants.WSE_ACTION_SUBSCRIBE:
                 return "WseSubscribe";
