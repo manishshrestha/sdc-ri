@@ -3,8 +3,8 @@ package org.somda.sdc.glue.common;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.somda.sdc.biceps.common.MdibDescriptionModifications;
 import org.somda.sdc.biceps.common.MdibTypeValidator;
 import org.somda.sdc.biceps.common.access.MdibAccess;
@@ -24,7 +24,7 @@ import java.util.List;
  * Use {@link MdibMapper} to map from {@linkplain MdibAccess} to an {@linkplain Mdib} object.
  */
 public class ModificationsBuilder {
-    private final Logger LOG = LoggerFactory.getLogger(ModificationsBuilder.class);
+    private final Logger LOG = LogManager.getLogger(ModificationsBuilder.class);
 
     private final ArrayListMultimap<String, AbstractState> states;
     private final MdibDescriptionModifications modifications;

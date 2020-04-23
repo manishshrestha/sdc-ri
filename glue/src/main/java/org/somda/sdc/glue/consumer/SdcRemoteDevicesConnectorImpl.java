@@ -9,8 +9,8 @@ import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.inject.Provider;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.somda.sdc.biceps.common.storage.PreprocessingException;
 import org.somda.sdc.biceps.consumer.access.RemoteMdibAccess;
 import org.somda.sdc.biceps.consumer.access.factory.RemoteMdibAccessFactory;
@@ -71,7 +71,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 public class SdcRemoteDevicesConnectorImpl extends AbstractIdleService implements SdcRemoteDevicesConnector, WatchdogObserver {
-    private static final Logger LOG = LoggerFactory.getLogger(SdcRemoteDevicesConnectorImpl.class);
+    private static final Logger LOG = LogManager.getLogger(SdcRemoteDevicesConnectorImpl.class);
 
     private ExecutorWrapperService<ListeningExecutorService> executorService;
     private Map<String, SdcRemoteDevice> sdcRemoteDevices;

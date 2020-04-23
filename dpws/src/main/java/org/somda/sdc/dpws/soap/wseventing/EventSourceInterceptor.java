@@ -6,8 +6,8 @@ import com.google.common.util.concurrent.AbstractIdleService;
 import com.google.inject.Inject;
 import com.google.inject.Provider;
 import com.google.inject.name.Named;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.somda.sdc.common.util.JaxbUtil;
 import org.somda.sdc.dpws.DpwsConstants;
 import org.somda.sdc.dpws.device.helper.RequestResponseServerHttpHandler;
@@ -63,7 +63,7 @@ import java.util.stream.Collectors;
  * Interceptor that handles an event source's incoming subscription requests and facilitates sending notifications.
  */
 public class EventSourceInterceptor extends AbstractIdleService implements EventSource {
-    private static final Logger LOG = LoggerFactory.getLogger(EventSourceInterceptor.class);
+    private static final Logger LOG = LogManager.getLogger(EventSourceInterceptor.class);
 
     private final Duration maxExpires;
     private final String subscriptionManagerPath;

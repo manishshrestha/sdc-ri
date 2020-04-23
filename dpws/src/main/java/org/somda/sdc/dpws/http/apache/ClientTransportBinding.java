@@ -10,8 +10,8 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.util.EntityUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.somda.sdc.dpws.TransportBinding;
 import org.somda.sdc.dpws.TransportBindingException;
 import org.somda.sdc.dpws.http.HttpException;
@@ -32,7 +32,7 @@ import java.net.SocketException;
 import java.nio.charset.StandardCharsets;
 
 public class ClientTransportBinding implements TransportBinding {
-    private static final Logger LOG = LoggerFactory.getLogger(ClientTransportBinding.class);
+    private static final Logger LOG = LogManager.getLogger(ClientTransportBinding.class);
 
     public static final String USER_AGENT_KEY = "X-User-Agent";
     public static final String USER_AGENT_VALUE = "SDCri";

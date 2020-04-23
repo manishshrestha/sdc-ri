@@ -4,6 +4,7 @@ import com.google.inject.Injector;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.somda.sdc.biceps.UnitTestUtil;
 import org.somda.sdc.biceps.common.MdibDescriptionModification;
 import org.somda.sdc.biceps.common.MdibDescriptionModifications;
@@ -12,6 +13,7 @@ import org.somda.sdc.biceps.common.storage.factory.MdibStorageFactory;
 import org.somda.sdc.biceps.model.participant.*;
 import org.somda.sdc.biceps.testutil.Handles;
 import org.somda.sdc.biceps.testutil.MockModelFactory;
+import test.org.somda.common.LoggingTestWatcher;
 import test.org.somda.common.TestLogging;
 
 import java.math.BigInteger;
@@ -23,6 +25,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 
+@ExtendWith(LoggingTestWatcher.class)
 public class MdibStorageImplTest {
     private static final UnitTestUtil UT = new UnitTestUtil();
 
@@ -30,7 +33,6 @@ public class MdibStorageImplTest {
 
     @BeforeEach
     void setUp() {
-        TestLogging.configure();
         Injector injector = UT.getInjector();
         mdibStorage = injector.getInstance(MdibStorageFactory.class).createMdibStorage();
     }

@@ -5,8 +5,8 @@ import com.google.common.collect.Multimap;
 import com.google.common.eventbus.Subscribe;
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.somda.sdc.biceps.common.MdibEntity;
 import org.somda.sdc.biceps.common.access.MdibAccessObserver;
 import org.somda.sdc.biceps.common.event.*;
@@ -33,7 +33,7 @@ import java.util.List;
  * with an MDS handle reference), no SourceMds attribute is set and hence all changes go into one report part.
  */
 public class ReportGenerator implements MdibAccessObserver {
-    private static final Logger LOG = LoggerFactory.getLogger(ReportGenerator.class);
+    private static final Logger LOG = LogManager.getLogger(ReportGenerator.class);
     private static final String REFLECTION_ERROR_STRING = "Reflection error caught. Sending of notification aborted.";
 
     private final EventSourceAccess eventSourceAccess;

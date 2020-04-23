@@ -2,8 +2,8 @@ package org.somda.sdc.glue.common;
 
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.somda.sdc.biceps.common.MdibDescriptionModifications;
 import org.somda.sdc.biceps.common.MdibEntity;
 import org.somda.sdc.biceps.common.access.MdibAccess;
@@ -52,7 +52,7 @@ import java.util.stream.Collectors;
  * {@link org.somda.sdc.biceps.provider.access.LocalMdibAccess}.
  */
 public class MdibMapper {
-    private static final Logger LOG = LoggerFactory.getLogger(MdibMapper.class);
+    private static final Logger LOG = LogManager.getLogger(MdibMapper.class);
     private final MdibAccess mdibAccess;
     private final ObjectFactory participantModelFactory;
     private final ObjectUtil objectUtil;

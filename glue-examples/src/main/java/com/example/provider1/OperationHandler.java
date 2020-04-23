@@ -1,8 +1,8 @@
 package com.example.provider1;
 
 import com.example.Constants;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.somda.sdc.biceps.common.MdibStateModifications;
 import org.somda.sdc.biceps.common.storage.PreprocessingException;
 import org.somda.sdc.biceps.model.message.InvocationError;
@@ -35,7 +35,7 @@ import java.util.Optional;
  */
 public class OperationHandler implements OperationInvocationReceiver {
 
-    private static final Logger LOG = LoggerFactory.getLogger(OperationHandler.class);
+    private static final Logger LOG = LogManager.getLogger(OperationHandler.class);
 
     private final LocalMdibAccess mdibAccess;
 

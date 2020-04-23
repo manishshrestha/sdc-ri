@@ -5,13 +5,13 @@ import it.org.somda.glue.consumer.ReportListenerSpy;
 import it.org.somda.glue.consumer.TestSdcClient;
 import it.org.somda.glue.provider.TestSdcDevice;
 import it.org.somda.glue.provider.VentilatorMdibRunner;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.somda.sdc.biceps.common.CommonConstants;
 import org.somda.sdc.biceps.common.MdibStateModifications;
 import org.somda.sdc.biceps.common.event.AbstractMdibAccessMessage;
@@ -77,7 +77,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @ExtendWith(LoggingTestWatcher.class)
 class CommunicationIT {
-    private static final Logger LOG = LoggerFactory.getLogger(CommunicationIT.class);
+    private static final Logger LOG = LogManager.getLogger(CommunicationIT.class);
     private static final IntegrationTestUtil IT = new IntegrationTestUtil();
 
     private TestSdcDevice testDevice;

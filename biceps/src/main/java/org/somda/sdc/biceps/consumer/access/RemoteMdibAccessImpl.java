@@ -22,8 +22,8 @@ import org.somda.sdc.biceps.model.participant.AbstractContextState;
 import org.somda.sdc.biceps.model.participant.AbstractDescriptor;
 import org.somda.sdc.biceps.model.participant.AbstractState;
 import org.somda.sdc.biceps.model.participant.MdibVersion;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 import javax.annotation.Nullable;
 import java.math.BigInteger;
@@ -37,7 +37,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
  * Default implementation of {@linkplain RemoteMdibAccessImpl}.
  */
 public class RemoteMdibAccessImpl implements RemoteMdibAccess {
-    private static final Logger LOG = LoggerFactory.getLogger(RemoteMdibAccessImpl.class);
+    private static final Logger LOG = LogManager.getLogger(RemoteMdibAccessImpl.class);
 
     private final Distributor eventDistributor;
     private final MdibStorage mdibStorage;

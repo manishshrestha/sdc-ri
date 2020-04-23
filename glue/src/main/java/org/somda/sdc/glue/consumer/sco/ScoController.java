@@ -4,7 +4,7 @@ import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
-import org.slf4j.Logger;
+import org.apache.logging.log4j.Logger;
 import org.somda.sdc.biceps.model.message.AbstractSet;
 import org.somda.sdc.biceps.model.message.AbstractSetResponse;
 import org.somda.sdc.biceps.model.message.OperationInvokedReport;

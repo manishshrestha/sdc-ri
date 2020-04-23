@@ -3,7 +3,7 @@ package org.somda.sdc.glue.consumer.sco.helper;
 import com.google.inject.Inject;
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.name.Named;
-import org.slf4j.Logger;
+import org.apache.logging.log4j.Logger;
 import org.somda.sdc.biceps.model.message.AbstractSetResponse;
 import org.somda.sdc.biceps.model.message.OperationInvokedReport;
 import org.somda.sdc.dpws.service.HostingServiceProxy;

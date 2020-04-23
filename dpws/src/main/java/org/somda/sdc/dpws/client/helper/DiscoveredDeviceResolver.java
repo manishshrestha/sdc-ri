@@ -18,8 +18,8 @@ import org.somda.sdc.dpws.soap.wsdiscovery.model.HelloType;
 import org.somda.sdc.dpws.soap.wsdiscovery.model.ProbeMatchType;
 import org.somda.sdc.dpws.soap.wsdiscovery.model.ProbeMatchesType;
 import org.somda.sdc.dpws.soap.wsdiscovery.model.ResolveMatchesType;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 import javax.xml.namespace.QName;
 import java.time.Duration;
@@ -34,7 +34,7 @@ import java.util.concurrent.TimeoutException;
  * Provide different functions to resolve a {@link DiscoveredDevice} object from hello or probe messages.
  */
 public class DiscoveredDeviceResolver {
-    private static final Logger LOG = LoggerFactory.getLogger(DiscoveredDeviceResolver.class);
+    private static final Logger LOG = LogManager.getLogger(DiscoveredDeviceResolver.class);
     private final WsDiscoveryClient wsDiscoveryClient;
     private final Duration maxWaitForResolveMatches;
     private final WsAddressingUtil wsaUtil;

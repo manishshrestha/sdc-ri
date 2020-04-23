@@ -7,8 +7,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.somda.sdc.biceps.common.MdibDescriptionModifications;
 import org.somda.sdc.biceps.common.MdibStateModifications;
 import org.somda.sdc.biceps.common.MdibTypeValidator;
@@ -37,7 +37,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @ExtendWith(LoggingTestWatcher.class)
 class MdibTransferIT {
-    private static final Logger LOG = LoggerFactory.getLogger(MdibTransferIT.class);
+    private static final Logger LOG = LogManager.getLogger(MdibTransferIT.class);
     private static final IntegrationTestUtil IT = new IntegrationTestUtil();
 
     private TestSdcDevice testDevice;

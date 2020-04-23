@@ -1,7 +1,7 @@
 package com.example;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.somda.sdc.dpws.crypto.CryptoSettings;
 
 import java.io.File;
@@ -12,7 +12,7 @@ import java.util.Objects;
 import java.util.Optional;
 
 public class CustomCryptoSettings implements CryptoSettings {
-    private static final Logger LOG = LoggerFactory.getLogger(CustomCryptoSettings.class);
+    private static final Logger LOG = LogManager.getLogger(CustomCryptoSettings.class);
 
     private static final String DEFAULT_KEYSTORE = "crypto/sdcparticipant.jks";
     private static final String DEFAULT_TRUSTSTORE = "crypto/root.jks";

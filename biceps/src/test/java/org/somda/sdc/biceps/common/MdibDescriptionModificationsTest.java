@@ -1,9 +1,11 @@
 package org.somda.sdc.biceps.common;
 
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.somda.sdc.biceps.model.participant.*;
 import org.somda.sdc.biceps.testutil.MockModelFactory;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import test.org.somda.common.LoggingTestWatcher;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
@@ -14,6 +16,7 @@ import java.util.Map;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 
+@ExtendWith(LoggingTestWatcher.class)
 public class MdibDescriptionModificationsTest {
     @Test
     public void singleState() throws InstantiationException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {

@@ -3,10 +3,13 @@ package org.somda.sdc.glue.common.uri;
 import jregex.Matcher;
 import jregex.Pattern;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.somda.sdc.glue.GlueConstants;
+import test.org.somda.common.LoggingTestWatcher;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@ExtendWith(LoggingTestWatcher.class)
 public class RegexTest {
 
     private static final Pattern AUTHORITY_PATTERN = new Pattern("^" + GlueConstants.AUTHORITY + "$");

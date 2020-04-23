@@ -2,6 +2,7 @@ package org.somda.sdc.glue.provider.sco;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.somda.sdc.biceps.model.message.InvocationError;
 import org.somda.sdc.biceps.model.message.InvocationState;
@@ -15,6 +16,7 @@ import org.somda.sdc.dpws.soap.exception.TransportException;
 import org.somda.sdc.glue.UnitTestUtil;
 import org.somda.sdc.glue.common.ActionConstants;
 import org.somda.sdc.glue.provider.sco.factory.ScoControllerFactory;
+import test.org.somda.common.LoggingTestWatcher;
 
 import java.net.URI;
 import java.util.ArrayList;
@@ -25,6 +27,7 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+@ExtendWith(LoggingTestWatcher.class)
 class ScoControllerTest {
     private static final UnitTestUtil IT = new UnitTestUtil();
 

@@ -1,15 +1,23 @@
 package org.somda.sdc.glue.provider.plugin;
 
 import com.google.common.eventbus.EventBus;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.somda.sdc.biceps.common.MdibEntity;
 import org.somda.sdc.biceps.common.event.ContextStateModificationMessage;
 import org.somda.sdc.biceps.common.event.DescriptionModificationMessage;
-import org.somda.sdc.biceps.model.participant.*;
+import org.somda.sdc.biceps.model.participant.CodedValue;
+import org.somda.sdc.biceps.model.participant.ContextAssociation;
+import org.somda.sdc.biceps.model.participant.InstanceIdentifier;
+import org.somda.sdc.biceps.model.participant.LocationContextState;
+import org.somda.sdc.biceps.model.participant.LocationDetail;
+import org.somda.sdc.biceps.model.participant.MdibVersion;
+import org.somda.sdc.biceps.model.participant.MdsDescriptor;
 import org.somda.sdc.biceps.model.participant.factory.CodedValueFactory;
 import org.somda.sdc.biceps.model.participant.factory.InstanceIdentifierFactory;
 import org.somda.sdc.biceps.provider.access.LocalMdibAccess;
@@ -21,12 +29,21 @@ import org.somda.sdc.glue.common.uri.LocationDetailQueryMapper;
 import org.somda.sdc.glue.common.uri.UriMapperGenerationArgumentException;
 import org.somda.sdc.glue.provider.SdcDeviceContext;
 import test.org.somda.common.LoggingTestWatcher;
-import test.org.somda.common.TestLogging;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(LoggingTestWatcher.class)
 class SdcRequiredTypesAndScopesTest {
@@ -34,12 +51,6 @@ class SdcRequiredTypesAndScopesTest {
     private EventBus eventBus;
     private DiscoveryAccess discoveryAccessMock;
     private LocalMdibAccess mdibAccessMock;
-
-
-    @BeforeAll
-    static void beforeAll() {
-        TestLogging.configure();
-    }
 
     @BeforeEach
     void beforeEach() {
@@ -202,7 +213,7 @@ class SdcRequiredTypesAndScopesTest {
     }
 
     @Test
-    void eventBusShallTriggerDescriptionUpdatesWithSetScopesAndHello() throws UriMapperGenerationArgumentException{
+    void eventBusShallTriggerDescriptionUpdatesWithSetScopesAndHello() throws UriMapperGenerationArgumentException {
         int setScopesInteractionCount = 2;
         int sendHelloInteractionCount = 1;
         int scopesCount = 3;
@@ -235,9 +246,9 @@ class SdcRequiredTypesAndScopesTest {
         var scopesCaptor = ArgumentCaptor.forClass(Collection.class);
         verify(discoveryAccessMock, times(++setScopesInteractionCount)).setScopes(scopesCaptor.capture());
         assertEquals(setScopesInteractionCount, scopesCaptor.getAllValues().size());
-        assertEquals(scopesCount, scopesCaptor.getAllValues().get(setScopesInteractionCount-1).size());
+        assertEquals(scopesCount, scopesCaptor.getAllValues().get(setScopesInteractionCount - 1).size());
         verifyScopes(Arrays.asList(expectedContextScopeUri, expectedMdsScopeUri, GlueConstants.SCOPE_SDC_PROVIDER),
-                scopesCaptor.getAllValues().get(setScopesInteractionCount-1));
+                scopesCaptor.getAllValues().get(setScopesInteractionCount - 1));
         verify(discoveryAccessMock, times(sendHelloInteractionCount)).sendHello();
     }
 

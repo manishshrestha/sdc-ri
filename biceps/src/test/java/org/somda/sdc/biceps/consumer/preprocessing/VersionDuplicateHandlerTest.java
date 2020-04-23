@@ -1,5 +1,6 @@
 package org.somda.sdc.biceps.consumer.preprocessing;
 
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.somda.sdc.biceps.UnitTestUtil;
 import org.somda.sdc.biceps.common.MdibStateModifications;
 import org.somda.sdc.biceps.common.storage.MdibStorage;
@@ -8,6 +9,7 @@ import org.somda.sdc.biceps.testutil.MockModelFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
+import test.org.somda.common.LoggingTestWatcher;
 
 import java.lang.reflect.Array;
 import java.math.BigInteger;
@@ -19,6 +21,7 @@ import java.util.function.Function;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 
+@ExtendWith(LoggingTestWatcher.class)
 class VersionDuplicateHandlerTest {
     private static final UnitTestUtil UT = new UnitTestUtil();
 

@@ -1,8 +1,8 @@
 package org.somda.sdc.dpws.network;
 
 import com.google.inject.Inject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 import java.net.*;
 import java.util.Optional;
@@ -11,7 +11,7 @@ import java.util.Optional;
  * Default implementation of {@linkplain LocalAddressResolver}.
  */
 public class LocalAddressResolverImpl implements LocalAddressResolver {
-    private static final Logger LOG = LoggerFactory.getLogger(LocalAddressResolverImpl.class);
+    private static final Logger LOG = LogManager.getLogger(LocalAddressResolverImpl.class);
 
     @Inject
     LocalAddressResolverImpl() {

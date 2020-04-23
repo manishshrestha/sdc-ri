@@ -22,7 +22,6 @@ import org.somda.sdc.dpws.service.HostingServiceProxy;
 import org.somda.sdc.dpws.soap.SoapConfig;
 import org.somda.sdc.dpws.soap.wsdiscovery.WsDiscoveryConfig;
 import test.org.somda.common.LoggingTestWatcher;
-import test.org.somda.common.TestLogging;
 
 import java.time.Duration;
 import java.util.List;
@@ -44,7 +43,6 @@ public class DiscoveryIT {
 
     @BeforeEach
     public void setUp() {
-        TestLogging.configure();
         this.devicePeer = new BasicPopulatedDevice(new MockedUdpBindingModule());
         this.clientPeer = new ClientPeer(new DefaultDpwsConfigModule() {
             @Override

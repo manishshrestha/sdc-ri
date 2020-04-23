@@ -4,8 +4,8 @@ import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.inject.AbstractModule;
 import com.google.inject.TypeLiteral;
 import com.google.inject.binder.AnnotatedBindingBuilder;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
@@ -16,7 +16,7 @@ import java.util.concurrent.ScheduledExecutorService;
  * Utilities for creating and using {@linkplain ExecutorWrapperService} with guice's {@linkplain AbstractModule}.
  */
 public class ExecutorWrapperUtil {
-    private static final Logger LOG = LoggerFactory.getLogger(ExecutorWrapperUtil.class);
+    private static final Logger LOG = LogManager.getLogger(ExecutorWrapperUtil.class);
 
     /**
      * Binds a {@linkplain ScheduledExecutorService} wrapped in a {@linkplain Callable} to an annotation.

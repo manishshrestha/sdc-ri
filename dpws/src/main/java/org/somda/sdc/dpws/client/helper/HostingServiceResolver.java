@@ -4,8 +4,8 @@ import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.somda.sdc.common.util.JaxbUtil;
 import org.somda.sdc.dpws.DpwsConfig;
 import org.somda.sdc.dpws.DpwsConstants;
@@ -55,7 +55,7 @@ import java.util.concurrent.TimeUnit;
  * Helper class to resolve hosting service and hosted service information from {@link DiscoveredDevice} objects.
  */
 public class HostingServiceResolver {
-    private static final Logger LOG = LoggerFactory.getLogger(HostingServiceResolver.class);
+    private static final Logger LOG = LogManager.getLogger(HostingServiceResolver.class);
 
     private final ExecutorWrapperService<ListeningExecutorService> networkJobExecutor;
     private final LocalAddressResolver localAddressResolver;

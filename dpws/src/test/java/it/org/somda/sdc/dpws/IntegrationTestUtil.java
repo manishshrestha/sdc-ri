@@ -2,8 +2,8 @@ package it.org.somda.sdc.dpws;
 
 import com.google.inject.Guice;
 import com.google.inject.Injector;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.somda.sdc.common.guice.DefaultHelperModule;
 import org.somda.sdc.dpws.guice.DefaultDpwsConfigModule;
 import org.somda.sdc.dpws.guice.DefaultDpwsModule;
@@ -12,7 +12,7 @@ import test.org.somda.common.CIDetector;
 import java.time.Duration;
 
 public class IntegrationTestUtil {
-    private static final Logger LOG = LoggerFactory.getLogger(IntegrationTestUtil.class);
+    private static final Logger LOG = LogManager.getLogger(IntegrationTestUtil.class);
     public static Duration MAX_WAIT_TIME;
     static {
         if (!CIDetector.isRunningInCi()) {

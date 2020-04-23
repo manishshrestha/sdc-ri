@@ -1,6 +1,6 @@
 package org.somda.sdc.biceps.common.access.helper;
 
-import org.slf4j.Logger;
+import org.apache.logging.log4j.Logger;
 import org.somda.sdc.biceps.common.MdibDescriptionModifications;
 import org.somda.sdc.biceps.common.MdibStateModifications;
 import org.somda.sdc.biceps.common.access.MdibAccess;

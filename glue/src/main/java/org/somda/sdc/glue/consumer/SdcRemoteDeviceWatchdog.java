@@ -5,7 +5,7 @@ import com.google.common.util.concurrent.AbstractIdleService;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
-import org.slf4j.Logger;
+import org.apache.logging.log4j.Logger;
 import org.somda.sdc.dpws.DpwsFramework;
 import org.somda.sdc.dpws.client.Client;
 import org.somda.sdc.common.util.ExecutorWrapperService;

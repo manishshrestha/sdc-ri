@@ -6,8 +6,8 @@ import org.eclipse.jetty.server.HttpChannel;
 import org.eclipse.jetty.server.HttpOutput;
 import org.eclipse.jetty.util.Callback;
 import org.eclipse.jetty.util.component.Destroyable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.somda.sdc.dpws.CommunicationLog;
 import org.somda.sdc.dpws.soap.CommunicationContext;
 import org.somda.sdc.dpws.soap.HttpApplicationInfo;
@@ -23,7 +23,7 @@ import java.nio.channels.WritableByteChannel;
  * {@linkplain HttpOutput.Interceptor} which logs messages to a stream.
  */
 public class CommunicationLogOutputInterceptor implements HttpOutput.Interceptor, Destroyable {
-    private static final Logger LOG = LoggerFactory.getLogger(CommunicationLogOutputInterceptor.class);
+    private static final Logger LOG = LogManager.getLogger(CommunicationLogOutputInterceptor.class);
 
     private final HttpChannel channel;
     private final CommunicationLog communicationLog;

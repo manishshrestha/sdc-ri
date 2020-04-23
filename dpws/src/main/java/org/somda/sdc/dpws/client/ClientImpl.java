@@ -3,8 +3,8 @@ package org.somda.sdc.dpws.client;
 import com.google.common.util.concurrent.*;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.somda.sdc.common.util.ExecutorWrapperService;
 import org.somda.sdc.dpws.DpwsConfig;
 import org.somda.sdc.dpws.TransportBinding;
@@ -49,7 +49,7 @@ import java.util.concurrent.TimeUnit;
  * Default implementation of {@linkplain Client}.
  */
 public class ClientImpl extends AbstractIdleService implements Client, Service, HelloByeAndProbeMatchesObserver {
-    private static final Logger LOG = LoggerFactory.getLogger(ClientImpl.class);
+    private static final Logger LOG = LogManager.getLogger(ClientImpl.class);
 
     private final UdpMessageQueueService discoveryMessageQueue;
     private final HostingServiceResolver hostingServiceResolver;

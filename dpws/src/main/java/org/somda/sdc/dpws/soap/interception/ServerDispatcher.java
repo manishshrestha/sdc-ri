@@ -1,8 +1,8 @@
 package org.somda.sdc.dpws.soap.interception;
 
 import com.google.inject.Inject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.somda.sdc.dpws.soap.SoapMessage;
 import org.somda.sdc.dpws.soap.exception.SoapFaultException;
 import org.somda.sdc.dpws.soap.factory.SoapFaultFactory;
@@ -14,7 +14,7 @@ import java.util.Optional;
  * Interceptor dispatcher designed for incoming messages on servers.
  */
 public class ServerDispatcher {
-    private static final Logger LOG = LoggerFactory.getLogger(ServerDispatcher.class);
+    private static final Logger LOG = LogManager.getLogger(ServerDispatcher.class);
 
     private final InterceptorProcessor interceptorProcessor;
     private final SoapFaultFactory soapFaultFactory;

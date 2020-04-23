@@ -6,7 +6,7 @@ import com.google.common.util.concurrent.ListenableFuture;
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
 import com.google.inject.name.Named;
-import org.slf4j.Logger;
+import org.apache.logging.log4j.Logger;
 import org.somda.sdc.biceps.common.access.MdibAccessObservable;
 import org.somda.sdc.biceps.consumer.access.RemoteMdibAccess;
 import org.somda.sdc.biceps.model.message.AbstractSet;
