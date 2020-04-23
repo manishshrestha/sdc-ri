@@ -9,8 +9,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.somda.sdc.biceps.common.event.AbstractMdibAccessMessage;
 import org.somda.sdc.biceps.common.event.MetricStateModificationMessage;
 import org.somda.sdc.biceps.model.participant.AbstractMetricState;
@@ -37,7 +37,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @ExtendWith(LoggingTestWatcher.class)
 public class SdcRemoteDeviceWatchdogIT {
-    private static final Logger LOG = LoggerFactory.getLogger(SdcRemoteDeviceWatchdogIT.class);
+    private static final Logger LOG = LogManager.getLogger(SdcRemoteDeviceWatchdogIT.class);
     private static final IntegrationTestUtil IT = new IntegrationTestUtil();
 
     private TestSdcDevice testDevice;

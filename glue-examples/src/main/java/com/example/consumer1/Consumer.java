@@ -5,8 +5,8 @@ import com.google.common.eventbus.Subscribe;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.SettableFuture;
 import com.google.inject.Injector;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.somda.sdc.biceps.model.message.Activate;
 import org.somda.sdc.biceps.model.message.ActivateResponse;
 import org.somda.sdc.biceps.model.message.InvocationState;
@@ -67,7 +67,7 @@ import java.util.stream.Collectors;
  */
 public class Consumer {
 
-    private static final Logger LOG = LoggerFactory.getLogger(Consumer.class);
+    private static final Logger LOG = LogManager.getLogger(Consumer.class);
     private static final Duration MAX_WAIT = Duration.ofSeconds(11);
     private static final long MAX_WAIT_SEC = MAX_WAIT.getSeconds();
 

@@ -26,8 +26,8 @@ import org.somda.sdc.biceps.provider.preprocessing.DuplicateChecker;
 import org.somda.sdc.biceps.provider.preprocessing.HandleReferenceHandler;
 import org.somda.sdc.biceps.provider.preprocessing.TypeConsistencyChecker;
 import org.somda.sdc.biceps.provider.preprocessing.VersionHandler;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 import java.math.BigInteger;
 import java.util.Arrays;
@@ -40,7 +40,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
  * Default implementation of {@linkplain LocalMdibAccessImpl}.
  */
 public class LocalMdibAccessImpl implements LocalMdibAccess {
-    private static final Logger LOG = LoggerFactory.getLogger(LocalMdibAccessImpl.class);
+    private static final Logger LOG = LogManager.getLogger(LocalMdibAccessImpl.class);
 
     private final Distributor eventDistributor;
     private final MdibStorage mdibStorage;

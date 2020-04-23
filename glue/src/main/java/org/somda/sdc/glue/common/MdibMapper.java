@@ -6,8 +6,8 @@ import org.somda.sdc.biceps.common.MdibEntity;
 import org.somda.sdc.biceps.common.access.MdibAccess;
 import org.somda.sdc.biceps.model.participant.*;
 import org.somda.sdc.common.util.ObjectUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
  * Maps MDIB entities from {@linkplain MdibAccess} to an {@linkplain Mdib} object.
  */
 public class MdibMapper {
-    private static final Logger LOG = LoggerFactory.getLogger(MdibMapper.class);
+    private static final Logger LOG = LogManager.getLogger(MdibMapper.class);
     private final MdibAccess mdibAccess;
     private final ObjectFactory participantModelFactory;
     private final ObjectUtil objectUtil;

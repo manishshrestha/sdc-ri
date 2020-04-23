@@ -1,7 +1,7 @@
 package org.somda.sdc.biceps.common;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.somda.sdc.biceps.provider.preprocessing.HandleDuplicatedException;
 import org.somda.sdc.biceps.model.participant.AbstractDescriptor;
 import org.somda.sdc.biceps.model.participant.AbstractMultiState;
@@ -20,7 +20,7 @@ import java.util.Set;
  * The {@linkplain MdibDescriptionModifications} is a fluent interface.
  */
 public class MdibDescriptionModifications {
-    private static final Logger LOG = LoggerFactory.getLogger(MdibDescriptionModifications.class);
+    private static final Logger LOG = LogManager.getLogger(MdibDescriptionModifications.class);
 
     private List<MdibDescriptionModification> modifications;
     private Set<String> insertedHandles;

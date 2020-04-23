@@ -1,8 +1,8 @@
 package org.somda.sdc.dpws;
 
 import com.google.inject.Inject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.somda.sdc.dpws.soap.CommunicationContext;
 import org.somda.sdc.dpws.soap.HttpApplicationInfo;
 
@@ -22,7 +22,7 @@ import java.util.Map;
  */
 public class CommunicationLogSinkImpl implements CommunicationLogSink {
 
-    private static final Logger LOG = LoggerFactory.getLogger(CommunicationLogSinkImpl.class);
+    private static final Logger LOG = LogManager.getLogger(CommunicationLogSinkImpl.class);
 
     private static final String SEPARATOR = "_";
     private static final String SUFFIX = ".xml";

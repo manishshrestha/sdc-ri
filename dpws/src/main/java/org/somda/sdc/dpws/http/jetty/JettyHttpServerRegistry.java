@@ -22,8 +22,8 @@ import org.eclipse.jetty.server.handler.ContextHandler;
 import org.eclipse.jetty.server.handler.ContextHandlerCollection;
 import org.eclipse.jetty.server.handler.gzip.GzipHandler;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.somda.sdc.dpws.CommunicationLog;
 import org.somda.sdc.dpws.DpwsConfig;
 import org.somda.sdc.dpws.crypto.CryptoConfig;
@@ -63,7 +63,7 @@ import java.util.concurrent.locks.ReentrantLock;
  * {@linkplain HttpServerRegistry} implementation based on Jetty HTTP servers.
  */
 public class JettyHttpServerRegistry extends AbstractIdleService implements HttpServerRegistry {
-    private static final Logger LOG = LoggerFactory.getLogger(JettyHttpServerRegistry.class);
+    private static final Logger LOG = LogManager.getLogger(JettyHttpServerRegistry.class);
 
     private JettyHttpServerHandlerFactory jettyHttpServerHandlerFactory;
 

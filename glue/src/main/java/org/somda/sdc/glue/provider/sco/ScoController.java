@@ -10,8 +10,8 @@ import org.somda.sdc.biceps.model.participant.ObjectFactory;
 import org.somda.sdc.biceps.provider.access.LocalMdibAccess;
 import org.somda.sdc.dpws.device.EventSourceAccess;
 import org.somda.sdc.glue.provider.sco.factory.ContextFactory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
@@ -21,7 +21,7 @@ import java.util.*;
  * Manages callbacks for incoming set service requests.
  */
 public class ScoController {
-    private static final Logger LOG = LoggerFactory.getLogger(ScoController.class);
+    private static final Logger LOG = LogManager.getLogger(ScoController.class);
 
     private final Map<String, ReflectionInfo> invocationReceivers;
     private final List<ReflectionInfo> defaultInvocationReceivers;

@@ -3,8 +3,8 @@ package org.somda.sdc.dpws.device.helper;
 import com.google.common.eventbus.Subscribe;
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.somda.sdc.common.util.ExecutorWrapperService;
 import org.somda.sdc.dpws.DpwsConstants;
 import org.somda.sdc.dpws.guice.AppDelayExecutor;
@@ -38,7 +38,7 @@ import java.util.concurrent.TimeUnit;
  * {@link UdpMessageQueueService#registerUdpMessageQueueObserver(UdpMessageQueueObserver)}.
  */
 public class DiscoveryDeviceUdpMessageProcessor implements UdpMessageQueueObserver {
-    private static final Logger LOG = LoggerFactory.getLogger(DiscoveryDeviceUdpMessageProcessor.class);
+    private static final Logger LOG = LogManager.getLogger(DiscoveryDeviceUdpMessageProcessor.class);
 
     private final RequestResponseServer requestResponseServer;
     private final UdpMessageQueueService udpMessageQueueService;

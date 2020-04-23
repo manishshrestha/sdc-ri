@@ -2,8 +2,8 @@ package it.org.somda.sdc.dpws;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.somda.sdc.dpws.DpwsConfig;
 import org.somda.sdc.dpws.DpwsTest;
 import org.somda.sdc.dpws.TransportBinding;
@@ -23,7 +23,7 @@ import java.net.URI;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 
 public class ApacheHttpClientTransportBindingFactoryImplIT extends DpwsTest {
-    private static final Logger LOG = LoggerFactory.getLogger(ApacheHttpClientTransportBindingFactoryImplIT.class);
+    private static final Logger LOG = LogManager.getLogger(ApacheHttpClientTransportBindingFactoryImplIT.class);
 
     private TransportBindingFactory transportBindingFactory;
     private SoapMessageFactory soapMessageFactory;

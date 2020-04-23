@@ -1,8 +1,8 @@
 package org.somda.sdc.dpws.soap;
 
 import com.google.inject.Inject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.somda.sdc.common.util.JaxbUtil;
 import org.somda.sdc.common.util.UriUtil;
 import org.somda.sdc.dpws.soap.factory.EnvelopeFactory;
@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
  * SOAP utility functions.
  */
 public class SoapUtil {
-    private static final Logger LOG = LoggerFactory.getLogger(SoapUtil.class);
+    private static final Logger LOG = LogManager.getLogger(SoapUtil.class);
     private final WsAddressingUtil wsaUtil;
     private final SoapMessageFactory soapMessageFactory;
     private final EnvelopeFactory envelopeFactory;

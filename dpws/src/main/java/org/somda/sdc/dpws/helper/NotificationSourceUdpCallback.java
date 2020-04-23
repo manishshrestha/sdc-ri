@@ -2,8 +2,8 @@ package org.somda.sdc.dpws.helper;
 
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.somda.sdc.dpws.soap.MarshallingService;
 import org.somda.sdc.dpws.soap.NotificationSource;
 import org.somda.sdc.dpws.soap.SoapDebug;
@@ -22,7 +22,7 @@ import java.io.ByteArrayOutputStream;
  * a {@link NotificationSource} instance to be connected with a {@link UdpMessageQueueService}.
  */
 public class NotificationSourceUdpCallback implements NotificationCallback {
-    private static final Logger LOG = LoggerFactory.getLogger(NotificationSourceUdpCallback.class);
+    private static final Logger LOG = LogManager.getLogger(NotificationSourceUdpCallback.class);
 
     private final UdpMessageQueueService udpMessageQueue;
     private final MarshallingService marshallingService;

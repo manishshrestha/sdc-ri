@@ -14,8 +14,8 @@ import org.apache.http.impl.client.DefaultHttpRequestRetryHandler;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.somda.sdc.dpws.CommunicationLog;
 import org.somda.sdc.dpws.DpwsConfig;
 import org.somda.sdc.dpws.DpwsConstants;
@@ -36,7 +36,7 @@ import java.util.concurrent.TimeUnit;
 
 public class ApacheTransportBindingFactoryImpl implements TransportBindingFactory {
 
-    private static final Logger LOG = LoggerFactory.getLogger(TransportBinding.class);
+    private static final Logger LOG = LogManager.getLogger(TransportBinding.class);
 
     private static final String SCHEME_SOAP_OVER_UDP = DpwsConstants.URI_SCHEME_SOAP_OVER_UDP;
     private static final String SCHEME_HTTP = "http";

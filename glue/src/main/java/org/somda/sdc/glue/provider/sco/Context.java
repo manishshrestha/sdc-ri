@@ -13,8 +13,8 @@ import org.somda.sdc.dpws.device.EventSourceAccess;
 import org.somda.sdc.dpws.soap.exception.MarshallingException;
 import org.somda.sdc.dpws.soap.exception.TransportException;
 import org.somda.sdc.glue.common.ActionConstants;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -25,7 +25,7 @@ import java.util.List;
  * @see InvocationResponse
  */
 public class Context {
-    private static final Logger LOG = LoggerFactory.getLogger(Context.class);
+    private static final Logger LOG = LogManager.getLogger(Context.class);
 
     @Stringified
     private final long transactionId;

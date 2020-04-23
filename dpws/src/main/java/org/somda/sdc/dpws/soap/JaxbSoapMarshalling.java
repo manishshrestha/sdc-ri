@@ -4,8 +4,8 @@ import com.google.common.util.concurrent.AbstractIdleService;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import com.sun.xml.bind.marshaller.NamespacePrefixMapper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.somda.sdc.common.util.NamespacePrefixMapperConverter;
 import org.somda.sdc.common.util.PrefixNamespaceMappingParser;
 import org.somda.sdc.dpws.DpwsConstants;
@@ -37,7 +37,7 @@ import java.nio.charset.StandardCharsets;
  * Creates XML input and output streams from {@link Envelope} instances by using JAXB.
  */
 public class JaxbSoapMarshalling extends AbstractIdleService implements SoapMarshalling {
-    private static final Logger LOG = LoggerFactory.getLogger(JaxbSoapMarshalling.class);
+    private static final Logger LOG = LogManager.getLogger(JaxbSoapMarshalling.class);
 
     private static final String PKG_DELIM = ":";
     private static final String SCHEMA_DELIM = ":";

@@ -1,8 +1,8 @@
 package org.somda.sdc.dpws.soap.wsaddressing;
 
 import com.google.inject.Inject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.somda.sdc.common.util.JaxbUtil;
 import org.somda.sdc.dpws.soap.wsaddressing.model.AttributedURIType;
 import org.somda.sdc.dpws.soap.wsaddressing.model.ObjectFactory;
@@ -18,7 +18,7 @@ import java.util.Optional;
  * Mapper to map between WS-Addressing JAXB elements and {@link WsAddressingHeader}.
  */
 public class WsAddressingMapper {
-    private static final Logger LOG = LoggerFactory.getLogger(WsAddressingMapper.class);
+    private static final Logger LOG = LogManager.getLogger(WsAddressingMapper.class);
     private final JaxbUtil jaxbUtil;
     private final ObjectFactory wsaFactory;
     private final WsAddressingUtil wsaUtil;

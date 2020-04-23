@@ -7,8 +7,8 @@ import com.google.common.util.concurrent.AbstractIdleService;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.somda.sdc.dpws.DpwsConstants;
 import org.somda.sdc.dpws.soap.ApplicationInfo;
 import org.somda.sdc.dpws.soap.CommunicationContext;
@@ -27,7 +27,7 @@ import java.util.Set;
 import java.util.concurrent.Executors;
 
 public class UdpBindingServiceMock extends AbstractIdleService implements UdpBindingService {
-    private static final Logger LOG = LoggerFactory.getLogger(UdpBindingServiceMock.class);
+    private static final Logger LOG = LogManager.getLogger(UdpBindingServiceMock.class);
     private static final int MIN_PORT = 49152;
     private static final int MAX_PORT = 65535;
     private static final Random RANDOM = new Random();

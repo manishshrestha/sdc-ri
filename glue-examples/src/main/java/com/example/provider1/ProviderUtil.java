@@ -8,8 +8,8 @@ import org.apache.commons.cli.Options;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.core.config.Configurator;
 import org.apache.logging.log4j.core.config.DefaultConfiguration;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.somda.sdc.biceps.guice.DefaultBicepsConfigModule;
 import org.somda.sdc.biceps.guice.DefaultBicepsModule;
 import org.somda.sdc.biceps.model.participant.AbstractMetricValue;
@@ -38,7 +38,7 @@ import java.util.List;
  * injection.
  */
 public class ProviderUtil extends BaseUtil {
-    private static final Logger LOG = LoggerFactory.getLogger(ProviderUtil.class);
+    private static final Logger LOG = LogManager.getLogger(ProviderUtil.class);
     public static final String OPT_REPORT_INTERVAL = "report_interval";
     public static final String OPT_WAVEFORMS_INTERVAL = "waveform_interval";
 

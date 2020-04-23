@@ -3,8 +3,8 @@ package org.somda.sdc.dpws.udp;
 import com.google.common.util.concurrent.AbstractIdleService;
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.somda.sdc.dpws.CommunicationLog;
 import org.somda.sdc.dpws.DpwsConstants;
 import org.somda.sdc.dpws.network.NetworkInterfaceUtil;
@@ -24,7 +24,7 @@ import java.util.Random;
  * Default implementation of {@linkplain UdpBindingService}.
  */
 public class UdpBindingServiceImpl extends AbstractIdleService implements UdpBindingService {
-    private static final Logger LOG = LoggerFactory.getLogger(UdpBindingServiceImpl.class);
+    private static final Logger LOG = LogManager.getLogger(UdpBindingServiceImpl.class);
 
     private final Random random = new Random();
     private final NetworkInterface networkInterface;

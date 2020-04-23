@@ -3,8 +3,8 @@ package org.somda.sdc.glue.provider.plugin;
 import com.google.common.base.Joiner;
 import com.google.common.eventbus.Subscribe;
 import com.google.inject.Inject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.somda.sdc.biceps.common.MdibEntity;
 import org.somda.sdc.biceps.common.access.MdibAccess;
 import org.somda.sdc.biceps.common.access.MdibAccessObserver;
@@ -33,7 +33,7 @@ import java.util.stream.Collectors;
  * In order to append custom scopes please consider using the {@link ScopesDecorator}.
  */
 public class SdcRequiredTypesAndScopes implements SdcDevicePlugin, MdibAccessObserver, ScopesDecorator {
-    private static final Logger LOG = LoggerFactory.getLogger(SdcRequiredTypesAndScopes.class);
+    private static final Logger LOG = LogManager.getLogger(SdcRequiredTypesAndScopes.class);
 
     private Device device;
     private MdibAccess mdibAccess;

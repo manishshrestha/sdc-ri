@@ -7,8 +7,8 @@ import com.google.inject.Provider;
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
 import com.google.inject.name.Named;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.somda.sdc.dpws.DpwsConfig;
 import org.somda.sdc.dpws.DpwsConstants;
 import org.somda.sdc.dpws.device.helper.ByteResourceHandler;
@@ -59,7 +59,7 @@ import java.util.stream.Collectors;
  * todo DGr no support for hosting and hosted services being updated during runtime.
  */
 public class DeviceImpl extends AbstractIdleService implements Device, Service, DiscoveryAccess, HostingServiceAccess {
-    private static final Logger LOG = LoggerFactory.getLogger(DeviceImpl.class);
+    private static final Logger LOG = LogManager.getLogger(DeviceImpl.class);
 
     private final DeviceSettings deviceSettings;
     private final WsDiscoveryTargetServiceFactory targetServiceFactory;

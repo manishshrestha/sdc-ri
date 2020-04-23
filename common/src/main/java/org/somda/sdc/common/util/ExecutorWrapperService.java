@@ -1,8 +1,8 @@
 package org.somda.sdc.common.util;
 
 import com.google.common.util.concurrent.AbstractIdleService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
@@ -17,7 +17,7 @@ import java.util.concurrent.TimeUnit;
  * @param <T> actual type of the {@linkplain ExecutorService}.
  */
 public class ExecutorWrapperService<T extends ExecutorService> extends AbstractIdleService {
-    private static Logger LOG = LoggerFactory.getLogger(ExecutorWrapperService.class);
+    private static Logger LOG = LogManager.getLogger(ExecutorWrapperService.class);
     private static long STOP_TIMEOUT = 5;
     private static TimeUnit STOP_TIMEUNIT = TimeUnit.SECONDS;
 

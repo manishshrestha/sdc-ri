@@ -6,8 +6,8 @@ import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
 import com.google.inject.name.Named;
 import org.eclipse.jetty.http.HttpStatus;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.somda.sdc.common.util.ExecutorWrapperService;
 import org.somda.sdc.dpws.DpwsConfig;
 import org.somda.sdc.dpws.DpwsConstants;
@@ -39,7 +39,7 @@ import java.util.concurrent.locks.ReentrantLock;
  * Default implementation of {@link EventSink}.
  */
 public class EventSinkImpl implements EventSink {
-    private static final Logger LOG = LoggerFactory.getLogger(EventSinkImpl.class);
+    private static final Logger LOG = LogManager.getLogger(EventSinkImpl.class);
 
     private static final String EVENT_SINK_CONTEXT_PREFIX = "/EventSink/";
     private static final String EVENT_SINK_NOTIFY_TO_CONTEXT_PREFIX = EVENT_SINK_CONTEXT_PREFIX + "NotifyTo/";

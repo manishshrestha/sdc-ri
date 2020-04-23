@@ -8,8 +8,8 @@ import org.apache.http.HttpRequest;
 import org.apache.http.HttpRequestInterceptor;
 import org.apache.http.protocol.HttpContext;
 import org.apache.http.protocol.HttpCoreContext;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.somda.sdc.dpws.CommunicationLog;
 import org.somda.sdc.dpws.http.apache.helper.ApacheClientHelper;
 import org.somda.sdc.dpws.soap.CommunicationContext;
@@ -24,7 +24,7 @@ import java.util.Collections;
  * Request interceptor which writes the outgoing request message and headers into the {@linkplain CommunicationLog}.
  */
 public class CommunicationLogHttpRequestInterceptor implements HttpRequestInterceptor {
-    private static final Logger LOG = LoggerFactory.getLogger(CommunicationLogHttpRequestInterceptor.class);
+    private static final Logger LOG = LogManager.getLogger(CommunicationLogHttpRequestInterceptor.class);
 
     private final CommunicationLog commlog;
 

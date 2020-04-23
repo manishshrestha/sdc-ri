@@ -4,8 +4,8 @@ import com.example.Constants;
 import com.google.common.collect.Iterables;
 import com.google.common.util.concurrent.AbstractIdleService;
 import com.google.inject.Injector;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.somda.sdc.biceps.common.MdibDescriptionModifications;
 import org.somda.sdc.biceps.common.MdibEntity;
 import org.somda.sdc.biceps.common.MdibStateModifications;
@@ -53,7 +53,7 @@ import java.util.stream.IntStream;
  */
 public class Provider extends AbstractIdleService {
 
-    private static final Logger LOG = LoggerFactory.getLogger(Provider.class);
+    private static final Logger LOG = LogManager.getLogger(Provider.class);
 
     private static final int MAX_ENUM_ITERATIONS = 17;
 

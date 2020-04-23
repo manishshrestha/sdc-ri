@@ -11,8 +11,8 @@ import org.apache.http.util.EntityUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.somda.sdc.dpws.CommunicationLog;
 import org.somda.sdc.dpws.CommunicationLogImpl;
 import org.somda.sdc.dpws.CommunicationLogSink;
@@ -51,7 +51,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class CommunicationLogIT extends DpwsTest {
-    private static final Logger LOG = LoggerFactory.getLogger(CommunicationLogIT.class);
+    private static final Logger LOG = LogManager.getLogger(CommunicationLogIT.class);
 
     private TransportBindingFactory transportBindingFactory;
     private SoapMessageFactory soapMessageFactory;
