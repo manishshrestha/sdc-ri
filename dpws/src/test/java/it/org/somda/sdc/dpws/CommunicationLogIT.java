@@ -360,13 +360,6 @@ public class CommunicationLogIT extends DpwsTest {
             this.outboundHeadersOld = new ArrayList<>();
         }
 
-        @Deprecated
-        public OutputStream getTargetStream(CommunicationLog.TransportType path,
-                                            CommunicationLog.Direction direction,
-                                            CommunicationContext communicationContext) {
-            return createTargetStream(path, direction, communicationContext);
-        }
-
         @Override
         public OutputStream createTargetStream(CommunicationLog.TransportType path,
                                                CommunicationLog.Direction direction,
