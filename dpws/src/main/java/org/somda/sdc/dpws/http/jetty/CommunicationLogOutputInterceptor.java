@@ -23,7 +23,7 @@ import java.nio.channels.WritableByteChannel;
  */
 public class CommunicationLogOutputInterceptor implements HttpOutput.Interceptor {
     private static final Logger LOG = LogManager.getLogger(CommunicationLogOutputInterceptor.class);
-    
+
     private final HttpChannel channel;
     private final CommunicationLog communicationLog;
     private final TransportInfo transportInfo;

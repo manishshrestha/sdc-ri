@@ -50,6 +50,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Extracted namespace prefixes in `biceps` and `glue` package `CommonConstants`.
 - Enable generating equals and hashcode for all models. (#140)
 - `org.somda.sdc.dpws.soap.TransportInfo` provides a  `List` of certificates instead of a `Collection`. (#147)
+- Communication log file names to include SOAP action information and XML to be pretty-printed. (#153)
 
 ### Fixed
 
