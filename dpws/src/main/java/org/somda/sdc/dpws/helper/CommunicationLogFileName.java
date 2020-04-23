@@ -10,6 +10,7 @@ import java.time.format.DateTimeFormatter;
  */
 public class CommunicationLogFileName {
     private static final String SEPARATOR = "_";
+    private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("HH-mm-ss-SSS");
 
     /**
      * Creates a communication log file base name.
@@ -21,9 +22,8 @@ public class CommunicationLogFileName {
     public static String create(String direction, CommunicationContext communicationContext) {
         var destAddr = communicationContext.getTransportInfo().getRemoteAddress().orElse("[unk-addr]");
         var destPort = communicationContext.getTransportInfo().getRemotePort().orElse(-1);
-        LocalTime date = LocalTime.now();
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH-mm-ss-SSS");
-        return System.nanoTime() + SEPARATOR + date.format(formatter) + SEPARATOR + direction +
+        var date = LocalTime.now();
+        return System.nanoTime() + SEPARATOR + date.format(DATE_TIME_FORMATTER) + SEPARATOR + direction +
                 SEPARATOR + destAddr + SEPARATOR + destPort;
     }
 
