@@ -78,12 +78,12 @@ public class MdibMapper {
         final Mdib mdib = participantModelFactory.createMdib();
 
         final MdibVersion mdibVersion = mdibAccess.getMdibVersion();
-        mdib.setSequenceId(mdibVersion.getSequenceId().toString());
+        mdib.setSequenceId(mdibVersion.getSequenceId());
         mdib.setInstanceId(mdibVersion.getInstanceId());
         mdib.setMdibVersion(mdibVersion.getVersion());
 
-        mdib.setMdDescription(mapMdDescription(Collections.EMPTY_LIST));
-        mdib.setMdState(mapMdState(Collections.EMPTY_LIST));
+        mdib.setMdDescription(mapMdDescription(Collections.emptyList()));
+        mdib.setMdState(mapMdState(Collections.emptyList()));
 
         return mdib;
     }
