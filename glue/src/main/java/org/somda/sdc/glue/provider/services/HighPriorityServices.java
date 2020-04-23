@@ -310,7 +310,9 @@ public class HighPriorityServices extends WebService {
             if (handleReferences.isEmpty()) {
                 filteredEntities = transaction.getRootEntities();
             } else {
-                // Only consider first handle as others cannot be answered due to XML Schema limitations
+                // Only consider first handle as others cannot be answered due to BICEPS XML Schema limitations
+                // (request can contain multiple handles, response can only answer to one of them)
+                // BICEPS does not define how to compute the result, hence all handles except the first one are ignored)
                 filteredEntities = new ArrayList<>();
                 var parentEntity = transaction.getEntity(handleReferences.get(0));
                 if (parentEntity.isPresent()) {
