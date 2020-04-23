@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.somda.sdc.biceps.common.MdibDescriptionModifications;
 import org.somda.sdc.biceps.common.MdibTypeValidator;
+import org.somda.sdc.biceps.common.access.MdibAccess;
 import org.somda.sdc.biceps.model.participant.*;
 import org.somda.sdc.glue.common.helper.DefaultStateValuesDispatcher;
 
@@ -19,6 +20,8 @@ import java.util.List;
  * <p>
  * <em>Important note: the MDIB passed to the {@linkplain ModificationsBuilder} will be modified. Make sure to pass a
  * copy if necessary.</em>
+ * <p>
+ * Use {@link MdibMapper} to map from {@linkplain MdibAccess} to an {@linkplain Mdib} object.
  */
 public class ModificationsBuilder {
     private final Logger LOG = LoggerFactory.getLogger(ModificationsBuilder.class);
@@ -82,17 +85,19 @@ public class ModificationsBuilder {
     private void build(MdsDescriptor mds) {
         insert(mds, null);
 
-        mds.getBattery().forEach(descr -> buildLeaf(descr, mds));
-        mds.setBattery(null);
-        buildLeaf(mds.getClock(), mds);
-        build(mds.getSystemContext(), mds);
-        mds.setSystemContext(null);
+        // Order of insertion shall be the same as the order from the MDIB XML Schema
         build(mds.getAlertSystem(), mds);
         mds.setAlertSystem(null);
-        mds.getVmd().forEach(descr -> build(descr, mds));
-        mds.setVmd(null);
         build(mds.getSco(), mds);
         mds.setSco(null);
+        build(mds.getSystemContext(), mds);
+        mds.setSystemContext(null);
+        buildLeaf(mds.getClock(), mds);
+        mds.setClock(null);
+        mds.getBattery().forEach(descr -> buildLeaf(descr, mds));
+        mds.setBattery(null);
+        mds.getVmd().forEach(descr -> build(descr, mds));
+        mds.setVmd(null);
     }
 
     private void build(@Nullable ScoDescriptor sco, AbstractDescriptor parent) {
