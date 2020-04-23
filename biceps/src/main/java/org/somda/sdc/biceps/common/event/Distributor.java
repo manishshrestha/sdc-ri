@@ -2,8 +2,8 @@ package org.somda.sdc.biceps.common.event;
 
 import com.google.common.eventbus.EventBus;
 import com.google.inject.Inject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.somda.sdc.biceps.common.MdibEntity;
 import org.somda.sdc.biceps.common.MdibStateModifications;
 import org.somda.sdc.biceps.common.access.MdibAccess;
@@ -16,7 +16,7 @@ import java.util.List;
  * Utility class to distribute any BICEPS MDIB events.
  */
 public class Distributor {
-    private static final Logger LOG = LoggerFactory.getLogger(Distributor.class);
+    private static final Logger LOG = LogManager.getLogger(Distributor.class);
 
     private final EventBus eventBus;
 

@@ -4,8 +4,8 @@ import java.util.Optional;
 
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.api.extension.TestWatcher;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 public class LoggingTestWatcher implements TestWatcher {
 
@@ -13,7 +13,7 @@ public class LoggingTestWatcher implements TestWatcher {
         TestLogging.configure();
     }
 
-    private static final Logger LOG = LoggerFactory.getLogger(LoggingTestWatcher.class);
+    private static final Logger LOG = LogManager.getLogger(LoggingTestWatcher.class);
 
     @Override
     public void testAborted(ExtensionContext extensionContext, Throwable throwable) {

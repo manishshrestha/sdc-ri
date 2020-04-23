@@ -4,8 +4,8 @@ import com.google.common.util.concurrent.AbstractExecutionThreadService;
 import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.somda.sdc.common.util.ExecutorWrapperService;
 import org.somda.sdc.dpws.factory.TransportBindingFactory;
 import org.somda.sdc.dpws.guice.NetworkJobThreadPool;
@@ -32,7 +32,7 @@ import java.util.concurrent.BlockingQueue;
  * Default implementation of {@link SourceSubscriptionManager}.
  */
 public class SourceSubscriptionManagerImpl extends AbstractExecutionThreadService implements SourceSubscriptionManager {
-    private static final Logger LOG = LoggerFactory.getLogger(SourceSubscriptionManagerImpl.class);
+    private static final Logger LOG = LogManager.getLogger(SourceSubscriptionManagerImpl.class);
 
     private final BlockingQueue<QueueItem> notificationQueue;
     private final SubscriptionManagerBase delegate;

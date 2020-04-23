@@ -5,8 +5,8 @@ import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.util.Modules;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.somda.sdc.dpws.guice.DefaultDpwsConfigModule;
 import org.somda.sdc.dpws.guice.DefaultDpwsModule;
 import org.somda.sdc.common.guice.DefaultHelperModule;
@@ -23,7 +23,7 @@ import java.util.List;
  */
 @ExtendWith(LoggingTestWatcher.class)
 public class DpwsTest {
-    private static final Logger LOG = LoggerFactory.getLogger(DpwsTest.class);
+    private static final Logger LOG = LogManager.getLogger(DpwsTest.class);
 
     private Injector injector;
     private List<AbstractModule> overridingModules;

@@ -1,7 +1,7 @@
 package org.somda.sdc.common.util;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 import javax.xml.bind.JAXBElement;
 import javax.xml.namespace.QName;
@@ -12,7 +12,7 @@ import java.util.Optional;
  * Default implementation of {@linkplain JaxbUtil}.
  */
 public class JaxbUtilImpl implements JaxbUtil {
-    private static final Logger LOG = LoggerFactory.getLogger(JaxbUtilImpl.class);
+    private static final Logger LOG = LogManager.getLogger(JaxbUtilImpl.class);
 
     @Override
     public <T> Optional<T> extractElement(Object element, QName elementType, Class<T> typeClass) {

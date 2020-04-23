@@ -6,8 +6,8 @@ import com.google.inject.Injector;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.core.config.Configurator;
 import org.apache.logging.log4j.core.config.DefaultConfiguration;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.somda.sdc.biceps.guice.DefaultBicepsConfigModule;
 import org.somda.sdc.biceps.guice.DefaultBicepsModule;
 import org.somda.sdc.common.guice.DefaultHelperModule;
@@ -32,7 +32,7 @@ import java.util.List;
  * injection.
  */
 public class ConsumerUtil extends BaseUtil {
-    private static final Logger LOG = LoggerFactory.getLogger(ConsumerUtil.class);
+    private static final Logger LOG = LogManager.getLogger(ConsumerUtil.class);
 
     private final Injector injector;
 

@@ -1,8 +1,8 @@
 package org.somda.sdc.dpws.soap;
 
 import com.google.inject.Inject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.somda.sdc.dpws.guice.DeviceSpecific;
 import org.somda.sdc.dpws.soap.exception.SoapFaultException;
 import org.somda.sdc.dpws.soap.factory.SoapFaultFactory;
@@ -17,7 +17,7 @@ import org.somda.sdc.dpws.soap.wsaddressing.model.ObjectFactory;
  * Default implementation of {@linkplain RequestResponseServer}.
  */
 public class RequestResponseServerImpl implements RequestResponseServer {
-    private static final Logger LOG = LoggerFactory.getLogger(RequestResponseServerImpl.class);
+    private static final Logger LOG = LogManager.getLogger(RequestResponseServerImpl.class);
 
     private final InterceptorRegistry interceptorRegistry;
     private final SoapFaultFactory soapFaultFactory;

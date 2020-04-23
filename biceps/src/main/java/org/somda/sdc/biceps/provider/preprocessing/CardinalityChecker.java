@@ -8,8 +8,8 @@ import org.somda.sdc.biceps.common.MdibTreeValidator;
 import org.somda.sdc.biceps.common.storage.DescriptionPreprocessingSegment;
 import org.somda.sdc.biceps.common.storage.MdibStorage;
 import org.somda.sdc.biceps.model.participant.AbstractDescriptor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 import java.util.Optional;
 
@@ -20,7 +20,7 @@ import java.util.Optional;
  * This checker guarantees that no child is inserted twice if the maximum allowed number of children is one.
  */
 public class CardinalityChecker implements DescriptionPreprocessingSegment {
-    private static final Logger LOG = LoggerFactory.getLogger(CardinalityChecker.class);
+    private static final Logger LOG = LogManager.getLogger(CardinalityChecker.class);
 
     private final MdibTreeValidator treeValidator;
 

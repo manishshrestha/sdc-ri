@@ -2,8 +2,8 @@ package org.somda.sdc.dpws.soap;
 
 import com.google.inject.Inject;
 import com.google.inject.assistedinject.Assisted;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.somda.sdc.dpws.soap.exception.SoapFaultException;
 import org.somda.sdc.dpws.soap.interception.Direction;
 import org.somda.sdc.dpws.soap.interception.Interceptor;
@@ -16,7 +16,7 @@ import org.somda.sdc.dpws.soap.wsaddressing.WsAddressingServerInterceptor;
  * Default implementation of {@linkplain NotificationSink}.
  */
 public class NotificationSinkImpl implements NotificationSink {
-    private static final Logger LOG = LoggerFactory.getLogger(NotificationSinkImpl.class);
+    private static final Logger LOG = LogManager.getLogger(NotificationSinkImpl.class);
 
     private final InterceptorRegistry interceptorRegistry;
     private final ServerDispatcher serverDispatcher;

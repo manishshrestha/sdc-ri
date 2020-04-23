@@ -3,8 +3,8 @@ package org.somda.sdc.glue.common;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import com.sun.xml.bind.marshaller.NamespacePrefixMapper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.somda.sdc.biceps.model.message.GetMdibResponse;
 import org.somda.sdc.biceps.model.message.ObjectFactory;
 import org.somda.sdc.biceps.model.participant.Mdib;
@@ -23,7 +23,7 @@ import java.io.*;
  * Utility class to read an {@linkplain Mdib} from an input stream (or file).
  */
 public class MdibXmlIo {
-    private static final Logger LOG = LoggerFactory.getLogger(MdibXmlIo.class);
+    private static final Logger LOG = LogManager.getLogger(MdibXmlIo.class);
     private final ObjectFactory messageModelFactory;
     private final MdibVersionUtil mdibVersionUtil;
     private final NamespacePrefixMapper namespacePrefixMapper;

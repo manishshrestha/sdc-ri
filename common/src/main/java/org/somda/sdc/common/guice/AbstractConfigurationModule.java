@@ -3,8 +3,8 @@ package org.somda.sdc.common.guice;
 import com.google.inject.AbstractModule;
 import com.google.inject.name.Names;
 import com.google.inject.util.Providers;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 import javax.annotation.Nullable;
 import java.util.Map;
@@ -17,7 +17,7 @@ import java.util.TreeMap;
  * Use {@link #bind(String, Class, Object)} to set values.
  */
 public abstract class AbstractConfigurationModule extends AbstractModule {
-    private static final Logger LOG = LoggerFactory.getLogger(AbstractConfigurationModule.class);
+    private static final Logger LOG = LogManager.getLogger(AbstractConfigurationModule.class);
     private final Map<String, ConfigurationValue> boundValues = new TreeMap<>();
     private boolean configureStarted = false;
 

@@ -3,8 +3,8 @@ package org.somda.sdc.dpws.soap.wsdiscovery;
 import com.google.common.primitives.UnsignedInteger;
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.somda.sdc.common.util.ObjectUtilImpl;
 import org.somda.sdc.dpws.soap.NotificationSource;
 import org.somda.sdc.dpws.soap.SoapMessage;
@@ -40,7 +40,7 @@ import java.util.concurrent.locks.ReentrantLock;
  * Default implementation of the {@linkplain WsDiscoveryTargetService}.
  */
 public class WsDiscoveryTargetServiceInterceptor implements WsDiscoveryTargetService {
-    private static final Logger LOG = LoggerFactory.getLogger(WsDiscoveryTargetServiceInterceptor.class);
+    private static final Logger LOG = LogManager.getLogger(WsDiscoveryTargetServiceInterceptor.class);
 
     private final ObjectFactory wsdFactory;
     private final SoapFaultFactory soapFaultFactory;

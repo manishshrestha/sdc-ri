@@ -8,8 +8,8 @@ import it.org.somda.glue.provider.VentilatorMdibRunner;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.somda.sdc.biceps.common.MdibDescriptionModifications;
 import org.somda.sdc.biceps.common.access.MdibAccessObserver;
 import org.somda.sdc.biceps.common.event.ContextStateModificationMessage;
@@ -55,7 +55,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @ExtendWith(LoggingTestWatcher.class)
 public class SdcRequiredTypesAndScopesIT {
-    private static final Logger LOG = LoggerFactory.getLogger(SdcRequiredTypesAndScopesIT.class);
+    private static final Logger LOG = LogManager.getLogger(SdcRequiredTypesAndScopesIT.class);
     private static final IntegrationTestUtil IT = new IntegrationTestUtil();
 
     private TestSdcDevice testDevice;

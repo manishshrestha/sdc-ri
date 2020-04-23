@@ -3,8 +3,8 @@ package org.somda.sdc.glue.common;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.somda.sdc.biceps.common.MdibDescriptionModifications;
 import org.somda.sdc.biceps.common.MdibTypeValidator;
 import org.somda.sdc.biceps.model.participant.*;
@@ -21,7 +21,7 @@ import java.util.List;
  * copy if necessary.</em>
  */
 public class ModificationsBuilder {
-    private final Logger LOG = LoggerFactory.getLogger(ModificationsBuilder.class);
+    private final Logger LOG = LogManager.getLogger(ModificationsBuilder.class);
 
     private final ArrayListMultimap<String, AbstractState> states;
     private final MdibDescriptionModifications modifications;
