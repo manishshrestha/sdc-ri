@@ -4,8 +4,8 @@ import com.google.common.eventbus.EventBus;
 import com.google.common.util.concurrent.AbstractIdleService;
 import com.google.common.util.concurrent.Service;
 import com.google.inject.Inject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.somda.sdc.dpws.soap.exception.TransportException;
 
 import java.io.IOException;
@@ -15,7 +15,7 @@ import java.util.concurrent.LinkedBlockingDeque;
  * Default implementation of {@linkplain UdpMessageQueueService}.
  */
 public class UdpMessageQueueServiceImpl extends AbstractIdleService implements Service, UdpMessageQueueService {
-    private final static Logger LOG = LoggerFactory.getLogger(UdpMessageQueueServiceImpl.class);
+    private final static Logger LOG = LogManager.getLogger(UdpMessageQueueServiceImpl.class);
     private static int instanceIdCounter = 0;
     private final int instanceId;
     private final LinkedBlockingDeque<UdpMessage> incomingMessageQueue;

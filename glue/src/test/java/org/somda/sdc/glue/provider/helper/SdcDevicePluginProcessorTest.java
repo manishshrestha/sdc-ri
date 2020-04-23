@@ -2,8 +2,10 @@ package org.somda.sdc.glue.provider.helper;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.somda.sdc.glue.provider.SdcDeviceContext;
 import org.somda.sdc.glue.provider.SdcDevicePlugin;
+import test.org.somda.common.LoggingTestWatcher;
 
 import java.util.Arrays;
 import java.util.List;
@@ -12,6 +14,7 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
+@ExtendWith(LoggingTestWatcher.class)
 class SdcDevicePluginProcessorTest {
 
     private List<SdcDevicePlugin> plugins;

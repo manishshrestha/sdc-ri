@@ -7,8 +7,8 @@ import com.google.inject.AbstractModule;
 import com.google.inject.Injector;
 import it.org.somda.glue.common.IntegrationTestPeer;
 import it.org.somda.sdc.dpws.MockedUdpBindingModule;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.somda.sdc.biceps.provider.access.factory.LocalMdibAccessFactory;
 import org.somda.sdc.common.util.ExecutorWrapperUtil;
 import org.somda.sdc.dpws.DpwsConfig;
@@ -40,7 +40,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
 
 public class TestSdcDevice extends IntegrationTestPeer {
-    private static final Logger LOG = LoggerFactory.getLogger(TestSdcDevice.class);
+    private static final Logger LOG = LogManager.getLogger(TestSdcDevice.class);
 
     private DpwsFramework dpwsFramework;
     private SdcDevice sdcDevice;

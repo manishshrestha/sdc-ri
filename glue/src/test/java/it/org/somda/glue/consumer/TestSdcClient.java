@@ -8,8 +8,8 @@ import com.google.inject.Injector;
 import it.org.somda.glue.common.IntegrationTestPeer;
 import it.org.somda.glue.provider.TestSdcDevice;
 import it.org.somda.sdc.dpws.MockedUdpBindingModule;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.somda.sdc.common.util.ExecutorWrapperUtil;
 import org.somda.sdc.dpws.DpwsConfig;
 import org.somda.sdc.dpws.DpwsFramework;
@@ -34,7 +34,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class TestSdcClient extends IntegrationTestPeer {
-    private static final Logger LOG = LoggerFactory.getLogger(TestSdcClient.class);
+    private static final Logger LOG = LogManager.getLogger(TestSdcClient.class);
     public static final Duration REQUESTED_EXPIRES = Duration.ofSeconds(20);
 
     private final Client client;

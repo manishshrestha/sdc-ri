@@ -2,6 +2,7 @@ package org.somda.sdc.glue.common;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.somda.sdc.biceps.common.MdibDescriptionModifications;
 import org.somda.sdc.biceps.common.MdibEntity;
 import org.somda.sdc.biceps.common.MdibTypeValidator;
@@ -14,6 +15,7 @@ import org.somda.sdc.biceps.testutil.Handles;
 import org.somda.sdc.biceps.testutil.MockEntryFactory;
 import org.somda.sdc.glue.UnitTestUtil;
 import org.somda.sdc.glue.common.factory.MdibMapperFactory;
+import test.org.somda.common.LoggingTestWatcher;
 
 import java.math.BigInteger;
 import java.util.Arrays;
@@ -21,6 +23,7 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@ExtendWith(LoggingTestWatcher.class)
 class MdibMapperTest {
     private static final UnitTestUtil UT = new UnitTestUtil();
 

@@ -12,8 +12,8 @@ import org.junit.platform.launcher.core.LauncherDiscoveryRequestBuilder;
 import org.junit.platform.launcher.core.LauncherFactory;
 import org.junit.platform.launcher.listeners.SummaryGeneratingListener;
 import org.junit.platform.launcher.listeners.TestExecutionSummary;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.somda.sdc.biceps.model.participant.AbstractContextState;
 import org.somda.sdc.biceps.model.participant.ContextAssociation;
 import org.somda.sdc.biceps.model.participant.LocationContextState;
@@ -53,7 +53,7 @@ import static org.junit.platform.engine.discovery.DiscoverySelectors.selectClass
  * This consumer is meant to be used for integration tests with other SDC libraries.
  */
 public class ConsumerIT {
-    private static final Logger LOG = LoggerFactory.getLogger(ConsumerIT.class);
+    private static final Logger LOG = LogManager.getLogger(ConsumerIT.class);
     private static final Duration MAX_WAIT = Duration.ofSeconds(11);
     private static String[] ARGS;
 

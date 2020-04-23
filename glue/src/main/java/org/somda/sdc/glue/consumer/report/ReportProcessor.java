@@ -2,8 +2,8 @@ package org.somda.sdc.glue.consumer.report;
 
 import com.google.common.util.concurrent.AbstractIdleService;
 import com.google.inject.Inject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.somda.sdc.biceps.common.MdibStateModifications;
 import org.somda.sdc.biceps.common.storage.PreprocessingException;
 import org.somda.sdc.biceps.consumer.access.RemoteMdibAccess;
@@ -34,7 +34,7 @@ import java.util.function.Consumer;
  * coherency.
  */
 public class ReportProcessor extends AbstractIdleService {
-    private static final Logger LOG = LoggerFactory.getLogger(ReportProcessor.class);
+    private static final Logger LOG = LogManager.getLogger(ReportProcessor.class);
 
     private final ReentrantLock mdibReadyLock;
     private final Condition mdibReadyCondition;

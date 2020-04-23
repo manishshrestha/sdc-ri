@@ -8,8 +8,8 @@ import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.inject.Inject;
 import com.google.inject.assistedinject.Assisted;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.somda.sdc.common.util.ExecutorWrapperService;
 import org.somda.sdc.dpws.client.DiscoveredDevice;
 import org.somda.sdc.dpws.client.event.DeviceEnteredMessage;
@@ -31,7 +31,7 @@ import java.util.Optional;
  * Helper class to forward Hello, Bye, ProbeMatches, and ProbeTimeout events.
  */
 public class HelloByeAndProbeMatchesObserverImpl implements HelloByeAndProbeMatchesObserver {
-    private static final Logger LOG = LoggerFactory.getLogger(HelloByeAndProbeMatchesObserverImpl.class);
+    private static final Logger LOG = LogManager.getLogger(HelloByeAndProbeMatchesObserverImpl.class);
 
     private final DiscoveredDeviceResolver discoveredDeviceResolver;
     private final ExecutorWrapperService<ListeningExecutorService> networkJobExecutor;

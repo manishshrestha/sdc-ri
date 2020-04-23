@@ -3,8 +3,8 @@ package org.somda.sdc.dpws.client.helper;
 import com.google.common.eventbus.Subscribe;
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.somda.sdc.dpws.soap.MarshallingService;
 import org.somda.sdc.dpws.soap.NotificationSink;
 import org.somda.sdc.dpws.soap.SoapDebug;
@@ -24,7 +24,7 @@ import java.io.ByteArrayInputStream;
  * {@link UdpMessageQueueService#registerUdpMessageQueueObserver(UdpMessageQueueObserver)}.
  */
 public class DiscoveryClientUdpProcessor implements UdpMessageQueueObserver {
-    private static final Logger LOG = LoggerFactory.getLogger(DiscoveryClientUdpProcessor.class);
+    private static final Logger LOG = LogManager.getLogger(DiscoveryClientUdpProcessor.class);
 
     private final MarshallingService marshallingService;
     private final NotificationSink notificationSink;

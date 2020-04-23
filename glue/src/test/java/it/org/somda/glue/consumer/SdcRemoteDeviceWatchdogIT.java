@@ -8,8 +8,9 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.somda.sdc.biceps.common.event.AbstractMdibAccessMessage;
 import org.somda.sdc.biceps.common.event.MetricStateModificationMessage;
 import org.somda.sdc.biceps.model.participant.AbstractMetricState;
@@ -22,6 +23,7 @@ import org.somda.sdc.glue.consumer.ConnectConfiguration;
 import org.somda.sdc.glue.consumer.SdcRemoteDevice;
 import org.somda.sdc.glue.provider.plugin.SdcRequiredTypesAndScopes;
 import test.org.somda.common.CIDetector;
+import test.org.somda.common.LoggingTestWatcher;
 
 import java.math.BigDecimal;
 import java.time.Duration;
@@ -33,8 +35,9 @@ import java.util.concurrent.TimeUnit;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+@ExtendWith(LoggingTestWatcher.class)
 public class SdcRemoteDeviceWatchdogIT {
-    private static final Logger LOG = LoggerFactory.getLogger(SdcRemoteDeviceWatchdogIT.class);
+    private static final Logger LOG = LogManager.getLogger(SdcRemoteDeviceWatchdogIT.class);
     private static final IntegrationTestUtil IT = new IntegrationTestUtil();
 
     private TestSdcDevice testDevice;

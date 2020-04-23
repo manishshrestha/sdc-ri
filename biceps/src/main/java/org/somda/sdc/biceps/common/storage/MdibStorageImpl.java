@@ -2,8 +2,8 @@ package org.somda.sdc.biceps.common.storage;
 
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.somda.sdc.biceps.common.MdibDescriptionModification;
 import org.somda.sdc.biceps.common.MdibDescriptionModifications;
 import org.somda.sdc.biceps.common.MdibEntity;
@@ -38,7 +38,7 @@ import java.util.stream.Collectors;
  * Default implementation of {@linkplain MdibStorage}.
  */
 public class MdibStorageImpl implements MdibStorage {
-    private static final Logger LOG = LoggerFactory.getLogger(MdibStorageImpl.class);
+    private static final Logger LOG = LogManager.getLogger(MdibStorageImpl.class);
 
     private final MdibEntityFactory entityFactory;
     private final MdibStorageUtil util;

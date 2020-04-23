@@ -1,8 +1,8 @@
 package org.somda.sdc.dpws;
 
 import com.google.inject.Inject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.somda.sdc.dpws.helper.CommunicationLogFileName;
 import org.somda.sdc.dpws.helper.CommunicationLogFileOutputStream;
 import org.somda.sdc.dpws.soap.CommunicationContext;
@@ -20,7 +20,7 @@ import java.util.Map;
  * Default implementation of {@linkplain CommunicationLogSink}.
  */
 public class CommunicationLogSinkImpl implements CommunicationLogSink {
-    private static final Logger LOG = LoggerFactory.getLogger(CommunicationLogSinkImpl.class);
+    private static final Logger LOG = LogManager.getLogger(CommunicationLogSinkImpl.class);
     private final Boolean createHttpHeaders;
 
     private EnumMap<CommunicationLog.TransportType, File> dirMapping;

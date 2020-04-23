@@ -25,14 +25,13 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-
 public class DiscoveredDeviceResolverTest extends DpwsTest {
     private WsAddressingUtil wsaUtil;
     private ObjectFactory objFactory;
 
     @Override
     @BeforeEach
-    public void setUp() throws Exception{
+    public void setUp() throws Exception {
         super.setUp();
         wsaUtil = getInjector().getInstance(WsAddressingUtil.class);
         objFactory = new ObjectFactory();

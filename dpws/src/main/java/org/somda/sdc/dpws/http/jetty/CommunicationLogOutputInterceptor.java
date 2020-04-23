@@ -2,11 +2,11 @@ package org.somda.sdc.dpws.http.jetty;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ListMultimap;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.eclipse.jetty.server.HttpChannel;
 import org.eclipse.jetty.server.HttpOutput;
 import org.eclipse.jetty.util.Callback;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.somda.sdc.dpws.CommunicationLog;
 import org.somda.sdc.dpws.soap.CommunicationContext;
 import org.somda.sdc.dpws.soap.HttpApplicationInfo;
@@ -22,8 +22,8 @@ import java.nio.channels.WritableByteChannel;
  * {@linkplain HttpOutput.Interceptor} which logs messages to a stream.
  */
 public class CommunicationLogOutputInterceptor implements HttpOutput.Interceptor {
-    private static final Logger LOG = LoggerFactory.getLogger(CommunicationLogOutputInterceptor.class);
-
+    private static final Logger LOG = LogManager.getLogger(CommunicationLogOutputInterceptor.class);
+    
     private final HttpChannel channel;
     private final CommunicationLog communicationLog;
     private final TransportInfo transportInfo;

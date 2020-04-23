@@ -2,8 +2,8 @@ package org.somda.sdc.dpws.http.jetty;
 
 import org.eclipse.jetty.server.HttpInput;
 import org.eclipse.jetty.util.component.Destroyable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -14,7 +14,7 @@ import java.nio.channels.WritableByteChannel;
  * {@linkplain HttpInput.Interceptor} which logs messages to a stream.
  */
 public class CommunicationLogInputInterceptor implements HttpInput.Interceptor, Destroyable {
-    private static final Logger LOG = LoggerFactory.getLogger(CommunicationLogInputInterceptor.class);
+    private static final Logger LOG = LogManager.getLogger(CommunicationLogInputInterceptor.class);
 
     private final OutputStream commlogStream;
 

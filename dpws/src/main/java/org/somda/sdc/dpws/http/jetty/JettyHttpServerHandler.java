@@ -5,8 +5,8 @@ import com.google.inject.assistedinject.AssistedInject;
 import org.eclipse.jetty.http.HttpStatus;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.handler.AbstractHandler;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.somda.sdc.dpws.CommunicationLog;
 import org.somda.sdc.dpws.http.HttpException;
 import org.somda.sdc.dpws.http.HttpHandler;
@@ -27,7 +27,7 @@ import java.util.List;
  * {@linkplain AbstractHandler} implementation based on Jetty HTTP servers.
  */
 public class JettyHttpServerHandler extends AbstractHandler {
-    private static final Logger LOG = LoggerFactory.getLogger(JettyHttpServerHandler.class);
+    private static final Logger LOG = LogManager.getLogger(JettyHttpServerHandler.class);
     public static final String SERVER_HEADER_KEY = "X-Server";
     public static final String SERVER_HEADER_VALUE = "SDCri";
 

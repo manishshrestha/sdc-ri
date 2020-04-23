@@ -3,10 +3,10 @@ package org.somda.sdc.common.util;
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import test.org.somda.common.TestLogging;
+import org.junit.jupiter.api.extension.ExtendWith;
+import test.org.somda.common.LoggingTestWatcher;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -15,6 +15,7 @@ import java.util.List;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 
+@ExtendWith(LoggingTestWatcher.class)
 public class ObjectUtilImplTest {
 
     private Injector inj;
@@ -22,7 +23,6 @@ public class ObjectUtilImplTest {
 
     @BeforeEach
     public void setUp() {
-        TestLogging.configure();
         inj = Guice.createInjector(
                 new AbstractModule() {
                     @Override

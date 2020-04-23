@@ -3,11 +3,13 @@ package org.somda.sdc.glue.consumer.sco;
 import it.org.somda.glue.consumer.ReportListenerSpy;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.somda.sdc.biceps.model.message.InvocationState;
 import org.somda.sdc.biceps.model.message.OperationInvokedReport;
 import org.somda.sdc.biceps.model.message.SetValueResponse;
 import org.somda.sdc.glue.UnitTestUtil;
 import org.somda.sdc.glue.consumer.sco.factory.ScoTransactionFactory;
+import test.org.somda.common.LoggingTestWatcher;
 
 import java.time.Duration;
 import java.util.ArrayList;
@@ -17,6 +19,7 @@ import java.util.function.Consumer;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@ExtendWith(LoggingTestWatcher.class)
 class ScoTransactionTest {
     private static final UnitTestUtil UT = new UnitTestUtil();
     private ScoTransactionFactory scoTransactionFactory;

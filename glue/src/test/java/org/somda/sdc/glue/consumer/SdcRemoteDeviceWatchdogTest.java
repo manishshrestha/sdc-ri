@@ -9,6 +9,7 @@ import com.google.inject.TypeLiteral;
 import com.google.inject.name.Names;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.somda.sdc.common.util.ExecutorWrapperService;
 import org.somda.sdc.dpws.client.Client;
@@ -24,6 +25,7 @@ import org.somda.sdc.glue.UnitTestUtil;
 import org.somda.sdc.glue.consumer.event.WatchdogMessage;
 import org.somda.sdc.glue.consumer.factory.SdcRemoteDeviceWatchdogFactory;
 import org.somda.sdc.glue.guice.WatchdogScheduledExecutor;
+import test.org.somda.common.LoggingTestWatcher;
 
 import java.net.URI;
 import java.time.Duration;
@@ -38,6 +40,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
+@ExtendWith(LoggingTestWatcher.class)
 class SdcRemoteDeviceWatchdogTest {
     private Injector injector;
     private ScheduledExecutorService mockExecutor;

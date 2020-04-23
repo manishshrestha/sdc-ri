@@ -1,13 +1,16 @@
 package org.somda.sdc.glue.common.helper;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.somda.sdc.biceps.model.participant.*;
 import org.somda.sdc.glue.common.DefaultStateValues;
+import test.org.somda.common.LoggingTestWatcher;
 
 import java.math.BigDecimal;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@ExtendWith(LoggingTestWatcher.class)
 class DefaultStateValuesDispatcherTest {
     static final String DEFAULT_HANDLE = "default-handle";
     static final ComponentActivation DEFAULT_COMPONENT_ACTIVATION = ComponentActivation.NOT_RDY;

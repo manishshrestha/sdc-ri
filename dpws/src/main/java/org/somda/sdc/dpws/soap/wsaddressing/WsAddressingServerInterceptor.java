@@ -12,8 +12,8 @@ import org.somda.sdc.dpws.soap.factory.SoapFaultFactory;
 import org.somda.sdc.dpws.soap.interception.*;
 import org.somda.sdc.dpws.soap.wsaddressing.factory.WsAddressingFaultFactory;
 import org.somda.sdc.dpws.soap.wsaddressing.model.AttributedURIType;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 import javax.annotation.Nullable;
 import java.util.Optional;
@@ -30,7 +30,7 @@ import java.util.function.Consumer;
  * todo DGr process ReplyTo automatically
  */
 public class WsAddressingServerInterceptor implements Interceptor {
-    private static final Logger LOG = LoggerFactory.getLogger(WsAddressingServerInterceptor.class);
+    private static final Logger LOG = LogManager.getLogger(WsAddressingServerInterceptor.class);
 
     private final Boolean ignoreMessageIds;
     private final WsAddressingFaultFactory addressingFaultFactory;

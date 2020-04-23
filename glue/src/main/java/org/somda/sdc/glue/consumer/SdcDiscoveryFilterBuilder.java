@@ -1,7 +1,7 @@
 package org.somda.sdc.glue.consumer;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.somda.sdc.biceps.model.participant.AbstractComplexDeviceComponentDescriptor;
 import org.somda.sdc.biceps.model.participant.AbstractContextState;
 import org.somda.sdc.biceps.model.participant.ContextAssociation;
@@ -29,7 +29,7 @@ import java.util.Optional;
  * @see GlueConstants#OID_KEY_PURPOSE_SDC_SERVICE_PROVIDER
  */
 public class SdcDiscoveryFilterBuilder {
-    private static final Logger LOG = LoggerFactory.getLogger(SdcDiscoveryFilterBuilder.class);
+    private static final Logger LOG = LogManager.getLogger(SdcDiscoveryFilterBuilder.class);
 
     private final DiscoveryFilterBuilder discoveryFilterBuilder;
 

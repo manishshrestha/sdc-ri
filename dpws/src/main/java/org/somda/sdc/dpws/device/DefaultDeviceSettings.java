@@ -4,8 +4,8 @@ import com.google.inject.Inject;
 import org.somda.sdc.dpws.soap.SoapUtil;
 import org.somda.sdc.dpws.soap.wsaddressing.WsAddressingUtil;
 import org.somda.sdc.dpws.soap.wsaddressing.model.EndpointReferenceType;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 import java.net.InetAddress;
 import java.net.NetworkInterface;
@@ -15,7 +15,7 @@ import java.util.UUID;
  * Default device settings if none are injected to a {@linkplain Device}.
  */
 public class DefaultDeviceSettings implements DeviceSettings {
-    private static final Logger LOG = LoggerFactory.getLogger(DefaultDeviceSettings.class);
+    private static final Logger LOG = LogManager.getLogger(DefaultDeviceSettings.class);
 
     private final EndpointReferenceType endpointReference;
 

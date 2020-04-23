@@ -2,8 +2,8 @@ package org.somda.sdc.dpws.service;
 
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.somda.sdc.common.util.ObjectUtil;
 import org.somda.sdc.dpws.DpwsConstants;
 import org.somda.sdc.dpws.model.LocalizedStringType;
@@ -35,7 +35,7 @@ import java.util.List;
  * {@linkplain HostingServiceInterceptor} acts as a {@link HostingService} implementation at the same time.
  */
 public class HostingServiceInterceptor implements HostingService {
-    private static final Logger LOG = LoggerFactory.getLogger(HostingServiceInterceptor.class);
+    private static final Logger LOG = LogManager.getLogger(HostingServiceInterceptor.class);
 
     private final WsDiscoveryTargetService targetService;
     private final ObjectUtil objectUtil;

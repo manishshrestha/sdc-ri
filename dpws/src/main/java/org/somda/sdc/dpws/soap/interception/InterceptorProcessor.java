@@ -1,7 +1,7 @@
 package org.somda.sdc.dpws.soap.interception;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.somda.sdc.dpws.soap.exception.SoapFaultException;
 
 import javax.annotation.Nullable;
@@ -13,7 +13,7 @@ import java.util.Collection;
  * Runs interceptors.
  */
 class InterceptorProcessor {
-    private static final Logger LOG = LoggerFactory.getLogger(InterceptorProcessor.class);
+    private static final Logger LOG = LogManager.getLogger(InterceptorProcessor.class);
 
     /**
      * Dispatches callback data to all interceptor methods from the given registry.

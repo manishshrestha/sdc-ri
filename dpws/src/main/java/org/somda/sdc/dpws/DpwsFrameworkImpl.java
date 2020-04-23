@@ -5,8 +5,8 @@ import com.google.common.util.concurrent.AbstractIdleService;
 import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.common.util.concurrent.Service;
 import com.google.inject.Inject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.somda.sdc.common.util.ExecutorWrapperService;
 import org.somda.sdc.dpws.guice.AppDelayExecutor;
 import org.somda.sdc.dpws.guice.DiscoveryUdpQueue;
@@ -33,7 +33,7 @@ import java.util.concurrent.ScheduledExecutorService;
  * Default implementation of {@link DpwsFramework}.
  */
 public class DpwsFrameworkImpl extends AbstractIdleService implements DpwsFramework {
-    private static final Logger LOG = LoggerFactory.getLogger(DpwsFrameworkImpl.class);
+    private static final Logger LOG = LogManager.getLogger(DpwsFrameworkImpl.class);
 
     private NetworkInterface networkInterface;
     private final UdpMessageQueueService udpMessageQueueService;

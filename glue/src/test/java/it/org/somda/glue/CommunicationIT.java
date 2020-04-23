@@ -10,15 +10,25 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.somda.sdc.biceps.common.MdibStateModifications;
 import org.somda.sdc.biceps.common.event.AbstractMdibAccessMessage;
 import org.somda.sdc.biceps.common.event.AlertStateModificationMessage;
 import org.somda.sdc.biceps.common.event.MetricStateModificationMessage;
 import org.somda.sdc.biceps.common.storage.PreprocessingException;
-import org.somda.sdc.biceps.model.message.*;
-import org.somda.sdc.biceps.model.participant.*;
+import org.somda.sdc.biceps.model.message.InvocationError;
+import org.somda.sdc.biceps.model.message.InvocationState;
+import org.somda.sdc.biceps.model.message.OperationInvokedReport;
+import org.somda.sdc.biceps.model.message.SetString;
+import org.somda.sdc.biceps.model.message.SetStringResponse;
+import org.somda.sdc.biceps.model.participant.AbstractAlertState;
+import org.somda.sdc.biceps.model.participant.AbstractMetricState;
+import org.somda.sdc.biceps.model.participant.AlertConditionState;
+import org.somda.sdc.biceps.model.participant.AlertSignalPresence;
+import org.somda.sdc.biceps.model.participant.AlertSignalState;
+import org.somda.sdc.biceps.model.participant.EnumStringMetricState;
+import org.somda.sdc.biceps.model.participant.NumericMetricState;
 import org.somda.sdc.biceps.testutil.MdibAccessObserverSpy;
 import org.somda.sdc.dpws.service.HostingServiceProxy;
 import org.somda.sdc.glue.common.MdibXmlIo;
@@ -36,14 +46,20 @@ import test.org.somda.common.LoggingTestWatcher;
 
 import java.math.BigDecimal;
 import java.time.Duration;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @ExtendWith(LoggingTestWatcher.class)
 class CommunicationIT {
-    private static final Logger LOG = LoggerFactory.getLogger(CommunicationIT.class);
+    private static final Logger LOG = LogManager.getLogger(CommunicationIT.class);
     private static final IntegrationTestUtil IT = new IntegrationTestUtil();
 
     private TestSdcDevice testDevice;

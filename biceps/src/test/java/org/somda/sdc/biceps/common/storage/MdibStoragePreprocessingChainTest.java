@@ -1,5 +1,6 @@
 package org.somda.sdc.biceps.common.storage;
 
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.somda.sdc.biceps.UnitTestUtil;
 import org.somda.sdc.biceps.common.MdibDescriptionModification;
 import org.somda.sdc.biceps.common.MdibDescriptionModifications;
@@ -12,12 +13,14 @@ import org.somda.sdc.biceps.testutil.MockModelFactory;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import test.org.somda.common.LoggingTestWatcher;
 
 import java.util.Arrays;
 import java.util.List;
 
 import static org.mockito.Mockito.*;
 
+@ExtendWith(LoggingTestWatcher.class)
 class MdibStoragePreprocessingChainTest {
     private static final UnitTestUtil UT = new UnitTestUtil();
 

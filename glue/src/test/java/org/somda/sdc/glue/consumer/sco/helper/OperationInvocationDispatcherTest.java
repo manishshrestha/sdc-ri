@@ -2,6 +2,7 @@ package org.somda.sdc.glue.consumer.sco.helper;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.somda.sdc.biceps.model.message.AbstractSetResponse;
 import org.somda.sdc.biceps.model.message.InvocationState;
 import org.somda.sdc.biceps.model.message.OperationInvokedReport;
@@ -15,6 +16,7 @@ import org.somda.sdc.glue.UnitTestUtil;
 import org.somda.sdc.glue.consumer.sco.ScoArtifacts;
 import org.somda.sdc.glue.consumer.sco.ScoTransactionImpl;
 import org.somda.sdc.glue.consumer.sco.factory.OperationInvocationDispatcherFactory;
+import test.org.somda.common.LoggingTestWatcher;
 
 import java.net.URI;
 import java.util.ArrayList;
@@ -23,6 +25,7 @@ import java.util.List;
 
 import static org.mockito.Mockito.*;
 
+@ExtendWith(LoggingTestWatcher.class)
 class OperationInvocationDispatcherTest {
     private static final UnitTestUtil UT = new UnitTestUtil();
     private HostingServiceProxy hostingServiceProxy;

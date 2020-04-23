@@ -2,8 +2,8 @@ package org.somda.sdc.dpws.device.helper;
 
 import com.google.inject.Inject;
 import org.eclipse.jetty.http.HttpStatus;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.somda.sdc.dpws.http.HttpException;
 import org.somda.sdc.dpws.http.HttpHandler;
 import org.somda.sdc.dpws.soap.*;
@@ -25,7 +25,7 @@ import java.io.OutputStream;
  * {@link HttpHandler#handle(InputStream, OutputStream, CommunicationContext)}.
  */
 public class RequestResponseServerHttpHandler implements HttpHandler, InterceptorHandler {
-    private static final Logger LOG = LoggerFactory.getLogger(RequestResponseServerHttpHandler.class);
+    private static final Logger LOG = LogManager.getLogger(RequestResponseServerHttpHandler.class);
 
     private final RequestResponseServer reqResServer;
     private final MarshallingService marshallingService;

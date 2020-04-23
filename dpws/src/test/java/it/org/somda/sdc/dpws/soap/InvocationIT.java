@@ -11,6 +11,10 @@ import dpws_test_service.messages._2017._05._10.TestOperationResponse;
 import it.org.somda.sdc.dpws.IntegrationTestUtil;
 import it.org.somda.sdc.dpws.MockedUdpBindingModule;
 import it.org.somda.sdc.dpws.TestServiceMetadata;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.somda.sdc.dpws.guice.DefaultDpwsConfigModule;
 import org.somda.sdc.dpws.service.HostedServiceProxy;
 import org.somda.sdc.dpws.service.HostingServiceProxy;
@@ -21,19 +25,20 @@ import org.somda.sdc.dpws.soap.interception.Interceptor;
 import org.somda.sdc.dpws.soap.interception.MessageInterceptor;
 import org.somda.sdc.dpws.soap.interception.NotificationObject;
 import org.somda.sdc.dpws.soap.wseventing.SubscribeResult;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import test.org.somda.common.LoggingTestWatcher;
-import test.org.somda.common.TestLogging;
 
 import java.time.Duration;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @ExtendWith(LoggingTestWatcher.class)
 public class InvocationIT {
@@ -54,8 +59,6 @@ public class InvocationIT {
 
     @BeforeEach
     public void setUp() throws Exception {
-        TestLogging.configure();
-
         factory = new ObjectFactory();
 
         devicePeer = new BasicPopulatedDevice(new MockedUdpBindingModule());
