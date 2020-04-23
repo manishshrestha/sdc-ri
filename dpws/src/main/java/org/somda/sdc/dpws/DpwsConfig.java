@@ -31,7 +31,7 @@ public class DpwsConfig {
      * Defines the sink for communication log messages in case a communication logger is enabled.
      * <p>
      * Implementations of {@link CommunicationLogSink} may ignore this configuration item as not every sink
-     * write to files.
+     * writes to files.
      *
      * <ul>
      * <li>Data type: {@linkplain java.io.File}
