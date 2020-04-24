@@ -131,7 +131,7 @@ public class EventSinkImpl implements EventSink {
 
             subscribeBody.setFilter(filterType);
 
-            SoapMessage subscribeRequest = soapUtil.createMessage(WsEventingConstants.WSE_ACTION_SUBSCRIBE, subscribeBody);
+            SoapMessage subscribeRequest = soapUtil.createMessage(WsEventingConstants.WSA_ACTION_SUBSCRIBE, subscribeBody);
 
             // Create client to send request
             // // TODO: 19.01.2017
@@ -179,7 +179,7 @@ public class EventSinkImpl implements EventSink {
 
             // Create new message, put subscription manager EPR address as wsa:To
             SoapMessage renewMsg = soapUtil.createMessage(
-                    WsEventingConstants.WSE_ACTION_RENEW,
+                    WsEventingConstants.WSA_ACTION_RENEW,
                     subManAddress,
                     renew,
                     subMan.getSubscriptionManagerEpr().getReferenceParameters()
@@ -210,7 +210,7 @@ public class EventSinkImpl implements EventSink {
 
             // Create new message, put subscription manager EPR address as wsa:To
             SoapMessage getStatusMsg = soapUtil.createMessage(
-                    WsEventingConstants.WSE_ACTION_GET_STATUS,
+                    WsEventingConstants.WSA_ACTION_GET_STATUS,
                     subManAddress,
                     getStatus,
                     subMan.getSubscriptionManagerEpr().getReferenceParameters()
@@ -238,7 +238,7 @@ public class EventSinkImpl implements EventSink {
 
             // Create new message, put subscription manager EPR address as wsa:To
             SoapMessage unsubscribeMsg = soapUtil.createMessage(
-                    WsEventingConstants.WSE_ACTION_UNSUBSCRIBE,
+                    WsEventingConstants.WSA_ACTION_UNSUBSCRIBE,
                     subManAddress,
                     unsubscribe,
                     subMan.getSubscriptionManagerEpr().getReferenceParameters()

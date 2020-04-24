@@ -28,23 +28,23 @@ public class WsEventingConstants {
      */
     public static final String NAMESPACE_PREFIX = "wse";
 
-    public static final String WSE_ACTION_SUBSCRIBE = NAMESPACE + "/Subscribe";
+    public static final String WSA_ACTION_SUBSCRIBE = NAMESPACE + "/Subscribe";
 
-    public static final String WSE_ACTION_SUBSCRIBE_RESPONSE = NAMESPACE + "/SubscribeResponse";
+    public static final String WSA_ACTION_SUBSCRIBE_RESPONSE = NAMESPACE + "/SubscribeResponse";
 
-    public static final String WSE_ACTION_RENEW = NAMESPACE + "/Renew";
+    public static final String WSA_ACTION_RENEW = NAMESPACE + "/Renew";
 
-    public static final String WSE_ACTION_RENEW_RESPONSE = NAMESPACE + "/RenewResponse";
+    public static final String WSA_ACTION_RENEW_RESPONSE = NAMESPACE + "/RenewResponse";
 
-    public static final String WSE_ACTION_GET_STATUS = NAMESPACE + "/GetStatus";
+    public static final String WSA_ACTION_GET_STATUS = NAMESPACE + "/GetStatus";
 
-    public static final String WSE_ACTION_GET_STATUS_RESPONSE = NAMESPACE + "/GetStatusResponse";
+    public static final String WSA_ACTION_GET_STATUS_RESPONSE = NAMESPACE + "/GetStatusResponse";
 
-    public static final String WSE_ACTION_UNSUBSCRIBE = NAMESPACE + "/Unsubscribe";
+    public static final String WSA_ACTION_UNSUBSCRIBE = NAMESPACE + "/Unsubscribe";
 
-    public static final String WSE_ACTION_UNSUBSCRIBE_RESPONSE = NAMESPACE + "/UnsubscribeResponse";
+    public static final String WSA_ACTION_UNSUBSCRIBE_RESPONSE = NAMESPACE + "/UnsubscribeResponse";
 
-    public static final String WSE_ACTION_SUBSCRIPTION_END = NAMESPACE + "/SubscriptionEnd";
+    public static final String WSA_ACTION_SUBSCRIPTION_END = NAMESPACE + "/SubscriptionEnd";
 
     public static final String SUPPORTED_DELIVERY_MODE = NAMESPACE + "/DeliveryModes/Push";
 

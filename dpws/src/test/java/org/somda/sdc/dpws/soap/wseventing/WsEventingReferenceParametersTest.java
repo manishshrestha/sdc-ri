@@ -232,7 +232,7 @@ public class WsEventingReferenceParametersTest extends DpwsTest {
         }
 
         @Override
-        @MessageInterceptor(value = WsEventingConstants.WSE_ACTION_SUBSCRIBE, direction = Direction.REQUEST)
+        @MessageInterceptor(value = WsEventingConstants.WSA_ACTION_SUBSCRIBE, direction = Direction.REQUEST)
         void processSubscribe(RequestResponseObject rrObj) throws SoapFaultException {
             super.processSubscribe(rrObj);
 
@@ -262,7 +262,7 @@ public class WsEventingReferenceParametersTest extends DpwsTest {
 
 
         @Override
-        @MessageInterceptor(value = WsEventingConstants.WSE_ACTION_UNSUBSCRIBE, direction = Direction.REQUEST)
+        @MessageInterceptor(value = WsEventingConstants.WSA_ACTION_UNSUBSCRIBE, direction = Direction.REQUEST)
         void processUnsubscribe(RequestResponseObject rrObj) throws SoapFaultException {
             super.processUnsubscribe(rrObj);
 
@@ -272,7 +272,7 @@ public class WsEventingReferenceParametersTest extends DpwsTest {
         }
 
         @Override
-        @MessageInterceptor(value = WsEventingConstants.WSE_ACTION_GET_STATUS, direction = Direction.REQUEST)
+        @MessageInterceptor(value = WsEventingConstants.WSA_ACTION_GET_STATUS, direction = Direction.REQUEST)
         void processGetStatus(RequestResponseObject rrObj) throws SoapFaultException {
             super.processGetStatus(rrObj);
 
@@ -282,7 +282,7 @@ public class WsEventingReferenceParametersTest extends DpwsTest {
         }
 
         @Override
-        @MessageInterceptor(value = WsEventingConstants.WSE_ACTION_RENEW, direction = Direction.REQUEST)
+        @MessageInterceptor(value = WsEventingConstants.WSA_ACTION_RENEW, direction = Direction.REQUEST)
         void processRenew(RequestResponseObject rrObj) throws SoapFaultException {
             super.processRenew(rrObj);
 
