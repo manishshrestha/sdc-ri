@@ -17,6 +17,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Use log4j2-api instead of slf4j for logging
 - Communication log file names to include SOAP action information and XML to be pretty-printed. (#153)
 
+### Removed
+
+- `org.somda.sdc.dpws.CommunicationLogSink.getTargetStream()`; use `org.somda.sdc.dpws.CommunicationLogSink.createTargetStream()` instead. (#153)
+
 ## 1.1.0 - 2020-04-18
 
 ### Added
