@@ -19,6 +19,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `GetContainmentTree` handling changed in order to allow traversal of the MDIB. (#150)
 - Change names in `org.somda.sdc.dpws.soap.wseventing.WsEventingConstants` from `WSE_ACTION[...]` to `WSA_ACTION[...]`. (#157)
 
+### Removed
+
+- `org.somda.sdc.dpws.CommunicationLogSink.getTargetStream()`; use `org.somda.sdc.dpws.CommunicationLogSink.createTargetStream()` instead. (#153)
+
 ## 1.1.0 - 2020-04-18
 
 ### Added
@@ -34,6 +38,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - SOAP constants for VersionMismatch, MustUnderstand and DataEncodingUnknown SOAP Fault codes.
 - `org.somda.sdc.dpws.soap.exception.SoapFaultException`: constructor that accepts a throwable cause. (#143)
 
+### Changed
+
+- Report processing on consumer side, which now compares MDIB sequence IDs by using URI compare instead of string compare.
+- Extracted namespace prefixes in `biceps` and `glue` package `CommonConstants`.
+- Enable generating equals and hashcode for all models. (#140)
+- `org.somda.sdc.dpws.soap.TransportInfo` provides a  `List` of certificates instead of a `Collection`. (#147)
+
 ### Deprecated
 
 - `org.somda.sdc.glue.provider.SdcDevice#getDiscoveryAccess()` and `#getHostingServiceAccess()`; see `SdcDevice` class comment for alternative access.
@@ -46,13 +57,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Additional utility method in `org.somda.sdc.dpws.soap.SoapUtil` to create new SoapMessage with reference parameters (#140)
 - `org.somda.sdc.dpws.soap.HttpApplicationInfo(Map<String, String>)` and `org.somda.sdc.dpws.soap.HttpApplicationInfo#getHttpHeaders()`; use Multimap versions instead. (#147)
 - `org.somda.sdc.biceps.common.preprocessing.DescriptorChildRemover#removeChildren(MdsDescriptor)` as this was not intended to be public. (#149)
-
-### Changed
-
-- Report processing on consumer side, which now compares MDIB sequence IDs by using URI compare instead of string compare.
-- Extracted namespace prefixes in `biceps` and `glue` package `CommonConstants`.
-- Enable generating equals and hashcode for all models. (#140)
-- `org.somda.sdc.dpws.soap.TransportInfo` provides a  `List` of certificates instead of a `Collection`. (#147)
 
 ### Fixed
 
