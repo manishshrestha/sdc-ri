@@ -274,10 +274,9 @@ public class MdibStorageImpl implements MdibStorage {
         deletedEntities.add(deletedEntity);
     }
 
-    private void updateEntity(
-            MdibDescriptionModification modification,
-            List<AbstractState> sanitizedStates,
-            List<MdibEntity> updatedEntities
+    private void updateEntity(MdibDescriptionModification modification,
+                              List<AbstractState> sanitizedStates,
+                              List<MdibEntity> updatedEntities
     ) {
         Optional.ofNullable(entities.get(modification.getHandle())).ifPresent(mdibEntity -> {
             LOG.debug("[{}] Update entity: {}", mdibVersion.getInstanceId(), modification.getDescriptor());
@@ -415,9 +414,9 @@ public class MdibStorageImpl implements MdibStorage {
                         .orElse(states -> {
                             var modificationAsMultiState = typeValidator.toMultiState(modification).orElseThrow(() ->
                                     new RuntimeException(String.format(
-                                                    "Found a non-matching multi-state for multi-state entity update"
-                                                            + " (descriptor handle: %s)",
-                                                    mdibEntity.getHandle())
+                                            "Found a non-matching multi-state for multi-state entity update"
+                                                    + " (descriptor handle: %s)",
+                                            mdibEntity.getHandle())
                                     ));
 
                             var newStates = new ArrayList<AbstractMultiState>();
