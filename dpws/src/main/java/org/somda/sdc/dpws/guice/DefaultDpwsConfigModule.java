@@ -59,6 +59,10 @@ public class DefaultDpwsConfigModule extends AbstractConfigurationModule {
                 File.class,
                 new File("commlog"));
 
+        bind(DpwsConfig.COMMUNICATION_LOG_WITH_HTTP_HEADERS,
+                Boolean.class,
+                true);
+
         bind(DpwsConfig.HTTP_GZIP_COMPRESSION,
                 Boolean.class,
                 true);

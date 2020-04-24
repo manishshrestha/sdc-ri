@@ -2,12 +2,11 @@ package org.somda.sdc.dpws.http.jetty;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ListMultimap;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.eclipse.jetty.server.HttpChannel;
 import org.eclipse.jetty.server.HttpOutput;
 import org.eclipse.jetty.util.Callback;
-import org.eclipse.jetty.util.component.Destroyable;
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
 import org.somda.sdc.dpws.CommunicationLog;
 import org.somda.sdc.dpws.soap.CommunicationContext;
 import org.somda.sdc.dpws.soap.HttpApplicationInfo;
@@ -22,7 +21,7 @@ import java.nio.channels.WritableByteChannel;
 /**
  * {@linkplain HttpOutput.Interceptor} which logs messages to a stream.
  */
-public class CommunicationLogOutputInterceptor implements HttpOutput.Interceptor, Destroyable {
+public class CommunicationLogOutputInterceptor implements HttpOutput.Interceptor {
     private static final Logger LOG = LogManager.getLogger(CommunicationLogOutputInterceptor.class);
 
     private final HttpChannel channel;
@@ -31,8 +30,10 @@ public class CommunicationLogOutputInterceptor implements HttpOutput.Interceptor
     private OutputStream commlogStream;
     private HttpOutput.Interceptor nextInterceptor;
 
-    CommunicationLogOutputInterceptor(HttpChannel channel, HttpOutput.Interceptor nextInterceptor,
-                                      CommunicationLog communicationLog, TransportInfo transportInfo) {
+    CommunicationLogOutputInterceptor(HttpChannel channel,
+                                      HttpOutput.Interceptor nextInterceptor,
+                                      CommunicationLog communicationLog,
+                                      TransportInfo transportInfo) {
         this.channel = channel;
         this.communicationLog = communicationLog;
         this.nextInterceptor = nextInterceptor;
@@ -46,6 +47,7 @@ public class CommunicationLogOutputInterceptor implements HttpOutput.Interceptor
             nextInterceptor.write(content, last, callback);
             return;
         }
+
         // get commlog handle
         if (this.commlogStream == null) {
             this.commlogStream = getCommlogStream();
@@ -55,10 +57,14 @@ public class CommunicationLogOutputInterceptor implements HttpOutput.Interceptor
         try {
             WritableByteChannel writableByteChannel = Channels.newChannel(commlogStream);
             writableByteChannel.write(content);
+            if (last) {
+                commlogStream.close();
+            }
         } catch (IOException e) {
             LOG.error("Error while writing to commlog", e);
         }
-        // rewind the bytebuffer we just went through
+
+        // rewind the byte buffer we just went through
         content.position(oldPosition);
         nextInterceptor.write(content, last, callback);
     }
@@ -99,14 +105,5 @@ public class CommunicationLogOutputInterceptor implements HttpOutput.Interceptor
     @Override
     public boolean isOptimizedForDirectBuffers() {
         return false;
-    }
-
-    @Override
-    public void destroy() {
-        try {
-            this.commlogStream.close();
-        } catch (IOException e) {
-            LOG.error("Error while closing commlog stream", e);
-        }
     }
 }

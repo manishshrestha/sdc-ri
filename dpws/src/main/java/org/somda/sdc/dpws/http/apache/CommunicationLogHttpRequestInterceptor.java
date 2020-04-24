@@ -2,7 +2,6 @@ package org.somda.sdc.dpws.http.apache;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpEntityEnclosingRequest;
-import org.apache.http.HttpException;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpRequest;
 import org.apache.http.HttpRequestInterceptor;
@@ -16,7 +15,6 @@ import org.somda.sdc.dpws.soap.CommunicationContext;
 import org.somda.sdc.dpws.soap.HttpApplicationInfo;
 import org.somda.sdc.dpws.soap.TransportInfo;
 
-import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Collections;
 
@@ -33,14 +31,14 @@ public class CommunicationLogHttpRequestInterceptor implements HttpRequestInterc
     }
 
     @Override
-    public void process(HttpRequest request, HttpContext context) throws HttpException, IOException {
-        LOG.debug("Processing request");
+    public void process(HttpRequest request, HttpContext context) {
+        LOG.debug("Processing request: {}", request.getRequestLine());
 
         HttpHost target = (HttpHost) context.getAttribute(
                 HttpCoreContext.HTTP_TARGET_HOST);
 
         if (!(request instanceof HttpEntityEnclosingRequest)) {
-            LOG.warn("Interceptor cannot retrieve request entity!");
+            LOG.warn("Interceptor cannot retrieve request entity for request {}", request.getRequestLine());
             return;
         }
 
@@ -63,12 +61,13 @@ public class CommunicationLogHttpRequestInterceptor implements HttpRequestInterc
 
         var requestCommContext = new CommunicationContext(requestHttpApplicationInfo, requestTransportInfo);
 
-        OutputStream commlogStream = commlog.logMessage(CommunicationLog.Direction.OUTBOUND, CommunicationLog.TransportType.HTTP,
+        OutputStream commlogStream = commlog.logMessage(
+                CommunicationLog.Direction.OUTBOUND,
+                CommunicationLog.TransportType.HTTP,
                 requestCommContext);
 
         entityRequest.setEntity(new CommunicationLogEntity(oldMessageEntity, commlogStream));
 
-
-        LOG.debug("Processing request done");
+        LOG.debug("Processing request done: {}", request.getRequestLine());
     }
-};
+}
