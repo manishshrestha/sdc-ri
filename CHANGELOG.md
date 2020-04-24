@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Use log4j2-api instead of slf4j for logging
 - Communication log file names to include SOAP action information and XML to be pretty-printed. (#153)
 - `GetContainmentTree` handling changed in order to allow traversal of the MDIB. (#150)
+- Change names in `org.somda.sdc.dpws.soap.wseventing.WsEventingConstants` from `WSE_ACTION[...]` to `WSA_ACTION[...]`. (#157)
 
 ## 1.1.0 - 2020-04-18
 

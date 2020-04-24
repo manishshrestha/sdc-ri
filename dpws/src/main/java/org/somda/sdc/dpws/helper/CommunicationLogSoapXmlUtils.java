@@ -99,23 +99,23 @@ class CommunicationLogSoapXmlUtils {
                 return action;
 
             // WS-Eventing
-            case WsEventingConstants.WSE_ACTION_SUBSCRIBE:
+            case WsEventingConstants.WSA_ACTION_SUBSCRIBE:
                 return "WseSubscribe";
-            case WsEventingConstants.WSE_ACTION_SUBSCRIBE_RESPONSE:
+            case WsEventingConstants.WSA_ACTION_SUBSCRIBE_RESPONSE:
                 return "WseSubscribeResponse";
-            case WsEventingConstants.WSE_ACTION_RENEW:
+            case WsEventingConstants.WSA_ACTION_RENEW:
                 return "WseRenew";
-            case WsEventingConstants.WSE_ACTION_RENEW_RESPONSE:
+            case WsEventingConstants.WSA_ACTION_RENEW_RESPONSE:
                 return "WseRenewResponse";
-            case WsEventingConstants.WSE_ACTION_GET_STATUS:
+            case WsEventingConstants.WSA_ACTION_GET_STATUS:
                 return "WseGetStatus";
-            case WsEventingConstants.WSE_ACTION_GET_STATUS_RESPONSE:
+            case WsEventingConstants.WSA_ACTION_GET_STATUS_RESPONSE:
                 return "WseGetStatusResponse";
-            case WsEventingConstants.WSE_ACTION_UNSUBSCRIBE:
+            case WsEventingConstants.WSA_ACTION_UNSUBSCRIBE:
                 return "WseUnsubscribe";
-            case WsEventingConstants.WSE_ACTION_UNSUBSCRIBE_RESPONSE:
+            case WsEventingConstants.WSA_ACTION_UNSUBSCRIBE_RESPONSE:
                 return "WseUnsubscribeResponse";
-            case WsEventingConstants.WSE_ACTION_SUBSCRIPTION_END:
+            case WsEventingConstants.WSA_ACTION_SUBSCRIPTION_END:
                 return "WseSubscriptionEnd";
 
             // WS-MetadataExchange
