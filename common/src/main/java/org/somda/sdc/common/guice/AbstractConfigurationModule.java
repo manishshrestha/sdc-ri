@@ -103,6 +103,8 @@ public abstract class AbstractConfigurationModule extends AbstractModule {
         DEFAULTED("[defaulted ]"),
         CUSTOMIZED("[customized]");
 
+        private final String caption;
+
         ValueOrigin(String value) {
             caption = value;
         }
@@ -111,8 +113,6 @@ public abstract class AbstractConfigurationModule extends AbstractModule {
         public String toString() {
             return caption;
         }
-
-        private final String caption;
     }
 
     private static class ConfigurationValue {

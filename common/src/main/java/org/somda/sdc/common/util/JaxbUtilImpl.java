@@ -1,7 +1,7 @@
 package org.somda.sdc.common.util;
 
-import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import javax.xml.bind.JAXBElement;
 import javax.xml.namespace.QName;
@@ -35,7 +35,7 @@ public class JaxbUtilImpl implements JaxbUtil {
             } else {
                 return Optional.of(typeClass.cast(element));
             }
-        } catch (Exception e) {
+        } catch (ClassCastException e) {
             return Optional.empty();
         }
     }
@@ -50,11 +50,6 @@ public class JaxbUtilImpl implements JaxbUtil {
             }
         } catch (ClassCastException e) {
             LOG.trace("Object was not a JAXBElement, extracting elements failed but it's alright");
-        } catch (Exception e) {
-            LOG.warn("Element could not be extracted. Is the QName {} known to JAXB via context path? " +
-                    "Exception message: {}", elementType, e.getMessage());
-            LOG.trace("Element could not be extracted", e);
-            // ignore, empty optional will be returned
         }
         return Optional.empty();
     }
@@ -69,7 +64,7 @@ public class JaxbUtilImpl implements JaxbUtil {
         if (first.isPresent()) {
             try {
                 return Optional.ofNullable(typeClass.cast(first.get()));
-            } catch (Exception e) {
+            } catch (ClassCastException ignored) {
                 // ignore, empty optional will be returned
             }
         }
@@ -87,7 +82,7 @@ public class JaxbUtilImpl implements JaxbUtil {
         if (first.isPresent()) {
             try {
                 return Optional.ofNullable(typeClass.cast(first.get()));
-            } catch (Exception e) {
+            } catch (ClassCastException ignored) {
                 // ignore, empty optional will be returned
             }
         }
