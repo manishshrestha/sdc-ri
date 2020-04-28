@@ -18,6 +18,14 @@ public class AnyDateTime {
     private LocalDateTime local;
     private OffsetDateTime offset;
 
+    private AnyDateTime(LocalDateTime local) {
+        this.local = local;
+    }
+
+    private AnyDateTime(OffsetDateTime offset) {
+        this.offset = offset;
+    }
+
     /**
      * Creates an instance with local date and time.
      *
@@ -116,14 +124,11 @@ public class AnyDateTime {
      * @see #doIfOffset(Consumer)
      */
     public interface Else<T> {
+        /**
+         * Defines what to do in an else case provoked by {@link #doIfLocal(Consumer)} or {@link #doIfOffset(Consumer)}.
+         *
+         * @param consumer the code to execute.
+         */
         void orElse(Consumer<T> consumer);
-    }
-
-    private AnyDateTime(LocalDateTime local) {
-        this.local = local;
-    }
-
-    private AnyDateTime(OffsetDateTime offset) {
-        this.offset = offset;
     }
 }

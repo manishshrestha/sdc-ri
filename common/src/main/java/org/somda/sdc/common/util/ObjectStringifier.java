@@ -116,7 +116,9 @@ public class ObjectStringifier {
         }
     }
 
-    private static <T> String stringifyWithFilter(T obj, @Nullable SortedMap<String, Object> keyValues, Predicate<Field> filter) {
+    private static <T> String stringifyWithFilter(T obj,
+                                                  @Nullable SortedMap<String, Object> keyValues,
+                                                  Predicate<Field> filter) {
         StringBuffer stringBuffer = start(obj);
 
         try {

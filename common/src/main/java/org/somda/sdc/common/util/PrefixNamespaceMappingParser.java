@@ -34,7 +34,7 @@ public class PrefixNamespaceMappingParser {
         final Map<String, PrefixNamespacePair> mapping = new HashMap<>();
         final Pattern pattern = Pattern.compile("\\{(.+?):(.+?)\\}");
 
-        for (final Matcher matcher = pattern.matcher(prefixNamespaces); matcher.find(); ) {
+        for (final Matcher matcher = pattern.matcher(prefixNamespaces); matcher.find();) {
             final String prefix = matcher.group(1);
             final String uri = matcher.group(2);
             try {

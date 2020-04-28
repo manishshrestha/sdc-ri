@@ -4,10 +4,11 @@ import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.inject.AbstractModule;
 import com.google.inject.TypeLiteral;
 import com.google.inject.binder.AnnotatedBindingBuilder;
-import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.lang.annotation.Annotation;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ScheduledExecutorService;
@@ -28,7 +29,9 @@ public class ExecutorWrapperUtil {
      * @param executor   wrapped inside a {@linkplain Callable}.
      * @param annotation to be bound to.
      */
-    public static void bindScheduledExecutor(AbstractModule module, Callable<ScheduledExecutorService> executor, Class<? extends Annotation> annotation) {
+    public static void bindScheduledExecutor(AbstractModule module,
+                                             Callable<ScheduledExecutorService> executor,
+                                             Class<? extends Annotation> annotation) {
         var executorWrapper = new ExecutorWrapperService<>(executor, annotation.getSimpleName());
         var tl = new TypeLiteral<ExecutorWrapperService<ScheduledExecutorService>>() {
         };
@@ -37,10 +40,11 @@ public class ExecutorWrapperUtil {
             Method bindMethod = getBindMethod(module);
             Object invoke = bindMethod.invoke(module, tl);
 
-            AnnotatedBindingBuilder<ExecutorWrapperService<ScheduledExecutorService>> invokeResult = (AnnotatedBindingBuilder<ExecutorWrapperService<ScheduledExecutorService>>) invoke;
+            AnnotatedBindingBuilder<ExecutorWrapperService<ScheduledExecutorService>> invokeResult =
+                    (AnnotatedBindingBuilder<ExecutorWrapperService<ScheduledExecutorService>>) invoke;
 
             invokeResult.annotatedWith(annotation).toInstance(executorWrapper);
-        } catch (Exception e) {
+        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
             throw new RuntimeException(e);
         }
     }
@@ -54,8 +58,11 @@ public class ExecutorWrapperUtil {
      * @param module     configuration module to bind executor to.
      * @param executor   wrapped inside a {@linkplain Callable}.
      * @param annotation to be bound to.
+     * @param <T>        the Guice module type where to bind.
      */
-    public static <T extends AbstractModule> void bindListeningExecutor(T module, Callable<ListeningExecutorService> executor, Class<? extends Annotation> annotation) {
+    public static <T extends AbstractModule> void bindListeningExecutor(T module,
+                                                                        Callable<ListeningExecutorService> executor,
+                                                                        Class<? extends Annotation> annotation) {
         var executorWrapper = new ExecutorWrapperService<>(executor, annotation.getSimpleName());
         var tl = new TypeLiteral<ExecutorWrapperService<ListeningExecutorService>>() {
         };
@@ -67,12 +74,12 @@ public class ExecutorWrapperUtil {
             var invokeResult = (AnnotatedBindingBuilder<ExecutorWrapperService<ListeningExecutorService>>) invoke;
 
             invokeResult.annotatedWith(annotation).toInstance(executorWrapper);
-        } catch (Exception e) {
+        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
             throw new RuntimeException(e);
         }
     }
 
-    public static Method getBindMethod(AbstractModule module) throws Exception {
+    public static Method getBindMethod(AbstractModule module) throws NoSuchMethodException {
         Class<? extends AbstractModule> clzz = module.getClass();
         Class<AbstractModule> target = AbstractModule.class;
         while (clzz != null && !(clzz.isAssignableFrom(target))) {

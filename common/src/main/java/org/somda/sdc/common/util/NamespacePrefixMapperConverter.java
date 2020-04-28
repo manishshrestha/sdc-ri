@@ -21,7 +21,8 @@ public class NamespacePrefixMapperConverter {
     }
 
     /**
-     * Converts from a {@linkplain org.somda.sdc.common.util.PrefixNamespaceMappingParser.PrefixNamespacePair} map to a {@linkplain NamespacePrefixMapper}.
+     * Converts from a {@linkplain org.somda.sdc.common.util.PrefixNamespaceMappingParser.PrefixNamespacePair} map to a
+     * {@linkplain NamespacePrefixMapper}.
      * <p>
      * To be used with JAXB marshallers to optimize namespace usage.
      *
