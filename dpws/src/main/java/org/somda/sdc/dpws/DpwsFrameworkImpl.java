@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.ScheduledExecutorService;
 
 /**
@@ -140,6 +141,15 @@ public class DpwsFrameworkImpl extends AbstractIdleService implements DpwsFramew
             return;
         }
         this.networkInterface = networkInterface;
+    }
+
+    @Override
+    public Optional<NetworkInterface> getNetworkInterface() {
+        if (state() == State.NEW) {
+            LOG.warn("Framework is not started, cannot retrieve network interface");
+            return Optional.empty();
+        }
+        return Optional.of(networkInterface);
     }
 
     synchronized public void registerService(Collection<Service> services) {

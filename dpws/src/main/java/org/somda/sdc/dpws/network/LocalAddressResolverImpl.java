@@ -1,10 +1,13 @@
 package org.somda.sdc.dpws.network;
 
 import com.google.inject.Inject;
-import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.somda.sdc.dpws.DpwsFramework;
 
-import java.net.*;
+import java.net.InterfaceAddress;
+import java.net.Socket;
+import java.net.URI;
 import java.util.Optional;
 
 /**
@@ -12,68 +15,38 @@ import java.util.Optional;
  */
 public class LocalAddressResolverImpl implements LocalAddressResolver {
     private static final Logger LOG = LogManager.getLogger(LocalAddressResolverImpl.class);
+    private final DpwsFramework dpwsFramework;
 
     @Inject
-    LocalAddressResolverImpl() {
+    LocalAddressResolverImpl(DpwsFramework dpwsFramework) {
+        this.dpwsFramework = dpwsFramework;
     }
 
     @Override
     public Optional<String> getLocalAddress(String remoteUri) {
         var parsedUri = URI.create(remoteUri);
-        try (Socket socket = new Socket(parsedUri.getHost(), parsedUri.getPort())) {
-            return Optional.of(socket.getLocalAddress().getHostAddress());
-        } catch (Exception e) {
-            LOG.info("Could not access remote URI {} and resolve local address. Reason: {}", remoteUri, e.getMessage());
+        var ifaceOpt = dpwsFramework.getNetworkInterface();
+        if (ifaceOpt.isEmpty()) {
+            LOG.error("getLocalAddress could not determine the configured network interface");
             return Optional.empty();
         }
+        var iface = ifaceOpt.get();
+        for (InterfaceAddress interfaceAddress : iface.getInterfaceAddresses()) {
+            try (Socket socket = new Socket(parsedUri.getHost(), parsedUri.getPort(), interfaceAddress.getAddress(), 0)) {
+                return Optional.of(socket.getLocalAddress().getHostAddress());
+            } catch (Exception e) {
+                LOG.debug(
+                        "Could not access remote URI {} and resolve local address using interface {}. Reason: {}",
+                        remoteUri, interfaceAddress, e.getMessage()
+                );
+            }
+        }
 
-//        Enumeration<NetworkInterface> networkInterfaces;
-//        try {
-//            networkInterfaces = NetworkInterface.getNetworkInterfaces();
-//        } catch (SocketException e) {
-//            return Optional.empty();
-//        }
-//
-//        Optional<InetAddress> localAddress = Optional.empty();
-//        for (NetworkInterface networkInterface : Collections.list(networkInterfaces)) {
-//            try {
-//                if (!networkInterface.isUp()) {
-//                    continue;
-//                }
-//
-//                localAddress = Collections.list(networkInterface.getInetAddresses()).stream()
-//                        .filter(inetAddress -> {
-//                            try {
-//                                if (!inetAddress.isReachable(2000)) {
-//                                    return false;
-//                                }
-//                            } catch (IOException e) {
-//                                return false;
-//                            }
-//
-//                            try (SocketChannel socket = SocketChannel.open()) {
-//                                // Bind socket to local interface
-//                                socket.bind(new InetSocketAddress(inetAddress, 8080));
-//
-//                                // Try to connect to given host
-//                                socket.connect(new InetSocketAddress(host, port));
-//                            } catch (IOException e) {
-//                                return false;
-//                            }
-//
-//                            return true;
-//                        }).findFirst();
-//
-//                if (localAddress.isPresent()) {
-//                    break;
-//                }
-//            } catch (SocketException e) {
-//                LOG.info("Caught socket exception while trying to get local address.", e);
-//            }
-//        }
-//
-//        if (localAddress.isPresent()) {
-//            return Optional.ofNullable(localAddress.get().getHostAddress());
-//        }
+        LOG.warn(
+                "Could not access remote URI {} and resolve local address,"
+                        + " no connection could be made using interface {}",
+                remoteUri, iface
+        );
+        return Optional.empty();
     }
 }

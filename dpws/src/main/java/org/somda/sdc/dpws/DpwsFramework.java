@@ -4,6 +4,7 @@ import com.google.common.util.concurrent.Service;
 
 import java.net.NetworkInterface;
 import java.util.Collection;
+import java.util.Optional;
 
 /**
  * Interface that supplies DPWS core functions.
@@ -28,6 +29,15 @@ public interface DpwsFramework extends Service {
     void setNetworkInterface(NetworkInterface networkInterface);
 
     /**
+     * Gets the network interface configured for the framework.
+     * <p>
+     * Interface is only available once the framework is at least starting.
+     *
+     * @return the configured network interface.
+     */
+    Optional<NetworkInterface> getNetworkInterface();
+
+    /**
      * Registers a service to attach to the framework's lifecycle.
      * <p>
      * Starts and shuts down registered services when starting and stopping the framework.
@@ -39,6 +49,7 @@ public interface DpwsFramework extends Service {
      * <li><em>Services will be shutdown in the inverse order they're registered in, i.e. the last service registered will
      * be the first to shut down.</em></li>
      * </ul>
+     *
      * @param services {@linkplain Service}s to register for startup and shutdown.
      */
     void registerService(Collection<Service> services);
