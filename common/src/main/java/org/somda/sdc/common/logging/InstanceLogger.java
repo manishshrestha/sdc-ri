@@ -2,7 +2,6 @@ package org.somda.sdc.common.logging;
 
 import org.apache.logging.log4j.CloseableThreadContext;
 import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.ThreadContext;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
@@ -18,7 +17,7 @@ public class InstanceLogger {
     /**
      * Wraps a logger into a proxy which adds context information to all messages.
      *
-     * @param logger to wrap
+     * @param logger     to wrap
      * @param instanceId to add to all messages
      * @return wrapped logger instance
      */
@@ -47,8 +46,6 @@ public class InstanceLogger {
         public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
             try (var ctc = CloseableThreadContext.put(INSTANCE_ID, instanceId)) {
                 return method.invoke(logger, args);
-            } finally {
-                ThreadContext.pop();
             }
         }
     }
