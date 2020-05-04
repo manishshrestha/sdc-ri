@@ -62,7 +62,7 @@ public class InstanceLoggerTest {
 
     @Test
     void testLoggerContext() {
-        var testMessage = "Ω≈ç√∫˜µ≤≥÷";
+        var testMessage = "åß∂ƒ©˙∆˚¬…æ";
         var marker = "CustomInstanceMarker";
 
         var proxiedLogger = InstanceLogger.wrapLogger(LOGGER, marker);
@@ -73,6 +73,35 @@ public class InstanceLoggerTest {
 
         var event = events.get(0);
         assertEquals(marker, event.getContextData().getValue(InstanceLogger.INSTANCE_ID));
+    }
+
+    @Test
+    void testLoggerContextMultipleLoggers() {
+        var testMessage = "œ∑´®†¥¨ˆøπ“‘";
+        var testMessage2 = "¡™£¢∞§¶•ªº–≠";
+        var marker = "CustomInstanceMarker";
+        var marker2 = "⅛⅜⅝⅞";
+
+        {
+            var proxiedLogger = InstanceLogger.wrapLogger(LOGGER, marker);
+            proxiedLogger.error(testMessage);
+        }
+        {
+            var proxiedLogger2 = InstanceLogger.wrapLogger(LOGGER, marker2);
+            proxiedLogger2.error(testMessage2);
+        }
+
+        var events = appender.getEvents();
+        assertEquals(2, events.size());
+
+        {
+            var event = events.get(0);
+            assertEquals(marker, event.getContextData().getValue(InstanceLogger.INSTANCE_ID));
+        }
+        {
+            var event = events.get(1);
+            assertEquals(marker2, event.getContextData().getValue(InstanceLogger.INSTANCE_ID));
+        }
     }
 
 }
