@@ -16,6 +16,7 @@ import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLSession;
 import java.io.File;
 import java.time.Duration;
+import java.util.UUID;
 
 /**
  * Default configuration module to configure {@link DefaultDpwsModule}.
@@ -26,6 +27,7 @@ import java.time.Duration;
 public class DefaultDpwsConfigModule extends AbstractConfigurationModule {
     @Override
     public void defaultConfigure() {
+        configureLogging();
         configureWsAddressingConfig();
         configureWsDiscoveryConfig();
         configureWsEventingConfig();
@@ -34,6 +36,13 @@ public class DefaultDpwsConfigModule extends AbstractConfigurationModule {
         configureCryptoConfig();
         configureSoapConfig();
         configureDpws();
+    }
+
+    private void configureLogging() {
+        var generated_uuid = UUID.randomUUID().toString();
+        bind(DpwsConfig.FRAMEWORK_IDENTIFIER,
+                String.class,
+                generated_uuid.substring(generated_uuid.length()-6));
     }
 
     private void configureDeviceConfig() {

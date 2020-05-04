@@ -121,4 +121,6 @@ public class DpwsConfig {
      * </ul>
      */
     public static final String HTTP_SUPPORT = "Dpws.EnableHttp";
+
+    public static final String FRAMEWORK_IDENTIFIER = "Dpws.FrameworkIdentifier";
 }

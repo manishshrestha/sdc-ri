@@ -5,8 +5,10 @@ import com.google.common.util.concurrent.AbstractIdleService;
 import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.common.util.concurrent.Service;
 import com.google.inject.Inject;
-import org.apache.logging.log4j.Logger;
+import com.google.inject.name.Named;
 import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.somda.sdc.common.logging.InstanceLogger;
 import org.somda.sdc.common.util.ExecutorWrapperService;
 import org.somda.sdc.dpws.guice.AppDelayExecutor;
 import org.somda.sdc.dpws.guice.DiscoveryUdpQueue;
@@ -36,6 +38,7 @@ public class DpwsFrameworkImpl extends AbstractIdleService implements DpwsFramew
     private static final Logger LOG = LogManager.getLogger(DpwsFrameworkImpl.class);
 
     private NetworkInterface networkInterface;
+    private final Logger instanceLogger;
     private final UdpMessageQueueService udpMessageQueueService;
     private final UdpBindingServiceFactory udpBindingServiceFactory;
     private final HttpServerRegistry httpServerRegistry;
@@ -53,7 +56,9 @@ public class DpwsFrameworkImpl extends AbstractIdleService implements DpwsFramew
                       @AppDelayExecutor ExecutorWrapperService<ScheduledExecutorService> appDelayExecutor,
                       @NetworkJobThreadPool ExecutorWrapperService<ListeningExecutorService> networkJobExecutor,
                       @WsDiscovery ExecutorWrapperService<ListeningExecutorService> wsDiscoveryExecutor,
-                      FrameworkMetadata metadata) {
+                      FrameworkMetadata metadata,
+                      @Named(DpwsConfig.FRAMEWORK_IDENTIFIER) String frameworkIdentifier) {
+        this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);
         this.udpMessageQueueService = udpMessageQueueService;
         this.udpBindingServiceFactory = udpBindingServiceFactory;
         this.httpServerRegistry = httpServerRegistry;
@@ -70,12 +75,12 @@ public class DpwsFrameworkImpl extends AbstractIdleService implements DpwsFramew
 
     @Override
     protected void startUp() throws SocketException, UnknownHostException {
-        LOG.info("Start SDCri DPWS framework");
+        instanceLogger.info("Start SDCri DPWS framework");
         logMetadata();
 
         if (networkInterface == null) {
             networkInterface = NetworkInterface.getByInetAddress(InetAddress.getLoopbackAddress());
-            LOG.info("Initializing dpws framework with loopback interface {}", networkInterface);
+            instanceLogger.info("Initializing dpws framework with loopback interface {}", networkInterface);
         }
 
         printNetworkInterfaceInformation();
@@ -87,14 +92,14 @@ public class DpwsFrameworkImpl extends AbstractIdleService implements DpwsFramew
                 udpBindingService, udpMessageQueueService
         ));
         registeredServices.forEach(service -> service.startAsync().awaitRunning());
-        LOG.info("SDCri DPWS framework is ready for use");
+        instanceLogger.info("SDCri DPWS framework is ready for use");
     }
 
     private void printNetworkInterfaceInformation() throws SocketException {
         Iterator<NetworkInterface> networkInterfaceIterator = NetworkInterface.getNetworkInterfaces().asIterator();
         while (networkInterfaceIterator.hasNext()) {
             NetworkInterface networkInterface = networkInterfaceIterator.next();
-            LOG.info("Found network interface: [{};isUp={};isLoopBack={},supportsMulticast={},MTU={},isVirtual={}]",
+            instanceLogger.info("Found network interface: [{};isUp={};isLoopBack={},supportsMulticast={},MTU={},isVirtual={}]",
                     networkInterface,
                     networkInterface.isUp(),
                     networkInterface.isLoopback(),
@@ -104,16 +109,16 @@ public class DpwsFrameworkImpl extends AbstractIdleService implements DpwsFramew
             Iterator<InetAddress> inetAddressIterator = networkInterface.getInetAddresses().asIterator();
             int i = 0;
             while (inetAddressIterator.hasNext()) {
-                LOG.info("{}.address[{}]: {}", networkInterface.getName(), i++, inetAddressIterator.next());
+                instanceLogger.info("{}.address[{}]: {}", networkInterface.getName(), i++, inetAddressIterator.next());
             }
         }
     }
 
     @Override
     protected void shutDown() {
-        LOG.info("Shutting down SDCri DPWS framework");
+        instanceLogger.info("Shutting down SDCri DPWS framework");
         Lists.reverse(registeredServices).forEach(service -> service.stopAsync().awaitTerminated());
-        LOG.info("SDCri DPWS framework shut down");
+        instanceLogger.info("SDCri DPWS framework shut down");
     }
 
     private void configureDiscovery() throws UnknownHostException, SocketException {
@@ -121,7 +126,7 @@ public class DpwsFrameworkImpl extends AbstractIdleService implements DpwsFramew
         try {
             wsdMulticastAddress = InetAddress.getByName(WsDiscoveryConstants.IPV4_MULTICAST_ADDRESS);
         } catch (UnknownHostException e) {
-            LOG.warn("WS-Discovery multicast port could not be retrieved as InetAddress: {}", e.getMessage());
+            instanceLogger.warn("WS-Discovery multicast port could not be retrieved as InetAddress: {}", e.getMessage());
             throw new RuntimeException(e);
         }
 
@@ -136,7 +141,7 @@ public class DpwsFrameworkImpl extends AbstractIdleService implements DpwsFramew
 
     public void setNetworkInterface(NetworkInterface networkInterface) {
         if (isRunning()) {
-            LOG.warn("Framework is already running, cannot change network interface");
+            instanceLogger.warn("Framework is already running, cannot change network interface");
             return;
         }
         this.networkInterface = networkInterface;
@@ -157,7 +162,7 @@ public class DpwsFrameworkImpl extends AbstractIdleService implements DpwsFramew
             services.forEach(
                     service -> {
                         if (service.state().equals(State.NEW)) {
-                            LOG.info("Delayed start of service {}", service);
+                            instanceLogger.info("Delayed start of service {}", service);
                             service.startAsync().awaitRunning();
                         } else {
                             service.awaitRunning();
@@ -168,10 +173,10 @@ public class DpwsFrameworkImpl extends AbstractIdleService implements DpwsFramew
     }
 
     private void logMetadata() {
-        LOG.info("SDCri version:\t{}", metadata.getFrameworkVersion());
-        LOG.info("Java vendor:\t\t{}", metadata.getJavaVendor());
-        LOG.info("Java version:\t{}", metadata.getJavaVersion());
-        LOG.info("OS version:\t\t{}", metadata.getOsVersion());
+        instanceLogger.info("SDCri version:\t{}", metadata.getFrameworkVersion());
+        instanceLogger.info("Java vendor:\t\t{}", metadata.getJavaVendor());
+        instanceLogger.info("Java version:\t{}", metadata.getJavaVersion());
+        instanceLogger.info("OS version:\t\t{}", metadata.getOsVersion());
     }
 
 }
