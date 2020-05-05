@@ -2,13 +2,16 @@ package org.somda.sdc.glue.provider.sco;
 
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
+import com.google.inject.name.Named;
 import org.somda.sdc.biceps.model.message.*;
 import org.somda.sdc.biceps.model.participant.InstanceIdentifier;
 import org.somda.sdc.biceps.model.participant.LocalizedText;
 import org.somda.sdc.biceps.model.participant.MdibVersion;
 import org.somda.sdc.biceps.provider.access.LocalMdibAccess;
+import org.somda.sdc.common.logging.InstanceLogger;
 import org.somda.sdc.common.util.ObjectStringifier;
 import org.somda.sdc.common.util.Stringified;
+import org.somda.sdc.dpws.DpwsConfig;
 import org.somda.sdc.dpws.device.EventSourceAccess;
 import org.somda.sdc.dpws.soap.exception.MarshallingException;
 import org.somda.sdc.dpws.soap.exception.TransportException;
@@ -37,6 +40,7 @@ public class Context {
     private final EventSourceAccess eventSource;
     private final LocalMdibAccess mdibAccess;
     private final ObjectFactory messageModelFactory;
+    private final Logger instanceLogger;
 
     // this is used to track whether the last OperationInvokedReport state
     // matches the Responses state, and sends an OperationInvokedReport in case it doesn't
@@ -48,7 +52,9 @@ public class Context {
             @Assisted InstanceIdentifier invocationSource,
             @Assisted EventSourceAccess eventSource,
             @Assisted LocalMdibAccess mdibAccess,
-            ObjectFactory messageModelFactory) {
+            ObjectFactory messageModelFactory,
+            @Named(DpwsConfig.FRAMEWORK_IDENTIFIER) String frameworkIdentifier) {
+        this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);
         this.transactionId = transactionId;
         this.operationHandle = operationHandle;
         this.invocationSource = invocationSource;
@@ -88,7 +94,7 @@ public class Context {
     public InvocationResponse createSuccessfulResponse(MdibVersion mdibVersion,
                                                        InvocationState invocationState) {
         if (!invocationState.equals(this.currentReportInvocationState)) {
-            LOG.debug(
+            instanceLogger.debug(
                     "No matching OperationInvokedReport was sent before creating response." +
                             " Sending response as OperationInvokedReport as well. Operation: {} - State: {}",
                     this.operationHandle, invocationState
@@ -257,10 +263,10 @@ public class Context {
         try {
             eventSource.sendNotification(ActionConstants.ACTION_OPERATION_INVOKED_REPORT, operationInvokedReport);
         } catch (MarshallingException e) {
-            LOG.warn("Could not marshal operation invoked report notification of transaction {} with invocation state {}",
+            instanceLogger.warn("Could not marshal operation invoked report notification of transaction {} with invocation state {}",
                     transactionId, invocationState);
         } catch (TransportException e) {
-            LOG.warn("Could not deliver operation invoked report notification of transaction {} with invocation state {}",
+            instanceLogger.warn("Could not deliver operation invoked report notification of transaction {} with invocation state {}",
                     transactionId, invocationState);
         }
     }

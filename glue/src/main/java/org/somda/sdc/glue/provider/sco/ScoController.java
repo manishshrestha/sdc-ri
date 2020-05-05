@@ -2,12 +2,15 @@ package org.somda.sdc.glue.provider.sco;
 
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
+import com.google.inject.name.Named;
 import org.somda.sdc.biceps.model.message.InvocationError;
 import org.somda.sdc.biceps.model.message.InvocationState;
 import org.somda.sdc.biceps.model.participant.InstanceIdentifier;
 import org.somda.sdc.biceps.model.participant.LocalizedText;
 import org.somda.sdc.biceps.model.participant.ObjectFactory;
 import org.somda.sdc.biceps.provider.access.LocalMdibAccess;
+import org.somda.sdc.common.logging.InstanceLogger;
+import org.somda.sdc.dpws.DpwsConfig;
 import org.somda.sdc.dpws.device.EventSourceAccess;
 import org.somda.sdc.glue.provider.sco.factory.ContextFactory;
 import org.apache.logging.log4j.Logger;
@@ -29,6 +32,7 @@ public class ScoController {
     private final LocalMdibAccess mdibAccess;
     private final ContextFactory contextFactory;
     private final ObjectFactory participantModelFactory;
+    private final Logger instanceLogger;
 
     private long transactionCounter;
 
@@ -36,7 +40,9 @@ public class ScoController {
     ScoController(@Assisted EventSourceAccess eventSourceAccess,
                   @Assisted LocalMdibAccess mdibAccess,
                   ContextFactory contextFactory,
-                  ObjectFactory participantModelFactory) {
+                  ObjectFactory participantModelFactory,
+                  @Named(DpwsConfig.FRAMEWORK_IDENTIFIER) String frameworkIdentifier) {
+        this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);
         this.eventSourceAccess = eventSourceAccess;
         this.mdibAccess = mdibAccess;
         this.contextFactory = contextFactory;
@@ -82,7 +88,7 @@ public class ScoController {
                     }
 
                     if (receiver.getAnnotation().listType().equals(IncomingSetServiceRequest.NoList.class)) {
-                        LOG.warn("For default invocation receivers each method annotation requires a listType attribute." +
+                        instanceLogger.warn("For default invocation receivers each method annotation requires a listType attribute." +
                                         " Callback for method {} on object {} ignored.",
                                 receiver.getCallbackMethod().getName(), receiver.getReceiver());
                         continue;
@@ -97,7 +103,7 @@ public class ScoController {
                     var response = (InvocationResponse) receiver.getCallbackMethod().invoke(receiver.getReceiver(),
                             context, payload);
                     if (!response.getInvocationState().equals(context.getCurrentReportInvocationState())) {
-                        LOG.debug(
+                        instanceLogger.debug(
                                 "No matching OperationInvokedReport was sent before sending response." +
                                         " TransactionId: {} - InvocationState: {}",
                                 response.getTransactionId(), response.getInvocationState()
@@ -113,8 +119,8 @@ public class ScoController {
                 }
             }
         } catch (Exception e) {
-            LOG.error("The invocation request could not be forwarded to or processed by the ultimate invocation processor.");
-            LOG.trace("The invocation request could not be forwarded to or processed by the ultimate invocation processor.", e);
+            instanceLogger.error("The invocation request could not be forwarded to or processed by the ultimate invocation processor.");
+            instanceLogger.trace("The invocation request could not be forwarded to or processed by the ultimate invocation processor.", e);
             localizedText.setValue("The invocation request could not be forwarded to or processed by the ultimate invocation processor");
         }
 
@@ -157,7 +163,7 @@ public class ScoController {
 
             String key = annotation.operationHandle();
             if (!key.isEmpty() && invocationReceivers.containsKey(key)) {
-                LOG.warn("Ignore callback registration for key {} as there is a receiver already", key);
+                instanceLogger.warn("Ignore callback registration for key {} as there is a receiver already", key);
                 continue;
             }
 
@@ -173,7 +179,7 @@ public class ScoController {
         }
 
         if (!annotationFound) {
-            LOG.warn("No callback function found in object {} of type {}", receiver.toString(), receiver.getClass().getName());
+            instanceLogger.warn("No callback function found in object {} of type {}", receiver.toString(), receiver.getClass().getName());
         }
     }
 
