@@ -4,6 +4,7 @@ import org.eclipse.jetty.server.HttpInput;
 import org.eclipse.jetty.util.component.Destroyable;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
+import org.somda.sdc.common.logging.InstanceLogger;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -17,8 +18,10 @@ public class CommunicationLogInputInterceptor implements HttpInput.Interceptor, 
     private static final Logger LOG = LogManager.getLogger(CommunicationLogInputInterceptor.class);
 
     private final OutputStream commlogStream;
+    private final Logger instanceLogger;
 
-    CommunicationLogInputInterceptor(OutputStream commlogStream) {
+    CommunicationLogInputInterceptor(OutputStream commlogStream, String frameworkIdentifier) {
+        this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);
         this.commlogStream = commlogStream;
     }
 
@@ -37,7 +40,7 @@ public class CommunicationLogInputInterceptor implements HttpInput.Interceptor, 
                 commlogStream.close();
             }
         } catch (IOException e) {
-            LOG.error("Error while writing to communication log stream", e);
+            instanceLogger.error("Error while writing to communication log stream", e);
         }
 
         // rewind the bytebuffer we just went through
@@ -50,7 +53,7 @@ public class CommunicationLogInputInterceptor implements HttpInput.Interceptor, 
         try {
             commlogStream.close();
         } catch (IOException e) {
-            LOG.error("Error while closing communication log stream", e);
+            instanceLogger.error("Error while closing communication log stream", e);
         }
     }
 }

@@ -16,6 +16,7 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
+import org.somda.sdc.common.logging.InstanceLogger;
 import org.somda.sdc.dpws.CommunicationLog;
 import org.somda.sdc.dpws.DpwsConfig;
 import org.somda.sdc.dpws.DpwsConstants;
@@ -53,6 +54,8 @@ public class ApacheTransportBindingFactoryImpl implements TransportBindingFactor
     private final String[] enabledCiphers;
     private final boolean enableHttps;
     private final boolean enableHttp;
+    private final Logger instanceLogger;
+    private final String frameworkIdentifier;
 
     private ClientTransportBindingFactory clientTransportBindingFactory;
     private final CommunicationLog communicationLog;
@@ -70,7 +73,10 @@ public class ApacheTransportBindingFactoryImpl implements TransportBindingFactor
                                       @Named(CryptoConfig.CRYPTO_CLIENT_HOSTNAME_VERIFIER) HostnameVerifier hostnameVerifier,
                                       @Named(DpwsConfig.HTTPS_SUPPORT) boolean enableHttps,
                                       @Named(DpwsConfig.HTTP_SUPPORT) boolean enableHttp,
-                                      CommunicationLog communicationLog) {
+                                      CommunicationLog communicationLog,
+                                      @Named(DpwsConfig.FRAMEWORK_IDENTIFIER) String frameworkIdentifier) {
+        this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);
+        this.frameworkIdentifier = frameworkIdentifier;
         this.marshalling = marshalling;
         this.soapUtil = soapUtil;
         this.clientConnectTimeout = clientConnectTimeout;
@@ -102,8 +108,8 @@ public class ApacheTransportBindingFactoryImpl implements TransportBindingFactor
 
         var clientBuilder = HttpClients.custom().setDefaultSocketConfig(socketConfig)
                 // attach interceptors to enable communication log capabilities including message headers
-                .addInterceptorLast(new CommunicationLogHttpRequestInterceptor(communicationLog))
-                .addInterceptorLast(new CommunicationLogHttpResponseInterceptor(communicationLog))
+                .addInterceptorLast(new CommunicationLogHttpRequestInterceptor(communicationLog, frameworkIdentifier))
+                .addInterceptorLast(new CommunicationLogHttpResponseInterceptor(communicationLog, frameworkIdentifier))
                 .setDefaultRequestConfig(requestConfig)
                 // allow reusing ssl connections in the pool
                 .disableConnectionState()
@@ -122,7 +128,7 @@ public class ApacheTransportBindingFactoryImpl implements TransportBindingFactor
             try {
                 sslContext = cryptoConfigurator.createSslContextFromCryptoConfig(cryptoSettings);
             } catch (Exception e) {
-                LOG.error("Could not read client crypto config, fallback to system properties", e);
+                instanceLogger.error("Could not read client crypto config, fallback to system properties", e);
                 sslContext = cryptoConfigurator.createSslContextFromSystemProperties();
             }
 

@@ -8,6 +8,7 @@ import com.google.inject.name.Named;
 import org.eclipse.jetty.http.HttpStatus;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
+import org.somda.sdc.common.logging.InstanceLogger;
 import org.somda.sdc.common.util.ExecutorWrapperService;
 import org.somda.sdc.dpws.DpwsConfig;
 import org.somda.sdc.dpws.DpwsConstants;
@@ -56,6 +57,7 @@ public class EventSinkImpl implements EventSink {
     private final Map<String, SinkSubscriptionManager> subscriptionManagers;
     private final Lock subscriptionsLock;
     private final Duration maxWaitForFutures;
+    private final Logger instanceLogger;
 
     @AssistedInject
     EventSinkImpl(@Assisted RequestResponseClient requestResponseClient,
@@ -67,7 +69,9 @@ public class EventSinkImpl implements EventSink {
                   SoapMarshalling marshalling,
                   SoapUtil soapUtil,
                   @NetworkJobThreadPool ExecutorWrapperService<ListeningExecutorService> executorService,
-                  SubscriptionManagerFactory subscriptionManagerFactory) {
+                  SubscriptionManagerFactory subscriptionManagerFactory,
+                  @Named(DpwsConfig.FRAMEWORK_IDENTIFIER) String frameworkIdentifier) {
+        this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);
         this.requestResponseClient = requestResponseClient;
         this.hostAddress = hostAddress;
         this.maxWaitForFutures = maxWaitForFutures;
@@ -257,8 +261,8 @@ public class EventSinkImpl implements EventSink {
             try {
                 future.get(maxWaitForFutures.toSeconds(), TimeUnit.SECONDS);
             } catch (InterruptedException | ExecutionException | TimeoutException e) {
-                LOG.warn("Subscription {} could not be unsubscribed. Ignore.", subscriptionManager.getSubscriptionId());
-                LOG.trace("Subscription {} could not be unsubscribed", subscriptionManager.getSubscriptionId(), e);
+                instanceLogger.warn("Subscription {} could not be unsubscribed. Ignore.", subscriptionManager.getSubscriptionId());
+                instanceLogger.trace("Subscription {} could not be unsubscribed", subscriptionManager.getSubscriptionId(), e);
             }
         }
     }
@@ -280,7 +284,7 @@ public class EventSinkImpl implements EventSink {
         try {
             SoapMessage soapMsg = soapUtil.createMessage(marshalling.unmarshal(inputStream));
             inputStream.close();
-            LOG.debug("Received incoming notification {}", soapMsg);
+            instanceLogger.debug("Received incoming notification {}", soapMsg);
             notificationSink.receiveNotification(soapMsg, communicationContext);
 
             // Only close the output stream when the notification has been processed

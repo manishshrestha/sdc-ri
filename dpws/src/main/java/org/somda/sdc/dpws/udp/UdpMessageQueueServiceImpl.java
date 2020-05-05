@@ -4,8 +4,11 @@ import com.google.common.eventbus.EventBus;
 import com.google.common.util.concurrent.AbstractIdleService;
 import com.google.common.util.concurrent.Service;
 import com.google.inject.Inject;
+import com.google.inject.name.Named;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
+import org.somda.sdc.common.logging.InstanceLogger;
+import org.somda.sdc.dpws.DpwsConfig;
 import org.somda.sdc.dpws.soap.exception.TransportException;
 
 import java.io.IOException;
@@ -21,13 +24,15 @@ public class UdpMessageQueueServiceImpl extends AbstractIdleService implements S
     private final LinkedBlockingDeque<UdpMessage> incomingMessageQueue;
     private final LinkedBlockingDeque<UdpMessage> outgoingMessageQueue;
     private final EventBus eventBus;
+    private final Logger instanceLogger;
 
     private UdpBindingService udpBinding;
     private Thread outgoingThread;
     private Thread incomingThread;
 
     @Inject
-    UdpMessageQueueServiceImpl(EventBus eventBus) {
+    UdpMessageQueueServiceImpl(EventBus eventBus, @Named(DpwsConfig.FRAMEWORK_IDENTIFIER) String frameworkIdentifier) {
+        this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);
         this.instanceId = instanceIdCounter++;
         this.incomingMessageQueue = new LinkedBlockingDeque<>();
         this.outgoingMessageQueue = new LinkedBlockingDeque<>();
@@ -57,17 +62,17 @@ public class UdpMessageQueueServiceImpl extends AbstractIdleService implements S
 
     @Override
     protected void startUp() throws Exception {
-        LOG.info("[{}] Start UDP message queue for binding {}", instanceId, udpBinding);
+        instanceLogger.info("[{}] Start UDP message queue for binding {}", instanceId, udpBinding);
         if (udpBinding == null) {
             String msg = "Cannot startup without UDP binding";
-            LOG.warn("[{}] {}", instanceId, msg);
+            instanceLogger.warn("[{}] {}", instanceId, msg);
             throw new Exception(msg);
         }
 
         startProcessingOfIncomingMessages();
         startProcessingOfOutgoingMessages();
 
-        LOG.info("[{}] UDP message queue for binding {} is running", instanceId, udpBinding);
+        instanceLogger.info("[{}] UDP message queue for binding {} is running", instanceId, udpBinding);
     }
 
     private void startProcessingOfOutgoingMessages() {
@@ -76,20 +81,20 @@ public class UdpMessageQueueServiceImpl extends AbstractIdleService implements S
                 do {
                     try {
                         UdpMessage message = outgoingMessageQueue.take();
-                        LOG.trace("[{}] Outgoing UdpMessageQueueService received UDP message, sending: {}", instanceId, message);
+                        instanceLogger.trace("[{}] Outgoing UdpMessageQueueService received UDP message, sending: {}", instanceId, message);
                         udpBinding.sendMessage(message);
                     } catch (IOException e) {
-                        LOG.warn("[{}] Outgoing UdpMessageQueueService IO exception caught", instanceId, e);
+                        instanceLogger.warn("[{}] Outgoing UdpMessageQueueService IO exception caught", instanceId, e);
                     } catch (InterruptedException e) {
-                        LOG.info("[{}] Outgoing UdpMessageQueueService interrupted", instanceId);
-                        LOG.trace("[{}] Outgoing UdpMessageQueueService interrupted", instanceId, e);
+                        instanceLogger.info("[{}] Outgoing UdpMessageQueueService interrupted", instanceId);
+                        instanceLogger.trace("[{}] Outgoing UdpMessageQueueService interrupted", instanceId, e);
                         break;
                     } catch (TransportException e) {
-                        LOG.info("[{}] Outgoing UdpMessageQueueService transport exception caught", instanceId, e);
+                        instanceLogger.info("[{}] Outgoing UdpMessageQueueService transport exception caught", instanceId, e);
                     }
                 } while (true);
             } finally {
-            LOG.info("[{}] Outgoing UdpMessageQueueService ended", instanceId);
+            instanceLogger.info("[{}] Outgoing UdpMessageQueueService ended", instanceId);
             }
         });
         outgoingThread.setName(String.format("[%s] Outgoing UdpMessageQueueService", instanceId));
@@ -103,18 +108,18 @@ public class UdpMessageQueueServiceImpl extends AbstractIdleService implements S
                 do {
                     try {
                         UdpMessage message = incomingMessageQueue.take();
-                        LOG.trace("[{}] Incoming UdpMessageQueueService received UDP message, posting to EventBus: {}", instanceId, message);
+                        instanceLogger.trace("[{}] Incoming UdpMessageQueueService received UDP message, posting to EventBus: {}", instanceId, message);
                         eventBus.post(message);
                     } catch (InterruptedException e) {
-                        LOG.info("[{}] Incoming UdpMessageQueueService interrupted", instanceId);
-                        LOG.trace("[{}] Incoming UdpMessageQueueService interrupted", instanceId, e);
+                        instanceLogger.info("[{}] Incoming UdpMessageQueueService interrupted", instanceId);
+                        instanceLogger.trace("[{}] Incoming UdpMessageQueueService interrupted", instanceId, e);
                         break;
                     } catch (Exception e) {
-                        LOG.warn("[{}] Incoming UdpMessageQueueService encountered an error on event dissemination", instanceId, e);
+                        instanceLogger.warn("[{}] Incoming UdpMessageQueueService encountered an error on event dissemination", instanceId, e);
                     }
                 } while (true);
             } finally {
-                LOG.info("[{}] Incoming UdpMessageQueueService ended", instanceId);
+                instanceLogger.info("[{}] Incoming UdpMessageQueueService ended", instanceId);
             }
         });
         incomingThread.setName(String.format("[%s] Incoming UdpMessageQueueService", instanceId));
@@ -124,19 +129,19 @@ public class UdpMessageQueueServiceImpl extends AbstractIdleService implements S
 
     @Override
     protected void shutDown() {
-        LOG.info("[{}] Shut down UDP message queue for binding {}", instanceId, udpBinding);
+        instanceLogger.info("[{}] Shut down UDP message queue for binding {}", instanceId, udpBinding);
         incomingMessageQueue.clear();
         outgoingMessageQueue.clear();
         incomingThread.interrupt();
         outgoingThread.interrupt();
-        LOG.info("[{}] UDP message queue for binding {} shut down", instanceId, udpBinding);
+        instanceLogger.info("[{}] UDP message queue for binding {} shut down", instanceId, udpBinding);
     }
 
     @Override
     public void receive(UdpMessage udpMessage) {
-        LOG.debug("[{}] Received UDP message, adding to queue", instanceId);
+        instanceLogger.debug("[{}] Received UDP message, adding to queue", instanceId);
         if (!incomingMessageQueue.offer(udpMessage)) {
-            LOG.error("[{}] Lost incoming UDP message in message queue: {}", instanceId, udpMessage);
+            instanceLogger.error("[{}] Lost incoming UDP message in message queue: {}", instanceId, udpMessage);
         }
     }
 }

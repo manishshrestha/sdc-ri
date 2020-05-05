@@ -182,6 +182,9 @@
                             <version>4.0.0</version>
                         </dependency>
                     </dependencies>
+                    <configuration>
+                        <includeTests>true</includeTests>
+                    </configuration>
                 </plugin>
 
                 <!-- https://mvnrepository.com/artifact/org.apache.maven.plugins/maven-checkstyle-plugin -->

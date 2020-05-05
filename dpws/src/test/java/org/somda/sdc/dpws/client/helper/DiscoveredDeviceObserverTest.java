@@ -53,7 +53,7 @@ public class DiscoveredDeviceObserverTest extends DpwsTest {
         discoveredDeviceResolver = mock(DiscoveredDeviceResolver.class);
         expectedUri = "http://expectedUri";
         expectedEpr = wsaUtil.createEprWithAddress(expectedUri);
-        helloByeAndProbeMatchesObserverImpl = new HelloByeAndProbeMatchesObserverImpl(discoveredDeviceResolver, execService, wsaUtil);
+        helloByeAndProbeMatchesObserverImpl = new HelloByeAndProbeMatchesObserverImpl(discoveredDeviceResolver, execService, wsaUtil, "abcd");
         objFactory = new ObjectFactory();
         callbackVisitCount = 0;
     }

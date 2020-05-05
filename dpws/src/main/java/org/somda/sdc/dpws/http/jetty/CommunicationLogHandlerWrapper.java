@@ -21,8 +21,10 @@ public class CommunicationLogHandlerWrapper extends HandlerWrapper {
 
     private final CommunicationLog commLog;
     private final boolean expectTLS;
+    private final String frameworkIdentifier;
 
-    CommunicationLogHandlerWrapper(CommunicationLog commLog, boolean expectTLS) {
+    CommunicationLogHandlerWrapper(CommunicationLog commLog, boolean expectTLS, String frameworkIdentifier) {
+        this.frameworkIdentifier = frameworkIdentifier;
         this.commLog = commLog;
         this.expectTLS = expectTLS;
     }
@@ -54,7 +56,7 @@ public class CommunicationLogHandlerWrapper extends HandlerWrapper {
         var out = baseRequest.getResponse().getHttpOutput();
 
         // attach interceptor to log request
-        baseRequest.getHttpInput().addInterceptor(new CommunicationLogInputInterceptor(input));
+        baseRequest.getHttpInput().addInterceptor(new CommunicationLogInputInterceptor(input, frameworkIdentifier));
 
         HttpOutput.Interceptor previousInterceptor = out.getInterceptor();
         try {
@@ -63,7 +65,8 @@ public class CommunicationLogHandlerWrapper extends HandlerWrapper {
                     baseRequest.getHttpChannel(),
                     previousInterceptor,
                     commLog,
-                    transportInfo
+                    transportInfo,
+                    frameworkIdentifier
             );
             out.setInterceptor(outInterceptor);
 

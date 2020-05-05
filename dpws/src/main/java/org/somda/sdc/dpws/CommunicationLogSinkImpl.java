@@ -1,14 +1,15 @@
 package org.somda.sdc.dpws;
 
 import com.google.inject.Inject;
+import com.google.inject.name.Named;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.somda.sdc.common.logging.InstanceLogger;
 import org.somda.sdc.dpws.helper.CommunicationLogFileName;
 import org.somda.sdc.dpws.helper.CommunicationLogFileOutputStream;
 import org.somda.sdc.dpws.soap.CommunicationContext;
 import org.somda.sdc.dpws.soap.HttpApplicationInfo;
 
-import javax.inject.Named;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -22,12 +23,15 @@ import java.util.Map;
 public class CommunicationLogSinkImpl implements CommunicationLogSink {
     private static final Logger LOG = LogManager.getLogger(CommunicationLogSinkImpl.class);
     private final Boolean createHttpHeaders;
+    private final Logger instanceLogger;
 
     private EnumMap<CommunicationLog.TransportType, File> dirMapping;
 
     @Inject
     CommunicationLogSinkImpl(@Named(DpwsConfig.COMMUNICATION_LOG_SINK_DIRECTORY) File logDirectory,
-                             @Named(DpwsConfig.COMMUNICATION_LOG_WITH_HTTP_HEADERS) Boolean createHttpHeaders) {
+                             @Named(DpwsConfig.COMMUNICATION_LOG_WITH_HTTP_HEADERS) Boolean createHttpHeaders,
+                             @Named(DpwsConfig.FRAMEWORK_IDENTIFIER) String frameworkIdentifier) {
+        this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);
         this.createHttpHeaders = createHttpHeaders;
 
         this.dirMapping = new EnumMap<>(CommunicationLog.TransportType.class);
@@ -38,7 +42,7 @@ public class CommunicationLogSinkImpl implements CommunicationLogSink {
             if (!subDirFile.exists() && !subDirFile.mkdirs()) {
                 this.dirMapping.put(transportType, null);
 
-                LOG.warn("Could not create the communication log directory '{}{}{}'", logDirectory.getAbsolutePath(),
+                instanceLogger.warn("Could not create the communication log directory '{}{}{}'", logDirectory.getAbsolutePath(),
                         File.separator, subDirFile.getName());
             } else {
                 this.dirMapping.put(transportType, subDirFile);
@@ -55,7 +59,7 @@ public class CommunicationLogSinkImpl implements CommunicationLogSink {
 
         var dir = dirMapping.get(transportType);
         if (dir == null) {
-            LOG.warn("The directory for the given transport type was not configured.");
+            instanceLogger.warn("The directory for the given transport type was not configured.");
             return outputStream;
         }
 
@@ -79,7 +83,7 @@ public class CommunicationLogSinkImpl implements CommunicationLogSink {
                         headerFile.write(targetString.getBytes());
                     }
                 } catch (IOException e) {
-                    LOG.error("Could not write headers to header file {}",
+                    instanceLogger.error("Could not write headers to header file {}",
                             CommunicationLogFileName.appendHttpHeaderSuffix(headerPath));
                 }
             }

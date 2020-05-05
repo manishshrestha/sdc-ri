@@ -1,8 +1,11 @@
 package org.somda.sdc.dpws.soap.interception;
 
 import com.google.inject.Inject;
+import com.google.inject.name.Named;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
+import org.somda.sdc.common.logging.InstanceLogger;
+import org.somda.sdc.dpws.DpwsConfig;
 import org.somda.sdc.dpws.soap.SoapMessage;
 import org.somda.sdc.dpws.soap.exception.SoapFaultException;
 import org.somda.sdc.dpws.soap.factory.SoapFaultFactory;
@@ -18,10 +21,13 @@ public class ServerDispatcher {
 
     private final InterceptorProcessor interceptorProcessor;
     private final SoapFaultFactory soapFaultFactory;
+    private final Logger instanceLogger;
 
     @Inject
     public ServerDispatcher(InterceptorProcessor interceptorProcessor,
-                            SoapFaultFactory soapFaultFactory) {
+                            SoapFaultFactory soapFaultFactory,
+                            @Named(DpwsConfig.FRAMEWORK_IDENTIFIER) String frameworkIdentifier) {
+        this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);
         this.interceptorProcessor = interceptorProcessor;
         this.soapFaultFactory = soapFaultFactory;
     }
@@ -48,14 +54,14 @@ public class ServerDispatcher {
         try {
             interceptorProcessor.dispatch(direction, registry, actionUri, interceptorCallbackObject);
         } catch (InterceptorException e) {
-            LOG.debug("Caught interceptor exception from {} with message: {}", e.getInterceptor(), e.getMessage());
+            instanceLogger.debug("Caught interceptor exception from {} with message: {}", e.getInterceptor(), e.getMessage());
             if (e.getCause() instanceof SoapFaultException) {
                 throw (SoapFaultException) e.getCause();
             }
             throw new SoapFaultException(soapFaultFactory.createReceiverFault(
                     String.format("Server fault information: %s", e.getCause().getMessage())));
         } catch (Exception e) {
-            LOG.warn("Unexpected exception thrown during dispatcher invocation routine: {}", e.getMessage());
+            instanceLogger.warn("Unexpected exception thrown during dispatcher invocation routine: {}", e.getMessage());
             throw new SoapFaultException(soapFaultFactory.createReceiverFault(
                     String.format("Server fault information: %s", e.getMessage())));
         }

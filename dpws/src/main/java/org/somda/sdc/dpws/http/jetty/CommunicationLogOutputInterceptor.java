@@ -7,6 +7,7 @@ import org.apache.logging.log4j.Logger;
 import org.eclipse.jetty.server.HttpChannel;
 import org.eclipse.jetty.server.HttpOutput;
 import org.eclipse.jetty.util.Callback;
+import org.somda.sdc.common.logging.InstanceLogger;
 import org.somda.sdc.dpws.CommunicationLog;
 import org.somda.sdc.dpws.soap.CommunicationContext;
 import org.somda.sdc.dpws.soap.HttpApplicationInfo;
@@ -27,13 +28,16 @@ public class CommunicationLogOutputInterceptor implements HttpOutput.Interceptor
     private final HttpChannel channel;
     private final CommunicationLog communicationLog;
     private final TransportInfo transportInfo;
+    private final Logger instanceLogger;
     private OutputStream commlogStream;
     private HttpOutput.Interceptor nextInterceptor;
 
     CommunicationLogOutputInterceptor(HttpChannel channel,
                                       HttpOutput.Interceptor nextInterceptor,
                                       CommunicationLog communicationLog,
-                                      TransportInfo transportInfo) {
+                                      TransportInfo transportInfo,
+                                      String frameworkIdentifier) {
+        this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);
         this.channel = channel;
         this.communicationLog = communicationLog;
         this.nextInterceptor = nextInterceptor;
@@ -61,7 +65,7 @@ public class CommunicationLogOutputInterceptor implements HttpOutput.Interceptor
                 commlogStream.close();
             }
         } catch (IOException e) {
-            LOG.error("Error while writing to commlog", e);
+            instanceLogger.error("Error while writing to commlog", e);
         }
 
         // rewind the byte buffer we just went through

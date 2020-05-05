@@ -39,10 +39,10 @@ public class DefaultDpwsConfigModule extends AbstractConfigurationModule {
     }
 
     private void configureLogging() {
-        var generated_uuid = UUID.randomUUID().toString();
+        var generatedUuid = UUID.randomUUID().toString();
         bind(DpwsConfig.FRAMEWORK_IDENTIFIER,
                 String.class,
-                generated_uuid.substring(generated_uuid.length()-6));
+                generatedUuid.substring(generatedUuid.length()-4));
     }
 
     private void configureDeviceConfig() {

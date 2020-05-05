@@ -12,7 +12,6 @@ import java.util.Optional;
  * Interceptor dispatcher designed for outgoing calls on clients.
  */
 public class ClientDispatcher {
-    private static final Logger LOG = LogManager.getLogger(ClientDispatcher.class);
     private final InterceptorProcessor interceptorProcessor;
 
     @Inject

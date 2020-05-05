@@ -122,5 +122,14 @@ public class DpwsConfig {
      */
     public static final String HTTP_SUPPORT = "Dpws.EnableHttp";
 
+    /**
+     * Sets an identifier for the injector instance the framework is running in, used
+     * to identify the instance in log messages.
+     *
+     * <ul>
+     * <li>Data type: {@linkplain String}
+     * <li>Use: optional
+     * </ul>
+     */
     public static final String FRAMEWORK_IDENTIFIER = "Dpws.FrameworkIdentifier";
 }

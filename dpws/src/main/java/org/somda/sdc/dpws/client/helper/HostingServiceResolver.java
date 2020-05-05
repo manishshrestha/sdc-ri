@@ -6,6 +6,7 @@ import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
+import org.somda.sdc.common.logging.InstanceLogger;
 import org.somda.sdc.common.util.JaxbUtil;
 import org.somda.sdc.dpws.DpwsConfig;
 import org.somda.sdc.dpws.DpwsConstants;
@@ -71,6 +72,7 @@ public class HostingServiceResolver {
     private final HttpUriBuilder uriBuilder;
     private final GetMetadataClient getMetadataClient;
     private final Duration maxWaitForFutures;
+    private final Logger instanceLogger;
 
     @Inject
     HostingServiceResolver(@Named(DpwsConfig.MAX_WAIT_FOR_FUTURES) Duration maxWaitForFutures,
@@ -86,7 +88,9 @@ public class HostingServiceResolver {
                            HostingServiceFactory hostingServiceFactory,
                            HostedServiceFactory hostedServiceFactory,
                            WsEventingEventSinkFactory eventSinkFactory,
-                           HttpUriBuilder uriBuilder) {
+                           HttpUriBuilder uriBuilder,
+                           @Named(DpwsConfig.FRAMEWORK_IDENTIFIER) String frameworkIdentifier) {
+        this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);
         this.maxWaitForFutures = maxWaitForFutures;
         this.networkJobExecutor = networkJobExecutor;
         this.localAddressResolver = localAddressResolver;
@@ -133,7 +137,7 @@ public class HostingServiceResolver {
                             .get(maxWaitForFutures.toMillis(), TimeUnit.MILLISECONDS);
                     break;
                 } catch (Exception e) {
-                    LOG.debug("TransferGet to {} failed", xAddr, e);
+                    instanceLogger.debug("TransferGet to {} failed", xAddr, e);
                 }
             }
 
@@ -181,7 +185,7 @@ public class HostingServiceResolver {
                     thisDevice = jaxbUtil.extractElement(metadataSection.getAny(), ThisDeviceType.class);
                     continue;
                 } catch (Exception e) {
-                    LOG.info("Resolve dpws:ThisDevice from {} failed", eprAddress);
+                    instanceLogger.info("Resolve dpws:ThisDevice from {} failed", eprAddress);
                     continue;
                 }
             }
@@ -191,7 +195,7 @@ public class HostingServiceResolver {
                     thisModel = jaxbUtil.extractElement(metadataSection.getAny(), ThisModelType.class);
                     continue;
                 } catch (Exception e) {
-                    LOG.info("Resolve dpws:ThisModel from {} failed", eprAddress);
+                    instanceLogger.info("Resolve dpws:ThisModel from {} failed", eprAddress);
                     continue;
                 }
             }
@@ -202,23 +206,23 @@ public class HostingServiceResolver {
                             .orElseThrow(Exception::new);
 
                     if (!rs.getType().equals(DpwsConstants.RELATIONSHIP_TYPE_HOST)) {
-                        LOG.debug("Incompatible dpws:Relationship type found for {}: {}", eprAddress, rs.getType());
+                        instanceLogger.debug("Incompatible dpws:Relationship type found for {}: {}", eprAddress, rs.getType());
                         continue;
                     }
 
                     relationshipData = extractRelationshipData(rs, eprAddress);
                 } catch (Exception e) {
-                    LOG.info("Resolve dpws:Relationship from {} failed", eprAddress);
+                    instanceLogger.info("Resolve dpws:Relationship from {} failed", eprAddress);
                 }
             }
         }
 
         if (thisDevice.isEmpty()) {
-            LOG.info("No dpws:ThisDevice found for {}", eprAddress);
+            instanceLogger.info("No dpws:ThisDevice found for {}", eprAddress);
         }
 
         if (thisModel.isEmpty()) {
-            LOG.info("No dpws:ThisModel found for {}", eprAddress);
+            instanceLogger.info("No dpws:ThisModel found for {}", eprAddress);
         }
 
         RelationshipData rsDataFromOptional = relationshipData.orElseThrow(() ->
@@ -255,12 +259,12 @@ public class HostingServiceResolver {
         }
 
         if (result.getEprAddress() == null) {
-            LOG.info("Found no valid dpws:Host for {}", eprAddress);
+            instanceLogger.info("Found no valid dpws:Host for {}", eprAddress);
             return Optional.empty();
         }
 
         if (result.getHostedServices().isEmpty()) {
-            LOG.info("Found no dpws:Hosted for {}", eprAddress);
+            instanceLogger.info("Found no dpws:Hosted for {}", eprAddress);
         }
 
         return Optional.of(result);
@@ -278,12 +282,12 @@ public class HostingServiceResolver {
                         .get(maxWaitForFutures.toMillis(), TimeUnit.MILLISECONDS);
                 break;
             } catch (Exception e) {
-                LOG.debug("GetMetadata to {} failed", eprType.getAddress().getValue(), e);
+                instanceLogger.debug("GetMetadata to {} failed", eprType.getAddress().getValue(), e);
             }
         }
 
         if (getMetadataResponse == null) {
-            LOG.info("None of the {} hosted service EPR addresses responded with a valid GetMetadata response",
+            instanceLogger.info("None of the {} hosted service EPR addresses responded with a valid GetMetadata response",
                     host.getEndpointReference().size());
             return Optional.empty();
         }

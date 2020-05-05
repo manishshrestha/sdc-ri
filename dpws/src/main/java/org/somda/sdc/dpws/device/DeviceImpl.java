@@ -9,6 +9,7 @@ import com.google.inject.assistedinject.AssistedInject;
 import com.google.inject.name.Named;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
+import org.somda.sdc.common.logging.InstanceLogger;
 import org.somda.sdc.dpws.DpwsConfig;
 import org.somda.sdc.dpws.DpwsConstants;
 import org.somda.sdc.dpws.device.helper.ByteResourceHandler;
@@ -79,6 +80,7 @@ public class DeviceImpl extends AbstractIdleService implements Device, Service, 
     private final String eprAddress;
     private final boolean enableHttps;
     private final boolean enableHttp;
+    private final Logger instanceLogger;
     private NetworkInterfaceUtil networkInterfaceUtil;
     private HttpUriBuilder httpUriBuilder;
 
@@ -112,7 +114,9 @@ public class DeviceImpl extends AbstractIdleService implements Device, Service, 
                NetworkInterfaceUtil networkInterfaceUtil,
                HttpUriBuilder httpUriBuilder,
                @Named(DpwsConfig.HTTPS_SUPPORT) boolean enableHttps,
-               @Named(DpwsConfig.HTTP_SUPPORT) boolean enableHttp) {
+               @Named(DpwsConfig.HTTP_SUPPORT) boolean enableHttp,
+               @Named(DpwsConfig.FRAMEWORK_IDENTIFIER) String frameworkIdentifier) {
+        this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);
         this.deviceSettings = deviceSettings;
         this.targetServiceFactory = targetServiceFactory;
         this.defaultConfigProvider = defaultConfigProvider;
@@ -142,7 +146,7 @@ public class DeviceImpl extends AbstractIdleService implements Device, Service, 
     @Override
     protected void startUp() throws Exception {
         EndpointReferenceType deviceEpr = deviceSettings.getEndpointReference();
-        LOG.info("Start device with EPR address '{}'", deviceEpr.getAddress().getValue());
+        instanceLogger.info("Start device with EPR address '{}'", deviceEpr.getAddress().getValue());
 
         String hostingServerCtxtPath = buildContextPathBase(eprAddress);
 
@@ -157,14 +161,14 @@ public class DeviceImpl extends AbstractIdleService implements Device, Service, 
                         try {
                             resultUris.add(replaceScheme(baseUri, "https"));
                         } catch (URISyntaxException e) {
-                            LOG.error("Error while creating https URI", e);
+                            instanceLogger.error("Error while creating https URI", e);
                         }
                     }
                     if (enableHttp) {
                         try {
                             resultUris.add(replaceScheme(baseUri, "http"));
                         } catch (URISyntaxException e) {
-                            LOG.error("Error while creating http URI", e);
+                            instanceLogger.error("Error while creating http URI", e);
                         }
                     }
                     return resultUris.stream();
@@ -223,7 +227,7 @@ public class DeviceImpl extends AbstractIdleService implements Device, Service, 
         wsdTargetService.setTypes(appendDpwsType(typesOnStartup));
         wsdTargetService.setScopes(scopesAsStrs(scopesOnStartup));
 
-        LOG.info("Device {} is running", hostingService);
+        instanceLogger.info("Device {} is running", hostingService);
 
         wsdTargetService.sendHello();
     }
@@ -247,14 +251,14 @@ public class DeviceImpl extends AbstractIdleService implements Device, Service, 
 
     @Override
     protected void shutDown() throws Exception {
-        LOG.info("Shut down device {}", hostingService);
+        instanceLogger.info("Shut down device {}", hostingService);
         wsdTargetService.sendBye();
         eventSources.forEach(source -> source.stopAsync().awaitTerminated());
         hostingService.getHostedServices().forEach(hostedService ->
                 hostedService.getWebService().stopAsync().awaitTerminated());
         httpServerRegistry.stopAsync().awaitTerminated();
         discoveryMessageQueue.unregisterUdpMessageQueueObserver(udpMsgProcessor);
-        LOG.info("Device {} shut down", hostingService);
+        instanceLogger.info("Device {} shut down", hostingService);
     }
 
     @Override
@@ -323,7 +327,7 @@ public class DeviceImpl extends AbstractIdleService implements Device, Service, 
             try {
                 wsdTargetService.sendHello(false);
             } catch (MarshallingException | TransportException | InterceptorException e) {
-                LOG.warn("Send Hello failed.", e);
+                instanceLogger.warn("Send Hello failed.", e);
             }
         }
     }
@@ -397,7 +401,7 @@ public class DeviceImpl extends AbstractIdleService implements Device, Service, 
         try {
             tmpWsdlDocBytes = ByteStreams.toByteArray(hostedService.getWsdlDocument());
         } catch (IOException e) {
-            LOG.warn("Could not add hosted service properly. IO exception while requesting WSDL document stream.", e);
+            instanceLogger.warn("Could not add hosted service properly. IO exception while requesting WSDL document stream.", e);
             return;
         }
 

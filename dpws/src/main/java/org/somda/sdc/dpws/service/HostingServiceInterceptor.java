@@ -2,9 +2,12 @@ package org.somda.sdc.dpws.service;
 
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
+import com.google.inject.name.Named;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
+import org.somda.sdc.common.logging.InstanceLogger;
 import org.somda.sdc.common.util.ObjectUtil;
+import org.somda.sdc.dpws.DpwsConfig;
 import org.somda.sdc.dpws.DpwsConstants;
 import org.somda.sdc.dpws.model.LocalizedStringType;
 import org.somda.sdc.dpws.model.ThisDeviceType;
@@ -46,6 +49,7 @@ public class HostingServiceInterceptor implements HostingService {
     private final SoapFaultFactory soapFaultFactory;
     private final ObjectFactory mexFactory;
     private final org.somda.sdc.dpws.model.ObjectFactory dpwsFactory;
+    private final Logger instanceLogger;
     private ThisModelType thisModel;
     private ThisDeviceType thisDevice;
 
@@ -62,7 +66,9 @@ public class HostingServiceInterceptor implements HostingService {
                               org.somda.sdc.dpws.model.ObjectFactory dpwsFactory,
                               ObjectUtil objectUtil,
                               WsAddressingUtil wsaUtil,
-                              MetadataSectionUtil metadataSectionUtil) {
+                              MetadataSectionUtil metadataSectionUtil,
+                              @Named(DpwsConfig.FRAMEWORK_IDENTIFIER) String frameworkIdentifier) {
+        this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);
         this.targetService = targetService;
         this.objectUtil = objectUtil;
         this.wsaUtil = wsaUtil;
@@ -209,7 +215,7 @@ public class HostingServiceInterceptor implements HostingService {
             int maxLength = size - 1;
             var newText = new String(Arrays.copyOf(textBytes, maxLength),
                     StandardCharsets.UTF_8);
-            LOG.warn("The following text was cut due to DPWS length violations (allowed: {} octets, " +
+            instanceLogger.warn("The following text was cut due to DPWS length violations (allowed: {} octets, " +
                     "actual: {} octets). '{}' is now '{}'", maxLength, textBytes.length, text, newText);
             return newText;
         } else {

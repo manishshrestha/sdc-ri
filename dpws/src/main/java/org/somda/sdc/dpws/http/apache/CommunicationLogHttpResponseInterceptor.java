@@ -8,6 +8,7 @@ import org.apache.http.protocol.HttpContext;
 import org.apache.http.protocol.HttpCoreContext;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
+import org.somda.sdc.common.logging.InstanceLogger;
 import org.somda.sdc.dpws.CommunicationLog;
 import org.somda.sdc.dpws.http.apache.helper.ApacheClientHelper;
 import org.somda.sdc.dpws.soap.CommunicationContext;
@@ -24,14 +25,16 @@ public class CommunicationLogHttpResponseInterceptor implements HttpResponseInte
     private static final Logger LOG = LogManager.getLogger(CommunicationLogHttpResponseInterceptor.class);
 
     private final CommunicationLog commlog;
+    private final Logger instanceLogger;
 
-    CommunicationLogHttpResponseInterceptor(CommunicationLog communicationLog) {
+    CommunicationLogHttpResponseInterceptor(CommunicationLog communicationLog, String frameworkIdentifier) {
+        this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);
         this.commlog = communicationLog;
     }
 
     @Override
     public void process(HttpResponse response, HttpContext context) {
-        LOG.debug("Processing response");
+        instanceLogger.debug("Processing response");
 
         HttpHost target = (HttpHost) context.getAttribute(
                 HttpCoreContext.HTTP_TARGET_HOST);
@@ -61,6 +64,6 @@ public class CommunicationLogHttpResponseInterceptor implements HttpResponseInte
 
         response.setEntity(new CommunicationLogEntity(oldMessageEntity, commlogStream));
 
-        LOG.debug("Processing response done");
+        instanceLogger.debug("Processing response done");
     }
 }

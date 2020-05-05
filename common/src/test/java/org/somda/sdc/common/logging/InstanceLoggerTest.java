@@ -20,7 +20,7 @@ import static org.mockito.Mockito.verify;
 public class InstanceLoggerTest {
 
     private static final String LOGGER_NAME = "com.example.some_logger";
-    private static Logger LOGGER;
+    private static Logger logger;
     private static ListAppender appender;
 
     @BeforeAll
@@ -28,14 +28,14 @@ public class InstanceLoggerTest {
         appender = new ListAppender("ListAppender");
         appender.start();
         LoggerContext context = LoggerContext.getContext(false);
-        LOGGER = context.getLogger(LOGGER_NAME);
-        LOGGER.addAppender(appender);
-        LOGGER.setLevel(Level.TRACE);
+        logger = context.getLogger(LOGGER_NAME);
+        logger.addAppender(appender);
+        logger.setLevel(Level.TRACE);
     }
 
     @AfterAll
     static void teardownLogging() {
-        LOGGER.removeAppender(appender);
+        logger.removeAppender(appender);
     }
 
     @BeforeEach
@@ -46,7 +46,7 @@ public class InstanceLoggerTest {
     @Test
     void testLoggerPassthrough() {
         var testMessage = "Ω≈ç√∫˜µ≤≥÷";
-        var logger = spy(LOGGER);
+        var logger = spy(InstanceLoggerTest.logger);
         var marker = "CustomInstanceMarker";
         var captor = ArgumentCaptor.forClass(String.class);
 
@@ -65,7 +65,7 @@ public class InstanceLoggerTest {
         var testMessage = "åß∂ƒ©˙∆˚¬…æ";
         var marker = "CustomInstanceMarker";
 
-        var proxiedLogger = InstanceLogger.wrapLogger(LOGGER, marker);
+        var proxiedLogger = InstanceLogger.wrapLogger(logger, marker);
         proxiedLogger.error(testMessage);
 
         var events = appender.getEvents();
@@ -83,11 +83,11 @@ public class InstanceLoggerTest {
         var marker2 = "⅛⅜⅝⅞";
 
         {
-            var proxiedLogger = InstanceLogger.wrapLogger(LOGGER, marker);
+            var proxiedLogger = InstanceLogger.wrapLogger(logger, marker);
             proxiedLogger.error(testMessage);
         }
         {
-            var proxiedLogger2 = InstanceLogger.wrapLogger(LOGGER, marker2);
+            var proxiedLogger2 = InstanceLogger.wrapLogger(logger, marker2);
             proxiedLogger2.error(testMessage2);
         }
 

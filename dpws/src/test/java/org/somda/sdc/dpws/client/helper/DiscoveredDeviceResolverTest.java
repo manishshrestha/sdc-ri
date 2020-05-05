@@ -59,7 +59,7 @@ public class DiscoveredDeviceResolverTest extends DpwsTest {
         WsDiscoveryClient wsdClient = mock(WsDiscoveryClient.class);
         when(wsdClient.sendResolve(epr)).thenReturn(Futures.immediateFuture(rmType));
 
-        DiscoveredDeviceResolver dpr = new DiscoveredDeviceResolver(wsdClient, Duration.ofSeconds(1), true, wsaUtil);
+        DiscoveredDeviceResolver dpr = new DiscoveredDeviceResolver(wsdClient, Duration.ofSeconds(1), true, wsaUtil, "abcd");
 
         Optional<DiscoveredDevice> actualWithResolveMatches = dpr.resolve(hMsg);
         assertTrue(actualWithResolveMatches.isPresent());

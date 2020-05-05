@@ -3,9 +3,12 @@ package org.somda.sdc.dpws.soap.wsdiscovery;
 import com.google.common.primitives.UnsignedInteger;
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
+import com.google.inject.name.Named;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
+import org.somda.sdc.common.logging.InstanceLogger;
 import org.somda.sdc.common.util.ObjectUtilImpl;
+import org.somda.sdc.dpws.DpwsConfig;
 import org.somda.sdc.dpws.soap.NotificationSource;
 import org.somda.sdc.dpws.soap.SoapMessage;
 import org.somda.sdc.dpws.soap.SoapUtil;
@@ -52,6 +55,7 @@ public class WsDiscoveryTargetServiceInterceptor implements WsDiscoveryTargetSer
     private final NotificationSource notificationSource;
     private final ObjectUtilImpl objectUtil;
     private final UnsignedInteger instanceId;
+    private final Logger instanceLogger;
     private List<QName> types;
     private List<String> scopes;
     private List<String> xAddrs;
@@ -70,7 +74,9 @@ public class WsDiscoveryTargetServiceInterceptor implements WsDiscoveryTargetSer
                                         WsDiscoveryFaultFactory wsdFaultFactory,
                                         WsAddressingUtil wsaUtil,
                                         WsDiscoveryUtil wsdUtil,
-                                        ObjectUtilImpl objectUtil) {
+                                        ObjectUtilImpl objectUtil,
+                                        @Named(DpwsConfig.FRAMEWORK_IDENTIFIER) String frameworkIdentifier) {
+        this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);
         this.targetServiceEpr = targetServiceEpr;
         this.notificationSource = notificationSource;
         this.objectUtil = objectUtil;
@@ -157,7 +163,7 @@ public class WsDiscoveryTargetServiceInterceptor implements WsDiscoveryTargetSer
 
         if (!URI.create(resolveType.getEndpointReference().getAddress().getValue())
                 .equals(URI.create(endpointReference.getAddress().getValue()))) {
-            LOG.debug("Incoming ResolveMatches message had an EPR address not matching this device." +
+            instanceLogger.debug("Incoming ResolveMatches message had an EPR address not matching this device." +
                             " Message EPR address is {}, device EPR address is {}",
                     resolveType.getEndpointReference().getAddress().getValue(),
                     endpointReference.getAddress().getValue());

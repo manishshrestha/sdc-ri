@@ -1,7 +1,11 @@
 package org.somda.sdc.dpws.soap.interception;
 
+import com.google.inject.Inject;
+import com.google.inject.name.Named;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
+import org.somda.sdc.common.logging.InstanceLogger;
+import org.somda.sdc.dpws.DpwsConfig;
 import org.somda.sdc.dpws.soap.exception.SoapFaultException;
 
 import javax.annotation.Nullable;
@@ -14,6 +18,12 @@ import java.util.Collection;
  */
 class InterceptorProcessor {
     private static final Logger LOG = LogManager.getLogger(InterceptorProcessor.class);
+    private final Logger instanceLogger;
+
+    @Inject
+    InterceptorProcessor(@Named(DpwsConfig.FRAMEWORK_IDENTIFIER) String frameworkIdentifier) {
+        this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);
+    }
 
     /**
      * Dispatches callback data to all interceptor methods from the given registry.
@@ -29,7 +39,7 @@ class InterceptorProcessor {
                   @Nullable String action,
                   InterceptorCallbackType callbackData) throws InterceptorException {
         if (action == null) {
-            LOG.debug("Try to dispatch without action, cancel");
+            instanceLogger.debug("Try to dispatch without action, cancel");
             return;
         }
 
@@ -62,10 +72,10 @@ class InterceptorProcessor {
 
                 callbackMethod.invoke(interceptorInfo.getCallbackObject(), callbackParam);
             } catch (IllegalAccessException e) {
-                LOG.warn(e.getMessage());
-                LOG.trace("Error while calling interceptor", e);
+                instanceLogger.warn(e.getMessage());
+                instanceLogger.trace("Error while calling interceptor", e);
             } catch (InvocationTargetException e) {
-                LOG.trace("Error while calling interceptor", e);
+                instanceLogger.trace("Error while calling interceptor", e);
                 throw new InterceptorException("Exception thrown by interceptor " +
                         interceptorInfo.getCallbackObject().toString(),
                         interceptorInfo.getCallbackObject(), e.getTargetException());
