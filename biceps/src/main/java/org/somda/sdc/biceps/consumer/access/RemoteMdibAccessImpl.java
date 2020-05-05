@@ -1,6 +1,7 @@
 package org.somda.sdc.biceps.consumer.access;
 
 import com.google.inject.assistedinject.AssistedInject;
+import com.google.inject.name.Named;
 import org.somda.sdc.biceps.common.MdibDescriptionModifications;
 import org.somda.sdc.biceps.common.MdibEntity;
 import org.somda.sdc.biceps.common.MdibStateModifications;
@@ -24,6 +25,8 @@ import org.somda.sdc.biceps.model.participant.AbstractState;
 import org.somda.sdc.biceps.model.participant.MdibVersion;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
+import org.somda.sdc.common.logging.InstanceLogger;
+import org.somda.sdc.dpws.DpwsConfig;
 
 import javax.annotation.Nullable;
 import java.math.BigInteger;
@@ -46,6 +49,7 @@ public class RemoteMdibAccessImpl implements RemoteMdibAccess {
     private final ReadTransactionFactory readTransactionFactory;
 
     private final WriteUtil writeUtil;
+    private final Logger instanceLogger;
 
     @AssistedInject
     RemoteMdibAccessImpl(Distributor eventDistributor,
@@ -54,7 +58,9 @@ public class RemoteMdibAccessImpl implements RemoteMdibAccess {
                          ReentrantReadWriteLock readWriteLock,
                          ReadTransactionFactory readTransactionFactory,
                          VersionDuplicateHandler versionDuplicateHandler,
-                         DescriptorChildRemover descriptorChildRemover) {
+                         DescriptorChildRemover descriptorChildRemover,
+                         @Named(DpwsConfig.FRAMEWORK_IDENTIFIER) String frameworkIdentifier) {
+        this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);
         this.eventDistributor = eventDistributor;
         this.mdibStorage = mdibStorageFactory.createMdibStorage();
         this.readWriteLock = readWriteLock;
@@ -65,7 +71,7 @@ public class RemoteMdibAccessImpl implements RemoteMdibAccess {
                 Arrays.asList(descriptorChildRemover),
                 Arrays.asList(versionDuplicateHandler));
 
-        this.writeUtil = new WriteUtil(LOG, eventDistributor, localMdibAccessPreprocessing, readWriteLock, this);
+        this.writeUtil = new WriteUtil(instanceLogger, eventDistributor, localMdibAccessPreprocessing, readWriteLock, this);
     }
 
     @Override

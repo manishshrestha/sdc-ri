@@ -1,6 +1,7 @@
 package org.somda.sdc.biceps.provider.access;
 
 import com.google.inject.assistedinject.AssistedInject;
+import com.google.inject.name.Named;
 import org.somda.sdc.biceps.common.MdibDescriptionModifications;
 import org.somda.sdc.biceps.common.MdibEntity;
 import org.somda.sdc.biceps.common.MdibStateModifications;
@@ -28,6 +29,8 @@ import org.somda.sdc.biceps.provider.preprocessing.TypeConsistencyChecker;
 import org.somda.sdc.biceps.provider.preprocessing.VersionHandler;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
+import org.somda.sdc.common.logging.InstanceLogger;
+import org.somda.sdc.dpws.DpwsConfig;
 
 import java.math.BigInteger;
 import java.util.Arrays;
@@ -49,6 +52,7 @@ public class LocalMdibAccessImpl implements LocalMdibAccess {
     private final CopyManager copyManager;
 
     private final WriteUtil writeUtil;
+    private final Logger instanceLogger;
 
     private MdibVersion mdibVersion;
     private BigInteger mdDescriptionVersion;
@@ -65,7 +69,9 @@ public class LocalMdibAccessImpl implements LocalMdibAccess {
                         TypeConsistencyChecker typeConsistencyChecker,
                         HandleReferenceHandler handleReferenceHandler,
                         DescriptorChildRemover descriptorChildRemover,
-                        CopyManager copyManager) {
+                        CopyManager copyManager,
+                        @Named(DpwsConfig.FRAMEWORK_IDENTIFIER) String frameworkIdentifier) {
+        this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);
         mdibVersion = MdibVersion.create();
         mdDescriptionVersion = BigInteger.ZERO;
         mdStateVersion = BigInteger.ZERO;
@@ -112,13 +118,13 @@ public class LocalMdibAccessImpl implements LocalMdibAccess {
 
     @Override
     public void registerObserver(MdibAccessObserver observer) {
-        LOG.info("Register MDIB observer: {}", observer);
+        instanceLogger.info("Register MDIB observer: {}", observer);
         eventDistributor.registerObserver(observer);
     }
 
     @Override
     public void unregisterObserver(MdibAccessObserver observer) {
-        LOG.info("Unreigster MDIB observer: {}", observer);
+        instanceLogger.info("Unregister MDIB observer: {}", observer);
         eventDistributor.unregisterObserver(observer);
     }
 

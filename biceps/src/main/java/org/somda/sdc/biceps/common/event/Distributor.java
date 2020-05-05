@@ -2,11 +2,14 @@ package org.somda.sdc.biceps.common.event;
 
 import com.google.common.eventbus.EventBus;
 import com.google.inject.Inject;
+import com.google.inject.name.Named;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 import org.somda.sdc.biceps.common.MdibEntity;
 import org.somda.sdc.biceps.common.MdibStateModifications;
 import org.somda.sdc.biceps.common.access.MdibAccess;
+import org.somda.sdc.common.logging.InstanceLogger;
+import org.somda.sdc.dpws.DpwsConfig;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -19,9 +22,12 @@ public class Distributor {
     private static final Logger LOG = LogManager.getLogger(Distributor.class);
 
     private final EventBus eventBus;
+    private final Logger instanceLogger;
 
     @Inject
-    Distributor(EventBus eventBus) {
+    Distributor(EventBus eventBus,
+                @Named(DpwsConfig.FRAMEWORK_IDENTIFIER) String frameworkIdentifier) {
+        this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);
         this.eventBus = eventBus;
     }
 
@@ -81,7 +87,7 @@ public class Distributor {
         }
 
         if (ctor == null) {
-            LOG.error("Expected constructor to create state modification message not found. Distribution failed.");
+            instanceLogger.error("Expected constructor to create state modification message not found. Distribution failed.");
             return;
         }
 
@@ -89,7 +95,7 @@ public class Distributor {
             eventBus.post(ctor.newInstance(mdibAccess, states));
         } catch (IllegalAccessException | IllegalArgumentException
                 | InstantiationException | InvocationTargetException e) {
-            LOG.error("Failed to call state event message constructor", e);
+            instanceLogger.error("Failed to call state event message constructor", e);
         }
     }
 }
