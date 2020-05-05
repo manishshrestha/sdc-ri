@@ -5,12 +5,14 @@ import com.google.common.util.concurrent.MoreExecutors;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.inject.AbstractModule;
 import com.google.inject.Injector;
+import com.google.inject.Provides;
+import com.google.inject.name.Named;
 import it.org.somda.glue.common.IntegrationTestPeer;
 import it.org.somda.sdc.dpws.MockedUdpBindingModule;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 import org.somda.sdc.biceps.provider.access.factory.LocalMdibAccessFactory;
-import org.somda.sdc.common.util.ExecutorWrapperUtil;
+import org.somda.sdc.common.util.ExecutorWrapperService;
 import org.somda.sdc.dpws.DpwsConfig;
 import org.somda.sdc.dpws.DpwsFramework;
 import org.somda.sdc.dpws.device.DeviceSettings;
@@ -30,7 +32,6 @@ import test.org.somda.common.CIDetector;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
-import java.net.URI;
 import java.time.Duration;
 import java.util.Collection;
 import java.util.Collections;
@@ -112,11 +113,15 @@ public class TestSdcDevice extends IntegrationTestPeer {
                     }
                 },
                 new AbstractModule() {
-                    @Override
-                    protected void configure() {
-                        super.configure();
-                        // bump network pool size because of parallelism tests
-                        {
+                    // bump network pool size because of parallelism tests
+
+                    ExecutorWrapperService<ListeningExecutorService> networkJobThreadPoolExecutor = null;
+                    ExecutorWrapperService<ListeningExecutorService> wsDiscoveryExecutor = null;
+
+                    @Provides
+                    @NetworkJobThreadPool
+                    ExecutorWrapperService<ListeningExecutorService> getNetworkJobThreadPool(@Named(DpwsConfig.FRAMEWORK_IDENTIFIER) String frameworkIdentifier) {
+                        if (networkJobThreadPoolExecutor == null) {
                             Callable<ListeningExecutorService> executor = () -> MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(
                                     30,
                                     new ThreadFactoryBuilder()
@@ -124,9 +129,16 @@ public class TestSdcDevice extends IntegrationTestPeer {
                                             .setDaemon(true)
                                             .build()
                             ));
-                            ExecutorWrapperUtil.bindListeningExecutor(this, executor, NetworkJobThreadPool.class);
+                            networkJobThreadPoolExecutor = new ExecutorWrapperService<>(executor, "NetworkJobThreadPool", frameworkIdentifier);
                         }
-                        {
+
+                        return networkJobThreadPoolExecutor;
+                    }
+
+                    @Provides
+                    @WsDiscovery
+                    ExecutorWrapperService<ListeningExecutorService> getWsDiscoveryExecutor(@Named(DpwsConfig.FRAMEWORK_IDENTIFIER) String frameworkIdentifier) {
+                        if (wsDiscoveryExecutor == null) {
                             Callable<ListeningExecutorService> executor = () -> MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(
                                     30,
                                     new ThreadFactoryBuilder()
@@ -134,8 +146,11 @@ public class TestSdcDevice extends IntegrationTestPeer {
                                             .setDaemon(true)
                                             .build()
                             ));
-                            ExecutorWrapperUtil.bindListeningExecutor(this, executor, WsDiscovery.class);
+
+                            wsDiscoveryExecutor = new ExecutorWrapperService<>(executor, "WsDiscovery", frameworkIdentifier);
                         }
+
+                        return wsDiscoveryExecutor;
                     }
                 }
         ));

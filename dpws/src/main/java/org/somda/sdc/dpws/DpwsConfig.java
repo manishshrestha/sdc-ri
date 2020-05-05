@@ -1,5 +1,7 @@
 package org.somda.sdc.dpws;
 
+import org.somda.sdc.common.Constants;
+
 /**
  * Configuration of the DPWS top level package.
  *
@@ -131,5 +133,5 @@ public class DpwsConfig {
      * <li>Use: optional
      * </ul>
      */
-    public static final String FRAMEWORK_IDENTIFIER = "Dpws.FrameworkIdentifier";
+    public static final String FRAMEWORK_IDENTIFIER = Constants.INSTANCE_IDENTIFIER;
 }

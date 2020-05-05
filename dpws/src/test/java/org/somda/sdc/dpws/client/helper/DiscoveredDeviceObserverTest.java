@@ -47,7 +47,7 @@ public class DiscoveredDeviceObserverTest extends DpwsTest {
         super.setUp();
         WsAddressingUtil wsaUtil = getInjector().getInstance(WsAddressingUtil.class);
         ExecutorWrapperService<ListeningExecutorService> execService = new ExecutorWrapperService<>(
-                MoreExecutors::newDirectExecutorService, "execService"
+                MoreExecutors::newDirectExecutorService, "execService", "abcd"
         );
         execService.startAsync().awaitRunning();
         discoveredDeviceResolver = mock(DiscoveredDeviceResolver.class);

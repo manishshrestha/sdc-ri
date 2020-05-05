@@ -2,6 +2,8 @@ package org.somda.sdc.biceps.provider.preprocessing;
 
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.somda.sdc.biceps.common.MdibDescriptionModification;
 import org.somda.sdc.biceps.common.MdibDescriptionModifications;
 import org.somda.sdc.biceps.common.MdibEntity;
@@ -9,10 +11,8 @@ import org.somda.sdc.biceps.common.MdibTreeValidator;
 import org.somda.sdc.biceps.common.storage.DescriptionPreprocessingSegment;
 import org.somda.sdc.biceps.common.storage.MdibStorage;
 import org.somda.sdc.biceps.model.participant.AbstractDescriptor;
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
+import org.somda.sdc.common.Constants;
 import org.somda.sdc.common.logging.InstanceLogger;
-import org.somda.sdc.dpws.DpwsConfig;
 
 import java.util.Optional;
 
@@ -30,7 +30,7 @@ public class CardinalityChecker implements DescriptionPreprocessingSegment {
 
     @Inject
     CardinalityChecker(MdibTreeValidator treeValidator,
-                       @Named(DpwsConfig.FRAMEWORK_IDENTIFIER) String frameworkIdentifier) {
+                       @Named(Constants.INSTANCE_IDENTIFIER) String frameworkIdentifier) {
         this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);
         this.treeValidator = treeValidator;
     }

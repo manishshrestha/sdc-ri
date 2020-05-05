@@ -2,6 +2,8 @@ package org.somda.sdc.biceps.provider.access;
 
 import com.google.inject.assistedinject.AssistedInject;
 import com.google.inject.name.Named;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.somda.sdc.biceps.common.MdibDescriptionModifications;
 import org.somda.sdc.biceps.common.MdibEntity;
 import org.somda.sdc.biceps.common.MdibStateModifications;
@@ -27,10 +29,8 @@ import org.somda.sdc.biceps.provider.preprocessing.DuplicateChecker;
 import org.somda.sdc.biceps.provider.preprocessing.HandleReferenceHandler;
 import org.somda.sdc.biceps.provider.preprocessing.TypeConsistencyChecker;
 import org.somda.sdc.biceps.provider.preprocessing.VersionHandler;
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
+import org.somda.sdc.common.Constants;
 import org.somda.sdc.common.logging.InstanceLogger;
-import org.somda.sdc.dpws.DpwsConfig;
 
 import java.math.BigInteger;
 import java.util.Arrays;
@@ -70,7 +70,7 @@ public class LocalMdibAccessImpl implements LocalMdibAccess {
                         HandleReferenceHandler handleReferenceHandler,
                         DescriptorChildRemover descriptorChildRemover,
                         CopyManager copyManager,
-                        @Named(DpwsConfig.FRAMEWORK_IDENTIFIER) String frameworkIdentifier) {
+                        @Named(Constants.INSTANCE_IDENTIFIER) String frameworkIdentifier) {
         this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);
         mdibVersion = MdibVersion.create();
         mdDescriptionVersion = BigInteger.ZERO;

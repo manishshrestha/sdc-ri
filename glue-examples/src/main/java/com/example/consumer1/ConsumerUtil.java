@@ -38,9 +38,7 @@ public class ConsumerUtil extends BaseUtil {
 
     public ConsumerUtil(String[] args) {
         super(args);
-
-        Configurator.initialize(new DefaultConfiguration());
-        Configurator.setRootLevel(Level.INFO);
+        Configurator.reconfigure(localLoggerConfig(Level.INFO));
 
         injector = Guice.createInjector(
                 new DefaultGlueModule(),

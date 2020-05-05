@@ -4,13 +4,16 @@ import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.inject.AbstractModule;
+import com.google.inject.Provides;
 import com.google.inject.Singleton;
 import com.google.inject.assistedinject.FactoryModuleBuilder;
-import org.somda.sdc.common.util.ExecutorWrapperUtil;
+import com.google.inject.name.Named;
+import org.somda.sdc.common.util.ExecutorWrapperService;
 import org.somda.sdc.dpws.CommunicationLog;
 import org.somda.sdc.dpws.CommunicationLogDummyImpl;
 import org.somda.sdc.dpws.CommunicationLogSink;
 import org.somda.sdc.dpws.CommunicationLogSinkImpl;
+import org.somda.sdc.dpws.DpwsConfig;
 import org.somda.sdc.dpws.DpwsFramework;
 import org.somda.sdc.dpws.DpwsFrameworkImpl;
 import org.somda.sdc.dpws.client.Client;
@@ -99,11 +102,24 @@ import java.util.concurrent.ScheduledExecutorService;
  * Default Guice module to bind all interfaces and factories used by the DPWS implementation.
  */
 public class DefaultDpwsModule extends AbstractModule {
+
+    private ExecutorWrapperService<ScheduledExecutorService> appDelayExecutor;
+    private ExecutorWrapperService<ListeningExecutorService> networkJobThreadPoolExecutor;
+    private ExecutorWrapperService<ListeningExecutorService> wsDiscoveryExecutor;
+
+    /**
+     * Constructor.
+     */
+    public DefaultDpwsModule() {
+        appDelayExecutor = null;
+        networkJobThreadPoolExecutor = null;
+        wsDiscoveryExecutor = null;
+    }
+
     @Override
     protected void configure() {
         configureMarshalling();
         configureUdp();
-        configureThreadPools();
         configureHttpServer();
         configureSoapEngine();
         configureWsAddressing();
@@ -176,15 +192,6 @@ public class DefaultDpwsModule extends AbstractModule {
 
     private void configureDevice() {
 
-        Callable<ScheduledExecutorService> executor = () -> Executors.newScheduledThreadPool(
-                10,
-                new ThreadFactoryBuilder()
-                        .setNameFormat("AppDelayExecutor-thread-%d")
-                        .setDaemon(true)
-                        .build()
-        );
-        ExecutorWrapperUtil.bindScheduledExecutor(this, executor, AppDelayExecutor.class);
-
         install(new FactoryModuleBuilder()
                 .implement(DiscoveryDeviceUdpMessageProcessor.class, DiscoveryDeviceUdpMessageProcessor.class)
                 .build(DeviceHelperFactory.class));
@@ -202,19 +209,6 @@ public class DefaultDpwsModule extends AbstractModule {
         bind(TransferGetClient.class).to(TransferGetClientImpl.class);
     }
 
-    private void configureThreadPools() {
-        Callable<ListeningExecutorService> executor = () -> MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(
-                10,
-                new ThreadFactoryBuilder()
-                        .setNameFormat("NetworkJobThreadPool-thread-%d")
-                        .setDaemon(true)
-                        .build()
-        ));
-
-        ExecutorWrapperUtil.bindListeningExecutor(this, executor, NetworkJobThreadPool.class);
-
-    }
-
     private void configureMarshalling() {
         bind(SoapMarshalling.class).to(JaxbSoapMarshalling.class).asEagerSingleton();
     }
@@ -226,15 +220,6 @@ public class DefaultDpwsModule extends AbstractModule {
     }
 
     private void configureWsDiscovery() {
-
-        Callable<ListeningExecutorService> executor = () -> MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(
-                10,
-                new ThreadFactoryBuilder()
-                        .setNameFormat("WsDiscovery-thread-%d")
-                        .setDaemon(true)
-                        .build()
-        ));
-        ExecutorWrapperUtil.bindListeningExecutor(this, executor, WsDiscovery.class);
 
         bind(UdpMessageQueueService.class)
                 .annotatedWith(DiscoveryUdpQueue.class)
@@ -299,4 +284,56 @@ public class DefaultDpwsModule extends AbstractModule {
         bind(HttpServerRegistry.class).to(JettyHttpServerRegistry.class).asEagerSingleton();
     }
 
+
+    @Provides
+    @AppDelayExecutor
+    ExecutorWrapperService<ScheduledExecutorService> getAppDelayExecutor(@Named(DpwsConfig.FRAMEWORK_IDENTIFIER) String frameworkIdentifier) {
+        if (appDelayExecutor == null) {
+            Callable<ScheduledExecutorService> executor = () -> Executors.newScheduledThreadPool(
+                    10,
+                    new ThreadFactoryBuilder()
+                            .setNameFormat("AppDelayExecutor-thread-%d")
+                            .setDaemon(true)
+                            .build()
+            );
+            appDelayExecutor = new ExecutorWrapperService<>(executor, "AppDelayExecutor", frameworkIdentifier);
+        }
+
+        return appDelayExecutor;
+    }
+
+    @Provides
+    @NetworkJobThreadPool
+    ExecutorWrapperService<ListeningExecutorService> getNetworkJobThreadPool(@Named(DpwsConfig.FRAMEWORK_IDENTIFIER) String frameworkIdentifier) {
+        if (networkJobThreadPoolExecutor == null) {
+            Callable<ListeningExecutorService> executor = () -> MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(
+                    10,
+                    new ThreadFactoryBuilder()
+                            .setNameFormat("NetworkJobThreadPool-thread-%d")
+                            .setDaemon(true)
+                            .build()
+            ));
+            networkJobThreadPoolExecutor = new ExecutorWrapperService<>(executor, "NetworkJobThreadPool", frameworkIdentifier);
+        }
+
+        return networkJobThreadPoolExecutor;
+    }
+
+    @Provides
+    @WsDiscovery
+    ExecutorWrapperService<ListeningExecutorService> getWsDiscoveryExecutor(@Named(DpwsConfig.FRAMEWORK_IDENTIFIER) String frameworkIdentifier) {
+        if (wsDiscoveryExecutor == null) {
+            Callable<ListeningExecutorService> executor = () -> MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(
+                    10,
+                    new ThreadFactoryBuilder()
+                            .setNameFormat("WsDiscovery-thread-%d")
+                            .setDaemon(true)
+                            .build()
+            ));
+
+            wsDiscoveryExecutor = new ExecutorWrapperService<>(executor, "WsDiscovery", frameworkIdentifier);
+        }
+
+        return wsDiscoveryExecutor;
+    }
 }

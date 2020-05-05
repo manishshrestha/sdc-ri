@@ -51,8 +51,7 @@ public class ProviderUtil extends BaseUtil {
 
     public ProviderUtil(String[] args) {
         super(args);
-        Configurator.initialize(new DefaultConfiguration());
-        Configurator.setRootLevel(Level.INFO);
+        Configurator.reconfigure(localLoggerConfig(Level.INFO));
 
         reportInterval = Duration.ofMillis(
                 Long.parseLong(getParsedArgs().getOptionValue(OPT_REPORT_INTERVAL, DEFAULT_REPORT_INTERVAL))
