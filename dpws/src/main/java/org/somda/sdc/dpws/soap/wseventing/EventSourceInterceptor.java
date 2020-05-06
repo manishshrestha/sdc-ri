@@ -6,8 +6,10 @@ import com.google.common.util.concurrent.AbstractIdleService;
 import com.google.inject.Inject;
 import com.google.inject.Provider;
 import com.google.inject.name.Named;
-import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.somda.sdc.common.CommonConfig;
+import org.somda.sdc.common.logging.InstanceLogger;
 import org.somda.sdc.common.util.JaxbUtil;
 import org.somda.sdc.dpws.DpwsConstants;
 import org.somda.sdc.dpws.device.helper.RequestResponseServerHttpHandler;
@@ -84,6 +86,7 @@ public class EventSourceInterceptor extends AbstractIdleService implements Event
     private final ObjectFactory wseFactory;
     private final SoapMessageFactory soapMessageFactory;
     private final EnvelopeFactory envelopeFactory;
+    private final Logger instanceLogger;
 
     @Inject
     EventSourceInterceptor(@Named(WsEventingConfig.SOURCE_MAX_EXPIRES) Duration maxExpires,
@@ -99,7 +102,9 @@ public class EventSourceInterceptor extends AbstractIdleService implements Event
                            Provider<RequestResponseServerHttpHandler> rrServerHttpHandlerProvider,
                            SubscriptionRegistry subscriptionRegistry,
                            SubscriptionManagerFactory subscriptionManagerFactory,
-                           HttpUriBuilder httpUriBuilder) {
+                           HttpUriBuilder httpUriBuilder,
+                           @Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier) {
+        this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);
         this.maxExpires = maxExpires;
         this.subscriptionManagerPath = subscriptionManagerPath;
         this.soapUtil = soapUtil;
@@ -236,7 +241,7 @@ public class EventSourceInterceptor extends AbstractIdleService implements Event
         soapUtil.setBody(subscribeResponse, rrObj.getResponse());
         soapUtil.setWsaAction(rrObj.getResponse(), WsEventingConstants.WSA_ACTION_SUBSCRIBE_RESPONSE);
 
-        LOG.info("Incoming subscribe request. Action(s): {}. Generated subscription id: {}. Notifications go to {}. " +
+        instanceLogger.info("Incoming subscribe request. Action(s): {}. Generated subscription id: {}. Notifications go to {}. " +
                         "Expiration in {} seconds",
                 Arrays.toString(uris.toArray()),
                 subMan.getSubscriptionId(),
@@ -261,7 +266,7 @@ public class EventSourceInterceptor extends AbstractIdleService implements Event
         soapUtil.setBody(renewResponse, rrObj.getResponse());
         soapUtil.setWsaAction(rrObj.getResponse(), WsEventingConstants.WSA_ACTION_RENEW_RESPONSE);
 
-        LOG.info("Subscription {} is renewed. New expiration in {} seconds",
+        instanceLogger.info("Subscription {} is renewed. New expiration in {} seconds",
                 subMan.getSubscriptionId(),
                 grantedExpires.getSeconds());
     }
@@ -303,7 +308,7 @@ public class EventSourceInterceptor extends AbstractIdleService implements Event
         // No response body required
         soapUtil.setWsaAction(rrObj.getResponse(), WsEventingConstants.WSA_ACTION_UNSUBSCRIBE_RESPONSE);
 
-        LOG.info("Unsubscribe {}. Invalidate subscription manager", subMan.getSubscriptionId());
+        instanceLogger.info("Unsubscribe {}. Invalidate subscription manager", subMan.getSubscriptionId());
     }
 
     private void removeStaleSubscriptions() {
@@ -321,7 +326,7 @@ public class EventSourceInterceptor extends AbstractIdleService implements Event
                     subscribedActionsLock.unlock();
                 }
                 subMan.stopAsync();
-                LOG.info("Remove expired subscription: {}", entry.getKey());
+                instanceLogger.info("Remove expired subscription: {}", entry.getKey());
             }
         });
     }

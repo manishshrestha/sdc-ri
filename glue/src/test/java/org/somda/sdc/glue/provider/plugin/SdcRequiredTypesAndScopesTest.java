@@ -61,7 +61,7 @@ class SdcRequiredTypesAndScopesTest {
         var sdcDeviceContextMock = mock(SdcDeviceContext.class);
         when(sdcDeviceContextMock.getDevice()).thenReturn(deviceMock);
         when(sdcDeviceContextMock.getLocalMdibAccess()).thenReturn(mdibAccessMock);
-        sdcRequiredTypesAndScopes = new SdcRequiredTypesAndScopes();
+        sdcRequiredTypesAndScopes = new SdcRequiredTypesAndScopes("abcd");
         sdcRequiredTypesAndScopes.beforeStartUp(sdcDeviceContextMock);
 
         eventBus = new EventBus();

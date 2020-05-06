@@ -7,7 +7,16 @@ import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.core.Filter;
+import org.apache.logging.log4j.core.appender.ConsoleAppender;
+import org.apache.logging.log4j.core.config.builder.api.ConfigurationBuilder;
+import org.apache.logging.log4j.core.config.builder.api.ConfigurationBuilderFactory;
+import org.apache.logging.log4j.core.config.builder.impl.BuiltConfiguration;
+import org.somda.sdc.common.logging.InstanceLogger;
 import org.somda.sdc.dpws.crypto.CryptoSettings;
+
+import java.util.List;
 
 /**
  * Base utility which provides parsing of command line flags and certain environment variables.
@@ -21,6 +30,20 @@ public class BaseUtil {
     private static final String OPT_TRUSTSTORE_PATH = "truststore";
     private static final String OPT_KEYSTORE_PASSWORD = "keystore_password";
     private static final String OPT_TRUSTSTORE_PASSWORD = "truststore_password";
+
+    private static final List<String> CHATTY_LOGGERS = List.of(
+            "org.apache.http.wire",
+            "org.apache.http.headers",
+            "org.eclipse.jetty"
+    );
+
+    private static final String CUSTOM_PATTERN = "%d{HH:mm:ss.SSS}"
+            + " [%thread]"
+            // only include the space if the have a variable
+            + " %notEmpty{[%X{" + InstanceLogger.INSTANCE_ID + "}] }"
+            + "%-5level"
+            + " %logger{36}"
+            + " - %msg%n";
 
     private final CommandLine parsedArgs;
     private String epr;
@@ -129,6 +152,44 @@ public class BaseUtil {
             return new CustomCryptoSettings(keyPath, trustPath, keyPass, trustPass);
         }
         return new CustomCryptoSettings();
+    }
+
+    protected static BuiltConfiguration localLoggerConfig(Level consoleLevel) {
+        ConfigurationBuilder<BuiltConfiguration> builder = ConfigurationBuilderFactory.newConfigurationBuilder();
+        builder.setStatusLevel(Level.ERROR);
+        builder.setConfigurationName("LocalLogging");
+
+        var layoutBuilder = builder
+                .newLayout("PatternLayout")
+                .addAttribute("pattern", CUSTOM_PATTERN);
+
+        var rootLogger = builder.newRootLogger(Level.DEBUG);
+
+        {
+            // create a console appender
+            var appenderBuilder = builder
+                    .newAppender("console_logger", ConsoleAppender.PLUGIN_NAME)
+                    .addAttribute("target", ConsoleAppender.Target.SYSTEM_OUT);
+            appenderBuilder.add(layoutBuilder);
+            // only log WARN or worse to console
+            appenderBuilder.addComponent(
+                    builder.newFilter("ThresholdFilter", Filter.Result.ACCEPT, Filter.Result.DENY)
+                            .addAttribute("level", consoleLevel)
+            );
+            builder.add(appenderBuilder);
+
+            rootLogger.add(builder.newAppenderRef(appenderBuilder.getName()));
+        }
+        {
+            // quiet down chatty loggers
+            CHATTY_LOGGERS.forEach(logger -> {
+                builder.add(builder.newLogger(logger, Level.INFO)
+                        .addAttribute("additivity", true));
+            });
+        }
+
+        builder.add(rootLogger);
+        return builder.build();
     }
 
     public CommandLine getParsedArgs() {

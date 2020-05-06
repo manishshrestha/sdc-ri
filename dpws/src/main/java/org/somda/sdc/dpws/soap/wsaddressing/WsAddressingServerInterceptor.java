@@ -3,17 +3,23 @@ package org.somda.sdc.dpws.soap.wsaddressing;
 import com.google.common.collect.EvictingQueue;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.somda.sdc.common.CommonConfig;
+import org.somda.sdc.common.logging.InstanceLogger;
 import org.somda.sdc.dpws.DpwsConstants;
 import org.somda.sdc.dpws.soap.CommunicationContext;
 import org.somda.sdc.dpws.soap.SoapMessage;
 import org.somda.sdc.dpws.soap.SoapUtil;
 import org.somda.sdc.dpws.soap.exception.SoapFaultException;
 import org.somda.sdc.dpws.soap.factory.SoapFaultFactory;
-import org.somda.sdc.dpws.soap.interception.*;
+import org.somda.sdc.dpws.soap.interception.Direction;
+import org.somda.sdc.dpws.soap.interception.Interceptor;
+import org.somda.sdc.dpws.soap.interception.MessageInterceptor;
+import org.somda.sdc.dpws.soap.interception.NotificationObject;
+import org.somda.sdc.dpws.soap.interception.RequestResponseObject;
 import org.somda.sdc.dpws.soap.wsaddressing.factory.WsAddressingFaultFactory;
 import org.somda.sdc.dpws.soap.wsaddressing.model.AttributedURIType;
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
 
 import javax.annotation.Nullable;
 import java.util.Optional;
@@ -38,6 +44,7 @@ public class WsAddressingServerInterceptor implements Interceptor {
     private final SoapUtil soapUtil;
     private final EvictingQueue<String> messageIdCache;
     private final SoapFaultFactory soapFaultFactory;
+    private final Logger instanceLogger;
 
     @Inject
     WsAddressingServerInterceptor(@Named(WsAddressingConfig.MESSAGE_ID_CACHE_SIZE) Integer messageIdCacheSize,
@@ -45,7 +52,9 @@ public class WsAddressingServerInterceptor implements Interceptor {
                                   WsAddressingFaultFactory addressingFaultFactory,
                                   SoapFaultFactory soapFaultFactory,
                                   WsAddressingUtil wsaUtil,
-                                  SoapUtil soapUtil) {
+                                  SoapUtil soapUtil,
+                                  @Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier) {
+        this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);
         this.messageIdCache = EvictingQueue.create(messageIdCacheSize);
         this.ignoreMessageIds = ignoreMessageIds;
         this.addressingFaultFactory = addressingFaultFactory;
@@ -113,7 +122,7 @@ public class WsAddressingServerInterceptor implements Interceptor {
 
             String faultMsg = String.format("Found message duplicate: %s (message: %s). Skip processing.",
                     foundMessageId.get(), actionUri);
-            LOG.debug(faultMsg);
+            instanceLogger.debug(faultMsg);
             throw new RuntimeException(faultMsg);
         }
         messageIdCache.add(messageId.get().getValue());
@@ -124,11 +133,11 @@ public class WsAddressingServerInterceptor implements Interceptor {
 
         // Typically missing message IDs are ok as long as the enclosing SOAP messages are conveyed using a
         // connection-agnostic protocol (e.g. TCP)
-        Consumer<SoapMessage> logCall = soapMessage -> LOG.debug(logMsg, soapMessage);
+        Consumer<SoapMessage> logCall = soapMessage -> instanceLogger.debug(logMsg, soapMessage);
         if (communicationContext != null &&
                 communicationContext.getTransportInfo().getScheme().equalsIgnoreCase(DpwsConstants.URI_SCHEME_SOAP_OVER_UDP)) {
             // In DPWS only UDP SOAP messages are required to enclose message IDs - promote missing message IDs to warn here
-            logCall = soapMessage -> LOG.warn(logMsg, soapMessage);
+            logCall = soapMessage -> instanceLogger.warn(logMsg, soapMessage);
         }
 
         return logCall;

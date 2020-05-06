@@ -3,12 +3,23 @@ package org.somda.sdc.glue.common;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
-import org.apache.logging.log4j.Logger;
+import com.google.inject.name.Named;
 import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.somda.sdc.biceps.common.MdibDescriptionModifications;
 import org.somda.sdc.biceps.common.MdibTypeValidator;
 import org.somda.sdc.biceps.common.access.MdibAccess;
-import org.somda.sdc.biceps.model.participant.*;
+import org.somda.sdc.biceps.model.participant.AbstractDescriptor;
+import org.somda.sdc.biceps.model.participant.AbstractMultiState;
+import org.somda.sdc.biceps.model.participant.AbstractState;
+import org.somda.sdc.biceps.model.participant.AlertSystemDescriptor;
+import org.somda.sdc.biceps.model.participant.ChannelDescriptor;
+import org.somda.sdc.biceps.model.participant.Mdib;
+import org.somda.sdc.biceps.model.participant.MdsDescriptor;
+import org.somda.sdc.biceps.model.participant.ScoDescriptor;
+import org.somda.sdc.biceps.model.participant.SystemContextDescriptor;
+import org.somda.sdc.biceps.model.participant.VmdDescriptor;
+import org.somda.sdc.common.logging.InstanceLogger;
 import org.somda.sdc.glue.common.helper.DefaultStateValuesDispatcher;
 
 import javax.annotation.Nullable;
@@ -32,25 +43,30 @@ public class ModificationsBuilder {
     private final Boolean createSingleStateIfMissing;
     private final MdibTypeValidator typeValidator;
     private final DefaultStateValuesDispatcher defaultStateValuesDispatcher;
+    private final Logger instanceLogger;
 
     @AssistedInject
     ModificationsBuilder(@Assisted Mdib mdib,
-                         MdibTypeValidator typeValidator) {
-        this(mdib, false, null, typeValidator);
+                         MdibTypeValidator typeValidator,
+                         @Named(org.somda.sdc.common.CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier) {
+        this(mdib, false, null, typeValidator, frameworkIdentifier);
     }
 
     @AssistedInject
     ModificationsBuilder(@Assisted Mdib mdib,
                          @Assisted Boolean createSingleStateIfMissing,
-                         MdibTypeValidator typeValidator) {
-        this(mdib, createSingleStateIfMissing, null, typeValidator);
+                         MdibTypeValidator typeValidator,
+                         @Named(org.somda.sdc.common.CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier) {
+        this(mdib, createSingleStateIfMissing, null, typeValidator, frameworkIdentifier);
     }
 
     @AssistedInject
     ModificationsBuilder(@Assisted Mdib mdib,
                          @Assisted Boolean createSingleStateIfMissing,
                          @Assisted @Nullable DefaultStateValues defaultStateValues,
-                         MdibTypeValidator typeValidator) {
+                         MdibTypeValidator typeValidator,
+                         @Named(org.somda.sdc.common.CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier) {
+        this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);
         this.createSingleStateIfMissing = createSingleStateIfMissing;
         this.typeValidator = typeValidator;
         if (defaultStateValues == null) {
@@ -186,9 +202,10 @@ public class ModificationsBuilder {
                     defaultStateValuesDispatcher.dispatchDefaultStateValues(state);
                     return state;
                 } catch (Exception e) {
-                    final String message = String.format("Could not create state for %s with handle %s",
-                            descriptor.getClass().getSimpleName(), descriptor.getHandle());
-                    LOG.warn(message, e);
+                    instanceLogger.warn(
+                            "Could not create state for {} with handle {}",
+                            descriptor.getClass().getSimpleName(), descriptor.getHandle(), e
+                    );
                     throw new RuntimeException(e);
                 }
             } else {

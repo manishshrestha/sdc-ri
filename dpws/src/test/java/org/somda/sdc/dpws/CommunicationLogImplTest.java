@@ -39,7 +39,7 @@ public class CommunicationLogImplTest extends DpwsTest {
             when(communicationLogSinkImplMock.createTargetStream(eq(CommunicationLog.TransportType.HTTP), any(), any()))
                     .thenReturn(mockOutputStream);
 
-            CommunicationLogImpl communicationLogImpl = new CommunicationLogImpl(communicationLogSinkImplMock);
+            CommunicationLogImpl communicationLogImpl = new CommunicationLogImpl(communicationLogSinkImplMock, "abcd");
 
             var requestCommContext = new CommunicationContext(
                     null,
@@ -81,7 +81,7 @@ public class CommunicationLogImplTest extends DpwsTest {
 
         CommunicationLogSinkImpl communicationLogSinkImplMock = mock(CommunicationLogSinkImpl.class);
 
-        CommunicationLogImpl communicationLogImpl = new CommunicationLogImpl(communicationLogSinkImplMock);
+        CommunicationLogImpl communicationLogImpl = new CommunicationLogImpl(communicationLogSinkImplMock, "abcd");
 
         var requestCommContext = new CommunicationContext(
                 null,

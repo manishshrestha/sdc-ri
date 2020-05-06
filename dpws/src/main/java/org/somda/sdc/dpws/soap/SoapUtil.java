@@ -1,8 +1,11 @@
 package org.somda.sdc.dpws.soap;
 
 import com.google.inject.Inject;
-import org.apache.logging.log4j.Logger;
+import com.google.inject.name.Named;
 import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.somda.sdc.common.CommonConfig;
+import org.somda.sdc.common.logging.InstanceLogger;
 import org.somda.sdc.common.util.JaxbUtil;
 import org.somda.sdc.common.util.UriUtil;
 import org.somda.sdc.dpws.soap.factory.EnvelopeFactory;
@@ -27,12 +30,15 @@ public class SoapUtil {
     private final SoapMessageFactory soapMessageFactory;
     private final EnvelopeFactory envelopeFactory;
     private final JaxbUtil jaxbUtil;
+    private final Logger instanceLogger;
 
     @Inject
     SoapUtil(WsAddressingUtil wsaUtil,
              SoapMessageFactory soapMessageFactory,
              EnvelopeFactory envelopeFactory,
-             JaxbUtil jaxbUtil) {
+             JaxbUtil jaxbUtil,
+             @Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier) {
+        this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);
         this.wsaUtil = wsaUtil;
         this.soapMessageFactory = soapMessageFactory;
         this.envelopeFactory = envelopeFactory;
@@ -201,7 +207,7 @@ public class SoapUtil {
                     .filter(obj -> {
                         boolean correctType = obj instanceof Element;
                         if (!correctType) {
-                            LOG.warn(
+                            instanceLogger.warn(
                                     "Reference parameter couldn't be attached to outgoing message, wrong type!" +
                                             " Type was {}", obj.getClass().getSimpleName()
                             );

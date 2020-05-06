@@ -2,11 +2,14 @@ package org.somda.sdc.dpws.http.jetty;
 
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
+import com.google.inject.name.Named;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.eclipse.jetty.http.HttpStatus;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.handler.AbstractHandler;
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
+import org.somda.sdc.common.CommonConfig;
+import org.somda.sdc.common.logging.InstanceLogger;
 import org.somda.sdc.dpws.CommunicationLog;
 import org.somda.sdc.dpws.http.HttpException;
 import org.somda.sdc.dpws.http.HttpHandler;
@@ -18,7 +21,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.security.cert.X509Certificate;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
@@ -34,19 +36,23 @@ public class JettyHttpServerHandler extends AbstractHandler {
     private final String mediaType;
     private final HttpHandler handler;
     private final CommunicationLog communicationLog;
+    private final Logger instanceLogger;
 
     @AssistedInject
     JettyHttpServerHandler(@Assisted Boolean expectTLS,
                            @Assisted String mediaType,
                            @Assisted HttpHandler handler,
-                           CommunicationLog communicationLog) {
-        this(mediaType, handler, communicationLog);
+                           CommunicationLog communicationLog,
+                           @Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier) {
+        this(mediaType, handler, communicationLog, frameworkIdentifier);
     }
 
     @AssistedInject
     JettyHttpServerHandler(@Assisted String mediaType,
                            @Assisted HttpHandler handler,
-                           CommunicationLog communicationLog) {
+                           CommunicationLog communicationLog,
+                           @Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier) {
+        this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);
         this.mediaType = mediaType;
         this.handler = handler;
         this.communicationLog = communicationLog;
@@ -54,7 +60,7 @@ public class JettyHttpServerHandler extends AbstractHandler {
 
     @Override
     public void handle(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response) throws IOException {
-        LOG.debug("Request to {}", request.getRequestURL());
+        instanceLogger.debug("Request to {}", request.getRequestURL());
         response.setStatus(HttpStatus.OK_200);
         response.setContentType(mediaType);
         response.setHeader(SERVER_HEADER_KEY, SERVER_HEADER_VALUE);
@@ -81,8 +87,8 @@ public class JettyHttpServerHandler extends AbstractHandler {
             );
 
         } catch (HttpException e) {
-            LOG.debug("An HTTP exception occurred during HTTP request processing: {}", e.getMessage());
-            LOG.trace("An HTTP exception occurred during HTTP request processing", e);
+            instanceLogger.debug("An HTTP exception occurred during HTTP request processing: {}", e.getMessage());
+            instanceLogger.trace("An HTTP exception occurred during HTTP request processing", e);
             response.setStatus(e.getStatusCode());
             if (!e.getMessage().isEmpty()) {
                 output.write(e.getMessage().getBytes());
@@ -96,9 +102,9 @@ public class JettyHttpServerHandler extends AbstractHandler {
             output.flush();
             output.close();
         } catch (IOException e) {
-            LOG.error("Could not close input/output streams from incoming HTTP request to {}. Reason: {}",
+            instanceLogger.error("Could not close input/output streams from incoming HTTP request to {}. Reason: {}",
                     request.getRequestURL(), e.getMessage());
-            LOG.trace("Could not close input/output streams from incoming HTTP request to {}",
+            instanceLogger.trace("Could not close input/output streams from incoming HTTP request to {}",
                     request.getRequestURL(), e);
         }
     }

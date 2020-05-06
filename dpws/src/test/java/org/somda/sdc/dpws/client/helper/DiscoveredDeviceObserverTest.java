@@ -47,13 +47,13 @@ public class DiscoveredDeviceObserverTest extends DpwsTest {
         super.setUp();
         WsAddressingUtil wsaUtil = getInjector().getInstance(WsAddressingUtil.class);
         ExecutorWrapperService<ListeningExecutorService> execService = new ExecutorWrapperService<>(
-                MoreExecutors::newDirectExecutorService, "execService"
+                MoreExecutors::newDirectExecutorService, "execService", "abcd"
         );
         execService.startAsync().awaitRunning();
         discoveredDeviceResolver = mock(DiscoveredDeviceResolver.class);
         expectedUri = "http://expectedUri";
         expectedEpr = wsaUtil.createEprWithAddress(expectedUri);
-        helloByeAndProbeMatchesObserverImpl = new HelloByeAndProbeMatchesObserverImpl(discoveredDeviceResolver, execService, wsaUtil);
+        helloByeAndProbeMatchesObserverImpl = new HelloByeAndProbeMatchesObserverImpl(discoveredDeviceResolver, execService, wsaUtil, "abcd");
         objFactory = new ObjectFactory();
         callbackVisitCount = 0;
     }

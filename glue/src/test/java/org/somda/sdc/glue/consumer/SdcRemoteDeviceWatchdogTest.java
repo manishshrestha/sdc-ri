@@ -68,7 +68,7 @@ class SdcRemoteDeviceWatchdogTest {
             protected void configure() {
                 bind(new TypeLiteral<ExecutorWrapperService<ScheduledExecutorService>>(){})
                         .annotatedWith(WatchdogScheduledExecutor.class)
-                        .toInstance(new ExecutorWrapperService<>(() -> mockExecutor, "WatchdogScheduledExecutorMock"));
+                        .toInstance(new ExecutorWrapperService<>(() -> mockExecutor, "WatchdogScheduledExecutorMock", "abcd"));
                 bind(Client.class)
                         .toInstance(mockClient);
             }

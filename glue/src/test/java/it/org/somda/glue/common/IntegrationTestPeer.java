@@ -7,6 +7,7 @@ import com.google.inject.Injector;
 import com.google.inject.util.Modules;
 import org.somda.sdc.biceps.guice.DefaultBicepsConfigModule;
 import org.somda.sdc.biceps.guice.DefaultBicepsModule;
+import org.somda.sdc.common.guice.DefaultCommonConfigModule;
 import org.somda.sdc.common.guice.DefaultHelperModule;
 import org.somda.sdc.dpws.guice.DefaultDpwsConfigModule;
 import org.somda.sdc.dpws.guice.DefaultDpwsModule;
@@ -25,6 +26,7 @@ public abstract class IntegrationTestPeer extends AbstractIdleService {
         }
         if (overridingModules.isEmpty()) {
             injector = Guice.createInjector(
+                    new DefaultCommonConfigModule(),
                     new DefaultGlueModule(),
                     new DefaultGlueConfigModule(),
                     new DefaultBicepsModule(),
@@ -33,13 +35,17 @@ public abstract class IntegrationTestPeer extends AbstractIdleService {
                     new DefaultDpwsModule(),
                     new GlueDpwsConfigModule());
         } else {
-            injector = Guice.createInjector(Modules.override(new DefaultGlueModule(),
-                    new DefaultGlueConfigModule(),
-                    new DefaultBicepsModule(),
-                    new DefaultBicepsConfigModule(),
-                    new DefaultHelperModule(),
-                    new DefaultDpwsModule(),
-                    new GlueDpwsConfigModule()).with(overridingModules));
+            injector = Guice.createInjector(
+                    Modules.override(
+                            new DefaultCommonConfigModule(),
+                            new DefaultGlueModule(),
+                            new DefaultGlueConfigModule(),
+                            new DefaultBicepsModule(),
+                            new DefaultBicepsConfigModule(),
+                            new DefaultHelperModule(),
+                            new DefaultDpwsModule(),
+                            new GlueDpwsConfigModule()
+                    ).with(overridingModules));
         }
     }
 

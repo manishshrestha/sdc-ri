@@ -4,6 +4,7 @@ import com.google.inject.Guice;
 import com.google.inject.Injector;
 import org.somda.sdc.biceps.guice.DefaultBicepsConfigModule;
 import org.somda.sdc.biceps.guice.DefaultBicepsModule;
+import org.somda.sdc.common.guice.DefaultCommonConfigModule;
 import org.somda.sdc.common.guice.DefaultHelperModule;
 import org.somda.sdc.dpws.guice.DefaultDpwsConfigModule;
 import org.somda.sdc.dpws.guice.DefaultDpwsModule;
@@ -20,6 +21,7 @@ public class IntegrationTestUtil {
     public IntegrationTestUtil() {
         TestLogging.configure();
         injector = Guice.createInjector(
+                new DefaultCommonConfigModule(),
                 new DefaultGlueModule(),
                 new DefaultGlueConfigModule(),
                 new DefaultBicepsModule(),

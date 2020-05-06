@@ -4,8 +4,10 @@ import com.google.common.util.concurrent.AbstractIdleService;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import com.sun.xml.bind.marshaller.NamespacePrefixMapper;
-import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.somda.sdc.common.CommonConfig;
+import org.somda.sdc.common.logging.InstanceLogger;
 import org.somda.sdc.common.util.NamespacePrefixMapperConverter;
 import org.somda.sdc.common.util.PrefixNamespaceMappingParser;
 import org.somda.sdc.dpws.DpwsConstants;
@@ -20,7 +22,11 @@ import org.somda.sdc.dpws.soap.wstransfer.WsTransferConstants;
 import org.xml.sax.SAXException;
 
 import javax.xml.XMLConstants;
-import javax.xml.bind.*;
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBElement;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Marshaller;
+import javax.xml.bind.Unmarshaller;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.stream.StreamSource;
@@ -49,6 +55,7 @@ public class JaxbSoapMarshalling extends AbstractIdleService implements SoapMars
     private final ObjectFactory soapFactory;
     private final FrameworkMetadata metadata;
     private final Boolean metadataComment;
+    private final Logger instanceLogger;
 
 
     private String contextPackages;
@@ -64,7 +71,9 @@ public class JaxbSoapMarshalling extends AbstractIdleService implements SoapMars
                         PrefixNamespaceMappingParser namespaceMappingParser,
                         NamespacePrefixMapperConverter namespacePrefixMapperConverter,
                         ObjectFactory soapFactory,
-                        FrameworkMetadata metadata) {
+                        FrameworkMetadata metadata,
+                        @Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier) {
+        this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);
         this.contextPackages = contextPackages;
         this.schemaPath = schemaPath;
         this.validateSoapMessages = validateSoapMessages;
@@ -82,14 +91,14 @@ public class JaxbSoapMarshalling extends AbstractIdleService implements SoapMars
 
     @Override
     protected void startUp() throws Exception {
-        LOG.info("Start SOAP marshalling. Initialize JAXB.");
+        instanceLogger.info("Start SOAP marshalling. Initialize JAXB.");
         initializeJaxb();
-        LOG.info("JAXB initialization finished");
+        instanceLogger.info("JAXB initialization finished");
     }
 
     @Override
     protected void shutDown() {
-        LOG.info("SOAP marshalling stopped");
+        instanceLogger.info("SOAP marshalling stopped");
     }
 
     /**
@@ -113,12 +122,12 @@ public class JaxbSoapMarshalling extends AbstractIdleService implements SoapMars
 
             var version = metadata.getFrameworkVersion();
             var versionString = "<!-- Generated with SDCri " + version + " -->";
-            LOG.debug("Attaching metadata comment: {}", versionString);
+            instanceLogger.debug("Attaching metadata comment: {}", versionString);
             try {
                 outputStream.write(XML_PROLOG.getBytes(StandardCharsets.UTF_8));
                 outputStream.write(versionString.getBytes(StandardCharsets.UTF_8));
             } catch (IOException e) {
-                LOG.error("Error while writing SDCri metadata to message");
+                instanceLogger.error("Error while writing SDCri metadata to message");
             }
         }
         marshaller.marshal(soapFactory.createEnvelope(envelope), outputStream);
@@ -163,12 +172,12 @@ public class JaxbSoapMarshalling extends AbstractIdleService implements SoapMars
                 WsTransferConstants.JAXB_CONTEXT_PACKAGE + PKG_DELIM +
                 WsMetadataExchangeConstants.JAXB_CONTEXT_PACKAGE;
 
-        LOG.info("Configure JAXB with contexts: {}", contextPackages);
+        instanceLogger.info("Configure JAXB with contexts: {}", contextPackages);
 
         try {
             jaxbContext = JAXBContext.newInstance(contextPackages);
         } catch (JAXBException e) {
-            LOG.error("JAXB context for SOAP model(s) could not be created", e);
+            instanceLogger.error("JAXB context for SOAP model(s) could not be created", e);
             throw new RuntimeException("JAXB context for SOAP model(s) could not be created");
         }
 
@@ -181,10 +190,10 @@ public class JaxbSoapMarshalling extends AbstractIdleService implements SoapMars
                     SCHEMA_DELIM + WsTransferConstants.SCHEMA_PATH +
                     SCHEMA_DELIM + DpwsConstants.SCHEMA_PATH +
                     SCHEMA_DELIM + schemaPath;
-            LOG.info("SOAP message validation enabled with schemas (order matters!): {}", extendedSchemaPath);
+            instanceLogger.info("SOAP message validation enabled with schemas (order matters!): {}", extendedSchemaPath);
             schema = generateTopLevelSchema(extendedSchemaPath);
         } else {
-            LOG.info("SOAP message validation disabled");
+            instanceLogger.info("SOAP message validation disabled");
             schema = null;
         }
     }
@@ -201,12 +210,12 @@ public class JaxbSoapMarshalling extends AbstractIdleService implements SoapMars
             var classLoader = getClass().getClassLoader();
             var schemaUrl = classLoader.getResource(path);
             if (schemaUrl == null) {
-                LOG.error("Could not find schema for resource: {}", path);
+                instanceLogger.error("Could not find schema for resource: {}", path);
                 throw new IOException(String.format("Could not find schema for resource while loading in %s: %s",
                         JaxbSoapMarshalling.class.getSimpleName(), path));
             }
             var targetNamespace = resolveTargetNamespace(schemaUrl);
-            LOG.info("Register namespace for validation: {}, read from {}", targetNamespace, schemaUrl.toString());
+            instanceLogger.info("Register namespace for validation: {}, read from {}", targetNamespace, schemaUrl.toString());
             stringBuilder.append(String.format(importPattern, targetNamespace, schemaUrl.toString()));
         }
         stringBuilder.append(topLevelSchemaEnd);

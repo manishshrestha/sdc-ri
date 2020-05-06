@@ -2,8 +2,11 @@ package org.somda.sdc.dpws.helper;
 
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
-import org.apache.logging.log4j.Logger;
+import com.google.inject.name.Named;
 import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.somda.sdc.common.CommonConfig;
+import org.somda.sdc.common.logging.InstanceLogger;
 import org.somda.sdc.dpws.soap.MarshallingService;
 import org.somda.sdc.dpws.soap.NotificationSource;
 import org.somda.sdc.dpws.soap.SoapDebug;
@@ -26,19 +29,20 @@ public class NotificationSourceUdpCallback implements NotificationCallback {
 
     private final UdpMessageQueueService udpMessageQueue;
     private final MarshallingService marshallingService;
+    private final Logger instanceLogger;
 
     @AssistedInject
     NotificationSourceUdpCallback(@Assisted UdpMessageQueueService udpMessageQueue,
-                                  MarshallingService marshallingService) {
+                                  MarshallingService marshallingService,
+                                  @Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier) {
+        this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);
         this.udpMessageQueue = udpMessageQueue;
         this.marshallingService = marshallingService;
     }
 
     @Override
     public void onNotification(SoapMessage notification) throws MarshallingException {
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("Outgoing SOAP/UDP message: {}", SoapDebug.get(notification));
-        }
+        instanceLogger.debug("Outgoing SOAP/UDP message: {}", () -> SoapDebug.get(notification));
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         marshallingService.marshal(notification, bos);
         byte[] data = bos.toByteArray();

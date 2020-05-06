@@ -3,6 +3,7 @@ package org.somda.sdc.common.util;
 import com.google.common.util.concurrent.AbstractIdleService;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
+import org.somda.sdc.common.logging.InstanceLogger;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
@@ -24,45 +25,38 @@ public class ExecutorWrapperService<T extends ExecutorService> extends AbstractI
     private final Callable<T> serviceCreator;
     @Stringified
     private final String serviceName;
+    private final Logger instanceLogger;
     @Stringified
     private T executorService;
-
-
-    /**
-     * Creates a wrapper around an {@linkplain ExecutorService}.
-     *
-     * @param serviceCreator {@linkplain Callable} which returns an {@linkplain ExecutorService}.
-     */
-    public ExecutorWrapperService(Callable<T> serviceCreator) {
-        this(serviceCreator, "UNKNOWN");
-    }
 
     /**
      * Creates a wrapper around an {@linkplain ExecutorService}.
      *
      * @param serviceCreator {@linkplain Callable} which returns an {@linkplain ExecutorService}.
      * @param serviceName name for the service, used in logging.
+     * @param frameworkIdentifier identifier used for logging
      */
-    public ExecutorWrapperService(Callable<T> serviceCreator, String serviceName) {
+    public ExecutorWrapperService(Callable<T> serviceCreator, String serviceName, String frameworkIdentifier) {
+        this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);
         this.serviceCreator = serviceCreator;
         this.serviceName = serviceName;
     }
 
     @Override
     protected void startUp() throws Exception {
-        LOG.debug("[{}] Starting executor service wrapper", serviceName);
+        instanceLogger.debug("[{}] Starting executor service wrapper", serviceName);
         this.executorService = serviceCreator.call();
     }
 
     @Override
     protected void shutDown() throws Exception {
-        LOG.info("[{}] Stopping executor service wrapper", serviceName);
+        instanceLogger.info("[{}] Stopping executor service wrapper", serviceName);
         if (this.executorService != null) {
             executorService.shutdown();
             try {
                 executorService.awaitTermination(STOP_TIMEOUT, STOP_TIMEUNIT);
             } catch (InterruptedException e) {
-                LOG.error("[{}] Could not stop all threads!", serviceName);
+                instanceLogger.error("[{}] Could not stop all threads!", serviceName);
                 throw e;
             }
         }
@@ -80,7 +74,7 @@ public class ExecutorWrapperService<T extends ExecutorService> extends AbstractI
         if (isRunning()) {
             return executorService;
         } else {
-            LOG.error("[{}] get was called on a service which was not running", serviceName);
+            instanceLogger.error("[{}] get was called on a service which was not running", serviceName);
             throw new RuntimeException(String.format(
                     "get called on %s service which was not running",
                     serviceName
@@ -90,6 +84,6 @@ public class ExecutorWrapperService<T extends ExecutorService> extends AbstractI
 
     @Override
     public String toString() {
-        return ObjectStringifier.stringify(this);
+        return ObjectStringifier.stringify(this) + " [" + state() + "]";
     }
 }

@@ -1,5 +1,6 @@
 package org.somda.sdc.dpws.http.apache;
 
+import com.google.inject.name.Named;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpEntityEnclosingRequest;
 import org.apache.http.HttpHost;
@@ -9,7 +10,9 @@ import org.apache.http.protocol.HttpContext;
 import org.apache.http.protocol.HttpCoreContext;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
+import org.somda.sdc.common.logging.InstanceLogger;
 import org.somda.sdc.dpws.CommunicationLog;
+import org.somda.sdc.dpws.DpwsConfig;
 import org.somda.sdc.dpws.http.apache.helper.ApacheClientHelper;
 import org.somda.sdc.dpws.soap.CommunicationContext;
 import org.somda.sdc.dpws.soap.HttpApplicationInfo;
@@ -25,20 +28,22 @@ public class CommunicationLogHttpRequestInterceptor implements HttpRequestInterc
     private static final Logger LOG = LogManager.getLogger(CommunicationLogHttpRequestInterceptor.class);
 
     private final CommunicationLog commlog;
+    private final Logger instanceLogger;
 
-    CommunicationLogHttpRequestInterceptor(CommunicationLog communicationLog) {
+    CommunicationLogHttpRequestInterceptor(CommunicationLog communicationLog, String frameworkIdentifier) {
+        this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);
         this.commlog = communicationLog;
     }
 
     @Override
     public void process(HttpRequest request, HttpContext context) {
-        LOG.debug("Processing request: {}", request.getRequestLine());
+        instanceLogger.debug("Processing request: {}", request.getRequestLine());
 
         HttpHost target = (HttpHost) context.getAttribute(
                 HttpCoreContext.HTTP_TARGET_HOST);
 
         if (!(request instanceof HttpEntityEnclosingRequest)) {
-            LOG.warn("Interceptor cannot retrieve request entity for request {}", request.getRequestLine());
+            instanceLogger.warn("Interceptor cannot retrieve request entity for request {}", request.getRequestLine());
             return;
         }
 
@@ -68,6 +73,6 @@ public class CommunicationLogHttpRequestInterceptor implements HttpRequestInterc
 
         entityRequest.setEntity(new CommunicationLogEntity(oldMessageEntity, commlogStream));
 
-        LOG.debug("Processing request done: {}", request.getRequestLine());
+        instanceLogger.debug("Processing request done: {}", request.getRequestLine());
     }
 }

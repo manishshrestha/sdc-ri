@@ -1,12 +1,21 @@
 package org.somda.sdc.dpws.device.helper;
 
 import com.google.inject.Inject;
-import org.eclipse.jetty.http.HttpStatus;
-import org.apache.logging.log4j.Logger;
+import com.google.inject.name.Named;
 import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.eclipse.jetty.http.HttpStatus;
+import org.somda.sdc.common.CommonConfig;
+import org.somda.sdc.common.logging.InstanceLogger;
 import org.somda.sdc.dpws.http.HttpException;
 import org.somda.sdc.dpws.http.HttpHandler;
-import org.somda.sdc.dpws.soap.*;
+import org.somda.sdc.dpws.soap.CommunicationContext;
+import org.somda.sdc.dpws.soap.MarshallingService;
+import org.somda.sdc.dpws.soap.RequestResponseServer;
+import org.somda.sdc.dpws.soap.SoapDebug;
+import org.somda.sdc.dpws.soap.SoapFaultHttpStatusCodeMapping;
+import org.somda.sdc.dpws.soap.SoapMessage;
+import org.somda.sdc.dpws.soap.SoapUtil;
 import org.somda.sdc.dpws.soap.exception.MarshallingException;
 import org.somda.sdc.dpws.soap.exception.SoapFaultException;
 import org.somda.sdc.dpws.soap.exception.TransportException;
@@ -30,11 +39,14 @@ public class RequestResponseServerHttpHandler implements HttpHandler, Intercepto
     private final RequestResponseServer reqResServer;
     private final MarshallingService marshallingService;
     private final SoapUtil soapUtil;
+    private final Logger instanceLogger;
 
     @Inject
     RequestResponseServerHttpHandler(RequestResponseServer reqResServer,
                                      MarshallingService marshallingService,
-                                     SoapUtil soapUtil) {
+                                     SoapUtil soapUtil,
+                                     @Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier) {
+        this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);
         this.reqResServer = reqResServer;
         this.marshallingService = marshallingService;
         this.soapUtil = soapUtil;
@@ -50,9 +62,7 @@ public class RequestResponseServerHttpHandler implements HttpHandler, Intercepto
             throw new TransportException("IO error closing HTTP input stream", e);
         }
 
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("Incoming SOAP/HTTP request: {}", SoapDebug.get(requestMsg));
-        }
+        instanceLogger.debug("Incoming SOAP/HTTP request: {}", () -> SoapDebug.get(requestMsg));
 
         SoapMessage responseMsg = soapUtil.createMessage();
         try {
@@ -67,8 +77,8 @@ public class RequestResponseServerHttpHandler implements HttpHandler, Intercepto
             throw new RuntimeException(e);
         }
 
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("Outgoing SOAP/HTTP response: {}", SoapDebug.get(responseMsg));
+        if (instanceLogger.isDebugEnabled()) {
+            instanceLogger.debug("Outgoing SOAP/HTTP response: {}", SoapDebug.get(responseMsg));
         }
 
         try {
@@ -89,9 +99,7 @@ public class RequestResponseServerHttpHandler implements HttpHandler, Intercepto
                     String.format("Error unmarshalling HTTP input stream: %s", e.getMessage()));
         }
 
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("Incoming SOAP/HTTP request: {}", SoapDebug.get(requestMsg));
-        }
+        instanceLogger.debug("Incoming SOAP/HTTP request: {}", () -> SoapDebug.get(requestMsg));
 
         SoapMessage responseMsg = soapUtil.createMessage();
 
@@ -111,8 +119,8 @@ public class RequestResponseServerHttpHandler implements HttpHandler, Intercepto
                     String.format("Error marshalling HTTP output stream: %s", e.getMessage()));
         }
 
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("Outgoing SOAP/HTTP response: {}", SoapDebug.get(responseMsg));
+        if (instanceLogger.isDebugEnabled()) {
+            instanceLogger.debug("Outgoing SOAP/HTTP response: {}", SoapDebug.get(responseMsg));
         }
 
         if (httpExceptionToThrow != null) {

@@ -3,8 +3,11 @@ package org.somda.sdc.dpws.client.helper;
 import com.google.common.eventbus.Subscribe;
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
-import org.apache.logging.log4j.Logger;
+import com.google.inject.name.Named;
 import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.somda.sdc.common.CommonConfig;
+import org.somda.sdc.common.logging.InstanceLogger;
 import org.somda.sdc.dpws.soap.MarshallingService;
 import org.somda.sdc.dpws.soap.NotificationSink;
 import org.somda.sdc.dpws.soap.SoapDebug;
@@ -28,10 +31,13 @@ public class DiscoveryClientUdpProcessor implements UdpMessageQueueObserver {
 
     private final MarshallingService marshallingService;
     private final NotificationSink notificationSink;
+    private final Logger instanceLogger;
 
     @AssistedInject
     DiscoveryClientUdpProcessor(@Assisted NotificationSink notificationSink,
-                                MarshallingService marshallingService) {
+                                MarshallingService marshallingService,
+                                @Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier) {
+        this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);
         this.notificationSink = notificationSink;
         this.marshallingService = marshallingService;
     }
@@ -43,13 +49,11 @@ public class DiscoveryClientUdpProcessor implements UdpMessageQueueObserver {
         try {
             notification = marshallingService.unmarshal(new ByteArrayInputStream(msg.getData(), 0, msg.getLength()));
         } catch (MarshallingException e) {
-            LOG.warn("Incoming UDP message could not be unmarshalled. Message Bytes: {}", msg.toString());
+            instanceLogger.warn("Incoming UDP message could not be unmarshalled. Message Bytes: {}", msg.toString());
             return;
         }
 
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("Incoming SOAP/UDP message: {}", SoapDebug.get(notification));
-        }
+        instanceLogger.debug("Incoming SOAP/UDP message: {}", () -> SoapDebug.get(notification));
 
         // Forward SOAP message to given notification interceptor chain
         notificationSink.receiveNotification(notification, msg.getCommunicationContext());

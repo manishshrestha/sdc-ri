@@ -2,9 +2,12 @@ package org.somda.sdc.dpws;
 
 import com.google.common.io.ByteStreams;
 import com.google.inject.Inject;
+import com.google.inject.name.Named;
 import org.apache.commons.io.output.TeeOutputStream;
-import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.somda.sdc.common.CommonConfig;
+import org.somda.sdc.common.logging.InstanceLogger;
 import org.somda.sdc.dpws.soap.CommunicationContext;
 
 import java.io.ByteArrayInputStream;
@@ -19,10 +22,12 @@ public class CommunicationLogImpl implements CommunicationLog {
     private static final Logger LOG = LogManager.getLogger(CommunicationLogImpl.class);
 
     private final CommunicationLogSink logSink;
+    private final Logger instanceLogger;
 
     @Inject
-    public CommunicationLogImpl(CommunicationLogSink sink) {
-
+    public CommunicationLogImpl(CommunicationLogSink sink,
+                                @Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier) {
+        this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);
         this.logSink = sink;
     }
 
@@ -62,7 +67,7 @@ public class CommunicationLogImpl implements CommunicationLog {
             }
             return new ByteArrayInputStream(bytes);
         } catch (IOException e) {
-            LOG.warn("Could not write to communication log file", e);
+            instanceLogger.warn("Could not write to communication log file", e);
         }
         return inputStream;
     }

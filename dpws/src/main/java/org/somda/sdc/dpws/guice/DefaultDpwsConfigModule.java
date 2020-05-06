@@ -16,6 +16,7 @@ import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLSession;
 import java.io.File;
 import java.time.Duration;
+import java.util.UUID;
 
 /**
  * Default configuration module to configure {@link DefaultDpwsModule}.

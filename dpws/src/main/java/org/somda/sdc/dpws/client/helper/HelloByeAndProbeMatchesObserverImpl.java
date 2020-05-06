@@ -8,8 +8,11 @@ import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.inject.Inject;
 import com.google.inject.assistedinject.Assisted;
-import org.apache.logging.log4j.Logger;
+import com.google.inject.name.Named;
 import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.somda.sdc.common.CommonConfig;
+import org.somda.sdc.common.logging.InstanceLogger;
 import org.somda.sdc.common.util.ExecutorWrapperService;
 import org.somda.sdc.dpws.client.DiscoveredDevice;
 import org.somda.sdc.dpws.client.event.DeviceEnteredMessage;
@@ -37,11 +40,14 @@ public class HelloByeAndProbeMatchesObserverImpl implements HelloByeAndProbeMatc
     private final ExecutorWrapperService<ListeningExecutorService> networkJobExecutor;
     private final WsAddressingUtil wsaUtil;
     private final EventBus discoveryBus;
+    private final Logger instanceLogger;
 
     @Inject
     HelloByeAndProbeMatchesObserverImpl(@Assisted DiscoveredDeviceResolver discoveredDeviceResolver,
                                         @NetworkJobThreadPool ExecutorWrapperService<ListeningExecutorService> networkJobExecutor,
-                                        WsAddressingUtil wsaUtil) {
+                                        WsAddressingUtil wsaUtil,
+                                        @Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier) {
+        this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);
         this.discoveredDeviceResolver = discoveredDeviceResolver;
         this.networkJobExecutor = networkJobExecutor;
         this.wsaUtil = wsaUtil;
@@ -69,7 +75,7 @@ public class HelloByeAndProbeMatchesObserverImpl implements HelloByeAndProbeMatc
             @Override
             public void onSuccess(@Nullable Optional<DiscoveredDevice> discoveredDevice) {
                 if (discoveredDevice == null) {
-                    LOG.warn("{} delivered null pointer", DiscoveredDeviceResolver.class);
+                    instanceLogger.warn("{} delivered null pointer", DiscoveredDeviceResolver.class);
                     return;
                 }
 
@@ -78,7 +84,7 @@ public class HelloByeAndProbeMatchesObserverImpl implements HelloByeAndProbeMatc
 
             @Override
             public void onFailure(Throwable throwable) {
-                LOG.trace("Error while processing Hello message.", throwable);
+                instanceLogger.trace("Error while processing Hello message.", throwable);
             }
         }, networkJobExecutor.get());
     }
@@ -101,7 +107,7 @@ public class HelloByeAndProbeMatchesObserverImpl implements HelloByeAndProbeMatc
             @Override
             public void onSuccess(@Nullable Optional<DiscoveredDevice> discoveredDevice) {
                 if (discoveredDevice == null) {
-                    LOG.warn("{} delivered null pointer", DiscoveredDeviceResolver.class);
+                    instanceLogger.warn("{} delivered null pointer", DiscoveredDeviceResolver.class);
                     return;
                 }
 

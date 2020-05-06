@@ -1,5 +1,7 @@
 package org.somda.sdc.dpws;
 
+import org.somda.sdc.common.CommonConfig;
+
 /**
  * Configuration of the DPWS top level package.
  *

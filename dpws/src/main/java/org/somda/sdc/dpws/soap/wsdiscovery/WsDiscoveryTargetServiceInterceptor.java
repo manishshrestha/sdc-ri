@@ -3,8 +3,11 @@ package org.somda.sdc.dpws.soap.wsdiscovery;
 import com.google.common.primitives.UnsignedInteger;
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
-import org.apache.logging.log4j.Logger;
+import com.google.inject.name.Named;
 import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.somda.sdc.common.CommonConfig;
+import org.somda.sdc.common.logging.InstanceLogger;
 import org.somda.sdc.common.util.ObjectUtilImpl;
 import org.somda.sdc.dpws.soap.NotificationSource;
 import org.somda.sdc.dpws.soap.SoapMessage;
@@ -21,7 +24,16 @@ import org.somda.sdc.dpws.soap.wsaddressing.WsAddressingHeader;
 import org.somda.sdc.dpws.soap.wsaddressing.WsAddressingUtil;
 import org.somda.sdc.dpws.soap.wsaddressing.model.EndpointReferenceType;
 import org.somda.sdc.dpws.soap.wsdiscovery.factory.WsDiscoveryFaultFactory;
-import org.somda.sdc.dpws.soap.wsdiscovery.model.*;
+import org.somda.sdc.dpws.soap.wsdiscovery.model.ByeType;
+import org.somda.sdc.dpws.soap.wsdiscovery.model.HelloType;
+import org.somda.sdc.dpws.soap.wsdiscovery.model.ObjectFactory;
+import org.somda.sdc.dpws.soap.wsdiscovery.model.ProbeMatchType;
+import org.somda.sdc.dpws.soap.wsdiscovery.model.ProbeMatchesType;
+import org.somda.sdc.dpws.soap.wsdiscovery.model.ProbeType;
+import org.somda.sdc.dpws.soap.wsdiscovery.model.ResolveMatchType;
+import org.somda.sdc.dpws.soap.wsdiscovery.model.ResolveMatchesType;
+import org.somda.sdc.dpws.soap.wsdiscovery.model.ResolveType;
+import org.somda.sdc.dpws.soap.wsdiscovery.model.ScopesType;
 
 import javax.annotation.Nullable;
 import javax.xml.bind.JAXBElement;
@@ -52,6 +64,7 @@ public class WsDiscoveryTargetServiceInterceptor implements WsDiscoveryTargetSer
     private final NotificationSource notificationSource;
     private final ObjectUtilImpl objectUtil;
     private final UnsignedInteger instanceId;
+    private final Logger instanceLogger;
     private List<QName> types;
     private List<String> scopes;
     private List<String> xAddrs;
@@ -70,7 +83,9 @@ public class WsDiscoveryTargetServiceInterceptor implements WsDiscoveryTargetSer
                                         WsDiscoveryFaultFactory wsdFaultFactory,
                                         WsAddressingUtil wsaUtil,
                                         WsDiscoveryUtil wsdUtil,
-                                        ObjectUtilImpl objectUtil) {
+                                        ObjectUtilImpl objectUtil,
+                                        @Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier) {
+        this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);
         this.targetServiceEpr = targetServiceEpr;
         this.notificationSource = notificationSource;
         this.objectUtil = objectUtil;
@@ -157,7 +172,7 @@ public class WsDiscoveryTargetServiceInterceptor implements WsDiscoveryTargetSer
 
         if (!URI.create(resolveType.getEndpointReference().getAddress().getValue())
                 .equals(URI.create(endpointReference.getAddress().getValue()))) {
-            LOG.debug("Incoming ResolveMatches message had an EPR address not matching this device." +
+            instanceLogger.debug("Incoming ResolveMatches message had an EPR address not matching this device." +
                             " Message EPR address is {}, device EPR address is {}",
                     resolveType.getEndpointReference().getAddress().getValue(),
                     endpointReference.getAddress().getValue());

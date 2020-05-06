@@ -4,8 +4,11 @@ import com.google.common.util.concurrent.AbstractExecutionThreadService;
 import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
-import org.apache.logging.log4j.Logger;
+import com.google.inject.name.Named;
 import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.somda.sdc.common.CommonConfig;
+import org.somda.sdc.common.logging.InstanceLogger;
 import org.somda.sdc.common.util.ExecutorWrapperService;
 import org.somda.sdc.dpws.factory.TransportBindingFactory;
 import org.somda.sdc.dpws.guice.NetworkJobThreadPool;
@@ -18,7 +21,6 @@ import org.somda.sdc.dpws.soap.wseventing.helper.SubscriptionManagerBase;
 import org.somda.sdc.dpws.soap.wseventing.model.Notification;
 
 import javax.annotation.Nullable;
-import javax.inject.Named;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Collection;
@@ -40,6 +42,7 @@ public class SourceSubscriptionManagerImpl extends AbstractExecutionThreadServic
     private final TransportBindingFactory transportBindingFactory;
     private final WsAddressingUtil wsaUtil;
     private final ExecutorWrapperService<ListeningExecutorService> networkJobExecutor;
+    private final Logger instanceLogger;
 
     private NotificationSource notifyToSender;
     private NotificationSource endToSender;
@@ -58,7 +61,9 @@ public class SourceSubscriptionManagerImpl extends AbstractExecutionThreadServic
                                   NotificationSourceFactory notificationSourceFactory,
                                   TransportBindingFactory transportBindingFactory,
                                   WsAddressingUtil wsaUtil,
-                                  @NetworkJobThreadPool ExecutorWrapperService<ListeningExecutorService> networkJobExecutor) {
+                                  @NetworkJobThreadPool ExecutorWrapperService<ListeningExecutorService> networkJobExecutor,
+                                  @Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier) {
+        this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);
         this.notificationSourceFactory = notificationSourceFactory;
         this.transportBindingFactory = transportBindingFactory;
         this.wsaUtil = wsaUtil;
@@ -133,7 +138,7 @@ public class SourceSubscriptionManagerImpl extends AbstractExecutionThreadServic
             try {
                 endToSender.sendNotification(endToMessage);
             } catch (Exception e) {
-                LOG.info("End-to message could not be delivered.", e);
+                instanceLogger.info("End-to message could not be delivered.", e);
             }
         });
     }
@@ -156,7 +161,7 @@ public class SourceSubscriptionManagerImpl extends AbstractExecutionThreadServic
         subscriptionId = wsaUtil.getAddressUri(delegate.getSubscriptionManagerEpr()).orElseThrow(() ->
                 new NoSuchElementException("Subscription manager id could not be resolved"));
 
-        LOG.info("Source subscription manager '{}' started. Start delivering notifications to '{}'",
+        instanceLogger.info("Source subscription manager '{}' started. Start delivering notifications to '{}'",
                 subscriptionId, notifyToUri);
     }
 
@@ -166,14 +171,14 @@ public class SourceSubscriptionManagerImpl extends AbstractExecutionThreadServic
             try {
                 final QueueItem queueItem = notificationQueue.take();
                 if (queueItem instanceof QueueShutDownItem) {
-                    LOG.info("Source subscription manager '{}' received stop signal and is about to shut down", subscriptionId);
+                    instanceLogger.info("Source subscription manager '{}' received stop signal and is about to shut down", subscriptionId);
                     break;
                 }
-                LOG.debug("Sending notification to {} - {}", notifyToUri, queueItem.getNotification().getPayload());
+                instanceLogger.debug("Sending notification to {} - {}", notifyToUri, queueItem.getNotification().getPayload());
                 notifyToSender.sendNotification(queueItem.getNotification().getPayload());
             } catch (Exception e) {
-                LOG.info("Source subscription manager '{}' ended unexpectedly", subscriptionId);
-                LOG.trace("Source subscription manager '{}' ended unexpectedly", subscriptionId, e);
+                instanceLogger.info("Source subscription manager '{}' ended unexpectedly", subscriptionId);
+                instanceLogger.trace("Source subscription manager '{}' ended unexpectedly", subscriptionId, e);
                 break;
             }
         }
@@ -181,7 +186,7 @@ public class SourceSubscriptionManagerImpl extends AbstractExecutionThreadServic
 
     @Override
     protected void shutDown() {
-        LOG.info("Source subscription manager '{}' shut down. Delivery to '{}' stopped.",
+        instanceLogger.info("Source subscription manager '{}' shut down. Delivery to '{}' stopped.",
                 subscriptionId, notifyToUri);
     }
 

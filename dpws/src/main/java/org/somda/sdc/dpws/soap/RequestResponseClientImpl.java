@@ -14,7 +14,6 @@ import org.apache.logging.log4j.LogManager;
  * Default implementation of {@linkplain RequestResponseClient}.
  */
 public class RequestResponseClientImpl implements RequestResponseClient {
-    private static final Logger LOG = LogManager.getLogger(RequestResponseClientImpl.class);
 
     private final InterceptorRegistry interceptorRegistry;
     private final RequestResponseCallback networkCallback;

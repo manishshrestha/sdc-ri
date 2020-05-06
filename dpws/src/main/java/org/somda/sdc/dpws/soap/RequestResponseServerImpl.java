@@ -17,7 +17,6 @@ import org.somda.sdc.dpws.soap.wsaddressing.model.ObjectFactory;
  * Default implementation of {@linkplain RequestResponseServer}.
  */
 public class RequestResponseServerImpl implements RequestResponseServer {
-    private static final Logger LOG = LogManager.getLogger(RequestResponseServerImpl.class);
 
     private final InterceptorRegistry interceptorRegistry;
     private final SoapFaultFactory soapFaultFactory;

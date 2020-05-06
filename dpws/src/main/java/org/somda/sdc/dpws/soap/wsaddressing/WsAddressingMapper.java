@@ -1,8 +1,11 @@
 package org.somda.sdc.dpws.soap.wsaddressing;
 
 import com.google.inject.Inject;
-import org.apache.logging.log4j.Logger;
+import com.google.inject.name.Named;
 import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.somda.sdc.common.CommonConfig;
+import org.somda.sdc.common.logging.InstanceLogger;
 import org.somda.sdc.common.util.JaxbUtil;
 import org.somda.sdc.dpws.soap.wsaddressing.model.AttributedURIType;
 import org.somda.sdc.dpws.soap.wsaddressing.model.ObjectFactory;
@@ -22,11 +25,14 @@ public class WsAddressingMapper {
     private final JaxbUtil jaxbUtil;
     private final ObjectFactory wsaFactory;
     private final WsAddressingUtil wsaUtil;
+    private final Logger instanceLogger;
 
     @Inject
     WsAddressingMapper(JaxbUtil jaxbUtil,
                        ObjectFactory wsaFactory,
-                       WsAddressingUtil wsaUtil) {
+                       WsAddressingUtil wsaUtil,
+                       @Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier) {
+        this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);
         this.jaxbUtil = jaxbUtil;
         this.wsaFactory = wsaFactory;
         this.wsaUtil = wsaUtil;
@@ -84,7 +90,7 @@ public class WsAddressingMapper {
                     if (jaxbObj.getName().equals(jaxbElement.getName())
                             && jaxbObj.getDeclaredType().equals(jaxbElement.getDeclaredType())
                             && jaxbObj.getScope().equals(jaxbElement.getScope())) {
-                        LOG.warn("Envelope header already contains entry for JAXBElement {}."
+                        instanceLogger.warn("Envelope header already contains entry for JAXBElement {}."
                                         + "Removing previously set element with value {} and replacing it with {}",
                                 obj, jaxbElement.getValue(), jaxbObj.getValue());
                         dest.remove(jaxbElement);
@@ -135,7 +141,7 @@ public class WsAddressingMapper {
                         WsAddressingConstants.IS_REFERENCE_PARAMETER.getLocalPart()
                 );
                 if (isRefParm) {
-                    LOG.debug(
+                    instanceLogger.debug(
                             "Incoming message contained reference parameter element ({}:{})",
                             elem.getNamespaceURI(), elem.getTagName()
                     );

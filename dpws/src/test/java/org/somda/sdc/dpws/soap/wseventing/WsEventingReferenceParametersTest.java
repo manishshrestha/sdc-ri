@@ -222,7 +222,7 @@ public class WsEventingReferenceParametersTest extends DpwsTest {
                 SubscriptionManagerFactory subscriptionManagerFactory,
                 HttpUriBuilder httpUriBuilder
         ) {
-            super(maxExpires, subscriptionManagerPath, soapUtil, faultFactory, jaxbUtil, wsaUtil, wseFactory, soapMessageFactory, envelopeFactory, httpServerRegistry, rrServerHttpHandlerProvider, subscriptionRegistry, subscriptionManagerFactory, httpUriBuilder);
+            super(maxExpires, subscriptionManagerPath, soapUtil, faultFactory, jaxbUtil, wsaUtil, wseFactory, soapMessageFactory, envelopeFactory, httpServerRegistry, rrServerHttpHandlerProvider, subscriptionRegistry, subscriptionManagerFactory, httpUriBuilder, "abcd");
             this.soapUtil = soapUtil;
 
             // reset the futures on every instantiation to avoid side effects

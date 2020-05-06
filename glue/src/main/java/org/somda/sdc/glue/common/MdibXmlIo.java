@@ -3,12 +3,13 @@ package org.somda.sdc.glue.common;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import com.sun.xml.bind.marshaller.NamespacePrefixMapper;
-import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.somda.sdc.biceps.model.message.GetMdibResponse;
 import org.somda.sdc.biceps.model.message.ObjectFactory;
 import org.somda.sdc.biceps.model.participant.Mdib;
 import org.somda.sdc.biceps.model.participant.MdibVersion;
+import org.somda.sdc.common.logging.InstanceLogger;
 import org.somda.sdc.common.util.NamespacePrefixMapperConverter;
 import org.somda.sdc.common.util.PrefixNamespaceMappingParser;
 import org.somda.sdc.dpws.soap.SoapConstants;
@@ -17,7 +18,12 @@ import org.somda.sdc.glue.GlueConstants;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 
 /**
  * Utility class to read an {@linkplain Mdib} from an input stream (or file).
@@ -27,6 +33,7 @@ public class MdibXmlIo {
     private final ObjectFactory messageModelFactory;
     private final MdibVersionUtil mdibVersionUtil;
     private final NamespacePrefixMapper namespacePrefixMapper;
+    private final Logger instanceLogger;
 
     private JAXBContext jaxbContext;
 
@@ -35,7 +42,9 @@ public class MdibXmlIo {
               MdibVersionUtil mdibVersionUtil,
               PrefixNamespaceMappingParser prefixNamespaceMappingParser,
               NamespacePrefixMapperConverter namespacePrefixMapperConverter,
-              @Named(CommonConfig.NAMESPACE_MAPPINGS) String namespaceMappings) {
+              @Named(CommonConfig.NAMESPACE_MAPPINGS) String namespaceMappings,
+              @Named(org.somda.sdc.common.CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier) {
+        this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);
         this.messageModelFactory = messageModelFactory;
         this.mdibVersionUtil = mdibVersionUtil;
 
@@ -91,7 +100,7 @@ public class MdibXmlIo {
             // Set a random UUID; no real purpose, but required for validity
             mdibVersionUtil.setMdibVersion(MdibVersion.create(), getMdibResponse);
         } catch (Exception e) {
-            LOG.warn("Unexpected error during setMdibVersion on a GetMdibResponseObject. " +
+            instanceLogger.warn("Unexpected error during setMdibVersion on a GetMdibResponseObject. " +
                     "Nothing was written to the output stream", e);
             return;
         }
@@ -118,7 +127,7 @@ public class MdibXmlIo {
     }
 
     private void initJaxb() {
-        LOG.info("Setup an MDIB XML reader with JAXB contexts: {}", GlueConstants.JAXB_CONTEXT_PATH);
+        instanceLogger.info("Setup an MDIB XML reader with JAXB contexts: {}", GlueConstants.JAXB_CONTEXT_PATH);
 
         try {
             jaxbContext = JAXBContext.newInstance(GlueConstants.JAXB_CONTEXT_PATH);

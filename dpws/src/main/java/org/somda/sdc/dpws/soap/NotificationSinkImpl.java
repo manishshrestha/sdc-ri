@@ -2,8 +2,11 @@ package org.somda.sdc.dpws.soap;
 
 import com.google.inject.Inject;
 import com.google.inject.assistedinject.Assisted;
-import org.apache.logging.log4j.Logger;
+import com.google.inject.name.Named;
 import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.somda.sdc.common.CommonConfig;
+import org.somda.sdc.common.logging.InstanceLogger;
 import org.somda.sdc.dpws.soap.exception.SoapFaultException;
 import org.somda.sdc.dpws.soap.interception.Direction;
 import org.somda.sdc.dpws.soap.interception.Interceptor;
@@ -20,11 +23,14 @@ public class NotificationSinkImpl implements NotificationSink {
 
     private final InterceptorRegistry interceptorRegistry;
     private final ServerDispatcher serverDispatcher;
+    private final Logger instanceLogger;
 
     @Inject
     NotificationSinkImpl(@Assisted WsAddressingServerInterceptor wsaServerInterceptor,
                          ServerDispatcher serverDispatcher,
-                         InterceptorRegistry interceptorRegistry) {
+                         InterceptorRegistry interceptorRegistry,
+                         @Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier) {
+        this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);
         this.serverDispatcher = serverDispatcher;
         this.interceptorRegistry = interceptorRegistry;
         register(wsaServerInterceptor);
@@ -41,7 +47,7 @@ public class NotificationSinkImpl implements NotificationSink {
         try {
             serverDispatcher.invokeDispatcher(Direction.NOTIFICATION, interceptorRegistry, notification, nObj);
         } catch (SoapFaultException e) {
-            LOG.debug("Caught SoapFaultException on notification is dropped. Message: {}", e.getMessage());
+            instanceLogger.debug("Caught SoapFaultException on notification is dropped. Message: {}", e.getMessage());
         }
     }
 }

@@ -4,6 +4,7 @@ import com.google.inject.Guice;
 import com.google.inject.Injector;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
+import org.somda.sdc.common.guice.DefaultCommonConfigModule;
 import org.somda.sdc.common.guice.DefaultHelperModule;
 import org.somda.sdc.dpws.guice.DefaultDpwsConfigModule;
 import org.somda.sdc.dpws.guice.DefaultDpwsModule;
@@ -31,6 +32,7 @@ public class IntegrationTestUtil {
 
     public IntegrationTestUtil() {
         injector = Guice.createInjector(
+                new DefaultCommonConfigModule(),
                 new DefaultDpwsModule(),
                 new DefaultHelperModule(),
                 new DefaultDpwsConfigModule());

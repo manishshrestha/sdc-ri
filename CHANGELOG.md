@@ -10,6 +10,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - `org.somda.sdc.common.util.AnyDateTime` and `org.somda.sdc.common.util.AnyDateTimeAdapter` to fully support XML Schema DateTime. (#151)
+- `org.somda.sdc.common.logging.InstanceLogger` to provide an instance identifier in all log messages. (#156)
+- `org.somda.sdc.common.CommonConfig` to configure the instance identifier for the logger. (#156)
 
 ### Changed
 
@@ -18,10 +20,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Communication log file names to include SOAP action information and XML to be pretty-printed. (#153)
 - `GetContainmentTree` handling changed in order to allow traversal of the MDIB. (#150)
 - Change names in `org.somda.sdc.dpws.soap.wseventing.WsEventingConstants` from `WSE_ACTION[...]` to `WSA_ACTION[...]`. (#157)
+- `org.somda.sdc.common.util.ExecutorWrapperService` are bound as guice `Provider`. (#156)
 
 ### Removed
 
 - `org.somda.sdc.dpws.CommunicationLogSink.getTargetStream()`; use `org.somda.sdc.dpws.CommunicationLogSink.createTargetStream()` instead. (#153)
+- `org.somda.sdc.common.util.ExecutorWrapperUtil`; `org.somda.sdc.common.util.ExecutorWrapperServices` are bound as guice `Provider`. (#156)
 
 ## 1.1.0 - 2020-04-18
 

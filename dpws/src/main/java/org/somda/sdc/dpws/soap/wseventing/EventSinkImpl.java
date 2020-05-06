@@ -5,9 +5,11 @@ import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
 import com.google.inject.name.Named;
-import org.eclipse.jetty.http.HttpStatus;
-import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.eclipse.jetty.http.HttpStatus;
+import org.somda.sdc.common.CommonConfig;
+import org.somda.sdc.common.logging.InstanceLogger;
 import org.somda.sdc.common.util.ExecutorWrapperService;
 import org.somda.sdc.dpws.DpwsConfig;
 import org.somda.sdc.dpws.DpwsConstants;
@@ -15,19 +17,38 @@ import org.somda.sdc.dpws.guice.NetworkJobThreadPool;
 import org.somda.sdc.dpws.http.HttpException;
 import org.somda.sdc.dpws.http.HttpHandler;
 import org.somda.sdc.dpws.http.HttpServerRegistry;
-import org.somda.sdc.dpws.soap.*;
+import org.somda.sdc.dpws.soap.CommunicationContext;
+import org.somda.sdc.dpws.soap.NotificationSink;
+import org.somda.sdc.dpws.soap.RequestResponseClient;
+import org.somda.sdc.dpws.soap.SoapMarshalling;
+import org.somda.sdc.dpws.soap.SoapMessage;
+import org.somda.sdc.dpws.soap.SoapUtil;
 import org.somda.sdc.dpws.soap.exception.MalformedSoapMessageException;
 import org.somda.sdc.dpws.soap.wsaddressing.WsAddressingUtil;
 import org.somda.sdc.dpws.soap.wsaddressing.model.EndpointReferenceType;
 import org.somda.sdc.dpws.soap.wseventing.exception.SubscriptionNotFoundException;
 import org.somda.sdc.dpws.soap.wseventing.factory.SubscriptionManagerFactory;
-import org.somda.sdc.dpws.soap.wseventing.model.*;
+import org.somda.sdc.dpws.soap.wseventing.model.DeliveryType;
+import org.somda.sdc.dpws.soap.wseventing.model.FilterType;
+import org.somda.sdc.dpws.soap.wseventing.model.GetStatus;
+import org.somda.sdc.dpws.soap.wseventing.model.GetStatusResponse;
+import org.somda.sdc.dpws.soap.wseventing.model.ObjectFactory;
+import org.somda.sdc.dpws.soap.wseventing.model.Renew;
+import org.somda.sdc.dpws.soap.wseventing.model.RenewResponse;
+import org.somda.sdc.dpws.soap.wseventing.model.Subscribe;
+import org.somda.sdc.dpws.soap.wseventing.model.SubscribeResponse;
+import org.somda.sdc.dpws.soap.wseventing.model.Unsubscribe;
 
 import javax.annotation.Nullable;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.time.Duration;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -56,6 +77,7 @@ public class EventSinkImpl implements EventSink {
     private final Map<String, SinkSubscriptionManager> subscriptionManagers;
     private final Lock subscriptionsLock;
     private final Duration maxWaitForFutures;
+    private final Logger instanceLogger;
 
     @AssistedInject
     EventSinkImpl(@Assisted RequestResponseClient requestResponseClient,
@@ -67,7 +89,9 @@ public class EventSinkImpl implements EventSink {
                   SoapMarshalling marshalling,
                   SoapUtil soapUtil,
                   @NetworkJobThreadPool ExecutorWrapperService<ListeningExecutorService> executorService,
-                  SubscriptionManagerFactory subscriptionManagerFactory) {
+                  SubscriptionManagerFactory subscriptionManagerFactory,
+                  @Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier) {
+        this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);
         this.requestResponseClient = requestResponseClient;
         this.hostAddress = hostAddress;
         this.maxWaitForFutures = maxWaitForFutures;
@@ -257,8 +281,8 @@ public class EventSinkImpl implements EventSink {
             try {
                 future.get(maxWaitForFutures.toSeconds(), TimeUnit.SECONDS);
             } catch (InterruptedException | ExecutionException | TimeoutException e) {
-                LOG.warn("Subscription {} could not be unsubscribed. Ignore.", subscriptionManager.getSubscriptionId());
-                LOG.trace("Subscription {} could not be unsubscribed", subscriptionManager.getSubscriptionId(), e);
+                instanceLogger.warn("Subscription {} could not be unsubscribed. Ignore.", subscriptionManager.getSubscriptionId());
+                instanceLogger.trace("Subscription {} could not be unsubscribed", subscriptionManager.getSubscriptionId(), e);
             }
         }
     }
@@ -280,7 +304,7 @@ public class EventSinkImpl implements EventSink {
         try {
             SoapMessage soapMsg = soapUtil.createMessage(marshalling.unmarshal(inputStream));
             inputStream.close();
-            LOG.debug("Received incoming notification {}", soapMsg);
+            instanceLogger.debug("Received incoming notification {}", soapMsg);
             notificationSink.receiveNotification(soapMsg, communicationContext);
 
             // Only close the output stream when the notification has been processed

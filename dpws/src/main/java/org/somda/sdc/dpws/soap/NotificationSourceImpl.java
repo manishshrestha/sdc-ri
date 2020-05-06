@@ -13,7 +13,6 @@ import org.apache.logging.log4j.LogManager;
  * Default implementation of {@linkplain NotificationSource}.
  */
 public class NotificationSourceImpl implements NotificationSource {
-    private static final Logger LOG = LogManager.getLogger(NotificationSourceImpl.class);
 
     private final InterceptorRegistry interceptorRegistry;
     private final NotificationCallback networkCallback;
