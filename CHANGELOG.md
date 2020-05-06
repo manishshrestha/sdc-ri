@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - `org.somda.sdc.common.util.AnyDateTime` and `org.somda.sdc.common.util.AnyDateTimeAdapter` to fully support XML Schema DateTime. (#151)
 - `org.somda.sdc.common.logging.InstanceLogger` to provide an instance identifier in all log messages. (#156)
+- `org.somda.sdc.common.CommonConfig` to configure the instance identifier for the logger. (#156)
 
 ### Changed
 
