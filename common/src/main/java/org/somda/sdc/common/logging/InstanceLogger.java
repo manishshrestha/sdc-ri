@@ -13,7 +13,7 @@ import java.lang.reflect.Proxy;
 public class InstanceLogger {
 
     /**
-     * The key which is used in the ThreadContext to communicate the instance identifier.
+     * The key which is used in the thread context to communicate the instance identifier.
      *
      * @see org.somda.sdc.common.CommonConfig#INSTANCE_IDENTIFIER
      */
