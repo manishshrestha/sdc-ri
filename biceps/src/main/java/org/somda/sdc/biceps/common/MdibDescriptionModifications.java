@@ -20,7 +20,6 @@ import java.util.Set;
  * The {@linkplain MdibDescriptionModifications} is a fluent interface.
  */
 public class MdibDescriptionModifications {
-    // TODO: Use InstanceLogger
     private static final Logger LOG = LogManager.getLogger(MdibDescriptionModifications.class);
 
     private List<MdibDescriptionModification> modifications;

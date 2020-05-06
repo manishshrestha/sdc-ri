@@ -1,10 +1,17 @@
 package org.somda.sdc.dpws.client;
 
-import com.google.common.util.concurrent.*;
+import com.google.common.util.concurrent.AbstractIdleService;
+import com.google.common.util.concurrent.FutureCallback;
+import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.ListenableFuture;
+import com.google.common.util.concurrent.ListeningExecutorService;
+import com.google.common.util.concurrent.Service;
+import com.google.common.util.concurrent.SettableFuture;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
-import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.somda.sdc.common.CommonConfig;
 import org.somda.sdc.common.logging.InstanceLogger;
 import org.somda.sdc.common.util.ExecutorWrapperService;
 import org.somda.sdc.dpws.DpwsConfig;
@@ -78,7 +85,7 @@ public class ClientImpl extends AbstractIdleService implements Client, Service, 
                RequestResponseClientFactory requestResponseClientFactory,
                HostingServiceResolver hostingServiceResolver,
                @ClientSpecific WsAddressingServerInterceptor wsAddressingServerInterceptor,
-               @Named(DpwsConfig.FRAMEWORK_IDENTIFIER) String frameworkIdentifier) {
+               @Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier) {
         this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);
         this.maxWaitForFutures = maxWaitForFutures;
         this.discoveryMessageQueue = discoveryMessageQueue;

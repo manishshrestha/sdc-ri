@@ -7,8 +7,8 @@ import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
 import com.google.inject.assistedinject.FactoryModuleBuilder;
 import com.google.inject.name.Named;
+import org.somda.sdc.common.CommonConfig;
 import org.somda.sdc.common.util.ExecutorWrapperService;
-import org.somda.sdc.dpws.DpwsConfig;
 import org.somda.sdc.glue.common.MdibMapper;
 import org.somda.sdc.glue.common.ModificationsBuilder;
 import org.somda.sdc.glue.common.factory.MdibMapperFactory;
@@ -110,7 +110,7 @@ public class DefaultGlueModule extends AbstractModule {
 
     @Provides
     @Consumer
-    ExecutorWrapperService<ListeningExecutorService> getConsumerExecutor(@Named(DpwsConfig.FRAMEWORK_IDENTIFIER) String frameworkIdentifier) {
+    ExecutorWrapperService<ListeningExecutorService> getConsumerExecutor(@Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier) {
         if (consumerExecutor == null) {
             Callable<ListeningExecutorService> executor = () -> MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(
                     10,
@@ -126,7 +126,7 @@ public class DefaultGlueModule extends AbstractModule {
 
     @Provides
     @WatchdogScheduledExecutor
-    ExecutorWrapperService<ScheduledExecutorService> getWatchdogScheduledExecutor(@Named(DpwsConfig.FRAMEWORK_IDENTIFIER) String frameworkIdentifier) {
+    ExecutorWrapperService<ScheduledExecutorService> getWatchdogScheduledExecutor(@Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier) {
         if (watchdogScheduledExecutor == null) {
             Callable<ScheduledExecutorService> executor = () -> Executors.newScheduledThreadPool(
                     10,

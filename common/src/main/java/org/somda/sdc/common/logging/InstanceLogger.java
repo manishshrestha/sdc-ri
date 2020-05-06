@@ -12,6 +12,11 @@ import java.lang.reflect.Proxy;
  */
 public class InstanceLogger {
 
+    /**
+     * The key which is used in the ThreadContext to communicate the instance identifier.
+     *
+     * @see org.somda.sdc.common.CommonConfig#INSTANCE_IDENTIFIER
+     */
     public static final String INSTANCE_ID = "instanceid";
 
     /**

@@ -2,12 +2,13 @@ package org.somda.sdc.dpws.network;
 
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
-import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.somda.sdc.common.CommonConfig;
 import org.somda.sdc.common.logging.InstanceLogger;
-import org.somda.sdc.dpws.DpwsConfig;
 
-import java.net.*;
+import java.net.Socket;
+import java.net.URI;
 import java.util.Optional;
 
 /**
@@ -18,7 +19,7 @@ public class LocalAddressResolverImpl implements LocalAddressResolver {
     private final Logger instanceLogger;
 
     @Inject
-    LocalAddressResolverImpl(@Named(DpwsConfig.FRAMEWORK_IDENTIFIER) String frameworkIdentifier) {
+    LocalAddressResolverImpl(@Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier) {
         this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);
     }
 

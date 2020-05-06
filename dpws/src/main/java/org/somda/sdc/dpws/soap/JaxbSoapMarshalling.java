@@ -4,12 +4,12 @@ import com.google.common.util.concurrent.AbstractIdleService;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import com.sun.xml.bind.marshaller.NamespacePrefixMapper;
-import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.somda.sdc.common.CommonConfig;
 import org.somda.sdc.common.logging.InstanceLogger;
 import org.somda.sdc.common.util.NamespacePrefixMapperConverter;
 import org.somda.sdc.common.util.PrefixNamespaceMappingParser;
-import org.somda.sdc.dpws.DpwsConfig;
 import org.somda.sdc.dpws.DpwsConstants;
 import org.somda.sdc.dpws.FrameworkMetadata;
 import org.somda.sdc.dpws.soap.model.Envelope;
@@ -22,7 +22,11 @@ import org.somda.sdc.dpws.soap.wstransfer.WsTransferConstants;
 import org.xml.sax.SAXException;
 
 import javax.xml.XMLConstants;
-import javax.xml.bind.*;
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBElement;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Marshaller;
+import javax.xml.bind.Unmarshaller;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.stream.StreamSource;
@@ -68,7 +72,7 @@ public class JaxbSoapMarshalling extends AbstractIdleService implements SoapMars
                         NamespacePrefixMapperConverter namespacePrefixMapperConverter,
                         ObjectFactory soapFactory,
                         FrameworkMetadata metadata,
-                        @Named(DpwsConfig.FRAMEWORK_IDENTIFIER) String frameworkIdentifier) {
+                        @Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier) {
         this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);
         this.contextPackages = contextPackages;
         this.schemaPath = schemaPath;

@@ -3,10 +3,10 @@ package org.somda.sdc.dpws.helper;
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
 import com.google.inject.name.Named;
-import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.somda.sdc.common.CommonConfig;
 import org.somda.sdc.common.logging.InstanceLogger;
-import org.somda.sdc.dpws.DpwsConfig;
 import org.somda.sdc.dpws.soap.MarshallingService;
 import org.somda.sdc.dpws.soap.NotificationSource;
 import org.somda.sdc.dpws.soap.SoapDebug;
@@ -34,7 +34,7 @@ public class NotificationSourceUdpCallback implements NotificationCallback {
     @AssistedInject
     NotificationSourceUdpCallback(@Assisted UdpMessageQueueService udpMessageQueue,
                                   MarshallingService marshallingService,
-                                  @Named(DpwsConfig.FRAMEWORK_IDENTIFIER) String frameworkIdentifier) {
+                                  @Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier) {
         this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);
         this.udpMessageQueue = udpMessageQueue;
         this.marshallingService = marshallingService;

@@ -6,17 +6,32 @@ import com.google.common.eventbus.Subscribe;
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
 import com.google.inject.name.Named;
-import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.somda.sdc.biceps.common.MdibEntity;
 import org.somda.sdc.biceps.common.access.MdibAccessObserver;
-import org.somda.sdc.biceps.common.event.*;
-import org.somda.sdc.biceps.model.message.*;
+import org.somda.sdc.biceps.common.event.AlertStateModificationMessage;
+import org.somda.sdc.biceps.common.event.ComponentStateModificationMessage;
+import org.somda.sdc.biceps.common.event.ContextStateModificationMessage;
+import org.somda.sdc.biceps.common.event.DescriptionModificationMessage;
+import org.somda.sdc.biceps.common.event.MetricStateModificationMessage;
+import org.somda.sdc.biceps.common.event.OperationStateModificationMessage;
+import org.somda.sdc.biceps.common.event.WaveformStateModificationMessage;
+import org.somda.sdc.biceps.model.message.AbstractReport;
+import org.somda.sdc.biceps.model.message.DescriptionModificationReport;
+import org.somda.sdc.biceps.model.message.DescriptionModificationType;
+import org.somda.sdc.biceps.model.message.EpisodicAlertReport;
+import org.somda.sdc.biceps.model.message.EpisodicComponentReport;
+import org.somda.sdc.biceps.model.message.EpisodicContextReport;
+import org.somda.sdc.biceps.model.message.EpisodicMetricReport;
+import org.somda.sdc.biceps.model.message.EpisodicOperationalStateReport;
+import org.somda.sdc.biceps.model.message.ObjectFactory;
+import org.somda.sdc.biceps.model.message.WaveformStream;
 import org.somda.sdc.biceps.model.participant.AbstractState;
 import org.somda.sdc.biceps.model.participant.MdibVersion;
 import org.somda.sdc.biceps.model.participant.RealTimeSampleArrayMetricState;
+import org.somda.sdc.common.CommonConfig;
 import org.somda.sdc.common.logging.InstanceLogger;
-import org.somda.sdc.dpws.DpwsConfig;
 import org.somda.sdc.dpws.device.EventSourceAccess;
 import org.somda.sdc.dpws.soap.exception.MarshallingException;
 import org.somda.sdc.dpws.soap.exception.TransportException;
@@ -50,7 +65,7 @@ public class ReportGenerator implements MdibAccessObserver {
                     ObjectFactory bicepsMessageFactory,
                     ReportMappings reportMappings,
                     MdibVersionUtil mdibVersionUtil,
-                    @Named(DpwsConfig.FRAMEWORK_IDENTIFIER) String frameworkIdentifier) {
+                    @Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier) {
         this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);
         this.eventSourceAccess = eventSourceAccess;
         this.bicepsMessageFactory = bicepsMessageFactory;

@@ -12,6 +12,7 @@ import it.org.somda.sdc.dpws.MockedUdpBindingModule;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 import org.somda.sdc.biceps.provider.access.factory.LocalMdibAccessFactory;
+import org.somda.sdc.common.CommonConfig;
 import org.somda.sdc.common.util.ExecutorWrapperService;
 import org.somda.sdc.dpws.DpwsConfig;
 import org.somda.sdc.dpws.DpwsFramework;
@@ -120,7 +121,7 @@ public class TestSdcDevice extends IntegrationTestPeer {
 
                     @Provides
                     @NetworkJobThreadPool
-                    ExecutorWrapperService<ListeningExecutorService> getNetworkJobThreadPool(@Named(DpwsConfig.FRAMEWORK_IDENTIFIER) String frameworkIdentifier) {
+                    ExecutorWrapperService<ListeningExecutorService> getNetworkJobThreadPool(@Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier) {
                         if (networkJobThreadPoolExecutor == null) {
                             Callable<ListeningExecutorService> executor = () -> MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(
                                     30,
@@ -137,7 +138,7 @@ public class TestSdcDevice extends IntegrationTestPeer {
 
                     @Provides
                     @WsDiscovery
-                    ExecutorWrapperService<ListeningExecutorService> getWsDiscoveryExecutor(@Named(DpwsConfig.FRAMEWORK_IDENTIFIER) String frameworkIdentifier) {
+                    ExecutorWrapperService<ListeningExecutorService> getWsDiscoveryExecutor(@Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier) {
                         if (wsDiscoveryExecutor == null) {
                             Callable<ListeningExecutorService> executor = () -> MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(
                                     30,

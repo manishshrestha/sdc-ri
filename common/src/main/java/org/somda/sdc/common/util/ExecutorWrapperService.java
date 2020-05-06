@@ -18,7 +18,6 @@ import java.util.concurrent.TimeUnit;
  * @param <T> actual type of the {@linkplain ExecutorService}.
  */
 public class ExecutorWrapperService<T extends ExecutorService> extends AbstractIdleService {
-    // TODO: Use InstanceLogger somehow
     private static final Logger LOG = LogManager.getLogger(ExecutorWrapperService.class);
     private static final long STOP_TIMEOUT = 5;
     private static final TimeUnit STOP_TIMEUNIT = TimeUnit.SECONDS;

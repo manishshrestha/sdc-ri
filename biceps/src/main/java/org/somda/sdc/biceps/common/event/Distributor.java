@@ -8,7 +8,7 @@ import org.apache.logging.log4j.Logger;
 import org.somda.sdc.biceps.common.MdibEntity;
 import org.somda.sdc.biceps.common.MdibStateModifications;
 import org.somda.sdc.biceps.common.access.MdibAccess;
-import org.somda.sdc.common.Constants;
+import org.somda.sdc.common.CommonConfig;
 import org.somda.sdc.common.logging.InstanceLogger;
 
 import java.lang.reflect.Constructor;
@@ -26,7 +26,7 @@ public class Distributor {
 
     @Inject
     Distributor(EventBus eventBus,
-                @Named(Constants.INSTANCE_IDENTIFIER) String frameworkIdentifier) {
+                @Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier) {
         this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);
         this.eventBus = eventBus;
     }

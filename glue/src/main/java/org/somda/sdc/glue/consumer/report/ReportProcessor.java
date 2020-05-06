@@ -3,17 +3,17 @@ package org.somda.sdc.glue.consumer.report;
 import com.google.common.util.concurrent.AbstractIdleService;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
-import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.somda.sdc.biceps.common.MdibStateModifications;
 import org.somda.sdc.biceps.common.storage.PreprocessingException;
 import org.somda.sdc.biceps.consumer.access.RemoteMdibAccess;
 import org.somda.sdc.biceps.model.message.AbstractReport;
 import org.somda.sdc.biceps.model.message.GetContextStatesResponse;
 import org.somda.sdc.biceps.model.participant.MdibVersion;
+import org.somda.sdc.common.CommonConfig;
 import org.somda.sdc.common.logging.InstanceLogger;
 import org.somda.sdc.common.util.AutoLock;
-import org.somda.sdc.dpws.DpwsConfig;
 import org.somda.sdc.glue.common.MdibVersionUtil;
 import org.somda.sdc.glue.consumer.report.helper.ReportWriter;
 
@@ -54,7 +54,7 @@ public class ReportProcessor extends AbstractIdleService {
     ReportProcessor(ReentrantLock mdibReadyLock,
                     MdibVersionUtil mdibVersionUtil,
                     ReportWriter reportWriter,
-                    @Named(DpwsConfig.FRAMEWORK_IDENTIFIER) String frameworkIdentifier) {
+                    @Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier) {
         this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);
         this.mdibReadyLock = mdibReadyLock;
         this.mdibReadyCondition = mdibReadyLock.newCondition();

@@ -7,6 +7,7 @@ import com.google.inject.util.Modules;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
+import org.somda.sdc.common.guice.DefaultCommonConfigModule;
 import org.somda.sdc.dpws.guice.DefaultDpwsConfigModule;
 import org.somda.sdc.dpws.guice.DefaultDpwsModule;
 import org.somda.sdc.common.guice.DefaultHelperModule;
@@ -71,10 +72,21 @@ public class DpwsTest {
         };
 
         if (overridingModules != null) {
-            injector = Guice.createInjector(Modules.override(new DefaultDpwsModule(), new DefaultHelperModule(),
-                    dpwsConfigOverride).with(overridingModules));
+            injector = Guice.createInjector(
+                    Modules.override(
+                            new DefaultCommonConfigModule(),
+                            new DefaultDpwsModule(),
+                            new DefaultHelperModule(),
+                            dpwsConfigOverride
+                    ).with(
+                            overridingModules
+                    )
+            );
         } else {
-            injector = Guice.createInjector(new DefaultDpwsModule(), new DefaultHelperModule(), dpwsConfigOverride);
+            injector = Guice.createInjector(
+                    new DefaultCommonConfigModule(), new DefaultDpwsModule(),
+                    new DefaultHelperModule(), dpwsConfigOverride
+            );
         }
     }
 

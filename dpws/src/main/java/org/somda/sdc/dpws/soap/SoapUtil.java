@@ -2,12 +2,12 @@ package org.somda.sdc.dpws.soap;
 
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
-import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.somda.sdc.common.CommonConfig;
 import org.somda.sdc.common.logging.InstanceLogger;
 import org.somda.sdc.common.util.JaxbUtil;
 import org.somda.sdc.common.util.UriUtil;
-import org.somda.sdc.dpws.DpwsConfig;
 import org.somda.sdc.dpws.soap.factory.EnvelopeFactory;
 import org.somda.sdc.dpws.soap.factory.SoapMessageFactory;
 import org.somda.sdc.dpws.soap.model.Envelope;
@@ -37,7 +37,7 @@ public class SoapUtil {
              SoapMessageFactory soapMessageFactory,
              EnvelopeFactory envelopeFactory,
              JaxbUtil jaxbUtil,
-             @Named(DpwsConfig.FRAMEWORK_IDENTIFIER) String frameworkIdentifier) {
+             @Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier) {
         this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);
         this.wsaUtil = wsaUtil;
         this.soapMessageFactory = soapMessageFactory;

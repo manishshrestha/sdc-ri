@@ -4,6 +4,7 @@ import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.somda.sdc.common.CommonConfig;
 import org.somda.sdc.common.logging.InstanceLogger;
 import org.somda.sdc.dpws.helper.CommunicationLogFileName;
 import org.somda.sdc.dpws.helper.CommunicationLogFileOutputStream;
@@ -30,7 +31,7 @@ public class CommunicationLogSinkImpl implements CommunicationLogSink {
     @Inject
     CommunicationLogSinkImpl(@Named(DpwsConfig.COMMUNICATION_LOG_SINK_DIRECTORY) File logDirectory,
                              @Named(DpwsConfig.COMMUNICATION_LOG_WITH_HTTP_HEADERS) Boolean createHttpHeaders,
-                             @Named(DpwsConfig.FRAMEWORK_IDENTIFIER) String frameworkIdentifier) {
+                             @Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier) {
         this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);
         this.createHttpHeaders = createHttpHeaders;
 

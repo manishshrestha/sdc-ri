@@ -5,11 +5,11 @@ import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
 import com.google.inject.name.Named;
-import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.somda.sdc.common.CommonConfig;
 import org.somda.sdc.common.logging.InstanceLogger;
 import org.somda.sdc.common.util.ExecutorWrapperService;
-import org.somda.sdc.dpws.DpwsConfig;
 import org.somda.sdc.dpws.factory.TransportBindingFactory;
 import org.somda.sdc.dpws.guice.NetworkJobThreadPool;
 import org.somda.sdc.dpws.soap.NotificationSource;
@@ -62,7 +62,7 @@ public class SourceSubscriptionManagerImpl extends AbstractExecutionThreadServic
                                   TransportBindingFactory transportBindingFactory,
                                   WsAddressingUtil wsaUtil,
                                   @NetworkJobThreadPool ExecutorWrapperService<ListeningExecutorService> networkJobExecutor,
-                                  @Named(DpwsConfig.FRAMEWORK_IDENTIFIER) String frameworkIdentifier) {
+                                  @Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier) {
         this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);
         this.notificationSourceFactory = notificationSourceFactory;
         this.transportBindingFactory = transportBindingFactory;

@@ -1,6 +1,6 @@
 package org.somda.sdc.dpws;
 
-import org.somda.sdc.common.Constants;
+import org.somda.sdc.common.CommonConfig;
 
 /**
  * Configuration of the DPWS top level package.
@@ -123,15 +123,4 @@ public class DpwsConfig {
      * </ul>
      */
     public static final String HTTP_SUPPORT = "Dpws.EnableHttp";
-
-    /**
-     * Sets an identifier for the injector instance the framework is running in, used
-     * to identify the instance in log messages.
-     *
-     * <ul>
-     * <li>Data type: {@linkplain String}
-     * <li>Use: optional
-     * </ul>
-     */
-    public static final String FRAMEWORK_IDENTIFIER = Constants.INSTANCE_IDENTIFIER;
 }

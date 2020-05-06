@@ -4,14 +4,22 @@ import com.google.common.collect.ArrayListMultimap;
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
 import com.google.inject.name.Named;
-import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.somda.sdc.biceps.common.MdibDescriptionModifications;
 import org.somda.sdc.biceps.common.MdibTypeValidator;
 import org.somda.sdc.biceps.common.access.MdibAccess;
-import org.somda.sdc.biceps.model.participant.*;
+import org.somda.sdc.biceps.model.participant.AbstractDescriptor;
+import org.somda.sdc.biceps.model.participant.AbstractMultiState;
+import org.somda.sdc.biceps.model.participant.AbstractState;
+import org.somda.sdc.biceps.model.participant.AlertSystemDescriptor;
+import org.somda.sdc.biceps.model.participant.ChannelDescriptor;
+import org.somda.sdc.biceps.model.participant.Mdib;
+import org.somda.sdc.biceps.model.participant.MdsDescriptor;
+import org.somda.sdc.biceps.model.participant.ScoDescriptor;
+import org.somda.sdc.biceps.model.participant.SystemContextDescriptor;
+import org.somda.sdc.biceps.model.participant.VmdDescriptor;
 import org.somda.sdc.common.logging.InstanceLogger;
-import org.somda.sdc.dpws.DpwsConfig;
 import org.somda.sdc.glue.common.helper.DefaultStateValuesDispatcher;
 
 import javax.annotation.Nullable;
@@ -40,7 +48,7 @@ public class ModificationsBuilder {
     @AssistedInject
     ModificationsBuilder(@Assisted Mdib mdib,
                          MdibTypeValidator typeValidator,
-                         @Named(DpwsConfig.FRAMEWORK_IDENTIFIER) String frameworkIdentifier) {
+                         @Named(org.somda.sdc.common.CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier) {
         this(mdib, false, null, typeValidator, frameworkIdentifier);
     }
 
@@ -48,7 +56,7 @@ public class ModificationsBuilder {
     ModificationsBuilder(@Assisted Mdib mdib,
                          @Assisted Boolean createSingleStateIfMissing,
                          MdibTypeValidator typeValidator,
-                         @Named(DpwsConfig.FRAMEWORK_IDENTIFIER) String frameworkIdentifier) {
+                         @Named(org.somda.sdc.common.CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier) {
         this(mdib, createSingleStateIfMissing, null, typeValidator, frameworkIdentifier);
     }
 
@@ -57,7 +65,7 @@ public class ModificationsBuilder {
                          @Assisted Boolean createSingleStateIfMissing,
                          @Assisted @Nullable DefaultStateValues defaultStateValues,
                          MdibTypeValidator typeValidator,
-                         @Named(DpwsConfig.FRAMEWORK_IDENTIFIER) String frameworkIdentifier) {
+                         @Named(org.somda.sdc.common.CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier) {
         this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);
         this.createSingleStateIfMissing = createSingleStateIfMissing;
         this.typeValidator = typeValidator;

@@ -8,35 +8,10 @@ import org.apache.logging.log4j.Logger;
 import org.somda.sdc.biceps.common.MdibDescriptionModifications;
 import org.somda.sdc.biceps.common.MdibEntity;
 import org.somda.sdc.biceps.common.access.MdibAccess;
-import org.somda.sdc.biceps.model.participant.AbstractComplexDeviceComponentDescriptor;
-import org.somda.sdc.biceps.model.participant.AbstractDescriptor;
-import org.somda.sdc.biceps.model.participant.AbstractMetricDescriptor;
-import org.somda.sdc.biceps.model.participant.AbstractOperationDescriptor;
-import org.somda.sdc.biceps.model.participant.AbstractState;
-import org.somda.sdc.biceps.model.participant.AlertConditionDescriptor;
-import org.somda.sdc.biceps.model.participant.AlertSignalDescriptor;
-import org.somda.sdc.biceps.model.participant.AlertSystemDescriptor;
-import org.somda.sdc.biceps.model.participant.BatteryDescriptor;
-import org.somda.sdc.biceps.model.participant.ChannelDescriptor;
-import org.somda.sdc.biceps.model.participant.ClockDescriptor;
-import org.somda.sdc.biceps.model.participant.EnsembleContextDescriptor;
-import org.somda.sdc.biceps.model.participant.LocationContextDescriptor;
-import org.somda.sdc.biceps.model.participant.MdDescription;
-import org.somda.sdc.biceps.model.participant.MdState;
-import org.somda.sdc.biceps.model.participant.Mdib;
-import org.somda.sdc.biceps.model.participant.MdibVersion;
-import org.somda.sdc.biceps.model.participant.MdsDescriptor;
-import org.somda.sdc.biceps.model.participant.MeansContextDescriptor;
-import org.somda.sdc.biceps.model.participant.ObjectFactory;
-import org.somda.sdc.biceps.model.participant.OperatorContextDescriptor;
-import org.somda.sdc.biceps.model.participant.PatientContextDescriptor;
-import org.somda.sdc.biceps.model.participant.ScoDescriptor;
-import org.somda.sdc.biceps.model.participant.SystemContextDescriptor;
-import org.somda.sdc.biceps.model.participant.VmdDescriptor;
-import org.somda.sdc.biceps.model.participant.WorkflowContextDescriptor;
+import org.somda.sdc.biceps.model.participant.*;
+import org.somda.sdc.common.CommonConfig;
 import org.somda.sdc.common.logging.InstanceLogger;
 import org.somda.sdc.common.util.ObjectUtil;
-import org.somda.sdc.dpws.DpwsConfig;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -65,7 +40,7 @@ public class MdibMapper {
     MdibMapper(@Assisted MdibAccess mdibAccess,
                ObjectFactory participantModelFactory,
                ObjectUtil objectUtil,
-               @Named(DpwsConfig.FRAMEWORK_IDENTIFIER) String frameworkIdentifier) {
+               @Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier) {
         this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);
         this.mdibAccess = mdibAccess;
         this.participantModelFactory = participantModelFactory;

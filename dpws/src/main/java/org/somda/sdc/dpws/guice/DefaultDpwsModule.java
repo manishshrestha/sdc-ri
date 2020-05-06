@@ -8,12 +8,12 @@ import com.google.inject.Provides;
 import com.google.inject.Singleton;
 import com.google.inject.assistedinject.FactoryModuleBuilder;
 import com.google.inject.name.Named;
+import org.somda.sdc.common.CommonConfig;
 import org.somda.sdc.common.util.ExecutorWrapperService;
 import org.somda.sdc.dpws.CommunicationLog;
 import org.somda.sdc.dpws.CommunicationLogDummyImpl;
 import org.somda.sdc.dpws.CommunicationLogSink;
 import org.somda.sdc.dpws.CommunicationLogSinkImpl;
-import org.somda.sdc.dpws.DpwsConfig;
 import org.somda.sdc.dpws.DpwsFramework;
 import org.somda.sdc.dpws.DpwsFrameworkImpl;
 import org.somda.sdc.dpws.client.Client;
@@ -287,7 +287,7 @@ public class DefaultDpwsModule extends AbstractModule {
 
     @Provides
     @AppDelayExecutor
-    ExecutorWrapperService<ScheduledExecutorService> getAppDelayExecutor(@Named(DpwsConfig.FRAMEWORK_IDENTIFIER) String frameworkIdentifier) {
+    ExecutorWrapperService<ScheduledExecutorService> getAppDelayExecutor(@Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier) {
         if (appDelayExecutor == null) {
             Callable<ScheduledExecutorService> executor = () -> Executors.newScheduledThreadPool(
                     10,
@@ -304,7 +304,7 @@ public class DefaultDpwsModule extends AbstractModule {
 
     @Provides
     @NetworkJobThreadPool
-    ExecutorWrapperService<ListeningExecutorService> getNetworkJobThreadPool(@Named(DpwsConfig.FRAMEWORK_IDENTIFIER) String frameworkIdentifier) {
+    ExecutorWrapperService<ListeningExecutorService> getNetworkJobThreadPool(@Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier) {
         if (networkJobThreadPoolExecutor == null) {
             Callable<ListeningExecutorService> executor = () -> MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(
                     10,
@@ -321,7 +321,7 @@ public class DefaultDpwsModule extends AbstractModule {
 
     @Provides
     @WsDiscovery
-    ExecutorWrapperService<ListeningExecutorService> getWsDiscoveryExecutor(@Named(DpwsConfig.FRAMEWORK_IDENTIFIER) String frameworkIdentifier) {
+    ExecutorWrapperService<ListeningExecutorService> getWsDiscoveryExecutor(@Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier) {
         if (wsDiscoveryExecutor == null) {
             Callable<ListeningExecutorService> executor = () -> MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(
                     10,

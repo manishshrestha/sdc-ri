@@ -5,6 +5,7 @@ import com.google.inject.Singleton;
 import com.google.inject.name.Named;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.somda.sdc.common.CommonConfig;
 import org.somda.sdc.common.logging.InstanceLogger;
 
 import java.io.BufferedReader;
@@ -21,7 +22,7 @@ public class FrameworkMetadata {
     private String osVersion;
 
     @Inject
-    FrameworkMetadata(@Named(DpwsConfig.FRAMEWORK_IDENTIFIER) String frameworkIdentifier) {
+    FrameworkMetadata(@Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier) {
         this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);
         frameworkVersion = getClass().getPackage().getImplementationVersion();
         if (frameworkVersion == null) {

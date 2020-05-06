@@ -21,7 +21,7 @@ import org.somda.sdc.biceps.model.participant.AbstractMultiState;
 import org.somda.sdc.biceps.model.participant.AbstractState;
 import org.somda.sdc.biceps.model.participant.ContextAssociation;
 import org.somda.sdc.biceps.model.participant.MdibVersion;
-import org.somda.sdc.common.Constants;
+import org.somda.sdc.common.CommonConfig;
 import org.somda.sdc.common.logging.InstanceLogger;
 
 import javax.annotation.Nullable;
@@ -61,7 +61,7 @@ public class MdibStorageImpl implements MdibStorage {
     MdibStorageImpl(MdibEntityFactory entityFactory,
                     MdibStorageUtil util,
                     MdibTypeValidator typeValidator,
-                    @Named(Constants.INSTANCE_IDENTIFIER) String frameworkIdentifier) {
+                    @Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier) {
         this(
                 MdibVersion.create(), BigInteger.valueOf(-1),
                 BigInteger.valueOf(-1), entityFactory, util,
@@ -74,7 +74,7 @@ public class MdibStorageImpl implements MdibStorage {
                     MdibEntityFactory entityFactory,
                     MdibStorageUtil util,
                     MdibTypeValidator typeValidator,
-                    @Named(Constants.INSTANCE_IDENTIFIER) String frameworkIdentifier) {
+                    @Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier) {
         this(
                 initialMdibVersion, BigInteger.valueOf(-1),
                 BigInteger.valueOf(-1), entityFactory, util,
@@ -89,7 +89,7 @@ public class MdibStorageImpl implements MdibStorage {
                     MdibEntityFactory entityFactory,
                     MdibStorageUtil util,
                     MdibTypeValidator typeValidator,
-                    @Named(Constants.INSTANCE_IDENTIFIER) String frameworkIdentifier) {
+                    @Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier) {
         this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);
         this.mdibVersion = initialMdibVersion;
         this.mdDescriptionVersion = mdDescriptionVersion;

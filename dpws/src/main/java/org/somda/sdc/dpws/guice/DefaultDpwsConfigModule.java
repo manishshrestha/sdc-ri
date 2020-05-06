@@ -27,7 +27,6 @@ import java.util.UUID;
 public class DefaultDpwsConfigModule extends AbstractConfigurationModule {
     @Override
     public void defaultConfigure() {
-        configureLogging();
         configureWsAddressingConfig();
         configureWsDiscoveryConfig();
         configureWsEventingConfig();
@@ -36,13 +35,6 @@ public class DefaultDpwsConfigModule extends AbstractConfigurationModule {
         configureCryptoConfig();
         configureSoapConfig();
         configureDpws();
-    }
-
-    private void configureLogging() {
-        var generatedUuid = UUID.randomUUID().toString();
-        bind(DpwsConfig.FRAMEWORK_IDENTIFIER,
-                String.class,
-                generatedUuid.substring(generatedUuid.length()-4));
     }
 
     private void configureDeviceConfig() {

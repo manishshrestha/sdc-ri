@@ -8,6 +8,7 @@ import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.somda.sdc.common.CommonConfig;
 import org.somda.sdc.common.logging.InstanceLogger;
 import org.somda.sdc.common.util.ExecutorWrapperService;
 import org.somda.sdc.dpws.guice.AppDelayExecutor;
@@ -57,7 +58,7 @@ public class DpwsFrameworkImpl extends AbstractIdleService implements DpwsFramew
                       @NetworkJobThreadPool ExecutorWrapperService<ListeningExecutorService> networkJobExecutor,
                       @WsDiscovery ExecutorWrapperService<ListeningExecutorService> wsDiscoveryExecutor,
                       FrameworkMetadata metadata,
-                      @Named(DpwsConfig.FRAMEWORK_IDENTIFIER) String frameworkIdentifier) {
+                      @Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier) {
         this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);
         this.udpMessageQueueService = udpMessageQueueService;
         this.udpBindingServiceFactory = udpBindingServiceFactory;

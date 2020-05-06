@@ -25,7 +25,7 @@ import org.somda.sdc.biceps.model.participant.AbstractContextState;
 import org.somda.sdc.biceps.model.participant.AbstractDescriptor;
 import org.somda.sdc.biceps.model.participant.AbstractState;
 import org.somda.sdc.biceps.model.participant.MdibVersion;
-import org.somda.sdc.common.Constants;
+import org.somda.sdc.common.CommonConfig;
 import org.somda.sdc.common.logging.InstanceLogger;
 
 import javax.annotation.Nullable;
@@ -59,7 +59,7 @@ public class RemoteMdibAccessImpl implements RemoteMdibAccess {
                          ReadTransactionFactory readTransactionFactory,
                          VersionDuplicateHandler versionDuplicateHandler,
                          DescriptorChildRemover descriptorChildRemover,
-                         @Named(Constants.INSTANCE_IDENTIFIER) String frameworkIdentifier) {
+                         @Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier) {
         this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);
         this.eventDistributor = eventDistributor;
         this.mdibStorage = mdibStorageFactory.createMdibStorage();

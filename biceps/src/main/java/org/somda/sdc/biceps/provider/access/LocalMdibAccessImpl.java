@@ -29,7 +29,7 @@ import org.somda.sdc.biceps.provider.preprocessing.DuplicateChecker;
 import org.somda.sdc.biceps.provider.preprocessing.HandleReferenceHandler;
 import org.somda.sdc.biceps.provider.preprocessing.TypeConsistencyChecker;
 import org.somda.sdc.biceps.provider.preprocessing.VersionHandler;
-import org.somda.sdc.common.Constants;
+import org.somda.sdc.common.CommonConfig;
 import org.somda.sdc.common.logging.InstanceLogger;
 
 import java.math.BigInteger;
@@ -70,7 +70,7 @@ public class LocalMdibAccessImpl implements LocalMdibAccess {
                         HandleReferenceHandler handleReferenceHandler,
                         DescriptorChildRemover descriptorChildRemover,
                         CopyManager copyManager,
-                        @Named(Constants.INSTANCE_IDENTIFIER) String frameworkIdentifier) {
+                        @Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier) {
         this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);
         mdibVersion = MdibVersion.create();
         mdDescriptionVersion = BigInteger.ZERO;

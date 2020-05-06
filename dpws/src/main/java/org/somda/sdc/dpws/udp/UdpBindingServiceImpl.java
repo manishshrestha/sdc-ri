@@ -4,11 +4,11 @@ import com.google.common.util.concurrent.AbstractIdleService;
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
 import com.google.inject.name.Named;
-import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.somda.sdc.common.CommonConfig;
 import org.somda.sdc.common.logging.InstanceLogger;
 import org.somda.sdc.dpws.CommunicationLog;
-import org.somda.sdc.dpws.DpwsConfig;
 import org.somda.sdc.dpws.DpwsConstants;
 import org.somda.sdc.dpws.network.NetworkInterfaceUtil;
 import org.somda.sdc.dpws.soap.ApplicationInfo;
@@ -19,7 +19,13 @@ import org.somda.sdc.dpws.soap.exception.TransportException;
 import javax.annotation.Nullable;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.net.*;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.MulticastSocket;
+import java.net.NetworkInterface;
+import java.net.SocketException;
 import java.util.Collections;
 import java.util.Random;
 
@@ -55,7 +61,7 @@ public class UdpBindingServiceImpl extends AbstractIdleService implements UdpBin
                           @Assisted("maxMessageSize") Integer maxMessageSize,
                           NetworkInterfaceUtil networkInterfaceUtil,
                           CommunicationLog communicationLog,
-                          @Named(DpwsConfig.FRAMEWORK_IDENTIFIER) String frameworkIdentifier) {
+                          @Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier) {
         this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);
         this.networkInterface = networkInterface;
         this.multicastGroup = multicastGroup;

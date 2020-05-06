@@ -14,8 +14,8 @@ import org.somda.sdc.biceps.common.event.DescriptionModificationMessage;
 import org.somda.sdc.biceps.model.participant.ContextAssociation;
 import org.somda.sdc.biceps.model.participant.LocationContextState;
 import org.somda.sdc.biceps.model.participant.MdsDescriptor;
+import org.somda.sdc.common.CommonConfig;
 import org.somda.sdc.common.logging.InstanceLogger;
-import org.somda.sdc.dpws.DpwsConfig;
 import org.somda.sdc.dpws.device.Device;
 import org.somda.sdc.glue.GlueConstants;
 import org.somda.sdc.glue.common.uri.ComplexDeviceComponentMapper;
@@ -51,7 +51,7 @@ public class SdcRequiredTypesAndScopes implements SdcDevicePlugin, MdibAccessObs
     private boolean initializing;
 
     @Inject
-    SdcRequiredTypesAndScopes(@Named(DpwsConfig.FRAMEWORK_IDENTIFIER) String frameworkIdentifier) {
+    SdcRequiredTypesAndScopes(@Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier) {
         this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);
         this.allScopes = new HashSet<>();
         this.locationContexts = new HashSet<>();
