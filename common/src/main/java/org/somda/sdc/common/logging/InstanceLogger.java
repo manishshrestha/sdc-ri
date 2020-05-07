@@ -17,7 +17,7 @@ public class InstanceLogger {
      *
      * @see org.somda.sdc.common.CommonConfig#INSTANCE_IDENTIFIER
      */
-    public static final String INSTANCE_ID = "instanceid";
+    public static final String INSTANCE_ID = "instanceId";
 
     /**
      * Wraps a logger into a proxy which adds context information to all messages.
@@ -35,7 +35,7 @@ public class InstanceLogger {
     }
 
     /**
-     * InvocationHandler which adds instance information to all messages.
+     * {@linkplain InvocationHandler} which adds instance information to all messages.
      */
     private static class InstanceLoggerInvocationHandler implements InvocationHandler {
 
@@ -49,7 +49,7 @@ public class InstanceLogger {
 
         @Override
         public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-            try (var ctc = CloseableThreadContext.put(INSTANCE_ID, instanceId)) {
+            try (var ignored = CloseableThreadContext.put(INSTANCE_ID, instanceId)) {
                 return method.invoke(logger, args);
             }
         }
