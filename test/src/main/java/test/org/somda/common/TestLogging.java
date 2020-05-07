@@ -16,9 +16,14 @@ import java.util.List;
 public class TestLogging {
 
     /**
-     * @see org.somda.sdc.common.logging.InstanceLogger.INSTANCE_ID
+     * @see org.somda.sdc.common.logging.InstanceLogger#INSTANCE_ID
      */
-    private static final String contextInstanceId = "instanceid";
+    private static final String contextInstanceId = "instanceId";
+
+    /**
+     * @see org.somda.sdc.glue.consumer.helper.HostingServiceLogger#HOSTING_SERVICE_INFO
+     */
+    private static final String hostingServiceInfo = "hostingServiceInfo";
 
     private static final List<String> CHATTY_LOGGERS = List.of(
             "org.apache.http.wire",
@@ -28,8 +33,9 @@ public class TestLogging {
 
     private static final String CUSTOM_PATTERN = "%d{HH:mm:ss.SSS}"
             + " [%thread]"
-            // only include the space if the have a variable
+            // only include the space if we have a variable
             + " %notEmpty{[%X{" + contextInstanceId + "}] }"
+            + " %notEmpty{[%X{" + hostingServiceInfo + "}] }"
             + "%-5level"
             + " %logger{36}"
             + " - %msg%n";

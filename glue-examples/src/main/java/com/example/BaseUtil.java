@@ -15,6 +15,8 @@ import org.apache.logging.log4j.core.config.builder.api.ConfigurationBuilderFact
 import org.apache.logging.log4j.core.config.builder.impl.BuiltConfiguration;
 import org.somda.sdc.common.logging.InstanceLogger;
 import org.somda.sdc.dpws.crypto.CryptoSettings;
+import org.somda.sdc.dpws.service.HostingService;
+import org.somda.sdc.glue.consumer.helper.HostingServiceLogger;
 
 import java.util.List;
 
@@ -39,8 +41,9 @@ public class BaseUtil {
 
     private static final String CUSTOM_PATTERN = "%d{HH:mm:ss.SSS}"
             + " [%thread]"
-            // only include the space if the have a variable
+            // only include the space if we have a variable for these
             + " %notEmpty{[%X{" + InstanceLogger.INSTANCE_ID + "}] }"
+            + " %notEmpty{[%X{" + HostingServiceLogger.HOSTING_SERVICE_INFO + "}] }"
             + "%-5level"
             + " %logger{36}"
             + " - %msg%n";

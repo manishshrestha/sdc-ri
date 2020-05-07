@@ -3,12 +3,14 @@ package org.somda.sdc.glue.consumer.sco.helper;
 import com.google.inject.Inject;
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.name.Named;
+import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.somda.sdc.biceps.model.message.AbstractSetResponse;
 import org.somda.sdc.biceps.model.message.OperationInvokedReport;
+import org.somda.sdc.common.CommonConfig;
 import org.somda.sdc.dpws.service.HostingServiceProxy;
 import org.somda.sdc.glue.consumer.ConsumerConfig;
-import org.somda.sdc.glue.consumer.helper.LogPrepender;
+import org.somda.sdc.glue.consumer.helper.HostingServiceLogger;
 import org.somda.sdc.glue.consumer.sco.ScoTransaction;
 import org.somda.sdc.glue.consumer.sco.ScoTransactionImpl;
 import org.somda.sdc.glue.consumer.sco.ScoUtil;
@@ -24,19 +26,21 @@ import java.util.concurrent.LinkedBlockingQueue;
  * Helper class to dispatch incoming operation invoked report parts to {@linkplain ScoTransaction} objects.
  */
 public class OperationInvocationDispatcher {
-    private final Logger LOG;
+    private static final Logger LOG = LogManager.getLogger(OperationInvocationDispatcher.class);
     private final ScoUtil scoUtil;
     private final Duration awaitingTransactionTimeout;
 
     private final Map<Long, BlockingQueue<OperationInvokedReport.ReportPart>> pendingReports;
     private final Map<Long, ScoTransactionImpl<? extends AbstractSetResponse>> runningTransactions;
     private final Map<Long, Instant> awaitingTransactions;
+    private final Logger instanceLogger;
 
     @Inject
     OperationInvocationDispatcher(@Assisted HostingServiceProxy hostingServiceProxy,
                                   ScoUtil scoUtil,
-                                  @Named(ConsumerConfig.AWAITING_TRANSACTION_TIMEOUT) Duration awaitingTransactionTimeout) {
-        this.LOG = LogPrepender.getLogger(hostingServiceProxy, OperationInvocationDispatcher.class);
+                                  @Named(ConsumerConfig.AWAITING_TRANSACTION_TIMEOUT) Duration awaitingTransactionTimeout,
+                                  @Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier) {
+        this.instanceLogger = HostingServiceLogger.getLogger(LOG, hostingServiceProxy, frameworkIdentifier);
         this.scoUtil = scoUtil;
         this.awaitingTransactionTimeout = awaitingTransactionTimeout;
         this.pendingReports = new HashMap<>();
@@ -70,7 +74,7 @@ public class OperationInvocationDispatcher {
         long transactionId = transaction.getTransactionId();
         final ScoTransaction<? extends AbstractSetResponse> runningTransaction = runningTransactions.get(transactionId);
         if (runningTransaction != null) {
-            LOG.warn("Try to add transaction {} twice, which is not permitted", transactionId);
+            instanceLogger.warn("Try to add transaction {} twice, which is not permitted", transactionId);
             return;
         }
 
@@ -104,7 +108,7 @@ public class OperationInvocationDispatcher {
             runningTransactions.remove(transactionId);
         }
         if (!reportPartsQueue.offer(reportPart)) {
-            LOG.warn("Too many reports received for transaction {}", transactionId);
+            instanceLogger.warn("Too many reports received for transaction {}", transactionId);
             return;
         }
 
@@ -120,7 +124,7 @@ public class OperationInvocationDispatcher {
                 final OperationInvokedReport.ReportPart reportFromQueue = queue.take();
                 transaction.receiveIncomingReport(reportFromQueue);
             } catch (InterruptedException e) {
-                LOG.error("Could not take expected report from queue for transaction {}", transaction.getTransactionId());
+                instanceLogger.error("Could not take expected report from queue for transaction {}", transaction.getTransactionId());
                 return;
             }
         }

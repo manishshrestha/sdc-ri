@@ -91,7 +91,11 @@ public class LocalMdibAccessImpl implements LocalMdibAccess {
                 ),
                 Arrays.asList(versionHandler));
 
-        this.writeUtil = new WriteUtil(LOG, eventDistributor, localMdibAccessPreprocessing, readWriteLock, this);
+        this.writeUtil = new WriteUtil(
+                instanceLogger, eventDistributor,
+                localMdibAccessPreprocessing, readWriteLock,
+                this
+        );
     }
 
     @Override
