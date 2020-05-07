@@ -33,7 +33,7 @@ public class HostingServiceLoggerTest {
     }
 
     @Test
-    void testTheThing() {
+    void testHostingServiceInfoPresent() {
         var instanceId = "instanzio";
 
         var testMessage = "٠١٢٣٤٥٦٧٨٩";
