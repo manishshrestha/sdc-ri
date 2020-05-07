@@ -41,7 +41,7 @@ public class BaseUtil {
 
     private static final String CUSTOM_PATTERN = "%d{HH:mm:ss.SSS}"
             + " [%thread]"
-            // only include the space if the have a variable for these
+            // only include the space if we have a variable for these
             + " %notEmpty{[%X{" + InstanceLogger.INSTANCE_ID + "}] }"
             + " %notEmpty{[%X{" + HostingServiceLogger.HOSTING_SERVICE_INFO + "}] }"
             + "%-5level"
