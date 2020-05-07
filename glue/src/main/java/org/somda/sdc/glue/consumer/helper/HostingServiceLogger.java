@@ -43,7 +43,7 @@ public class HostingServiceLogger {
     }
 
     /**
-     * InvocationHandler which adds instance and hosting service information to all messages.
+     * {@linkplain InvocationHandler} which adds instance and hosting service information to all messages.
      */
     private static class HostingServiceLoggerLoggerInvocationHandler implements InvocationHandler {
 

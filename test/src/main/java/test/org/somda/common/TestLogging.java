@@ -18,7 +18,7 @@ public class TestLogging {
     /**
      * @see org.somda.sdc.common.logging.InstanceLogger#INSTANCE_ID
      */
-    private static final String contextInstanceId = "instanceid";
+    private static final String contextInstanceId = "instanceId";
 
     /**
      * @see org.somda.sdc.glue.consumer.helper.HostingServiceLogger#HOSTING_SERVICE_INFO
