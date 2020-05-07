@@ -47,7 +47,7 @@ import org.somda.sdc.glue.consumer.event.RemoteDeviceConnectedMessage;
 import org.somda.sdc.glue.consumer.event.WatchdogMessage;
 import org.somda.sdc.glue.consumer.factory.SdcRemoteDeviceFactory;
 import org.somda.sdc.glue.consumer.factory.SdcRemoteDeviceWatchdogFactory;
-import org.somda.sdc.glue.consumer.helper.LogPrepender;
+import org.somda.sdc.glue.consumer.helper.HostingServiceLogger;
 import org.somda.sdc.glue.consumer.report.ReportProcessingException;
 import org.somda.sdc.glue.consumer.report.ReportProcessor;
 import org.somda.sdc.glue.consumer.sco.ScoController;
@@ -89,6 +89,7 @@ public class SdcRemoteDevicesConnectorImpl extends AbstractIdleService implement
     private final MdibVersionUtil mdibVersionUtil;
     private final SdcRemoteDeviceFactory sdcRemoteDeviceFactory;
     private final SdcRemoteDeviceWatchdogFactory watchdogFactory;
+    private final String frameworkIdentifier;
 
     @Inject
     SdcRemoteDevicesConnectorImpl(@Consumer ExecutorWrapperService<ListeningExecutorService> executorService,
@@ -122,6 +123,7 @@ public class SdcRemoteDevicesConnectorImpl extends AbstractIdleService implement
         this.mdibVersionUtil = mdibVersionUtil;
         this.sdcRemoteDeviceFactory = sdcRemoteDeviceFactory;
         this.watchdogFactory = watchdogFactory;
+        this.frameworkIdentifier = frameworkIdentifier;
 
         dpwsFramework.registerService(List.of(executorService, this));
     }
@@ -137,7 +139,7 @@ public class SdcRemoteDevicesConnectorImpl extends AbstractIdleService implement
 
         return executorService.get().submit(() -> {
             try {
-                final Logger tempLog = LogPrepender.getLogger(hostingServiceProxy, SdcRemoteDevicesConnectorImpl.class);
+                final Logger tempLog = HostingServiceLogger.getLogger(LOG, hostingServiceProxy, frameworkIdentifier);
                 tempLog.info("Start connecting");
                 ReportProcessor reportProcessor = createReportProcessor();
                 RemoteMdibAccess mdibAccess = createRemoteMdibAccess(hostingServiceProxy);
