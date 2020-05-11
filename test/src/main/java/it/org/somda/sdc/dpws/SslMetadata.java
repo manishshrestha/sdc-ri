@@ -2,15 +2,37 @@ package it.org.somda.sdc.dpws;
 
 import com.google.common.util.concurrent.AbstractIdleService;
 import com.google.common.util.concurrent.Service;
-import org.bouncycastle.asn1.x509.*;
+import org.bouncycastle.asn1.x500.X500Name;
+import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
+import org.bouncycastle.asn1.x509.BasicConstraints;
+import org.bouncycastle.asn1.x509.ExtendedKeyUsage;
+import org.bouncycastle.asn1.x509.Extension;
+import org.bouncycastle.asn1.x509.GeneralName;
+import org.bouncycastle.asn1.x509.GeneralNames;
+import org.bouncycastle.asn1.x509.KeyPurposeId;
+import org.bouncycastle.asn1.x509.KeyUsage;
+import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
+import org.bouncycastle.cert.X509v3CertificateBuilder;
+import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
+import org.bouncycastle.crypto.params.AsymmetricKeyParameter;
+import org.bouncycastle.crypto.util.PrivateKeyFactory;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import org.bouncycastle.x509.X509V3CertificateGenerator;
+import org.bouncycastle.operator.ContentSigner;
+import org.bouncycastle.operator.DefaultDigestAlgorithmIdentifierFinder;
+import org.bouncycastle.operator.DefaultSignatureAlgorithmIdentifierFinder;
+import org.bouncycastle.operator.OperatorCreationException;
+import org.bouncycastle.operator.bc.BcRSAContentSignerBuilder;
 
 import javax.annotation.Nullable;
-import javax.security.auth.x500.X500Principal;
 import java.io.IOException;
 import java.math.BigInteger;
-import java.security.*;
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.PrivateKey;
+import java.security.Security;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.Collections;
@@ -21,7 +43,7 @@ import java.util.List;
  * SSL metadata used for crypto related tests.
  * <p>
  * Provides key stores and trust stores for client and device side in-memory.
- *
+ * <p>
  * Code derived from http://www.bouncycastle.org/documentation.html and https://www.baeldung.com/java-keystore
  */
 public class SslMetadata extends AbstractIdleService implements Service {
@@ -36,14 +58,8 @@ public class SslMetadata extends AbstractIdleService implements Service {
     }
 
     @Override
-    protected void startUp() throws
-            InvalidKeyException,
-            NoSuchProviderException,
-            SignatureException,
-            NoSuchAlgorithmException,
-            CertificateException,
-            KeyStoreException,
-            IOException {
+    protected void startUp() throws NoSuchAlgorithmException, CertificateException, KeyStoreException,
+            IOException, OperatorCreationException {
 
         Security.addProvider(new BouncyCastleProvider());
 
@@ -116,31 +132,42 @@ public class SslMetadata extends AbstractIdleService implements Service {
     }
 
     private static X509Certificate generateCertificate(String issuer, KeyPair keyPair, ExtendedKeyUsage extendedKeyUsage)
-            throws InvalidKeyException, NoSuchProviderException, SignatureException {
-
-        /*
-         * DGr 2019-07-06
-         * At the time implementing the certificate generation, there was no reasonable implementation found online that
-         * didn't use deprecated functionality.
-         */
+            throws IOException, OperatorCreationException, CertificateException {
+        SubjectPublicKeyInfo subPubKeyInfo = SubjectPublicKeyInfo.getInstance(keyPair.getPublic().getEncoded());
+        AlgorithmIdentifier sigAlgId = new DefaultSignatureAlgorithmIdentifierFinder().find("SHA256WithRSAEncryption");
+        AlgorithmIdentifier digAlgId = new DefaultDigestAlgorithmIdentifierFinder().find(sigAlgId);
+        AsymmetricKeyParameter privateKeyAsymKeyParam = PrivateKeyFactory.createKey(keyPair.getPrivate().getEncoded());
+        ContentSigner sigGen = new BcRSAContentSignerBuilder(sigAlgId, digAlgId).build(privateKeyAsymKeyParam);
 
         // generate the certificate
-        X509V3CertificateGenerator certGen = new X509V3CertificateGenerator();
+        X509v3CertificateBuilder certGen = new X509v3CertificateBuilder(
+                new X500Name("CN=" + issuer),
+                BigInteger.valueOf(System.currentTimeMillis()),
+                new Date(System.currentTimeMillis() - 500000),
+                new Date(System.currentTimeMillis() + 500000),
+                new X500Name("CN=" + issuer),
+                subPubKeyInfo
+        );
 
-        certGen.setSerialNumber(BigInteger.valueOf(System.currentTimeMillis()));
-        certGen.setIssuerDN(new X500Principal("CN=" + issuer));
-        certGen.setNotBefore(new Date(System.currentTimeMillis() - 500000));
-        certGen.setNotAfter(new Date(System.currentTimeMillis() + 500000));
-        certGen.setSubjectDN(new X500Principal("CN=" + issuer));
-        certGen.setPublicKey(keyPair.getPublic());
-        certGen.setSignatureAlgorithm("SHA256WithRSAEncryption");
+        certGen.addExtension(Extension.basicConstraints, true, new BasicConstraints(false));
+        certGen.addExtension(
+                Extension.keyUsage,
+                true,
+                new KeyUsage(KeyUsage.digitalSignature | KeyUsage.keyEncipherment)
+        );
+        certGen.addExtension(
+                Extension.subjectAlternativeName,
+                false,
+                new GeneralNames(
+                        new GeneralName(GeneralName.rfc822Name, "david.gregorczyk@web.de")
+                )
+        );
+        certGen.addExtension(Extension.extendedKeyUsage, true, extendedKeyUsage);
 
-        certGen.addExtension(X509Extensions.BasicConstraints, true, new BasicConstraints(false));
-        certGen.addExtension(X509Extensions.KeyUsage, true, new KeyUsage(KeyUsage.digitalSignature | KeyUsage.keyEncipherment));
-        certGen.addExtension(X509Extensions.SubjectAlternativeName, false, new GeneralNames(new GeneralName(GeneralName.rfc822Name, "david.gregorczyk@web.de")));
-        certGen.addExtension(X509Extensions.ExtendedKeyUsage, true, extendedKeyUsage);
+        var certificateHolder = certGen.build(sigGen);
 
-        return certGen.generateX509Certificate(keyPair.getPrivate(), "BC");
+        return new JcaX509CertificateConverter().setProvider("BC").getCertificate(certificateHolder);
+
     }
 
     public class KeySet {
