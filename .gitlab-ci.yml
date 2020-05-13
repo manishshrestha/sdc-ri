@@ -1,4 +1,4 @@
-image: maven:3-jdk-11
+image: ${CI_REGISTRY}/sdc-suite/docker-build-image:feature-docker-container
 
 variables:
   MAVEN_CLI_OPTS: "-s .m2/settings.xml --batch-mode"
@@ -15,18 +15,13 @@ build:
 
 test:
   stage: test
-  before_script:
-    - ./ci/run_tcpdump.sh
   script:
     - mvn $MAVEN_CLI_OPTS verify
-  after_script:
-    - ./ci/stop_tcpdump.sh
 
   artifacts:
     when: always
     expire_in: 4 weeks
     paths:
-      - udp_traffic.pcap
       - ./**/target/surefire-reports/TEST-*.xml
       - ./**/target/failsafe-reports/TEST-*.xml
       - ./**/target/test.log
