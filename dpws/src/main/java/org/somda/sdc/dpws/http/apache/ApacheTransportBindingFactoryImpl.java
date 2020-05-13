@@ -194,4 +194,16 @@ public class ApacheTransportBindingFactoryImpl implements TransportBindingFactor
                 String.format("Binding with scheme %s is currently not supported", scheme));
     }
 
+    /**
+     * Access the configured http client.
+     * <p>
+     * Note: <em>Do not</em> use this client for productive purposes, always use the {@linkplain TransportBinding}
+     * instead. This is only useful if you want to send intentionally bad messages to a server, which you most likely
+     * do not want.
+     *
+     * @return the configured apache http client
+     */
+    public HttpClient getClient() {
+        return client;
+    }
 }
