@@ -3,6 +3,7 @@ package org.somda.sdc.dpws.soap.wsaddressing;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.somda.sdc.dpws.DpwsTest;
+import org.somda.sdc.dpws.helper.JaxbMarshalling;
 import org.somda.sdc.dpws.soap.ApplicationInfo;
 import org.somda.sdc.dpws.soap.CommunicationContext;
 import org.somda.sdc.dpws.soap.RequestResponseServer;
@@ -48,6 +49,7 @@ public class WsAddressingServerInterceptorTest extends DpwsTest {
         );
 
         InputStream soapStrm = getClass().getResourceAsStream("soap-envelope.xml");
+        getInjector().getInstance(JaxbMarshalling.class).startAsync().awaitRunning();
         getInjector().getInstance(SoapMarshalling.class).startAsync().awaitRunning();
         Envelope soapEnv = getInjector().getInstance(SoapMarshalling.class).unmarshal(soapStrm);
 

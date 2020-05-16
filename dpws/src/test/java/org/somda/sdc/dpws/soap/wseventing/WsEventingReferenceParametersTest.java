@@ -21,6 +21,7 @@ import org.somda.sdc.dpws.TransportBindingFactoryMock;
 import org.somda.sdc.dpws.device.helper.RequestResponseServerHttpHandler;
 import org.somda.sdc.dpws.factory.TransportBindingFactory;
 import org.somda.sdc.dpws.guice.NetworkJobThreadPool;
+import org.somda.sdc.dpws.helper.JaxbMarshalling;
 import org.somda.sdc.dpws.http.HttpException;
 import org.somda.sdc.dpws.http.HttpHandler;
 import org.somda.sdc.dpws.http.HttpServerRegistry;
@@ -97,6 +98,7 @@ public class WsEventingReferenceParametersTest extends DpwsTest {
                 },
                 NetworkJobThreadPool.class
         )).startAsync().awaitRunning();
+        getInjector().getInstance(JaxbMarshalling.class).startAsync().awaitRunning();
         getInjector().getInstance(SoapMarshalling.class).startAsync().awaitRunning();
 
         WsAddressingUtil wsaUtil = getInjector().getInstance(WsAddressingUtil.class);
