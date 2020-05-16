@@ -29,14 +29,5 @@ public interface HostedService {
      *
      * @return input stream with WSDL data used to respond to WS-MetadataExchange requests.
      */
-    InputStream getWsdlDocument();
-
-    /**
-     * Provision of a list of URIs that points to WSDL document resources.
-     * <p>
-     * todo DGr the user is allowed to alter this list - might be a design flaw that should be addressed some time.
-     *
-     * @return URIs that point to WSDL documents, preferably exactly one reference.
-     */
-    List<String> getWsdlLocations();
+    byte[] getWsdlDocument();
 }

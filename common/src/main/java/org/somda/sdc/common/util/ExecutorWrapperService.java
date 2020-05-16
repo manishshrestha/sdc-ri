@@ -76,7 +76,7 @@ public class ExecutorWrapperService<T extends ExecutorService> extends AbstractI
         } else {
             instanceLogger.error("[{}] get was called on a service which was not running", serviceName);
             throw new RuntimeException(String.format(
-                    "get called on %s service which was not running",
+                    "ExecutorWrapperService.get() called on %s service which was not running",
                     serviceName
             ));
         }

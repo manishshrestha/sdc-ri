@@ -1,6 +1,7 @@
 package it.org.somda.sdc.dpws.soap;
 
 
+import com.google.common.io.ByteStreams;
 import com.google.inject.AbstractModule;
 import it.org.somda.sdc.dpws.TestServiceMetadata;
 import org.somda.sdc.dpws.DpwsFramework;
@@ -13,6 +14,7 @@ import org.somda.sdc.dpws.soap.TransportInfo;
 
 import javax.annotation.Nullable;
 import javax.xml.namespace.QName;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -76,7 +78,7 @@ public class BasicPopulatedDevice extends DevicePeer {
     }
 
     @Override
-    protected void startUp() {
+    protected void startUp() throws IOException {
         getDevice().getDiscoveryAccess().setScopes(Arrays.asList(SCOPE_1, SCOPE_2));
         getDevice().getDiscoveryAccess().setTypes(Arrays.asList(QNAME_1, QNAME_2));
 
@@ -100,14 +102,14 @@ public class BasicPopulatedDevice extends DevicePeer {
                         new QName(TestServiceMetadata.NAMESPACE_SRV, TestServiceMetadata.PORT_TYPE_NAME_1),
                         new QName(TestServiceMetadata.NAMESPACE_SRV, TestServiceMetadata.PORT_TYPE_NAME_2)),
                 service1,
-                wsdlResource1));
+                ByteStreams.toByteArray(wsdlResource1)));
 
         assert wsdlResource2 != null;
         getDevice().getHostingServiceAccess().addHostedService(hostedServiceFactory.createHostedService(
                 TestServiceMetadata.SERVICE_ID_2,
                 Collections.singletonList(new QName(TestServiceMetadata.NAMESPACE_SRV, TestServiceMetadata.PORT_TYPE_NAME_3)),
                 service2,
-                wsdlResource2));
+                ByteStreams.toByteArray(wsdlResource2)));
 
         dpwsFramework.startAsync().awaitRunning();
         getDevice().startAsync().awaitRunning();

@@ -1,7 +1,5 @@
 package org.somda.sdc.dpws;
 
-import org.somda.sdc.common.CommonConfig;
-
 /**
  * Configuration of the DPWS top level package.
  *
@@ -105,7 +103,7 @@ public class DpwsConfig {
     public static final String HTTP_SERVER_CONNECTION_TIMEOUT = "Dpws.HttpServerConnectionTimeout";
 
     /**
-     * Enables Https communication for Client and Server.
+     * Enables HTTPS communication for Client and Server.
      *
      * <ul>
      * <li>Data type: {@linkplain Boolean}
@@ -115,7 +113,7 @@ public class DpwsConfig {
     public static final String HTTPS_SUPPORT = "Dpws.EnableHttps";
 
     /**
-     * Enables plain Http communication for Client and Server.
+     * Enables unsecured HTTP communication for Client and Server.
      *
      * <ul>
      * <li>Data type: {@linkplain Boolean}

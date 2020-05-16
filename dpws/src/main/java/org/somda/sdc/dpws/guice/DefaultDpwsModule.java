@@ -12,6 +12,7 @@ import org.somda.sdc.common.CommonConfig;
 import org.somda.sdc.common.util.ExecutorWrapperService;
 import org.somda.sdc.dpws.CommunicationLog;
 import org.somda.sdc.dpws.CommunicationLogDummyImpl;
+import org.somda.sdc.dpws.CommunicationLogImpl;
 import org.somda.sdc.dpws.CommunicationLogSink;
 import org.somda.sdc.dpws.CommunicationLogSinkImpl;
 import org.somda.sdc.dpws.DpwsFramework;
@@ -28,6 +29,7 @@ import org.somda.sdc.dpws.device.factory.DeviceFactory;
 import org.somda.sdc.dpws.device.helper.DiscoveryDeviceUdpMessageProcessor;
 import org.somda.sdc.dpws.device.helper.factory.DeviceHelperFactory;
 import org.somda.sdc.dpws.factory.TransportBindingFactory;
+import org.somda.sdc.dpws.helper.JaxbMarshalling;
 import org.somda.sdc.dpws.helper.NotificationSourceUdpCallback;
 import org.somda.sdc.dpws.helper.factory.DpwsHelperFactory;
 import org.somda.sdc.dpws.http.HttpServerRegistry;
@@ -93,6 +95,8 @@ import org.somda.sdc.dpws.udp.UdpBindingServiceImpl;
 import org.somda.sdc.dpws.udp.UdpMessageQueueService;
 import org.somda.sdc.dpws.udp.UdpMessageQueueServiceImpl;
 import org.somda.sdc.dpws.udp.factory.UdpBindingServiceFactory;
+import org.somda.sdc.dpws.wsdl.JaxbWsdlMarshalling;
+import org.somda.sdc.dpws.wsdl.WsdlMarshalling;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
@@ -210,7 +214,9 @@ public class DefaultDpwsModule extends AbstractModule {
     }
 
     private void configureMarshalling() {
+        bind(JaxbMarshalling.class).asEagerSingleton();
         bind(SoapMarshalling.class).to(JaxbSoapMarshalling.class).asEagerSingleton();
+        bind(WsdlMarshalling.class).to(JaxbWsdlMarshalling.class).asEagerSingleton();
     }
 
     private void configureUdp() {

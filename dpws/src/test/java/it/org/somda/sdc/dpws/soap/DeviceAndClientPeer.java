@@ -1,5 +1,6 @@
 package it.org.somda.sdc.dpws.soap;
 
+import com.google.common.io.ByteStreams;
 import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.common.util.concurrent.MoreExecutors;
 import dpws_test_service.messages._2017._05._10.TestNotification;
@@ -120,7 +121,7 @@ public class DeviceAndClientPeer extends IntegrationTestPeer {
                         new QName(TestServiceMetadata.NAMESPACE_SRV, TestServiceMetadata.PORT_TYPE_NAME_1),
                         new QName(TestServiceMetadata.NAMESPACE_SRV, TestServiceMetadata.PORT_TYPE_NAME_2)),
                 service1,
-                wsdlResource1));
+                ByteStreams.toByteArray(wsdlResource1)));
 
         dpwsFramework.startAsync().awaitRunning();
         device.startAsync().awaitRunning();
