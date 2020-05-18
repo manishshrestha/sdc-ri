@@ -103,7 +103,7 @@ public class ClientTransportBinding implements TransportBinding {
             // no retry handling is required as apache httpclient already does
             response = this.client.execute(post);
         } catch (SocketException e) {
-            instanceLogger.error("No response received in request to {}", this.clientUri, e);
+            instanceLogger.error("Unexpected SocketException on request to {}", this.clientUri, e);
             throw new TransportBindingException(e);
         } catch (IOException e) {
             instanceLogger.error("Unexpected IO exception on request to {}", this.clientUri);
