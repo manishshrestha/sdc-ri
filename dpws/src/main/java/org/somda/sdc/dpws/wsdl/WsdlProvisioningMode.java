@@ -12,7 +12,7 @@ package org.somda.sdc.dpws.wsdl;
  */
 public enum WsdlProvisioningMode {
     /**
-     * The WSDL definition is included in the GetMetadata response's MetadataSection.
+     * The WSDL definition is included in the GetMetadata response's MetadataSection as DialectSpecificElement.
      */
     INLINE,
 

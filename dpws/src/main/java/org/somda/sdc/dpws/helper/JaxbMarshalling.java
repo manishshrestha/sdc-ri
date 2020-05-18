@@ -45,7 +45,7 @@ import java.nio.charset.StandardCharsets;
  * Creates XML input and output streams from/to JAXB instances.
  */
 public class JaxbMarshalling extends AbstractIdleService {
-    private static final Logger LOG = LogManager.getLogger(org.somda.sdc.dpws.soap.JaxbSoapMarshalling.class);
+    private static final Logger LOG = LogManager.getLogger(JaxbMarshalling.class);
 
     private static final String PKG_DELIM = ":";
     private static final String SCHEMA_DELIM = ":";
@@ -55,10 +55,9 @@ public class JaxbMarshalling extends AbstractIdleService {
     private final String schemaPath;
     private final Boolean validateSoapMessages;
     private final ObjectFactory soapFactory;
-    private final FrameworkMetadata metadata;
     private final Boolean metadataComment;
     private final Logger instanceLogger;
-
+    private final String versionString;
 
     private String contextPackages;
     private JAXBContext jaxbContext;
@@ -81,7 +80,6 @@ public class JaxbMarshalling extends AbstractIdleService {
         this.validateSoapMessages = validateSoapMessages;
         this.metadataComment = metadataComment;
         this.soapFactory = soapFactory;
-        this.metadata = metadata;
 
         // Append internal mappings
         namespaceMappings += SoapConstants.NAMESPACE_PREFIX_MAPPINGS;
@@ -89,6 +87,8 @@ public class JaxbMarshalling extends AbstractIdleService {
         this.namespacePrefixMapper = namespacePrefixMapperConverter.convert(
                 namespaceMappingParser.parse(namespaceMappings));
 
+        var version = metadata.getFrameworkVersion();
+        this.versionString = "<!-- Generated with SDCri " + version + " -->";
     }
 
     @Override
@@ -115,8 +115,6 @@ public class JaxbMarshalling extends AbstractIdleService {
             // don't generate document level events (i.e. the XML prolog)
             marshaller.setProperty(Marshaller.JAXB_FRAGMENT, true);
 
-            var version = metadata.getFrameworkVersion();
-            var versionString = "<!-- Generated with SDCri " + version + " -->";
             instanceLogger.debug("Attaching metadata comment: {}", versionString);
             try {
                 outputStream.write(XML_PROLOG.getBytes(StandardCharsets.UTF_8));

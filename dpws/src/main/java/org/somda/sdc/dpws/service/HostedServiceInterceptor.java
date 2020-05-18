@@ -10,6 +10,7 @@ import org.somda.sdc.dpws.http.HttpServerRegistry;
 import org.somda.sdc.dpws.service.helper.MetadataSectionUtil;
 import org.somda.sdc.dpws.soap.SoapConstants;
 import org.somda.sdc.dpws.soap.SoapUtil;
+import org.somda.sdc.dpws.soap.factory.SoapFaultFactory;
 import org.somda.sdc.dpws.soap.interception.Direction;
 import org.somda.sdc.dpws.soap.interception.Interceptor;
 import org.somda.sdc.dpws.soap.interception.MessageInterceptor;
@@ -50,6 +51,7 @@ public class HostedServiceInterceptor implements Interceptor {
     private final MetadataSectionUtil metadataSectionUtil;
     private final WsdlMarshalling wsdlMarshalling;
     private final HttpServerRegistry httpServerRegistry;
+    private SoapFaultFactory soapFaultFactory;
 
     private String wsdlUri;
     private JAXBElement<TDefinitions> wsdlDefinition;
@@ -66,7 +68,8 @@ public class HostedServiceInterceptor implements Interceptor {
                              WsAddressingUtil wsaUtil,
                              MetadataSectionUtil metadataSectionUtil,
                              WsdlMarshalling wsdlMarshalling,
-                             HttpServerRegistry httpServerRegistry) {
+                             HttpServerRegistry httpServerRegistry,
+                             SoapFaultFactory soapFaultFactory) {
         this.hostedService = hostedService;
         this.targetService = targetService;
         this.soapUtil = soapUtil;
@@ -77,6 +80,7 @@ public class HostedServiceInterceptor implements Interceptor {
         this.provisioningMode = provisioningMode;
         this.wsdlMarshalling = wsdlMarshalling;
         this.httpServerRegistry = httpServerRegistry;
+        this.soapFaultFactory = soapFaultFactory;
 
         this.wsdlUri = null;
         this.wsdlDefinition = null;
@@ -145,7 +149,7 @@ public class HostedServiceInterceptor implements Interceptor {
                     wsdlMarshalling.unmarshal(new ByteArrayInputStream(hostedService.getWsdlDocument())));
         } catch (JAXBException e) {
             LOG.warn("Unmarshalling of WSDL failed. Fallback to resource provisioning. Error message: {}",
-                    e.getMessage(), e);
+                    e.getMessage());
             LOG.trace("Unmarshalling of WSDL failed", e);
             this.provisioningMode = WsdlProvisioningMode.RESOURCE;
         }
@@ -160,14 +164,14 @@ public class HostedServiceInterceptor implements Interceptor {
         var wsdlDocBytes = hostedService.getWsdlDocument();
         for (EndpointReferenceType epr : hostedService.getType().getEndpointReference()) {
             if (wsdlDocBytes.length == 0) {
-                LOG.warn("Could not register WSDL resource. WSDL is empty.");
-                return;
+                throw new RuntimeException(String.format("Could not register WSDL resource for %s. WSDL is empty.",
+                        epr));
             }
 
             var uriFromEpr = wsaUtil.getAddressUri(epr);
             if (uriFromEpr.isEmpty()) {
-                LOG.warn("Invalid EPR detected while trying to create WSDL resource. Skip EPR {}.", epr);
-                continue;
+                throw new RuntimeException(String.format("Invalid EPR detected while trying to create WSDL resource. " +
+                        String.format("Skip EPR %s.", epr)));
             }
 
             URI uri;

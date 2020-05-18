@@ -25,9 +25,9 @@ public interface HostedService {
     WebService getWebService();
 
     /**
-     * Provision of an input stream with WSDL document data.
+     * Provision of an byte array with WSDL document data.
      *
-     * @return input stream with WSDL data used to respond to WS-MetadataExchange requests.
+     * @return byte array with WSDL data used to respond to WS-MetadataExchange requests.
      */
     byte[] getWsdlDocument();
 }
