@@ -28,6 +28,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `org.somda.sdc.dpws.CommunicationLogSink.getTargetStream()`; use `org.somda.sdc.dpws.CommunicationLogSink.createTargetStream()` instead. (#153)
 - `org.somda.sdc.common.util.ExecutorWrapperUtil`; `org.somda.sdc.common.util.ExecutorWrapperServices` are bound as guice `Provider`. (#156)
 
+### Fixed
+- `org.somda.sdc.dpws.soap.wseventing.EventSourceInterceptor` no longer tries to send SubscriptionEnd messages to stale subscriptions on shutdown. (#164)
+
 ## 1.1.0 - 2020-04-18
 
 ### Added

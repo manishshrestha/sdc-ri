@@ -154,6 +154,8 @@ public class EventSourceInterceptor extends AbstractIdleService implements Event
 
     @Override
     public void subscriptionEndToAll(WsEventingStatus status) {
+        // don't send end to stale subscription
+        removeStaleSubscriptions();
         subscriptionRegistry.getSubscriptions().forEach((uri, subMan) -> {
             subMan.getEndTo().ifPresent(endTo -> {
                 SoapMessage endToMessage = createForEndTo(status, subMan, endTo);
@@ -165,6 +167,7 @@ public class EventSourceInterceptor extends AbstractIdleService implements Event
 
     @MessageInterceptor(value = WsEventingConstants.WSA_ACTION_SUBSCRIBE, direction = Direction.REQUEST)
     void processSubscribe(RequestResponseObject rrObj) throws SoapFaultException {
+        removeStaleSubscriptions();
         final Supplier<SoapFaultException> soapFaultExceptionSupplier = () ->
                 new SoapFaultException(createInvalidMsg(rrObj));
         Subscribe subscribe = soapUtil.getBody(rrObj.getRequest(), Subscribe.class).orElseThrow(soapFaultExceptionSupplier);
