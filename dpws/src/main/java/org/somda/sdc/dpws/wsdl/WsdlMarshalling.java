@@ -1,7 +1,6 @@
 package org.somda.sdc.dpws.wsdl;
 
 import com.google.common.util.concurrent.Service;
-import org.somda.sdc.dpws.soap.model.Envelope;
 import org.somda.sdc.dpws.wsdl.model.TDefinitions;
 
 import javax.xml.bind.JAXBException;
