@@ -10,7 +10,6 @@ import org.somda.sdc.dpws.http.HttpServerRegistry;
 import org.somda.sdc.dpws.service.helper.MetadataSectionUtil;
 import org.somda.sdc.dpws.soap.SoapConstants;
 import org.somda.sdc.dpws.soap.SoapUtil;
-import org.somda.sdc.dpws.soap.factory.SoapFaultFactory;
 import org.somda.sdc.dpws.soap.interception.Direction;
 import org.somda.sdc.dpws.soap.interception.Interceptor;
 import org.somda.sdc.dpws.soap.interception.MessageInterceptor;
@@ -51,7 +50,6 @@ public class HostedServiceInterceptor implements Interceptor {
     private final MetadataSectionUtil metadataSectionUtil;
     private final WsdlMarshalling wsdlMarshalling;
     private final HttpServerRegistry httpServerRegistry;
-    private SoapFaultFactory soapFaultFactory;
 
     private String wsdlUri;
     private JAXBElement<TDefinitions> wsdlDefinition;
@@ -68,8 +66,7 @@ public class HostedServiceInterceptor implements Interceptor {
                              WsAddressingUtil wsaUtil,
                              MetadataSectionUtil metadataSectionUtil,
                              WsdlMarshalling wsdlMarshalling,
-                             HttpServerRegistry httpServerRegistry,
-                             SoapFaultFactory soapFaultFactory) {
+                             HttpServerRegistry httpServerRegistry) {
         this.hostedService = hostedService;
         this.targetService = targetService;
         this.soapUtil = soapUtil;
@@ -80,7 +77,6 @@ public class HostedServiceInterceptor implements Interceptor {
         this.provisioningMode = provisioningMode;
         this.wsdlMarshalling = wsdlMarshalling;
         this.httpServerRegistry = httpServerRegistry;
-        this.soapFaultFactory = soapFaultFactory;
 
         this.wsdlUri = null;
         this.wsdlDefinition = null;
