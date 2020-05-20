@@ -13,4 +13,14 @@ public class WsdlConstants {
      * Defines the context package for JAXB.
      */
     public static final String JAXB_CONTEXT_PACKAGE = "org.somda.sdc.dpws.wsdl.model";
+
+    /**
+     * Defines the preferred prefix for the wsdl namespace
+     */
+    public static final String NAMESPACE_PREFIX = "wsdl";
+
+    /**
+     * Defines the WSDL namespace.
+     */
+    public static final String NAMESPACE = "http://schemas.xmlsoap.org/wsdl/";
 }
