@@ -11,6 +11,7 @@ import org.somda.sdc.dpws.soap.SoapConfig;
 import org.somda.sdc.dpws.soap.wsaddressing.WsAddressingConfig;
 import org.somda.sdc.dpws.soap.wsdiscovery.WsDiscoveryConfig;
 import org.somda.sdc.dpws.soap.wseventing.WsEventingConfig;
+import org.somda.sdc.dpws.wsdl.WsdlProvisioningMode;
 
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLSession;
@@ -45,6 +46,10 @@ public class DefaultDpwsConfigModule extends AbstractConfigurationModule {
         bind(DeviceConfig.SECURED_ENDPOINT,
                 Boolean.class,
                 false);
+
+        bind(DeviceConfig.WSDL_PROVISIONING_MODE,
+                WsdlProvisioningMode.class,
+                WsdlProvisioningMode.RESOURCE);
     }
 
     private void configureDpws() {

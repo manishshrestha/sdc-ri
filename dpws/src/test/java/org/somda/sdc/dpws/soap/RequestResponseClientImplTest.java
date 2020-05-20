@@ -3,6 +3,7 @@ package org.somda.sdc.dpws.soap;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.somda.sdc.dpws.DpwsTest;
+import org.somda.sdc.dpws.helper.JaxbMarshalling;
 import org.somda.sdc.dpws.soap.factory.RequestResponseClientFactory;
 import org.somda.sdc.dpws.soap.interception.Direction;
 import org.somda.sdc.dpws.soap.interception.Interceptor;
@@ -26,6 +27,7 @@ public class RequestResponseClientImplTest extends DpwsTest {
     @BeforeEach
     public void setUp() throws Exception {
         super.setUp();
+        getInjector().getInstance(JaxbMarshalling.class).startAsync().awaitRunning();
         getInjector().getInstance(SoapMarshalling.class).startAsync().awaitRunning();
         dispatchedSequence = new ArrayList<>();
     }

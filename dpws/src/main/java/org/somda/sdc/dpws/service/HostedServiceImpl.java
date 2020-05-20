@@ -26,41 +26,39 @@ public class HostedServiceImpl implements HostedService {
     private final List<QName> types;
     private final List<EndpointReferenceType> eprs;
     private final WebService webService;
-    private final InputStream wsdlDocument;
+    private final byte[] wsdlDocument;
     private final ObjectFactory dpwsFactory;
     private final ObjectUtil objectUtil;
-    private final List<String> wsdlLocations;
 
     @AssistedInject
     HostedServiceImpl(@Assisted String serviceId,
                       @Assisted List<QName> types,
                       @Assisted List<String> eprAddresses,
                       @Assisted WebService webService,
-                      @Assisted InputStream wsdlDocumentStream,
+                      @Assisted byte[] wsdlDocument,
                       ObjectFactory dpwsFactory,
                       ObjectUtil objectUtil,
-                      WsAddressingUtil wsaUtil) throws IOException {
+                      WsAddressingUtil wsaUtil) {
         this.serviceId = serviceId;
         this.types = types;
         this.eprs = eprAddresses.stream()
                 .map(wsaUtil::createEprWithAddress)
                 .collect(Collectors.toList());
         this.webService = webService;
-        this.wsdlDocument = new ByteArrayInputStream(ByteStreams.toByteArray(wsdlDocumentStream));
+        this.wsdlDocument = wsdlDocument;
         this.dpwsFactory = dpwsFactory;
         this.objectUtil = objectUtil;
-        this.wsdlLocations = new ArrayList<>();
     }
 
     @AssistedInject
     HostedServiceImpl(@Assisted String serviceId,
                       @Assisted List<QName> types,
                       @Assisted WebService webService,
-                      @Assisted InputStream wsdlDocumentStream,
+                      @Assisted byte[] wsdlDocument,
                       ObjectFactory dpwsFactory,
                       ObjectUtil objectUtil,
-                      WsAddressingUtil wsaUtil) throws IOException {
-        this(serviceId, types, new ArrayList<>(), webService, wsdlDocumentStream, dpwsFactory, objectUtil, wsaUtil);
+                      WsAddressingUtil wsaUtil) {
+        this(serviceId, types, new ArrayList<>(), webService, wsdlDocument, dpwsFactory, objectUtil, wsaUtil);
     }
 
     @Override
@@ -78,12 +76,7 @@ public class HostedServiceImpl implements HostedService {
     }
 
     @Override
-    public InputStream getWsdlDocument() {
+    public byte[] getWsdlDocument() {
         return wsdlDocument;
-    }
-
-    @Override
-    public List<String> getWsdlLocations() {
-        return wsdlLocations;
     }
 }

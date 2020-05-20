@@ -398,32 +398,11 @@ public class DeviceImpl extends AbstractIdleService implements Device, Service, 
                     hostedService.getWsdlDocument());
         }
 
-        // Make given WSDL document accessible through HTTP
         String contextPath = buildContextPathBase(hostingService.getEndpointReferenceAddress()) + contextPathPart;
-        String wsdlContextPath = contextPath + "/wsdl";
-
-        // Retrieve WSDL document bytes
-        byte[] tmpWsdlDocBytes;
-        try {
-            tmpWsdlDocBytes = ByteStreams.toByteArray(hostedService.getWsdlDocument());
-        } catch (IOException e) {
-            instanceLogger.warn("Could not add hosted service properly. IO exception while requesting WSDL document stream.", e);
-            return;
-        }
-
-        // Make WSDL document bytes available as HTTP resource
-        final byte[] wsdlDocBytes = tmpWsdlDocBytes;
         for (EndpointReferenceType epr : hostedService.getType().getEndpointReference()) {
-            if (wsdlDocBytes.length == 0) {
-                throw new RuntimeException("Empty WSDL document detected");
-            }
             var uri = wsaUtil.getAddressUri(epr).orElseThrow(() ->
                     new RuntimeException("Invalid EPR detected when trying to add hosted service"));
-
             httpServerRegistry.registerContext(uri, contextPath, hsReqResHandler);
-            var wsdlLocation = httpServerRegistry.registerContext(uri, wsdlContextPath,
-                    SoapConstants.MEDIA_TYPE_WSDL, new ByteResourceHandler(wsdlDocBytes));
-            hostedService.getWsdlLocations().add(wsdlLocation);
         }
 
         // Create hosted service interceptor to access GetMetadata requests

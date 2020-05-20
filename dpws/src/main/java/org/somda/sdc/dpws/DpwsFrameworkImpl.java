@@ -15,12 +15,14 @@ import org.somda.sdc.dpws.guice.AppDelayExecutor;
 import org.somda.sdc.dpws.guice.DiscoveryUdpQueue;
 import org.somda.sdc.dpws.guice.NetworkJobThreadPool;
 import org.somda.sdc.dpws.guice.WsDiscovery;
+import org.somda.sdc.dpws.helper.JaxbMarshalling;
 import org.somda.sdc.dpws.http.HttpServerRegistry;
 import org.somda.sdc.dpws.soap.SoapMarshalling;
 import org.somda.sdc.dpws.soap.wsdiscovery.WsDiscoveryConstants;
 import org.somda.sdc.dpws.udp.UdpBindingService;
 import org.somda.sdc.dpws.udp.UdpMessageQueueService;
 import org.somda.sdc.dpws.udp.factory.UdpBindingServiceFactory;
+import org.somda.sdc.dpws.wsdl.WsdlMarshalling;
 
 import java.net.InetAddress;
 import java.net.NetworkInterface;
@@ -42,8 +44,6 @@ public class DpwsFrameworkImpl extends AbstractIdleService implements DpwsFramew
     private final Logger instanceLogger;
     private final UdpMessageQueueService udpMessageQueueService;
     private final UdpBindingServiceFactory udpBindingServiceFactory;
-    private final HttpServerRegistry httpServerRegistry;
-    private final SoapMarshalling soapMarshalling;
     private final FrameworkMetadata metadata;
 
     private final List<Service> registeredServices;
@@ -53,7 +53,9 @@ public class DpwsFrameworkImpl extends AbstractIdleService implements DpwsFramew
     DpwsFrameworkImpl(@DiscoveryUdpQueue UdpMessageQueueService udpMessageQueueService,
                       UdpBindingServiceFactory udpBindingServiceFactory,
                       HttpServerRegistry httpServerRegistry,
+                      JaxbMarshalling jaxbMarshalling,
                       SoapMarshalling soapMarshalling,
+                      WsdlMarshalling wsdlMarshalling,
                       @AppDelayExecutor ExecutorWrapperService<ScheduledExecutorService> appDelayExecutor,
                       @NetworkJobThreadPool ExecutorWrapperService<ListeningExecutorService> networkJobExecutor,
                       @WsDiscovery ExecutorWrapperService<ListeningExecutorService> wsDiscoveryExecutor,
@@ -62,15 +64,13 @@ public class DpwsFrameworkImpl extends AbstractIdleService implements DpwsFramew
         this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);
         this.udpMessageQueueService = udpMessageQueueService;
         this.udpBindingServiceFactory = udpBindingServiceFactory;
-        this.httpServerRegistry = httpServerRegistry;
-        this.soapMarshalling = soapMarshalling;
         this.metadata = metadata;
         this.registeredServices = new ArrayList<>();
         registeredServices.addAll(List.of(
                 // dpws thread pools
                 appDelayExecutor, networkJobExecutor, wsDiscoveryExecutor,
                 // dpws services
-                this.soapMarshalling, this.httpServerRegistry
+                jaxbMarshalling, soapMarshalling, wsdlMarshalling, httpServerRegistry
         ));
     }
 

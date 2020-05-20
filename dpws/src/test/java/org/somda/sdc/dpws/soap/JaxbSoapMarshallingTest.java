@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test;
 import org.somda.sdc.common.guice.AbstractConfigurationModule;
 import org.somda.sdc.dpws.DpwsTest;
 import org.somda.sdc.dpws.NetworkSinkMock;
+import org.somda.sdc.dpws.helper.JaxbMarshalling;
 import org.somda.sdc.dpws.soap.factory.EnvelopeFactory;
 import org.somda.sdc.dpws.soap.factory.SoapFaultFactory;
 import org.somda.sdc.dpws.soap.model.Envelope;
@@ -43,6 +44,7 @@ public class JaxbSoapMarshallingTest extends DpwsTest {
             }
         });
         super.setUp();
+        getInjector().getInstance(JaxbMarshalling.class).startAsync().awaitRunning();
         getInjector().getInstance(SoapMarshalling.class).startAsync().awaitRunning();
     }
 

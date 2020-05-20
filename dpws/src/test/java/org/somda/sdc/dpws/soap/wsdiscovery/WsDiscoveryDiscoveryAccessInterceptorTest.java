@@ -4,6 +4,7 @@ import com.google.common.primitives.UnsignedInteger;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.somda.sdc.dpws.DpwsTest;
+import org.somda.sdc.dpws.helper.JaxbMarshalling;
 import org.somda.sdc.dpws.soap.ApplicationInfo;
 import org.somda.sdc.dpws.soap.CommunicationContext;
 import org.somda.sdc.dpws.soap.NotificationSource;
@@ -101,6 +102,7 @@ public class WsDiscoveryDiscoveryAccessInterceptorTest extends DpwsTest {
         reqResServer = getInjector().getInstance(RequestResponseServer.class);
         reqResServer.register(wsDiscoveryTargetService);
 
+        getInjector().getInstance(JaxbMarshalling.class).startAsync().awaitRunning();
         unmarshaller = getInjector().getInstance(SoapMarshalling.class);
         unmarshaller.startAsync().awaitRunning();
     }

@@ -12,6 +12,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `org.somda.sdc.common.util.AnyDateTime` and `org.somda.sdc.common.util.AnyDateTimeAdapter` to fully support XML Schema DateTime. (#151)
 - `org.somda.sdc.common.logging.InstanceLogger` to provide an instance identifier in all log messages. (#156)
 - `org.somda.sdc.common.CommonConfig` to configure the instance identifier for the logger. (#156)
+- `org.somda.sdc.dpws.wsdl.WsdlMarshalling` to marshal and unmarshal WSDL documents. (#161)
+- `DeviceConfig.WSDL_PROVISIONING_MODE` to allow device-side configuration of different WSDL provisioning modes in accordance with WS-MetadataExchange. (#161)
 
 ### Changed
 
@@ -27,6 +29,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - `org.somda.sdc.dpws.CommunicationLogSink.getTargetStream()`; use `org.somda.sdc.dpws.CommunicationLogSink.createTargetStream()` instead. (#153)
 - `org.somda.sdc.common.util.ExecutorWrapperUtil`; `org.somda.sdc.common.util.ExecutorWrapperServices` are bound as guice `Provider`. (#156)
+- `org.somda.sdc.dpws.service.HostedService.getWsdlLocations()` as data is exclusively accessible through `getWsdlDocument()`. (#161)
 
 ### Fixed
 - `org.somda.sdc.dpws.soap.wseventing.EventSourceInterceptor` no longer tries to send SubscriptionEnd messages to stale subscriptions on shutdown. (#164)

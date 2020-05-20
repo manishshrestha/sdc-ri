@@ -1,5 +1,6 @@
 package org.somda.sdc.glue.provider;
 
+import com.google.common.io.ByteStreams;
 import com.google.common.util.concurrent.AbstractIdleService;
 import com.google.inject.Provider;
 import com.google.inject.assistedinject.Assisted;
@@ -25,6 +26,7 @@ import org.somda.sdc.glue.provider.services.factory.ServicesFactory;
 import org.somda.sdc.mdpws.common.CommonConstants;
 
 import javax.xml.namespace.QName;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
 
@@ -180,7 +182,7 @@ public class SdcDevice extends AbstractIdleService implements Device, EventSourc
         pluginProcessor.afterShutDown();
     }
 
-    private void setupHostedServices() {
+    private void setupHostedServices() throws IOException {
         final ClassLoader classLoader = getClass().getClassLoader();
         InputStream highPrioWsdlStream = classLoader.getResourceAsStream("wsdl/IEEE11073-20701-HighPriority-Services.wsdl");
         assert highPrioWsdlStream != null;
@@ -195,7 +197,7 @@ public class SdcDevice extends AbstractIdleService implements Device, EventSourc
                         new QName(WsdlConstants.TARGET_NAMESPACE, WsdlConstants.SERVICE_STATE_EVENT),
                         new QName(WsdlConstants.TARGET_NAMESPACE, WsdlConstants.SERVICE_WAVEFORM)),
                 highPriorityServices,
-                highPrioWsdlStream));
+                ByteStreams.toByteArray(highPrioWsdlStream)));
     }
 
     private void addOperationInvocationReceiver(OperationInvocationReceiver receiver) {

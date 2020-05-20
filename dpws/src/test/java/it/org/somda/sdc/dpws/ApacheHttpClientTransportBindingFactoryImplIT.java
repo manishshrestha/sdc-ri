@@ -9,6 +9,7 @@ import org.somda.sdc.dpws.DpwsTest;
 import org.somda.sdc.dpws.TransportBinding;
 import org.somda.sdc.dpws.factory.TransportBindingFactory;
 import org.somda.sdc.dpws.guice.DefaultDpwsConfigModule;
+import org.somda.sdc.dpws.helper.JaxbMarshalling;
 import org.somda.sdc.dpws.soap.SoapMarshalling;
 import org.somda.sdc.dpws.soap.SoapMessage;
 import org.somda.sdc.dpws.soap.factory.EnvelopeFactory;
@@ -43,6 +44,7 @@ public class ApacheHttpClientTransportBindingFactoryImplIT extends DpwsTest {
         transportBindingFactory = getInjector().getInstance(TransportBindingFactory.class);
         soapMessageFactory = getInjector().getInstance(SoapMessageFactory.class);
         envelopeFactory = getInjector().getInstance(EnvelopeFactory.class);
+        getInjector().getInstance(JaxbMarshalling.class).startAsync().awaitRunning();
         marshalling = getInjector().getInstance(SoapMarshalling.class);
         marshalling.startAsync().awaitRunning();
     }

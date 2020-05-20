@@ -21,6 +21,7 @@ import org.somda.sdc.dpws.DpwsTest;
 import org.somda.sdc.dpws.TransportBinding;
 import org.somda.sdc.dpws.factory.TransportBindingFactory;
 import org.somda.sdc.dpws.guice.DefaultDpwsConfigModule;
+import org.somda.sdc.dpws.helper.JaxbMarshalling;
 import org.somda.sdc.dpws.http.HttpException;
 import org.somda.sdc.dpws.http.HttpHandler;
 import org.somda.sdc.dpws.http.apache.ClientTransportBinding;
@@ -83,6 +84,7 @@ public class CommunicationLogIT extends DpwsTest {
         transportBindingFactory = getInjector().getInstance(TransportBindingFactory.class);
         soapMessageFactory = getInjector().getInstance(SoapMessageFactory.class);
         envelopeFactory = getInjector().getInstance(EnvelopeFactory.class);
+        getInjector().getInstance(JaxbMarshalling.class).startAsync().awaitRunning();
         marshalling = getInjector().getInstance(SoapMarshalling.class);
         logSink = (TestCommLogSink) getInjector().getInstance(CommunicationLogSink.class);
         marshalling.startAsync().awaitRunning();
