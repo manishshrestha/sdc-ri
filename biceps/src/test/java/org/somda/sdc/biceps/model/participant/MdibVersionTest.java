@@ -1,12 +1,15 @@
 package org.somda.sdc.biceps.model.participant;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import test.org.somda.common.LoggingTestWatcher;
 
 import java.math.BigInteger;
 import java.net.URI;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@ExtendWith(LoggingTestWatcher.class)
 class MdibVersionTest {
 
     @Test

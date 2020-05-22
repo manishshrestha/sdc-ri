@@ -3,8 +3,11 @@ package org.somda.sdc.dpws.udp;
 import com.google.common.util.concurrent.AbstractIdleService;
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.google.inject.name.Named;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.somda.sdc.common.CommonConfig;
+import org.somda.sdc.common.logging.InstanceLogger;
 import org.somda.sdc.dpws.CommunicationLog;
 import org.somda.sdc.dpws.DpwsConstants;
 import org.somda.sdc.dpws.network.NetworkInterfaceUtil;
@@ -16,7 +19,13 @@ import org.somda.sdc.dpws.soap.exception.TransportException;
 import javax.annotation.Nullable;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.net.*;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.MulticastSocket;
+import java.net.NetworkInterface;
+import java.net.SocketException;
 import java.util.Collections;
 import java.util.Random;
 
@@ -24,12 +33,13 @@ import java.util.Random;
  * Default implementation of {@linkplain UdpBindingService}.
  */
 public class UdpBindingServiceImpl extends AbstractIdleService implements UdpBindingService {
-    private static final Logger LOG = LoggerFactory.getLogger(UdpBindingServiceImpl.class);
+    private static final Logger LOG = LogManager.getLogger(UdpBindingServiceImpl.class);
 
     private final Random random = new Random();
     private final NetworkInterface networkInterface;
     private final InetAddress multicastGroup;
     private final Integer socketPort;
+    private final Logger instanceLogger;
     private Thread multicastSocketRunner;
     private Thread unicastSocketRunner;
 
@@ -42,6 +52,7 @@ public class UdpBindingServiceImpl extends AbstractIdleService implements UdpBin
     private final CommunicationLog communicationLog;
     private UdpMessageReceiverCallback receiver;
     private InetAddress networkInterfaceAddress;
+    private InetSocketAddress multicastAddress;
 
     @AssistedInject
     UdpBindingServiceImpl(@Assisted NetworkInterface networkInterface,
@@ -49,47 +60,49 @@ public class UdpBindingServiceImpl extends AbstractIdleService implements UdpBin
                           @Assisted("multicastPort") Integer multicastPort,
                           @Assisted("maxMessageSize") Integer maxMessageSize,
                           NetworkInterfaceUtil networkInterfaceUtil,
-                          CommunicationLog communicationLog) {
+                          CommunicationLog communicationLog,
+                          @Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier) {
+        this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);
         this.networkInterface = networkInterface;
         this.multicastGroup = multicastGroup;
         this.socketPort = multicastPort;
         this.maxMessageSize = maxMessageSize;
         this.networkInterfaceUtil = networkInterfaceUtil;
         this.communicationLog = communicationLog;
+        this.multicastAddress = new InetSocketAddress(multicastGroup, socketPort);
         this.multicastSocket = null;
         this.networkInterfaceAddress = null;
     }
 
     @Override
     protected void startUp() throws Exception {
-        InetSocketAddress address = new InetSocketAddress(multicastGroup, socketPort);
-        LOG.info("Start UDP binding on network interface {}", this);
+        instanceLogger.info("Start UDP binding on network interface {}", this);
         // try to get first available address from network interface
         networkInterfaceAddress = networkInterfaceUtil.getFirstIpV4Address(networkInterface).orElseThrow(() ->
                 new SocketException(String.format("Could not retrieve network interface address from: %s", networkInterface)));
 
-        LOG.info("Bind to address {}", networkInterfaceAddress);
+        instanceLogger.info("Bind to address {}", networkInterfaceAddress);
 
         outgoingSocket = new DatagramSocket(0, networkInterfaceAddress);
-        LOG.info("Outgoing socket at {} is open", outgoingSocket.getLocalSocketAddress());
+        instanceLogger.info("Outgoing socket at {} is open", outgoingSocket.getLocalSocketAddress());
         if (multicastGroup != null) {
             if (!multicastGroup.isMulticastAddress()) {
                 throw new Exception(String.format("Given address is not a multicast address: %s", multicastGroup));
             }
 
             multicastSocket = new MulticastSocket(socketPort);
-            LOG.info("Join to UDP multicast address group {}", address);
-            multicastSocket.joinGroup(address, networkInterface);
+            instanceLogger.info("Join to UDP multicast address group {}", multicastAddress);
+            multicastSocket.joinGroup(multicastAddress, networkInterface);
             incomingSocket = multicastSocket;
         } else {
             incomingSocket = new DatagramSocket(0, networkInterfaceAddress);
-            LOG.info("Incoming socket is open: {}", incomingSocket.getLocalSocketAddress());
+            instanceLogger.info("Incoming socket is open: {}", incomingSocket.getLocalSocketAddress());
         }
 
         if (receiver == null) {
-            LOG.info("No data receiver configured; ignore incoming UDP messages");
+            instanceLogger.info("No data receiver configured; ignore incoming UDP messages");
         } else {
-            LOG.info("Data receiver configured; process incoming UDP messages");
+            instanceLogger.info("Data receiver configured; process incoming UDP messages");
 
             // Socket to receive any incoming multicast traffic
             this.multicastSocketRunner = new Thread(() -> {
@@ -98,7 +111,7 @@ public class UdpBindingServiceImpl extends AbstractIdleService implements UdpBin
                     try {
                         incomingSocket.receive(packet);
                     } catch (IOException e) {
-                        LOG.trace("Could not process UDP packet. Discard.");
+                        instanceLogger.trace("Could not process UDP packet. Discard.");
                         continue;
                     }
 
@@ -127,7 +140,7 @@ public class UdpBindingServiceImpl extends AbstractIdleService implements UdpBin
                     try {
                         outgoingSocket.receive(packet);
                     } catch (IOException e) {
-                        LOG.trace("Could not process UDP packet. Discard.");
+                        instanceLogger.trace("Could not process UDP packet. Discard.");
                         continue;
                     }
 
@@ -157,20 +170,20 @@ public class UdpBindingServiceImpl extends AbstractIdleService implements UdpBin
         // this has primarily been an issue in low performance environments such as the CI
         Thread.sleep(1000);
 
-        LOG.info("UDP binding {} is running", this);
+        instanceLogger.info("UDP binding {} is running", this);
     }
 
     @Override
     protected void shutDown() throws Exception {
-        LOG.info("Shut down UDP binding {}", this);
+        instanceLogger.info("Shut down UDP binding {}", this);
         multicastSocketRunner.interrupt();
         unicastSocketRunner.interrupt();
-        if (multicastSocket != null) {
-            multicastSocket.leaveGroup(multicastGroup);
+        if (multicastSocket != null && multicastGroup != null && multicastAddress != null) {
+            multicastSocket.leaveGroup(multicastAddress, networkInterface);
         }
         incomingSocket.close();
         outgoingSocket.close();
-        LOG.info("UDP binding {} shut down", this);
+        instanceLogger.info("UDP binding {} shut down", this);
     }
 
     @Override
@@ -181,7 +194,7 @@ public class UdpBindingServiceImpl extends AbstractIdleService implements UdpBin
     @Override
     public void sendMessage(UdpMessage message) throws IOException, TransportException {
         if (!isRunning()) {
-            LOG.warn("Try to send message, but service is not running. Skip.");
+            instanceLogger.warn("Try to send message, but service is not running. Skip.");
             return;
         }
         if (message.getLength() > maxMessageSize) {
@@ -225,7 +238,7 @@ public class UdpBindingServiceImpl extends AbstractIdleService implements UdpBin
             try {
                 Thread.sleep(t);
             } catch (InterruptedException e) {
-                LOG.info("Thread interrupted");
+                instanceLogger.info("Thread interrupted");
                 break;
             }
 
@@ -282,7 +295,7 @@ public class UdpBindingServiceImpl extends AbstractIdleService implements UdpBin
                     messageData
             );
         } catch (IOException e) {
-            LOG.warn("Could not log udp message though the communication log", e);
+            instanceLogger.warn("Could not log udp message though the communication log", e);
         }
 
     }

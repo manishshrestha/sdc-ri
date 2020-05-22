@@ -2,29 +2,51 @@ package org.somda.sdc.biceps.common.storage;
 
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.somda.sdc.biceps.common.*;
+import com.google.inject.name.Named;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.somda.sdc.biceps.common.MdibDescriptionModification;
+import org.somda.sdc.biceps.common.MdibDescriptionModifications;
+import org.somda.sdc.biceps.common.MdibEntity;
+import org.somda.sdc.biceps.common.MdibStateModifications;
+import org.somda.sdc.biceps.common.MdibTypeValidator;
 import org.somda.sdc.biceps.common.access.WriteDescriptionResult;
 import org.somda.sdc.biceps.common.access.WriteStateResult;
 import org.somda.sdc.biceps.common.factory.MdibEntityFactory;
 import org.somda.sdc.biceps.common.storage.helper.MdibStorageUtil;
-import org.somda.sdc.biceps.model.participant.*;
+import org.somda.sdc.biceps.model.participant.AbstractContextDescriptor;
+import org.somda.sdc.biceps.model.participant.AbstractContextState;
+import org.somda.sdc.biceps.model.participant.AbstractDescriptor;
+import org.somda.sdc.biceps.model.participant.AbstractMultiState;
+import org.somda.sdc.biceps.model.participant.AbstractState;
+import org.somda.sdc.biceps.model.participant.ContextAssociation;
+import org.somda.sdc.biceps.model.participant.MdibVersion;
+import org.somda.sdc.common.CommonConfig;
+import org.somda.sdc.common.logging.InstanceLogger;
 
 import javax.annotation.Nullable;
+import java.lang.reflect.InvocationTargetException;
 import java.math.BigInteger;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
  * Default implementation of {@linkplain MdibStorage}.
  */
 public class MdibStorageImpl implements MdibStorage {
-    private static final Logger LOG = LoggerFactory.getLogger(MdibStorageImpl.class);
+    private static final Logger LOG = LogManager.getLogger(MdibStorageImpl.class);
 
     private final MdibEntityFactory entityFactory;
     private final MdibStorageUtil util;
     private final MdibTypeValidator typeValidator;
+    private final Logger instanceLogger;
 
     private MdibVersion mdibVersion;
     private BigInteger mdDescriptionVersion;
@@ -38,16 +60,26 @@ public class MdibStorageImpl implements MdibStorage {
     @AssistedInject
     MdibStorageImpl(MdibEntityFactory entityFactory,
                     MdibStorageUtil util,
-                    MdibTypeValidator typeValidator) {
-        this(MdibVersion.create(), BigInteger.valueOf(-1), BigInteger.valueOf(-1), entityFactory, util, typeValidator);
+                    MdibTypeValidator typeValidator,
+                    @Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier) {
+        this(
+                MdibVersion.create(), BigInteger.valueOf(-1),
+                BigInteger.valueOf(-1), entityFactory, util,
+                typeValidator, frameworkIdentifier
+        );
     }
 
     @AssistedInject
     MdibStorageImpl(@Assisted MdibVersion initialMdibVersion,
                     MdibEntityFactory entityFactory,
                     MdibStorageUtil util,
-                    MdibTypeValidator typeValidator) {
-        this(initialMdibVersion, BigInteger.valueOf(-1), BigInteger.valueOf(-1), entityFactory, util, typeValidator);
+                    MdibTypeValidator typeValidator,
+                    @Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier) {
+        this(
+                initialMdibVersion, BigInteger.valueOf(-1),
+                BigInteger.valueOf(-1), entityFactory, util,
+                typeValidator, frameworkIdentifier
+        );
     }
 
     @AssistedInject
@@ -56,7 +88,9 @@ public class MdibStorageImpl implements MdibStorage {
                     @Assisted("mdStateVersion") BigInteger mdStateVersion,
                     MdibEntityFactory entityFactory,
                     MdibStorageUtil util,
-                    MdibTypeValidator typeValidator) {
+                    MdibTypeValidator typeValidator,
+                    @Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier) {
+        this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);
         this.mdibVersion = initialMdibVersion;
         this.mdDescriptionVersion = mdDescriptionVersion;
         this.mdStateVersion = mdStateVersion;
@@ -204,7 +238,10 @@ public class MdibStorageImpl implements MdibStorage {
                     deleteEntity(modification, deletedEntities);
                     break;
                 default:
-                    LOG.warn("Unknown modification type detected. Skip entry while description modification processing.");
+                    instanceLogger.warn(
+                            "Unknown modification type detected."
+                                    + " Skip entry while description modification processing."
+                    );
             }
         }
 
@@ -230,7 +267,10 @@ public class MdibStorageImpl implements MdibStorage {
 
     private void deleteEntity(MdibDescriptionModification modification, List<MdibEntity> deletedEntities) {
         Optional.ofNullable(entities.get(modification.getHandle())).ifPresent(mdibEntity -> {
-            LOG.debug("[{}] Delete entity: {}", mdibVersion.getInstanceId(), modification.getDescriptor().getHandle());
+            instanceLogger.debug(
+                    "[{}] Delete entity: {}",
+                    mdibVersion.getInstanceId(), modification.getDescriptor().getHandle()
+            );
             mdibEntity.getParent().ifPresent(parentHandle ->
                     Optional.ofNullable(entities.get(parentHandle)).ifPresent(parentEntity ->
                             entities.put(parentEntity.getHandle(), entityFactory.replaceChildren(parentEntity,
@@ -241,7 +281,10 @@ public class MdibStorageImpl implements MdibStorage {
 
         final MdibEntity deletedEntity = entities.get(modification.getHandle());
         if (deletedEntity == null) {
-            LOG.warn("Possible inconsistency detected. Entity to delete was not found: {}" + modification.getHandle());
+            instanceLogger.warn(
+                    "Possible inconsistency detected. Entity to delete was not found: {}",
+                    modification.getHandle()
+            );
             return;
         }
 
@@ -253,9 +296,12 @@ public class MdibStorageImpl implements MdibStorage {
         deletedEntities.add(deletedEntity);
     }
 
-    private void updateEntity(MdibDescriptionModification modification, List<AbstractState> sanitizedStates, List<MdibEntity> updatedEntities) {
+    private void updateEntity(MdibDescriptionModification modification,
+                              List<AbstractState> sanitizedStates,
+                              List<MdibEntity> updatedEntities
+    ) {
         Optional.ofNullable(entities.get(modification.getHandle())).ifPresent(mdibEntity -> {
-            LOG.debug("[{}] Update entity: {}", mdibVersion.getInstanceId(), modification.getDescriptor());
+            instanceLogger.debug("[{}] Update entity: {}", mdibVersion.getInstanceId(), modification.getDescriptor());
 
             entities.put(mdibEntity.getHandle(), entityFactory.replaceDescriptorAndStates(
                     mdibEntity,
@@ -321,7 +367,10 @@ public class MdibStorageImpl implements MdibStorage {
         // Add to entities list
         entities.put(mdibEntityForStorage.getHandle(), mdibEntityForStorage);
 
-        LOG.debug("[{}] Insert entity: {}", mdibVersion.getInstanceId(), mdibEntityForStorage.getDescriptor());
+        instanceLogger.debug(
+                "[{}] Insert entity: {}",
+                mdibVersion.getInstanceId(), mdibEntityForStorage.getDescriptor()
+        );
 
         // Add to context states if context entity
         if (mdibEntityForStorage.getDescriptor() instanceof AbstractContextDescriptor) {
@@ -344,8 +393,8 @@ public class MdibStorageImpl implements MdibStorage {
 
         final List<AbstractState> modifiedStates = new ArrayList<>();
         for (AbstractState modification : stateModifications.getStates()) {
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("[{}] Update state: {}", mdibVersion.getSequenceId(), modification);
+            if (instanceLogger.isDebugEnabled()) {
+                instanceLogger.debug("[{}] Update state: {}", mdibVersion.getSequenceId(), modification);
             }
 
             modifiedStates.add(modification);
@@ -355,8 +404,10 @@ public class MdibStorageImpl implements MdibStorage {
                 // Do not store context states when not associated
                 var contextState = getNotAssociatedContextState(modification);
                 if (contextState.isPresent()) {
-                    LOG.debug("Found update on context state {} with association=not-associated; do not store in MDIB",
-                            contextState.get().getHandle());
+                    instanceLogger.debug(
+                            "Found update on context state {} with association=not-associated; do not store in MDIB",
+                            contextState.get().getHandle()
+                    );
                     continue;
                 }
 
@@ -369,10 +420,15 @@ public class MdibStorageImpl implements MdibStorage {
                 try {
                     descr = typeValidator.resolveDescriptorType(modification.getClass())
                             .getConstructor().newInstance();
-                } catch (Exception e) {
-                    LOG.warn("Ignore modification. Reason: could not instantiate descriptor type for handle {}.",
-                            modification.getDescriptorHandle());
-                    LOG.trace("Ignore modification", e);
+                } catch (ClassNotFoundException | InvocationTargetException | SecurityException
+                        | NoSuchMethodException | InstantiationException | IllegalArgumentException
+                        | IllegalAccessException e
+                ) {
+                    instanceLogger.warn(
+                            "Ignore modification. Reason: could not instantiate descriptor type for handle {}.",
+                            modification.getDescriptorHandle()
+                    );
+                    instanceLogger.trace("Ignore modification", e);
                     continue;
                 }
                 descr.setHandle(modification.getDescriptorHandle());
@@ -386,9 +442,11 @@ public class MdibStorageImpl implements MdibStorage {
                         })
                         .orElse(states -> {
                             var modificationAsMultiState = typeValidator.toMultiState(modification).orElseThrow(() ->
-                                    new RuntimeException(
-                                            String.format("Found a non-matching multi-state for multi-state entity update (descriptor handle: %s",
-                                                    mdibEntity.getHandle())));
+                                    new RuntimeException(String.format(
+                                            "Found a non-matching multi-state for multi-state entity update"
+                                                    + " (descriptor handle: %s)",
+                                            mdibEntity.getHandle())
+                                    ));
 
                             var newStates = new ArrayList<AbstractMultiState>();
                             boolean found = false;
@@ -396,11 +454,17 @@ public class MdibStorageImpl implements MdibStorage {
                                 if (multiState.getHandle().equals(modificationAsMultiState.getHandle())) {
                                     found = true;
                                     if (getNotAssociatedContextState(modificationAsMultiState).isPresent()) {
-                                        LOG.debug("Found context state {} with association=not-associated; refuse storage in MDIB",
-                                                modificationAsMultiState.getHandle());
+                                        instanceLogger.debug(
+                                                "Found context state {} with association=not-associated;"
+                                                        + " refuse storage in MDIB",
+                                                modificationAsMultiState.getHandle()
+                                        );
                                         contextStates.remove(multiState.getHandle());
                                     } else {
-                                        LOG.debug("Replacing already present multi-state {}", multiState.getHandle());
+                                        instanceLogger.debug(
+                                                "Replacing already present multi-state {}",
+                                                multiState.getHandle()
+                                        );
                                         newStates.add(modificationAsMultiState);
                                     }
                                 } else {
@@ -409,7 +473,7 @@ public class MdibStorageImpl implements MdibStorage {
                             }
 
                             if (!found && getNotAssociatedContextState(modificationAsMultiState).isEmpty()) {
-                                LOG.debug("Adding new MultiState {}", modificationAsMultiState.getHandle());
+                                instanceLogger.debug("Adding new MultiState {}", modificationAsMultiState.getHandle());
                                 newStates.add(modificationAsMultiState);
                             }
 
@@ -452,7 +516,8 @@ public class MdibStorageImpl implements MdibStorage {
     private Optional<AbstractContextState> getNotAssociatedContextState(AbstractState state) {
         if (state instanceof AbstractContextState) {
             var contextState = (AbstractContextState) state;
-            if (contextState.getContextAssociation() == null || ContextAssociation.NO.equals(contextState.getContextAssociation())) {
+            if (contextState.getContextAssociation() == null
+                    || ContextAssociation.NO.equals(contextState.getContextAssociation())) {
                 return Optional.of(contextState);
             }
         }

@@ -8,7 +8,21 @@ import org.somda.sdc.biceps.common.MdibStateModifications;
 import org.somda.sdc.biceps.common.MdibTypeValidator;
 import org.somda.sdc.biceps.common.access.MdibAccess;
 import org.somda.sdc.biceps.common.storage.PreprocessingException;
-import org.somda.sdc.biceps.model.message.*;
+import org.somda.sdc.biceps.model.message.Activate;
+import org.somda.sdc.biceps.model.message.ActivateResponse;
+import org.somda.sdc.biceps.model.message.GetContainmentTree;
+import org.somda.sdc.biceps.model.message.GetContainmentTreeResponse;
+import org.somda.sdc.biceps.model.message.GetContextStates;
+import org.somda.sdc.biceps.model.message.GetContextStatesResponse;
+import org.somda.sdc.biceps.model.message.GetDescriptor;
+import org.somda.sdc.biceps.model.message.GetDescriptorResponse;
+import org.somda.sdc.biceps.model.message.GetMdDescription;
+import org.somda.sdc.biceps.model.message.GetMdDescriptionResponse;
+import org.somda.sdc.biceps.model.message.GetMdState;
+import org.somda.sdc.biceps.model.message.GetMdStateResponse;
+import org.somda.sdc.biceps.model.message.GetMdib;
+import org.somda.sdc.biceps.model.message.GetMdibResponse;
+import org.somda.sdc.biceps.model.message.InvocationState;
 import org.somda.sdc.biceps.model.participant.PatientContextState;
 import org.somda.sdc.biceps.provider.access.LocalMdibAccess;
 import org.somda.sdc.biceps.provider.access.factory.LocalMdibAccessFactory;
@@ -20,17 +34,12 @@ import org.somda.sdc.dpws.soap.CommunicationContext;
 import org.somda.sdc.dpws.soap.SoapUtil;
 import org.somda.sdc.dpws.soap.exception.SoapFaultException;
 import org.somda.sdc.dpws.soap.interception.RequestResponseObject;
-import org.somda.sdc.glue.GlueConstants;
 import org.somda.sdc.glue.UnitTestUtil;
 import org.somda.sdc.glue.provider.sco.Context;
 import org.somda.sdc.glue.provider.sco.IncomingSetServiceRequest;
 import org.somda.sdc.glue.provider.sco.InvocationResponse;
 import org.somda.sdc.glue.provider.sco.OperationInvocationReceiver;
 import org.somda.sdc.glue.provider.services.factory.ServicesFactory;
-import org.somda.sdc.mdpws.model.DualChannelType;
-import org.somda.sdc.mdpws.model.DualChannelValueType;
-import org.somda.sdc.mdpws.model.ObjectFactory;
-import org.somda.sdc.mdpws.model.SafetyInfoType;
 import org.somda.sdc.mdpws.provider.safety.SafetyXPath;
 
 import javax.xml.namespace.QName;
@@ -38,7 +47,12 @@ import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 
 class HighPriorityServicesTest {
@@ -323,13 +337,13 @@ class HighPriorityServicesTest {
         request.setOperationHandleRef(Handles.OPERATION_0);
         var rrObj = createRequestResponseObject(request);
 
-        var safetyInfo = new SafetyInfoType();
-        DualChannelValueType v;
-        safetyInfo.getDualChannel().getValue().add()
-        ObjectFactory factory = new ObjectFactory();
-        factory.
-        safetyInfo.setDualChannel(new DualChannelType());
-        safetyInfo.setDualChannel(new DualChannelType());
+//        var safetyInfo = new SafetyInfoType();
+//        DualChannelValueType v;
+//        safetyInfo.getDualChannel().getValue().add()
+//        ObjectFactory factory = new ObjectFactory();
+//        factory.
+//        safetyInfo.setDualChannel(new DualChannelType());
+//        safetyInfo.setDualChannel(new DualChannelType());
 
 //        rrObj.getRequest().getOriginalEnvelope().getHeader().getAny()
 //                .add()
@@ -363,93 +377,6 @@ class HighPriorityServicesTest {
 
     @Test
     void setMetricState() {
-    }
-
-    @Test
-    void getDescriptor() throws SoapFaultException {
-        {
-            // Check with empty filter
-
-            var rrObj = createRequestResponseObject(new GetDescriptor());
-            highPriorityServices.getDescriptor(rrObj);
-
-            var actualResponse = soapUtil.getBody(rrObj.getResponse(), GetDescriptorResponse.class);
-            assertTrue(actualResponse.isPresent());
-
-            assertTrue(actualResponse.get().getDescriptor().isEmpty());
-        }
-
-        {
-            // Check with filter
-
-            var request = new GetDescriptor();
-            request.getHandleRef().addAll(List.of(Handles.VMD_0, UUID.randomUUID().toString()));
-            var rrObj = createRequestResponseObject(request);
-            highPriorityServices.getDescriptor(rrObj);
-
-            var actualResponse = soapUtil.getBody(rrObj.getResponse(), GetDescriptorResponse.class);
-            assertTrue(actualResponse.isPresent());
-            assertEquals(1, actualResponse.get().getDescriptor().size());
-            assertEquals(Handles.VMD_0, actualResponse.get().getDescriptor().get(0).getHandle());
-        }
-    }
-
-    @Test
-    void getContainmentTree() throws SoapFaultException {
-        {
-            // Check with empty filter
-
-            var rrObj = createRequestResponseObject(new GetContainmentTree());
-            highPriorityServices.getContainmentTree(rrObj);
-
-            var actualResponse = soapUtil.getBody(rrObj.getResponse(), GetContainmentTreeResponse.class);
-            assertTrue(actualResponse.isPresent());
-
-            assertNull(actualResponse.get().getContainmentTree().getChildrenCount());
-            assertNull(actualResponse.get().getContainmentTree().getEntryType());
-            assertNull(actualResponse.get().getContainmentTree().getHandleRef());
-            assertNull(actualResponse.get().getContainmentTree().getParentHandleRef());
-            assertEquals(2, actualResponse.get().getContainmentTree().getEntry().size());
-            assertEquals(Handles.MDS_0, actualResponse.get().getContainmentTree().getEntry().get(0).getHandleRef());
-            assertEquals(Handles.MDS_1, actualResponse.get().getContainmentTree().getEntry().get(1).getHandleRef());
-        }
-
-        {
-            // Check with filter
-
-            var request = new GetContainmentTree();
-            request.getHandleRef().addAll(List.of(Handles.VMD_0, Handles.VMD_1));
-            var rrObj = createRequestResponseObject(request);
-            highPriorityServices.getContainmentTree(rrObj);
-
-            var actualResponse = soapUtil.getBody(rrObj.getResponse(), GetContainmentTreeResponse.class);
-            assertTrue(actualResponse.isPresent());
-
-            assertNull(actualResponse.get().getContainmentTree().getChildrenCount());
-            assertNull(actualResponse.get().getContainmentTree().getEntryType());
-            assertNull(actualResponse.get().getContainmentTree().getHandleRef());
-            assertNull(actualResponse.get().getContainmentTree().getParentHandleRef());
-
-            assertEquals(2, actualResponse.get().getContainmentTree().getEntry().size());
-            assertEquals(Handles.VMD_0, actualResponse.get().getContainmentTree().getEntry().get(0).getHandleRef());
-            assertEquals(2, actualResponse.get().getContainmentTree().getEntry().get(0).getChildrenCount());
-            assertEquals(new QName(CommonConstants.NAMESPACE_PARTICIPANT, "VmdDescriptor"), actualResponse.get().getContainmentTree().getEntry().get(0).getEntryType());
-            assertEquals(Handles.MDS_0, actualResponse.get().getContainmentTree().getEntry().get(0).getParentHandleRef());
-
-            assertEquals(Handles.VMD_1, actualResponse.get().getContainmentTree().getEntry().get(1).getHandleRef());
-            assertEquals(0, actualResponse.get().getContainmentTree().getEntry().get(1).getChildrenCount());
-            assertEquals(new QName(CommonConstants.NAMESPACE_PARTICIPANT, "VmdDescriptor"), actualResponse.get().getContainmentTree().getEntry().get(1).getEntryType());
-            assertEquals(Handles.MDS_0, actualResponse.get().getContainmentTree().getEntry().get(1).getParentHandleRef());
-        }
-
-        {
-            // Check violation of biceps:R5030 (different parent handles)
-
-            var request = new GetContainmentTree();
-            request.getHandleRef().addAll(List.of(Handles.MDS_0, Handles.VMD_1));
-            var rrObj = createRequestResponseObject(request);
-            assertThrows(SoapFaultException.class, () -> highPriorityServices.getContainmentTree(rrObj));
-        }
     }
 
     private int getRecursiveStateCount(MdibAccess mdibAccess, MdibEntity entity) {

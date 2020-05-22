@@ -1,10 +1,17 @@
 package org.somda.sdc.biceps.provider.access;
 
 import com.google.inject.assistedinject.AssistedInject;
+import com.google.inject.name.Named;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.somda.sdc.biceps.common.MdibDescriptionModifications;
 import org.somda.sdc.biceps.common.MdibEntity;
 import org.somda.sdc.biceps.common.MdibStateModifications;
-import org.somda.sdc.biceps.common.access.*;
+import org.somda.sdc.biceps.common.access.CopyManager;
+import org.somda.sdc.biceps.common.access.MdibAccessObserver;
+import org.somda.sdc.biceps.common.access.ReadTransaction;
+import org.somda.sdc.biceps.common.access.WriteDescriptionResult;
+import org.somda.sdc.biceps.common.access.WriteStateResult;
 import org.somda.sdc.biceps.common.access.factory.ReadTransactionFactory;
 import org.somda.sdc.biceps.common.access.helper.WriteUtil;
 import org.somda.sdc.biceps.common.event.Distributor;
@@ -22,8 +29,8 @@ import org.somda.sdc.biceps.provider.preprocessing.DuplicateChecker;
 import org.somda.sdc.biceps.provider.preprocessing.HandleReferenceHandler;
 import org.somda.sdc.biceps.provider.preprocessing.TypeConsistencyChecker;
 import org.somda.sdc.biceps.provider.preprocessing.VersionHandler;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.somda.sdc.common.CommonConfig;
+import org.somda.sdc.common.logging.InstanceLogger;
 
 import java.math.BigInteger;
 import java.util.Arrays;
@@ -36,7 +43,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
  * Default implementation of {@linkplain LocalMdibAccessImpl}.
  */
 public class LocalMdibAccessImpl implements LocalMdibAccess {
-    private static final Logger LOG = LoggerFactory.getLogger(LocalMdibAccessImpl.class);
+    private static final Logger LOG = LogManager.getLogger(LocalMdibAccessImpl.class);
 
     private final Distributor eventDistributor;
     private final MdibStorage mdibStorage;
@@ -45,6 +52,7 @@ public class LocalMdibAccessImpl implements LocalMdibAccess {
     private final CopyManager copyManager;
 
     private final WriteUtil writeUtil;
+    private final Logger instanceLogger;
 
     private MdibVersion mdibVersion;
     private BigInteger mdDescriptionVersion;
@@ -61,7 +69,9 @@ public class LocalMdibAccessImpl implements LocalMdibAccess {
                         TypeConsistencyChecker typeConsistencyChecker,
                         HandleReferenceHandler handleReferenceHandler,
                         DescriptorChildRemover descriptorChildRemover,
-                        CopyManager copyManager) {
+                        CopyManager copyManager,
+                        @Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier) {
+        this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);
         mdibVersion = MdibVersion.create();
         mdDescriptionVersion = BigInteger.ZERO;
         mdStateVersion = BigInteger.ZERO;
@@ -74,42 +84,51 @@ public class LocalMdibAccessImpl implements LocalMdibAccess {
 
         MdibStoragePreprocessingChain localMdibAccessPreprocessing = chainFactory.createMdibStoragePreprocessingChain(
                 mdibStorage,
-                Arrays.asList(duplicateChecker, typeConsistencyChecker, versionHandler, handleReferenceHandler, descriptorChildRemover),
+                Arrays.asList(
+                        duplicateChecker, typeConsistencyChecker,
+                        versionHandler, handleReferenceHandler,
+                        descriptorChildRemover
+                ),
                 Arrays.asList(versionHandler));
 
-        this.writeUtil = new WriteUtil(LOG, eventDistributor, localMdibAccessPreprocessing, readWriteLock, this);
+        this.writeUtil = new WriteUtil(
+                instanceLogger, eventDistributor,
+                localMdibAccessPreprocessing, readWriteLock,
+                this
+        );
     }
 
     @Override
-    public WriteDescriptionResult writeDescription(MdibDescriptionModifications mdibDescriptionModifications) throws PreprocessingException {
-        mdibDescriptionModifications = copyManager.processInput(mdibDescriptionModifications);
+    public WriteDescriptionResult writeDescription(MdibDescriptionModifications mdibDescriptionModifications)
+            throws PreprocessingException {
+        var modificationsCopy = copyManager.processInput(mdibDescriptionModifications);
         return writeUtil.writeDescription(descriptionModifications -> {
             mdibVersion = MdibVersion.increment(mdibVersion);
             mdDescriptionVersion = mdDescriptionVersion.add(BigInteger.ONE);
             mdStateVersion = mdStateVersion.add(BigInteger.ONE);
             return mdibStorage.apply(mdibVersion, mdDescriptionVersion, mdStateVersion, descriptionModifications);
-        }, mdibDescriptionModifications);
+        }, modificationsCopy);
     }
 
     @Override
     public WriteStateResult writeStates(MdibStateModifications mdibStateModifications) throws PreprocessingException {
-        mdibStateModifications = copyManager.processInput(mdibStateModifications);
+        var modificationsCopy = copyManager.processInput(mdibStateModifications);
         return writeUtil.writeStates(stateModifications -> {
             mdibVersion = MdibVersion.increment(mdibVersion);
             mdStateVersion = mdStateVersion.add(BigInteger.ONE);
             return mdibStorage.apply(mdibVersion, mdStateVersion, stateModifications);
-        }, mdibStateModifications);
+        }, modificationsCopy);
     }
 
     @Override
     public void registerObserver(MdibAccessObserver observer) {
-        LOG.info("Register MDIB observer: {}", observer);
+        instanceLogger.info("Register MDIB observer: {}", observer);
         eventDistributor.registerObserver(observer);
     }
 
     @Override
     public void unregisterObserver(MdibAccessObserver observer) {
-        LOG.info("Unreigster MDIB observer: {}", observer);
+        instanceLogger.info("Unregister MDIB observer: {}", observer);
         eventDistributor.unregisterObserver(observer);
     }
 

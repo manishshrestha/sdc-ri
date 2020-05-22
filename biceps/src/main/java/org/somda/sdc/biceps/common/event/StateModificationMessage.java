@@ -12,7 +12,8 @@ import java.util.List;
  *
  * @param <T> the state type that is provided by the {@linkplain StateModificationMessage}.
  */
-public class StateModificationMessage<T extends AbstractState> extends AbstractMdibAccessMessage implements EventMessage {
+public class StateModificationMessage<T extends AbstractState>
+        extends AbstractMdibAccessMessage implements EventMessage {
     private final List<T> states;
 
     /**

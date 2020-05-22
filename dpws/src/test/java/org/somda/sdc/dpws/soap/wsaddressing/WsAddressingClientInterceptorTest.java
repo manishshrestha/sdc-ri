@@ -1,13 +1,13 @@
 package org.somda.sdc.dpws.soap.wsaddressing;
 
-import org.somda.sdc.dpws.DpwsTest;
-import org.somda.sdc.dpws.soap.SoapMessage;
-import org.somda.sdc.dpws.soap.RequestResponseClient;
-import org.somda.sdc.dpws.soap.factory.SoapMessageFactory;
-import org.somda.sdc.dpws.soap.factory.EnvelopeFactory;
-import org.somda.sdc.dpws.soap.factory.RequestResponseClientFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.somda.sdc.dpws.DpwsTest;
+import org.somda.sdc.dpws.soap.RequestResponseClient;
+import org.somda.sdc.dpws.soap.SoapMessage;
+import org.somda.sdc.dpws.soap.factory.EnvelopeFactory;
+import org.somda.sdc.dpws.soap.factory.RequestResponseClientFactory;
+import org.somda.sdc.dpws.soap.factory.SoapMessageFactory;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 

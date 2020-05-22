@@ -9,6 +9,7 @@ import com.google.inject.TypeLiteral;
 import com.google.inject.assistedinject.Assisted;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.somda.sdc.biceps.model.message.*;
 import org.somda.sdc.common.util.ExecutorWrapperService;
@@ -30,6 +31,7 @@ import org.somda.sdc.glue.consumer.sco.factory.OperationInvocationDispatcherFact
 import org.somda.sdc.glue.consumer.sco.factory.ScoControllerFactory;
 import org.somda.sdc.glue.consumer.sco.factory.ScoTransactionFactory;
 import org.somda.sdc.glue.consumer.sco.helper.OperationInvocationDispatcher;
+import test.org.somda.common.LoggingTestWatcher;
 
 import javax.annotation.Nullable;
 import java.net.URI;
@@ -46,6 +48,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+@ExtendWith(LoggingTestWatcher.class)
 class ScoControllerTest {
     private Injector injector;
     private HostingServiceProxy hostingServiceProxy;

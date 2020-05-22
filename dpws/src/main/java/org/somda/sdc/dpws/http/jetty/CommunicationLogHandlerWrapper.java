@@ -1,6 +1,5 @@
 package org.somda.sdc.dpws.http.jetty;
 
-import com.google.inject.Inject;
 import org.eclipse.jetty.server.HttpOutput;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.handler.HandlerWrapper;
@@ -14,8 +13,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * {@linkplain HandlerWrapper} which enables {@linkplain CommunicationLog} capabilities for requests and responses.
@@ -24,8 +21,10 @@ public class CommunicationLogHandlerWrapper extends HandlerWrapper {
 
     private final CommunicationLog commLog;
     private final boolean expectTLS;
+    private final String frameworkIdentifier;
 
-    CommunicationLogHandlerWrapper(CommunicationLog commLog, boolean expectTLS) {
+    CommunicationLogHandlerWrapper(CommunicationLog commLog, boolean expectTLS, String frameworkIdentifier) {
+        this.frameworkIdentifier = frameworkIdentifier;
         this.commLog = commLog;
         this.expectTLS = expectTLS;
     }
@@ -33,14 +32,8 @@ public class CommunicationLogHandlerWrapper extends HandlerWrapper {
     @Override
     public void handle(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
 
-        // collect information for HttpApplicationInfo
-        Map<String, String> requestHeaderMap = new HashMap<>();
-        request.getHeaderNames().asIterator().forEachRemaining(
-                headerName -> requestHeaderMap.put(headerName, request.getHeader(headerName))
-        );
-
         var requestHttpApplicationInfo = new HttpApplicationInfo(
-                requestHeaderMap
+                JettyUtil.getRequestHeaders(request)
         );
 
         // collect information for TransportInfo
@@ -63,7 +56,7 @@ public class CommunicationLogHandlerWrapper extends HandlerWrapper {
         var out = baseRequest.getResponse().getHttpOutput();
 
         // attach interceptor to log request
-        baseRequest.getHttpInput().addInterceptor(new CommunicationLogInputInterceptor(input));
+        baseRequest.getHttpInput().addInterceptor(new CommunicationLogInputInterceptor(input, frameworkIdentifier));
 
         HttpOutput.Interceptor previousInterceptor = out.getInterceptor();
         try {
@@ -72,7 +65,8 @@ public class CommunicationLogHandlerWrapper extends HandlerWrapper {
                     baseRequest.getHttpChannel(),
                     previousInterceptor,
                     commLog,
-                    transportInfo
+                    transportInfo,
+                    frameworkIdentifier
             );
             out.setInterceptor(outInterceptor);
 

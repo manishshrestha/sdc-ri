@@ -1,7 +1,7 @@
 package org.somda.sdc.common.util;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -15,7 +15,7 @@ import java.util.regex.Pattern;
  * Utility to parse prefix-to-namespace string representation used by configuration values.
  */
 public class PrefixNamespaceMappingParser {
-    private static final Logger LOG = LoggerFactory.getLogger(PrefixNamespaceMappingParser.class);
+    private static final Logger LOG = LogManager.getLogger(PrefixNamespaceMappingParser.class);
 
     PrefixNamespaceMappingParser() {
     }
@@ -34,7 +34,7 @@ public class PrefixNamespaceMappingParser {
         final Map<String, PrefixNamespacePair> mapping = new HashMap<>();
         final Pattern pattern = Pattern.compile("\\{(.+?):(.+?)\\}");
 
-        for (final Matcher matcher = pattern.matcher(prefixNamespaces); matcher.find(); ) {
+        for (final Matcher matcher = pattern.matcher(prefixNamespaces); matcher.find();) {
             final String prefix = matcher.group(1);
             final String uri = matcher.group(2);
             try {

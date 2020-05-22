@@ -2,14 +2,17 @@ package org.somda.sdc.glue.consumer.report;
 
 import com.google.common.util.concurrent.AbstractIdleService;
 import com.google.inject.Inject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.google.inject.name.Named;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.somda.sdc.biceps.common.MdibStateModifications;
 import org.somda.sdc.biceps.common.storage.PreprocessingException;
 import org.somda.sdc.biceps.consumer.access.RemoteMdibAccess;
 import org.somda.sdc.biceps.model.message.AbstractReport;
 import org.somda.sdc.biceps.model.message.GetContextStatesResponse;
 import org.somda.sdc.biceps.model.participant.MdibVersion;
+import org.somda.sdc.common.CommonConfig;
+import org.somda.sdc.common.logging.InstanceLogger;
 import org.somda.sdc.common.util.AutoLock;
 import org.somda.sdc.glue.common.MdibVersionUtil;
 import org.somda.sdc.glue.consumer.report.helper.ReportWriter;
@@ -34,13 +37,14 @@ import java.util.function.Consumer;
  * coherency.
  */
 public class ReportProcessor extends AbstractIdleService {
-    private static final Logger LOG = LoggerFactory.getLogger(ReportProcessor.class);
+    private static final Logger LOG = LogManager.getLogger(ReportProcessor.class);
 
     private final ReentrantLock mdibReadyLock;
     private final Condition mdibReadyCondition;
     private final MdibVersionUtil mdibVersionUtil;
     private final ReportWriter reportWriter;
     private final BlockingQueue<AbstractReport> bufferedReports;
+    private final Logger instanceLogger;
 
     private AtomicBoolean bufferingRequested;
     private RemoteMdibAccess mdibAccess;
@@ -49,7 +53,9 @@ public class ReportProcessor extends AbstractIdleService {
     @Inject
     ReportProcessor(ReentrantLock mdibReadyLock,
                     MdibVersionUtil mdibVersionUtil,
-                    ReportWriter reportWriter) {
+                    ReportWriter reportWriter,
+                    @Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier) {
+        this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);
         this.mdibReadyLock = mdibReadyLock;
         this.mdibReadyCondition = mdibReadyLock.newCondition();
         this.mdibVersionUtil = mdibVersionUtil;
@@ -93,7 +99,7 @@ public class ReportProcessor extends AbstractIdleService {
             throws PreprocessingException, ReportProcessingException {
         try (AutoLock ignored = AutoLock.lock(mdibReadyLock)) {
             if (this.mdibAccess != null) {
-                LOG.warn("Tried to invoke startApplyingReportsOnMdib() multiple times. " +
+                instanceLogger.warn("Tried to invoke startApplyingReportsOnMdib() multiple times. " +
                         "Make sure to call it only once. " +
                         "Invocation ignored.");
                 return;
@@ -187,7 +193,7 @@ public class ReportProcessor extends AbstractIdleService {
         }
 
         if (mdibVersion.getVersion().compareTo(contextStatesResponse.getMdibVersion()) > 0) {
-            LOG.warn("Found a context state response whose MDIB version ({}) is older than the MDIB's MDIB version ({})",
+            instanceLogger.warn("Found a context state response whose MDIB version ({}) is older than the MDIB's MDIB version ({})",
                     contextStatesResponse.getMdibVersion(), mdibVersion.getVersion());
             return;
         }

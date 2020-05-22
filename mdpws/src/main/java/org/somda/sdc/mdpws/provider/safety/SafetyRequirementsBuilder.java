@@ -1,13 +1,13 @@
 package org.somda.sdc.mdpws.provider.safety; 
  
-import org.somda.sdc.mdpws.model.*; 
- 
+import org.somda.sdc.mdpws.model.*;
+
 import java.util.ArrayList; 
 import java.util.List; 
 import java.util.UUID; 
  
 public class SafetyRequirementsBuilder { 
-    private List<SelectorType> dualChannelSelectors; 
+    private List<SelectorType> dualChannelSelectors;
     private List<SelectorType> safetyContextSelectors; 
  
     private SafetyRequirementsBuilder() { 
@@ -48,7 +48,7 @@ public class SafetyRequirementsBuilder {
         dualChannelType.getSelector().addAll(dualChannelSelectors); 
         dualChannel.setValue(dualChannelType); 
  
-        var safetyContextType = new SafetyContextDefinitionType(); 
+        var safetyContextType = new org.somda.sdc.mdpws.model.SafetyContextDefinitionType();
         safetyContextType.getSelector().addAll(safetyContextSelectors); 
         safetyContext.setValue(safetyContextType); 
  

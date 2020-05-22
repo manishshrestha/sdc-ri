@@ -1,7 +1,7 @@
 package org.somda.sdc.glue.provider.helper;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.somda.sdc.glue.provider.SdcDeviceContext;
 import org.somda.sdc.glue.provider.SdcDevicePlugin;
 
@@ -11,7 +11,7 @@ import java.util.Collection;
  * Processes all {@linkplain org.somda.sdc.glue.provider.SdcDevicePlugin} instances passed to an {@linkplain org.somda.sdc.glue.provider.SdcDevice}.
  */
 public class SdcDevicePluginProcessor {
-    private static final Logger LOG = LoggerFactory.getLogger(SdcDevicePluginProcessor.class);
+    private static final Logger LOG = LogManager.getLogger(SdcDevicePluginProcessor.class);
 
     private final SdcDeviceContext context;
     private final Collection<SdcDevicePlugin> devicePlugins;

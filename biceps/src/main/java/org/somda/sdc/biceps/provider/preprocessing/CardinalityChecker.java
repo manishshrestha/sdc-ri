@@ -1,13 +1,18 @@
 package org.somda.sdc.biceps.provider.preprocessing;
 
 import com.google.inject.Inject;
-import org.apache.commons.logging.LogFactory;
-import org.somda.sdc.biceps.common.*;
+import com.google.inject.name.Named;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.somda.sdc.biceps.common.MdibDescriptionModification;
+import org.somda.sdc.biceps.common.MdibDescriptionModifications;
+import org.somda.sdc.biceps.common.MdibEntity;
+import org.somda.sdc.biceps.common.MdibTreeValidator;
 import org.somda.sdc.biceps.common.storage.DescriptionPreprocessingSegment;
 import org.somda.sdc.biceps.common.storage.MdibStorage;
 import org.somda.sdc.biceps.model.participant.AbstractDescriptor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.somda.sdc.common.CommonConfig;
+import org.somda.sdc.common.logging.InstanceLogger;
 
 import java.util.Optional;
 
@@ -18,13 +23,15 @@ import java.util.Optional;
  * This checker guarantees that no child is inserted twice if the maximum allowed number of children is one.
  */
 public class CardinalityChecker implements DescriptionPreprocessingSegment {
-    private static final Logger LOG = LoggerFactory.getLogger(CardinalityChecker.class);
+    private static final Logger LOG = LogManager.getLogger(CardinalityChecker.class);
 
     private final MdibTreeValidator treeValidator;
+    private final Logger instanceLogger;
 
     @Inject
-    CardinalityChecker(MdibTreeValidator treeValidator) {
-
+    CardinalityChecker(MdibTreeValidator treeValidator,
+                       @Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier) {
+        this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);
         this.treeValidator = treeValidator;
     }
 
@@ -53,7 +60,7 @@ public class CardinalityChecker implements DescriptionPreprocessingSegment {
         final Optional<MdibEntity> parentEntityFromStorage = storage.getEntity(parentHandle.get());
         if (parentEntityFromStorage.isEmpty()) {
             // No parent in the storage yet - early exit
-            LOG.warn("Expected a parent in the MDIB storage, but none found: %s", parentHandle.get());
+            instanceLogger.warn("Expected a parent in the MDIB storage, but none found: %s", parentHandle.get());
             return;
         }
 

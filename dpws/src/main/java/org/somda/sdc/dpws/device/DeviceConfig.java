@@ -29,4 +29,14 @@ public class DeviceConfig {
      */
     @Deprecated(since = "1.1.0", forRemoval = true)
     public static final String SECURED_ENDPOINT = "Dpws.Device.SecuredEndpoint";
+
+    /**
+     * Defines the mode that describes how to provide WSDL data.
+     * <p>
+     * <ul>
+     * <li>Data type: {@linkplain org.somda.sdc.dpws.wsdl.WsdlProvisioningMode}
+     * <li>Use: optional
+     * </ul>
+     */
+    public static final String WSDL_PROVISIONING_MODE = "Dpws.WsdlProvisioningMode";
 }

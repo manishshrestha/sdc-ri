@@ -1,7 +1,8 @@
 package org.somda.sdc.biceps.provider.preprocessing;
 
 import com.google.inject.Inject;
-import org.somda.sdc.biceps.common.*;
+import org.somda.sdc.biceps.common.MdibDescriptionModification;
+import org.somda.sdc.biceps.common.MdibDescriptionModifications;
 import org.somda.sdc.biceps.common.storage.DescriptionPreprocessingSegment;
 import org.somda.sdc.biceps.common.storage.MdibStorage;
 

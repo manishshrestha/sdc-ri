@@ -9,14 +9,17 @@ import org.apache.http.impl.client.HttpClients;
 import org.eclipse.jetty.server.Server;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.somda.sdc.dpws.DpwsConfig;
 import org.somda.sdc.dpws.DpwsTest;
 import org.somda.sdc.dpws.TransportBinding;
 import org.somda.sdc.dpws.TransportBindingException;
 import org.somda.sdc.dpws.factory.TransportBindingFactory;
 import org.somda.sdc.dpws.guice.DefaultDpwsConfigModule;
+import org.somda.sdc.dpws.helper.JaxbMarshalling;
+import org.somda.sdc.dpws.http.HttpException;
+import org.somda.sdc.dpws.http.HttpHandler;
 import org.somda.sdc.dpws.http.jetty.JettyHttpServerRegistry;
+import org.somda.sdc.dpws.soap.CommunicationContext;
 import org.somda.sdc.dpws.soap.SoapMarshalling;
 import org.somda.sdc.dpws.soap.SoapMessage;
 import org.somda.sdc.dpws.soap.exception.MarshallingException;
@@ -24,11 +27,12 @@ import org.somda.sdc.dpws.soap.exception.SoapFaultException;
 import org.somda.sdc.dpws.soap.exception.TransportException;
 import org.somda.sdc.dpws.soap.factory.EnvelopeFactory;
 import org.somda.sdc.dpws.soap.factory.SoapMessageFactory;
-import test.org.somda.common.LoggingTestWatcher;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
@@ -40,10 +44,12 @@ import java.util.zip.GZIPOutputStream;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
-@ExtendWith(LoggingTestWatcher.class)
 public class JettyHttpServerRegistryIT extends DpwsTest {
     private static final int COMPRESSION_MIN_SIZE = 32;
 
@@ -68,6 +74,7 @@ public class JettyHttpServerRegistryIT extends DpwsTest {
         transportBindingFactory = getInjector().getInstance(TransportBindingFactory.class);
         soapMessageFactory = getInjector().getInstance(SoapMessageFactory.class);
         envelopeFactory = getInjector().getInstance(EnvelopeFactory.class);
+        getInjector().getInstance(JaxbMarshalling.class).startAsync().awaitRunning();
         getInjector().getInstance(SoapMarshalling.class).startAsync().awaitRunning();
     }
 
@@ -78,7 +85,12 @@ public class JettyHttpServerRegistryIT extends DpwsTest {
         final AtomicBoolean isRequested = new AtomicBoolean(false);
 
         httpServerRegistry.startAsync().awaitRunning();
-        var srvUri = httpServerRegistry.registerContext(baseUri, ctxtPath, (req, res, ti) -> isRequested.set(true));
+        var srvUri = httpServerRegistry.registerContext(baseUri, ctxtPath, new HttpHandler() {
+            @Override
+            public void handle(InputStream inStream, OutputStream outStream, CommunicationContext communicationContext) throws HttpException {
+                isRequested.set(true);
+            }
+        });
 
         TransportBinding httpBinding = transportBindingFactory.createHttpBinding(srvUri);
         httpBinding.onRequestResponse(createASoapMessage());
@@ -93,7 +105,12 @@ public class JettyHttpServerRegistryIT extends DpwsTest {
         var isRequested = new AtomicBoolean(false);
 
         httpServerRegistry.startAsync().awaitRunning();
-        var srvUri = httpServerRegistry.registerContext(baseUri, ctxtPath, (req, res, ti) -> isRequested.set(true));
+        var srvUri = httpServerRegistry.registerContext(baseUri, ctxtPath, new HttpHandler() {
+            @Override
+            public void handle(InputStream inStream, OutputStream outStream, CommunicationContext communicationContext) throws HttpException {
+                isRequested.set(true);
+            }
+        });
 
         TransportBinding httpBinding = transportBindingFactory.createHttpBinding(srvUri);
         httpBinding.onNotification(createASoapMessage());
@@ -123,12 +140,20 @@ public class JettyHttpServerRegistryIT extends DpwsTest {
         var isPath2Requested = new AtomicBoolean(false);
 
         httpServerRegistry.startAsync().awaitRunning();
-        var srvUri1 = URI.create(httpServerRegistry.registerContext(baseUri, ctxtPath1, (req, res, ti) ->
-                isPath1Requested.set(true)));
+        var srvUri1 = URI.create(httpServerRegistry.registerContext(baseUri, ctxtPath1, new HttpHandler() {
+            @Override
+            public void handle(InputStream inStream, OutputStream outStream, CommunicationContext communicationContext) throws HttpException {
+                isPath1Requested.set(true);
+            }
+        }));
         // uri1 has found a free port, attach uri 2 to the same
         baseUri = String.format("%s:%s", srvUri1.getScheme(), srvUri1.getSchemeSpecificPart());
-        var srvUri2 = httpServerRegistry.registerContext(baseUri, ctxtPath2, (req, res, ti) ->
-                isPath2Requested.set(true));
+        var srvUri2 = httpServerRegistry.registerContext(baseUri, ctxtPath2, new HttpHandler() {
+            @Override
+            public void handle(InputStream inStream, OutputStream outStream, CommunicationContext communicationContext) throws HttpException {
+                isPath2Requested.set(true);
+            }
+        });
 
         TransportBinding httpBinding1 = transportBindingFactory.createHttpBinding(srvUri1.toString());
         TransportBinding httpBinding2 = transportBindingFactory.createHttpBinding(srvUri2);
@@ -170,7 +195,7 @@ public class JettyHttpServerRegistryIT extends DpwsTest {
     }
 
     @Test
-    public void defaultPort() throws Exception {
+    void defaultPort() throws Exception {
         // Plausibility test that default port is assigned
         // Plus: there is always one listener expected that holds the port
         // If Jetty is about to change this behavior, this test will fail
@@ -183,7 +208,7 @@ public class JettyHttpServerRegistryIT extends DpwsTest {
     }
 
     @Test
-    public void gzipCompression() throws IOException {
+    void gzipCompression() throws IOException {
         var baseUri = "http://127.0.0.1:0";
         final String compressedPath = "/ctxt/path1";
 
@@ -197,16 +222,19 @@ public class JettyHttpServerRegistryIT extends DpwsTest {
 
         httpServerRegistry.startAsync().awaitRunning();
         var srvUri1 = httpServerRegistry.registerContext(
-                baseUri, compressedPath, (req, res, ti) -> {
-                    try {
-                        // request should be decompressed transparently
-                        byte[] bytes = req.readAllBytes();
-                        resultString.set(new String(bytes));
+                baseUri, compressedPath, new HttpHandler() {
+                    @Override
+                    public void handle(InputStream inStream, OutputStream outStream, CommunicationContext communicationContext) throws HttpException {
+                        try {
+                            // request should be decompressed transparently
+                            byte[] bytes = inStream.readAllBytes();
+                            resultString.set(new String(bytes));
 
-                        // write response, which should be compressed transparently
-                        res.write(expectedResponseBuilder.toString().getBytes());
-                    } catch (Exception e) {
-                        throw new RuntimeException(e);
+                            // write response, which should be compressed transparently
+                            outStream.write(expectedResponseBuilder.toString().getBytes());
+                        } catch (Exception e) {
+                            throw new RuntimeException(e);
+                        }
                     }
                 });
 

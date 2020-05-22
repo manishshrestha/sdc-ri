@@ -3,8 +3,11 @@ package org.somda.sdc.dpws.device.helper;
 import com.google.common.eventbus.Subscribe;
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.google.inject.name.Named;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.somda.sdc.common.CommonConfig;
+import org.somda.sdc.common.logging.InstanceLogger;
 import org.somda.sdc.common.util.ExecutorWrapperService;
 import org.somda.sdc.dpws.DpwsConstants;
 import org.somda.sdc.dpws.guice.AppDelayExecutor;
@@ -38,7 +41,7 @@ import java.util.concurrent.TimeUnit;
  * {@link UdpMessageQueueService#registerUdpMessageQueueObserver(UdpMessageQueueObserver)}.
  */
 public class DiscoveryDeviceUdpMessageProcessor implements UdpMessageQueueObserver {
-    private static final Logger LOG = LoggerFactory.getLogger(DiscoveryDeviceUdpMessageProcessor.class);
+    private static final Logger LOG = LogManager.getLogger(DiscoveryDeviceUdpMessageProcessor.class);
 
     private final RequestResponseServer requestResponseServer;
     private final UdpMessageQueueService udpMessageQueueService;
@@ -46,6 +49,7 @@ public class DiscoveryDeviceUdpMessageProcessor implements UdpMessageQueueObserv
     private final SoapUtil soapUtil;
     private final ExecutorWrapperService<ScheduledExecutorService> scheduledExecutorService;
     private final Random randomNumbers;
+    private final Logger instanceLogger;
 
     @AssistedInject
     DiscoveryDeviceUdpMessageProcessor(@Assisted RequestResponseServer requestResponseServer,
@@ -53,7 +57,9 @@ public class DiscoveryDeviceUdpMessageProcessor implements UdpMessageQueueObserv
                                        MarshallingService marshallingService,
                                        SoapUtil soapUtil,
                                        @AppDelayExecutor ExecutorWrapperService<ScheduledExecutorService> scheduledExecutorService,
-                                       Random randomNumbers) {
+                                       Random randomNumbers,
+                                       @Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier) {
+        this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);
         this.requestResponseServer = requestResponseServer;
         this.udpMessageQueueService = udpMessageQueueService;
         this.marshallingService = marshallingService;
@@ -64,7 +70,7 @@ public class DiscoveryDeviceUdpMessageProcessor implements UdpMessageQueueObserv
 
     @Subscribe
     private void receiveUdpMessage(UdpMessage msg) {
-        LOG.trace("Receive UDP message called with message: {}", msg);
+        instanceLogger.trace("Receive UDP message called with message: {}", msg);
         SoapMessage response = soapUtil.createMessage();
         SoapMessage request;
 
@@ -72,19 +78,18 @@ public class DiscoveryDeviceUdpMessageProcessor implements UdpMessageQueueObserv
         try {
             request = marshallingService.unmarshal(new ByteArrayInputStream(msg.getData(), 0, msg.getLength()));
         } catch (MarshallingException e) {
-            LOG.warn("Incoming UDP message could not be unmarshalled. Message Bytes: {}", msg.toString());
+            instanceLogger.warn("Incoming UDP message could not be unmarshalled. Message Bytes: {}", msg.toString());
             return;
         }
 
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("Incoming SOAP/UDP message: {}", SoapDebug.get(request));
-        }
+        instanceLogger.debug("Incoming SOAP/UDP message: {}", () -> SoapDebug.get(request));
 
         // Forward SOAP message to given request response interceptor chain
         try {
             requestResponseServer.receiveRequestResponse(request, response, msg.getCommunicationContext());
         } catch (SoapFaultException e) {
-            LOG.debug("SOAP fault thrown [{}]", e.getMessage());
+            instanceLogger.debug("SOAP fault thrown [{}]", e.getMessage());
+            instanceLogger.trace("SOAP fault thrown", e);
             return;
         }
 
@@ -92,20 +97,19 @@ public class DiscoveryDeviceUdpMessageProcessor implements UdpMessageQueueObserv
         //  Remove once proper UDP notification handling is in place.
         var action = response.getWsAddressingHeader().getAction();
         if (action.isEmpty() || action.get().getValue().isBlank()) {
-            LOG.debug("Not sending a response, no response with an action generated for message {}", SoapDebug.get(request));
+            instanceLogger.debug("Not sending a response, no response with an action generated for message {}", SoapDebug.get(request));
             return;
         }
 
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("Outgoing SOAP/UDP message: {}", SoapDebug.get(response));
-        }
+        instanceLogger.debug("Outgoing SOAP/UDP message: {}", () -> SoapDebug.get(response));
 
         // Marshal SOAP response message
         ByteArrayOutputStream os = new ByteArrayOutputStream();
         try {
             marshallingService.marshal(response, os);
         } catch (MarshallingException e) {
-            LOG.warn("WS-Discovery response could not be created. Reason: {}", e.getMessage());
+            instanceLogger.warn("WS-Discovery response could not be created. Reason: {}", e.getMessage());
+            instanceLogger.trace("WS-Discovery response could not be created", e);
             return;
         }
 

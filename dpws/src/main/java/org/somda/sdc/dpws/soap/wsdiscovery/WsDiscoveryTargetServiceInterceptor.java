@@ -3,8 +3,12 @@ package org.somda.sdc.dpws.soap.wsdiscovery;
 import com.google.common.primitives.UnsignedInteger;
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.google.inject.name.Named;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.somda.sdc.common.CommonConfig;
+import org.somda.sdc.common.logging.InstanceLogger;
+import org.somda.sdc.common.util.ObjectUtilImpl;
 import org.somda.sdc.dpws.soap.NotificationSource;
 import org.somda.sdc.dpws.soap.SoapMessage;
 import org.somda.sdc.dpws.soap.SoapUtil;
@@ -12,20 +16,30 @@ import org.somda.sdc.dpws.soap.exception.MarshallingException;
 import org.somda.sdc.dpws.soap.exception.SoapFaultException;
 import org.somda.sdc.dpws.soap.exception.TransportException;
 import org.somda.sdc.dpws.soap.factory.SoapFaultFactory;
-import org.somda.sdc.dpws.soap.interception.*;
+import org.somda.sdc.dpws.soap.interception.Direction;
+import org.somda.sdc.dpws.soap.interception.InterceptorException;
+import org.somda.sdc.dpws.soap.interception.MessageInterceptor;
+import org.somda.sdc.dpws.soap.interception.RequestResponseObject;
 import org.somda.sdc.dpws.soap.wsaddressing.WsAddressingHeader;
 import org.somda.sdc.dpws.soap.wsaddressing.WsAddressingUtil;
 import org.somda.sdc.dpws.soap.wsaddressing.model.EndpointReferenceType;
 import org.somda.sdc.dpws.soap.wsdiscovery.factory.WsDiscoveryFaultFactory;
-import org.somda.sdc.common.util.ObjectUtilImpl;
-import org.somda.sdc.dpws.soap.wsdiscovery.model.*;
+import org.somda.sdc.dpws.soap.wsdiscovery.model.ByeType;
+import org.somda.sdc.dpws.soap.wsdiscovery.model.HelloType;
+import org.somda.sdc.dpws.soap.wsdiscovery.model.ObjectFactory;
+import org.somda.sdc.dpws.soap.wsdiscovery.model.ProbeMatchType;
+import org.somda.sdc.dpws.soap.wsdiscovery.model.ProbeMatchesType;
+import org.somda.sdc.dpws.soap.wsdiscovery.model.ProbeType;
+import org.somda.sdc.dpws.soap.wsdiscovery.model.ResolveMatchType;
+import org.somda.sdc.dpws.soap.wsdiscovery.model.ResolveMatchesType;
+import org.somda.sdc.dpws.soap.wsdiscovery.model.ResolveType;
+import org.somda.sdc.dpws.soap.wsdiscovery.model.ScopesType;
 
 import javax.annotation.Nullable;
 import javax.xml.bind.JAXBElement;
 import javax.xml.namespace.QName;
 import java.net.URI;
-import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -38,7 +52,7 @@ import java.util.concurrent.locks.ReentrantLock;
  * Default implementation of the {@linkplain WsDiscoveryTargetService}.
  */
 public class WsDiscoveryTargetServiceInterceptor implements WsDiscoveryTargetService {
-    private static final Logger LOG = LoggerFactory.getLogger(WsDiscoveryTargetServiceInterceptor.class);
+    private static final Logger LOG = LogManager.getLogger(WsDiscoveryTargetServiceInterceptor.class);
 
     private final ObjectFactory wsdFactory;
     private final SoapFaultFactory soapFaultFactory;
@@ -50,6 +64,7 @@ public class WsDiscoveryTargetServiceInterceptor implements WsDiscoveryTargetSer
     private final NotificationSource notificationSource;
     private final ObjectUtilImpl objectUtil;
     private final UnsignedInteger instanceId;
+    private final Logger instanceLogger;
     private List<QName> types;
     private List<String> scopes;
     private List<String> xAddrs;
@@ -68,7 +83,9 @@ public class WsDiscoveryTargetServiceInterceptor implements WsDiscoveryTargetSer
                                         WsDiscoveryFaultFactory wsdFaultFactory,
                                         WsAddressingUtil wsaUtil,
                                         WsDiscoveryUtil wsdUtil,
-                                        ObjectUtilImpl objectUtil) {
+                                        ObjectUtilImpl objectUtil,
+                                        @Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier) {
+        this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);
         this.targetServiceEpr = targetServiceEpr;
         this.notificationSource = notificationSource;
         this.objectUtil = objectUtil;
@@ -155,7 +172,7 @@ public class WsDiscoveryTargetServiceInterceptor implements WsDiscoveryTargetSer
 
         if (!URI.create(resolveType.getEndpointReference().getAddress().getValue())
                 .equals(URI.create(endpointReference.getAddress().getValue()))) {
-            LOG.debug("Incoming ResolveMatches message had an EPR address not matching this device." +
+            instanceLogger.debug("Incoming ResolveMatches message had an EPR address not matching this device." +
                             " Message EPR address is {}, device EPR address is {}",
                     resolveType.getEndpointReference().getAddress().getValue(),
                     endpointReference.getAddress().getValue());
@@ -353,7 +370,7 @@ public class WsDiscoveryTargetServiceInterceptor implements WsDiscoveryTargetSer
 
     private UnsignedInteger getNewMetadataVersion(@Nullable UnsignedInteger currentVersion) {
         // Metadata version is calculated from timestamp in seconds
-        var newVersion = UnsignedInteger.valueOf(ZonedDateTime.now(ZoneOffset.UTC).toInstant().toEpochMilli() / 1000L);
+        var newVersion = UnsignedInteger.valueOf(Instant.now().toEpochMilli() / 1000L);
         if (currentVersion == null) {
             return newVersion;
         }

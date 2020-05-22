@@ -1,11 +1,9 @@
 package it.org.somda.sdc.dpws.soap;
 
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import test.org.somda.common.LoggingTestWatcher;
-import test.org.somda.common.TestLogging;
 
 @ExtendWith(LoggingTestWatcher.class)
 public class DeviceAndClientInOneInstanceIT {
@@ -14,11 +12,6 @@ public class DeviceAndClientInOneInstanceIT {
     private String eprAddress2;
     private DeviceAndClientPeer peer1;
     private DeviceAndClientPeer peer2;
-
-    @BeforeAll
-    static void beforeAll() {
-        TestLogging.configure();
-    }
 
     @BeforeEach
     void beforeEach() {

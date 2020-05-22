@@ -18,7 +18,11 @@ import org.somda.sdc.dpws.soap.wsdiscovery.event.ByeMessage;
 import org.somda.sdc.dpws.soap.wsdiscovery.event.HelloMessage;
 import org.somda.sdc.dpws.soap.wsdiscovery.event.ProbeMatchesMessage;
 import org.somda.sdc.dpws.soap.wsdiscovery.event.ProbeTimeoutMessage;
-import org.somda.sdc.dpws.soap.wsdiscovery.model.*;
+import org.somda.sdc.dpws.soap.wsdiscovery.model.ByeType;
+import org.somda.sdc.dpws.soap.wsdiscovery.model.HelloType;
+import org.somda.sdc.dpws.soap.wsdiscovery.model.ObjectFactory;
+import org.somda.sdc.dpws.soap.wsdiscovery.model.ProbeMatchType;
+import org.somda.sdc.dpws.soap.wsdiscovery.model.ProbeMatchesType;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -43,13 +47,13 @@ public class DiscoveredDeviceObserverTest extends DpwsTest {
         super.setUp();
         WsAddressingUtil wsaUtil = getInjector().getInstance(WsAddressingUtil.class);
         ExecutorWrapperService<ListeningExecutorService> execService = new ExecutorWrapperService<>(
-                MoreExecutors::newDirectExecutorService, "execService"
+                MoreExecutors::newDirectExecutorService, "execService", "abcd"
         );
         execService.startAsync().awaitRunning();
         discoveredDeviceResolver = mock(DiscoveredDeviceResolver.class);
         expectedUri = "http://expectedUri";
         expectedEpr = wsaUtil.createEprWithAddress(expectedUri);
-        helloByeAndProbeMatchesObserverImpl = new HelloByeAndProbeMatchesObserverImpl(discoveredDeviceResolver, execService, wsaUtil);
+        helloByeAndProbeMatchesObserverImpl = new HelloByeAndProbeMatchesObserverImpl(discoveredDeviceResolver, execService, wsaUtil, "abcd");
         objFactory = new ObjectFactory();
         callbackVisitCount = 0;
     }

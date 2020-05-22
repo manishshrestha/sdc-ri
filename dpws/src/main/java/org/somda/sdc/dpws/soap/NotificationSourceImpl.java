@@ -6,14 +6,13 @@ import org.somda.sdc.dpws.soap.exception.MarshallingException;
 import org.somda.sdc.dpws.soap.exception.TransportException;
 import org.somda.sdc.dpws.soap.interception.*;
 import org.somda.sdc.dpws.soap.wsaddressing.WsAddressingClientInterceptor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 /**
  * Default implementation of {@linkplain NotificationSource}.
  */
 public class NotificationSourceImpl implements NotificationSource {
-    private static final Logger LOG = LoggerFactory.getLogger(NotificationSourceImpl.class);
 
     private final InterceptorRegistry interceptorRegistry;
     private final NotificationCallback networkCallback;

@@ -25,14 +25,13 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-
 public class DiscoveredDeviceResolverTest extends DpwsTest {
     private WsAddressingUtil wsaUtil;
     private ObjectFactory objFactory;
 
     @Override
     @BeforeEach
-    public void setUp() throws Exception{
+    public void setUp() throws Exception {
         super.setUp();
         wsaUtil = getInjector().getInstance(WsAddressingUtil.class);
         objFactory = new ObjectFactory();
@@ -60,7 +59,7 @@ public class DiscoveredDeviceResolverTest extends DpwsTest {
         WsDiscoveryClient wsdClient = mock(WsDiscoveryClient.class);
         when(wsdClient.sendResolve(epr)).thenReturn(Futures.immediateFuture(rmType));
 
-        DiscoveredDeviceResolver dpr = new DiscoveredDeviceResolver(wsdClient, Duration.ofSeconds(1), true, wsaUtil);
+        DiscoveredDeviceResolver dpr = new DiscoveredDeviceResolver(wsdClient, Duration.ofSeconds(1), true, wsaUtil, "abcd");
 
         Optional<DiscoveredDevice> actualWithResolveMatches = dpr.resolve(hMsg);
         assertTrue(actualWithResolveMatches.isPresent());

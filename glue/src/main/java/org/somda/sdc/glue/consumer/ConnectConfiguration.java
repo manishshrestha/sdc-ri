@@ -1,7 +1,7 @@
 package org.somda.sdc.glue.consumer;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.somda.sdc.dpws.service.HostingServiceProxy;
 import org.somda.sdc.glue.common.ActionConstants;
 import org.somda.sdc.glue.common.SubscribableActionsMapping;
@@ -16,7 +16,7 @@ import java.util.*;
  * @see SdcRemoteDevicesConnector#connect(HostingServiceProxy, ConnectConfiguration)
  */
 public class ConnectConfiguration {
-    private static final Logger LOG = LoggerFactory.getLogger(ConnectConfiguration.class);
+    private static final Logger LOG = LogManager.getLogger(ConnectConfiguration.class);
 
     /**
      * List of all port types shipped with SDC.

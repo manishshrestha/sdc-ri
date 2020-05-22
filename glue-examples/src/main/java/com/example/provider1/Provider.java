@@ -1,11 +1,11 @@
 package com.example.provider1;
 
-import com.example.ProviderMdibConstants;
+import com.example.Constants;
 import com.google.common.collect.Iterables;
 import com.google.common.util.concurrent.AbstractIdleService;
 import com.google.inject.Injector;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.somda.sdc.biceps.common.MdibDescriptionModifications;
 import org.somda.sdc.biceps.common.MdibEntity;
 import org.somda.sdc.biceps.common.MdibStateModifications;
@@ -31,10 +31,17 @@ import java.io.InputStream;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.RoundingMode;
+import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
+import java.net.UnknownHostException;
 import java.time.Instant;
-import java.util.*;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -46,8 +53,7 @@ import java.util.stream.IntStream;
  */
 public class Provider extends AbstractIdleService {
 
-    private static final ProviderUtil IT = new ProviderUtil();
-    private static final Logger LOG = LoggerFactory.getLogger(Provider.class);
+    private static final Logger LOG = LogManager.getLogger(Provider.class);
 
     private static final int MAX_ENUM_ITERATIONS = 17;
 
@@ -62,23 +68,48 @@ public class Provider extends AbstractIdleService {
     /**
      * Create an instance of an SDC Provider
      *
-     * @param networkAdapterName name of the adapter the provider bindes to, e.g. eth1
-     * @param eprAddress         WS-Addressing EndpointReference Address element
+     * @param providerUtil options and configured injector
      * @throws SocketException thrown if network adapter cannot be set up
+     * @throws UnknownHostException if provided address cannot be resolved to an adapter
      */
-    public Provider(String networkAdapterName, String eprAddress) throws SocketException {
-        this.injector = IT.getInjector();
-        final NetworkInterface networkInterface = NetworkInterface.getByName(networkAdapterName);
+    public Provider(ProviderUtil providerUtil) throws SocketException, UnknownHostException {
+        this.injector = providerUtil.getInjector();
+
+        NetworkInterface networkInterface;
+        if (providerUtil.getIface() != null && !providerUtil.getIface().isEmpty()) {
+            LOG.info("Starting with interface {}", providerUtil.getIface());
+            networkInterface = NetworkInterface.getByName(providerUtil.getIface());
+        } else {
+            if (providerUtil.getAddress() != null && !providerUtil.getAddress().isBlank()) {
+                // bind to adapter matching ip
+                LOG.info("Starting with address {}", providerUtil.getAddress());
+                networkInterface = NetworkInterface.getByInetAddress(
+                        InetAddress.getByName(providerUtil.getAddress())
+                );
+            } else {
+                // find loopback interface for fallback
+                networkInterface = NetworkInterface.getByInetAddress(InetAddress.getLoopbackAddress());
+                LOG.info("Starting with fallback default adapter {}", networkInterface);
+            }
+        }
+        assert networkInterface != null;
         this.dpwsFramework = injector.getInstance(DpwsFramework.class);
         this.dpwsFramework.setNetworkInterface(networkInterface);
         this.mdibAccess = injector.getInstance(LocalMdibAccessFactory.class).createLocalMdibAccess();
 
+        var epr = providerUtil.getEpr();
+        if (epr == null) {
+            epr = "urn:uuid:" + UUID.randomUUID().toString();
+            LOG.info("No epr address provided, generated random epr {}", epr);
+        }
+
         var handler = new OperationHandler(this.mdibAccess);
+        String finalEpr = epr;
         this.sdcDevice = injector.getInstance(SdcDeviceFactory.class).createSdcDevice(new DeviceSettings() {
             @Override
             public EndpointReferenceType getEndpointReference() {
                 return injector.getInstance(WsAddressingUtil.class)
-                        .createEprWithAddress(eprAddress);
+                        .createEprWithAddress(finalEpr);
             }
 
             @Override
@@ -159,8 +190,8 @@ public class Provider extends AbstractIdleService {
             final MdibStateModifications locMod = MdibStateModifications.create(MdibStateModifications.Type.CONTEXT);
             // update location state
             try (ReadTransaction readTransaction = mdibAccess.startTransaction()) {
-                final var locDesc = readTransaction.getDescriptor(ProviderMdibConstants.HANDLE_LOCATIONCONTEXT, LocationContextDescriptor.class).orElseThrow(() ->
-                        new RuntimeException(String.format("Could not find state for handle %s", ProviderMdibConstants.HANDLE_LOCATIONCONTEXT)));
+                final var locDesc = readTransaction.getDescriptor(Constants.HANDLE_LOCATIONCONTEXT, LocationContextDescriptor.class).orElseThrow(() ->
+                        new RuntimeException(String.format("Could not find state for handle %s", Constants.HANDLE_LOCATIONCONTEXT)));
 
                 var locState = new LocationContextState();
                 locState.setLocationDetail(location);
@@ -354,31 +385,35 @@ public class Provider extends AbstractIdleService {
 
     }
 
-
     public static void main(String[] args) throws IOException, PreprocessingException {
 
-        Provider provider = new Provider(
-                "eth1",
-                "urn:uuid:857bf583-8a51-475f-a77f-d0ca7de69b11"
-        );
+        var util = new ProviderUtil(args);
+
+        var targetFacility = System.getenv().getOrDefault("ref_fac", Constants.DEFAULT_FACILITY);
+        var targetBed = System.getenv().getOrDefault("ref_bed", Constants.DEFAULT_BED);
+        var targetPoC = System.getenv().getOrDefault("ref_poc", Constants.DEFAULT_POC);
+
+        Provider provider = new Provider(util);
 
         // set a location for scopes
         var loc = new LocationDetail();
-        loc.setBed("TopBunk");
-        loc.setPoC("LD1");
-        loc.setFacility("sdcri");
+        loc.setBed(targetBed);
+        loc.setPoC(targetPoC);
+        loc.setFacility(targetFacility);
         provider.setLocation(loc);
 
         provider.startAsync().awaitRunning();
 
         // generate some data
+        var waveformInterval = util.getWaveformInterval().toMillis();
+        LOG.info("Sending waveforms every {}ms", waveformInterval);
         var t1 = new Thread(() -> {
             while (true) {
                 try {
-                    Thread.sleep(100);
-                    provider.changeWaveform(ProviderMdibConstants.HANDLE_WAVEFORM);
+                    Thread.sleep(waveformInterval);
+                    provider.changeWaveform(Constants.HANDLE_WAVEFORM);
                 } catch (Exception e) {
-                    LOG.error("Thread loop stopping", e);
+                    LOG.warn("Thread loop stopping", e);
                     break;
                 }
             }
@@ -386,16 +421,18 @@ public class Provider extends AbstractIdleService {
         t1.setDaemon(true);
         t1.start();
 
+        var reportInterval = util.getReportInterval().toMillis();
+        LOG.info("Sending reports every {}ms", reportInterval);
         var t2 = new Thread(() -> {
             while (true) {
                 try {
-                    Thread.sleep(5000);
-                    provider.changeNumericMetric(ProviderMdibConstants.HANDLE_NUMERIC_DYNAMIC);
-                    provider.changeStringMetric(ProviderMdibConstants.HANDLE_STRING_DYNAMIC);
-                    provider.changeEnumStringMetric(ProviderMdibConstants.HANDLE_ENUM_DYNAMIC);
-                    provider.changeAlertSignalAndConditionPresence(ProviderMdibConstants.HANDLE_ALERT_SIGNAL, ProviderMdibConstants.HANDLE_ALERT_CONDITION);
+                    Thread.sleep(reportInterval);
+                    provider.changeNumericMetric(Constants.HANDLE_NUMERIC_DYNAMIC);
+                    provider.changeStringMetric(Constants.HANDLE_STRING_DYNAMIC);
+                    provider.changeEnumStringMetric(Constants.HANDLE_ENUM_DYNAMIC);
+                    provider.changeAlertSignalAndConditionPresence(Constants.HANDLE_ALERT_SIGNAL, Constants.HANDLE_ALERT_CONDITION);
                 } catch (InterruptedException | PreprocessingException e) {
-                    LOG.error("Thread loop stopping", e);
+                    LOG.warn("Thread loop stopping", e);
                     break;
                 }
             }
@@ -403,7 +440,19 @@ public class Provider extends AbstractIdleService {
         t2.setDaemon(true);
         t2.start();
 
-        int read = System.in.read();
+        // graceful shutdown using sigterm
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            t1.interrupt();
+            t2.interrupt();
+
+            provider.stopAsync().awaitTerminated();
+        }));
+
+        try {
+            System.in.read();
+        } catch (IOException e) {
+            // pass and quit
+        }
 
         t1.interrupt();
         t2.interrupt();

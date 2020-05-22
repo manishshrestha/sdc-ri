@@ -1,20 +1,26 @@
 package org.somda.sdc.dpws.network;
 
 import com.google.inject.Inject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.google.inject.name.Named;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.somda.sdc.common.CommonConfig;
+import org.somda.sdc.common.logging.InstanceLogger;
 
-import java.net.*;
+import java.net.Socket;
+import java.net.URI;
 import java.util.Optional;
 
 /**
  * Default implementation of {@linkplain LocalAddressResolver}.
  */
 public class LocalAddressResolverImpl implements LocalAddressResolver {
-    private static final Logger LOG = LoggerFactory.getLogger(LocalAddressResolverImpl.class);
+    private static final Logger LOG = LogManager.getLogger(LocalAddressResolverImpl.class);
+    private final Logger instanceLogger;
 
     @Inject
-    LocalAddressResolverImpl() {
+    LocalAddressResolverImpl(@Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier) {
+        this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);
     }
 
     @Override
@@ -23,7 +29,7 @@ public class LocalAddressResolverImpl implements LocalAddressResolver {
         try (Socket socket = new Socket(parsedUri.getHost(), parsedUri.getPort())) {
             return Optional.of(socket.getLocalAddress().getHostAddress());
         } catch (Exception e) {
-            LOG.info("Could not access remote URI {} and resolve local address. Reason: {}", remoteUri, e.getMessage());
+            instanceLogger.info("Could not access remote URI {} and resolve local address. Reason: {}", remoteUri, e.getMessage());
             return Optional.empty();
         }
 

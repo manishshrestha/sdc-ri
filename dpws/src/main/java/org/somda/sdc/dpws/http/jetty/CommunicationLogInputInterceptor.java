@@ -2,8 +2,9 @@ package org.somda.sdc.dpws.http.jetty;
 
 import org.eclipse.jetty.server.HttpInput;
 import org.eclipse.jetty.util.component.Destroyable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.somda.sdc.common.logging.InstanceLogger;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -14,11 +15,13 @@ import java.nio.channels.WritableByteChannel;
  * {@linkplain HttpInput.Interceptor} which logs messages to a stream.
  */
 public class CommunicationLogInputInterceptor implements HttpInput.Interceptor, Destroyable {
-    private static final Logger LOG = LoggerFactory.getLogger(CommunicationLogInputInterceptor.class);
+    private static final Logger LOG = LogManager.getLogger(CommunicationLogInputInterceptor.class);
 
     private final OutputStream commlogStream;
+    private final Logger instanceLogger;
 
-    CommunicationLogInputInterceptor(OutputStream commlogStream) {
+    CommunicationLogInputInterceptor(OutputStream commlogStream, String frameworkIdentifier) {
+        this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);
         this.commlogStream = commlogStream;
     }
 
@@ -28,13 +31,18 @@ public class CommunicationLogInputInterceptor implements HttpInput.Interceptor, 
             // why is this a thing?
             return null;
         }
+
         int oldPosition = content.getByteBuffer().position();
         try {
             WritableByteChannel writableByteChannel = Channels.newChannel(commlogStream);
             writableByteChannel.write(content.getByteBuffer());
+            if (content instanceof HttpInput.EofContent) {
+                commlogStream.close();
+            }
         } catch (IOException e) {
-            LOG.error("Error while writing to communication log stream", e);
+            instanceLogger.error("Error while writing to communication log stream", e);
         }
+
         // rewind the bytebuffer we just went through
         content.getByteBuffer().position(oldPosition);
         return new HttpInput.Content(content.getByteBuffer());
@@ -45,7 +53,7 @@ public class CommunicationLogInputInterceptor implements HttpInput.Interceptor, 
         try {
             commlogStream.close();
         } catch (IOException e) {
-            LOG.error("Error while closing communication log stream", e);
+            instanceLogger.error("Error while closing communication log stream", e);
         }
     }
 }

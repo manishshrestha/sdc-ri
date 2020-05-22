@@ -22,7 +22,9 @@ public interface MdibStoragePreprocessingChainFactory {
      *                                 The segments are applied in the same order as inserted to the list.
      * @return a new {@link MdibStoragePreprocessingChain} instance.
      */
-    MdibStoragePreprocessingChain createMdibStoragePreprocessingChain(@Assisted MdibStorage mdibStorage,
-                                                                      @Assisted List<DescriptionPreprocessingSegment> descriptionChainSegments,
-                                                                      @Assisted List<StatePreprocessingSegment> stateChainSegments);
+    MdibStoragePreprocessingChain createMdibStoragePreprocessingChain(
+            @Assisted MdibStorage mdibStorage,
+            @Assisted List<DescriptionPreprocessingSegment> descriptionChainSegments,
+            @Assisted List<StatePreprocessingSegment> stateChainSegments
+    );
 }

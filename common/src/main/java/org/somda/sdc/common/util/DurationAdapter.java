@@ -22,7 +22,7 @@ public class DurationAdapter extends XmlAdapter<String, Duration> {
     private static final String MINUTES = "minutes";
     private static final String SECONDS = "seconds";
 
-    private static final Pattern pattern = Pattern.compile("^(?<" + SIGN + ">[+-])?" +
+    private static final Pattern PATTERN = Pattern.compile("^(?<" + SIGN + ">[+-])?" +
             "P(?!\\b)" +
             "(?:(?<years>[0-9]+([,.][0-9]+)?)Y)?" +
             "(?:(?<months>[0-9]+([,.][0-9]+)?)M)?" +
@@ -41,8 +41,8 @@ public class DurationAdapter extends XmlAdapter<String, Duration> {
 
         try {
             return Duration.parse(v);
-        } catch (Exception e) {
-            final Matcher matcher = pattern.matcher(v);
+        } catch (DateTimeParseException e) {
+            final Matcher matcher = PATTERN.matcher(v);
             if (matcher.matches()) {
                 final String sign = matcher.group(SIGN);
                 return Duration.parse(String.format("%sP%sDT%sH%sM%sS",
@@ -54,7 +54,7 @@ public class DurationAdapter extends XmlAdapter<String, Duration> {
             }
         }
 
-        throw new DateTimeParseException("XML Schema duration could not be parsed to a Duration", v, 0);
+        throw new DateTimeParseException("XML Schema duration could not be parsed to a Java Duration", v, 0);
     }
 
     @Override

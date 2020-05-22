@@ -2,32 +2,71 @@ package org.somda.sdc.glue.common;
 
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.google.inject.name.Named;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.somda.sdc.biceps.common.MdibDescriptionModifications;
 import org.somda.sdc.biceps.common.MdibEntity;
 import org.somda.sdc.biceps.common.access.MdibAccess;
-import org.somda.sdc.biceps.model.participant.*;
+import org.somda.sdc.biceps.model.participant.AbstractComplexDeviceComponentDescriptor;
+import org.somda.sdc.biceps.model.participant.AbstractDescriptor;
+import org.somda.sdc.biceps.model.participant.AbstractMetricDescriptor;
+import org.somda.sdc.biceps.model.participant.AbstractOperationDescriptor;
+import org.somda.sdc.biceps.model.participant.AbstractState;
+import org.somda.sdc.biceps.model.participant.AlertConditionDescriptor;
+import org.somda.sdc.biceps.model.participant.AlertSignalDescriptor;
+import org.somda.sdc.biceps.model.participant.AlertSystemDescriptor;
+import org.somda.sdc.biceps.model.participant.BatteryDescriptor;
+import org.somda.sdc.biceps.model.participant.ChannelDescriptor;
+import org.somda.sdc.biceps.model.participant.ClockDescriptor;
+import org.somda.sdc.biceps.model.participant.EnsembleContextDescriptor;
+import org.somda.sdc.biceps.model.participant.LocationContextDescriptor;
+import org.somda.sdc.biceps.model.participant.MdDescription;
+import org.somda.sdc.biceps.model.participant.MdState;
+import org.somda.sdc.biceps.model.participant.Mdib;
+import org.somda.sdc.biceps.model.participant.MdibVersion;
+import org.somda.sdc.biceps.model.participant.MdsDescriptor;
+import org.somda.sdc.biceps.model.participant.MeansContextDescriptor;
+import org.somda.sdc.biceps.model.participant.ObjectFactory;
+import org.somda.sdc.biceps.model.participant.OperatorContextDescriptor;
+import org.somda.sdc.biceps.model.participant.PatientContextDescriptor;
+import org.somda.sdc.biceps.model.participant.ScoDescriptor;
+import org.somda.sdc.biceps.model.participant.SystemContextDescriptor;
+import org.somda.sdc.biceps.model.participant.VmdDescriptor;
+import org.somda.sdc.biceps.model.participant.WorkflowContextDescriptor;
+import org.somda.sdc.common.CommonConfig;
+import org.somda.sdc.common.logging.InstanceLogger;
 import org.somda.sdc.common.util.ObjectUtil;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.*;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
  * Maps MDIB entities from {@linkplain MdibAccess} to an {@linkplain Mdib} object.
+ * <p>
+ * Use {@link ModificationsBuilder} to map from an {@linkplain Mdib} to {@linkplain MdibDescriptionModifications} in
+ * order to add MDIB elements to {@link org.somda.sdc.biceps.consumer.access.RemoteMdibAccess} and
+ * {@link org.somda.sdc.biceps.provider.access.LocalMdibAccess}.
  */
 public class MdibMapper {
-    private static final Logger LOG = LoggerFactory.getLogger(MdibMapper.class);
+    private static final Logger LOG = LogManager.getLogger(MdibMapper.class);
     private final MdibAccess mdibAccess;
     private final ObjectFactory participantModelFactory;
     private final ObjectUtil objectUtil;
+    private final Logger instanceLogger;
 
     @AssistedInject
     MdibMapper(@Assisted MdibAccess mdibAccess,
                ObjectFactory participantModelFactory,
-               ObjectUtil objectUtil) {
-
+               ObjectUtil objectUtil,
+               @Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier) {
+        this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);
         this.mdibAccess = mdibAccess;
         this.participantModelFactory = participantModelFactory;
         this.objectUtil = objectUtil;
@@ -44,12 +83,12 @@ public class MdibMapper {
         final Mdib mdib = participantModelFactory.createMdib();
 
         final MdibVersion mdibVersion = mdibAccess.getMdibVersion();
-        mdib.setSequenceId(mdibVersion.getSequenceId().toString());
+        mdib.setSequenceId(mdibVersion.getSequenceId());
         mdib.setInstanceId(mdibVersion.getInstanceId());
         mdib.setMdibVersion(mdibVersion.getVersion());
 
-        mdib.setMdDescription(mapMdDescription(Collections.EMPTY_LIST));
-        mdib.setMdState(mapMdState(Collections.EMPTY_LIST));
+        mdib.setMdDescription(mapMdDescription(Collections.emptyList()));
+        mdib.setMdState(mapMdState(Collections.emptyList()));
 
         return mdib;
     }
@@ -319,15 +358,16 @@ public class MdibMapper {
                 final List listObject = List.class.cast(getList.invoke(parentDescriptor));
                 listObject.add(childDescriptor);
             } catch (ClassCastException e) {
-                LOG.warn("Mapping of zero-or-many failed for descriptor {}, because function does not return a list object",
+                instanceLogger.warn("Mapping of zero-or-many failed for descriptor {}, because function does not return a list object",
                         entity.getDescriptor().getHandle());
             } catch (NoSuchMethodException e) {
-                LOG.warn("Mapping of zero-or-many failed for descriptor {}, because method {} does not exist",
+                instanceLogger.warn("Mapping of zero-or-many failed for descriptor {}, because method {} does not exist",
                         entity.getDescriptor().getHandle(),
                         getterFunctionName);
             } catch (InvocationTargetException | IllegalAccessException e) {
-                LOG.warn("Mapping of zero-or-many failed for descriptor {}, because method {} could not be invoked on object of type {}",
+                instanceLogger.warn("Mapping of zero-or-many failed for descriptor {}, because method {} could not be invoked on object of type {}",
                         entity.getDescriptor().getHandle(),
+                        getterFunctionName,
                         entity.getDescriptor().getClass());
             }
         }
@@ -344,12 +384,13 @@ public class MdibMapper {
                 setObject.invoke(parentDescriptor, childDescriptor);
                 break;
             } catch (NoSuchMethodException e) {
-                LOG.warn("Mapping of zero-or-one failed for descriptor {}, because method {} does not exist",
+                instanceLogger.warn("Mapping of zero-or-one failed for descriptor {}, because method {} does not exist",
                         entity.getDescriptor().getHandle(),
                         setterFunctionName);
             } catch (InvocationTargetException | IllegalAccessException e) {
-                LOG.warn("Mapping of zero-or-one failed for descriptor {}, because method {} could not be invoked on object of type {}",
+                instanceLogger.warn("Mapping of zero-or-one failed for descriptor {}, because method {} could not be invoked on object of type {}",
                         entity.getDescriptor().getHandle(),
+                        setterFunctionName,
                         entity.getDescriptor().getClass());
             }
         }

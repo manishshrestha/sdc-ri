@@ -1,6 +1,9 @@
 package org.somda.sdc.biceps.consumer.access;
 
 import com.google.inject.assistedinject.AssistedInject;
+import com.google.inject.name.Named;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.somda.sdc.biceps.common.MdibDescriptionModifications;
 import org.somda.sdc.biceps.common.MdibEntity;
 import org.somda.sdc.biceps.common.MdibStateModifications;
@@ -22,19 +25,22 @@ import org.somda.sdc.biceps.model.participant.AbstractContextState;
 import org.somda.sdc.biceps.model.participant.AbstractDescriptor;
 import org.somda.sdc.biceps.model.participant.AbstractState;
 import org.somda.sdc.biceps.model.participant.MdibVersion;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.somda.sdc.common.CommonConfig;
+import org.somda.sdc.common.logging.InstanceLogger;
 
 import javax.annotation.Nullable;
 import java.math.BigInteger;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
  * Default implementation of {@linkplain RemoteMdibAccessImpl}.
  */
 public class RemoteMdibAccessImpl implements RemoteMdibAccess {
-    private static final Logger LOG = LoggerFactory.getLogger(RemoteMdibAccessImpl.class);
+    private static final Logger LOG = LogManager.getLogger(RemoteMdibAccessImpl.class);
 
     private final Distributor eventDistributor;
     private final MdibStorage mdibStorage;
@@ -43,6 +49,7 @@ public class RemoteMdibAccessImpl implements RemoteMdibAccess {
     private final ReadTransactionFactory readTransactionFactory;
 
     private final WriteUtil writeUtil;
+    private final Logger instanceLogger;
 
     @AssistedInject
     RemoteMdibAccessImpl(Distributor eventDistributor,
@@ -51,7 +58,9 @@ public class RemoteMdibAccessImpl implements RemoteMdibAccess {
                          ReentrantReadWriteLock readWriteLock,
                          ReadTransactionFactory readTransactionFactory,
                          VersionDuplicateHandler versionDuplicateHandler,
-                         DescriptorChildRemover descriptorChildRemover) {
+                         DescriptorChildRemover descriptorChildRemover,
+                         @Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier) {
+        this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);
         this.eventDistributor = eventDistributor;
         this.mdibStorage = mdibStorageFactory.createMdibStorage();
         this.readWriteLock = readWriteLock;
@@ -62,14 +71,19 @@ public class RemoteMdibAccessImpl implements RemoteMdibAccess {
                 Arrays.asList(descriptorChildRemover),
                 Arrays.asList(versionDuplicateHandler));
 
-        this.writeUtil = new WriteUtil(LOG, eventDistributor, localMdibAccessPreprocessing, readWriteLock, this);
+        this.writeUtil = new WriteUtil(
+                instanceLogger, eventDistributor,
+                localMdibAccessPreprocessing, readWriteLock,
+                this
+        );
     }
 
     @Override
     public WriteDescriptionResult writeDescription(MdibVersion mdibVersion,
                                                    @Nullable BigInteger mdDescriptionVersion,
                                                    @Nullable BigInteger mdStateVersion,
-                                                   MdibDescriptionModifications mdibDescriptionModifications) throws PreprocessingException {
+                                                   MdibDescriptionModifications mdibDescriptionModifications)
+            throws PreprocessingException {
         // No copy of mdibDescriptionModifications here as data is read from network source
         // SDCri takes over responsibility to not change elements after write
         return writeUtil.writeDescription(descriptionModifications ->

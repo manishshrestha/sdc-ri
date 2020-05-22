@@ -5,12 +5,14 @@ import com.google.common.util.concurrent.MoreExecutors;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.inject.AbstractModule;
 import com.google.inject.Injector;
+import com.google.inject.Provides;
+import com.google.inject.name.Named;
 import it.org.somda.glue.common.IntegrationTestPeer;
-import it.org.somda.glue.provider.TestSdcDevice;
 import it.org.somda.sdc.dpws.MockedUdpBindingModule;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.somda.sdc.common.util.ExecutorWrapperUtil;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.somda.sdc.common.CommonConfig;
+import org.somda.sdc.common.util.ExecutorWrapperService;
 import org.somda.sdc.dpws.DpwsConfig;
 import org.somda.sdc.dpws.DpwsFramework;
 import org.somda.sdc.dpws.client.Client;
@@ -34,7 +36,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class TestSdcClient extends IntegrationTestPeer {
-    private static final Logger LOG = LoggerFactory.getLogger(TestSdcClient.class);
+    private static final Logger LOG = LogManager.getLogger(TestSdcClient.class);
     public static final Duration REQUESTED_EXPIRES = Duration.ofSeconds(20);
 
     private final Client client;
@@ -83,11 +85,15 @@ public class TestSdcClient extends IntegrationTestPeer {
                     }
                 },
                 new AbstractModule() {
-                    @Override
-                    protected void configure() {
-                        super.configure();
-                        // bump network pool size because of parallelism tests
-                        {
+                    // bump network pool size because of parallelism tests
+
+                    ExecutorWrapperService<ListeningExecutorService> networkJobThreadPoolExecutor = null;
+                    ExecutorWrapperService<ListeningExecutorService> wsDiscoveryExecutor = null;
+
+                    @Provides
+                    @NetworkJobThreadPool
+                    ExecutorWrapperService<ListeningExecutorService> getNetworkJobThreadPool(@Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier) {
+                        if (networkJobThreadPoolExecutor == null) {
                             Callable<ListeningExecutorService> executor = () -> MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(
                                     30,
                                     new ThreadFactoryBuilder()
@@ -95,9 +101,16 @@ public class TestSdcClient extends IntegrationTestPeer {
                                             .setDaemon(true)
                                             .build()
                             ));
-                            ExecutorWrapperUtil.bindListeningExecutor(this, executor, NetworkJobThreadPool.class);
+                            networkJobThreadPoolExecutor = new ExecutorWrapperService<>(executor, "NetworkJobThreadPool", frameworkIdentifier);
                         }
-                        {
+
+                        return networkJobThreadPoolExecutor;
+                    }
+
+                    @Provides
+                    @WsDiscovery
+                    ExecutorWrapperService<ListeningExecutorService> getWsDiscoveryExecutor(@Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier) {
+                        if (wsDiscoveryExecutor == null) {
                             Callable<ListeningExecutorService> executor = () -> MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(
                                     30,
                                     new ThreadFactoryBuilder()
@@ -105,8 +118,11 @@ public class TestSdcClient extends IntegrationTestPeer {
                                             .setDaemon(true)
                                             .build()
                             ));
-                            ExecutorWrapperUtil.bindListeningExecutor(this, executor, WsDiscovery.class);
+
+                            wsDiscoveryExecutor = new ExecutorWrapperService<>(executor, "WsDiscovery", frameworkIdentifier);
                         }
+
+                        return wsDiscoveryExecutor;
                     }
                 }
         );

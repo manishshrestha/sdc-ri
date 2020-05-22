@@ -1,23 +1,23 @@
 package org.somda.sdc.dpws.http.apache;
 
-import com.google.inject.Inject;
+import com.google.inject.name.Named;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpEntityEnclosingRequest;
-import org.apache.http.HttpException;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpRequest;
 import org.apache.http.HttpRequestInterceptor;
 import org.apache.http.protocol.HttpContext;
 import org.apache.http.protocol.HttpCoreContext;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.somda.sdc.common.logging.InstanceLogger;
 import org.somda.sdc.dpws.CommunicationLog;
+import org.somda.sdc.dpws.DpwsConfig;
 import org.somda.sdc.dpws.http.apache.helper.ApacheClientHelper;
 import org.somda.sdc.dpws.soap.CommunicationContext;
 import org.somda.sdc.dpws.soap.HttpApplicationInfo;
 import org.somda.sdc.dpws.soap.TransportInfo;
 
-import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Collections;
 
@@ -25,23 +25,25 @@ import java.util.Collections;
  * Request interceptor which writes the outgoing request message and headers into the {@linkplain CommunicationLog}.
  */
 public class CommunicationLogHttpRequestInterceptor implements HttpRequestInterceptor {
-    private static final Logger LOG = LoggerFactory.getLogger(CommunicationLogHttpRequestInterceptor.class);
+    private static final Logger LOG = LogManager.getLogger(CommunicationLogHttpRequestInterceptor.class);
 
     private final CommunicationLog commlog;
+    private final Logger instanceLogger;
 
-    CommunicationLogHttpRequestInterceptor(CommunicationLog communicationLog) {
+    CommunicationLogHttpRequestInterceptor(CommunicationLog communicationLog, String frameworkIdentifier) {
+        this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);
         this.commlog = communicationLog;
     }
 
     @Override
-    public void process(HttpRequest request, HttpContext context) throws HttpException, IOException {
-        LOG.debug("Processing request");
+    public void process(HttpRequest request, HttpContext context) {
+        instanceLogger.debug("Processing request: {}", request.getRequestLine());
 
         HttpHost target = (HttpHost) context.getAttribute(
                 HttpCoreContext.HTTP_TARGET_HOST);
 
         if (!(request instanceof HttpEntityEnclosingRequest)) {
-            LOG.warn("Interceptor cannot retrieve request entity!");
+            instanceLogger.warn("Interceptor cannot retrieve request entity for request {}", request.getRequestLine());
             return;
         }
 
@@ -49,7 +51,7 @@ public class CommunicationLogHttpRequestInterceptor implements HttpRequestInterc
         HttpEntity oldMessageEntity = entityRequest.getEntity();
 
         var requestHttpApplicationInfo = new HttpApplicationInfo(
-                ApacheClientHelper.allHeadersToMap(request.getAllHeaders())
+                ApacheClientHelper.allHeadersToMultimap(request.getAllHeaders())
         );
 
         // collect information for TransportInfo
@@ -64,12 +66,13 @@ public class CommunicationLogHttpRequestInterceptor implements HttpRequestInterc
 
         var requestCommContext = new CommunicationContext(requestHttpApplicationInfo, requestTransportInfo);
 
-        OutputStream commlogStream = commlog.logMessage(CommunicationLog.Direction.OUTBOUND, CommunicationLog.TransportType.HTTP,
+        OutputStream commlogStream = commlog.logMessage(
+                CommunicationLog.Direction.OUTBOUND,
+                CommunicationLog.TransportType.HTTP,
                 requestCommContext);
 
         entityRequest.setEntity(new CommunicationLogEntity(oldMessageEntity, commlogStream));
 
-
-        LOG.debug("Processing request done");
+        instanceLogger.debug("Processing request done: {}", request.getRequestLine());
     }
-};
+}

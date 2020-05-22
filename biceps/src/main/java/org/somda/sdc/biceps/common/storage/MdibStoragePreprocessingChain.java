@@ -13,7 +13,8 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * Provides a processing chain that is supposed to be run before any interaction with an {@linkplain MdibStorage} instance.
+ * Provides a processing chain that is supposed to be run before any interaction with
+ * an {@linkplain MdibStorage} instance.
  * <p>
  * The {@linkplain MdibStoragePreprocessingChain} offers processing functions for description and state change sets.
  */
@@ -40,17 +41,22 @@ public class MdibStoragePreprocessingChain {
      * @param modifications the modification to pass to the chain segments.
      * @throws PreprocessingException in case a chain segment fails.
      */
-    public void processDescriptionModifications(MdibDescriptionModifications modifications) throws PreprocessingException {
+    public void processDescriptionModifications(MdibDescriptionModifications modifications)
+            throws PreprocessingException {
         final List<MdibDescriptionModification> modificationList = modifications.getModifications();
         int sizeToIterate = modificationList.size();
 
-        descriptionChainSegments.forEach(chainSegment -> chainSegment.beforeFirstModification(modifications, mdibStorage));
+        descriptionChainSegments.forEach(chainSegment ->
+                chainSegment.beforeFirstModification(modifications, mdibStorage)
+        );
 
         for (int i = 0; i < sizeToIterate; ++i) {
             for (DescriptionPreprocessingSegment chainSegment : descriptionChainSegments) {
                 try {
                     chainSegment.process(modifications, modificationList.get(i), mdibStorage);
+                // CHECKSTYLE.OFF: IllegalCatch
                 } catch (Exception e) {
+                // CHECKSTYLE.ON: IllegalCatch
                     throw new PreprocessingException(e.getMessage(), e.getCause(),
                             modificationList.get(i).getHandle(), chainSegment.toString());
                 }
@@ -58,7 +64,9 @@ public class MdibStoragePreprocessingChain {
             sizeToIterate = modificationList.size();
         }
 
-        descriptionChainSegments.forEach(chainSegment -> chainSegment.afterLastModification(modifications, mdibStorage));
+        descriptionChainSegments.forEach(chainSegment ->
+                chainSegment.afterLastModification(modifications, mdibStorage)
+        );
     }
 
     /**
@@ -74,7 +82,9 @@ public class MdibStoragePreprocessingChain {
             for (StatePreprocessingSegment chainSegment : stateChainSegments) {
                 try {
                     chainSegment.process(modifications, modification, mdibStorage);
+                // CHECKSTYLE.OFF: IllegalCatch
                 } catch (Exception e) {
+                // CHECKSTYLE.ON: IllegalCatch
                     final Optional<AbstractMultiState> multiState = typeValidator.toMultiState(modification);
                     String handle = modification.getDescriptorHandle();
                     if (multiState.isPresent()) {

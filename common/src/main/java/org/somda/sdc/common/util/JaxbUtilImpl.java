@@ -1,7 +1,7 @@
 package org.somda.sdc.common.util;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.annotation.XmlType;
@@ -13,7 +13,7 @@ import java.util.Optional;
  * Default implementation of {@linkplain JaxbUtil}.
  */
 public class JaxbUtilImpl implements JaxbUtil {
-    private static final Logger LOG = LoggerFactory.getLogger(JaxbUtilImpl.class);
+    private static final Logger LOG = LogManager.getLogger(JaxbUtilImpl.class);
 
     @Override
     public <T> Optional<T> extractElement(Object element, QName elementType, Class<T> typeClass) {
@@ -36,7 +36,7 @@ public class JaxbUtilImpl implements JaxbUtil {
             } else {
                 return Optional.of(typeClass.cast(element));
             }
-        } catch (Exception e) {
+        } catch (ClassCastException e) {
             return Optional.empty();
         }
     }
@@ -51,11 +51,6 @@ public class JaxbUtilImpl implements JaxbUtil {
             }
         } catch (ClassCastException e) {
             LOG.trace("Object was not a JAXBElement, extracting elements failed but it's alright");
-        } catch (Exception e) {
-            LOG.warn("Element could not be extracted. Is the QName {} known to JAXB via context path? " +
-                    "Exception message: {}", elementType, e.getMessage());
-            LOG.trace("Element could not be extracted", e);
-            // ignore, empty optional will be returned
         }
         return Optional.empty();
     }
@@ -70,7 +65,7 @@ public class JaxbUtilImpl implements JaxbUtil {
         if (first.isPresent()) {
             try {
                 return Optional.ofNullable(typeClass.cast(first.get()));
-            } catch (Exception e) {
+            } catch (ClassCastException ignored) {
                 // ignore, empty optional will be returned
             }
         }
@@ -88,7 +83,7 @@ public class JaxbUtilImpl implements JaxbUtil {
         if (first.isPresent()) {
             try {
                 return Optional.ofNullable(typeClass.cast(first.get()));
-            } catch (Exception e) {
+            } catch (ClassCastException ignored) {
                 // ignore, empty optional will be returned
             }
         }
@@ -101,7 +96,7 @@ public class JaxbUtilImpl implements JaxbUtil {
         QName qname = null;
         for (var annotation : object.getClass().getAnnotations()) {
             if (annotation.annotationType() == XmlType.class) {
-                var xmlType = ((XmlType) annotation);
+                var xmlType = (XmlType) annotation;
                 qname = new QName(xmlType.namespace(), xmlType.name());
                 break;
             }

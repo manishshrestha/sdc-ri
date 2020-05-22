@@ -2,8 +2,11 @@ package org.somda.sdc.dpws;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.google.inject.name.Named;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.somda.sdc.common.CommonConfig;
+import org.somda.sdc.common.logging.InstanceLogger;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -11,14 +14,16 @@ import java.io.InputStreamReader;
 
 @Singleton
 public class FrameworkMetadata {
-    private static final Logger LOG = LoggerFactory.getLogger(FrameworkMetadata.class);
+    private static final Logger LOG = LogManager.getLogger(FrameworkMetadata.class);
+    private final Logger instanceLogger;
     private String frameworkVersion;
     private String javaVersion;
     private String javaVendor;
     private String osVersion;
 
     @Inject
-    FrameworkMetadata() {
+    FrameworkMetadata(@Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier) {
+        this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);
         frameworkVersion = getClass().getPackage().getImplementationVersion();
         if (frameworkVersion == null) {
             frameworkVersion = "DEVELOPMENT VERSION" + determineGitRevision();
@@ -67,10 +72,10 @@ public class FrameworkMetadata {
             if (exitVal == 0) {
                 return " " + output.toString();
             } else {
-                LOG.error("Could not call git to determine revision, exit code was {}", exitVal);
+                instanceLogger.error("Could not call git to determine revision, exit code was {}", exitVal);
             }
         } catch (IOException | InterruptedException e) {
-            LOG.error("Could not call git to determine revision", e);
+            instanceLogger.error("Could not call git to determine revision", e);
         }
         return " unknown revision";
     }

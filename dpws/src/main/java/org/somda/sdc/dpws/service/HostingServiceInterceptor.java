@@ -2,8 +2,11 @@ package org.somda.sdc.dpws.service;
 
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.google.inject.name.Named;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.somda.sdc.common.CommonConfig;
+import org.somda.sdc.common.logging.InstanceLogger;
 import org.somda.sdc.common.util.ObjectUtil;
 import org.somda.sdc.dpws.DpwsConstants;
 import org.somda.sdc.dpws.model.LocalizedStringType;
@@ -35,7 +38,7 @@ import java.util.List;
  * {@linkplain HostingServiceInterceptor} acts as a {@link HostingService} implementation at the same time.
  */
 public class HostingServiceInterceptor implements HostingService {
-    private static final Logger LOG = LoggerFactory.getLogger(HostingServiceInterceptor.class);
+    private static final Logger LOG = LogManager.getLogger(HostingServiceInterceptor.class);
 
     private final WsDiscoveryTargetService targetService;
     private final ObjectUtil objectUtil;
@@ -46,6 +49,7 @@ public class HostingServiceInterceptor implements HostingService {
     private final SoapFaultFactory soapFaultFactory;
     private final ObjectFactory mexFactory;
     private final org.somda.sdc.dpws.model.ObjectFactory dpwsFactory;
+    private final Logger instanceLogger;
     private ThisModelType thisModel;
     private ThisDeviceType thisDevice;
 
@@ -62,7 +66,9 @@ public class HostingServiceInterceptor implements HostingService {
                               org.somda.sdc.dpws.model.ObjectFactory dpwsFactory,
                               ObjectUtil objectUtil,
                               WsAddressingUtil wsaUtil,
-                              MetadataSectionUtil metadataSectionUtil) {
+                              MetadataSectionUtil metadataSectionUtil,
+                              @Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier) {
+        this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);
         this.targetService = targetService;
         this.objectUtil = objectUtil;
         this.wsaUtil = wsaUtil;
@@ -209,7 +215,7 @@ public class HostingServiceInterceptor implements HostingService {
             int maxLength = size - 1;
             var newText = new String(Arrays.copyOf(textBytes, maxLength),
                     StandardCharsets.UTF_8);
-            LOG.warn("The following text was cut due to DPWS length violations (allowed: {} octets, " +
+            instanceLogger.warn("The following text was cut due to DPWS length violations (allowed: {} octets, " +
                     "actual: {} octets). '{}' is now '{}'", maxLength, textBytes.length, text, newText);
             return newText;
         } else {

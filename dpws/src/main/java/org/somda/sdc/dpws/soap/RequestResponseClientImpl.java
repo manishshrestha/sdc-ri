@@ -7,14 +7,13 @@ import org.somda.sdc.dpws.soap.exception.SoapFaultException;
 import org.somda.sdc.dpws.soap.exception.TransportException;
 import org.somda.sdc.dpws.soap.interception.*;
 import org.somda.sdc.dpws.soap.wsaddressing.WsAddressingClientInterceptor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 /**
  * Default implementation of {@linkplain RequestResponseClient}.
  */
 public class RequestResponseClientImpl implements RequestResponseClient {
-    private static final Logger LOG = LoggerFactory.getLogger(RequestResponseClientImpl.class);
 
     private final InterceptorRegistry interceptorRegistry;
     private final RequestResponseCallback networkCallback;

@@ -11,11 +11,13 @@ import org.somda.sdc.dpws.soap.SoapConfig;
 import org.somda.sdc.dpws.soap.wsaddressing.WsAddressingConfig;
 import org.somda.sdc.dpws.soap.wsdiscovery.WsDiscoveryConfig;
 import org.somda.sdc.dpws.soap.wseventing.WsEventingConfig;
+import org.somda.sdc.dpws.wsdl.WsdlProvisioningMode;
 
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLSession;
 import java.io.File;
 import java.time.Duration;
+import java.util.UUID;
 
 /**
  * Default configuration module to configure {@link DefaultDpwsModule}.
@@ -44,6 +46,10 @@ public class DefaultDpwsConfigModule extends AbstractConfigurationModule {
         bind(DeviceConfig.SECURED_ENDPOINT,
                 Boolean.class,
                 false);
+
+        bind(DeviceConfig.WSDL_PROVISIONING_MODE,
+                WsdlProvisioningMode.class,
+                WsdlProvisioningMode.RESOURCE);
     }
 
     private void configureDpws() {
@@ -58,6 +64,10 @@ public class DefaultDpwsConfigModule extends AbstractConfigurationModule {
         bind(DpwsConfig.COMMUNICATION_LOG_SINK_DIRECTORY,
                 File.class,
                 new File("commlog"));
+
+        bind(DpwsConfig.COMMUNICATION_LOG_WITH_HTTP_HEADERS,
+                Boolean.class,
+                true);
 
         bind(DpwsConfig.HTTP_GZIP_COMPRESSION,
                 Boolean.class,

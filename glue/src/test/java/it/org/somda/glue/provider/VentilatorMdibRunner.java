@@ -29,6 +29,8 @@ public class VentilatorMdibRunner implements SdcDevicePlugin {
     public static final String HANDLE_BAD_MDC_DEV_SYS_PT_VENT_VMD = "handle_bad_MDC_DEV_SYS_PT_VENT_VMD";
     public static final String HANDLE_VIS_BAD_MDC_DEV_SYS_PT_VENT_VMD = "handle_vis_bad_MDC_DEV_SYS_PT_VENT_VMD";
     public static final String HANDLE_SET_MDC_DEV_SYS_PT_VENT_VMD = "handle_set_MDC_DEV_SYS_PT_VENT_VMD";
+    public static final String HANDLE_ALERT_SYSTEM = "handle_AlertSystem";
+    public static final String HANDLE_SCO = "handle_Sco";
 
     private final MdibXmlIo mdibXmlIo;
     private final ModificationsBuilderFactory modificationsBuilderFactory;

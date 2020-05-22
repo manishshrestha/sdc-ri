@@ -9,8 +9,8 @@ import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.inject.Provider;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.somda.sdc.biceps.common.storage.PreprocessingException;
 import org.somda.sdc.biceps.consumer.access.RemoteMdibAccess;
 import org.somda.sdc.biceps.consumer.access.factory.RemoteMdibAccessFactory;
@@ -20,9 +20,11 @@ import org.somda.sdc.biceps.model.message.GetMdibResponse;
 import org.somda.sdc.biceps.model.message.ObjectFactory;
 import org.somda.sdc.biceps.model.message.OperationInvokedReport;
 import org.somda.sdc.biceps.model.participant.Mdib;
+import org.somda.sdc.common.CommonConfig;
+import org.somda.sdc.common.logging.InstanceLogger;
+import org.somda.sdc.common.util.ExecutorWrapperService;
 import org.somda.sdc.dpws.DpwsConfig;
 import org.somda.sdc.dpws.DpwsFramework;
-import org.somda.sdc.common.util.ExecutorWrapperService;
 import org.somda.sdc.dpws.service.HostedServiceProxy;
 import org.somda.sdc.dpws.service.HostingServiceProxy;
 import org.somda.sdc.dpws.soap.SoapMessage;
@@ -45,7 +47,7 @@ import org.somda.sdc.glue.consumer.event.RemoteDeviceConnectedMessage;
 import org.somda.sdc.glue.consumer.event.WatchdogMessage;
 import org.somda.sdc.glue.consumer.factory.SdcRemoteDeviceFactory;
 import org.somda.sdc.glue.consumer.factory.SdcRemoteDeviceWatchdogFactory;
-import org.somda.sdc.glue.consumer.helper.LogPrepender;
+import org.somda.sdc.glue.consumer.helper.HostingServiceLogger;
 import org.somda.sdc.glue.consumer.report.ReportProcessingException;
 import org.somda.sdc.glue.consumer.report.ReportProcessor;
 import org.somda.sdc.glue.consumer.sco.ScoController;
@@ -56,7 +58,6 @@ import javax.annotation.Nullable;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.xml.namespace.QName;
-import java.net.URI;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -71,11 +72,12 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 public class SdcRemoteDevicesConnectorImpl extends AbstractIdleService implements SdcRemoteDevicesConnector, WatchdogObserver {
-    private static final Logger LOG = LoggerFactory.getLogger(SdcRemoteDevicesConnectorImpl.class);
+    private static final Logger LOG = LogManager.getLogger(SdcRemoteDevicesConnectorImpl.class);
 
     private ExecutorWrapperService<ListeningExecutorService> executorService;
     private Map<String, SdcRemoteDevice> sdcRemoteDevices;
     private EventBus eventBus;
+    private final Logger instanceLogger;
     private final Provider<ReportProcessor> reportProcessorProvider;
     private final ScoControllerFactory scoControllerFactory;
     private final Duration requestedExpires;
@@ -87,6 +89,7 @@ public class SdcRemoteDevicesConnectorImpl extends AbstractIdleService implement
     private final MdibVersionUtil mdibVersionUtil;
     private final SdcRemoteDeviceFactory sdcRemoteDeviceFactory;
     private final SdcRemoteDeviceWatchdogFactory watchdogFactory;
+    private final String frameworkIdentifier;
 
     @Inject
     SdcRemoteDevicesConnectorImpl(@Consumer ExecutorWrapperService<ListeningExecutorService> executorService,
@@ -103,7 +106,9 @@ public class SdcRemoteDevicesConnectorImpl extends AbstractIdleService implement
                                   MdibVersionUtil mdibVersionUtil,
                                   SdcRemoteDeviceFactory sdcRemoteDeviceFactory,
                                   SdcRemoteDeviceWatchdogFactory watchdogFactory,
-                                  DpwsFramework dpwsFramework) {
+                                  DpwsFramework dpwsFramework,
+                                  @Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier) {
+        this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);
         this.executorService = executorService;
         this.sdcRemoteDevices = sdcRemoteDevices;
         this.eventBus = eventBus;
@@ -118,6 +123,7 @@ public class SdcRemoteDevicesConnectorImpl extends AbstractIdleService implement
         this.mdibVersionUtil = mdibVersionUtil;
         this.sdcRemoteDeviceFactory = sdcRemoteDeviceFactory;
         this.watchdogFactory = watchdogFactory;
+        this.frameworkIdentifier = frameworkIdentifier;
 
         dpwsFramework.registerService(List.of(executorService, this));
     }
@@ -133,7 +139,7 @@ public class SdcRemoteDevicesConnectorImpl extends AbstractIdleService implement
 
         return executorService.get().submit(() -> {
             try {
-                final Logger tempLog = LogPrepender.getLogger(hostingServiceProxy, SdcRemoteDevicesConnectorImpl.class);
+                final Logger tempLog = HostingServiceLogger.getLogger(LOG, hostingServiceProxy, frameworkIdentifier);
                 tempLog.info("Start connecting");
                 ReportProcessor reportProcessor = createReportProcessor();
                 RemoteMdibAccess mdibAccess = createRemoteMdibAccess(hostingServiceProxy);
@@ -231,7 +237,7 @@ public class SdcRemoteDevicesConnectorImpl extends AbstractIdleService implement
                 });
             }
         } else {
-            LOG.info("disconnect() called for unknown epr address {}, device already disconnected?", eprAddress);
+            instanceLogger.info("disconnect() called for unknown epr address {}, device already disconnected?", eprAddress);
         }
         return Futures.immediateCancelledFuture();
     }
@@ -277,12 +283,12 @@ public class SdcRemoteDevicesConnectorImpl extends AbstractIdleService implement
         for (String serviceId : subscriptions.keySet()) {
             final Collection<String> actions = subscriptions.get(serviceId);
             if (actions.isEmpty()) {
-                LOG.warn("Expect to find at least one action to subscribe for service id {}, but none found", serviceId);
+                instanceLogger.warn("Expect to find at least one action to subscribe for service id {}, but none found", serviceId);
                 continue;
             }
             final HostedServiceProxy hostedServiceProxy = hostingServiceProxy.getHostedServices().get(serviceId);
             if (hostedServiceProxy == null) {
-                LOG.warn("Expect to found a hosted service proxy to access for service id {}, but none found", serviceId);
+                instanceLogger.warn("Expect to found a hosted service proxy to access for service id {}, but none found", serviceId);
                 continue;
             }
 
@@ -295,7 +301,7 @@ public class SdcRemoteDevicesConnectorImpl extends AbstractIdleService implement
                             final AbstractReport report = soapUtil.getBody(notificationObject.getNotification(),
                                     AbstractReport.class).orElseThrow(() -> new RuntimeException(
                                     String.format("Received unexpected report message from service %s", serviceId)));
-                            LOG.debug("Incoming SOAP/HTTP notification: {}", report);
+                            instanceLogger.debug("Incoming SOAP/HTTP notification: {}", report);
                             if (report instanceof OperationInvokedReport) {
                                 if (scoController != null) {
                                     scoController.processOperationInvokedReport((OperationInvokedReport) report);
@@ -324,7 +330,7 @@ public class SdcRemoteDevicesConnectorImpl extends AbstractIdleService implement
         for (String action : actionsToSubscribe) {
             final QName targetPortType = SubscribableActionsMapping.TARGET_QNAMES.get(action);
             if (targetPortType == null) {
-                LOG.warn("Found an action that could not be mapped to a target port type: {}", action);
+                instanceLogger.warn("Found an action that could not be mapped to a target port type: {}", action);
                 continue;
             }
 
@@ -409,7 +415,7 @@ public class SdcRemoteDevicesConnectorImpl extends AbstractIdleService implement
 
     @Subscribe
     void onConnectionLoss(WatchdogMessage watchdogMessage) {
-        LOG.info("Lost connection to device {}. Reason: {}", watchdogMessage.getPayload(),
+        instanceLogger.info("Lost connection to device {}. Reason: {}", watchdogMessage.getPayload(),
                 watchdogMessage.getReason().getMessage());
         disconnect(watchdogMessage.getPayload());
     }
@@ -421,7 +427,7 @@ public class SdcRemoteDevicesConnectorImpl extends AbstractIdleService implement
 
     @Override
     protected void shutDown() throws Exception {
-        LOG.info("Shutting down, disconnecting all devices");
+        instanceLogger.info("Shutting down, disconnecting all devices");
         List.copyOf(sdcRemoteDevices.keySet()).forEach(this::disconnect);
     }
 }

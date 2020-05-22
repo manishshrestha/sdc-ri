@@ -1,23 +1,25 @@
 package com.example.provider1;
 
-import com.example.CustomCryptoSettings;
+import com.example.BaseUtil;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
+import org.apache.commons.cli.Option;
+import org.apache.commons.cli.Options;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.core.config.Configurator;
 import org.apache.logging.log4j.core.config.DefaultConfiguration;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.somda.sdc.biceps.guice.DefaultBicepsConfigModule;
 import org.somda.sdc.biceps.guice.DefaultBicepsModule;
 import org.somda.sdc.biceps.model.participant.AbstractMetricValue;
 import org.somda.sdc.biceps.model.participant.GenerationMode;
 import org.somda.sdc.biceps.model.participant.MeasurementValidity;
+import org.somda.sdc.common.guice.DefaultCommonConfigModule;
 import org.somda.sdc.common.guice.DefaultHelperModule;
 import org.somda.sdc.dpws.DpwsConfig;
 import org.somda.sdc.dpws.crypto.CryptoConfig;
 import org.somda.sdc.dpws.crypto.CryptoSettings;
-import org.somda.sdc.dpws.device.DeviceConfig;
 import org.somda.sdc.dpws.guice.DefaultDpwsModule;
 import org.somda.sdc.glue.GlueConstants;
 import org.somda.sdc.glue.guice.DefaultGlueConfigModule;
@@ -27,6 +29,7 @@ import org.somda.sdc.glue.guice.GlueDpwsConfigModule;
 import javax.net.ssl.HostnameVerifier;
 import java.net.URI;
 import java.security.cert.X509Certificate;
+import java.time.Duration;
 import java.util.List;
 
 /**
@@ -35,15 +38,33 @@ import java.util.List;
  * Overwriting configuration steps allows customizing the behavior of the framework through
  * injection.
  */
-public class ProviderUtil {
-    private static final Logger LOG = LoggerFactory.getLogger(ProviderUtil.class);
-    private final Injector injector;
+public class ProviderUtil extends BaseUtil {
+    private static final Logger LOG = LogManager.getLogger(ProviderUtil.class);
+    public static final String OPT_REPORT_INTERVAL = "report_interval";
+    public static final String OPT_WAVEFORMS_INTERVAL = "waveform_interval";
 
-    public ProviderUtil() {
-        Configurator.initialize(new DefaultConfiguration());
-        Configurator.setRootLevel(Level.INFO);
+    private static final String DEFAULT_REPORT_INTERVAL = "5000"; // millis
+    private static final String DEFAULT_WAVEFORM_INTERVAL = "100"; // millis
+
+    private final Injector injector;
+    private final Duration reportInterval;
+    private final Duration waveformInterval;
+
+    public ProviderUtil(String[] args) {
+        super(args);
+        Configurator.reconfigure(localLoggerConfig(Level.INFO));
+
+        reportInterval = Duration.ofMillis(
+                Long.parseLong(getParsedArgs().getOptionValue(OPT_REPORT_INTERVAL, DEFAULT_REPORT_INTERVAL))
+        );
+
+        waveformInterval = Duration.ofMillis(
+                Long.parseLong(getParsedArgs().getOptionValue(OPT_WAVEFORMS_INTERVAL, DEFAULT_WAVEFORM_INTERVAL))
+        );
+
 
         injector = Guice.createInjector(
+                new DefaultCommonConfigModule(),
                 new DefaultGlueModule(),
                 new DefaultGlueConfigModule(),
                 new DefaultBicepsModule(),
@@ -56,10 +77,10 @@ public class ProviderUtil {
                         super.customConfigure();
                         bind(CryptoConfig.CRYPTO_SETTINGS,
                                 CryptoSettings.class,
-                                new CustomCryptoSettings()
+                                createCustomCryptoSettings()
                         );
-                        bind(DpwsConfig.HTTPS_SUPPORT, Boolean.class, true);
-                        bind(DpwsConfig.HTTP_SUPPORT, Boolean.class, false);
+                        bind(DpwsConfig.HTTPS_SUPPORT, Boolean.class, isUseTls());
+                        bind(DpwsConfig.HTTP_SUPPORT, Boolean.class, !isUseTls());
                         bind(CryptoConfig.CRYPTO_DEVICE_HOSTNAME_VERIFIER,
                                 HostnameVerifier.class,
                                 (hostname, session) -> {
@@ -110,5 +131,39 @@ public class ProviderUtil {
             qual.setValidity(MeasurementValidity.VLD);
             val.setMetricQuality(qual);
         }
+    }
+
+    @Override
+    protected Options configureOptions() {
+        var options = super.configureOptions();
+
+        {
+            String message = "Interval in ms in which reports are being generated."
+                    + " Default: " + DEFAULT_REPORT_INTERVAL;
+            Option reportIntervalOpt = new Option(null, OPT_REPORT_INTERVAL,
+                    true, message);
+            reportIntervalOpt.setType(Long.class);
+            options.addOption(reportIntervalOpt);
+        }
+
+        {
+
+            String message = "Interval in ms in which waveforms are being generated."
+                    + " Default: " + DEFAULT_WAVEFORM_INTERVAL;
+            Option waveformIntervalOpt = new Option(null, OPT_WAVEFORMS_INTERVAL,
+                    true, message);
+            waveformIntervalOpt.setType(Long.class);
+            options.addOption(waveformIntervalOpt);
+        }
+
+        return options;
+    }
+
+    public Duration getReportInterval() {
+        return reportInterval;
+    }
+
+    public Duration getWaveformInterval() {
+        return waveformInterval;
     }
 }

@@ -5,8 +5,41 @@ import com.google.inject.assistedinject.AssistedInject;
 import org.somda.sdc.biceps.common.MdibEntity;
 import org.somda.sdc.biceps.common.access.ReadTransaction;
 import org.somda.sdc.biceps.model.message.AbstractSet;
-import org.somda.sdc.biceps.model.message.*;
-import org.somda.sdc.biceps.model.participant.*;
+import org.somda.sdc.biceps.model.message.AbstractSetResponse;
+import org.somda.sdc.biceps.model.message.Activate;
+import org.somda.sdc.biceps.model.message.ActivateResponse;
+import org.somda.sdc.biceps.model.message.GetContainmentTree;
+import org.somda.sdc.biceps.model.message.GetContainmentTreeResponse;
+import org.somda.sdc.biceps.model.message.GetContextStates;
+import org.somda.sdc.biceps.model.message.GetContextStatesResponse;
+import org.somda.sdc.biceps.model.message.GetDescriptor;
+import org.somda.sdc.biceps.model.message.GetDescriptorResponse;
+import org.somda.sdc.biceps.model.message.GetMdDescription;
+import org.somda.sdc.biceps.model.message.GetMdDescriptionResponse;
+import org.somda.sdc.biceps.model.message.GetMdState;
+import org.somda.sdc.biceps.model.message.GetMdStateResponse;
+import org.somda.sdc.biceps.model.message.GetMdib;
+import org.somda.sdc.biceps.model.message.GetMdibResponse;
+import org.somda.sdc.biceps.model.message.InvocationInfo;
+import org.somda.sdc.biceps.model.message.ObjectFactory;
+import org.somda.sdc.biceps.model.message.SetAlertState;
+import org.somda.sdc.biceps.model.message.SetAlertStateResponse;
+import org.somda.sdc.biceps.model.message.SetComponentState;
+import org.somda.sdc.biceps.model.message.SetComponentStateResponse;
+import org.somda.sdc.biceps.model.message.SetContextState;
+import org.somda.sdc.biceps.model.message.SetContextStateResponse;
+import org.somda.sdc.biceps.model.message.SetMetricState;
+import org.somda.sdc.biceps.model.message.SetMetricStateResponse;
+import org.somda.sdc.biceps.model.message.SetString;
+import org.somda.sdc.biceps.model.message.SetStringResponse;
+import org.somda.sdc.biceps.model.message.SetValue;
+import org.somda.sdc.biceps.model.message.SetValueResponse;
+import org.somda.sdc.biceps.model.participant.AbstractContextState;
+import org.somda.sdc.biceps.model.participant.AbstractState;
+import org.somda.sdc.biceps.model.participant.ContainmentTree;
+import org.somda.sdc.biceps.model.participant.ContainmentTreeEntry;
+import org.somda.sdc.biceps.model.participant.InstanceIdentifier;
+import org.somda.sdc.biceps.model.participant.MdibVersion;
 import org.somda.sdc.biceps.provider.access.LocalMdibAccess;
 import org.somda.sdc.common.util.JaxbUtil;
 import org.somda.sdc.dpws.device.WebService;
@@ -29,7 +62,15 @@ import org.somda.sdc.glue.provider.services.helper.factory.ReportGeneratorFactor
 import org.somda.sdc.mdpws.model.ContextValueType;
 import org.somda.sdc.mdpws.model.DualChannelValueType;
 
-import java.util.*;
+import javax.xml.bind.annotation.XmlType;
+import javax.xml.namespace.QName;
+import java.lang.annotation.Annotation;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 
 /**
@@ -55,6 +96,8 @@ public class HighPriorityServices extends WebService {
     private final MdibVersionUtil mdibVersionUtil;
     private final WsAddressingUtil wsaUtil;
     private final JaxbUtil jaxbUtil;
+    private final ObjectFactory messageModelFactory;
+    private final org.somda.sdc.biceps.model.participant.ObjectFactory participantModelFactory;
     private final ScoController scoController;
 
     private final InstanceIdentifier anonymousSource;
@@ -69,7 +112,9 @@ public class HighPriorityServices extends WebService {
                          ScoControllerFactory scoControllerFactory,
                          MdibVersionUtil mdibVersionUtil,
                          WsAddressingUtil wsaUtil,
-                         JaxbUtil jaxbUtil) {
+                         JaxbUtil jaxbUtil,
+                         ObjectFactory messageModelFactory,
+                         org.somda.sdc.biceps.model.participant.ObjectFactory participantModelFactory) {
         this.mdibAccess = mdibAccess;
         this.soapUtil = soapUtil;
         this.faultFactory = faultFactory;
@@ -77,6 +122,8 @@ public class HighPriorityServices extends WebService {
         this.mdibVersionUtil = mdibVersionUtil;
         this.wsaUtil = wsaUtil;
         this.jaxbUtil = jaxbUtil;
+        this.messageModelFactory = messageModelFactory;
+        this.participantModelFactory = participantModelFactory;
         this.scoController = scoControllerFactory.createScoController(this, mdibAccess);
         this.reportGenerator = reportGeneratorFactory.createReportGenerator(this);
         anonymousSource = new InstanceIdentifier();
@@ -278,9 +325,11 @@ public class HighPriorityServices extends WebService {
     /**
      * Answers the incoming GetContainmentTree request.
      * <p>
-     * The folowing rules apply:
+     * The following rules apply based on meaningful/individual interpretation of BICEPS:
      * <ul>
-     * <li>The result shall contain containment tree information of all elements that are matched by msg:GetContainmentTree/msg:HandleRef.
+     * <li>The result shall contain containment tree information of all child elements of the particular parent that is
+     * matched by the first entry of msg:GetContainmentTree/msg:HandleRef. Others are ignored as they cannot be put to
+     * the response message
      * <li>If no handle reference is provided, all containment tree elements on MDS level SHALL be returned.
      * </ul>
      *
@@ -289,43 +338,42 @@ public class HighPriorityServices extends WebService {
      */
     @MessageInterceptor(ActionConstants.ACTION_GET_CONTAINMENT_TREE)
     void getContainmentTree(RequestResponseObject requestResponseObject) throws SoapFaultException {
-        var getContainmentTree = getRequest(requestResponseObject, GetContainmentTree.class);
-        var getContainmentTreeResponse = new GetContainmentTreeResponse();
-        var handleReferences = getContainmentTree.getHandleRef();
-        var containmentTree = new ContainmentTree();
+        final GetContainmentTree getContainmentTree = getRequest(requestResponseObject, GetContainmentTree.class);
+        final GetContainmentTreeResponse getContainmentTreeResponse = messageModelFactory.createGetContainmentTreeResponse();
+        final List<String> handleReferences = getContainmentTree.getHandleRef();
+        final ContainmentTree containmentTree = participantModelFactory.createContainmentTree();
 
         try (ReadTransaction transaction = mdibAccess.startTransaction()) {
+            // Collect entities
             List<MdibEntity> filteredEntities;
             if (handleReferences.isEmpty()) {
                 filteredEntities = transaction.getRootEntities();
             } else {
-                filteredEntities = new ArrayList<>(handleReferences.size());
-                Optional<String> parent = null;
-                for (String handleReference : handleReferences) {
-                    final Optional<MdibEntity> entity = transaction.getEntity(handleReference);
-                    if (entity.isPresent()) {
-                        if (parent == null) {
-                            parent = entity.get().getParent();
-                        } else {
-                            if (!parent.equals(entity.get().getParent())) {
-                                throw new SoapFaultException(faultFactory.createSenderFault(
-                                        "Multiple parent handle references found for " +
-                                                "requested containment tree, which violates biceps:R5030"));
-                            }
-                        }
+                // Only consider first handle as others cannot be answered due to BICEPS XML Schema limitations
+                // (request can contain multiple handles, response can only answer to one of them)
+                // BICEPS does not define how to compute the result, hence all handles except the first one are ignored)
+                filteredEntities = new ArrayList<>();
+                var parentEntity = transaction.getEntity(handleReferences.get(0));
+                if (parentEntity.isPresent()) {
+                    var entity = parentEntity.get();
+                    containmentTree.setChildrenCount(entity.getChildren().size());
+                    containmentTree.setHandleRef(entity.getHandle());
+                    entity.getParent().ifPresent(containmentTree::setParentHandleRef);
+                    containmentTree.setEntryType(jaxbUtil.getQualifiedName(entity.getDescriptor()).orElse(null));
 
-                        filteredEntities.add(entity.get());
-                    }
+                    entity.getChildren().forEach(childHandle ->
+                            transaction.getEntity(childHandle).ifPresent(filteredEntities::add));
                 }
             }
 
+            // Prepare response
             for (MdibEntity entity : filteredEntities) {
-                var entry = new ContainmentTreeEntry();
+                final ContainmentTreeEntry entry = participantModelFactory.createContainmentTreeEntry();
                 entry.setChildrenCount(entity.getChildren().size());
-                entry.setParentHandleRef(entity.getParent().orElse(null));
                 entry.setHandleRef(entity.getHandle());
+                entity.getParent().ifPresent(entry::setParentHandleRef);
                 entry.setType(entity.getDescriptor().getType());
-                entry.setEntryType(jaxbUtil.getQualifiedName(entity.getDescriptor()).orElse(null));
+                entry.setEntryType(getContainmentTreeEntryType(entity));
                 containmentTree.getEntry().add(entry);
             }
 
@@ -333,6 +381,7 @@ public class HighPriorityServices extends WebService {
             setResponse(requestResponseObject, getContainmentTreeResponse, transaction.getMdibVersion(),
                     ActionConstants.getResponseAction(ActionConstants.ACTION_GET_CONTAINMENT_TREE));
         }
+
     }
 
     private <T> T getRequest(RequestResponseObject requestResponseObject, Class<T> bodyType) throws SoapFaultException {
@@ -382,7 +431,7 @@ public class HighPriorityServices extends WebService {
                                                                                                  Function<T, ?> getPayload) throws SoapFaultException {
         T request = getRequest(requestResponseObject, requestClass);
         var dualChannelValues = resolveDualChannelValues(requestResponseObject);
-        var safetyContextValues = resolveSaferyContextValues(requestResponseObject);
+        var safetyContextValues = resolveSafetyContextValues(requestResponseObject);
 
         final InvocationResponse invocationResponse;
         try {
@@ -412,7 +461,7 @@ public class HighPriorityServices extends WebService {
         return values;
     }
 
-    private Map<String, ContextValueType> resolveSaferyContextValues(RequestResponseObject requestResponseObject) {
+    private Map<String, ContextValueType> resolveSafetyContextValues(RequestResponseObject requestResponseObject) {
         var values = new HashMap<String, ContextValueType>();
         for (var object : requestResponseObject.getRequest().getOriginalEnvelope().getHeader().getAny()) {
             if (object instanceof ContextValueType) {
@@ -421,5 +470,15 @@ public class HighPriorityServices extends WebService {
             }
         }
         return values;
+    }
+
+    private QName getContainmentTreeEntryType(MdibEntity entity) throws SoapFaultException {
+        for (Annotation annotation : entity.getDescriptorClass().getAnnotations()) {
+            if (annotation.annotationType() == XmlType.class) {
+                return new QName(((XmlType) annotation).namespace(), ((XmlType) annotation).name());
+            }
+        }
+        throw new SoapFaultException(faultFactory.createReceiverFault(String.format(
+                "Could not resolve entry type the requested descriptor %s. Operation aborted.", entity.getHandle())));
     }
 }

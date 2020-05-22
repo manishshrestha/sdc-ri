@@ -3,7 +3,11 @@ package org.somda.sdc.dpws.soap.wseventing;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.common.util.concurrent.SettableFuture;
-import com.google.inject.*;
+import com.google.inject.AbstractModule;
+import com.google.inject.Inject;
+import com.google.inject.Key;
+import com.google.inject.Provider;
+import com.google.inject.TypeLiteral;
 import com.google.inject.name.Named;
 import com.google.inject.name.Names;
 import org.junit.jupiter.api.BeforeEach;
@@ -17,12 +21,20 @@ import org.somda.sdc.dpws.TransportBindingFactoryMock;
 import org.somda.sdc.dpws.device.helper.RequestResponseServerHttpHandler;
 import org.somda.sdc.dpws.factory.TransportBindingFactory;
 import org.somda.sdc.dpws.guice.NetworkJobThreadPool;
+import org.somda.sdc.dpws.helper.JaxbMarshalling;
+import org.somda.sdc.dpws.http.HttpException;
+import org.somda.sdc.dpws.http.HttpHandler;
 import org.somda.sdc.dpws.http.HttpServerRegistry;
 import org.somda.sdc.dpws.http.HttpUriBuilder;
 import org.somda.sdc.dpws.model.HostedServiceType;
 import org.somda.sdc.dpws.model.ObjectFactory;
 import org.somda.sdc.dpws.network.LocalAddressResolver;
-import org.somda.sdc.dpws.soap.*;
+import org.somda.sdc.dpws.soap.CommunicationContext;
+import org.somda.sdc.dpws.soap.NotificationSink;
+import org.somda.sdc.dpws.soap.RequestResponseClient;
+import org.somda.sdc.dpws.soap.RequestResponseServer;
+import org.somda.sdc.dpws.soap.SoapMarshalling;
+import org.somda.sdc.dpws.soap.SoapUtil;
 import org.somda.sdc.dpws.soap.exception.SoapFaultException;
 import org.somda.sdc.dpws.soap.factory.EnvelopeFactory;
 import org.somda.sdc.dpws.soap.factory.NotificationSinkFactory;
@@ -45,6 +57,8 @@ import org.w3c.dom.Element;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.time.Duration;
 import java.util.Collection;
 import java.util.Collections;
@@ -53,7 +67,9 @@ import java.util.concurrent.TimeUnit;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 
 public class WsEventingReferenceParametersTest extends DpwsTest {
@@ -78,9 +94,11 @@ public class WsEventingReferenceParametersTest extends DpwsTest {
 
         // start required thread pool(s)
         getInjector().getInstance(Key.get(
-                new TypeLiteral<ExecutorWrapperService<ListeningExecutorService>>(){},
+                new TypeLiteral<ExecutorWrapperService<ListeningExecutorService>>() {
+                },
                 NetworkJobThreadPool.class
         )).startAsync().awaitRunning();
+        getInjector().getInstance(JaxbMarshalling.class).startAsync().awaitRunning();
         getInjector().getInstance(SoapMarshalling.class).startAsync().awaitRunning();
 
         WsAddressingUtil wsaUtil = getInjector().getInstance(WsAddressingUtil.class);
@@ -94,9 +112,12 @@ public class WsEventingReferenceParametersTest extends DpwsTest {
         HttpServerRegistry httpSrvRegisty = getInjector().getInstance(HttpServerRegistry.class);
 
         var uri = "http://" + HOST + ":" + PORT;
-        MarshallingService marshallingService = getInjector().getInstance(MarshallingService.class);
-        var hostedServiceUri = httpSrvRegisty.registerContext(uri, HOSTED_SERVICE_PATH, (inStream, outStream, ti) ->
-                marshallingService.handleRequestResponse(reqResSrv, inStream, outStream, ti));
+        var hostedServiceUri = httpSrvRegisty.registerContext(uri, HOSTED_SERVICE_PATH, new HttpHandler() {
+            @Override
+            public void handle(InputStream inStream, OutputStream outStream, CommunicationContext communicationContext) throws HttpException {
+                MarshallingHelper.handleRequestResponse(getInjector(), reqResSrv, inStream, outStream, communicationContext);
+            }
+        });
 
         HostedServiceType hst = dpwsFactory.createHostedServiceType();
         hst.getEndpointReference().add(wsaUtil.createEprWithAddress(hostedServiceUri));
@@ -203,7 +224,7 @@ public class WsEventingReferenceParametersTest extends DpwsTest {
                 SubscriptionManagerFactory subscriptionManagerFactory,
                 HttpUriBuilder httpUriBuilder
         ) {
-            super(maxExpires, subscriptionManagerPath, soapUtil, faultFactory, jaxbUtil, wsaUtil, wseFactory, soapMessageFactory, envelopeFactory, httpServerRegistry, rrServerHttpHandlerProvider, subscriptionRegistry, subscriptionManagerFactory, httpUriBuilder);
+            super(maxExpires, subscriptionManagerPath, soapUtil, faultFactory, jaxbUtil, wsaUtil, wseFactory, soapMessageFactory, envelopeFactory, httpServerRegistry, rrServerHttpHandlerProvider, subscriptionRegistry, subscriptionManagerFactory, httpUriBuilder, "abcd");
             this.soapUtil = soapUtil;
 
             // reset the futures on every instantiation to avoid side effects
@@ -213,7 +234,7 @@ public class WsEventingReferenceParametersTest extends DpwsTest {
         }
 
         @Override
-        @MessageInterceptor(value = WsEventingConstants.WSE_ACTION_SUBSCRIBE, direction = Direction.REQUEST)
+        @MessageInterceptor(value = WsEventingConstants.WSA_ACTION_SUBSCRIBE, direction = Direction.REQUEST)
         void processSubscribe(RequestResponseObject rrObj) throws SoapFaultException {
             super.processSubscribe(rrObj);
 
@@ -243,7 +264,7 @@ public class WsEventingReferenceParametersTest extends DpwsTest {
 
 
         @Override
-        @MessageInterceptor(value = WsEventingConstants.WSE_ACTION_UNSUBSCRIBE, direction = Direction.REQUEST)
+        @MessageInterceptor(value = WsEventingConstants.WSA_ACTION_UNSUBSCRIBE, direction = Direction.REQUEST)
         void processUnsubscribe(RequestResponseObject rrObj) throws SoapFaultException {
             super.processUnsubscribe(rrObj);
 
@@ -253,7 +274,7 @@ public class WsEventingReferenceParametersTest extends DpwsTest {
         }
 
         @Override
-        @MessageInterceptor(value = WsEventingConstants.WSE_ACTION_GET_STATUS, direction = Direction.REQUEST)
+        @MessageInterceptor(value = WsEventingConstants.WSA_ACTION_GET_STATUS, direction = Direction.REQUEST)
         void processGetStatus(RequestResponseObject rrObj) throws SoapFaultException {
             super.processGetStatus(rrObj);
 
@@ -263,7 +284,7 @@ public class WsEventingReferenceParametersTest extends DpwsTest {
         }
 
         @Override
-        @MessageInterceptor(value = WsEventingConstants.WSE_ACTION_RENEW, direction = Direction.REQUEST)
+        @MessageInterceptor(value = WsEventingConstants.WSA_ACTION_RENEW, direction = Direction.REQUEST)
         void processRenew(RequestResponseObject rrObj) throws SoapFaultException {
             super.processRenew(rrObj);
 
@@ -289,4 +310,5 @@ public class WsEventingReferenceParametersTest extends DpwsTest {
             bind(LocalAddressResolver.class).to(LocalAddressResolverMock.class);
         }
     }
+
 }

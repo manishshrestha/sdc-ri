@@ -4,8 +4,8 @@ import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
 import org.apache.http.HttpHeaders;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.somda.sdc.dpws.soap.SoapConstants;
 
 import java.io.ByteArrayOutputStream;
@@ -16,7 +16,7 @@ import java.util.List;
 import java.util.zip.GZIPOutputStream;
 
 public class HttpServerUtil {
-    private static final Logger LOG = LoggerFactory.getLogger(HttpServerUtil.class);
+    private static final Logger LOG = LogManager.getLogger(HttpServerUtil.class);
 
 
     public static HttpServer spawnHttpServer(InetSocketAddress addr, HttpHandler httpHandler) throws IOException {

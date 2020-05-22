@@ -21,7 +21,8 @@ public interface JaxbUtil {
     <T> Optional<T> extractElement(Object element, Class<T> typeClass);
 
     /**
-     * Tries to cast the element to a {@linkplain JAXBElement} object with given QName type and returns it as an {@linkplain Optional}.
+     * Tries to cast the element to a {@linkplain JAXBElement} object with given QName type and returns it as an
+     * {@linkplain Optional}.
      *
      * @param element     the element to inspect.
      * @param elementType the QName type specification.
@@ -70,6 +71,7 @@ public interface JaxbUtil {
      * Resolves the qualified name of an object that is an instantiated JAXB class.
      *
      * @param object the object to examine.
+     * @param <T> JAXB-managed class.
      * @return {@linkplain Optional#empty()} if there is no JAXB annotation attached to the class of the given object or
      * a qualified name based on the JAXB annotation of the class of the given object.
      */
