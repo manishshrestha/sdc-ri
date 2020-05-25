@@ -45,6 +45,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.lessThan;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
@@ -183,7 +184,10 @@ public class WsEventingTest extends DpwsTest {
         var spySink = spy(notificationSink);
         SubscribeResult resInfo = wseSink.subscribe(Collections.singletonList(ACTION),
                 expectedExpires, spySink).get(MAX_WAIT.toSeconds(), TimeUnit.SECONDS);
-        assertThat("Granted expires duration", resInfo.getGrantedExpires(), is(expectedExpires));
+        assertEquals(
+                expectedExpires, resInfo.getGrantedExpires(),
+                "Expected expires not matching actual expires"
+        );
 
         // wait expiration time plus one second to make sure it is expired
         Thread.sleep(1000 + expectedExpires.toMillis());
