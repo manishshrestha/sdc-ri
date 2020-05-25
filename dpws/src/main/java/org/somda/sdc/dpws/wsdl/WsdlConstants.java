@@ -15,7 +15,7 @@ public class WsdlConstants {
     public static final String JAXB_CONTEXT_PACKAGE = "org.somda.sdc.dpws.wsdl.model";
 
     /**
-     * Defines the preferred prefix for the wsdl namespace
+     * Defines the preferred prefix for the wsdl namespace.
      */
     public static final String NAMESPACE_PREFIX = "wsdl";
 
