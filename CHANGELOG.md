@@ -14,6 +14,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `org.somda.sdc.common.CommonConfig` to configure the instance identifier for the logger. (#156)
 - `org.somda.sdc.dpws.wsdl.WsdlMarshalling` to marshal and unmarshal WSDL documents. (#161)
 - `DeviceConfig.WSDL_PROVISIONING_MODE` to allow device-side configuration of different WSDL provisioning modes in accordance with WS-MetadataExchange. (#161)
+- `org.somda.sdc.dpws.http.HttpClient` interface for generic http requests. (#165)
+- `org.somda.sdc.dpws.wsdl.WsdlRetriever` to retrieve WSDLs from services using multiple methods. (#165)
 
 ### Changed
 
