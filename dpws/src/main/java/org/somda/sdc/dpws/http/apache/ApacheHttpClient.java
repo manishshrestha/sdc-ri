@@ -6,6 +6,7 @@ import com.google.inject.name.Named;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpRequestBase;
+import org.apache.http.util.EntityUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.somda.sdc.common.CommonConfig;
@@ -46,6 +47,15 @@ public class ApacheHttpClient implements HttpClient {
             instanceLogger.error("Error while reading response from {}. Message: {}", url, e.getMessage());
             instanceLogger.trace("Error while reading response from {}", url, e);
             throw new TransportException("Error while reading response", e);
+        }
+
+        // finally consume the entire entity
+        try {
+            EntityUtils.consume(response.getEntity());
+        } catch (IOException e) {
+            instanceLogger.error("Error while consuming response entity from {}. Message: {}", url, e.getMessage());
+            instanceLogger.trace("Error while consuming response entity from {}", url, e);
+            throw new TransportException("Error while consuming response entity", e);
         }
 
         return new org.somda.sdc.dpws.http.HttpResponse(statusCode, content);
