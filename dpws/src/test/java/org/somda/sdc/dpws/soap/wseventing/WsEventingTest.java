@@ -33,11 +33,13 @@ import org.somda.sdc.dpws.soap.factory.RequestResponseClientFactory;
 import org.somda.sdc.dpws.soap.wsaddressing.WsAddressingServerInterceptor;
 import org.somda.sdc.dpws.soap.wsaddressing.WsAddressingUtil;
 import org.somda.sdc.dpws.soap.wseventing.factory.WsEventingEventSinkFactory;
+import org.somda.sdc.dpws.soap.wseventing.model.WsEventingStatus;
 
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.time.Duration;
 import java.util.Collections;
+import java.util.concurrent.TimeUnit;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThan;
@@ -45,6 +47,10 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.lessThan;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 /**
  * Round trip test for WS-Eventing (Source+Sink).
@@ -55,9 +61,11 @@ public class WsEventingTest extends DpwsTest {
     private static final String HOSTED_SERVICE_PATH = "/hosted-service";
     private static final String ACTION = "http://action";
     private static final Duration MAX_EXPIRES = Duration.ofHours(3);
+    private static final Duration MAX_WAIT = Duration.ofSeconds(5);
 
     private EventSink wseSink;
     private NotificationSink notificationSink;
+    private EventSource wseSource;
 
     @BeforeEach
     public void setUp() throws Exception {
@@ -77,7 +85,7 @@ public class WsEventingTest extends DpwsTest {
         WsAddressingUtil wsaUtil = getInjector().getInstance(WsAddressingUtil.class);
         ObjectFactory dpwsFactory = getInjector().getInstance(ObjectFactory.class);
         HostedServiceFactory hostedServiceFactory = getInjector().getInstance(HostedServiceFactory.class);
-        EventSource wseSource = getInjector().getInstance(EventSource.class);
+        wseSource = getInjector().getInstance(EventSource.class);
         RequestResponseServer reqResSrv = getInjector().getInstance(RequestResponseServer.class);
         reqResSrv.register(wseSource);
         notificationSink = getInjector().getInstance(NotificationSinkFactory.class).createNotificationSink(
@@ -167,6 +175,25 @@ public class WsEventingTest extends DpwsTest {
         } catch (Exception e) {
             assertTrue(true);
         }
+    }
+
+    @Test
+    void subscriptionEndNoStale() throws Exception {
+        Duration expectedExpires = Duration.ofSeconds(1);
+        var spySink = spy(notificationSink);
+        SubscribeResult resInfo = wseSink.subscribe(Collections.singletonList(ACTION),
+                expectedExpires, spySink).get(MAX_WAIT.toSeconds(), TimeUnit.SECONDS);
+        assertThat("Granted expires duration", resInfo.getGrantedExpires(), is(expectedExpires));
+
+        // wait expiration time plus one second to make sure it is expired
+        Thread.sleep(1000 + expectedExpires.toMillis());
+
+        wseSource.subscriptionEndToAll(WsEventingStatus.STATUS_SOURCE_CANCELLING);
+
+        // we must wait for the message to be sent asynchronously, otherwise we might miss it
+        Thread.sleep(1000);
+
+        verify(spySink, times(0)).receiveNotification(any(), any());
     }
 
     private class DpwsModuleReplacements extends AbstractModule {
