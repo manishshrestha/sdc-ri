@@ -1,7 +1,7 @@
 package org.somda.sdc.dpws.http;
 
 /**
- * A basic http response containing statuscode and body
+ * A basic http response containing status code and body.
  */
 public class HttpResponse {
     private final int statusCode;

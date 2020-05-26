@@ -17,6 +17,9 @@ import org.somda.sdc.dpws.soap.exception.TransportException;
 import java.io.IOException;
 import java.net.SocketException;
 
+/**
+ * HTTP client implementation using a configured apache http client as backend.
+ */
 public class ApacheHttpClient implements HttpClient {
     private static final Logger LOG = LogManager.getLogger();
 
