@@ -71,7 +71,7 @@ public class CommunicationLogHttpRequestInterceptor implements HttpRequestInterc
                 commlogStream.close();
             } catch (IOException e) {
                 // not totally harmful, nothing was inside the body
-                LOG.error("Could not close empty output stream. {}", e.getMessage());
+                LOG.warn("Could not close empty output stream. {}", e.getMessage());
                 LOG.trace("Could not close empty output stream.", e);
             }
             return;
