@@ -35,6 +35,7 @@ import org.somda.sdc.dpws.helper.factory.DpwsHelperFactory;
 import org.somda.sdc.dpws.http.HttpServerRegistry;
 import org.somda.sdc.dpws.http.apache.ApacheTransportBindingFactoryImpl;
 import org.somda.sdc.dpws.http.apache.ClientTransportBindingFactory;
+import org.somda.sdc.dpws.http.factory.HttpClientFactory;
 import org.somda.sdc.dpws.http.jetty.JettyHttpServerRegistry;
 import org.somda.sdc.dpws.http.jetty.factory.JettyHttpServerHandlerFactory;
 import org.somda.sdc.dpws.network.LocalAddressResolver;
@@ -144,6 +145,9 @@ public class DefaultDpwsModule extends AbstractModule {
         bind(DpwsFramework.class).to(DpwsFrameworkImpl.class).in(Singleton.class);
 
         bind(TransportBindingFactory.class)
+                .to(ApacheTransportBindingFactoryImpl.class).asEagerSingleton();
+
+        bind(HttpClientFactory.class)
                 .to(ApacheTransportBindingFactoryImpl.class).asEagerSingleton();
 
 

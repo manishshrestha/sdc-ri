@@ -18,6 +18,7 @@ import org.somda.sdc.dpws.soap.CommunicationContext;
 import org.somda.sdc.dpws.soap.HttpApplicationInfo;
 import org.somda.sdc.dpws.soap.TransportInfo;
 
+import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Collections;
 
@@ -42,14 +43,6 @@ public class CommunicationLogHttpRequestInterceptor implements HttpRequestInterc
         HttpHost target = (HttpHost) context.getAttribute(
                 HttpCoreContext.HTTP_TARGET_HOST);
 
-        if (!(request instanceof HttpEntityEnclosingRequest)) {
-            instanceLogger.warn("Interceptor cannot retrieve request entity for request {}", request.getRequestLine());
-            return;
-        }
-
-        var entityRequest = (HttpEntityEnclosingRequest) request;
-        HttpEntity oldMessageEntity = entityRequest.getEntity();
-
         var requestHttpApplicationInfo = new HttpApplicationInfo(
                 ApacheClientHelper.allHeadersToMultimap(request.getAllHeaders())
         );
@@ -70,6 +63,22 @@ public class CommunicationLogHttpRequestInterceptor implements HttpRequestInterc
                 CommunicationLog.Direction.OUTBOUND,
                 CommunicationLog.TransportType.HTTP,
                 requestCommContext);
+
+        if (!(request instanceof HttpEntityEnclosingRequest)) {
+            // GET doesn't have any entity, but still has headers to save
+            instanceLogger.debug("Request doesn't have a body {}, closing stream", request.getRequestLine());
+            try {
+                commlogStream.close();
+            } catch (IOException e) {
+                // not totally harmful, nothing was inside the body
+                LOG.warn("Could not close empty output stream. {}", e.getMessage());
+                LOG.trace("Could not close empty output stream.", e);
+            }
+            return;
+        }
+
+        var entityRequest = (HttpEntityEnclosingRequest) request;
+        HttpEntity oldMessageEntity = entityRequest.getEntity();
 
         entityRequest.setEntity(new CommunicationLogEntity(oldMessageEntity, commlogStream));
 

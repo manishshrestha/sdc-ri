@@ -31,6 +31,7 @@ import org.somda.sdc.dpws.soap.SoapUtil;
 import org.somda.sdc.dpws.soap.factory.RequestResponseClientFactory;
 import org.somda.sdc.dpws.soap.wsaddressing.WsAddressingUtil;
 import org.somda.sdc.dpws.soap.wsaddressing.model.EndpointReferenceType;
+import org.somda.sdc.dpws.soap.wsaddressing.model.ReferenceParametersType;
 import org.somda.sdc.dpws.soap.wsmetadataexchange.GetMetadataClient;
 import org.somda.sdc.dpws.soap.wsmetadataexchange.model.Metadata;
 import org.somda.sdc.dpws.soap.wsmetadataexchange.model.MetadataSection;
@@ -251,6 +252,15 @@ public class HostingServiceResolverTest extends DpwsTest {
 
         @Override
         public ListenableFuture<SoapMessage> sendTransferGet(RequestResponseClient requestResponseClient, String wsaTo) {
+            try {
+                return Futures.immediateFuture(transferGetMessages.pop());
+            } catch (EmptyStackException e) {
+                throw new RuntimeException("TransferGet message stack empty");
+            }
+        }
+
+        @Override
+        public ListenableFuture<SoapMessage> sendTransferGet(RequestResponseClient requestResponseClient, String wsaTo, ReferenceParametersType referenceParameters) {
             try {
                 return Futures.immediateFuture(transferGetMessages.pop());
             } catch (EmptyStackException e) {

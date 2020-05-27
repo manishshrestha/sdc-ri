@@ -26,6 +26,7 @@ import org.somda.sdc.dpws.client.event.ProbedDeviceFoundMessage;
 import org.somda.sdc.dpws.service.HostingServiceProxy;
 import org.somda.sdc.dpws.soap.exception.TransportException;
 import org.somda.sdc.dpws.soap.interception.InterceptorException;
+import org.somda.sdc.dpws.wsdl.WsdlRetriever;
 import org.somda.sdc.glue.consumer.ConnectConfiguration;
 import org.somda.sdc.glue.consumer.PrerequisitesException;
 import org.somda.sdc.glue.consumer.SdcDiscoveryFilterBuilder;
@@ -34,6 +35,7 @@ import org.somda.sdc.glue.consumer.SdcRemoteDevicesConnector;
 import org.somda.sdc.glue.consumer.SetServiceAccess;
 import org.somda.sdc.glue.consumer.sco.ScoTransaction;
 
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
@@ -296,6 +298,21 @@ public class Consumer {
         } catch (InterruptedException | TimeoutException | ExecutionException e) {
             LOG.error("Couldn't connect to EPR {}", targetEpr, e);
             System.exit(1);
+        }
+
+        // optionally retrieve the wsdl
+        LOG.info("Retrieving device WSDL");
+        var wsdlRetriever = consumer.getInjector().getInstance(WsdlRetriever.class);
+        try {
+            var wsdls = wsdlRetriever.retrieveWsdls(hostingServiceProxy);
+            LOG.debug("Retrieved WSDLs");
+            if (LOG.isDebugEnabled()) {
+                wsdls.forEach((service, data) -> {
+                    LOG.debug("WSDLs for service {}: {}", service, data);
+                });
+            }
+        } catch (IOException e) {
+            LOG.error("Could not retrieve WSDL", e);
         }
 
         LOG.info("Attaching to remote mdib and subscriptions for {}", targetEpr);

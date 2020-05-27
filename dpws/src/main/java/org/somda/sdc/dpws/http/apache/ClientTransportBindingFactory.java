@@ -15,4 +15,11 @@ public interface ClientTransportBindingFactory {
      */
     ClientTransportBinding create(HttpClient client, String clientUri, SoapMarshalling marshalling, SoapUtil soapUtil);
 
+    /**
+     * Instantiates an {@linkplain ApacheHttpClient}.
+     *
+     * @param client to use as backend
+     * @return new client
+     */
+    ApacheHttpClient createHttpClient(HttpClient client);
 }

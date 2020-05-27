@@ -8,6 +8,8 @@ import org.somda.sdc.common.util.ExecutorWrapperService;
 import org.somda.sdc.dpws.soap.RequestResponseClient;
 import org.somda.sdc.dpws.soap.SoapMessage;
 import org.somda.sdc.dpws.soap.SoapUtil;
+import org.somda.sdc.dpws.soap.wsaddressing.WsAddressingConstants;
+import org.somda.sdc.dpws.soap.wsaddressing.model.ReferenceParametersType;
 
 /**
  * Default implementation of {@link TransferGetClient}.
@@ -27,5 +29,18 @@ public class TransferGetClientImpl implements TransferGetClient {
     public ListenableFuture<SoapMessage> sendTransferGet(RequestResponseClient requestResponseClient, String wsaTo) {
         return executorService.get().submit(() -> requestResponseClient.sendRequestResponse(
                 soapUtil.createMessage(WsTransferConstants.WSA_ACTION_GET, wsaTo)));
+    }
+
+    @Override
+    public ListenableFuture<SoapMessage> sendTransferGet(
+            RequestResponseClient requestResponseClient,
+            String wsaTo,
+            ReferenceParametersType referenceParametersType
+    ) {
+        return executorService.get().submit(() -> {
+            var request = soapUtil.createMessage(WsTransferConstants.WSA_ACTION_GET, wsaTo);
+            request.getOriginalEnvelope().getHeader().getAny().add(referenceParametersType);
+            return requestResponseClient.sendRequestResponse(request);
+        });
     }
 }

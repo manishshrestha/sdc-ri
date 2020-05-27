@@ -93,8 +93,8 @@ public class BasicPopulatedDevice extends DevicePeer {
         service2 = getInjector().getInstance(DpwsTestService2.class);
 
         final ClassLoader classLoader = getClass().getClassLoader();
-        InputStream wsdlResource1 = classLoader.getResourceAsStream("it/org/somda/sdc/dpws/TestService1.wsdl");
-        InputStream wsdlResource2 = classLoader.getResourceAsStream("it/org/somda/sdc/dpws/TestService2.wsdl");
+        InputStream wsdlResource1 = classLoader.getResourceAsStream(TestServiceMetadata.SERVICE_ID_1_RESOURCE_PATH);
+        InputStream wsdlResource2 = classLoader.getResourceAsStream(TestServiceMetadata.SERVICE_ID_2_RESOURCE_PATH);
         assert wsdlResource1 != null;
         getDevice().getHostingServiceAccess().addHostedService(hostedServiceFactory.createHostedService(
                 TestServiceMetadata.SERVICE_ID_1,
