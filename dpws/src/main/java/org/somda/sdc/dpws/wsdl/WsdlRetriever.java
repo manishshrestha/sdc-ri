@@ -84,7 +84,7 @@ public class WsdlRetriever {
      * Retrieves all WSDLs of the Provider the client is connected to.
      *
      * @param hostingServiceProxy to retrieve WSDLs from
-     * @return Map with hosted service name as key and all associated WSDLs as values
+     * @return map with hosted service name as key and all associated WSDLs as values
      * @throws IOException        in case WSDLs could not be retrieved
      * @throws TransportException in case a transport related error occurs (connection refused, ...)
      */
@@ -122,7 +122,15 @@ public class WsdlRetriever {
         return wsdlMap;
     }
 
-    List<String> retrieveWsdlFromMetadata(Metadata metadata) throws TransportException, IOException {
+    /**
+     * Retrieves the WSDLs referenced or embedded in the provided metadata.
+     *
+     * @param metadata to extract WSDLs from
+     * @return all WSDLs found within the given metadata
+     * @throws IOException        in case WSDLs could not be retrieved
+     * @throws TransportException in case a transport related error occurs (connection refused, ...)
+     */
+    public List<String> retrieveWsdlFromMetadata(Metadata metadata) throws TransportException, IOException {
         // find metadata section with wsdl
         var wsdlSections = metadata.getMetadataSection()
                 .stream()
