@@ -444,6 +444,7 @@ public class EventSourceInterceptor extends AbstractIdleService implements Event
     }
 
     public Map<String, SubscriptionManager> getActiveSubscriptions() {
+        removeStaleSubscriptions();
         return subscriptionRegistry.getSubscriptions().entrySet()
                 .stream().collect(Collectors.toMap(Map.Entry::getKey, e -> (SubscriptionManager) e.getValue()));
     }

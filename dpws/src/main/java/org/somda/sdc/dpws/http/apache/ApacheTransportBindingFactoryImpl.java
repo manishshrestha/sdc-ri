@@ -24,6 +24,7 @@ import org.somda.sdc.dpws.crypto.CryptoConfig;
 import org.somda.sdc.dpws.crypto.CryptoConfigurator;
 import org.somda.sdc.dpws.crypto.CryptoSettings;
 import org.somda.sdc.dpws.factory.TransportBindingFactory;
+import org.somda.sdc.dpws.http.factory.HttpClientFactory;
 import org.somda.sdc.dpws.soap.SoapMarshalling;
 import org.somda.sdc.dpws.soap.SoapUtil;
 
@@ -34,7 +35,7 @@ import java.net.URI;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 
-public class ApacheTransportBindingFactoryImpl implements TransportBindingFactory {
+public class ApacheTransportBindingFactoryImpl implements TransportBindingFactory, HttpClientFactory {
 
     private static final Logger LOG = LogManager.getLogger(TransportBinding.class);
 
@@ -194,8 +195,13 @@ public class ApacheTransportBindingFactoryImpl implements TransportBindingFactor
                 String.format("Binding with scheme %s is currently not supported", scheme));
     }
 
+    @Override
+    public org.somda.sdc.dpws.http.HttpClient createHttpClient() {
+        return this.clientTransportBindingFactory.createHttpClient(client);
+    }
+
     /**
-     * Access the configured http client.
+     * Access the configured apache http client.
      * <p>
      * Note: <em>Do not</em> use this client for productive purposes, always use the {@linkplain TransportBinding}
      * instead. This is only useful if you want to send intentionally bad messages to a server, which you most likely

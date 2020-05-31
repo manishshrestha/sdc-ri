@@ -6,6 +6,7 @@ import org.somda.sdc.dpws.soap.wsdiscovery.WsDiscoveryConstants;
 import org.somda.sdc.dpws.soap.wseventing.WsEventingConstants;
 import org.somda.sdc.dpws.soap.wsmetadataexchange.WsMetadataExchangeConstants;
 import org.somda.sdc.dpws.soap.wstransfer.WsTransferConstants;
+import org.somda.sdc.dpws.wsdl.WsdlConstants;
 
 import javax.xml.namespace.QName;
 
@@ -121,5 +122,6 @@ public class SoapConstants {
             "{" + WsMetadataExchangeConstants.NAMESPACE_PREFIX + ":" + WsMetadataExchangeConstants.NAMESPACE + "}" +
             "{" + WsTransferConstants.NAMESPACE_PREFIX + ":" + WsTransferConstants.NAMESPACE + "}" +
             "{" + DpwsConstants.NAMESPACE_PREFIX + ":" + DpwsConstants.NAMESPACE + "}" +
+            "{" + WsdlConstants.NAMESPACE_PREFIX + ":" + WsdlConstants.NAMESPACE + "}" +
             "{" + NAMESPACE_PREFIX + ":" + NAMESPACE + "}";
 }
