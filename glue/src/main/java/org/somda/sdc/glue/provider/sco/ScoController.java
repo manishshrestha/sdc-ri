@@ -157,9 +157,12 @@ public class ScoController {
                 }
             }
         } catch (Exception e) {
-            instanceLogger.error("The invocation request could not be forwarded to or processed by the ultimate invocation processor.");
-            instanceLogger.trace("The invocation request could not be forwarded to or processed by the ultimate invocation processor.", e);
-            localizedText.setValue("The invocation request could not be forwarded to or processed by the ultimate invocation processor");
+            instanceLogger.error("The invocation request could not be forwarded to or processed by the ultimate " +
+                    "invocation processor");
+            instanceLogger.trace("The invocation request could not be forwarded to or processed by the ultimate " +
+                    "invocation processor", e);
+            localizedText.setValue("The invocation request could not be forwarded to or processed by the ultimate " +
+                    "invocation processor");
         }
 
         // send error report
@@ -167,7 +170,7 @@ public class ScoController {
                 mdibAccess.getMdibVersion(),
                 InvocationState.FAIL,
                 InvocationError.UNSPEC,
-                Arrays.asList(localizedText));
+                Collections.singletonList(localizedText));
     }
 
     /**
@@ -229,7 +232,9 @@ public class ScoController {
         private final Method callbackMethod;
         private final IncomingSetServiceRequest annotation;
 
-        public ReflectionInfo(OperationInvocationReceiver receiver, Method callbackMethod, IncomingSetServiceRequest annotation) {
+        public ReflectionInfo(OperationInvocationReceiver receiver,
+                              Method callbackMethod,
+                              IncomingSetServiceRequest annotation) {
             this.receiver = receiver;
             this.callbackMethod = callbackMethod;
             this.annotation = annotation;
