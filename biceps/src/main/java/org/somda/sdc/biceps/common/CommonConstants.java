@@ -1,5 +1,7 @@
 package org.somda.sdc.biceps.common;
 
+import javax.xml.namespace.QName;
+
 /**
  * Common BICEPS constants.
  */
@@ -35,5 +37,10 @@ public class CommonConstants {
      * Prefix used for the namespace of the BICEPS Message Model.
      */
     public static final String NAMESPACE_MESSAGE_PREFIX = "msg";
+
+    /**
+     * Designates the qualified name for MustUnderstand attributes attached to BICEPS extensions.
+     */
+    public static final QName QNAME_MUST_UNDERSTAND_ATTRIBUTE = new QName(NAMESPACE_EXTENSION, "MustUnderstand");
 
 }
