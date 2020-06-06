@@ -12,6 +12,7 @@ import org.somda.sdc.common.util.NamespacePrefixMapperConverter;
 import org.somda.sdc.common.util.PrefixNamespaceMappingParser;
 import org.somda.sdc.dpws.DpwsConstants;
 import org.somda.sdc.dpws.FrameworkMetadata;
+import org.somda.sdc.dpws.soap.factory.ContentHandlerProxyFactory;
 import org.somda.sdc.dpws.soap.SoapConfig;
 import org.somda.sdc.dpws.soap.SoapConstants;
 import org.somda.sdc.dpws.soap.model.ObjectFactory;
@@ -21,8 +22,10 @@ import org.somda.sdc.dpws.soap.wseventing.WsEventingConstants;
 import org.somda.sdc.dpws.soap.wsmetadataexchange.WsMetadataExchangeConstants;
 import org.somda.sdc.dpws.soap.wstransfer.WsTransferConstants;
 import org.somda.sdc.dpws.wsdl.WsdlConstants;
+import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
+import javax.annotation.Nullable;
 import javax.xml.XMLConstants;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
@@ -31,6 +34,7 @@ import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParserFactory;
 import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
@@ -58,6 +62,8 @@ public class JaxbMarshalling extends AbstractIdleService {
     private final Boolean metadataComment;
     private final Logger instanceLogger;
     private final String versionString;
+    private final ContentHandlerProxyFactory contentHandlerProxyFactory;
+    private final SAXParserFactory saxParserFactory;
 
     private String contextPackages;
     private JAXBContext jaxbContext;
@@ -69,17 +75,21 @@ public class JaxbMarshalling extends AbstractIdleService {
                     @Named(SoapConfig.JAXB_SCHEMA_PATH) String schemaPath,
                     @Named(SoapConfig.VALIDATE_SOAP_MESSAGES) Boolean validateSoapMessages,
                     @Named(SoapConfig.METADATA_COMMENT) Boolean metadataComment,
+                    @Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier,
                     PrefixNamespaceMappingParser namespaceMappingParser,
                     NamespacePrefixMapperConverter namespacePrefixMapperConverter,
                     ObjectFactory soapFactory,
                     FrameworkMetadata metadata,
-                    @Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier) {
+                    ContentHandlerProxyFactoryHolder contentHandlerProxyFactoryHolder) {
         this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);
         this.contextPackages = contextPackages;
         this.schemaPath = schemaPath;
         this.validateSoapMessages = validateSoapMessages;
         this.metadataComment = metadataComment;
         this.soapFactory = soapFactory;
+        this.contentHandlerProxyFactory = contentHandlerProxyFactoryHolder.contentHandlerProxyFactory;
+        this.saxParserFactory = SAXParserFactory.newInstance();
+        saxParserFactory.setNamespaceAware(true);
 
         // Append internal mappings
         namespaceMappings += SoapConstants.NAMESPACE_PREFIX_MAPPINGS;
@@ -134,7 +144,7 @@ public class JaxbMarshalling extends AbstractIdleService {
     }
 
     /**
-     * Takes an input stream and unmarshals it.
+     * Takes an input stream and unmarshalls it.
      *
      * @param inputStream the input stream to unmarshal.
      * @return the unmarshalled SOAP envelope.
@@ -146,7 +156,20 @@ public class JaxbMarshalling extends AbstractIdleService {
         if (schema != null) {
             unmarshaller.setSchema(schema);
         }
-        return unmarshaller.unmarshal(inputStream);
+
+        if (contentHandlerProxyFactory == null) {
+            return unmarshaller.unmarshal(inputStream);
+        } else {
+            try {
+                var unmarshallerHandler = unmarshaller.getUnmarshallerHandler();
+                var xmlReader = saxParserFactory.newSAXParser().getXMLReader();
+                xmlReader.setContentHandler(contentHandlerProxyFactory.createContentHandlerProxy(unmarshallerHandler));
+                xmlReader.parse(new InputSource(inputStream));
+                return unmarshallerHandler.getResult();
+            } catch (ParserConfigurationException | IOException | SAXException e) {
+                throw new JAXBException(e);
+            }
+        }
     }
 
     private void initializeJaxb() throws SAXException, IOException, ParserConfigurationException {
@@ -222,5 +245,14 @@ public class JaxbMarshalling extends AbstractIdleService {
             var document = builder.parse(inputStream);
             return document.getDocumentElement().getAttribute("targetNamespace");
         }
+    }
+
+    // recommended workaround for non-existing optional injection in ctors
+    // see https://github.com/google/guice/wiki/FrequentlyAskedQuestions
+    //     #how-can-i-inject-optional-parameters-into-a-constructor
+    private static class ContentHandlerProxyFactoryHolder {
+        @Inject(optional = true)
+        @Nullable
+        ContentHandlerProxyFactory contentHandlerProxyFactory = null;
     }
 }
