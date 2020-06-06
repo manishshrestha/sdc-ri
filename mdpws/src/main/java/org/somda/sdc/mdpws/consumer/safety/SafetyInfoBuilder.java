@@ -8,7 +8,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Builder class to conveniently assemble safety info that is intended to be added as {@linkplain org.somda.sdc.dpws.soap.SoapMessage} headers.
+ * Builder class to conveniently assemble safety info that is intended to be added as
+ * {@linkplain org.somda.sdc.dpws.soap.SoapMessage} headers.
  */
 public class SafetyInfoBuilder {
     private final ObjectFactory objectFactory;

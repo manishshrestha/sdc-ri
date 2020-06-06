@@ -8,6 +8,9 @@ import org.somda.sdc.dpws.soap.SoapConfig;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Injectable utility class to create {@linkplain XPathBuilder} with suitable namespace/prefix mappings.
+ */
 public class SafetyXPath {
     private final Map<String, String> namespaceToPrefix;
 
@@ -22,17 +25,14 @@ public class SafetyXPath {
         }
     }
 
+    /**
+     * Creates an {@linkplain XPathBuilder} with namespace/prefix mappings derived from the globally used mapping.
+     * <p>
+     * This ensures the XPath string to contain valid prefixes when be added to a JAXB object.
+     *
+     * @return an {@linkplain XPathBuilder} that is capable of creating XPath strings valid in marshalled JAXB objects.
+     */
     public XPathBuilder createXPathBuilder() {
         return XPathBuilder.create(namespaceToPrefix);
     }
-
-    public SafetyRequirementsBuilder createSafetyRequirementsBuilder() {
-        return SafetyRequirementsBuilder.create();
-    }
-
-//    public JAXBElement<SafetyRequirementsType> createSafetyRequirementsElement(SafetyRequirementsType safetyRequirementsType) {
-//        var element = new JAXBElement<SafetyRequirementsType>();
-//        element.setValue(safetyRequirementsType);
-//        return element;
-//    }
 } 
