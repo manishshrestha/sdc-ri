@@ -2,8 +2,8 @@ package org.somda.sdc.glue.guice;
 
 import org.somda.sdc.dpws.guice.DefaultDpwsConfigModule;
 import org.somda.sdc.dpws.soap.SoapConfig;
-import org.somda.sdc.dpws.soap.SoapConstants;
 import org.somda.sdc.glue.GlueConstants;
+import org.somda.sdc.glue.common.CommonConstants;
 
 public class GlueDpwsConfigModule extends DefaultDpwsConfigModule {
     @Override
@@ -14,5 +14,10 @@ public class GlueDpwsConfigModule extends DefaultDpwsConfigModule {
         bind(SoapConfig.JAXB_SCHEMA_PATH,
                 String.class,
                 GlueConstants.SCHEMA_PATH);
+        bind(SoapConfig.NAMESPACE_MAPPINGS,
+                String.class,
+                org.somda.sdc.glue.common.CommonConstants.NAMESPACE_PREFIX_MAPPINGS_MDPWS +
+                        org.somda.sdc.glue.common.CommonConstants.NAMESPACE_PREFIX_MAPPINGS_BICEPS +
+                        CommonConstants.NAMESPACE_PREFIX_MAPPINGS_GLUE);
     }
 }
