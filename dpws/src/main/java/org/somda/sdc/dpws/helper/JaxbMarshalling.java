@@ -88,7 +88,7 @@ public class JaxbMarshalling extends AbstractIdleService {
                 namespaceMappingParser.parse(namespaceMappings));
 
         var version = metadata.getFrameworkVersion();
-        this.versionString = "<!-- Generated with SDCri " + version + " -->";
+        this.versionString = "<!-- Generated with SDCri " + version + " -->\n";
     }
 
     @Override
