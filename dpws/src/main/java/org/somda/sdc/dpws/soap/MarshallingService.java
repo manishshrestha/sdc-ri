@@ -8,6 +8,7 @@ import org.somda.sdc.dpws.soap.model.Envelope;
 import javax.xml.bind.JAXBException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.Reader;
 
 /**
  * Utility class to marshal/unmarshal SOAP messages.
@@ -48,6 +49,22 @@ public class MarshallingService {
     public SoapMessage unmarshal(InputStream is) throws MarshallingException {
         try {
             Envelope env = soapMarshalling.unmarshal(is);
+            return soapUtil.createMessage(env);
+        } catch (Exception e) {
+            throw new MarshallingException(e);
+        }
+    }
+
+    /**
+     * Unmarshals a SOAP message from a reader.
+     *
+     * @param reader the input stream where to unmarshal from.
+     * @return the unmarshalled object.
+     * @throws MarshallingException if any exception occurs during unmarshalling.
+     */
+    public SoapMessage unmarshal(Reader reader) throws MarshallingException {
+        try {
+            Envelope env = soapMarshalling.unmarshal(reader);
             return soapUtil.createMessage(env);
         } catch (Exception e) {
             throw new MarshallingException(e);

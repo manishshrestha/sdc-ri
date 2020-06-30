@@ -1,7 +1,10 @@
 package org.somda.sdc.dpws.wsdl;
 
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.ListMultimap;
 import com.google.common.util.concurrent.Futures;
 import com.google.inject.AbstractModule;
+import org.apache.http.HttpHeaders;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -9,6 +12,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 import org.somda.sdc.dpws.DpwsTest;
 import org.somda.sdc.dpws.helper.JaxbMarshalling;
+import org.somda.sdc.dpws.http.ContentType;
 import org.somda.sdc.dpws.http.HttpClient;
 import org.somda.sdc.dpws.http.HttpResponse;
 import org.somda.sdc.dpws.http.factory.HttpClientFactory;
@@ -31,6 +35,7 @@ import java.util.concurrent.TimeoutException;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -276,6 +281,87 @@ public class WsdlRetrieverTest extends DpwsTest {
 
         extractWsdl(wsdl);
     }
+
+    @Test
+    public void testConvertResponseToStringHttpHeader() {
+        var testString = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><dang>å</dang>";
+        {
+            var charset = StandardCharsets.UTF_16LE;
+            ListMultimap<String, String> headers = ArrayListMultimap.create();
+            headers.put(HttpHeaders.CONTENT_TYPE.toLowerCase(), "text/xml; charset=" + charset.displayName());
+            var response = new HttpResponse(200, testString.getBytes(charset), headers);
+
+            var result = testClass.convertResponseToString(response);
+            assertEquals(testString, result);
+        }
+        {
+            var charset = StandardCharsets.UTF_8;
+            ListMultimap<String, String> headers = ArrayListMultimap.create();
+            headers.put(HttpHeaders.CONTENT_TYPE.toLowerCase(), "text/xml; charset=" + charset.displayName());
+            var response = new HttpResponse(200, testString.getBytes(charset), headers);
+
+            var result = testClass.convertResponseToString(response);
+            assertEquals(testString, result);
+        }
+        {
+            var charset = StandardCharsets.ISO_8859_1;
+            ListMultimap<String, String> headers = ArrayListMultimap.create();
+            headers.put(HttpHeaders.CONTENT_TYPE.toLowerCase(), "text/xml");
+            var response = new HttpResponse(200, testString.getBytes(charset), headers);
+
+            var result = testClass.convertResponseToString(response);
+            assertEquals(testString, result);
+        }
+    }
+
+
+    @Test
+    public void testConvertResponseToStringProlog() {
+        {
+            var testString = "<?xml version=\"1.0\" encoding=\"UTF-16LE\"?><dang>å</dang>";
+            var charset = StandardCharsets.UTF_16LE;
+            ListMultimap<String, String> headers = ArrayListMultimap.create();
+            headers.put(HttpHeaders.CONTENT_TYPE.toLowerCase(), "application/xml");
+            var response = new HttpResponse(200, testString.getBytes(charset), headers);
+
+            var result = testClass.convertResponseToString(response);
+            assertEquals(testString, result);
+        }
+        {
+            var testString = "<?xml version=\"1.0\" encoding=\"UTF-16BE\"?><dang>å</dang>";
+            var charset = StandardCharsets.UTF_16BE;
+            ListMultimap<String, String> headers = ArrayListMultimap.create();
+            headers.put(HttpHeaders.CONTENT_TYPE.toLowerCase(), "application/xml");
+            var response = new HttpResponse(200, testString.getBytes(charset), headers);
+
+            var result = testClass.convertResponseToString(response);
+            assertEquals(testString, result);
+        }
+        {
+            var testString = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><dang>å</dang>";
+            var charset = StandardCharsets.UTF_8;
+            ListMultimap<String, String> headers = ArrayListMultimap.create();
+            headers.put(HttpHeaders.CONTENT_TYPE.toLowerCase(), "application/xml");
+            var response = new HttpResponse(200, testString.getBytes(charset), headers);
+
+            var result = testClass.convertResponseToString(response);
+            assertEquals(testString, result);
+        }
+        {
+            var testString = "<dang>☂</dang>"; // use character outside of latin-1
+            // default should be utf-8 when using no prolog and content type without specified encoding
+            var contentType = ContentType.ContentTypes.APPLICATION_XML;
+            assertNull(contentType.defaultEncoding);
+            var charset = StandardCharsets.UTF_8;
+            ListMultimap<String, String> headers = ArrayListMultimap.create();
+            headers.put(HttpHeaders.CONTENT_TYPE.toLowerCase(), contentType.contentType);
+            var response = new HttpResponse(200, testString.getBytes(charset), headers);
+
+            var result = testClass.convertResponseToString(response);
+            assertEquals(testString, result);
+        }
+    }
+
 
     /*
      Simple check to ensure wsdl is well formed and contains all necessary namespaces.

@@ -7,9 +7,11 @@ import org.apache.logging.log4j.Logger;
 import org.eclipse.jetty.http.HttpStatus;
 import org.somda.sdc.common.CommonConfig;
 import org.somda.sdc.common.logging.InstanceLogger;
+import org.somda.sdc.dpws.http.ContentType;
 import org.somda.sdc.dpws.http.HttpException;
 import org.somda.sdc.dpws.http.HttpHandler;
 import org.somda.sdc.dpws.soap.CommunicationContext;
+import org.somda.sdc.dpws.soap.HttpApplicationInfo;
 import org.somda.sdc.dpws.soap.MarshallingService;
 import org.somda.sdc.dpws.soap.RequestResponseServer;
 import org.somda.sdc.dpws.soap.SoapDebug;
@@ -24,7 +26,9 @@ import org.somda.sdc.dpws.soap.interception.InterceptorHandler;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.io.Reader;
 
 /**
  * {@linkplain RequestResponseServer} that is invoked on SOAP {@linkplain HttpHandler} callbacks.
@@ -92,8 +96,17 @@ public class RequestResponseServerHttpHandler implements HttpHandler, Intercepto
     public void handle(InputStream inStream, OutputStream outStream, CommunicationContext communicationContext)
             throws HttpException {
         SoapMessage requestMsg;
+        var headers = ((HttpApplicationInfo) communicationContext.getApplicationInfo()).getHeaders();
+        var contentTypeOpt = ContentType.fromListMultimap(headers);
+        if (contentTypeOpt.isEmpty()) {
+            throw new HttpException(HttpStatus.BAD_REQUEST_400,
+                    String.format("Could not parse Content-Type header element")
+            );
+        }
+        var contentType = contentTypeOpt.get();
         try {
-            requestMsg = marshallingService.unmarshal(inStream);
+            Reader reader = new InputStreamReader(inStream, contentType.getCharset());
+            requestMsg = marshallingService.unmarshal(reader);
         } catch (MarshallingException e) {
             throw new HttpException(HttpStatus.BAD_REQUEST_400,
                     String.format("Error unmarshalling HTTP input stream: %s", e.getMessage()));

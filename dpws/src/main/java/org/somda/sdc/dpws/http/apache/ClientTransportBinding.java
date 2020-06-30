@@ -17,6 +17,7 @@ import org.somda.sdc.common.CommonConfig;
 import org.somda.sdc.common.logging.InstanceLogger;
 import org.somda.sdc.dpws.TransportBinding;
 import org.somda.sdc.dpws.TransportBindingException;
+import org.somda.sdc.dpws.http.ContentType;
 import org.somda.sdc.dpws.http.HttpException;
 import org.somda.sdc.dpws.soap.SoapConstants;
 import org.somda.sdc.dpws.soap.SoapMarshalling;
@@ -25,12 +26,15 @@ import org.somda.sdc.dpws.soap.SoapUtil;
 import org.somda.sdc.dpws.soap.exception.MarshallingException;
 import org.somda.sdc.dpws.soap.exception.SoapFaultException;
 import org.somda.sdc.dpws.soap.exception.TransportException;
+import org.somda.sdc.dpws.soap.model.Envelope;
 
 import javax.xml.bind.JAXBException;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
 import java.net.SocketException;
 import java.nio.charset.StandardCharsets;
 
@@ -114,17 +118,34 @@ public class ClientTransportBinding implements TransportBinding {
         HttpEntity entity = response.getEntity();
         byte[] bytes;
 
+        var contentTypeElements = entity.getContentType();
+        var contentType = ContentType.fromApache(contentTypeElements).orElseThrow(() -> {
+            instanceLogger.error("Could not parse content type from element {}", contentTypeElements);
+            return new TransportBindingException("Could not parse content type from element " + contentTypeElements);
+        });
+
         try (InputStream contentStream = entity.getContent()) {
             bytes = ByteStreams.toByteArray(contentStream);
         } catch (IOException e) {
             instanceLogger.error("Couldn't read response", e);
             bytes = new byte[0];
-
         }
 
         try (InputStream inputStream = new ByteArrayInputStream(bytes)) {
             if (inputStream.available() > 0) {
-                SoapMessage msg = soapUtil.createMessage(marshalling.unmarshal(inputStream));
+                Reader reader = null;
+                // wrap up text/xml into a reader
+                if (contentType.getCharset() != null) {
+                    reader = new InputStreamReader(inputStream, contentType.getCharset());
+                }
+                Envelope envelope;
+                if (reader != null) {
+                    envelope = marshalling.unmarshal(reader);
+                } else {
+                    envelope = marshalling.unmarshal(inputStream);
+                }
+
+                SoapMessage msg = soapUtil.createMessage(envelope);
                 if (msg.isFault()) {
                     throw new SoapFaultException(msg, new HttpException(response.getStatusLine().getStatusCode()));
                 }

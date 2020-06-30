@@ -10,6 +10,7 @@ import org.somda.sdc.common.logging.InstanceLogger;
 import org.somda.sdc.dpws.DpwsConfig;
 import org.somda.sdc.dpws.factory.TransportBindingFactory;
 import org.somda.sdc.dpws.http.HttpResponse;
+import org.somda.sdc.dpws.http.ContentType;
 import org.somda.sdc.dpws.http.factory.HttpClientFactory;
 import org.somda.sdc.dpws.service.HostedServiceProxy;
 import org.somda.sdc.dpws.service.HostingServiceProxy;
@@ -25,9 +26,15 @@ import org.somda.sdc.dpws.wsdl.model.TDefinitions;
 
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.nio.charset.UnsupportedCharsetException;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -201,7 +208,37 @@ public class WsdlRetriever {
         if (response.getStatusCode() >= 300) {
             throw new TransportException("Unexpected HTTP status code. Was " + response.getStatusCode());
         }
-        return new String(response.getBody(), StandardCharsets.UTF_8);
+
+        return convertResponseToString(response);
+    }
+
+    String convertResponseToString(HttpResponse response) {
+        Charset charset = null;
+        var contentTypeOpt = ContentType.fromListMultimap(response.getHeader());
+        if (contentTypeOpt.isPresent() && contentTypeOpt.get().getCharset() != null) {
+            charset = contentTypeOpt.get().getCharset();
+        }
+        // find xml declaration if there is one and content-type didn't specify the encoding
+        if (charset == null) {
+            try {
+                XMLStreamReader xmlStreamReader = XMLInputFactory.newInstance().createXMLStreamReader(
+                        new ByteArrayInputStream(response.getBody())
+                );
+                var encoding = xmlStreamReader.getCharacterEncodingScheme();
+                if (encoding != null) {
+                    charset = Charset.forName(encoding);
+                }
+            } catch (XMLStreamException | UnsupportedCharsetException e) {
+                LOG.warn("Could not determine XML encoding scheme");
+                LOG.trace("Could not determine XML encoding scheme", e);
+            }
+        }
+        if (charset == null) {
+            // this seems like a sensible default in a world which apparently does not make any sense
+            charset = StandardCharsets.UTF_8;
+        }
+
+        return new String(response.getBody(), charset);
     }
 
     private List<String> retrieveWsdlFromMetadataReference(EndpointReferenceType reference)

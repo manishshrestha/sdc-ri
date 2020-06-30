@@ -38,6 +38,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.Reader;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 
@@ -148,6 +149,24 @@ public class JaxbMarshalling extends AbstractIdleService {
         }
         return unmarshaller.unmarshal(inputStream);
     }
+
+
+    /**
+     * Takes a reader and unmarshals it.
+     *
+     * @param reader the input stream to unmarshal.
+     * @return the unmarshalled SOAP envelope.
+     * @throws JAXBException if unmarshalling fails.
+     */
+    public Object unmarshal(Reader reader) throws JAXBException {
+        checkRunning();
+        Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
+        if (schema != null) {
+            unmarshaller.setSchema(schema);
+        }
+        return unmarshaller.unmarshal(reader);
+    }
+
 
     private void initializeJaxb() throws SAXException, IOException, ParserConfigurationException {
         if (!contextPackages.isEmpty()) {
