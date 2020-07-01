@@ -105,8 +105,13 @@ public class RequestResponseServerHttpHandler implements HttpHandler, Intercepto
         }
         var contentType = contentTypeOpt.get();
         try {
-            Reader reader = new InputStreamReader(inStream, contentType.getCharset());
-            requestMsg = marshallingService.unmarshal(reader);
+            if (contentType.getCharset() != null) {
+                Reader reader = new InputStreamReader(inStream, contentType.getCharset());
+                requestMsg = marshallingService.unmarshal(reader);
+            } else {
+                // let jaxb figure it out
+                requestMsg = marshallingService.unmarshal(inStream);
+            }
         } catch (MarshallingException e) {
             throw new HttpException(HttpStatus.BAD_REQUEST_400,
                     String.format("Error unmarshalling HTTP input stream: %s", e.getMessage()));
