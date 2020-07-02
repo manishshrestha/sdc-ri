@@ -120,7 +120,7 @@ public class ClientTransportBindingTest extends DpwsTest {
     }
 
     @Test
-    @DisplayName("RequestResponseServerHttpHandler shall handle implicit iso-8859-1 in text/xml")
+    @DisplayName("RequestResponseServerHttpHandler shall handle explicit utf-16be in text/xml")
     void testContentTypeTextXmlExplicitUtf16() throws JAXBException, IOException, SoapFaultException {
         var mockSoapMessage = mock(SoapMessage.class, Mockito.RETURNS_DEEP_STUBS);
         var requestContent = "heya";
@@ -158,7 +158,7 @@ public class ClientTransportBindingTest extends DpwsTest {
 
 
     @Test
-    @DisplayName("RequestResponseServerHttpHandler shall handle implicit iso-8859-1 in text/xml")
+    @DisplayName("RequestResponseServerHttpHandler shall let jaxb handle application/xml without charset")
     void testContentTypeApplicationXml() throws JAXBException, IOException, SoapFaultException {
         var mockSoapMessage = mock(SoapMessage.class, Mockito.RETURNS_DEEP_STUBS);
         var requestContent = "heya";
