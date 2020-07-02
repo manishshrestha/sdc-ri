@@ -61,6 +61,7 @@ public class RequestResponseServerHttpHandlerTest extends DpwsTest {
     }
 
     @Test
+    @DisplayName("RequestResponseServerHttpHandler shall fail without a content-type")
     void testContentTypeMissing() {
         final String expectedString = "The quick brown fox jumps over the lazy dog ý ☂";
 
