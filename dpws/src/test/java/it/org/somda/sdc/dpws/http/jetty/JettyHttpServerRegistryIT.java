@@ -282,7 +282,6 @@ public class JettyHttpServerRegistryIT extends DpwsTest {
         assertEquals(expectedString, resultString.get());
     }
 
-
     private SoapMessage createASoapMessage() {
         return soapMessageFactory.createSoapMessage(envelopeFactory.createEnvelope());
     }

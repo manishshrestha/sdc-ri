@@ -39,6 +39,7 @@ import java.io.Reader;
  */
 public class RequestResponseServerHttpHandler implements HttpHandler, InterceptorHandler {
     private static final Logger LOG = LogManager.getLogger(RequestResponseServerHttpHandler.class);
+    static final String NO_CONTENT_TYPE_MESSAGE = "Could not parse Content-Type header element";
 
     private final RequestResponseServer reqResServer;
     private final MarshallingService marshallingService;
@@ -99,9 +100,7 @@ public class RequestResponseServerHttpHandler implements HttpHandler, Intercepto
         var headers = ((HttpApplicationInfo) communicationContext.getApplicationInfo()).getHeaders();
         var contentTypeOpt = ContentType.fromListMultimap(headers);
         if (contentTypeOpt.isEmpty()) {
-            throw new HttpException(HttpStatus.BAD_REQUEST_400,
-                    String.format("Could not parse Content-Type header element")
-            );
+            throw new HttpException(HttpStatus.BAD_REQUEST_400, NO_CONTENT_TYPE_MESSAGE);
         }
         var contentType = contentTypeOpt.get();
         try {

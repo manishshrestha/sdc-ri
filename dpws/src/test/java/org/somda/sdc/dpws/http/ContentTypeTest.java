@@ -1,11 +1,10 @@
-package org.somda.sdc.dpws.http.apache;
+package org.somda.sdc.dpws.http;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ListMultimap;
 import org.apache.http.HttpHeaders;
 import org.apache.http.message.BasicHeader;
 import org.junit.jupiter.api.Test;
-import org.somda.sdc.dpws.http.ContentType;
 
 import java.nio.charset.StandardCharsets;
 
