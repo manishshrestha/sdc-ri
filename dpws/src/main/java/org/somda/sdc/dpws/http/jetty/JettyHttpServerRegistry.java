@@ -387,8 +387,7 @@ public class JettyHttpServerRegistry extends AbstractIdleService implements Http
         server.setHandler(context);
         this.contextHandlerMap.put(server, context);
 
-        CommunicationLogHandlerWrapper commlogHandler =
-                new CommunicationLogHandlerWrapper(communicationLog, sslContext != null, frameworkIdentifier);
+        CommunicationLogHandlerWrapper commlogHandler = new CommunicationLogHandlerWrapper(communicationLog, frameworkIdentifier);
         commlogHandler.setHandler(server.getHandler());
         server.setHandler(commlogHandler);
 
