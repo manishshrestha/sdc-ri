@@ -62,7 +62,9 @@ public class ServerDispatcher {
             }
             throw new SoapFaultException(soapFaultFactory.createReceiverFault(
                     String.format("Server fault information: %s", e.getCause().getMessage())));
+            // CHECKSTYLE.OFF: IllegalCatch
         } catch (Exception e) {
+            // CHECKSTYLE.ON: IllegalCatch
             instanceLogger.warn("Unexpected exception thrown during dispatcher invocation routine: {}", e.getMessage());
             throw new SoapFaultException(soapFaultFactory.createReceiverFault(
                     String.format("Server fault information: %s", e.getMessage())));

@@ -28,7 +28,7 @@ import java.io.ByteArrayOutputStream;
 class CommunicationLogSoapXmlUtils {
     private static final String EMPTY_XML = "[empty]";
     private static final String ACTION_UNKNOWN = "[unknown]";
-    
+
     /**
      * Short version {@link #moreReadable(String)} applied on {@link #findAction(byte[])}.
      *
@@ -180,7 +180,9 @@ class CommunicationLogSoapXmlUtils {
             transformer.transform(xmlInput, xmlOutput);
 
             return output.toByteArray();
+            // CHECKSTYLE.OFF: IllegalCatch
         } catch (Exception e) {
+            // CHECKSTYLE.ON: IllegalCatch
             return unformattedXml;
         }
     }

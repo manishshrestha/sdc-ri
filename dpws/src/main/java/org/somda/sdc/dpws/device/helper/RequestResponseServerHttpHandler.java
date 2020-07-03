@@ -73,7 +73,9 @@ public class RequestResponseServerHttpHandler implements HttpHandler, Intercepto
 
         try {
             marshallingService.marshal(responseMsg, outStream);
+            // CHECKSTYLE.OFF: IllegalCatch
         } catch (Exception e) {
+            // CHECKSTYLE.ON: IllegalCatch
             throw new RuntimeException(e);
         }
 

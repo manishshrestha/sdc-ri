@@ -371,7 +371,9 @@ public class EventSourceInterceptor extends AbstractIdleService implements Event
             } else {
                 return requestedExpires;
             }
+            // CHECKSTYLE.OFF: IllegalCatch
         } catch (Exception e) {
+            // CHECKSTYLE.ON: IllegalCatch
             throw new SoapFaultException(faultFactory.createInvalidExpirationTime());
         }
     }

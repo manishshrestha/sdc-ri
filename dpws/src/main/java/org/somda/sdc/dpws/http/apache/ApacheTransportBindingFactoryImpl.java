@@ -128,7 +128,9 @@ public class ApacheTransportBindingFactoryImpl implements TransportBindingFactor
             SSLContext sslContext;
             try {
                 sslContext = cryptoConfigurator.createSslContextFromCryptoConfig(cryptoSettings);
+                // CHECKSTYLE.OFF: IllegalCatch
             } catch (Exception e) {
+                // CHECKSTYLE.ON: IllegalCatch
                 instanceLogger.error("Could not read client crypto config, fallback to system properties", e);
                 sslContext = cryptoConfigurator.createSslContextFromSystemProperties();
             }

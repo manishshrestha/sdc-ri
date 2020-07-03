@@ -140,7 +140,9 @@ public class SourceSubscriptionManagerImpl extends AbstractExecutionThreadServic
         networkJobExecutor.get().submit(() -> {
             try {
                 endToSender.sendNotification(endToMessage);
+                // CHECKSTYLE.OFF: IllegalCatch
             } catch (Exception e) {
+                // CHECKSTYLE.ON: IllegalCatch
                 instanceLogger.info("End-to message could not be delivered.", e);
             }
         });
@@ -181,7 +183,9 @@ public class SourceSubscriptionManagerImpl extends AbstractExecutionThreadServic
                 instanceLogger.debug("Sending notification to {} - {}", notifyToUri,
                         queueItem.getNotification().getPayload());
                 notifyToSender.sendNotification(queueItem.getNotification().getPayload());
+                // CHECKSTYLE.OFF: IllegalCatch
             } catch (Exception e) {
+                // CHECKSTYLE.ON: IllegalCatch
                 instanceLogger.info("Source subscription manager '{}' ended unexpectedly", subscriptionId);
                 instanceLogger.trace("Source subscription manager '{}' ended unexpectedly", subscriptionId, e);
                 break;

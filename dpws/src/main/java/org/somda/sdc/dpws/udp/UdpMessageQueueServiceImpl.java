@@ -118,7 +118,9 @@ public class UdpMessageQueueServiceImpl extends AbstractIdleService implements S
                         instanceLogger.info("[{}] Incoming UdpMessageQueueService interrupted", instanceId);
                         instanceLogger.trace("[{}] Incoming UdpMessageQueueService interrupted", instanceId, e);
                         break;
+                        // CHECKSTYLE.OFF: IllegalCatch
                     } catch (Exception e) {
+                        // CHECKSTYLE.ON: IllegalCatch
                         instanceLogger.warn("[{}] Incoming UdpMessageQueueService encountered an error on " +
                                 "event dissemination", instanceId, e);
                     }
