@@ -38,5 +38,6 @@ public interface TransferGetClient {
      * <li>{@link org.somda.sdc.dpws.soap.interception.InterceptorException}
      * </ul>
      */
-    ListenableFuture<SoapMessage> sendTransferGet(RequestResponseClient requestResponseClient, String wsaTo, ReferenceParametersType referenceParameters);
+    ListenableFuture<SoapMessage> sendTransferGet(RequestResponseClient requestResponseClient, String wsaTo,
+                                                  ReferenceParametersType referenceParameters);
 }

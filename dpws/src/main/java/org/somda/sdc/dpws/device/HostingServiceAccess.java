@@ -15,15 +15,20 @@ public interface HostingServiceAccess {
      * <p>
      * According to the DPWS specification, certain information is limited in the number of characters:
      * <ul>
-     * <li>{@link ThisDeviceType#getFriendlyName()} shall have fewer than {@link org.somda.sdc.dpws.DpwsConstants#MAX_FIELD_SIZE} octets
-     * <li>{@link ThisDeviceType#getFirmwareVersion()} shall have fewer than {@link org.somda.sdc.dpws.DpwsConstants#MAX_FIELD_SIZE} octets
-     * <li>{@link ThisDeviceType#getSerialNumber()} ()} shall have fewer than {@link org.somda.sdc.dpws.DpwsConstants#MAX_FIELD_SIZE} octets
+     * <li>{@link ThisDeviceType#getFriendlyName()} shall have fewer than
+     * {@link org.somda.sdc.dpws.DpwsConstants#MAX_FIELD_SIZE} octets
+     * <li>{@link ThisDeviceType#getFirmwareVersion()} shall have fewer than
+     * {@link org.somda.sdc.dpws.DpwsConstants#MAX_FIELD_SIZE} octets
+     * <li>{@link ThisDeviceType#getSerialNumber()} ()} shall have fewer than
+     * {@link org.somda.sdc.dpws.DpwsConstants#MAX_FIELD_SIZE} octets
      * </ul>
      * <p>
-     * <em>Attention: If those limits are exceeded, the underlying implementation may cut off overflowing characters.</em>
+     * <em>Attention: If those limits are exceeded, the underlying implementation may cut off
+     * overflowing characters.</em>
      *
      * @param thisDevice the ThisModel information to set.
-     * @see <a href="http://docs.oasis-open.org/ws-dd/dpws/1.1/os/wsdd-dpws-1.1-spec-os.html#_Toc228672093">4.1 Characteristics</a>
+     * @see <a href="http://docs.oasis-open.org/ws-dd/dpws/1.1/os/wsdd-dpws-1.1-spec-os.html#_Toc228672093"
+     * >4.1 Characteristics</a>
      */
     void setThisDevice(ThisDeviceType thisDevice);
 
@@ -32,17 +37,24 @@ public interface HostingServiceAccess {
      * <p>
      * According to the DPWS specification, certain information is limited in the number of characters:
      * <ul>
-     * <li>{@link ThisModelType#getManufacturer()} ()} shall have fewer than {@link org.somda.sdc.dpws.DpwsConstants#MAX_FIELD_SIZE} octets
-     * <li>{@link ThisModelType#getModelName()} ()} shall have fewer than {@link org.somda.sdc.dpws.DpwsConstants#MAX_FIELD_SIZE} octets
-     * <li>{@link ThisModelType#getModelNumber()} ()} ()} shall have fewer than {@link org.somda.sdc.dpws.DpwsConstants#MAX_FIELD_SIZE} octets
-     * <li>{@link ThisModelType#getManufacturerUrl()} shall have fewer than {@link org.somda.sdc.dpws.DpwsConstants#MAX_URI_SIZE} octets
-     * <li>{@link ThisModelType#getModelUrl()} ()} shall have fewer than {@link org.somda.sdc.dpws.DpwsConstants#MAX_URI_SIZE} octets
+     * <li>{@link ThisModelType#getManufacturer()} ()} shall have fewer than
+     * {@link org.somda.sdc.dpws.DpwsConstants#MAX_FIELD_SIZE} octets
+     * <li>{@link ThisModelType#getModelName()} ()} shall have fewer than
+     * {@link org.somda.sdc.dpws.DpwsConstants#MAX_FIELD_SIZE} octets
+     * <li>{@link ThisModelType#getModelNumber()} ()} ()} shall have fewer than
+     * {@link org.somda.sdc.dpws.DpwsConstants#MAX_FIELD_SIZE} octets
+     * <li>{@link ThisModelType#getManufacturerUrl()} shall have fewer than
+     * {@link org.somda.sdc.dpws.DpwsConstants#MAX_URI_SIZE} octets
+     * <li>{@link ThisModelType#getModelUrl()} ()} shall have fewer than
+     * {@link org.somda.sdc.dpws.DpwsConstants#MAX_URI_SIZE} octets
      * </ul>
      * <p>
-     * <em>Attention: If those limits are exceeded, the underlying implementation may cut off overflowing characters.</em>
+     * <em>Attention: If those limits are exceeded, the underlying implementation may cut off
+     * overflowing characters.</em>
      *
      * @param thisModel the ThisModel information to set.
-     * @see <a href="http://docs.oasis-open.org/ws-dd/dpws/1.1/os/wsdd-dpws-1.1-spec-os.html#_Toc228672093">4.1 Characteristics</a>
+     * @see <a href="http://docs.oasis-open.org/ws-dd/dpws/1.1/os/wsdd-dpws-1.1-spec-os.html#_Toc228672093"
+     * >4.1 Characteristics</a>
      */
     void setThisModel(ThisModelType thisModel);
 

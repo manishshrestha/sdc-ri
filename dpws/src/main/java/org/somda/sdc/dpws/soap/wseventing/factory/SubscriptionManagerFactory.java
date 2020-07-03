@@ -23,9 +23,11 @@ public interface SubscriptionManagerFactory {
      * @param notifyTo               endpoint reference where to send notifications to.
      * @param endTo                  endpoint reference where to send end-to request to or null if none is available.
      * @param subscriptionId         the subscription id for the subscription manager.
+     * @param actions                TODO is this used?
      * @return a new {@link SourceSubscriptionManager} instance.
      */
-    SourceSubscriptionManager createSourceSubscriptionManager(@Assisted("SubscriptionManager") EndpointReferenceType subscriptionManagerEpr,
+    SourceSubscriptionManager createSourceSubscriptionManager(@Assisted("SubscriptionManager")
+                                                                      EndpointReferenceType subscriptionManagerEpr,
                                                               @Assisted Duration expires,
                                                               @Assisted("NotifyTo") EndpointReferenceType notifyTo,
                                                               @Assisted("EndTo") @Nullable EndpointReferenceType endTo,
@@ -37,13 +39,16 @@ public interface SubscriptionManagerFactory {
      * <p>
      * A subscription id is assigned automatically.
      *
-     * @param subscriptionManagerEpr
-     * @param expires
-     * @param notifyTo
-     * @param endTo
+     * @param subscriptionManagerEpr endpoint reference where to receive subscription modification requests (GetStatus,
+     *                               Renew, Unsubscribe).
+     * @param expires                expiration duration.
+     * @param notifyTo               endpoint reference where to receive notifications at.
+     * @param endTo                  endpoint reference where to receive end-to request at.
+     * @param actions                TODO is this used?
      * @return a new {@link SinkSubscriptionManager} instance.
      */
-    SinkSubscriptionManager createSinkSubscriptionManager(@Assisted("SubscriptionManager") EndpointReferenceType subscriptionManagerEpr,
+    SinkSubscriptionManager createSinkSubscriptionManager(@Assisted("SubscriptionManager")
+                                                                  EndpointReferenceType subscriptionManagerEpr,
                                                           @Assisted Duration expires,
                                                           @Assisted("NotifyTo") EndpointReferenceType notifyTo,
                                                           @Assisted("EndTo") EndpointReferenceType endTo,

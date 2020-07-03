@@ -4,7 +4,13 @@ import com.google.inject.Inject;
 import org.somda.sdc.dpws.soap.SoapConstants;
 import org.somda.sdc.dpws.soap.SoapMessage;
 import org.somda.sdc.dpws.soap.SoapUtil;
-import org.somda.sdc.dpws.soap.model.*;
+import org.somda.sdc.dpws.soap.model.Detail;
+import org.somda.sdc.dpws.soap.model.Fault;
+import org.somda.sdc.dpws.soap.model.Faultcode;
+import org.somda.sdc.dpws.soap.model.Faultreason;
+import org.somda.sdc.dpws.soap.model.ObjectFactory;
+import org.somda.sdc.dpws.soap.model.Reasontext;
+import org.somda.sdc.dpws.soap.model.Subcode;
 import org.somda.sdc.dpws.soap.wsaddressing.WsAddressingConstants;
 
 import javax.annotation.Nullable;
@@ -42,7 +48,8 @@ public class SoapFaultFactory {
      * @param detail the fault details.
      * @return a {@link SoapMessage} containing the fault.
      */
-    public SoapMessage createFault(String actionUri, QName code, QName subcode, String reasonText, @Nullable Object detail) {
+    public SoapMessage createFault(String actionUri, QName code, QName subcode, String reasonText,
+                                   @Nullable Object detail) {
         Subcode scObj = new Subcode();
         scObj.setValue(subcode);
 
@@ -106,7 +113,10 @@ public class SoapFaultFactory {
      * @return a {@link SoapMessage} containing the fault.
      */
     public SoapMessage createReceiverFault(String reasonText) {
-        return createFault(WsAddressingConstants.FAULT_ACTION, SoapConstants.RECEIVER, SoapConstants.DEFAULT_SUBCODE, reasonText);
+        return createFault(
+                WsAddressingConstants.FAULT_ACTION, SoapConstants.RECEIVER,
+                SoapConstants.DEFAULT_SUBCODE, reasonText
+        );
     }
 
     /**
@@ -116,6 +126,9 @@ public class SoapFaultFactory {
      * @return a {@link SoapMessage} containing the fault.
      */
     public SoapMessage createSenderFault(String reasonText) {
-        return createFault(WsAddressingConstants.FAULT_ACTION, SoapConstants.SENDER, SoapConstants.DEFAULT_SUBCODE, reasonText);
+        return createFault(
+                WsAddressingConstants.FAULT_ACTION, SoapConstants.SENDER,
+                SoapConstants.DEFAULT_SUBCODE, reasonText
+        );
     }
 }

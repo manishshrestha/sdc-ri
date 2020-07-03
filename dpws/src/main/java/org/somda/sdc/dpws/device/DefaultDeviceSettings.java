@@ -12,6 +12,7 @@ import org.somda.sdc.dpws.soap.wsaddressing.model.EndpointReferenceType;
 
 import java.net.InetAddress;
 import java.net.NetworkInterface;
+import java.net.SocketException;
 import java.util.UUID;
 
 /**
@@ -40,8 +41,8 @@ public class DefaultDeviceSettings implements DeviceSettings {
     public NetworkInterface getNetworkInterface() {
         try {
             return NetworkInterface.getByInetAddress(InetAddress.getLoopbackAddress());
-        } catch (Exception e) {
-            instanceLogger.warn("No default network interface was resolvable:", e.getMessage());
+        } catch (SocketException | NullPointerException e) {
+            instanceLogger.warn("No default network interface was resolvable: {}", e.getMessage());
             throw new RuntimeException(e);
         }
     }

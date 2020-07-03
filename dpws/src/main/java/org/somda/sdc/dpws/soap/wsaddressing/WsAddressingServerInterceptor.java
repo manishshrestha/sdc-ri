@@ -128,15 +128,18 @@ public class WsAddressingServerInterceptor implements Interceptor {
         messageIdCache.add(messageId.get().getValue());
     }
 
-    private Consumer<SoapMessage> resolveLogCallForMissingMessageIds(@Nullable CommunicationContext communicationContext) {
+    private Consumer<SoapMessage> resolveLogCallForMissingMessageIds(
+            @Nullable CommunicationContext communicationContext) {
         var logMsg = "Incoming message {} had no MessageID element in its header";
 
         // Typically missing message IDs are ok as long as the enclosing SOAP messages are conveyed using a
         // connection-agnostic protocol (e.g. TCP)
         Consumer<SoapMessage> logCall = soapMessage -> instanceLogger.debug(logMsg, soapMessage);
         if (communicationContext != null &&
-                communicationContext.getTransportInfo().getScheme().equalsIgnoreCase(DpwsConstants.URI_SCHEME_SOAP_OVER_UDP)) {
-            // In DPWS only UDP SOAP messages are required to enclose message IDs - promote missing message IDs to warn here
+                communicationContext.getTransportInfo().getScheme()
+                        .equalsIgnoreCase(DpwsConstants.URI_SCHEME_SOAP_OVER_UDP)) {
+            // In DPWS only UDP SOAP messages are required to enclose message IDs
+            // - promote missing message IDs to warn here
             logCall = soapMessage -> instanceLogger.warn(logMsg, soapMessage);
         }
 

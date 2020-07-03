@@ -20,6 +20,7 @@ public interface DeviceHelperFactory {
      *                           messages to.
      * @return a configured {@link DiscoveryDeviceUdpMessageProcessor} instance.
      */
-    DiscoveryDeviceUdpMessageProcessor createDiscoveryDeviceUdpMessageProcessor(@Assisted RequestResponseServer rrServer,
-                                                                                @Assisted UdpMessageQueueService udpMsgQueueService);
+    DiscoveryDeviceUdpMessageProcessor createDiscoveryDeviceUdpMessageProcessor(
+            @Assisted RequestResponseServer rrServer,
+            @Assisted UdpMessageQueueService udpMsgQueueService);
 }

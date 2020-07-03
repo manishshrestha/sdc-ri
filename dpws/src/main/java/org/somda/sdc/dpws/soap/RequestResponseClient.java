@@ -21,5 +21,6 @@ public interface RequestResponseClient extends InterceptorHandler {
      * @throws MarshallingException if any exception occurs during marshalling or unmarshalling of SOAP messages.
      * @throws InterceptorException if one of the interceptors pops up with an error.
      */
-    SoapMessage sendRequestResponse(SoapMessage request) throws SoapFaultException, MarshallingException, TransportException, InterceptorException;
+    SoapMessage sendRequestResponse(SoapMessage request) throws SoapFaultException, MarshallingException,
+            TransportException, InterceptorException;
 }

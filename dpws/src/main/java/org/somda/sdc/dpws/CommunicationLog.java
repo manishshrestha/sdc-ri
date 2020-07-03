@@ -33,7 +33,8 @@ public interface CommunicationLog {
      * @param communicationContext communication information such as target address and port.
      * @return an output stream to write the log message into.
      */
-    OutputStream logMessage(Direction direction, TransportType transportType, CommunicationContext communicationContext);
+    OutputStream logMessage(Direction direction, TransportType transportType,
+                            CommunicationContext communicationContext);
 
 
     /**
@@ -45,8 +46,9 @@ public interface CommunicationLog {
      * @param transportType        the transport protocol used i.e. udp, http, etc.
      * @param communicationContext communication information such as target address and port
      * @param message              the message to log as input stream.
-     *                             As the input stream might be unusable after reading, another one is created to be used for
-     *                             further processing; see return value.
+     *                             As the input stream might be unusable after reading,
+     *                             another one is created to be used for further processing;
+     *                             see return value.
      * @return a new input stream that mirrors the data from the message input data.
      */
     InputStream logMessage(Direction direction, TransportType transportType, CommunicationContext communicationContext,

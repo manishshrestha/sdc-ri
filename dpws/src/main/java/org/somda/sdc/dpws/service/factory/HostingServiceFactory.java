@@ -38,6 +38,7 @@ public interface HostingServiceFactory {
      * @param activeXAddr physical address that was used to retrieve the hosting service proxy information.
      * @return a {@link HostingServiceProxy} instance.
      */
+    // CHECKSTYLE.OFF: ParameterNumber
     HostingServiceProxy createHostingServiceProxy(@Assisted("eprAddress") String endpointReferenceAddress,
                                                   @Assisted List<QName> types,
                                                   @Assisted ThisDeviceType thisDevice,
@@ -46,4 +47,5 @@ public interface HostingServiceFactory {
                                                   @Assisted long metadataVersion,
                                                   @Assisted RequestResponseClient requestResponseClient,
                                                   @Assisted("activeXAddr") String activeXAddr);
+    // CHECKSTYLE.ON: ParameterNumber
 }

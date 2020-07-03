@@ -82,10 +82,10 @@ public class JaxbMarshalling extends AbstractIdleService {
         this.soapFactory = soapFactory;
 
         // Append internal mappings
-        namespaceMappings += SoapConstants.NAMESPACE_PREFIX_MAPPINGS;
+        var namespaceMappingsExtended = namespaceMappings + SoapConstants.NAMESPACE_PREFIX_MAPPINGS;
 
         this.namespacePrefixMapper = namespacePrefixMapperConverter.convert(
-                namespaceMappingParser.parse(namespaceMappings));
+                namespaceMappingParser.parse(namespaceMappingsExtended));
 
         var version = metadata.getFrameworkVersion();
         this.versionString = "<!-- Generated with SDCri " + version + " -->\n";
@@ -189,7 +189,8 @@ public class JaxbMarshalling extends AbstractIdleService {
         }
     }
 
-    private Schema generateTopLevelSchema(String schemaPath) throws SAXException, IOException, ParserConfigurationException {
+    private Schema generateTopLevelSchema(String schemaPath) throws SAXException, IOException,
+            ParserConfigurationException {
         final var topLevelSchemaBeginning =
                 "<xsd:schema xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" elementFormDefault=\"qualified\">";
         final var importPattern = "<xsd:import namespace=\"%s\" schemaLocation=\"%s\"/>";
@@ -206,7 +207,8 @@ public class JaxbMarshalling extends AbstractIdleService {
                         org.somda.sdc.dpws.soap.JaxbSoapMarshalling.class.getSimpleName(), path));
             }
             var targetNamespace = resolveTargetNamespace(schemaUrl);
-            instanceLogger.info("Register namespace for validation: {}, read from {}", targetNamespace, schemaUrl.toString());
+            instanceLogger.info("Register namespace for validation: {}, read from {}", targetNamespace,
+                    schemaUrl.toString());
             stringBuilder.append(String.format(importPattern, targetNamespace, schemaUrl.toString()));
         }
         stringBuilder.append(topLevelSchemaEnd);

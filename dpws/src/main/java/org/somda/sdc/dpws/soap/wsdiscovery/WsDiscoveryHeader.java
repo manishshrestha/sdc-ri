@@ -8,7 +8,8 @@ import java.util.Optional;
 /**
  * Convenience class to represent WS-Discovery header information.
  *
- * @see <a href="http://docs.oasis-open.org/ws-dd/discovery/1.1/os/wsdd-discovery-1.1-spec-os.html#_Toc234231847">Application Sequencing</a>
+ * @see <a href="http://docs.oasis-open.org/ws-dd/discovery/1.1/os/wsdd-discovery-1.1-spec-os.html#_Toc234231847"
+ * >Application Sequencing</a>
  */
 public class WsDiscoveryHeader {
     private AppSequenceType appSequence;

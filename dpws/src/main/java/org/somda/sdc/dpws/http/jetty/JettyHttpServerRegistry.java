@@ -230,7 +230,8 @@ public class JettyHttpServerRegistry extends AbstractIdleService implements Http
 
     // TODO: 2.0.0 - return all created URIs, i.e. http and https
     @Override
-    public String registerContext(String schemeAndAuthority, String contextPath, String mediaType, HttpHandler handler) {
+    public String registerContext(String schemeAndAuthority, String contextPath, String mediaType,
+                                  HttpHandler handler) {
         if (!contextPath.startsWith("/")) {
             throw new RuntimeException(String.format("Context path needs to start with a slash, but is %s",
                     contextPath));
@@ -299,7 +300,8 @@ public class JettyHttpServerRegistry extends AbstractIdleService implements Http
                 });
 
                 if (handlerRegistry.isEmpty()) {
-                    instanceLogger.info("No further HTTP handlers active. Shutdown HTTP server at '{}'", schemeAndAuthority);
+                    instanceLogger.info("No further HTTP handlers active. Shutdown HTTP server at '{}'",
+                            schemeAndAuthority);
                     try {
                         httpServer.stop();
                     } catch (Exception e) {
@@ -373,7 +375,8 @@ public class JettyHttpServerRegistry extends AbstractIdleService implements Http
     private Server createHttpServer(URI uri) {
         instanceLogger.info("Setup HTTP server for address '{}'", uri);
         if (!isSupportedScheme(uri)) {
-            throw new RuntimeException(String.format("HTTP server setup failed. Unsupported scheme: %s", uri.getScheme()));
+            throw new RuntimeException(String.format("HTTP server setup failed. Unsupported scheme: %s",
+                    uri.getScheme()));
 
         }
         HttpConfiguration httpConfig = new HttpConfiguration();
@@ -445,7 +448,8 @@ public class JettyHttpServerRegistry extends AbstractIdleService implements Http
                         endp.getLocalAddress().getHostName();
 
                         if (!hostnameVerifier.verify(sslEndp.getLocalAddress().getHostName(), session)) {
-                            instanceLogger.debug("HostnameVerifier has filtered request, marking request as handled and aborting request");
+                            instanceLogger.debug("HostnameVerifier has filtered request, marking request as " +
+                                    "handled and aborting request");
                             request.setHandled(true);
                             request.getHttpChannel().abort(new Exception("HostnameVerifier has rejected request"));
                         }

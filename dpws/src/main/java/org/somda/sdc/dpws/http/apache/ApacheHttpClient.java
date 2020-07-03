@@ -41,7 +41,8 @@ public class ApacheHttpClient implements HttpClient {
         return parseResponse(response, url);
     }
 
-    private org.somda.sdc.dpws.http.HttpResponse parseResponse(HttpResponse response, String url) throws TransportException {
+    private org.somda.sdc.dpws.http.HttpResponse parseResponse(HttpResponse response, String url)
+            throws TransportException {
         var statusCode = response.getStatusLine().getStatusCode();
         byte[] content;
         try {
@@ -64,12 +65,14 @@ public class ApacheHttpClient implements HttpClient {
         return new org.somda.sdc.dpws.http.HttpResponse(statusCode, content);
     }
 
-    private HttpResponse executeRequest(org.apache.http.client.HttpClient client, HttpRequestBase request, String endpoint)
+    private HttpResponse executeRequest(org.apache.http.client.HttpClient client, HttpRequestBase request,
+                                        String endpoint)
             throws TransportException {
         try {
             return client.execute(request);
         } catch (SocketException e) {
-            instanceLogger.error("Unexpected SocketException on request to {}. Message: {}", endpoint, e.getMessage());
+            instanceLogger.error("Unexpected SocketException on request to {}. Message: {}", endpoint,
+                    e.getMessage());
             instanceLogger.trace("Unexpected SocketException on request to {}", endpoint, e);
             throw new TransportException("Unexpected SocketException on request", e);
         } catch (IOException e) {

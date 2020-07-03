@@ -35,10 +35,11 @@ import java.net.SocketException;
 import java.nio.charset.StandardCharsets;
 
 public class ClientTransportBinding implements TransportBinding {
-    private static final Logger LOG = LogManager.getLogger(ClientTransportBinding.class);
 
     public static final String USER_AGENT_KEY = "X-User-Agent";
     public static final String USER_AGENT_VALUE = "SDCri";
+
+    private static final Logger LOG = LogManager.getLogger(ClientTransportBinding.class);
 
     private final SoapMarshalling marshalling;
     private final SoapUtil soapUtil;

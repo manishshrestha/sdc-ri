@@ -57,11 +57,13 @@ public class SourceSubscriptionManagerImpl extends AbstractExecutionThreadServic
                                   @Assisted("EndTo") @Nullable EndpointReferenceType endTo,
                                   @Assisted("SubscriptionId") String subscriptionId,
                                   @Assisted("Actions") Collection<String> actions,
-                                  @Named(WsEventingConfig.NOTIFICATION_QUEUE_CAPACITY) Integer notificationQueueCapacity,
+                                  @Named(WsEventingConfig.NOTIFICATION_QUEUE_CAPACITY)
+                                          Integer notificationQueueCapacity,
                                   NotificationSourceFactory notificationSourceFactory,
                                   TransportBindingFactory transportBindingFactory,
                                   WsAddressingUtil wsaUtil,
-                                  @NetworkJobThreadPool ExecutorWrapperService<ListeningExecutorService> networkJobExecutor,
+                                  @NetworkJobThreadPool ExecutorWrapperService<ListeningExecutorService>
+                                          networkJobExecutor,
                                   @Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier) {
         this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);
         this.notificationSourceFactory = notificationSourceFactory;
@@ -69,7 +71,8 @@ public class SourceSubscriptionManagerImpl extends AbstractExecutionThreadServic
         this.wsaUtil = wsaUtil;
         this.networkJobExecutor = networkJobExecutor;
         this.subscriptionId = UUID.randomUUID().toString();
-        this.delegate = new SubscriptionManagerBase(notifyTo, endTo, subscriptionId, expires, subscriptionManagerEpr, actions);
+        this.delegate = new SubscriptionManagerBase(
+                notifyTo, endTo, subscriptionId, expires, subscriptionManagerEpr, actions);
         this.notificationQueue = new ArrayBlockingQueue<>(notificationQueueCapacity);
 
         this.notifyToSender = null;
@@ -171,10 +174,12 @@ public class SourceSubscriptionManagerImpl extends AbstractExecutionThreadServic
             try {
                 final QueueItem queueItem = notificationQueue.take();
                 if (queueItem instanceof QueueShutDownItem) {
-                    instanceLogger.info("Source subscription manager '{}' received stop signal and is about to shut down", subscriptionId);
+                    instanceLogger.info("Source subscription manager '{}' received stop signal and is about " +
+                            "to shut down", subscriptionId);
                     break;
                 }
-                instanceLogger.debug("Sending notification to {} - {}", notifyToUri, queueItem.getNotification().getPayload());
+                instanceLogger.debug("Sending notification to {} - {}", notifyToUri,
+                        queueItem.getNotification().getPayload());
                 notifyToSender.sendNotification(queueItem.getNotification().getPayload());
             } catch (Exception e) {
                 instanceLogger.info("Source subscription manager '{}' ended unexpectedly", subscriptionId);
@@ -197,7 +202,7 @@ public class SourceSubscriptionManagerImpl extends AbstractExecutionThreadServic
     }
 
     private static class QueueItem {
-        public Notification notification;
+        private Notification notification;
 
         QueueItem(@Nullable Notification notification) {
             this.notification = notification;

@@ -61,8 +61,8 @@ public interface HttpServerRegistry extends Service {
     /**
      * Removes a handler for the given scheme, authority and context path.
      * <p>
-     * {@link HttpHandler#process(InputStream, OutputStream, org.somda.sdc.dpws.soap.CommunicationContext)} will not be called for
-     * any request destined to the corresponding handler.
+     * {@link HttpHandler#process(InputStream, OutputStream, org.somda.sdc.dpws.soap.CommunicationContext)}
+     * will not be called for any request destined to the corresponding handler.
      * Requests to the corresponding are answered with an HTTP 404.
      *
      * @param schemeAndAuthority scheme and authority where the context shall be removed.
