@@ -26,6 +26,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Change names in `org.somda.sdc.dpws.soap.wseventing.WsEventingConstants` from `WSE_ACTION[...]` to `WSA_ACTION[...]`. (#157)
 - `org.somda.sdc.common.util.ExecutorWrapperService` are bound as guice `Provider`. (#156)
 - `org.somda.sdc.glue.consumer.helper.LogPrepender` replaced by `HostingServiceLogger`. (#156)
+- Evaluate HTTP Content-Type header element to determine the appropriate charset for received messages. (#170)
 
 ### Removed
 
