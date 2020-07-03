@@ -133,13 +133,13 @@ public class ClientTransportBinding implements TransportBinding {
 
         try (InputStream inputStream = new ByteArrayInputStream(bytes)) {
             if (inputStream.available() > 0) {
-                // wrap up text/xml into a reader
                 Envelope envelope;
+                // wrap up content with a known or forced charset into a reader
                 if (contentType.getCharset() != null) {
                     Reader reader = new InputStreamReader(inputStream, contentType.getCharset());
                     envelope = marshalling.unmarshal(reader);
                 } else {
-                    // let jaxb figure it out
+                    // let jaxb figure it out otherwise
                     envelope = marshalling.unmarshal(inputStream);
                 }
 

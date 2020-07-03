@@ -104,11 +104,12 @@ public class RequestResponseServerHttpHandler implements HttpHandler, Intercepto
         }
         var contentType = contentTypeOpt.get();
         try {
+            // wrap up content with a known or forced charset into a reader
             if (contentType.getCharset() != null) {
                 Reader reader = new InputStreamReader(inStream, contentType.getCharset());
                 requestMsg = marshallingService.unmarshal(reader);
             } else {
-                // let jaxb figure it out
+                // let jaxb figure it out otherwise
                 requestMsg = marshallingService.unmarshal(inStream);
             }
         } catch (MarshallingException e) {

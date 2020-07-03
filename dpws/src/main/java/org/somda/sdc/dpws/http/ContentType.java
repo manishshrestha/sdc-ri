@@ -77,6 +77,7 @@ public class ContentType {
         Charset charset = null;
         String boundary = null;
         if (elements.length > 1) {
+            // skip the first element, it's the media-type again
             for (int i = 1; i < elements.length; i++) {
                 var element = elements[i];
                 var parts = element.strip().split("=");
