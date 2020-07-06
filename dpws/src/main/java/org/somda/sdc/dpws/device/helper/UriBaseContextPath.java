@@ -40,8 +40,8 @@ public class UriBaseContextPath {
                 return parsedUri.getPath().substring(1); // skip preceding slash
             case URN_UUID:
             case URN_OID:
-                return parsedUri.getSchemeSpecificPart().substring(supportedUriScheme.get().getSpecificPart()
-                        .length() + 1);
+                return parsedUri.getSchemeSpecificPart()
+                        .substring(supportedUriScheme.get().getSpecificPart().length() + 1);
             default:
                 return "";
         }

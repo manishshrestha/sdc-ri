@@ -290,7 +290,6 @@ public class WsDiscoveryClientInterceptor implements WsDiscoveryClient {
                     if (!condition.await(wait, TimeUnit.MILLISECONDS)) {
                         break;
                     }
-                    ;
 
                     msg = popMatches(messageQueue, wsaRelatesTo);
                     wait -= System.currentTimeMillis() - tStartInMillis;

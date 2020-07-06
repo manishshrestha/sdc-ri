@@ -23,7 +23,7 @@ public interface SubscriptionManagerFactory {
      * @param notifyTo               endpoint reference where to send notifications to.
      * @param endTo                  endpoint reference where to send end-to request to or null if none is available.
      * @param subscriptionId         the subscription id for the subscription manager.
-     * @param actions                TODO is this used?
+     * @param actions                actions handled by the subscription manager
      * @return a new {@link SourceSubscriptionManager} instance.
      */
     SourceSubscriptionManager createSourceSubscriptionManager(@Assisted("SubscriptionManager")
@@ -44,7 +44,7 @@ public interface SubscriptionManagerFactory {
      * @param expires                expiration duration.
      * @param notifyTo               endpoint reference where to receive notifications at.
      * @param endTo                  endpoint reference where to receive end-to request at.
-     * @param actions                TODO is this used?
+     * @param actions                actions handled by the subscription manager
      * @return a new {@link SinkSubscriptionManager} instance.
      */
     SinkSubscriptionManager createSinkSubscriptionManager(@Assisted("SubscriptionManager")

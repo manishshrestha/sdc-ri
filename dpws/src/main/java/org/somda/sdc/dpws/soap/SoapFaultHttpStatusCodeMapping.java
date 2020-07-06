@@ -30,8 +30,7 @@ public class SoapFaultHttpStatusCodeMapping {
         if (fault.getCode().getValue().equals(SoapConstants.SENDER)) {
             return HttpStatus.BAD_REQUEST_400;
         }
-
-        return HttpStatus.INTERNAL_SERVER_ERROR_500; // Return 500 by default (Receiver, MusUnderstand,
-        // VersionMismatch, DataEncodingUnknown and others)
+        // Return 500 by default (Receiver, MustUnderstand, VersionMismatch, DataEncodingUnknown and others)
+        return HttpStatus.INTERNAL_SERVER_ERROR_500;
     }
 }
