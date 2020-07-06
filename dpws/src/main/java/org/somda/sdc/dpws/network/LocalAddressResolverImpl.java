@@ -28,7 +28,9 @@ public class LocalAddressResolverImpl implements LocalAddressResolver {
         var parsedUri = URI.create(remoteUri);
         try (Socket socket = new Socket(parsedUri.getHost(), parsedUri.getPort())) {
             return Optional.of(socket.getLocalAddress().getHostAddress());
+            // CHECKSTYLE.OFF: IllegalCatch
         } catch (Exception e) {
+            // CHECKSTYLE.ON: IllegalCatch
             instanceLogger.info("Could not access remote URI {} and resolve local address. Reason: {}", remoteUri,
                     e.getMessage());
             return Optional.empty();

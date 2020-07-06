@@ -51,7 +51,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.CancellationException;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 /**
  * Helper class to resolve hosting service and hosted service information from {@link DiscoveredDevice} objects.
@@ -137,7 +140,7 @@ public class HostingServiceResolver {
                     transferGetResponse = transferGetClient.sendTransferGet(rrClient, xAddr)
                             .get(maxWaitForFutures.toMillis(), TimeUnit.MILLISECONDS);
                     break;
-                } catch (Exception e) {
+                } catch (InterruptedException | ExecutionException | TimeoutException | CancellationException e) {
                     instanceLogger.debug("TransferGet to {} failed", xAddr, e);
                 }
             }
@@ -186,7 +189,9 @@ public class HostingServiceResolver {
                 try {
                     thisDevice = jaxbUtil.extractElement(metadataSection.getAny(), ThisDeviceType.class);
                     continue;
+                    // CHECKSTYLE.OFF: IllegalCatch
                 } catch (Exception e) {
+                    // CHECKSTYLE.ON: IllegalCatch
                     instanceLogger.info("Resolve dpws:ThisDevice from {} failed", eprAddress);
                     continue;
                 }
@@ -196,7 +201,9 @@ public class HostingServiceResolver {
                 try {
                     thisModel = jaxbUtil.extractElement(metadataSection.getAny(), ThisModelType.class);
                     continue;
+                    // CHECKSTYLE.OFF: IllegalCatch
                 } catch (Exception e) {
+                    // CHECKSTYLE.ON: IllegalCatch
                     instanceLogger.info("Resolve dpws:ThisModel from {} failed", eprAddress);
                     continue;
                 }
@@ -214,7 +221,9 @@ public class HostingServiceResolver {
                     }
 
                     relationshipData = extractRelationshipData(rs, eprAddress);
+                    // CHECKSTYLE.OFF: IllegalCatch
                 } catch (Exception e) {
+                    // CHECKSTYLE.ON: IllegalCatch
                     instanceLogger.info("Resolve dpws:Relationship from {} failed", eprAddress);
                 }
             }
@@ -284,7 +293,7 @@ public class HostingServiceResolver {
                 getMetadataResponse = getMetadataClient.sendGetMetadata(rrClient)
                         .get(maxWaitForFutures.toMillis(), TimeUnit.MILLISECONDS);
                 break;
-            } catch (Exception e) {
+            } catch (InterruptedException | ExecutionException | TimeoutException | CancellationException e) {
                 instanceLogger.debug("GetMetadata to {} failed", eprType.getAddress().getValue(), e);
             }
         }

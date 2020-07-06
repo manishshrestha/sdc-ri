@@ -29,9 +29,10 @@ import java.util.List;
  * {@linkplain AbstractHandler} implementation based on Jetty HTTP servers.
  */
 public class JettyHttpServerHandler extends AbstractHandler {
-    private static final Logger LOG = LogManager.getLogger(JettyHttpServerHandler.class);
     public static final String SERVER_HEADER_KEY = "X-Server";
     public static final String SERVER_HEADER_VALUE = "SDCri";
+
+    private static final Logger LOG = LogManager.getLogger(JettyHttpServerHandler.class);
 
     private final String mediaType;
     private final HttpHandler handler;

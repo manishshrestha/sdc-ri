@@ -159,7 +159,9 @@ public class JettyHttpServerRegistry extends AbstractIdleService implements Http
                             (handlerUri, handler) -> {
                                 try {
                                     handler.stop();
+                                    // CHECKSTYLE.OFF: IllegalCatch
                                 } catch (Exception e) {
+                                    // CHECKSTYLE.ON: IllegalCatch
                                     instanceLogger.warn("HTTP handler could not be stopped properly", e);
                                 }
                             }
@@ -169,14 +171,17 @@ public class JettyHttpServerRegistry extends AbstractIdleService implements Http
                     contextWrapperRegistry.forEach((contextPath, wrapper) -> {
                                 try {
                                     wrapper.stop();
+                                    // CHECKSTYLE.OFF: IllegalCatch
                                 } catch (Exception e) {
+                                    // CHECKSTYLE.ON: IllegalCatch
                                     instanceLogger.warn("HTTP handler wrapper could not be stopped properly", e);
                                 }
                             }
                     );
                     contextWrapperRegistry.clear();
-
+                    // CHECKSTYLE.OFF: IllegalCatch
                 } catch (Exception e) {
+                    // CHECKSTYLE.ON: IllegalCatch
                     instanceLogger.warn("HTTP server could not be stopped properly", e);
                 }
             });
@@ -266,7 +271,9 @@ public class JettyHttpServerRegistry extends AbstractIdleService implements Http
             // use requested scheme for response
             var contextUri = replaceScheme(mapKeyUri, URI.create(schemeAndAuthority).getScheme());
             return contextUri.toString();
+            // CHECKSTYLE.OFF: IllegalCatch
         } catch (Exception e) {
+            // CHECKSTYLE.ON: IllegalCatch
             instanceLogger.error("Registering context {} failed.", contextPath, e);
             throw new RuntimeException(e);
         } finally {
@@ -304,8 +311,10 @@ public class JettyHttpServerRegistry extends AbstractIdleService implements Http
                             schemeAndAuthority);
                     try {
                         httpServer.stop();
+                        // CHECKSTYLE.OFF: IllegalCatch
                     } catch (Exception e) {
-                        e.printStackTrace();
+                        // CHECKSTYLE.ON: IllegalCatch
+                        instanceLogger.error("Could not stop HTTP server", e);
                     }
                     serverRegistry.remove(serverRegistryKey);
                 }
@@ -357,7 +366,9 @@ public class JettyHttpServerRegistry extends AbstractIdleService implements Http
         Server httpServer = createHttpServer(URI.create(uri));
         try {
             httpServer.start();
+            // CHECKSTYLE.OFF: IllegalCatch
         } catch (Exception e) {
+            // CHECKSTYLE.ON: IllegalCatch
             throw new RuntimeException(e);
         }
 

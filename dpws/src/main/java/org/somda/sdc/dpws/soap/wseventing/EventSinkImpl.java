@@ -320,7 +320,9 @@ public class EventSinkImpl implements EventSink {
             // as closing allows the server do dispatch the next request, which will cause concurrency problems
             // for the ultimate receiver of the notifications
             outputStream.close();
+            // CHECKSTYLE.OFF: IllegalCatch
         } catch (Exception e) {
+            // CHECKSTYLE.ON: IllegalCatch
             throw new HttpException(HttpStatus.INTERNAL_SERVER_ERROR_500, e.getMessage());
         }
     }

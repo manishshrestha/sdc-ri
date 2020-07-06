@@ -49,7 +49,9 @@ public class MarshallingService {
         try {
             Envelope env = soapMarshalling.unmarshal(is);
             return soapUtil.createMessage(env);
+            // CHECKSTYLE.OFF: IllegalCatch
         } catch (Exception e) {
+            // CHECKSTYLE.ON: IllegalCatch
             throw new MarshallingException(e);
         }
     }

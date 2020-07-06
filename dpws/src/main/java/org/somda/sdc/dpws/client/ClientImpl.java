@@ -51,7 +51,10 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.CancellationException;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 /**
  * Default implementation of {@linkplain Client}.
@@ -213,7 +216,7 @@ public class ClientImpl extends AbstractIdleService implements Client, Service, 
 
                 try {
                     hspFuture.set(connect(discoveredDevice).get(maxWaitForFutures.toMillis(), TimeUnit.MILLISECONDS));
-                } catch (Exception e) {
+                } catch (InterruptedException | ExecutionException | TimeoutException | CancellationException e) {
                     instanceLogger.debug("Connecting to {} failed", eprAddress, e);
                     throw new RuntimeException(String.format("Connect of %s failed", eprAddress));
                 }
