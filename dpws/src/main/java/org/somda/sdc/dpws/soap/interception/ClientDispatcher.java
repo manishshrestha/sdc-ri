@@ -3,9 +3,6 @@ package org.somda.sdc.dpws.soap.interception;
 import com.google.inject.Inject;
 import org.somda.sdc.dpws.soap.SoapMessage;
 import org.somda.sdc.dpws.soap.wsaddressing.model.AttributedURIType;
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
-
 import java.util.Optional;
 
 /**

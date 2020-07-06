@@ -143,6 +143,8 @@ class CommunicationLogSoapXmlUtils {
                 return "WsdHello";
             case WsDiscoveryConstants.WSA_ACTION_BYE:
                 return "WsdBye";
+            default:
+                break;
         }
 
         var indexLastSlash = action.lastIndexOf('/');

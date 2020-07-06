@@ -11,17 +11,20 @@ import java.io.OutputStream;
 public class CommunicationLogDummyImpl implements CommunicationLog {
     
     @Override
-    public OutputStream logMessage(Direction direction, TransportType transportType, CommunicationContext communicationContext, OutputStream message) {
+    public OutputStream logMessage(Direction direction, TransportType transportType,
+                                   CommunicationContext communicationContext, OutputStream message) {
         return message;
     }
 
     @Override
-    public OutputStream logMessage(Direction direction, TransportType transportType, CommunicationContext communicationContext) {
+    public OutputStream logMessage(Direction direction, TransportType transportType,
+                                   CommunicationContext communicationContext) {
         return OutputStream.nullOutputStream();
     }
 
     @Override
-    public InputStream logMessage(Direction direction, TransportType transportType, CommunicationContext communicationContext, InputStream message) {
+    public InputStream logMessage(Direction direction, TransportType transportType,
+                                  CommunicationContext communicationContext, InputStream message) {
         return message;
     }
 }

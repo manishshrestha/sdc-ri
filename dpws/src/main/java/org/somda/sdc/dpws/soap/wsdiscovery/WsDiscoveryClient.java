@@ -17,15 +17,24 @@ import java.util.List;
 /**
  * Ws-Discovery Client interface.
  *
- * @see <a href="http://docs.oasis-open.org/ws-dd/discovery/1.1/os/wsdd-discovery-1.1-spec-os.html#_Toc234231815">Conceptual Message Content</a>
+ * @see <a href="http://docs.oasis-open.org/ws-dd/discovery/1.1/os/wsdd-discovery-1.1-spec-os.html#_Toc234231815"
+ * >Conceptual Message Content</a>
  */
 public interface WsDiscoveryClient extends Interceptor {
     ListenableFuture<Integer> sendProbe(String probeId, Collection<QName> types, Collection<String> scopes)
             throws MarshallingException, TransportException, InterceptorException;
-    ListenableFuture<Integer> sendProbe(String probeId, Collection<QName> types, Collection<String> scopes, Integer maxResults)
+
+    ListenableFuture<Integer> sendProbe(String probeId, Collection<QName> types,
+                                        Collection<String> scopes, Integer maxResults)
             throws MarshallingException, TransportException, InterceptorException;
-    ListenableFuture<ProbeMatchesType> sendDirectedProbe(RequestResponseClient rrClient, List<QName> types, List<String> scopes);
-    ListenableFuture<ResolveMatchesType> sendResolve(EndpointReferenceType epr) throws MarshallingException, TransportException, InterceptorException;
+
+    ListenableFuture<ProbeMatchesType> sendDirectedProbe(RequestResponseClient rrClient, List<QName> types,
+                                                         List<String> scopes);
+
+    ListenableFuture<ResolveMatchesType> sendResolve(EndpointReferenceType epr)
+            throws MarshallingException, TransportException, InterceptorException;
+
     void registerHelloByeAndProbeMatchesObserver(HelloByeAndProbeMatchesObserver observer);
+
     void unregisterHelloByeAndProbeMatchesObserver(HelloByeAndProbeMatchesObserver observer);
 }

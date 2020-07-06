@@ -13,7 +13,8 @@ import javax.xml.namespace.QName;
 /**
  * SOAP 1.2 constants.
  *
- * @see <a href="https://www.w3.org/TR/2007/REC-soap12-part1-20070427/">SOAP Version 1.2 Part 1: Messaging Framework (Second Edition)</a>
+ * @see <a href="https://www.w3.org/TR/2007/REC-soap12-part1-20070427/"
+ * >SOAP Version 1.2 Part 1: Messaging Framework (Second Edition)</a>
  */
 public class SoapConstants {
     /**
@@ -34,7 +35,7 @@ public class SoapConstants {
     public static final String NAMESPACE = "http://www.w3.org/2003/05/soap-envelope";
 
     /**
-     * Defines the preferred prefix for the SOAP 1.2 namespace
+     * Defines the preferred prefix for the SOAP 1.2 namespace.
      */
     public static final String NAMESPACE_PREFIX = "s12";
 
@@ -48,7 +49,7 @@ public class SoapConstants {
     public static final String NAMESPACE_XSI = "http://www.w3.org/2001/XMLSchema-instance";
 
     /**
-     * Defines the preferred prefix for the XML Schema instance namespace
+     * Defines the preferred prefix for the XML Schema instance namespace.
      */
     public static final String NAMESPACE_XSI_PREFIX = "xsi";
 
@@ -102,7 +103,8 @@ public class SoapConstants {
     /**
      * WSDL HTTP binding media type.
      *
-     * @see <a href="https://www.ietf.org/mail-archive/web/ietf-types/current/msg00287.html">Proposed media type registration: application/wsdl+xml</a>
+     * @see <a href="https://www.ietf.org/mail-archive/web/ietf-types/current/msg00287.html"
+     * >Proposed media type registration: application/wsdl+xml</a>
      */
     public static final String MEDIA_TYPE_WSDL = "text/xml";
     //public static final String MEDIA_TYPE_WSDL = "application/wsdl+xml";

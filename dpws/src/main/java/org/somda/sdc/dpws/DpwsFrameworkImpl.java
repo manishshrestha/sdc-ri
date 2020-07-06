@@ -99,18 +99,19 @@ public class DpwsFrameworkImpl extends AbstractIdleService implements DpwsFramew
     private void printNetworkInterfaceInformation() throws SocketException {
         Iterator<NetworkInterface> networkInterfaceIterator = NetworkInterface.getNetworkInterfaces().asIterator();
         while (networkInterfaceIterator.hasNext()) {
-            NetworkInterface networkInterface = networkInterfaceIterator.next();
-            instanceLogger.info("Found network interface: [{};isUp={};isLoopBack={},supportsMulticast={},MTU={},isVirtual={}]",
-                    networkInterface,
-                    networkInterface.isUp(),
-                    networkInterface.isLoopback(),
-                    networkInterface.supportsMulticast(),
-                    networkInterface.getMTU(),
-                    networkInterface.isVirtual());
-            Iterator<InetAddress> inetAddressIterator = networkInterface.getInetAddresses().asIterator();
+            NetworkInterface netInterface = networkInterfaceIterator.next();
+            instanceLogger.info("Found network interface: [{};isUp={};isLoopBack={},supportsMulticast={},MTU={}," +
+                            "isVirtual={}]",
+                    netInterface,
+                    netInterface.isUp(),
+                    netInterface.isLoopback(),
+                    netInterface.supportsMulticast(),
+                    netInterface.getMTU(),
+                    netInterface.isVirtual());
+            Iterator<InetAddress> inetAddressIterator = netInterface.getInetAddresses().asIterator();
             int i = 0;
             while (inetAddressIterator.hasNext()) {
-                instanceLogger.info("{}.address[{}]: {}", networkInterface.getName(), i++, inetAddressIterator.next());
+                instanceLogger.info("{}.address[{}]: {}", netInterface.getName(), i++, inetAddressIterator.next());
             }
         }
     }
@@ -127,7 +128,8 @@ public class DpwsFrameworkImpl extends AbstractIdleService implements DpwsFramew
         try {
             wsdMulticastAddress = InetAddress.getByName(WsDiscoveryConstants.IPV4_MULTICAST_ADDRESS);
         } catch (UnknownHostException e) {
-            instanceLogger.warn("WS-Discovery multicast port could not be retrieved as InetAddress: {}", e.getMessage());
+            instanceLogger.warn("WS-Discovery multicast port could not be retrieved as InetAddress: {}",
+                    e.getMessage());
             throw new RuntimeException(e);
         }
 

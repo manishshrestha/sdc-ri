@@ -53,10 +53,6 @@ public class HostingServiceInterceptor implements HostingService {
     private ThisModelType thisModel;
     private ThisDeviceType thisDevice;
 
-    @Override
-    public List<String> getXAddrs() {
-        return targetService.getXAddrs();
-    }
 
     @AssistedInject
     HostingServiceInterceptor(@Assisted WsDiscoveryTargetService targetService,
@@ -91,6 +87,11 @@ public class HostingServiceInterceptor implements HostingService {
         LocalizedStringType friendlyName = dpwsFactory.createLocalizedStringType();
         friendlyName.setValue("Unknown FriendlyName");
         this.thisDevice.getFriendlyName().add(friendlyName);
+    }
+
+    @Override
+    public List<String> getXAddrs() {
+        return targetService.getXAddrs();
     }
 
     @MessageInterceptor(value = WsTransferConstants.WSA_ACTION_GET, direction = Direction.REQUEST)

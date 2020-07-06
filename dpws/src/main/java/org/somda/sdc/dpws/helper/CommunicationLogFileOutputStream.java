@@ -1,6 +1,5 @@
 package org.somda.sdc.dpws.helper;
 
-import javax.xml.transform.TransformerException;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;

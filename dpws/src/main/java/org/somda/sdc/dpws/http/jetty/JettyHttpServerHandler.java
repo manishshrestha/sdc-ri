@@ -59,7 +59,8 @@ public class JettyHttpServerHandler extends AbstractHandler {
     }
 
     @Override
-    public void handle(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response) throws IOException {
+    public void handle(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response)
+            throws IOException {
         instanceLogger.debug("Request to {}", request.getRequestURL());
         response.setStatus(HttpStatus.OK_200);
         response.setContentType(mediaType);
@@ -121,7 +122,8 @@ public class JettyHttpServerHandler extends AbstractHandler {
      * function will be degraded to package private with SDCri 2.0.
      */
     @Deprecated(since = "1.1.0", forRemoval = false)
-    public static List<X509Certificate> getX509Certificates(HttpServletRequest request, boolean expectTLS) throws IOException {
+    public static List<X509Certificate> getX509Certificates(HttpServletRequest request, boolean expectTLS)
+            throws IOException {
         if (!expectTLS) {
             return Collections.emptyList();
         }

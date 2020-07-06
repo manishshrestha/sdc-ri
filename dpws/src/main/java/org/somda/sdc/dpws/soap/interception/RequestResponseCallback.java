@@ -21,5 +21,6 @@ public interface RequestResponseCallback {
      *                              This will hinder the response from being received.
      * @throws MarshallingException if an error occurs during marshalling or unmarshalling of a SOAP message.
      */
-    SoapMessage onRequestResponse(SoapMessage request) throws SoapFaultException, MarshallingException, TransportException;
+    SoapMessage onRequestResponse(SoapMessage request) throws SoapFaultException, MarshallingException,
+            TransportException;
 }

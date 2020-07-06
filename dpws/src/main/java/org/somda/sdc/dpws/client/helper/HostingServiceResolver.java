@@ -143,7 +143,8 @@ public class HostingServiceResolver {
             }
 
             if (transferGetResponse == null) {
-                throw new TransportException(String.format("None of the %s XAddr URL(s) responded with a valid TransferGet response",
+                throw new TransportException(String.format("None of the %s XAddr URL(s) responded with a " +
+                                "valid TransferGet response",
                         discoveredDevice.getXAddrs().size()));
             }
 
@@ -207,7 +208,8 @@ public class HostingServiceResolver {
                             .orElseThrow(Exception::new);
 
                     if (!rs.getType().equals(DpwsConstants.RELATIONSHIP_TYPE_HOST)) {
-                        instanceLogger.debug("Incompatible dpws:Relationship type found for {}: {}", eprAddress, rs.getType());
+                        instanceLogger.debug("Incompatible dpws:Relationship type found for {}: {}",
+                                eprAddress, rs.getType());
                         continue;
                     }
 
@@ -288,7 +290,8 @@ public class HostingServiceResolver {
         }
 
         if (getMetadataResponse == null) {
-            instanceLogger.info("None of the {} hosted service EPR addresses responded with a valid GetMetadata response",
+            instanceLogger.info("None of the {} hosted service EPR addresses responded with a " +
+                            "valid GetMetadata response",
                     host.getEndpointReference().size());
             return Optional.empty();
         }
@@ -298,7 +301,8 @@ public class HostingServiceResolver {
             return Optional.empty();
         }
 
-        String httpBinding = uriBuilder.buildUri(URI.create(activeHostedServiceEprAddress).getScheme(), localAddress.get(), 0);
+        String httpBinding = uriBuilder.buildUri(URI.create(activeHostedServiceEprAddress).getScheme(),
+                localAddress.get(), 0);
 
         final EventSink eventSink = eventSinkFactory.createWsEventingEventSink(rrClient, httpBinding);
         return Optional.of(hostedServiceFactory.createHostedServiceProxy(host, rrClient,

@@ -20,5 +20,6 @@ public interface NotificationSource extends InterceptorHandler {
      * @throws MarshallingException if any exception occurs during marshalling or unmarshalling of SOAP messages.
      * @throws InterceptorException if one of the interceptors pops up with an error.
      */
-    void sendNotification(SoapMessage notification) throws MarshallingException, TransportException, InterceptorException;
+    void sendNotification(SoapMessage notification) throws MarshallingException, TransportException,
+            InterceptorException;
 }

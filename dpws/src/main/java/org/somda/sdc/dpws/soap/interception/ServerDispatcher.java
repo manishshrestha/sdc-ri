@@ -39,7 +39,8 @@ public class ServerDispatcher {
      * @param registry                  the interceptor registry used to seek interceptors.
      * @param soapMessage               the SOAP message to dispatch.
      * @param interceptorCallbackObject the object where to dispatch the message to.
-     * @throws SoapFaultException if the interceptor was cancelled (in order to communicate this as an error to the client).
+     * @throws SoapFaultException if the interceptor was cancelled
+     *                            (in order to communicate this as an error to the client).
      */
     public void invokeDispatcher(Direction direction,
                                  InterceptorRegistry registry,
@@ -54,7 +55,8 @@ public class ServerDispatcher {
         try {
             interceptorProcessor.dispatch(direction, registry, actionUri, interceptorCallbackObject);
         } catch (InterceptorException e) {
-            instanceLogger.debug("Caught interceptor exception from {} with message: {}", e.getInterceptor(), e.getMessage());
+            instanceLogger.debug("Caught interceptor exception from {} with message: {}",
+                    e.getInterceptor(), e.getMessage());
             if (e.getCause() instanceof SoapFaultException) {
                 throw (SoapFaultException) e.getCause();
             }

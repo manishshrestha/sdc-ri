@@ -19,15 +19,18 @@ public interface HostingService extends Interceptor {
      * As defined in dpws:R0004, the URI is a UUID IRI.
      *
      * @return the EPR address.
-     * @see <a href="http://docs.oasis-open.org/ws-dd/dpws/1.1/os/wsdd-dpws-1.1-spec-os.html#_Toc228672089">WS-Addressing</a>
+     * @see <a href="http://docs.oasis-open.org/ws-dd/dpws/1.1/os/wsdd-dpws-1.1-spec-os.html#_Toc228672089"
+     * >WS-Addressing</a>
      */
     String getEndpointReferenceAddress();
 
     /**
      * Gets the XAddrs list of the hosting service.
      *
-     * @return Physical addresses the hosting service is reachable from. Forwards addresses from WS-Discovery XAddr field.
-     * @see <a href="http://docs.oasis-open.org/ws-dd/discovery/1.1/os/wsdd-discovery-1.1-spec-os.html#_Toc234231821">Hello</a>
+     * @return Physical addresses the hosting service is reachable from.
+     * Forwards addresses from WS-Discovery XAddr field.
+     * @see <a href="http://docs.oasis-open.org/ws-dd/discovery/1.1/os/wsdd-discovery-1.1-spec-os.html#_Toc234231821"
+     * >Hello</a>
      */
     List<String> getXAddrs();
 
@@ -35,7 +38,8 @@ public interface HostingService extends Interceptor {
      * Gets ThisModel information.
      *
      * @return ThisModel information as defined in DPWS.
-     * @see <a href="http://docs.oasis-open.org/ws-dd/dpws/1.1/os/wsdd-dpws-1.1-spec-os.html#_Toc228672093">Characteristics</a>
+     * @see <a href="http://docs.oasis-open.org/ws-dd/dpws/1.1/os/wsdd-dpws-1.1-spec-os.html#_Toc228672093"
+     * >Characteristics</a>
      */
     ThisModelType getThisModel();
 
@@ -43,7 +47,8 @@ public interface HostingService extends Interceptor {
      * Sets ThisModel information as defined in DPWS.
      *
      * @param thisModel ThisModel information.
-     * @see <a href="http://docs.oasis-open.org/ws-dd/dpws/1.1/os/wsdd-dpws-1.1-spec-os.html#_Toc228672093">Characteristics</a>
+     * @see <a href="http://docs.oasis-open.org/ws-dd/dpws/1.1/os/wsdd-dpws-1.1-spec-os.html#_Toc228672093"
+     * >Characteristics</a>
      */
     void setThisModel(ThisModelType thisModel);
 
@@ -51,7 +56,8 @@ public interface HostingService extends Interceptor {
      * Gets ThisDevice information.
      *
      * @return ThisDevice information as defined in DPWS.
-     * @see <a href="http://docs.oasis-open.org/ws-dd/dpws/1.1/os/wsdd-dpws-1.1-spec-os.html#_Toc228672093">Characteristics</a>
+     * @see <a href="http://docs.oasis-open.org/ws-dd/dpws/1.1/os/wsdd-dpws-1.1-spec-os.html#_Toc228672093"
+     * >Characteristics</a>
      */
     ThisDeviceType getThisDevice();
 
@@ -59,7 +65,8 @@ public interface HostingService extends Interceptor {
      * Set ThisDevice information as defined in DPWS.
      *
      * @param thisDevice ThisDevice information.
-     * @see <a href="http://docs.oasis-open.org/ws-dd/dpws/1.1/os/wsdd-dpws-1.1-spec-os.html#_Toc228672093">Characteristics</a>
+     * @see <a href="http://docs.oasis-open.org/ws-dd/dpws/1.1/os/wsdd-dpws-1.1-spec-os.html#_Toc228672093"
+     * >Characteristics</a>
      */
     void setThisDevice(ThisDeviceType thisDevice);
 

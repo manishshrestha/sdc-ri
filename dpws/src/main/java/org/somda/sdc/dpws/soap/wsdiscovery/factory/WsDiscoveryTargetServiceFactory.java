@@ -15,7 +15,8 @@ public interface WsDiscoveryTargetServiceFactory {
      * @param targetServiceEpr   the target service endpoint reference.
      * @param notificationSource the source where to send Hello and Bye messages from.
      * @return a new target service instance.
-     * @see <a href="http://docs.oasis-open.org/ws-dd/discovery/1.1/os/wsdd-discovery-1.1-spec-os.html#_Toc234231810">Endpoint References</a>
+     * @see <a href="http://docs.oasis-open.org/ws-dd/discovery/1.1/os/wsdd-discovery-1.1-spec-os.html#_Toc234231810"
+     * >Endpoint References</a>
      */
     WsDiscoveryTargetService createWsDiscoveryTargetService(@Assisted EndpointReferenceType targetServiceEpr,
                                                             @Assisted NotificationSource notificationSource);

@@ -70,7 +70,8 @@ public class ApacheTransportBindingFactoryImpl implements TransportBindingFactor
                                       ClientTransportBindingFactory clientTransportBindingFactory,
                                       @Named(CryptoConfig.CRYPTO_TLS_ENABLED_VERSIONS) String[] tlsProtocols,
                                       @Named(CryptoConfig.CRYPTO_TLS_ENABLED_CIPHERS) String[] enabledCiphers,
-                                      @Named(CryptoConfig.CRYPTO_CLIENT_HOSTNAME_VERIFIER) HostnameVerifier hostnameVerifier,
+                                      @Named(CryptoConfig.CRYPTO_CLIENT_HOSTNAME_VERIFIER)
+                                              HostnameVerifier hostnameVerifier,
                                       @Named(DpwsConfig.HTTPS_SUPPORT) boolean enableHttps,
                                       @Named(DpwsConfig.HTTP_SUPPORT) boolean enableHttp,
                                       CommunicationLog communicationLog,

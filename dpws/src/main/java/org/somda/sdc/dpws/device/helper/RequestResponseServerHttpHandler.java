@@ -103,7 +103,8 @@ public class RequestResponseServerHttpHandler implements HttpHandler, Intercepto
 
         SoapMessage responseMsg = soapUtil.createMessage();
 
-        //  Postpone throw of exception which in case of a SoapFaultException allows to marshal response and make debug output
+        // Postpone throw of exception which in case of a SoapFaultException allows to
+        // marshal response and make debug output
         HttpException httpExceptionToThrow = null;
         try {
             reqResServer.receiveRequestResponse(requestMsg, responseMsg, communicationContext);

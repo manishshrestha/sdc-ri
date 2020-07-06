@@ -1,7 +1,6 @@
 package org.somda.sdc.dpws.soap.factory;
 
 import org.somda.sdc.dpws.soap.NotificationSink;
-import org.somda.sdc.dpws.soap.NotificationSource;
 import org.somda.sdc.dpws.soap.wsaddressing.WsAddressingServerInterceptor;
 
 /**

@@ -65,7 +65,8 @@ public class ThisModelBuilder {
     /**
      * Gets the actual model type.
      *
-     * @return the internally stored model type. Caution: changes afterwards in the fluent interface will affect this returned value.
+     * @return the internally stored model type. Caution: changes afterwards in the fluent interface will affect
+     * this returned value.
      */
     public ThisModelType get() {
         return thisModel;

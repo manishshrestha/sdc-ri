@@ -31,7 +31,8 @@ public class WsEventingFaultFactory {
      * Creates DeliveryModeRequestedUnavailable fault messages.
      *
      * @return the fault message.
-     * @see <a href="https://www.w3.org/Submission/WS-Eventing/#DeliveryModeRequestedUnavailable">WS-Eventing specification</a>
+     * @see <a href="https://www.w3.org/Submission/WS-Eventing/#DeliveryModeRequestedUnavailable"
+     * >WS-Eventing specification</a>
      */
     public SoapMessage createDeliveryModeRequestedUnavailable() {
         return soapFaultFactory.createFault(
@@ -92,7 +93,8 @@ public class WsEventingFaultFactory {
      * Creates FilteringRequestedUnavailable fault messages.
      *
      * @return the fault message.
-     * @see <a href="https://www.w3.org/Submission/WS-Eventing/#FilteringRequestedUnavailable">WS-Eventing specification</a>
+     * @see <a href="https://www.w3.org/Submission/WS-Eventing/#FilteringRequestedUnavailable"
+     * >WS-Eventing specification</a>
      */
     public SoapMessage createFilteringRequestedUnavailable() {
         return soapFaultFactory.createFault(
@@ -109,7 +111,8 @@ public class WsEventingFaultFactory {
      *
      * @param reason a specific reason text.
      * @return the fault message.
-     * @see <a href="https://www.w3.org/Submission/WS-Eventing/#EventSourceUnableToProcess">WS-Eventing specification</a>
+     * @see <a href="https://www.w3.org/Submission/WS-Eventing/#EventSourceUnableToProcess"
+     * >WS-Eventing specification</a>
      */
     public SoapMessage createEventSourceUnableToProcess(String reason) {
         return soapFaultFactory.createFault(
