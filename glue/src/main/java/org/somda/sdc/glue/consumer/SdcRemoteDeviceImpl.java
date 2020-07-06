@@ -100,13 +100,16 @@ public class SdcRemoteDeviceImpl extends AbstractIdleService implements SdcRemot
             final String message = "Remote device does not provide a set service. {} refused.";
             return new SetServiceAccess() {
                 @Override
-                public <T extends AbstractSet, V extends AbstractSetResponse> ListenableFuture<ScoTransaction<V>> invoke(T setRequest, Class<V> responseClass) {
+                public <T extends AbstractSet, V extends AbstractSetResponse> ListenableFuture<ScoTransaction<V>>
+                invoke(T setRequest, Class<V> responseClass) {
                     instanceLogger.warn(message, setRequest.getClass().getSimpleName());
                     return Futures.immediateCancelledFuture();
                 }
 
                 @Override
-                public <T extends AbstractSet, V extends AbstractSetResponse> ListenableFuture<ScoTransaction<V>> invoke(T setRequest, @Nullable Consumer<OperationInvokedReport.ReportPart> reportListener, Class<V> responseClass) {
+                public <T extends AbstractSet, V extends AbstractSetResponse> ListenableFuture<ScoTransaction<V>>
+                invoke(T setRequest, @Nullable Consumer<OperationInvokedReport.ReportPart> reportListener,
+                       Class<V> responseClass) {
                     instanceLogger.warn(message, setRequest.getClass().getSimpleName());
                     return Futures.immediateCancelledFuture();
                 }
@@ -147,7 +150,8 @@ public class SdcRemoteDeviceImpl extends AbstractIdleService implements SdcRemot
         } catch (TimeoutException e) {
             instanceLogger.error("Could not stop the report processor", e);
         }
-        final ArrayList<HostedServiceProxy> hostedServices = new ArrayList<>(hostingServiceProxy.getHostedServices().values());
+        final ArrayList<HostedServiceProxy> hostedServices =
+                new ArrayList<>(hostingServiceProxy.getHostedServices().values());
         for (HostedServiceProxy hostedService : hostedServices) {
             hostedService.getEventSinkAccess().unsubscribeAll();
         }
@@ -155,7 +159,8 @@ public class SdcRemoteDeviceImpl extends AbstractIdleService implements SdcRemot
 
     private void checkRunning() {
         if (!isRunning()) {
-            throw new RuntimeException(String.format("Tried to access a disconnected SDC remote device instance with EPR address %s",
+            throw new RuntimeException(String.format("Tried to access a disconnected SDC remote device instance " +
+                            "with EPR address %s",
                     hostingServiceProxy.getEndpointReferenceAddress()));
         }
     }

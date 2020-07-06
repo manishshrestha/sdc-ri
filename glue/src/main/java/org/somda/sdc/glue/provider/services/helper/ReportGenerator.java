@@ -147,7 +147,8 @@ public class ReportGenerator implements MdibAccessObserver {
                     modificationMessage.getMdibAccess().getMdibVersion(), e.getMessage());
             instanceLogger.trace("Could not marshal message for description modification report", e);
         } catch (TransportException e) {
-            instanceLogger.info("Failed to deliver notification for description modification report with version {}: {}",
+            instanceLogger.info(
+                    "Failed to deliver notification for description modification report with version {}: {}",
                     modificationMessage.getMdibAccess().getMdibVersion(), e.getMessage());
             instanceLogger.trace("Failed to deliver notification for description modification report", e);
         } catch (ReflectiveOperationException e) {
@@ -167,7 +168,8 @@ public class ReportGenerator implements MdibAccessObserver {
         );
     }
 
-    private void dispatchStateEvents(MdibVersion mdibVersion, List<MdibEntity> insertedEntities, List<MdibEntity> updatedEntities) {
+    private void dispatchStateEvents(MdibVersion mdibVersion, List<MdibEntity> insertedEntities,
+                                     List<MdibEntity> updatedEntities) {
         // expectedKeys (which pertains to the key size of the multimap below) = 6 because of the following event types
         // - alert changes
         // - component change
@@ -189,7 +191,8 @@ public class ReportGenerator implements MdibAccessObserver {
         }
     }
 
-    private void collectStates(Multimap<Class<? extends AbstractReport>, AbstractState> classifiedStates, List<MdibEntity> entities) {
+    private void collectStates(Multimap<Class<?
+            extends AbstractReport>, AbstractState> classifiedStates, List<MdibEntity> entities) {
         for (MdibEntity entity : entities) {
             classifiedStates.putAll(reportMappings.getEpisodicReportClass(entity.getStateClass()), entity.getStates());
         }
@@ -200,7 +203,8 @@ public class ReportGenerator implements MdibAccessObserver {
                               DescriptionModificationType modType,
                               List<MdibEntity> entities) {
         for (MdibEntity entity : entities) {
-            final DescriptionModificationReport.ReportPart reportPart = bicepsMessageFactory.createDescriptionModificationReportReportPart();
+            final DescriptionModificationReport.ReportPart reportPart =
+                    bicepsMessageFactory.createDescriptionModificationReportReportPart();
             reportPart.getDescriptor().add(entity.getDescriptor());
             reportPart.getState().addAll(entity.getStates());
             reportPart.setParentDescriptor(entity.getParent().orElse(null));
@@ -223,11 +227,13 @@ public class ReportGenerator implements MdibAccessObserver {
         } catch (MarshallingException e) {
             instanceLogger.warn("Could not marshal message for state action {} with version: {}. {}",
                     ActionConstants.ACTION_WAVEFORM_STREAM, mdibVersion, e.getMessage());
-            instanceLogger.trace("Could not marshal message for state action {}", ActionConstants.ACTION_WAVEFORM_STREAM, e);
+            instanceLogger.trace("Could not marshal message for state action {}",
+                    ActionConstants.ACTION_WAVEFORM_STREAM, e);
         } catch (TransportException e) {
             instanceLogger.info("Failed to deliver notification for state action {} with version: {}. {}",
                     ActionConstants.ACTION_WAVEFORM_STREAM, mdibVersion, e.getMessage());
-            instanceLogger.trace("Failed to deliver notification for state action {}", ActionConstants.ACTION_WAVEFORM_STREAM, e);
+            instanceLogger.trace("Failed to deliver notification for state action {}",
+                    ActionConstants.ACTION_WAVEFORM_STREAM, e);
         } catch (ReflectiveOperationException e) {
             instanceLogger.warn(REFLECTION_ERROR_STRING, e);
         }

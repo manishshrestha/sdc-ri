@@ -78,7 +78,8 @@ public class DefaultGlueModule extends AbstractModule {
                 .build(SdcRemoteDeviceFactory.class));
 
         install(new FactoryModuleBuilder()
-                .implement(org.somda.sdc.glue.consumer.sco.ScoController.class, org.somda.sdc.glue.consumer.sco.ScoController.class)
+                .implement(org.somda.sdc.glue.consumer.sco.ScoController.class,
+                        org.somda.sdc.glue.consumer.sco.ScoController.class)
                 .build(org.somda.sdc.glue.consumer.sco.factory.ScoControllerFactory.class));
 
         install(new FactoryModuleBuilder()
@@ -110,15 +111,17 @@ public class DefaultGlueModule extends AbstractModule {
 
     @Provides
     @Consumer
-    ExecutorWrapperService<ListeningExecutorService> getConsumerExecutor(@Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier) {
+    ExecutorWrapperService<ListeningExecutorService> getConsumerExecutor(
+            @Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier) {
         if (consumerExecutor == null) {
-            Callable<ListeningExecutorService> executor = () -> MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(
-                    10,
-                    new ThreadFactoryBuilder()
-                            .setNameFormat("Consumer-thread-%d")
-                            .setDaemon(true)
-                            .build()
-            ));
+            Callable<ListeningExecutorService> executor =
+                    () -> MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(
+                            10,
+                            new ThreadFactoryBuilder()
+                                    .setNameFormat("Consumer-thread-%d")
+                                    .setDaemon(true)
+                                    .build()
+                    ));
             consumerExecutor = new ExecutorWrapperService<>(executor, "Consumer", frameworkIdentifier);
         }
         return consumerExecutor;
@@ -126,7 +129,8 @@ public class DefaultGlueModule extends AbstractModule {
 
     @Provides
     @WatchdogScheduledExecutor
-    ExecutorWrapperService<ScheduledExecutorService> getWatchdogScheduledExecutor(@Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier) {
+    ExecutorWrapperService<ScheduledExecutorService> getWatchdogScheduledExecutor(
+            @Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier) {
         if (watchdogScheduledExecutor == null) {
             Callable<ScheduledExecutorService> executor = () -> Executors.newScheduledThreadPool(
                     10,
@@ -136,7 +140,8 @@ public class DefaultGlueModule extends AbstractModule {
                             .build()
             );
 
-            watchdogScheduledExecutor = new ExecutorWrapperService<>(executor, "WatchdogScheduledExecutor", frameworkIdentifier);
+            watchdogScheduledExecutor =
+                    new ExecutorWrapperService<>(executor, "WatchdogScheduledExecutor", frameworkIdentifier);
         }
 
         return watchdogScheduledExecutor;

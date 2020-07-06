@@ -91,11 +91,14 @@ public class ReportProcessor extends AbstractIdleService {
      * Accepts an MDIB and starts applying reports on it.
      *
      * @param mdibAccess            the MDIB access to use for application of incoming reports.
-     * @param contextStatesResponse optionally a get-context-states response message in case a get-mdib request did not returned some.
+     * @param contextStatesResponse optionally a get-context-states response message in case
+     *                              a get-mdib request did not returned some.
      * @throws PreprocessingException    is thrown in case writing to the MDIB fails.
-     * @throws ReportProcessingException is thrown in case there is any error during processing of a report or accessing data from the queue.
+     * @throws ReportProcessingException is thrown in case there is any error during processing of a report or
+     *                                   accessing data from the queue.
      */
-    public void startApplyingReportsOnMdib(RemoteMdibAccess mdibAccess, @Nullable GetContextStatesResponse contextStatesResponse)
+    public void startApplyingReportsOnMdib(RemoteMdibAccess mdibAccess,
+                                           @Nullable GetContextStatesResponse contextStatesResponse)
             throws PreprocessingException, ReportProcessingException {
         try (AutoLock ignored = AutoLock.lock(mdibReadyLock)) {
             if (this.mdibAccess != null) {
@@ -118,7 +121,8 @@ public class ReportProcessor extends AbstractIdleService {
         }
     }
 
-    private void applyReportsFromBuffer(RemoteMdibAccess mdibAccess) throws PreprocessingException, ReportProcessingException {
+    private void applyReportsFromBuffer(RemoteMdibAccess mdibAccess)
+            throws PreprocessingException, ReportProcessingException {
         while (!bufferedReports.isEmpty()) {
             try {
                 applyReportOnMdib(bufferedReports.take(), mdibAccess);
@@ -132,12 +136,14 @@ public class ReportProcessor extends AbstractIdleService {
         applyReportOnMdib(report, mdibAccess);
     }
 
-    private void applyReportOnMdib(AbstractReport report, RemoteMdibAccess mdibAccess) throws PreprocessingException, ReportProcessingException {
+    private void applyReportOnMdib(AbstractReport report, RemoteMdibAccess mdibAccess)
+            throws PreprocessingException, ReportProcessingException {
         final MdibVersion mdibAccessMdibVersion = mdibAccess.getMdibVersion();
         final MdibVersion reportMdibVersion = mdibVersionUtil.getMdibVersion(report);
         if (!mdibAccessMdibVersion.getSequenceId().equals(reportMdibVersion.getSequenceId()) ||
                 !mdibAccessMdibVersion.getInstanceId().equals(reportMdibVersion.getInstanceId())) {
-            throw new ReportProcessingException(String.format("MDIB version from MDIB (%s) and MDIB version from report (%s) do not match",
+            throw new ReportProcessingException(String.format("MDIB version from MDIB (%s) and " +
+                            "MDIB version from report (%s) do not match",
                     mdibAccessMdibVersion, reportMdibVersion));
         }
 
@@ -179,7 +185,8 @@ public class ReportProcessor extends AbstractIdleService {
         };
     }
 
-    private void applyOptionalContextStates(RemoteMdibAccess mdibAccess, @Nullable GetContextStatesResponse contextStatesResponse)
+    private void applyOptionalContextStates(RemoteMdibAccess mdibAccess,
+                                            @Nullable GetContextStatesResponse contextStatesResponse)
             throws PreprocessingException, ReportProcessingException {
         if (contextStatesResponse == null) {
             return;
@@ -188,12 +195,14 @@ public class ReportProcessor extends AbstractIdleService {
         final MdibVersion mdibVersion = mdibAccess.getMdibVersion();
         if (!URI.create(mdibVersion.getSequenceId()).equals(URI.create(contextStatesResponse.getSequenceId())) ||
                 !mdibVersion.getInstanceId().equals(contextStatesResponse.getInstanceId())) {
-            throw new ReportProcessingException(String.format("Received context state report belongs to different MDIB sequence/instance. Expected: %s, actual: %s",
+            throw new ReportProcessingException(String.format("Received context state report belongs to " +
+                            "different MDIB sequence/instance. Expected: %s, actual: %s",
                     mdibVersionUtil.getMdibVersion(contextStatesResponse), mdibVersion));
         }
 
         if (mdibVersion.getVersion().compareTo(contextStatesResponse.getMdibVersion()) > 0) {
-            instanceLogger.warn("Found a context state response whose MDIB version ({}) is older than the MDIB's MDIB version ({})",
+            instanceLogger.warn("Found a context state response whose MDIB version ({}) is older " +
+                            "than the MDIB's MDIB version ({})",
                     contextStatesResponse.getMdibVersion(), mdibVersion.getVersion());
             return;
         }

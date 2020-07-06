@@ -33,10 +33,6 @@ public class SdcDiscoveryFilterBuilder {
 
     private final DiscoveryFilterBuilder discoveryFilterBuilder;
 
-    public static SdcDiscoveryFilterBuilder create() {
-        return new SdcDiscoveryFilterBuilder();
-    }
-
     /**
      * Constructs a new object with empty types and scopes.
      */
@@ -44,6 +40,10 @@ public class SdcDiscoveryFilterBuilder {
         this.discoveryFilterBuilder = new DiscoveryFilterBuilder();
         this.discoveryFilterBuilder.addType(CommonConstants.MEDICAL_DEVICE_TYPE);
         this.discoveryFilterBuilder.addScope(GlueConstants.SCOPE_SDC_PROVIDER.toString());
+    }
+
+    public static SdcDiscoveryFilterBuilder create() {
+        return new SdcDiscoveryFilterBuilder();
     }
 
     /**
@@ -91,7 +91,8 @@ public class SdcDiscoveryFilterBuilder {
      * @param <T>       a complex device component descriptor type.
      * @return this object.
      */
-    public <T extends AbstractComplexDeviceComponentDescriptor> SdcDiscoveryFilterBuilder addDeviceComponent(T component) {
+    public <T extends AbstractComplexDeviceComponentDescriptor> SdcDiscoveryFilterBuilder addDeviceComponent(
+            T component) {
 
         try {
             addScope(ComplexDeviceComponentMapper.fromComplexDeviceComponent(component));
@@ -124,7 +125,8 @@ public class SdcDiscoveryFilterBuilder {
         }
 
         ContextIdentificationMapper.ContextSource contextSource = mapToContextSource(contextState);
-        return Optional.of(ContextIdentificationMapper.fromInstanceIdentifier(contextState.getIdentification().get(0), contextSource).toString());
+        return Optional.of(ContextIdentificationMapper.fromInstanceIdentifier(contextState.getIdentification().get(0),
+                contextSource).toString());
     }
 
     private static ContextIdentificationMapper.ContextSource mapToContextSource(AbstractContextState contextState) {

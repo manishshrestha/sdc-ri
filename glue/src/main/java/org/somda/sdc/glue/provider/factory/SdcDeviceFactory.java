@@ -23,13 +23,16 @@ public interface SdcDeviceFactory {
      *                                     collection is empty or custom plugins to run on start up and shut down in the
      *                                     order given by this collection.
      *                                     Make sure plugins are independent to each other.
-     *                                     Also make sure that at least the {@link org.somda.sdc.glue.provider.plugin.SdcRequiredTypesAndScopes}
+     *                                     Also make sure that at least the
+     *                                     {@link org.somda.sdc.glue.provider.plugin.SdcRequiredTypesAndScopes}
      *                                     or a functionally equivalent plugin is loaded.
      *                                     See {@link SdcDevicePlugin} for more details.
-     * @return a new {@link SdcDevice}. Use {@link SdcDevice#startAsync()} in order to start exposing the device on the network.
+     * @return a new {@link SdcDevice}.
+     * Use {@link SdcDevice#startAsync()} in order to start exposing the device on the network.
      */
     SdcDevice createSdcDevice(@Assisted DeviceSettings deviceSettings,
                               @Assisted LocalMdibAccess mdibAccess,
-                              @Assisted("operationInvocationReceivers") Collection<OperationInvocationReceiver> operationInvocationReceivers,
+                              @Assisted("operationInvocationReceivers")
+                                      Collection<OperationInvocationReceiver> operationInvocationReceivers,
                               @Assisted("plugins") Collection<SdcDevicePlugin> plugins);
 }

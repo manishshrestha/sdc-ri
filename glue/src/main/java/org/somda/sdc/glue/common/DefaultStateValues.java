@@ -6,7 +6,7 @@ import org.somda.sdc.biceps.model.participant.Mdib;
  * Implementing classes of this interface can be used to define default values for states.
  * <p>
  * This interface enables {@link ModificationsBuilder} instances to transform an
- * {@link org.somda.sdc.biceps.model.participant.Mdib} into a modifications set in which every generated state
+ * {@link Mdib} into a modifications set in which every generated state
  * visits a callback function of the implementing class.
  * <p>
  * For each state type that is supposed to have a default value, a class derived from {@linkplain DefaultStateValues}
@@ -26,7 +26,8 @@ import org.somda.sdc.biceps.model.participant.Mdib;
  * In that case the method needs to call the more generated callback itself.
  * The second method is called for each {@link org.somda.sdc.biceps.model.participant.NumericMetricState}.
  *
- * @see org.somda.sdc.glue.common.factory.ModificationsBuilderFactory#createModificationsBuilder(Mdib, Boolean, DefaultStateValues)
+ * @see org.somda.sdc.glue.common.factory.ModificationsBuilderFactory#createModificationsBuilder(
+ *Mdib, Boolean, DefaultStateValues)
  */
 public interface DefaultStateValues {
 }

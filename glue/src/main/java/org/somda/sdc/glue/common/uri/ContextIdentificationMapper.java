@@ -1,10 +1,17 @@
 package org.somda.sdc.glue.common.uri;
 
-import org.somda.sdc.biceps.model.participant.*;
+import jregex.Matcher;
+import jregex.Pattern;
+import org.somda.sdc.biceps.model.participant.AbstractContextState;
+import org.somda.sdc.biceps.model.participant.EnsembleContextState;
+import org.somda.sdc.biceps.model.participant.InstanceIdentifier;
+import org.somda.sdc.biceps.model.participant.LocationContextState;
+import org.somda.sdc.biceps.model.participant.MeansContextState;
+import org.somda.sdc.biceps.model.participant.OperatorContextState;
+import org.somda.sdc.biceps.model.participant.PatientContextState;
+import org.somda.sdc.biceps.model.participant.WorkflowContextState;
 import org.somda.sdc.glue.GlueConstants;
 import org.somda.sdc.glue.common.helper.UrlUtf8;
-
-import jregex.*;
 
 /**
  * Utility class to map between context-based URIs and instance identifiers.
@@ -101,8 +108,9 @@ public class ContextIdentificationMapper {
 
                 return instanceIdentifier;
             } else {
-                throw new UriMapperParsingException("Invalid encoding of InstanceIdentifier in the URI for the mapper " +
-                        ContextIdentificationMapper.class.toString());
+                throw new UriMapperParsingException(
+                        "Invalid encoding of InstanceIdentifier in the URI for the mapper " +
+                                ContextIdentificationMapper.class.toString());
             }
         } else {
             throw new UriMapperParsingException("Invalid URI for the mapper " +

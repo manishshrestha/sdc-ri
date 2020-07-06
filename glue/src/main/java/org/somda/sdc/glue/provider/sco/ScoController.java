@@ -69,18 +69,22 @@ public class ScoController {
      * returned.
      */
     public <T> InvocationResponse processIncomingSetOperation(String handle, InstanceIdentifier source, T payload) {
-        final Context context = contextFactory.createContext(transactionCounter++, handle, source, eventSourceAccess, mdibAccess);
+        final Context context =
+                contextFactory.createContext(transactionCounter++, handle, source, eventSourceAccess, mdibAccess);
 
         final LocalizedText localizedText = participantModelFactory.createLocalizedText();
         localizedText.setLang("en");
-        localizedText.setValue(String.format("There is no ultimate invocation processor available for operation %s", handle));
+        localizedText.setValue(
+                String.format("There is no ultimate invocation processor available for operation %s", handle));
 
         try {
             final ReflectionInfo reflectionInfo = invocationReceivers.get(handle);
             if (reflectionInfo != null) {
-                if (reflectionInfo.getCallbackMethod().getParameters()[1].getType().isAssignableFrom(payload.getClass())) {
-                    return (InvocationResponse) reflectionInfo.getCallbackMethod().invoke(reflectionInfo.getReceiver(),
-                            context, payload);
+                if (reflectionInfo.getCallbackMethod().getParameters()[1]
+                        .getType().isAssignableFrom(payload.getClass())) {
+                    return (InvocationResponse) reflectionInfo.getCallbackMethod()
+                            .invoke(reflectionInfo.getReceiver(),
+                                    context, payload);
                 }
             }
 
@@ -92,7 +96,8 @@ public class ScoController {
                     }
 
                     if (receiver.getAnnotation().listType().equals(IncomingSetServiceRequest.NoList.class)) {
-                        instanceLogger.warn("For default invocation receivers each method annotation requires a listType attribute." +
+                        instanceLogger.warn("For default invocation receivers each method annotation " +
+                                        "requires a listType attribute." +
                                         " Callback for method {} on object {} ignored.",
                                 receiver.getCallbackMethod().getName(), receiver.getReceiver());
                         continue;
@@ -123,9 +128,12 @@ public class ScoController {
                 }
             }
         } catch (Exception e) {
-            instanceLogger.error("The invocation request could not be forwarded to or processed by the ultimate invocation processor.");
-            instanceLogger.trace("The invocation request could not be forwarded to or processed by the ultimate invocation processor.", e);
-            localizedText.setValue("The invocation request could not be forwarded to or processed by the ultimate invocation processor");
+            instanceLogger.error("The invocation request could not be forwarded to or processed " +
+                    "by the ultimate invocation processor.");
+            instanceLogger.trace("The invocation request could not be forwarded to or processed " +
+                    "by the ultimate invocation processor.", e);
+            localizedText.setValue("The invocation request could not be forwarded to or processed " +
+                    "by the ultimate invocation processor");
         }
 
         // send error report
@@ -183,7 +191,8 @@ public class ScoController {
         }
 
         if (!annotationFound) {
-            instanceLogger.warn("No callback function found in object {} of type {}", receiver.toString(), receiver.getClass().getName());
+            instanceLogger.warn("No callback function found in object {} of type {}",
+                    receiver.toString(), receiver.getClass().getName());
         }
     }
 
@@ -192,7 +201,8 @@ public class ScoController {
         private final Method callbackMethod;
         private final IncomingSetServiceRequest annotation;
 
-        public ReflectionInfo(OperationInvocationReceiver receiver, Method callbackMethod, IncomingSetServiceRequest annotation) {
+        public ReflectionInfo(OperationInvocationReceiver receiver, Method callbackMethod,
+                              IncomingSetServiceRequest annotation) {
             this.receiver = receiver;
             this.callbackMethod = callbackMethod;
             this.annotation = annotation;

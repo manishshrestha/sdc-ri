@@ -2,8 +2,6 @@ package org.somda.sdc.glue.consumer.event;
 
 import org.somda.sdc.common.event.AbstractEventMessage;
 
-import java.net.URI;
-
 /**
  * Message that is delivered to a {@linkplain org.somda.sdc.glue.consumer.WatchdogObserver} if something went wrong.
  */
