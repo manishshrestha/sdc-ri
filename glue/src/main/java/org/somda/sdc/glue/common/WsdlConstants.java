@@ -10,6 +10,8 @@ import javax.xml.namespace.QName;
  * @see ActionConstants
  */
 public class WsdlConstants {
+    // CHECKSTYLE.OFF: DeclarationOrder
+    private static final String SLASH = "/";
 
     public static final String TARGET_NAMESPACE = CommonConstants.NAMESPACE_SDC;
 
@@ -88,6 +90,6 @@ public class WsdlConstants {
     public static final QName PORT_TYPE_CONTAINMENT_TREE_QNAME = new QName(TARGET_NAMESPACE, SERVICE_CONTAINMENT_TREE);
     public static final QName PORT_TYPE_ARCHIVE_QNAME = new QName(TARGET_NAMESPACE, SERVICE_ARCHIVE);
     public static final QName PORT_TYPE_LOCALIZATION_QNAME = new QName(TARGET_NAMESPACE, SERVICE_LOCALIZATION);
+    // CHECKSTYLE.ON: DeclarationOrder
 
-    private static final String SLASH = "/";
 }
