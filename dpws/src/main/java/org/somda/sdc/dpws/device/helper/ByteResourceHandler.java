@@ -4,7 +4,6 @@ import org.eclipse.jetty.http.HttpStatus;
 import org.somda.sdc.dpws.http.HttpException;
 import org.somda.sdc.dpws.http.HttpHandler;
 import org.somda.sdc.dpws.soap.CommunicationContext;
-import org.somda.sdc.dpws.soap.exception.TransportException;
 
 import java.io.IOException;
 import java.io.InputStream;

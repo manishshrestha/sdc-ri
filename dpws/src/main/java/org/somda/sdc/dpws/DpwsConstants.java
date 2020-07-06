@@ -6,7 +6,8 @@ import java.time.Duration;
 /**
  * DPWS constants.
  *
- * @see <a href="http://docs.oasis-open.org/ws-dd/dpws/1.1/os/wsdd-dpws-1.1-spec-os.html#_Toc228672112">Appendix B. Constants</a>
+ * @see <a href="http://docs.oasis-open.org/ws-dd/dpws/1.1/os/wsdd-dpws-1.1-spec-os.html#_Toc228672112"
+ * >Appendix B. Constants</a>
  */
 public class DpwsConstants {
     /**
@@ -25,7 +26,7 @@ public class DpwsConstants {
     public static final String NAMESPACE = "http://docs.oasis-open.org/ws-dd/ns/dpws/2009/01";
 
     /**
-     * Defines the preferred prefix for the DPWS namespace
+     * Defines the preferred prefix for the DPWS namespace.
      */
     public static final String NAMESPACE_PREFIX = "dpws";
 

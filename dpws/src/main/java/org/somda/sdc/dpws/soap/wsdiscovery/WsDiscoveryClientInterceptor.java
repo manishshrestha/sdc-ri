@@ -26,11 +26,23 @@ import org.somda.sdc.dpws.soap.wsdiscovery.event.ByeMessage;
 import org.somda.sdc.dpws.soap.wsdiscovery.event.HelloMessage;
 import org.somda.sdc.dpws.soap.wsdiscovery.event.ProbeMatchesMessage;
 import org.somda.sdc.dpws.soap.wsdiscovery.event.ProbeTimeoutMessage;
-import org.somda.sdc.dpws.soap.wsdiscovery.model.*;
+import org.somda.sdc.dpws.soap.wsdiscovery.model.AppSequenceType;
+import org.somda.sdc.dpws.soap.wsdiscovery.model.ByeType;
+import org.somda.sdc.dpws.soap.wsdiscovery.model.HelloType;
+import org.somda.sdc.dpws.soap.wsdiscovery.model.ObjectFactory;
+import org.somda.sdc.dpws.soap.wsdiscovery.model.ProbeMatchesType;
+import org.somda.sdc.dpws.soap.wsdiscovery.model.ProbeType;
+import org.somda.sdc.dpws.soap.wsdiscovery.model.ResolveMatchesType;
+import org.somda.sdc.dpws.soap.wsdiscovery.model.ResolveType;
+import org.somda.sdc.dpws.soap.wsdiscovery.model.ScopesType;
 
 import javax.xml.namespace.QName;
 import java.time.Duration;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
@@ -70,7 +82,8 @@ public class WsDiscoveryClientInterceptor implements WsDiscoveryClient {
     @AssistedInject
     WsDiscoveryClientInterceptor(@Assisted NotificationSource notificationSource,
                                  @Named(WsDiscoveryConfig.MAX_WAIT_FOR_PROBE_MATCHES) Duration maxWaitForProbeMatches,
-                                 @Named(WsDiscoveryConfig.MAX_WAIT_FOR_RESOLVE_MATCHES) Duration maxWaitForResolveMatches,
+                                 @Named(WsDiscoveryConfig.MAX_WAIT_FOR_RESOLVE_MATCHES)
+                                         Duration maxWaitForResolveMatches,
                                  @Named(WsDiscoveryConfig.PROBE_MATCHES_BUFFER_SIZE) Integer probeMatchesBufferSize,
                                  @Named(WsDiscoveryConfig.RESOLVE_MATCHES_BUFFER_SIZE) Integer resolveMatchesBufferSize,
                                  WsDiscoveryUtil wsdUtil,
@@ -157,7 +170,8 @@ public class WsDiscoveryClientInterceptor implements WsDiscoveryClient {
     }
 
     @Override
-    public ListenableFuture<Integer> sendProbe(String probeId, Collection<QName> types, Collection<String> scopes, Integer maxResults)
+    public ListenableFuture<Integer> sendProbe(String probeId, Collection<QName> types,
+                                               Collection<String> scopes, Integer maxResults)
             throws MarshallingException, TransportException, InterceptorException {
         SoapMessage probeMsg = createProbeMessage(types, scopes);
 
@@ -275,7 +289,7 @@ public class WsDiscoveryClientInterceptor implements WsDiscoveryClient {
 
                     if (!condition.await(wait, TimeUnit.MILLISECONDS)) {
                         break;
-                    };
+                    }
 
                     msg = popMatches(messageQueue, wsaRelatesTo);
                     wait -= System.currentTimeMillis() - tStartInMillis;
@@ -292,7 +306,7 @@ public class WsDiscoveryClientInterceptor implements WsDiscoveryClient {
                     "No ResolveMatches message received in %s milliseconds, Resolve MessageID was %s",
                     Long.valueOf(maxWaitInMillis).toString(),
                     wsaRelatesTo
-                    ));
+            ));
         }
     }
 
@@ -360,14 +374,15 @@ public class WsDiscoveryClientInterceptor implements WsDiscoveryClient {
         }
 
         private Integer fetchData(Integer probeMatchesCount) {
+            var copyProbeMatchesCount = probeMatchesCount;
             Optional<SoapMessage> msg = popMatches(messageQueue, wsaRelatesTo);
             if (msg.isPresent()) {
                 ProbeMatchesType pMatches = soapUtil.getBody(msg.get(), ProbeMatchesType.class)
                         .orElseThrow(() -> new RuntimeException("SOAP message body malformed"));
                 helloByeProbeEvents.post(new ProbeMatchesMessage(probeId, pMatches));
-                probeMatchesCount++;
+                copyProbeMatchesCount++;
             }
-            return probeMatchesCount;
+            return copyProbeMatchesCount;
         }
     }
 

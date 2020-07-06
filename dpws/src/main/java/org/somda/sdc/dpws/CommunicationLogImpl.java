@@ -62,7 +62,8 @@ public class CommunicationLogImpl implements CommunicationLog {
         try {
             final byte[] bytes = ByteStreams.toByteArray(inputStream);
 
-            try (OutputStream targetStream = this.logSink.createTargetStream(transportType, direction, communicationContext)) {
+            try (OutputStream targetStream = this.logSink.createTargetStream(transportType, direction,
+                    communicationContext)) {
                 new ByteArrayInputStream(bytes).transferTo(targetStream);
             }
             return new ByteArrayInputStream(bytes);

@@ -38,7 +38,8 @@ public interface HostedServiceProxy extends RequestResponseClient {
      * Gets the physical address that is actively being used to send requests.
      * <p>
      * A hosted service can have different physical addresses in order to be accessible.
-     * The one that is returned with this function is the one that was used to initially resolve metadata (GetMetadata request).
+     * The one that is returned with this function is the one that was used to initially resolve metadata
+     * (GetMetadata request).
      *
      * @return the currently active EPR address.
      */

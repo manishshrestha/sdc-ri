@@ -115,18 +115,18 @@ public class WsDiscoveryTargetServiceInterceptor implements WsDiscoveryTargetSer
         ScopesType scopesFromProbe = Optional.ofNullable(probe.getScopes()).orElse(wsdFactory.createScopesType());
         List<QName> typesFromProbe = Optional.ofNullable(probe.getTypes()).orElse(new ArrayList<>());
 
-        String matchBy = Optional.ofNullable(scopesFromProbe.getMatchBy()).orElse(MatchBy.RFC3986.getUri());
+        String requestMatchBy = Optional.ofNullable(scopesFromProbe.getMatchBy()).orElse(MatchBy.RFC3986.getUri());
         MatchBy matcher = Arrays.stream(MatchBy.values())
-                .filter(item -> item.getUri().equals(matchBy))
+                .filter(item -> item.getUri().equals(requestMatchBy))
                 .findAny().orElseThrow(() -> new SoapFaultException(wsdFaultFactory.createMatchingRuleNotSupported()));
 
         EndpointReferenceType endpointReference = getEndpointReference();
-        List<String> scopes = getScopes();
-        List<QName> types = getTypes();
-        List<String> xAddrs = getXAddrs();
-        UnsignedInteger metadataVersion = getMetadataVersion();
+        List<String> copyScopes = getScopes();
+        List<QName> copyTypes = getTypes();
+        List<String> copyXAddrs = getXAddrs();
+        UnsignedInteger copyMetadataVersion = getMetadataVersion();
 
-        if (!wsdUtil.isScopesMatching(scopes, scopesFromProbe.getValue(), matcher) ||
+        if (!wsdUtil.isScopesMatching(copyScopes, scopesFromProbe.getValue(), matcher) ||
                 !wsdUtil.isTypesMatching(this.types, typesFromProbe)) {
             throw new RuntimeException("Scopes and Types do not match in incoming Probe.");
         }
@@ -134,11 +134,11 @@ public class WsDiscoveryTargetServiceInterceptor implements WsDiscoveryTargetSer
         ProbeMatchType probeMatchType = wsdFactory.createProbeMatchType();
         probeMatchType.setEndpointReference(endpointReference);
         ScopesType scopesType = wsdFactory.createScopesType();
-        scopesType.setValue(scopes);
+        scopesType.setValue(copyScopes);
         probeMatchType.setScopes(scopesType);
-        probeMatchType.setTypes(types);
-        probeMatchType.setXAddrs(xAddrs);
-        probeMatchType.setMetadataVersion(metadataVersion.longValue());
+        probeMatchType.setTypes(copyTypes);
+        probeMatchType.setXAddrs(copyXAddrs);
+        probeMatchType.setMetadataVersion(copyMetadataVersion.longValue());
 
         ProbeMatchesType probeMatchesType = wsdFactory.createProbeMatchesType();
         List<ProbeMatchType> probeMatchTypeList = new ArrayList<>();
@@ -165,10 +165,10 @@ public class WsDiscoveryTargetServiceInterceptor implements WsDiscoveryTargetSer
                 new SoapFaultException(soapFaultFactory.createSenderFault("Missing Endpoint Reference Address")));
 
         EndpointReferenceType endpointReference = getEndpointReference();
-        List<String> scopes = getScopes();
-        List<QName> types = getTypes();
-        List<String> xAddrs = getXAddrs();
-        UnsignedInteger metadataVersion = getMetadataVersion();
+        List<String> copyScopes = getScopes();
+        List<QName> copyTypes = getTypes();
+        List<String> copyXAddrs = getXAddrs();
+        UnsignedInteger copyMetadataVersion = getMetadataVersion();
 
         if (!URI.create(resolveType.getEndpointReference().getAddress().getValue())
                 .equals(URI.create(endpointReference.getAddress().getValue()))) {
@@ -182,11 +182,11 @@ public class WsDiscoveryTargetServiceInterceptor implements WsDiscoveryTargetSer
         ResolveMatchType resolveMatchType = wsdFactory.createResolveMatchType();
         resolveMatchType.setEndpointReference(endpointReference);
         ScopesType scopesType = wsdFactory.createScopesType();
-        scopesType.setValue(scopes);
+        scopesType.setValue(copyScopes);
         resolveMatchType.setScopes(scopesType);
-        resolveMatchType.setTypes(types);
-        resolveMatchType.setXAddrs(xAddrs);
-        resolveMatchType.setMetadataVersion(metadataVersion.longValue());
+        resolveMatchType.setTypes(copyTypes);
+        resolveMatchType.setXAddrs(copyXAddrs);
+        resolveMatchType.setMetadataVersion(copyMetadataVersion.longValue());
 
         ResolveMatchesType resolveMatchesType = wsdFactory.createResolveMatchesType();
         resolveMatchesType.setResolveMatch(resolveMatchType);
@@ -308,7 +308,8 @@ public class WsDiscoveryTargetServiceInterceptor implements WsDiscoveryTargetSer
     }
 
     @Override
-    public UnsignedInteger sendHello(boolean forceNewMetadataVersion) throws MarshallingException, TransportException, InterceptorException {
+    public UnsignedInteger sendHello(boolean forceNewMetadataVersion)
+            throws MarshallingException, TransportException, InterceptorException {
         UnsignedInteger currentMetadataVersion;
         if (forceNewMetadataVersion) {
             currentMetadataVersion = incMetadataVersionAndGet();
@@ -385,7 +386,8 @@ public class WsDiscoveryTargetServiceInterceptor implements WsDiscoveryTargetSer
         return newVersion;
     }
 
-    private void sendMulticast(String action, JAXBElement<?> body) throws MarshallingException, TransportException, InterceptorException {
+    private void sendMulticast(String action, JAXBElement<?> body)
+            throws MarshallingException, TransportException, InterceptorException {
         SoapMessage soapMessage = soapUtil.createMessage(action, WsDiscoveryConstants.WSA_UDP_TO, body);
         soapMessage.getWsDiscoveryHeader().setAppSequence(wsdUtil.createAppSequence(instanceId));
         notificationSource.sendNotification(soapMessage);

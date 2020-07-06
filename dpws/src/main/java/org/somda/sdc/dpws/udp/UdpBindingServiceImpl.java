@@ -79,7 +79,8 @@ public class UdpBindingServiceImpl extends AbstractIdleService implements UdpBin
         instanceLogger.info("Start UDP binding on network interface {}", this);
         // try to get first available address from network interface
         networkInterfaceAddress = networkInterfaceUtil.getFirstIpV4Address(networkInterface).orElseThrow(() ->
-                new SocketException(String.format("Could not retrieve network interface address from: %s", networkInterface)));
+                new SocketException(String.format("Could not retrieve network interface address from: %s",
+                        networkInterface)));
 
         instanceLogger.info("Bind to address {}", networkInterfaceAddress);
 
@@ -198,7 +199,8 @@ public class UdpBindingServiceImpl extends AbstractIdleService implements UdpBin
             return;
         }
         if (message.getLength() > maxMessageSize) {
-            String msg = String.format("Exceed maximum UDP message size. Try to write %d Bytes, but only %d Bytes allowed.",
+            String msg = String.format("Exceed maximum UDP message size. Try to write %d Bytes, " +
+                            "but only %d Bytes allowed.",
                     message.getLength(), maxMessageSize);
             throw new IOException(msg);
         }
@@ -212,7 +214,8 @@ public class UdpBindingServiceImpl extends AbstractIdleService implements UdpBin
         } else {
             if (multicastGroup == null) {
                 throw new TransportException(
-                        String.format("No transport data in UDP message, which is required as no multicast group is available. Message: %s",
+                        String.format("No transport data in UDP message, which is required as no multicast group " +
+                                        "is available. Message: %s",
                                 message.toString()));
             }
             packet.setAddress(multicastGroup);
@@ -287,7 +290,8 @@ public class UdpBindingServiceImpl extends AbstractIdleService implements UdpBin
         // no UDP specialization, create ApplicationInfo
         var requestCommContext = new CommunicationContext(new ApplicationInfo(), requestTransportInfo);
 
-        try (ByteArrayInputStream messageData = new ByteArrayInputStream(packet.getData(), packet.getOffset(), packet.getLength())) {
+        try (ByteArrayInputStream messageData =
+                     new ByteArrayInputStream(packet.getData(), packet.getOffset(), packet.getLength())) {
             communicationLog.logMessage(
                     direction,
                     CommunicationLog.TransportType.UDP,

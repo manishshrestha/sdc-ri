@@ -95,7 +95,8 @@ public class WsdlRetriever {
      * @throws IOException        in case WSDLs could not be retrieved
      * @throws TransportException in case a transport related error occurs (connection refused, ...)
      */
-    public Map<String, List<String>> retrieveWsdls(HostingServiceProxy hostingServiceProxy) throws IOException, TransportException {
+    public Map<String, List<String>> retrieveWsdls(HostingServiceProxy hostingServiceProxy)
+            throws IOException, TransportException {
         instanceLogger.debug("Retrieving WSDLs for {}", hostingServiceProxy.getActiveXAddr());
         var wsdlMap = new HashMap<String, List<String>>();
 
@@ -190,7 +191,7 @@ public class WsdlRetriever {
     @SuppressWarnings("unchecked")
     private String retrieveWsdlFromAny(Object any) throws IOException {
         try {
-            var definition = ((JAXBElement<TDefinitions>) any);
+            var definition = (JAXBElement<TDefinitions>) any;
             return retrieveEmbeddedWsdlFromMetadata(definition.getValue());
         } catch (ClassCastException e) {
             LOG.error(
@@ -198,7 +199,8 @@ public class WsdlRetriever {
                             + " was {} instead, cannot handle it",
                     any.getClass().getSimpleName()
             );
-            throw new IOException("Any node in metadata was not of instance JAXBElement<TDefinitions>, cannot handle it");
+            throw new IOException("Any node in metadata was not of instance JAXBElement<TDefinitions>, " +
+                    "cannot handle it");
         }
     }
 

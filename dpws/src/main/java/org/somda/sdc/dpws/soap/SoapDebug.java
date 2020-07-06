@@ -65,7 +65,7 @@ public class SoapDebug {
             Object obj = msg.getOriginalEnvelope().getBody().getAny().get(0);
             String name = obj.getClass().getSimpleName();
             if (obj instanceof JAXBElement) {
-                name = ((JAXBElement)obj).getName().toString();
+                name = ((JAXBElement) obj).getName().toString();
             }
             sb.append(String.format("bodyType=[%s];", name));
         }

@@ -13,7 +13,8 @@ import java.util.List;
 /**
  * WS-Discovery Target Service interface.
  *
- * @see <a href="http://docs.oasis-open.org/ws-dd/discovery/1.1/os/wsdd-discovery-1.1-spec-os.html#_Toc234231815">Conceptual Message Content</a>
+ * @see <a href="http://docs.oasis-open.org/ws-dd/discovery/1.1/os/wsdd-discovery-1.1-spec-os.html#_Toc234231815"
+ * >Conceptual Message Content</a>
  */
 public interface WsDiscoveryTargetService extends Interceptor {
     EndpointReferenceType getEndpointReference();
@@ -95,7 +96,7 @@ public interface WsDiscoveryTargetService extends Interceptor {
      *
      * @return the metadata version that has been attached to the Hello message.
      * @throws MarshallingException if marshalling the Hello message fails.
-     * @throws TransportException if there is any problem on the transport layer.
+     * @throws TransportException   if there is any problem on the transport layer.
      * @throws InterceptorException if one of the interceptors pops up with an error.
      */
     UnsignedInteger sendHello() throws MarshallingException, TransportException, InterceptorException;
@@ -106,16 +107,17 @@ public interface WsDiscoveryTargetService extends Interceptor {
      * @param forceNewMetadataVersion set to true to force incrementing the metadata version, or false to not do so.
      * @return the metadata version that has been attached to the Hello message.
      * @throws MarshallingException if marshalling the Hello message fails.
-     * @throws TransportException if there is any problem on the transport layer.
+     * @throws TransportException   if there is any problem on the transport layer.
      * @throws InterceptorException if one of the interceptors pops up with an error.
      */
-    UnsignedInteger sendHello(boolean forceNewMetadataVersion) throws MarshallingException, TransportException, InterceptorException;
+    UnsignedInteger sendHello(boolean forceNewMetadataVersion)
+            throws MarshallingException, TransportException, InterceptorException;
 
     /**
      * Blocking function to send out a Bye message.
      *
      * @throws MarshallingException if marshalling the Bye message fails.
-     * @throws TransportException if there is any problem on the transport layer.
+     * @throws TransportException   if there is any problem on the transport layer.
      * @throws InterceptorException if one of the interceptors pops up with an error.
      */
     void sendBye() throws MarshallingException, TransportException, InterceptorException;

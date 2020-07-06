@@ -34,5 +34,6 @@ public interface ClientHelperFactory {
      * @param discoveredDeviceResolver the resolver that is used if hello messages do not contain XAddrs.
      * @return the oberserver instance.
      */
-    HelloByeAndProbeMatchesObserverImpl createDiscoveryObserver(@Assisted DiscoveredDeviceResolver discoveredDeviceResolver);
+    HelloByeAndProbeMatchesObserverImpl createDiscoveryObserver(
+        @Assisted DiscoveredDeviceResolver discoveredDeviceResolver);
 }

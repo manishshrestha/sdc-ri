@@ -50,11 +50,14 @@ public class MarshallingService {
         try {
             Envelope env = soapMarshalling.unmarshal(is);
             return soapUtil.createMessage(env);
+            // CHECKSTYLE.OFF: IllegalCatch
         } catch (Exception e) {
+            // CHECKSTYLE.ON: IllegalCatch
             throw new MarshallingException(e);
         }
     }
 
+    
     /**
      * Unmarshals a SOAP message from a reader.
      *
@@ -66,21 +69,26 @@ public class MarshallingService {
         try {
             Envelope env = soapMarshalling.unmarshal(reader);
             return soapUtil.createMessage(env);
+            // CHECKSTYLE.OFF: IllegalCatch
         } catch (Exception e) {
+            // CHECKSTYLE.ON: IllegalCatch
             throw new MarshallingException(e);
         }
     }
 
     /**
-     * Uses the given {@link RequestResponseServer} object to accept unmarshalled request data and marshalled response data.
+     * Uses the given {@link RequestResponseServer} object to accept unmarshalled request data
+     * and marshalled response data.
      *
      * @param srv                  the request-response server where to call
-     *                             {@link RequestResponseServer#receiveRequestResponse(SoapMessage, SoapMessage, CommunicationContext)}
+     *                             {@link RequestResponseServer#receiveRequestResponse(SoapMessage, SoapMessage,
+     *                             CommunicationContext)}
      * @param is                   input stream that provides SOAP request message.
      * @param os                   output stream where to write SOAP response message to.
      * @param communicationContext transport and application layer information.
      * @throws MarshallingException if any exception occurs during marshalling or unmarshalling of SOAP messages.
-     * @deprecated only used by tests. Do not use this function as it is misplaced in the {@linkplain MarshallingService}.
+     * @deprecated only used by tests. Do not use this function as it is misplaced
+     * in the {@linkplain MarshallingService}.
      */
     @Deprecated(since = "1.1.0", forRemoval = true)
     public void handleRequestResponse(RequestResponseServer srv,

@@ -50,7 +50,7 @@ public class SubscriptionManagerBase implements SubscriptionManager {
 
     @Override
     public LocalDateTime getExpiresTimeout() {
-        try (AutoLock ignored = AutoLock.lock(expiresLock)){
+        try (AutoLock ignored = AutoLock.lock(expiresLock)) {
             return expiresTimeout;
         }
     }
@@ -67,7 +67,7 @@ public class SubscriptionManagerBase implements SubscriptionManager {
 
     @Override
     public Duration getExpires() {
-        try (AutoLock ignored = AutoLock.lock(expiresLock)){
+        try (AutoLock ignored = AutoLock.lock(expiresLock)) {
             return expires;
         }
     }
@@ -83,7 +83,7 @@ public class SubscriptionManagerBase implements SubscriptionManager {
     }
 
     public void renew(Duration expires) {
-        try (AutoLock ignored = AutoLock.lock(expiresLock)){
+        try (AutoLock ignored = AutoLock.lock(expiresLock)) {
             this.expires = expires;
             this.expiresTimeout = calculateTimeout(expires);
         }

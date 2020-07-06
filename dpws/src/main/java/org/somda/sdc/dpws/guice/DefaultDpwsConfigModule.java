@@ -17,7 +17,6 @@ import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLSession;
 import java.io.File;
 import java.time.Duration;
-import java.util.UUID;
 
 /**
  * Default configuration module to configure {@link DefaultDpwsModule}.
@@ -111,7 +110,7 @@ public class DefaultDpwsConfigModule extends AbstractConfigurationModule {
                         "TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384",
                         "TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384",
                         "TLS_DHE_RSA_WITH_AES_128_GCM_SHA256",
-                        "TLS_DHE_RSA_WITH_AES_256_GCM_SHA384"
+                        "TLS_DHE_RSA_WITH_AES_256_GCM_SHA384",
                 });
 
         var defaultHostnameVerifier = new HostnameVerifier() {

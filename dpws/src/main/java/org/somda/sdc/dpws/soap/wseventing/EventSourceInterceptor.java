@@ -170,7 +170,8 @@ public class EventSourceInterceptor extends AbstractIdleService implements Event
         removeStaleSubscriptions();
         final Supplier<SoapFaultException> soapFaultExceptionSupplier = () ->
                 new SoapFaultException(createInvalidMsg(rrObj));
-        Subscribe subscribe = soapUtil.getBody(rrObj.getRequest(), Subscribe.class).orElseThrow(soapFaultExceptionSupplier);
+        Subscribe subscribe = soapUtil.getBody(rrObj.getRequest(), Subscribe.class)
+                .orElseThrow(soapFaultExceptionSupplier);
 
         // Validate delivery mode
         String deliveryMode = Optional.ofNullable(subscribe.getDelivery().getMode())
@@ -205,7 +206,8 @@ public class EventSourceInterceptor extends AbstractIdleService implements Event
 
         // Validate filter type
         FilterType filterType = Optional.ofNullable(subscribe.getFilter()).orElseThrow(() ->
-                new SoapFaultException(faultFactory.createEventSourceUnableToProcess("No filter given, but required.")));
+                new SoapFaultException(faultFactory.createEventSourceUnableToProcess("No filter given, " +
+                        "but required.")));
 
         // Validate filter dialect
         String filterDialect = Optional.ofNullable(filterType.getDialect()).orElse("");
@@ -244,8 +246,8 @@ public class EventSourceInterceptor extends AbstractIdleService implements Event
         soapUtil.setBody(subscribeResponse, rrObj.getResponse());
         soapUtil.setWsaAction(rrObj.getResponse(), WsEventingConstants.WSA_ACTION_SUBSCRIBE_RESPONSE);
 
-        instanceLogger.info("Incoming subscribe request. Action(s): {}. Generated subscription id: {}. Notifications go to {}. " +
-                        "Expiration in {} seconds",
+        instanceLogger.info("Incoming subscribe request. Action(s): {}. Generated subscription id: {}. " +
+                        "Notifications go to {}. Expiration in {} seconds",
                 Arrays.toString(uris.toArray()),
                 subMan.getSubscriptionId(),
                 wsaUtil.getAddressUri(subMan.getNotifyTo()).orElse("<unknown>"),
@@ -369,7 +371,9 @@ public class EventSourceInterceptor extends AbstractIdleService implements Event
             } else {
                 return requestedExpires;
             }
+            // CHECKSTYLE.OFF: IllegalCatch
         } catch (Exception e) {
+            // CHECKSTYLE.ON: IllegalCatch
             throw new SoapFaultException(faultFactory.createInvalidExpirationTime());
         }
     }
@@ -420,7 +424,8 @@ public class EventSourceInterceptor extends AbstractIdleService implements Event
         }
     }
 
-    private SoapMessage createForEndTo(WsEventingStatus status, SourceSubscriptionManager subMan, EndpointReferenceType endTo) {
+    private SoapMessage createForEndTo(WsEventingStatus status, SourceSubscriptionManager subMan,
+                                       EndpointReferenceType endTo) {
         SubscriptionEnd subscriptionEnd = wseFactory.createSubscriptionEnd();
         subscriptionEnd.setSubscriptionManager(subMan.getSubscriptionManagerEpr());
         subscriptionEnd.setStatus(status.getUri());

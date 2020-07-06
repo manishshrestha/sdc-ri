@@ -47,7 +47,8 @@ public class ThisDeviceBuilder {
     /**
      * Gets the actual device type.
      *
-     * @return the internally stored device type. Caution: changes afterwards in the fluent interface will affect this returned value.
+     * @return the internally stored device type. Caution: changes afterwards in the fluent interface will affect
+     * this returned value.
      */
     public ThisDeviceType get() {
         return thisDevice;
