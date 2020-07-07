@@ -7,7 +7,6 @@ import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.core.config.Configurator;
-import org.apache.logging.log4j.core.config.DefaultConfiguration;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 import org.somda.sdc.biceps.guice.DefaultBicepsConfigModule;
@@ -39,9 +38,10 @@ import java.util.List;
  * injection.
  */
 public class ProviderUtil extends BaseUtil {
-    private static final Logger LOG = LogManager.getLogger(ProviderUtil.class);
     public static final String OPT_REPORT_INTERVAL = "report_interval";
     public static final String OPT_WAVEFORMS_INTERVAL = "waveform_interval";
+
+    private static final Logger LOG = LogManager.getLogger(ProviderUtil.class);
 
     private static final String DEFAULT_REPORT_INTERVAL = "5000"; // millis
     private static final String DEFAULT_WAVEFORM_INTERVAL = "100"; // millis
@@ -100,7 +100,8 @@ public class ProviderUtil extends BaseUtil {
                                         for (String key : extendedKeyUsage) {
                                             try {
                                                 URI keyUri = URI.create(key);
-                                                if (keyUri.equals(URI.create(GlueConstants.OID_KEY_PURPOSE_SDC_SERVICE_CONSUMER))) {
+                                                if (keyUri.equals(URI.create(
+                                                        GlueConstants.OID_KEY_PURPOSE_SDC_SERVICE_CONSUMER))) {
                                                     LOG.debug("SDC Service Consumer PKP found");
                                                     return true;
                                                 }

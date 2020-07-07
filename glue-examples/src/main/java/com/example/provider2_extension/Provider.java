@@ -52,40 +52,6 @@ public class Provider extends AbstractIdleService {
     private final MdibXmlIo mdibXmlIo;
     private final ModificationsBuilderFactory modificationsBuilderFactory;
 
-    public static void main(String[] args) throws SocketException, UnknownHostException {
-        // starts an MDIB with a descriptor and state extensions
-        // runs with state updates every 5 seconds
-
-        var providerUtil = new ProviderUtil(args);
-        var provider = new Provider(providerUtil);
-        provider.startAsync().awaitRunning();
-
-        var reportInterval = providerUtil.getReportInterval().toMillis();
-        LOG.info("Sending metric state report with extension every {} ms", reportInterval);
-        var thread = new Thread(() -> {
-            while (true) {
-                try {
-                    Thread.sleep(reportInterval);
-                    provider.changeNumericMetric();
-                } catch (InterruptedException | PreprocessingException e) {
-                    LOG.warn("Thread loop stopping", e);
-                    break;
-                }
-            }
-        });
-        thread.setDaemon(true);
-        thread.start();
-
-        try {
-            System.in.read();
-        } catch (IOException e) {
-            // pass and quit
-        }
-
-        thread.interrupt();
-        provider.stopAsync().awaitTerminated();
-    }
-
     Provider(ProviderUtil providerUtil) throws SocketException, UnknownHostException {
         var injector = providerUtil.getInjector();
 
@@ -141,6 +107,40 @@ public class Provider extends AbstractIdleService {
                 .setFriendlyName(dpwsUtil.createLocalizedStrings()
                         .add("en", "Provider with extensions example")
                         .get()).get());
+    }
+
+    public static void main(String[] args) throws SocketException, UnknownHostException {
+        // starts an MDIB with a descriptor and state extensions
+        // runs with state updates every 5 seconds
+
+        var providerUtil = new ProviderUtil(args);
+        var provider = new Provider(providerUtil);
+        provider.startAsync().awaitRunning();
+
+        var reportInterval = providerUtil.getReportInterval().toMillis();
+        LOG.info("Sending metric state report with extension every {} ms", reportInterval);
+        var thread = new Thread(() -> {
+            while (true) {
+                try {
+                    Thread.sleep(reportInterval);
+                    provider.changeNumericMetric();
+                } catch (InterruptedException | PreprocessingException e) {
+                    LOG.warn("Thread loop stopping", e);
+                    break;
+                }
+            }
+        });
+        thread.setDaemon(true);
+        thread.start();
+
+        try {
+            System.in.read();
+        } catch (IOException e) {
+            // pass and quit
+        }
+
+        thread.interrupt();
+        provider.stopAsync().awaitTerminated();
     }
 
     void changeNumericMetric() throws PreprocessingException {

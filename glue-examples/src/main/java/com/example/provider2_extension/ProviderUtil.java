@@ -29,8 +29,8 @@ import java.time.Duration;
 import java.util.List;
 
 class ProviderUtil extends BaseUtil {
-    private static final Logger LOG = LogManager.getLogger(ProviderUtil.class);
     public static final String OPT_REPORT_INTERVAL = "report_interval";
+    private static final Logger LOG = LogManager.getLogger(ProviderUtil.class);
 
     private static final String DEFAULT_REPORT_INTERVAL = "5000"; // millis
 

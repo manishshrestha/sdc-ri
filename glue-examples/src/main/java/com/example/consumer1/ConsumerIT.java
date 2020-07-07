@@ -55,7 +55,7 @@ import static org.junit.platform.engine.discovery.DiscoverySelectors.selectClass
 public class ConsumerIT {
     private static final Logger LOG = LogManager.getLogger(ConsumerIT.class);
     private static final Duration MAX_WAIT = Duration.ofSeconds(11);
-    private static String[] ARGS;
+    private static String[] args;
 
     private static Duration reportTimeout;
     private static String targetFacility;
@@ -77,7 +77,7 @@ public class ConsumerIT {
 
     @Test
     void runIT() throws Exception {
-        var settings = new ConsumerUtil(ARGS);
+        var settings = new ConsumerUtil(args);
         var consumer = new Consumer(settings);
         consumer.startUp();
 
@@ -206,7 +206,7 @@ public class ConsumerIT {
         Thread.sleep(reportTimeout.toMillis());
 
         // expected number of reports given 5 second interval
-        int minNumberReports = ((int) (reportTimeout.dividedBy(Duration.ofSeconds(5))) - 1);
+        int minNumberReports = (int) (reportTimeout.dividedBy(Duration.ofSeconds(5))) - 1;
 
         // verify the number of reports for the expected metrics is at least five during the timeout
         assertTrue(
@@ -264,7 +264,7 @@ public class ConsumerIT {
 
     public static void main(String[] args) {
 
-        ARGS = args;
+        ConsumerIT.args = args;
 
         final LauncherDiscoveryRequest request =
                 LauncherDiscoveryRequestBuilder.request()

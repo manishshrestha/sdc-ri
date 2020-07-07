@@ -54,28 +54,6 @@ public class Consumer extends AbstractIdleService {
     private final Condition connectCondition;
     private int connectCount;
 
-    public static void main(String[] args) throws Exception {
-        var settings = new ConsumerUtil(args);
-        var targetEpr = settings.getEpr();
-        if (targetEpr == null || targetEpr.isEmpty()) {
-            LOG.error("An EPR is required but was not found (see command line argument --epr)");
-            System.exit(1);
-        }
-
-        var consumer = new Consumer(settings);
-        consumer.startAsync().awaitRunning();
-
-        LOG.info("Press any key to exit");
-        try {
-            System.in.read();
-        } catch (IOException e) {
-            // pass and quit
-        }
-        LOG.info("Shutting down");
-        consumer.stopAsync().awaitTerminated();
-
-    }
-
     Consumer(ConsumerUtil consumerUtil) throws SocketException, UnknownHostException {
         this.consumerUtil = consumerUtil;
 
@@ -110,6 +88,28 @@ public class Consumer extends AbstractIdleService {
 
         this.connectorThread = new Thread(new ConnectorThread());
         connectorThread.setDaemon(true);
+    }
+
+    public static void main(String[] args) throws Exception {
+        var settings = new ConsumerUtil(args);
+        var targetEpr = settings.getEpr();
+        if (targetEpr == null || targetEpr.isEmpty()) {
+            LOG.error("An EPR is required but was not found (see command line argument --epr)");
+            System.exit(1);
+        }
+
+        var consumer = new Consumer(settings);
+        consumer.startAsync().awaitRunning();
+
+        LOG.info("Press any key to exit");
+        try {
+            System.in.read();
+        } catch (IOException e) {
+            // pass and quit
+        }
+        LOG.info("Shutting down");
+        consumer.stopAsync().awaitTerminated();
+
     }
 
     protected void startUp() {
