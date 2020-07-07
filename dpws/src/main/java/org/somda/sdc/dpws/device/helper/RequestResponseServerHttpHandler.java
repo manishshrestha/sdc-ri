@@ -1,5 +1,6 @@
 package org.somda.sdc.dpws.device.helper;
 
+import com.google.common.collect.ListMultimap;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import org.apache.logging.log4j.LogManager;
@@ -99,7 +100,14 @@ public class RequestResponseServerHttpHandler implements HttpHandler, Intercepto
     public void handle(InputStream inStream, OutputStream outStream, CommunicationContext communicationContext)
             throws HttpException {
         SoapMessage requestMsg;
-        var headers = ((HttpApplicationInfo) communicationContext.getApplicationInfo()).getHeaders();
+        ListMultimap<String, String> headers;
+        try {
+            headers = ((HttpApplicationInfo) communicationContext.getApplicationInfo()).getHeaders();
+        } catch (ClassCastException e) {
+            var errorText = "Unexpected ApplicationInfo received, expected HttpApplicationInfo.";
+            instanceLogger.error(errorText);
+            throw new HttpException(HttpStatus.INTERNAL_SERVER_ERROR_500, errorText);
+        }
         var contentTypeOpt = ContentType.fromListMultimap(headers);
         if (contentTypeOpt.isEmpty()) {
             throw new HttpException(HttpStatus.BAD_REQUEST_400, NO_CONTENT_TYPE_MESSAGE);

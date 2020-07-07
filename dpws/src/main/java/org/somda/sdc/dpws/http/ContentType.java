@@ -5,6 +5,8 @@ import org.apache.http.Header;
 import org.apache.http.HttpHeaders;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.somda.sdc.common.util.ObjectStringifier;
+import org.somda.sdc.common.util.Stringified;
 import org.somda.sdc.dpws.soap.SoapConstants;
 
 import javax.annotation.Nullable;
@@ -23,8 +25,11 @@ public class ContentType {
     private static final String CHARSET = "charset";
     private static final String BOUNDARY = "boundary";
 
+    @Stringified
     private final ContentTypes contentType;
+    @Stringified
     private final Charset charset;
+    @Stringified
     private final String boundary;
 
     ContentType(ContentTypes contentType, @Nullable Charset charset, @Nullable String boundary) {
@@ -40,8 +45,9 @@ public class ContentType {
 
     /**
      * Parses a charset element to a java {@linkplain Charset}.
+     *
      * @param charset to parse
-     * @return Optional containing charset if understood by java, empty otherwise
+     * @return {@linkplain Optional} containing charset if understood by java, empty otherwise
      */
     private static Optional<Charset> parseCharset(@Nullable String charset) {
         if (charset != null && !charset.isBlank()) {
@@ -58,6 +64,7 @@ public class ContentType {
      * Parses the content-type entry from a {@link ListMultimap} containing header entries.
      *
      * <em>Http header keys must be lower case, i.e. content-type, not Content-Type/</em>
+     *
      * @param headers to parse content-type from
      * @return parsed content-type if successful, empty optional otherwise
      */
@@ -88,7 +95,7 @@ public class ContentType {
                 if (CHARSET.equalsIgnoreCase(key)) {
                     var parsedCharset = parseCharset(value);
                     if (parsedCharset.isEmpty()) {
-                        LOG.error("Unknown charset provided with content type {}. charset: {}", contentType, value);
+                        LOG.error("Unknown charset provided with content type {}. Charset: {}", contentType, value);
                         return Optional.empty();
                     }
                     charset = parsedCharset.get();
@@ -102,6 +109,7 @@ public class ContentType {
 
     /**
      * Parses the content-type {@linkplain Header} element provided by apache http client.
+     *
      * @param header to parse content-type from
      * @return parsed content-type if parseable, empty optional otherweise
      */
@@ -149,11 +157,7 @@ public class ContentType {
 
     @Override
     public String toString() {
-        return "ContentType{" +
-            "contentType=" + contentType +
-            ", charset=" + charset +
-            ", boundary='" + boundary + '\'' +
-            '}';
+        return ObjectStringifier.stringify(this);
     }
 
     /**
@@ -169,6 +173,12 @@ public class ContentType {
         public final String contentType;
         public final Charset defaultEncoding;
 
+        /**
+         * Maps a mime-type to the respective {@linkplain ContentTypes} enum value.
+         *
+         * @param mime to map to content types value
+         * @return enum value if present, empty {@linkplain Optional} otherwise
+         */
         public static Optional<ContentTypes> fromMime(String mime) {
             for (ContentTypes contentType : ContentTypes.values()) {
                 if (contentType.contentType.equalsIgnoreCase(mime)) {
