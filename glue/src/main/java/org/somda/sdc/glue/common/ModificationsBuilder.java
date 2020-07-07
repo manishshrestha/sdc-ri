@@ -35,7 +35,7 @@ import java.util.List;
  * Use {@link MdibMapper} to map from {@linkplain MdibAccess} to an {@linkplain Mdib} object.
  */
 public class ModificationsBuilder {
-    private final Logger log = LogManager.getLogger(ModificationsBuilder.class);
+    private static final Logger LOG = LogManager.getLogger(ModificationsBuilder.class);
 
     private final ArrayListMultimap<String, AbstractState> states;
     private final MdibDescriptionModifications modifications;
@@ -66,7 +66,7 @@ public class ModificationsBuilder {
                          @Assisted @Nullable DefaultStateValues defaultStateValues,
                          MdibTypeValidator typeValidator,
                          @Named(org.somda.sdc.common.CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier) {
-        this.instanceLogger = InstanceLogger.wrapLogger(log, frameworkIdentifier);
+        this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);
         this.createSingleStateIfMissing = createSingleStateIfMissing;
         this.typeValidator = typeValidator;
         var copyDefaultStateValues = defaultStateValues;
