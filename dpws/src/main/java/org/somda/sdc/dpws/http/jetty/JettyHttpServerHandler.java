@@ -89,7 +89,7 @@ public class JettyHttpServerHandler extends AbstractHandler {
             );
 
         } catch (HttpException e) {
-            instanceLogger.warn("An HTTP exception occurred during HTTP request processing: {}", e.getMessage());
+            instanceLogger.warn("An HTTP exception occurred during HTTP request processing. {}", e.getMessage());
             instanceLogger.trace("An HTTP exception occurred during HTTP request processing", e);
             response.setStatus(e.getStatusCode());
             if (!e.getMessage().isEmpty()) {
