@@ -5,7 +5,6 @@ import com.google.inject.Guice;
 import com.google.inject.Injector;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.core.config.Configurator;
-import org.apache.logging.log4j.core.config.DefaultConfiguration;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 import org.somda.sdc.biceps.guice.DefaultBicepsConfigModule;
@@ -78,7 +77,8 @@ public class ConsumerUtil extends BaseUtil {
                                         for (String key : extendedKeyUsage) {
                                             try {
                                                 URI keyUri = URI.create(key);
-                                                if (keyUri.equals(URI.create(GlueConstants.OID_KEY_PURPOSE_SDC_SERVICE_PROVIDER))) {
+                                                if (keyUri.equals(URI.create(
+                                                        GlueConstants.OID_KEY_PURPOSE_SDC_SERVICE_PROVIDER))) {
                                                     LOG.debug("SDC Service Provider PKP found");
                                                     return true;
                                                 }

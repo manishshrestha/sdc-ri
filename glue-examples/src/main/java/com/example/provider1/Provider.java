@@ -11,7 +11,25 @@ import org.somda.sdc.biceps.common.MdibEntity;
 import org.somda.sdc.biceps.common.MdibStateModifications;
 import org.somda.sdc.biceps.common.access.ReadTransaction;
 import org.somda.sdc.biceps.common.storage.PreprocessingException;
-import org.somda.sdc.biceps.model.participant.*;
+import org.somda.sdc.biceps.model.participant.AlertConditionState;
+import org.somda.sdc.biceps.model.participant.AlertSignalPresence;
+import org.somda.sdc.biceps.model.participant.AlertSignalState;
+import org.somda.sdc.biceps.model.participant.ContextAssociation;
+import org.somda.sdc.biceps.model.participant.EnumStringMetricDescriptor;
+import org.somda.sdc.biceps.model.participant.EnumStringMetricState;
+import org.somda.sdc.biceps.model.participant.GenerationMode;
+import org.somda.sdc.biceps.model.participant.InstanceIdentifier;
+import org.somda.sdc.biceps.model.participant.LocationContextDescriptor;
+import org.somda.sdc.biceps.model.participant.LocationContextState;
+import org.somda.sdc.biceps.model.participant.LocationDetail;
+import org.somda.sdc.biceps.model.participant.Mdib;
+import org.somda.sdc.biceps.model.participant.MeasurementValidity;
+import org.somda.sdc.biceps.model.participant.NumericMetricState;
+import org.somda.sdc.biceps.model.participant.NumericMetricValue;
+import org.somda.sdc.biceps.model.participant.RealTimeSampleArrayMetricState;
+import org.somda.sdc.biceps.model.participant.SampleArrayValue;
+import org.somda.sdc.biceps.model.participant.StringMetricState;
+import org.somda.sdc.biceps.model.participant.StringMetricValue;
 import org.somda.sdc.biceps.provider.access.LocalMdibAccess;
 import org.somda.sdc.biceps.provider.access.factory.LocalMdibAccessFactory;
 import org.somda.sdc.dpws.DpwsFramework;
@@ -66,10 +84,10 @@ public class Provider extends AbstractIdleService {
     private LocationDetail currentLocation;
 
     /**
-     * Create an instance of an SDC Provider
+     * Create an instance of an SDC Provider.
      *
      * @param providerUtil options and configured injector
-     * @throws SocketException thrown if network adapter cannot be set up
+     * @throws SocketException      thrown if network adapter cannot be set up
      * @throws UnknownHostException if provided address cannot be resolved to an adapter
      */
     public Provider(ProviderUtil providerUtil) throws SocketException, UnknownHostException {
@@ -105,18 +123,20 @@ public class Provider extends AbstractIdleService {
 
         var handler = new OperationHandler(this.mdibAccess);
         String finalEpr = epr;
-        this.sdcDevice = injector.getInstance(SdcDeviceFactory.class).createSdcDevice(new DeviceSettings() {
-            @Override
-            public EndpointReferenceType getEndpointReference() {
-                return injector.getInstance(WsAddressingUtil.class)
-                        .createEprWithAddress(finalEpr);
-            }
+        this.sdcDevice = injector.getInstance(SdcDeviceFactory.class)
+                .createSdcDevice(new DeviceSettings() {
+                                     @Override
+                                     public EndpointReferenceType getEndpointReference() {
+                                         return injector.getInstance(WsAddressingUtil.class)
+                                                 .createEprWithAddress(finalEpr);
+                                     }
 
-            @Override
-            public NetworkInterface getNetworkInterface() {
-                return networkInterface;
-            }
-        }, this.mdibAccess, List.of(handler), Collections.singleton(injector.getInstance(SdcRequiredTypesAndScopes.class)));
+                                     @Override
+                                     public NetworkInterface getNetworkInterface() {
+                                         return networkInterface;
+                                     }
+                                 }, this.mdibAccess, List.of(handler),
+                        Collections.singleton(injector.getInstance(SdcRequiredTypesAndScopes.class)));
 
         this.instanceIdentifier = new InstanceIdentifier();
         this.instanceIdentifier.setRootName("AwesomeExampleInstance");
@@ -149,7 +169,8 @@ public class Provider extends AbstractIdleService {
                 .setPresentationUrl("http://www.example.com")
                 .get());
 
-        final ModificationsBuilderFactory modificationsBuilderFactory = injector.getInstance(ModificationsBuilderFactory.class);
+        final ModificationsBuilderFactory modificationsBuilderFactory =
+                injector.getInstance(ModificationsBuilderFactory.class);
 
         // load initial mdib from file
         final MdibXmlIo mdibXmlIo = injector.getInstance(MdibXmlIo.class);
@@ -158,7 +179,8 @@ public class Provider extends AbstractIdleService {
             throw new RuntimeException("Could not load mdib.xml as resource");
         }
         final Mdib mdib = mdibXmlIo.readMdib(mdibAsStream);
-        final MdibDescriptionModifications modifications = modificationsBuilderFactory.createModificationsBuilder(mdib).get();
+        final MdibDescriptionModifications modifications =
+                modificationsBuilderFactory.createModificationsBuilder(mdib).get();
         mdibAccess.writeDescription(modifications);
 
         if (currentLocation != null) {
@@ -190,8 +212,10 @@ public class Provider extends AbstractIdleService {
             final MdibStateModifications locMod = MdibStateModifications.create(MdibStateModifications.Type.CONTEXT);
             // update location state
             try (ReadTransaction readTransaction = mdibAccess.startTransaction()) {
-                final var locDesc = readTransaction.getDescriptor(Constants.HANDLE_LOCATIONCONTEXT, LocationContextDescriptor.class).orElseThrow(() ->
-                        new RuntimeException(String.format("Could not find state for handle %s", Constants.HANDLE_LOCATIONCONTEXT)));
+                final var locDesc = readTransaction.getDescriptor(
+                        Constants.HANDLE_LOCATIONCONTEXT, LocationContextDescriptor.class).orElseThrow(() ->
+                        new RuntimeException(String.format("Could not find state for handle %s",
+                                Constants.HANDLE_LOCATIONCONTEXT)));
 
                 var locState = new LocationContextState();
                 locState.setLocationDetail(location);
@@ -213,13 +237,14 @@ public class Provider extends AbstractIdleService {
 
 
     /**
-     * Adds a sine wave to the data of a waveform
+     * Adds a sine wave to the data of a waveform.
      *
      * @param handle descriptor handle of waveform state
      * @throws PreprocessingException if changes could not be committed to mdib
      */
     public void changeWaveform(String handle) throws PreprocessingException {
-        final MdibStateModifications modifications = MdibStateModifications.create(MdibStateModifications.Type.WAVEFORM);
+        final MdibStateModifications modifications =
+                MdibStateModifications.create(MdibStateModifications.Type.WAVEFORM);
 
         try (ReadTransaction readTransaction = mdibAccess.startTransaction()) {
             final var state = readTransaction.getState(handle, RealTimeSampleArrayMetricState.class).orElseThrow(() ->
@@ -319,7 +344,8 @@ public class Provider extends AbstractIdleService {
         MdibEntity mdibEntity = entityOpt.get();
         EnumStringMetricDescriptor descriptor = (EnumStringMetricDescriptor) mdibEntity.getDescriptor();
 
-        List<String> allowedValue = descriptor.getAllowedValue().stream().map(x -> x.getValue()).collect(Collectors.toList());
+        List<String> allowedValue =
+                descriptor.getAllowedValue().stream().map(x -> x.getValue()).collect(Collectors.toList());
 
         EnumStringMetricState state = (EnumStringMetricState) mdibEntity.getStates().get(0);
 
@@ -356,7 +382,7 @@ public class Provider extends AbstractIdleService {
     }
 
     /**
-     * Toggles an AlertSignalState and AlertConditionState between presence on and off
+     * Toggles an AlertSignalState and AlertConditionState between presence on and off.
      *
      * @param signalHandle    signal handle to toggle
      * @param conditionHandle matching condition to toggle
@@ -378,7 +404,8 @@ public class Provider extends AbstractIdleService {
         }
 
         try {
-            mdibAccess.writeStates(MdibStateModifications.create(MdibStateModifications.Type.ALERT).add(conditionState).add(signalState));
+            mdibAccess.writeStates(MdibStateModifications
+                    .create(MdibStateModifications.Type.ALERT).add(conditionState).add(signalState));
         } catch (PreprocessingException e) {
             LOG.error("", e);
         }
@@ -430,7 +457,8 @@ public class Provider extends AbstractIdleService {
                     provider.changeNumericMetric(Constants.HANDLE_NUMERIC_DYNAMIC);
                     provider.changeStringMetric(Constants.HANDLE_STRING_DYNAMIC);
                     provider.changeEnumStringMetric(Constants.HANDLE_ENUM_DYNAMIC);
-                    provider.changeAlertSignalAndConditionPresence(Constants.HANDLE_ALERT_SIGNAL, Constants.HANDLE_ALERT_CONDITION);
+                    provider.changeAlertSignalAndConditionPresence(
+                            Constants.HANDLE_ALERT_SIGNAL, Constants.HANDLE_ALERT_CONDITION);
                 } catch (InterruptedException | PreprocessingException e) {
                     LOG.warn("Thread loop stopping", e);
                     break;
