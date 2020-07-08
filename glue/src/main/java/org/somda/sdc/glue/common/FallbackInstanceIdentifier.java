@@ -29,7 +29,7 @@ public class FallbackInstanceIdentifier {
                 + DELIMITER + UrlUtf8.encode(locationDetail.getPoC())
                 + DELIMITER + UrlUtf8.encode(locationDetail.getRoom())
                 + DELIMITER + UrlUtf8.encode(locationDetail.getBed());
-        if (!extension.equals("/////")) {
+        if (!"/////".equals(extension)) {
             InstanceIdentifier instanceIdentifier = new InstanceIdentifier();
             instanceIdentifier.setRootName(LOCATION_ROOT_SEGMENT);
             instanceIdentifier.setExtensionName(extension);

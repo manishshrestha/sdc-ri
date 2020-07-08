@@ -38,7 +38,8 @@ public class OperationInvocationDispatcher {
     @Inject
     OperationInvocationDispatcher(@Assisted HostingServiceProxy hostingServiceProxy,
                                   ScoUtil scoUtil,
-                                  @Named(ConsumerConfig.AWAITING_TRANSACTION_TIMEOUT) Duration awaitingTransactionTimeout,
+                                  @Named(ConsumerConfig.AWAITING_TRANSACTION_TIMEOUT)
+                                          Duration awaitingTransactionTimeout,
                                   @Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier) {
         this.instanceLogger = HostingServiceLogger.getLogger(LOG, hostingServiceProxy, frameworkIdentifier);
         this.scoUtil = scoUtil;
@@ -124,7 +125,8 @@ public class OperationInvocationDispatcher {
                 final OperationInvokedReport.ReportPart reportFromQueue = queue.take();
                 transaction.receiveIncomingReport(reportFromQueue);
             } catch (InterruptedException e) {
-                instanceLogger.error("Could not take expected report from queue for transaction {}", transaction.getTransactionId());
+                instanceLogger.error("Could not take expected report from queue for transaction {}",
+                        transaction.getTransactionId());
                 return;
             }
         }

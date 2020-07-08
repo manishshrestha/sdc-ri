@@ -71,7 +71,8 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-public class SdcRemoteDevicesConnectorImpl extends AbstractIdleService implements SdcRemoteDevicesConnector, WatchdogObserver {
+public class SdcRemoteDevicesConnectorImpl extends AbstractIdleService
+        implements SdcRemoteDevicesConnector, WatchdogObserver {
     private static final Logger LOG = LogManager.getLogger(SdcRemoteDevicesConnectorImpl.class);
 
     private ExecutorWrapperService<ListeningExecutorService> executorService;
@@ -130,7 +131,8 @@ public class SdcRemoteDevicesConnectorImpl extends AbstractIdleService implement
 
     @Override
     public ListenableFuture<SdcRemoteDevice> connect(HostingServiceProxy hostingServiceProxy,
-                                                     ConnectConfiguration connectConfiguration) throws PrerequisitesException {
+                                                     ConnectConfiguration connectConfiguration)
+            throws PrerequisitesException {
         // Early exit if there is a connection already
         checkExistingConnection(hostingServiceProxy);
 
@@ -164,7 +166,8 @@ public class SdcRemoteDevicesConnectorImpl extends AbstractIdleService implement
                 }
 
                 tempLog.info("Start watchdog");
-                var watchdog = watchdogFactory.createSdcRemoteDeviceWatchdog(hostingServiceProxy, subscribeResults, this);
+                var watchdog =
+                        watchdogFactory.createSdcRemoteDeviceWatchdog(hostingServiceProxy, subscribeResults, this);
 
                 tempLog.info("Create and run remote device structure");
                 final SdcRemoteDevice sdcRemoteDevice = sdcRemoteDeviceFactory.createSdcRemoteDevice(
@@ -176,10 +179,12 @@ public class SdcRemoteDevicesConnectorImpl extends AbstractIdleService implement
                 sdcRemoteDevice.startAsync().awaitRunning();
                 tempLog.info("Remote device is running");
 
-                if (sdcRemoteDevices.putIfAbsent(hostingServiceProxy.getEndpointReferenceAddress(), sdcRemoteDevice) == null) {
+                if (sdcRemoteDevices.putIfAbsent(hostingServiceProxy
+                        .getEndpointReferenceAddress(), sdcRemoteDevice) == null) {
                     eventBus.post(new RemoteDeviceConnectedMessage(sdcRemoteDevice));
                 } else {
-                    throw new PrerequisitesException(String.format("A remote device with EPR address %s was already connected",
+                    throw new PrerequisitesException(String.format(
+                            "A remote device with EPR address %s was already connected",
                             hostingServiceProxy.getEndpointReferenceAddress()));
                 }
 
@@ -221,7 +226,8 @@ public class SdcRemoteDevicesConnectorImpl extends AbstractIdleService implement
             return Optional.empty();
         }
 
-        return Optional.of(scoControllerFactory.createScoController(hostingServiceProxy, setServiceProxy, contextServiceProxy));
+        return Optional.of(scoControllerFactory.createScoController(
+                hostingServiceProxy, setServiceProxy, contextServiceProxy));
     }
 
     @Override
@@ -237,7 +243,8 @@ public class SdcRemoteDevicesConnectorImpl extends AbstractIdleService implement
                 });
             }
         } else {
-            instanceLogger.info("disconnect() called for unknown epr address {}, device already disconnected?", eprAddress);
+            instanceLogger.info("disconnect() called for unknown epr address {}, device already disconnected?",
+                    eprAddress);
         }
         return Futures.immediateCancelledFuture();
     }
@@ -273,22 +280,26 @@ public class SdcRemoteDevicesConnectorImpl extends AbstractIdleService implement
     }
 
     private Map<String, SubscribeResult> subscribeServices(HostingServiceProxy hostingServiceProxy,
-                                   Collection<String> actionsToSubscribe,
-                                   ReportProcessor reportProcessor,
-                                   @Nullable ScoController scoController) throws PrerequisitesException {
+                                                           Collection<String> actionsToSubscribe,
+                                                           ReportProcessor reportProcessor,
+                                                           @Nullable ScoController scoController)
+            throws PrerequisitesException {
         // Multimap<ServiceId, ActionUri>
-        final Multimap<String, String> subscriptions = getServiceIdWithActionsToSubscribe(hostingServiceProxy, actionsToSubscribe);
+        final Multimap<String, String> subscriptions =
+                getServiceIdWithActionsToSubscribe(hostingServiceProxy, actionsToSubscribe);
         Map<String, SubscribeResult> subscribeResults = new HashMap<>(subscriptions.size());
 
         for (String serviceId : subscriptions.keySet()) {
             final Collection<String> actions = subscriptions.get(serviceId);
             if (actions.isEmpty()) {
-                instanceLogger.warn("Expect to find at least one action to subscribe for service id {}, but none found", serviceId);
+                instanceLogger.warn("Expect to find at least one action to subscribe for service id {}, " +
+                        "but none found", serviceId);
                 continue;
             }
             final HostedServiceProxy hostedServiceProxy = hostingServiceProxy.getHostedServices().get(serviceId);
             if (hostedServiceProxy == null) {
-                instanceLogger.warn("Expect to found a hosted service proxy to access for service id {}, but none found", serviceId);
+                instanceLogger.warn("Expect to found a hosted service proxy to access for service id {}, " +
+                        "but none found", serviceId);
                 continue;
             }
 
@@ -316,7 +327,8 @@ public class SdcRemoteDevicesConnectorImpl extends AbstractIdleService implement
                 subscribeResults.put(serviceId, subscribeResult.get(responseWaitingTime.toSeconds(), TimeUnit.SECONDS));
             } catch (InterruptedException | ExecutionException | TimeoutException e) {
                 throw new PrerequisitesException(
-                        String.format("Subscribe request towards service with service id %s failed. Physical target address: %s",
+                        String.format("Subscribe request towards service with service id %s failed. " +
+                                        "Physical target address: %s",
                                 serviceId,
                                 hostedServiceProxy.getActiveEprAddress().toString()), e);
             }
@@ -325,7 +337,8 @@ public class SdcRemoteDevicesConnectorImpl extends AbstractIdleService implement
         return subscribeResults;
     }
 
-    private Multimap<String, String> getServiceIdWithActionsToSubscribe(HostingServiceProxy hostingServiceProxy, Collection<String> actionsToSubscribe) {
+    private Multimap<String, String> getServiceIdWithActionsToSubscribe(HostingServiceProxy hostingServiceProxy,
+                                                                        Collection<String> actionsToSubscribe) {
         Multimap<String, String> subscriptions = ArrayListMultimap.create();
         for (String action : actionsToSubscribe) {
             final QName targetPortType = SubscribableActionsMapping.TARGET_QNAMES.get(action);
@@ -344,9 +357,11 @@ public class SdcRemoteDevicesConnectorImpl extends AbstractIdleService implement
         return subscriptions;
     }
 
-    private RemoteMdibAccess createRemoteMdibAccess(HostingServiceProxy hostingServiceProxy) throws PrerequisitesException {
+    private RemoteMdibAccess createRemoteMdibAccess(HostingServiceProxy hostingServiceProxy)
+            throws PrerequisitesException {
         // find get service
-        final HostedServiceProxy getServiceProxy = findHostedServiceProxy(hostingServiceProxy, WsdlConstants.PORT_TYPE_GET_QNAME);
+        final HostedServiceProxy getServiceProxy =
+                findHostedServiceProxy(hostingServiceProxy, WsdlConstants.PORT_TYPE_GET_QNAME);
 
         final RemoteMdibAccess mdibAccess = remoteMdibAccessFactory.createRemoteMdibAccess();
 
@@ -354,9 +369,10 @@ public class SdcRemoteDevicesConnectorImpl extends AbstractIdleService implement
             final SoapMessage getMdibResponseMessage = getServiceProxy.getRequestResponseClient().sendRequestResponse(
                     soapUtil.createMessage(ActionConstants.ACTION_GET_MDIB, messageModelFactory.createGetMdib()));
             final GetMdibResponse getMdibResponse = soapUtil.getBody(getMdibResponseMessage,
-                    GetMdibResponse.class).orElseThrow(() -> new PrerequisitesException("Remote endpoint did not send a GetMdibResponse message in response to " +
-                    String.format("a GetMdib to service %s with physical address %s",
-                            getServiceProxy.getType().getServiceId(), getServiceProxy.getActiveEprAddress())));
+                    GetMdibResponse.class).orElseThrow(() -> new PrerequisitesException(
+                    "Remote endpoint did not send a GetMdibResponse message in response to " +
+                            String.format("a GetMdib to service %s with physical address %s",
+                                    getServiceProxy.getType().getServiceId(), getServiceProxy.getActiveEprAddress())));
 
             final Mdib mdib = getMdibResponse.getMdib();
             final ModificationsBuilder modBuilder = modificationsBuilderFactory.createModificationsBuilder(mdib);
@@ -368,7 +384,8 @@ public class SdcRemoteDevicesConnectorImpl extends AbstractIdleService implement
                     modBuilder.get());
 
         } catch (MarshallingException | InterceptorException | TransportException | SoapFaultException e) {
-            throw new PrerequisitesException(String.format("Could not send a GetMdib request to service %s with physical address %s",
+            throw new PrerequisitesException(String.format(
+                    "Could not send a GetMdib request to service %s with physical address %s",
                     getServiceProxy.getType().getServiceId(), getServiceProxy.getActiveEprAddress()), e);
         } catch (PreprocessingException e) {
             throw new PrerequisitesException("Could not write initial MDIB to remote MDIB access", e);
@@ -377,7 +394,8 @@ public class SdcRemoteDevicesConnectorImpl extends AbstractIdleService implement
         return mdibAccess;
     }
 
-    private HostedServiceProxy findHostedServiceProxy(HostingServiceProxy hostingServiceProxy, QName portType) throws PrerequisitesException {
+    private HostedServiceProxy findHostedServiceProxy(HostingServiceProxy hostingServiceProxy, QName portType)
+            throws PrerequisitesException {
         HostedServiceProxy foundProxy = null;
         for (HostedServiceProxy hostedServiceProxy : hostingServiceProxy.getHostedServices().values()) {
             if (hostedServiceProxy.getType().getTypes().contains(portType)) {
@@ -398,17 +416,24 @@ public class SdcRemoteDevicesConnectorImpl extends AbstractIdleService implement
         return foundProxy;
     }
 
-    private GetContextStatesResponse requestContextStates(HostingServiceProxy hostingServiceProxy) throws PrerequisitesException {
-        final HostedServiceProxy contextServiceProxy = findHostedServiceProxy(hostingServiceProxy, WsdlConstants.PORT_TYPE_CONTEXT_QNAME);
+    private GetContextStatesResponse requestContextStates(HostingServiceProxy hostingServiceProxy)
+            throws PrerequisitesException {
+        final HostedServiceProxy contextServiceProxy =
+                findHostedServiceProxy(hostingServiceProxy, WsdlConstants.PORT_TYPE_CONTEXT_QNAME);
         try {
-            final SoapMessage getContextStatesResponseMessage = contextServiceProxy.getRequestResponseClient().sendRequestResponse(
-                    soapUtil.createMessage(ActionConstants.ACTION_GET_CONTEXT_STATES, messageModelFactory.createGetContextStates()));
+            final SoapMessage getContextStatesResponseMessage =
+                    contextServiceProxy.getRequestResponseClient().sendRequestResponse(
+                            soapUtil.createMessage(ActionConstants.ACTION_GET_CONTEXT_STATES,
+                                    messageModelFactory.createGetContextStates()));
             return soapUtil.getBody(getContextStatesResponseMessage,
-                    GetContextStatesResponse.class).orElseThrow(() -> new PrerequisitesException("Remote endpoint did not send a GetContextStatesResponse message in response to " +
-                    String.format("a GetContextStates to service %s with physical address %s",
-                            contextServiceProxy.getType().getServiceId(), contextServiceProxy.getActiveEprAddress())));
+                    GetContextStatesResponse.class).orElseThrow(() -> new PrerequisitesException(
+                    "Remote endpoint did not send a GetContextStatesResponse message in response to " +
+                            String.format("a GetContextStates to service %s with physical address %s",
+                                    contextServiceProxy.getType().getServiceId(),
+                                    contextServiceProxy.getActiveEprAddress())));
         } catch (MarshallingException | InterceptorException | TransportException | SoapFaultException e) {
-            throw new PrerequisitesException(String.format("Could not send a GetContextStates request to service %s with physical address %s",
+            throw new PrerequisitesException(String.format(
+                    "Could not send a GetContextStates request to service %s with physical address %s",
                     contextServiceProxy.getType().getServiceId(), contextServiceProxy.getActiveEprAddress()), e);
         }
     }

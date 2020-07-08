@@ -57,7 +57,8 @@ public class ScoController implements SetServiceAccess {
         this.instanceLogger = HostingServiceLogger.getLogger(LOG, hostingServiceProxy, frameworkIdentifier);
         this.setServiceProxy = setServiceProxy;
         this.contextServiceProxy = contextServiceProxy;
-        this.operationInvocationDispatcher = operationInvocationDispatcherFactory.createOperationInvocationDispatcher(hostingServiceProxy);
+        this.operationInvocationDispatcher =
+                operationInvocationDispatcherFactory.createOperationInvocationDispatcher(hostingServiceProxy);
         this.executorService = executorService;
         this.soapUtil = soapUtil;
         this.scoTransactionFactory = scoTransactionFactory;
@@ -77,11 +78,14 @@ public class ScoController implements SetServiceAccess {
             @Nullable java.util.function.Consumer<OperationInvokedReport.ReportPart> reportListener,
             Class<V> responseClass) {
         return executorService.get().submit(() -> {
-            instanceLogger.debug("Invoke {} operation with payload: {}", setRequest.getClass().getSimpleName(), setRequest.toString());
+            instanceLogger.debug("Invoke {} operation with payload: {}",
+                    setRequest.getClass().getSimpleName(), setRequest.toString());
             final V response = responseClass.cast(sendMessage(setRequest, responseClass));
-            instanceLogger.debug("Received {} message with payload: {}", response.getClass().getSimpleName(), response.toString());
+            instanceLogger.debug("Received {} message with payload: {}",
+                    response.getClass().getSimpleName(), response.toString());
 
-            final ScoTransactionImpl<V> transaction = scoTransactionFactory.createScoTransaction(response, reportListener);
+            final ScoTransactionImpl<V> transaction =
+                    scoTransactionFactory.createScoTransaction(response, reportListener);
 
             operationInvocationDispatcher.registerTransaction(transaction);
 
@@ -106,7 +110,8 @@ public class ScoController implements SetServiceAccess {
         HostedServiceProxy hostedServiceProxy;
         if (setRequest.getClass().equals(SetContextState.class)) {
             if (contextServiceProxy == null) {
-                throw new InvocationException("SetContextState request could not be sent: no context service available");
+                throw new InvocationException("SetContextState request could not be sent: " +
+                        "no context service available");
             }
             action = ActionConstants.ACTION_SET_CONTEXT_STATE;
             hostedServiceProxy = contextServiceProxy;

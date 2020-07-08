@@ -4,9 +4,43 @@ import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
 import org.somda.sdc.biceps.common.MdibEntity;
 import org.somda.sdc.biceps.common.access.ReadTransaction;
+import org.somda.sdc.biceps.model.message.AbstractSet;
+import org.somda.sdc.biceps.model.message.AbstractSetResponse;
+import org.somda.sdc.biceps.model.message.Activate;
+import org.somda.sdc.biceps.model.message.ActivateResponse;
+import org.somda.sdc.biceps.model.message.GetContainmentTree;
+import org.somda.sdc.biceps.model.message.GetContainmentTreeResponse;
+import org.somda.sdc.biceps.model.message.GetContextStates;
+import org.somda.sdc.biceps.model.message.GetContextStatesResponse;
+import org.somda.sdc.biceps.model.message.GetDescriptor;
+import org.somda.sdc.biceps.model.message.GetDescriptorResponse;
+import org.somda.sdc.biceps.model.message.GetMdDescription;
+import org.somda.sdc.biceps.model.message.GetMdDescriptionResponse;
+import org.somda.sdc.biceps.model.message.GetMdState;
+import org.somda.sdc.biceps.model.message.GetMdStateResponse;
+import org.somda.sdc.biceps.model.message.GetMdib;
+import org.somda.sdc.biceps.model.message.GetMdibResponse;
+import org.somda.sdc.biceps.model.message.InvocationInfo;
 import org.somda.sdc.biceps.model.message.ObjectFactory;
-import org.somda.sdc.biceps.model.message.*;
-import org.somda.sdc.biceps.model.participant.*;
+import org.somda.sdc.biceps.model.message.ObjectFactory;
+import org.somda.sdc.biceps.model.message.SetAlertState;
+import org.somda.sdc.biceps.model.message.SetAlertStateResponse;
+import org.somda.sdc.biceps.model.message.SetComponentState;
+import org.somda.sdc.biceps.model.message.SetComponentStateResponse;
+import org.somda.sdc.biceps.model.message.SetContextState;
+import org.somda.sdc.biceps.model.message.SetContextStateResponse;
+import org.somda.sdc.biceps.model.message.SetMetricState;
+import org.somda.sdc.biceps.model.message.SetMetricStateResponse;
+import org.somda.sdc.biceps.model.message.SetString;
+import org.somda.sdc.biceps.model.message.SetStringResponse;
+import org.somda.sdc.biceps.model.message.SetValue;
+import org.somda.sdc.biceps.model.message.SetValueResponse;
+import org.somda.sdc.biceps.model.participant.AbstractContextState;
+import org.somda.sdc.biceps.model.participant.AbstractState;
+import org.somda.sdc.biceps.model.participant.ContainmentTree;
+import org.somda.sdc.biceps.model.participant.ContainmentTreeEntry;
+import org.somda.sdc.biceps.model.participant.InstanceIdentifier;
+import org.somda.sdc.biceps.model.participant.MdibVersion;
 import org.somda.sdc.biceps.provider.access.LocalMdibAccess;
 import org.somda.sdc.dpws.device.WebService;
 import org.somda.sdc.dpws.soap.SoapUtil;
@@ -166,12 +200,19 @@ public class HighPriorityServices extends WebService {
      * <p>
      * Filters context states according to the followind rules:
      * <ul>
-     * <li>If the msg:GetContextStates/msg:HandleRef list is empty, all context states in the MDIB SHALL be included in the result list.
-     * <li>If a HANDLE reference from the msg:GetContextStates/msg:HandleRef list does match a context descriptor HANDLE, then all context states that belong to the corresponding context descriptor SHALL be included in the result list.
-     * <li>If a HANDLE reference from the msg:GetContextStates/msg:HandleRef list does match a context state HANDLE, then the corresponding context state SHALL be included in the result list.
+     * <li>If the msg:GetContextStates/msg:HandleRef list is empty,
+     * all context states in the MDIB SHALL be included in the result list.
+     * <li>If a HANDLE reference from the msg:GetContextStates/msg:HandleRef list
+     * does match a context descriptor HANDLE,
+     * then all context states that belong to the corresponding context descriptor SHALL be included in the result list.
+     * <li>If a HANDLE reference from the msg:GetContextStates/msg:HandleRef list
+     * does match a context state HANDLE,
+     * then the corresponding context state SHALL be included in the result list.
      * </ul>
      * <p>
-     * The following rule is currently not supported: If a HANDLE reference from the msg:GetContextStates/msg:HandleRef list does match an MDS descriptor, then all context states that are part of this MDS SHALL be included in the result list.
+     * The following rule is currently not supported:
+     * If a HANDLE reference from the msg:GetContextStates/msg:HandleRef list does match an MDS descriptor,
+     * then all context states that are part of this MDS SHALL be included in the result list.
      * <p>
      * todo DGr Implement missing rule
      *
@@ -208,13 +249,15 @@ public class HighPriorityServices extends WebService {
     @MessageInterceptor(ActionConstants.ACTION_GET_CONTEXT_STATES_BY_FILTER)
     void getContextStatesByFilter(RequestResponseObject requestResponseObject) throws SoapFaultException {
         // todo DGr implement getContextStatesByFilter
-        throw new SoapFaultException(faultFactory.createReceiverFault(("GetContextStatesByFilter is not available on this device")));
+        throw new SoapFaultException(faultFactory.createReceiverFault(
+                "GetContextStatesByFilter is not available on this device"));
     }
 
     @MessageInterceptor(ActionConstants.ACTION_GET_CONTEXT_STATES_BY_IDENTIFICATION)
     void getContextStatesByIdentification(RequestResponseObject requestResponseObject) throws SoapFaultException {
         // todo DGr implement getContextStatesByIdentification
-        throw new SoapFaultException(faultFactory.createReceiverFault(("GetContextStatesByIdentification is not available on this device")));
+        throw new SoapFaultException(faultFactory.createReceiverFault(
+                "GetContextStatesByIdentification is not available on this device"));
     }
 
     @MessageInterceptor(ActionConstants.ACTION_SET_VALUE)
@@ -300,7 +343,8 @@ public class HighPriorityServices extends WebService {
     @MessageInterceptor(ActionConstants.ACTION_GET_CONTAINMENT_TREE)
     void getContainmentTree(RequestResponseObject requestResponseObject) throws SoapFaultException {
         final GetContainmentTree getContainmentTree = getRequest(requestResponseObject, GetContainmentTree.class);
-        final GetContainmentTreeResponse getContainmentTreeResponse = messageModelFactory.createGetContainmentTreeResponse();
+        final GetContainmentTreeResponse getContainmentTreeResponse =
+                messageModelFactory.createGetContainmentTreeResponse();
         final List<String> handleReferences = getContainmentTree.getHandleRef();
         final ContainmentTree containmentTree = participantModelFactory.createContainmentTree();
 
@@ -364,7 +408,8 @@ public class HighPriorityServices extends WebService {
         soapUtil.setBody(response, requestResponseObject.getResponse());
     }
 
-    private <T extends AbstractSetResponse> T getResponseObjectAsTypeOrThrow(InvocationResponse responseData, Class<T> type) throws SoapFaultException {
+    private <T extends AbstractSetResponse> T getResponseObjectAsTypeOrThrow(
+            InvocationResponse responseData, Class<T> type) throws SoapFaultException {
         try {
             final T response = type.getConstructor().newInstance();
             response.setSequenceId(responseData.getMdibVersion().getSequenceId().toString());
@@ -384,11 +429,12 @@ public class HighPriorityServices extends WebService {
         }
     }
 
-    private <T extends AbstractSet, V extends AbstractSetResponse> void processSetServiceRequest(RequestResponseObject requestResponseObject,
-                                                                                                 Class<T> requestClass,
-                                                                                                 Class<V> responseClass,
-                                                                                                 String responseAction,
-                                                                                                 Function<T, ?> getPayload) throws SoapFaultException {
+    private <T extends AbstractSet, V extends AbstractSetResponse> void processSetServiceRequest(
+            RequestResponseObject requestResponseObject,
+            Class<T> requestClass,
+            Class<V> responseClass,
+            String responseAction,
+            Function<T, ?> getPayload) throws SoapFaultException {
         T request = getRequest(requestResponseObject, requestClass);
         final InvocationResponse invocationResponse;
         try {

@@ -1,6 +1,13 @@
 package org.somda.sdc.glue.common;
 
-import org.somda.sdc.biceps.model.participant.*;
+import org.somda.sdc.biceps.model.participant.AbstractAlertState;
+import org.somda.sdc.biceps.model.participant.AbstractOperationState;
+import org.somda.sdc.biceps.model.participant.AlertActivation;
+import org.somda.sdc.biceps.model.participant.AlertConditionMonitoredLimits;
+import org.somda.sdc.biceps.model.participant.ClockState;
+import org.somda.sdc.biceps.model.participant.LimitAlertConditionState;
+import org.somda.sdc.biceps.model.participant.OperatingMode;
+import org.somda.sdc.biceps.model.participant.Range;
 
 /**
  * Defines required default values for all states.
@@ -9,7 +16,8 @@ import org.somda.sdc.biceps.model.participant.*;
  * <ul>
  * <li>{@link AbstractAlertState#setActivationState(AlertActivation)} is set to {@link AlertActivation#ON}
  * <li>{@link LimitAlertConditionState#setLimits(Range)} is set to empty {@link Range}
- * <li>{@link LimitAlertConditionState#setMonitoredAlertLimits(AlertConditionMonitoredLimits)} is set to {@link AlertConditionMonitoredLimits#ALL}
+ * <li>{@link LimitAlertConditionState#setMonitoredAlertLimits(AlertConditionMonitoredLimits)}
+ * is set to {@link AlertConditionMonitoredLimits#ALL}
  * <li>{@link AbstractOperationState#setOperatingMode(OperatingMode)} is set to {@link OperatingMode#EN}
  * <li>{@link ClockState#setRemoteSync(boolean)} is set to false
  * </ul>

@@ -36,7 +36,8 @@ import java.util.concurrent.TimeUnit;
  * {@linkplain SdcRemoteDeviceWatchdog} is a Guava service that requests a remote device in a given periodicity once
  * started.
  * <ul>
- * <li>If at least one subscription exists, {@linkplain SdcRemoteDeviceWatchdog} tries to renew this subscription in order
+ * <li>If at least one subscription exists,
+ * {@linkplain SdcRemoteDeviceWatchdog} tries to renew this subscription in order
  * to check if the remote device is still reachable.
  * <li>If multiple subscriptions exist, all are renewed.
  * <li>If no subscription exists, {@linkplain SdcRemoteDeviceWatchdog} sends a directed probe.
@@ -64,7 +65,8 @@ public class SdcRemoteDeviceWatchdog extends AbstractIdleService {
     SdcRemoteDeviceWatchdog(@Assisted HostingServiceProxy hostingServiceProxy,
                             @Assisted Map<String, SubscribeResult> subscriptions,
                             @Assisted @Nullable WatchdogObserver initialWatchdogObserver,
-                            @WatchdogScheduledExecutor ExecutorWrapperService<ScheduledExecutorService> watchdogExecutor,
+                            @WatchdogScheduledExecutor
+                                    ExecutorWrapperService<ScheduledExecutorService> watchdogExecutor,
                             @Named(ConsumerConfig.WATCHDOG_PERIOD) Duration watchdogPeriod,
                             DpwsFramework dpwsFramework,
                             EventBus eventBus,
@@ -105,7 +107,8 @@ public class SdcRemoteDeviceWatchdog extends AbstractIdleService {
 
     @Override
     protected void startUp() {
-        currentJob = watchdogExecutor.get().schedule(new WatchdogJob(), watchdogPeriod.toMillis(), TimeUnit.MILLISECONDS);
+        currentJob = watchdogExecutor.get()
+                .schedule(new WatchdogJob(), watchdogPeriod.toMillis(), TimeUnit.MILLISECONDS);
     }
 
     @Override
@@ -132,7 +135,8 @@ public class SdcRemoteDeviceWatchdog extends AbstractIdleService {
                 final HostedServiceProxy hostedServiceProxy = hostingServiceProxy.getHostedServices().get(serviceId);
                 if (hostedServiceProxy == null) {
                     instanceLogger.warn("Could not find expected hosted service with id {}", serviceId);
-                    postWatchdogMessage(new Exception(String.format("Could not find expected hosted service with id %s", serviceId)));
+                    postWatchdogMessage(new Exception(String.format(
+                            "Could not find expected hosted service with id %s", serviceId)));
                     return;
                 }
 
@@ -142,23 +146,28 @@ public class SdcRemoteDeviceWatchdog extends AbstractIdleService {
                 try {
                     final Duration grantedExpires = renewFuture.get(timeout.toMillis(), TimeUnit.MILLISECONDS);
                     if (grantedExpires.compareTo(watchdogPeriod) < 0) {
-                        instanceLogger.warn("Too little time granted for subscription on service {} (expected at least {}, got {})",
+                        instanceLogger.warn("Too little time granted for subscription on service {} " +
+                                        "(expected at least {}, got {})",
                                 serviceId, watchdogPeriod, grantedExpires);
-                        postWatchdogMessage(new Exception(String.format("Too little time granted for subscription on service %s (expected at least %s, got %s)",
+                        postWatchdogMessage(new Exception(String.format(
+                                "Too little time granted for subscription on service %s (expected at least %s, got %s)",
                                 serviceId, watchdogPeriod, grantedExpires)));
                         return;
                     }
                 } catch (Exception e) {
                     instanceLogger.warn("Trying to renew subscription running on service {} failed", serviceId);
-                    postWatchdogMessage(new Exception(String.format("Trying to renew subscription running on service %s failed", serviceId), e));
+                    postWatchdogMessage(new Exception(String.format(
+                            "Trying to renew subscription running on service %s failed", serviceId), e));
                     return;
                 }
 
                 final Instant finish = Instant.now();
                 timeout = timeout.minus(Duration.between(start, finish));
                 if (timeout.toMillis() < 0) {
-                    instanceLogger.warn("Watchdog timeout exceeded. Could not get watchdog triggers served in time.");
-                    postWatchdogMessage(new Exception("Watchdog timeout exceeded. Could not get watchdog triggers served in time."));
+                    instanceLogger.warn("Watchdog timeout exceeded. " +
+                            "Could not get watchdog triggers served in time.");
+                    postWatchdogMessage(new Exception("Watchdog timeout exceeded. " +
+                            "Could not get watchdog triggers served in time."));
                     return;
                 }
 
@@ -167,7 +176,8 @@ public class SdcRemoteDeviceWatchdog extends AbstractIdleService {
 
             if (!watchdogRequestSent) {
                 final Instant start = Instant.now();
-                final ListenableFuture<ProbeMatchesType> probeFuture = client.directedProbe(hostingServiceProxy.getActiveXAddr());
+                final ListenableFuture<ProbeMatchesType> probeFuture =
+                        client.directedProbe(hostingServiceProxy.getActiveXAddr());
                 try {
                     probeFuture.get(timeout.toMillis(), TimeUnit.MILLISECONDS);
                     final Instant finish = Instant.now();
@@ -180,7 +190,8 @@ public class SdcRemoteDeviceWatchdog extends AbstractIdleService {
             }
 
             if (isRunning() && watchdogExecutor.isRunning()) {
-                currentJob = watchdogExecutor.get().schedule(new WatchdogJob(), timeout.toMillis(), TimeUnit.MILLISECONDS);
+                currentJob =
+                        watchdogExecutor.get().schedule(new WatchdogJob(), timeout.toMillis(), TimeUnit.MILLISECONDS);
             } else {
                 currentJob = null;
                 instanceLogger.info(

@@ -65,6 +65,7 @@ public class ScoTransactionImpl<T extends AbstractSetResponse> implements ScoTra
 
     @Override
     public List<OperationInvokedReport.ReportPart> waitForFinalReport(Duration waitTime) {
+        var copyWaitTime = waitTime;
         try (AutoLock ignored = AutoLock.lock(reportsLock)) {
             if (scoUtil.hasFinalReport(collectedReports)) {
                 return objectUtil.deepCopy(collectedReports);
@@ -89,8 +90,8 @@ public class ScoTransactionImpl<T extends AbstractSetResponse> implements ScoTra
                 }
 
                 Instant finish = Instant.now();
-                waitTime = waitTime.minus(Duration.between(start, finish));
-            } while (waitTime.toMillis() > 0);
+                copyWaitTime = copyWaitTime.minus(Duration.between(start, finish));
+            } while (copyWaitTime.toMillis() > 0);
         }
         return Collections.emptyList();
     }

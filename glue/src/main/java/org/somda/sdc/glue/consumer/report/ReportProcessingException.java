@@ -19,7 +19,8 @@ public class ReportProcessingException extends Exception {
         super(cause);
     }
 
-    public ReportProcessingException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
+    public ReportProcessingException(String message, Throwable cause,
+                                     boolean enableSuppression, boolean writableStackTrace) {
         super(message, cause, enableSuppression, writableStackTrace);
     }
 }
