@@ -96,9 +96,16 @@ public class SoapConstants {
     /**
      * SOAP HTTP binding media type.
      *
-     * @see <a href="http://www.ietf.org/rfc/rfc3902.txt">The "application/soap+xml" media type</a>
+     * @see <a href="https://www.ietf.org/rfc/rfc3902.txt">The "application/soap+xml" media type</a>
      */
     public static final String MEDIA_TYPE_SOAP = "application/soap+xml";
+
+    /**
+     * XML media type.
+     *
+     * @see <a href="https://tools.ietf.org/rfc/rfc3023.txt">3.2 Application/xml Registration</a>
+     */
+    public static final String MEDIA_TYPE_XML = "application/xml";
 
     /**
      * WSDL HTTP binding media type.

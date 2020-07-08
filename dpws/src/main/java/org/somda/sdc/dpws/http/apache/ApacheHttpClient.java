@@ -12,6 +12,7 @@ import org.apache.logging.log4j.Logger;
 import org.somda.sdc.common.CommonConfig;
 import org.somda.sdc.common.logging.InstanceLogger;
 import org.somda.sdc.dpws.http.HttpClient;
+import org.somda.sdc.dpws.http.apache.helper.ApacheClientHelper;
 import org.somda.sdc.dpws.soap.exception.TransportException;
 
 import java.io.IOException;
@@ -53,6 +54,8 @@ public class ApacheHttpClient implements HttpClient {
             throw new TransportException("Error while reading response", e);
         }
 
+        var headers = ApacheClientHelper.allHeadersToMultimap(response.getAllHeaders());
+
         // finally consume the entire entity
         try {
             EntityUtils.consume(response.getEntity());
@@ -62,7 +65,7 @@ public class ApacheHttpClient implements HttpClient {
             throw new TransportException("Error while consuming response entity", e);
         }
 
-        return new org.somda.sdc.dpws.http.HttpResponse(statusCode, content);
+        return new org.somda.sdc.dpws.http.HttpResponse(statusCode, content, headers);
     }
 
     private HttpResponse executeRequest(org.apache.http.client.HttpClient client, HttpRequestBase request,
