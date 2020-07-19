@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+		 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<parent>
+		<artifactId>sdc-ri</artifactId>
+		<groupId>org.somda.sdc</groupId>
+		<version>2.0.0-SNAPSHOT</version>
+	</parent>
+	<modelVersion>4.0.0</modelVersion>
+
+	<artifactId>proto-model</artifactId>
+
+	<build>
+		<plugins>
+			<plugin>
+				<!--
+					this plugin overrides the inherited one from the parent POM with Java 8 code compatibility
+					as there is a weired Javadoc+protobuf issue with Java 11.
+				-->
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-javadoc-plugin</artifactId>
+				<version>3.2.0</version>
+				<configuration>
+					<source>8</source>
+				</configuration>
+				<executions>
+					<execution>
+						<id>attach-javadocs</id>
+						<goals>
+							<goal>jar</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>3.8.0</version>
+				<configuration>
+					<source>1.6</source>
+					<target>1.6</target>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.xolstice.maven.plugins</groupId>
+				<artifactId>protobuf-maven-plugin</artifactId>
+				<version>0.6.1</version>
+				<configuration>
+					<!-- by default protoc is expected to be in the PATH; change if a specific path is required -->
+					<!--<protocExecutable>protoc</protocExecutable>-->
+
+					<!-- Just include every proto file from the proto resources folder -->
+					<includes>
+						<include>**/*.proto</include>
+					</includes>
+
+					<!-- Do not compile if compilation unit is still up-to-date -->
+					<checkStaleness>true</checkStaleness>
+				</configuration>
+				<executions>
+					<execution>
+						<goals>
+							<goal>compile</goal>
+							<goal>test-compile</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
+	<dependencies>
+		<dependency>
+			<groupId>org.somda.sdc</groupId>
+			<artifactId>dpws</artifactId>
+			<version>2.0.0-SNAPSHOT</version>
+		</dependency>
+
+		<!-- https://mvnrepository.com/artifact/com.google.protobuf/protobuf-java -->
+		<dependency>
+			<groupId>com.google.protobuf</groupId>
+			<artifactId>protobuf-java</artifactId>
+			<version>3.12.2</version>
+		</dependency>
+	</dependencies>
+</project>

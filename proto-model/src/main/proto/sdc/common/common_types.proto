@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+package sdc.common;
+
+option java_package = "org.somda.sdc.proto.model.common";
+option java_outer_classname = "CommonTypes";
+
+message QName {
+  string namespace = 1;
+  string localName = 2;
+}

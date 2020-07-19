@@ -1,0 +1,71 @@
+syntax = "proto3";
+
+package sdc.discovery;
+
+import "google/protobuf/any.proto";
+import "sdc/addressing/addressing_types.proto";
+import "sdc/common/common_types.proto";
+import "sdc/discovery/discovery_types.proto";
+
+option java_package = "org.somda.sdc.proto.model.discovery";
+option java_outer_classname = "DiscoveryMessages";
+
+message AnyDiscoveryMessage {
+  oneof type {
+    Hello hello = 1;
+    Bye bye = 2;
+    Probe probe = 3;
+    ProbeMatches probe_matches = 4;
+    Resolve resolve = 5;
+    ResolveMatches resolve_matches = 6;
+  }
+}
+
+message Hello {
+  repeated google.protobuf.Any extension = 1;
+  sdc.addressing.Addressing addressing = 2;
+  AppSequence app_sequence = 3;
+  Endpoint endpoint = 4;
+}
+
+message Bye {
+  repeated google.protobuf.Any extension = 1;
+  sdc.addressing.Addressing addressing = 2;
+  AppSequence app_sequence = 3;
+  Endpoint endpoint = 4;
+}
+
+message Probe {
+  repeated google.protobuf.Any extension = 1;
+  sdc.addressing.Addressing addressing = 2;
+
+  // types are left out intentionally as they are conceptually blurry
+  // and not required from the discovery point of view
+  Scopes scopes = 3;
+}
+
+message ProbeMatches {
+  repeated google.protobuf.Any extension = 1;
+  sdc.addressing.Addressing addressing = 2;
+  repeated Endpoint endpoint = 3;
+}
+
+message Resolve {
+  repeated google.protobuf.Any extension = 1;
+  sdc.addressing.Addressing addressing = 2;
+  sdc.addressing.EndpointReference endpoint_reference = 3;
+}
+
+message ResolveMatches {
+  repeated google.protobuf.Any extension = 1;
+  sdc.addressing.Addressing addressing = 2;
+  Endpoint endpoint = 3;
+}
+
+message Fault {
+  repeated google.protobuf.Any extension = 1;
+  sdc.addressing.Addressing addressing = 2;
+  sdc.common.QName code = 3;
+  sdc.common.QName subCode = 4;
+  string reason = 5;
+}

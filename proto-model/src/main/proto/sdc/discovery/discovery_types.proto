@@ -1,0 +1,31 @@
+syntax = "proto3";
+
+package sdc.discovery;
+
+import "google/protobuf/any.proto";
+import "sdc/addressing/addressing_types.proto";
+import "sdc/common/common_types.proto";
+
+option java_package = "org.somda.sdc.proto.model.discovery";
+option java_outer_classname = "DiscoveryTypes";
+
+message AppSequence {
+  uint64 instance_id = 1;
+  string sequence_id = 2;
+  uint64 message_number = 3;
+}
+
+message Scopes {
+  string match_by = 1;
+  repeated string scopes = 2;
+}
+
+message Endpoint {
+  repeated google.protobuf.Any extension = 1;
+
+  sdc.addressing.EndpointReference endpoint_reference = 2;
+  repeated sdc.common.QName types = 3;
+  repeated string scopes = 4;
+  repeated string x_addrs = 5;
+  uint64 metadata_version = 6;
+}

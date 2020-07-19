@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+package sdc.addressing;
+
+import "google/protobuf/any.proto";
+
+option java_package = "org.somda.sdc.proto.model.addressing";
+option java_outer_classname = "AddressingTypes";
+
+message Addressing {
+  string action = 1;
+  string message_id = 2;
+  string relates_id = 3;
+  string to = 4;
+
+  repeated google.protobuf.Any extension = 5;
+}
+
+message EndpointReference {
+  string address = 1;
+  repeated google.protobuf.Any extension = 2;
+}
