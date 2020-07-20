@@ -10,11 +10,10 @@ import org.apache.logging.log4j.LogManager;
 import org.somda.sdc.common.guice.DefaultCommonConfigModule;
 import org.somda.sdc.dpws.guice.DefaultDpwsConfigModule;
 import org.somda.sdc.dpws.guice.DefaultDpwsModule;
-import org.somda.sdc.common.guice.DefaultHelperModule;
+import org.somda.sdc.common.guice.DefaultCommonModule;
 import org.somda.sdc.dpws.soap.wsdiscovery.WsDiscoveryConfig;
 import test.org.somda.common.CIDetector;
 import test.org.somda.common.LoggingTestWatcher;
-import test.org.somda.common.TestLogging;
 
 import java.time.Duration;
 import java.util.List;
@@ -76,7 +75,7 @@ public class DpwsTest {
                     Modules.override(
                             new DefaultCommonConfigModule(),
                             new DefaultDpwsModule(),
-                            new DefaultHelperModule(),
+                            new DefaultCommonModule(),
                             dpwsConfigOverride
                     ).with(
                             overridingModules
@@ -85,7 +84,7 @@ public class DpwsTest {
         } else {
             injector = Guice.createInjector(
                     new DefaultCommonConfigModule(), new DefaultDpwsModule(),
-                    new DefaultHelperModule(), dpwsConfigOverride
+                    new DefaultCommonModule(), dpwsConfigOverride
             );
         }
     }
