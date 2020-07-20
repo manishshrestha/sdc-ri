@@ -101,7 +101,7 @@ public class Client extends AbstractIdleService implements Service, UdpMessageQu
                     }
                     break;
                 case RESOLVE_MATCHES:
-                    try (var ignored = AutoLock.lock(probeLock)) {
+                    try (var ignored = AutoLock.lock(resolveLock)) {
                         resolveMatchesBuffer.add(discoveryMessage.getResolveMatches());
                         resolveCondition.signal();
                     }
@@ -140,11 +140,11 @@ public class Client extends AbstractIdleService implements Service, UdpMessageQu
                         helloByeProbeEventBus,
                         () -> popProbeMatches(probe.getAddressing().getMessageId())));
 
-        udpUtil.sendMulticast(probe);
+        udpUtil.sendMulticast(DiscoveryMessages.AnyDiscoveryMessage.newBuilder().setProbe(probe).build());
         return future;
     }
 
-    ListenableFuture<DiscoveryTypes.Endpoint> resolve(String eprAddress) {
+    public ListenableFuture<DiscoveryTypes.Endpoint> resolve(String eprAddress) {
         var resolve = DiscoveryMessages.Resolve.newBuilder()
                 .setAddressing(addressingUtil.assemblyAddressing(
                         WsDiscoveryConstants.WSA_ACTION_RESOLVE,
@@ -159,7 +159,7 @@ public class Client extends AbstractIdleService implements Service, UdpMessageQu
                         resolveCondition,
                         () -> popResolveMatches(resolve.getAddressing().getMessageId())));
 
-        udpUtil.sendMulticast(resolve);
+        udpUtil.sendMulticast(DiscoveryMessages.AnyDiscoveryMessage.newBuilder().setResolve(resolve).build());
         return future;
     }
 
@@ -180,10 +180,12 @@ public class Client extends AbstractIdleService implements Service, UdpMessageQu
     @Override
     protected void startUp() throws Exception {
         udpUtil.registerObserver(this);
+        executorService.startAsync().awaitRunning();
     }
 
     @Override
     protected void shutDown() throws Exception {
+        executorService.stopAsync().awaitTerminated();
         udpUtil.unregisterObserver(this);
     }
 }

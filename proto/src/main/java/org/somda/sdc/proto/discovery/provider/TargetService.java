@@ -75,15 +75,14 @@ public class TargetService extends AbstractIdleService implements Service, UdpMe
         this.scopes.addAll(scopes);
     }
 
-    public synchronized void updateXAddrs() {
+    public synchronized void updateXAddrs(Collection<String> xAddrs) {
         this.xAddrs.clear();
-        this.xAddrs.addAll(scopes);
+        this.xAddrs.addAll(xAddrs);
     }
 
     @Subscribe
     void receiveUdpMessage(UdpMessage udpMessage) throws IOException {
         try {
-            LOG.warn(Arrays.toString(udpMessage.getData()));
             var discoveryMessage = DiscoveryMessages.AnyDiscoveryMessage.parseFrom(
                     new ByteArrayInputStream(udpMessage.getData(), 0, udpMessage.getLength()));
 
@@ -122,7 +121,7 @@ public class TargetService extends AbstractIdleService implements Service, UdpMe
 
     private synchronized void processProbe(UdpMessage requestMessage, DiscoveryMessages.Probe probe)
             throws FaultException, ValidationException {
-        validate(probe.getAddressing());
+        validateProbe(probe.getAddressing());
 
         var probedScopes = probe.getScopes();
         var matchBy = Optional.ofNullable(probedScopes.getMatchBy()).orElse(MatchBy.RFC3986.getUri());
@@ -148,7 +147,7 @@ public class TargetService extends AbstractIdleService implements Service, UdpMe
                 .setAddressing(addressingUtil.assemblyAddressing(
                         WsDiscoveryConstants.WSA_ACTION_PROBE_MATCHES,
                         WsDiscoveryConstants.WSA_UDP_TO,
-                        probe.getAddressing().getRelatesId()))
+                        probe.getAddressing().getMessageId()))
                 .addEndpoint(createEndpoint(getCurrentMetadataVersion()));
 
         udpUtil.sendResponse(DiscoveryMessages.AnyDiscoveryMessage.newBuilder().setProbeMatches(
@@ -157,7 +156,7 @@ public class TargetService extends AbstractIdleService implements Service, UdpMe
 
     private synchronized void processResolve(UdpMessage requestMessage, DiscoveryMessages.Resolve resolve)
             throws ValidationException {
-        validate(resolve.getAddressing());
+        validateResolve(resolve.getAddressing());
         var eprToResolve = resolve.getEndpointReference();
 
         if (!URI.create(eprToResolve.getAddress()).equals(URI.create(endpointReference.getAddress()))) {
@@ -169,7 +168,7 @@ public class TargetService extends AbstractIdleService implements Service, UdpMe
                 .setAddressing(addressingUtil.assemblyAddressing(
                         WsDiscoveryConstants.WSA_ACTION_RESOLVE_MATCHES,
                         WsDiscoveryConstants.WSA_UDP_TO,
-                        resolve.getAddressing().getRelatesId()))
+                        resolve.getAddressing().getMessageId()))
                 .setEndpoint(createEndpoint(getCurrentMetadataVersion()));
 
         udpUtil.sendResponse(DiscoveryMessages.AnyDiscoveryMessage.newBuilder()
@@ -222,9 +221,15 @@ public class TargetService extends AbstractIdleService implements Service, UdpMe
                 .build();
     }
 
-    private void validate(AddressingTypes.Addressing addressing) throws ValidationException {
+    private void validateProbe(AddressingTypes.Addressing addressing) throws ValidationException {
         addressingValidator.validate(addressing)
                 .validateMessageId()
                 .validateAction(WsDiscoveryConstants.WSA_ACTION_PROBE);
+    }
+
+    private void validateResolve(AddressingTypes.Addressing addressing) throws ValidationException {
+        addressingValidator.validate(addressing)
+                .validateMessageId()
+                .validateAction(WsDiscoveryConstants.WSA_ACTION_RESOLVE);
     }
 }
