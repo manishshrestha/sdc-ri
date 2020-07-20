@@ -49,12 +49,12 @@ public class MdibXmlIo {
         this.mdibVersionUtil = mdibVersionUtil;
 
         // Append internal namespace prefix mappings
-        namespaceMappings += CommonConstants.NAMESPACE_PREFIX_MAPPINGS_MDPWS +
+        var namespaceMappingsExtended = namespaceMappings + CommonConstants.NAMESPACE_PREFIX_MAPPINGS_MDPWS +
                 CommonConstants.NAMESPACE_PREFIX_MAPPINGS_BICEPS + CommonConstants.NAMESPACE_PREFIX_MAPPINGS_GLUE +
                 "{xsi:" + SoapConstants.NAMESPACE_XSI + "}";
 
         this.namespacePrefixMapper = namespacePrefixMapperConverter.convert(
-                prefixNamespaceMappingParser.parse(namespaceMappings));
+                prefixNamespaceMappingParser.parse(namespaceMappingsExtended));
 
         initJaxb();
     }

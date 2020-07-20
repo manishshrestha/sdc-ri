@@ -15,7 +15,6 @@ import org.apache.logging.log4j.core.config.builder.api.ConfigurationBuilderFact
 import org.apache.logging.log4j.core.config.builder.impl.BuiltConfiguration;
 import org.somda.sdc.common.logging.InstanceLogger;
 import org.somda.sdc.dpws.crypto.CryptoSettings;
-import org.somda.sdc.dpws.service.HostingService;
 import org.somda.sdc.glue.consumer.helper.HostingServiceLogger;
 
 import java.util.List;
@@ -76,9 +75,9 @@ public class BaseUtil {
         Options options = new Options();
 
         {
-            Option epr = new Option("e", OPT_EPR, true, "epr address of provider");
-            epr.setRequired(false);
-            options.addOption(epr);
+            Option eprAddressProvider = new Option("e", OPT_EPR, true, "epr address of provider");
+            eprAddressProvider.setRequired(false);
+            options.addOption(eprAddressProvider);
         }
         {
             Option networkInterface = new Option("i", OPT_IFACE, true, "network interface to use");

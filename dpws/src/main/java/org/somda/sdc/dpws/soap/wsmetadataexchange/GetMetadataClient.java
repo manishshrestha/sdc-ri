@@ -1,12 +1,9 @@
 package org.somda.sdc.dpws.soap.wsmetadataexchange;
 
 import com.google.common.util.concurrent.ListenableFuture;
-import org.somda.sdc.dpws.soap.NotificationSink;
 import org.somda.sdc.dpws.soap.RequestResponseClient;
 import org.somda.sdc.dpws.soap.SoapMessage;
 
-import java.time.Duration;
-import java.util.List;
 
 /**
  * API to send WS-MetadataExchange GetMetadata requests.

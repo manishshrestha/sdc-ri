@@ -9,7 +9,6 @@ import org.somda.sdc.dpws.CommunicationLog;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Entity wrapper to enable {@linkplain CommunicationLog} capabilities in the http client.

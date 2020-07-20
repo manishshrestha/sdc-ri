@@ -11,7 +11,8 @@ import java.util.Collection;
  * This service is required to be started before any other interaction with the DPWS stack.
  * It is required once per Guice module.
  * <p>
- * {@linkplain DpwsFramework} is responsible to run a multicast UDP queue in order to send and receive discovery messages.
+ * {@linkplain DpwsFramework} is responsible to run a multicast UDP queue in order to send and
+ * receive discovery messages.
  * Moreover, it prints out a list of network adapters for information purposes.
  * <p>
  * Do not forget to stop the DPWS framework for a graceful shutdown.
@@ -36,8 +37,8 @@ public interface DpwsFramework extends Service {
      * <p>
      * <ul>
      * <li><em>Services registered when the framework is already running will be started.</em></li>
-     * <li><em>Services will be shutdown in the inverse order they're registered in, i.e. the last service registered will
-     * be the first to shut down.</em></li>
+     * <li><em>Services will be shutdown in the inverse order they're registered in,
+     * i.e. the last service registered will be the first to shut down.</em></li>
      * </ul>
      * @param services {@linkplain Service}s to register for startup and shutdown.
      */

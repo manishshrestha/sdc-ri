@@ -8,7 +8,8 @@ import org.somda.sdc.glue.provider.SdcDevicePlugin;
 import java.util.Collection;
 
 /**
- * Processes all {@linkplain org.somda.sdc.glue.provider.SdcDevicePlugin} instances passed to an {@linkplain org.somda.sdc.glue.provider.SdcDevice}.
+ * Processes all {@linkplain org.somda.sdc.glue.provider.SdcDevicePlugin} instances
+ * passed to an {@linkplain org.somda.sdc.glue.provider.SdcDevice}.
  */
 public class SdcDevicePluginProcessor {
     private static final Logger LOG = LogManager.getLogger(SdcDevicePluginProcessor.class);

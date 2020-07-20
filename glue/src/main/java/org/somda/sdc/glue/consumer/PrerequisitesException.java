@@ -3,7 +3,7 @@ package org.somda.sdc.glue.consumer;
 /**
  * Any exception that comes up before the connection process to a remote device could be finished.
  */
-public class PrerequisitesException extends Exception{
+public class PrerequisitesException extends Exception {
     public PrerequisitesException() {
     }
 
@@ -19,7 +19,8 @@ public class PrerequisitesException extends Exception{
         super(cause);
     }
 
-    public PrerequisitesException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
+    public PrerequisitesException(String message, Throwable cause,
+                                  boolean enableSuppression, boolean writableStackTrace) {
         super(message, cause, enableSuppression, writableStackTrace);
     }
 }

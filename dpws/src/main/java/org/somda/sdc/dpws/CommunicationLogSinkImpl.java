@@ -43,8 +43,8 @@ public class CommunicationLogSinkImpl implements CommunicationLogSink {
             if (!subDirFile.exists() && !subDirFile.mkdirs()) {
                 this.dirMapping.put(transportType, null);
 
-                instanceLogger.warn("Could not create the communication log directory '{}{}{}'", logDirectory.getAbsolutePath(),
-                        File.separator, subDirFile.getName());
+                instanceLogger.warn("Could not create the communication log directory '{}{}{}'",
+                        logDirectory.getAbsolutePath(), File.separator, subDirFile.getName());
             } else {
                 this.dirMapping.put(transportType, subDirFile);
             }

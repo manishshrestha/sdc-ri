@@ -1,12 +1,14 @@
 package org.somda.sdc.dpws.soap;
 
 import com.google.inject.Inject;
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
 import org.somda.sdc.dpws.guice.DeviceSpecific;
 import org.somda.sdc.dpws.soap.exception.SoapFaultException;
 import org.somda.sdc.dpws.soap.factory.SoapFaultFactory;
-import org.somda.sdc.dpws.soap.interception.*;
+import org.somda.sdc.dpws.soap.interception.Direction;
+import org.somda.sdc.dpws.soap.interception.Interceptor;
+import org.somda.sdc.dpws.soap.interception.InterceptorRegistry;
+import org.somda.sdc.dpws.soap.interception.RequestResponseObject;
+import org.somda.sdc.dpws.soap.interception.ServerDispatcher;
 import org.somda.sdc.dpws.soap.wsaddressing.WsAddressingConstants;
 import org.somda.sdc.dpws.soap.wsaddressing.WsAddressingServerInterceptor;
 import org.somda.sdc.dpws.soap.wsaddressing.WsAddressingUtil;

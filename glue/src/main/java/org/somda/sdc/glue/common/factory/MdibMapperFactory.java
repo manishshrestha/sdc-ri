@@ -9,7 +9,8 @@ import org.somda.sdc.glue.common.MdibMapper;
  */
 public interface MdibMapperFactory {
     /**
-     * Creates a new {@linkplain MdibMapper} that maps from {@linkplain MdibAccess} to {@linkplain org.somda.sdc.biceps.model.participant.Mdib}.
+     * Creates a new {@linkplain MdibMapper} that maps from {@linkplain MdibAccess}
+     * to {@linkplain org.somda.sdc.biceps.model.participant.Mdib}.
      *
      * @param mdibAccess the MDIB access where to map data from.
      * @return a new instance to map to {@link org.somda.sdc.biceps.model.participant.Mdib}.

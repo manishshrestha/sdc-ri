@@ -38,6 +38,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.Reader;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 
@@ -82,13 +83,13 @@ public class JaxbMarshalling extends AbstractIdleService {
         this.soapFactory = soapFactory;
 
         // Append internal mappings
-        namespaceMappings += SoapConstants.NAMESPACE_PREFIX_MAPPINGS;
+        var namespaceMappingsExtended = namespaceMappings + SoapConstants.NAMESPACE_PREFIX_MAPPINGS;
 
         this.namespacePrefixMapper = namespacePrefixMapperConverter.convert(
-                namespaceMappingParser.parse(namespaceMappings));
+                namespaceMappingParser.parse(namespaceMappingsExtended));
 
         var version = metadata.getFrameworkVersion();
-        this.versionString = "<!-- Generated with SDCri " + version + " -->";
+        this.versionString = "<!-- Generated with SDCri " + version + " -->\n";
     }
 
     @Override
@@ -149,6 +150,24 @@ public class JaxbMarshalling extends AbstractIdleService {
         return unmarshaller.unmarshal(inputStream);
     }
 
+
+    /**
+     * Takes a reader and unmarshals it.
+     *
+     * @param reader the input stream to unmarshal.
+     * @return the unmarshalled SOAP envelope.
+     * @throws JAXBException if unmarshalling fails.
+     */
+    public Object unmarshal(Reader reader) throws JAXBException {
+        checkRunning();
+        Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
+        if (schema != null) {
+            unmarshaller.setSchema(schema);
+        }
+        return unmarshaller.unmarshal(reader);
+    }
+
+
     private void initializeJaxb() throws SAXException, IOException, ParserConfigurationException {
         if (!contextPackages.isEmpty()) {
             contextPackages += PKG_DELIM;
@@ -189,7 +208,8 @@ public class JaxbMarshalling extends AbstractIdleService {
         }
     }
 
-    private Schema generateTopLevelSchema(String schemaPath) throws SAXException, IOException, ParserConfigurationException {
+    private Schema generateTopLevelSchema(String schemaPath) throws SAXException, IOException,
+            ParserConfigurationException {
         final var topLevelSchemaBeginning =
                 "<xsd:schema xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" elementFormDefault=\"qualified\">";
         final var importPattern = "<xsd:import namespace=\"%s\" schemaLocation=\"%s\"/>";
@@ -206,7 +226,8 @@ public class JaxbMarshalling extends AbstractIdleService {
                         org.somda.sdc.dpws.soap.JaxbSoapMarshalling.class.getSimpleName(), path));
             }
             var targetNamespace = resolveTargetNamespace(schemaUrl);
-            instanceLogger.info("Register namespace for validation: {}, read from {}", targetNamespace, schemaUrl.toString());
+            instanceLogger.info("Register namespace for validation: {}, read from {}", targetNamespace,
+                    schemaUrl.toString());
             stringBuilder.append(String.format(importPattern, targetNamespace, schemaUrl.toString()));
         }
         stringBuilder.append(topLevelSchemaEnd);

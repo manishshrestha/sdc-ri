@@ -71,7 +71,8 @@ public class SubscriptionRegistry {
      * Registers an {@link EventBus} observer to enable tracking of subscription insertion and deletion.
      *
      * @param observer an observer with {@link com.google.common.eventbus.Subscribe} annotated methods and
-     *                 the first argument of type {@link SubscriptionAddedMessage} or {@link SubscriptionRemovedMessage}.
+     *                 the first argument of type {@link SubscriptionAddedMessage} or
+     *                 {@link SubscriptionRemovedMessage}.
      * @see EventBus#register(Object)
      */
     public void registerObserver(Object observer) {

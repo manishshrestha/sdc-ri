@@ -144,7 +144,8 @@ public class Consumer {
      * @throws InterruptedException if retrieving the final OperationInvokedReport is interrupted
      * @throws TimeoutException     if retrieving the final OperationInvokedReport times out
      */
-    static InvocationState invokeActivate(SetServiceAccess setServiceAccess, String handle, List<String> args) throws ExecutionException, InterruptedException, TimeoutException {
+    static InvocationState invokeActivate(SetServiceAccess setServiceAccess, String handle, List<String> args)
+            throws ExecutionException, InterruptedException, TimeoutException {
         LOG.info("Invoking Activate for handle {} with arguments {}", handle, args);
 
         Activate activate = new Activate();
@@ -159,7 +160,8 @@ public class Consumer {
         final ListenableFuture<ScoTransaction<ActivateResponse>> activateFuture = setServiceAccess
                 .invoke(activate, ActivateResponse.class);
         ScoTransaction<ActivateResponse> activateResponse = activateFuture.get(MAX_WAIT_SEC, TimeUnit.SECONDS);
-        List<OperationInvokedReport.ReportPart> reportParts = activateResponse.waitForFinalReport(Duration.ofSeconds(5));
+        List<OperationInvokedReport.ReportPart> reportParts =
+                activateResponse.waitForFinalReport(Duration.ofSeconds(5));
 
         // return the final reports invocation state
         return reportParts.get(reportParts.size() - 1).getInvocationInfo().getInvocationState();
@@ -176,7 +178,8 @@ public class Consumer {
      * @throws InterruptedException if retrieving the final OperationInvokedReport is interrupted
      * @throws TimeoutException     if retrieving the final OperationInvokedReport times out
      */
-    static InvocationState invokeSetValue(SetServiceAccess setServiceAccess, String handle, BigDecimal value) throws ExecutionException, InterruptedException, TimeoutException {
+    static InvocationState invokeSetValue(SetServiceAccess setServiceAccess, String handle, BigDecimal value)
+            throws ExecutionException, InterruptedException, TimeoutException {
         LOG.info("Invoking SetValue for handle {} with value {}", handle, value);
         SetValue setValue = new SetValue();
         setValue.setOperationHandleRef(handle);
@@ -185,7 +188,8 @@ public class Consumer {
         final ListenableFuture<ScoTransaction<SetValueResponse>> setValueFuture = setServiceAccess
                 .invoke(setValue, SetValueResponse.class);
         ScoTransaction<SetValueResponse> setValueResponse = setValueFuture.get(MAX_WAIT_SEC, TimeUnit.SECONDS);
-        List<OperationInvokedReport.ReportPart> reportParts = setValueResponse.waitForFinalReport(Duration.ofSeconds(5));
+        List<OperationInvokedReport.ReportPart> reportParts =
+                setValueResponse.waitForFinalReport(Duration.ofSeconds(5));
 
         // return the final reports invocation state
         return reportParts.get(reportParts.size() - 1).getInvocationInfo().getInvocationState();
@@ -202,7 +206,8 @@ public class Consumer {
      * @throws InterruptedException if retrieving the final OperationInvokedReport is interrupted
      * @throws TimeoutException     if retrieving the final OperationInvokedReport times out
      */
-    static InvocationState invokeSetString(SetServiceAccess setServiceAccess, String handle, String value) throws ExecutionException, InterruptedException, TimeoutException {
+    static InvocationState invokeSetString(SetServiceAccess setServiceAccess, String handle, String value)
+            throws ExecutionException, InterruptedException, TimeoutException {
         LOG.info("Invoking SetString for handle {} with value {}", handle, value);
         SetString setString = new SetString();
         setString.setOperationHandleRef(handle);
@@ -211,7 +216,8 @@ public class Consumer {
         final ListenableFuture<ScoTransaction<SetStringResponse>> setStringFuture = setServiceAccess
                 .invoke(setString, SetStringResponse.class);
         ScoTransaction<SetStringResponse> setStringResponse = setStringFuture.get(MAX_WAIT_SEC, TimeUnit.SECONDS);
-        List<OperationInvokedReport.ReportPart> reportParts = setStringResponse.waitForFinalReport(Duration.ofSeconds(5));
+        List<OperationInvokedReport.ReportPart> reportParts =
+                setStringResponse.waitForFinalReport(Duration.ofSeconds(5));
 
         // return the final reports invocation state
         if (!reportParts.isEmpty()) {
@@ -225,7 +231,8 @@ public class Consumer {
         return injector;
     }
 
-    public static void main(String[] args) throws SocketException, UnknownHostException, InterceptorException, TransportException, InterruptedException {
+    public static void main(String[] args) throws SocketException, UnknownHostException,
+            InterceptorException, TransportException, InterruptedException {
 
         var settings = new ConsumerUtil(args);
         var targetEpr = settings.getEpr();
@@ -340,17 +347,19 @@ public class Consumer {
         List<AbstractContextState> contextStates = sdcRemoteDevice.getMdibAccess().getContextStates();
 
         // has patient
-        long numPatientContexts = contextStates.stream().filter(x -> PatientContextState.class.isAssignableFrom(x.getClass())).count();
+        long numPatientContexts = contextStates.stream()
+                .filter(x -> PatientContextState.class.isAssignableFrom(x.getClass())).count();
         resultMap.put(5, numPatientContexts >= 1);
         // has location context
-        long numLocationContexts = contextStates.stream().filter(x -> LocationContextState.class.isAssignableFrom(x.getClass())).count();
+        long numLocationContexts = contextStates.stream()
+                .filter(x -> LocationContextState.class.isAssignableFrom(x.getClass())).count();
         resultMap.put(6, numLocationContexts >= 1);
 
         // wait for incoming reports
         Thread.sleep(REPORT_TIMEOUT);
 
         // expected number of reports given 5 second interval
-        int minNumberReports = ((int) (REPORT_TIMEOUT / Duration.ofSeconds(5).toMillis()) - 1);
+        int minNumberReports = (int) (REPORT_TIMEOUT / Duration.ofSeconds(5).toMillis()) - 1;
 
         // verify the number of reports for the expected metrics is at least five during the timeout
         var metricChangesOk = reportObs.numMetricChanges >= minNumberReports;

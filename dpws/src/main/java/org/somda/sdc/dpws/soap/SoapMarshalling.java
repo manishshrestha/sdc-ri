@@ -6,6 +6,7 @@ import org.somda.sdc.dpws.soap.model.Envelope;
 import javax.xml.bind.JAXBException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.Reader;
 
 /**
  * JAXB SOAP marshalling service.
@@ -29,4 +30,14 @@ public interface SoapMarshalling extends Service {
      * @throws ClassCastException if the cast to {@link Envelope} fails.
      */
     Envelope unmarshal(InputStream inputStream) throws JAXBException, ClassCastException;
+
+    /**
+     * Unmarshals a SOAP message.
+     *
+     * @param reader the input message to unmarshal a SOAP message from.
+     * @return the unmarshalled SOAP envelope.
+     * @throws JAXBException      if unmarshalling fails.
+     * @throws ClassCastException if the cast to {@link Envelope} fails.
+     */
+    Envelope unmarshal(Reader reader) throws JAXBException, ClassCastException;
 }

@@ -12,6 +12,11 @@ public interface ClientTransportBindingFactory {
 
     /**
      * Instantiates {@linkplain ClientTransportBinding} with the given objects and injected objects.
+     * @param client used for binding
+     * @param clientUri uri to connect to
+     * @param marshalling marshalling service
+     * @param soapUtil utility to create {@linkplain org.somda.sdc.dpws.soap.SoapMessage}
+     * @return a new {@linkplain ClientTransportBinding}
      */
     ClientTransportBinding create(HttpClient client, String clientUri, SoapMarshalling marshalling, SoapUtil soapUtil);
 

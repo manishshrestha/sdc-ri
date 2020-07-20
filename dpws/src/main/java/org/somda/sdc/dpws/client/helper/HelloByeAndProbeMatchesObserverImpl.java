@@ -44,7 +44,8 @@ public class HelloByeAndProbeMatchesObserverImpl implements HelloByeAndProbeMatc
 
     @Inject
     HelloByeAndProbeMatchesObserverImpl(@Assisted DiscoveredDeviceResolver discoveredDeviceResolver,
-                                        @NetworkJobThreadPool ExecutorWrapperService<ListeningExecutorService> networkJobExecutor,
+                                        @NetworkJobThreadPool
+                                        ExecutorWrapperService<ListeningExecutorService> networkJobExecutor,
                                         WsAddressingUtil wsaUtil,
                                         @Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier) {
         this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);

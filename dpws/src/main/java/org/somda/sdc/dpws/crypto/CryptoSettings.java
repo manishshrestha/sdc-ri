@@ -11,7 +11,8 @@ import java.util.Optional;
  * ({@link #getKeyStoreFile()}, {@link #getTrustStoreFile()}) or streams ({@link #getKeyStoreStream()},
  * {@link #getKeyStoreStream()}).
  *
- * @see <a href="https://www.cloudera.com/documentation/enterprise/5-10-x/topics/cm_sg_create_key_trust.html">More information on key and trust stores</a>
+ * @see <a href="https://www.cloudera.com/documentation/enterprise/5-10-x/topics/cm_sg_create_key_trust.html"
+ * >More information on key and trust stores</a>
  */
 public interface CryptoSettings {
     Optional<File> getKeyStoreFile();

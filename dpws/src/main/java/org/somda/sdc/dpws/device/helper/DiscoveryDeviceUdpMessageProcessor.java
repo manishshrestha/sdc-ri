@@ -56,7 +56,8 @@ public class DiscoveryDeviceUdpMessageProcessor implements UdpMessageQueueObserv
                                        @Assisted UdpMessageQueueService udpMessageQueueService,
                                        MarshallingService marshallingService,
                                        SoapUtil soapUtil,
-                                       @AppDelayExecutor ExecutorWrapperService<ScheduledExecutorService> scheduledExecutorService,
+                                       @AppDelayExecutor ExecutorWrapperService<ScheduledExecutorService>
+                                               scheduledExecutorService,
                                        Random randomNumbers,
                                        @Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier) {
         this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);
@@ -97,7 +98,8 @@ public class DiscoveryDeviceUdpMessageProcessor implements UdpMessageQueueObserv
         //  Remove once proper UDP notification handling is in place.
         var action = response.getWsAddressingHeader().getAction();
         if (action.isEmpty() || action.get().getValue().isBlank()) {
-            instanceLogger.debug("Not sending a response, no response with an action generated for message {}", SoapDebug.get(request));
+            instanceLogger.debug("Not sending a response, no response with an action generated for message {}",
+                    SoapDebug.get(request));
             return;
         }
 

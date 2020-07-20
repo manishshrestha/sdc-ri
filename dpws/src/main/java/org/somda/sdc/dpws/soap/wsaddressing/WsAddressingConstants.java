@@ -34,35 +34,40 @@ public class WsAddressingConstants {
     /**
      * WS-Addressing wsa:Action header element.
      *
-     * @see <a href="https://www.w3.org/TR/2006/REC-ws-addr-core-20060509/#msgaddrprops">Message Addressing Properties</a>
+     * @see <a href="https://www.w3.org/TR/2006/REC-ws-addr-core-20060509/#msgaddrprops"
+     * >Message Addressing Properties</a>
      */
     public static final QName ACTION = new QName(NAMESPACE, "Action");
 
     /**
      * WS-Addressing wsa:MessageID header element.
      *
-     * @see <a href="https://www.w3.org/TR/2006/REC-ws-addr-core-20060509/#msgaddrprops">Message Addressing Properties</a>
+     * @see <a href="https://www.w3.org/TR/2006/REC-ws-addr-core-20060509/#msgaddrprops"
+     * >Message Addressing Properties</a>
      */
     public static final QName MESSAGE_ID = new QName(NAMESPACE, "MessageID");
 
     /**
      * WS-Addressing wsa:ReplyTo header element.
      *
-     * @see <a href="https://www.w3.org/TR/2006/REC-ws-addr-core-20060509/#msgaddrprops">Message Addressing Properties</a>
+     * @see <a href="https://www.w3.org/TR/2006/REC-ws-addr-core-20060509/#msgaddrprops"
+     * >Message Addressing Properties</a>
      */
     public static final QName RELATES_TO = new QName(NAMESPACE, "RelatesTo");
 
     /**
      * WS-Addressing wsa:To header element.
      *
-     * @see <a href="https://www.w3.org/TR/2006/REC-ws-addr-core-20060509/#msgaddrprops">Message Addressing Properties</a>
+     * @see <a href="https://www.w3.org/TR/2006/REC-ws-addr-core-20060509/#msgaddrprops"
+     * >Message Addressing Properties</a>
      */
     public static final QName TO = new QName(NAMESPACE, "To");
 
     /**
      * WS-Addressing wsa:ReferenceParameters header element.
      *
-     * @see <a href="https://www.w3.org/TR/2006/REC-ws-addr-core-20060509/#msgaddrprops">Message Addressing Properties</a>
+     * @see <a href="https://www.w3.org/TR/2006/REC-ws-addr-core-20060509/#msgaddrprops"
+     * >Message Addressing Properties</a>
      */
     public static final QName REFERENCE_PARAMETERS = new QName(NAMESPACE, "ReferenceParameters");
 
@@ -76,9 +81,11 @@ public class WsAddressingConstants {
     /**
      * MessageAddressingHeaderRequired fault QName.
      *
-     * @see <a href="https://www.w3.org/TR/2006/REC-ws-addr-soap-20060509/#missingmapfault">Message Addressing Header Required</a>
+     * @see <a href="https://www.w3.org/TR/2006/REC-ws-addr-soap-20060509/#missingmapfault"
+     * >Message Addressing Header Required</a>
      */
-    public static final QName MESSAGE_ADDRESSING_HEADER_REQUIRED = new QName(NAMESPACE, "MessageAddressingHeaderRequired");
+    public static final QName MESSAGE_ADDRESSING_HEADER_REQUIRED =
+            new QName(NAMESPACE, "MessageAddressingHeaderRequired");
 
     /**
      * WS-Addressing wsa:Action for faults.
@@ -90,14 +97,16 @@ public class WsAddressingConstants {
     /**
      * WS-Addressing anonymous wsa:To/wsa:ReplyTo endpoint address.
      *
-     * @see <a href="https://www.w3.org/TR/2006/REC-ws-addr-soap-20060509/#anonaddress">Use of Anonymous Address in SOAP Response Endpoints</a>
+     * @see <a href="https://www.w3.org/TR/2006/REC-ws-addr-soap-20060509/#anonaddress"
+     * >Use of Anonymous Address in SOAP Response Endpoints</a>
      */
     public static final String ANONYMOUS = NAMESPACE + "/anonymous";
 
     /**
      * IsReferenceParameter attribute.
      *
-     * @see <a href="https://www.w3.org/TR/2006/REC-ws-addr-soap-20060509/#additionalinfoset">Additional Infoset Items</a>
+     * @see <a href="https://www.w3.org/TR/2006/REC-ws-addr-soap-20060509/#additionalinfoset"
+     * >Additional Infoset Items</a>
      */
     public static final QName IS_REFERENCE_PARAMETER = new QName(NAMESPACE, "IsReferenceParameter");
 

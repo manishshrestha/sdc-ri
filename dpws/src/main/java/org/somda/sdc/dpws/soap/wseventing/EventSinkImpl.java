@@ -119,7 +119,9 @@ public class EventSinkImpl implements EventSink {
             String endToContext = EVENT_SINK_END_TO_CONTEXT_PREFIX + contextSuffix;
             var endToUri = httpServerRegistry.registerContext(hostAddress, endToContext, new HttpHandler() {
                 @Override
-                public void handle(InputStream inStream, OutputStream outStream, CommunicationContext communicationContext) throws HttpException {
+                public void handle(InputStream inStream, OutputStream outStream,
+                                   CommunicationContext communicationContext)
+                        throws HttpException {
                     processIncomingNotification(notificationSink, inStream, outStream, communicationContext);
                 }
             });
@@ -128,7 +130,9 @@ public class EventSinkImpl implements EventSink {
             String notifyToContext = EVENT_SINK_NOTIFY_TO_CONTEXT_PREFIX + contextSuffix;
             var notifyToUri = httpServerRegistry.registerContext(hostAddress, notifyToContext, new HttpHandler() {
                 @Override
-                public void handle(InputStream inStream, OutputStream outStream, CommunicationContext communicationContext) throws HttpException {
+                public void handle(InputStream inStream, OutputStream outStream,
+                                   CommunicationContext communicationContext)
+                        throws HttpException {
                     processIncomingNotification(notificationSink, inStream, outStream, communicationContext);
                 }
             });
@@ -155,11 +159,13 @@ public class EventSinkImpl implements EventSink {
 
             subscribeBody.setFilter(filterType);
 
-            SoapMessage subscribeRequest = soapUtil.createMessage(WsEventingConstants.WSA_ACTION_SUBSCRIBE, subscribeBody);
+            SoapMessage subscribeRequest = soapUtil.createMessage(WsEventingConstants.WSA_ACTION_SUBSCRIBE,
+                    subscribeBody);
 
             // Create client to send request
             // // TODO: 19.01.2017
-            //HostedServiceTransportBinding hsTb = hostedServiceTransportBindingFactory.createHostedServiceTransportBinding(hostedServiceProxy);
+            //HostedServiceTransportBinding hsTb = hostedServiceTransportBindingFactory
+            // .createHostedServiceTransportBinding(hostedServiceProxy);
             //hostedServiceProxy.registerMetadataChangeObserver(hsTb);
             //RequestResponseClient hostedServiceClient = resReqClientFactory.createRequestResponseClient(hsTb);
 
@@ -281,8 +287,10 @@ public class EventSinkImpl implements EventSink {
             try {
                 future.get(maxWaitForFutures.toSeconds(), TimeUnit.SECONDS);
             } catch (InterruptedException | ExecutionException | TimeoutException e) {
-                instanceLogger.warn("Subscription {} could not be unsubscribed. Ignore.", subscriptionManager.getSubscriptionId());
-                instanceLogger.trace("Subscription {} could not be unsubscribed", subscriptionManager.getSubscriptionId(), e);
+                instanceLogger.warn("Subscription {} could not be unsubscribed. Ignore.",
+                        subscriptionManager.getSubscriptionId());
+                instanceLogger.trace("Subscription {} could not be unsubscribed",
+                        subscriptionManager.getSubscriptionId(), e);
             }
         }
     }
@@ -300,7 +308,8 @@ public class EventSinkImpl implements EventSink {
     private void processIncomingNotification(NotificationSink notificationSink,
                                              InputStream inputStream,
                                              OutputStream outputStream,
-                                             CommunicationContext communicationContext) throws HttpException {
+                                             CommunicationContext communicationContext)
+            throws HttpException {
         try {
             SoapMessage soapMsg = soapUtil.createMessage(marshalling.unmarshal(inputStream));
             inputStream.close();
@@ -311,7 +320,9 @@ public class EventSinkImpl implements EventSink {
             // as closing allows the server do dispatch the next request, which will cause concurrency problems
             // for the ultimate receiver of the notifications
             outputStream.close();
+            // CHECKSTYLE.OFF: IllegalCatch
         } catch (Exception e) {
+            // CHECKSTYLE.ON: IllegalCatch
             throw new HttpException(HttpStatus.INTERNAL_SERVER_ERROR_500, e.getMessage());
         }
     }

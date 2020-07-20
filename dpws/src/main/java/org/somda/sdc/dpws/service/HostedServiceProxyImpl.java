@@ -80,13 +80,16 @@ public class HostedServiceProxyImpl implements HostedServiceProxy, EventSinkAcce
     }
 
     @Override
-    public synchronized SoapMessage sendRequestResponse(SoapMessage request) throws SoapFaultException, MarshallingException, TransportException, InterceptorException {
+    public synchronized SoapMessage sendRequestResponse(SoapMessage request)
+            throws SoapFaultException, MarshallingException, TransportException, InterceptorException {
         return requestResponseClient.sendRequestResponse(request);
     }
 
     @Override
-    public ListenableFuture<SubscribeResult> subscribe(List<String> actions, @Nullable Duration expires, Interceptor notificationSink) {
-        final NotificationSink notifications = notificationSinkFactory.createNotificationSink(wsAddressingServerInterceptor);
+    public ListenableFuture<SubscribeResult> subscribe(List<String> actions, @Nullable Duration expires,
+                                                       Interceptor notificationSink) {
+        final NotificationSink notifications = notificationSinkFactory
+                .createNotificationSink(wsAddressingServerInterceptor);
         notifications.register(notificationSink);
         return eventSink.subscribe(actions, expires, notifications);
     }

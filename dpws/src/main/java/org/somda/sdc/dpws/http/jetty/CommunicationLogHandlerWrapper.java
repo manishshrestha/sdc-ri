@@ -20,24 +20,23 @@ import java.io.OutputStream;
 public class CommunicationLogHandlerWrapper extends HandlerWrapper {
 
     private final CommunicationLog commLog;
-    private final boolean expectTLS;
     private final String frameworkIdentifier;
 
-    CommunicationLogHandlerWrapper(CommunicationLog commLog, boolean expectTLS, String frameworkIdentifier) {
+    CommunicationLogHandlerWrapper(CommunicationLog commLog, String frameworkIdentifier) {
         this.frameworkIdentifier = frameworkIdentifier;
         this.commLog = commLog;
-        this.expectTLS = expectTLS;
     }
 
     @Override
-    public void handle(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
+    public void handle(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response)
+            throws IOException, ServletException {
 
         var requestHttpApplicationInfo = new HttpApplicationInfo(
                 JettyUtil.getRequestHeaders(request)
         );
 
         // collect information for TransportInfo
-        var requestCertificates = JettyHttpServerHandler.getX509Certificates(request, expectTLS);
+        var requestCertificates = JettyHttpServerHandler.getX509Certificates(request, baseRequest.isSecure());
         var transportInfo = new TransportInfo(
                 request.getScheme(),
                 request.getLocalAddr(),

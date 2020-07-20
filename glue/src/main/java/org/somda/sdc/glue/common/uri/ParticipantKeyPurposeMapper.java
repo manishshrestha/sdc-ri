@@ -18,7 +18,8 @@ public class ParticipantKeyPurposeMapper {
             "(" +
                     "(" +
                     "(" + NO_LEADING_ZERO_EXCEPT_FOR_SINGLE_DIGIT + ".)*" +
-                    "(" + NO_LEADING_ZERO_EXCEPT_FOR_SINGLE_DIGIT + "." + NO_LEADING_ZERO_EXCEPT_FOR_SINGLE_DIGIT + ")" +
+                    "(" + NO_LEADING_ZERO_EXCEPT_FOR_SINGLE_DIGIT + "." +
+                    NO_LEADING_ZERO_EXCEPT_FOR_SINGLE_DIGIT + ")" +
                     "(." + NO_LEADING_ZERO_EXCEPT_FOR_SINGLE_DIGIT + ")*" +
                     ")|" +
                     NO_LEADING_ZERO_EXCEPT_FOR_SINGLE_DIGIT + ")";

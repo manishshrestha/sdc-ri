@@ -77,8 +77,10 @@ public class SslMetadata extends AbstractIdleService implements Service {
         final X509Certificate serverCert = generateCertificate("sdc-lite-server.org", serverKeyPair, extendedKeyUsage);
         final X509Certificate clientCert = generateCertificate("sdc-lite-client.org", clientKeyPair, extendedKeyUsage);
 
-        final KeyStore serverKeyStore = createKeyStore(serverAlias, serverKeyPair.getPrivate(), commonPassword, Collections.singletonList(serverCert));
-        final KeyStore clientKeyStore = createKeyStore(clientAlias, clientKeyPair.getPrivate(), commonPassword, Collections.singletonList(clientCert));
+        final KeyStore serverKeyStore = createKeyStore(serverAlias, serverKeyPair.getPrivate(),
+                commonPassword, Collections.singletonList(serverCert));
+        final KeyStore clientKeyStore = createKeyStore(clientAlias, clientKeyPair.getPrivate(),
+                commonPassword, Collections.singletonList(clientCert));
 
         final KeyStore serverTrustStore = createTrustStore(serverAlias, commonPassword, clientCert);
         final KeyStore clientTrustStore = createTrustStore(clientAlias, commonPassword, serverCert);
@@ -131,7 +133,8 @@ public class SslMetadata extends AbstractIdleService implements Service {
         return keyStore;
     }
 
-    private static X509Certificate generateCertificate(String issuer, KeyPair keyPair, ExtendedKeyUsage extendedKeyUsage)
+    private static X509Certificate generateCertificate(
+            String issuer, KeyPair keyPair, ExtendedKeyUsage extendedKeyUsage)
             throws IOException, OperatorCreationException, CertificateException {
         SubjectPublicKeyInfo subPubKeyInfo = SubjectPublicKeyInfo.getInstance(keyPair.getPublic().getEncoded());
         AlgorithmIdentifier sigAlgId = new DefaultSignatureAlgorithmIdentifierFinder().find("SHA256WithRSAEncryption");
@@ -171,11 +174,11 @@ public class SslMetadata extends AbstractIdleService implements Service {
     }
 
     public class KeySet {
-        final KeyStore keyStore;
-        final String keyStorePassword;
+        private final KeyStore keyStore;
+        private final String keyStorePassword;
 
-        final KeyStore trustStore;
-        final String trustStorePassword;
+        private final KeyStore trustStore;
+        private final String trustStorePassword;
 
         public KeySet(KeyStore keyStore, String keyStorePassword, KeyStore trustStore, String trustStorePassword) {
             this.keyStore = keyStore;

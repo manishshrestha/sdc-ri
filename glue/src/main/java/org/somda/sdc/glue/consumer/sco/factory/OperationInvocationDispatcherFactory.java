@@ -5,5 +5,6 @@ import org.somda.sdc.dpws.service.HostingServiceProxy;
 import org.somda.sdc.glue.consumer.sco.helper.OperationInvocationDispatcher;
 
 public interface OperationInvocationDispatcherFactory {
-    OperationInvocationDispatcher createOperationInvocationDispatcher(@Assisted HostingServiceProxy hostingServiceProxy);
+    OperationInvocationDispatcher createOperationInvocationDispatcher(
+            @Assisted HostingServiceProxy hostingServiceProxy);
 }

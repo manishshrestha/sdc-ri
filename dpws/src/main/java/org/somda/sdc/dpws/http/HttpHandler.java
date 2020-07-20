@@ -62,7 +62,9 @@ public interface HttpHandler {
     {
         try {
             process(inStream, outStream, communicationContext);
+            // CHECKSTYLE.OFF: IllegalCatch
         } catch (Exception e) {
+            // CHECKSTYLE.ON: IllegalCatch
             throw new HttpException(HttpStatus.INTERNAL_SERVER_ERROR_500, e.getMessage());
         }
     }

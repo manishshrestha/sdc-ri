@@ -139,7 +139,8 @@ public class Context {
                                                          InvocationState invocationState,
                                                          InvocationError invocationError,
                                                          List<LocalizedText> invocationErrorMessage) {
-        return new InvocationResponse(mdibVersion, transactionId, invocationState, invocationError, invocationErrorMessage);
+        return new InvocationResponse(mdibVersion, transactionId, invocationState,
+                invocationError, invocationErrorMessage);
     }
 
     /**
@@ -157,7 +158,8 @@ public class Context {
     public InvocationResponse createUnsuccessfulResponse(InvocationState invocationState,
                                                          InvocationError invocationError,
                                                          List<LocalizedText> invocationErrorMessage) {
-        return new InvocationResponse(mdibAccess.getMdibVersion(), transactionId, invocationState, invocationError, invocationErrorMessage);
+        return new InvocationResponse(mdibAccess.getMdibVersion(), transactionId, invocationState,
+                invocationError, invocationErrorMessage);
     }
 
     /**
@@ -252,7 +254,8 @@ public class Context {
         invocationInfo.setInvocationError(invocationError);
         invocationInfo.setInvocationErrorMessage(invocationErrorMessage);
 
-        final OperationInvokedReport.ReportPart reportPart = messageModelFactory.createOperationInvokedReportReportPart();
+        final OperationInvokedReport.ReportPart reportPart =
+                messageModelFactory.createOperationInvokedReportReportPart();
         reportPart.setOperationHandleRef(operationHandle);
         reportPart.setOperationTarget(operationTarget);
         reportPart.setInvocationSource(invocationSource);
@@ -267,10 +270,12 @@ public class Context {
         try {
             eventSource.sendNotification(ActionConstants.ACTION_OPERATION_INVOKED_REPORT, operationInvokedReport);
         } catch (MarshallingException e) {
-            instanceLogger.warn("Could not marshal operation invoked report notification of transaction {} with invocation state {}",
+            instanceLogger.warn("Could not marshal operation invoked report notification of transaction {} " +
+                            "with invocation state {}",
                     transactionId, invocationState);
         } catch (TransportException e) {
-            instanceLogger.warn("Could not deliver operation invoked report notification of transaction {} with invocation state {}",
+            instanceLogger.warn("Could not deliver operation invoked report notification of transaction {} " +
+                            "with invocation state {}",
                     transactionId, invocationState);
         }
     }

@@ -31,7 +31,8 @@ public class NotificationObject implements InterceptorCallbackType {
     /**
      * Returns the transport information attached to this notification.
      *
-     * @return the {@link TransportInfo} object or {@linkplain Optional#empty()} if no transport information is available.
+     * @return the {@link TransportInfo} object or {@linkplain Optional#empty()} if no transport information
+     * is available.
      * The latter case typically happens for notifications on the way from the client to the network as at this point
      * no connection information is available.
      * Once the notification was received by a server, transport information can be attached to this object and

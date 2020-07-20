@@ -32,7 +32,8 @@ public interface SdcDeviceContext {
     LocalMdibAccess getLocalMdibAccess();
 
     /**
-     * Gets a collection of {@linkplain OperationInvocationReceiver} instances passed to the {@linkplain SdcDevice} constructor.
+     * Gets a collection of {@linkplain OperationInvocationReceiver} instances
+     * passed to the {@linkplain SdcDevice} constructor.
      *
      * @return an unmodifiable {@link OperationInvocationReceiver} collection.
      */
@@ -58,7 +59,8 @@ public interface SdcDeviceContext {
      * <li>Alert states (every subclass of {@link org.somda.sdc.biceps.model.participant.AbstractAlertState})
      * <li>Context states (every subclass of {@link org.somda.sdc.biceps.model.participant.AbstractContextState})
      * <li>Operational states (every subclass of {@link org.somda.sdc.biceps.model.participant.AbstractOperationState})
-     * <li>Component states (every subclass of {@link org.somda.sdc.biceps.model.participant.AbstractDeviceComponentState})
+     * <li>Component states (every subclass of
+     * {@link org.somda.sdc.biceps.model.participant.AbstractDeviceComponentState})
      * </ul>
      *
      * @param states      the states that are supposed to be notified.

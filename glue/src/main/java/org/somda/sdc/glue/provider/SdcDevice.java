@@ -9,7 +9,11 @@ import org.somda.sdc.biceps.model.participant.AbstractState;
 import org.somda.sdc.biceps.model.participant.MdibVersion;
 import org.somda.sdc.biceps.provider.access.LocalMdibAccess;
 import org.somda.sdc.dpws.DpwsConstants;
-import org.somda.sdc.dpws.device.*;
+import org.somda.sdc.dpws.device.Device;
+import org.somda.sdc.dpws.device.DeviceSettings;
+import org.somda.sdc.dpws.device.DiscoveryAccess;
+import org.somda.sdc.dpws.device.EventSourceAccess;
+import org.somda.sdc.dpws.device.HostingServiceAccess;
 import org.somda.sdc.dpws.device.factory.DeviceFactory;
 import org.somda.sdc.dpws.service.factory.HostedServiceFactory;
 import org.somda.sdc.dpws.soap.exception.MarshallingException;
@@ -28,7 +32,12 @@ import org.somda.sdc.mdpws.common.CommonConstants;
 import javax.xml.namespace.QName;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Adds SDC services to a DPWS device and manages incoming set service requests.
@@ -46,7 +55,8 @@ public class SdcDevice extends AbstractIdleService implements Device, EventSourc
     @AssistedInject
     SdcDevice(@Assisted DeviceSettings deviceSettings,
               @Assisted LocalMdibAccess mdibAccess,
-              @Assisted("operationInvocationReceivers") Collection<OperationInvocationReceiver> operationInvocationReceivers,
+              @Assisted("operationInvocationReceivers")
+                      Collection<OperationInvocationReceiver> operationInvocationReceivers,
               @Assisted("plugins") Collection<SdcDevicePlugin> plugins,
               Provider<SdcRequiredTypesAndScopes> sdcRequiredTypesAndScopesProvider,
               DeviceFactory deviceFactory,
@@ -54,8 +64,9 @@ public class SdcDevice extends AbstractIdleService implements Device, EventSourc
               HostedServiceFactory hostedServiceFactory) {
 
         // Always support the minimally required types and scopes
-        if (plugins.isEmpty()) {
-            plugins = Collections.singleton(sdcRequiredTypesAndScopesProvider.get());
+        var copyPlugins = plugins;
+        if (copyPlugins.isEmpty()) {
+            copyPlugins = Collections.singleton(sdcRequiredTypesAndScopesProvider.get());
         }
 
         this.mdibAccess = mdibAccess;
@@ -64,7 +75,7 @@ public class SdcDevice extends AbstractIdleService implements Device, EventSourc
         this.hostedServiceFactory = hostedServiceFactory;
         this.operationInvocationReceivers = operationInvocationReceivers;
 
-        this.pluginProcessor = new SdcDevicePluginProcessor(plugins, this);
+        this.pluginProcessor = new SdcDevicePluginProcessor(copyPlugins, this);
     }
 
     public LocalMdibAccess getMdibAccess() {
@@ -123,7 +134,8 @@ public class SdcDevice extends AbstractIdleService implements Device, EventSourc
             @Override
             public void setTypes(Collection<QName> types) {
                 ArrayList<QName> tmpTypes = new ArrayList<>();
-                if (types.stream().filter(qName -> qName.equals(CommonConstants.MEDICAL_DEVICE_TYPE)).findAny().isEmpty()) {
+                if (types.stream().filter(qName -> qName.equals(CommonConstants.MEDICAL_DEVICE_TYPE))
+                        .findAny().isEmpty()) {
                     tmpTypes.add(DpwsConstants.DEVICE_TYPE);
                 }
                 tmpTypes.addAll(types);
@@ -133,7 +145,8 @@ public class SdcDevice extends AbstractIdleService implements Device, EventSourc
             @Override
             public void setScopes(Collection<String> scopes) {
                 ArrayList<String> tmpScopes = new ArrayList<>();
-                if (scopes.stream().filter(scope -> scope.equals(GlueConstants.SCOPE_SDC_PROVIDER)).findAny().isEmpty()) {
+                if (scopes.stream().filter(scope -> scope.equals(GlueConstants.SCOPE_SDC_PROVIDER))
+                        .findAny().isEmpty()) {
                     tmpScopes.add(GlueConstants.SCOPE_SDC_PROVIDER);
                 }
                 tmpScopes.addAll(scopes);
@@ -155,7 +168,8 @@ public class SdcDevice extends AbstractIdleService implements Device, EventSourc
      *
      * @return the hosting service access.
      * @see Device#getHostingServiceAccess()
-     * @deprecated Prefer implementing a plugin to and use {@link Device#getHostingServiceAccess()} from {@link SdcDeviceContext#getDevice()}.
+     * @deprecated Prefer implementing a plugin to and use {@link Device#getHostingServiceAccess()}
+     * from {@link SdcDeviceContext#getDevice()}.
      */
     @Override
     @Deprecated
@@ -184,7 +198,8 @@ public class SdcDevice extends AbstractIdleService implements Device, EventSourc
 
     private void setupHostedServices() throws IOException {
         final ClassLoader classLoader = getClass().getClassLoader();
-        InputStream highPrioWsdlStream = classLoader.getResourceAsStream("wsdl/IEEE11073-20701-HighPriority-Services.wsdl");
+        InputStream highPrioWsdlStream =
+                classLoader.getResourceAsStream("wsdl/IEEE11073-20701-HighPriority-Services.wsdl");
         assert highPrioWsdlStream != null;
         dpwsDevice.getHostingServiceAccess().addHostedService(hostedServiceFactory.createHostedService(
                 "HighPriorityServices",

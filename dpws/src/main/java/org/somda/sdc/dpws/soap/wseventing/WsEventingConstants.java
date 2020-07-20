@@ -19,12 +19,12 @@ public class WsEventingConstants {
     public static final String SCHEMA_PATH = "ws-eventing-schema.xsd";
 
     /**
-     * WS-Eventing 1.0 namespace
+     * WS-Eventing 1.0 namespace.
      */
     public static final String NAMESPACE = "http://schemas.xmlsoap.org/ws/2004/08/eventing";
 
     /**
-     * Defines the preferred prefix for the WS-Eventing 1.0 namespace
+     * Defines the preferred prefix for the WS-Eventing 1.0 namespace.
      */
     public static final String NAMESPACE_PREFIX = "wse";
 
@@ -48,7 +48,8 @@ public class WsEventingConstants {
 
     public static final String SUPPORTED_DELIVERY_MODE = NAMESPACE + "/DeliveryModes/Push";
 
-    public static final QName DELIVERY_MODE_REQUESTED_UNAVAILABLE = new QName(NAMESPACE, "DeliveryModeRequestedUnavailable");
+    public static final QName DELIVERY_MODE_REQUESTED_UNAVAILABLE =
+            new QName(NAMESPACE, "DeliveryModeRequestedUnavailable");
     public static final QName INVALID_EXPIRATION_TIME = new QName(NAMESPACE, "InvalidExpirationTime");
     public static final QName UNSUPPORTED_EXPIRATION_TYPE = new QName(NAMESPACE, "UnsupportedExpirationType");
     public static final QName FILTERING_NOT_SUPPORTED = new QName(NAMESPACE, "FilteringNotSupported");

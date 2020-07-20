@@ -15,6 +15,7 @@ import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.Reader;
 
 /**
  * Creates XML input and output streams from {@link Envelope} instances by using JAXB.
@@ -78,5 +79,21 @@ public class JaxbSoapMarshalling extends AbstractIdleService implements SoapMars
     public Envelope unmarshal(InputStream inputStream) throws JAXBException, ClassCastException {
         checkRunning();
         return ((JAXBElement<Envelope>) (jaxbMarshalling.unmarshal(inputStream))).getValue();
+    }
+
+
+    /**
+     * Takes a reader and unmarshals it.
+     *
+     * @param reader the input stream to unmarshal.
+     * @return the unmarshalled SOAP envelope.
+     * @throws JAXBException      if unmarshalling fails.
+     * @throws ClassCastException in case unmarshalled data could not be cast to a JAXB element.
+     */
+    @Override
+    @SuppressWarnings("unchecked")
+    public Envelope unmarshal(Reader reader) throws JAXBException, ClassCastException {
+        checkRunning();
+        return ((JAXBElement<Envelope>) (jaxbMarshalling.unmarshal(reader))).getValue();
     }
 }

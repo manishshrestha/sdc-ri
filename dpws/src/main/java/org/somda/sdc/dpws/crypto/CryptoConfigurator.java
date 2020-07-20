@@ -6,7 +6,11 @@ import org.apache.http.ssl.SSLContexts;
 
 import javax.net.ssl.SSLContext;
 import java.io.IOException;
-import java.security.*;
+import java.security.KeyManagementException;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 
 /**
@@ -29,7 +33,8 @@ public class CryptoConfigurator {
      * @return an SSlContext matching the given crypto settings.
      */
     public SSLContext createSslContextFromCryptoConfig(CryptoSettings cryptoSettings)
-            throws KeyStoreException, UnrecoverableKeyException, CertificateException, NoSuchAlgorithmException, IOException, KeyManagementException {
+            throws KeyStoreException, UnrecoverableKeyException, CertificateException, NoSuchAlgorithmException,
+            IOException, KeyManagementException {
         final SSLContextBuilder sslContextBuilder = SSLContexts.custom();
 
         // key store

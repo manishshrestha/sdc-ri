@@ -8,7 +8,13 @@ import org.somda.sdc.glue.common.SubscribableActionsMapping;
 import org.somda.sdc.glue.common.WsdlConstants;
 
 import javax.xml.namespace.QName;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Container to provide connection options for remote SDC device connections.
@@ -16,7 +22,7 @@ import java.util.*;
  * @see SdcRemoteDevicesConnector#connect(HostingServiceProxy, ConnectConfiguration)
  */
 public class ConnectConfiguration {
-    private static final Logger LOG = LogManager.getLogger(ConnectConfiguration.class);
+
 
     /**
      * List of all port types shipped with SDC.
@@ -71,6 +77,17 @@ public class ConnectConfiguration {
     public static final Collection<String> ALL_EPISODIC_AND_WAVEFORM_REPORTS;
 
     /**
+     * Commonly used actions if only updates on description and contexts are desired.
+     * <p>
+     * This can be used in order to watch remote devices without receiving all of their data.
+     * Note that this setup includes operation invoked reports by default.
+     */
+    public static final Collection<String> DESCRIPTION_AND_CONTEXTS = Collections.unmodifiableCollection(Arrays.asList(
+            ActionConstants.ACTION_EPISODIC_CONTEXT_REPORT,
+            ActionConstants.ACTION_DESCRIPTION_MODIFICATION_REPORT,
+            ActionConstants.ACTION_OPERATION_INVOKED_REPORT));
+
+    /**
      * Commonly used periodic actions for remote SDC device synchronization.
      * <p>
      * Comprises all periodic reports plus waveforms.
@@ -78,6 +95,8 @@ public class ConnectConfiguration {
      * @see #PERIODIC_REPORTS
      */
     public static final Collection<String> ALL_PERIODIC_AND_WAVEFORM_REPORTS;
+
+    private static final Logger LOG = LogManager.getLogger(ConnectConfiguration.class);
 
     static {
         var allEpisodicAndWaveformReports = new ArrayList<>(EPISODIC_REPORTS);
@@ -88,19 +107,17 @@ public class ConnectConfiguration {
         ALL_PERIODIC_AND_WAVEFORM_REPORTS = Collections.unmodifiableCollection(allPeriodicAndWaveformReports);
     }
 
-    /**
-     * Commonly used actions if only updates on description and contexts are desired.
-     * <p>
-     * This can be used in order to watch remote devices without receiving all of their data.
-     * Note that this setup includes operation invoked reports by default.
-     */
-    public static Collection<String> DESCRIPTION_AND_CONTEXTS = Collections.unmodifiableCollection(Arrays.asList(
-            ActionConstants.ACTION_EPISODIC_CONTEXT_REPORT,
-            ActionConstants.ACTION_DESCRIPTION_MODIFICATION_REPORT,
-            ActionConstants.ACTION_OPERATION_INVOKED_REPORT));
 
     private Collection<String> actions;
     private Collection<QName> requiredPortTypes;
+
+    private ConnectConfiguration(Collection<String> actions,
+                                 Collection<QName> requiredPortTypes) {
+        this.actions = new ArrayList<>(actions);
+        this.requiredPortTypes = new ArrayList<>(requiredPortTypes);
+        this.requiredPortTypes.add(WsdlConstants.PORT_TYPE_GET_QNAME);
+        this.requiredPortTypes.addAll(findRequiredQNamesBasedOnActions(this.actions));
+    }
 
     /**
      * Creates a configuration that subscribes nothing.
@@ -141,13 +158,6 @@ public class ConnectConfiguration {
         return new ConnectConfiguration(actions, requiredPortTypes);
     }
 
-    private ConnectConfiguration(Collection<String> actions,
-                                 Collection<QName> requiredPortTypes) {
-        this.actions = new ArrayList<>(actions);
-        this.requiredPortTypes = new ArrayList<>(requiredPortTypes);
-        this.requiredPortTypes.add(WsdlConstants.PORT_TYPE_GET_QNAME);
-        this.requiredPortTypes.addAll(findRequiredQNamesBasedOnActions(this.actions));
-    }
 
     public Collection<String> getActions() {
         return actions;

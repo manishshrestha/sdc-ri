@@ -6,7 +6,6 @@ import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 import org.somda.sdc.common.CommonConfig;
 import org.somda.sdc.common.logging.InstanceLogger;
-import org.somda.sdc.dpws.DpwsConfig;
 import org.somda.sdc.dpws.soap.exception.SoapFaultException;
 
 import javax.annotation.Nullable;

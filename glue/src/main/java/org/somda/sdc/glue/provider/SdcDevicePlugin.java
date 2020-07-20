@@ -31,7 +31,8 @@ public interface SdcDevicePlugin {
     /**
      * Called once the device is running.
      * <p>
-     * This callback is triggered only if the device was running before, i.e., {@link SdcDevice#isRunning()} returned true.
+     * This callback is triggered only if the device was running before,
+     * i.e., {@link SdcDevice#isRunning()} returned true.
      *
      * @param context all accessible {@link SdcDevice} data.
      * @throws Exception any exception thrown will immediately stop the device from continuing startup.
@@ -45,7 +46,8 @@ public interface SdcDevicePlugin {
     /**
      * Called before the device is about to shutdown.
      * <p>
-     * This callback is triggered only if the device was running before, i.e., {@link SdcDevice#isRunning()} returned true.
+     * This callback is triggered only if the device was running before,
+     * i.e., {@link SdcDevice#isRunning()} returned true.
      *
      * @param context all accessible {@link SdcDevice} data.
      * @throws Exception any exception thrown does not stop the device from shutting down.
@@ -59,7 +61,8 @@ public interface SdcDevicePlugin {
     /**
      * Called after the device was shut down.
      * <p>
-     * This callback is triggered only if the device was running before, i.e., {@link SdcDevice#isRunning()} returned true.
+     * This callback is triggered only if the device was running before,
+     * i.e., {@link SdcDevice#isRunning()} returned true.
      *
      * @param context all accessible {@link SdcDevice} data.
      * @throws Exception any exception thrown does not affect any other plugins from being invoked.

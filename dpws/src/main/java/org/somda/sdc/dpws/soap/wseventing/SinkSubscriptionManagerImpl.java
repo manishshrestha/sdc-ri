@@ -10,7 +10,6 @@ import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Default implementation of {@link SinkSubscriptionManager}.
@@ -25,7 +24,8 @@ public class SinkSubscriptionManagerImpl implements SinkSubscriptionManager {
                                 @Assisted("EndTo") EndpointReferenceType endTo,
                                 @Assisted("Actions") Collection<String> actions) {
         final var subscriptionId = UUID.randomUUID().toString();
-        this.delegate = new SubscriptionManagerBase(notifyTo, endTo, subscriptionId, expires, subscriptionManagerEpr, actions);
+        this.delegate = new SubscriptionManagerBase(
+                notifyTo, endTo, subscriptionId, expires, subscriptionManagerEpr, actions);
     }
 
     @Override

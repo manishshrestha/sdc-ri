@@ -14,8 +14,8 @@ public interface ModificationsBuilderFactory {
     /**
      * Creates a {@linkplain ModificationsBuilder} instance.
      * <p>
-     * <em>Important note: the MDIB passed to the {@linkplain ModificationsBuilder} will be modified. Make sure to pass a
-     * copy if necessary.</em>
+     * <em>Important note: the MDIB passed to the {@linkplain ModificationsBuilder} will be modified.
+     * Make sure to pass a copy if necessary.</em>
      *
      * @param mdib the MDIB used to create the modifications from.
      * @return a new {@linkplain ModificationsBuilder}.
@@ -26,8 +26,8 @@ public interface ModificationsBuilderFactory {
     /**
      * Creates a {@linkplain ModificationsBuilder} instance.
      * <p>
-     * <em>Important note: the MDIB passed to the {@linkplain ModificationsBuilder} will be modified. Make sure to pass a
-     * copy if necessary.</em>
+     * <em>Important note: the MDIB passed to the {@linkplain ModificationsBuilder} will be modified.
+     * Make sure to pass a copy if necessary.</em>
      *
      * @param mdib                       the MDIB used to create the modifications from.
      * @param createSingleStateIfMissing if true then the builder tries to create a missing single state; if false then
@@ -43,8 +43,8 @@ public interface ModificationsBuilderFactory {
     /**
      * Creates a {@linkplain ModificationsBuilder} instance.
      * <p>
-     * <em>Important note: the MDIB passed to the {@linkplain ModificationsBuilder} will be modified. Make sure to pass a
-     * copy if necessary.</em>
+     * <em>Important note: the MDIB passed to the {@linkplain ModificationsBuilder} will be modified.
+     * Make sure to pass a copy if necessary.</em>
      *
      * @param mdib                       the MDIB used to create the modifications from.
      * @param createSingleStateIfMissing if true then the builder tries to create a missing single state; if false then

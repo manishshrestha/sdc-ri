@@ -17,9 +17,12 @@ public interface SdcRemoteDevicesConnector extends Service {
      * The client connection will pass only if the host is reachable and provides the mandatory BICEPS Get service.
      * After this function is triggered, the following process is conducted:
      * <ol>
-     * <li>If there is at least one action in the set of available actions, then the connector subscribes to those actions.
-     * <li>The connector starts a watchdog and either uses WS-Eventing Renew requests in case of an existing subscription
-     * or DirectedProbe requests in case of no existing subscriptions in order to keep track of the connection to the remote node.
+     * <li>If there is at least one action in the set of available actions,
+     * then the connector subscribes to those actions.
+     * <li>The connector starts a watchdog and either uses WS-Eventing Renew requests
+     * in case of an existing subscription
+     * or DirectedProbe requests in case of no existing subscriptions
+     * in order to keep track of the connection to the remote node.
      * <li>The connector collects and buffers all incoming reports.
      * <li>The MDIB is requested from the remote node.
      * <li>Reports are applied on the MDIB.
@@ -42,7 +45,8 @@ public interface SdcRemoteDevicesConnector extends Service {
      * Disconnects a device.
      * <p>
      * This function is non-blocking.
-     * Right after it returns the disconnected device can be re-connected (while the former device is still disconnecting).
+     * Right after it returns the disconnected device can be re-connected
+     * (while the former device is still disconnecting).
      *
      * @param eprAddress the endpoint reference address of the remote device to disconnect.
      * @return a listenable future that finishes once the remote device is disconnected (i.e., subscriptions are
