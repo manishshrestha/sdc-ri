@@ -80,7 +80,7 @@ public class JettyHttpServerHandler extends AbstractHandler {
         }
 
         var input = request.getInputStream();
-        OutputStream output = response.getOutputStream();
+        var output = response.getOutputStream();
 
         var requestHttpApplicationInfo = new HttpApplicationInfo(
                 JettyUtil.getRequestHeaders(request)
@@ -88,37 +88,18 @@ public class JettyHttpServerHandler extends AbstractHandler {
 
         try {
 
-            if (this.chunkedTransfer) {
-                ByteArrayOutputStream tempOut = new ByteArrayOutputStream();
-
-                handler.handle(input, tempOut,
-                    new CommunicationContext(requestHttpApplicationInfo,
-                        new TransportInfo(
-                            request.getScheme(),
-                            request.getLocalAddr(),
-                            request.getLocalPort(),
-                            request.getRemoteAddr(),
-                            request.getRemotePort(),
-                            getX509Certificates(request, baseRequest.isSecure())
-                        )
+            handler.handle(input, output,
+                new CommunicationContext(requestHttpApplicationInfo,
+                    new TransportInfo(
+                        request.getScheme(),
+                        request.getLocalAddr(),
+                        request.getLocalPort(),
+                        request.getRemoteAddr(),
+                        request.getRemotePort(),
+                        getX509Certificates(request, baseRequest.isSecure())
                     )
-                );
-                tempOut.write(CHUNKED_ENDING);
-                output.write(tempOut.toByteArray());
-            } else {
-                handler.handle(input, output,
-                    new CommunicationContext(requestHttpApplicationInfo,
-                        new TransportInfo(
-                            request.getScheme(),
-                            request.getLocalAddr(),
-                            request.getLocalPort(),
-                            request.getRemoteAddr(),
-                            request.getRemotePort(),
-                            getX509Certificates(request, baseRequest.isSecure())
-                        )
-                    )
-                );
-            }
+                )
+            );
 
         } catch (HttpException e) {
             instanceLogger.warn("An HTTP exception occurred during HTTP request processing. {}", e.getMessage());
