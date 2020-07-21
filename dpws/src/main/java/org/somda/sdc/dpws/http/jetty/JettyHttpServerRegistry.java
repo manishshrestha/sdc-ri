@@ -473,7 +473,9 @@ public class JettyHttpServerRegistry extends AbstractIdleService implements Http
             var connectionFactory = new SslConnectionFactory(contextFactory, HttpVersion.HTTP_1_1.asString());
             ServerConnector httpsConnector;
 
-            HttpConnectionFactory httpConnectionFactory = new HttpConnectionFactory(httpConfig, HttpCompliance.RFC2616);
+            HttpConnectionFactory httpConnectionFactory = new HttpConnectionFactory(httpsConfig,
+                HttpCompliance.RFC2616);
+
             if (enableHttp) {
                 httpsConnector = new ServerConnector(server,
                         new OptionalSslConnectionFactory(connectionFactory, HttpVersion.HTTP_1_1.asString()),
