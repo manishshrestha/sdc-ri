@@ -84,19 +84,18 @@ public class JettyHttpServerHandler extends AbstractHandler {
         );
 
         try {
-
-            handler.handle(input, output,
-                new CommunicationContext(requestHttpApplicationInfo,
-                    new TransportInfo(
-                        request.getScheme(),
-                        request.getLocalAddr(),
-                        request.getLocalPort(),
-                        request.getRemoteAddr(),
-                        request.getRemotePort(),
-                        getX509Certificates(request, baseRequest.isSecure())
+                handler.handle(input, output,
+                    new CommunicationContext(requestHttpApplicationInfo,
+                        new TransportInfo(
+                            request.getScheme(),
+                            request.getLocalAddr(),
+                            request.getLocalPort(),
+                            request.getRemoteAddr(),
+                            request.getRemotePort(),
+                            getX509Certificates(request, baseRequest.isSecure())
+                        )
                     )
-                )
-            );
+                );
 
         } catch (HttpException e) {
             instanceLogger.warn("An HTTP exception occurred during HTTP request processing. {}", e.getMessage());
