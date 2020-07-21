@@ -20,9 +20,7 @@ import org.somda.sdc.dpws.soap.TransportInfo;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.security.cert.X509Certificate;
 import java.util.Collections;
 import java.util.List;
@@ -36,7 +34,6 @@ public class JettyHttpServerHandler extends AbstractHandler {
     public static final String SERVER_HEADER_VALUE = "SDCri";
 
     private static final Logger LOG = LogManager.getLogger(JettyHttpServerHandler.class);
-    private static final byte[] CHUNKED_ENDING = new byte[]{0x0d, 0x0a};
 
     private final String mediaType;
     private final HttpHandler handler;
