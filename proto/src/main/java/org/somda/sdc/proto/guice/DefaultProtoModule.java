@@ -1,4 +1,4 @@
-package org.somda.sdc.proto.discovery.guice;
+package org.somda.sdc.proto.guice;
 
 import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.common.util.concurrent.MoreExecutors;
@@ -19,7 +19,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
 
 /**
- * Default Glue module.
+ * Default protoSDC module.
  */
 public class DefaultProtoModule extends AbstractModule {
 

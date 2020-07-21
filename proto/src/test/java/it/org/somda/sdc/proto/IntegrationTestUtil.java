@@ -7,7 +7,7 @@ import org.somda.sdc.common.guice.DefaultCommonConfigModule;
 import org.somda.sdc.common.guice.DefaultHelperModule;
 import org.somda.sdc.dpws.guice.DefaultDpwsConfigModule;
 import org.somda.sdc.dpws.guice.DefaultDpwsModule;
-import org.somda.sdc.proto.discovery.guice.DefaultProtoModule;
+import org.somda.sdc.proto.guice.DefaultProtoModule;
 import test.org.somda.common.TestLogging;
 
 public class IntegrationTestUtil {

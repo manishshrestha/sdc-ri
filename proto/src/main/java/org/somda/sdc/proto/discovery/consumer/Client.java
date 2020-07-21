@@ -22,7 +22,7 @@ import org.somda.sdc.proto.discovery.common.UdpUtil;
 import org.somda.sdc.proto.discovery.consumer.event.DeviceEnteredMessage;
 import org.somda.sdc.proto.discovery.consumer.helper.ProbeCallable;
 import org.somda.sdc.proto.discovery.consumer.helper.ResolveCallable;
-import org.somda.sdc.proto.discovery.guice.ProtoDiscovery;
+import org.somda.sdc.proto.guice.ProtoDiscovery;
 import org.somda.sdc.proto.model.addressing.AddressingTypes;
 import org.somda.sdc.proto.model.discovery.DiscoveryMessages;
 import org.somda.sdc.proto.model.discovery.DiscoveryTypes;

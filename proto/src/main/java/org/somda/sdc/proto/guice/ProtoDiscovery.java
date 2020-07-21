@@ -1,4 +1,4 @@
-package org.somda.sdc.proto.discovery.guice;
+package org.somda.sdc.proto.guice;
 
 import com.google.inject.BindingAnnotation;
 
@@ -11,10 +11,10 @@ import static java.lang.annotation.ElementType.PARAMETER;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 /**
- * Annotation to bind any UDP-specific instances.
+ * Annotation to bind WS-Discovery related object instances with Guice.
  */
 @Target({PARAMETER, FIELD, METHOD})
 @Retention(RUNTIME)
 @BindingAnnotation
-public @interface Udp {
+public @interface ProtoDiscovery {
 }

@@ -1,7 +1,6 @@
 package it.org.somda.sdc.proto.discovery;
 
 import com.google.common.eventbus.Subscribe;
-import com.google.common.util.concurrent.ListenableFuture;
 import com.google.inject.Injector;
 import it.org.somda.sdc.proto.IntegrationTestUtil;
 import org.junit.jupiter.api.AfterEach;
@@ -26,9 +25,7 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -95,7 +92,7 @@ public class DiscoveryIT {
 
     @Test
     @DisplayName("Resolve")
-    void testResolve() throws Exception{
+    void testResolve() throws Exception {
         var scope = "http://scope";
         var xAddr = "http://127.0.0.1";
         targetService.updateScopes(Collections.singleton(scope));
