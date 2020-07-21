@@ -16,11 +16,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `DeviceConfig.WSDL_PROVISIONING_MODE` to allow device-side configuration of different WSDL provisioning modes in accordance with WS-MetadataExchange. (#161)
 - `org.somda.sdc.dpws.http.HttpClient` interface for generic http requests. (#165)
 - `org.somda.sdc.dpws.wsdl.WsdlRetriever` to retrieve WSDLs from services using multiple methods. (#165)
+- `org.somda.sdc.dpws.http.apache.ClientTransportBinding` and `org.somda.sdc.dpws.http.jetty.JettyHttpServerHandler` added chunked flag to enforce chunked outgoing requests and chunked outgoing responses. Only one big chunk is used instead of splitting up, since it wis currently only neede for testtin purposes. (#173)
 
 ### Changed
 
 - Use of `io.github.threetenjaxb.core.LocalDateTimeXmlAdapter` to `org.somda.sdc.common.util.AnyDateTimeAdapter` for any XML Schema DateTime in module `biceps-model`. (#151)
-- Use log4j2-api instead of slf4j for logging
+- Use log4j2-api instead of slf4j for logging. (#156)
 - Communication log file names to include SOAP action information and XML to be pretty-printed. (#153)
 - `GetContainmentTree` handling changed in order to allow traversal of the MDIB. (#150)
 - Change names in `org.somda.sdc.dpws.soap.wseventing.WsEventingConstants` from `WSE_ACTION[...]` to `WSA_ACTION[...]`. (#157)
@@ -39,8 +40,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `IEEE11073-20701-LowPriority-Services.wsdl` specified the wrong input and output messages for `GetStatesFromArchive` operation. (#167)
 - Namespace prefix mappings which were missing for SDC Glue-related XML fragments. (#169)
 - `org.somda.sdc.dpws.http.jetty.CommunicationLogHandlerWrapper` determined TLS usage by whether CryptoSettings were present, not based on request. (#171)
+- `org.somda.sdc.dpws.http.jetty.JettyHttpServerRegistry` is now compliant with RFC 2616 instead of RFC 7230. (#172)
 
-## 1.1.0 - 2020-04-18
+## [1.1.0] - 2020-04-18
 
 ### Added
 
