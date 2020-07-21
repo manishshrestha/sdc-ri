@@ -59,7 +59,7 @@ public class ClientTransportBinding implements TransportBinding {
                            @Assisted SoapMarshalling marshalling,
                            @Assisted SoapUtil soapUtil,
                            @Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier,
-                           @Named(DpwsConfig.HTTP_CHUNKED_TRANSFER) boolean chunkedTransfer) {
+                           @Named(DpwsConfig.ENFORCE_HTTP_CHUNKED_TRANSFER) boolean chunkedTransfer) {
         this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);
         instanceLogger.debug("Creating ClientTransportBinding for {}", clientUri);
         this.client = client;

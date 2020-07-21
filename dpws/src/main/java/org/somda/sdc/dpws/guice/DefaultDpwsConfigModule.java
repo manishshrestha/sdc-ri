@@ -84,7 +84,7 @@ public class DefaultDpwsConfigModule extends AbstractConfigurationModule {
                 Boolean.class,
                 true);
 
-        bind(DpwsConfig.HTTP_CHUNKED_TRANSFER,
+        bind(DpwsConfig.ENFORCE_HTTP_CHUNKED_TRANSFER,
             Boolean.class,
             false);
 
