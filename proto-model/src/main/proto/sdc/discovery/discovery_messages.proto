@@ -11,13 +11,17 @@ option java_package = "org.somda.sdc.proto.model.discovery";
 option java_outer_classname = "DiscoveryMessages";
 
 message AnyDiscoveryMessage {
+  repeated google.protobuf.Any extension = 1;
+
   oneof type {
-    Hello hello = 1;
-    Bye bye = 2;
-    Probe probe = 3;
-    ProbeMatches probe_matches = 4;
-    Resolve resolve = 5;
-    ResolveMatches resolve_matches = 6;
+    Hello hello = 2;
+    Bye bye = 3;
+    Probe probe = 4;
+    ProbeMatches probe_matches = 5;
+    Resolve resolve = 6;
+    ResolveMatches resolve_matches = 7;
+    GetHost get_host = 8;
+    GetHostResponse get_host_response = 9;
   }
 }
 
@@ -41,7 +45,7 @@ message Probe {
 
   // types are left out intentionally as they are conceptually blurry
   // and not required from the discovery point of view
-  Scopes scopes = 3;
+  ScopeMatcher scopes_matcher = 3;
 }
 
 message ProbeMatches {
@@ -68,4 +72,16 @@ message Fault {
   sdc.common.QName code = 3;
   sdc.common.QName subCode = 4;
   string reason = 5;
+}
+
+message GetHost {
+  repeated google.protobuf.Any extension = 1;
+}
+
+message GetHostResponse {
+  repeated google.protobuf.Any extension = 1;
+
+  sdc.addressing.EndpointReference endpoint_reference = 2;
+  DeviceMetadata metadata = 3;
+  repeated HostedService hosted_service = 4;
 }

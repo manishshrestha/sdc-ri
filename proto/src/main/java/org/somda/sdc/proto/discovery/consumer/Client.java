@@ -123,13 +123,13 @@ public class Client extends AbstractIdleService implements Service, UdpMessageQu
         helloByeProbeEventBus.unregister(observer);
     }
 
-    public ListenableFuture<List<DiscoveryTypes.Endpoint>> probe(DiscoveryTypes.Scopes scopes, int maxResults) {
+    public ListenableFuture<List<DiscoveryTypes.Endpoint>> probe(DiscoveryTypes.ScopeMatcher scopeMatcher, int maxResults) {
         var probeId = String.format("probeId(%s@%s)", discoveryIdCounter.incrementAndGet(), this);
         var probe = DiscoveryMessages.Probe.newBuilder()
                 .setAddressing(addressingUtil.assemblyAddressing(
                         WsDiscoveryConstants.WSA_ACTION_PROBE,
                         WsDiscoveryConstants.WSA_UDP_TO))
-                .setScopes(scopes).build();
+                .setScopesMatcher(scopeMatcher).build();
         var future = executorService.get().submit(
                 new ProbeCallable(
                         probeId,

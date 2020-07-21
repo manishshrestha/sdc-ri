@@ -15,7 +15,7 @@ message AppSequence {
   uint64 message_number = 3;
 }
 
-message Scopes {
+message ScopeMatcher {
   string match_by = 1;
   repeated string scopes = 2;
 }
@@ -24,8 +24,32 @@ message Endpoint {
   repeated google.protobuf.Any extension = 1;
 
   sdc.addressing.EndpointReference endpoint_reference = 2;
-  repeated sdc.common.QName types = 3;
-  repeated string scopes = 4;
-  repeated string x_addrs = 5;
+  repeated sdc.common.QName type = 3;
+  repeated string scope = 4;
+  repeated string x_addr = 5;
   uint64 metadata_version = 6;
+}
+
+message DeviceMetadata {
+  repeated google.protobuf.Any extension = 1;
+
+  // ThisDevice
+  sdc.common.LocalizedString friendly_name = 2;
+  string firmware_version = 3;
+  string serial_number = 4;
+
+  // ThisModel
+  sdc.common.LocalizedString manufacturer = 5;
+  string manufacturer_url = 6;
+  sdc.common.LocalizedString model_name = 7;
+  string model_url = 8;
+  string presentation_url = 9;
+}
+
+message HostedService {
+  repeated google.protobuf.Any extension = 1;
+
+  sdc.addressing.EndpointReference endpoint_reference = 2;
+  sdc.common.QName type = 3;
+  string service_id = 4;
 }

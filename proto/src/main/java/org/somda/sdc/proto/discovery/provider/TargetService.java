@@ -123,7 +123,7 @@ public class TargetService extends AbstractIdleService implements Service, UdpMe
             throws FaultException, ValidationException {
         validateProbe(probe.getAddressing());
 
-        var probedScopes = probe.getScopes();
+        var probedScopes = probe.getScopesMatcher();
         var matchBy = Optional.ofNullable(probedScopes.getMatchBy()).orElse(MatchBy.RFC3986.getUri());
         if (matchBy.isEmpty()) {
             matchBy = MatchBy.RFC3986.getUri();
@@ -216,8 +216,8 @@ public class TargetService extends AbstractIdleService implements Service, UdpMe
         return DiscoveryTypes.Endpoint.newBuilder()
                 .setEndpointReference(endpointReference)
                 .setMetadataVersion(metadataVersion)
-                .addAllScopes(scopes)
-                .addAllXAddrs(xAddrs)
+                .addAllScope(scopes)
+                .addAllXAddr(xAddrs)
                 .build();
     }
 

@@ -9,3 +9,8 @@ message QName {
   string namespace = 1;
   string localName = 2;
 }
+
+message LocalizedString {
+  string value = 1;
+  string locale = 2;
+}

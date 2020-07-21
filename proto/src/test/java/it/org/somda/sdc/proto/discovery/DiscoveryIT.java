@@ -78,13 +78,13 @@ public class DiscoveryIT {
         targetService.startAsync().awaitRunning();
         client.registerObserver(observer);
         client.startAsync().awaitRunning();
-        var probe = client.probe(DiscoveryTypes.Scopes.newBuilder().addScopes(scope).build(), 1);
+        var probe = client.probe(DiscoveryTypes.ScopeMatcher.newBuilder().addScopes(scope).build(), 1);
         var endpoints = probe.get(5, TimeUnit.SECONDS);
         assertEquals(1, endpoints.size());
-        assertEquals(1, endpoints.get(0).getScopesList().size());
-        assertEquals(scope, endpoints.get(0).getScopes(0));
-        assertEquals(1, endpoints.get(0).getXAddrsList().size());
-        assertEquals(xAddr, endpoints.get(0).getXAddrs(0));
+        assertEquals(1, endpoints.get(0).getScopeList().size());
+        assertEquals(scope, endpoints.get(0).getScope(0));
+        assertEquals(1, endpoints.get(0).getXAddrList().size());
+        assertEquals(xAddr, endpoints.get(0).getXAddr(0));
 
         assertTrue(observer.waitForMessages(2, Duration.ofSeconds(5)));
         assertEquals(2, observer.timedWait.getData().size());
@@ -103,10 +103,10 @@ public class DiscoveryIT {
         var resolve = client.resolve(epr);
         var endpoint = resolve.get(5, TimeUnit.SECONDS);
         assertEquals(epr, endpoint.getEndpointReference().getAddress());
-        assertEquals(1, endpoint.getScopesList().size());
-        assertEquals(scope, endpoint.getScopes(0));
-        assertEquals(1, endpoint.getXAddrsList().size());
-        assertEquals(xAddr, endpoint.getXAddrs(0));
+        assertEquals(1, endpoint.getScopeList().size());
+        assertEquals(scope, endpoint.getScope(0));
+        assertEquals(1, endpoint.getXAddrList().size());
+        assertEquals(xAddr, endpoint.getXAddr(0));
     }
 
     private class DiscoveryObserver implements org.somda.sdc.proto.discovery.consumer.DiscoveryObserver {
