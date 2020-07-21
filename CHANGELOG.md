@@ -16,7 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `DeviceConfig.WSDL_PROVISIONING_MODE` to allow device-side configuration of different WSDL provisioning modes in accordance with WS-MetadataExchange. (#161)
 - `org.somda.sdc.dpws.http.HttpClient` interface for generic http requests. (#165)
 - `org.somda.sdc.dpws.wsdl.WsdlRetriever` to retrieve WSDLs from services using multiple methods. (#165)
-- `org.somda.sdc.dpws.http.apache.ClientTransportBinding` and `org.somda.sdc.dpws.http.jetty.JettyHttpServerHandler` added chunked flag to enforce chunked outgoing requests and chunked outgoing responses. Only one big chunk is used instead of splitting up, since it wis currently only needed for testing purposes. (#173)
+- `org.somda.sdc.dpws.http.apache.ClientTransportBinding` and `org.somda.sdc.dpws.http.jetty.JettyHttpServerHandler` added chunked flag to enforce chunked outgoing requests and chunked outgoing responses. Only one big chunk is used instead of splitting up, since it is currently only needed for testing purposes. (#173)
 
 ### Changed
 
