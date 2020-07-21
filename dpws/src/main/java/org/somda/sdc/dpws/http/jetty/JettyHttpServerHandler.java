@@ -66,7 +66,7 @@ public class JettyHttpServerHandler extends AbstractHandler {
 
     @Override
     public void handle(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response)
-            throws IOException {
+        throws IOException {
         instanceLogger.debug("Request to {}", request.getRequestURL());
         response.setStatus(HttpStatus.OK_200);
         response.setContentType(mediaType);
@@ -80,22 +80,22 @@ public class JettyHttpServerHandler extends AbstractHandler {
         var output = response.getOutputStream();
 
         var requestHttpApplicationInfo = new HttpApplicationInfo(
-                JettyUtil.getRequestHeaders(request)
+            JettyUtil.getRequestHeaders(request)
         );
 
         try {
-                handler.handle(input, output,
-                    new CommunicationContext(requestHttpApplicationInfo,
-                        new TransportInfo(
-                            request.getScheme(),
-                            request.getLocalAddr(),
-                            request.getLocalPort(),
-                            request.getRemoteAddr(),
-                            request.getRemotePort(),
-                            getX509Certificates(request, baseRequest.isSecure())
-                        )
+            handler.handle(input, output,
+                new CommunicationContext(requestHttpApplicationInfo,
+                    new TransportInfo(
+                        request.getScheme(),
+                        request.getLocalAddr(),
+                        request.getLocalPort(),
+                        request.getRemoteAddr(),
+                        request.getRemotePort(),
+                        getX509Certificates(request, baseRequest.isSecure())
                     )
-                );
+                )
+            );
 
         } catch (HttpException e) {
             instanceLogger.warn("An HTTP exception occurred during HTTP request processing. {}", e.getMessage());
@@ -114,9 +114,9 @@ public class JettyHttpServerHandler extends AbstractHandler {
             output.close();
         } catch (IOException e) {
             instanceLogger.error("Could not close input/output streams from incoming HTTP request to {}. Reason: {}",
-                    request.getRequestURL(), e.getMessage());
+                request.getRequestURL(), e.getMessage());
             instanceLogger.trace("Could not close input/output streams from incoming HTTP request to {}",
-                    request.getRequestURL(), e);
+                request.getRequestURL(), e);
         }
     }
 
@@ -133,7 +133,7 @@ public class JettyHttpServerHandler extends AbstractHandler {
      */
     @Deprecated(since = "1.1.0", forRemoval = false)
     public static List<X509Certificate> getX509Certificates(HttpServletRequest request, boolean expectTLS)
-            throws IOException {
+        throws IOException {
         if (!expectTLS) {
             return Collections.emptyList();
         }
@@ -148,7 +148,7 @@ public class JettyHttpServerHandler extends AbstractHandler {
             } else {
                 LOG.error("Certificate information is of an unexpected type: {}", anonymousCertificates.getClass());
                 throw new IOException(String.format("Certificate information is of an unexpected type: %s",
-                        anonymousCertificates.getClass()));
+                    anonymousCertificates.getClass()));
             }
         }
     }
