@@ -14,7 +14,7 @@ import org.somda.sdc.common.guice.AbstractConfigurationModule;
 import org.somda.sdc.dpws.crypto.CryptoConfig;
 import org.somda.sdc.dpws.crypto.CryptoSettings;
 import org.somda.sdc.proto.crypto.CryptoUtil;
-import org.somda.sdc.proto.model.service.Metadata;
+import org.somda.sdc.proto.model.discovery.DiscoveryMessages;
 import org.somda.sdc.proto.model.service.MetadataServiceGrpc;
 import org.somda.sdc.proto.provider.ProviderSettings;
 import org.somda.sdc.proto.provider.guice.ProviderImplFactory;
@@ -66,7 +66,7 @@ public class ProviderImplIT {
 
         var metadataResponse = client.getMetadata();
 
-        assertEquals(PROVIDER_NAME, metadataResponse.getDeviceName());
+        assertEquals(PROVIDER_NAME, metadataResponse.getMetadata().getFriendlyName().getValue());
     }
 
     static class MetadataClient {
@@ -88,8 +88,8 @@ public class ProviderImplIT {
             blockingStub = MetadataServiceGrpc.newBlockingStub(channel);
         }
 
-        Metadata.GetMetadataResponse getMetadata() {
-            return blockingStub.getMetadata(Metadata.GetMetadataRequest.newBuilder().build());
+        DiscoveryMessages.GetHostResponse getMetadata() {
+            return blockingStub.getMetadata(DiscoveryMessages.GetHost.newBuilder().build());
         }
     }
 }

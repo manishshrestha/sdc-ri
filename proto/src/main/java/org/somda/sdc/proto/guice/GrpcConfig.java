@@ -1,6 +1,6 @@
-package org.somda.sdc.proto.server.guice;
+package org.somda.sdc.proto.guice;
 
-public class GrpcServerConfig {
+public class GrpcConfig {
 
     /**
      * Enables insecure communication for the gRPC server.
@@ -10,5 +10,5 @@ public class GrpcServerConfig {
      * <li>Use: optional
      * </ul>
      */
-    public static final String GRPC_INSECURE = "gRPC.Insecure";
+    public static final String GRPC_SERVER_INSECURE = "gRPC.Server.Insecure";
 }

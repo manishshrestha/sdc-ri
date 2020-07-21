@@ -17,7 +17,7 @@ import org.somda.sdc.dpws.crypto.CryptoConfig;
 import org.somda.sdc.dpws.crypto.CryptoSettings;
 import org.somda.sdc.proto.crypto.CryptoUtil;
 import org.somda.sdc.proto.provider.ProviderSettings;
-import org.somda.sdc.proto.server.guice.GrpcServerConfig;
+import org.somda.sdc.proto.guice.GrpcConfig;
 
 import javax.annotation.Nullable;
 import java.net.InetSocketAddress;
@@ -38,7 +38,7 @@ public class ServerImpl extends AbstractIdleService implements Server {
     ServerImpl(
         @Assisted ProviderSettings providerSettings,
         @Nullable @Named(CryptoConfig.CRYPTO_SETTINGS) CryptoSettings cryptoSettings,
-        @Named(GrpcServerConfig.GRPC_INSECURE) boolean insecure,
+        @Named(GrpcConfig.GRPC_SERVER_INSECURE) boolean insecure,
         @Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier
     ) {
         this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);

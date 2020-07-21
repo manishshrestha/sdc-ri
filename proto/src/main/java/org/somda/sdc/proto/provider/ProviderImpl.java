@@ -15,6 +15,8 @@ import org.somda.sdc.dpws.soap.SoapUtil;
 import org.somda.sdc.proto.discovery.provider.TargetService;
 import org.somda.sdc.proto.discovery.provider.factory.TargetServiceFactory;
 import org.somda.sdc.proto.model.common.CommonTypes;
+import org.somda.sdc.proto.model.discovery.DiscoveryMessages;
+import org.somda.sdc.proto.model.discovery.DiscoveryTypes;
 import org.somda.sdc.proto.model.service.Metadata;
 import org.somda.sdc.proto.model.service.MetadataServiceGrpc;
 import org.somda.sdc.proto.server.Server;
@@ -110,18 +112,17 @@ public class ProviderImpl extends AbstractIdleService implements Provider {
         }
 
         @Override
-        public void getMetadata(final Metadata.GetMetadataRequest request, final StreamObserver<Metadata.GetMetadataResponse> responseObserver) {
-            var response = Metadata.GetMetadataResponse.newBuilder()
-                .setDeviceName(providerSettings.getProviderName());
+        public void getMetadata(final DiscoveryMessages.GetHost request, final StreamObserver<DiscoveryMessages.GetHostResponse> responseObserver) {
+            var response = DiscoveryMessages.GetHostResponse.newBuilder();
 
-            types.forEach( type ->
-                response.addServices(CommonTypes.QName.newBuilder()
-                    .setNamespace(type.getNamespaceURI())
-                    .setLocalName(type.getLocalPart())
-                    .build()
-                ).build()
-            );
+            var metadata = DiscoveryTypes.DeviceMetadata.newBuilder()
+                .setFriendlyName(
+                    CommonTypes.LocalizedString.newBuilder()
+                    .setValue(providerSettings.getProviderName())
+                    .setLocale("en_US")
+                );
 
+            response.setMetadata(metadata);
             responseObserver.onNext(response.build());
             responseObserver.onCompleted();
         }
