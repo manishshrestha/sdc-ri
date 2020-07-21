@@ -121,4 +121,14 @@ public class DpwsConfig {
      * </ul>
      */
     public static final String HTTP_SUPPORT = "Dpws.EnableHttp";
+
+    /**
+     * Enables chunked requests and reponses.
+     *
+     * <ul>
+     * <li>Data type: {@linkplain Boolean}
+     * <li>Use: optional
+     * </ul>
+     */
+    public static final String HTTP_CHUNKED_TRANSFER = "Dpws.EnableHttpChunked";
 }

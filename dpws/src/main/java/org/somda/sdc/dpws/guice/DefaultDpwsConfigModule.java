@@ -84,6 +84,10 @@ public class DefaultDpwsConfigModule extends AbstractConfigurationModule {
                 Boolean.class,
                 true);
 
+        bind(DpwsConfig.HTTP_CHUNKED_TRANSFER,
+            Boolean.class,
+            false);
+
         bind(DpwsConfig.HTTP_SERVER_CONNECTION_TIMEOUT,
                 Duration.class,
                 Duration.ofSeconds(30));

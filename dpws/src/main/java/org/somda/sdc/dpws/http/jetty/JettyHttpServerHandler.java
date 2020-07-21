@@ -11,6 +11,7 @@ import org.eclipse.jetty.server.handler.AbstractHandler;
 import org.somda.sdc.common.CommonConfig;
 import org.somda.sdc.common.logging.InstanceLogger;
 import org.somda.sdc.dpws.CommunicationLog;
+import org.somda.sdc.dpws.DpwsConfig;
 import org.somda.sdc.dpws.http.HttpException;
 import org.somda.sdc.dpws.http.HttpHandler;
 import org.somda.sdc.dpws.soap.CommunicationContext;
@@ -19,7 +20,9 @@ import org.somda.sdc.dpws.soap.TransportInfo;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.security.cert.X509Certificate;
 import java.util.Collections;
 import java.util.List;
@@ -33,30 +36,35 @@ public class JettyHttpServerHandler extends AbstractHandler {
     public static final String SERVER_HEADER_VALUE = "SDCri";
 
     private static final Logger LOG = LogManager.getLogger(JettyHttpServerHandler.class);
+    private static final byte[] CHUNKED_ENDING = new byte[]{0x0d, 0x0a};
 
     private final String mediaType;
     private final HttpHandler handler;
     private final CommunicationLog communicationLog;
     private final Logger instanceLogger;
+    private final boolean chunkedTransfer;
 
     @AssistedInject
     JettyHttpServerHandler(@Assisted Boolean expectTLS,
                            @Assisted String mediaType,
                            @Assisted HttpHandler handler,
                            CommunicationLog communicationLog,
-                           @Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier) {
-        this(mediaType, handler, communicationLog, frameworkIdentifier);
+                           @Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier,
+                           @Named(DpwsConfig.HTTP_CHUNKED_TRANSFER) boolean chunkedTransfer) {
+        this(mediaType, handler, communicationLog, frameworkIdentifier, chunkedTransfer);
     }
 
     @AssistedInject
     JettyHttpServerHandler(@Assisted String mediaType,
                            @Assisted HttpHandler handler,
                            CommunicationLog communicationLog,
-                           @Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier) {
+                           @Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier,
+                           @Named(DpwsConfig.HTTP_CHUNKED_TRANSFER) boolean chunkedTransfer) {
         this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);
         this.mediaType = mediaType;
         this.handler = handler;
         this.communicationLog = communicationLog;
+        this.chunkedTransfer = chunkedTransfer;
     }
 
     @Override
@@ -67,26 +75,50 @@ public class JettyHttpServerHandler extends AbstractHandler {
         response.setContentType(mediaType);
         response.setHeader(SERVER_HEADER_KEY, SERVER_HEADER_VALUE);
 
+        if (this.chunkedTransfer) {
+            response.setHeader("Transfer-Encoding", "chunked");
+        }
+
         var input = request.getInputStream();
-        var output = response.getOutputStream();
+        OutputStream output = response.getOutputStream();
 
         var requestHttpApplicationInfo = new HttpApplicationInfo(
                 JettyUtil.getRequestHeaders(request)
         );
 
         try {
-            handler.handle(input, output,
+
+            if (this.chunkedTransfer) {
+                ByteArrayOutputStream tempOut = new ByteArrayOutputStream();
+
+                handler.handle(input, tempOut,
                     new CommunicationContext(requestHttpApplicationInfo,
-                            new TransportInfo(
-                                    request.getScheme(),
-                                    request.getLocalAddr(),
-                                    request.getLocalPort(),
-                                    request.getRemoteAddr(),
-                                    request.getRemotePort(),
-                                    getX509Certificates(request, baseRequest.isSecure())
-                            )
+                        new TransportInfo(
+                            request.getScheme(),
+                            request.getLocalAddr(),
+                            request.getLocalPort(),
+                            request.getRemoteAddr(),
+                            request.getRemotePort(),
+                            getX509Certificates(request, baseRequest.isSecure())
+                        )
                     )
-            );
+                );
+                tempOut.write(CHUNKED_ENDING);
+                output.write(tempOut.toByteArray());
+            } else {
+                handler.handle(input, output,
+                    new CommunicationContext(requestHttpApplicationInfo,
+                        new TransportInfo(
+                            request.getScheme(),
+                            request.getLocalAddr(),
+                            request.getLocalPort(),
+                            request.getRemoteAddr(),
+                            request.getRemotePort(),
+                            getX509Certificates(request, baseRequest.isSecure())
+                        )
+                    )
+                );
+            }
 
         } catch (HttpException e) {
             instanceLogger.warn("An HTTP exception occurred during HTTP request processing. {}", e.getMessage());
