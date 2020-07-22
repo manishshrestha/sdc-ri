@@ -20,7 +20,9 @@ import org.somda.sdc.dpws.soap.TransportInfo;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.security.cert.X509Certificate;
 import java.util.Collections;
 import java.util.List;
@@ -72,19 +74,16 @@ public class JettyHttpServerHandler extends AbstractHandler {
         response.setContentType(mediaType);
         response.setHeader(SERVER_HEADER_KEY, SERVER_HEADER_VALUE);
 
-        if (this.chunkedTransfer) {
-            response.setHeader("Transfer-Encoding", "chunked");
-        }
-
         var input = request.getInputStream();
-        var output = response.getOutputStream();
+
+        ByteArrayOutputStream tempOut = new ByteArrayOutputStream();
 
         var requestHttpApplicationInfo = new HttpApplicationInfo(
             JettyUtil.getRequestHeaders(request)
         );
 
         try {
-            handler.handle(input, output,
+            handler.handle(input, tempOut,
                 new CommunicationContext(requestHttpApplicationInfo,
                     new TransportInfo(
                         request.getScheme(),
@@ -102,11 +101,22 @@ public class JettyHttpServerHandler extends AbstractHandler {
             instanceLogger.trace("An HTTP exception occurred during HTTP request processing", e);
             response.setStatus(e.getStatusCode());
             if (!e.getMessage().isEmpty()) {
-                output.write(e.getMessage().getBytes());
+                tempOut.write(e.getMessage().getBytes());
             }
         } finally {
             baseRequest.setHandled(true);
         }
+
+        final byte[] tempOutValue = tempOut.toByteArray();
+
+        if (this.chunkedTransfer) {
+            response.setHeader("Transfer-Encoding", "chunked");
+        } else {
+            response.setHeader("Content-Length", String.valueOf(tempOutValue.length));
+        }
+
+        OutputStream output = response.getOutputStream();
+        output.write(tempOutValue);
 
         try {
             input.close();

@@ -125,9 +125,9 @@ public class DpwsConfig {
     public static final String HTTP_SUPPORT = "Dpws.EnableHttp";
 
     /**
-     * Enforces chunked requests and reponses.
+     * Enforces chunked requests and responses.
      *
-     * Note, that chunked responses can still occur in the  {@linkplain JettyHttpServerHandler} when this is turned off.
+     * Note, that chunked responses and requests can still occur when this is turned off.
      *
      * <ul>
      * <li>Data type: {@linkplain Boolean}
