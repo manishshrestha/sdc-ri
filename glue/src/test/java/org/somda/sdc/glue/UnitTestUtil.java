@@ -7,7 +7,7 @@ import com.google.inject.util.Modules;
 import org.somda.sdc.biceps.guice.DefaultBicepsConfigModule;
 import org.somda.sdc.biceps.guice.DefaultBicepsModule;
 import org.somda.sdc.common.guice.DefaultCommonConfigModule;
-import org.somda.sdc.common.guice.DefaultHelperModule;
+import org.somda.sdc.common.guice.DefaultCommonModule;
 import org.somda.sdc.dpws.guice.DefaultDpwsConfigModule;
 import org.somda.sdc.dpws.guice.DefaultDpwsModule;
 import org.somda.sdc.glue.guice.DefaultGlueConfigModule;
@@ -25,7 +25,7 @@ public class UnitTestUtil {
                 new DefaultGlueConfigModule(),
                 new DefaultBicepsModule(),
                 new DefaultBicepsConfigModule(),
-                new DefaultHelperModule(),
+                new DefaultCommonModule(),
                 new DefaultDpwsModule(),
                 new DefaultDpwsConfigModule());
     }
@@ -41,7 +41,7 @@ public class UnitTestUtil {
                 new DefaultGlueConfigModule(),
                 new DefaultBicepsModule(),
                 new DefaultBicepsConfigModule(),
-                new DefaultHelperModule(),
+                new DefaultCommonModule(),
                 new DefaultDpwsModule(),
                 new DefaultDpwsConfigModule()).with(overridingModule));
     }

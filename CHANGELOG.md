@@ -27,7 +27,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `org.somda.sdc.common.util.ExecutorWrapperService` are bound as guice `Provider`. (#156)
 - `org.somda.sdc.glue.consumer.helper.LogPrepender` replaced by `HostingServiceLogger`. (#156)
 - Evaluate HTTP Content-Type header element to determine the appropriate charset for received messages. (#170)
-
+- `org.somda.sdc.common.guice.DefaultHelperModule` renamed to `DefaultCommonModule`. (#160)
+ 
 ### Removed
 
 - `org.somda.sdc.dpws.CommunicationLogSink.getTargetStream()`; use `org.somda.sdc.dpws.CommunicationLogSink.createTargetStream()` instead. (#153)

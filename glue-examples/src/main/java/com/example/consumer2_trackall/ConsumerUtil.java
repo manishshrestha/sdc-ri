@@ -12,7 +12,7 @@ import org.apache.logging.log4j.core.config.Configurator;
 import org.somda.sdc.biceps.guice.DefaultBicepsConfigModule;
 import org.somda.sdc.biceps.guice.DefaultBicepsModule;
 import org.somda.sdc.common.guice.DefaultCommonConfigModule;
-import org.somda.sdc.common.guice.DefaultHelperModule;
+import org.somda.sdc.common.guice.DefaultCommonModule;
 import org.somda.sdc.dpws.CommunicationLog;
 import org.somda.sdc.dpws.CommunicationLogImpl;
 import org.somda.sdc.dpws.DpwsConfig;
@@ -59,7 +59,7 @@ class ConsumerUtil extends BaseUtil {
                 },
                 new DefaultBicepsModule(),
                 new DefaultBicepsConfigModule(),
-                new DefaultHelperModule(),
+                new DefaultCommonModule(),
                 Modules.override(new DefaultDpwsModule()).with(new AbstractModule() {
                     @Override
                     protected void configure() {

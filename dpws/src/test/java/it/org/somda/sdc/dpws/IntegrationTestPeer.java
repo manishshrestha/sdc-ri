@@ -6,7 +6,7 @@ import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.util.Modules;
 import org.somda.sdc.common.guice.DefaultCommonConfigModule;
-import org.somda.sdc.common.guice.DefaultHelperModule;
+import org.somda.sdc.common.guice.DefaultCommonModule;
 import org.somda.sdc.dpws.guice.DefaultDpwsConfigModule;
 import org.somda.sdc.dpws.guice.DefaultDpwsModule;
 
@@ -21,12 +21,12 @@ public abstract class IntegrationTestPeer extends AbstractIdleService {
                     Modules.override(
                             new DefaultCommonConfigModule(),
                             new DefaultDpwsModule(),
-                            new DefaultHelperModule(),
+                            new DefaultCommonModule(),
                             configModule
                     ).with(overridingModule)
             );
         } else {
-            injector = Guice.createInjector(new DefaultDpwsModule(), new DefaultHelperModule(), configModule);
+            injector = Guice.createInjector(new DefaultDpwsModule(), new DefaultCommonModule(), configModule);
         }
     }
 
