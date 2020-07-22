@@ -5,6 +5,7 @@ import org.apache.logging.log4j.Logger;
 import org.somda.sdc.dpws.crypto.CryptoSettings;
 
 import javax.net.ssl.KeyManagerFactory;
+import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
 import java.io.IOException;
 import java.security.KeyStore;
@@ -34,16 +35,13 @@ public class CryptoUtil {
         return Optional.empty();
     }
 
-    public static Optional<TrustManagerFactory> loadTrustStore(CryptoSettings cryptoSettings) {
+    public static Optional<TrustManager> loadTrustStore(CryptoSettings cryptoSettings) {
         if (cryptoSettings.getTrustStoreStream().isPresent()) {
             try {
                 KeyStore trustStore = KeyStore.getInstance(KeyStore.getDefaultType());
                 trustStore.load(cryptoSettings.getTrustStoreStream().get(), cryptoSettings.getTrustStorePassword().toCharArray());
 
-                TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance("SunX509");
-                trustManagerFactory.init(trustStore);
-
-                return Optional.of(trustManagerFactory);
+                return Optional.of(new ClientTrustManager(trustStore));
             } catch (KeyStoreException | CertificateException | NoSuchAlgorithmException | IOException e) {
                 LOG.error("Could not load truststore", e);
             }
