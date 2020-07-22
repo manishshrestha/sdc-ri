@@ -15,6 +15,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.somda.sdc.common.CommonConfig;
 import org.somda.sdc.common.logging.InstanceLogger;
+import org.somda.sdc.dpws.DpwsConfig;
 import org.somda.sdc.dpws.TransportBinding;
 import org.somda.sdc.dpws.TransportBindingException;
 import org.somda.sdc.dpws.http.ContentType;
@@ -50,19 +51,22 @@ public class ClientTransportBinding implements TransportBinding {
     private final Logger instanceLogger;
     private HttpClient client;
     private final String clientUri;
+    private final boolean chunkedTransfer;
 
     @Inject
     ClientTransportBinding(@Assisted HttpClient client,
                            @Assisted String clientUri,
                            @Assisted SoapMarshalling marshalling,
                            @Assisted SoapUtil soapUtil,
-                           @Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier) {
+                           @Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier,
+                           @Named(DpwsConfig.ENFORCE_HTTP_CHUNKED_TRANSFER) boolean chunkedTransfer) {
         this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);
         instanceLogger.debug("Creating ClientTransportBinding for {}", clientUri);
         this.client = client;
         this.clientUri = clientUri;
         this.marshalling = marshalling;
         this.soapUtil = soapUtil;
+        this.chunkedTransfer = chunkedTransfer;
     }
 
     @Override
@@ -99,6 +103,11 @@ public class ClientTransportBinding implements TransportBinding {
 
         // attach payload
         var requestEntity = new ByteArrayEntity(byteArrayOutputStream.toByteArray());
+
+        if (this.chunkedTransfer) {
+            requestEntity.setChunked(true);
+        }
+
         post.setEntity(requestEntity);
 
         instanceLogger.debug("Sending POST request to {}", this.clientUri);
