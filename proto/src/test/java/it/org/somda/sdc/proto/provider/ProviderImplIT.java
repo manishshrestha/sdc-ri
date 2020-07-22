@@ -79,7 +79,6 @@ public class ProviderImplIT {
                             .keyManager(CryptoUtil.loadKeyStore(cryptoSettings).get())
                             .trustManager(CryptoUtil.loadTrustStore(cryptoSettings).get())
                             .build())
-                    .overrideAuthority("sdc-lite-server.org")
                     .build());
         }
 
