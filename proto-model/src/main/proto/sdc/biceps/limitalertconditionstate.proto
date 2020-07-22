@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package sdc.biceps;
+
+option java_package = "org.somda.sdc.proto.model.biceps";
+option java_outer_classname = "LimitAlertConditionStateType";
+
+import "sdc/biceps/alertconditionstate.proto";
+import "sdc/biceps/range.proto";
+import "sdc/biceps/alertconditionmonitoredlimits.proto";
+import "sdc/biceps/alertactivation.proto";
+
+message LimitAlertConditionState {
+  AlertConditionState alert_condition_state = 1;
+  Range limits = 2;
+  AlertConditionMonitoredLimits a_monitored_alert_limits = 3;
+  AlertActivation a_auto_limit_activation_state = 4;
+}

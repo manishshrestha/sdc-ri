@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+package sdc.biceps;
+
+option java_package = "org.somda.sdc.proto.model.biceps";
+option java_outer_classname = "AbstractDeviceComponentStateType";
+
+import "sdc/biceps/abstractstate.proto";
+import "sdc/biceps/calibrationinfo.proto";
+import "sdc/biceps/physicalconnectorinfo.proto";
+import "sdc/biceps/componentactivation.proto";
+
+message AbstractDeviceComponentState {
+  AbstractState abstract_state = 1;
+  CalibrationInfo calibration_info = 2;
+  CalibrationInfo next_calibration = 3;
+  PhysicalConnectorInfo physical_connector = 4;
+  ComponentActivation a_activation_state = 5;
+  uint32 a_operating_hours = 6;
+  int32 a_operating_cycles = 7;
+}

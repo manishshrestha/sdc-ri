@@ -1,0 +1,26 @@
+syntax = "proto3";
+
+package sdc.biceps;
+
+option java_package = "org.somda.sdc.proto.model.biceps";
+option java_outer_classname = "AbstractContextStateOneOfType";
+
+import "sdc/biceps/abstractcontextstate.proto";
+import "sdc/biceps/operatorcontextstate.proto";
+import "sdc/biceps/ensemblecontextstate.proto";
+import "sdc/biceps/workflowcontextstate.proto";
+import "sdc/biceps/patientcontextstate.proto";
+import "sdc/biceps/locationcontextstate.proto";
+import "sdc/biceps/meanscontextstate.proto";
+
+message AbstractContextStateOneOf {
+  oneof abstract_context_state_one_of {
+    AbstractContextState abstract_context_state = 1;
+    OperatorContextState operator_context_state = 2;
+    EnsembleContextState ensemble_context_state = 3;
+    WorkflowContextState workflow_context_state = 4;
+    PatientContextState patient_context_state = 5;
+    LocationContextState location_context_state = 6;
+    MeansContextState means_context_state = 7;
+  }
+}

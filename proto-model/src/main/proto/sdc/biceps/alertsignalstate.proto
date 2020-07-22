@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package sdc.biceps;
+
+option java_package = "org.somda.sdc.proto.model.biceps";
+option java_outer_classname = "AlertSignalStateType";
+
+import "sdc/biceps/abstractalertstate.proto";
+import "google/protobuf/duration.proto";
+import "sdc/biceps/alertsignalpresence.proto";
+import "sdc/biceps/alertsignalprimarylocation.proto";
+
+message AlertSignalState {
+  AbstractAlertState abstract_alert_state = 1;
+  google.protobuf.Duration a_actual_signal_generation_delay = 2;
+  AlertSignalPresence a_presence = 3;
+  AlertSignalPrimaryLocation a_location = 4;
+  uint32 a_slot = 5;
+}

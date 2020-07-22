@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+package sdc.biceps;
+
+option java_package = "org.somda.sdc.proto.model.biceps";
+option java_outer_classname = "OperatingJurisdictionType";
+
+import "sdc/biceps/instanceidentifier.proto";
+
+message OperatingJurisdiction {
+  InstanceIdentifier instance_identifier = 1;
+}

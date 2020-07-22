@@ -1,7 +1,6 @@
 package org.somda.sdc.proto.provider;
 
 import com.google.common.util.concurrent.AbstractIdleService;
-import com.google.inject.Inject;
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
 import com.google.inject.name.Named;
@@ -17,8 +16,7 @@ import org.somda.sdc.proto.discovery.provider.factory.TargetServiceFactory;
 import org.somda.sdc.proto.model.common.CommonTypes;
 import org.somda.sdc.proto.model.discovery.DiscoveryMessages;
 import org.somda.sdc.proto.model.discovery.DiscoveryTypes;
-import org.somda.sdc.proto.model.service.Metadata;
-import org.somda.sdc.proto.model.service.MetadataServiceGrpc;
+import org.somda.sdc.proto.model.discovery.MetadataServiceGrpc;
 import org.somda.sdc.proto.server.Server;
 import org.somda.sdc.proto.server.guice.ServerImplFactory;
 
@@ -41,11 +39,11 @@ public class ProviderImpl extends AbstractIdleService implements Provider {
 
     @AssistedInject
     ProviderImpl(
-        @Assisted ProviderSettings providerSettings,
-        TargetServiceFactory targetServiceFactory,
-        ServerImplFactory serverFactory,
-        SoapUtil soapUtil,
-        @Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier
+            @Assisted ProviderSettings providerSettings,
+            TargetServiceFactory targetServiceFactory,
+            ServerImplFactory serverFactory,
+            SoapUtil soapUtil,
+            @Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier
     ) {
         this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);
         this.targetServiceFactory = targetServiceFactory;
@@ -59,13 +57,13 @@ public class ProviderImpl extends AbstractIdleService implements Provider {
     @Override
     protected void startUp() throws Exception {
         instanceLogger.info(
-            "Starting gRPC Provider {} at address {} with epr {}",
-            providerSettings.getProviderName(),
-            providerSettings.getNetworkAddress(),
-            epr
+                "Starting gRPC Provider {} at address {} with epr {}",
+                providerSettings.getProviderName(),
+                providerSettings.getNetworkAddress(),
+                epr
         );
         // the metadata service is always required
-        server.registerService(new MetadataServicer(providerSettings, types));
+        server.registerService(new MetadataService(providerSettings, types));
         server.startAsync().awaitRunning();
 
         var xAddr = String.format("%s:%s", providerSettings.getNetworkAddress().getHostName(), providerSettings.getNetworkAddress().getPort());
@@ -76,9 +74,9 @@ public class ProviderImpl extends AbstractIdleService implements Provider {
     @Override
     protected void shutDown() throws Exception {
         instanceLogger.info(
-            "Stopping gRPC Provider {} at address {}",
-            providerSettings.getProviderName(),
-            providerSettings.getNetworkAddress()
+                "Stopping gRPC Provider {} at address {}",
+                providerSettings.getProviderName(),
+                providerSettings.getNetworkAddress()
         );
         targetService.stopAsync().awaitTerminated();
         server.stopAsync().awaitTerminated();
@@ -101,26 +99,26 @@ public class ProviderImpl extends AbstractIdleService implements Provider {
         this.types.add(serviceType);
     }
 
-    static class MetadataServicer extends MetadataServiceGrpc.MetadataServiceImplBase {
+    static class MetadataService extends MetadataServiceGrpc.MetadataServiceImplBase {
 
         private final ProviderSettings providerSettings;
         private final List<QName> types;
 
-        MetadataServicer(ProviderSettings providerSettings, List<QName> types) {
+        MetadataService(ProviderSettings providerSettings, List<QName> types) {
             this.providerSettings = providerSettings;
             this.types = types;
         }
 
         @Override
-        public void getMetadata(final DiscoveryMessages.GetHost request, final StreamObserver<DiscoveryMessages.GetHostResponse> responseObserver) {
-            var response = DiscoveryMessages.GetHostResponse.newBuilder();
-
+        public void getMetadata(DiscoveryMessages.GetMetadataRequest request,
+                                StreamObserver<DiscoveryMessages.GetMetadataResponse> responseObserver) {
+            var response = DiscoveryMessages.GetMetadataResponse.newBuilder();
             var metadata = DiscoveryTypes.DeviceMetadata.newBuilder()
-                .setFriendlyName(
-                    CommonTypes.LocalizedString.newBuilder()
-                    .setValue(providerSettings.getProviderName())
-                    .setLocale("en_US")
-                );
+                    .setFriendlyName(
+                            CommonTypes.LocalizedString.newBuilder()
+                                    .setValue(providerSettings.getProviderName())
+                                    .setLocale("en_US")
+                    );
 
             response.setMetadata(metadata);
             responseObserver.onNext(response.build());

@@ -12,7 +12,7 @@ public class FaultException extends Exception {
         this.fault = DiscoveryMessages.Fault.newBuilder()
                 .setCode(map(code))
                 .setSubCode(map(subCode))
-                .setReason(reason)
+                .setReason(CommonTypes.LocalizedString.newBuilder().setValue(reason).build())
                 .build();
     }
 
@@ -22,7 +22,7 @@ public class FaultException extends Exception {
 
     @Override
     public String getMessage() {
-        return fault.getReason();
+        return fault.getReason().getValue();
     }
 
     private CommonTypes.QName map(QName qName) {

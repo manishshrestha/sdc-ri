@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+package sdc.biceps;
+
+option java_package = "org.somda.sdc.proto.model.biceps";
+option java_outer_classname = "StringMetricDescriptorType";
+
+import "sdc/biceps/abstractmetricdescriptor.proto";
+
+message StringMetricDescriptor {
+  AbstractMetricDescriptor abstract_metric_descriptor = 1;
+}

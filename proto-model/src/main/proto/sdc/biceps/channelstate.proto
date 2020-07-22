@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+package sdc.biceps;
+
+option java_package = "org.somda.sdc.proto.model.biceps";
+option java_outer_classname = "ChannelStateType";
+
+import "sdc/biceps/abstractdevicecomponentstate.proto";
+
+message ChannelState {
+  AbstractDeviceComponentState abstract_device_component_state = 1;
+}

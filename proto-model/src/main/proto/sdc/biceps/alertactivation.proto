@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package sdc.biceps;
+
+option java_package = "org.somda.sdc.proto.model.biceps";
+option java_outer_classname = "AlertActivationType";
+
+
+message AlertActivation {
+  enum AlertActivationEnum {
+    ON = 0;
+    OFF = 1;
+    PSD = 2;
+  }
+}

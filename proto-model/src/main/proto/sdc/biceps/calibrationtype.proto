@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+package sdc.biceps;
+
+option java_package = "org.somda.sdc.proto.model.biceps";
+option java_outer_classname = "CalibrationTypeType";
+
+
+message CalibrationType {
+  enum CalibrationTypeEnum {
+    OFFSET = 0;
+    GAIN = 1;
+    TP = 2;
+    UNSPEC = 3;
+  }
+}

@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+package sdc.biceps;
+
+option java_package = "org.somda.sdc.proto.model.biceps";
+option java_outer_classname = "RangeType";
+
+import "sdc/biceps/extension.proto";
+
+message Range {
+  Extension element1 = 1;
+  string a_lower = 2;
+  string a_upper = 3;
+  string a_step_width = 4;
+  string a_relative_accuracy = 5;
+  string a_absolute_accuracy = 6;
+}

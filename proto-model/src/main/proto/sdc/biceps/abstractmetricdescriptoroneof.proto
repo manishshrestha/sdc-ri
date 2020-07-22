@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+package sdc.biceps;
+
+option java_package = "org.somda.sdc.proto.model.biceps";
+option java_outer_classname = "AbstractMetricDescriptorOneOfType";
+
+import "sdc/biceps/abstractmetricdescriptor.proto";
+import "sdc/biceps/numericmetricdescriptor.proto";
+import "sdc/biceps/distributionsamplearraymetricdescriptor.proto";
+import "sdc/biceps/realtimesamplearraymetricdescriptor.proto";
+import "sdc/biceps/stringmetricdescriptoroneof.proto";
+
+message AbstractMetricDescriptorOneOf {
+  oneof abstract_metric_descriptor_one_of {
+    AbstractMetricDescriptor abstract_metric_descriptor = 1;
+    NumericMetricDescriptor numeric_metric_descriptor = 2;
+    DistributionSampleArrayMetricDescriptor distribution_sample_array_metric_descriptor = 3;
+    RealTimeSampleArrayMetricDescriptor real_time_sample_array_metric_descriptor = 4;
+    StringMetricDescriptorOneOf string_metric_descriptor_one_of = 5;
+  }
+}

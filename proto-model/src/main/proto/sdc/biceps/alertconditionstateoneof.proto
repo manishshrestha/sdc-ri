@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+package sdc.biceps;
+
+option java_package = "org.somda.sdc.proto.model.biceps";
+option java_outer_classname = "AlertConditionStateOneOfType";
+
+import "sdc/biceps/alertconditionstate.proto";
+import "sdc/biceps/limitalertconditionstate.proto";
+
+message AlertConditionStateOneOf {
+  oneof alert_condition_state_one_of {
+    AlertConditionState alert_condition_state = 1;
+    LimitAlertConditionState limit_alert_condition_state = 2;
+  }
+}

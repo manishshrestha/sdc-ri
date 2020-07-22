@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+package sdc.biceps;
+
+option java_package = "org.somda.sdc.proto.model.biceps";
+option java_outer_classname = "AbstractSetResponseType";
+
+import "sdc/biceps/extension.proto";
+import "sdc/biceps/invocationinfo.proto";
+
+message AbstractSetResponse {
+  Extension element1 = 1;
+  InvocationInfo invocation_info = 2;
+}

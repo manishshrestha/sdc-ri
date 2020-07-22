@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package sdc.biceps;
+
+option java_package = "org.somda.sdc.proto.model.biceps";
+option java_outer_classname = "ActivateType";
+
+import "sdc/biceps/abstractset.proto";
+import "sdc/biceps/extension.proto";
+import "google/protobuf/any.proto";
+
+  message Activate {
+    AbstractSet abstract_set = 1;
+    message Argument {
+      Extension element1 = 1;
+      google.protobuf.Any arg_value = 2;
+    }
+    Argument argument = 2;
+  }

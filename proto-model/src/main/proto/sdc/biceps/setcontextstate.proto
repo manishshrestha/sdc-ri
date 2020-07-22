@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+package sdc.biceps;
+
+option java_package = "org.somda.sdc.proto.model.biceps";
+option java_outer_classname = "SetContextStateType";
+
+import "sdc/biceps/abstractset.proto";
+import "sdc/biceps/abstractcontextstateoneof.proto";
+
+  message SetContextState {
+    AbstractSet abstract_set = 1;
+    AbstractContextStateOneOf proposed_context_state = 2;
+  }

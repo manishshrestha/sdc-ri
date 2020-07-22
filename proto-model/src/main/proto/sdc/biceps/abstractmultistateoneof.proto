@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+package sdc.biceps;
+
+option java_package = "org.somda.sdc.proto.model.biceps";
+option java_outer_classname = "AbstractMultiStateOneOfType";
+
+import "sdc/biceps/abstractmultistate.proto";
+import "sdc/biceps/abstractcontextstateoneof.proto";
+
+message AbstractMultiStateOneOf {
+  oneof abstract_multi_state_one_of {
+    AbstractMultiState abstract_multi_state = 1;
+    AbstractContextStateOneOf abstract_context_state_one_of = 2;
+  }
+}

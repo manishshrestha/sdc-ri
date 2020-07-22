@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+package sdc.biceps;
+
+option java_package = "org.somda.sdc.proto.model.biceps";
+option java_outer_classname = "GetDescriptorResponseType";
+
+import "sdc/biceps/abstractgetresponse.proto";
+import "sdc/biceps/abstractdescriptoroneof.proto";
+
+  message GetDescriptorResponse {
+    AbstractGetResponse abstract_get_response = 1;
+    AbstractDescriptorOneOf descriptorx_xx = 2;
+  }

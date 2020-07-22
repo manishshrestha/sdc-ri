@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package sdc.biceps;
+
+option java_package = "org.somda.sdc.proto.model.biceps";
+option java_outer_classname = "LocalizedTextWidthType";
+
+
+message LocalizedTextWidth {
+  enum LocalizedTextWidthEnum {
+    XS = 0;
+    S = 1;
+    M = 2;
+    L = 3;
+    XL = 4;
+    XXL = 5;
+  }
+}

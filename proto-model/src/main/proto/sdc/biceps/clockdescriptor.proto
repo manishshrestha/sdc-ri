@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+package sdc.biceps;
+
+option java_package = "org.somda.sdc.proto.model.biceps";
+option java_outer_classname = "ClockDescriptorType";
+
+import "sdc/biceps/abstractdevicecomponentdescriptor.proto";
+import "sdc/biceps/codedvalue.proto";
+import "google/protobuf/duration.proto";
+
+message ClockDescriptor {
+  AbstractDeviceComponentDescriptor abstract_device_component_descriptor = 1;
+  CodedValue time_protocol = 2;
+  google.protobuf.Duration a_resolution = 3;
+}

@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package sdc.biceps;
+
+option java_package = "org.somda.sdc.proto.model.biceps";
+option java_outer_classname = "AbstractDescriptorType";
+
+import "sdc/biceps/extension.proto";
+import "sdc/biceps/codedvalue.proto";
+import "sdc/biceps/safetyclassification.proto";
+
+message AbstractDescriptor {
+  Extension element1 = 1;
+  CodedValue type = 2;
+  string a_handle = 3;
+  uint64 a_descriptor_version = 4;
+  SafetyClassification a_safety_classification = 5;
+}

@@ -1,0 +1,263 @@
+syntax = "proto3";
+
+package sdc;
+
+import "google/protobuf/any.proto";
+
+import "sdc/addressing/addressing_types.proto";
+
+import "sdc/biceps/activate.proto";
+import "sdc/biceps/activateresponse.proto";
+import "sdc/biceps/episodicalertreport.proto";
+import "sdc/biceps/episodiccomponentreport.proto";
+import "sdc/biceps/episodiccontextreport.proto";
+import "sdc/biceps/episodicmetricreport.proto";
+import "sdc/biceps/episodicoperationalstatereport.proto";
+import "sdc/biceps/getcontextstates.proto";
+import "sdc/biceps/getcontextstatesresponse.proto";
+import "sdc/biceps/getdescriptorsfromarchive.proto";
+import "sdc/biceps/getdescriptorsfromarchiveresponse.proto";
+import "sdc/biceps/getlocalizedtext.proto";
+import "sdc/biceps/getlocalizedtextresponse.proto";
+import "sdc/biceps/getmddescription.proto";
+import "sdc/biceps/getmddescriptionresponse.proto";
+import "sdc/biceps/getmdib.proto";
+import "sdc/biceps/getmdibresponse.proto";
+import "sdc/biceps/getmdstate.proto";
+import "sdc/biceps/getmdstateresponse.proto";
+import "sdc/biceps/getstatesfromarchive.proto";
+import "sdc/biceps/getstatesfromarchiveresponse.proto";
+import "sdc/biceps/getsupportedlanguages.proto";
+import "sdc/biceps/getsupportedlanguagesresponse.proto";
+import "sdc/biceps/operationinvokedreport.proto";
+import "sdc/biceps/periodicalertreport.proto";
+import "sdc/biceps/periodiccomponentreport.proto";
+import "sdc/biceps/periodiccontextreport.proto";
+import "sdc/biceps/periodicmetricreport.proto";
+import "sdc/biceps/periodicoperationalstatereport.proto";
+import "sdc/biceps/setalertstate.proto";
+import "sdc/biceps/setalertstateresponse.proto";
+import "sdc/biceps/setcomponentstate.proto";
+import "sdc/biceps/setcomponentstateresponse.proto";
+import "sdc/biceps/setcontextstate.proto";
+import "sdc/biceps/setcontextstateresponse.proto";
+import "sdc/biceps/setmetricstate.proto";
+import "sdc/biceps/setmetricstateresponse.proto";
+import "sdc/biceps/setstring.proto";
+import "sdc/biceps/setstringresponse.proto";
+import "sdc/biceps/setvalue.proto";
+import "sdc/biceps/setvalueresponse.proto";
+import "sdc/biceps/waveformstream.proto";
+
+option java_package = "org.somda.sdc.proto.model";
+option java_outer_classname = "SdcMessages";
+
+message GetMdibRequest {
+  sdc.addressing.Addressing addressing = 1;
+  sdc.biceps.GetMdib payload = 2;
+}
+
+message GetMdibResponse {
+  sdc.addressing.Addressing addressing = 1;
+  sdc.biceps.GetMdibResponse payload = 2;
+}
+
+message GetMdDescriptionRequest {
+  sdc.addressing.Addressing addressing = 1;
+  sdc.biceps.GetMdDescription payload = 2;
+}
+
+message GetMdDescriptionResponse {
+  sdc.addressing.Addressing addressing = 1;
+  sdc.biceps.GetMdDescriptionResponse payload = 2;
+}
+
+message GetMdStateRequest {
+  sdc.addressing.Addressing addressing = 1;
+  sdc.biceps.GetMdState payload = 2;
+}
+
+message GetMdStateResponse {
+  sdc.addressing.Addressing addressing = 1;
+  sdc.biceps.GetMdStateResponse payload = 2;
+}
+
+message GetContextStatesRequest {
+  sdc.addressing.Addressing addressing = 1;
+  sdc.biceps.GetContextStates payload = 2;
+}
+
+message GetContextStatesResponse {
+  sdc.addressing.Addressing addressing = 1;
+  sdc.biceps.GetContextStatesResponse payload = 2;
+}
+
+message ActivateRequest {
+  sdc.addressing.Addressing addressing = 1;
+  sdc.biceps.Activate payload = 2;
+}
+
+message ActivateResponse {
+  sdc.addressing.Addressing addressing = 1;
+  sdc.biceps.ActivateResponse payload = 2;
+}
+
+message SetStringRequest {
+  sdc.addressing.Addressing addressing = 1;
+  sdc.biceps.SetString payload = 2;
+}
+
+message SetStringResponse {
+  sdc.addressing.Addressing addressing = 1;
+  sdc.biceps.SetStringResponse payload = 2;
+}
+
+message SetValueRequest {
+  sdc.addressing.Addressing addressing = 1;
+  sdc.biceps.SetValue payload = 2;
+}
+
+message SetValueResponse {
+  sdc.addressing.Addressing addressing = 1;
+  sdc.biceps.SetValueResponse payload = 2;
+}
+
+message SetMetricStateRequest {
+  sdc.addressing.Addressing addressing = 1;
+  sdc.biceps.SetMetricState payload = 2;
+}
+
+message SetMetricStateResponse {
+  sdc.addressing.Addressing addressing = 1;
+  sdc.biceps.SetMetricStateResponse payload = 2;
+}
+
+message SetComponentStateRequest {
+  sdc.addressing.Addressing addressing = 1;
+  sdc.biceps.SetComponentState payload = 2;
+}
+
+message SetComponentStateResponse {
+  sdc.addressing.Addressing addressing = 1;
+  sdc.biceps.SetComponentStateResponse payload = 2;
+}
+
+message SetAlertStateRequest {
+  sdc.addressing.Addressing addressing = 1;
+  sdc.biceps.SetAlertState payload = 2;
+}
+
+message SetAlertStateResponse {
+  sdc.addressing.Addressing addressing = 1;
+  sdc.biceps.SetAlertStateResponse payload = 2;
+}
+
+message SetContextStateRequest {
+  sdc.addressing.Addressing addressing = 1;
+  sdc.biceps.SetContextState payload = 2;
+}
+
+message SetContextStateResponse {
+  sdc.addressing.Addressing addressing = 1;
+  sdc.biceps.SetContextStateResponse payload = 2;
+}
+
+message GetSupportedLanguagesRequest {
+  sdc.addressing.Addressing addressing = 1;
+  sdc.biceps.GetSupportedLanguages payload = 2;
+}
+
+message GetSupportedLanguagesResponse {
+  sdc.addressing.Addressing addressing = 1;
+  sdc.biceps.GetSupportedLanguagesResponse payload = 2;
+}
+
+message GetLocalizedTextRequest {
+  sdc.addressing.Addressing addressing = 1;
+  sdc.biceps.GetLocalizedText payload = 2;
+}
+
+message GetLocalizedTextStream {
+  sdc.addressing.Addressing addressing = 1;
+  sdc.biceps.GetLocalizedTextResponse payload = 2;
+}
+
+message GetDescriptorsFromArchiveRequest {
+  sdc.addressing.Addressing addressing = 1;
+  sdc.biceps.GetDescriptorsFromArchive payload = 2;
+}
+
+message GetDescriptorsFromArchiveStream {
+  sdc.addressing.Addressing addressing = 1;
+  sdc.biceps.GetDescriptorsFromArchiveResponse payload = 2;
+}
+
+message GetStatesFromArchiveRequest {
+  sdc.addressing.Addressing addressing = 1;
+  sdc.biceps.GetStatesFromArchive payload = 2;
+}
+
+message GetStatesFromArchiveStream {
+  sdc.addressing.Addressing addressing = 1;
+  sdc.biceps.GetStatesFromArchiveResponse payload = 2;
+}
+
+message ActionFilter {
+  repeated string action = 3;
+}
+
+message HandleFilter {
+  string sequence_id = 1;
+  repeated string handle = 2;
+}
+
+message Filter {
+  oneof type {
+    google.protobuf.Any other_filter = 2;
+    ActionFilter action_filter = 3;
+    HandleFilter handle_filter = 4;
+  }
+}
+
+message EpisodicReportRequest {
+  sdc.addressing.Addressing addressing = 1;
+  Filter filter = 2;
+}
+
+message EpisodicReportStream {
+  sdc.addressing.Addressing addressing = 1;
+  oneof type {
+    sdc.biceps.EpisodicAlertReport alert = 2;
+    sdc.biceps.EpisodicComponentReport component = 3;
+    sdc.biceps.EpisodicMetricReport metric = 4;
+    sdc.biceps.EpisodicOperationalStateReport operational_state = 5;
+    sdc.biceps.EpisodicContextReport context = 6;
+    sdc.biceps.WaveformStream waveform = 7;
+  }
+}
+
+message PeriodicReportRequest {
+  sdc.addressing.Addressing addressing = 1;
+  Filter filter = 2;
+}
+
+message PeriodicReportStream {
+  sdc.addressing.Addressing addressing = 1;
+  oneof type {
+    sdc.biceps.PeriodicAlertReport alert = 2;
+    sdc.biceps.PeriodicComponentReport component = 3;
+    sdc.biceps.PeriodicMetricReport metric = 4;
+    sdc.biceps.PeriodicOperationalStateReport operational_state = 5;
+    sdc.biceps.PeriodicContextReport context = 6;
+    sdc.biceps.WaveformStream waveform_stream = 7;
+  }
+}
+
+message OperationInvokedReportRequest {
+  sdc.addressing.Addressing addressing = 1;
+}
+
+message OperationInvokedReportStream {
+  sdc.addressing.Addressing addressing = 1;
+  sdc.biceps.OperationInvokedReport operation_invoked = 2;
+}

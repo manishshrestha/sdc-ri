@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package sdc.biceps;
+
+option java_package = "org.somda.sdc.proto.model.biceps";
+option java_outer_classname = "NumericMetricStateType";
+
+import "sdc/biceps/abstractmetricstate.proto";
+import "sdc/biceps/numericmetricvalue.proto";
+import "sdc/biceps/range.proto";
+import "google/protobuf/duration.proto";
+
+message NumericMetricState {
+  AbstractMetricState abstract_metric_state = 1;
+  NumericMetricValue metric_value = 2;
+  Range physiological_range = 3;
+  google.protobuf.Duration a_active_averaging_period = 4;
+}

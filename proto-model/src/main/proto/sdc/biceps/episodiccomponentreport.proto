@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+package sdc.biceps;
+
+option java_package = "org.somda.sdc.proto.model.biceps";
+option java_outer_classname = "EpisodicComponentReportType";
+
+import "sdc/biceps/abstractcomponentreport.proto";
+
+  message EpisodicComponentReport {
+    AbstractComponentReport abstract_component_report = 1;
+  }

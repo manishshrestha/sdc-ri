@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+package sdc.biceps;
+
+option java_package = "org.somda.sdc.proto.model.biceps";
+option java_outer_classname = "StringMetricDescriptorOneOfType";
+
+import "sdc/biceps/stringmetricdescriptor.proto";
+import "sdc/biceps/enumstringmetricdescriptor.proto";
+
+message StringMetricDescriptorOneOf {
+  oneof string_metric_descriptor_one_of {
+    StringMetricDescriptor string_metric_descriptor = 1;
+    EnumStringMetricDescriptor enum_string_metric_descriptor = 2;
+  }
+}

@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+package sdc.biceps;
+
+option java_package = "org.somda.sdc.proto.model.biceps";
+option java_outer_classname = "OperatorContextStateType";
+
+import "sdc/biceps/abstractcontextstate.proto";
+import "sdc/biceps/basedemographics.proto";
+
+message OperatorContextState {
+  AbstractContextState abstract_context_state = 1;
+  BaseDemographicsOneOf operator_details = 2;
+}

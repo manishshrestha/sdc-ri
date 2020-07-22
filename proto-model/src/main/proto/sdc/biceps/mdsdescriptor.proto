@@ -1,0 +1,44 @@
+syntax = "proto3";
+
+package sdc.biceps;
+
+option java_package = "org.somda.sdc.proto.model.biceps";
+option java_outer_classname = "MdsDescriptorType";
+
+import "sdc/biceps/abstractcomplexdevicecomponentdescriptor.proto";
+import "sdc/biceps/extension.proto";
+import "sdc/biceps/instanceidentifieroneof.proto";
+import "sdc/biceps/localizedtext.proto";
+import "sdc/biceps/systemcontextdescriptor.proto";
+import "sdc/biceps/clockdescriptor.proto";
+import "sdc/biceps/batterydescriptor.proto";
+import "sdc/biceps/approvedjurisdictions.proto";
+import "sdc/biceps/vmddescriptor.proto";
+
+message MdsDescriptor {
+  AbstractComplexDeviceComponentDescriptor abstract_complex_device_component_descriptor = 1;
+  message MetaData {
+    Extension element1 = 1;
+    message Udi {
+      Extension element1 = 1;
+      string device_identifier = 2;
+      string human_readable_form = 3;
+      InstanceIdentifierOneOf issuer = 4;
+      InstanceIdentifierOneOf jurisdiction = 5;
+    }
+    Udi udi = 2;
+    string lot_number = 3;
+    LocalizedText manufacturer = 4;
+    string manufacture_date = 5;
+    string expiration_date = 6;
+    LocalizedText model_name = 7;
+    string model_number = 8;
+    string serial_number = 9;
+  }
+  MetaData meta_data = 2;
+  SystemContextDescriptor system_context = 3;
+  ClockDescriptor clock = 4;
+  BatteryDescriptor battery = 5;
+  ApprovedJurisdictions approved_jurisdictions = 6;
+  VmdDescriptor vmd = 7;
+}

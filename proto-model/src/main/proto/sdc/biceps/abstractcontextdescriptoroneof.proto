@@ -1,0 +1,26 @@
+syntax = "proto3";
+
+package sdc.biceps;
+
+option java_package = "org.somda.sdc.proto.model.biceps";
+option java_outer_classname = "AbstractContextDescriptorOneOfType";
+
+import "sdc/biceps/abstractcontextdescriptor.proto";
+import "sdc/biceps/meanscontextdescriptor.proto";
+import "sdc/biceps/workflowcontextdescriptor.proto";
+import "sdc/biceps/patientcontextdescriptor.proto";
+import "sdc/biceps/operatorcontextdescriptor.proto";
+import "sdc/biceps/ensemblecontextdescriptor.proto";
+import "sdc/biceps/locationcontextdescriptor.proto";
+
+message AbstractContextDescriptorOneOf {
+  oneof abstract_context_descriptor_one_of {
+    AbstractContextDescriptor abstract_context_descriptor = 1;
+    MeansContextDescriptor means_context_descriptor = 2;
+    WorkflowContextDescriptor workflow_context_descriptor = 3;
+    PatientContextDescriptor patient_context_descriptor = 4;
+    OperatorContextDescriptor operator_context_descriptor = 5;
+    EnsembleContextDescriptor ensemble_context_descriptor = 6;
+    LocationContextDescriptor location_context_descriptor = 7;
+  }
+}

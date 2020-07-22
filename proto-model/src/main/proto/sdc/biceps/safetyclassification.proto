@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+package sdc.biceps;
+
+option java_package = "org.somda.sdc.proto.model.biceps";
+option java_outer_classname = "SafetyClassificationType";
+
+
+message SafetyClassification {
+  enum SafetyClassificationEnum {
+    INF = 0;
+    MEDA = 1;
+    MEDB = 2;
+    MEDC = 3;
+  }
+}

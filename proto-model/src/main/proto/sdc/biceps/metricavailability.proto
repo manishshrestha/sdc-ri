@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+package sdc.biceps;
+
+option java_package = "org.somda.sdc.proto.model.biceps";
+option java_outer_classname = "MetricAvailabilityType";
+
+
+message MetricAvailability {
+  enum MetricAvailabilityEnum {
+    INTR = 0;
+    CONT = 1;
+  }
+}

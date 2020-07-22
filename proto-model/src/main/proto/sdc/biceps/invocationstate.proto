@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package sdc.biceps;
+
+option java_package = "org.somda.sdc.proto.model.biceps";
+option java_outer_classname = "InvocationStateType";
+
+
+message InvocationState {
+  enum InvocationStateEnum {
+    WAIT = 0;
+    START = 1;
+    CNCLLD = 2;
+    CNCLLDMAN = 3;
+    FIN = 4;
+    FINMOD = 5;
+    FAIL = 6;
+  }
+}

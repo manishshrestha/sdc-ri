@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+package sdc.biceps;
+
+option java_package = "org.somda.sdc.proto.model.biceps";
+option java_outer_classname = "LocalizedTextType";
+
+import "sdc/biceps/localizedtextwidth.proto";
+
+message LocalizedText {
+  string string = 1;
+  string a_ref = 2;
+  string a_lang = 3;
+  uint64 a_version = 4;
+  LocalizedTextWidth a_text_width = 5;
+}

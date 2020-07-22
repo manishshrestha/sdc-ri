@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package sdc.biceps;
+
+option java_package = "org.somda.sdc.proto.model.biceps";
+option java_outer_classname = "MdStateType";
+
+import "sdc/biceps/extension.proto";
+import "sdc/biceps/abstractstateoneof.proto";
+
+message MdState {
+  Extension element1 = 1;
+  AbstractStateOneOf state = 2;
+  uint64 a_state_version = 3;
+}

@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+package sdc.biceps;
+
+option java_package = "org.somda.sdc.proto.model.biceps";
+option java_outer_classname = "SetValueType";
+
+import "sdc/biceps/abstractset.proto";
+
+  message SetValue {
+    AbstractSet abstract_set = 1;
+    string requested_numeric_value = 2;
+  }

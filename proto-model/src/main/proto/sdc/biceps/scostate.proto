@@ -1,0 +1,25 @@
+syntax = "proto3";
+
+package sdc.biceps;
+
+option java_package = "org.somda.sdc.proto.model.biceps";
+option java_outer_classname = "ScoStateType";
+
+import "sdc/biceps/abstractdevicecomponentstate.proto";
+import "sdc/biceps/extension.proto";
+import "sdc/biceps/codedvalue.proto";
+import "sdc/biceps/operatingmode.proto";
+import "sdc/biceps/operationref.proto";
+
+message ScoState {
+  AbstractDeviceComponentState abstract_device_component_state = 1;
+  message OperationGroup {
+    Extension element1 = 1;
+    CodedValue type = 2;
+    OperatingMode a_operating_mode = 3;
+    OperationRef a_operations = 4;
+  }
+  OperationGroup operation_group = 2;
+  OperationRef a_invocation_requested = 3;
+  OperationRef a_invocation_required = 4;
+}

@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+package sdc.biceps;
+
+option java_package = "org.somda.sdc.proto.model.biceps";
+option java_outer_classname = "GetMdStateType";
+
+import "sdc/biceps/abstractget.proto";
+
+  message GetMdState {
+    AbstractGet abstract_get = 1;
+    string handle_ref = 2;
+  }

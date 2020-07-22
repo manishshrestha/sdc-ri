@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+package sdc.biceps;
+
+option java_package = "org.somda.sdc.proto.model.biceps";
+option java_outer_classname = "MdibType";
+
+import "sdc/biceps/extension.proto";
+import "sdc/biceps/mddescription.proto";
+import "sdc/biceps/mdstate.proto";
+
+message Mdib {
+  Extension element1 = 1;
+  MdDescription md_description = 2;
+  MdState md_state = 3;
+}

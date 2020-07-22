@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package sdc.biceps;
+
+option java_package = "org.somda.sdc.proto.model.biceps";
+option java_outer_classname = "AbstractMultiStateType";
+
+import "sdc/biceps/abstractstate.proto";
+import "sdc/biceps/codedvalue.proto";
+
+message AbstractMultiState {
+  AbstractState abstract_state = 1;
+  CodedValue category = 2;
+  string a_handle = 3;
+}

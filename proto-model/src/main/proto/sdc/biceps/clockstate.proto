@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+package sdc.biceps;
+
+option java_package = "org.somda.sdc.proto.model.biceps";
+option java_outer_classname = "ClockStateType";
+
+import "sdc/biceps/abstractdevicecomponentstate.proto";
+import "sdc/biceps/codedvalue.proto";
+
+message ClockState {
+  AbstractDeviceComponentState abstract_device_component_state = 1;
+  CodedValue active_sync_protocol = 2;
+  string reference_source = 3;
+  uint64 a_date_and_time = 4;
+  bool a_remote_sync = 5;
+  string a_accuracy = 6;
+  uint64 a_last_set = 7;
+  string a_time_zone = 8;
+  bool a_critical_use = 9;
+}

@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package sdc.biceps;
+
+option java_package = "org.somda.sdc.proto.model.biceps";
+option java_outer_classname = "GetContextStatesByIdentificationType";
+
+import "sdc/biceps/abstractget.proto";
+import "sdc/biceps/instanceidentifieroneof.proto";
+
+  message GetContextStatesByIdentification {
+    AbstractGet abstract_get = 1;
+    InstanceIdentifierOneOf identification = 2;
+    string a_context_type = 3;
+  }

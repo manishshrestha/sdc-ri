@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+package sdc.biceps;
+
+option java_package = "org.somda.sdc.proto.model.biceps";
+option java_outer_classname = "EpisodicAlertReportType";
+
+import "sdc/biceps/abstractalertreport.proto";
+
+  message EpisodicAlertReport {
+    AbstractAlertReport abstract_alert_report = 1;
+  }

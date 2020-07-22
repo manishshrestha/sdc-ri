@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package sdc.biceps;
+
+option java_package = "org.somda.sdc.proto.model.biceps";
+option java_outer_classname = "MeasurementType";
+
+import "sdc/biceps/extension.proto";
+import "sdc/biceps/codedvalue.proto";
+
+message Measurement {
+  Extension element1 = 1;
+  CodedValue measurement_unit = 2;
+  string a_measured_value = 3;
+}

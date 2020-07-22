@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+package sdc.biceps;
+
+option java_package = "org.somda.sdc.proto.model.biceps";
+option java_outer_classname = "AlertConditionPriorityType";
+
+
+message AlertConditionPriority {
+  enum AlertConditionPriorityEnum {
+    LO = 0;
+    ME = 1;
+    HI = 2;
+    NONE = 3;
+  }
+}

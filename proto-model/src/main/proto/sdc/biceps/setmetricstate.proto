@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+package sdc.biceps;
+
+option java_package = "org.somda.sdc.proto.model.biceps";
+option java_outer_classname = "SetMetricStateType";
+
+import "sdc/biceps/abstractset.proto";
+import "sdc/biceps/abstractmetricstateoneof.proto";
+
+  message SetMetricState {
+    AbstractSet abstract_set = 1;
+    AbstractMetricStateOneOf proposed_metric_state = 2;
+  }

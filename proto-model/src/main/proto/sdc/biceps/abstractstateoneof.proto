@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+package sdc.biceps;
+
+option java_package = "org.somda.sdc.proto.model.biceps";
+option java_outer_classname = "AbstractStateOneOfType";
+
+import "sdc/biceps/abstractstate.proto";
+import "sdc/biceps/abstractoperationstateoneof.proto";
+import "sdc/biceps/abstractalertstateoneof.proto";
+import "sdc/biceps/abstractmultistateoneof.proto";
+import "sdc/biceps/abstractmetricstateoneof.proto";
+import "sdc/biceps/abstractdevicecomponentstateoneof.proto";
+
+message AbstractStateOneOf {
+  oneof abstract_state_one_of {
+    AbstractState abstract_state = 1;
+    AbstractOperationStateOneOf abstract_operation_state_one_of = 2;
+    AbstractAlertStateOneOf abstract_alert_state_one_of = 3;
+    AbstractMultiStateOneOf abstract_multi_state_one_of = 4;
+    AbstractMetricStateOneOf abstract_metric_state_one_of = 5;
+    AbstractDeviceComponentStateOneOf abstract_device_component_state_one_of = 6;
+  }
+}

@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+package sdc.biceps;
+
+option java_package = "org.somda.sdc.proto.model.biceps";
+option java_outer_classname = "AbstractReportPartType";
+
+import "sdc/biceps/extension.proto";
+
+message AbstractReportPart {
+  Extension element1 = 1;
+  string source_mds = 2;
+}

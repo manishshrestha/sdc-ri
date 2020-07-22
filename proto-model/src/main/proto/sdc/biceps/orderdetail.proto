@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+package sdc.biceps;
+
+option java_package = "org.somda.sdc.proto.model.biceps";
+option java_outer_classname = "OrderDetailType";
+
+import "sdc/biceps/extension.proto";
+import "sdc/biceps/basedemographics.proto";
+import "sdc/biceps/codedvalue.proto";
+import "sdc/biceps/imagingprocedure.proto";
+
+message OrderDetail {
+  Extension element1 = 1;
+  string start = 2;
+  string end = 3;
+  PersonParticipation performer = 4;
+  CodedValue service = 5;
+  ImagingProcedure imaging_procedure = 6;
+}

@@ -1,0 +1,26 @@
+syntax = "proto3";
+
+package sdc.biceps;
+
+option java_package = "org.somda.sdc.proto.model.biceps";
+option java_outer_classname = "CodedValueType";
+
+import "sdc/biceps/extension.proto";
+import "sdc/biceps/localizedtext.proto";
+
+message CodedValue {
+  Extension element1 = 1;
+  LocalizedText coding_system_name = 2;
+  LocalizedText concept_description = 3;
+  message Translation {
+    Extension element1 = 1;
+    string a_code = 2;
+    string a_coding_system = 3;
+    string a_coding_system_version = 4;
+  }
+  Translation translation = 4;
+  string a_code = 5;
+  string a_coding_system = 6;
+  string a_coding_system_version = 7;
+  string a_symbolic_code_name = 8;
+}

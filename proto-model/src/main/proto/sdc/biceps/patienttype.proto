@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package sdc.biceps;
+
+option java_package = "org.somda.sdc.proto.model.biceps";
+option java_outer_classname = "PatientTypeType";
+
+
+message PatientType {
+  enum PatientTypeEnum {
+    UNSPEC = 0;
+    AD = 1;
+    ADO = 2;
+    PED = 3;
+    INF = 4;
+    NEO = 5;
+    OTH = 6;
+  }
+}

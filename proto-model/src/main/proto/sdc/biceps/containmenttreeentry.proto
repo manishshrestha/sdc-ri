@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+package sdc.biceps;
+
+option java_package = "org.somda.sdc.proto.model.biceps";
+option java_outer_classname = "ContainmentTreeEntryType";
+
+import "sdc/biceps/extension.proto";
+import "sdc/biceps/codedvalue.proto";
+
+message ContainmentTreeEntry {
+  Extension element1 = 1;
+  CodedValue type = 2;
+}

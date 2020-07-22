@@ -15,7 +15,7 @@ import org.somda.sdc.dpws.crypto.CryptoConfig;
 import org.somda.sdc.dpws.crypto.CryptoSettings;
 import org.somda.sdc.proto.crypto.CryptoUtil;
 import org.somda.sdc.proto.model.discovery.DiscoveryMessages;
-import org.somda.sdc.proto.model.service.MetadataServiceGrpc;
+import org.somda.sdc.proto.model.discovery.MetadataServiceGrpc;
 import org.somda.sdc.proto.provider.ProviderSettings;
 import org.somda.sdc.proto.provider.guice.ProviderImplFactory;
 
@@ -36,14 +36,14 @@ public class ProviderImplIT {
     @BeforeEach
     void setUp() {
         this.providerInjector = new IntegrationTestUtil(
-            new AbstractConfigurationModule() {
-                @Override
-                protected void defaultConfigure() {
-                    bind(CryptoConfig.CRYPTO_SETTINGS,
-                        CryptoSettings.class,
-                        Ssl.setupServer());
+                new AbstractConfigurationModule() {
+                    @Override
+                    protected void defaultConfigure() {
+                        bind(CryptoConfig.CRYPTO_SETTINGS,
+                                CryptoSettings.class,
+                                Ssl.setupServer());
+                    }
                 }
-            }
         ).getInjector();
 
         this.clientCrypto = Ssl.setupClient();
@@ -54,9 +54,9 @@ public class ProviderImplIT {
         var providerFactory = providerInjector.getInstance(ProviderImplFactory.class);
         var serverAddr = new InetSocketAddress("127.0.0.1", 0);
         var providerSettings = ProviderSettings.builder()
-            .setNetworkAddress(serverAddr)
-            .setProviderName(PROVIDER_NAME)
-            .build();
+                .setNetworkAddress(serverAddr)
+                .setProviderName(PROVIDER_NAME)
+                .build();
 
         var provider = providerFactory.create(providerSettings);
         provider.startAsync().awaitRunning();
@@ -75,12 +75,12 @@ public class ProviderImplIT {
 
         MetadataClient(InetSocketAddress host, CryptoSettings cryptoSettings) throws SSLException {
             this(NettyChannelBuilder.forAddress(host)
-                .sslContext(GrpcSslContexts.forClient()
-                    .keyManager(CryptoUtil.loadKeyStore(cryptoSettings).get())
-                    .trustManager(CryptoUtil.loadTrustStore(cryptoSettings).get())
-                    .build())
-                .overrideAuthority("sdc-lite-server.org")
-                .build());
+                    .sslContext(GrpcSslContexts.forClient()
+                            .keyManager(CryptoUtil.loadKeyStore(cryptoSettings).get())
+                            .trustManager(CryptoUtil.loadTrustStore(cryptoSettings).get())
+                            .build())
+                    .overrideAuthority("sdc-lite-server.org")
+                    .build());
         }
 
         MetadataClient(ManagedChannel channel) {
@@ -88,8 +88,8 @@ public class ProviderImplIT {
             blockingStub = MetadataServiceGrpc.newBlockingStub(channel);
         }
 
-        DiscoveryMessages.GetHostResponse getMetadata() {
-            return blockingStub.getMetadata(DiscoveryMessages.GetHost.newBuilder().build());
+        DiscoveryMessages.GetMetadataResponse getMetadata() {
+            return blockingStub.getMetadata(DiscoveryMessages.GetMetadataRequest.newBuilder().build());
         }
     }
 }

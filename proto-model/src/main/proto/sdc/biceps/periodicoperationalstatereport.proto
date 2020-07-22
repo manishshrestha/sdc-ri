@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+package sdc.biceps;
+
+option java_package = "org.somda.sdc.proto.model.biceps";
+option java_outer_classname = "PeriodicOperationalStateReportType";
+
+import "sdc/biceps/abstractoperationalstatereport.proto";
+
+  message PeriodicOperationalStateReport {
+    AbstractOperationalStateReport abstract_operational_state_report = 1;
+  }

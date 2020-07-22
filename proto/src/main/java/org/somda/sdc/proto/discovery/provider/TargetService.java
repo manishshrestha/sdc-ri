@@ -83,15 +83,15 @@ public class TargetService extends AbstractIdleService implements Service, UdpMe
     @Subscribe
     void receiveUdpMessage(UdpMessage udpMessage) throws IOException {
         try {
-            var discoveryMessage = DiscoveryMessages.AnyDiscoveryMessage.parseFrom(
+            var discoveryMessage = DiscoveryMessages.DiscoveryUdpMessage.parseFrom(
                     new ByteArrayInputStream(udpMessage.getData(), 0, udpMessage.getLength()));
 
             switch (discoveryMessage.getTypeCase()) {
                 case PROBE:
-                    processProbe(udpMessage, discoveryMessage.getProbe());
+                    processProbe(udpMessage, discoveryMessage.getAddressing(), discoveryMessage.getProbe());
                     break;
                 case RESOLVE:
-                    processResolve(udpMessage, discoveryMessage.getResolve());
+                    processResolve(udpMessage, discoveryMessage.getAddressing(), discoveryMessage.getResolve());
                     break;
                 default:
                     // ignore
@@ -119,9 +119,10 @@ public class TargetService extends AbstractIdleService implements Service, UdpMe
         udpUtil.unregisterObserver(this);
     }
 
-    private synchronized void processProbe(UdpMessage requestMessage, DiscoveryMessages.Probe probe)
-            throws FaultException, ValidationException {
-        validateProbe(probe.getAddressing());
+    private synchronized void processProbe(UdpMessage requestMessage,
+                                           AddressingTypes.Addressing addressing,
+                                           DiscoveryMessages.Probe probe) throws FaultException, ValidationException {
+        validateProbe(addressing);
 
         var probedScopes = probe.getScopesMatcher();
         var matchBy = Optional.ofNullable(probedScopes.getMatchBy()).orElse(MatchBy.RFC3986.getUri());
@@ -144,19 +145,21 @@ public class TargetService extends AbstractIdleService implements Service, UdpMe
         }
 
         var probeMatches = DiscoveryMessages.ProbeMatches.newBuilder()
+                .addEndpoint(createEndpoint(getCurrentMetadataVersion()));
+
+        udpUtil.sendResponse(DiscoveryMessages.DiscoveryUdpMessage.newBuilder()
                 .setAddressing(addressingUtil.assemblyAddressing(
                         WsDiscoveryConstants.WSA_ACTION_PROBE_MATCHES,
                         WsDiscoveryConstants.WSA_UDP_TO,
-                        probe.getAddressing().getMessageId()))
-                .addEndpoint(createEndpoint(getCurrentMetadataVersion()));
-
-        udpUtil.sendResponse(DiscoveryMessages.AnyDiscoveryMessage.newBuilder().setProbeMatches(
-                probeMatches.build()).build(), requestMessage);
+                        addressing.getMessageId()))
+                .setProbeMatches(
+                        probeMatches.build()).build(), requestMessage);
     }
 
-    private synchronized void processResolve(UdpMessage requestMessage, DiscoveryMessages.Resolve resolve)
-            throws ValidationException {
-        validateResolve(resolve.getAddressing());
+    private synchronized void processResolve(UdpMessage requestMessage,
+                                             AddressingTypes.Addressing addressing,
+                                             DiscoveryMessages.Resolve resolve) throws ValidationException {
+        validateResolve(addressing);
         var eprToResolve = resolve.getEndpointReference();
 
         if (!URI.create(eprToResolve.getAddress()).equals(URI.create(endpointReference.getAddress()))) {
@@ -165,24 +168,25 @@ public class TargetService extends AbstractIdleService implements Service, UdpMe
         }
 
         var resolveMatches = DiscoveryMessages.ResolveMatches.newBuilder()
+                .setEndpoint(createEndpoint(getCurrentMetadataVersion()));
+
+        udpUtil.sendResponse(DiscoveryMessages.DiscoveryUdpMessage.newBuilder()
                 .setAddressing(addressingUtil.assemblyAddressing(
                         WsDiscoveryConstants.WSA_ACTION_RESOLVE_MATCHES,
                         WsDiscoveryConstants.WSA_UDP_TO,
-                        resolve.getAddressing().getMessageId()))
-                .setEndpoint(createEndpoint(getCurrentMetadataVersion()));
-
-        udpUtil.sendResponse(DiscoveryMessages.AnyDiscoveryMessage.newBuilder()
+                        addressing.getMessageId()))
                 .setResolveMatches(resolveMatches.build()).build(), requestMessage);
     }
 
     private void sendHello() {
         var hello = DiscoveryMessages.Hello.newBuilder()
+                .setEndpoint(createEndpoint(setAndGetNextMetadataVersion()));
+
+        udpUtil.sendMulticast(DiscoveryMessages.DiscoveryUdpMessage.newBuilder()
                 .setAddressing(AddressingTypes.Addressing.newBuilder()
                         .setAction(WsDiscoveryConstants.WSA_ACTION_HELLO))
-                .setEndpoint(createEndpoint(setAndGetNextMetadataVersion()))
-                .setAppSequence(nextAppSequence()).build();
-
-        udpUtil.sendMulticast(DiscoveryMessages.AnyDiscoveryMessage.newBuilder().setHello(hello).build());
+                .setAppSequence(nextAppSequence())
+                .setHello(hello).build());
     }
 
     private synchronized long getCurrentMetadataVersion() {

@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+package sdc.biceps;
+
+option java_package = "org.somda.sdc.proto.model.biceps";
+option java_outer_classname = "NumericMetricValueType";
+
+import "sdc/biceps/abstractmetricvalue.proto";
+
+message NumericMetricValue {
+  AbstractMetricValue abstract_metric_value = 1;
+  string a_value = 2;
+}

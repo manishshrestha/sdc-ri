@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+package sdc.biceps;
+
+option java_package = "org.somda.sdc.proto.model.biceps";
+option java_outer_classname = "EntryRefType";
+
+
+message EntryRef {
+  repeated string entry_ref = 1;
+}

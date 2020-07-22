@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package sdc.biceps;
+
+option java_package = "org.somda.sdc.proto.model.biceps";
+option java_outer_classname = "LimitAlertConditionDescriptorType";
+
+import "sdc/biceps/alertconditiondescriptor.proto";
+import "sdc/biceps/range.proto";
+
+message LimitAlertConditionDescriptor {
+  AlertConditionDescriptor alert_condition_descriptor = 1;
+  Range max_limits = 2;
+  bool a_auto_limit_supported = 3;
+}

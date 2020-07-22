@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package sdc.biceps;
+
+option java_package = "org.somda.sdc.proto.model.biceps";
+option java_outer_classname = "MdDescriptionType";
+
+import "sdc/biceps/extension.proto";
+import "sdc/biceps/mdsdescriptor.proto";
+
+message MdDescription {
+  Extension element1 = 1;
+  MdsDescriptor mds = 2;
+  uint64 a_description_version = 3;
+}

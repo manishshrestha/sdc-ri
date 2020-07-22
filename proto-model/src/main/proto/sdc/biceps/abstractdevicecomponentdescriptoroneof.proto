@@ -1,0 +1,26 @@
+syntax = "proto3";
+
+package sdc.biceps;
+
+option java_package = "org.somda.sdc.proto.model.biceps";
+option java_outer_classname = "AbstractDeviceComponentDescriptorOneOfType";
+
+import "sdc/biceps/abstractdevicecomponentdescriptor.proto";
+import "sdc/biceps/clockdescriptor.proto";
+import "sdc/biceps/batterydescriptor.proto";
+import "sdc/biceps/channeldescriptor.proto";
+import "sdc/biceps/scodescriptor.proto";
+import "sdc/biceps/systemcontextdescriptor.proto";
+import "sdc/biceps/abstractcomplexdevicecomponentdescriptoroneof.proto";
+
+message AbstractDeviceComponentDescriptorOneOf {
+  oneof abstract_device_component_descriptor_one_of {
+    AbstractDeviceComponentDescriptor abstract_device_component_descriptor = 1;
+    ClockDescriptor clock_descriptor = 2;
+    BatteryDescriptor battery_descriptor = 3;
+    ChannelDescriptor channel_descriptor = 4;
+    ScoDescriptor sco_descriptor = 5;
+    SystemContextDescriptor system_context_descriptor = 6;
+    AbstractComplexDeviceComponentDescriptorOneOf abstract_complex_device_component_descriptor_one_of = 7;
+  }
+}

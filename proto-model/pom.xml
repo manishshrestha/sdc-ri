@@ -62,6 +62,10 @@
 						<include>**/*.proto</include>
 					</includes>
 
+					<!-- Use separate file for arguments as Windows will quickly exceed
+					     the maximum command line length and causes protoc to fail -->
+					<useArgumentFile>true</useArgumentFile>
+
 					<!-- Do not compile if compilation unit is still up-to-date -->
 					<checkStaleness>true</checkStaleness>
 

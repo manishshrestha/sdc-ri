@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+package sdc.biceps;
+
+option java_package = "org.somda.sdc.proto.model.biceps";
+option java_outer_classname = "GetContextStatesByFilterType";
+
+import "sdc/biceps/abstractget.proto";
+
+  message GetContextStatesByFilter {
+    AbstractGet abstract_get = 1;
+    string filter = 2;
+    string a_context_type = 3;
+  }

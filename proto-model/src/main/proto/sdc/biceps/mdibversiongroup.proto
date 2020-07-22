@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+package sdc.biceps;
+
+option java_package = "org.somda.sdc.proto.model.biceps";
+option java_outer_classname = "MdibVersionGroupType";
+
+
+message MdibVersionGroup {
+  uint64 a_mdib_version = 1;
+  string a_sequence_id = 2;
+  uint64 a_instance_id = 3;
+}

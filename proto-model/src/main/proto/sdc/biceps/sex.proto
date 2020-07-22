@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+package sdc.biceps;
+
+option java_package = "org.somda.sdc.proto.model.biceps";
+option java_outer_classname = "SexType";
+
+
+message Sex {
+  enum SexEnum {
+    UNSPEC = 0;
+    M = 1;
+    F = 2;
+    UNKN = 3;
+  }
+}

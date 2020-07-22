@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+package sdc.biceps;
+
+option java_package = "org.somda.sdc.proto.model.biceps";
+option java_outer_classname = "AbstractMetricStateType";
+
+import "sdc/biceps/abstractstate.proto";
+import "sdc/biceps/codedvalue.proto";
+import "sdc/biceps/physicalconnectorinfo.proto";
+import "sdc/biceps/componentactivation.proto";
+import "google/protobuf/duration.proto";
+
+message AbstractMetricState {
+  AbstractState abstract_state = 1;
+  CodedValue body_site = 2;
+  PhysicalConnectorInfo physical_connector = 3;
+  ComponentActivation a_activation_state = 4;
+  google.protobuf.Duration a_active_determination_period = 5;
+  google.protobuf.Duration a_life_time_period = 6;
+}

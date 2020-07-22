@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+package sdc.biceps;
+
+option java_package = "org.somda.sdc.proto.model.biceps";
+option java_outer_classname = "VersionFrameType";
+
+
+message VersionFrame {
+  uint64 a_start = 1;
+  uint64 a_end = 2;
+}

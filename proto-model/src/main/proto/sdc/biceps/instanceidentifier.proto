@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+package sdc.biceps;
+
+option java_package = "org.somda.sdc.proto.model.biceps";
+option java_outer_classname = "InstanceIdentifierType";
+
+import "sdc/biceps/extension.proto";
+import "sdc/biceps/codedvalue.proto";
+import "sdc/biceps/localizedtext.proto";
+
+message InstanceIdentifier {
+  Extension element1 = 1;
+  CodedValue type = 2;
+  LocalizedText identifier_name = 3;
+}

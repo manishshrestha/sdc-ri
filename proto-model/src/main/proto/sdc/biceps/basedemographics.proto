@@ -1,0 +1,81 @@
+syntax = "proto3";
+
+package sdc.biceps;
+
+option java_package = "org.somda.sdc.proto.model.biceps";
+option java_outer_classname = "BaseDemographicsType";
+
+import "sdc/biceps/extension.proto";
+
+message BaseDemographics {
+  Extension element1 = 1;
+  string givenname = 2;
+  string middlename = 3;
+  string familyname = 4;
+  string birthname = 5;
+  string title = 6;
+}
+import "sdc/biceps/sex.proto";
+import "sdc/biceps/patienttype.proto";
+import "sdc/biceps/measurement.proto";
+import "sdc/biceps/codedvalue.proto";
+
+message PatientDemographicsCoreData {
+  BaseDemographics base_demographics = 1;
+  Sex sex = 2;
+  PatientType patient_type = 3;
+  message DateOfBirth {
+    oneof DateOfBirth {
+      string date_time = 1;
+      string date = 2;
+      string g_year_month = 3;
+      string g_year = 4;
+    }
+  }
+  DateOfBirth date_of_birth = 4;
+  Measurement height = 5;
+  Measurement weight = 6;
+  CodedValue race = 7;
+}
+import "sdc/biceps/instanceidentifieroneof.proto";
+
+message PersonReference {
+  Extension element1 = 1;
+  InstanceIdentifierOneOf identification = 2;
+  BaseDemographicsOneOf name = 3;
+}
+
+message PersonParticipation {
+  PersonReference person_reference = 1;
+  CodedValue role = 2;
+}
+
+message NeonatalPatientDemographicsCoreData {
+  PatientDemographicsCoreData patient_demographics_core_data = 1;
+  Measurement gestational_age = 2;
+  Measurement birth_length = 3;
+  Measurement birth_weight = 4;
+  Measurement head_circumference = 5;
+  PersonReferenceOneOf mother = 6;
+}
+
+message BaseDemographicsOneOf {
+  oneof base_demographics_one_of {
+    BaseDemographics base_demographics = 1;
+    PatientDemographicsCoreDataOneOf patient_demographics_core_data_one_of = 2;
+  }
+}
+
+message PatientDemographicsCoreDataOneOf {
+  oneof patient_demographics_core_data_one_of {
+    PatientDemographicsCoreData patient_demographics_core_data = 1;
+    NeonatalPatientDemographicsCoreData neonatal_patient_demographics_core_data = 2;
+  }
+}
+
+message PersonReferenceOneOf {
+  oneof person_reference_one_of {
+    PersonReference person_reference = 1;
+    PersonParticipation person_participation = 2;
+  }
+}

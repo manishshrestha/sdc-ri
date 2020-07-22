@@ -1,0 +1,30 @@
+syntax = "proto3";
+
+package sdc.biceps;
+
+option java_package = "org.somda.sdc.proto.model.biceps";
+option java_outer_classname = "AbstractMetricValueType";
+
+import "sdc/biceps/extension.proto";
+import "sdc/biceps/measurementvalidity.proto";
+import "sdc/biceps/generationmode.proto";
+import "sdc/biceps/codedvalue.proto";
+
+message AbstractMetricValue {
+  Extension element1 = 1;
+  message MetricQuality {
+    Extension element1 = 1;
+    MeasurementValidity a_validity = 2;
+    GenerationMode a_mode = 3;
+    string a_qi = 4;
+  }
+  MetricQuality metric_quality = 2;
+  message Annotation {
+    Extension element1 = 1;
+    CodedValue type = 2;
+  }
+  Annotation annotation = 3;
+  uint64 a_start_time = 4;
+  uint64 a_stop_time = 5;
+  uint64 a_determination_time = 6;
+}

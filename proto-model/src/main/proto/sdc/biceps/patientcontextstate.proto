@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+package sdc.biceps;
+
+option java_package = "org.somda.sdc.proto.model.biceps";
+option java_outer_classname = "PatientContextStateType";
+
+import "sdc/biceps/abstractcontextstate.proto";
+import "sdc/biceps/basedemographics.proto";
+
+message PatientContextState {
+  AbstractContextState abstract_context_state = 1;
+  PatientDemographicsCoreDataOneOf core_data = 2;
+}

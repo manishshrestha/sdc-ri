@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+package sdc.biceps;
+
+option java_package = "org.somda.sdc.proto.model.biceps";
+option java_outer_classname = "RealTimeSampleArrayMetricStateType";
+
+import "sdc/biceps/abstractmetricstate.proto";
+import "sdc/biceps/samplearrayvalue.proto";
+import "sdc/biceps/range.proto";
+
+message RealTimeSampleArrayMetricState {
+  AbstractMetricState abstract_metric_state = 1;
+  SampleArrayValue metric_value = 2;
+  Range physiological_range = 3;
+}

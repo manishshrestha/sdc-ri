@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+package sdc.biceps;
+
+option java_package = "org.somda.sdc.proto.model.biceps";
+option java_outer_classname = "SetMetricStateResponseType";
+
+import "sdc/biceps/abstractsetresponse.proto";
+
+  message SetMetricStateResponse {
+    AbstractSetResponse abstract_set_response = 1;
+  }

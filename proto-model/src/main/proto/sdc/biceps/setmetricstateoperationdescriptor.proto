@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+package sdc.biceps;
+
+option java_package = "org.somda.sdc.proto.model.biceps";
+option java_outer_classname = "SetMetricStateOperationDescriptorType";
+
+import "sdc/biceps/abstractsetstateoperationdescriptor.proto";
+
+message SetMetricStateOperationDescriptor {
+  AbstractSetStateOperationDescriptor abstract_set_state_operation_descriptor = 1;
+}

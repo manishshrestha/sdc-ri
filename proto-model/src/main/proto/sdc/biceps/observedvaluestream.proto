@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package sdc.biceps;
+
+option java_package = "org.somda.sdc.proto.model.biceps";
+option java_outer_classname = "ObservedValueStreamType";
+
+import "sdc/biceps/abstractreport.proto";
+import "sdc/biceps/samplearrayvalue.proto";
+
+  message ObservedValueStream {
+    AbstractReport abstract_report = 1;
+    message Value {
+      SampleArrayValue value = 1;
+      string a_metric = 2;
+      uint64 a_state_version = 3;
+    }
+    Value value = 2;
+  }

@@ -1,0 +1,37 @@
+syntax = "proto3";
+
+package sdc.biceps;
+
+option java_package = "org.somda.sdc.proto.model.biceps";
+option java_outer_classname = "AlertConditionDescriptorType";
+
+import "sdc/biceps/abstractalertdescriptor.proto";
+import "sdc/biceps/causeinfo.proto";
+import "sdc/biceps/alertconditionkind.proto";
+import "sdc/biceps/alertconditionpriority.proto";
+import "google/protobuf/duration.proto";
+
+message AlertConditionDescriptor {
+  AbstractAlertDescriptor abstract_alert_descriptor = 1;
+  string source = 2;
+  CauseInfo cause_info = 3;
+  AlertConditionKind a_kind = 4;
+  AlertConditionPriority a_priority = 5;
+  google.protobuf.Duration a_default_condition_generation_delay = 6;
+  message CanEscalate {
+    enum CanEscalateEnum {
+      LO = 0;
+      ME = 1;
+      HI = 2;
+    }
+  }
+  CanEscalate can_escalate = 7;
+  message CanDeescalate {
+    enum CanDeescalateEnum {
+      ME = 0;
+      LO = 1;
+      NONE = 2;
+    }
+  }
+  CanDeescalate can_deescalate = 8;
+}

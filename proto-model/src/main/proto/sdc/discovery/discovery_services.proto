@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+package sdc.discovery;
+
+import "sdc/discovery/discovery_messages.proto";
+
+option java_package = "org.somda.sdc.proto.model.discovery";
+option java_outer_classname = "Discovery";
+
+service MetadataService {
+  rpc GetMetadata(GetMetadataRequest) returns (GetMetadataResponse);
+  rpc DirectedProbe(DirectedProbeRequest) returns (DirectedProbeResponse);
+}
+
+service ProxyService {
+  rpc Hello(HelloRequest) returns (HelloResponse);
+  rpc Bye(ByeRequest) returns (ByeResponse);
+  rpc Probe(ProbeRequest) returns (ProbeResponse);
+  rpc Resolve(ResolveRequest) returns (ResolveResponse);
+}

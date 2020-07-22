@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package sdc.biceps;
+
+option java_package = "org.somda.sdc.proto.model.biceps";
+option java_outer_classname = "AbstractComponentReportType";
+
+import "sdc/biceps/abstractreport.proto";
+import "sdc/biceps/abstractreportpart.proto";
+import "sdc/biceps/abstractdevicecomponentstateoneof.proto";
+
+message AbstractComponentReport {
+  AbstractReport abstract_report = 1;
+  message ReportPart {
+    AbstractReportPart abstract_report_part = 1;
+    AbstractDeviceComponentStateOneOf component_state = 2;
+  }
+  ReportPart report_part = 2;
+}

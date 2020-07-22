@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+package sdc.biceps;
+
+option java_package = "org.somda.sdc.proto.model.biceps";
+option java_outer_classname = "PeriodicMetricReportType";
+
+import "sdc/biceps/abstractmetricreport.proto";
+
+  message PeriodicMetricReport {
+    AbstractMetricReport abstract_metric_report = 1;
+  }

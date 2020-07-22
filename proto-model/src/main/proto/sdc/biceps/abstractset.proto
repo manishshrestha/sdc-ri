@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+package sdc.biceps;
+
+option java_package = "org.somda.sdc.proto.model.biceps";
+option java_outer_classname = "AbstractSetType";
+
+import "sdc/biceps/extension.proto";
+
+message AbstractSet {
+  Extension element1 = 1;
+  string operation_handle_ref = 2;
+}

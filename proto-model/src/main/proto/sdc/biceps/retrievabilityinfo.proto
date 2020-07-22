@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+package sdc.biceps;
+
+option java_package = "org.somda.sdc.proto.model.biceps";
+option java_outer_classname = "RetrievabilityInfoType";
+
+import "sdc/biceps/extension.proto";
+import "sdc/biceps/retrievabilitymethod.proto";
+import "google/protobuf/duration.proto";
+
+message RetrievabilityInfo {
+  Extension element1 = 1;
+  RetrievabilityMethod a_method = 2;
+  google.protobuf.Duration a_update_period = 3;
+}

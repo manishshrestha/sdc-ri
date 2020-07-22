@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+package sdc.biceps;
+
+option java_package = "org.somda.sdc.proto.model.biceps";
+option java_outer_classname = "MdsStateType";
+
+import "sdc/biceps/abstractcomplexdevicecomponentstate.proto";
+import "sdc/biceps/operatingjurisdiction.proto";
+import "sdc/biceps/mdsoperatingmode.proto";
+
+message MdsState {
+  AbstractComplexDeviceComponentState abstract_complex_device_component_state = 1;
+  OperatingJurisdiction operating_jurisdiction = 2;
+  string a_lang = 3;
+  MdsOperatingMode a_operating_mode = 4;
+}

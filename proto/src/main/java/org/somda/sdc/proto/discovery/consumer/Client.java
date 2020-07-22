@@ -47,8 +47,7 @@ public class Client extends AbstractIdleService implements Service, UdpMessageQu
     private final ExecutorWrapperService<ListeningExecutorService> executorService;
     private final AddressingUtil addressingUtil;
     private final EventBus helloByeProbeEventBus;
-    private EvictingQueue<DiscoveryMessages.ProbeMatches> probeMatchesBuffer;
-    private EvictingQueue<DiscoveryMessages.ResolveMatches> resolveMatchesBuffer;
+    private EvictingQueue<DiscoveryMessages.DiscoveryUdpMessage> messageBuffer;
 
     private final Lock probeLock;
     private final Lock resolveLock;
@@ -78,8 +77,7 @@ public class Client extends AbstractIdleService implements Service, UdpMessageQu
         this.probeCondition = probeLock.newCondition();
         this.resolveCondition = resolveLock.newCondition();
 
-        this.probeMatchesBuffer = EvictingQueue.create(probeMatchesBufferSize);
-        this.resolveMatchesBuffer = EvictingQueue.create(resolveMatchesBufferSize);
+        this.messageBuffer = EvictingQueue.create(probeMatchesBufferSize);
 
         udpUtil.registerObserver(this);
     }
@@ -87,7 +85,7 @@ public class Client extends AbstractIdleService implements Service, UdpMessageQu
     @Subscribe
     void receiveUdpMessage(UdpMessage udpMessage) throws IOException {
         try {
-            var discoveryMessage = DiscoveryMessages.AnyDiscoveryMessage.parseFrom(
+            var discoveryMessage = DiscoveryMessages.DiscoveryUdpMessage.parseFrom(
                     new ByteArrayInputStream(udpMessage.getData(), 0, udpMessage.getLength()));
 
             switch (discoveryMessage.getTypeCase()) {
@@ -96,13 +94,13 @@ public class Client extends AbstractIdleService implements Service, UdpMessageQu
                     break;
                 case PROBE_MATCHES:
                     try (var ignored = AutoLock.lock(probeLock)) {
-                        probeMatchesBuffer.add(discoveryMessage.getProbeMatches());
+                        messageBuffer.add(discoveryMessage);
                         probeCondition.signal();
                     }
                     break;
                 case RESOLVE_MATCHES:
                     try (var ignored = AutoLock.lock(resolveLock)) {
-                        resolveMatchesBuffer.add(discoveryMessage.getResolveMatches());
+                        messageBuffer.add(discoveryMessage);
                         resolveCondition.signal();
                     }
                     break;
@@ -126,10 +124,10 @@ public class Client extends AbstractIdleService implements Service, UdpMessageQu
     public ListenableFuture<List<DiscoveryTypes.Endpoint>> probe(DiscoveryTypes.ScopeMatcher scopeMatcher, int maxResults) {
         var probeId = String.format("probeId(%s@%s)", discoveryIdCounter.incrementAndGet(), this);
         var probe = DiscoveryMessages.Probe.newBuilder()
-                .setAddressing(addressingUtil.assemblyAddressing(
-                        WsDiscoveryConstants.WSA_ACTION_PROBE,
-                        WsDiscoveryConstants.WSA_UDP_TO))
                 .setScopesMatcher(scopeMatcher).build();
+        var addressing = addressingUtil.assemblyAddressing(
+                WsDiscoveryConstants.WSA_ACTION_PROBE,
+                WsDiscoveryConstants.WSA_UDP_TO);
         var future = executorService.get().submit(
                 new ProbeCallable(
                         probeId,
@@ -138,42 +136,51 @@ public class Client extends AbstractIdleService implements Service, UdpMessageQu
                         probeLock,
                         probeCondition,
                         helloByeProbeEventBus,
-                        () -> popProbeMatches(probe.getAddressing().getMessageId())));
+                        () -> popProbeMatches(addressing.getMessageId())));
 
-        udpUtil.sendMulticast(DiscoveryMessages.AnyDiscoveryMessage.newBuilder().setProbe(probe).build());
+        udpUtil.sendMulticast(DiscoveryMessages.DiscoveryUdpMessage.newBuilder()
+                .setAddressing(addressing)
+                .setProbe(probe).build());
         return future;
     }
 
     public ListenableFuture<DiscoveryTypes.Endpoint> resolve(String eprAddress) {
         var resolve = DiscoveryMessages.Resolve.newBuilder()
-                .setAddressing(addressingUtil.assemblyAddressing(
-                        WsDiscoveryConstants.WSA_ACTION_RESOLVE,
-                        WsDiscoveryConstants.WSA_UDP_TO))
                 .setEndpointReference(AddressingTypes.EndpointReference.newBuilder().setAddress(eprAddress).build())
                 .build();
+        var addressing = addressingUtil.assemblyAddressing(
+                WsDiscoveryConstants.WSA_ACTION_RESOLVE,
+                WsDiscoveryConstants.WSA_UDP_TO);
         var future = executorService.get().submit(
                 new ResolveCallable(
                         maxWaitForResolveMatches,
-                        resolve.getAddressing().getMessageId(),
+                        addressing.getMessageId(),
                         resolveLock,
                         resolveCondition,
-                        () -> popResolveMatches(resolve.getAddressing().getMessageId())));
+                        () -> popResolveMatches(addressing.getMessageId())));
 
-        udpUtil.sendMulticast(DiscoveryMessages.AnyDiscoveryMessage.newBuilder().setResolve(resolve).build());
+        udpUtil.sendMulticast(DiscoveryMessages.DiscoveryUdpMessage.newBuilder()
+                .setAddressing(addressing)
+                .setResolve(resolve).build());
         return future;
     }
 
     private Optional<DiscoveryMessages.ProbeMatches> popProbeMatches(String messageId) {
-        var msg = probeMatchesBuffer.stream().filter(message ->
-                messageId.equals(message.getAddressing().getRelatesId())).findFirst();
-        msg.ifPresent(probeMatchesBuffer::remove);
-        return msg;
+        return popMessage(messageId)
+                .filter(it -> it.getTypeCase() == DiscoveryMessages.DiscoveryUdpMessage.TypeCase.PROBE_MATCHES)
+                .map(DiscoveryMessages.DiscoveryUdpMessage::getProbeMatches);
     }
 
     private Optional<DiscoveryMessages.ResolveMatches> popResolveMatches(String messageId) {
-        var msg = resolveMatchesBuffer.stream().filter(message ->
+        return popMessage(messageId)
+                .filter(it -> it.getTypeCase() == DiscoveryMessages.DiscoveryUdpMessage.TypeCase.RESOLVE_MATCHES)
+                .map(DiscoveryMessages.DiscoveryUdpMessage::getResolveMatches);
+    }
+
+    private Optional<DiscoveryMessages.DiscoveryUdpMessage> popMessage(String messageId) {
+        var msg = messageBuffer.stream().filter(message ->
                 messageId.equals(message.getAddressing().getRelatesId())).findFirst();
-        msg.ifPresent(resolveMatchesBuffer::remove);
+        msg.ifPresent(messageBuffer::remove);
         return msg;
     }
 

@@ -1,0 +1,23 @@
+syntax = "proto3";
+
+package sdc.biceps;
+
+option java_package = "org.somda.sdc.proto.model.biceps";
+option java_outer_classname = "OperationInvokedReportType";
+
+import "sdc/biceps/abstractreport.proto";
+import "sdc/biceps/abstractreportpart.proto";
+import "sdc/biceps/invocationinfo.proto";
+import "sdc/biceps/instanceidentifieroneof.proto";
+
+  message OperationInvokedReport {
+    AbstractReport abstract_report = 1;
+    message ReportPart {
+      AbstractReportPart abstract_report_part = 1;
+      InvocationInfo invocation_info = 2;
+      InstanceIdentifierOneOf invocation_source = 3;
+      string a_operation_handle_ref = 4;
+      string a_operation_target = 5;
+    }
+    ReportPart report_part = 2;
+  }

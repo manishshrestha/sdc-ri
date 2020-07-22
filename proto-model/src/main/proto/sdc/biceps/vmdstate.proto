@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+package sdc.biceps;
+
+option java_package = "org.somda.sdc.proto.model.biceps";
+option java_outer_classname = "VmdStateType";
+
+import "sdc/biceps/abstractcomplexdevicecomponentstate.proto";
+import "sdc/biceps/operatingjurisdiction.proto";
+
+message VmdState {
+  AbstractComplexDeviceComponentState abstract_complex_device_component_state = 1;
+  OperatingJurisdiction operating_jurisdiction = 2;
+}

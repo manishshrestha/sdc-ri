@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+package sdc.biceps;
+
+option java_package = "org.somda.sdc.proto.model.biceps";
+option java_outer_classname = "RealTimeSampleArrayMetricDescriptorType";
+
+import "sdc/biceps/abstractmetricdescriptor.proto";
+import "sdc/biceps/range.proto";
+import "google/protobuf/duration.proto";
+
+message RealTimeSampleArrayMetricDescriptor {
+  AbstractMetricDescriptor abstract_metric_descriptor = 1;
+  Range technical_range = 2;
+  string a_resolution = 3;
+  google.protobuf.Duration a_sample_period = 4;
+}

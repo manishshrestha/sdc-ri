@@ -1,0 +1,28 @@
+syntax = "proto3";
+
+package sdc.biceps;
+
+option java_package = "org.somda.sdc.proto.model.biceps";
+option java_outer_classname = "BatteryStateType";
+
+import "sdc/biceps/abstractdevicecomponentstate.proto";
+import "sdc/biceps/measurement.proto";
+
+message BatteryState {
+  AbstractDeviceComponentState abstract_device_component_state = 1;
+  Measurement capacity_remaining = 2;
+  Measurement voltage = 3;
+  Measurement current = 4;
+  Measurement temperature = 5;
+  Measurement remaining_battery_time = 6;
+  message ChargeStatus {
+    enum ChargeStatusEnum {
+      FUL = 0;
+      CHB = 1;
+      DISCHB = 2;
+      DEB = 3;
+    }
+  }
+  ChargeStatus charge_status = 7;
+  uint32 a_charge_cycles = 8;
+}

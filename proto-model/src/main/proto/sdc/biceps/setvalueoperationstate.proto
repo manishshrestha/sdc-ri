@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+package sdc.biceps;
+
+option java_package = "org.somda.sdc.proto.model.biceps";
+option java_outer_classname = "SetValueOperationStateType";
+
+import "sdc/biceps/abstractoperationstate.proto";
+import "sdc/biceps/range.proto";
+
+message SetValueOperationState {
+  AbstractOperationState abstract_operation_state = 1;
+  Range allowed_range = 2;
+}

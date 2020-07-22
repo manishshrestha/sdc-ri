@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+package sdc.biceps;
+
+option java_package = "org.somda.sdc.proto.model.biceps";
+option java_outer_classname = "ImagingProcedureType";
+
+import "sdc/biceps/extension.proto";
+import "sdc/biceps/instanceidentifieroneof.proto";
+import "sdc/biceps/codedvalue.proto";
+
+message ImagingProcedure {
+  Extension element1 = 1;
+  InstanceIdentifierOneOf accession_identifier = 2;
+  InstanceIdentifierOneOf requested_procedure_id = 3;
+  InstanceIdentifierOneOf study_instance_uid = 4;
+  InstanceIdentifierOneOf scheduled_procedure_step_id = 5;
+  CodedValue modality = 6;
+  CodedValue protocol_code = 7;
+}

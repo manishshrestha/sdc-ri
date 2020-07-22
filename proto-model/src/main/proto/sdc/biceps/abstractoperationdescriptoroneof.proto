@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+package sdc.biceps;
+
+option java_package = "org.somda.sdc.proto.model.biceps";
+option java_outer_classname = "AbstractOperationDescriptorOneOfType";
+
+import "sdc/biceps/abstractoperationdescriptor.proto";
+import "sdc/biceps/setstringoperationdescriptor.proto";
+import "sdc/biceps/abstractsetstateoperationdescriptoroneof.proto";
+import "sdc/biceps/setvalueoperationdescriptor.proto";
+
+message AbstractOperationDescriptorOneOf {
+  oneof abstract_operation_descriptor_one_of {
+    AbstractOperationDescriptor abstract_operation_descriptor = 1;
+    SetStringOperationDescriptor set_string_operation_descriptor = 2;
+    AbstractSetStateOperationDescriptorOneOf abstract_set_state_operation_descriptor_one_of = 3;
+    SetValueOperationDescriptor set_value_operation_descriptor = 4;
+  }
+}

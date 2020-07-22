@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+package sdc.biceps;
+
+option java_package = "org.somda.sdc.proto.model.biceps";
+option java_outer_classname = "MdsOperatingModeType";
+
+
+message MdsOperatingMode {
+  enum MdsOperatingModeEnum {
+    NML = 0;
+    DMO = 1;
+    SRV = 2;
+    MTN = 3;
+  }
+}

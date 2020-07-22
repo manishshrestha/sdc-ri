@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+package sdc.biceps;
+
+option java_package = "org.somda.sdc.proto.model.biceps";
+option java_outer_classname = "GetSupportedLanguagesResponseType";
+
+import "sdc/biceps/abstractgetresponse.proto";
+
+  message GetSupportedLanguagesResponse {
+    AbstractGetResponse abstract_get_response = 1;
+    string lang = 2;
+  }

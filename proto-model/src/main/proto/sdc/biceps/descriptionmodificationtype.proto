@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package sdc.biceps;
+
+option java_package = "org.somda.sdc.proto.model.biceps";
+option java_outer_classname = "DescriptionModificationTypeType";
+
+
+message DescriptionModificationType {
+  enum DescriptionModificationTypeEnum {
+    CRT = 0;
+    UPT = 1;
+    DEL = 2;
+  }
+}

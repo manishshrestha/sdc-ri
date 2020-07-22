@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package sdc.biceps;
+
+option java_package = "org.somda.sdc.proto.model.biceps";
+option java_outer_classname = "ActivateOperationDescriptorType";
+
+import "sdc/biceps/abstractsetstateoperationdescriptor.proto";
+import "sdc/biceps/codedvalue.proto";
+
+message ActivateOperationDescriptor {
+  AbstractSetStateOperationDescriptor abstract_set_state_operation_descriptor = 1;
+  message Argument {
+    CodedValue arg_name = 1;
+    string arg = 2;
+  }
+  Argument argument = 2;
+}

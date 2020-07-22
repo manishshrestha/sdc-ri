@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package sdc.biceps;
+
+option java_package = "org.somda.sdc.proto.model.biceps";
+option java_outer_classname = "LocationDetailType";
+
+import "sdc/biceps/extension.proto";
+
+message LocationDetail {
+  Extension element1 = 1;
+  string a_po_c = 2;
+  string a_room = 3;
+  string a_bed = 4;
+  string a_facility = 5;
+  string a_building = 6;
+  string a_floor = 7;
+}

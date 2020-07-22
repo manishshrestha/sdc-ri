@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+package sdc.biceps;
+
+option java_package = "org.somda.sdc.proto.model.biceps";
+option java_outer_classname = "SystemSignalActivationType";
+
+import "sdc/biceps/alertsignalmanifestation.proto";
+import "sdc/biceps/alertactivation.proto";
+
+message SystemSignalActivation {
+  AlertSignalManifestation a_manifestation = 1;
+  AlertActivation a_state = 2;
+}

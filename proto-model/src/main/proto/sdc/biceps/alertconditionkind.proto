@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package sdc.biceps;
+
+option java_package = "org.somda.sdc.proto.model.biceps";
+option java_outer_classname = "AlertConditionKindType";
+
+
+message AlertConditionKind {
+  enum AlertConditionKindEnum {
+    PHY = 0;
+    TEC = 1;
+    OTH = 2;
+  }
+}

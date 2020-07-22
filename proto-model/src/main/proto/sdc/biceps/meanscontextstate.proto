@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+package sdc.biceps;
+
+option java_package = "org.somda.sdc.proto.model.biceps";
+option java_outer_classname = "MeansContextStateType";
+
+import "sdc/biceps/abstractcontextstate.proto";
+
+message MeansContextState {
+  AbstractContextState abstract_context_state = 1;
+}

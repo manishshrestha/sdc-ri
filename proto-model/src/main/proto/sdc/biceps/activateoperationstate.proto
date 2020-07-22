@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+package sdc.biceps;
+
+option java_package = "org.somda.sdc.proto.model.biceps";
+option java_outer_classname = "ActivateOperationStateType";
+
+import "sdc/biceps/abstractoperationstate.proto";
+
+message ActivateOperationState {
+  AbstractOperationState abstract_operation_state = 1;
+}

@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+package sdc.biceps;
+
+option java_package = "org.somda.sdc.proto.model.biceps";
+option java_outer_classname = "DescriptionModificationReportType";
+
+import "sdc/biceps/abstractreport.proto";
+import "sdc/biceps/abstractreportpart.proto";
+import "sdc/biceps/abstractdescriptoroneof.proto";
+import "sdc/biceps/abstractstateoneof.proto";
+import "sdc/biceps/descriptionmodificationtype.proto";
+
+  message DescriptionModificationReport {
+    AbstractReport abstract_report = 1;
+    message ReportPart {
+      AbstractReportPart abstract_report_part = 1;
+      AbstractDescriptorOneOf descriptorx_xx = 2;
+      AbstractStateOneOf state = 3;
+      string a_parent_descriptor = 4;
+      DescriptionModificationType a_modification_type = 5;
+    }
+    ReportPart report_part = 2;
+  }
