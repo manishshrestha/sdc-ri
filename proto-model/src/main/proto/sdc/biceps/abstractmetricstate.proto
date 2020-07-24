@@ -13,7 +13,7 @@ import "google/protobuf/duration.proto";
 
 message AbstractMetricState {
   AbstractState abstract_state = 1;
-  CodedValue body_site = 2;
+  repeated CodedValue body_site = 2;
   PhysicalConnectorInfo physical_connector = 3;
   ComponentActivation a_activation_state = 4;
   google.protobuf.Duration a_active_determination_period = 5;

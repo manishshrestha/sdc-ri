@@ -18,4 +18,5 @@ message MeasurementValidity {
     UFLW = 7;
     NA = 8;
   }
+  MeasurementValidityEnum type = 1;
 }

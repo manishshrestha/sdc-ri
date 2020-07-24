@@ -9,5 +9,5 @@ import "sdc/biceps/abstractoperationdescriptor.proto";
 
 message AbstractSetStateOperationDescriptor {
   AbstractOperationDescriptor abstract_operation_descriptor = 1;
-  string modifiable_data = 2;
+  repeated string modifiable_data = 2;
 }

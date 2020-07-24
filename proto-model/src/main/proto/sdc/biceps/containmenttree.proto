@@ -11,6 +11,6 @@ import "sdc/biceps/containmenttreeinfo.proto";
 
 message ContainmentTree {
   Extension element1 = 1;
-  ContainmentTreeEntry entry = 2;
+  repeated ContainmentTreeEntry entry = 2;
   ContainmentTreeInfo a_containment_tree_info = 3;
 }

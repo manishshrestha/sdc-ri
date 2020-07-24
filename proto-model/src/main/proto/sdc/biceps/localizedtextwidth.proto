@@ -15,4 +15,5 @@ message LocalizedTextWidth {
     XL = 4;
     XXL = 5;
   }
+  LocalizedTextWidthEnum type = 1;
 }

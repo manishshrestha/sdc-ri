@@ -9,6 +9,6 @@ import "sdc/biceps/abstractget.proto";
 
   message GetContextStatesByFilter {
     AbstractGet abstract_get = 1;
-    string filter = 2;
+    repeated string filter = 2;
     string a_context_type = 3;
   }

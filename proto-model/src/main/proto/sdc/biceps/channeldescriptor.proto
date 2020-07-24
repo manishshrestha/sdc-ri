@@ -10,5 +10,5 @@ import "sdc/biceps/abstractmetricdescriptoroneof.proto";
 
 message ChannelDescriptor {
   AbstractDeviceComponentDescriptor abstract_device_component_descriptor = 1;
-  AbstractMetricDescriptorOneOf metric = 2;
+  repeated AbstractMetricDescriptorOneOf metric = 2;
 }

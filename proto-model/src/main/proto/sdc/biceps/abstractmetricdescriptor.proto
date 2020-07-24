@@ -18,7 +18,7 @@ import "google/protobuf/duration.proto";
 message AbstractMetricDescriptor {
   AbstractDescriptor abstract_descriptor = 1;
   CodedValue unit = 2;
-  CodedValue body_site = 3;
+  repeated CodedValue body_site = 3;
   message Relation {
     Extension element1 = 1;
     CodedValue code = 2;
@@ -32,6 +32,7 @@ message AbstractMetricDescriptor {
         DCE = 4;
         OTH = 5;
       }
+      KindEnum type = 1;
     }
   Kind relation = 4;
     EntryRef a_entries = 5;

@@ -10,5 +10,5 @@ import "sdc/biceps/abstractdescriptoroneof.proto";
 
   message GetDescriptorsFromArchiveResponse {
     AbstractGetResponse abstract_get_response = 1;
-    AbstractDescriptorOneOf descriptorx_xx = 2;
+    repeated AbstractDescriptorOneOf descriptorx_xx = 2;
   }

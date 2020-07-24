@@ -12,5 +12,7 @@ import "sdc/biceps/localizedtext.proto";
 message InstanceIdentifier {
   Extension element1 = 1;
   CodedValue type = 2;
-  LocalizedText identifier_name = 3;
+  repeated LocalizedText identifier_name = 3;
+  string root = 4;
+  string extension = 5;
 }

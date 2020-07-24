@@ -13,8 +13,8 @@ import "google/protobuf/duration.proto";
 
 message AlertConditionDescriptor {
   AbstractAlertDescriptor abstract_alert_descriptor = 1;
-  string source = 2;
-  CauseInfo cause_info = 3;
+  repeated string source = 2;
+  repeated CauseInfo cause_info = 3;
   AlertConditionKind a_kind = 4;
   AlertConditionPriority a_priority = 5;
   google.protobuf.Duration a_default_condition_generation_delay = 6;
@@ -24,6 +24,7 @@ message AlertConditionDescriptor {
       ME = 1;
       HI = 2;
     }
+    CanEscalateEnum type = 1;
   }
   CanEscalate can_escalate = 7;
   message CanDeescalate {
@@ -32,6 +33,7 @@ message AlertConditionDescriptor {
       LO = 1;
       NONE = 2;
     }
+    CanDeescalateEnum type = 1;
   }
   CanDeescalate can_deescalate = 8;
 }

@@ -10,6 +10,6 @@ import "sdc/biceps/instanceidentifieroneof.proto";
 
   message GetContextStatesByIdentification {
     AbstractGet abstract_get = 1;
-    InstanceIdentifierOneOf identification = 2;
+    repeated InstanceIdentifierOneOf identification = 2;
     string a_context_type = 3;
   }

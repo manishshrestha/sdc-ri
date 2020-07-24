@@ -13,5 +13,5 @@ import "sdc/biceps/timeframe.proto";
     AbstractGet abstract_get = 1;
     VersionFrame descriptor_revisions = 2;
     TimeFrame time_frame = 3;
-    string handle = 4;
+    repeated string handle = 4;
   }

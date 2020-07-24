@@ -8,5 +8,5 @@ option java_outer_classname = "RetrievabilityType";
 import "sdc/biceps/retrievabilityinfo.proto";
 
   message Retrievability {
-    RetrievabilityInfo by = 1;
+    repeated RetrievabilityInfo by = 1;
   }

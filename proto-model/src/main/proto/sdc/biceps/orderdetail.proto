@@ -14,7 +14,7 @@ message OrderDetail {
   Extension element1 = 1;
   string start = 2;
   string end = 3;
-  PersonParticipation performer = 4;
-  CodedValue service = 5;
-  ImagingProcedure imaging_procedure = 6;
+  repeated PersonParticipation performer = 4;
+  repeated CodedValue service = 5;
+  repeated ImagingProcedure imaging_procedure = 6;
 }

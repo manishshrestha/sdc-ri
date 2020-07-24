@@ -10,5 +10,5 @@ import "sdc/biceps/abstractstateoneof.proto";
 
   message GetStatesFromArchiveResponse {
     AbstractGetResponse abstract_get_response = 1;
-    AbstractStateOneOf state = 2;
+    repeated AbstractStateOneOf state = 2;
   }

@@ -13,4 +13,5 @@ message MdsOperatingMode {
     SRV = 2;
     MTN = 3;
   }
+  MdsOperatingModeEnum type = 1;
 }

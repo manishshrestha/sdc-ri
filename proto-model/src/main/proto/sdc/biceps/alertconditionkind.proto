@@ -12,4 +12,5 @@ message AlertConditionKind {
     TEC = 1;
     OTH = 2;
   }
+  AlertConditionKindEnum type = 1;
 }

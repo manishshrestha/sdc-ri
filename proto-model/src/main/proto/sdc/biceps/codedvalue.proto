@@ -10,8 +10,8 @@ import "sdc/biceps/localizedtext.proto";
 
 message CodedValue {
   Extension element1 = 1;
-  LocalizedText coding_system_name = 2;
-  LocalizedText concept_description = 3;
+  repeated LocalizedText coding_system_name = 2;
+  repeated LocalizedText concept_description = 3;
   message Translation {
     Extension element1 = 1;
     string a_code = 2;

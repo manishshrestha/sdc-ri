@@ -12,4 +12,5 @@ message GenerationMode {
     TEST = 1;
     DEMO = 2;
   }
+  GenerationModeEnum type = 1;
 }

@@ -15,7 +15,7 @@ import "sdc/biceps/calibrationtype.proto";
 message CalibrationInfo {
   Extension element1 = 1;
   message CalibrationDocumentation {
-    LocalizedText documentation = 1;
+    repeated LocalizedText documentation = 1;
     message CalibrationResult {
       CodedValue code = 1;
       Measurement value = 2;

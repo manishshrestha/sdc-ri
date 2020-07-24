@@ -13,4 +13,5 @@ message SafetyClassification {
     MEDB = 2;
     MEDC = 3;
   }
+  SafetyClassificationEnum type = 1;
 }

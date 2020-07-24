@@ -15,4 +15,5 @@ message ComponentActivation {
     SHTDN = 4;
     FAIL = 5;
   }
+  ComponentActivationEnum type = 1;
 }

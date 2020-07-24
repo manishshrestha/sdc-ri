@@ -10,5 +10,5 @@ import "sdc/biceps/abstractcontextstateoneof.proto";
 
   message SetContextState {
     AbstractSet abstract_set = 1;
-    AbstractContextStateOneOf proposed_context_state = 2;
+    repeated AbstractContextStateOneOf proposed_context_state = 2;
   }

@@ -13,4 +13,5 @@ message CalibrationType {
     TP = 2;
     UNSPEC = 3;
   }
+  CalibrationTypeEnum type = 1;
 }

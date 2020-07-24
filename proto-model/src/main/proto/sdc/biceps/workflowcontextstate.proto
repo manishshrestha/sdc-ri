@@ -21,8 +21,8 @@ message WorkflowContextState {
     PersonReferenceOneOf patient = 2;
     LocationReference assigned_location = 3;
     InstanceIdentifierOneOf visit_number = 4;
-    CodedValue danger_code = 5;
-    ClinicalInfo relevant_clinical_info = 6;
+    repeated CodedValue danger_code = 5;
+    repeated ClinicalInfo relevant_clinical_info = 6;
     message RequestedOrderDetail {
       OrderDetail order_detail = 1;
       PersonReferenceOneOf referring_physician = 2;
@@ -33,7 +33,7 @@ message WorkflowContextState {
     message PerformedOrderDetail {
       OrderDetail order_detail = 1;
       InstanceIdentifierOneOf filler_order_number = 2;
-      ClinicalInfo resulting_clinical_info = 3;
+      repeated ClinicalInfo resulting_clinical_info = 3;
     }
     PerformedOrderDetail performed_order_detail = 8;
   }

@@ -16,4 +16,5 @@ message PatientType {
     NEO = 5;
     OTH = 6;
   }
+  PatientTypeEnum type = 1;
 }

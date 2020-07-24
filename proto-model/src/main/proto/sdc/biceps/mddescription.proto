@@ -10,6 +10,6 @@ import "sdc/biceps/mdsdescriptor.proto";
 
 message MdDescription {
   Extension element1 = 1;
-  MdsDescriptor mds = 2;
+  repeated MdsDescriptor mds = 2;
   uint64 a_description_version = 3;
 }

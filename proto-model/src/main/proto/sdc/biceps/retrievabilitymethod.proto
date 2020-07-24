@@ -13,4 +13,5 @@ message RetrievabilityMethod {
     EP = 2;
     STRM = 3;
   }
+  RetrievabilityMethodEnum type = 1;
 }

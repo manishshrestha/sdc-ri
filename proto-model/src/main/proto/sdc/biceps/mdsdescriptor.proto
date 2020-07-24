@@ -28,17 +28,17 @@ message MdsDescriptor {
     }
     Udi udi = 2;
     string lot_number = 3;
-    LocalizedText manufacturer = 4;
+    repeated LocalizedText manufacturer = 4;
     string manufacture_date = 5;
     string expiration_date = 6;
-    LocalizedText model_name = 7;
+    repeated LocalizedText model_name = 7;
     string model_number = 8;
-    string serial_number = 9;
+    repeated string serial_number = 9;
   }
   MetaData meta_data = 2;
   SystemContextDescriptor system_context = 3;
   ClockDescriptor clock = 4;
-  BatteryDescriptor battery = 5;
+  repeated BatteryDescriptor battery = 5;
   ApprovedJurisdictions approved_jurisdictions = 6;
-  VmdDescriptor vmd = 7;
+  repeated VmdDescriptor vmd = 7;
 }

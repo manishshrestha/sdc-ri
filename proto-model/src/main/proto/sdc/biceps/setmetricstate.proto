@@ -10,5 +10,5 @@ import "sdc/biceps/abstractmetricstateoneof.proto";
 
   message SetMetricState {
     AbstractSet abstract_set = 1;
-    AbstractMetricStateOneOf proposed_metric_state = 2;
+    repeated AbstractMetricStateOneOf proposed_metric_state = 2;
   }

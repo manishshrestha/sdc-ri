@@ -22,6 +22,7 @@ message BatteryState {
       DISCHB = 2;
       DEB = 3;
     }
+    ChargeStatusEnum type = 1;
   }
   ChargeStatus charge_status = 7;
   uint32 a_charge_cycles = 8;

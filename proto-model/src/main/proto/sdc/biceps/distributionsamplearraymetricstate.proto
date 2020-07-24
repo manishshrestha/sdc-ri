@@ -12,5 +12,5 @@ import "sdc/biceps/range.proto";
 message DistributionSampleArrayMetricState {
   AbstractMetricState abstract_metric_state = 1;
   SampleArrayValue metric_value = 2;
-  Range physiological_range = 3;
+  repeated Range physiological_range = 3;
 }

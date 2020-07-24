@@ -13,7 +13,7 @@ message AbstractAlertReport {
   AbstractReport abstract_report = 1;
   message ReportPart {
     AbstractReportPart abstract_report_part = 1;
-    AbstractAlertStateOneOf alert_state = 2;
+    repeated AbstractAlertStateOneOf alert_state = 2;
   }
   ReportPart report_part = 2;
 }

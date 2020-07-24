@@ -10,7 +10,7 @@ import "sdc/biceps/extension.proto";
 message BaseDemographics {
   Extension element1 = 1;
   string givenname = 2;
-  string middlename = 3;
+  repeated string middlename = 3;
   string familyname = 4;
   string birthname = 5;
   string title = 6;
@@ -41,13 +41,13 @@ import "sdc/biceps/instanceidentifieroneof.proto";
 
 message PersonReference {
   Extension element1 = 1;
-  InstanceIdentifierOneOf identification = 2;
+  repeated InstanceIdentifierOneOf identification = 2;
   BaseDemographicsOneOf name = 3;
 }
 
 message PersonParticipation {
   PersonReference person_reference = 1;
-  CodedValue role = 2;
+  repeated CodedValue role = 2;
 }
 
 message NeonatalPatientDemographicsCoreData {

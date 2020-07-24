@@ -13,4 +13,5 @@ message AlertConditionPriority {
     HI = 2;
     NONE = 3;
   }
+  AlertConditionPriorityEnum type = 1;
 }

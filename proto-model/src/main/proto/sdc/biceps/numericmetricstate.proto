@@ -13,6 +13,6 @@ import "google/protobuf/duration.proto";
 message NumericMetricState {
   AbstractMetricState abstract_metric_state = 1;
   NumericMetricValue metric_value = 2;
-  Range physiological_range = 3;
+  repeated Range physiological_range = 3;
   google.protobuf.Duration a_active_averaging_period = 4;
 }

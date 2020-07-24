@@ -10,5 +10,5 @@ import "sdc/biceps/realtimesamplearraymetricstate.proto";
 
   message WaveformStream {
     AbstractReport abstract_report = 1;
-    RealTimeSampleArrayMetricState state = 2;
+    repeated RealTimeSampleArrayMetricState state = 2;
   }

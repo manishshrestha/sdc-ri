@@ -15,8 +15,8 @@ import "sdc/biceps/descriptionmodificationtype.proto";
     AbstractReport abstract_report = 1;
     message ReportPart {
       AbstractReportPart abstract_report_part = 1;
-      AbstractDescriptorOneOf descriptorx_xx = 2;
-      AbstractStateOneOf state = 3;
+      repeated AbstractDescriptorOneOf descriptorx_xx = 2;
+      repeated AbstractStateOneOf state = 3;
       string a_parent_descriptor = 4;
       DescriptionModificationType a_modification_type = 5;
     }

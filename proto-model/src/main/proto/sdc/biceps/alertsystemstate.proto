@@ -11,7 +11,7 @@ import "sdc/biceps/alertconditionreference.proto";
 
 message AlertSystemState {
   AbstractAlertState abstract_alert_state = 1;
-  SystemSignalActivation system_signal_activation = 2;
+  repeated SystemSignalActivation system_signal_activation = 2;
   uint64 a_last_self_check = 3;
   int64 a_self_check_count = 4;
   AlertConditionReference a_present_physiological_alarm_conditions = 5;

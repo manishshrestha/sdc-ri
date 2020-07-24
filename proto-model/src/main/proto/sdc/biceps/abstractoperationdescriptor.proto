@@ -22,6 +22,7 @@ message AbstractOperationDescriptor {
       SP = 3;
       OTH = 4;
     }
+    AccessLevelEnum type = 1;
   }
   AccessLevel access_level = 6;
 }

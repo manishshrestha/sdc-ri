@@ -21,9 +21,10 @@ message ClinicalInfo {
       LO = 0;
       HI = 1;
     }
+    CriticalityEnum type = 1;
   }
   Criticality criticality = 4;
-  LocalizedText description = 5;
+  repeated LocalizedText description = 5;
   message RelatedMeasurement {
     Measurement value = 1;
     message ReferenceRange {

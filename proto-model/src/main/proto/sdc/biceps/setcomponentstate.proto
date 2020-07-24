@@ -10,5 +10,5 @@ import "sdc/biceps/abstractdevicecomponentstateoneof.proto";
 
   message SetComponentState {
     AbstractSet abstract_set = 1;
-    AbstractDeviceComponentStateOneOf proposed_component_state = 2;
+    repeated AbstractDeviceComponentStateOneOf proposed_component_state = 2;
   }

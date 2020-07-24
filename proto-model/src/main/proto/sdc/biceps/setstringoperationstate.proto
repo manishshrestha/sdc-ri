@@ -10,7 +10,7 @@ import "sdc/biceps/abstractoperationstate.proto";
 message SetStringOperationState {
   AbstractOperationState abstract_operation_state = 1;
   message AllowedValues {
-    string value = 1;
+    repeated string value = 1;
   }
   AllowedValues allowed_values = 2;
 }

@@ -11,4 +11,5 @@ message AlertSignalPrimaryLocation {
     LOC = 0;
     REM = 1;
   }
+  AlertSignalPrimaryLocationEnum type = 1;
 }

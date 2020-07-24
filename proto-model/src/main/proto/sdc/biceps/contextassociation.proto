@@ -13,4 +13,5 @@ message ContextAssociation {
     ASSOC = 2;
     DIS = 3;
   }
+  ContextAssociationEnum type = 1;
 }

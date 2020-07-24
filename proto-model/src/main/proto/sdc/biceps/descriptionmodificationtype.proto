@@ -12,4 +12,5 @@ message DescriptionModificationType {
     UPT = 1;
     DEL = 2;
   }
+  DescriptionModificationTypeEnum type = 1;
 }

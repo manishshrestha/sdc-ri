@@ -11,7 +11,7 @@ import "sdc/biceps/codedvalue.proto";
 message ClockState {
   AbstractDeviceComponentState abstract_device_component_state = 1;
   CodedValue active_sync_protocol = 2;
-  string reference_source = 3;
+  repeated string reference_source = 3;
   uint64 a_date_and_time = 4;
   bool a_remote_sync = 5;
   string a_accuracy = 6;

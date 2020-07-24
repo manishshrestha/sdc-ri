@@ -15,4 +15,5 @@ message MetricCategory {
     PRESET = 4;
     RCMM = 5;
   }
+  MetricCategoryEnum type = 1;
 }

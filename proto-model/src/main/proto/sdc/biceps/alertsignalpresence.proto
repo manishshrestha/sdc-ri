@@ -13,4 +13,5 @@ message AlertSignalPresence {
     LATCH = 2;
     ACK = 3;
   }
+  AlertSignalPresenceEnum type = 1;
 }

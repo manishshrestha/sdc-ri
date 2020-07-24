@@ -11,8 +11,8 @@ import "sdc/biceps/contextassociation.proto";
 
 message AbstractContextState {
   AbstractMultiState abstract_multi_state = 1;
-  InstanceIdentifierOneOf validator = 2;
-  InstanceIdentifierOneOf identification = 3;
+  repeated InstanceIdentifierOneOf validator = 2;
+  repeated InstanceIdentifierOneOf identification = 3;
   ContextAssociation a_context_association = 4;
   uint64 a_binding_mdib_version = 5;
   uint64 a_unbinding_mdib_version = 6;

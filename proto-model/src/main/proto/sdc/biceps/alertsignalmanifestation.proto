@@ -13,4 +13,5 @@ message AlertSignalManifestation {
     TAN = 2;
     OTH = 3;
   }
+  AlertSignalManifestationEnum type = 1;
 }

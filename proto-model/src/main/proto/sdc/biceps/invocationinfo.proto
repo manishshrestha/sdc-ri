@@ -15,5 +15,5 @@ message InvocationInfo {
   uint32 transaction_id = 2;
   InvocationState invocation_state = 3;
   InvocationError invocation_error = 4;
-  LocalizedText invocation_error_message = 5;
+  repeated LocalizedText invocation_error_message = 5;
 }

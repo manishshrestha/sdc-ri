@@ -13,4 +13,5 @@ message Sex {
     F = 2;
     UNKN = 3;
   }
+  SexEnum type = 1;
 }

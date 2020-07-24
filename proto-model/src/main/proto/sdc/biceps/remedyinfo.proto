@@ -10,5 +10,5 @@ import "sdc/biceps/localizedtext.proto";
 
 message RemedyInfo {
   Extension element1 = 1;
-  LocalizedText description = 2;
+  repeated LocalizedText description = 2;
 }

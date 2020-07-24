@@ -12,5 +12,5 @@ import "sdc/biceps/channeldescriptor.proto";
 message VmdDescriptor {
   AbstractComplexDeviceComponentDescriptor abstract_complex_device_component_descriptor = 1;
   ApprovedJurisdictions approved_jurisdictions = 2;
-  ChannelDescriptor channel = 3;
+  repeated ChannelDescriptor channel = 3;
 }

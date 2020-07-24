@@ -13,4 +13,5 @@ message AlertConditionMonitoredLimits {
     HIOFF = 2;
     NONE = 3;
   }
+  AlertConditionMonitoredLimitsEnum type = 1;
 }

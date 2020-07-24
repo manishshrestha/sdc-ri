@@ -13,7 +13,7 @@ message AbstractComponentReport {
   AbstractReport abstract_report = 1;
   message ReportPart {
     AbstractReportPart abstract_report_part = 1;
-    AbstractDeviceComponentStateOneOf component_state = 2;
+    repeated AbstractDeviceComponentStateOneOf component_state = 2;
   }
   ReportPart report_part = 2;
 }

@@ -9,5 +9,5 @@ import "sdc/biceps/abstractget.proto";
 
   message GetContainmentTree {
     AbstractGet abstract_get = 1;
-    string handle_ref = 2;
+    repeated string handle_ref = 2;
   }

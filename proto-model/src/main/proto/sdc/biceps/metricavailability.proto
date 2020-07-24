@@ -11,4 +11,5 @@ message MetricAvailability {
     INTR = 0;
     CONT = 1;
   }
+  MetricAvailabilityEnum type = 1;
 }

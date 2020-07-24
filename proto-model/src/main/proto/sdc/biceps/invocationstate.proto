@@ -16,4 +16,5 @@ message InvocationState {
     FINMOD = 5;
     FAIL = 6;
   }
+  InvocationStateEnum type = 1;
 }

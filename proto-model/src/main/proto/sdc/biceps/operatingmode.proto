@@ -12,4 +12,5 @@ message OperatingMode {
     EN = 1;
     NA = 2;
   }
+  OperatingModeEnum type = 1;
 }

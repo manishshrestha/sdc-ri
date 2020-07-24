@@ -13,4 +13,5 @@ message InvocationError {
     INV = 2;
     OTH = 3;
   }
+  InvocationErrorEnum type = 1;
 }

@@ -10,5 +10,5 @@ import "sdc/biceps/range.proto";
 
 message SetValueOperationState {
   AbstractOperationState abstract_operation_state = 1;
-  Range allowed_range = 2;
+  repeated Range allowed_range = 2;
 }

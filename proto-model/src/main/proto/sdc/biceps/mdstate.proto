@@ -10,6 +10,6 @@ import "sdc/biceps/abstractstateoneof.proto";
 
 message MdState {
   Extension element1 = 1;
-  AbstractStateOneOf state = 2;
+  repeated AbstractStateOneOf state = 2;
   uint64 a_state_version = 3;
 }

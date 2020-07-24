@@ -10,9 +10,9 @@ import "sdc/biceps/localizedtextwidth.proto";
 
   message GetLocalizedText {
     AbstractGet abstract_get = 1;
-    string ref = 2;
+    repeated string ref = 2;
     uint64 version = 3;
-    string lang = 4;
-    LocalizedTextWidth text_width = 5;
-    int32 number_of_lines = 6;
+    repeated string lang = 4;
+    repeated LocalizedTextWidth text_width = 5;
+    repeated int32 number_of_lines = 6;
   }

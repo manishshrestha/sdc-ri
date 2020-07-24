@@ -12,4 +12,5 @@ message AlertActivation {
     OFF = 1;
     PSD = 2;
   }
+  AlertActivationEnum type = 1;
 }

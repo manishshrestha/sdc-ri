@@ -8,5 +8,5 @@ option java_outer_classname = "ApprovedJurisdictionsType";
 import "sdc/biceps/instanceidentifieroneof.proto";
 
 message ApprovedJurisdictions {
-  InstanceIdentifierOneOf approved_jurisdiction = 1;
+  repeated InstanceIdentifierOneOf approved_jurisdiction = 1;
 }

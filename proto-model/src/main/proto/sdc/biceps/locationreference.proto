@@ -11,6 +11,6 @@ import "sdc/biceps/locationdetail.proto";
 
 message LocationReference {
   Extension element1 = 1;
-  InstanceIdentifierOneOf identification = 2;
+  repeated InstanceIdentifierOneOf identification = 2;
   LocationDetail location_detail = 3;
 }

@@ -13,7 +13,7 @@ message AbstractContextReport {
   AbstractReport abstract_report = 1;
   message ReportPart {
     AbstractReportPart abstract_report_part = 1;
-    AbstractContextStateOneOf context_state = 2;
+    repeated AbstractContextStateOneOf context_state = 2;
   }
   ReportPart report_part = 2;
 }

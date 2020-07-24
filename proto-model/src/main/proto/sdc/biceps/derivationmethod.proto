@@ -11,4 +11,5 @@ message DerivationMethod {
     AUTO = 0;
     MAN = 1;
   }
+  DerivationMethodEnum type = 1;
 }
