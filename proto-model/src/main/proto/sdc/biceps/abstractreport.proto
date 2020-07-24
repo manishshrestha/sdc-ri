@@ -6,7 +6,9 @@ option java_package = "org.somda.sdc.proto.model.biceps";
 option java_outer_classname = "AbstractReportType";
 
 import "sdc/biceps/extension.proto";
+import "sdc/biceps/mdibversiongroup.proto";
 
 message AbstractReport {
   Extension element1 = 1;
+  MdibVersionGroup a_mdib_version_group = 2;
 }

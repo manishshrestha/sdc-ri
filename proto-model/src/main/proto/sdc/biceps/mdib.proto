@@ -8,9 +8,11 @@ option java_outer_classname = "MdibType";
 import "sdc/biceps/extension.proto";
 import "sdc/biceps/mddescription.proto";
 import "sdc/biceps/mdstate.proto";
+import "sdc/biceps/mdibversiongroup.proto";
 
 message Mdib {
   Extension element1 = 1;
   MdDescription md_description = 2;
   MdState md_state = 3;
+  MdibVersionGroup a_mdib_version_group = 4;
 }

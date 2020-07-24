@@ -7,8 +7,10 @@ option java_outer_classname = "AbstractSetResponseType";
 
 import "sdc/biceps/extension.proto";
 import "sdc/biceps/invocationinfo.proto";
+import "sdc/biceps/mdibversiongroup.proto";
 
 message AbstractSetResponse {
   Extension element1 = 1;
   InvocationInfo invocation_info = 2;
+  MdibVersionGroup a_mdib_version_group = 3;
 }

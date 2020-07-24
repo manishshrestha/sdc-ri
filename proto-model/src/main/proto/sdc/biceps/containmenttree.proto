@@ -7,8 +7,10 @@ option java_outer_classname = "ContainmentTreeType";
 
 import "sdc/biceps/extension.proto";
 import "sdc/biceps/containmenttreeentry.proto";
+import "sdc/biceps/containmenttreeinfo.proto";
 
 message ContainmentTree {
   Extension element1 = 1;
   ContainmentTreeEntry entry = 2;
+  ContainmentTreeInfo a_containment_tree_info = 3;
 }
