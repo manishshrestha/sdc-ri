@@ -10,6 +10,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.somda.sdc.common.guice.AbstractConfigurationModule;
 import org.somda.sdc.dpws.crypto.CryptoConfig;
 import org.somda.sdc.dpws.crypto.CryptoSettings;
@@ -18,6 +19,7 @@ import org.somda.sdc.proto.model.discovery.DiscoveryMessages;
 import org.somda.sdc.proto.model.discovery.MetadataServiceGrpc;
 import org.somda.sdc.proto.provider.ProviderSettings;
 import org.somda.sdc.proto.provider.guice.ProviderImplFactory;
+import test.org.somda.common.LoggingTestWatcher;
 
 import javax.net.ssl.SSLException;
 import java.net.InetSocketAddress;
@@ -25,11 +27,11 @@ import java.net.InetSocketAddress;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @SuppressWarnings("UnstableApiUsage")
+@ExtendWith(LoggingTestWatcher.class)
 public class ProviderImplIT {
     private static final Logger LOG = LogManager.getLogger(ProviderImplIT.class);
     private static final String PROVIDER_NAME = "Ṱ̺̺̕o͞ ̷i̲̬͇̪͙n̝̗͕v̟̜̘̦͟o̶̙̰̠kè͚̮̺̪̹̱̤ ̖t̝͕̳̣̻̪͞h̼͓̲̦̳̘̲e͇̣̰̦̬͎ ̢̼̻̱̘h͚͎͙̜̣̲ͅi̦̲̣̰̤v̻͍e̺̭̳̪̰-m̢iͅn̖̺̞̲̯̰d̵̼̟͙̩̼̘̳ ̞̥̱̳̭r̛̗̘e͙p͠r̼̞̻̭̗e̺̠̣͟s̘͇̳͍̝͉e͉̥̯̞̲͚̬͜ǹ̬͎͎̟̖͇̤t͍̬̤͓̼̭͘ͅi̪̱n͠g̴͉ ͏͉ͅc̬̟h͡a̫̻̯͘o̫̟̖͍̙̝͉s̗̦̲.̨̹͈̣";
     private Injector providerInjector;
-    private Injector consumerInjector;
     private CryptoSettings clientCrypto;
 
 

@@ -22,6 +22,7 @@ public class IntegrationTestUtil {
         TestLogging.configure();
 
         var overrideList = new ArrayList<AbstractModule>();
+        // always add udp binding module
         overrideList.add(new MockedUdpBindingModule());
         overrideList.addAll(Arrays.asList(overrides));
         injector = Guice.createInjector(
