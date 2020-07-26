@@ -2,6 +2,7 @@ package org.somda.sdc.proto.consumer;
 
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
+import io.grpc.Channel;
 import io.grpc.ManagedChannel;
 import io.grpc.netty.shaded.io.grpc.netty.GrpcSslContexts;
 import io.grpc.netty.shaded.io.grpc.netty.NettyChannelBuilder;
@@ -50,6 +51,10 @@ public class ConsumerImpl implements Consumer {
 
     @Override
     public void connect(final DiscoveryTypes.Endpoint endpoint) throws IOException {
+        if (channel != null) {
+            throw new IllegalStateException("Consumer is already connected to a server");
+        }
+        // TODO: Handle multiple addresses
         var address = endpoint.getXAddrList().stream().findFirst()
                 .orElseThrow(() -> new IOException("Endpoint does not provide any xAddr"));
 
@@ -66,8 +71,10 @@ public class ConsumerImpl implements Consumer {
         var channelBuilder = NettyChannelBuilder.forAddress(host);
         if (cryptoSettings != null) {
             channelBuilder.sslContext(GrpcSslContexts.forClient()
-                    .keyManager(CryptoUtil.loadKeyStore(cryptoSettings).get())
-                    .trustManager(CryptoUtil.loadTrustStore(cryptoSettings).get())
+                    .keyManager(CryptoUtil.loadKeyStore(cryptoSettings)
+                            .orElseThrow(() -> new IOException("Could not load keystore")))
+                    .trustManager(CryptoUtil.loadTrustStore(cryptoSettings)
+                            .orElseThrow(() -> new IOException("Could not load truststore")))
                     .build());
         } else {
             channelBuilder.usePlaintext();
@@ -80,7 +87,7 @@ public class ConsumerImpl implements Consumer {
 
         metadata.getHostedServiceList().forEach(hostedService -> {
             var type = hostedService.getType();
-            instanceLogger.info("Device provides type\n{}", type);
+            instanceLogger.info("Device provides type {{{}}}{}", type.getNamespace(), type.getLocalName());
 
             if (ProtoConstants.GET_SERVICE_QNAME.equals(type)) {
                 getServiceStub = GetServiceGrpc.newBlockingStub(channel);
@@ -103,12 +110,19 @@ public class ConsumerImpl implements Consumer {
     }
 
     @Override
-    public void disconnect() {
-        channel.shutdown();
-        channel = null;
+    public Optional<Channel> getChannel() {
+        return Optional.ofNullable(channel);
+    }
 
-        metadataStub = null;
-        getServiceStub = null;
-        setServiceStub = null;
+    @Override
+    public void disconnect() {
+        if (channel != null) {
+            channel.shutdown();
+            channel = null;
+
+            metadataStub = null;
+            getServiceStub = null;
+            setServiceStub = null;
+        }
     }
 }
