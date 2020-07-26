@@ -34,10 +34,10 @@ service SetService {
 
 service LocalizationService {
   rpc GetSupportedLanguages(GetSupportedLanguagesRequest) returns (GetSupportedLanguagesResponse);
-  rpc GetLocalizedText(GetLocalizedTextRequest) returns (GetLocalizedTextStream);
+  rpc GetLocalizedText(GetLocalizedTextRequest) returns (stream GetLocalizedTextStream);
 }
 
 service ArchiveService {
-  rpc GetDescriptorsFromArchive(GetDescriptorsFromArchiveRequest) returns (GetDescriptorsFromArchiveStream);
-  rpc GetStatesFromArchive(GetStatesFromArchiveRequest) returns (GetStatesFromArchiveStream);
+  rpc GetDescriptorsFromArchive(GetDescriptorsFromArchiveRequest) returns (stream GetDescriptorsFromArchiveStream);
+  rpc GetStatesFromArchive(GetStatesFromArchiveRequest) returns (stream GetStatesFromArchiveStream);
 }

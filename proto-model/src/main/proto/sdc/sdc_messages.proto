@@ -203,7 +203,7 @@ message GetStatesFromArchiveStream {
 }
 
 message ActionFilter {
-  repeated string action = 3;
+  repeated string action = 1;
 }
 
 message HandleFilter {
@@ -213,9 +213,9 @@ message HandleFilter {
 
 message Filter {
   oneof type {
-    google.protobuf.Any other_filter = 2;
-    ActionFilter action_filter = 3;
-    HandleFilter handle_filter = 4;
+    google.protobuf.Any other_filter = 1;
+    ActionFilter action_filter = 2;
+    HandleFilter handle_filter = 3;
   }
 }
 
