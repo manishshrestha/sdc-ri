@@ -20,7 +20,6 @@ import org.somda.sdc.proto.model.discovery.MetadataServiceGrpc;
 import org.somda.sdc.proto.server.Server;
 import org.somda.sdc.proto.server.guice.ServerImplFactory;
 
-import javax.xml.namespace.QName;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.List;
@@ -35,7 +34,7 @@ public class ProviderImpl extends AbstractIdleService implements Provider {
     private final ProviderSettings providerSettings;
     private final String epr;
     private final TargetService targetService;
-    private final List<QName> types;
+    private final List<CommonTypes.QName> types;
 
     @AssistedInject
     ProviderImpl(
@@ -66,7 +65,7 @@ public class ProviderImpl extends AbstractIdleService implements Provider {
         server.registerService(new MetadataService(providerSettings, types));
         server.startAsync().awaitRunning();
 
-        var xAddr = String.format("%s:%s", providerSettings.getNetworkAddress().getHostName(), providerSettings.getNetworkAddress().getPort());
+        var xAddr = String.format("%s:%s", server.getAddress().getHostName(), server.getAddress().getPort());
         targetService.updateXAddrs(List.of(xAddr));
         targetService.startAsync().awaitRunning();
     }
@@ -93,7 +92,7 @@ public class ProviderImpl extends AbstractIdleService implements Provider {
     }
 
     @Override
-    public void addService(final QName serviceType, final BindableService service) {
+    public void addService(final CommonTypes.QName serviceType, final BindableService service) {
         this.server.registerService(service);
         // since registering throws if unavailable, we can safely add the QName
         this.types.add(serviceType);
@@ -102,9 +101,9 @@ public class ProviderImpl extends AbstractIdleService implements Provider {
     static class MetadataService extends MetadataServiceGrpc.MetadataServiceImplBase {
 
         private final ProviderSettings providerSettings;
-        private final List<QName> types;
+        private final List<CommonTypes.QName> types;
 
-        MetadataService(ProviderSettings providerSettings, List<QName> types) {
+        MetadataService(ProviderSettings providerSettings, List<CommonTypes.QName> types) {
             this.providerSettings = providerSettings;
             this.types = types;
         }
@@ -119,6 +118,14 @@ public class ProviderImpl extends AbstractIdleService implements Provider {
                                     .setValue(providerSettings.getProviderName())
                                     .setLocale("en_US")
                     );
+
+            types.forEach(type -> {
+                response.addHostedService(
+                        DiscoveryTypes.HostedService.newBuilder()
+                                .setType(type)
+                                .build()
+                );
+            });
 
             response.setMetadata(metadata);
             responseObserver.onNext(response.build());

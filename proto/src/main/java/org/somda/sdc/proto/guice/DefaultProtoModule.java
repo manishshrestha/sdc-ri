@@ -10,6 +10,8 @@ import org.somda.sdc.common.CommonConfig;
 import org.somda.sdc.common.util.ExecutorWrapperService;
 import org.somda.sdc.proto.addressing.AddressingValidator;
 import org.somda.sdc.proto.addressing.factory.AddressingValidatorFactory;
+import org.somda.sdc.proto.consumer.Consumer;
+import org.somda.sdc.proto.consumer.ConsumerImpl;
 import org.somda.sdc.proto.discovery.common.UdpUtil;
 import org.somda.sdc.proto.discovery.provider.TargetService;
 import org.somda.sdc.proto.discovery.provider.factory.TargetServiceFactory;
@@ -61,6 +63,8 @@ public class DefaultProtoModule extends AbstractModule {
         install(new FactoryModuleBuilder()
                 .implement(ProtoToPojoModificationsBuilder.class, ProtoToPojoModificationsBuilder.class)
                 .build(ProtoToPojoModificationsBuilderFactory.class));
+
+        bind(Consumer.class).to(ConsumerImpl.class);
 
         bind(UdpUtil.class).annotatedWith(ProtoDiscovery.class).to(UdpUtil.class).asEagerSingleton();
     }
