@@ -2,18 +2,19 @@ syntax = "proto3";
 
 package sdc.biceps;
 
+option java_multiple_files = true;
 option java_package = "org.somda.sdc.proto.model.biceps";
-option java_outer_classname = "AbstractMetricReportType";
+option java_outer_classname = "AbstractMetricReportProto";
 
 import "sdc/biceps/abstractreport.proto";
 import "sdc/biceps/abstractreportpart.proto";
 import "sdc/biceps/abstractmetricstateoneof.proto";
 
-message AbstractMetricReport {
-  AbstractReport abstract_report = 1;
-  message ReportPart {
-    AbstractReportPart abstract_report_part = 1;
-    repeated AbstractMetricStateOneOf metric_state = 2;
+message AbstractMetricReportMsg {
+  AbstractReportMsg abstract_report = 1;
+  message ReportPartMsg {
+    AbstractReportPartMsg abstract_report_part = 1;
+    repeated AbstractMetricStateOneOfMsg metric_state = 2;
   }
-  ReportPart report_part = 2;
+  repeated ReportPartMsg report_part = 2;
 }

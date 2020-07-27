@@ -2,18 +2,20 @@ syntax = "proto3";
 
 package sdc.biceps;
 
+option java_multiple_files = true;
 option java_package = "org.somda.sdc.proto.model.biceps";
-option java_outer_classname = "AlertConditionStateType";
+option java_outer_classname = "AlertConditionStateProto";
 
 import "sdc/biceps/abstractalertstate.proto";
 import "google/protobuf/duration.proto";
 import "sdc/biceps/alertconditionpriority.proto";
+import "google/protobuf/wrappers.proto";
 
-message AlertConditionState {
-  AbstractAlertState abstract_alert_state = 1;
+message AlertConditionStateMsg {
+  AbstractAlertStateMsg abstract_alert_state = 1;
   google.protobuf.Duration a_actual_condition_generation_delay = 2;
-  AlertConditionPriority a_actual_priority = 3;
-  int32 a_rank = 4;
-  bool a_presence = 5;
-  uint64 a_determination_time = 6;
+  AlertConditionPriorityMsg a_actual_priority = 3;
+  google.protobuf.Int32Value a_rank = 4;
+  google.protobuf.BoolValue a_presence = 5;
+  google.protobuf.UInt64Value a_determination_time = 6;
 }

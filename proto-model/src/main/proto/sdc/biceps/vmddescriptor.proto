@@ -2,15 +2,16 @@ syntax = "proto3";
 
 package sdc.biceps;
 
+option java_multiple_files = true;
 option java_package = "org.somda.sdc.proto.model.biceps";
-option java_outer_classname = "VmdDescriptorType";
+option java_outer_classname = "VmdDescriptorProto";
 
 import "sdc/biceps/abstractcomplexdevicecomponentdescriptor.proto";
 import "sdc/biceps/approvedjurisdictions.proto";
 import "sdc/biceps/channeldescriptor.proto";
 
-message VmdDescriptor {
-  AbstractComplexDeviceComponentDescriptor abstract_complex_device_component_descriptor = 1;
-  ApprovedJurisdictions approved_jurisdictions = 2;
-  repeated ChannelDescriptor channel = 3;
+message VmdDescriptorMsg {
+  AbstractComplexDeviceComponentDescriptorMsg abstract_complex_device_component_descriptor = 1;
+  ApprovedJurisdictionsMsg approved_jurisdictions = 2;
+  repeated ChannelDescriptorMsg channel = 3;
 }

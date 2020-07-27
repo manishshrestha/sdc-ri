@@ -2,16 +2,17 @@ syntax = "proto3";
 
 package sdc.biceps;
 
+option java_multiple_files = true;
 option java_package = "org.somda.sdc.proto.model.biceps";
-option java_outer_classname = "AlertSignalPresenceType";
+option java_outer_classname = "AlertSignalPresenceProto";
 
 
-message AlertSignalPresence {
-  enum AlertSignalPresenceEnum {
+message AlertSignalPresenceMsg {
+  enum EnumType {
     ON = 0;
     OFF = 1;
     LATCH = 2;
     ACK = 3;
   }
-  AlertSignalPresenceEnum type = 1;
+  EnumType enum_value = 1;
 }

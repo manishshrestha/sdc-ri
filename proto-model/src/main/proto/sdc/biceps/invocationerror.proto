@@ -2,16 +2,17 @@ syntax = "proto3";
 
 package sdc.biceps;
 
+option java_multiple_files = true;
 option java_package = "org.somda.sdc.proto.model.biceps";
-option java_outer_classname = "InvocationErrorType";
+option java_outer_classname = "InvocationErrorProto";
 
 
-message InvocationError {
-  enum InvocationErrorEnum {
+message InvocationErrorMsg {
+  enum EnumType {
     UNSPEC = 0;
     UNKN = 1;
     INV = 2;
     OTH = 3;
   }
-  InvocationErrorEnum type = 1;
+  EnumType enum_value = 1;
 }

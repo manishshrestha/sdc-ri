@@ -2,12 +2,13 @@ syntax = "proto3";
 
 package sdc.biceps;
 
+option java_multiple_files = true;
 option java_package = "org.somda.sdc.proto.model.biceps";
-option java_outer_classname = "GetSupportedLanguagesResponseType";
+option java_outer_classname = "GetSupportedLanguagesResponseProto";
 
 import "sdc/biceps/abstractgetresponse.proto";
 
-  message GetSupportedLanguagesResponse {
-    AbstractGetResponse abstract_get_response = 1;
+  message GetSupportedLanguagesResponseMsg {
+    AbstractGetResponseMsg abstract_get_response = 1;
     repeated string lang = 2;
   }

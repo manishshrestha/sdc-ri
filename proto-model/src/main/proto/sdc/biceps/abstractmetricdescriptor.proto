@@ -2,8 +2,9 @@ syntax = "proto3";
 
 package sdc.biceps;
 
+option java_multiple_files = true;
 option java_package = "org.somda.sdc.proto.model.biceps";
-option java_outer_classname = "AbstractMetricDescriptorType";
+option java_outer_classname = "AbstractMetricDescriptorProto";
 
 import "sdc/biceps/abstractdescriptor.proto";
 import "sdc/biceps/codedvalue.proto";
@@ -15,32 +16,32 @@ import "sdc/biceps/derivationmethod.proto";
 import "sdc/biceps/metricavailability.proto";
 import "google/protobuf/duration.proto";
 
-message AbstractMetricDescriptor {
-  AbstractDescriptor abstract_descriptor = 1;
-  CodedValue unit = 2;
-  repeated CodedValue body_site = 3;
-  message Relation {
-    Extension element1 = 1;
-    CodedValue code = 2;
-    InstanceIdentifierOneOf identification = 3;
-    message Kind {
-      enum KindEnum {
+message AbstractMetricDescriptorMsg {
+  AbstractDescriptorMsg abstract_descriptor = 1;
+  CodedValueMsg unit = 2;
+  repeated CodedValueMsg body_site = 3;
+  message RelationMsg {
+    ExtensionMsg element1 = 1;
+    CodedValueMsg code = 2;
+    InstanceIdentifierOneOfMsg identification = 3;
+    message KindMsg {
+      enum EnumType {
         RCM = 0;
-        PS = 1;
-        SST = 2;
-        ECE = 3;
-        DCE = 4;
+        P_S = 1;
+        S_S_T = 2;
+        E_C_E = 3;
+        D_C_E = 4;
         OTH = 5;
       }
-      KindEnum type = 1;
+      EnumType enum_value = 1;
     }
-  Kind relation = 4;
-    EntryRef a_entries = 5;
+  KindMsg relation = 4;
+    EntryRefMsg a_entries = 5;
   }
-  Relation relation = 4;
-  MetricCategory a_metric_category = 5;
-  DerivationMethod a_derivation_method = 6;
-  MetricAvailability a_metric_availability = 7;
+  repeated RelationMsg relation = 4;
+  MetricCategoryMsg a_metric_category = 5;
+  DerivationMethodMsg a_derivation_method = 6;
+  MetricAvailabilityMsg a_metric_availability = 7;
   google.protobuf.Duration a_max_measurement_time = 8;
   google.protobuf.Duration a_max_delay_time = 9;
   google.protobuf.Duration a_determination_period = 10;

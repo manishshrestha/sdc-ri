@@ -2,10 +2,11 @@ syntax = "proto3";
 
 package sdc.biceps;
 
+option java_multiple_files = true;
 option java_package = "org.somda.sdc.proto.model.biceps";
-option java_outer_classname = "AlertConditionReferenceType";
+option java_outer_classname = "AlertConditionReferenceProto";
 
 
-message AlertConditionReference {
+message AlertConditionReferenceMsg {
   repeated string alert_condition_reference = 1;
 }

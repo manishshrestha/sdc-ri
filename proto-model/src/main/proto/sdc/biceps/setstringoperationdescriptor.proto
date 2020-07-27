@@ -2,12 +2,14 @@ syntax = "proto3";
 
 package sdc.biceps;
 
+option java_multiple_files = true;
 option java_package = "org.somda.sdc.proto.model.biceps";
-option java_outer_classname = "SetStringOperationDescriptorType";
+option java_outer_classname = "SetStringOperationDescriptorProto";
 
 import "sdc/biceps/abstractoperationdescriptor.proto";
+import "google/protobuf/wrappers.proto";
 
-message SetStringOperationDescriptor {
-  AbstractOperationDescriptor abstract_operation_descriptor = 1;
-  uint64 a_max_length = 2;
+message SetStringOperationDescriptorMsg {
+  AbstractOperationDescriptorMsg abstract_operation_descriptor = 1;
+  google.protobuf.UInt64Value a_max_length = 2;
 }

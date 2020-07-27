@@ -2,12 +2,13 @@ syntax = "proto3";
 
 package sdc.biceps;
 
+option java_multiple_files = true;
 option java_package = "org.somda.sdc.proto.model.biceps";
-option java_outer_classname = "MetricCategoryType";
+option java_outer_classname = "MetricCategoryProto";
 
 
-message MetricCategory {
-  enum MetricCategoryEnum {
+message MetricCategoryMsg {
+  enum EnumType {
     UNSPEC = 0;
     MSRMT = 1;
     CLC = 2;
@@ -15,5 +16,5 @@ message MetricCategory {
     PRESET = 4;
     RCMM = 5;
   }
-  MetricCategoryEnum type = 1;
+  EnumType enum_value = 1;
 }

@@ -4,6 +4,8 @@ import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.util.Modules;
+import org.somda.sdc.biceps.guice.DefaultBicepsConfigModule;
+import org.somda.sdc.biceps.guice.DefaultBicepsModule;
 import org.somda.sdc.common.guice.DefaultCommonConfigModule;
 import org.somda.sdc.common.guice.DefaultHelperModule;
 import org.somda.sdc.dpws.guice.DefaultDpwsConfigModule;
@@ -31,7 +33,9 @@ public class IntegrationTestUtil {
                         new DefaultDpwsModule(),
                         new DefaultDpwsConfigModule(),
                         new DefaultProtoModule(),
-                        new DefaultGrpcConfigModule()
+                        new DefaultGrpcConfigModule(),
+                        new DefaultBicepsConfigModule(),
+                        new DefaultBicepsModule()
                 ).with(
                     overrideList
                 ));

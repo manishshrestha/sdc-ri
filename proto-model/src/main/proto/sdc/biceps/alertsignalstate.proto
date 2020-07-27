@@ -2,18 +2,20 @@ syntax = "proto3";
 
 package sdc.biceps;
 
+option java_multiple_files = true;
 option java_package = "org.somda.sdc.proto.model.biceps";
-option java_outer_classname = "AlertSignalStateType";
+option java_outer_classname = "AlertSignalStateProto";
 
 import "sdc/biceps/abstractalertstate.proto";
 import "google/protobuf/duration.proto";
 import "sdc/biceps/alertsignalpresence.proto";
 import "sdc/biceps/alertsignalprimarylocation.proto";
+import "google/protobuf/wrappers.proto";
 
-message AlertSignalState {
-  AbstractAlertState abstract_alert_state = 1;
+message AlertSignalStateMsg {
+  AbstractAlertStateMsg abstract_alert_state = 1;
   google.protobuf.Duration a_actual_signal_generation_delay = 2;
-  AlertSignalPresence a_presence = 3;
-  AlertSignalPrimaryLocation a_location = 4;
-  uint32 a_slot = 5;
+  AlertSignalPresenceMsg a_presence = 3;
+  AlertSignalPrimaryLocationMsg a_location = 4;
+  google.protobuf.UInt32Value a_slot = 5;
 }

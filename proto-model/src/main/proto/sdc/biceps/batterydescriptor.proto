@@ -2,15 +2,16 @@ syntax = "proto3";
 
 package sdc.biceps;
 
+option java_multiple_files = true;
 option java_package = "org.somda.sdc.proto.model.biceps";
-option java_outer_classname = "BatteryDescriptorType";
+option java_outer_classname = "BatteryDescriptorProto";
 
 import "sdc/biceps/abstractdevicecomponentdescriptor.proto";
 import "sdc/biceps/measurement.proto";
 
-message BatteryDescriptor {
-  AbstractDeviceComponentDescriptor abstract_device_component_descriptor = 1;
-  Measurement capacity_full_charge = 2;
-  Measurement capacity_specified = 3;
-  Measurement voltage_specified = 4;
+message BatteryDescriptorMsg {
+  AbstractDeviceComponentDescriptorMsg abstract_device_component_descriptor = 1;
+  MeasurementMsg capacity_full_charge = 2;
+  MeasurementMsg capacity_specified = 3;
+  MeasurementMsg voltage_specified = 4;
 }

@@ -2,8 +2,9 @@ syntax = "proto3";
 
 package sdc.biceps;
 
+option java_multiple_files = true;
 option java_package = "org.somda.sdc.proto.model.biceps";
-option java_outer_classname = "AbstractMetricStateOneOfType";
+option java_outer_classname = "AbstractMetricStateOneOfProto";
 
 import "sdc/biceps/abstractmetricstate.proto";
 import "sdc/biceps/realtimesamplearraymetricstate.proto";
@@ -11,12 +12,12 @@ import "sdc/biceps/numericmetricstate.proto";
 import "sdc/biceps/distributionsamplearraymetricstate.proto";
 import "sdc/biceps/stringmetricstateoneof.proto";
 
-message AbstractMetricStateOneOf {
+message AbstractMetricStateOneOfMsg {
   oneof abstract_metric_state_one_of {
-    AbstractMetricState abstract_metric_state = 1;
-    RealTimeSampleArrayMetricState real_time_sample_array_metric_state = 2;
-    NumericMetricState numeric_metric_state = 3;
-    DistributionSampleArrayMetricState distribution_sample_array_metric_state = 4;
-    StringMetricStateOneOf string_metric_state_one_of = 5;
+    AbstractMetricStateMsg abstract_metric_state = 1;
+    RealTimeSampleArrayMetricStateMsg real_time_sample_array_metric_state = 2;
+    NumericMetricStateMsg numeric_metric_state = 3;
+    DistributionSampleArrayMetricStateMsg distribution_sample_array_metric_state = 4;
+    StringMetricStateOneOfMsg string_metric_state_one_of = 5;
   }
 }

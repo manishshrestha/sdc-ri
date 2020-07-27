@@ -2,16 +2,17 @@ syntax = "proto3";
 
 package sdc.biceps;
 
+option java_multiple_files = true;
 option java_package = "org.somda.sdc.proto.model.biceps";
-option java_outer_classname = "GetStatesFromArchiveType";
+option java_outer_classname = "GetStatesFromArchiveProto";
 
 import "sdc/biceps/abstractget.proto";
 import "sdc/biceps/versionframe.proto";
 import "sdc/biceps/timeframe.proto";
 
-  message GetStatesFromArchive {
-    AbstractGet abstract_get = 1;
-    VersionFrame state_revisions = 2;
-    TimeFrame time_frame = 3;
+  message GetStatesFromArchiveMsg {
+    AbstractGetMsg abstract_get = 1;
+    VersionFrameMsg state_revisions = 2;
+    TimeFrameMsg time_frame = 3;
     repeated string handle = 4;
   }

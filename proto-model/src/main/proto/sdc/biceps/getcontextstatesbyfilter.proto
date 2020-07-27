@@ -2,13 +2,15 @@ syntax = "proto3";
 
 package sdc.biceps;
 
+option java_multiple_files = true;
 option java_package = "org.somda.sdc.proto.model.biceps";
-option java_outer_classname = "GetContextStatesByFilterType";
+option java_outer_classname = "GetContextStatesByFilterProto";
 
 import "sdc/biceps/abstractget.proto";
+import "google/protobuf/wrappers.proto";
 
-  message GetContextStatesByFilter {
-    AbstractGet abstract_get = 1;
+  message GetContextStatesByFilterMsg {
+    AbstractGetMsg abstract_get = 1;
     repeated string filter = 2;
-    string a_context_type = 3;
+    google.protobuf.StringValue a_context_type = 3;
   }

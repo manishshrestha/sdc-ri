@@ -2,13 +2,14 @@ syntax = "proto3";
 
 package sdc.biceps;
 
+option java_multiple_files = true;
 option java_package = "org.somda.sdc.proto.model.biceps";
-option java_outer_classname = "ScoDescriptorType";
+option java_outer_classname = "ScoDescriptorProto";
 
 import "sdc/biceps/abstractdevicecomponentdescriptor.proto";
 import "sdc/biceps/abstractoperationdescriptoroneof.proto";
 
-message ScoDescriptor {
-  AbstractDeviceComponentDescriptor abstract_device_component_descriptor = 1;
-  repeated AbstractOperationDescriptorOneOf operation = 2;
+message ScoDescriptorMsg {
+  AbstractDeviceComponentDescriptorMsg abstract_device_component_descriptor = 1;
+  repeated AbstractOperationDescriptorOneOfMsg operation = 2;
 }

@@ -10,14 +10,11 @@ import org.somda.sdc.biceps.common.MdibEntity;
 import org.somda.sdc.biceps.common.access.MdibAccess;
 import org.somda.sdc.biceps.model.participant.AbstractComplexDeviceComponentDescriptor;
 import org.somda.sdc.biceps.model.participant.AbstractDescriptor;
-import org.somda.sdc.biceps.model.participant.AbstractMetricDescriptor;
 import org.somda.sdc.biceps.model.participant.AbstractOperationDescriptor;
 import org.somda.sdc.biceps.model.participant.AlertConditionDescriptor;
 import org.somda.sdc.biceps.model.participant.AlertSignalDescriptor;
 import org.somda.sdc.biceps.model.participant.AlertSystemDescriptor;
-import org.somda.sdc.biceps.model.participant.BatteryDescriptor;
 import org.somda.sdc.biceps.model.participant.ChannelDescriptor;
-import org.somda.sdc.biceps.model.participant.ClockDescriptor;
 import org.somda.sdc.biceps.model.participant.EnsembleContextDescriptor;
 import org.somda.sdc.biceps.model.participant.LocationContextDescriptor;
 import org.somda.sdc.biceps.model.participant.MdDescription;
@@ -36,12 +33,13 @@ import org.somda.sdc.common.CommonConfig;
 import org.somda.sdc.common.logging.InstanceLogger;
 import org.somda.sdc.common.util.ObjectUtil;
 import org.somda.sdc.glue.common.ModificationsBuilder;
-import org.somda.sdc.proto.model.biceps.MdDescriptionType;
-import org.somda.sdc.proto.model.biceps.MdStateType;
-import org.somda.sdc.proto.model.biceps.MdibType;
-import org.somda.sdc.proto.model.biceps.MdibVersionGroupType;
+import org.somda.sdc.proto.model.biceps.MdDescriptionMsg;
+import org.somda.sdc.proto.model.biceps.MdStateMsg;
+import org.somda.sdc.proto.model.biceps.MdibMsg;
+import org.somda.sdc.proto.model.biceps.MdibVersionGroupMsg;
+import org.somda.sdc.proto.model.biceps.MdsDescriptorMsg;
+import org.somda.sdc.proto.model.biceps.VmdDescriptorMsg;
 
-import javax.annotation.Nullable;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Collections;
@@ -49,7 +47,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 /**
@@ -59,19 +56,19 @@ import java.util.stream.Collectors;
  * order to add MDIB elements to {@link org.somda.sdc.biceps.consumer.access.RemoteMdibAccess} and
  * {@link org.somda.sdc.biceps.provider.access.LocalMdibAccess}.
  */
-public class JaxbToProtoTreeMapper {
-    private static final Logger LOG = LogManager.getLogger(JaxbToProtoTreeMapper.class);
+public class PojoToProtoTreeMapper {
+    private static final Logger LOG = LogManager.getLogger(PojoToProtoTreeMapper.class);
     private final MdibAccess mdibAccess;
     private final ObjectFactory participantModelFactory;
     private final ObjectUtil objectUtil;
-    private final JaxbToProtoNodeMapper nodeMapper;
+    private final PojoToProtoNodeMapper nodeMapper;
     private final Logger instanceLogger;
 
     @AssistedInject
-    JaxbToProtoTreeMapper(@Assisted MdibAccess mdibAccess,
+    PojoToProtoTreeMapper(@Assisted MdibAccess mdibAccess,
                           ObjectFactory participantModelFactory,
                           ObjectUtil objectUtil,
-                          JaxbToProtoNodeMapper nodeMapper,
+                          PojoToProtoNodeMapper nodeMapper,
                           @Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier) {
         this.nodeMapper = nodeMapper;
         this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);
@@ -83,18 +80,18 @@ public class JaxbToProtoTreeMapper {
     /**
      * Maps to an {@linkplain Mdib} instance.
      * <p>
-     * All information is copied from the {@link MdibAccess} given to the {@linkplain JaxbToProtoTreeMapper} on construction.
+     * All information is copied from the {@link MdibAccess} given to the {@linkplain PojoToProtoTreeMapper} on construction.
      *
      * @return a fully populated {@link Mdib} instance.
      */
-    public MdibType.Mdib mapMdib() {
-        var mdib = MdibType.Mdib.newBuilder();
+    public MdibMsg mapMdib() {
+        var mdib = MdibMsg.newBuilder();
 
         var mdibVersion = mdibAccess.getMdibVersion();
-        var mdibVersionGroup = MdibVersionGroupType.MdibVersionGroup.newBuilder();
-        setOptional(mdibVersion.getInstanceId().longValue(), mdibVersionGroup::setAInstanceId);
-        setOptional(mdibVersion.getSequenceId(), mdibVersionGroup::setASequenceId);
-        setOptional(mdibVersion.getVersion().longValue(), mdibVersionGroup::setAMdibVersion);
+        var mdibVersionGroup = MdibVersionGroupMsg.newBuilder();
+        mdibVersionGroup.setAInstanceId(Util.toUInt64(mdibVersion.getInstanceId()));
+        Util.doIfNotNull(mdibVersion.getSequenceId(), mdibVersionGroup::setASequenceId);
+        mdibVersionGroup.setAMdibVersion(Util.toUInt64(mdibVersion.getVersion()));
 
         mdib.setAMdibVersionGroup(mdibVersionGroup.build());
         mdib.setMdDescription(mapMdDescription(Collections.emptyList()));
@@ -116,10 +113,9 @@ public class JaxbToProtoTreeMapper {
      *                     </ul>
      * @return the mapped instance.
      */
-    public MdStateType.MdState mapMdState(List<String> handleFilter) {
-
-        var mdState = MdStateType.MdState.newBuilder();
-        mdState.setAStateVersion(mdibAccess.getMdStateVersion().longValue());
+    public MdStateMsg mapMdState(List<String> handleFilter) {
+        var mdState = MdStateMsg.newBuilder();
+        mdState.setAStateVersion(Util.toUInt64(mdibAccess.getMdStateVersion()));
 
         if (handleFilter.isEmpty()) {
             for (MdibEntity rootEntity : mdibAccess.getRootEntities()) {
@@ -150,47 +146,45 @@ public class JaxbToProtoTreeMapper {
      *                     </ul>
      * @return the mapped instance.
      */
-    public MdDescriptionType.MdDescription mapMdDescription(List<String> handleFilter) {
-        // todo
-        return null;
-//        Set<String> handleFilterCopy = new HashSet<>(handleFilter);
-//        final MdDescription mdDescription = participantModelFactory.createMdDescription();
-//        mdDescription.setDescriptionVersion(mdibAccess.getMdDescriptionVersion());
-//
-//        List<MdibEntity> rootEntities;
-//        if (handleFilter.isEmpty()) {
-//            rootEntities = mdibAccess.getRootEntities();
-//        } else {
-//            List<MdibEntity> allRootEntities = mdibAccess.getRootEntities();
-//            rootEntities = allRootEntities.stream()
-//                    .filter(mdibEntity -> handleFilterCopy.stream()
-//                            .filter(handle -> mdibEntity.getHandle().equals(handle)).findAny().isPresent())
-//                    .collect(Collectors.toList());
-//            rootEntities.forEach(mdibEntity -> {
-//                handleFilterCopy.remove(mdibEntity.getHandle());
-//                allRootEntities.remove(mdibEntity);
-//            });
-//
-//            for (MdibEntity entity : allRootEntities) {
-//                for (String handle : handleFilterCopy) {
-//                    if (findHandleInSubtree(handle, entity)) {
-//                        rootEntities.add(entity);
-//                        handleFilterCopy.remove(handle);
-//                        break;
-//                    }
-//                }
-//            }
-//        }
-//
-//        for (MdibEntity rootEntity : rootEntities) {
-//            mapMds(mdDescription, rootEntity);
-//        }
-//
-//        return mdDescription;
+    public MdDescriptionMsg mapMdDescription(List<String> handleFilter) {
+        var mdDescription = MdDescriptionMsg.newBuilder();
+        var handleFilterCopy = new HashSet<>(handleFilter);
+        mdDescription.setADescriptionVersion(Util.toUInt64(mdibAccess.getMdDescriptionVersion()));
+
+        List<MdibEntity> rootEntities;
+        if (handleFilter.isEmpty()) {
+            rootEntities = mdibAccess.getRootEntities();
+        } else {
+            List<MdibEntity> allRootEntities = mdibAccess.getRootEntities();
+            rootEntities = allRootEntities.stream()
+                    .filter(mdibEntity -> handleFilterCopy.stream()
+                            .anyMatch(handle -> mdibEntity.getHandle().equals(handle)))
+                    .collect(Collectors.toList());
+            rootEntities.forEach(mdibEntity -> {
+                handleFilterCopy.remove(mdibEntity.getHandle());
+                allRootEntities.remove(mdibEntity);
+            });
+
+            for (MdibEntity entity : allRootEntities) {
+                for (String handle : handleFilterCopy) {
+                    if (findHandleInSubtree(handle, entity)) {
+                        rootEntities.add(entity);
+                        handleFilterCopy.remove(handle);
+                        break;
+                    }
+                }
+            }
+        }
+
+        for (MdibEntity rootEntity : rootEntities) {
+            mapMds(mdDescription, rootEntity);
+        }
+
+        return mdDescription.build();
     }
 
 
-    private void appendStates(MdStateType.MdState.Builder mdState, MdibEntity entity) {
+    private void appendStates(MdStateMsg.Builder mdState, MdibEntity entity) {
         mdState.addAllState(entity.getStates().stream()
                 .map(nodeMapper::mapAbstractStateOneOf)
                 .collect(Collectors.toList()));
@@ -200,7 +194,7 @@ public class JaxbToProtoTreeMapper {
         }
     }
 
-    private void appendStatesIfMatch(MdStateType.MdState.Builder mdState, MdibEntity entity, Set<String> filterSet) {
+    private void appendStatesIfMatch(MdStateMsg.Builder mdState, MdibEntity entity, Set<String> filterSet) {
         if (filterSet.contains(entity.getHandle())) {
             filterSet.remove(entity.getHandle());
             mdState.addAllState(entity.getStates().stream()
@@ -240,58 +234,61 @@ public class JaxbToProtoTreeMapper {
         return false;
     }
 
-    private void mapMds(MdDescription mdDescription, MdibEntity mds) {
-        final Optional<MdsDescriptor> descriptor = mds.getDescriptor(MdsDescriptor.class);
+    private void mapMds(MdDescriptionMsg.Builder mdDescription, MdibEntity mds) {
+        var descriptor = mds.getDescriptor(MdsDescriptor.class);
         if (descriptor.isEmpty()) {
             return;
         }
 
-        MdsDescriptor descriptorCopy = objectUtil.deepCopy(descriptor.get());
+        var builder = nodeMapper.mapMdsDesctriptor(descriptor.get());
 
-        mapZeroOrMoreDescriptors(
-                descriptorCopy,
-                mdibAccess.getChildrenByType(mds.getHandle(), BatteryDescriptor.class),
-                "getBattery");
-        mapZeroOrOneDescriptor(
-                descriptorCopy,
-                mdibAccess.getChildrenByType(mds.getHandle(), ClockDescriptor.class),
-                "setClock");
-        mapAlertSystem(descriptorCopy, mdibAccess.getChildrenByType(mds.getHandle(),
-                AlertSystemDescriptor.class));
-        mapSco(descriptorCopy, mdibAccess.getChildrenByType(mds.getHandle(),
-                ScoDescriptor.class));
-        mapSystemContext(descriptorCopy, mdibAccess.getChildrenByType(mds.getHandle(),
-                SystemContextDescriptor.class));
-        mapVmds(descriptorCopy, mdibAccess.getChildrenByType(mds.getHandle(),
+//        mapZeroOrMoreDescriptors(
+//                descriptorCopy,
+//                mdibAccess.getChildrenByType(mds.getHandle(), BatteryDescriptor.class),
+//                "getBattery");
+//        mapZeroOrOneDescriptor(
+//                descriptorCopy,
+//                mdibAccess.getChildrenByType(mds.getHandle(), ClockDescriptor.class),
+//                "setClock");
+//        mapAlertSystem(descriptorCopy, mdibAccess.getChildrenByType(mds.getHandle(),
+//                AlertSystemDescriptor.class));
+//        mapSco(descriptorCopy, mdibAccess.getChildrenByType(mds.getHandle(),
+//                ScoDescriptor.class));
+//        mapSystemContext(descriptorCopy, mdibAccess.getChildrenByType(mds.getHandle(),
+//                SystemContextDescriptor.class));
+        mapVmds(builder, mdibAccess.getChildrenByType(mds.getHandle(),
                 VmdDescriptor.class));
 
-        mdDescription.getMds().add(descriptorCopy);
+        mdDescription.addMds(builder);
     }
 
-    private void mapVmds(MdsDescriptor parent, List<MdibEntity> vmds) {
+    private void mapVmds(MdsDescriptorMsg.Builder parent, List<MdibEntity> vmds) {
         for (MdibEntity vmd : vmds) {
             vmd.getDescriptor(VmdDescriptor.class).ifPresent(vmdDescriptor -> {
-                VmdDescriptor vmdDescriptorCopy = objectUtil.deepCopy(vmdDescriptor);
-                parent.getVmd().add(vmdDescriptorCopy);
-                mapAlertSystem(vmdDescriptorCopy, mdibAccess.getChildrenByType(vmdDescriptorCopy.getHandle(),
-                        AlertSystemDescriptor.class));
-                mapSco(vmdDescriptorCopy, mdibAccess.getChildrenByType(vmdDescriptorCopy.getHandle(),
-                        ScoDescriptor.class));
-                mapChannels(vmdDescriptorCopy, mdibAccess.getChildrenByType(vmdDescriptorCopy.getHandle(),
+                var builder = nodeMapper.mapVmdDescriptor(vmdDescriptor);
+                // todo
+//                mapAlertSystem(vmdDescriptorCopy, mdibAccess.getChildrenByType(vmdDescriptorCopy.getHandle(),
+//                        AlertSystemDescriptor.class));
+//                mapSco(vmdDescriptorCopy, mdibAccess.getChildrenByType(vmdDescriptorCopy.getHandle(),
+//                        ScoDescriptor.class));
+                mapChannels(builder, mdibAccess.getChildrenByType(vmdDescriptor.getHandle(),
                         ChannelDescriptor.class));
+                parent.addVmd(builder);
             });
         }
     }
 
-    private void mapChannels(VmdDescriptor parent, List<MdibEntity> channels) {
+    private void mapChannels(VmdDescriptorMsg.Builder parent, List<MdibEntity> channels) {
         for (MdibEntity channel : channels) {
             channel.getDescriptor(ChannelDescriptor.class).ifPresent(channelDescriptor -> {
-                ChannelDescriptor channelDescriptorCopy = objectUtil.deepCopy(channelDescriptor);
-                parent.getChannel().add(channelDescriptorCopy);
-                mapZeroOrMoreDescriptors(
-                        channelDescriptorCopy,
-                        mdibAccess.getChildrenByType(channelDescriptorCopy.getHandle(), AbstractMetricDescriptor.class),
-                        "getMetric");
+                var builder = nodeMapper.mapChannelDescriptor(channelDescriptor);
+
+//                mapZeroOrMoreDescriptors(
+//                        channelDescriptorCopy,
+//                        mdibAccess.getChildrenByType(channelDescriptorCopy.getHandle(), AbstractMetricDescriptor.class),
+//                        "getMetric");
+
+                parent.addChannel(builder);
             });
         }
     }
@@ -424,9 +421,4 @@ public class JaxbToProtoTreeMapper {
         }
     }
 
-    private <T> void setOptional(@Nullable T value, Consumer<T> consumer) {
-        if (value != null) {
-            consumer.accept(value);
-        }
-    }
 }

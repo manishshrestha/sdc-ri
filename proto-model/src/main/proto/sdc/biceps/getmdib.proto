@@ -2,11 +2,12 @@ syntax = "proto3";
 
 package sdc.biceps;
 
+option java_multiple_files = true;
 option java_package = "org.somda.sdc.proto.model.biceps";
-option java_outer_classname = "GetMdibType";
+option java_outer_classname = "GetMdibProto";
 
 import "sdc/biceps/abstractget.proto";
 
-  message GetMdib {
-    AbstractGet abstract_get = 1;
+  message GetMdibMsg {
+    AbstractGetMsg abstract_get = 1;
   }

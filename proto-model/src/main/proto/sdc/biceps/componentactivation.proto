@@ -2,18 +2,19 @@ syntax = "proto3";
 
 package sdc.biceps;
 
+option java_multiple_files = true;
 option java_package = "org.somda.sdc.proto.model.biceps";
-option java_outer_classname = "ComponentActivationType";
+option java_outer_classname = "ComponentActivationProto";
 
 
-message ComponentActivation {
-  enum ComponentActivationEnum {
+message ComponentActivationMsg {
+  enum EnumType {
     ON = 0;
-    NOTRDY = 1;
-    STNDBY = 2;
+    NOT_RDY = 1;
+    STND_BY = 2;
     OFF = 3;
     SHTDN = 4;
     FAIL = 5;
   }
-  ComponentActivationEnum type = 1;
+  EnumType enum_value = 1;
 }

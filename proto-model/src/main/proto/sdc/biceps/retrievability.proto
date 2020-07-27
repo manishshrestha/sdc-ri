@@ -2,11 +2,12 @@ syntax = "proto3";
 
 package sdc.biceps;
 
+option java_multiple_files = true;
 option java_package = "org.somda.sdc.proto.model.biceps";
-option java_outer_classname = "RetrievabilityType";
+option java_outer_classname = "RetrievabilityProto";
 
 import "sdc/biceps/retrievabilityinfo.proto";
 
-  message Retrievability {
-    repeated RetrievabilityInfo by = 1;
+  message RetrievabilityMsg {
+    repeated RetrievabilityInfoMsg by = 1;
   }

@@ -2,16 +2,18 @@ syntax = "proto3";
 
 package sdc.biceps;
 
+option java_multiple_files = true;
 option java_package = "org.somda.sdc.proto.model.biceps";
-option java_outer_classname = "RangeType";
+option java_outer_classname = "RangeProto";
 
 import "sdc/biceps/extension.proto";
+import "google/protobuf/wrappers.proto";
 
-message Range {
-  Extension element1 = 1;
-  string a_lower = 2;
-  string a_upper = 3;
-  string a_step_width = 4;
-  string a_relative_accuracy = 5;
-  string a_absolute_accuracy = 6;
+message RangeMsg {
+  ExtensionMsg element1 = 1;
+  google.protobuf.StringValue a_lower = 2;
+  google.protobuf.StringValue a_upper = 3;
+  google.protobuf.StringValue a_step_width = 4;
+  google.protobuf.StringValue a_relative_accuracy = 5;
+  google.protobuf.StringValue a_absolute_accuracy = 6;
 }

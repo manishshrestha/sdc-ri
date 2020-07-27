@@ -2,20 +2,22 @@ syntax = "proto3";
 
 package sdc.biceps;
 
+option java_multiple_files = true;
 option java_package = "org.somda.sdc.proto.model.biceps";
-option java_outer_classname = "AbstractContextStateType";
+option java_outer_classname = "AbstractContextStateProto";
 
 import "sdc/biceps/abstractmultistate.proto";
 import "sdc/biceps/instanceidentifieroneof.proto";
 import "sdc/biceps/contextassociation.proto";
+import "google/protobuf/wrappers.proto";
 
-message AbstractContextState {
-  AbstractMultiState abstract_multi_state = 1;
-  repeated InstanceIdentifierOneOf validator = 2;
-  repeated InstanceIdentifierOneOf identification = 3;
-  ContextAssociation a_context_association = 4;
-  uint64 a_binding_mdib_version = 5;
-  uint64 a_unbinding_mdib_version = 6;
-  uint64 a_binding_start_time = 7;
-  uint64 a_binding_end_time = 8;
+message AbstractContextStateMsg {
+  AbstractMultiStateMsg abstract_multi_state = 1;
+  repeated InstanceIdentifierOneOfMsg validator = 2;
+  repeated InstanceIdentifierOneOfMsg identification = 3;
+  ContextAssociationMsg a_context_association = 4;
+  google.protobuf.UInt64Value a_binding_mdib_version = 5;
+  google.protobuf.UInt64Value a_unbinding_mdib_version = 6;
+  google.protobuf.UInt64Value a_binding_start_time = 7;
+  google.protobuf.UInt64Value a_binding_end_time = 8;
 }

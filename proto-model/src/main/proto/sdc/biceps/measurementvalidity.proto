@@ -2,12 +2,13 @@ syntax = "proto3";
 
 package sdc.biceps;
 
+option java_multiple_files = true;
 option java_package = "org.somda.sdc.proto.model.biceps";
-option java_outer_classname = "MeasurementValidityType";
+option java_outer_classname = "MeasurementValidityProto";
 
 
-message MeasurementValidity {
-  enum MeasurementValidityEnum {
+message MeasurementValidityMsg {
+  enum EnumType {
     VLD = 0;
     VLDATED = 1;
     ONG = 2;
@@ -16,7 +17,7 @@ message MeasurementValidity {
     INV = 5;
     OFLW = 6;
     UFLW = 7;
-    NA = 8;
+    N_A = 8;
   }
-  MeasurementValidityEnum type = 1;
+  EnumType enum_value = 1;
 }

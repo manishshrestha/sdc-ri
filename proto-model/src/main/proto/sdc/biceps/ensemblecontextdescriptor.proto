@@ -2,11 +2,12 @@ syntax = "proto3";
 
 package sdc.biceps;
 
+option java_multiple_files = true;
 option java_package = "org.somda.sdc.proto.model.biceps";
-option java_outer_classname = "EnsembleContextDescriptorType";
+option java_outer_classname = "EnsembleContextDescriptorProto";
 
 import "sdc/biceps/abstractcontextdescriptor.proto";
 
-message EnsembleContextDescriptor {
-  AbstractContextDescriptor abstract_context_descriptor = 1;
+message EnsembleContextDescriptorMsg {
+  AbstractContextDescriptorMsg abstract_context_descriptor = 1;
 }

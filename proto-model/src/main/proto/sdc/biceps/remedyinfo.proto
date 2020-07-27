@@ -2,13 +2,14 @@ syntax = "proto3";
 
 package sdc.biceps;
 
+option java_multiple_files = true;
 option java_package = "org.somda.sdc.proto.model.biceps";
-option java_outer_classname = "RemedyInfoType";
+option java_outer_classname = "RemedyInfoProto";
 
 import "sdc/biceps/extension.proto";
 import "sdc/biceps/localizedtext.proto";
 
-message RemedyInfo {
-  Extension element1 = 1;
-  repeated LocalizedText description = 2;
+message RemedyInfoMsg {
+  ExtensionMsg element1 = 1;
+  repeated LocalizedTextMsg description = 2;
 }

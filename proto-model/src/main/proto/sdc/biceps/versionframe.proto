@@ -2,11 +2,13 @@ syntax = "proto3";
 
 package sdc.biceps;
 
+option java_multiple_files = true;
 option java_package = "org.somda.sdc.proto.model.biceps";
-option java_outer_classname = "VersionFrameType";
+option java_outer_classname = "VersionFrameProto";
 
+import "google/protobuf/wrappers.proto";
 
-message VersionFrame {
-  uint64 a_start = 1;
-  uint64 a_end = 2;
+message VersionFrameMsg {
+  google.protobuf.UInt64Value a_start = 1;
+  google.protobuf.UInt64Value a_end = 2;
 }

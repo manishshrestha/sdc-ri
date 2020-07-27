@@ -2,13 +2,15 @@ syntax = "proto3";
 
 package sdc.biceps;
 
+option java_multiple_files = true;
 option java_package = "org.somda.sdc.proto.model.biceps";
-option java_outer_classname = "ContainmentTreeInfoType";
+option java_outer_classname = "ContainmentTreeInfoProto";
 
+import "google/protobuf/wrappers.proto";
 
-message ContainmentTreeInfo {
-  string a_handle_ref = 1;
-  string a_parent_handle_ref = 2;
-  string a_entry_type = 3;
-  int32 a_children_count = 4;
+message ContainmentTreeInfoMsg {
+  google.protobuf.StringValue a_handle_ref = 1;
+  google.protobuf.StringValue a_parent_handle_ref = 2;
+  google.protobuf.StringValue a_entry_type = 3;
+  google.protobuf.Int32Value a_children_count = 4;
 }

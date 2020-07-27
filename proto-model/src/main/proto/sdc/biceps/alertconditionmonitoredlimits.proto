@@ -2,16 +2,17 @@ syntax = "proto3";
 
 package sdc.biceps;
 
+option java_multiple_files = true;
 option java_package = "org.somda.sdc.proto.model.biceps";
-option java_outer_classname = "AlertConditionMonitoredLimitsType";
+option java_outer_classname = "AlertConditionMonitoredLimitsProto";
 
 
-message AlertConditionMonitoredLimits {
-  enum AlertConditionMonitoredLimitsEnum {
+message AlertConditionMonitoredLimitsMsg {
+  enum EnumType {
     ALL = 0;
-    LOOFF = 1;
-    HIOFF = 2;
+    LO_OFF = 1;
+    HI_OFF = 2;
     NONE = 3;
   }
-  AlertConditionMonitoredLimitsEnum type = 1;
+  EnumType enum_value = 1;
 }

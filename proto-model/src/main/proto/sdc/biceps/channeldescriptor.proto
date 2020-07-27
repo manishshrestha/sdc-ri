@@ -2,13 +2,14 @@ syntax = "proto3";
 
 package sdc.biceps;
 
+option java_multiple_files = true;
 option java_package = "org.somda.sdc.proto.model.biceps";
-option java_outer_classname = "ChannelDescriptorType";
+option java_outer_classname = "ChannelDescriptorProto";
 
 import "sdc/biceps/abstractdevicecomponentdescriptor.proto";
 import "sdc/biceps/abstractmetricdescriptoroneof.proto";
 
-message ChannelDescriptor {
-  AbstractDeviceComponentDescriptor abstract_device_component_descriptor = 1;
-  repeated AbstractMetricDescriptorOneOf metric = 2;
+message ChannelDescriptorMsg {
+  AbstractDeviceComponentDescriptorMsg abstract_device_component_descriptor = 1;
+  repeated AbstractMetricDescriptorOneOfMsg metric = 2;
 }

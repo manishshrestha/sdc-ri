@@ -2,19 +2,20 @@ syntax = "proto3";
 
 package sdc.biceps;
 
+option java_multiple_files = true;
 option java_package = "org.somda.sdc.proto.model.biceps";
-option java_outer_classname = "AbstractAlertStateOneOfType";
+option java_outer_classname = "AbstractAlertStateOneOfProto";
 
 import "sdc/biceps/abstractalertstate.proto";
 import "sdc/biceps/alertconditionstateoneof.proto";
 import "sdc/biceps/alertsystemstate.proto";
 import "sdc/biceps/alertsignalstate.proto";
 
-message AbstractAlertStateOneOf {
+message AbstractAlertStateOneOfMsg {
   oneof abstract_alert_state_one_of {
-    AbstractAlertState abstract_alert_state = 1;
-    AlertConditionStateOneOf alert_condition_state_one_of = 2;
-    AlertSystemState alert_system_state = 3;
-    AlertSignalState alert_signal_state = 4;
+    AbstractAlertStateMsg abstract_alert_state = 1;
+    AlertConditionStateOneOfMsg alert_condition_state_one_of = 2;
+    AlertSystemStateMsg alert_system_state = 3;
+    AlertSignalStateMsg alert_signal_state = 4;
   }
 }

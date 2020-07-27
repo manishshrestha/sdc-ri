@@ -2,14 +2,16 @@ syntax = "proto3";
 
 package sdc.biceps;
 
+option java_multiple_files = true;
 option java_package = "org.somda.sdc.proto.model.biceps";
-option java_outer_classname = "PhysicalConnectorInfoType";
+option java_outer_classname = "PhysicalConnectorInfoProto";
 
 import "sdc/biceps/extension.proto";
 import "sdc/biceps/localizedtext.proto";
+import "google/protobuf/wrappers.proto";
 
-message PhysicalConnectorInfo {
-  Extension element1 = 1;
-  repeated LocalizedText label = 2;
-  int32 a_number = 3;
+message PhysicalConnectorInfoMsg {
+  ExtensionMsg element1 = 1;
+  repeated LocalizedTextMsg label = 2;
+  google.protobuf.Int32Value a_number = 3;
 }

@@ -2,18 +2,19 @@ syntax = "proto3";
 
 package sdc.biceps;
 
+option java_multiple_files = true;
 option java_package = "org.somda.sdc.proto.model.biceps";
-option java_outer_classname = "SampleArrayValueType";
+option java_outer_classname = "SampleArrayValueProto";
 
 import "sdc/biceps/abstractmetricvalue.proto";
 import "sdc/biceps/realtimevaluetype.proto";
 
-message SampleArrayValue {
-  AbstractMetricValue abstract_metric_value = 1;
-  message ApplyAnnotation {
+message SampleArrayValueMsg {
+  AbstractMetricValueMsg abstract_metric_value = 1;
+  message ApplyAnnotationMsg {
     uint32 a_annotation_index = 1;
     uint32 a_sample_index = 2;
   }
-  ApplyAnnotation apply_annotation = 2;
-  RealTimeValueType a_samples = 3;
+  repeated ApplyAnnotationMsg apply_annotation = 2;
+  RealTimeValueTypeMsg a_samples = 3;
 }

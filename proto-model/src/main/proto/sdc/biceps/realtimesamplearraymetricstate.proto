@@ -2,15 +2,16 @@ syntax = "proto3";
 
 package sdc.biceps;
 
+option java_multiple_files = true;
 option java_package = "org.somda.sdc.proto.model.biceps";
-option java_outer_classname = "RealTimeSampleArrayMetricStateType";
+option java_outer_classname = "RealTimeSampleArrayMetricStateProto";
 
 import "sdc/biceps/abstractmetricstate.proto";
 import "sdc/biceps/samplearrayvalue.proto";
 import "sdc/biceps/range.proto";
 
-message RealTimeSampleArrayMetricState {
-  AbstractMetricState abstract_metric_state = 1;
-  SampleArrayValue metric_value = 2;
-  repeated Range physiological_range = 3;
+message RealTimeSampleArrayMetricStateMsg {
+  AbstractMetricStateMsg abstract_metric_state = 1;
+  SampleArrayValueMsg metric_value = 2;
+  repeated RangeMsg physiological_range = 3;
 }

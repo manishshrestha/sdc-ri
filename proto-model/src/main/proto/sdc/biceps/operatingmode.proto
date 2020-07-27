@@ -2,15 +2,16 @@ syntax = "proto3";
 
 package sdc.biceps;
 
+option java_multiple_files = true;
 option java_package = "org.somda.sdc.proto.model.biceps";
-option java_outer_classname = "OperatingModeType";
+option java_outer_classname = "OperatingModeProto";
 
 
-message OperatingMode {
-  enum OperatingModeEnum {
+message OperatingModeMsg {
+  enum EnumType {
     DIS = 0;
     EN = 1;
-    NA = 2;
+    N_A = 2;
   }
-  OperatingModeEnum type = 1;
+  EnumType enum_value = 1;
 }

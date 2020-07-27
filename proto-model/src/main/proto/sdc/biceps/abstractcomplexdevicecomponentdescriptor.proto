@@ -2,15 +2,16 @@ syntax = "proto3";
 
 package sdc.biceps;
 
+option java_multiple_files = true;
 option java_package = "org.somda.sdc.proto.model.biceps";
-option java_outer_classname = "AbstractComplexDeviceComponentDescriptorType";
+option java_outer_classname = "AbstractComplexDeviceComponentDescriptorProto";
 
 import "sdc/biceps/abstractdevicecomponentdescriptor.proto";
 import "sdc/biceps/alertsystemdescriptor.proto";
 import "sdc/biceps/scodescriptor.proto";
 
-message AbstractComplexDeviceComponentDescriptor {
-  AbstractDeviceComponentDescriptor abstract_device_component_descriptor = 1;
-  AlertSystemDescriptor alert_system = 2;
-  ScoDescriptor sco = 3;
+message AbstractComplexDeviceComponentDescriptorMsg {
+  AbstractDeviceComponentDescriptorMsg abstract_device_component_descriptor = 1;
+  AlertSystemDescriptorMsg alert_system = 2;
+  ScoDescriptorMsg sco = 3;
 }

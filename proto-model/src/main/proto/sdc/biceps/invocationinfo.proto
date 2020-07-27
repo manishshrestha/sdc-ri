@@ -2,18 +2,19 @@ syntax = "proto3";
 
 package sdc.biceps;
 
+option java_multiple_files = true;
 option java_package = "org.somda.sdc.proto.model.biceps";
-option java_outer_classname = "InvocationInfoType";
+option java_outer_classname = "InvocationInfoProto";
 
 import "sdc/biceps/extension.proto";
 import "sdc/biceps/invocationstate.proto";
 import "sdc/biceps/invocationerror.proto";
 import "sdc/biceps/localizedtext.proto";
 
-message InvocationInfo {
-  Extension element1 = 1;
+message InvocationInfoMsg {
+  ExtensionMsg element1 = 1;
   uint32 transaction_id = 2;
-  InvocationState invocation_state = 3;
-  InvocationError invocation_error = 4;
-  repeated LocalizedText invocation_error_message = 5;
+  InvocationStateMsg invocation_state = 3;
+  InvocationErrorMsg invocation_error = 4;
+  repeated LocalizedTextMsg invocation_error_message = 5;
 }

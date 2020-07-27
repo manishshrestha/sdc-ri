@@ -2,22 +2,24 @@ syntax = "proto3";
 
 package sdc.biceps;
 
+option java_multiple_files = true;
 option java_package = "org.somda.sdc.proto.model.biceps";
-option java_outer_classname = "AlertSignalDescriptorType";
+option java_outer_classname = "AlertSignalDescriptorProto";
 
 import "sdc/biceps/abstractalertdescriptor.proto";
+import "google/protobuf/wrappers.proto";
 import "sdc/biceps/alertsignalmanifestation.proto";
 import "google/protobuf/duration.proto";
 
-message AlertSignalDescriptor {
-  AbstractAlertDescriptor abstract_alert_descriptor = 1;
-  string a_condition_signaled = 2;
-  AlertSignalManifestation a_manifestation = 3;
+message AlertSignalDescriptorMsg {
+  AbstractAlertDescriptorMsg abstract_alert_descriptor = 1;
+  google.protobuf.StringValue a_condition_signaled = 2;
+  AlertSignalManifestationMsg a_manifestation = 3;
   bool a_latching = 4;
   google.protobuf.Duration a_default_signal_generation_delay = 5;
   google.protobuf.Duration a_min_signal_generation_delay = 6;
   google.protobuf.Duration a_max_signal_generation_delay = 7;
-  bool a_signal_delegation_supported = 8;
-  bool a_acknowledgement_supported = 9;
+  google.protobuf.BoolValue a_signal_delegation_supported = 8;
+  google.protobuf.BoolValue a_acknowledgement_supported = 9;
   google.protobuf.Duration a_acknowledge_timeout = 10;
 }

@@ -2,14 +2,15 @@ syntax = "proto3";
 
 package sdc.biceps;
 
+option java_multiple_files = true;
 option java_package = "org.somda.sdc.proto.model.biceps";
-option java_outer_classname = "DerivationMethodType";
+option java_outer_classname = "DerivationMethodProto";
 
 
-message DerivationMethod {
-  enum DerivationMethodEnum {
+message DerivationMethodMsg {
+  enum EnumType {
     AUTO = 0;
     MAN = 1;
   }
-  DerivationMethodEnum type = 1;
+  EnumType enum_value = 1;
 }

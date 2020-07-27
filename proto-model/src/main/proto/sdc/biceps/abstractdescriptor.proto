@@ -2,17 +2,19 @@ syntax = "proto3";
 
 package sdc.biceps;
 
+option java_multiple_files = true;
 option java_package = "org.somda.sdc.proto.model.biceps";
-option java_outer_classname = "AbstractDescriptorType";
+option java_outer_classname = "AbstractDescriptorProto";
 
 import "sdc/biceps/extension.proto";
 import "sdc/biceps/codedvalue.proto";
+import "google/protobuf/wrappers.proto";
 import "sdc/biceps/safetyclassification.proto";
 
-message AbstractDescriptor {
-  Extension element1 = 1;
-  CodedValue type = 2;
+message AbstractDescriptorMsg {
+  ExtensionMsg element1 = 1;
+  CodedValueMsg type = 2;
   string a_handle = 3;
-  uint64 a_descriptor_version = 4;
-  SafetyClassification a_safety_classification = 5;
+  google.protobuf.UInt64Value a_descriptor_version = 4;
+  SafetyClassificationMsg a_safety_classification = 5;
 }

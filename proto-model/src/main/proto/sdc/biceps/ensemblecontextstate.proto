@@ -2,11 +2,12 @@ syntax = "proto3";
 
 package sdc.biceps;
 
+option java_multiple_files = true;
 option java_package = "org.somda.sdc.proto.model.biceps";
-option java_outer_classname = "EnsembleContextStateType";
+option java_outer_classname = "EnsembleContextStateProto";
 
 import "sdc/biceps/abstractcontextstate.proto";
 
-message EnsembleContextState {
-  AbstractContextState abstract_context_state = 1;
+message EnsembleContextStateMsg {
+  AbstractContextStateMsg abstract_context_state = 1;
 }

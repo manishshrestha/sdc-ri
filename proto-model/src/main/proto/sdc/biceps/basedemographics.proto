@@ -2,13 +2,14 @@ syntax = "proto3";
 
 package sdc.biceps;
 
+option java_multiple_files = true;
 option java_package = "org.somda.sdc.proto.model.biceps";
-option java_outer_classname = "BaseDemographicsType";
+option java_outer_classname = "BaseDemographicsProto";
 
 import "sdc/biceps/extension.proto";
 
-message BaseDemographics {
-  Extension element1 = 1;
+message BaseDemographicsMsg {
+  ExtensionMsg element1 = 1;
   string givenname = 2;
   repeated string middlename = 3;
   string familyname = 4;
@@ -20,62 +21,62 @@ import "sdc/biceps/patienttype.proto";
 import "sdc/biceps/measurement.proto";
 import "sdc/biceps/codedvalue.proto";
 
-message PatientDemographicsCoreData {
-  BaseDemographics base_demographics = 1;
-  Sex sex = 2;
-  PatientType patient_type = 3;
-  message DateOfBirth {
-    oneof DateOfBirth {
+message PatientDemographicsCoreDataMsg {
+  BaseDemographicsMsg base_demographics = 1;
+  SexMsg sex = 2;
+  PatientTypeMsg patient_type = 3;
+  message DateOfBirthMsg {
+    oneof DateOfBirthMsg {
       string date_time = 1;
       string date = 2;
       string g_year_month = 3;
       string g_year = 4;
     }
   }
-  DateOfBirth date_of_birth = 4;
-  Measurement height = 5;
-  Measurement weight = 6;
-  CodedValue race = 7;
+  DateOfBirthMsg date_of_birth = 4;
+  MeasurementMsg height = 5;
+  MeasurementMsg weight = 6;
+  CodedValueMsg race = 7;
 }
 import "sdc/biceps/instanceidentifieroneof.proto";
 
-message PersonReference {
-  Extension element1 = 1;
-  repeated InstanceIdentifierOneOf identification = 2;
-  BaseDemographicsOneOf name = 3;
+message PersonReferenceMsg {
+  ExtensionMsg element1 = 1;
+  repeated InstanceIdentifierOneOfMsg identification = 2;
+  BaseDemographicsOneOfMsg name = 3;
 }
 
-message PersonParticipation {
-  PersonReference person_reference = 1;
-  repeated CodedValue role = 2;
+message PersonParticipationMsg {
+  PersonReferenceMsg person_reference = 1;
+  repeated CodedValueMsg role = 2;
 }
 
-message NeonatalPatientDemographicsCoreData {
-  PatientDemographicsCoreData patient_demographics_core_data = 1;
-  Measurement gestational_age = 2;
-  Measurement birth_length = 3;
-  Measurement birth_weight = 4;
-  Measurement head_circumference = 5;
-  PersonReferenceOneOf mother = 6;
+message NeonatalPatientDemographicsCoreDataMsg {
+  PatientDemographicsCoreDataMsg patient_demographics_core_data = 1;
+  MeasurementMsg gestational_age = 2;
+  MeasurementMsg birth_length = 3;
+  MeasurementMsg birth_weight = 4;
+  MeasurementMsg head_circumference = 5;
+  PersonReferenceOneOfMsg mother = 6;
 }
 
-message BaseDemographicsOneOf {
+message BaseDemographicsOneOfMsg {
   oneof base_demographics_one_of {
-    BaseDemographics base_demographics = 1;
-    PatientDemographicsCoreDataOneOf patient_demographics_core_data_one_of = 2;
+    BaseDemographicsMsg base_demographics = 1;
+    PatientDemographicsCoreDataOneOfMsg patient_demographics_core_data_one_of = 2;
   }
 }
 
-message PatientDemographicsCoreDataOneOf {
+message PatientDemographicsCoreDataOneOfMsg {
   oneof patient_demographics_core_data_one_of {
-    PatientDemographicsCoreData patient_demographics_core_data = 1;
-    NeonatalPatientDemographicsCoreData neonatal_patient_demographics_core_data = 2;
+    PatientDemographicsCoreDataMsg patient_demographics_core_data = 1;
+    NeonatalPatientDemographicsCoreDataMsg neonatal_patient_demographics_core_data = 2;
   }
 }
 
-message PersonReferenceOneOf {
+message PersonReferenceOneOfMsg {
   oneof person_reference_one_of {
-    PersonReference person_reference = 1;
-    PersonParticipation person_participation = 2;
+    PersonReferenceMsg person_reference = 1;
+    PersonParticipationMsg person_participation = 2;
   }
 }

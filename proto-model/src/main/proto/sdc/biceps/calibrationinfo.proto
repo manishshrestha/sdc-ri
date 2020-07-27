@@ -2,8 +2,9 @@ syntax = "proto3";
 
 package sdc.biceps;
 
+option java_multiple_files = true;
 option java_package = "org.somda.sdc.proto.model.biceps";
-option java_outer_classname = "CalibrationInfoType";
+option java_outer_classname = "CalibrationInfoProto";
 
 import "sdc/biceps/extension.proto";
 import "sdc/biceps/localizedtext.proto";
@@ -11,19 +12,20 @@ import "sdc/biceps/codedvalue.proto";
 import "sdc/biceps/measurement.proto";
 import "sdc/biceps/calibrationstate.proto";
 import "sdc/biceps/calibrationtype.proto";
+import "google/protobuf/wrappers.proto";
 
-message CalibrationInfo {
-  Extension element1 = 1;
-  message CalibrationDocumentation {
-    repeated LocalizedText documentation = 1;
-    message CalibrationResult {
-      CodedValue code = 1;
-      Measurement value = 2;
+message CalibrationInfoMsg {
+  ExtensionMsg element1 = 1;
+  message CalibrationDocumentationMsg {
+    repeated LocalizedTextMsg documentation = 1;
+    message CalibrationResultMsg {
+      CodedValueMsg code = 1;
+      MeasurementMsg value = 2;
     }
-    CalibrationResult calibration_result = 2;
+    repeated CalibrationResultMsg calibration_result = 2;
   }
-  CalibrationDocumentation calibration_documentation = 2;
-  CalibrationState a_component_calibration_state = 3;
-  CalibrationType a_type = 4;
-  uint64 a_time = 5;
+  repeated CalibrationDocumentationMsg calibration_documentation = 2;
+  CalibrationStateMsg a_component_calibration_state = 3;
+  CalibrationTypeMsg a_type = 4;
+  google.protobuf.UInt64Value a_time = 5;
 }

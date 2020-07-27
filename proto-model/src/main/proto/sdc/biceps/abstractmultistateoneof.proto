@@ -2,15 +2,16 @@ syntax = "proto3";
 
 package sdc.biceps;
 
+option java_multiple_files = true;
 option java_package = "org.somda.sdc.proto.model.biceps";
-option java_outer_classname = "AbstractMultiStateOneOfType";
+option java_outer_classname = "AbstractMultiStateOneOfProto";
 
 import "sdc/biceps/abstractmultistate.proto";
 import "sdc/biceps/abstractcontextstateoneof.proto";
 
-message AbstractMultiStateOneOf {
+message AbstractMultiStateOneOfMsg {
   oneof abstract_multi_state_one_of {
-    AbstractMultiState abstract_multi_state = 1;
-    AbstractContextStateOneOf abstract_context_state_one_of = 2;
+    AbstractMultiStateMsg abstract_multi_state = 1;
+    AbstractContextStateOneOfMsg abstract_context_state_one_of = 2;
   }
 }

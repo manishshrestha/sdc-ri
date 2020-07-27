@@ -2,13 +2,14 @@ syntax = "proto3";
 
 package sdc.biceps;
 
+option java_multiple_files = true;
 option java_package = "org.somda.sdc.proto.model.biceps";
-option java_outer_classname = "WaveformStreamType";
+option java_outer_classname = "WaveformStreamProto";
 
 import "sdc/biceps/abstractreport.proto";
 import "sdc/biceps/realtimesamplearraymetricstate.proto";
 
-  message WaveformStream {
-    AbstractReport abstract_report = 1;
-    repeated RealTimeSampleArrayMetricState state = 2;
+  message WaveformStreamMsg {
+    AbstractReportMsg abstract_report = 1;
+    repeated RealTimeSampleArrayMetricStateMsg state = 2;
   }

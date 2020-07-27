@@ -2,13 +2,14 @@ syntax = "proto3";
 
 package sdc.biceps;
 
+option java_multiple_files = true;
 option java_package = "org.somda.sdc.proto.model.biceps";
-option java_outer_classname = "AbstractAlertStateType";
+option java_outer_classname = "AbstractAlertStateProto";
 
 import "sdc/biceps/abstractstate.proto";
 import "sdc/biceps/alertactivation.proto";
 
-message AbstractAlertState {
-  AbstractState abstract_state = 1;
-  AlertActivation a_activation_state = 2;
+message AbstractAlertStateMsg {
+  AbstractStateMsg abstract_state = 1;
+  AlertActivationMsg a_activation_state = 2;
 }

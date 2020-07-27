@@ -2,11 +2,12 @@ syntax = "proto3";
 
 package sdc.biceps;
 
+option java_multiple_files = true;
 option java_package = "org.somda.sdc.proto.model.biceps";
-option java_outer_classname = "ApprovedJurisdictionsType";
+option java_outer_classname = "ApprovedJurisdictionsProto";
 
 import "sdc/biceps/instanceidentifieroneof.proto";
 
-message ApprovedJurisdictions {
-  repeated InstanceIdentifierOneOf approved_jurisdiction = 1;
+message ApprovedJurisdictionsMsg {
+  repeated InstanceIdentifierOneOfMsg approved_jurisdiction = 1;
 }

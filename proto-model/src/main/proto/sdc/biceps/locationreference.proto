@@ -2,15 +2,16 @@ syntax = "proto3";
 
 package sdc.biceps;
 
+option java_multiple_files = true;
 option java_package = "org.somda.sdc.proto.model.biceps";
-option java_outer_classname = "LocationReferenceType";
+option java_outer_classname = "LocationReferenceProto";
 
 import "sdc/biceps/extension.proto";
 import "sdc/biceps/instanceidentifieroneof.proto";
 import "sdc/biceps/locationdetail.proto";
 
-message LocationReference {
-  Extension element1 = 1;
-  repeated InstanceIdentifierOneOf identification = 2;
-  LocationDetail location_detail = 3;
+message LocationReferenceMsg {
+  ExtensionMsg element1 = 1;
+  repeated InstanceIdentifierOneOfMsg identification = 2;
+  LocationDetailMsg location_detail = 3;
 }

@@ -2,14 +2,15 @@ syntax = "proto3";
 
 package sdc.biceps;
 
+option java_multiple_files = true;
 option java_package = "org.somda.sdc.proto.model.biceps";
-option java_outer_classname = "MetricAvailabilityType";
+option java_outer_classname = "MetricAvailabilityProto";
 
 
-message MetricAvailability {
-  enum MetricAvailabilityEnum {
+message MetricAvailabilityMsg {
+  enum EnumType {
     INTR = 0;
     CONT = 1;
   }
-  MetricAvailabilityEnum type = 1;
+  EnumType enum_value = 1;
 }

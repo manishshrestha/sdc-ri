@@ -2,20 +2,21 @@ syntax = "proto3";
 
 package sdc.biceps;
 
+option java_multiple_files = true;
 option java_package = "org.somda.sdc.proto.model.biceps";
-option java_outer_classname = "SystemErrorReportType";
+option java_outer_classname = "SystemErrorReportProto";
 
 import "sdc/biceps/abstractreport.proto";
 import "sdc/biceps/abstractreportpart.proto";
 import "sdc/biceps/codedvalue.proto";
 import "sdc/biceps/localizedtext.proto";
 
-  message SystemErrorReport {
-    AbstractReport abstract_report = 1;
-    message ReportPart {
-      AbstractReportPart abstract_report_part = 1;
-      CodedValue error_code = 2;
-      LocalizedText error_info = 3;
+  message SystemErrorReportMsg {
+    AbstractReportMsg abstract_report = 1;
+    message ReportPartMsg {
+      AbstractReportPartMsg abstract_report_part = 1;
+      CodedValueMsg error_code = 2;
+      LocalizedTextMsg error_info = 3;
     }
-    ReportPart report_part = 2;
+    repeated ReportPartMsg report_part = 2;
   }

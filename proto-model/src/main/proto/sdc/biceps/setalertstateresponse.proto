@@ -2,11 +2,12 @@ syntax = "proto3";
 
 package sdc.biceps;
 
+option java_multiple_files = true;
 option java_package = "org.somda.sdc.proto.model.biceps";
-option java_outer_classname = "SetAlertStateResponseType";
+option java_outer_classname = "SetAlertStateResponseProto";
 
 import "sdc/biceps/abstractsetresponse.proto";
 
-  message SetAlertStateResponse {
-    AbstractSetResponse abstract_set_response = 1;
+  message SetAlertStateResponseMsg {
+    AbstractSetResponseMsg abstract_set_response = 1;
   }

@@ -2,8 +2,9 @@ syntax = "proto3";
 
 package sdc.biceps;
 
+option java_multiple_files = true;
 option java_package = "org.somda.sdc.proto.model.biceps";
-option java_outer_classname = "ClinicalInfoType";
+option java_outer_classname = "ClinicalInfoProto";
 
 import "sdc/biceps/extension.proto";
 import "sdc/biceps/codedvalue.proto";
@@ -12,27 +13,27 @@ import "sdc/biceps/measurement.proto";
 import "sdc/biceps/range.proto";
 import "sdc/biceps/measurementvalidity.proto";
 
-message ClinicalInfo {
-  Extension element1 = 1;
-  CodedValue type = 2;
-  CodedValue code = 3;
-  message Criticality {
-    enum CriticalityEnum {
+message ClinicalInfoMsg {
+  ExtensionMsg element1 = 1;
+  CodedValueMsg type = 2;
+  CodedValueMsg code = 3;
+  message CriticalityMsg {
+    enum EnumType {
       LO = 0;
       HI = 1;
     }
-    CriticalityEnum type = 1;
+    EnumType enum_value = 1;
   }
-  Criticality criticality = 4;
-  repeated LocalizedText description = 5;
-  message RelatedMeasurement {
-    Measurement value = 1;
-    message ReferenceRange {
-      Range range = 1;
-      CodedValue meaning = 2;
+  CriticalityMsg criticality = 4;
+  repeated LocalizedTextMsg description = 5;
+  message RelatedMeasurementMsg {
+    MeasurementMsg value = 1;
+    message ReferenceRangeMsg {
+      RangeMsg range = 1;
+      CodedValueMsg meaning = 2;
     }
-    ReferenceRange reference_range = 2;
-    MeasurementValidity a_validity = 3;
+    repeated ReferenceRangeMsg reference_range = 2;
+    MeasurementValidityMsg a_validity = 3;
   }
-  RelatedMeasurement related_measurement = 6;
+  repeated RelatedMeasurementMsg related_measurement = 6;
 }

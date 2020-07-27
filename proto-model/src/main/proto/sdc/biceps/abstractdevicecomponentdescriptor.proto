@@ -2,19 +2,20 @@ syntax = "proto3";
 
 package sdc.biceps;
 
+option java_multiple_files = true;
 option java_package = "org.somda.sdc.proto.model.biceps";
-option java_outer_classname = "AbstractDeviceComponentDescriptorType";
+option java_outer_classname = "AbstractDeviceComponentDescriptorProto";
 
 import "sdc/biceps/abstractdescriptor.proto";
 import "sdc/biceps/codedvalue.proto";
 import "sdc/biceps/instanceidentifieroneof.proto";
 
-message AbstractDeviceComponentDescriptor {
-  AbstractDescriptor abstract_descriptor = 1;
-  message ProductionSpecification {
-    CodedValue spec_type = 1;
+message AbstractDeviceComponentDescriptorMsg {
+  AbstractDescriptorMsg abstract_descriptor = 1;
+  message ProductionSpecificationMsg {
+    CodedValueMsg spec_type = 1;
     string production_spec = 2;
-    InstanceIdentifierOneOf component_id = 3;
+    InstanceIdentifierOneOfMsg component_id = 3;
   }
-  ProductionSpecification production_specification = 2;
+  repeated ProductionSpecificationMsg production_specification = 2;
 }

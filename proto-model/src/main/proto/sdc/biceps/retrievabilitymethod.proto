@@ -2,16 +2,17 @@ syntax = "proto3";
 
 package sdc.biceps;
 
+option java_multiple_files = true;
 option java_package = "org.somda.sdc.proto.model.biceps";
-option java_outer_classname = "RetrievabilityMethodType";
+option java_outer_classname = "RetrievabilityMethodProto";
 
 
-message RetrievabilityMethod {
-  enum RetrievabilityMethodEnum {
+message RetrievabilityMethodMsg {
+  enum EnumType {
     GET = 0;
     PER = 1;
     EP = 2;
     STRM = 3;
   }
-  RetrievabilityMethodEnum type = 1;
+  EnumType enum_value = 1;
 }

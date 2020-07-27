@@ -2,10 +2,11 @@ syntax = "proto3";
 
 package sdc.biceps;
 
+option java_multiple_files = true;
 option java_package = "org.somda.sdc.proto.model.biceps";
-option java_outer_classname = "RealTimeValueTypeType";
+option java_outer_classname = "RealTimeValueTypeProto";
 
 
-message RealTimeValueType {
+message RealTimeValueTypeMsg {
   repeated string real_time_value_type = 1;
 }

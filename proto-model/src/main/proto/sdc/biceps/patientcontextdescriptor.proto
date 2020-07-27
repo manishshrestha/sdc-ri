@@ -2,11 +2,12 @@ syntax = "proto3";
 
 package sdc.biceps;
 
+option java_multiple_files = true;
 option java_package = "org.somda.sdc.proto.model.biceps";
-option java_outer_classname = "PatientContextDescriptorType";
+option java_outer_classname = "PatientContextDescriptorProto";
 
 import "sdc/biceps/abstractcontextdescriptor.proto";
 
-message PatientContextDescriptor {
-  AbstractContextDescriptor abstract_context_descriptor = 1;
+message PatientContextDescriptorMsg {
+  AbstractContextDescriptorMsg abstract_context_descriptor = 1;
 }

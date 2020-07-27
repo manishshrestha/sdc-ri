@@ -2,11 +2,12 @@ syntax = "proto3";
 
 package sdc.biceps;
 
+option java_multiple_files = true;
 option java_package = "org.somda.sdc.proto.model.biceps";
-option java_outer_classname = "EnumStringMetricStateType";
+option java_outer_classname = "EnumStringMetricStateProto";
 
 import "sdc/biceps/stringmetricstate.proto";
 
-message EnumStringMetricState {
-  StringMetricState string_metric_state = 1;
+message EnumStringMetricStateMsg {
+  StringMetricStateMsg string_metric_state = 1;
 }

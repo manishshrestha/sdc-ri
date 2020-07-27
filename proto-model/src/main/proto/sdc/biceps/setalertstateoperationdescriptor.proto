@@ -2,11 +2,12 @@ syntax = "proto3";
 
 package sdc.biceps;
 
+option java_multiple_files = true;
 option java_package = "org.somda.sdc.proto.model.biceps";
-option java_outer_classname = "SetAlertStateOperationDescriptorType";
+option java_outer_classname = "SetAlertStateOperationDescriptorProto";
 
 import "sdc/biceps/abstractsetstateoperationdescriptor.proto";
 
-message SetAlertStateOperationDescriptor {
-  AbstractSetStateOperationDescriptor abstract_set_state_operation_descriptor = 1;
+message SetAlertStateOperationDescriptorMsg {
+  AbstractSetStateOperationDescriptorMsg abstract_set_state_operation_descriptor = 1;
 }

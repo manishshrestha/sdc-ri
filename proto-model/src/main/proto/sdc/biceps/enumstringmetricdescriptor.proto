@@ -2,21 +2,22 @@ syntax = "proto3";
 
 package sdc.biceps;
 
+option java_multiple_files = true;
 option java_package = "org.somda.sdc.proto.model.biceps";
-option java_outer_classname = "EnumStringMetricDescriptorType";
+option java_outer_classname = "EnumStringMetricDescriptorProto";
 
 import "sdc/biceps/stringmetricdescriptor.proto";
 import "sdc/biceps/codedvalue.proto";
 import "sdc/biceps/instanceidentifieroneof.proto";
 import "sdc/biceps/measurement.proto";
 
-message EnumStringMetricDescriptor {
-  StringMetricDescriptor string_metric_descriptor = 1;
-  message AllowedValue {
+message EnumStringMetricDescriptorMsg {
+  StringMetricDescriptorMsg string_metric_descriptor = 1;
+  message AllowedValueMsg {
     string value = 1;
-    CodedValue type = 2;
-    InstanceIdentifierOneOf identification = 3;
-    Measurement characteristic = 4;
+    CodedValueMsg type = 2;
+    InstanceIdentifierOneOfMsg identification = 3;
+    MeasurementMsg characteristic = 4;
   }
-  AllowedValue allowed_value = 2;
+  repeated AllowedValueMsg allowed_value = 2;
 }

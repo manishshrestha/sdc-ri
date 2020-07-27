@@ -2,8 +2,9 @@ syntax = "proto3";
 
 package sdc.biceps;
 
+option java_multiple_files = true;
 option java_package = "org.somda.sdc.proto.model.biceps";
-option java_outer_classname = "WorkflowContextStateType";
+option java_outer_classname = "WorkflowContextStateProto";
 
 import "sdc/biceps/abstractcontextstate.proto";
 import "sdc/biceps/extension.proto";
@@ -14,28 +15,28 @@ import "sdc/biceps/codedvalue.proto";
 import "sdc/biceps/clinicalinfo.proto";
 import "sdc/biceps/orderdetail.proto";
 
-message WorkflowContextState {
-  AbstractContextState abstract_context_state = 1;
-  message WorkflowDetail {
-    Extension element1 = 1;
-    PersonReferenceOneOf patient = 2;
-    LocationReference assigned_location = 3;
-    InstanceIdentifierOneOf visit_number = 4;
-    repeated CodedValue danger_code = 5;
-    repeated ClinicalInfo relevant_clinical_info = 6;
-    message RequestedOrderDetail {
-      OrderDetail order_detail = 1;
-      PersonReferenceOneOf referring_physician = 2;
-      PersonReferenceOneOf requesting_physician = 3;
-      InstanceIdentifierOneOf placer_order_number = 4;
+message WorkflowContextStateMsg {
+  AbstractContextStateMsg abstract_context_state = 1;
+  message WorkflowDetailMsg {
+    ExtensionMsg element1 = 1;
+    PersonReferenceOneOfMsg patient = 2;
+    LocationReferenceMsg assigned_location = 3;
+    InstanceIdentifierOneOfMsg visit_number = 4;
+    repeated CodedValueMsg danger_code = 5;
+    repeated ClinicalInfoMsg relevant_clinical_info = 6;
+    message RequestedOrderDetailMsg {
+      OrderDetailMsg order_detail = 1;
+      PersonReferenceOneOfMsg referring_physician = 2;
+      PersonReferenceOneOfMsg requesting_physician = 3;
+      InstanceIdentifierOneOfMsg placer_order_number = 4;
     }
-    RequestedOrderDetail requested_order_detail = 7;
-    message PerformedOrderDetail {
-      OrderDetail order_detail = 1;
-      InstanceIdentifierOneOf filler_order_number = 2;
-      repeated ClinicalInfo resulting_clinical_info = 3;
+    RequestedOrderDetailMsg requested_order_detail = 7;
+    message PerformedOrderDetailMsg {
+      OrderDetailMsg order_detail = 1;
+      InstanceIdentifierOneOfMsg filler_order_number = 2;
+      repeated ClinicalInfoMsg resulting_clinical_info = 3;
     }
-    PerformedOrderDetail performed_order_detail = 8;
+    PerformedOrderDetailMsg performed_order_detail = 8;
   }
-  WorkflowDetail workflow_detail = 2;
+  WorkflowDetailMsg workflow_detail = 2;
 }

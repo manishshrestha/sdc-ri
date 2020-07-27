@@ -2,17 +2,18 @@ syntax = "proto3";
 
 package sdc.biceps;
 
+option java_multiple_files = true;
 option java_package = "org.somda.sdc.proto.model.biceps";
-option java_outer_classname = "GetLocalizedTextType";
+option java_outer_classname = "GetLocalizedTextProto";
 
 import "sdc/biceps/abstractget.proto";
 import "sdc/biceps/localizedtextwidth.proto";
 
-  message GetLocalizedText {
-    AbstractGet abstract_get = 1;
+  message GetLocalizedTextMsg {
+    AbstractGetMsg abstract_get = 1;
     repeated string ref = 2;
     uint64 version = 3;
     repeated string lang = 4;
-    repeated LocalizedTextWidth text_width = 5;
-    repeated int32 number_of_lines = 6;
+    repeated LocalizedTextWidthMsg text_width = 5;
+    repeated int64 number_of_lines = 6;
   }

@@ -2,27 +2,29 @@ syntax = "proto3";
 
 package sdc.biceps;
 
+option java_multiple_files = true;
 option java_package = "org.somda.sdc.proto.model.biceps";
-option java_outer_classname = "AbstractOperationDescriptorType";
+option java_outer_classname = "AbstractOperationDescriptorProto";
 
 import "sdc/biceps/abstractdescriptor.proto";
 import "google/protobuf/duration.proto";
+import "google/protobuf/wrappers.proto";
 
-message AbstractOperationDescriptor {
-  AbstractDescriptor abstract_descriptor = 1;
+message AbstractOperationDescriptorMsg {
+  AbstractDescriptorMsg abstract_descriptor = 1;
   string a_operation_target = 2;
   google.protobuf.Duration a_max_time_to_finish = 3;
   google.protobuf.Duration a_invocation_effective_timeout = 4;
-  bool a_retriggerable = 5;
-  message AccessLevel {
-    enum AccessLevelEnum {
+  google.protobuf.BoolValue a_retriggerable = 5;
+  message AccessLevelMsg {
+    enum EnumType {
       USR = 0;
-      CSUSR = 1;
-      RO = 2;
-      SP = 3;
+      C_S_USR = 1;
+      R_O = 2;
+      S_P = 3;
       OTH = 4;
     }
-    AccessLevelEnum type = 1;
+    EnumType enum_value = 1;
   }
-  AccessLevel access_level = 6;
+  AccessLevelMsg access_level = 6;
 }

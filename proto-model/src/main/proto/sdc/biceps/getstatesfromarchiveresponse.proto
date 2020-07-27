@@ -2,13 +2,14 @@ syntax = "proto3";
 
 package sdc.biceps;
 
+option java_multiple_files = true;
 option java_package = "org.somda.sdc.proto.model.biceps";
-option java_outer_classname = "GetStatesFromArchiveResponseType";
+option java_outer_classname = "GetStatesFromArchiveResponseProto";
 
 import "sdc/biceps/abstractgetresponse.proto";
 import "sdc/biceps/abstractstateoneof.proto";
 
-  message GetStatesFromArchiveResponse {
-    AbstractGetResponse abstract_get_response = 1;
-    repeated AbstractStateOneOf state = 2;
+  message GetStatesFromArchiveResponseMsg {
+    AbstractGetResponseMsg abstract_get_response = 1;
+    repeated AbstractStateOneOfMsg state = 2;
   }

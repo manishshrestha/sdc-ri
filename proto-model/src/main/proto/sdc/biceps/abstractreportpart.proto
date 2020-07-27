@@ -2,12 +2,13 @@ syntax = "proto3";
 
 package sdc.biceps;
 
+option java_multiple_files = true;
 option java_package = "org.somda.sdc.proto.model.biceps";
-option java_outer_classname = "AbstractReportPartType";
+option java_outer_classname = "AbstractReportPartProto";
 
 import "sdc/biceps/extension.proto";
 
-message AbstractReportPart {
-  Extension element1 = 1;
+message AbstractReportPartMsg {
+  ExtensionMsg element1 = 1;
   string source_mds = 2;
 }

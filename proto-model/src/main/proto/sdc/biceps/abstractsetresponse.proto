@@ -2,15 +2,16 @@ syntax = "proto3";
 
 package sdc.biceps;
 
+option java_multiple_files = true;
 option java_package = "org.somda.sdc.proto.model.biceps";
-option java_outer_classname = "AbstractSetResponseType";
+option java_outer_classname = "AbstractSetResponseProto";
 
 import "sdc/biceps/extension.proto";
 import "sdc/biceps/invocationinfo.proto";
 import "sdc/biceps/mdibversiongroup.proto";
 
-message AbstractSetResponse {
-  Extension element1 = 1;
-  InvocationInfo invocation_info = 2;
-  MdibVersionGroup a_mdib_version_group = 3;
+message AbstractSetResponseMsg {
+  ExtensionMsg element1 = 1;
+  InvocationInfoMsg invocation_info = 2;
+  MdibVersionGroupMsg a_mdib_version_group = 3;
 }

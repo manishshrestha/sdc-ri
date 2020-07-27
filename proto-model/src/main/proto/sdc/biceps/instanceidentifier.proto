@@ -2,17 +2,19 @@ syntax = "proto3";
 
 package sdc.biceps;
 
+option java_multiple_files = true;
 option java_package = "org.somda.sdc.proto.model.biceps";
-option java_outer_classname = "InstanceIdentifierType";
+option java_outer_classname = "InstanceIdentifierProto";
 
 import "sdc/biceps/extension.proto";
 import "sdc/biceps/codedvalue.proto";
 import "sdc/biceps/localizedtext.proto";
+import "google/protobuf/wrappers.proto";
 
-message InstanceIdentifier {
-  Extension element1 = 1;
-  CodedValue type = 2;
-  repeated LocalizedText identifier_name = 3;
-  string root = 4;
-  string extension = 5;
+message InstanceIdentifierMsg {
+  ExtensionMsg element1 = 1;
+  CodedValueMsg type = 2;
+  repeated LocalizedTextMsg identifier_name = 3;
+  google.protobuf.StringValue a_root = 4;
+  google.protobuf.StringValue a_extension = 5;
 }

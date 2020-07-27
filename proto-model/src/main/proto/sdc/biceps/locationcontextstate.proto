@@ -2,13 +2,14 @@ syntax = "proto3";
 
 package sdc.biceps;
 
+option java_multiple_files = true;
 option java_package = "org.somda.sdc.proto.model.biceps";
-option java_outer_classname = "LocationContextStateType";
+option java_outer_classname = "LocationContextStateProto";
 
 import "sdc/biceps/abstractcontextstate.proto";
 import "sdc/biceps/locationdetail.proto";
 
-message LocationContextState {
-  AbstractContextState abstract_context_state = 1;
-  LocationDetail location_detail = 2;
+message LocationContextStateMsg {
+  AbstractContextStateMsg abstract_context_state = 1;
+  LocationDetailMsg location_detail = 2;
 }

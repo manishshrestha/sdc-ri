@@ -2,14 +2,16 @@ syntax = "proto3";
 
 package sdc.biceps;
 
+option java_multiple_files = true;
 option java_package = "org.somda.sdc.proto.model.biceps";
-option java_outer_classname = "GetContextStatesByIdentificationType";
+option java_outer_classname = "GetContextStatesByIdentificationProto";
 
 import "sdc/biceps/abstractget.proto";
 import "sdc/biceps/instanceidentifieroneof.proto";
+import "google/protobuf/wrappers.proto";
 
-  message GetContextStatesByIdentification {
-    AbstractGet abstract_get = 1;
-    repeated InstanceIdentifierOneOf identification = 2;
-    string a_context_type = 3;
+  message GetContextStatesByIdentificationMsg {
+    AbstractGetMsg abstract_get = 1;
+    repeated InstanceIdentifierOneOfMsg identification = 2;
+    google.protobuf.StringValue a_context_type = 3;
   }

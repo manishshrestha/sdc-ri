@@ -2,15 +2,16 @@ syntax = "proto3";
 
 package sdc.biceps;
 
+option java_multiple_files = true;
 option java_package = "org.somda.sdc.proto.model.biceps";
-option java_outer_classname = "CauseInfoType";
+option java_outer_classname = "CauseInfoProto";
 
 import "sdc/biceps/extension.proto";
 import "sdc/biceps/remedyinfo.proto";
 import "sdc/biceps/localizedtext.proto";
 
-message CauseInfo {
-  Extension element1 = 1;
-  RemedyInfo remedy_info = 2;
-  repeated LocalizedText description = 3;
+message CauseInfoMsg {
+  ExtensionMsg element1 = 1;
+  RemedyInfoMsg remedy_info = 2;
+  repeated LocalizedTextMsg description = 3;
 }

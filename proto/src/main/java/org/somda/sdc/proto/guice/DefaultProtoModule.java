@@ -13,6 +13,10 @@ import org.somda.sdc.proto.addressing.factory.AddressingValidatorFactory;
 import org.somda.sdc.proto.discovery.common.UdpUtil;
 import org.somda.sdc.proto.discovery.provider.TargetService;
 import org.somda.sdc.proto.discovery.provider.factory.TargetServiceFactory;
+import org.somda.sdc.proto.mapping.PojoToProtoTreeMapper;
+import org.somda.sdc.proto.mapping.ProtoToPojoModificationsBuilder;
+import org.somda.sdc.proto.mapping.factory.PojoToProtoTreeMapperFactory;
+import org.somda.sdc.proto.mapping.factory.ProtoToPojoModificationsBuilderFactory;
 import org.somda.sdc.proto.provider.Provider;
 import org.somda.sdc.proto.provider.ProviderImpl;
 import org.somda.sdc.proto.provider.guice.ProviderImplFactory;
@@ -51,6 +55,12 @@ public class DefaultProtoModule extends AbstractModule {
         install(new FactoryModuleBuilder()
             .implement(Server.class, ServerImpl.class)
             .build(ServerImplFactory.class));
+        install(new FactoryModuleBuilder()
+                .implement(PojoToProtoTreeMapper.class, PojoToProtoTreeMapper.class)
+                .build(PojoToProtoTreeMapperFactory.class));
+        install(new FactoryModuleBuilder()
+                .implement(ProtoToPojoModificationsBuilder.class, ProtoToPojoModificationsBuilder.class)
+                .build(ProtoToPojoModificationsBuilderFactory.class));
 
         bind(UdpUtil.class).annotatedWith(ProtoDiscovery.class).to(UdpUtil.class).asEagerSingleton();
     }

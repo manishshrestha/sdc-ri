@@ -2,11 +2,12 @@ syntax = "proto3";
 
 package sdc.biceps;
 
+option java_multiple_files = true;
 option java_package = "org.somda.sdc.proto.model.biceps";
-option java_outer_classname = "PeriodicContextReportType";
+option java_outer_classname = "PeriodicContextReportProto";
 
 import "sdc/biceps/abstractcontextreport.proto";
 
-  message PeriodicContextReport {
-    AbstractContextReport abstract_context_report = 1;
+  message PeriodicContextReportMsg {
+    AbstractContextReportMsg abstract_context_report = 1;
   }

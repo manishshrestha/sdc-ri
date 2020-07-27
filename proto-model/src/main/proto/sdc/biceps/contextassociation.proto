@@ -2,16 +2,17 @@ syntax = "proto3";
 
 package sdc.biceps;
 
+option java_multiple_files = true;
 option java_package = "org.somda.sdc.proto.model.biceps";
-option java_outer_classname = "ContextAssociationType";
+option java_outer_classname = "ContextAssociationProto";
 
 
-message ContextAssociation {
-  enum ContextAssociationEnum {
+message ContextAssociationMsg {
+  enum EnumType {
     NO = 0;
     PRE = 1;
     ASSOC = 2;
     DIS = 3;
   }
-  ContextAssociationEnum type = 1;
+  EnumType enum_value = 1;
 }
