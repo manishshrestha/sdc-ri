@@ -4,14 +4,21 @@ import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.somda.sdc.biceps.model.participant.AbstractDescriptor;
 import org.somda.sdc.biceps.model.participant.AbstractDeviceComponentDescriptor;
+import org.somda.sdc.biceps.model.participant.AbstractMultiState;
+import org.somda.sdc.biceps.model.participant.AbstractState;
 import org.somda.sdc.biceps.model.participant.CodedValue;
 import org.somda.sdc.biceps.model.participant.InstanceIdentifier;
 import org.somda.sdc.biceps.model.participant.LocalizedText;
 import org.somda.sdc.biceps.model.participant.LocationDetail;
 import org.somda.sdc.biceps.model.participant.OperatingJurisdiction;
+import org.somda.sdc.biceps.model.participant.SafetyClassification;
 import org.somda.sdc.common.logging.InstanceLogger;
+import org.somda.sdc.proto.model.biceps.AbstractDescriptorMsg;
 import org.somda.sdc.proto.model.biceps.AbstractDeviceComponentDescriptorMsg;
+import org.somda.sdc.proto.model.biceps.AbstractMultiStateMsg;
+import org.somda.sdc.proto.model.biceps.AbstractStateMsg;
 import org.somda.sdc.proto.model.biceps.CodedValueMsg;
 import org.somda.sdc.proto.model.biceps.InstanceIdentifierMsg;
 import org.somda.sdc.proto.model.biceps.InstanceIdentifierOneOfMsg;
@@ -24,12 +31,29 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class ProtoToPojoBaseMapper {
-    private static final Logger LOG = LogManager.getLogger(ProtoToPojoNodeMapper.class);
+    private static final Logger LOG = LogManager.getLogger(ProtoToPojoOneOfMapper.class);
     private final Logger instanceLogger;
 
     @Inject
     ProtoToPojoBaseMapper(@Named(org.somda.sdc.common.CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier) {
         this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);
+    }
+
+    void map(AbstractDescriptor pojo, AbstractDescriptorMsg protoMsg) {
+        pojo.setHandle(protoMsg.getAHandle());
+        pojo.setDescriptorVersion(Util.optionalBigIntOfLong(protoMsg, "ADescriptorVersion"));
+        pojo.setSafetyClassification(Util.mapToPojoEnum(protoMsg, "ASafetyClassification", SafetyClassification.class));
+    }
+
+    void map(AbstractState pojo, AbstractStateMsg protoMsg) {
+        pojo.setDescriptorHandle(protoMsg.getADescriptorHandle());
+        pojo.setDescriptorVersion(Util.optionalBigIntOfLong(protoMsg, "ADescriptorVersion"));
+        pojo.setStateVersion(Util.optionalBigIntOfLong(protoMsg, "AStateVersion"));
+    }
+
+    void map(AbstractMultiState pojo, AbstractMultiStateMsg protoMsg) {
+        pojo.setHandle(protoMsg.getAHandle());
+        map(pojo, protoMsg.getAbstractState());
     }
 
     public InstanceIdentifier map(@Nullable InstanceIdentifierMsg protoMsg) {

@@ -1,18 +1,23 @@
 package org.somda.sdc.proto.mapping;
 
 import com.google.inject.Inject;
+import org.somda.sdc.biceps.model.participant.AbstractDescriptor;
 import org.somda.sdc.biceps.model.participant.AbstractDeviceComponentDescriptor;
+import org.somda.sdc.biceps.model.participant.AbstractState;
 import org.somda.sdc.biceps.model.participant.CodedValue;
 import org.somda.sdc.biceps.model.participant.InstanceIdentifier;
 import org.somda.sdc.biceps.model.participant.LocalizedText;
 import org.somda.sdc.biceps.model.participant.OperatingJurisdiction;
+import org.somda.sdc.proto.model.biceps.AbstractDescriptorMsg;
 import org.somda.sdc.proto.model.biceps.AbstractDeviceComponentDescriptorMsg;
+import org.somda.sdc.proto.model.biceps.AbstractStateMsg;
 import org.somda.sdc.proto.model.biceps.CodedValueMsg;
 import org.somda.sdc.proto.model.biceps.InstanceIdentifierMsg;
 import org.somda.sdc.proto.model.biceps.InstanceIdentifierOneOfMsg;
 import org.somda.sdc.proto.model.biceps.LocalizedTextMsg;
 import org.somda.sdc.proto.model.biceps.LocalizedTextWidthMsg;
 import org.somda.sdc.proto.model.biceps.OperatingJurisdictionMsg;
+import org.somda.sdc.proto.model.biceps.SafetyClassificationMsg;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -85,6 +90,25 @@ public class PojoToProtoBaseMapper {
         Util.doIfNotNull(productionSpecification.getProductionSpec(), builder::setProductionSpec);
         Util.doIfNotNull(productionSpecification.getSpecType(), codedValue ->
                 builder.setSpecType(mapCodedValue(codedValue)));
+        return builder.build();
+    }
+
+    AbstractDescriptorMsg mapAbstractDescriptor(AbstractDescriptor abstractDescriptor) {
+        var builder = AbstractDescriptorMsg.newBuilder();
+        builder.setADescriptorVersion(Util.toUInt64(abstractDescriptor.getDescriptorVersion()));
+        Util.doIfNotNull(abstractDescriptor.getHandle(), builder::setAHandle);
+        Util.doIfNotNull(abstractDescriptor.getSafetyClassification(), safetyClassification ->
+                builder.setASafetyClassification(Util.mapToProtoEnum(safetyClassification, SafetyClassificationMsg.class)));
+        Util.doIfNotNull(abstractDescriptor.getType(), codedValue ->
+                builder.setType(mapCodedValue(codedValue)));
+        return builder.build();
+    }
+
+    AbstractStateMsg mapAbstractState(AbstractState abstractState) {
+        var builder = AbstractStateMsg.newBuilder();
+        Util.doIfNotNull(abstractState.getDescriptorHandle(), builder::setADescriptorHandle);
+        builder.setADescriptorVersion(Util.toUInt64(abstractState.getDescriptorVersion()));
+        builder.setAStateVersion(Util.toUInt64(abstractState.getStateVersion()));
         return builder.build();
     }
 }

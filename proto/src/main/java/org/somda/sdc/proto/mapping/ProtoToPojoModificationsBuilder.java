@@ -11,7 +11,6 @@ import org.somda.sdc.biceps.common.MdibDescriptionModifications;
 import org.somda.sdc.biceps.common.MdibTypeValidator;
 import org.somda.sdc.biceps.common.access.MdibAccess;
 import org.somda.sdc.biceps.model.participant.AbstractDescriptor;
-import org.somda.sdc.biceps.model.participant.AbstractMetricDescriptor;
 import org.somda.sdc.biceps.model.participant.AbstractMultiState;
 import org.somda.sdc.biceps.model.participant.AbstractState;
 import org.somda.sdc.biceps.model.participant.ChannelDescriptor;
@@ -24,7 +23,6 @@ import org.somda.sdc.glue.common.DefaultStateValues;
 import org.somda.sdc.glue.common.MdibMapper;
 import org.somda.sdc.glue.common.RequiredDefaultStateValues;
 import org.somda.sdc.glue.common.helper.DefaultStateValuesDispatcher;
-import org.somda.sdc.proto.model.biceps.AbstractMetricDescriptorMsg;
 import org.somda.sdc.proto.model.biceps.AbstractMetricDescriptorOneOfMsg;
 import org.somda.sdc.proto.model.biceps.ChannelDescriptorMsg;
 import org.somda.sdc.proto.model.biceps.MdibMsg;
@@ -55,12 +53,12 @@ public class ProtoToPojoModificationsBuilder {
     private final MdibTypeValidator typeValidator;
     private final DefaultStateValuesDispatcher defaultStateValuesDispatcher;
     private final Logger instanceLogger;
-    private final ProtoToPojoNodeMapper nodeMapper;
+    private final ProtoToPojoOneOfMapper nodeMapper;
 
     @AssistedInject
     ProtoToPojoModificationsBuilder(@Assisted MdibMsg mdib,
                                     MdibTypeValidator typeValidator,
-                                    ProtoToPojoNodeMapper nodeMapper,
+                                    ProtoToPojoOneOfMapper nodeMapper,
                                     @Named(org.somda.sdc.common.CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier) {
         this(mdib, false, null, typeValidator, nodeMapper, frameworkIdentifier);
     }
@@ -69,7 +67,7 @@ public class ProtoToPojoModificationsBuilder {
     ProtoToPojoModificationsBuilder(@Assisted MdibMsg mdib,
                                     @Assisted Boolean createSingleStateIfMissing,
                                     MdibTypeValidator typeValidator,
-                                    ProtoToPojoNodeMapper nodeMapper,
+                                    ProtoToPojoOneOfMapper nodeMapper,
                                     @Named(org.somda.sdc.common.CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier) {
         this(mdib, createSingleStateIfMissing, null, typeValidator, nodeMapper, frameworkIdentifier);
     }
@@ -79,7 +77,7 @@ public class ProtoToPojoModificationsBuilder {
                                     @Assisted Boolean createSingleStateIfMissing,
                                     @Assisted @Nullable DefaultStateValues defaultStateValues,
                                     MdibTypeValidator typeValidator,
-                                    ProtoToPojoNodeMapper nodeMapper,
+                                    ProtoToPojoOneOfMapper nodeMapper,
                                     @Named(org.somda.sdc.common.CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier) {
         this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);
         this.createSingleStateIfMissing = createSingleStateIfMissing;

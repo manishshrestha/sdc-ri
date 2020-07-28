@@ -8,7 +8,29 @@ import org.apache.logging.log4j.Logger;
 import org.somda.sdc.biceps.common.MdibDescriptionModifications;
 import org.somda.sdc.biceps.common.MdibEntity;
 import org.somda.sdc.biceps.common.access.MdibAccess;
-import org.somda.sdc.biceps.model.participant.*;
+import org.somda.sdc.biceps.model.participant.AbstractComplexDeviceComponentDescriptor;
+import org.somda.sdc.biceps.model.participant.AbstractDescriptor;
+import org.somda.sdc.biceps.model.participant.AbstractOperationDescriptor;
+import org.somda.sdc.biceps.model.participant.AlertConditionDescriptor;
+import org.somda.sdc.biceps.model.participant.AlertSignalDescriptor;
+import org.somda.sdc.biceps.model.participant.AlertSystemDescriptor;
+import org.somda.sdc.biceps.model.participant.ChannelDescriptor;
+import org.somda.sdc.biceps.model.participant.EnsembleContextDescriptor;
+import org.somda.sdc.biceps.model.participant.EnumStringMetricDescriptor;
+import org.somda.sdc.biceps.model.participant.LocationContextDescriptor;
+import org.somda.sdc.biceps.model.participant.MdDescription;
+import org.somda.sdc.biceps.model.participant.MdState;
+import org.somda.sdc.biceps.model.participant.Mdib;
+import org.somda.sdc.biceps.model.participant.MdsDescriptor;
+import org.somda.sdc.biceps.model.participant.MeansContextDescriptor;
+import org.somda.sdc.biceps.model.participant.ObjectFactory;
+import org.somda.sdc.biceps.model.participant.OperatorContextDescriptor;
+import org.somda.sdc.biceps.model.participant.PatientContextDescriptor;
+import org.somda.sdc.biceps.model.participant.ScoDescriptor;
+import org.somda.sdc.biceps.model.participant.StringMetricDescriptor;
+import org.somda.sdc.biceps.model.participant.SystemContextDescriptor;
+import org.somda.sdc.biceps.model.participant.VmdDescriptor;
+import org.somda.sdc.biceps.model.participant.WorkflowContextDescriptor;
 import org.somda.sdc.common.CommonConfig;
 import org.somda.sdc.common.logging.InstanceLogger;
 import org.somda.sdc.common.util.ObjectUtil;
@@ -44,16 +66,34 @@ public class PojoToProtoTreeMapper {
     private final MdibAccess mdibAccess;
     private final ObjectFactory participantModelFactory;
     private final ObjectUtil objectUtil;
-    private final PojoToProtoNodeMapper nodeMapper;
+    private final PojoToProtoBaseMapper baseMapper;
+    private final PojoToProtoAlertMapper alertMapper;
+    private final PojoToProtoComponentMapper componentMapper;
+    private final PojoToProtoContextMapper contextMapper;
+    private final PojoToProtoMetricMapper metricMapper;
+    private final PojoToProtoOperationMapper operationMapper;
+    private final PojoToProtoOneOfMapper oneOfMapper;
     private final Logger instanceLogger;
 
     @AssistedInject
     PojoToProtoTreeMapper(@Assisted MdibAccess mdibAccess,
                           ObjectFactory participantModelFactory,
                           ObjectUtil objectUtil,
-                          PojoToProtoNodeMapper nodeMapper,
+                          PojoToProtoBaseMapper baseMapper,
+                          PojoToProtoAlertMapper alertMapper,
+                          PojoToProtoComponentMapper componentMapper,
+                          PojoToProtoContextMapper contextMapper,
+                          PojoToProtoMetricMapper metricMapper,
+                          PojoToProtoOperationMapper operationMapper,
+                          PojoToProtoOneOfMapper nodeMapper,
                           @Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier) {
-        this.nodeMapper = nodeMapper;
+        this.baseMapper = baseMapper;
+        this.alertMapper = alertMapper;
+        this.componentMapper = componentMapper;
+        this.contextMapper = contextMapper;
+        this.metricMapper = metricMapper;
+        this.operationMapper = operationMapper;
+        this.oneOfMapper = nodeMapper;
         this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);
         this.mdibAccess = mdibAccess;
         this.participantModelFactory = participantModelFactory;
@@ -169,7 +209,7 @@ public class PojoToProtoTreeMapper {
 
     private void appendStates(MdStateMsg.Builder mdState, MdibEntity entity) {
         mdState.addAllState(entity.getStates().stream()
-                .map(nodeMapper::mapAbstractStateOneOf)
+                .map(oneOfMapper::mapAbstractStateOneOf)
                 .collect(Collectors.toList()));
         for (String childHandle : entity.getChildren()) {
             mdibAccess.getEntity(childHandle).ifPresent(childEntity ->
@@ -181,7 +221,7 @@ public class PojoToProtoTreeMapper {
         if (filterSet.contains(entity.getHandle())) {
             filterSet.remove(entity.getHandle());
             mdState.addAllState(entity.getStates().stream()
-                    .map(nodeMapper::mapAbstractStateOneOf)
+                    .map(oneOfMapper::mapAbstractStateOneOf)
                     .collect(Collectors.toList()));
             entity.doIfMultiState(multiStates ->
                     multiStates.forEach(state -> filterSet.remove(state.getHandle())));
@@ -191,7 +231,7 @@ public class PojoToProtoTreeMapper {
         entity.doIfMultiState(multiStates ->
                 multiStates.forEach(state -> {
                     if (filterSet.contains(state.getHandle())) {
-                        mdState.addState(nodeMapper.mapAbstractStateOneOf(state));
+                        mdState.addState(oneOfMapper.mapAbstractStateOneOf(state));
                         filterSet.remove(state.getHandle());
                     }
                 }));
@@ -223,7 +263,7 @@ public class PojoToProtoTreeMapper {
             return;
         }
 
-        var builder = nodeMapper.mapMdsDescriptor(descriptor.get());
+        var builder = componentMapper.mapMdsDescriptor(descriptor.get());
 
 //        mapZeroOrMoreDescriptors(
 //                descriptorCopy,
@@ -248,7 +288,7 @@ public class PojoToProtoTreeMapper {
     private void mapVmds(MdsDescriptorMsg.Builder parent, List<MdibEntity> vmds) {
         for (MdibEntity vmd : vmds) {
             vmd.getDescriptor(VmdDescriptor.class).ifPresent(vmdDescriptor -> {
-                var builder = nodeMapper.mapVmdDescriptor(vmdDescriptor);
+                var builder = componentMapper.mapVmdDescriptor(vmdDescriptor);
                 // todo
 //                mapAlertSystem(vmdDescriptorCopy, mdibAccess.getChildrenByType(vmdDescriptorCopy.getHandle(),
 //                        AlertSystemDescriptor.class));
@@ -264,7 +304,7 @@ public class PojoToProtoTreeMapper {
     private void mapChannels(VmdDescriptorMsg.Builder parent, List<MdibEntity> channels) {
         for (MdibEntity channel : channels) {
             channel.getDescriptor(ChannelDescriptor.class).ifPresent(channelDescriptor -> {
-                var builder = nodeMapper.mapChannelDescriptor(channelDescriptor);
+                var builder = componentMapper.mapChannelDescriptor(channelDescriptor);
 
                 // TODO: Handle other types.
                 mapStringMetricDescriptor(
@@ -279,9 +319,9 @@ public class PojoToProtoTreeMapper {
     private void mapStringMetricDescriptor(ChannelDescriptorMsg.Builder parent, List<MdibEntity> descriptors) {
         for (MdibEntity descriptor : descriptors) {
             descriptor.getDescriptor(StringMetricDescriptor.class)
-                    // TODO: is this filter necessary? Stupid inheritance makes it likely
+                    // is this filter necessary? yes, because stupid inheritance
                     .filter(desc -> !(desc instanceof EnumStringMetricDescriptor)).ifPresent(stringMetricDescriptor -> {
-                        var builder = nodeMapper.mapStringMetricDescriptor(stringMetricDescriptor);
+                        var builder = metricMapper.mapStringMetricDescriptor(stringMetricDescriptor);
 
                         parent.addMetric(
                                 AbstractMetricDescriptorOneOfMsg.newBuilder().setStringMetricDescriptorOneOf(

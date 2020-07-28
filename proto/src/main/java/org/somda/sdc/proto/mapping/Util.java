@@ -6,6 +6,10 @@ import com.google.protobuf.Int64Value;
 import com.google.protobuf.StringValue;
 import com.google.protobuf.UInt32Value;
 import com.google.protobuf.UInt64Value;
+import org.somda.sdc.biceps.model.participant.AbstractDescriptor;
+import org.somda.sdc.biceps.model.participant.AbstractMetricState;
+import org.somda.sdc.biceps.model.participant.AbstractState;
+import org.somda.sdc.biceps.model.participant.StringMetricState;
 
 import javax.annotation.Nullable;
 import java.lang.reflect.InvocationTargetException;
@@ -189,5 +193,29 @@ class Util {
         } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException | ClassCastException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    static AbstractState invalidState() {
+        var state = new AbstractState();
+        state.setDescriptorHandle("[mapping failed]");
+        return state;
+    }
+
+    static AbstractDescriptor invalidDescriptor() {
+        var descr = new AbstractDescriptor();
+        descr.setHandle("[mapping failed]");
+        return descr;
+    }
+
+    static AbstractMetricState invalidMetricState() {
+        var state = new AbstractMetricState();
+        state.setDescriptorHandle("[mapping failed]");
+        return state;
+    }
+
+    static StringMetricState invalidStringMetricState() {
+        var state = new StringMetricState();
+        state.setDescriptorHandle("[mapping failed]");
+        return state;
     }
 }
