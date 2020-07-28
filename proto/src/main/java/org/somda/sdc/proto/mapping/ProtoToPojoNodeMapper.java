@@ -5,35 +5,92 @@ import com.google.inject.name.Named;
 import com.google.protobuf.MessageOrBuilder;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.somda.sdc.biceps.model.participant.AbstractComplexDeviceComponentDescriptor;
+import org.somda.sdc.biceps.model.participant.AbstractComplexDeviceComponentState;
+import org.somda.sdc.biceps.model.participant.AbstractContextState;
 import org.somda.sdc.biceps.model.participant.*;
+import org.somda.sdc.biceps.model.participant.AbstractDeviceComponentDescriptor;
+import org.somda.sdc.biceps.model.participant.AbstractDeviceComponentState;
+import org.somda.sdc.biceps.model.participant.AbstractMultiState;
+import org.somda.sdc.biceps.model.participant.AbstractState;
+import org.somda.sdc.biceps.model.participant.ChannelDescriptor;
+import org.somda.sdc.biceps.model.participant.ChannelState;
+import org.somda.sdc.biceps.model.participant.ComponentActivation;
+import org.somda.sdc.biceps.model.participant.ContextAssociation;
+import org.somda.sdc.biceps.model.participant.EnsembleContextState;
+import org.somda.sdc.biceps.model.participant.LocationContextState;
+import org.somda.sdc.biceps.model.participant.MdsDescriptor;
+import org.somda.sdc.biceps.model.participant.MdsOperatingMode;
+import org.somda.sdc.biceps.model.participant.MdsState;
+import org.somda.sdc.biceps.model.participant.SafetyClassification;
+import org.somda.sdc.biceps.model.participant.ScoDescriptor;
+import org.somda.sdc.biceps.model.participant.ScoState;
+import org.somda.sdc.biceps.model.participant.SystemContextDescriptor;
+import org.somda.sdc.biceps.model.participant.VmdDescriptor;
+import org.somda.sdc.biceps.model.participant.VmdState;
 import org.somda.sdc.common.logging.InstanceLogger;
 import org.somda.sdc.proto.model.biceps.*;
-
-import java.math.BigInteger;
+import org.somda.sdc.common.util.TimestampAdapter;
+import org.somda.sdc.proto.model.biceps.AbstractComplexDeviceComponentDescriptorMsg;
+import org.somda.sdc.proto.model.biceps.AbstractComplexDeviceComponentDescriptorOneOfMsg;
+import org.somda.sdc.proto.model.biceps.AbstractComplexDeviceComponentStateMsg;
+import org.somda.sdc.proto.model.biceps.AbstractComplexDeviceComponentStateOneOfMsg;
+import org.somda.sdc.proto.model.biceps.AbstractContextStateMsg;
+import org.somda.sdc.proto.model.biceps.AbstractContextStateOneOfMsg;
+import org.somda.sdc.proto.model.biceps.AbstractDescriptorMsg;
+import org.somda.sdc.proto.model.biceps.AbstractDescriptorOneOfMsg;
+import org.somda.sdc.proto.model.biceps.AbstractDeviceComponentDescriptorMsg;
+import org.somda.sdc.proto.model.biceps.AbstractDeviceComponentDescriptorOneOfMsg;
+import org.somda.sdc.proto.model.biceps.AbstractDeviceComponentStateMsg;
+import org.somda.sdc.proto.model.biceps.AbstractDeviceComponentStateOneOfMsg;
+import org.somda.sdc.proto.model.biceps.AbstractMultiStateMsg;
+import org.somda.sdc.proto.model.biceps.AbstractMultiStateOneOfMsg;
+import org.somda.sdc.proto.model.biceps.AbstractStateMsg;
+import org.somda.sdc.proto.model.biceps.AbstractStateOneOfMsg;
+import org.somda.sdc.proto.model.biceps.ChannelDescriptorMsg;
+import org.somda.sdc.proto.model.biceps.ChannelStateMsg;
+import org.somda.sdc.proto.model.biceps.EnsembleContextStateMsg;
+import org.somda.sdc.proto.model.biceps.LocationContextStateMsg;
+import org.somda.sdc.proto.model.biceps.MdsDescriptorMsg;
+import org.somda.sdc.proto.model.biceps.MdsStateMsg;
+import org.somda.sdc.proto.model.biceps.OperatingJurisdictionMsg;
+import org.somda.sdc.proto.model.biceps.ScoDescriptorMsg;
+import org.somda.sdc.proto.model.biceps.ScoStateMsg;
+import org.somda.sdc.proto.model.biceps.SystemContextDescriptorMsg;
+import org.somda.sdc.proto.model.biceps.SystemContextStateMsg;
+import org.somda.sdc.proto.model.biceps.VmdDescriptorMsg;
+import org.somda.sdc.proto.model.biceps.VmdStateMsg;
 import java.util.stream.Collectors;
 
 public class ProtoToPojoNodeMapper {
     private static final Logger LOG = LogManager.getLogger(ProtoToPojoNodeMapper.class);
 
     private final ProtoToPojoBaseMapper baseMapper;
+    private final TimestampAdapter timestampAdapter;
     private final Logger instanceLogger;
 
     @Inject
     ProtoToPojoNodeMapper(ProtoToPojoBaseMapper baseMapper,
+                          TimestampAdapter timestampAdapter,
                           @Named(org.somda.sdc.common.CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier) {
         this.baseMapper = baseMapper;
+        this.timestampAdapter = timestampAdapter;
         this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);
     }
 
     public AbstractDescriptor mapDescriptor(MessageOrBuilder protoMsg) {
         if (protoMsg instanceof MdsDescriptorMsg) {
-            return map((MdsDescriptorMsg)protoMsg);
+            return map((MdsDescriptorMsg) protoMsg);
         } else if (protoMsg instanceof VmdDescriptorMsg) {
             return map((VmdDescriptorMsg)protoMsg);
         } else if (protoMsg instanceof ChannelDescriptorMsg) {
             return map((ChannelDescriptorMsg) protoMsg);
         } else if (protoMsg instanceof StringMetricDescriptorMsg) {
             return map((StringMetricDescriptorMsg) protoMsg);
+        } else if (protoMsg instanceof ChannelDescriptorMsg) {
+            return map((ChannelDescriptorMsg) protoMsg);
+        } else if (protoMsg instanceof SystemContextDescriptor) {
+            return map((SystemContextDescriptorMsg) protoMsg);
         } else {
             instanceLogger.error("Descriptor mapping not implemented: {}", protoMsg);
             return invalidDescriptor();
@@ -42,11 +99,13 @@ public class ProtoToPojoNodeMapper {
 
     public AbstractState mapState(MessageOrBuilder protoMsg) {
         if (protoMsg instanceof MdsStateMsg) {
-            return map((MdsStateMsg)protoMsg);
+            return map((MdsStateMsg) protoMsg);
         } else if (protoMsg instanceof VmdStateMsg) {
-            return map((VmdStateMsg)protoMsg);
-        }else if (protoMsg instanceof ChannelStateMsg) {
-            return map((ChannelStateMsg)protoMsg);
+            return map((VmdStateMsg) protoMsg);
+        } else if (protoMsg instanceof ChannelStateMsg) {
+            return map((ChannelStateMsg) protoMsg);
+        } else if (protoMsg instanceof SystemContextStateMsg) {
+            return map((SystemContextStateMsg) protoMsg);
         } else {
             instanceLogger.error("Descriptor mapping not implemented: {}", protoMsg);
             return invalidState();
@@ -95,11 +154,9 @@ public class ProtoToPojoNodeMapper {
             case CHANNEL_DESCRIPTOR:
                 return map(protoMsg.getChannelDescriptor());
             case SCO_DESCRIPTOR:
-                instanceLogger.error("Descriptor mapping not implemented: {}", type);
-                break;
+                return map(protoMsg.getScoDescriptor());
             case SYSTEM_CONTEXT_DESCRIPTOR:
-                instanceLogger.error("Descriptor mapping not implemented: {}", type);
-                break;
+                return map(protoMsg.getSystemContextDescriptor());
             case ABSTRACT_COMPLEX_DEVICE_COMPONENT_DESCRIPTOR_ONE_OF:
                 break;
             case ABSTRACTDEVICECOMPONENTDESCRIPTORONEOF_NOT_SET:
@@ -142,8 +199,7 @@ public class ProtoToPojoNodeMapper {
                 instanceLogger.error("State mapping not implemented: {}", type);
                 break;
             case ABSTRACT_MULTI_STATE_ONE_OF:
-                instanceLogger.error("State mapping not implemented: {}", type);
-                break;
+                return map(protoMsg.getAbstractMultiStateOneOf());
             case ABSTRACT_METRIC_STATE_ONE_OF:
                 return map(protoMsg.getAbstractMetricStateOneOf());
             case ABSTRACT_DEVICE_COMPONENT_STATE_ONE_OF:
@@ -192,6 +248,52 @@ public class ProtoToPojoNodeMapper {
         return invalidStringMetricState();
     }
 
+    private AbstractState map(AbstractMultiStateOneOfMsg protoMsg) {
+        var type = protoMsg.getAbstractMultiStateOneOfCase();
+        switch (type) {
+            case ABSTRACT_MULTI_STATE:
+                instanceLogger.error("State mapping not implemented: {}", type);
+                break;
+            case ABSTRACT_CONTEXT_STATE_ONE_OF:
+                return map(protoMsg.getAbstractContextStateOneOf());
+            case ABSTRACTMULTISTATEONEOF_NOT_SET:
+            default:
+                instanceLogger.error("State mapping not implemented: {}", type);
+        }
+
+        return invalidState();
+    }
+
+    private AbstractState map(AbstractContextStateOneOfMsg protoMsg) {
+        var type = protoMsg.getAbstractContextStateOneOfCase();
+        switch (type) {
+            case ABSTRACT_CONTEXT_STATE:
+                instanceLogger.error("State mapping not implemented: {}", type);
+                break;
+            case OPERATOR_CONTEXT_STATE:
+                instanceLogger.error("State mapping not implemented: {}", type);
+                break;
+            case ENSEMBLE_CONTEXT_STATE:
+                return map(protoMsg.getEnsembleContextState());
+            case WORKFLOW_CONTEXT_STATE:
+                instanceLogger.error("State mapping not implemented: {}", type);
+                break;
+            case PATIENT_CONTEXT_STATE:
+                instanceLogger.error("State mapping not implemented: {}", type);
+                break;
+            case LOCATION_CONTEXT_STATE:
+                return map(protoMsg.getLocationContextState());
+            case MEANS_CONTEXT_STATE:
+                instanceLogger.error("State mapping not implemented: {}", type);
+                break;
+            case ABSTRACTCONTEXTSTATEONEOF_NOT_SET:
+            default:
+                instanceLogger.error("State mapping not implemented: {}", type);
+        }
+
+        return invalidState();
+    }
+
     private AbstractState map(AbstractDeviceComponentStateOneOfMsg protoMsg) {
         var type = protoMsg.getAbstractDeviceComponentStateOneOfCase();
         switch (type) {
@@ -204,16 +306,14 @@ public class ProtoToPojoNodeMapper {
             case CHANNEL_STATE:
                 return map(protoMsg.getChannelState());
             case SYSTEM_CONTEXT_STATE:
-                instanceLogger.error("State mapping not implemented: {}", type);
-                break;
+                return map(protoMsg.getSystemContextState());
             case ABSTRACT_COMPLEX_DEVICE_COMPONENT_STATE_ONE_OF:
                 return map(protoMsg.getAbstractComplexDeviceComponentStateOneOf());
             case BATTERY_STATE:
                 instanceLogger.error("State mapping not implemented: {}", type);
                 break;
             case SCO_STATE:
-                instanceLogger.error("State mapping not implemented: {}", type);
-                break;
+                return map(protoMsg.getScoState());
             case ABSTRACTDEVICECOMPONENTSTATEONEOF_NOT_SET:
             default:
                 instanceLogger.error("State mapping not implemented: {}", type);
@@ -221,6 +321,13 @@ public class ProtoToPojoNodeMapper {
         }
 
         return invalidState();
+    }
+
+    private ScoState map(ScoStateMsg protoMsg) {
+        var pojo = new ScoState();
+        pojo.setInvocationRequested(protoMsg.getAInvocationRequested().getOperationRefList());
+        pojo.setInvocationRequired(protoMsg.getAInvocationRequired().getOperationRefList());
+        return pojo;
     }
 
     private AbstractState map(AbstractComplexDeviceComponentStateOneOfMsg protoMsg) {
@@ -310,6 +417,55 @@ public class ProtoToPojoNodeMapper {
                 protoMsg.getAMetricCategory(),
                 category -> pojo.setMetricCategory(Util.mapToPojoEnum(protoMsg, "AMetricCategory", MetricCategory.class))
         );
+    }
+
+    private SystemContextDescriptor map(SystemContextDescriptorMsg protoMsg) {
+        var pojo = new SystemContextDescriptor();
+        map(pojo, protoMsg.getAbstractDeviceComponentDescriptor());
+        return pojo;
+    }
+
+    private SystemContextState map(SystemContextStateMsg protoMsg) {
+        var pojo = new SystemContextState();
+        map(pojo, protoMsg.getAbstractDeviceComponentState());
+        return pojo;
+    }
+
+    public EnsembleContextState map(EnsembleContextStateMsg protoMsg) {
+        var pojoState = new EnsembleContextState();
+        map(pojoState, protoMsg.getAbstractContextState());
+        return pojoState;
+    }
+
+    public LocationContextState map(LocationContextStateMsg protoMsg) {
+        var pojoState = new LocationContextState();
+        if (protoMsg.hasLocationDetail()) {
+            pojoState.setLocationDetail(baseMapper.map(protoMsg.getLocationDetail()));
+        }
+        map(pojoState, protoMsg.getAbstractContextState());
+        return pojoState;
+    }
+
+    private ScoDescriptor map(ScoDescriptorMsg protoMsg) {
+        var pojo = new ScoDescriptor();
+        map(pojo, protoMsg.getAbstractDeviceComponentDescriptor());
+        return pojo;
+    }
+
+    private void map(AbstractContextState pojo, AbstractContextStateMsg protoMsg) {
+        pojo.setBindingEndTime(timestampAdapter.unmarshal(Util.optionalBigIntOfLong(protoMsg, "ABindingEndTime")));
+        pojo.setBindingStartTime(timestampAdapter.unmarshal(Util.optionalBigIntOfLong(protoMsg, "ABindingStartTime")));
+        pojo.setBindingMdibVersion(Util.optionalBigIntOfLong(protoMsg, "ABindingMdibVersion"));
+        pojo.setUnbindingMdibVersion(Util.optionalBigIntOfLong(protoMsg, "AUnbindingMdibVersion"));
+        pojo.setContextAssociation(Util.mapToPojoEnum(protoMsg, "AContextAssociation", ContextAssociation.class));
+        pojo.setIdentification(baseMapper.mapInstanceIdentifiers(protoMsg.getIdentificationList()));
+        pojo.setValidator(baseMapper.mapInstanceIdentifiers(protoMsg.getValidatorList()));
+        map(pojo, protoMsg.getAbstractMultiState());
+    }
+
+    private void map(AbstractMultiState pojo, AbstractMultiStateMsg protoMsg) {
+        pojo.setHandle(protoMsg.getAHandle());
+        map(pojo, protoMsg.getAbstractState());
     }
 
     private void map(AbstractDeviceComponentDescriptor pojo, AbstractDeviceComponentDescriptorMsg protoMsg) {

@@ -8,15 +8,19 @@ import org.somda.sdc.biceps.model.participant.AbstractDeviceComponentDescriptor;
 import org.somda.sdc.biceps.model.participant.CodedValue;
 import org.somda.sdc.biceps.model.participant.InstanceIdentifier;
 import org.somda.sdc.biceps.model.participant.LocalizedText;
+import org.somda.sdc.biceps.model.participant.LocationDetail;
 import org.somda.sdc.biceps.model.participant.OperatingJurisdiction;
 import org.somda.sdc.common.logging.InstanceLogger;
 import org.somda.sdc.proto.model.biceps.AbstractDeviceComponentDescriptorMsg;
 import org.somda.sdc.proto.model.biceps.CodedValueMsg;
 import org.somda.sdc.proto.model.biceps.InstanceIdentifierMsg;
+import org.somda.sdc.proto.model.biceps.InstanceIdentifierOneOfMsg;
 import org.somda.sdc.proto.model.biceps.LocalizedTextMsg;
+import org.somda.sdc.proto.model.biceps.LocationDetailMsg;
 import org.somda.sdc.proto.model.biceps.OperatingJurisdictionMsg;
 
 import javax.annotation.Nullable;
+import java.util.List;
 import java.util.stream.Collectors;
 
 public class ProtoToPojoBaseMapper {
@@ -35,12 +39,25 @@ public class ProtoToPojoBaseMapper {
 
         var pojo = new InstanceIdentifier();
         pojo.setExtensionName(Util.optionalStr(protoMsg, "AExtension"));
-        if (protoMsg.hasARoot() && !protoMsg.getARoot().getValue().isEmpty()) {
-            pojo.setRootName(protoMsg.getARoot().getValue());
-        }
+        pojo.setRootName(Util.optionalStr(protoMsg, "ARoot"));
         pojo.setType(map(Util.optional(protoMsg, "Type", CodedValueMsg.class)));
-        pojo.setIdentifierName(protoMsg.getIdentifierNameList().stream().map(this::map).collect(Collectors.toList()));
+        pojo.setIdentifierName(mapLocalizedTexts(protoMsg.getIdentifierNameList()));
         return pojo;
+    }
+
+    public List<InstanceIdentifier> mapInstanceIdentifiers(List<InstanceIdentifierOneOfMsg> protoMsgs) {
+        return protoMsgs.stream().map(it -> {
+            switch (it.getInstanceIdentifierOneOfCase()) {
+                case INSTANCE_IDENTIFIER:
+                    return map(it.getInstanceIdentifier());
+                case OPERATING_JURISDICTION:
+                case INSTANCEIDENTIFIERONEOF_NOT_SET:
+                default:
+                    instanceLogger.error("Instance identifier type not supported in context identification: {}",
+                            it.getInstanceIdentifierOneOfCase());
+                    return new InstanceIdentifier();
+            }
+        }).collect(Collectors.toList());
     }
 
     public OperatingJurisdiction map(@Nullable OperatingJurisdictionMsg protoMsg) {
@@ -86,17 +103,27 @@ public class ProtoToPojoBaseMapper {
         return pojo;
     }
 
-    public AbstractDeviceComponentDescriptor.ProductionSpecification map(
-            @Nullable AbstractDeviceComponentDescriptorMsg.ProductionSpecificationMsg protoMsg) {
-        if (protoMsg == null) {
-            return null;
-        }
+    public List<LocalizedText> mapLocalizedTexts(List<LocalizedTextMsg> protoMsgs) {
+        return protoMsgs.stream().map(this::map).collect(Collectors.toList());
+    }
 
+    public AbstractDeviceComponentDescriptor.ProductionSpecification map(
+            AbstractDeviceComponentDescriptorMsg.ProductionSpecificationMsg protoMsg) {
         var pojo = new AbstractDeviceComponentDescriptor.ProductionSpecification();
         pojo.setProductionSpec(protoMsg.getProductionSpec());
         pojo.setSpecType(map(Util.optional(protoMsg, "SpecType", CodedValueMsg.class)));
         pojo.setComponentId(map(Util.optional(protoMsg, "ComponentId", InstanceIdentifierMsg.class)));
+        return pojo;
+    }
 
+    public LocationDetail map(LocationDetailMsg protoMsg) {
+        var pojo = new LocationDetail();
+        pojo.setBed(Util.optionalStr(protoMsg, "ABed"));
+        pojo.setBuilding(Util.optionalStr(protoMsg, "ABuilding"));
+        pojo.setFacility(Util.optionalStr(protoMsg, "AFacility"));
+        pojo.setFloor(Util.optionalStr(protoMsg, "AFloor"));
+        pojo.setPoC(Util.optionalStr(protoMsg, "APoC"));
+        pojo.setRoom(Util.optionalStr(protoMsg, "ARoom"));
         return pojo;
     }
 }

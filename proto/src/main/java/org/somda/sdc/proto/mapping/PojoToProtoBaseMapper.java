@@ -34,6 +34,15 @@ public class PojoToProtoBaseMapper {
         return localizedTexts.stream().map(this::mapLocalizedText).collect(Collectors.toList());
     }
 
+//    public List<InstanceIdentifierMsg> mapInstanceIdentifiers(List<InstanceIdentifier> instanceIdentifier) {
+//        var builder = InstanceIdentifierMsg.newBuilder();
+//        builder.setARoot(Util.toStringValue(instanceIdentifier.getRootName()));
+//        builder.setAExtension(Util.toStringValue(instanceIdentifier.getExtensionName()));
+//        Util.doIfNotNull(instanceIdentifier.getType(), codedValue -> builder.setType(mapCodedValue(codedValue)));
+//        builder.addAllIdentifierName(mapLocalizedTexts(instanceIdentifier.getIdentifierName()));
+//        return builder.build();
+//    }
+
     public InstanceIdentifierMsg mapInstanceIdentifier(InstanceIdentifier instanceIdentifier) {
         var builder = InstanceIdentifierMsg.newBuilder();
         builder.setARoot(Util.toStringValue(instanceIdentifier.getRootName()));

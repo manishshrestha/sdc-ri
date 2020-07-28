@@ -100,7 +100,7 @@ class Util {
     }
 
     static String optionalStr(Object protoMsg, String protoTypeName) {
-        return Optional.ofNullable(optionalProtoPrimitive(protoMsg, protoTypeName, String.class)).orElse(null);
+        return optionalProtoPrimitive(protoMsg, protoTypeName, String.class);
     }
 
     static <T> T optional(Object protoMsg, String protoTypeName, Class<T> resultingPojoClass) {
