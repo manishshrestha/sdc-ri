@@ -59,5 +59,6 @@ class RoundTripTest {
         resultsToCompare.add(new MdsRoundTrip(modifications));
         resultsToCompare.add(new VmdRoundTrip(modifications));
         resultsToCompare.add(new ChannelRoundTrip(modifications));
+        resultsToCompare.add(new StringMetricRoundTrip(modifications));
     }
 }

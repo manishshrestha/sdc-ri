@@ -8,36 +8,19 @@ import org.apache.logging.log4j.Logger;
 import org.somda.sdc.biceps.common.MdibDescriptionModifications;
 import org.somda.sdc.biceps.common.MdibEntity;
 import org.somda.sdc.biceps.common.access.MdibAccess;
-import org.somda.sdc.biceps.model.participant.AbstractComplexDeviceComponentDescriptor;
-import org.somda.sdc.biceps.model.participant.AbstractDescriptor;
-import org.somda.sdc.biceps.model.participant.AbstractOperationDescriptor;
-import org.somda.sdc.biceps.model.participant.AlertConditionDescriptor;
-import org.somda.sdc.biceps.model.participant.AlertSignalDescriptor;
-import org.somda.sdc.biceps.model.participant.AlertSystemDescriptor;
-import org.somda.sdc.biceps.model.participant.ChannelDescriptor;
-import org.somda.sdc.biceps.model.participant.EnsembleContextDescriptor;
-import org.somda.sdc.biceps.model.participant.LocationContextDescriptor;
-import org.somda.sdc.biceps.model.participant.MdDescription;
-import org.somda.sdc.biceps.model.participant.MdState;
-import org.somda.sdc.biceps.model.participant.Mdib;
-import org.somda.sdc.biceps.model.participant.MdsDescriptor;
-import org.somda.sdc.biceps.model.participant.MeansContextDescriptor;
-import org.somda.sdc.biceps.model.participant.ObjectFactory;
-import org.somda.sdc.biceps.model.participant.OperatorContextDescriptor;
-import org.somda.sdc.biceps.model.participant.PatientContextDescriptor;
-import org.somda.sdc.biceps.model.participant.ScoDescriptor;
-import org.somda.sdc.biceps.model.participant.SystemContextDescriptor;
-import org.somda.sdc.biceps.model.participant.VmdDescriptor;
-import org.somda.sdc.biceps.model.participant.WorkflowContextDescriptor;
+import org.somda.sdc.biceps.model.participant.*;
 import org.somda.sdc.common.CommonConfig;
 import org.somda.sdc.common.logging.InstanceLogger;
 import org.somda.sdc.common.util.ObjectUtil;
 import org.somda.sdc.glue.common.ModificationsBuilder;
+import org.somda.sdc.proto.model.biceps.AbstractMetricDescriptorOneOfMsg;
+import org.somda.sdc.proto.model.biceps.ChannelDescriptorMsg;
 import org.somda.sdc.proto.model.biceps.MdDescriptionMsg;
 import org.somda.sdc.proto.model.biceps.MdStateMsg;
 import org.somda.sdc.proto.model.biceps.MdibMsg;
 import org.somda.sdc.proto.model.biceps.MdibVersionGroupMsg;
 import org.somda.sdc.proto.model.biceps.MdsDescriptorMsg;
+import org.somda.sdc.proto.model.biceps.StringMetricDescriptorOneOfMsg;
 import org.somda.sdc.proto.model.biceps.VmdDescriptorMsg;
 
 import java.lang.reflect.InvocationTargetException;
@@ -240,7 +223,7 @@ public class PojoToProtoTreeMapper {
             return;
         }
 
-        var builder = nodeMapper.mapMdsDesctriptor(descriptor.get());
+        var builder = nodeMapper.mapMdsDescriptor(descriptor.get());
 
 //        mapZeroOrMoreDescriptors(
 //                descriptorCopy,
@@ -283,14 +266,33 @@ public class PojoToProtoTreeMapper {
             channel.getDescriptor(ChannelDescriptor.class).ifPresent(channelDescriptor -> {
                 var builder = nodeMapper.mapChannelDescriptor(channelDescriptor);
 
-//                mapZeroOrMoreDescriptors(
-//                        channelDescriptorCopy,
-//                        mdibAccess.getChildrenByType(channelDescriptorCopy.getHandle(), AbstractMetricDescriptor.class),
-//                        "getMetric");
+                // TODO: Handle other types.
+                mapStringMetricDescriptor(
+                        builder,
+                        mdibAccess.getChildrenByType(channelDescriptor.getHandle(), StringMetricDescriptor.class));
 
                 parent.addChannel(builder);
             });
         }
+    }
+
+    private void mapStringMetricDescriptor(ChannelDescriptorMsg.Builder parent, List<MdibEntity> descriptors) {
+        for (MdibEntity descriptor : descriptors) {
+            descriptor.getDescriptor(StringMetricDescriptor.class)
+                    // TODO: is this filter necessary? Stupid inheritance makes it likely
+                    .filter(desc -> !(desc instanceof EnumStringMetricDescriptor)).ifPresent(stringMetricDescriptor -> {
+                        var builder = nodeMapper.mapStringMetricDescriptor(stringMetricDescriptor);
+
+                        parent.addMetric(
+                                AbstractMetricDescriptorOneOfMsg.newBuilder().setStringMetricDescriptorOneOf(
+                                        StringMetricDescriptorOneOfMsg.newBuilder().setStringMetricDescriptor(builder)
+                                )
+                        );
+                    }
+            );
+
+        }
+
     }
 
     private void mapSco(AbstractComplexDeviceComponentDescriptor parent, List<MdibEntity> scos) {

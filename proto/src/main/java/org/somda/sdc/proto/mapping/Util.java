@@ -1,5 +1,6 @@
 package org.somda.sdc.proto.mapping;
 
+import com.google.protobuf.Duration;
 import com.google.protobuf.Int32Value;
 import com.google.protobuf.Int64Value;
 import com.google.protobuf.StringValue;
@@ -18,6 +19,17 @@ class Util {
         if (value != null) {
             consumer.accept(value);
         }
+    }
+
+    static Duration fromJavaDuration(java.time.Duration duration) {
+        var builder = Duration.newBuilder();
+        builder.setSeconds(duration.getSeconds());
+        builder.setNanos(duration.getNano());
+        return builder.build();
+    }
+
+    static java.time.Duration fromProtoDuration(Duration duration) {
+        return java.time.Duration.ofSeconds(duration.getSeconds(), duration.getNanos());
     }
 
     static UInt64Value toUInt64(@Nullable BigInteger number) {

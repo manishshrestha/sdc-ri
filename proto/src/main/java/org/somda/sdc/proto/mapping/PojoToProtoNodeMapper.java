@@ -6,6 +6,8 @@ import org.apache.logging.log4j.Logger;
 import org.somda.sdc.proto.model.biceps.*;
 import org.somda.sdc.biceps.model.participant.*;
 
+import java.math.BigInteger;
+
 public class PojoToProtoNodeMapper {
     private static final Logger LOG = LogManager.getLogger(PojoToProtoNodeMapper.class);
     private final PojoToProtoBaseMapper baseMapper;
@@ -21,11 +23,85 @@ public class PojoToProtoNodeMapper {
         if (state instanceof org.somda.sdc.biceps.model.participant.AbstractDeviceComponentState) {
             builder.setAbstractDeviceComponentStateOneOf(
                     mapAbstractDeviceComponentStateOneOf((AbstractDeviceComponentState) state));
+        } else if (state instanceof org.somda.sdc.biceps.model.participant.StringMetricState) {
+            builder.setAbstractMetricStateOneOf(mapAbstractMetricStateOneOf((AbstractMetricState) state));
         } else {
             LOG.error("Class {} not supported", state.getClass());
             //throw new IllegalArgumentException(String.format("Class %s not supported", state.getClass()));
         }
 
+        return builder.build();
+    }
+
+    public AbstractMetricStateOneOfMsg mapAbstractMetricStateOneOf(AbstractMetricState state) {
+        var builder = AbstractMetricStateOneOfMsg.newBuilder();
+        if (state instanceof StringMetricState) {
+            builder.setStringMetricStateOneOf(mapStringMetricStateOneOf((StringMetricState) state));
+        } else {
+            LOG.error("Class {} not supported", state.getClass());
+        }
+        return builder.build();
+    }
+
+    public StringMetricStateOneOfMsg mapStringMetricStateOneOf(StringMetricState state) {
+        var builder = StringMetricStateOneOfMsg.newBuilder();
+        if (state instanceof EnumStringMetricState) {
+            LOG.error("Class {} not supported", state.getClass());
+        } else {
+            builder.setStringMetricState(mapStringMetricState(state));
+        }
+        return builder.build();
+    }
+
+    private StringMetricStateMsg mapStringMetricState(StringMetricState state) {
+        var builder = StringMetricStateMsg.newBuilder();
+        Util.doIfNotNull(state.getMetricValue(), value -> builder.setMetricValue(mapStringMetricValue(value)));
+        builder.setAbstractMetricState(mapAbstractMetricState(state));
+
+        return builder.build();
+    }
+
+    private AbstractMetricStateMsg mapAbstractMetricState(AbstractMetricState state) {
+        var builder = AbstractMetricStateMsg.newBuilder();
+        builder.setAbstractState(mapAbstractState(state));
+        Util.doIfNotNull(
+                state.getActivationState(),
+                activation -> builder.setAActivationState(Util.mapToProtoEnum(activation, ComponentActivationMsg.class))
+        );
+        Util.doIfNotNull(
+                state.getActiveDeterminationPeriod(),
+                period -> builder.setAActiveDeterminationPeriod(Util.fromJavaDuration(period))
+        );
+        Util.doIfNotNull(
+                state.getLifeTimePeriod(),
+                period -> builder.setALifeTimePeriod(Util.fromJavaDuration(period))
+        );
+        return builder.build();
+    }
+
+    private StringMetricValueMsg mapStringMetricValue(StringMetricValue value) {
+        var builder = StringMetricValueMsg.newBuilder();
+        builder.setAValue(Util.toStringValue(value.getValue()));
+        builder.setAbstractMetricValue(mapAbstractMetricValue(value));
+        return builder.build();
+    }
+
+    private AbstractMetricValueMsg mapAbstractMetricValue(AbstractMetricValue value) {
+        var builder = AbstractMetricValueMsg.newBuilder();
+        Util.doIfNotNull(
+                value.getDeterminationTime(),
+                time -> builder.setADeterminationTime(Util.toUInt64(BigInteger.valueOf(time.toEpochMilli())))
+        );
+        Util.doIfNotNull(
+                value.getStartTime(),
+                time -> builder.setAStartTime(Util.toUInt64(BigInteger.valueOf(time.toEpochMilli())))
+        );
+        Util.doIfNotNull(
+                value.getStopTime(),
+                time -> builder.setAStopTime(Util.toUInt64(BigInteger.valueOf(time.toEpochMilli())))
+        );
+        Util.doIfNotNull(value.getMetricQuality(), quality ->
+                builder.setMetricQuality(Util.mapToProtoEnum(quality, AbstractMetricValueMsg.MetricQualityMsg.class)));
         return builder.build();
     }
 
@@ -113,7 +189,7 @@ public class PojoToProtoNodeMapper {
         return builder.build();
     }
 
-    public MdsDescriptorMsg.Builder mapMdsDesctriptor(MdsDescriptor mdsDescriptor) {
+    public MdsDescriptorMsg.Builder mapMdsDescriptor(MdsDescriptor mdsDescriptor) {
         return MdsDescriptorMsg.newBuilder()
                 .setAbstractComplexDeviceComponentDescriptor(
                         mapAbstractComplexDeviceComponentDescriptor(mdsDescriptor));
@@ -129,6 +205,22 @@ public class PojoToProtoNodeMapper {
         return ChannelDescriptorMsg.newBuilder()
                 .setAbstractDeviceComponentDescriptor(
                         mapAbstractDeviceComponentDescriptor(channelDescriptor));
+    }
+
+    public StringMetricDescriptorMsg.Builder mapStringMetricDescriptor(StringMetricDescriptor stringMetricDescriptor) {
+        return StringMetricDescriptorMsg.newBuilder()
+                .setAbstractMetricDescriptor(mapAbstractMetricDescriptor(stringMetricDescriptor));
+    }
+
+    public AbstractMetricDescriptorMsg.Builder mapAbstractMetricDescriptor(AbstractMetricDescriptor abstractMetricDescriptor) {
+        var builder = AbstractMetricDescriptorMsg.newBuilder()
+                .setAbstractDescriptor(mapAbstractDescriptor(abstractMetricDescriptor));
+        Util.doIfNotNull(
+                abstractMetricDescriptor.getMetricCategory(),
+                category -> builder.setAMetricCategory(Util.mapToProtoEnum(category, MetricCategoryMsg.class))
+        );
+
+        return builder;
     }
 
     public AbstractComplexDeviceComponentDescriptorMsg mapAbstractComplexDeviceComponentDescriptor(

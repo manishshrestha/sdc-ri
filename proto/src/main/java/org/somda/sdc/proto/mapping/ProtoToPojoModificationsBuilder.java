@@ -11,20 +11,26 @@ import org.somda.sdc.biceps.common.MdibDescriptionModifications;
 import org.somda.sdc.biceps.common.MdibTypeValidator;
 import org.somda.sdc.biceps.common.access.MdibAccess;
 import org.somda.sdc.biceps.model.participant.AbstractDescriptor;
+import org.somda.sdc.biceps.model.participant.AbstractMetricDescriptor;
 import org.somda.sdc.biceps.model.participant.AbstractMultiState;
 import org.somda.sdc.biceps.model.participant.AbstractState;
 import org.somda.sdc.biceps.model.participant.ChannelDescriptor;
 import org.somda.sdc.biceps.model.participant.Mdib;
 import org.somda.sdc.biceps.model.participant.MdsDescriptor;
+import org.somda.sdc.biceps.model.participant.StringMetricDescriptor;
 import org.somda.sdc.biceps.model.participant.VmdDescriptor;
 import org.somda.sdc.common.logging.InstanceLogger;
 import org.somda.sdc.glue.common.DefaultStateValues;
 import org.somda.sdc.glue.common.MdibMapper;
 import org.somda.sdc.glue.common.RequiredDefaultStateValues;
 import org.somda.sdc.glue.common.helper.DefaultStateValuesDispatcher;
+import org.somda.sdc.proto.model.biceps.AbstractMetricDescriptorMsg;
+import org.somda.sdc.proto.model.biceps.AbstractMetricDescriptorOneOfMsg;
 import org.somda.sdc.proto.model.biceps.ChannelDescriptorMsg;
 import org.somda.sdc.proto.model.biceps.MdibMsg;
 import org.somda.sdc.proto.model.biceps.MdsDescriptorMsg;
+import org.somda.sdc.proto.model.biceps.StringMetricDescriptorMsg;
+import org.somda.sdc.proto.model.biceps.StringMetricDescriptorOneOfMsg;
 import org.somda.sdc.proto.model.biceps.VmdDescriptorMsg;
 
 import javax.annotation.Nullable;
@@ -196,8 +202,41 @@ public class ProtoToPojoModificationsBuilder {
         instanceLogger.error("Missing mapping for metrics");
 //        channel.getMetric().forEach(descr -> buildLeaf(descr, channel));
 //        channel.setMetric(null);
+        channel.getMetricList().forEach(metric -> build(metric, addedDescr));
 
         parent.setChannel(null);
+    }
+
+    private void build (AbstractMetricDescriptorOneOfMsg metric, ChannelDescriptor parent) {
+        var type = metric.getAbstractMetricDescriptorOneOfCase();
+        switch (type) {
+            case STRING_METRIC_DESCRIPTOR_ONE_OF:
+                build(metric.getStringMetricDescriptorOneOf(), parent);
+                break;
+            case NUMERIC_METRIC_DESCRIPTOR:
+                instanceLogger.error("Missing mapping for {}", type);
+                break;
+            default:
+                instanceLogger.error("Missing mapping for {}", type);
+                break;
+        }
+
+    }
+
+    private void build(StringMetricDescriptorOneOfMsg metric, ChannelDescriptor parent) {
+        var type = metric.getStringMetricDescriptorOneOfCase();
+        switch (type) {
+            case STRING_METRIC_DESCRIPTOR:
+                build(metric.getStringMetricDescriptor(), parent);
+                break;
+            case ENUM_STRING_METRIC_DESCRIPTOR:
+                instanceLogger.error("Missing mapping for {}", type);
+                break;
+        }
+    }
+
+    private void build(StringMetricDescriptorMsg metric, ChannelDescriptor parent) {
+        var addedDesc = insert(metric, StringMetricDescriptor.class, parent.getHandle());
     }
 
     private <T extends AbstractDescriptor> void buildLeaf(@Nullable T descriptor, AbstractDescriptor parent) {
