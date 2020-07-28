@@ -64,5 +64,7 @@ public class StringMetricRoundTrip implements BiConsumer<LocalMdibAccess, Remote
         assertEquals(expectedState.getActivationState(), actualState.getActivationState());
         assertEquals(expectedState.getActiveDeterminationPeriod(), actualState.getActiveDeterminationPeriod());
         assertEquals(expectedState.getLifeTimePeriod(), actualState.getLifeTimePeriod());
+
+        assertEquals(expectedState.getMetricValue().getValue(), actualState.getMetricValue().getValue());
     }
 }
