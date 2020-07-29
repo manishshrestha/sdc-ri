@@ -13,7 +13,10 @@ import org.somda.sdc.biceps.model.participant.StringMetricState;
 
 import javax.annotation.Nullable;
 import java.lang.reflect.InvocationTargetException;
+import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.Optional;
 import java.util.function.Consumer;
@@ -23,6 +26,14 @@ class Util {
         if (value != null) {
             consumer.accept(value);
         }
+    }
+
+    static Long instantToMicros(Instant instant) {
+        return ChronoUnit.MICROS.between(Instant.EPOCH, instant);
+    }
+
+    static Instant microsToInstant(Long micros) {
+        return Instant.EPOCH.plus(micros, ChronoUnit.MICROS);
     }
 
     static Duration fromJavaDuration(java.time.Duration duration) {
@@ -100,6 +111,18 @@ class Util {
     static BigInteger optionalBigIntOfLong(Object protoMsg, String typeName) {
         return Optional.ofNullable(optionalProtoPrimitive(protoMsg, typeName, Long.class))
                 .map(BigInteger::valueOf)
+                .orElse(null);
+    }
+
+    static BigDecimal optionalBigDecimalOfString(Object protoMsg, String typeName) {
+        return Optional.ofNullable(optionalProtoPrimitive(protoMsg, typeName, String.class))
+                .map(BigDecimal::new)
+                .orElse(null);
+    }
+
+    static Instant optionalInstantOfLong(Object protoMsg, String typeName) {
+        return Optional.ofNullable(optionalProtoPrimitive(protoMsg, typeName, Long.class))
+                .map(Util::microsToInstant)
                 .orElse(null);
     }
 

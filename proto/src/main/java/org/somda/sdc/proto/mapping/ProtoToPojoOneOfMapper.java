@@ -8,6 +8,7 @@ import org.apache.logging.log4j.Logger;
 import org.somda.sdc.biceps.model.participant.AbstractDescriptor;
 import org.somda.sdc.biceps.model.participant.AbstractMetricState;
 import org.somda.sdc.biceps.model.participant.AbstractState;
+import org.somda.sdc.biceps.model.participant.NumericMetricState;
 import org.somda.sdc.biceps.model.participant.ScoState;
 import org.somda.sdc.biceps.model.participant.StringMetricState;
 import org.somda.sdc.biceps.model.participant.SystemContextDescriptor;
@@ -57,6 +58,8 @@ public class ProtoToPojoOneOfMapper {
             return metricMapper.map((EnumStringMetricDescriptorMsg) protoMsg);
         } else if (protoMsg instanceof StringMetricDescriptorMsg) {
             return metricMapper.map((StringMetricDescriptorMsg) protoMsg);
+        } else if (protoMsg instanceof NumericMetricDescriptorMsg) {
+            return metricMapper.map((NumericMetricDescriptorMsg) protoMsg);
         } else if (protoMsg instanceof SystemContextDescriptorMsg) {
             return componentMapper.map((SystemContextDescriptorMsg) protoMsg);
         } else {
@@ -186,8 +189,7 @@ public class ProtoToPojoOneOfMapper {
             case STRING_METRIC_STATE_ONE_OF:
                 return map(protoMsg.getStringMetricStateOneOf());
             case NUMERIC_METRIC_STATE:
-                instanceLogger.error("State mapping not implemented: {}", type);
-                break;
+                return metricMapper.map(protoMsg.getNumericMetricState());
             case REAL_TIME_SAMPLE_ARRAY_METRIC_STATE:
                 instanceLogger.error("State mapping not implemented: {}", type);
                 break;

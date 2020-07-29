@@ -11,6 +11,8 @@ import org.somda.sdc.biceps.model.participant.AbstractState;
 import org.somda.sdc.biceps.model.participant.ChannelState;
 import org.somda.sdc.biceps.model.participant.EnumStringMetricState;
 import org.somda.sdc.biceps.model.participant.MdsState;
+import org.somda.sdc.biceps.model.participant.NumericMetricState;
+import org.somda.sdc.biceps.model.participant.NumericMetricValue;
 import org.somda.sdc.biceps.model.participant.StringMetricState;
 import org.somda.sdc.biceps.model.participant.VmdState;
 import org.somda.sdc.common.CommonConfig;
@@ -19,6 +21,7 @@ import org.somda.sdc.proto.model.biceps.AbstractComplexDeviceComponentStateOneOf
 import org.somda.sdc.proto.model.biceps.AbstractDeviceComponentStateOneOfMsg;
 import org.somda.sdc.proto.model.biceps.AbstractMetricStateOneOfMsg;
 import org.somda.sdc.proto.model.biceps.AbstractStateOneOfMsg;
+import org.somda.sdc.proto.model.biceps.NumericMetricStateMsg;
 import org.somda.sdc.proto.model.biceps.StringMetricStateOneOfMsg;
 
 public class PojoToProtoOneOfMapper {
@@ -53,7 +56,7 @@ public class PojoToProtoOneOfMapper {
         if (state instanceof org.somda.sdc.biceps.model.participant.AbstractDeviceComponentState) {
             builder.setAbstractDeviceComponentStateOneOf(
                     mapAbstractDeviceComponentStateOneOf((AbstractDeviceComponentState) state));
-        } else if (state instanceof org.somda.sdc.biceps.model.participant.StringMetricState) {
+        } else if (state instanceof org.somda.sdc.biceps.model.participant.AbstractMetricState) {
             builder.setAbstractMetricStateOneOf(mapAbstractMetricStateOneOf((AbstractMetricState) state));
         } else {
             LOG.error("Class {} not supported", state.getClass());
@@ -67,6 +70,8 @@ public class PojoToProtoOneOfMapper {
         var builder = AbstractMetricStateOneOfMsg.newBuilder();
         if (state instanceof StringMetricState) {
             builder.setStringMetricStateOneOf(mapStringMetricStateOneOf((StringMetricState) state));
+        } else if (state instanceof NumericMetricState) {
+            builder.setNumericMetricState(metricMapper.mapNumericMetricState((NumericMetricState) state));
         } else {
             LOG.error("Class {} not supported", state.getClass());
         }
@@ -82,7 +87,6 @@ public class PojoToProtoOneOfMapper {
         }
         return builder.build();
     }
-
 
     public AbstractDeviceComponentStateOneOfMsg mapAbstractDeviceComponentStateOneOf(
             AbstractDeviceComponentState state) {
