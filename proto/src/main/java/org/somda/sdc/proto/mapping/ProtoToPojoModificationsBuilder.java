@@ -18,6 +18,7 @@ import org.somda.sdc.biceps.model.participant.EnumStringMetricDescriptor;
 import org.somda.sdc.biceps.model.participant.Mdib;
 import org.somda.sdc.biceps.model.participant.MdsDescriptor;
 import org.somda.sdc.biceps.model.participant.NumericMetricDescriptor;
+import org.somda.sdc.biceps.model.participant.RealTimeSampleArrayMetricDescriptor;
 import org.somda.sdc.biceps.model.participant.StringMetricDescriptor;
 import org.somda.sdc.biceps.model.participant.VmdDescriptor;
 import org.somda.sdc.common.logging.InstanceLogger;
@@ -31,6 +32,7 @@ import org.somda.sdc.proto.model.biceps.EnumStringMetricDescriptorMsg;
 import org.somda.sdc.proto.model.biceps.MdibMsg;
 import org.somda.sdc.proto.model.biceps.MdsDescriptorMsg;
 import org.somda.sdc.proto.model.biceps.NumericMetricDescriptorMsg;
+import org.somda.sdc.proto.model.biceps.RealTimeSampleArrayMetricDescriptorMsg;
 import org.somda.sdc.proto.model.biceps.StringMetricDescriptorMsg;
 import org.somda.sdc.proto.model.biceps.StringMetricDescriptorOneOfMsg;
 import org.somda.sdc.proto.model.biceps.VmdDescriptorMsg;
@@ -215,6 +217,9 @@ public class ProtoToPojoModificationsBuilder {
             case NUMERIC_METRIC_DESCRIPTOR:
                 build(metric.getNumericMetricDescriptor(), parent);
                 break;
+            case REAL_TIME_SAMPLE_ARRAY_METRIC_DESCRIPTOR:
+                build(metric.getRealTimeSampleArrayMetricDescriptor(), parent);
+                break;
             default:
                 instanceLogger.error("Missing mapping for {}", type);
                 break;
@@ -234,6 +239,9 @@ public class ProtoToPojoModificationsBuilder {
         }
     }
 
+    private void build(RealTimeSampleArrayMetricDescriptorMsg metric, ChannelDescriptor parent) {
+        var addedDesc = insert(metric, RealTimeSampleArrayMetricDescriptor.class, parent.getHandle());
+    }
 
     private void build(NumericMetricDescriptorMsg metric, ChannelDescriptor parent) {
         var addedDesc = insert(metric, NumericMetricDescriptor.class, parent.getHandle());

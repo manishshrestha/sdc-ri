@@ -8,18 +8,7 @@ import org.apache.logging.log4j.Logger;
 import org.somda.sdc.biceps.model.participant.*;
 import org.somda.sdc.common.CommonConfig;
 import org.somda.sdc.common.logging.InstanceLogger;
-import org.somda.sdc.proto.model.biceps.AbstractMetricDescriptorMsg;
-import org.somda.sdc.proto.model.biceps.AbstractMetricStateMsg;
-import org.somda.sdc.proto.model.biceps.AbstractMetricValueMsg;
-import org.somda.sdc.proto.model.biceps.EnumStringMetricDescriptorMsg;
-import org.somda.sdc.proto.model.biceps.EnumStringMetricStateMsg;
-import org.somda.sdc.proto.model.biceps.NumericMetricDescriptorMsg;
-import org.somda.sdc.proto.model.biceps.NumericMetricStateMsg;
-import org.somda.sdc.proto.model.biceps.NumericMetricValueMsg;
-import org.somda.sdc.proto.model.biceps.RangeMsg;
-import org.somda.sdc.proto.model.biceps.StringMetricDescriptorMsg;
-import org.somda.sdc.proto.model.biceps.StringMetricStateMsg;
-import org.somda.sdc.proto.model.biceps.StringMetricValueMsg;
+import org.somda.sdc.proto.model.biceps.*;
 
 import java.math.BigDecimal;
 import java.util.stream.Collectors;
@@ -34,6 +23,25 @@ public class ProtoToPojoMetricMapper {
                             ProtoToPojoBaseMapper baseMapper) {
         this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);
         this.baseMapper = baseMapper;
+    }
+
+    public RealTimeSampleArrayMetricDescriptor map(RealTimeSampleArrayMetricDescriptorMsg protoMsg) {
+        var pojo = new RealTimeSampleArrayMetricDescriptor();
+        map(pojo, protoMsg.getAbstractMetricDescriptor());
+        pojo.setTechnicalRange(protoMsg.getTechnicalRangeList().stream().map(this::map).collect(Collectors.toList()));
+        pojo.setResolution(new BigDecimal(protoMsg.getAResolution()));
+        Util.doIfNotNull(Util.optional(protoMsg, "ASamplePeriod", Duration.class), period ->
+                pojo.setSamplePeriod(Util.fromProtoDuration(period)));
+        return pojo;
+    }
+
+    public RealTimeSampleArrayMetricState map(RealTimeSampleArrayMetricStateMsg protoMsg) {
+        var pojo = new RealTimeSampleArrayMetricState();
+        map(pojo, protoMsg.getAbstractMetricState());
+        Util.doIfNotNull(Util.optional(protoMsg, "MetricValue", SampleArrayValueMsg.class),
+                value -> pojo.setMetricValue(map(value)));
+        pojo.setPhysiologicalRange(protoMsg.getPhysiologicalRangeList().stream().map(this::map).collect(Collectors.toList()));
+        return pojo;
     }
 
     public NumericMetricDescriptor map(NumericMetricDescriptorMsg protoMsg) {
@@ -91,6 +99,17 @@ public class ProtoToPojoMetricMapper {
         var pojoState = new StringMetricState();
         map(pojoState, protoMsg);
         return pojoState;
+    }
+
+    public SampleArrayValue map(SampleArrayValueMsg protoMsg) {
+        var pojo = new SampleArrayValue();
+        pojo.setSamples(
+                protoMsg.getASamples().getRealTimeValueTypeList().stream()
+                        .map(BigDecimal::new)
+                        .collect(Collectors.toList())
+        );
+//        pojo.setApplyAnnotation();
+        return pojo;
     }
 
     public StringMetricValue map(StringMetricValueMsg protoMsg) {
@@ -160,6 +179,17 @@ public class ProtoToPojoMetricMapper {
                 protoMsg.getAMetricAvailability(),
                 availability -> pojo.setMetricAvailability(Util.mapToPojoEnum(protoMsg, "AMetricAvailability", MetricAvailability.class))
         );
+        Util.doIfNotNull(Util.optional(protoMsg, "ADerivationMethod", DerivationMethodMsg.class),
+                method -> pojo.setDerivationMethod(Util.mapToPojoEnum(protoMsg, "ADerivationMethod", DerivationMethod.class)));
+        Util.doIfNotNull(Util.optional(protoMsg, "AMaxMeasurementTime", Duration.class), duration ->
+                pojo.setMaxMeasurementTime(Util.fromProtoDuration(duration)));
+        Util.doIfNotNull(Util.optional(protoMsg, "AMaxDelayTime", Duration.class), duration ->
+                pojo.setMaxDelayTime(Util.fromProtoDuration(duration)));
+        Util.doIfNotNull(Util.optional(protoMsg, "ALifeTimePeriod", Duration.class), duration ->
+                pojo.setLifeTimePeriod(Util.fromProtoDuration(duration)));
+        Util.doIfNotNull(Util.optional(protoMsg, "AActivationDuration", Duration.class), duration ->
+                pojo.setActivationDuration(Util.fromProtoDuration(duration)));
+
     }
 
     private void map(AbstractMetricState state, AbstractMetricStateMsg protoMsg) {

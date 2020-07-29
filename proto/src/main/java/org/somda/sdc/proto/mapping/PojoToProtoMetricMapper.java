@@ -4,20 +4,7 @@ import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.somda.sdc.biceps.model.participant.AbstractMetricDescriptor;
-import org.somda.sdc.biceps.model.participant.AbstractMetricState;
-import org.somda.sdc.biceps.model.participant.AbstractMetricValue;
-import org.somda.sdc.biceps.model.participant.EnumStringMetricDescriptor;
-import org.somda.sdc.biceps.model.participant.EnumStringMetricState;
-import org.somda.sdc.biceps.model.participant.MeasurementValidity;
-import org.somda.sdc.biceps.model.participant.MetricAvailability;
-import org.somda.sdc.biceps.model.participant.NumericMetricDescriptor;
-import org.somda.sdc.biceps.model.participant.NumericMetricState;
-import org.somda.sdc.biceps.model.participant.NumericMetricValue;
-import org.somda.sdc.biceps.model.participant.Range;
-import org.somda.sdc.biceps.model.participant.StringMetricDescriptor;
-import org.somda.sdc.biceps.model.participant.StringMetricState;
-import org.somda.sdc.biceps.model.participant.StringMetricValue;
+import org.somda.sdc.biceps.model.participant.*;
 import org.somda.sdc.common.CommonConfig;
 import org.somda.sdc.common.logging.InstanceLogger;
 import org.somda.sdc.proto.model.biceps.*;
@@ -35,6 +22,17 @@ public class PojoToProtoMetricMapper {
                             PojoToProtoBaseMapper baseMapper) {
         this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);
         this.baseMapper = baseMapper;
+    }
+
+    public RealTimeSampleArrayMetricDescriptorMsg.Builder mapRealTimeSampleArrayMetricDescriptor(RealTimeSampleArrayMetricDescriptor rtsDescriptor) {
+        var builder = RealTimeSampleArrayMetricDescriptorMsg.newBuilder()
+                .setAbstractMetricDescriptor(mapAbstractMetricDescriptor(rtsDescriptor));
+
+        builder.setAResolution(rtsDescriptor.getResolution().toPlainString());
+        builder.setASamplePeriod(Util.fromJavaDuration(rtsDescriptor.getSamplePeriod()));
+        builder.addAllTechnicalRange(rtsDescriptor.getTechnicalRange().stream().map(this::mapRange).collect(Collectors.toList()));
+
+        return builder;
     }
 
     public NumericMetricDescriptorMsg.Builder mapNumericMetricDescriptor(NumericMetricDescriptor numericMetricDescriptor) {
@@ -90,9 +88,28 @@ public class PojoToProtoMetricMapper {
                 builder.setADeterminationPeriod(Util.fromJavaDuration(period)));
         Util.doIfNotNull(abstractMetricDescriptor.getLifeTimePeriod(), period ->
                 builder.setALifeTimePeriod(Util.fromJavaDuration(period)));
-        // TODO: Remaining stuff
+
+        Util.doIfNotNull(abstractMetricDescriptor.getMaxMeasurementTime(), time ->
+                builder.setAMaxMeasurementTime(Util.fromJavaDuration(time)));
+        Util.doIfNotNull(abstractMetricDescriptor.getMaxDelayTime(), time ->
+                builder.setAMaxDelayTime(Util.fromJavaDuration(time)));
 
         return builder;
+    }
+
+
+    public RealTimeSampleArrayMetricStateMsg mapRealTimeSampleArrayMetricState(RealTimeSampleArrayMetricState state) {
+        var builder = RealTimeSampleArrayMetricStateMsg.newBuilder()
+                .setAbstractMetricState(mapAbstractMetricState(state));
+
+        Util.doIfNotNull(
+                state.getMetricValue(),
+                value -> builder.setMetricValue(mapSampleArrayMetricValue(value))
+        );
+        builder.addAllPhysiologicalRange(
+                state.getPhysiologicalRange().stream().map(this::mapRange).collect(Collectors.toList())
+        );
+        return builder.build();
     }
 
     public NumericMetricStateMsg mapNumericMetricState(NumericMetricState state) {
@@ -143,6 +160,17 @@ public class PojoToProtoMetricMapper {
                 state.getLifeTimePeriod(),
                 period -> builder.setALifeTimePeriod(Util.fromJavaDuration(period))
         );
+        return builder.build();
+    }
+
+    private SampleArrayValueMsg mapSampleArrayMetricValue(SampleArrayValue value) {
+        var builder = SampleArrayValueMsg.newBuilder()
+                .setAbstractMetricValue(mapAbstractMetricValue(value));
+
+        var valueBuilder = RealTimeValueTypeMsg.newBuilder();
+        value.getSamples().forEach(sample -> valueBuilder.addRealTimeValueType(sample.toPlainString()));
+        builder.setASamples(valueBuilder);
+
         return builder.build();
     }
 

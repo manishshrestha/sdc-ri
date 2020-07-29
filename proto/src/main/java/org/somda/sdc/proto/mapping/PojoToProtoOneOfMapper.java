@@ -13,6 +13,8 @@ import org.somda.sdc.biceps.model.participant.EnumStringMetricState;
 import org.somda.sdc.biceps.model.participant.MdsState;
 import org.somda.sdc.biceps.model.participant.NumericMetricState;
 import org.somda.sdc.biceps.model.participant.NumericMetricValue;
+import org.somda.sdc.biceps.model.participant.RealTimeSampleArrayMetricDescriptor;
+import org.somda.sdc.biceps.model.participant.RealTimeSampleArrayMetricState;
 import org.somda.sdc.biceps.model.participant.StringMetricState;
 import org.somda.sdc.biceps.model.participant.VmdState;
 import org.somda.sdc.common.CommonConfig;
@@ -72,6 +74,8 @@ public class PojoToProtoOneOfMapper {
             builder.setStringMetricStateOneOf(mapStringMetricStateOneOf((StringMetricState) state));
         } else if (state instanceof NumericMetricState) {
             builder.setNumericMetricState(metricMapper.mapNumericMetricState((NumericMetricState) state));
+        } else if (state instanceof RealTimeSampleArrayMetricState) {
+            builder.setRealTimeSampleArrayMetricState(metricMapper.mapRealTimeSampleArrayMetricState((RealTimeSampleArrayMetricState) state));
         } else {
             LOG.error("Class {} not supported", state.getClass());
         }

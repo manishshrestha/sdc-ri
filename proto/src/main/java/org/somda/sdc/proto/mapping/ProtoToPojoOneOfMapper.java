@@ -9,6 +9,7 @@ import org.somda.sdc.biceps.model.participant.AbstractDescriptor;
 import org.somda.sdc.biceps.model.participant.AbstractMetricState;
 import org.somda.sdc.biceps.model.participant.AbstractState;
 import org.somda.sdc.biceps.model.participant.NumericMetricState;
+import org.somda.sdc.biceps.model.participant.RealTimeSampleArrayMetricDescriptor;
 import org.somda.sdc.biceps.model.participant.ScoState;
 import org.somda.sdc.biceps.model.participant.StringMetricState;
 import org.somda.sdc.biceps.model.participant.SystemContextDescriptor;
@@ -60,6 +61,8 @@ public class ProtoToPojoOneOfMapper {
             return metricMapper.map((StringMetricDescriptorMsg) protoMsg);
         } else if (protoMsg instanceof NumericMetricDescriptorMsg) {
             return metricMapper.map((NumericMetricDescriptorMsg) protoMsg);
+        } else if (protoMsg instanceof RealTimeSampleArrayMetricDescriptorMsg) {
+            return metricMapper.map((RealTimeSampleArrayMetricDescriptorMsg) protoMsg);
         } else if (protoMsg instanceof SystemContextDescriptorMsg) {
             return componentMapper.map((SystemContextDescriptorMsg) protoMsg);
         } else {
@@ -191,8 +194,7 @@ public class ProtoToPojoOneOfMapper {
             case NUMERIC_METRIC_STATE:
                 return metricMapper.map(protoMsg.getNumericMetricState());
             case REAL_TIME_SAMPLE_ARRAY_METRIC_STATE:
-                instanceLogger.error("State mapping not implemented: {}", type);
-                break;
+                return metricMapper.map(protoMsg.getRealTimeSampleArrayMetricState());
             case DISTRIBUTION_SAMPLE_ARRAY_METRIC_STATE:
                 instanceLogger.error("State mapping not implemented: {}", type);
                 break;
