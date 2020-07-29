@@ -14,6 +14,7 @@ import org.somda.sdc.biceps.model.participant.NumericMetricValue;
 import org.somda.sdc.biceps.model.participant.Range;
 import org.somda.sdc.biceps.provider.access.LocalMdibAccess;
 import org.somda.sdc.biceps.testutil.Handles;
+import org.somda.sdc.proto.UnitTestUtil;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -70,7 +71,7 @@ public class NumericMetricRoundTrip implements BiConsumer<LocalMdibAccess, Remot
             var value = new NumericMetricValue();
             state.setMetricValue(value);
             value.setValue(BigDecimal.valueOf(1337));
-            //value.setDeterminationTime(Instant.now());
+            value.setDeterminationTime(UnitTestUtil.makeTestTimestamp());
 
             var quality = new AbstractMetricValue.MetricQuality();
             value.setMetricQuality(quality);

@@ -15,6 +15,7 @@ import org.somda.sdc.proto.guice.DefaultGrpcConfigModule;
 import org.somda.sdc.proto.guice.DefaultProtoModule;
 import test.org.somda.common.TestLogging;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -44,5 +45,9 @@ public class UnitTestUtil {
 
     public Injector getInjector() {
         return injector;
+    }
+
+    public static Instant makeTestTimestamp() {
+        return Instant.ofEpochMilli(Instant.now().toEpochMilli());
     }
 }

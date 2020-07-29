@@ -7,6 +7,7 @@ import org.somda.sdc.biceps.model.participant.*;
 import org.somda.sdc.biceps.model.participant.factory.CodedValueFactory;
 import org.somda.sdc.biceps.provider.access.LocalMdibAccess;
 import org.somda.sdc.biceps.testutil.Handles;
+import org.somda.sdc.proto.UnitTestUtil;
 
 import java.math.BigInteger;
 import java.time.Instant;
@@ -28,7 +29,7 @@ public class EnsembleContextRoundTrip implements BiConsumer<LocalMdibAccess, Rem
             state.setHandle(Handles.CONTEXT_0);
             state.setContextAssociation(ContextAssociation.DIS);
             state.setBindingMdibVersion(BigInteger.TWO);
-            state.setBindingStartTime(Instant.now());
+            state.setBindingStartTime(UnitTestUtil.makeTestTimestamp());
         }
 
         modifications.insert(descriptor, state, Handles.SYSTEMCONTEXT_0);
