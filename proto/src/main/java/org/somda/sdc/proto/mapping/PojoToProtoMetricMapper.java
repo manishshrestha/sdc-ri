@@ -7,6 +7,7 @@ import org.apache.logging.log4j.Logger;
 import org.somda.sdc.biceps.model.participant.*;
 import org.somda.sdc.common.CommonConfig;
 import org.somda.sdc.common.logging.InstanceLogger;
+import org.somda.sdc.common.util.TimestampAdapter;
 import org.somda.sdc.proto.model.biceps.*;
 
 import java.math.BigInteger;
@@ -15,12 +16,15 @@ import java.util.stream.Collectors;
 public class PojoToProtoMetricMapper {
     private static final Logger LOG = LogManager.getLogger(PojoToProtoMetricMapper.class);
     private final Logger instanceLogger;
+    private final TimestampAdapter timestampAdapter;
     private final PojoToProtoBaseMapper baseMapper;
 
     @Inject
     PojoToProtoMetricMapper(@Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier,
+                            TimestampAdapter timestampAdapter,
                             PojoToProtoBaseMapper baseMapper) {
         this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);
+        this.timestampAdapter = timestampAdapter;
         this.baseMapper = baseMapper;
     }
 
@@ -195,15 +199,15 @@ public class PojoToProtoMetricMapper {
         var builder = AbstractMetricValueMsg.newBuilder();
         Util.doIfNotNull(
                 value.getDeterminationTime(),
-                time -> builder.setADeterminationTime(Util.toUInt64(BigInteger.valueOf(Util.instantToMicros(time))))
+                time -> builder.setADeterminationTime(Util.toUInt64(timestampAdapter.marshal(time)))
         );
         Util.doIfNotNull(
                 value.getStartTime(),
-                time -> builder.setAStartTime(Util.toUInt64(BigInteger.valueOf(Util.instantToMicros(time))))
+                time -> builder.setAStartTime(Util.toUInt64(timestampAdapter.marshal(time)))
         );
         Util.doIfNotNull(
                 value.getStopTime(),
-                time -> builder.setAStopTime(Util.toUInt64(BigInteger.valueOf(Util.instantToMicros(time))))
+                time -> builder.setAStopTime(Util.toUInt64(timestampAdapter.marshal(time)))
         );
         Util.doIfNotNull(value.getMetricQuality(), quality -> builder.setMetricQuality(mapMetricQuality(quality)));
         return builder.build();

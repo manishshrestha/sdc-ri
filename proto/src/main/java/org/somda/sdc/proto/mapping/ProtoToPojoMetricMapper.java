@@ -8,6 +8,7 @@ import org.apache.logging.log4j.Logger;
 import org.somda.sdc.biceps.model.participant.*;
 import org.somda.sdc.common.CommonConfig;
 import org.somda.sdc.common.logging.InstanceLogger;
+import org.somda.sdc.common.util.TimestampAdapter;
 import org.somda.sdc.proto.model.biceps.*;
 
 import java.math.BigDecimal;
@@ -16,12 +17,15 @@ import java.util.stream.Collectors;
 public class ProtoToPojoMetricMapper {
     private static final Logger LOG = LogManager.getLogger(ProtoToPojoMetricMapper.class);
     private final Logger instanceLogger;
+    private final TimestampAdapter timestampAdapter;
     private final ProtoToPojoBaseMapper baseMapper;
 
     @Inject
     ProtoToPojoMetricMapper(@Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier,
+                            TimestampAdapter timestampAdapter,
                             ProtoToPojoBaseMapper baseMapper) {
         this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);
+        this.timestampAdapter = timestampAdapter;
         this.baseMapper = baseMapper;
     }
 
@@ -139,9 +143,12 @@ public class ProtoToPojoMetricMapper {
     private void map(AbstractMetricValue pojo, AbstractMetricValueMsg protoMsg) {
         Util.doIfNotNull(Util.optional(protoMsg, "MetricQuality", AbstractMetricValueMsg.MetricQualityMsg.class),
                 quality -> pojo.setMetricQuality(map(quality)));
-        pojo.setDeterminationTime(Util.optionalInstantOfLong(protoMsg, "ADeterminationTime"));
-        pojo.setStartTime(Util.optionalInstantOfLong(protoMsg, "AStartTime"));
-        pojo.setStopTime(Util.optionalInstantOfLong(protoMsg, "AStopTime"));
+        pojo.setDeterminationTime(timestampAdapter.unmarshal(
+                Util.optionalBigIntOfLong(protoMsg, "ADeterminationTime")));
+        pojo.setStartTime(timestampAdapter.unmarshal(
+                Util.optionalBigIntOfLong(protoMsg, "AStartTime")));
+        pojo.setStopTime(timestampAdapter.unmarshal(
+                Util.optionalBigIntOfLong(protoMsg, "AStopTime")));
     }
 
     private AbstractMetricValue.MetricQuality map(AbstractMetricValueMsg.MetricQualityMsg protoMsg) {

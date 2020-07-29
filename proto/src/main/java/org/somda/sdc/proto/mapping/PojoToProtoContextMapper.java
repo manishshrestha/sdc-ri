@@ -72,9 +72,9 @@ public class PojoToProtoContextMapper {
     public AbstractContextStateMsg mapAbstractContextState(AbstractContextState contextState) {
         var builder = AbstractContextStateMsg.newBuilder();
         Util.doIfNotNull(contextState.getBindingStartTime(), it ->
-                builder.setABindingStartTime(Util.toUInt64(BigInteger.valueOf(Util.instantToMicros(it)))));
+                builder.setABindingStartTime(Util.toUInt64(timestampAdapter.marshal(it))));
         Util.doIfNotNull(contextState.getBindingEndTime(), it ->
-                builder.setABindingEndTime(Util.toUInt64(BigInteger.valueOf(Util.instantToMicros(it)))));
+                builder.setABindingEndTime(Util.toUInt64(timestampAdapter.marshal(it))));
         Util.doIfNotNull(contextState.getBindingMdibVersion(), it ->
                 builder.setABindingMdibVersion(Util.toUInt64(it)));
         Util.doIfNotNull(contextState.getUnbindingMdibVersion(), it ->

@@ -28,10 +28,12 @@ class Util {
         }
     }
 
+    @Deprecated()
     static Long instantToMicros(Instant instant) {
         return ChronoUnit.MICROS.between(Instant.EPOCH, instant);
     }
 
+    @Deprecated()
     static Instant microsToInstant(Long micros) {
         return Instant.EPOCH.plus(micros, ChronoUnit.MICROS);
     }
@@ -120,6 +122,7 @@ class Util {
                 .orElse(null);
     }
 
+    @Deprecated
     static Instant optionalInstantOfLong(Object protoMsg, String typeName) {
         return Optional.ofNullable(optionalProtoPrimitive(protoMsg, typeName, Long.class))
                 .map(Util::microsToInstant)
