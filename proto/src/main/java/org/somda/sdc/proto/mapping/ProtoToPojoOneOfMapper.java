@@ -13,26 +13,7 @@ import org.somda.sdc.biceps.model.participant.StringMetricState;
 import org.somda.sdc.biceps.model.participant.SystemContextDescriptor;
 import org.somda.sdc.common.logging.InstanceLogger;
 import org.somda.sdc.common.util.TimestampAdapter;
-import org.somda.sdc.proto.model.biceps.AbstractComplexDeviceComponentDescriptorOneOfMsg;
-import org.somda.sdc.proto.model.biceps.AbstractComplexDeviceComponentStateOneOfMsg;
-import org.somda.sdc.proto.model.biceps.AbstractContextStateOneOfMsg;
-import org.somda.sdc.proto.model.biceps.AbstractDescriptorOneOfMsg;
-import org.somda.sdc.proto.model.biceps.AbstractDeviceComponentDescriptorOneOfMsg;
-import org.somda.sdc.proto.model.biceps.AbstractDeviceComponentStateOneOfMsg;
-import org.somda.sdc.proto.model.biceps.AbstractMetricStateOneOfMsg;
-import org.somda.sdc.proto.model.biceps.AbstractMultiStateOneOfMsg;
-import org.somda.sdc.proto.model.biceps.AbstractStateOneOfMsg;
-import org.somda.sdc.proto.model.biceps.ChannelDescriptorMsg;
-import org.somda.sdc.proto.model.biceps.ChannelStateMsg;
-import org.somda.sdc.proto.model.biceps.MdsDescriptorMsg;
-import org.somda.sdc.proto.model.biceps.MdsStateMsg;
-import org.somda.sdc.proto.model.biceps.ScoStateMsg;
-import org.somda.sdc.proto.model.biceps.StringMetricDescriptorMsg;
-import org.somda.sdc.proto.model.biceps.StringMetricStateOneOfMsg;
-import org.somda.sdc.proto.model.biceps.SystemContextDescriptorMsg;
-import org.somda.sdc.proto.model.biceps.SystemContextStateMsg;
-import org.somda.sdc.proto.model.biceps.VmdDescriptorMsg;
-import org.somda.sdc.proto.model.biceps.VmdStateMsg;
+import org.somda.sdc.proto.model.biceps.*;
 
 public class ProtoToPojoOneOfMapper {
     private static final Logger LOG = LogManager.getLogger(ProtoToPojoOneOfMapper.class);
@@ -72,11 +53,11 @@ public class ProtoToPojoOneOfMapper {
             return componentMapper.map((VmdDescriptorMsg) protoMsg);
         } else if (protoMsg instanceof ChannelDescriptorMsg) {
             return componentMapper.map((ChannelDescriptorMsg) protoMsg);
+        } else if (protoMsg instanceof EnumStringMetricDescriptorMsg) {
+            return metricMapper.map((EnumStringMetricDescriptorMsg) protoMsg);
         } else if (protoMsg instanceof StringMetricDescriptorMsg) {
             return metricMapper.map((StringMetricDescriptorMsg) protoMsg);
-        } else if (protoMsg instanceof ChannelDescriptorMsg) {
-            return componentMapper.map((ChannelDescriptorMsg) protoMsg);
-        } else if (protoMsg instanceof SystemContextDescriptor) {
+        } else if (protoMsg instanceof SystemContextDescriptorMsg) {
             return componentMapper.map((SystemContextDescriptorMsg) protoMsg);
         } else {
             instanceLogger.error("Descriptor mapping not implemented: {}", protoMsg);
@@ -227,7 +208,7 @@ public class ProtoToPojoOneOfMapper {
         var type = protoMsg.getStringMetricStateOneOfCase();
         switch (type) {
             case ENUM_STRING_METRIC_STATE:
-                instanceLogger.error("State mapping not implemented: {}", type);
+                return metricMapper.map(protoMsg.getEnumStringMetricState());
             case STRING_METRIC_STATE:
                 return metricMapper.map(protoMsg.getStringMetricState());
         }

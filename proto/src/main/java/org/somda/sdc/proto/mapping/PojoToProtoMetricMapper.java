@@ -7,6 +7,8 @@ import org.apache.logging.log4j.Logger;
 import org.somda.sdc.biceps.model.participant.AbstractMetricDescriptor;
 import org.somda.sdc.biceps.model.participant.AbstractMetricState;
 import org.somda.sdc.biceps.model.participant.AbstractMetricValue;
+import org.somda.sdc.biceps.model.participant.EnumStringMetricDescriptor;
+import org.somda.sdc.biceps.model.participant.EnumStringMetricState;
 import org.somda.sdc.biceps.model.participant.StringMetricDescriptor;
 import org.somda.sdc.biceps.model.participant.StringMetricState;
 import org.somda.sdc.biceps.model.participant.StringMetricValue;
@@ -16,6 +18,8 @@ import org.somda.sdc.proto.model.biceps.AbstractMetricDescriptorMsg;
 import org.somda.sdc.proto.model.biceps.AbstractMetricStateMsg;
 import org.somda.sdc.proto.model.biceps.AbstractMetricValueMsg;
 import org.somda.sdc.proto.model.biceps.ComponentActivationMsg;
+import org.somda.sdc.proto.model.biceps.EnumStringMetricDescriptorMsg;
+import org.somda.sdc.proto.model.biceps.EnumStringMetricStateMsg;
 import org.somda.sdc.proto.model.biceps.MetricCategoryMsg;
 import org.somda.sdc.proto.model.biceps.StringMetricDescriptorMsg;
 import org.somda.sdc.proto.model.biceps.StringMetricStateMsg;
@@ -33,6 +37,22 @@ public class PojoToProtoMetricMapper {
                            PojoToProtoBaseMapper baseMapper) {
         this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);
         this.baseMapper = baseMapper;
+    }
+
+    public EnumStringMetricDescriptorMsg.Builder mapEnumStringMetricDescriptor(EnumStringMetricDescriptor enumStringMetricDescriptor) {
+        var builder = EnumStringMetricDescriptorMsg.newBuilder()
+                .setStringMetricDescriptor(mapStringMetricDescriptor(enumStringMetricDescriptor));
+
+        enumStringMetricDescriptor.getAllowedValue().forEach(allowedValue -> {
+            var valueBuilder = EnumStringMetricDescriptorMsg.AllowedValueMsg.newBuilder();
+            valueBuilder.setValue(allowedValue.getValue());
+//            valueBuilder.setCharacteristic();
+//            valueBuilder.setIdentification();
+//            valueBuilder.setType();
+            builder.addAllowedValue(valueBuilder);
+        });
+
+        return builder;
     }
 
     public StringMetricDescriptorMsg.Builder mapStringMetricDescriptor(StringMetricDescriptor stringMetricDescriptor) {
@@ -60,6 +80,13 @@ public class PojoToProtoMetricMapper {
         return builder.build();
     }
 
+    public EnumStringMetricStateMsg mapEnumStringMetricState(EnumStringMetricState state) {
+        var builder = EnumStringMetricStateMsg.newBuilder();
+        builder.setStringMetricState(mapStringMetricState(state));
+        return builder.build();
+    }
+
+
     private AbstractMetricStateMsg mapAbstractMetricState(AbstractMetricState state) {
         var builder = AbstractMetricStateMsg.newBuilder();
         builder.setAbstractState(baseMapper.mapAbstractState(state));
@@ -77,6 +104,7 @@ public class PojoToProtoMetricMapper {
         );
         return builder.build();
     }
+
     private StringMetricValueMsg mapStringMetricValue(StringMetricValue value) {
         var builder = StringMetricValueMsg.newBuilder();
         builder.setAValue(Util.toStringValue(value.getValue()));

@@ -76,7 +76,7 @@ public class PojoToProtoOneOfMapper {
     public StringMetricStateOneOfMsg mapStringMetricStateOneOf(StringMetricState state) {
         var builder = StringMetricStateOneOfMsg.newBuilder();
         if (state instanceof EnumStringMetricState) {
-            LOG.error("Class {} not supported", state.getClass());
+            builder.setEnumStringMetricState(metricMapper.mapEnumStringMetricState((EnumStringMetricState) state));
         } else {
             builder.setStringMetricState(metricMapper.mapStringMetricState(state));
         }

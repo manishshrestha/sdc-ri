@@ -14,6 +14,7 @@ import org.somda.sdc.biceps.model.participant.AbstractDescriptor;
 import org.somda.sdc.biceps.model.participant.AbstractMultiState;
 import org.somda.sdc.biceps.model.participant.AbstractState;
 import org.somda.sdc.biceps.model.participant.ChannelDescriptor;
+import org.somda.sdc.biceps.model.participant.EnumStringMetricDescriptor;
 import org.somda.sdc.biceps.model.participant.Mdib;
 import org.somda.sdc.biceps.model.participant.MdsDescriptor;
 import org.somda.sdc.biceps.model.participant.StringMetricDescriptor;
@@ -25,6 +26,7 @@ import org.somda.sdc.glue.common.RequiredDefaultStateValues;
 import org.somda.sdc.glue.common.helper.DefaultStateValuesDispatcher;
 import org.somda.sdc.proto.model.biceps.AbstractMetricDescriptorOneOfMsg;
 import org.somda.sdc.proto.model.biceps.ChannelDescriptorMsg;
+import org.somda.sdc.proto.model.biceps.EnumStringMetricDescriptorMsg;
 import org.somda.sdc.proto.model.biceps.MdibMsg;
 import org.somda.sdc.proto.model.biceps.MdsDescriptorMsg;
 import org.somda.sdc.proto.model.biceps.StringMetricDescriptorMsg;
@@ -197,9 +199,6 @@ public class ProtoToPojoModificationsBuilder {
     private void build(ChannelDescriptorMsg channel, VmdDescriptor parent) {
         var addedDescr = insert(channel, ChannelDescriptor.class, parent.getHandle());
 
-        instanceLogger.error("Missing mapping for metrics");
-//        channel.getMetric().forEach(descr -> buildLeaf(descr, channel));
-//        channel.setMetric(null);
         channel.getMetricList().forEach(metric -> build(metric, addedDescr));
 
         parent.setChannel(null);
@@ -228,9 +227,13 @@ public class ProtoToPojoModificationsBuilder {
                 build(metric.getStringMetricDescriptor(), parent);
                 break;
             case ENUM_STRING_METRIC_DESCRIPTOR:
-                instanceLogger.error("Missing mapping for {}", type);
+                build(metric.getEnumStringMetricDescriptor(), parent);
                 break;
         }
+    }
+
+    private void build(EnumStringMetricDescriptorMsg metric, ChannelDescriptor parent) {
+        var addedDesc = insert(metric, EnumStringMetricDescriptor.class, parent.getHandle());
     }
 
     private void build(StringMetricDescriptorMsg metric, ChannelDescriptor parent) {

@@ -60,5 +60,6 @@ class RoundTripTest {
         resultsToCompare.add(new VmdRoundTrip(modifications));
         resultsToCompare.add(new ChannelRoundTrip(modifications));
         resultsToCompare.add(new StringMetricRoundTrip(modifications));
+        resultsToCompare.add(new EnumStringMetricRoundTrip(modifications));
     }
 }

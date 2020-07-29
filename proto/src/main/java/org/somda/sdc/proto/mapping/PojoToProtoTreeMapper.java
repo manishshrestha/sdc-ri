@@ -307,12 +307,33 @@ public class PojoToProtoTreeMapper {
                 var builder = componentMapper.mapChannelDescriptor(channelDescriptor);
 
                 // TODO: Handle other types.
+                mapEnumStringMetricDescriptor(
+                        builder,
+                        mdibAccess.getChildrenByType(channelDescriptor.getHandle(), EnumStringMetricDescriptor.class)
+                );
                 mapStringMetricDescriptor(
                         builder,
-                        mdibAccess.getChildrenByType(channelDescriptor.getHandle(), StringMetricDescriptor.class));
+                        mdibAccess.getChildrenByType(channelDescriptor.getHandle(), StringMetricDescriptor.class)
+                );
 
                 parent.addChannel(builder);
             });
+        }
+    }
+
+    private void mapEnumStringMetricDescriptor(ChannelDescriptorMsg.Builder parent, List<MdibEntity> descriptors) {
+        for (MdibEntity descriptor : descriptors) {
+            descriptor.getDescriptor(EnumStringMetricDescriptor.class).ifPresent(enumStringMetricDescriptor -> {
+                        var builder = metricMapper.mapEnumStringMetricDescriptor(enumStringMetricDescriptor);
+
+                        parent.addMetric(
+                                AbstractMetricDescriptorOneOfMsg.newBuilder().setStringMetricDescriptorOneOf(
+                                        StringMetricDescriptorOneOfMsg.newBuilder().setEnumStringMetricDescriptor(builder)
+                                )
+                        );
+                    }
+            );
+
         }
     }
 
