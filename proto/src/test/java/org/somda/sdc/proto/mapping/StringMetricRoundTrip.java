@@ -19,11 +19,19 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class StringMetricRoundTrip implements BiConsumer<LocalMdibAccess, RemoteMdibAccess> {
 
+    private static final String HANDLE = Handles.METRIC_0;
+    private static final String HANDLE_MIN = HANDLE + "Min";
 
     public StringMetricRoundTrip(MdibDescriptionModifications modifications) {
+        bigSet(modifications);
+        minimalSet(modifications);
+    }
+
+    public void bigSet(MdibDescriptionModifications modifications) {
+        // TODO: Complete
         var descriptor = new StringMetricDescriptor();
         {
-            descriptor.setHandle(Handles.METRIC_0);
+            descriptor.setHandle(HANDLE);
             descriptor.setDescriptorVersion(BigInteger.ONE);
             descriptor.setMetricCategory(MetricCategory.SET);
             descriptor.setMetricAvailability(MetricAvailability.INTR);
@@ -31,7 +39,7 @@ public class StringMetricRoundTrip implements BiConsumer<LocalMdibAccess, Remote
 
         var state = new StringMetricState();
         {
-            state.setDescriptorHandle(Handles.METRIC_0);
+            state.setDescriptorHandle(HANDLE);
             state.setStateVersion(BigInteger.TEN);
             state.setActivationState(ComponentActivation.NOT_RDY);
             state.setActiveDeterminationPeriod(Duration.ofHours(2));
@@ -46,26 +54,42 @@ public class StringMetricRoundTrip implements BiConsumer<LocalMdibAccess, Remote
         modifications.insert(descriptor, state, Handles.CHANNEL_0);
     }
 
+    public void minimalSet(MdibDescriptionModifications modifications) {
+        var descriptor = new StringMetricDescriptor();
+        {
+            descriptor.setHandle(HANDLE_MIN);
+            descriptor.setMetricCategory(MetricCategory.SET);
+            descriptor.setMetricAvailability(MetricAvailability.INTR);
+        }
+
+        var state = new StringMetricState();
+        {
+            state.setDescriptorHandle(HANDLE_MIN);
+        }
+
+        modifications.insert(descriptor, state, Handles.CHANNEL_0);
+    }
 
     @SuppressWarnings("OptionalGetWithoutIsPresent")
     @Override
     public void accept(final LocalMdibAccess localMdibAccess, final RemoteMdibAccess remoteMdibAccess) {
-        var expectedDescriptor = localMdibAccess.getDescriptor(Handles.METRIC_0, StringMetricDescriptor.class).get();
-        var expectedState = localMdibAccess.getState(Handles.METRIC_0, StringMetricState.class).get();
-        var actualDescriptor = remoteMdibAccess.getDescriptor(Handles.METRIC_0, StringMetricDescriptor.class).get();
-        var actualState = remoteMdibAccess.getState(Handles.METRIC_0, StringMetricState.class).get();
+        {
+            var expectedDescriptor = localMdibAccess.getDescriptor(HANDLE, StringMetricDescriptor.class).get();
+            var expectedState = localMdibAccess.getState(HANDLE, StringMetricState.class).get();
+            var actualDescriptor = remoteMdibAccess.getDescriptor(HANDLE, StringMetricDescriptor.class).get();
+            var actualState = remoteMdibAccess.getState(HANDLE, StringMetricState.class).get();
 
-        assertEquals(expectedDescriptor.getHandle(), actualDescriptor.getHandle());
-        assertEquals(expectedDescriptor.getDescriptorVersion(), actualDescriptor.getDescriptorVersion());
-        assertEquals(expectedDescriptor.getMetricCategory(), actualDescriptor.getMetricCategory());
-        assertEquals(expectedDescriptor.getMetricAvailability(), expectedDescriptor.getMetricAvailability());
+            assertEquals(expectedDescriptor, actualDescriptor);
+            assertEquals(expectedState, actualState);
+        }
+        {
+            var expectedDescriptor = localMdibAccess.getDescriptor(HANDLE_MIN, StringMetricDescriptor.class).get();
+            var expectedState = localMdibAccess.getState(HANDLE_MIN, StringMetricState.class).get();
+            var actualDescriptor = remoteMdibAccess.getDescriptor(HANDLE_MIN, StringMetricDescriptor.class).get();
+            var actualState = remoteMdibAccess.getState(HANDLE_MIN, StringMetricState.class).get();
 
-        assertEquals(expectedState.getDescriptorHandle(), actualState.getDescriptorHandle());
-        assertEquals(expectedState.getStateVersion(), actualState.getStateVersion());
-        assertEquals(expectedState.getActivationState(), actualState.getActivationState());
-        assertEquals(expectedState.getActiveDeterminationPeriod(), actualState.getActiveDeterminationPeriod());
-        assertEquals(expectedState.getLifeTimePeriod(), actualState.getLifeTimePeriod());
-
-        assertEquals(expectedState.getMetricValue().getValue(), actualState.getMetricValue().getValue());
+            assertEquals(expectedDescriptor, actualDescriptor);
+            assertEquals(expectedState, actualState);
+        }
     }
 }

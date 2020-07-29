@@ -26,8 +26,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class NumericMetricRoundTrip implements BiConsumer<LocalMdibAccess, RemoteMdibAccess> {
 
-    private static String HANDLE = Handles.METRIC_2;
-    private static String HANDLE_MIN = HANDLE + "Min";
+    private static final String HANDLE = Handles.METRIC_2;
+    private static final String HANDLE_MIN = HANDLE + "Min";
 
     NumericMetricRoundTrip(MdibDescriptionModifications modifications) {
         bigSet(modifications);
@@ -35,6 +35,7 @@ public class NumericMetricRoundTrip implements BiConsumer<LocalMdibAccess, Remot
     }
 
     private void bigSet(MdibDescriptionModifications modifications) {
+        // TODO: Complete
         var descriptor = new NumericMetricDescriptor();
         {
             descriptor.setHandle(HANDLE);

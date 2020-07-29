@@ -118,7 +118,8 @@ public class ProtoToPojoMetricMapper {
     }
 
     private void map(AbstractMetricValue pojo, AbstractMetricValueMsg protoMsg) {
-        Util.doIfNotNull(protoMsg.getMetricQuality(), quality -> pojo.setMetricQuality(map(quality)));
+        Util.doIfNotNull(Util.optional(protoMsg, "MetricQuality", AbstractMetricValueMsg.MetricQualityMsg.class),
+                quality -> pojo.setMetricQuality(map(quality)));
         pojo.setDeterminationTime(Util.optionalInstantOfLong(protoMsg, "ADeterminationTime"));
         pojo.setStartTime(Util.optionalInstantOfLong(protoMsg, "AStartTime"));
         pojo.setStopTime(Util.optionalInstantOfLong(protoMsg, "AStopTime"));
@@ -142,7 +143,10 @@ public class ProtoToPojoMetricMapper {
     }
 
     private void map(StringMetricState state, StringMetricStateMsg protoMsg) {
-        state.setMetricValue(map(protoMsg.getMetricValue()));
+        Util.doIfNotNull(
+                Util.optional(protoMsg, "MetricValue", StringMetricValueMsg.class),
+                value -> state.setMetricValue(map(value))
+        );
         map(state, protoMsg.getAbstractMetricState());
     }
 
