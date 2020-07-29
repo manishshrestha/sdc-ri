@@ -1,5 +1,6 @@
 package org.somda.sdc.proto.mapping;
 
+import org.somda.sdc.biceps.common.MdibDescriptionModification;
 import org.somda.sdc.biceps.common.MdibDescriptionModifications;
 import org.somda.sdc.biceps.consumer.access.RemoteMdibAccess;
 import org.somda.sdc.biceps.model.participant.AbstractMetricValue;
@@ -25,10 +26,18 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class NumericMetricRoundTrip implements BiConsumer<LocalMdibAccess, RemoteMdibAccess> {
 
+    private static String HANDLE = Handles.METRIC_2;
+    private static String HANDLE_MIN = HANDLE + "Min";
+
     NumericMetricRoundTrip(MdibDescriptionModifications modifications) {
+        bigSet(modifications);
+        minimalSet(modifications);
+    }
+
+    private void bigSet(MdibDescriptionModifications modifications) {
         var descriptor = new NumericMetricDescriptor();
         {
-            descriptor.setHandle(Handles.METRIC_2);
+            descriptor.setHandle(HANDLE);
             descriptor.setDescriptorVersion(BigInteger.ONE);
             descriptor.setMetricCategory(MetricCategory.SET);
             descriptor.setMetricAvailability(MetricAvailability.INTR);
@@ -46,7 +55,7 @@ public class NumericMetricRoundTrip implements BiConsumer<LocalMdibAccess, Remot
 
         var state = new NumericMetricState();
         {
-            state.setDescriptorHandle(Handles.METRIC_2);
+            state.setDescriptorHandle(HANDLE);
             state.setActiveAveragingPeriod(Duration.ofMinutes(55));
 
             var range1 = new Range();
@@ -71,16 +80,46 @@ public class NumericMetricRoundTrip implements BiConsumer<LocalMdibAccess, Remot
         modifications.insert(descriptor, state, Handles.CHANNEL_0);
     }
 
+    private void minimalSet(MdibDescriptionModifications modifications) {
+        var descriptor = new NumericMetricDescriptor();
+        {
+            descriptor.setHandle(HANDLE_MIN);
+            descriptor.setMetricCategory(MetricCategory.SET);
+            descriptor.setMetricAvailability(MetricAvailability.INTR);
+            descriptor.setResolution(BigDecimal.TEN);
+
+            var range1 = new Range();
+            descriptor.setTechnicalRange(List.of(range1));
+        }
+
+        var state = new NumericMetricState();
+        {
+            state.setDescriptorHandle(HANDLE_MIN);
+        }
+        modifications.insert(descriptor, state, Handles.CHANNEL_0);
+    }
+
     @SuppressWarnings("OptionalGetWithoutIsPresent")
     @Override
     public void accept(final LocalMdibAccess localMdibAccess, final RemoteMdibAccess remoteMdibAccess) {
-        var expectedDescriptor = localMdibAccess.getDescriptor(Handles.METRIC_2, NumericMetricDescriptor.class).get();
-        var expectedState = localMdibAccess.getState(Handles.METRIC_2, NumericMetricState.class).get();
-        var actualDescriptor = remoteMdibAccess.getDescriptor(Handles.METRIC_2, NumericMetricDescriptor.class).get();
-        var actualState = remoteMdibAccess.getState(Handles.METRIC_2, NumericMetricState.class).get();
+        {
+            var expectedDescriptor = localMdibAccess.getDescriptor(HANDLE, NumericMetricDescriptor.class).get();
+            var expectedState = localMdibAccess.getState(HANDLE, NumericMetricState.class).get();
+            var actualDescriptor = remoteMdibAccess.getDescriptor(HANDLE, NumericMetricDescriptor.class).get();
+            var actualState = remoteMdibAccess.getState(HANDLE, NumericMetricState.class).get();
 
-        assertEquals(expectedDescriptor, actualDescriptor);
-        assertEquals(expectedState, actualState);
+            assertEquals(expectedDescriptor, actualDescriptor);
+            assertEquals(expectedState, actualState);
+        }
+        {
+            var expectedDescriptor = localMdibAccess.getDescriptor(HANDLE_MIN, NumericMetricDescriptor.class).get();
+            var expectedState = localMdibAccess.getState(HANDLE_MIN, NumericMetricState.class).get();
+            var actualDescriptor = remoteMdibAccess.getDescriptor(HANDLE_MIN, NumericMetricDescriptor.class).get();
+            var actualState = remoteMdibAccess.getState(HANDLE_MIN, NumericMetricState.class).get();
+
+            assertEquals(expectedDescriptor, actualDescriptor);
+            assertEquals(expectedState, actualState);
+        }
     }
 
 }

@@ -41,7 +41,7 @@ public class ProtoToPojoMetricMapper {
         map(pojo, protoMsg.getAbstractMetricDescriptor());
         pojo.setTechnicalRange(protoMsg.getTechnicalRangeList().stream().map(this::map).collect(Collectors.toList()));
         pojo.setResolution(new BigDecimal(protoMsg.getAResolution()));
-        Util.doIfNotNull(protoMsg.getAAveragingPeriod(), period ->
+        Util.doIfNotNull(Util.optional(protoMsg, "AAveragingPeriod", Duration.class), period ->
                 pojo.setAveragingPeriod(Util.fromProtoDuration(period)));
         return pojo;
     }
@@ -50,10 +50,11 @@ public class ProtoToPojoMetricMapper {
         var pojo = new NumericMetricState();
         map(pojo, protoMsg.getAbstractMetricState());
         pojo.setPhysiologicalRange(protoMsg.getPhysiologicalRangeList().stream().map(this::map).collect(Collectors.toList()));
-        Util.doIfNotNull(protoMsg.getAActiveAveragingPeriod(), period ->
+        Util.doIfNotNull(Util.optional(protoMsg, "AActiveAveragingPeriod", Duration.class), period ->
                 pojo.setActiveAveragingPeriod(Util.fromProtoDuration(period))
         );
-        Util.doIfNotNull(protoMsg.getMetricValue(), value -> pojo.setMetricValue(map(value)));
+        Util.doIfNotNull(Util.optional(protoMsg, "MetricValue", NumericMetricValueMsg.class),
+                value -> pojo.setMetricValue(map(value)));
 
         return pojo;
     }
