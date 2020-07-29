@@ -62,6 +62,10 @@ public class ProtoToPojoOneOfMapper {
             return metricMapper.map((NumericMetricDescriptorMsg) protoMsg);
         } else if (protoMsg instanceof SystemContextDescriptorMsg) {
             return componentMapper.map((SystemContextDescriptorMsg) protoMsg);
+        } else if (protoMsg instanceof EnsembleContextDescriptorMsg) {
+            return contextMapper.map((EnsembleContextDescriptorMsg) protoMsg);
+        } else if (protoMsg instanceof LocationContextDescriptorMsg) {
+            return contextMapper.map((LocationContextDescriptorMsg) protoMsg);
         } else {
             instanceLogger.error("Descriptor mapping not implemented: {}", protoMsg);
             return Util.invalidDescriptor();

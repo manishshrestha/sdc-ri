@@ -9,6 +9,25 @@ import org.somda.sdc.biceps.common.MdibDescriptionModifications;
 import org.somda.sdc.biceps.common.MdibEntity;
 import org.somda.sdc.biceps.common.access.MdibAccess;
 import org.somda.sdc.biceps.model.participant.*;
+import org.somda.sdc.biceps.model.participant.AbstractComplexDeviceComponentDescriptor;
+import org.somda.sdc.biceps.model.participant.AbstractDescriptor;
+import org.somda.sdc.biceps.model.participant.AbstractOperationDescriptor;
+import org.somda.sdc.biceps.model.participant.AlertConditionDescriptor;
+import org.somda.sdc.biceps.model.participant.AlertSignalDescriptor;
+import org.somda.sdc.biceps.model.participant.AlertSystemDescriptor;
+import org.somda.sdc.biceps.model.participant.ChannelDescriptor;
+import org.somda.sdc.biceps.model.participant.EnsembleContextDescriptor;
+import org.somda.sdc.biceps.model.participant.EnumStringMetricDescriptor;
+import org.somda.sdc.biceps.model.participant.LocationContextDescriptor;
+import org.somda.sdc.biceps.model.participant.MdDescription;
+import org.somda.sdc.biceps.model.participant.MdState;
+import org.somda.sdc.biceps.model.participant.Mdib;
+import org.somda.sdc.biceps.model.participant.MdsDescriptor;
+import org.somda.sdc.biceps.model.participant.ObjectFactory;
+import org.somda.sdc.biceps.model.participant.ScoDescriptor;
+import org.somda.sdc.biceps.model.participant.StringMetricDescriptor;
+import org.somda.sdc.biceps.model.participant.SystemContextDescriptor;
+import org.somda.sdc.biceps.model.participant.VmdDescriptor;
 import org.somda.sdc.common.CommonConfig;
 import org.somda.sdc.common.logging.InstanceLogger;
 import org.somda.sdc.common.util.ObjectUtil;
@@ -21,6 +40,7 @@ import org.somda.sdc.proto.model.biceps.MdibMsg;
 import org.somda.sdc.proto.model.biceps.MdibVersionGroupMsg;
 import org.somda.sdc.proto.model.biceps.MdsDescriptorMsg;
 import org.somda.sdc.proto.model.biceps.StringMetricDescriptorOneOfMsg;
+import org.somda.sdc.proto.model.biceps.SystemContextDescriptorMsg;
 import org.somda.sdc.proto.model.biceps.VmdDescriptorMsg;
 
 import java.lang.reflect.InvocationTargetException;
@@ -255,8 +275,8 @@ public class PojoToProtoTreeMapper {
 //                AlertSystemDescriptor.class));
 //        mapSco(descriptorCopy, mdibAccess.getChildrenByType(mds.getHandle(),
 //                ScoDescriptor.class));
-//        mapSystemContext(descriptorCopy, mdibAccess.getChildrenByType(mds.getHandle(),
-//                SystemContextDescriptor.class));
+        mapSystemContext(builder, mdibAccess.getChildrenByType(mds.getHandle(),
+                SystemContextDescriptor.class));
         mapVmds(builder, mdibAccess.getChildrenByType(mds.getHandle(),
                 VmdDescriptor.class));
 
@@ -357,38 +377,62 @@ public class PojoToProtoTreeMapper {
         }
     }
 
-    private void mapSystemContext(MdsDescriptor parent, List<MdibEntity> systemContexts) {
+    private void mapSystemContext(MdsDescriptorMsg.Builder parent, List<MdibEntity> systemContexts) {
         for (MdibEntity systemContext : systemContexts) {
             systemContext.getDescriptor(SystemContextDescriptor.class).ifPresent(systemContextDescriptor -> {
-                SystemContextDescriptor systemContextDescriptorCopy = objectUtil.deepCopy(systemContextDescriptor);
-                parent.setSystemContext(systemContextDescriptorCopy);
-                String parentHandle = systemContextDescriptorCopy.getHandle();
-                mapZeroOrOneDescriptor(
-                        systemContextDescriptorCopy,
-                        mdibAccess.getChildrenByType(parentHandle, PatientContextDescriptor.class),
-                        "setPatientContext");
-                mapZeroOrOneDescriptor(
-                        systemContextDescriptorCopy,
-                        mdibAccess.getChildrenByType(parentHandle, LocationContextDescriptor.class),
-                        "setLocationContext");
-                mapZeroOrMoreDescriptors(
-                        systemContextDescriptorCopy,
-                        mdibAccess.getChildrenByType(parentHandle, EnsembleContextDescriptor.class),
-                        "getEnsembleContext");
-                mapZeroOrMoreDescriptors(
-                        systemContextDescriptorCopy,
-                        mdibAccess.getChildrenByType(parentHandle, WorkflowContextDescriptor.class),
-                        "getWorkflowContext");
-                mapZeroOrMoreDescriptors(
-                        systemContextDescriptorCopy,
-                        mdibAccess.getChildrenByType(parentHandle, OperatorContextDescriptor.class),
-                        "getOperatorContext");
-                mapZeroOrMoreDescriptors(
-                        systemContextDescriptorCopy,
-                        mdibAccess.getChildrenByType(parentHandle, MeansContextDescriptor.class),
-                        "getMeansContext");
+                var builder = componentMapper.mapSystemContextDescriptor(systemContextDescriptor);
+                mapEnsembleContextDescriptor(builder, mdibAccess.getChildrenByType(systemContext.getHandle(),
+                        EnsembleContextDescriptor.class));
+                mapLocationContextDescriptor(builder, mdibAccess.getChildrenByType(systemContext.getHandle(),
+                        LocationContextDescriptor.class));
+//                mapZeroOrOneDescriptor(
+//                        systemContextDescriptorCopy,
+//                        mdibAccess.getChildrenByType(parentHandle, PatientContextDescriptor.class),
+//                        "setPatientContext");
+//                mapZeroOrOneDescriptor(
+//                        systemContextDescriptorCopy,
+//                        mdibAccess.getChildrenByType(parentHandle, LocationContextDescriptor.class),
+//                        "setLocationContext");
+//                mapZeroOrMoreDescriptors(
+//                        systemContextDescriptorCopy,
+//                        mdibAccess.getChildrenByType(parentHandle, EnsembleContextDescriptor.class),
+//                        "getEnsembleContext");
+//                mapZeroOrMoreDescriptors(
+//                        systemContextDescriptorCopy,
+//                        mdibAccess.getChildrenByType(parentHandle, WorkflowContextDescriptor.class),
+//                        "getWorkflowContext");
+//                mapZeroOrMoreDescriptors(
+//                        systemContextDescriptorCopy,
+//                        mdibAccess.getChildrenByType(parentHandle, OperatorContextDescriptor.class),
+//                        "getOperatorContext");
+//                mapZeroOrMoreDescriptors(
+//                        systemContextDescriptorCopy,
+//                        mdibAccess.getChildrenByType(parentHandle, MeansContextDescriptor.class),
+//                        "getMeansContext");
+                parent.setSystemContext(builder);
             });
             break;
+        }
+    }
+
+    private void mapEnsembleContextDescriptor(SystemContextDescriptorMsg.Builder parent, List<MdibEntity> descriptors) {
+        for (MdibEntity descriptor : descriptors) {
+            descriptor.getDescriptor(EnsembleContextDescriptor.class).ifPresent(ensembleContextDescriptor -> {
+                        var builder = contextMapper.mapEnsembleContextDescriptor(ensembleContextDescriptor);
+                        parent.addEnsembleContext(builder);
+                    }
+            );
+        }
+    }
+
+    private void mapLocationContextDescriptor(SystemContextDescriptorMsg.Builder parent, List<MdibEntity> descriptors) {
+        for (MdibEntity descriptor : descriptors) {
+            descriptor.getDescriptor(LocationContextDescriptor.class).ifPresent(locationContextDescriptor -> {
+                        var builder = contextMapper.mapLocationContextDescriptor(locationContextDescriptor);
+                        parent.setLocationContext(builder);
+                    }
+            );
+            return;
         }
     }
 

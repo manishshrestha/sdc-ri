@@ -42,6 +42,9 @@ public class ProtoToPojoBaseMapper {
     void map(AbstractDescriptor pojo, AbstractDescriptorMsg protoMsg) {
         pojo.setHandle(protoMsg.getAHandle());
         pojo.setDescriptorVersion(Util.optionalBigIntOfLong(protoMsg, "ADescriptorVersion"));
+        if (protoMsg.hasType()) {
+            pojo.setType(map(protoMsg.getType()));
+        }
         pojo.setSafetyClassification(Util.mapToPojoEnum(protoMsg, "ASafetyClassification", SafetyClassification.class));
     }
 
@@ -104,12 +107,8 @@ public class ProtoToPojoBaseMapper {
 
         var pojo = new CodedValue();
         pojo.setCode(protoMsg.getACode());
-        if (protoMsg.hasACodingSystem() && !protoMsg.getACodingSystem().getValue().isEmpty()) {
-            pojo.setCodingSystem(protoMsg.getACodingSystem().getValue());
-        } else {
-            pojo.setCodingSystem("urn:oid:1.2.840.10004.1.1.1.0.0.1");
-        }
-        pojo.setCodingSystem(Util.optionalStr(protoMsg, "ACodingSystemVersion"));
+        pojo.setCodingSystem(Util.optionalStr(protoMsg, "ACodingSystem"));
+        pojo.setCodingSystemVersion(Util.optionalStr(protoMsg, "ACodingSystemVersion"));
         pojo.setSymbolicCodeName(Util.optionalStr(protoMsg, "ASymbolicCodeName"));
         return pojo;
     }

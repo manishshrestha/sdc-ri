@@ -3,6 +3,7 @@ package org.somda.sdc.proto.mapping;
 import com.google.inject.Inject;
 import org.somda.sdc.biceps.model.participant.AbstractDescriptor;
 import org.somda.sdc.biceps.model.participant.AbstractDeviceComponentDescriptor;
+import org.somda.sdc.biceps.model.participant.AbstractMultiState;
 import org.somda.sdc.biceps.model.participant.AbstractState;
 import org.somda.sdc.biceps.model.participant.CodedValue;
 import org.somda.sdc.biceps.model.participant.InstanceIdentifier;
@@ -10,6 +11,7 @@ import org.somda.sdc.biceps.model.participant.LocalizedText;
 import org.somda.sdc.biceps.model.participant.OperatingJurisdiction;
 import org.somda.sdc.proto.model.biceps.AbstractDescriptorMsg;
 import org.somda.sdc.proto.model.biceps.AbstractDeviceComponentDescriptorMsg;
+import org.somda.sdc.proto.model.biceps.AbstractMultiStateMsg;
 import org.somda.sdc.proto.model.biceps.AbstractStateMsg;
 import org.somda.sdc.proto.model.biceps.CodedValueMsg;
 import org.somda.sdc.proto.model.biceps.InstanceIdentifierMsg;
@@ -57,12 +59,22 @@ public class PojoToProtoBaseMapper {
         return builder.build();
     }
 
+    public List<InstanceIdentifierOneOfMsg> mapInstanceIdentifiers(List<InstanceIdentifier> instanceIdentifiers) {
+        return instanceIdentifiers.stream()
+                .map(it -> InstanceIdentifierOneOfMsg.newBuilder().setInstanceIdentifier(mapInstanceIdentifier(it))
+                        .build())
+                .collect(Collectors.toList());
+    }
+
     public CodedValueMsg mapCodedValue(CodedValue codedValue) {
         var builder = CodedValueMsg.newBuilder();
         Util.doIfNotNull(codedValue.getCode(), builder::setACode);
-        builder.setACodingSystem(Util.toStringValue(codedValue.getCodingSystem()));
-        builder.setACodingSystemVersion(Util.toStringValue(codedValue.getCodingSystemVersion()));
-        builder.setASymbolicCodeName(Util.toStringValue(codedValue.getSymbolicCodeName()));
+        Util.doIfNotNull(codedValue.getCodingSystem(), it ->
+                builder.setACodingSystem(Util.toStringValue(codedValue.getCodingSystem())));
+        Util.doIfNotNull(codedValue.getCodingSystemVersion(), it ->
+                builder.setACodingSystemVersion(Util.toStringValue(codedValue.getCodingSystemVersion())));
+        Util.doIfNotNull(codedValue.getSymbolicCodeName(), it ->
+                builder.setASymbolicCodeName(Util.toStringValue(codedValue.getSymbolicCodeName())));
         builder.addAllConceptDescription(mapLocalizedTexts(codedValue.getConceptDescription()));
         builder.addAllCodingSystemName(mapLocalizedTexts(codedValue.getCodingSystemName()));
         return builder.build();
@@ -106,9 +118,18 @@ public class PojoToProtoBaseMapper {
 
     AbstractStateMsg mapAbstractState(AbstractState abstractState) {
         var builder = AbstractStateMsg.newBuilder();
-        Util.doIfNotNull(abstractState.getDescriptorHandle(), builder::setADescriptorHandle);
+        builder.setADescriptorHandle(abstractState.getDescriptorHandle());
         builder.setADescriptorVersion(Util.toUInt64(abstractState.getDescriptorVersion()));
         builder.setAStateVersion(Util.toUInt64(abstractState.getStateVersion()));
+        return builder.build();
+    }
+
+    AbstractMultiStateMsg mapAbstractMultiState(AbstractMultiState abstractMultiState) {
+        var builder = AbstractMultiStateMsg.newBuilder();
+        Util.doIfNotNull(abstractMultiState.getCategory(), codedValue ->
+                builder.setCategory(mapCodedValue(codedValue)));
+        builder.setAHandle(abstractMultiState.getHandle());
+        builder.setAbstractState(mapAbstractState(abstractMultiState));
         return builder.build();
     }
 }

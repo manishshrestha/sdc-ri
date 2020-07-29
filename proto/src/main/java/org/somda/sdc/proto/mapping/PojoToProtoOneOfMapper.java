@@ -8,7 +8,7 @@ import org.somda.sdc.biceps.model.participant.AbstractComplexDeviceComponentStat
 import org.somda.sdc.biceps.model.participant.AbstractDeviceComponentState;
 import org.somda.sdc.biceps.model.participant.AbstractMetricState;
 import org.somda.sdc.biceps.model.participant.AbstractState;
-import org.somda.sdc.biceps.model.participant.ChannelState;
+import org.somda.sdc.biceps.model.participant.*;
 import org.somda.sdc.biceps.model.participant.EnumStringMetricState;
 import org.somda.sdc.biceps.model.participant.MdsState;
 import org.somda.sdc.biceps.model.participant.NumericMetricState;
@@ -18,8 +18,11 @@ import org.somda.sdc.biceps.model.participant.VmdState;
 import org.somda.sdc.common.CommonConfig;
 import org.somda.sdc.common.logging.InstanceLogger;
 import org.somda.sdc.proto.model.biceps.AbstractComplexDeviceComponentStateOneOfMsg;
+import org.somda.sdc.proto.model.biceps.AbstractContextStateMsg;
+import org.somda.sdc.proto.model.biceps.AbstractContextStateOneOfMsg;
 import org.somda.sdc.proto.model.biceps.AbstractDeviceComponentStateOneOfMsg;
 import org.somda.sdc.proto.model.biceps.AbstractMetricStateOneOfMsg;
+import org.somda.sdc.proto.model.biceps.AbstractMultiStateOneOfMsg;
 import org.somda.sdc.proto.model.biceps.AbstractStateOneOfMsg;
 import org.somda.sdc.proto.model.biceps.NumericMetricStateMsg;
 import org.somda.sdc.proto.model.biceps.StringMetricStateOneOfMsg;
@@ -53,11 +56,13 @@ public class PojoToProtoOneOfMapper {
 
     public AbstractStateOneOfMsg mapAbstractStateOneOf(AbstractState state) {
         var builder = AbstractStateOneOfMsg.newBuilder();
-        if (state instanceof org.somda.sdc.biceps.model.participant.AbstractDeviceComponentState) {
+        if (state instanceof AbstractDeviceComponentState) {
             builder.setAbstractDeviceComponentStateOneOf(
                     mapAbstractDeviceComponentStateOneOf((AbstractDeviceComponentState) state));
-        } else if (state instanceof org.somda.sdc.biceps.model.participant.AbstractMetricState) {
+        } else if (state instanceof AbstractMetricState) {
             builder.setAbstractMetricStateOneOf(mapAbstractMetricStateOneOf((AbstractMetricState) state));
+        } else if (state instanceof AbstractMultiState) {
+            builder.setAbstractMultiStateOneOf(mapAbstractMultiStateOneOf((AbstractMultiState) state));
         } else {
             LOG.error("Class {} not supported", state.getClass());
             //throw new IllegalArgumentException(String.format("Class %s not supported", state.getClass()));
@@ -88,6 +93,28 @@ public class PojoToProtoOneOfMapper {
         return builder.build();
     }
 
+    public AbstractMultiStateOneOfMsg mapAbstractMultiStateOneOf(AbstractMultiState state) {
+        var builder = AbstractMultiStateOneOfMsg.newBuilder();
+        if (state instanceof AbstractContextState) {
+            builder.setAbstractContextStateOneOf(mapAbstractContextStateOneOf((AbstractContextState) state));
+        } else {
+            LOG.error("Class {} not supported", state.getClass());
+        }
+        return builder.build();
+    }
+
+    public AbstractContextStateOneOfMsg mapAbstractContextStateOneOf(AbstractContextState state) {
+        var builder = AbstractContextStateOneOfMsg.newBuilder();
+        if (state instanceof EnsembleContextState) {
+            builder.setEnsembleContextState(contextMapper.mapEnsembleContextState((EnsembleContextState) state));
+        } else if (state instanceof LocationContextState) {
+            builder.setLocationContextState(contextMapper.mapLocationContextState((LocationContextState) state));
+        } else {
+            LOG.error("Class {} not supported", state.getClass());
+        }
+        return builder.build();
+    }
+
     public AbstractDeviceComponentStateOneOfMsg mapAbstractDeviceComponentStateOneOf(
             AbstractDeviceComponentState state) {
         var builder = AbstractDeviceComponentStateOneOfMsg.newBuilder();
@@ -96,7 +123,10 @@ public class PojoToProtoOneOfMapper {
         } else if (state instanceof AbstractComplexDeviceComponentState) {
             builder.setAbstractComplexDeviceComponentStateOneOf(
                     mapAbstractComplexDeviceComponentStateOneOf((AbstractComplexDeviceComponentState) state));
-        } else {
+        } else if (state instanceof SystemContextState) {
+            builder.setSystemContextState(componentMapper.mapSystemContextState((SystemContextState)state));
+        }
+        else {
             LOG.error("Class {} not supported", state.getClass());
             // throw new IllegalArgumentException(String.format("Class %s not supported", state.getClass()));
         }

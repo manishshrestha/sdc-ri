@@ -14,11 +14,14 @@ import org.somda.sdc.biceps.model.participant.AbstractDescriptor;
 import org.somda.sdc.biceps.model.participant.AbstractMultiState;
 import org.somda.sdc.biceps.model.participant.AbstractState;
 import org.somda.sdc.biceps.model.participant.ChannelDescriptor;
+import org.somda.sdc.biceps.model.participant.EnsembleContextDescriptor;
 import org.somda.sdc.biceps.model.participant.EnumStringMetricDescriptor;
+import org.somda.sdc.biceps.model.participant.LocationContextDescriptor;
 import org.somda.sdc.biceps.model.participant.Mdib;
 import org.somda.sdc.biceps.model.participant.MdsDescriptor;
 import org.somda.sdc.biceps.model.participant.NumericMetricDescriptor;
 import org.somda.sdc.biceps.model.participant.StringMetricDescriptor;
+import org.somda.sdc.biceps.model.participant.SystemContextDescriptor;
 import org.somda.sdc.biceps.model.participant.VmdDescriptor;
 import org.somda.sdc.common.logging.InstanceLogger;
 import org.somda.sdc.glue.common.DefaultStateValues;
@@ -33,10 +36,12 @@ import org.somda.sdc.proto.model.biceps.MdsDescriptorMsg;
 import org.somda.sdc.proto.model.biceps.NumericMetricDescriptorMsg;
 import org.somda.sdc.proto.model.biceps.StringMetricDescriptorMsg;
 import org.somda.sdc.proto.model.biceps.StringMetricDescriptorOneOfMsg;
+import org.somda.sdc.proto.model.biceps.SystemContextDescriptorMsg;
 import org.somda.sdc.proto.model.biceps.VmdDescriptorMsg;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -131,8 +136,8 @@ public class ProtoToPojoModificationsBuilder {
 //        build(mds.getSco(), mds);
 //        mds.setSco(null);
         instanceLogger.error("Missing mapping for system context");
-//        build(mds.getSystemContext(), mds);
-//        mds.setSystemContext(null);
+        build(mds.getSystemContext(), parent);
+        parent.setSystemContext(null);
         instanceLogger.error("Missing mapping for clock");
 //        buildLeaf(mds.getClock(), mds);
 //        mds.setClock(null);
@@ -141,9 +146,10 @@ public class ProtoToPojoModificationsBuilder {
 //        mds.setBattery(null);
 
         mds.getVmdList().forEach(descr -> build(descr, parent));
+        parent.setVmd(Collections.emptyList());
     }
 
-//    private void build(@Nullable ScoDescriptor sco, AbstractDescriptor parent) {
+    //    private void build(@Nullable ScoDescriptor sco, AbstractDescriptor parent) {
 //        if (sco == null) {
 //            return;
 //        }
@@ -153,25 +159,25 @@ public class ProtoToPojoModificationsBuilder {
 //        sco.setOperation(null);
 //    }
 //
-//    private void build(@Nullable SystemContextDescriptor systemContext, AbstractDescriptor parent) {
-//        if (systemContext == null) {
-//            return;
-//        }
-//        insert(systemContext, parent);
-//
-//        buildMultiStateLeaf(systemContext.getLocationContext(), systemContext);
-//        systemContext.setLocationContext(null);
+    private void build(SystemContextDescriptorMsg systemContext, MdsDescriptor parent) {
+        var addedDescr = insert(systemContext, SystemContextDescriptor.class, parent.getHandle());
+
+        insertMulti(systemContext.getLocationContext(), LocationContextDescriptor.class, addedDescr.getHandle());
+        addedDescr.setLocationContext(null);
 //        buildMultiStateLeaf(systemContext.getPatientContext(), systemContext);
-//        systemContext.setPatientContext(null);
+        addedDescr.setPatientContext(null);
 //        systemContext.getEnsembleContext().forEach(descr -> buildMultiStateLeaf(descr, systemContext));
-//        systemContext.setEnsembleContext(null);
+        systemContext.getEnsembleContextList().forEach(it ->
+                insertMulti(it, EnsembleContextDescriptor.class, addedDescr.getHandle()));
+        addedDescr.setEnsembleContext(null);
 //        systemContext.getWorkflowContext().forEach(descr -> buildMultiStateLeaf(descr, systemContext));
-//        systemContext.setWorkflowContext(null);
+        addedDescr.setWorkflowContext(null);
 //        systemContext.getOperatorContext().forEach(descr -> buildMultiStateLeaf(descr, systemContext));
-//        systemContext.setOperatorContext(null);
-//        systemContext.getMeansContext().forEach(descr -> buildMultiStateLeaf(descr, systemContext));
-//        systemContext.setMeansContext(null);
-//    }
+        addedDescr.setOperatorContext(null);
+//        addedDescr.getMeansContext().forEach(descr -> buildMultiStateLeaf(descr, systemContext));
+        addedDescr.setMeansContext(null);
+    }
+
 //
 //    private void build(@Nullable AlertSystemDescriptor alertSystem, AbstractDescriptor parent) {
 //        if (alertSystem == null) {
@@ -195,15 +201,13 @@ public class ProtoToPojoModificationsBuilder {
 //        build(vmd.getAlertSystem(), vmd);
 //        vmd.setAlertSystem(null);
         vmd.getChannelList().forEach(descr -> build(descr, addedDescr));
-        parent.setVmd(null);
+        addedDescr.setChannel(Collections.emptyList());
     }
 
     private void build(ChannelDescriptorMsg channel, VmdDescriptor parent) {
         var addedDescr = insert(channel, ChannelDescriptor.class, parent.getHandle());
 
         channel.getMetricList().forEach(metric -> build(metric, addedDescr));
-
-        parent.setChannel(null);
     }
 
     private void build(AbstractMetricDescriptorOneOfMsg metric, ChannelDescriptor parent) {
@@ -300,6 +304,14 @@ public class ProtoToPojoModificationsBuilder {
                                                     @Nullable String parentHandle) {
         var descriptorToInsert = resultType.cast(nodeMapper.mapDescriptor(descriptor));
         modifications.insert(descriptorToInsert, singleState(descriptorToInsert), parentHandle);
+        return descriptorToInsert;
+    }
+
+    private <T extends AbstractDescriptor> T insertMulti(MessageOrBuilder descriptor,
+                                                         Class<T> resultType,
+                                                         @Nullable String parentHandle) {
+        var descriptorToInsert = resultType.cast(nodeMapper.mapDescriptor(descriptor));
+        modifications.insert(descriptorToInsert, multiStates(descriptorToInsert), parentHandle);
         return descriptorToInsert;
     }
 }

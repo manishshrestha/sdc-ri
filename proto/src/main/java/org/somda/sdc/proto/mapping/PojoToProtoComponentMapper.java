@@ -12,6 +12,8 @@ import org.somda.sdc.biceps.model.participant.ChannelDescriptor;
 import org.somda.sdc.biceps.model.participant.ChannelState;
 import org.somda.sdc.biceps.model.participant.MdsDescriptor;
 import org.somda.sdc.biceps.model.participant.MdsState;
+import org.somda.sdc.biceps.model.participant.SystemContextDescriptor;
+import org.somda.sdc.biceps.model.participant.SystemContextState;
 import org.somda.sdc.biceps.model.participant.VmdDescriptor;
 import org.somda.sdc.biceps.model.participant.VmdState;
 import org.somda.sdc.common.CommonConfig;
@@ -26,6 +28,8 @@ import org.somda.sdc.proto.model.biceps.ComponentActivationMsg;
 import org.somda.sdc.proto.model.biceps.MdsDescriptorMsg;
 import org.somda.sdc.proto.model.biceps.MdsOperatingModeMsg;
 import org.somda.sdc.proto.model.biceps.MdsStateMsg;
+import org.somda.sdc.proto.model.biceps.SystemContextDescriptorMsg;
+import org.somda.sdc.proto.model.biceps.SystemContextStateMsg;
 import org.somda.sdc.proto.model.biceps.VmdDescriptorMsg;
 import org.somda.sdc.proto.model.biceps.VmdStateMsg;
 
@@ -39,6 +43,17 @@ public class PojoToProtoComponentMapper {
                                PojoToProtoBaseMapper baseMapper) {
         this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);
         this.baseMapper = baseMapper;
+    }
+
+    public SystemContextDescriptorMsg.Builder mapSystemContextDescriptor(SystemContextDescriptor systemContextDescriptor) {
+        return SystemContextDescriptorMsg.newBuilder()
+                .setAbstractDeviceComponentDescriptor(
+                        mapAbstractDeviceComponentDescriptor(systemContextDescriptor));
+    }
+
+    public SystemContextStateMsg mapSystemContextState(SystemContextState systemContextState) {
+        return SystemContextStateMsg.newBuilder()
+                .setAbstractDeviceComponentState(mapAbstractDeviceComponentState(systemContextState)).build();
     }
 
     public MdsDescriptorMsg.Builder mapMdsDescriptor(MdsDescriptor mdsDescriptor) {
@@ -96,8 +111,8 @@ public class PojoToProtoComponentMapper {
         builder.setAbstractState(baseMapper.mapAbstractState(state));
         Util.doIfNotNull(state.getActivationState(), componentActivation ->
                 builder.setAActivationState(Util.mapToProtoEnum(componentActivation, ComponentActivationMsg.class)));
-        builder.setAOperatingHours(Util.toUInt32(state.getOperatingHours()));
-        builder.setAOperatingCycles(Util.toInt32(state.getOperatingCycles()));
+        Util.doIfNotNull(state.getOperatingHours(), it -> builder.setAOperatingHours(Util.toUInt32(it)));
+        Util.doIfNotNull(state.getOperatingCycles(), it -> builder.setAOperatingCycles(Util.toInt32(it)));
         // todo map CalibrationInfo
         // todo map NextCalibration
         // todo map PhysicalConnector
