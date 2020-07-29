@@ -317,9 +317,23 @@ public class PojoToProtoTreeMapper {
                         builder,
                         mdibAccess.getChildrenByType(channelDescriptor.getHandle(), NumericMetricDescriptor.class)
                 );
+                mapRealTimeSampleArrayDescriptor(
+                        builder,
+                        mdibAccess.getChildrenByType(channelDescriptor.getHandle(), RealTimeSampleArrayMetricDescriptor.class)
+                );
 
                 parent.addChannel(builder);
             });
+        }
+    }
+
+    private void mapRealTimeSampleArrayDescriptor(ChannelDescriptorMsg.Builder parent, List<MdibEntity> descriptors) {
+        for (MdibEntity descriptor : descriptors) {
+            descriptor.getDescriptor(RealTimeSampleArrayMetricDescriptor.class).ifPresent(rtsDescriptor -> {
+                        var builder = metricMapper.mapRealTimeSampleArrayMetricDescriptor(rtsDescriptor);
+                        parent.addMetric(AbstractMetricDescriptorOneOfMsg.newBuilder().setRealTimeSampleArrayMetricDescriptor(builder));
+                    }
+            );
         }
     }
 

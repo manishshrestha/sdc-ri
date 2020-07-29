@@ -70,7 +70,7 @@ public class NumericMetricRoundTrip implements BiConsumer<LocalMdibAccess, Remot
             var value = new NumericMetricValue();
             state.setMetricValue(value);
             value.setValue(BigDecimal.valueOf(1337));
-            value.setDeterminationTime(Instant.now());
+            //value.setDeterminationTime(Instant.now());
 
             var quality = new AbstractMetricValue.MetricQuality();
             value.setMetricQuality(quality);
