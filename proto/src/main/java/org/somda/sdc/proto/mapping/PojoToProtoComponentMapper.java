@@ -8,11 +8,12 @@ import org.somda.sdc.biceps.model.participant.AbstractComplexDeviceComponentDesc
 import org.somda.sdc.biceps.model.participant.AbstractComplexDeviceComponentState;
 import org.somda.sdc.biceps.model.participant.AbstractDeviceComponentDescriptor;
 import org.somda.sdc.biceps.model.participant.AbstractDeviceComponentState;
-import org.somda.sdc.biceps.model.participant.AlertSystemDescriptor;
 import org.somda.sdc.biceps.model.participant.ChannelDescriptor;
 import org.somda.sdc.biceps.model.participant.ChannelState;
 import org.somda.sdc.biceps.model.participant.MdsDescriptor;
 import org.somda.sdc.biceps.model.participant.MdsState;
+import org.somda.sdc.biceps.model.participant.ScoDescriptor;
+import org.somda.sdc.biceps.model.participant.ScoState;
 import org.somda.sdc.biceps.model.participant.SystemContextDescriptor;
 import org.somda.sdc.biceps.model.participant.SystemContextState;
 import org.somda.sdc.biceps.model.participant.VmdDescriptor;
@@ -29,10 +30,15 @@ import org.somda.sdc.proto.model.biceps.ComponentActivationMsg;
 import org.somda.sdc.proto.model.biceps.MdsDescriptorMsg;
 import org.somda.sdc.proto.model.biceps.MdsOperatingModeMsg;
 import org.somda.sdc.proto.model.biceps.MdsStateMsg;
+import org.somda.sdc.proto.model.biceps.OperationRefMsg;
+import org.somda.sdc.proto.model.biceps.ScoDescriptorMsg;
+import org.somda.sdc.proto.model.biceps.ScoStateMsg;
 import org.somda.sdc.proto.model.biceps.SystemContextDescriptorMsg;
 import org.somda.sdc.proto.model.biceps.SystemContextStateMsg;
 import org.somda.sdc.proto.model.biceps.VmdDescriptorMsg;
 import org.somda.sdc.proto.model.biceps.VmdStateMsg;
+
+import java.util.List;
 
 public class PojoToProtoComponentMapper {
     private static final Logger LOG = LogManager.getLogger(PojoToProtoComponentMapper.class);
@@ -58,6 +64,26 @@ public class PojoToProtoComponentMapper {
     public SystemContextStateMsg mapSystemContextState(SystemContextState systemContextState) {
         return SystemContextStateMsg.newBuilder()
                 .setAbstractDeviceComponentState(mapAbstractDeviceComponentState(systemContextState)).build();
+    }
+
+    public ScoDescriptorMsg.Builder mapScoDescriptor(ScoDescriptor scoDescriptor) {
+        return ScoDescriptorMsg.newBuilder()
+                .setAbstractDeviceComponentDescriptor(mapAbstractDeviceComponentDescriptor(scoDescriptor));
+    }
+
+    public ScoStateMsg mapScoState(ScoState scoState) {
+        var builder = ScoStateMsg.newBuilder();
+        if (!scoState.getInvocationRequested().isEmpty()) {
+            builder.setAInvocationRequested(mapOperationRefs(scoState.getInvocationRequested()));
+        }
+        if (!scoState.getInvocationRequired().isEmpty()) {
+            builder.setAInvocationRequired(mapOperationRefs(scoState.getInvocationRequired()));
+        }
+        return builder.setAbstractDeviceComponentState(mapAbstractDeviceComponentState(scoState)).build();
+    }
+
+    public OperationRefMsg mapOperationRefs(List<String> opRefs) {
+        return OperationRefMsg.newBuilder().addAllOperationRef(opRefs).build();
     }
 
     public MdsDescriptorMsg.Builder mapMdsDescriptor(MdsDescriptor mdsDescriptor) {
@@ -123,11 +149,11 @@ public class PojoToProtoComponentMapper {
         return builder.build();
     }
 
-    private AbstractComplexDeviceComponentDescriptorMsg mapAbstractComplexDeviceComponentDescriptor(
+    private AbstractComplexDeviceComponentDescriptorMsg.Builder mapAbstractComplexDeviceComponentDescriptor(
             AbstractComplexDeviceComponentDescriptor complexComponentDescriptor) {
         var builder = AbstractComplexDeviceComponentDescriptorMsg.newBuilder();
         builder.setAbstractDeviceComponentDescriptor(mapAbstractDeviceComponentDescriptor(complexComponentDescriptor));
-        return builder.build();
+        return builder;
     }
 
     private AbstractComplexDeviceComponentStateMsg mapAbstractComplexDeviceComponentState(

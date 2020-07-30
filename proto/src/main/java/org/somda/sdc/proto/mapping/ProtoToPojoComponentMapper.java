@@ -15,6 +15,7 @@ import org.somda.sdc.biceps.model.participant.MdsDescriptor;
 import org.somda.sdc.biceps.model.participant.MdsOperatingMode;
 import org.somda.sdc.biceps.model.participant.MdsState;
 import org.somda.sdc.biceps.model.participant.ScoDescriptor;
+import org.somda.sdc.biceps.model.participant.ScoState;
 import org.somda.sdc.biceps.model.participant.SystemContextDescriptor;
 import org.somda.sdc.biceps.model.participant.SystemContextState;
 import org.somda.sdc.biceps.model.participant.VmdDescriptor;
@@ -31,6 +32,7 @@ import org.somda.sdc.proto.model.biceps.MdsDescriptorMsg;
 import org.somda.sdc.proto.model.biceps.MdsStateMsg;
 import org.somda.sdc.proto.model.biceps.OperatingJurisdictionMsg;
 import org.somda.sdc.proto.model.biceps.ScoDescriptorMsg;
+import org.somda.sdc.proto.model.biceps.ScoStateMsg;
 import org.somda.sdc.proto.model.biceps.SystemContextDescriptorMsg;
 import org.somda.sdc.proto.model.biceps.SystemContextStateMsg;
 import org.somda.sdc.proto.model.biceps.VmdDescriptorMsg;
@@ -95,6 +97,14 @@ public class ProtoToPojoComponentMapper {
     ScoDescriptor map(ScoDescriptorMsg protoMsg) {
         var pojo = new ScoDescriptor();
         map(pojo, protoMsg.getAbstractDeviceComponentDescriptor());
+        return pojo;
+    }
+
+    ScoState map(ScoStateMsg protoMsg) {
+        var pojo = new ScoState();
+        pojo.setInvocationRequested(protoMsg.getAInvocationRequested().getOperationRefList());
+        pojo.setInvocationRequired(protoMsg.getAInvocationRequired().getOperationRefList());
+        map(pojo, protoMsg.getAbstractDeviceComponentState());
         return pojo;
     }
 

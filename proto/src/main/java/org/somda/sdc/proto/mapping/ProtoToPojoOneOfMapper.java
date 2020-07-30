@@ -73,6 +73,8 @@ public class ProtoToPojoOneOfMapper {
             return contextMapper.map((LocationContextDescriptorMsg) protoMsg);
         } else if (protoMsg instanceof AlertSystemDescriptorMsg) {
             return alertMapper.map((AlertSystemDescriptorMsg) protoMsg);
+        } else if (protoMsg instanceof ScoDescriptorMsg) {
+            return componentMapper.map((ScoDescriptorMsg) protoMsg);
         } else {
             instanceLogger.error("Descriptor mapping not implemented: {}", protoMsg);
             return Util.invalidDescriptor();
@@ -317,7 +319,7 @@ public class ProtoToPojoOneOfMapper {
                 instanceLogger.error("State mapping not implemented: {}", type);
                 break;
             case SCO_STATE:
-                return map(protoMsg.getScoState());
+                return componentMapper.map(protoMsg.getScoState());
             case ABSTRACTDEVICECOMPONENTSTATEONEOF_NOT_SET:
             default:
                 instanceLogger.error("State mapping not implemented: {}", type);
@@ -325,13 +327,6 @@ public class ProtoToPojoOneOfMapper {
         }
 
         return Util.invalidState();
-    }
-
-    private ScoState map(ScoStateMsg protoMsg) {
-        var pojo = new ScoState();
-        pojo.setInvocationRequested(protoMsg.getAInvocationRequested().getOperationRefList());
-        pojo.setInvocationRequired(protoMsg.getAInvocationRequired().getOperationRefList());
-        return pojo;
     }
 
     private AbstractState map(AbstractComplexDeviceComponentStateOneOfMsg protoMsg) {

@@ -10,7 +10,23 @@ import org.apache.logging.log4j.Logger;
 import org.somda.sdc.biceps.common.MdibDescriptionModifications;
 import org.somda.sdc.biceps.common.MdibTypeValidator;
 import org.somda.sdc.biceps.common.access.MdibAccess;
-import org.somda.sdc.biceps.model.participant.*;
+import org.somda.sdc.biceps.model.participant.AbstractComplexDeviceComponentDescriptor;
+import org.somda.sdc.biceps.model.participant.AbstractDescriptor;
+import org.somda.sdc.biceps.model.participant.AbstractMultiState;
+import org.somda.sdc.biceps.model.participant.AbstractState;
+import org.somda.sdc.biceps.model.participant.AlertSystemDescriptor;
+import org.somda.sdc.biceps.model.participant.ChannelDescriptor;
+import org.somda.sdc.biceps.model.participant.EnsembleContextDescriptor;
+import org.somda.sdc.biceps.model.participant.EnumStringMetricDescriptor;
+import org.somda.sdc.biceps.model.participant.LocationContextDescriptor;
+import org.somda.sdc.biceps.model.participant.Mdib;
+import org.somda.sdc.biceps.model.participant.MdsDescriptor;
+import org.somda.sdc.biceps.model.participant.NumericMetricDescriptor;
+import org.somda.sdc.biceps.model.participant.RealTimeSampleArrayMetricDescriptor;
+import org.somda.sdc.biceps.model.participant.ScoDescriptor;
+import org.somda.sdc.biceps.model.participant.StringMetricDescriptor;
+import org.somda.sdc.biceps.model.participant.SystemContextDescriptor;
+import org.somda.sdc.biceps.model.participant.VmdDescriptor;
 import org.somda.sdc.common.logging.InstanceLogger;
 import org.somda.sdc.glue.common.DefaultStateValues;
 import org.somda.sdc.glue.common.MdibMapper;
@@ -25,6 +41,7 @@ import org.somda.sdc.proto.model.biceps.MdibMsg;
 import org.somda.sdc.proto.model.biceps.MdsDescriptorMsg;
 import org.somda.sdc.proto.model.biceps.NumericMetricDescriptorMsg;
 import org.somda.sdc.proto.model.biceps.RealTimeSampleArrayMetricDescriptorMsg;
+import org.somda.sdc.proto.model.biceps.ScoDescriptorMsg;
 import org.somda.sdc.proto.model.biceps.StringMetricDescriptorMsg;
 import org.somda.sdc.proto.model.biceps.StringMetricDescriptorOneOfMsg;
 import org.somda.sdc.proto.model.biceps.SystemContextDescriptorMsg;
@@ -122,11 +139,10 @@ public class ProtoToPojoModificationsBuilder {
         // Order of insertion shall be the same as the order from the MDIB XML Schema
         instanceLogger.error("Missing mapping for MDS alert system");
         build(mds.getAbstractComplexDeviceComponentDescriptor(), parent);
-        instanceLogger.error("Missing mapping for MDS SCO");
-//        build(mds.getSco(), mds);
-//        mds.setSco(null);
         instanceLogger.error("Missing mapping for system context");
-        build(mds.getSystemContext(), parent);
+        if (mds.hasSystemContext()) {
+            build(mds.getSystemContext(), parent);
+        }
         parent.setSystemContext(null);
         instanceLogger.error("Missing mapping for clock");
 //        buildLeaf(mds.getClock(), mds);
@@ -140,8 +156,15 @@ public class ProtoToPojoModificationsBuilder {
     }
 
     private void build(AbstractComplexDeviceComponentDescriptorMsg protoMsg, AbstractComplexDeviceComponentDescriptor descriptor) {
-        build(protoMsg.getAlertSystem(), descriptor);
+        if (protoMsg.hasAlertSystem()) {
+            build(protoMsg.getAlertSystem(), descriptor);
+        }
         descriptor.setAlertSystem(null);
+
+        if (protoMsg.hasSco()) {
+            build(protoMsg.getSco(), descriptor);
+        }
+        descriptor.setSco(null);
     }
 
     private void build(AlertSystemDescriptorMsg alertSystem, AbstractComplexDeviceComponentDescriptor parent) {
@@ -152,6 +175,13 @@ public class ProtoToPojoModificationsBuilder {
 
         addedDesc.setAlertSignal(Collections.emptyList());
         addedDesc.setAlertCondition(Collections.emptyList());
+    }
+
+    private void build(ScoDescriptorMsg sco, AbstractComplexDeviceComponentDescriptor parent) {
+        var addedDesc = insert(sco, ScoDescriptor.class, parent.getHandle());
+
+//        addedDesc.getAlertCondition().forEach(condition -> build(condition, addedDescr));
+//        addedDesc.getAlertSignal().forEach(signal -> build(signal, addedDescr));
     }
 
     //    private void build(@Nullable ScoDescriptor sco, AbstractDescriptor parent) {

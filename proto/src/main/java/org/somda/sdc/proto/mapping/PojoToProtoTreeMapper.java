@@ -273,11 +273,11 @@ public class PojoToProtoTreeMapper {
 //                descriptorCopy,
 //                mdibAccess.getChildrenByType(mds.getHandle(), ClockDescriptor.class),
 //                "setClock");
-//        mapSco(descriptorCopy, mdibAccess.getChildrenByType(mds.getHandle(),
-//                ScoDescriptor.class));
+        var compBuilder = builder.getAbstractComplexDeviceComponentDescriptorBuilder();
+        mapSco(compBuilder, mdibAccess.getChildrenByType(mds.getHandle(), ScoDescriptor.class));
         // TODO: Recreating a builder from the field seems terribly inefficient
         mapAlertSystem(
-                builder.getAbstractComplexDeviceComponentDescriptorBuilder(),
+                compBuilder,
                 mdibAccess.getChildrenByType(mds.getHandle(),
                 AlertSystemDescriptor.class)
         );
@@ -386,15 +386,15 @@ public class PojoToProtoTreeMapper {
         }
     }
 
-    private void mapSco(AbstractComplexDeviceComponentDescriptor parent, List<MdibEntity> scos) {
+    private void mapSco(AbstractComplexDeviceComponentDescriptorMsg.Builder parent, List<MdibEntity> scos) {
         for (MdibEntity sco : scos) {
             sco.getDescriptor(ScoDescriptor.class).ifPresent(scoDescriptor -> {
-                ScoDescriptor scoDescriptorCopy = objectUtil.deepCopy(scoDescriptor);
-                parent.setSco(scoDescriptorCopy);
-                mapZeroOrMoreDescriptors(
-                        scoDescriptorCopy,
-                        mdibAccess.getChildrenByType(sco.getHandle(), AbstractOperationDescriptor.class),
-                        "getOperation");
+                var builder = componentMapper.mapScoDescriptor(scoDescriptor);
+//                mapZeroOrMoreDescriptors(
+//                        builder,
+//                        mdibAccess.getChildrenByType(sco.getHandle(), AbstractOperationDescriptor.class),
+//                        "getOperation");
+                parent.setSco(builder);
             });
             break;
         }
