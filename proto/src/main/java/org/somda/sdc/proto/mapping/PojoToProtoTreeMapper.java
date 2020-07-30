@@ -290,15 +290,12 @@ public class PojoToProtoTreeMapper {
         for (MdibEntity vmd : vmds) {
             vmd.getDescriptor(VmdDescriptor.class).ifPresent(vmdDescriptor -> {
                 var builder = componentMapper.mapVmdDescriptor(vmdDescriptor);
-                mapAlertSystem(
-                        builder.getAbstractComplexDeviceComponentDescriptorBuilder(),
-                        mdibAccess.getChildrenByType(vmd.getHandle(), AlertSystemDescriptor.class)
-                );
-                // todo
-//                mapSco(vmdDescriptorCopy, mdibAccess.getChildrenByType(vmdDescriptorCopy.getHandle(),
-//                        ScoDescriptor.class));
-                mapChannels(builder, mdibAccess.getChildrenByType(vmdDescriptor.getHandle(),
-                        ChannelDescriptor.class));
+                // TODO: redundant copy of AbstractComplexDeviceComponentDescriptorBuilder again
+                var compBuilder = builder.getAbstractComplexDeviceComponentDescriptorBuilder();
+
+                mapAlertSystem(compBuilder, mdibAccess.getChildrenByType(vmd.getHandle(), AlertSystemDescriptor.class));
+                mapSco(compBuilder, mdibAccess.getChildrenByType(vmd.getHandle(), ScoDescriptor.class));
+                mapChannels(builder, mdibAccess.getChildrenByType(vmdDescriptor.getHandle(), ChannelDescriptor.class));
                 parent.addVmd(builder);
             });
         }
