@@ -23,6 +23,7 @@ import org.somda.sdc.biceps.model.participant.ScoState;
 import org.somda.sdc.biceps.model.participant.StringMetricState;
 import org.somda.sdc.biceps.model.participant.SystemContextState;
 import org.somda.sdc.biceps.model.participant.VmdState;
+import org.somda.sdc.biceps.model.participant.*;
 import org.somda.sdc.common.CommonConfig;
 import org.somda.sdc.common.logging.InstanceLogger;
 import org.somda.sdc.proto.model.biceps.AbstractAlertStateOneOfMsg;
@@ -32,6 +33,7 @@ import org.somda.sdc.proto.model.biceps.AbstractDeviceComponentStateOneOfMsg;
 import org.somda.sdc.proto.model.biceps.AbstractMetricStateOneOfMsg;
 import org.somda.sdc.proto.model.biceps.AbstractMultiStateOneOfMsg;
 import org.somda.sdc.proto.model.biceps.AbstractStateOneOfMsg;
+import org.somda.sdc.proto.model.biceps.AlertConditionStateOneOfMsg;
 import org.somda.sdc.proto.model.biceps.StringMetricStateOneOfMsg;
 
 public class PojoToProtoOneOfMapper {
@@ -108,8 +110,22 @@ public class PojoToProtoOneOfMapper {
         var builder = AbstractAlertStateOneOfMsg.newBuilder();
         if (state instanceof AlertSystemState) {
             builder.setAlertSystemState(alertMapper.mapAlertSystemState((AlertSystemState) state));
+        } else if (state instanceof AlertConditionState) {
+            builder.setAlertConditionStateOneOf(mapAlertConditionStateOneOf((AlertConditionState) state));
+        } else if (state instanceof AlertSignalState) {
+            builder.setAlertSignalState(alertMapper.mapAlertSignalState((AlertSignalState) state));
         } else {
             LOG.error("Class {} not supported", state.getClass());
+        }
+        return builder.build();
+    }
+
+    public AlertConditionStateOneOfMsg mapAlertConditionStateOneOf(AlertConditionState state) {
+        var builder = AlertConditionStateOneOfMsg.newBuilder();
+        if (state instanceof LimitAlertConditionState) {
+            LOG.error("Class {} not supported", state.getClass());
+        } else {
+            builder.setAlertConditionState(alertMapper.mapAlertConditionState(state));
         }
         return builder.build();
     }

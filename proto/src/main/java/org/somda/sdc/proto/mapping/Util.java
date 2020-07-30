@@ -1,5 +1,6 @@
 package org.somda.sdc.proto.mapping;
 
+import com.google.protobuf.BoolValue;
 import com.google.protobuf.Duration;
 import com.google.protobuf.Int32Value;
 import com.google.protobuf.Int64Value;
@@ -89,6 +90,14 @@ class Util {
 
     static StringValue toStringValue(@Nullable String value) {
         var builder = StringValue.newBuilder();
+        if (value != null) {
+            builder.setValue(value);
+        }
+        return builder.build();
+    }
+
+    static BoolValue toBoolValue(@Nullable Boolean value) {
+        var builder = BoolValue.newBuilder();
         if (value != null) {
             builder.setValue(value);
         }

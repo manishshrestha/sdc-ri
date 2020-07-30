@@ -8,22 +8,22 @@ import org.apache.logging.log4j.Logger;
 import org.somda.sdc.biceps.common.MdibDescriptionModifications;
 import org.somda.sdc.biceps.common.MdibEntity;
 import org.somda.sdc.biceps.common.access.MdibAccess;
-import org.somda.sdc.biceps.model.participant.*;
-import org.somda.sdc.biceps.model.participant.AbstractComplexDeviceComponentDescriptor;
 import org.somda.sdc.biceps.model.participant.AbstractDescriptor;
-import org.somda.sdc.biceps.model.participant.AbstractOperationDescriptor;
 import org.somda.sdc.biceps.model.participant.AlertConditionDescriptor;
 import org.somda.sdc.biceps.model.participant.AlertSignalDescriptor;
 import org.somda.sdc.biceps.model.participant.AlertSystemDescriptor;
 import org.somda.sdc.biceps.model.participant.ChannelDescriptor;
 import org.somda.sdc.biceps.model.participant.EnsembleContextDescriptor;
 import org.somda.sdc.biceps.model.participant.EnumStringMetricDescriptor;
+import org.somda.sdc.biceps.model.participant.LimitAlertConditionDescriptor;
 import org.somda.sdc.biceps.model.participant.LocationContextDescriptor;
 import org.somda.sdc.biceps.model.participant.MdDescription;
 import org.somda.sdc.biceps.model.participant.MdState;
 import org.somda.sdc.biceps.model.participant.Mdib;
 import org.somda.sdc.biceps.model.participant.MdsDescriptor;
+import org.somda.sdc.biceps.model.participant.NumericMetricDescriptor;
 import org.somda.sdc.biceps.model.participant.ObjectFactory;
+import org.somda.sdc.biceps.model.participant.RealTimeSampleArrayMetricDescriptor;
 import org.somda.sdc.biceps.model.participant.ScoDescriptor;
 import org.somda.sdc.biceps.model.participant.StringMetricDescriptor;
 import org.somda.sdc.biceps.model.participant.SystemContextDescriptor;
@@ -34,7 +34,7 @@ import org.somda.sdc.common.util.ObjectUtil;
 import org.somda.sdc.glue.common.ModificationsBuilder;
 import org.somda.sdc.proto.model.biceps.AbstractComplexDeviceComponentDescriptorMsg;
 import org.somda.sdc.proto.model.biceps.AbstractMetricDescriptorOneOfMsg;
-import org.somda.sdc.proto.model.biceps.AlertSystemDescriptorMsg;
+import org.somda.sdc.proto.model.biceps.AlertConditionDescriptorOneOfMsg;
 import org.somda.sdc.proto.model.biceps.ChannelDescriptorMsg;
 import org.somda.sdc.proto.model.biceps.MdDescriptionMsg;
 import org.somda.sdc.proto.model.biceps.MdStateMsg;
@@ -273,14 +273,11 @@ public class PojoToProtoTreeMapper {
 //                descriptorCopy,
 //                mdibAccess.getChildrenByType(mds.getHandle(), ClockDescriptor.class),
 //                "setClock");
+        // TODO: AbstractComplexDeviceComponentDescriptorBuilder has been built in MDS mapping already -
+        //  this call creates another one which might be slightly inefficient
         var compBuilder = builder.getAbstractComplexDeviceComponentDescriptorBuilder();
         mapSco(compBuilder, mdibAccess.getChildrenByType(mds.getHandle(), ScoDescriptor.class));
-        // TODO: Recreating a builder from the field seems terribly inefficient
-        mapAlertSystem(
-                compBuilder,
-                mdibAccess.getChildrenByType(mds.getHandle(),
-                AlertSystemDescriptor.class)
-        );
+        mapAlertSystem(compBuilder, mdibAccess.getChildrenByType(mds.getHandle(), AlertSystemDescriptor.class));
         mapSystemContext(builder, mdibAccess.getChildrenByType(mds.getHandle(),
                 SystemContextDescriptor.class));
         mapVmds(builder, mdibAccess.getChildrenByType(mds.getHandle(),
@@ -295,8 +292,7 @@ public class PojoToProtoTreeMapper {
                 var builder = componentMapper.mapVmdDescriptor(vmdDescriptor);
                 mapAlertSystem(
                         builder.getAbstractComplexDeviceComponentDescriptorBuilder(),
-                        mdibAccess.getChildrenByType(vmd.getHandle(),
-                                AlertSystemDescriptor.class)
+                        mdibAccess.getChildrenByType(vmd.getHandle(), AlertSystemDescriptor.class)
                 );
                 // todo
 //                mapSco(vmdDescriptorCopy, mdibAccess.getChildrenByType(vmdDescriptorCopy.getHandle(),
@@ -459,7 +455,9 @@ public class PojoToProtoTreeMapper {
         }
     }
 
-    private void mapAlertSystem(AbstractComplexDeviceComponentDescriptorMsg.Builder parent, List<MdibEntity> alertSystems) {
+    private void mapAlertSystem(
+            AbstractComplexDeviceComponentDescriptorMsg.Builder parent,
+            List<MdibEntity> alertSystems) {
         if (alertSystems.size() != 1) {
             return;
         }
@@ -468,8 +466,21 @@ public class PojoToProtoTreeMapper {
             alertSystem.getDescriptor(AlertSystemDescriptor.class).ifPresent(alertSystemDescriptor -> {
                 var builder = alertMapper.mapAlertSystemDescriptor(alertSystemDescriptor);
 
-//                mapAlertConditions(builder, mdibAccess.getChildrenByType(alertSystemDescriptor.getHandle(), AlertConditionDescriptor.class));
-//                mapAlertSignals(builder, mdibAccess.getChildrenByType(alertSystemDescriptor.getHandle(), AlertSignalDescriptor.class));
+                mdibAccess.getChildrenByType(alertSystemDescriptor.getHandle(), AlertConditionDescriptor.class)
+                        .forEach(condition ->
+                                condition.getDescriptor(AlertConditionDescriptor.class).ifPresent(descriptor -> {
+                                    var oneOf = AlertConditionDescriptorOneOfMsg.newBuilder();
+                                    if (descriptor instanceof LimitAlertConditionDescriptor) {
+                                        instanceLogger.error("LimitAlertConditionDescriptor not implemented");
+                                    } else {
+                                        oneOf.setAlertConditionDescriptor(alertMapper.mapAlertConditionDescriptor(descriptor));
+                                    }
+                                    builder.addAlertCondition(oneOf.build());
+                                })
+                        );
+                mdibAccess.getChildrenByType(alertSystemDescriptor.getHandle(), AlertSignalDescriptor.class).forEach(signal ->
+                        signal.getDescriptor(AlertSignalDescriptor.class).ifPresent(signalDesc -> builder.addAlertSignal(alertMapper.mapAlertSignalDescriptor(signalDesc)))
+                );
 
                 parent.setAlertSystem(builder);
             });

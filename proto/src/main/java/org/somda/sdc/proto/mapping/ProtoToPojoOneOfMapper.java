@@ -10,6 +10,7 @@ import org.somda.sdc.biceps.model.participant.AbstractAlertState;
 import org.somda.sdc.biceps.model.participant.AbstractDescriptor;
 import org.somda.sdc.biceps.model.participant.AbstractMetricState;
 import org.somda.sdc.biceps.model.participant.AbstractState;
+import org.somda.sdc.biceps.model.participant.AlertConditionDescriptor;
 import org.somda.sdc.biceps.model.participant.NumericMetricState;
 import org.somda.sdc.biceps.model.participant.RealTimeSampleArrayMetricDescriptor;
 import org.somda.sdc.biceps.model.participant.ScoState;
@@ -75,6 +76,10 @@ public class ProtoToPojoOneOfMapper {
             return alertMapper.map((AlertSystemDescriptorMsg) protoMsg);
         } else if (protoMsg instanceof ScoDescriptorMsg) {
             return componentMapper.map((ScoDescriptorMsg) protoMsg);
+        } else if (protoMsg instanceof AlertConditionDescriptorMsg) {
+            return alertMapper.map((AlertConditionDescriptorMsg) protoMsg);
+        } else if (protoMsg instanceof AlertSignalDescriptorMsg) {
+            return alertMapper.map((AlertSignalDescriptorMsg) protoMsg);
         } else {
             instanceLogger.error("Descriptor mapping not implemented: {}", protoMsg);
             return Util.invalidDescriptor();
@@ -212,10 +217,28 @@ public class ProtoToPojoOneOfMapper {
         switch (type) {
             case ALERT_SYSTEM_STATE:
                 return alertMapper.map(protoMsg.getAlertSystemState());
+            case ALERT_CONDITION_STATE_ONE_OF:
+                return map(protoMsg.getAlertConditionStateOneOf());
+            case ALERT_SIGNAL_STATE:
+                return alertMapper.map(protoMsg.getAlertSignalState());
             default:
                 instanceLogger.error("State mapping not implemented: {}", type);
                 break;
         }
+
+        return Util.invalidAlertState();
+    }
+
+    private AbstractAlertState map(final AlertConditionStateOneOfMsg protoMsg) {
+        var type = protoMsg.getAlertConditionStateOneOfCase();
+        switch (type) {
+            case ALERT_CONDITION_STATE:
+                return alertMapper.map(protoMsg.getAlertConditionState());
+            default:
+                instanceLogger.error("State mapping not implemented: {}", type);
+                break;
+        }
+
 
         return Util.invalidAlertState();
     }

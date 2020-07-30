@@ -14,6 +14,8 @@ import org.somda.sdc.biceps.model.participant.AbstractComplexDeviceComponentDesc
 import org.somda.sdc.biceps.model.participant.AbstractDescriptor;
 import org.somda.sdc.biceps.model.participant.AbstractMultiState;
 import org.somda.sdc.biceps.model.participant.AbstractState;
+import org.somda.sdc.biceps.model.participant.AlertConditionDescriptor;
+import org.somda.sdc.biceps.model.participant.AlertSignalDescriptor;
 import org.somda.sdc.biceps.model.participant.AlertSystemDescriptor;
 import org.somda.sdc.biceps.model.participant.ChannelDescriptor;
 import org.somda.sdc.biceps.model.participant.EnsembleContextDescriptor;
@@ -34,6 +36,9 @@ import org.somda.sdc.glue.common.RequiredDefaultStateValues;
 import org.somda.sdc.glue.common.helper.DefaultStateValuesDispatcher;
 import org.somda.sdc.proto.model.biceps.AbstractComplexDeviceComponentDescriptorMsg;
 import org.somda.sdc.proto.model.biceps.AbstractMetricDescriptorOneOfMsg;
+import org.somda.sdc.proto.model.biceps.AlertConditionDescriptorMsg;
+import org.somda.sdc.proto.model.biceps.AlertConditionDescriptorOneOfMsg;
+import org.somda.sdc.proto.model.biceps.AlertSignalDescriptorMsg;
 import org.somda.sdc.proto.model.biceps.AlertSystemDescriptorMsg;
 import org.somda.sdc.proto.model.biceps.ChannelDescriptorMsg;
 import org.somda.sdc.proto.model.biceps.EnumStringMetricDescriptorMsg;
@@ -170,8 +175,8 @@ public class ProtoToPojoModificationsBuilder {
     private void build(AlertSystemDescriptorMsg alertSystem, AbstractComplexDeviceComponentDescriptor parent) {
         var addedDesc = insert(alertSystem, AlertSystemDescriptor.class, parent.getHandle());
 
-//        addedDesc.getAlertCondition().forEach(condition -> build(condition, addedDescr));
-//        addedDesc.getAlertSignal().forEach(signal -> build(signal, addedDescr));
+        alertSystem.getAlertConditionList().forEach(condition -> build(condition, addedDesc));
+        alertSystem.getAlertSignalList().forEach(signal -> build(signal, addedDesc));
 
         addedDesc.setAlertSignal(Collections.emptyList());
         addedDesc.setAlertCondition(Collections.emptyList());
@@ -194,6 +199,31 @@ public class ProtoToPojoModificationsBuilder {
 //        sco.setOperation(null);
 //    }
 //
+
+    private void build(AlertSignalDescriptorMsg signalMsg, AlertSystemDescriptor parent) {
+        var addedDescr = insert(signalMsg, AlertSignalDescriptor.class, parent.getHandle());
+    }
+
+    private void build(AlertConditionDescriptorOneOfMsg conditionMsg, AlertSystemDescriptor parent) {
+        var type = conditionMsg.getAlertConditionDescriptorOneOfCase();
+        switch (type) {
+            case ALERT_CONDITION_DESCRIPTOR:
+                build(conditionMsg.getAlertConditionDescriptor(), parent);
+                break;
+            case LIMIT_ALERT_CONDITION_DESCRIPTOR:
+                instanceLogger.error("Case not implemented {}", type);
+                break;
+            default:
+                instanceLogger.error("Case not implemented {}", type);
+                break;
+        }
+    }
+
+    private void build(AlertConditionDescriptorMsg conditionMsg, AlertSystemDescriptor parent) {
+        var addedDescr = insert(conditionMsg, AlertConditionDescriptor.class, parent.getHandle());
+    }
+
+
     private void build(SystemContextDescriptorMsg systemContext, MdsDescriptor parent) {
         var addedDescr = insert(systemContext, SystemContextDescriptor.class, parent.getHandle());
 
