@@ -6,6 +6,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.somda.sdc.biceps.model.participant.AbstractAlertDescriptor;
 import org.somda.sdc.biceps.model.participant.AbstractAlertState;
+import org.somda.sdc.biceps.model.participant.AlertConditionDescriptor;
+import org.somda.sdc.biceps.model.participant.AlertConditionState;
 import org.somda.sdc.biceps.model.participant.AlertSystemDescriptor;
 import org.somda.sdc.biceps.model.participant.AlertSystemState;
 import org.somda.sdc.common.CommonConfig;
@@ -14,7 +16,11 @@ import org.somda.sdc.common.util.TimestampAdapter;
 import org.somda.sdc.proto.model.biceps.AbstractAlertDescriptorMsg;
 import org.somda.sdc.proto.model.biceps.AbstractAlertStateMsg;
 import org.somda.sdc.proto.model.biceps.AlertActivationMsg;
+import org.somda.sdc.proto.model.biceps.AlertConditionDescriptorMsg;
+import org.somda.sdc.proto.model.biceps.AlertConditionKindMsg;
+import org.somda.sdc.proto.model.biceps.AlertConditionPriorityMsg;
 import org.somda.sdc.proto.model.biceps.AlertConditionReferenceMsg;
+import org.somda.sdc.proto.model.biceps.AlertConditionStateMsg;
 import org.somda.sdc.proto.model.biceps.AlertSystemDescriptorMsg;
 import org.somda.sdc.proto.model.biceps.AlertSystemStateMsg;
 
@@ -36,7 +42,7 @@ public class PojoToProtoAlertMapper {
         this.timestampAdapter = timestampAdapter;
     }
 
-    public AlertSystemDescriptorMsg mapAlertSystemDescriptor(AlertSystemDescriptor descriptor) {
+    public AlertSystemDescriptorMsg.Builder mapAlertSystemDescriptor(AlertSystemDescriptor descriptor) {
         var builder = AlertSystemDescriptorMsg.newBuilder()
                 .setAbstractAlertDescriptor(mapAbstractAlertDescriptor(descriptor));
 
@@ -50,6 +56,26 @@ public class PojoToProtoAlertMapper {
         // these are handled by the tree mapper?
 //        builder.setAlertCondition();
 //        builder.setAlertSignal();
+        return builder;
+    }
+
+    public AlertConditionDescriptorMsg mapAlertConditionDescriptor(AlertConditionDescriptor descriptor) {
+        var builder = AlertConditionDescriptorMsg.newBuilder()
+                .setAbstractAlertDescriptor(mapAbstractAlertDescriptor(descriptor));
+
+        builder.setAKind(Util.mapToProtoEnum(descriptor.getKind(), AlertConditionKindMsg.class));
+        builder.setAPriority(Util.mapToProtoEnum(descriptor.getPriority(), AlertConditionPriorityMsg.class));
+        Util.doIfNotNull(descriptor.getDefaultConditionGenerationDelay(), delay ->
+                builder.setADefaultConditionGenerationDelay(Util.fromJavaDuration(delay)));
+        Util.doIfNotNull(descriptor.getCanEscalate(), escalate ->
+                builder.setCanEscalate(Util.mapToProtoEnum(escalate, AlertConditionDescriptorMsg.CanEscalateMsg.class)));
+        Util.doIfNotNull(descriptor.getCanDeescalate(), escalate ->
+                builder.setCanDeescalate(Util.mapToProtoEnum(escalate, AlertConditionDescriptorMsg.CanDeescalateMsg.class)));
+        descriptor.getSource().forEach(builder::addSource);
+
+        // TODO
+//        builder.addCauseInfo()
+
         return builder.build();
     }
 
@@ -63,6 +89,24 @@ public class PojoToProtoAlertMapper {
                 builder.setASelfCheckCount(Util.toInt64(count)));
         builder.setAPresentPhysiologicalAlarmConditions(mapAlertConditionReference(state.getPresentPhysiologicalAlarmConditions()));
         builder.setAPresentTechnicalAlarmConditions(mapAlertConditionReference(state.getPresentTechnicalAlarmConditions()));
+
+        return builder.build();
+    }
+
+    public AlertConditionStateMsg mapAlertConditionState(AlertConditionState state) {
+        var builder = AlertConditionStateMsg.newBuilder()
+                .setAbstractAlertState(mapAbstractAlertState(state));
+
+        Util.doIfNotNull(state.getActualConditionGenerationDelay(), delay ->
+                builder.setAActualConditionGenerationDelay(Util.fromJavaDuration(delay)));
+        Util.doIfNotNull(state.getActualPriority(), priority ->
+                builder.setAActualPriority(Util.mapToProtoEnum(priority, AlertConditionPriorityMsg.class)));
+        Util.doIfNotNull(state.getRank(), rank ->
+                builder.setARank(Util.toInt32(rank)));
+        Util.doIfNotNull(state.isPresence(), presence ->
+                builder.setAPresence(Util.toBoolValue(presence)));
+        Util.doIfNotNull(state.getDeterminationTime(), timestamp ->
+                builder.setADeterminationTime(Util.toUInt64(timestampAdapter.marshal(timestamp))));
 
         return builder.build();
     }

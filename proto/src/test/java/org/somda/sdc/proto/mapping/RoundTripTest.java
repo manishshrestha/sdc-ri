@@ -67,5 +67,6 @@ class RoundTripTest {
         resultsToCompare.add(new EnsembleContextRoundTrip(modifications));
         resultsToCompare.add(new LocationContextRoundTrip(modifications));
         resultsToCompare.add(new AlertSystemRoundTrip(modifications));
+        resultsToCompare.add(new AlertConditionRoundTrip(modifications));
     }
 }

@@ -27,6 +27,7 @@ import org.somda.sdc.proto.model.biceps.AbstractDeviceComponentStateOneOfMsg;
 import org.somda.sdc.proto.model.biceps.AbstractMetricStateOneOfMsg;
 import org.somda.sdc.proto.model.biceps.AbstractMultiStateOneOfMsg;
 import org.somda.sdc.proto.model.biceps.AbstractStateOneOfMsg;
+import org.somda.sdc.proto.model.biceps.AlertConditionStateOneOfMsg;
 import org.somda.sdc.proto.model.biceps.NumericMetricStateMsg;
 import org.somda.sdc.proto.model.biceps.StringMetricStateOneOfMsg;
 
@@ -104,8 +105,20 @@ public class PojoToProtoOneOfMapper {
         var builder = AbstractAlertStateOneOfMsg.newBuilder();
         if (state instanceof AlertSystemState) {
             builder.setAlertSystemState(alertMapper.mapAlertSystemState((AlertSystemState) state));
+        } else if (state instanceof AlertConditionState) {
+            builder.setAlertConditionStateOneOf(mapAlertConditionStateOneOf((AlertConditionState) state));
         } else {
             LOG.error("Class {} not supported", state.getClass());
+        }
+        return builder.build();
+    }
+
+    public AlertConditionStateOneOfMsg mapAlertConditionStateOneOf(AlertConditionState state) {
+        var builder = AlertConditionStateOneOfMsg.newBuilder();
+        if (state instanceof LimitAlertConditionState) {
+            LOG.error("Class {} not supported", state.getClass());
+        } else {
+            builder.setAlertConditionState(alertMapper.mapAlertConditionState(state));
         }
         return builder.build();
     }

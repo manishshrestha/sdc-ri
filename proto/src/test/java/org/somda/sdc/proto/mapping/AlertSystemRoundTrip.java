@@ -3,6 +3,9 @@ package org.somda.sdc.proto.mapping;
 import org.somda.sdc.biceps.common.MdibDescriptionModifications;
 import org.somda.sdc.biceps.consumer.access.RemoteMdibAccess;
 import org.somda.sdc.biceps.model.participant.AlertActivation;
+import org.somda.sdc.biceps.model.participant.AlertConditionDescriptor;
+import org.somda.sdc.biceps.model.participant.AlertConditionKind;
+import org.somda.sdc.biceps.model.participant.AlertConditionPriority;
 import org.somda.sdc.biceps.model.participant.AlertSystemDescriptor;
 import org.somda.sdc.biceps.model.participant.AlertSystemState;
 import org.somda.sdc.biceps.model.participant.SafetyClassification;
@@ -20,7 +23,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public class AlertSystemRoundTrip implements BiConsumer<LocalMdibAccess, RemoteMdibAccess> {
 
     private static final String HANDLE = Handles.ALERTSYSTEM_0;
-    private static final String HANDLE_MIN = HANDLE + "Min";
+    private static final String HANDLE_MIN = Handles.ALERTSYSTEM_1;
 
     AlertSystemRoundTrip(MdibDescriptionModifications modifications) {
         bigSet(modifications);
@@ -36,12 +39,6 @@ public class AlertSystemRoundTrip implements BiConsumer<LocalMdibAccess, RemoteM
             descriptor.setMaxTechnicalParallelAlarms(1337L);
             descriptor.setMaxPhysiologicalParallelAlarms(1338L);
             descriptor.setSelfCheckPeriod(Duration.ofMillis(1)); // check yourself before you latch yourself
-//
-//            var condition = new AlertConditionDescriptor();
-//            descriptor.setAlertCondition(List.of(condition));
-//            condition.set
-//            var signal = new AlertSignalDescriptor();
-//            descriptor.setAlertSignal(List.of(signal));
         }
         var state = new AlertSystemState();
         {

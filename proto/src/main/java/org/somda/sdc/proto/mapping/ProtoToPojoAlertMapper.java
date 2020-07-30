@@ -2,6 +2,7 @@ package org.somda.sdc.proto.mapping;
 
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
+import com.google.protobuf.BoolValue;
 import com.google.protobuf.Duration;
 import com.google.protobuf.Int64Value;
 import com.google.protobuf.UInt32Value;
@@ -11,6 +12,10 @@ import org.apache.logging.log4j.Logger;
 import org.somda.sdc.biceps.model.participant.AbstractAlertDescriptor;
 import org.somda.sdc.biceps.model.participant.AbstractAlertState;
 import org.somda.sdc.biceps.model.participant.AlertActivation;
+import org.somda.sdc.biceps.model.participant.AlertConditionDescriptor;
+import org.somda.sdc.biceps.model.participant.AlertConditionKind;
+import org.somda.sdc.biceps.model.participant.AlertConditionPriority;
+import org.somda.sdc.biceps.model.participant.AlertConditionState;
 import org.somda.sdc.biceps.model.participant.AlertSystemDescriptor;
 import org.somda.sdc.biceps.model.participant.AlertSystemState;
 import org.somda.sdc.common.CommonConfig;
@@ -18,6 +23,8 @@ import org.somda.sdc.common.logging.InstanceLogger;
 import org.somda.sdc.common.util.TimestampAdapter;
 import org.somda.sdc.proto.model.biceps.AbstractAlertDescriptorMsg;
 import org.somda.sdc.proto.model.biceps.AbstractAlertStateMsg;
+import org.somda.sdc.proto.model.biceps.AlertConditionDescriptorMsg;
+import org.somda.sdc.proto.model.biceps.AlertConditionStateMsg;
 import org.somda.sdc.proto.model.biceps.AlertSystemDescriptorMsg;
 import org.somda.sdc.proto.model.biceps.AlertSystemStateMsg;
 
@@ -52,6 +59,25 @@ public class ProtoToPojoAlertMapper {
         return pojo;
     }
 
+    public AlertConditionDescriptor map(AlertConditionDescriptorMsg protoMsg) {
+        var pojo = new AlertConditionDescriptor();
+        map(pojo, protoMsg.getAbstractAlertDescriptor());
+
+        pojo.setKind(Util.mapToPojoEnum(protoMsg, "AKind", AlertConditionKind.class));
+        pojo.setPriority(Util.mapToPojoEnum(protoMsg, "APriority", AlertConditionPriority.class));
+
+        Util.doIfNotNull(Util.optional(protoMsg, "ADefaultConditionGenerationDelay", Duration.class), duration ->
+                pojo.setDefaultConditionGenerationDelay(Util.fromProtoDuration(duration)));
+        pojo.setCanEscalate(Util.mapToPojoEnum(protoMsg, "CanEscalate", AlertConditionPriority.class));
+        pojo.setCanDeescalate(Util.mapToPojoEnum(protoMsg, "CanDeescalate", AlertConditionPriority.class));
+
+        // TODO:
+//        pojo.setSource();
+//        pojo.setCauseInfo();
+
+        return pojo;
+    }
+
     public void map(AbstractAlertDescriptor pojo, AbstractAlertDescriptorMsg protoMsg) {
         baseMapper.map(pojo, protoMsg.getAbstractDescriptor());
     }
@@ -70,6 +96,22 @@ public class ProtoToPojoAlertMapper {
         Util.doIfNotNull(protoMsg.getAPresentTechnicalAlarmConditions(), conditions ->
                 pojo.setPresentTechnicalAlarmConditions(conditions.getAlertConditionReferenceList())
         );
+
+        return pojo;
+    }
+
+    public AlertConditionState map(AlertConditionStateMsg protoMsg) {
+        var pojo = new AlertConditionState();
+        map(pojo, protoMsg.getAbstractAlertState());
+
+        Util.doIfNotNull(Util.optional(protoMsg, "AActualConditionGenerationDelay", Duration.class), duration ->
+                pojo.setActualConditionGenerationDelay(Util.fromProtoDuration(duration)));
+        pojo.setActualPriority(Util.mapToPojoEnum(protoMsg, "AActualPriority", AlertConditionPriority.class));
+        pojo.setRank(Util.optionalIntOfInt(protoMsg, "ARank"));
+        Util.doIfNotNull(Util.optional(protoMsg, "APresence", BoolValue.class), presence ->
+                pojo.setPresence(presence.getValue()));
+        Util.doIfNotNull(Util.optionalBigIntOfLong(protoMsg, "ADeterminationTime"), check ->
+                pojo.setDeterminationTime(timestampAdapter.unmarshal(check)));
 
         return pojo;
     }

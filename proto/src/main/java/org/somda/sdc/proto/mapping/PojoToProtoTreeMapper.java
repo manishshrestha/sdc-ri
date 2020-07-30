@@ -34,6 +34,7 @@ import org.somda.sdc.common.util.ObjectUtil;
 import org.somda.sdc.glue.common.ModificationsBuilder;
 import org.somda.sdc.proto.model.biceps.AbstractComplexDeviceComponentDescriptorMsg;
 import org.somda.sdc.proto.model.biceps.AbstractMetricDescriptorOneOfMsg;
+import org.somda.sdc.proto.model.biceps.AlertConditionDescriptorOneOfMsg;
 import org.somda.sdc.proto.model.biceps.AlertSystemDescriptorMsg;
 import org.somda.sdc.proto.model.biceps.ChannelDescriptorMsg;
 import org.somda.sdc.proto.model.biceps.MdDescriptionMsg;
@@ -278,8 +279,7 @@ public class PojoToProtoTreeMapper {
         // TODO: Recreating a builder from the field seems terribly inefficient
         mapAlertSystem(
                 builder.getAbstractComplexDeviceComponentDescriptorBuilder(),
-                mdibAccess.getChildrenByType(mds.getHandle(),
-                AlertSystemDescriptor.class)
+                mdibAccess.getChildrenByType(mds.getHandle(), AlertSystemDescriptor.class)
         );
         mapSystemContext(builder, mdibAccess.getChildrenByType(mds.getHandle(),
                 SystemContextDescriptor.class));
@@ -295,8 +295,7 @@ public class PojoToProtoTreeMapper {
                 var builder = componentMapper.mapVmdDescriptor(vmdDescriptor);
                 mapAlertSystem(
                         builder.getAbstractComplexDeviceComponentDescriptorBuilder(),
-                        mdibAccess.getChildrenByType(vmd.getHandle(),
-                                AlertSystemDescriptor.class)
+                        mdibAccess.getChildrenByType(vmd.getHandle(), AlertSystemDescriptor.class)
                 );
                 // todo
 //                mapSco(vmdDescriptorCopy, mdibAccess.getChildrenByType(vmdDescriptorCopy.getHandle(),
@@ -459,7 +458,9 @@ public class PojoToProtoTreeMapper {
         }
     }
 
-    private void mapAlertSystem(AbstractComplexDeviceComponentDescriptorMsg.Builder parent, List<MdibEntity> alertSystems) {
+    private void mapAlertSystem(
+            AbstractComplexDeviceComponentDescriptorMsg.Builder parent,
+            List<MdibEntity> alertSystems) {
         if (alertSystems.size() != 1) {
             return;
         }
@@ -468,7 +469,18 @@ public class PojoToProtoTreeMapper {
             alertSystem.getDescriptor(AlertSystemDescriptor.class).ifPresent(alertSystemDescriptor -> {
                 var builder = alertMapper.mapAlertSystemDescriptor(alertSystemDescriptor);
 
-//                mapAlertConditions(builder, mdibAccess.getChildrenByType(alertSystemDescriptor.getHandle(), AlertConditionDescriptor.class));
+                mdibAccess.getChildrenByType(alertSystemDescriptor.getHandle(), AlertConditionDescriptor.class)
+                        .forEach(condition ->
+                                condition.getDescriptor(AlertConditionDescriptor.class).ifPresent(descriptor -> {
+                                    var oneOf = AlertConditionDescriptorOneOfMsg.newBuilder();
+                                    if (descriptor instanceof LimitAlertConditionDescriptor) {
+                                        instanceLogger.error("LimitAlertConditionDescriptor not implemented");
+                                    } else {
+                                        oneOf.setAlertConditionDescriptor(alertMapper.mapAlertConditionDescriptor(descriptor));
+                                    }
+                                    builder.addAlertCondition(oneOf.build());
+                                })
+                        );
 //                mapAlertSignals(builder, mdibAccess.getChildrenByType(alertSystemDescriptor.getHandle(), AlertSignalDescriptor.class));
 
                 parent.setAlertSystem(builder);

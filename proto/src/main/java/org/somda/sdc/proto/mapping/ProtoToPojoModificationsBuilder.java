@@ -16,19 +16,7 @@ import org.somda.sdc.glue.common.DefaultStateValues;
 import org.somda.sdc.glue.common.MdibMapper;
 import org.somda.sdc.glue.common.RequiredDefaultStateValues;
 import org.somda.sdc.glue.common.helper.DefaultStateValuesDispatcher;
-import org.somda.sdc.proto.model.biceps.AbstractComplexDeviceComponentDescriptorMsg;
-import org.somda.sdc.proto.model.biceps.AbstractMetricDescriptorOneOfMsg;
-import org.somda.sdc.proto.model.biceps.AlertSystemDescriptorMsg;
-import org.somda.sdc.proto.model.biceps.ChannelDescriptorMsg;
-import org.somda.sdc.proto.model.biceps.EnumStringMetricDescriptorMsg;
-import org.somda.sdc.proto.model.biceps.MdibMsg;
-import org.somda.sdc.proto.model.biceps.MdsDescriptorMsg;
-import org.somda.sdc.proto.model.biceps.NumericMetricDescriptorMsg;
-import org.somda.sdc.proto.model.biceps.RealTimeSampleArrayMetricDescriptorMsg;
-import org.somda.sdc.proto.model.biceps.StringMetricDescriptorMsg;
-import org.somda.sdc.proto.model.biceps.StringMetricDescriptorOneOfMsg;
-import org.somda.sdc.proto.model.biceps.SystemContextDescriptorMsg;
-import org.somda.sdc.proto.model.biceps.VmdDescriptorMsg;
+import org.somda.sdc.proto.model.biceps.*;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -147,6 +135,7 @@ public class ProtoToPojoModificationsBuilder {
     private void build(AlertSystemDescriptorMsg alertSystem, AbstractComplexDeviceComponentDescriptor parent) {
         var addedDesc = insert(alertSystem, AlertSystemDescriptor.class, parent.getHandle());
 
+        alertSystem.getAlertConditionList().forEach(condition -> build(condition, addedDesc));
 //        addedDesc.getAlertCondition().forEach(condition -> build(condition, addedDescr));
 //        addedDesc.getAlertSignal().forEach(signal -> build(signal, addedDescr));
 
@@ -164,6 +153,27 @@ public class ProtoToPojoModificationsBuilder {
 //        sco.setOperation(null);
 //    }
 //
+
+    private void build(AlertConditionDescriptorOneOfMsg conditionMsg, AlertSystemDescriptor parent) {
+        var type = conditionMsg.getAlertConditionDescriptorOneOfCase();
+        switch (type) {
+            case ALERT_CONDITION_DESCRIPTOR:
+                build(conditionMsg.getAlertConditionDescriptor(), parent);
+                break;
+            case LIMIT_ALERT_CONDITION_DESCRIPTOR:
+                instanceLogger.error("Case not implemented {}", type);
+                break;
+            default:
+                instanceLogger.error("Case not implemented {}", type);
+                break;
+        }
+    }
+
+    private void build(AlertConditionDescriptorMsg conditionMsg, AlertSystemDescriptor parent) {
+        var addedDescr = insert(conditionMsg, AlertConditionDescriptor.class, parent.getHandle());
+    }
+
+
     private void build(SystemContextDescriptorMsg systemContext, MdsDescriptor parent) {
         var addedDescr = insert(systemContext, SystemContextDescriptor.class, parent.getHandle());
 
