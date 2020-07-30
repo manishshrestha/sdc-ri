@@ -19,6 +19,7 @@ import org.somda.sdc.biceps.model.participant.StringMetricState;
 import org.somda.sdc.biceps.model.participant.VmdState;
 import org.somda.sdc.common.CommonConfig;
 import org.somda.sdc.common.logging.InstanceLogger;
+import org.somda.sdc.proto.model.biceps.AbstractAlertStateOneOfMsg;
 import org.somda.sdc.proto.model.biceps.AbstractComplexDeviceComponentStateOneOfMsg;
 import org.somda.sdc.proto.model.biceps.AbstractContextStateMsg;
 import org.somda.sdc.proto.model.biceps.AbstractContextStateOneOfMsg;
@@ -65,6 +66,8 @@ public class PojoToProtoOneOfMapper {
             builder.setAbstractMetricStateOneOf(mapAbstractMetricStateOneOf((AbstractMetricState) state));
         } else if (state instanceof AbstractMultiState) {
             builder.setAbstractMultiStateOneOf(mapAbstractMultiStateOneOf((AbstractMultiState) state));
+        } else if (state instanceof AbstractAlertState) {
+            builder.setAbstractAlertStateOneOf(mapAbstractAlertStateOneOf((AbstractAlertState) state));
         } else {
             LOG.error("Class {} not supported", state.getClass());
             //throw new IllegalArgumentException(String.format("Class %s not supported", state.getClass()));
@@ -93,6 +96,16 @@ public class PojoToProtoOneOfMapper {
             builder.setEnumStringMetricState(metricMapper.mapEnumStringMetricState((EnumStringMetricState) state));
         } else {
             builder.setStringMetricState(metricMapper.mapStringMetricState(state));
+        }
+        return builder.build();
+    }
+
+    public AbstractAlertStateOneOfMsg mapAbstractAlertStateOneOf(AbstractAlertState state) {
+        var builder = AbstractAlertStateOneOfMsg.newBuilder();
+        if (state instanceof AlertSystemState) {
+            builder.setAlertSystemState(alertMapper.mapAlertSystemState((AlertSystemState) state));
+        } else {
+            LOG.error("Class {} not supported", state.getClass());
         }
         return builder.build();
     }

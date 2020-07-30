@@ -8,6 +8,7 @@ import org.somda.sdc.biceps.model.participant.AbstractComplexDeviceComponentDesc
 import org.somda.sdc.biceps.model.participant.AbstractComplexDeviceComponentState;
 import org.somda.sdc.biceps.model.participant.AbstractDeviceComponentDescriptor;
 import org.somda.sdc.biceps.model.participant.AbstractDeviceComponentState;
+import org.somda.sdc.biceps.model.participant.AlertSystemDescriptor;
 import org.somda.sdc.biceps.model.participant.ChannelDescriptor;
 import org.somda.sdc.biceps.model.participant.ChannelState;
 import org.somda.sdc.biceps.model.participant.MdsDescriptor;
@@ -37,12 +38,15 @@ public class PojoToProtoComponentMapper {
     private static final Logger LOG = LogManager.getLogger(PojoToProtoComponentMapper.class);
     private final Logger instanceLogger;
     private final PojoToProtoBaseMapper baseMapper;
+    private final PojoToProtoAlertMapper alertMapper;
 
     @Inject
     PojoToProtoComponentMapper(@Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier,
-                               PojoToProtoBaseMapper baseMapper) {
+                               PojoToProtoBaseMapper baseMapper,
+                               PojoToProtoAlertMapper alertMapper) {
         this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);
         this.baseMapper = baseMapper;
+        this.alertMapper = alertMapper;
     }
 
     public SystemContextDescriptorMsg.Builder mapSystemContextDescriptor(SystemContextDescriptor systemContextDescriptor) {

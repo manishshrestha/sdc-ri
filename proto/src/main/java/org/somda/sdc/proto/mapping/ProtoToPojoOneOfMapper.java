@@ -5,6 +5,8 @@ import com.google.inject.name.Named;
 import com.google.protobuf.MessageOrBuilder;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.somda.sdc.biceps.model.participant.AbstractAlertDescriptor;
+import org.somda.sdc.biceps.model.participant.AbstractAlertState;
 import org.somda.sdc.biceps.model.participant.AbstractDescriptor;
 import org.somda.sdc.biceps.model.participant.AbstractMetricState;
 import org.somda.sdc.biceps.model.participant.AbstractState;
@@ -69,6 +71,8 @@ public class ProtoToPojoOneOfMapper {
             return contextMapper.map((EnsembleContextDescriptorMsg) protoMsg);
         } else if (protoMsg instanceof LocationContextDescriptorMsg) {
             return contextMapper.map((LocationContextDescriptorMsg) protoMsg);
+        } else if (protoMsg instanceof AlertSystemDescriptorMsg) {
+            return alertMapper.map((AlertSystemDescriptorMsg) protoMsg);
         } else {
             instanceLogger.error("Descriptor mapping not implemented: {}", protoMsg);
             return Util.invalidDescriptor();
@@ -97,8 +101,7 @@ public class ProtoToPojoOneOfMapper {
                 instanceLogger.error("Descriptor mapping not implemented: {}", type);
                 break;
             case ABSTRACT_ALERT_DESCRIPTOR_ONE_OF:
-                instanceLogger.error("Descriptor mapping not implemented: {}", type);
-                break;
+                return map(protoMsg.getAbstractAlertDescriptorOneOf());
             case ABSTRACT_DEVICE_COMPONENT_DESCRIPTOR_ONE_OF:
                 return map(protoMsg.getAbstractDeviceComponentDescriptorOneOf());
             case ABSTRACT_OPERATION_DESCRIPTOR_ONE_OF:
@@ -116,6 +119,18 @@ public class ProtoToPojoOneOfMapper {
         }
 
         return Util.invalidDescriptor();
+    }
+
+    private AbstractAlertDescriptor map(AbstractAlertDescriptorOneOfMsg protoMsg) {
+        var type = protoMsg.getAbstractAlertDescriptorOneOfCase();
+        switch (type) {
+            case ALERT_SYSTEM_DESCRIPTOR:
+                return alertMapper.map(protoMsg.getAlertSystemDescriptor());
+            default:
+                instanceLogger.error("Descriptor mapping not implemented: {}", type);
+        }
+
+        return Util.invalidAlertDescriptor();
     }
 
     private AbstractDescriptor map(AbstractDeviceComponentDescriptorOneOfMsg protoMsg) {
@@ -174,8 +189,7 @@ public class ProtoToPojoOneOfMapper {
                 instanceLogger.error("State mapping not implemented: {}", type);
                 break;
             case ABSTRACT_ALERT_STATE_ONE_OF:
-                instanceLogger.error("State mapping not implemented: {}", type);
-                break;
+                return map(protoMsg.getAbstractAlertStateOneOf());
             case ABSTRACT_MULTI_STATE_ONE_OF:
                 return map(protoMsg.getAbstractMultiStateOneOf());
             case ABSTRACT_METRIC_STATE_ONE_OF:
@@ -188,6 +202,20 @@ public class ProtoToPojoOneOfMapper {
         }
 
         return Util.invalidState();
+    }
+
+
+    private AbstractAlertState map(final AbstractAlertStateOneOfMsg protoMsg) {
+        var type = protoMsg.getAbstractAlertStateOneOfCase();
+        switch (type) {
+            case ALERT_SYSTEM_STATE:
+                return alertMapper.map(protoMsg.getAlertSystemState());
+            default:
+                instanceLogger.error("State mapping not implemented: {}", type);
+                break;
+        }
+
+        return Util.invalidAlertState();
     }
 
     private AbstractMetricState map(AbstractMetricStateOneOfMsg protoMsg) {

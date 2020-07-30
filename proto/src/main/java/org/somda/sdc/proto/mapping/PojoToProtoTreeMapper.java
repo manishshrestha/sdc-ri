@@ -32,7 +32,9 @@ import org.somda.sdc.common.CommonConfig;
 import org.somda.sdc.common.logging.InstanceLogger;
 import org.somda.sdc.common.util.ObjectUtil;
 import org.somda.sdc.glue.common.ModificationsBuilder;
+import org.somda.sdc.proto.model.biceps.AbstractComplexDeviceComponentDescriptorMsg;
 import org.somda.sdc.proto.model.biceps.AbstractMetricDescriptorOneOfMsg;
+import org.somda.sdc.proto.model.biceps.AlertSystemDescriptorMsg;
 import org.somda.sdc.proto.model.biceps.ChannelDescriptorMsg;
 import org.somda.sdc.proto.model.biceps.MdDescriptionMsg;
 import org.somda.sdc.proto.model.biceps.MdStateMsg;
@@ -271,10 +273,14 @@ public class PojoToProtoTreeMapper {
 //                descriptorCopy,
 //                mdibAccess.getChildrenByType(mds.getHandle(), ClockDescriptor.class),
 //                "setClock");
-//        mapAlertSystem(descriptorCopy, mdibAccess.getChildrenByType(mds.getHandle(),
-//                AlertSystemDescriptor.class));
 //        mapSco(descriptorCopy, mdibAccess.getChildrenByType(mds.getHandle(),
 //                ScoDescriptor.class));
+        // TODO: Recreating a builder from the field seems terribly inefficient
+        mapAlertSystem(
+                builder.getAbstractComplexDeviceComponentDescriptorBuilder(),
+                mdibAccess.getChildrenByType(mds.getHandle(),
+                AlertSystemDescriptor.class)
+        );
         mapSystemContext(builder, mdibAccess.getChildrenByType(mds.getHandle(),
                 SystemContextDescriptor.class));
         mapVmds(builder, mdibAccess.getChildrenByType(mds.getHandle(),
@@ -287,9 +293,12 @@ public class PojoToProtoTreeMapper {
         for (MdibEntity vmd : vmds) {
             vmd.getDescriptor(VmdDescriptor.class).ifPresent(vmdDescriptor -> {
                 var builder = componentMapper.mapVmdDescriptor(vmdDescriptor);
+                mapAlertSystem(
+                        builder.getAbstractComplexDeviceComponentDescriptorBuilder(),
+                        mdibAccess.getChildrenByType(vmd.getHandle(),
+                                AlertSystemDescriptor.class)
+                );
                 // todo
-//                mapAlertSystem(vmdDescriptorCopy, mdibAccess.getChildrenByType(vmdDescriptorCopy.getHandle(),
-//                        AlertSystemDescriptor.class));
 //                mapSco(vmdDescriptorCopy, mdibAccess.getChildrenByType(vmdDescriptorCopy.getHandle(),
 //                        ScoDescriptor.class));
                 mapChannels(builder, mdibAccess.getChildrenByType(vmdDescriptor.getHandle(),
@@ -450,28 +459,21 @@ public class PojoToProtoTreeMapper {
         }
     }
 
-    private void mapAlertSystem(AbstractComplexDeviceComponentDescriptor parent, List<MdibEntity> alertSystems) {
-        if (alertSystems.isEmpty()) {
+    private void mapAlertSystem(AbstractComplexDeviceComponentDescriptorMsg.Builder parent, List<MdibEntity> alertSystems) {
+        if (alertSystems.size() != 1) {
             return;
         }
 
-        final Optional<AlertSystemDescriptor> descriptor =
-                alertSystems.get(0).getDescriptor(AlertSystemDescriptor.class);
-        if (descriptor.isEmpty()) {
-            return;
+        for (MdibEntity alertSystem : alertSystems) {
+            alertSystem.getDescriptor(AlertSystemDescriptor.class).ifPresent(alertSystemDescriptor -> {
+                var builder = alertMapper.mapAlertSystemDescriptor(alertSystemDescriptor);
+
+//                mapAlertConditions(builder, mdibAccess.getChildrenByType(alertSystemDescriptor.getHandle(), AlertConditionDescriptor.class));
+//                mapAlertSignals(builder, mdibAccess.getChildrenByType(alertSystemDescriptor.getHandle(), AlertSignalDescriptor.class));
+
+                parent.setAlertSystem(builder);
+            });
         }
-
-        AlertSystemDescriptor descriptorCopy = objectUtil.deepCopy(descriptor.get());
-
-        parent.setAlertSystem(descriptorCopy);
-        mapZeroOrMoreDescriptors(
-                descriptorCopy,
-                mdibAccess.getChildrenByType(descriptorCopy.getHandle(), AlertConditionDescriptor.class),
-                "getAlertCondition");
-        mapZeroOrMoreDescriptors(
-                descriptorCopy,
-                mdibAccess.getChildrenByType(descriptorCopy.getHandle(), AlertSignalDescriptor.class),
-                "getAlertSignal");
     }
 
     private void mapZeroOrMoreDescriptors(AbstractDescriptor parentDescriptor,

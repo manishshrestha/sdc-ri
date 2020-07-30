@@ -6,6 +6,8 @@ import com.google.protobuf.Int64Value;
 import com.google.protobuf.StringValue;
 import com.google.protobuf.UInt32Value;
 import com.google.protobuf.UInt64Value;
+import org.somda.sdc.biceps.model.participant.AbstractAlertDescriptor;
+import org.somda.sdc.biceps.model.participant.AbstractAlertState;
 import org.somda.sdc.biceps.model.participant.AbstractDescriptor;
 import org.somda.sdc.biceps.model.participant.AbstractMetricState;
 import org.somda.sdc.biceps.model.participant.AbstractState;
@@ -49,6 +51,14 @@ class Util {
         var builder = Int64Value.newBuilder();
         if (number != null) {
             builder.setValue(number.longValue());
+        }
+        return builder.build();
+    }
+
+    static Int64Value toInt64(@Nullable Long number) {
+        var builder = Int64Value.newBuilder();
+        if (number != null) {
+            builder.setValue(number);
         }
         return builder.build();
     }
@@ -224,5 +234,17 @@ class Util {
         var state = new StringMetricState();
         state.setDescriptorHandle("[mapping failed]");
         return state;
+    }
+
+    static AbstractAlertState invalidAlertState() {
+        var state = new AbstractAlertState();
+        state.setDescriptorHandle("[mapping failed]");
+        return state;
+    }
+
+    static AbstractAlertDescriptor invalidAlertDescriptor() {
+        var descriptor = new AbstractAlertDescriptor();
+        descriptor.setHandle("[mapping failed]");
+        return descriptor;
     }
 }

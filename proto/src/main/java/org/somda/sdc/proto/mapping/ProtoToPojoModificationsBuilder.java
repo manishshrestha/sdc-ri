@@ -10,26 +10,15 @@ import org.apache.logging.log4j.Logger;
 import org.somda.sdc.biceps.common.MdibDescriptionModifications;
 import org.somda.sdc.biceps.common.MdibTypeValidator;
 import org.somda.sdc.biceps.common.access.MdibAccess;
-import org.somda.sdc.biceps.model.participant.AbstractDescriptor;
-import org.somda.sdc.biceps.model.participant.AbstractMultiState;
-import org.somda.sdc.biceps.model.participant.AbstractState;
-import org.somda.sdc.biceps.model.participant.ChannelDescriptor;
-import org.somda.sdc.biceps.model.participant.EnsembleContextDescriptor;
-import org.somda.sdc.biceps.model.participant.EnumStringMetricDescriptor;
-import org.somda.sdc.biceps.model.participant.LocationContextDescriptor;
-import org.somda.sdc.biceps.model.participant.Mdib;
-import org.somda.sdc.biceps.model.participant.MdsDescriptor;
-import org.somda.sdc.biceps.model.participant.NumericMetricDescriptor;
-import org.somda.sdc.biceps.model.participant.RealTimeSampleArrayMetricDescriptor;
-import org.somda.sdc.biceps.model.participant.StringMetricDescriptor;
-import org.somda.sdc.biceps.model.participant.SystemContextDescriptor;
-import org.somda.sdc.biceps.model.participant.VmdDescriptor;
+import org.somda.sdc.biceps.model.participant.*;
 import org.somda.sdc.common.logging.InstanceLogger;
 import org.somda.sdc.glue.common.DefaultStateValues;
 import org.somda.sdc.glue.common.MdibMapper;
 import org.somda.sdc.glue.common.RequiredDefaultStateValues;
 import org.somda.sdc.glue.common.helper.DefaultStateValuesDispatcher;
+import org.somda.sdc.proto.model.biceps.AbstractComplexDeviceComponentDescriptorMsg;
 import org.somda.sdc.proto.model.biceps.AbstractMetricDescriptorOneOfMsg;
+import org.somda.sdc.proto.model.biceps.AlertSystemDescriptorMsg;
 import org.somda.sdc.proto.model.biceps.ChannelDescriptorMsg;
 import org.somda.sdc.proto.model.biceps.EnumStringMetricDescriptorMsg;
 import org.somda.sdc.proto.model.biceps.MdibMsg;
@@ -132,8 +121,7 @@ public class ProtoToPojoModificationsBuilder {
 
         // Order of insertion shall be the same as the order from the MDIB XML Schema
         instanceLogger.error("Missing mapping for MDS alert system");
-//        build(mds.getAlertSystem(), mds);
-//        mds.setAlertSystem(null);
+        build(mds.getAbstractComplexDeviceComponentDescriptor(), parent);
         instanceLogger.error("Missing mapping for MDS SCO");
 //        build(mds.getSco(), mds);
 //        mds.setSco(null);
@@ -149,6 +137,21 @@ public class ProtoToPojoModificationsBuilder {
 
         mds.getVmdList().forEach(descr -> build(descr, parent));
         parent.setVmd(Collections.emptyList());
+    }
+
+    private void build(AbstractComplexDeviceComponentDescriptorMsg protoMsg, AbstractComplexDeviceComponentDescriptor descriptor) {
+        build(protoMsg.getAlertSystem(), descriptor);
+        descriptor.setAlertSystem(null);
+    }
+
+    private void build(AlertSystemDescriptorMsg alertSystem, AbstractComplexDeviceComponentDescriptor parent) {
+        var addedDesc = insert(alertSystem, AlertSystemDescriptor.class, parent.getHandle());
+
+//        addedDesc.getAlertCondition().forEach(condition -> build(condition, addedDescr));
+//        addedDesc.getAlertSignal().forEach(signal -> build(signal, addedDescr));
+
+        addedDesc.setAlertSignal(Collections.emptyList());
+        addedDesc.setAlertCondition(Collections.emptyList());
     }
 
     //    private void build(@Nullable ScoDescriptor sco, AbstractDescriptor parent) {
@@ -199,9 +202,8 @@ public class ProtoToPojoModificationsBuilder {
         instanceLogger.error("Missing mapping for VMD SCO");
 //        build(vmd.getSco(), vmd);
 //        vmd.setSco(null);
-        instanceLogger.error("Missing mapping for VMD alert system");
-//        build(vmd.getAlertSystem(), vmd);
-//        vmd.setAlertSystem(null);
+        build(vmd.getAbstractComplexDeviceComponentDescriptor(), parent);
+
         vmd.getChannelList().forEach(descr -> build(descr, addedDescr));
         addedDescr.setChannel(Collections.emptyList());
     }
@@ -210,6 +212,7 @@ public class ProtoToPojoModificationsBuilder {
         var addedDescr = insert(channel, ChannelDescriptor.class, parent.getHandle());
 
         channel.getMetricList().forEach(metric -> build(metric, addedDescr));
+        addedDescr.setMetric(Collections.emptyList());
     }
 
     private void build(AbstractMetricDescriptorOneOfMsg metric, ChannelDescriptor parent) {
