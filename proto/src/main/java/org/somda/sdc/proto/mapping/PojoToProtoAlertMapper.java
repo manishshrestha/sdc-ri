@@ -8,23 +8,15 @@ import org.somda.sdc.biceps.model.participant.AbstractAlertDescriptor;
 import org.somda.sdc.biceps.model.participant.AbstractAlertState;
 import org.somda.sdc.biceps.model.participant.AlertConditionDescriptor;
 import org.somda.sdc.biceps.model.participant.AlertConditionState;
+import org.somda.sdc.biceps.model.participant.AlertSignalDescriptor;
+import org.somda.sdc.biceps.model.participant.AlertSignalState;
 import org.somda.sdc.biceps.model.participant.AlertSystemDescriptor;
 import org.somda.sdc.biceps.model.participant.AlertSystemState;
 import org.somda.sdc.common.CommonConfig;
 import org.somda.sdc.common.logging.InstanceLogger;
 import org.somda.sdc.common.util.TimestampAdapter;
-import org.somda.sdc.proto.model.biceps.AbstractAlertDescriptorMsg;
-import org.somda.sdc.proto.model.biceps.AbstractAlertStateMsg;
-import org.somda.sdc.proto.model.biceps.AlertActivationMsg;
-import org.somda.sdc.proto.model.biceps.AlertConditionDescriptorMsg;
-import org.somda.sdc.proto.model.biceps.AlertConditionKindMsg;
-import org.somda.sdc.proto.model.biceps.AlertConditionPriorityMsg;
-import org.somda.sdc.proto.model.biceps.AlertConditionReferenceMsg;
-import org.somda.sdc.proto.model.biceps.AlertConditionStateMsg;
-import org.somda.sdc.proto.model.biceps.AlertSystemDescriptorMsg;
-import org.somda.sdc.proto.model.biceps.AlertSystemStateMsg;
+import org.somda.sdc.proto.model.biceps.*;
 
-import java.math.BigInteger;
 import java.util.List;
 
 public class PojoToProtoAlertMapper {
@@ -79,6 +71,30 @@ public class PojoToProtoAlertMapper {
         return builder.build();
     }
 
+    public AlertSignalDescriptorMsg mapAlertSignalDescriptor(AlertSignalDescriptor descriptor) {
+        var builder = AlertSignalDescriptorMsg.newBuilder()
+                .setAbstractAlertDescriptor(mapAbstractAlertDescriptor(descriptor));
+
+        Util.doIfNotNull(descriptor.getConditionSignaled(), condition ->
+                builder.setAConditionSignaled(Util.toStringValue(condition)));
+        builder.setAManifestation(Util.mapToProtoEnum(descriptor.getManifestation(), AlertSignalManifestationMsg.class));
+        builder.setALatching(descriptor.isLatching());
+        Util.doIfNotNull(descriptor.getDefaultSignalGenerationDelay(), duration ->
+                builder.setADefaultSignalGenerationDelay(Util.fromJavaDuration(duration)));
+        Util.doIfNotNull(descriptor.getMinSignalGenerationDelay(), duration ->
+                builder.setAMinSignalGenerationDelay(Util.fromJavaDuration(duration)));
+        Util.doIfNotNull(descriptor.getMaxSignalGenerationDelay(), duration ->
+                builder.setAMaxSignalGenerationDelay(Util.fromJavaDuration(duration)));
+        Util.doIfNotNull(descriptor.isSignalDelegationSupported(), delegation ->
+                builder.setASignalDelegationSupported(Util.toBoolValue(delegation)));
+        Util.doIfNotNull(descriptor.isAcknowledgementSupported(), ack ->
+                builder.setAAcknowledgementSupported(Util.toBoolValue(ack)));
+        Util.doIfNotNull(descriptor.getAcknowledgeTimeout(), duration ->
+                builder.setAAcknowledgeTimeout(Util.fromJavaDuration(duration)));
+
+        return builder.build();
+    }
+
     public AlertSystemStateMsg mapAlertSystemState(AlertSystemState state) {
         var builder = AlertSystemStateMsg.newBuilder()
                 .setAbstractAlertState(mapAbstractAlertState(state));
@@ -107,6 +123,22 @@ public class PojoToProtoAlertMapper {
                 builder.setAPresence(Util.toBoolValue(presence)));
         Util.doIfNotNull(state.getDeterminationTime(), timestamp ->
                 builder.setADeterminationTime(Util.toUInt64(timestampAdapter.marshal(timestamp))));
+
+        return builder.build();
+    }
+
+    public AlertSignalStateMsg mapAlertSignalState(AlertSignalState state) {
+        var builder = AlertSignalStateMsg.newBuilder()
+                .setAbstractAlertState(mapAbstractAlertState(state));
+
+        Util.doIfNotNull(state.getActualSignalGenerationDelay(), duration ->
+                builder.setAActualSignalGenerationDelay(Util.fromJavaDuration(duration)));
+        Util.doIfNotNull(state.getPresence(), presence ->
+                builder.setAPresence(Util.mapToProtoEnum(presence, AlertSignalPresenceMsg.class)));
+        Util.doIfNotNull(state.getLocation(), location ->
+                builder.setALocation(Util.mapToProtoEnum(location, AlertSignalPrimaryLocationMsg.class)));
+        Util.doIfNotNull(state.getSlot(), slot ->
+                builder.setASlot(Util.toUInt32(slot)));
 
         return builder.build();
     }

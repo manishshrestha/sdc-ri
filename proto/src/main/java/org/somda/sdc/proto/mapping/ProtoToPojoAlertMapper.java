@@ -5,6 +5,7 @@ import com.google.inject.name.Named;
 import com.google.protobuf.BoolValue;
 import com.google.protobuf.Duration;
 import com.google.protobuf.Int64Value;
+import com.google.protobuf.StringValue;
 import com.google.protobuf.UInt32Value;
 import com.google.protobuf.UInt64Value;
 import org.apache.logging.log4j.LogManager;
@@ -16,6 +17,11 @@ import org.somda.sdc.biceps.model.participant.AlertConditionDescriptor;
 import org.somda.sdc.biceps.model.participant.AlertConditionKind;
 import org.somda.sdc.biceps.model.participant.AlertConditionPriority;
 import org.somda.sdc.biceps.model.participant.AlertConditionState;
+import org.somda.sdc.biceps.model.participant.AlertSignalDescriptor;
+import org.somda.sdc.biceps.model.participant.AlertSignalManifestation;
+import org.somda.sdc.biceps.model.participant.AlertSignalPresence;
+import org.somda.sdc.biceps.model.participant.AlertSignalPrimaryLocation;
+import org.somda.sdc.biceps.model.participant.AlertSignalState;
 import org.somda.sdc.biceps.model.participant.AlertSystemDescriptor;
 import org.somda.sdc.biceps.model.participant.AlertSystemState;
 import org.somda.sdc.common.CommonConfig;
@@ -25,6 +31,9 @@ import org.somda.sdc.proto.model.biceps.AbstractAlertDescriptorMsg;
 import org.somda.sdc.proto.model.biceps.AbstractAlertStateMsg;
 import org.somda.sdc.proto.model.biceps.AlertConditionDescriptorMsg;
 import org.somda.sdc.proto.model.biceps.AlertConditionStateMsg;
+import org.somda.sdc.proto.model.biceps.AlertSignalDescriptorMsg;
+import org.somda.sdc.proto.model.biceps.AlertSignalPresenceMsg;
+import org.somda.sdc.proto.model.biceps.AlertSignalStateMsg;
 import org.somda.sdc.proto.model.biceps.AlertSystemDescriptorMsg;
 import org.somda.sdc.proto.model.biceps.AlertSystemStateMsg;
 
@@ -78,6 +87,30 @@ public class ProtoToPojoAlertMapper {
         return pojo;
     }
 
+    public AlertSignalDescriptor map(AlertSignalDescriptorMsg protoMsg) {
+        var pojo = new AlertSignalDescriptor();
+        map(pojo, protoMsg.getAbstractAlertDescriptor());
+
+        Util.doIfNotNull(Util.optional(protoMsg, "AConditionSignaled", StringValue.class), condition ->
+                pojo.setConditionSignaled(condition.getValue()));
+        pojo.setManifestation(Util.mapToPojoEnum(protoMsg, "AManifestation", AlertSignalManifestation.class));
+        pojo.setLatching(protoMsg.getALatching());
+        Util.doIfNotNull(Util.optional(protoMsg, "ADefaultSignalGenerationDelay", Duration.class), duration ->
+                pojo.setDefaultSignalGenerationDelay(Util.fromProtoDuration(duration)));
+        Util.doIfNotNull(Util.optional(protoMsg, "AMinSignalGenerationDelay", Duration.class), duration ->
+                pojo.setMinSignalGenerationDelay(Util.fromProtoDuration(duration)));
+        Util.doIfNotNull(Util.optional(protoMsg, "AMaxSignalGenerationDelay", Duration.class), duration ->
+                pojo.setMaxSignalGenerationDelay(Util.fromProtoDuration(duration)));
+        Util.doIfNotNull(Util.optional(protoMsg, "ASignalDelegationSupported", BoolValue.class), delegation ->
+                pojo.setSignalDelegationSupported(delegation.getValue()));
+        Util.doIfNotNull(Util.optional(protoMsg, "AAcknowledgementSupported", BoolValue.class), ack ->
+                pojo.setAcknowledgementSupported(ack.getValue()));
+        Util.doIfNotNull(Util.optional(protoMsg, "AAcknowledgeTimeout", Duration.class), duration ->
+                pojo.setAcknowledgeTimeout(Util.fromProtoDuration(duration)));
+
+        return pojo;
+    }
+
     public void map(AbstractAlertDescriptor pojo, AbstractAlertDescriptorMsg protoMsg) {
         baseMapper.map(pojo, protoMsg.getAbstractDescriptor());
     }
@@ -112,6 +145,19 @@ public class ProtoToPojoAlertMapper {
                 pojo.setPresence(presence.getValue()));
         Util.doIfNotNull(Util.optionalBigIntOfLong(protoMsg, "ADeterminationTime"), check ->
                 pojo.setDeterminationTime(timestampAdapter.unmarshal(check)));
+
+        return pojo;
+    }
+
+    public AlertSignalState map(AlertSignalStateMsg protoMsg) {
+        var pojo = new AlertSignalState();
+        map(pojo, protoMsg.getAbstractAlertState());
+
+        Util.doIfNotNull(Util.optional(protoMsg, "AActualSignalGenerationDelay", Duration.class), duration ->
+                pojo.setActualSignalGenerationDelay(Util.fromProtoDuration(duration)));
+        pojo.setPresence(Util.mapToPojoEnum(protoMsg, "APresence", AlertSignalPresence.class));
+        pojo.setLocation(Util.mapToPojoEnum(protoMsg, "ALocation", AlertSignalPrimaryLocation.class));
+        pojo.setSlot(Util.optionalLongOfInt(protoMsg, "ASlot"));
 
         return pojo;
     }

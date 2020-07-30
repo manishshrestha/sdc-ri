@@ -136,8 +136,7 @@ public class ProtoToPojoModificationsBuilder {
         var addedDesc = insert(alertSystem, AlertSystemDescriptor.class, parent.getHandle());
 
         alertSystem.getAlertConditionList().forEach(condition -> build(condition, addedDesc));
-//        addedDesc.getAlertCondition().forEach(condition -> build(condition, addedDescr));
-//        addedDesc.getAlertSignal().forEach(signal -> build(signal, addedDescr));
+        alertSystem.getAlertSignalList().forEach(signal -> build(signal, addedDesc));
 
         addedDesc.setAlertSignal(Collections.emptyList());
         addedDesc.setAlertCondition(Collections.emptyList());
@@ -153,6 +152,10 @@ public class ProtoToPojoModificationsBuilder {
 //        sco.setOperation(null);
 //    }
 //
+
+    private void build(AlertSignalDescriptorMsg signalMsg, AlertSystemDescriptor parent) {
+        var addedDescr = insert(signalMsg, AlertSignalDescriptor.class, parent.getHandle());
+    }
 
     private void build(AlertConditionDescriptorOneOfMsg conditionMsg, AlertSystemDescriptor parent) {
         var type = conditionMsg.getAlertConditionDescriptorOneOfCase();

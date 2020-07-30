@@ -76,6 +76,8 @@ public class ProtoToPojoOneOfMapper {
             return alertMapper.map((AlertSystemDescriptorMsg) protoMsg);
         } else if (protoMsg instanceof AlertConditionDescriptorMsg) {
             return alertMapper.map((AlertConditionDescriptorMsg) protoMsg);
+        } else if (protoMsg instanceof AlertSignalDescriptorMsg) {
+            return alertMapper.map((AlertSignalDescriptorMsg) protoMsg);
         } else {
             instanceLogger.error("Descriptor mapping not implemented: {}", protoMsg);
             return Util.invalidDescriptor();
@@ -215,6 +217,8 @@ public class ProtoToPojoOneOfMapper {
                 return alertMapper.map(protoMsg.getAlertSystemState());
             case ALERT_CONDITION_STATE_ONE_OF:
                 return map(protoMsg.getAlertConditionStateOneOf());
+            case ALERT_SIGNAL_STATE:
+                return alertMapper.map(protoMsg.getAlertSignalState());
             default:
                 instanceLogger.error("State mapping not implemented: {}", type);
                 break;

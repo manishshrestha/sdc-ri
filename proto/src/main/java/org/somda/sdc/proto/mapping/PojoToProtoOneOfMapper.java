@@ -4,31 +4,17 @@ import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.somda.sdc.biceps.model.participant.AbstractComplexDeviceComponentState;
-import org.somda.sdc.biceps.model.participant.AbstractDeviceComponentState;
-import org.somda.sdc.biceps.model.participant.AbstractMetricState;
-import org.somda.sdc.biceps.model.participant.AbstractState;
 import org.somda.sdc.biceps.model.participant.*;
-import org.somda.sdc.biceps.model.participant.EnumStringMetricState;
-import org.somda.sdc.biceps.model.participant.MdsState;
-import org.somda.sdc.biceps.model.participant.NumericMetricState;
-import org.somda.sdc.biceps.model.participant.NumericMetricValue;
-import org.somda.sdc.biceps.model.participant.RealTimeSampleArrayMetricDescriptor;
-import org.somda.sdc.biceps.model.participant.RealTimeSampleArrayMetricState;
-import org.somda.sdc.biceps.model.participant.StringMetricState;
-import org.somda.sdc.biceps.model.participant.VmdState;
 import org.somda.sdc.common.CommonConfig;
 import org.somda.sdc.common.logging.InstanceLogger;
 import org.somda.sdc.proto.model.biceps.AbstractAlertStateOneOfMsg;
 import org.somda.sdc.proto.model.biceps.AbstractComplexDeviceComponentStateOneOfMsg;
-import org.somda.sdc.proto.model.biceps.AbstractContextStateMsg;
 import org.somda.sdc.proto.model.biceps.AbstractContextStateOneOfMsg;
 import org.somda.sdc.proto.model.biceps.AbstractDeviceComponentStateOneOfMsg;
 import org.somda.sdc.proto.model.biceps.AbstractMetricStateOneOfMsg;
 import org.somda.sdc.proto.model.biceps.AbstractMultiStateOneOfMsg;
 import org.somda.sdc.proto.model.biceps.AbstractStateOneOfMsg;
 import org.somda.sdc.proto.model.biceps.AlertConditionStateOneOfMsg;
-import org.somda.sdc.proto.model.biceps.NumericMetricStateMsg;
 import org.somda.sdc.proto.model.biceps.StringMetricStateOneOfMsg;
 
 public class PojoToProtoOneOfMapper {
@@ -107,6 +93,8 @@ public class PojoToProtoOneOfMapper {
             builder.setAlertSystemState(alertMapper.mapAlertSystemState((AlertSystemState) state));
         } else if (state instanceof AlertConditionState) {
             builder.setAlertConditionStateOneOf(mapAlertConditionStateOneOf((AlertConditionState) state));
+        } else if (state instanceof AlertSignalState) {
+            builder.setAlertSignalState(alertMapper.mapAlertSignalState((AlertSignalState) state));
         } else {
             LOG.error("Class {} not supported", state.getClass());
         }
