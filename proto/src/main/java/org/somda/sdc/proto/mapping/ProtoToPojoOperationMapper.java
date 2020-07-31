@@ -19,6 +19,10 @@ import org.somda.sdc.biceps.model.participant.SetContextStateOperationDescriptor
 import org.somda.sdc.biceps.model.participant.SetContextStateOperationState;
 import org.somda.sdc.biceps.model.participant.SetMetricStateOperationDescriptor;
 import org.somda.sdc.biceps.model.participant.SetMetricStateOperationState;
+import org.somda.sdc.biceps.model.participant.SetStringOperationDescriptor;
+import org.somda.sdc.biceps.model.participant.SetStringOperationState;
+import org.somda.sdc.biceps.model.participant.SetValueOperationDescriptor;
+import org.somda.sdc.biceps.model.participant.SetValueOperationState;
 import org.somda.sdc.common.CommonConfig;
 import org.somda.sdc.common.logging.InstanceLogger;
 import org.somda.sdc.proto.model.biceps.AbstractOperationDescriptorMsg;
@@ -34,6 +38,10 @@ import org.somda.sdc.proto.model.biceps.SetContextStateOperationDescriptorMsg;
 import org.somda.sdc.proto.model.biceps.SetContextStateOperationStateMsg;
 import org.somda.sdc.proto.model.biceps.SetMetricStateOperationDescriptorMsg;
 import org.somda.sdc.proto.model.biceps.SetMetricStateOperationStateMsg;
+import org.somda.sdc.proto.model.biceps.SetStringOperationDescriptorMsg;
+import org.somda.sdc.proto.model.biceps.SetStringOperationStateMsg;
+import org.somda.sdc.proto.model.biceps.SetValueOperationDescriptorMsg;
+import org.somda.sdc.proto.model.biceps.SetValueOperationStateMsg;
 
 import javax.xml.namespace.QName;
 import java.util.stream.Collectors;
@@ -59,6 +67,30 @@ public class ProtoToPojoOperationMapper {
 
     public ActivateOperationState map(ActivateOperationStateMsg protoMsg) {
         var pojo = new ActivateOperationState();
+        map(pojo, protoMsg.getAbstractOperationState());
+        return pojo;
+    }
+
+    public SetStringOperationDescriptor map(SetStringOperationDescriptorMsg protoMsg) {
+        var pojo = new SetStringOperationDescriptor();
+        map(pojo, protoMsg.getAbstractOperationDescriptor());
+        return pojo;
+    }
+
+    public SetValueOperationState map(SetValueOperationStateMsg protoMsg) {
+        var pojo = new SetValueOperationState();
+        map(pojo, protoMsg.getAbstractOperationState());
+        return pojo;
+    }
+
+    public SetValueOperationDescriptor map(SetValueOperationDescriptorMsg protoMsg) {
+        var pojo = new SetValueOperationDescriptor();
+        map(pojo, protoMsg.getAbstractOperationDescriptor());
+        return pojo;
+    }
+
+    public SetStringOperationState map(SetStringOperationStateMsg protoMsg) {
+        var pojo = new SetStringOperationState();
         map(pojo, protoMsg.getAbstractOperationState());
         return pojo;
     }

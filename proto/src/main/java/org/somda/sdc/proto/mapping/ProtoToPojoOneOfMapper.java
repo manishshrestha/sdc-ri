@@ -13,6 +13,7 @@ import org.somda.sdc.biceps.model.participant.AbstractOperationDescriptor;
 import org.somda.sdc.biceps.model.participant.AbstractOperationState;
 import org.somda.sdc.biceps.model.participant.AbstractSetStateOperationDescriptor;
 import org.somda.sdc.biceps.model.participant.AbstractState;
+import org.somda.sdc.biceps.model.participant.SetValueOperationDescriptor;
 import org.somda.sdc.biceps.model.participant.StringMetricState;
 import org.somda.sdc.common.logging.InstanceLogger;
 import org.somda.sdc.common.util.TimestampAdapter;
@@ -46,10 +47,11 @@ import org.somda.sdc.proto.model.biceps.NumericMetricDescriptorMsg;
 import org.somda.sdc.proto.model.biceps.RealTimeSampleArrayMetricDescriptorMsg;
 import org.somda.sdc.proto.model.biceps.ScoDescriptorMsg;
 import org.somda.sdc.proto.model.biceps.SetAlertStateOperationDescriptorMsg;
-import org.somda.sdc.proto.model.biceps.SetAlertStateOperationStateMsg;
 import org.somda.sdc.proto.model.biceps.SetComponentStateOperationDescriptorMsg;
 import org.somda.sdc.proto.model.biceps.SetContextStateOperationDescriptorMsg;
 import org.somda.sdc.proto.model.biceps.SetMetricStateOperationDescriptorMsg;
+import org.somda.sdc.proto.model.biceps.SetStringOperationDescriptorMsg;
+import org.somda.sdc.proto.model.biceps.SetValueOperationDescriptorMsg;
 import org.somda.sdc.proto.model.biceps.StringMetricDescriptorMsg;
 import org.somda.sdc.proto.model.biceps.StringMetricStateOneOfMsg;
 import org.somda.sdc.proto.model.biceps.SystemContextDescriptorMsg;
@@ -115,6 +117,10 @@ public class ProtoToPojoOneOfMapper {
             return componentMapper.map((ScoDescriptorMsg) protoMsg);
         } else if (protoMsg instanceof ActivateOperationDescriptorMsg) {
             return operationMapper.map((ActivateOperationDescriptorMsg) protoMsg);
+        } else if (protoMsg instanceof SetStringOperationDescriptorMsg) {
+            return operationMapper.map((SetStringOperationDescriptorMsg) protoMsg);
+        } else if (protoMsg instanceof SetValueOperationDescriptorMsg) {
+            return operationMapper.map((SetValueOperationDescriptorMsg) protoMsg);
         } else if (protoMsg instanceof SetMetricStateOperationDescriptorMsg) {
             return operationMapper.map((SetMetricStateOperationDescriptorMsg) protoMsg);
         } else if (protoMsg instanceof SetComponentStateOperationDescriptorMsg) {
@@ -308,8 +314,7 @@ public class ProtoToPojoOneOfMapper {
             case SET_CONTEXT_STATE_OPERATION_STATE:
                 return operationMapper.map(protoMsg.getSetContextStateOperationState());
             case SET_VALUE_OPERATION_STATE:
-                instanceLogger.error("State mapping not implemented: {}", type);
-                break;
+                return operationMapper.map(protoMsg.getSetValueOperationState());
             case SET_COMPONENT_STATE_OPERATION_STATE:
                 return operationMapper.map(protoMsg.getSetComponentStateOperationState());
             case SET_METRIC_STATE_OPERATION_STATE:
@@ -317,8 +322,7 @@ public class ProtoToPojoOneOfMapper {
             case SET_ALERT_STATE_OPERATION_STATE:
                 return operationMapper.map(protoMsg.getSetAlertStateOperationState());
             case SET_STRING_OPERATION_STATE:
-                instanceLogger.error("State mapping not implemented: {}", type);
-                break;
+                return operationMapper.map(protoMsg.getSetStringOperationState());
             case ACTIVATE_OPERATION_STATE:
                 return operationMapper.map(protoMsg.getActivateOperationState());
             case ABSTRACT_OPERATION_STATE:

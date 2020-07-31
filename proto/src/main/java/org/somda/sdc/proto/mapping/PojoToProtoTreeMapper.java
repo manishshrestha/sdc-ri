@@ -30,6 +30,9 @@ import org.somda.sdc.biceps.model.participant.SetAlertStateOperationDescriptor;
 import org.somda.sdc.biceps.model.participant.SetComponentStateOperationDescriptor;
 import org.somda.sdc.biceps.model.participant.SetContextStateOperationDescriptor;
 import org.somda.sdc.biceps.model.participant.SetMetricStateOperationDescriptor;
+import org.somda.sdc.biceps.model.participant.SetStringOperationDescriptor;
+import org.somda.sdc.biceps.model.participant.SetStringOperationState;
+import org.somda.sdc.biceps.model.participant.SetValueOperationDescriptor;
 import org.somda.sdc.biceps.model.participant.StringMetricDescriptor;
 import org.somda.sdc.biceps.model.participant.SystemContextDescriptor;
 import org.somda.sdc.biceps.model.participant.VmdDescriptor;
@@ -403,6 +406,24 @@ public class PojoToProtoTreeMapper {
                                     .setAbstractSetStateOperationDescriptorOneOf(
                                             AbstractSetStateOperationDescriptorOneOfMsg.newBuilder()
                                                     .setActivateOperationDescriptor(opBuilder)));
+                        });
+
+                mapOperationDescriptor(
+                        mdibAccess.getChildrenByType(sco.getHandle(), SetStringOperationDescriptor.class),
+                        SetStringOperationDescriptor.class,
+                        descriptor -> {
+                            var opBuilder = operationMapper.mapSetStringOperationDescriptor((descriptor));
+                            scoBuilder.addOperation(AbstractOperationDescriptorOneOfMsg.newBuilder()
+                                    .setSetStringOperationDescriptor(opBuilder));
+                        });
+
+                mapOperationDescriptor(
+                        mdibAccess.getChildrenByType(sco.getHandle(), SetValueOperationDescriptor.class),
+                        SetValueOperationDescriptor.class,
+                        descriptor -> {
+                            var opBuilder = operationMapper.mapSetValueOperationDescriptor((descriptor));
+                            scoBuilder.addOperation(AbstractOperationDescriptorOneOfMsg.newBuilder()
+                                    .setSetValueOperationDescriptor(opBuilder));
                         });
 
                 mapOperationDescriptor(

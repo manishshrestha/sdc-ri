@@ -31,6 +31,8 @@ import org.somda.sdc.biceps.model.participant.SetAlertStateOperationDescriptor;
 import org.somda.sdc.biceps.model.participant.SetComponentStateOperationDescriptor;
 import org.somda.sdc.biceps.model.participant.SetContextStateOperationDescriptor;
 import org.somda.sdc.biceps.model.participant.SetMetricStateOperationDescriptor;
+import org.somda.sdc.biceps.model.participant.SetStringOperationDescriptor;
+import org.somda.sdc.biceps.model.participant.SetValueOperationDescriptor;
 import org.somda.sdc.biceps.model.participant.StringMetricDescriptor;
 import org.somda.sdc.biceps.model.participant.SystemContextDescriptor;
 import org.somda.sdc.biceps.model.participant.VmdDescriptor;
@@ -194,37 +196,26 @@ public class ProtoToPojoModificationsBuilder {
         sco.getOperationList().forEach(it -> {
             var type = it.getAbstractOperationDescriptorOneOfCase();
             switch (type) {
-                case ABSTRACT_OPERATION_DESCRIPTOR:
-                    instanceLogger.error("Case not implemented {}", type);
-                    break;
                 case SET_STRING_OPERATION_DESCRIPTOR:
-                    instanceLogger.error("Case not implemented {}", type);
+                    insert(it.getSetStringOperationDescriptor(),
+                            SetStringOperationDescriptor.class,
+                            addedDesc.getHandle());
                     break;
                 case ABSTRACT_SET_STATE_OPERATION_DESCRIPTOR_ONE_OF:
                     build(it.getAbstractSetStateOperationDescriptorOneOf(), addedDesc.getHandle());
                     break;
                 case SET_VALUE_OPERATION_DESCRIPTOR:
-                    instanceLogger.error("Case not implemented {}", type);
+                    insert(it.getSetValueOperationDescriptor(),
+                            SetValueOperationDescriptor.class,
+                            addedDesc.getHandle());
                     break;
+                case ABSTRACT_OPERATION_DESCRIPTOR:
                 case ABSTRACTOPERATIONDESCRIPTORONEOF_NOT_SET:
                 default:
                     instanceLogger.error("Case not implemented {}", type);
             }
         });
-//        addedDesc.getAlertCondition().forEach(condition -> build(condition, addedDescr));
-//        addedDesc.getAlertSignal().forEach(signal -> build(signal, addedDescr));
     }
-
-    //    private void build(@Nullable ScoDescriptor sco, AbstractDescriptor parent) {
-//        if (sco == null) {
-//            return;
-//        }
-//        insert(sco, parent);
-//
-//        sco.getOperation().forEach(descriptor -> buildLeaf(descriptor, sco));
-//        sco.setOperation(null);
-//    }
-//
 
     private void build(AbstractSetStateOperationDescriptorOneOfMsg setStateOnOf, String parentHandle) {
         var type = setStateOnOf.getAbstractSetStateOperationDescriptorOneOfCase();

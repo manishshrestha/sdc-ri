@@ -17,6 +17,10 @@ import org.somda.sdc.biceps.model.participant.SetContextStateOperationDescriptor
 import org.somda.sdc.biceps.model.participant.SetContextStateOperationState;
 import org.somda.sdc.biceps.model.participant.SetMetricStateOperationDescriptor;
 import org.somda.sdc.biceps.model.participant.SetMetricStateOperationState;
+import org.somda.sdc.biceps.model.participant.SetStringOperationDescriptor;
+import org.somda.sdc.biceps.model.participant.SetStringOperationState;
+import org.somda.sdc.biceps.model.participant.SetValueOperationDescriptor;
+import org.somda.sdc.biceps.model.participant.SetValueOperationState;
 import org.somda.sdc.common.CommonConfig;
 import org.somda.sdc.common.logging.InstanceLogger;
 import org.somda.sdc.proto.model.biceps.AbstractOperationDescriptorMsg;
@@ -33,6 +37,10 @@ import org.somda.sdc.proto.model.biceps.SetContextStateOperationDescriptorMsg;
 import org.somda.sdc.proto.model.biceps.SetContextStateOperationStateMsg;
 import org.somda.sdc.proto.model.biceps.SetMetricStateOperationDescriptorMsg;
 import org.somda.sdc.proto.model.biceps.SetMetricStateOperationStateMsg;
+import org.somda.sdc.proto.model.biceps.SetStringOperationDescriptorMsg;
+import org.somda.sdc.proto.model.biceps.SetStringOperationStateMsg;
+import org.somda.sdc.proto.model.biceps.SetValueOperationDescriptorMsg;
+import org.somda.sdc.proto.model.biceps.SetValueOperationStateMsg;
 
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -59,6 +67,32 @@ public class PojoToProtoOperationMapper {
 
     public ActivateOperationStateMsg mapActivateOperationState(ActivateOperationState state) {
         return ActivateOperationStateMsg.newBuilder()
+                .setAbstractOperationState(mapAbstractOperationState(state))
+                .build();
+    }
+
+    public SetStringOperationDescriptorMsg mapSetStringOperationDescriptor(
+            SetStringOperationDescriptor descriptor) {
+        return SetStringOperationDescriptorMsg.newBuilder()
+                .setAbstractOperationDescriptor(mapAbstractOperationDescriptor(descriptor))
+                .build();
+    }
+
+    public SetStringOperationStateMsg mapSetStringOperationState(SetStringOperationState state) {
+        return SetStringOperationStateMsg.newBuilder()
+                .setAbstractOperationState(mapAbstractOperationState(state))
+                .build();
+    }
+
+    public SetValueOperationDescriptorMsg mapSetValueOperationDescriptor(
+            SetValueOperationDescriptor descriptor) {
+        return SetValueOperationDescriptorMsg.newBuilder()
+                .setAbstractOperationDescriptor(mapAbstractOperationDescriptor(descriptor))
+                .build();
+    }
+
+    public SetValueOperationStateMsg mapSetValueOperationState(SetValueOperationState state) {
+        return SetValueOperationStateMsg.newBuilder()
                 .setAbstractOperationState(mapAbstractOperationState(state))
                 .build();
     }

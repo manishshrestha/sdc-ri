@@ -10,20 +10,30 @@ import org.somda.sdc.biceps.model.participant.AbstractContextState;
 import org.somda.sdc.biceps.model.participant.AbstractDeviceComponentState;
 import org.somda.sdc.biceps.model.participant.AbstractMetricState;
 import org.somda.sdc.biceps.model.participant.AbstractMultiState;
+import org.somda.sdc.biceps.model.participant.AbstractOperationState;
 import org.somda.sdc.biceps.model.participant.AbstractState;
+import org.somda.sdc.biceps.model.participant.ActivateOperationState;
+import org.somda.sdc.biceps.model.participant.AlertConditionState;
+import org.somda.sdc.biceps.model.participant.AlertSignalState;
 import org.somda.sdc.biceps.model.participant.AlertSystemState;
 import org.somda.sdc.biceps.model.participant.ChannelState;
 import org.somda.sdc.biceps.model.participant.EnsembleContextState;
 import org.somda.sdc.biceps.model.participant.EnumStringMetricState;
+import org.somda.sdc.biceps.model.participant.LimitAlertConditionState;
 import org.somda.sdc.biceps.model.participant.LocationContextState;
 import org.somda.sdc.biceps.model.participant.MdsState;
 import org.somda.sdc.biceps.model.participant.NumericMetricState;
 import org.somda.sdc.biceps.model.participant.RealTimeSampleArrayMetricState;
 import org.somda.sdc.biceps.model.participant.ScoState;
+import org.somda.sdc.biceps.model.participant.SetAlertStateOperationState;
+import org.somda.sdc.biceps.model.participant.SetComponentStateOperationState;
+import org.somda.sdc.biceps.model.participant.SetContextStateOperationState;
+import org.somda.sdc.biceps.model.participant.SetMetricStateOperationState;
+import org.somda.sdc.biceps.model.participant.SetStringOperationState;
+import org.somda.sdc.biceps.model.participant.SetValueOperationState;
 import org.somda.sdc.biceps.model.participant.StringMetricState;
 import org.somda.sdc.biceps.model.participant.SystemContextState;
 import org.somda.sdc.biceps.model.participant.VmdState;
-import org.somda.sdc.biceps.model.participant.*;
 import org.somda.sdc.common.CommonConfig;
 import org.somda.sdc.common.logging.InstanceLogger;
 import org.somda.sdc.proto.model.biceps.AbstractAlertStateOneOfMsg;
@@ -117,13 +127,19 @@ public class PojoToProtoOneOfMapper {
         } else if (state instanceof SetMetricStateOperationState) {
             builder.setSetMetricStateOperationState(
                     operationMapper.mapSetMetricStateOperationState((SetMetricStateOperationState) state));
-        }  else if (state instanceof SetComponentStateOperationState) {
+        } else if (state instanceof SetStringOperationState) {
+            builder.setSetStringOperationState(
+                    operationMapper.mapSetStringOperationState((SetStringOperationState) state));
+        } else if (state instanceof SetValueOperationState) {
+            builder.setSetValueOperationState(
+                    operationMapper.mapSetValueOperationState((SetValueOperationState) state));
+        } else if (state instanceof SetComponentStateOperationState) {
             builder.setSetComponentStateOperationState(
                     operationMapper.mapSetComponentStateOperationState((SetComponentStateOperationState) state));
-        }  else if (state instanceof SetAlertStateOperationState) {
+        } else if (state instanceof SetAlertStateOperationState) {
             builder.setSetAlertStateOperationState(
                     operationMapper.mapSetAlertStateOperationState((SetAlertStateOperationState) state));
-        }  else if (state instanceof SetContextStateOperationState) {
+        } else if (state instanceof SetContextStateOperationState) {
             builder.setSetContextStateOperationState(
                     operationMapper.mapSetContextStateOperationState((SetContextStateOperationState) state));
         } else {
