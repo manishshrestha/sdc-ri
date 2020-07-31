@@ -148,7 +148,7 @@ public class PojoToProtoOperationMapper {
 
     private ActivateOperationDescriptorMsg.ArgumentMsg mapArgument(ActivateOperationDescriptor.Argument argument) {
         var builder = ActivateOperationDescriptorMsg.ArgumentMsg.newBuilder();
-        builder.setArg(String.format("{%s:%s}",
+        builder.setArg(String.format("{%s}%s",
                 Optional.ofNullable(argument.getArg().getNamespaceURI()).orElse(""),
                 argument.getArg().getLocalPart()));
         builder.setArgName(baseMapper.mapCodedValue(argument.getArgName()));

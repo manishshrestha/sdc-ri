@@ -30,6 +30,7 @@ import org.somda.sdc.proto.model.biceps.AbstractOperationDescriptorOneOfMsg;
 import org.somda.sdc.proto.model.biceps.AbstractOperationStateOneOfMsg;
 import org.somda.sdc.proto.model.biceps.AbstractSetStateOperationDescriptorOneOfMsg;
 import org.somda.sdc.proto.model.biceps.AbstractStateOneOfMsg;
+import org.somda.sdc.proto.model.biceps.ActivateOperationDescriptorMsg;
 import org.somda.sdc.proto.model.biceps.AlertConditionDescriptorMsg;
 import org.somda.sdc.proto.model.biceps.AlertConditionStateOneOfMsg;
 import org.somda.sdc.proto.model.biceps.AlertSignalDescriptorMsg;
@@ -112,6 +113,8 @@ public class ProtoToPojoOneOfMapper {
             return alertMapper.map((AlertSystemDescriptorMsg) protoMsg);
         } else if (protoMsg instanceof ScoDescriptorMsg) {
             return componentMapper.map((ScoDescriptorMsg) protoMsg);
+        } else if (protoMsg instanceof ActivateOperationDescriptorMsg) {
+            return operationMapper.map((ActivateOperationDescriptorMsg) protoMsg);
         } else if (protoMsg instanceof SetMetricStateOperationDescriptorMsg) {
             return operationMapper.map((SetMetricStateOperationDescriptorMsg) protoMsg);
         } else if (protoMsg instanceof SetComponentStateOperationDescriptorMsg) {
@@ -317,8 +320,7 @@ public class ProtoToPojoOneOfMapper {
                 instanceLogger.error("State mapping not implemented: {}", type);
                 break;
             case ACTIVATE_OPERATION_STATE:
-                instanceLogger.error("State mapping not implemented: {}", type);
-                break;
+                return operationMapper.map(protoMsg.getActivateOperationState());
             case ABSTRACT_OPERATION_STATE:
             case ABSTRACTOPERATIONSTATEONEOF_NOT_SET:
             default:

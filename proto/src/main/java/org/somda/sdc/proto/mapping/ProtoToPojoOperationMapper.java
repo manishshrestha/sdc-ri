@@ -140,8 +140,8 @@ public class ProtoToPojoOperationMapper {
     private ActivateOperationDescriptor.Argument map(ActivateOperationDescriptorMsg.ArgumentMsg protoMsg) {
         var arg = new ActivateOperationDescriptor.Argument();
         var argName = protoMsg.getArg();
-        argName = argName.substring(1, argName.length() - 1);
-        var split = Splitter.on(':').splitToList(argName);
+        argName = argName.substring(1);
+        var split = Splitter.on('}').splitToList(argName);
         if (split.size() != 2) {
             throw new ArrayIndexOutOfBoundsException(String.format("Split QName was malformed: %s", protoMsg.getArg()));
         }

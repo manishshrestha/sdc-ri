@@ -112,7 +112,8 @@ public class PojoToProtoOneOfMapper {
     public AbstractOperationStateOneOfMsg mapAbstractOperationStateOneOf(AbstractOperationState state) {
         var builder = AbstractOperationStateOneOfMsg.newBuilder();
         if (state instanceof ActivateOperationState) {
-//            builder.setA(alertMapper.mapAlertSystemState((ActivateOperationState) state));
+            builder.setActivateOperationState(
+                    operationMapper.mapActivateOperationState((ActivateOperationState) state));
         } else if (state instanceof SetMetricStateOperationState) {
             builder.setSetMetricStateOperationState(
                     operationMapper.mapSetMetricStateOperationState((SetMetricStateOperationState) state));

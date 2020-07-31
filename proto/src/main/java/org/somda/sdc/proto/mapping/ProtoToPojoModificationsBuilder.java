@@ -14,6 +14,7 @@ import org.somda.sdc.biceps.model.participant.AbstractComplexDeviceComponentDesc
 import org.somda.sdc.biceps.model.participant.AbstractDescriptor;
 import org.somda.sdc.biceps.model.participant.AbstractMultiState;
 import org.somda.sdc.biceps.model.participant.AbstractState;
+import org.somda.sdc.biceps.model.participant.ActivateOperationDescriptor;
 import org.somda.sdc.biceps.model.participant.AlertConditionDescriptor;
 import org.somda.sdc.biceps.model.participant.AlertSignalDescriptor;
 import org.somda.sdc.biceps.model.participant.AlertSystemDescriptor;
@@ -246,7 +247,8 @@ public class ProtoToPojoModificationsBuilder {
                         parentHandle);
                 break;
             case ACTIVATE_OPERATION_DESCRIPTOR:
-                instanceLogger.error("Case not implemented {}", type);
+                insert(setStateOnOf.getActivateOperationDescriptor(), ActivateOperationDescriptor.class,
+                        parentHandle);
                 break;
             case ABSTRACT_SET_STATE_OPERATION_DESCRIPTOR:
             case ABSTRACTSETSTATEOPERATIONDESCRIPTORONEOF_NOT_SET:

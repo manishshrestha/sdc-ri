@@ -9,6 +9,7 @@ import org.somda.sdc.biceps.common.MdibDescriptionModifications;
 import org.somda.sdc.biceps.common.MdibEntity;
 import org.somda.sdc.biceps.common.access.MdibAccess;
 import org.somda.sdc.biceps.model.participant.AbstractDescriptor;
+import org.somda.sdc.biceps.model.participant.ActivateOperationDescriptor;
 import org.somda.sdc.biceps.model.participant.AlertConditionDescriptor;
 import org.somda.sdc.biceps.model.participant.AlertSignalDescriptor;
 import org.somda.sdc.biceps.model.participant.AlertSystemDescriptor;
@@ -392,6 +393,17 @@ public class PojoToProtoTreeMapper {
         for (MdibEntity sco : scos) {
             sco.getDescriptor(ScoDescriptor.class).ifPresent(scoDescriptor -> {
                 var scoBuilder = componentMapper.mapScoDescriptor(scoDescriptor);
+
+                mapOperationDescriptor(
+                        mdibAccess.getChildrenByType(sco.getHandle(), ActivateOperationDescriptor.class),
+                        ActivateOperationDescriptor.class,
+                        descriptor -> {
+                            var opBuilder = operationMapper.mapActivateOperationDescriptor((descriptor));
+                            scoBuilder.addOperation(AbstractOperationDescriptorOneOfMsg.newBuilder()
+                                    .setAbstractSetStateOperationDescriptorOneOf(
+                                            AbstractSetStateOperationDescriptorOneOfMsg.newBuilder()
+                                                    .setActivateOperationDescriptor(opBuilder)));
+                        });
 
                 mapOperationDescriptor(
                         mdibAccess.getChildrenByType(sco.getHandle(), SetMetricStateOperationDescriptor.class),
