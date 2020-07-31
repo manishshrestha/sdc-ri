@@ -356,6 +356,10 @@ public class ProtoToPojoOneOfMapper {
         switch (type) {
             case ALERT_CONDITION_STATE:
                 return alertMapper.map(protoMsg.getAlertConditionState());
+            case LIMIT_ALERT_CONDITION_STATE:
+                instanceLogger.error("State mapping not implemented: {}", type);
+                break;
+            case ALERTCONDITIONSTATEONEOF_NOT_SET:
             default:
                 instanceLogger.error("State mapping not implemented: {}", type);
                 break;
