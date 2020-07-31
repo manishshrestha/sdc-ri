@@ -25,25 +25,25 @@ import java.util.Arrays;
 import java.util.Optional;
 import java.util.function.Consumer;
 
-class Util {
-    static <T> void doIfNotNull(@Nullable T value, Consumer<T> consumer) {
+public class Util {
+    public static <T> void doIfNotNull(@Nullable T value, Consumer<T> consumer) {
         if (value != null) {
             consumer.accept(value);
         }
     }
 
-    static Duration fromJavaDuration(java.time.Duration duration) {
+    public static Duration fromJavaDuration(java.time.Duration duration) {
         var builder = Duration.newBuilder();
         builder.setSeconds(duration.getSeconds());
         builder.setNanos(duration.getNano());
         return builder.build();
     }
 
-    static java.time.Duration fromProtoDuration(Duration duration) {
+    public static java.time.Duration fromProtoDuration(Duration duration) {
         return java.time.Duration.ofSeconds(duration.getSeconds(), duration.getNanos());
     }
 
-    static UInt64Value toUInt64(@Nullable BigInteger number) {
+    public static UInt64Value toUInt64(@Nullable BigInteger number) {
         var builder = UInt64Value.newBuilder();
         if (number != null && number.longValue() >= 0) {
             builder.setValue(number.longValue());
@@ -51,7 +51,7 @@ class Util {
         return builder.build();
     }
 
-    static Int64Value toInt64(@Nullable BigInteger number) {
+    public static Int64Value toInt64(@Nullable BigInteger number) {
         var builder = Int64Value.newBuilder();
         if (number != null) {
             builder.setValue(number.longValue());
@@ -59,7 +59,7 @@ class Util {
         return builder.build();
     }
 
-    static Int64Value toInt64(@Nullable Long number) {
+    public static Int64Value toInt64(@Nullable Long number) {
         var builder = Int64Value.newBuilder();
         if (number != null) {
             builder.setValue(number);
@@ -67,7 +67,7 @@ class Util {
         return builder.build();
     }
 
-    static Int32Value toInt32(@Nullable Integer number) {
+    public static Int32Value toInt32(@Nullable Integer number) {
         var builder = Int32Value.newBuilder();
         if (number != null) {
             builder.setValue(number);
@@ -75,7 +75,7 @@ class Util {
         return builder.build();
     }
 
-    static UInt32Value toUInt32(@Nullable Long number) {
+    public static UInt32Value toUInt32(@Nullable Long number) {
         var builder = UInt32Value.newBuilder();
         if (number != null && number >= 0) {
             builder.setValue(number.intValue());
@@ -83,7 +83,7 @@ class Util {
         return builder.build();
     }
 
-    static UInt32Value toUInt32(@Nullable Integer number) {
+    public static UInt32Value toUInt32(@Nullable Integer number) {
         var builder = UInt32Value.newBuilder();
         if (number != null && number >= 0) {
             builder.setValue(number);
@@ -91,7 +91,7 @@ class Util {
         return builder.build();
     }
 
-    static StringValue toStringValue(@Nullable String value) {
+    public static StringValue toStringValue(@Nullable String value) {
         var builder = StringValue.newBuilder();
         if (value != null) {
             builder.setValue(value);
@@ -99,7 +99,7 @@ class Util {
         return builder.build();
     }
 
-    static BoolValue toBoolValue(@Nullable Boolean value) {
+    public static BoolValue toBoolValue(@Nullable Boolean value) {
         var builder = BoolValue.newBuilder();
         if (value != null) {
             builder.setValue(value);
@@ -107,7 +107,7 @@ class Util {
         return builder.build();
     }
 
-    static Long optionalLongOfInt(Object protoMsg, String typeName) {
+    public static Long optionalLongOfInt(Object protoMsg, String typeName) {
         var value = optionalProtoPrimitive(protoMsg, typeName, Integer.class);
         if (value == null) {
             return null;
@@ -116,27 +116,27 @@ class Util {
         }
     }
 
-    static Integer optionalIntOfInt(Object protoMsg, String typeName) {
+    public static Integer optionalIntOfInt(Object protoMsg, String typeName) {
         return Optional.ofNullable(optionalProtoPrimitive(protoMsg, typeName, Integer.class)).orElse(null);
     }
 
-    static BigInteger optionalBigIntOfLong(Object protoMsg, String typeName) {
+    public static BigInteger optionalBigIntOfLong(Object protoMsg, String typeName) {
         return Optional.ofNullable(optionalProtoPrimitive(protoMsg, typeName, Long.class))
                 .map(BigInteger::valueOf)
                 .orElse(null);
     }
 
-    static BigDecimal optionalBigDecimalOfString(Object protoMsg, String typeName) {
+    public static BigDecimal optionalBigDecimalOfString(Object protoMsg, String typeName) {
         return Optional.ofNullable(optionalProtoPrimitive(protoMsg, typeName, String.class))
                 .map(BigDecimal::new)
                 .orElse(null);
     }
 
-    static String optionalStr(Object protoMsg, String protoTypeName) {
+    public static String optionalStr(Object protoMsg, String protoTypeName) {
         return optionalProtoPrimitive(protoMsg, protoTypeName, String.class);
     }
 
-    static <T> T optional(Object protoMsg, String protoTypeName, Class<T> resultingPojoClass) {
+    public static <T> T optional(Object protoMsg, String protoTypeName, Class<T> resultingPojoClass) {
         try {
             var hasValue = "has" + protoTypeName;
             var getValue = "get" + protoTypeName;
@@ -152,7 +152,7 @@ class Util {
         }
     }
 
-    static <T> T mapToPojoEnum(Object protoMsg, String protoEnumName, Class<T> pojoEnumType) {
+    public static <T> T mapToPojoEnum(Object protoMsg, String protoEnumName, Class<T> pojoEnumType) {
         try {
             var hasEnum = "has" + protoEnumName;
             var getEnum = "get" + protoEnumName;
@@ -173,7 +173,7 @@ class Util {
         }
     }
 
-    static <T, V> T mapToProtoEnum(@Nullable V pojoEnumValue, Class<T> protoEnumMsgType) {
+    public static <T, V> T mapToProtoEnum(@Nullable V pojoEnumValue, Class<T> protoEnumMsgType) {
         try {
             var protoEnumMsg = protoEnumMsgType.getMethod("newBuilder").invoke(null);
             var buildMethod = protoEnumMsg.getClass().getMethod("build");
@@ -224,37 +224,37 @@ class Util {
         }
     }
 
-    static AbstractState invalidState() {
+    public static AbstractState invalidState() {
         var state = new AbstractState();
         state.setDescriptorHandle("[mapping failed]");
         return state;
     }
 
-    static AbstractDescriptor invalidDescriptor() {
+    public static AbstractDescriptor invalidDescriptor() {
         var descr = new AbstractDescriptor();
         descr.setHandle("[mapping failed]");
         return descr;
     }
 
-    static AbstractMetricState invalidMetricState() {
+    public static AbstractMetricState invalidMetricState() {
         var state = new AbstractMetricState();
         state.setDescriptorHandle("[mapping failed]");
         return state;
     }
 
-    static StringMetricState invalidStringMetricState() {
+    public static StringMetricState invalidStringMetricState() {
         var state = new StringMetricState();
         state.setDescriptorHandle("[mapping failed]");
         return state;
     }
 
-    static AbstractAlertState invalidAlertState() {
+    public static AbstractAlertState invalidAlertState() {
         var state = new AbstractAlertState();
         state.setDescriptorHandle("[mapping failed]");
         return state;
     }
 
-    static AbstractAlertDescriptor invalidAlertDescriptor() {
+    public static AbstractAlertDescriptor invalidAlertDescriptor() {
         var descriptor = new AbstractAlertDescriptor();
         descriptor.setHandle("[mapping failed]");
         return descriptor;
