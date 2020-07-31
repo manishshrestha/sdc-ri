@@ -8,6 +8,7 @@ import org.somda.sdc.biceps.model.participant.AbstractComplexDeviceComponentDesc
 import org.somda.sdc.biceps.model.participant.AbstractComplexDeviceComponentState;
 import org.somda.sdc.biceps.model.participant.AbstractDeviceComponentDescriptor;
 import org.somda.sdc.biceps.model.participant.AbstractDeviceComponentState;
+import org.somda.sdc.biceps.model.participant.ApprovedJurisdictions;
 import org.somda.sdc.biceps.model.participant.ChannelDescriptor;
 import org.somda.sdc.biceps.model.participant.ChannelState;
 import org.somda.sdc.biceps.model.participant.MdsDescriptor;
@@ -24,6 +25,7 @@ import org.somda.sdc.proto.model.biceps.AbstractComplexDeviceComponentDescriptor
 import org.somda.sdc.proto.model.biceps.AbstractComplexDeviceComponentStateMsg;
 import org.somda.sdc.proto.model.biceps.AbstractDeviceComponentDescriptorMsg;
 import org.somda.sdc.proto.model.biceps.AbstractDeviceComponentStateMsg;
+import org.somda.sdc.proto.model.biceps.ApprovedJurisdictionsMsg;
 import org.somda.sdc.proto.model.biceps.ChannelDescriptorMsg;
 import org.somda.sdc.proto.model.biceps.ChannelStateMsg;
 import org.somda.sdc.proto.model.biceps.ComponentActivationMsg;
@@ -87,15 +89,18 @@ public class PojoToProtoComponentMapper {
     }
 
     public MdsDescriptorMsg.Builder mapMdsDescriptor(MdsDescriptor mdsDescriptor) {
-        return MdsDescriptorMsg.newBuilder()
-                .setAbstractComplexDeviceComponentDescriptor(
-                        mapAbstractComplexDeviceComponentDescriptor(mdsDescriptor));
+        var builder = MdsDescriptorMsg.newBuilder();
+        Util.doIfNotNull(mdsDescriptor.getApprovedJurisdictions(), it ->
+                builder.setApprovedJurisdictions(mapApprovedJurisdictions(it)));
+        return builder.setAbstractComplexDeviceComponentDescriptor(
+                mapAbstractComplexDeviceComponentDescriptor(mdsDescriptor));
     }
 
     public MdsStateMsg mapMdsState(MdsState mdsState) {
         var builder = MdsStateMsg.newBuilder();
         builder.setAbstractComplexDeviceComponentState(mapAbstractComplexDeviceComponentState(mdsState));
-        builder.setALang(Util.toStringValue(mdsState.getLang()));
+        Util.doIfNotNull(mdsState.getLang(), it ->
+                builder.setALang(Util.toStringValue(mdsState.getLang())));
         Util.doIfNotNull(mdsState.getOperatingMode(), mdsOperatingMode ->
                 builder.setAOperatingMode(Util.mapToProtoEnum(mdsOperatingMode, MdsOperatingModeMsg.class)));
         Util.doIfNotNull(mdsState.getOperatingJurisdiction(), operatingJurisdiction ->
@@ -104,9 +109,11 @@ public class PojoToProtoComponentMapper {
     }
 
     public VmdDescriptorMsg.Builder mapVmdDescriptor(VmdDescriptor vmdDescriptor) {
-        return VmdDescriptorMsg.newBuilder()
-                .setAbstractComplexDeviceComponentDescriptor(
-                        mapAbstractComplexDeviceComponentDescriptor(vmdDescriptor));
+        var builder = VmdDescriptorMsg.newBuilder();
+        Util.doIfNotNull(vmdDescriptor.getApprovedJurisdictions(), it ->
+                builder.setApprovedJurisdictions(mapApprovedJurisdictions(it)));
+        return builder.setAbstractComplexDeviceComponentDescriptor(
+                mapAbstractComplexDeviceComponentDescriptor(vmdDescriptor));
     }
 
     public VmdStateMsg mapVmdState(VmdState vmdState) {
@@ -114,6 +121,13 @@ public class PojoToProtoComponentMapper {
         Util.doIfNotNull(vmdState.getOperatingJurisdiction(), operatingJurisdiction ->
                 builder.setOperatingJurisdiction(baseMapper.mapOperatingJurisdiction(operatingJurisdiction)));
         return builder.setAbstractComplexDeviceComponentState(mapAbstractComplexDeviceComponentState(vmdState)).build();
+    }
+
+    private ApprovedJurisdictionsMsg mapApprovedJurisdictions(ApprovedJurisdictions approvedJurisdictions) {
+        return ApprovedJurisdictionsMsg.newBuilder()
+                .addAllApprovedJurisdiction(baseMapper
+                        .mapInstanceIdentifiers(approvedJurisdictions.getApprovedJurisdiction())).build();
+
     }
 
     public ChannelDescriptorMsg.Builder mapChannelDescriptor(ChannelDescriptor channelDescriptor) {

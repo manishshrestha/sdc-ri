@@ -3,6 +3,8 @@ package org.somda.sdc.proto.mapping;
 import org.somda.sdc.biceps.common.MdibDescriptionModifications;
 import org.somda.sdc.biceps.consumer.access.RemoteMdibAccess;
 import org.somda.sdc.biceps.model.participant.ApprovedJurisdictions;
+import org.somda.sdc.biceps.model.participant.ChannelDescriptor;
+import org.somda.sdc.biceps.model.participant.ChannelState;
 import org.somda.sdc.biceps.model.participant.ComponentActivation;
 import org.somda.sdc.biceps.model.participant.OperatingJurisdiction;
 import org.somda.sdc.biceps.model.participant.SafetyClassification;
@@ -17,13 +19,34 @@ import java.util.function.BiConsumer;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class VmdRoundTrip implements BiConsumer<LocalMdibAccess, RemoteMdibAccess> {
-    private final ApprovedJurisdictions approvedJurisdictions;
-    private final OperatingJurisdiction operatingJurisdiction;
+    private ApprovedJurisdictions approvedJurisdictions;
+    private OperatingJurisdiction operatingJurisdiction;
+
+    private static final String HANDLE = Handles.VMD_0;
+    private static final String HANDLE_MIN = HANDLE + "Min";
 
     public VmdRoundTrip(MdibDescriptionModifications modifications) {
+        bigSet(modifications);
+        minimalSet(modifications);
+    }
+
+    private void minimalSet(MdibDescriptionModifications modifications) {
         var descriptor = new VmdDescriptor();
         {
-            descriptor.setHandle(Handles.VMD_0);
+            descriptor.setHandle(HANDLE_MIN);
+        }
+
+        var state = new VmdState();
+        {
+        }
+
+        modifications.insert(descriptor, state, Handles.MDS_0);
+    }
+
+    private void bigSet(MdibDescriptionModifications modifications) {
+        var descriptor = new VmdDescriptor();
+        {
+            descriptor.setHandle(HANDLE);
             approvedJurisdictions = new ApprovedJurisdictions();
             approvedJurisdictions.getApprovedJurisdiction()
                     .add(InstanceIdentifierFactory.createInstanceIdentifier("http://test/", "extension"));
@@ -46,17 +69,23 @@ public class VmdRoundTrip implements BiConsumer<LocalMdibAccess, RemoteMdibAcces
 
     @Override
     public void accept(LocalMdibAccess localMdibAccess, RemoteMdibAccess remoteMdibAccess) {
-        var expectedDescriptor = localMdibAccess.getDescriptor(Handles.VMD_0, VmdDescriptor.class).get();
-        var expectedState = localMdibAccess.getState(Handles.VMD_0, VmdState.class).get();
-        var actualDescriptor = remoteMdibAccess.getDescriptor(Handles.VMD_0, VmdDescriptor.class).get();
-        var actualState = remoteMdibAccess.getState(Handles.VMD_0, VmdState.class).get();
+        {
+            var expectedDescriptor = localMdibAccess.getDescriptor(HANDLE, VmdDescriptor.class);
+            var expectedState = localMdibAccess.getState(HANDLE, VmdState.class);
+            var actualDescriptor = remoteMdibAccess.getDescriptor(HANDLE, VmdDescriptor.class);
+            var actualState = remoteMdibAccess.getState(HANDLE, VmdState.class);
 
-        assertEquals(expectedDescriptor.getHandle(), actualDescriptor.getHandle());
-        assertEquals(SafetyClassification.MED_B, expectedDescriptor.getSafetyClassification());
+            assertEquals(expectedDescriptor, actualDescriptor);
+            assertEquals(expectedState, actualState);
+        }
+        {
+            var expectedDescriptor = localMdibAccess.getDescriptor(HANDLE_MIN, VmdDescriptor.class);
+            var expectedState = localMdibAccess.getState(HANDLE_MIN, VmdState.class);
+            var actualDescriptor = remoteMdibAccess.getDescriptor(HANDLE_MIN, VmdDescriptor.class);
+            var actualState = remoteMdibAccess.getState(HANDLE_MIN, VmdState.class);
 
-        assertEquals(Handles.MDS_0, remoteMdibAccess.getEntity(Handles.VMD_0).get().getParent().get());
-        assertEquals(expectedState.getDescriptorHandle(), actualState.getDescriptorHandle());
-        assertEquals(ComponentActivation.OFF, actualState.getActivationState());
-        assertEquals(operatingJurisdiction.getRootName(), actualState.getOperatingJurisdiction().getRootName());
+            assertEquals(expectedDescriptor, actualDescriptor);
+            assertEquals(expectedState, actualState);
+        }
     }
 }

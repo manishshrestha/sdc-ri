@@ -17,16 +17,31 @@ import java.util.function.BiConsumer;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class ChannelRoundTrip implements BiConsumer<LocalMdibAccess, RemoteMdibAccess> {
-    private final ApprovedJurisdictions approvedJurisdictions;
-    private final OperatingJurisdiction operatingJurisdiction;
+    private static final String HANDLE = Handles.CHANNEL_0;
+    private static final String HANDLE_MIN = HANDLE + "Min";
 
     public ChannelRoundTrip(MdibDescriptionModifications modifications) {
+        bigSet(modifications);
+        minimalSet(modifications);
+    }
+
+    private void minimalSet(MdibDescriptionModifications modifications) {
         var descriptor = new ChannelDescriptor();
         {
-            descriptor.setHandle(Handles.CHANNEL_0);
-            approvedJurisdictions = new ApprovedJurisdictions();
-            approvedJurisdictions.getApprovedJurisdiction()
-                    .add(InstanceIdentifierFactory.createInstanceIdentifier("http://test/", "extension"));
+            descriptor.setHandle(HANDLE_MIN);
+        }
+
+        var state = new ChannelState();
+        {
+        }
+
+        modifications.insert(descriptor, state, Handles.VMD_0);
+    }
+
+    private void bigSet(MdibDescriptionModifications modifications) {
+        var descriptor = new ChannelDescriptor();
+        {
+            descriptor.setHandle(HANDLE);
             descriptor.setSafetyClassification(SafetyClassification.MED_C);
         }
 
@@ -35,8 +50,6 @@ public class ChannelRoundTrip implements BiConsumer<LocalMdibAccess, RemoteMdibA
             state.setActivationState(ComponentActivation.SHTDN);
             state.setOperatingCycles(1000);
             state.setOperatingHours(5L);
-            operatingJurisdiction = new OperatingJurisdiction();
-            operatingJurisdiction.setRootName("http://full-qualifying-root");
         }
 
         modifications.insert(descriptor, state, Handles.VMD_0);
@@ -44,16 +57,23 @@ public class ChannelRoundTrip implements BiConsumer<LocalMdibAccess, RemoteMdibA
 
     @Override
     public void accept(LocalMdibAccess localMdibAccess, RemoteMdibAccess remoteMdibAccess) {
-        var expectedDescriptor = localMdibAccess.getDescriptor(Handles.CHANNEL_0, ChannelDescriptor.class).get();
-        var expectedState = localMdibAccess.getState(Handles.CHANNEL_0, ChannelState.class).get();
-        var actualDescriptor = remoteMdibAccess.getDescriptor(Handles.CHANNEL_0, ChannelDescriptor.class).get();
-        var actualState = remoteMdibAccess.getState(Handles.CHANNEL_0, ChannelState.class).get();
+        {
+            var expectedDescriptor = localMdibAccess.getDescriptor(HANDLE, ChannelDescriptor.class);
+            var expectedState = localMdibAccess.getState(HANDLE, ChannelState.class);
+            var actualDescriptor = remoteMdibAccess.getDescriptor(HANDLE, ChannelDescriptor.class);
+            var actualState = remoteMdibAccess.getState(HANDLE, ChannelState.class);
 
-        assertEquals(expectedDescriptor.getHandle(), actualDescriptor.getHandle());
-        assertEquals(SafetyClassification.MED_C, expectedDescriptor.getSafetyClassification());
+            assertEquals(expectedDescriptor, actualDescriptor);
+            assertEquals(expectedState, actualState);
+        }
+        {
+            var expectedDescriptor = localMdibAccess.getDescriptor(HANDLE_MIN, ChannelDescriptor.class);
+            var expectedState = localMdibAccess.getState(HANDLE_MIN, ChannelState.class);
+            var actualDescriptor = remoteMdibAccess.getDescriptor(HANDLE_MIN, ChannelDescriptor.class);
+            var actualState = remoteMdibAccess.getState(HANDLE_MIN, ChannelState.class);
 
-        assertEquals(Handles.VMD_0, remoteMdibAccess.getEntity(Handles.CHANNEL_0).get().getParent().get());
-        assertEquals(expectedState.getDescriptorHandle(), actualState.getDescriptorHandle());
-        assertEquals(ComponentActivation.SHTDN, actualState.getActivationState());
+            assertEquals(expectedDescriptor, actualDescriptor);
+            assertEquals(expectedState, actualState);
+        }
     }
 }

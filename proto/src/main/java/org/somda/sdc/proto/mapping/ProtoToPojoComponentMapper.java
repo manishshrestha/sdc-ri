@@ -8,6 +8,7 @@ import org.somda.sdc.biceps.model.participant.AbstractComplexDeviceComponentDesc
 import org.somda.sdc.biceps.model.participant.AbstractComplexDeviceComponentState;
 import org.somda.sdc.biceps.model.participant.AbstractDeviceComponentDescriptor;
 import org.somda.sdc.biceps.model.participant.AbstractDeviceComponentState;
+import org.somda.sdc.biceps.model.participant.ApprovedJurisdictions;
 import org.somda.sdc.biceps.model.participant.ChannelDescriptor;
 import org.somda.sdc.biceps.model.participant.ChannelState;
 import org.somda.sdc.biceps.model.participant.ComponentActivation;
@@ -26,6 +27,7 @@ import org.somda.sdc.proto.model.biceps.AbstractComplexDeviceComponentDescriptor
 import org.somda.sdc.proto.model.biceps.AbstractComplexDeviceComponentStateMsg;
 import org.somda.sdc.proto.model.biceps.AbstractDeviceComponentDescriptorMsg;
 import org.somda.sdc.proto.model.biceps.AbstractDeviceComponentStateMsg;
+import org.somda.sdc.proto.model.biceps.ApprovedJurisdictionsMsg;
 import org.somda.sdc.proto.model.biceps.ChannelDescriptorMsg;
 import org.somda.sdc.proto.model.biceps.ChannelStateMsg;
 import org.somda.sdc.proto.model.biceps.MdsDescriptorMsg;
@@ -54,32 +56,44 @@ public class ProtoToPojoComponentMapper {
 
     public MdsDescriptor map(MdsDescriptorMsg protoMsg) {
         var pojo = new MdsDescriptor();
+        if (protoMsg.hasApprovedJurisdictions()) {
+            pojo.setApprovedJurisdictions(map(protoMsg.getApprovedJurisdictions()));
+        }
         map(pojo, protoMsg.getAbstractComplexDeviceComponentDescriptor());
         return pojo;
     }
 
     public MdsState map(MdsStateMsg protoMsg) {
-        var pojoState = new MdsState();
-        pojoState.setLang(Util.optionalStr(protoMsg, "ALang"));
-        pojoState.setOperatingMode(Util.mapToPojoEnum(protoMsg, "AOperatingMode", MdsOperatingMode.class));
-        pojoState.setOperatingJurisdiction(baseMapper.map(
+        var pojo = new MdsState();
+        pojo.setLang(Util.optionalStr(protoMsg, "ALang"));
+        pojo.setOperatingMode(Util.mapToPojoEnum(protoMsg, "AOperatingMode", MdsOperatingMode.class));
+        pojo.setOperatingJurisdiction(baseMapper.map(
                 Util.optional(protoMsg, "OperatingJurisdiction", OperatingJurisdictionMsg.class)));
-        map(pojoState, protoMsg.getAbstractComplexDeviceComponentState());
-        return pojoState;
+        map(pojo, protoMsg.getAbstractComplexDeviceComponentState());
+        return pojo;
     }
 
     public VmdDescriptor map(VmdDescriptorMsg protoMsg) {
-        var pojoState = new VmdDescriptor();
-        map(pojoState, protoMsg.getAbstractComplexDeviceComponentDescriptor());
-        return pojoState;
+        var pojo = new VmdDescriptor();
+        if (protoMsg.hasApprovedJurisdictions()) {
+            pojo.setApprovedJurisdictions(map(protoMsg.getApprovedJurisdictions()));
+        }
+        map(pojo, protoMsg.getAbstractComplexDeviceComponentDescriptor());
+        return pojo;
     }
 
     public VmdState map(VmdStateMsg protoMsg) {
-        var pojoState = new VmdState();
-        pojoState.setOperatingJurisdiction(baseMapper.map(
+        var pojo = new VmdState();
+        pojo.setOperatingJurisdiction(baseMapper.map(
                 Util.optional(protoMsg, "OperatingJurisdiction", OperatingJurisdictionMsg.class)));
-        map(pojoState, protoMsg.getAbstractComplexDeviceComponentState());
-        return pojoState;
+        map(pojo, protoMsg.getAbstractComplexDeviceComponentState());
+        return pojo;
+    }
+
+    private ApprovedJurisdictions map(ApprovedJurisdictionsMsg protoMsg) {
+        var apj = new ApprovedJurisdictions();
+        apj.setApprovedJurisdiction(baseMapper.mapInstanceIdentifiers(protoMsg.getApprovedJurisdictionList()));
+        return apj;
     }
 
     public ChannelDescriptor map(ChannelDescriptorMsg protoMsg) {
@@ -89,9 +103,9 @@ public class ProtoToPojoComponentMapper {
     }
 
     public ChannelState map(ChannelStateMsg protoMsg) {
-        var pojoState = new ChannelState();
-        map(pojoState, protoMsg.getAbstractDeviceComponentState());
-        return pojoState;
+        var pojo = new ChannelState();
+        map(pojo, protoMsg.getAbstractDeviceComponentState());
+        return pojo;
     }
 
     ScoDescriptor map(ScoDescriptorMsg protoMsg) {
