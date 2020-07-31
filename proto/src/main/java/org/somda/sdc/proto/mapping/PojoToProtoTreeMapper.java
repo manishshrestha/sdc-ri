@@ -25,6 +25,9 @@ import org.somda.sdc.biceps.model.participant.NumericMetricDescriptor;
 import org.somda.sdc.biceps.model.participant.ObjectFactory;
 import org.somda.sdc.biceps.model.participant.RealTimeSampleArrayMetricDescriptor;
 import org.somda.sdc.biceps.model.participant.ScoDescriptor;
+import org.somda.sdc.biceps.model.participant.SetAlertStateOperationDescriptor;
+import org.somda.sdc.biceps.model.participant.SetComponentStateOperationDescriptor;
+import org.somda.sdc.biceps.model.participant.SetContextStateOperationDescriptor;
 import org.somda.sdc.biceps.model.participant.SetMetricStateOperationDescriptor;
 import org.somda.sdc.biceps.model.participant.StringMetricDescriptor;
 import org.somda.sdc.biceps.model.participant.SystemContextDescriptor;
@@ -401,16 +404,38 @@ public class PojoToProtoTreeMapper {
                                                     .setSetMetricStateOperationDescriptor(opBuilder)));
                         });
 
-//                mapOperationDescriptor(
-//                        mdibAccess.getChildrenByType(sco.getHandle(), SetMetricStateOperationDescriptor.class),
-//                        SetMetricStateOperationDescriptor.class,
-//                        descriptor -> {
-//                            var opBuilder = operationMapper.mapSetMetricStateOperationDescriptor(descriptor);
-//                            scoBuilder.addOperation(AbstractOperationDescriptorOneOfMsg.newBuilder()
-//                                    .setAbstractSetStateOperationDescriptorOneOf(
-//                                            AbstractSetStateOperationDescriptorOneOfMsg.newBuilder()
-//                                                    .setSetMetricStateOperationDescriptor(opBuilder)));
-//                        });
+                mapOperationDescriptor(
+                        mdibAccess.getChildrenByType(sco.getHandle(), SetComponentStateOperationDescriptor.class),
+                        SetComponentStateOperationDescriptor.class,
+                        descriptor -> {
+                            var opBuilder = operationMapper.mapSetComponentStateOperationDescriptor(descriptor);
+                            scoBuilder.addOperation(AbstractOperationDescriptorOneOfMsg.newBuilder()
+                                    .setAbstractSetStateOperationDescriptorOneOf(
+                                            AbstractSetStateOperationDescriptorOneOfMsg.newBuilder()
+                                                    .setSetComponentStateOperationDescriptor(opBuilder)));
+                        });
+
+                mapOperationDescriptor(
+                        mdibAccess.getChildrenByType(sco.getHandle(), SetAlertStateOperationDescriptor.class),
+                        SetAlertStateOperationDescriptor.class,
+                        descriptor -> {
+                            var opBuilder = operationMapper.mapSetAlertStateOperationDescriptor(descriptor);
+                            scoBuilder.addOperation(AbstractOperationDescriptorOneOfMsg.newBuilder()
+                                    .setAbstractSetStateOperationDescriptorOneOf(
+                                            AbstractSetStateOperationDescriptorOneOfMsg.newBuilder()
+                                                    .setSetAlertStateOperationDescriptor(opBuilder)));
+                        });
+
+                mapOperationDescriptor(
+                        mdibAccess.getChildrenByType(sco.getHandle(), SetContextStateOperationDescriptor.class),
+                        SetContextStateOperationDescriptor.class,
+                        descriptor -> {
+                            var opBuilder = operationMapper.mapSetContextStateOperationDescriptor(descriptor);
+                            scoBuilder.addOperation(AbstractOperationDescriptorOneOfMsg.newBuilder()
+                                    .setAbstractSetStateOperationDescriptorOneOf(
+                                            AbstractSetStateOperationDescriptorOneOfMsg.newBuilder()
+                                                    .setSetContextStateOperationDescriptor(opBuilder)));
+                        });
 
                 parent.setSco(scoBuilder);
             });

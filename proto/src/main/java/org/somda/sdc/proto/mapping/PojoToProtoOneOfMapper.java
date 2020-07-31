@@ -116,6 +116,15 @@ public class PojoToProtoOneOfMapper {
         } else if (state instanceof SetMetricStateOperationState) {
             builder.setSetMetricStateOperationState(
                     operationMapper.mapSetMetricStateOperationState((SetMetricStateOperationState) state));
+        }  else if (state instanceof SetComponentStateOperationState) {
+            builder.setSetComponentStateOperationState(
+                    operationMapper.mapSetComponentStateOperationState((SetComponentStateOperationState) state));
+        }  else if (state instanceof SetAlertStateOperationState) {
+            builder.setSetAlertStateOperationState(
+                    operationMapper.mapSetAlertStateOperationState((SetAlertStateOperationState) state));
+        }  else if (state instanceof SetContextStateOperationState) {
+            builder.setSetContextStateOperationState(
+                    operationMapper.mapSetContextStateOperationState((SetContextStateOperationState) state));
         } else {
             LOG.error("Class {} not supported", state.getClass());
         }

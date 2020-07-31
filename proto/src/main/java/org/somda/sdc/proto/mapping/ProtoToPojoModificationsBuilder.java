@@ -26,6 +26,9 @@ import org.somda.sdc.biceps.model.participant.MdsDescriptor;
 import org.somda.sdc.biceps.model.participant.NumericMetricDescriptor;
 import org.somda.sdc.biceps.model.participant.RealTimeSampleArrayMetricDescriptor;
 import org.somda.sdc.biceps.model.participant.ScoDescriptor;
+import org.somda.sdc.biceps.model.participant.SetAlertStateOperationDescriptor;
+import org.somda.sdc.biceps.model.participant.SetComponentStateOperationDescriptor;
+import org.somda.sdc.biceps.model.participant.SetContextStateOperationDescriptor;
 import org.somda.sdc.biceps.model.participant.SetMetricStateOperationDescriptor;
 import org.somda.sdc.biceps.model.participant.StringMetricDescriptor;
 import org.somda.sdc.biceps.model.participant.SystemContextDescriptor;
@@ -225,25 +228,27 @@ public class ProtoToPojoModificationsBuilder {
     private void build(AbstractSetStateOperationDescriptorOneOfMsg setStateOnOf, String parentHandle) {
         var type = setStateOnOf.getAbstractSetStateOperationDescriptorOneOfCase();
         switch (type) {
-            case ABSTRACT_SET_STATE_OPERATION_DESCRIPTOR:
-                instanceLogger.error("Case not implemented {}", type);
-                break;
             case SET_COMPONENT_STATE_OPERATION_DESCRIPTOR:
-                instanceLogger.error("Case not implemented {}", type);
+                insert(setStateOnOf.getSetComponentStateOperationDescriptor(),
+                        SetComponentStateOperationDescriptor.class,
+                        parentHandle);
                 break;
             case SET_ALERT_STATE_OPERATION_DESCRIPTOR:
-                instanceLogger.error("Case not implemented {}", type);
+                insert(setStateOnOf.getSetAlertStateOperationDescriptor(), SetAlertStateOperationDescriptor.class,
+                        parentHandle);
                 break;
             case SET_METRIC_STATE_OPERATION_DESCRIPTOR:
                 insert(setStateOnOf.getSetMetricStateOperationDescriptor(), SetMetricStateOperationDescriptor.class,
                         parentHandle);
                 break;
             case SET_CONTEXT_STATE_OPERATION_DESCRIPTOR:
-                instanceLogger.error("Case not implemented {}", type);
+                insert(setStateOnOf.getSetContextStateOperationDescriptor(), SetContextStateOperationDescriptor.class,
+                        parentHandle);
                 break;
             case ACTIVATE_OPERATION_DESCRIPTOR:
                 instanceLogger.error("Case not implemented {}", type);
                 break;
+            case ABSTRACT_SET_STATE_OPERATION_DESCRIPTOR:
             case ABSTRACTSETSTATEOPERATIONDESCRIPTORONEOF_NOT_SET:
             default:
                 instanceLogger.error("Case not implemented {}", type);

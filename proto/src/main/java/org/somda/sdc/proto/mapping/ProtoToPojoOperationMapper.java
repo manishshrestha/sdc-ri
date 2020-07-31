@@ -11,6 +11,12 @@ import org.somda.sdc.biceps.model.participant.AbstractSetStateOperationDescripto
 import org.somda.sdc.biceps.model.participant.ActivateOperationDescriptor;
 import org.somda.sdc.biceps.model.participant.ActivateOperationState;
 import org.somda.sdc.biceps.model.participant.OperatingMode;
+import org.somda.sdc.biceps.model.participant.SetAlertStateOperationDescriptor;
+import org.somda.sdc.biceps.model.participant.SetAlertStateOperationState;
+import org.somda.sdc.biceps.model.participant.SetComponentStateOperationDescriptor;
+import org.somda.sdc.biceps.model.participant.SetComponentStateOperationState;
+import org.somda.sdc.biceps.model.participant.SetContextStateOperationDescriptor;
+import org.somda.sdc.biceps.model.participant.SetContextStateOperationState;
 import org.somda.sdc.biceps.model.participant.SetMetricStateOperationDescriptor;
 import org.somda.sdc.biceps.model.participant.SetMetricStateOperationState;
 import org.somda.sdc.common.CommonConfig;
@@ -20,6 +26,12 @@ import org.somda.sdc.proto.model.biceps.AbstractOperationStateMsg;
 import org.somda.sdc.proto.model.biceps.AbstractSetStateOperationDescriptorMsg;
 import org.somda.sdc.proto.model.biceps.ActivateOperationDescriptorMsg;
 import org.somda.sdc.proto.model.biceps.ActivateOperationStateMsg;
+import org.somda.sdc.proto.model.biceps.SetAlertStateOperationDescriptorMsg;
+import org.somda.sdc.proto.model.biceps.SetAlertStateOperationStateMsg;
+import org.somda.sdc.proto.model.biceps.SetComponentStateOperationDescriptorMsg;
+import org.somda.sdc.proto.model.biceps.SetComponentStateOperationStateMsg;
+import org.somda.sdc.proto.model.biceps.SetContextStateOperationDescriptorMsg;
+import org.somda.sdc.proto.model.biceps.SetContextStateOperationStateMsg;
 import org.somda.sdc.proto.model.biceps.SetMetricStateOperationDescriptorMsg;
 import org.somda.sdc.proto.model.biceps.SetMetricStateOperationStateMsg;
 
@@ -59,6 +71,42 @@ public class ProtoToPojoOperationMapper {
 
     public SetMetricStateOperationState map(SetMetricStateOperationStateMsg protoMsg) {
         var pojo = new SetMetricStateOperationState();
+        map(pojo, protoMsg.getAbstractOperationState());
+        return pojo;
+    }
+
+    public SetComponentStateOperationDescriptor map(SetComponentStateOperationDescriptorMsg protoMsg) {
+        var pojo = new SetComponentStateOperationDescriptor();
+        map(pojo, protoMsg.getAbstractSetStateOperationDescriptor());
+        return pojo;
+    }
+
+    public SetComponentStateOperationState map(SetComponentStateOperationStateMsg protoMsg) {
+        var pojo = new SetComponentStateOperationState();
+        map(pojo, protoMsg.getAbstractOperationState());
+        return pojo;
+    }
+
+    public SetContextStateOperationDescriptor map(SetContextStateOperationDescriptorMsg protoMsg) {
+        var pojo = new SetContextStateOperationDescriptor();
+        map(pojo, protoMsg.getAbstractSetStateOperationDescriptor());
+        return pojo;
+    }
+
+    public SetContextStateOperationState map(SetContextStateOperationStateMsg protoMsg) {
+        var pojo = new SetContextStateOperationState();
+        map(pojo, protoMsg.getAbstractOperationState());
+        return pojo;
+    }
+
+    public SetAlertStateOperationDescriptor map(SetAlertStateOperationDescriptorMsg protoMsg) {
+        var pojo = new SetAlertStateOperationDescriptor();
+        map(pojo, protoMsg.getAbstractSetStateOperationDescriptor());
+        return pojo;
+    }
+
+    public SetAlertStateOperationState map(SetAlertStateOperationStateMsg protoMsg) {
+        var pojo = new SetAlertStateOperationState();
         map(pojo, protoMsg.getAbstractOperationState());
         return pojo;
     }

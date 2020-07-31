@@ -13,15 +13,48 @@ import org.somda.sdc.biceps.model.participant.AbstractOperationDescriptor;
 import org.somda.sdc.biceps.model.participant.AbstractOperationState;
 import org.somda.sdc.biceps.model.participant.AbstractSetStateOperationDescriptor;
 import org.somda.sdc.biceps.model.participant.AbstractState;
-import org.somda.sdc.biceps.model.participant.AlertConditionDescriptor;
-import org.somda.sdc.biceps.model.participant.NumericMetricState;
-import org.somda.sdc.biceps.model.participant.RealTimeSampleArrayMetricDescriptor;
-import org.somda.sdc.biceps.model.participant.ScoState;
 import org.somda.sdc.biceps.model.participant.StringMetricState;
-import org.somda.sdc.biceps.model.participant.SystemContextDescriptor;
 import org.somda.sdc.common.logging.InstanceLogger;
 import org.somda.sdc.common.util.TimestampAdapter;
-import org.somda.sdc.proto.model.biceps.*;
+import org.somda.sdc.proto.model.biceps.AbstractAlertDescriptorOneOfMsg;
+import org.somda.sdc.proto.model.biceps.AbstractAlertStateOneOfMsg;
+import org.somda.sdc.proto.model.biceps.AbstractComplexDeviceComponentDescriptorOneOfMsg;
+import org.somda.sdc.proto.model.biceps.AbstractComplexDeviceComponentStateOneOfMsg;
+import org.somda.sdc.proto.model.biceps.AbstractContextStateOneOfMsg;
+import org.somda.sdc.proto.model.biceps.AbstractDescriptorOneOfMsg;
+import org.somda.sdc.proto.model.biceps.AbstractDeviceComponentDescriptorOneOfMsg;
+import org.somda.sdc.proto.model.biceps.AbstractDeviceComponentStateOneOfMsg;
+import org.somda.sdc.proto.model.biceps.AbstractMetricStateOneOfMsg;
+import org.somda.sdc.proto.model.biceps.AbstractMultiStateOneOfMsg;
+import org.somda.sdc.proto.model.biceps.AbstractOperationDescriptorOneOfMsg;
+import org.somda.sdc.proto.model.biceps.AbstractOperationStateOneOfMsg;
+import org.somda.sdc.proto.model.biceps.AbstractSetStateOperationDescriptorOneOfMsg;
+import org.somda.sdc.proto.model.biceps.AbstractStateOneOfMsg;
+import org.somda.sdc.proto.model.biceps.AlertConditionDescriptorMsg;
+import org.somda.sdc.proto.model.biceps.AlertConditionStateOneOfMsg;
+import org.somda.sdc.proto.model.biceps.AlertSignalDescriptorMsg;
+import org.somda.sdc.proto.model.biceps.AlertSystemDescriptorMsg;
+import org.somda.sdc.proto.model.biceps.ChannelDescriptorMsg;
+import org.somda.sdc.proto.model.biceps.ChannelStateMsg;
+import org.somda.sdc.proto.model.biceps.EnsembleContextDescriptorMsg;
+import org.somda.sdc.proto.model.biceps.EnumStringMetricDescriptorMsg;
+import org.somda.sdc.proto.model.biceps.LocationContextDescriptorMsg;
+import org.somda.sdc.proto.model.biceps.MdsDescriptorMsg;
+import org.somda.sdc.proto.model.biceps.MdsStateMsg;
+import org.somda.sdc.proto.model.biceps.NumericMetricDescriptorMsg;
+import org.somda.sdc.proto.model.biceps.RealTimeSampleArrayMetricDescriptorMsg;
+import org.somda.sdc.proto.model.biceps.ScoDescriptorMsg;
+import org.somda.sdc.proto.model.biceps.SetAlertStateOperationDescriptorMsg;
+import org.somda.sdc.proto.model.biceps.SetAlertStateOperationStateMsg;
+import org.somda.sdc.proto.model.biceps.SetComponentStateOperationDescriptorMsg;
+import org.somda.sdc.proto.model.biceps.SetContextStateOperationDescriptorMsg;
+import org.somda.sdc.proto.model.biceps.SetMetricStateOperationDescriptorMsg;
+import org.somda.sdc.proto.model.biceps.StringMetricDescriptorMsg;
+import org.somda.sdc.proto.model.biceps.StringMetricStateOneOfMsg;
+import org.somda.sdc.proto.model.biceps.SystemContextDescriptorMsg;
+import org.somda.sdc.proto.model.biceps.SystemContextStateMsg;
+import org.somda.sdc.proto.model.biceps.VmdDescriptorMsg;
+import org.somda.sdc.proto.model.biceps.VmdStateMsg;
 
 public class ProtoToPojoOneOfMapper {
     private static final Logger LOG = LogManager.getLogger(ProtoToPojoOneOfMapper.class);
@@ -81,6 +114,12 @@ public class ProtoToPojoOneOfMapper {
             return componentMapper.map((ScoDescriptorMsg) protoMsg);
         } else if (protoMsg instanceof SetMetricStateOperationDescriptorMsg) {
             return operationMapper.map((SetMetricStateOperationDescriptorMsg) protoMsg);
+        } else if (protoMsg instanceof SetComponentStateOperationDescriptorMsg) {
+            return operationMapper.map((SetComponentStateOperationDescriptorMsg) protoMsg);
+        } else if (protoMsg instanceof SetContextStateOperationDescriptorMsg) {
+            return operationMapper.map((SetContextStateOperationDescriptorMsg) protoMsg);
+        } else if (protoMsg instanceof SetAlertStateOperationDescriptorMsg) {
+            return operationMapper.map((SetAlertStateOperationDescriptorMsg) protoMsg);
         } else if (protoMsg instanceof AlertConditionDescriptorMsg) {
             return alertMapper.map((AlertConditionDescriptorMsg) protoMsg);
         } else if (protoMsg instanceof AlertSignalDescriptorMsg) {
@@ -264,19 +303,16 @@ public class ProtoToPojoOneOfMapper {
         var type = protoMsg.getAbstractOperationStateOneOfCase();
         switch (type) {
             case SET_CONTEXT_STATE_OPERATION_STATE:
-                instanceLogger.error("State mapping not implemented: {}", type);
-                break;
+                return operationMapper.map(protoMsg.getSetContextStateOperationState());
             case SET_VALUE_OPERATION_STATE:
                 instanceLogger.error("State mapping not implemented: {}", type);
                 break;
             case SET_COMPONENT_STATE_OPERATION_STATE:
-                instanceLogger.error("State mapping not implemented: {}", type);
-                break;
+                return operationMapper.map(protoMsg.getSetComponentStateOperationState());
             case SET_METRIC_STATE_OPERATION_STATE:
                 return operationMapper.map(protoMsg.getSetMetricStateOperationState());
             case SET_ALERT_STATE_OPERATION_STATE:
-                instanceLogger.error("State mapping not implemented: {}", type);
-                break;
+                return operationMapper.map(protoMsg.getSetAlertStateOperationState());
             case SET_STRING_OPERATION_STATE:
                 instanceLogger.error("State mapping not implemented: {}", type);
                 break;

@@ -71,5 +71,8 @@ class RoundTripTest {
         resultsToCompare.add(new AlertConditionRoundTrip(modifications));
         resultsToCompare.add(new AlertSignalRoundTrip(modifications));
         resultsToCompare.add(new SetMetricStateOperationRoundTrip(modifications));
+        resultsToCompare.add(new SetComponentStateOperationRoundTrip(modifications));
+        resultsToCompare.add(new SetContextStateOperationRoundTrip(modifications));
+        resultsToCompare.add(new SetAlertStateOperationRoundTrip(modifications));
     }
 }

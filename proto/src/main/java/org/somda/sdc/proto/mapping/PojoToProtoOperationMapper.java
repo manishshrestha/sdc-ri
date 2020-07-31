@@ -9,6 +9,12 @@ import org.somda.sdc.biceps.model.participant.AbstractOperationState;
 import org.somda.sdc.biceps.model.participant.AbstractSetStateOperationDescriptor;
 import org.somda.sdc.biceps.model.participant.ActivateOperationDescriptor;
 import org.somda.sdc.biceps.model.participant.ActivateOperationState;
+import org.somda.sdc.biceps.model.participant.SetAlertStateOperationDescriptor;
+import org.somda.sdc.biceps.model.participant.SetAlertStateOperationState;
+import org.somda.sdc.biceps.model.participant.SetComponentStateOperationDescriptor;
+import org.somda.sdc.biceps.model.participant.SetComponentStateOperationState;
+import org.somda.sdc.biceps.model.participant.SetContextStateOperationDescriptor;
+import org.somda.sdc.biceps.model.participant.SetContextStateOperationState;
 import org.somda.sdc.biceps.model.participant.SetMetricStateOperationDescriptor;
 import org.somda.sdc.biceps.model.participant.SetMetricStateOperationState;
 import org.somda.sdc.common.CommonConfig;
@@ -19,6 +25,12 @@ import org.somda.sdc.proto.model.biceps.AbstractSetStateOperationDescriptorMsg;
 import org.somda.sdc.proto.model.biceps.ActivateOperationDescriptorMsg;
 import org.somda.sdc.proto.model.biceps.ActivateOperationStateMsg;
 import org.somda.sdc.proto.model.biceps.OperatingModeMsg;
+import org.somda.sdc.proto.model.biceps.SetAlertStateOperationDescriptorMsg;
+import org.somda.sdc.proto.model.biceps.SetAlertStateOperationStateMsg;
+import org.somda.sdc.proto.model.biceps.SetComponentStateOperationDescriptorMsg;
+import org.somda.sdc.proto.model.biceps.SetComponentStateOperationStateMsg;
+import org.somda.sdc.proto.model.biceps.SetContextStateOperationDescriptorMsg;
+import org.somda.sdc.proto.model.biceps.SetContextStateOperationStateMsg;
 import org.somda.sdc.proto.model.biceps.SetMetricStateOperationDescriptorMsg;
 import org.somda.sdc.proto.model.biceps.SetMetricStateOperationStateMsg;
 
@@ -60,6 +72,45 @@ public class PojoToProtoOperationMapper {
 
     public SetMetricStateOperationStateMsg mapSetMetricStateOperationState(SetMetricStateOperationState state) {
         return SetMetricStateOperationStateMsg.newBuilder()
+                .setAbstractOperationState(mapAbstractOperationState(state))
+                .build();
+    }
+
+    public SetComponentStateOperationDescriptorMsg mapSetComponentStateOperationDescriptor(
+            SetComponentStateOperationDescriptor descriptor) {
+        return SetComponentStateOperationDescriptorMsg.newBuilder()
+                .setAbstractSetStateOperationDescriptor(mapAbstractSetStateOperationDescriptor(descriptor))
+                .build();
+    }
+
+    public SetComponentStateOperationStateMsg mapSetComponentStateOperationState(SetComponentStateOperationState state) {
+        return SetComponentStateOperationStateMsg.newBuilder()
+                .setAbstractOperationState(mapAbstractOperationState(state))
+                .build();
+    }
+
+    public SetAlertStateOperationDescriptorMsg mapSetAlertStateOperationDescriptor(
+            SetAlertStateOperationDescriptor descriptor) {
+        return SetAlertStateOperationDescriptorMsg.newBuilder()
+                .setAbstractSetStateOperationDescriptor(mapAbstractSetStateOperationDescriptor(descriptor))
+                .build();
+    }
+
+    public SetAlertStateOperationStateMsg mapSetAlertStateOperationState(SetAlertStateOperationState state) {
+        return SetAlertStateOperationStateMsg.newBuilder()
+                .setAbstractOperationState(mapAbstractOperationState(state))
+                .build();
+    }
+
+    public SetContextStateOperationDescriptorMsg mapSetContextStateOperationDescriptor(
+            SetContextStateOperationDescriptor descriptor) {
+        return SetContextStateOperationDescriptorMsg.newBuilder()
+                .setAbstractSetStateOperationDescriptor(mapAbstractSetStateOperationDescriptor(descriptor))
+                .build();
+    }
+
+    public SetContextStateOperationStateMsg mapSetContextStateOperationState(SetContextStateOperationState state) {
+        return SetContextStateOperationStateMsg.newBuilder()
                 .setAbstractOperationState(mapAbstractOperationState(state))
                 .build();
     }
