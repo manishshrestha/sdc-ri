@@ -32,6 +32,7 @@ import org.somda.sdc.proto.model.biceps.AbstractContextStateOneOfMsg;
 import org.somda.sdc.proto.model.biceps.AbstractDeviceComponentStateOneOfMsg;
 import org.somda.sdc.proto.model.biceps.AbstractMetricStateOneOfMsg;
 import org.somda.sdc.proto.model.biceps.AbstractMultiStateOneOfMsg;
+import org.somda.sdc.proto.model.biceps.AbstractOperationStateOneOfMsg;
 import org.somda.sdc.proto.model.biceps.AbstractStateOneOfMsg;
 import org.somda.sdc.proto.model.biceps.AlertConditionStateOneOfMsg;
 import org.somda.sdc.proto.model.biceps.StringMetricStateOneOfMsg;
@@ -74,6 +75,8 @@ public class PojoToProtoOneOfMapper {
             builder.setAbstractMultiStateOneOf(mapAbstractMultiStateOneOf((AbstractMultiState) state));
         } else if (state instanceof AbstractAlertState) {
             builder.setAbstractAlertStateOneOf(mapAbstractAlertStateOneOf((AbstractAlertState) state));
+        } else if (state instanceof AbstractOperationState) {
+            builder.setAbstractOperationStateOneOf(mapAbstractOperationStateOneOf((AbstractOperationState) state));
         } else {
             LOG.error("Class {} not supported", state.getClass());
             //throw new IllegalArgumentException(String.format("Class %s not supported", state.getClass()));
@@ -105,6 +108,20 @@ public class PojoToProtoOneOfMapper {
         }
         return builder.build();
     }
+
+    public AbstractOperationStateOneOfMsg mapAbstractOperationStateOneOf(AbstractOperationState state) {
+        var builder = AbstractOperationStateOneOfMsg.newBuilder();
+        if (state instanceof ActivateOperationState) {
+//            builder.setA(alertMapper.mapAlertSystemState((ActivateOperationState) state));
+        } else if (state instanceof SetMetricStateOperationState) {
+            builder.setSetMetricStateOperationState(
+                    operationMapper.mapSetMetricStateOperationState((SetMetricStateOperationState) state));
+        } else {
+            LOG.error("Class {} not supported", state.getClass());
+        }
+        return builder.build();
+    }
+
 
     public AbstractAlertStateOneOfMsg mapAbstractAlertStateOneOf(AbstractAlertState state) {
         var builder = AbstractAlertStateOneOfMsg.newBuilder();

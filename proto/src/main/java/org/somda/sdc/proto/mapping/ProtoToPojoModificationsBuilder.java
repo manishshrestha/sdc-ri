@@ -26,6 +26,7 @@ import org.somda.sdc.biceps.model.participant.MdsDescriptor;
 import org.somda.sdc.biceps.model.participant.NumericMetricDescriptor;
 import org.somda.sdc.biceps.model.participant.RealTimeSampleArrayMetricDescriptor;
 import org.somda.sdc.biceps.model.participant.ScoDescriptor;
+import org.somda.sdc.biceps.model.participant.SetMetricStateOperationDescriptor;
 import org.somda.sdc.biceps.model.participant.StringMetricDescriptor;
 import org.somda.sdc.biceps.model.participant.SystemContextDescriptor;
 import org.somda.sdc.biceps.model.participant.VmdDescriptor;
@@ -36,6 +37,7 @@ import org.somda.sdc.glue.common.RequiredDefaultStateValues;
 import org.somda.sdc.glue.common.helper.DefaultStateValuesDispatcher;
 import org.somda.sdc.proto.model.biceps.AbstractComplexDeviceComponentDescriptorMsg;
 import org.somda.sdc.proto.model.biceps.AbstractMetricDescriptorOneOfMsg;
+import org.somda.sdc.proto.model.biceps.AbstractSetStateOperationDescriptorOneOfMsg;
 import org.somda.sdc.proto.model.biceps.AlertConditionDescriptorMsg;
 import org.somda.sdc.proto.model.biceps.AlertConditionDescriptorOneOfMsg;
 import org.somda.sdc.proto.model.biceps.AlertSignalDescriptorMsg;
@@ -185,6 +187,26 @@ public class ProtoToPojoModificationsBuilder {
     private void build(ScoDescriptorMsg sco, AbstractComplexDeviceComponentDescriptor parent) {
         var addedDesc = insert(sco, ScoDescriptor.class, parent.getHandle());
 
+        sco.getOperationList().forEach(it -> {
+            var type = it.getAbstractOperationDescriptorOneOfCase();
+            switch (type) {
+                case ABSTRACT_OPERATION_DESCRIPTOR:
+                    instanceLogger.error("Case not implemented {}", type);
+                    break;
+                case SET_STRING_OPERATION_DESCRIPTOR:
+                    instanceLogger.error("Case not implemented {}", type);
+                    break;
+                case ABSTRACT_SET_STATE_OPERATION_DESCRIPTOR_ONE_OF:
+                    build(it.getAbstractSetStateOperationDescriptorOneOf(), addedDesc.getHandle());
+                    break;
+                case SET_VALUE_OPERATION_DESCRIPTOR:
+                    instanceLogger.error("Case not implemented {}", type);
+                    break;
+                case ABSTRACTOPERATIONDESCRIPTORONEOF_NOT_SET:
+                default:
+                    instanceLogger.error("Case not implemented {}", type);
+            }
+        });
 //        addedDesc.getAlertCondition().forEach(condition -> build(condition, addedDescr));
 //        addedDesc.getAlertSignal().forEach(signal -> build(signal, addedDescr));
     }
@@ -199,6 +221,34 @@ public class ProtoToPojoModificationsBuilder {
 //        sco.setOperation(null);
 //    }
 //
+
+    private void build(AbstractSetStateOperationDescriptorOneOfMsg setStateOnOf, String parentHandle) {
+        var type = setStateOnOf.getAbstractSetStateOperationDescriptorOneOfCase();
+        switch (type) {
+            case ABSTRACT_SET_STATE_OPERATION_DESCRIPTOR:
+                instanceLogger.error("Case not implemented {}", type);
+                break;
+            case SET_COMPONENT_STATE_OPERATION_DESCRIPTOR:
+                instanceLogger.error("Case not implemented {}", type);
+                break;
+            case SET_ALERT_STATE_OPERATION_DESCRIPTOR:
+                instanceLogger.error("Case not implemented {}", type);
+                break;
+            case SET_METRIC_STATE_OPERATION_DESCRIPTOR:
+                insert(setStateOnOf.getSetMetricStateOperationDescriptor(), SetMetricStateOperationDescriptor.class,
+                        parentHandle);
+                break;
+            case SET_CONTEXT_STATE_OPERATION_DESCRIPTOR:
+                instanceLogger.error("Case not implemented {}", type);
+                break;
+            case ACTIVATE_OPERATION_DESCRIPTOR:
+                instanceLogger.error("Case not implemented {}", type);
+                break;
+            case ABSTRACTSETSTATEOPERATIONDESCRIPTORONEOF_NOT_SET:
+            default:
+                instanceLogger.error("Case not implemented {}", type);
+        }
+    }
 
     private void build(AlertSignalDescriptorMsg signalMsg, AlertSystemDescriptor parent) {
         var addedDescr = insert(signalMsg, AlertSignalDescriptor.class, parent.getHandle());

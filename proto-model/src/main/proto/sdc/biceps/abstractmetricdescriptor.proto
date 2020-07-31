@@ -27,10 +27,10 @@ message AbstractMetricDescriptorMsg {
     message KindMsg {
       enum EnumType {
         RCM = 0;
-        P_S = 1;
-        S_S_T = 2;
-        E_C_E = 3;
-        D_C_E = 4;
+        PS = 1;
+        SST = 2;
+        ECE = 3;
+        DCE = 4;
         OTH = 5;
       }
       EnumType enum_value = 1;

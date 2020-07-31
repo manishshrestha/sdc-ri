@@ -11,6 +11,9 @@ import org.somda.sdc.biceps.model.participant.AbstractAlertDescriptor;
 import org.somda.sdc.biceps.model.participant.AbstractAlertState;
 import org.somda.sdc.biceps.model.participant.AbstractDescriptor;
 import org.somda.sdc.biceps.model.participant.AbstractMetricState;
+import org.somda.sdc.biceps.model.participant.AbstractOperationDescriptor;
+import org.somda.sdc.biceps.model.participant.AbstractOperationState;
+import org.somda.sdc.biceps.model.participant.AbstractSetStateOperationDescriptor;
 import org.somda.sdc.biceps.model.participant.AbstractState;
 import org.somda.sdc.biceps.model.participant.StringMetricState;
 
@@ -254,6 +257,24 @@ class Util {
     static AbstractAlertDescriptor invalidAlertDescriptor() {
         var descriptor = new AbstractAlertDescriptor();
         descriptor.setHandle("[mapping failed]");
+        return descriptor;
+    }
+
+    public static AbstractOperationDescriptor invalidOperationDescriptor() {
+        var descriptor = new AbstractOperationDescriptor();
+        descriptor.setHandle("[mapping failed]");
+        return descriptor;
+    }
+
+    public static AbstractSetStateOperationDescriptor invalidSetStateOperationDescriptor() {
+        var descriptor = new AbstractSetStateOperationDescriptor();
+        descriptor.setHandle("[mapping failed]");
+        return descriptor;
+    }
+
+    public static AbstractOperationState invalidOperationState() {
+        var descriptor = new AbstractOperationState();
+        descriptor.setDescriptorHandle("[mapping failed]");
         return descriptor;
     }
 }

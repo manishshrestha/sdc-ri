@@ -9,6 +9,9 @@ import org.somda.sdc.biceps.model.participant.AbstractAlertDescriptor;
 import org.somda.sdc.biceps.model.participant.AbstractAlertState;
 import org.somda.sdc.biceps.model.participant.AbstractDescriptor;
 import org.somda.sdc.biceps.model.participant.AbstractMetricState;
+import org.somda.sdc.biceps.model.participant.AbstractOperationDescriptor;
+import org.somda.sdc.biceps.model.participant.AbstractOperationState;
+import org.somda.sdc.biceps.model.participant.AbstractSetStateOperationDescriptor;
 import org.somda.sdc.biceps.model.participant.AbstractState;
 import org.somda.sdc.biceps.model.participant.AlertConditionDescriptor;
 import org.somda.sdc.biceps.model.participant.NumericMetricState;
@@ -76,6 +79,8 @@ public class ProtoToPojoOneOfMapper {
             return alertMapper.map((AlertSystemDescriptorMsg) protoMsg);
         } else if (protoMsg instanceof ScoDescriptorMsg) {
             return componentMapper.map((ScoDescriptorMsg) protoMsg);
+        } else if (protoMsg instanceof SetMetricStateOperationDescriptorMsg) {
+            return operationMapper.map((SetMetricStateOperationDescriptorMsg) protoMsg);
         } else if (protoMsg instanceof AlertConditionDescriptorMsg) {
             return alertMapper.map((AlertConditionDescriptorMsg) protoMsg);
         } else if (protoMsg instanceof AlertSignalDescriptorMsg) {
@@ -112,8 +117,7 @@ public class ProtoToPojoOneOfMapper {
             case ABSTRACT_DEVICE_COMPONENT_DESCRIPTOR_ONE_OF:
                 return map(protoMsg.getAbstractDeviceComponentDescriptorOneOf());
             case ABSTRACT_OPERATION_DESCRIPTOR_ONE_OF:
-                instanceLogger.error("Descriptor mapping not implemented: {}", type);
-                break;
+                return map(protoMsg.getAbstractOperationDescriptorOneOf());
             case ABSTRACT_METRIC_DESCRIPTOR_ONE_OF:
                 instanceLogger.error("Descriptor mapping not implemented: {}", type);
                 break;
@@ -126,6 +130,52 @@ public class ProtoToPojoOneOfMapper {
         }
 
         return Util.invalidDescriptor();
+    }
+
+    public AbstractOperationDescriptor map(AbstractOperationDescriptorOneOfMsg protoMsg) {
+        var type = protoMsg.getAbstractOperationDescriptorOneOfCase();
+        switch (type) {
+            case SET_STRING_OPERATION_DESCRIPTOR:
+                instanceLogger.error("Descriptor mapping not implemented: {}", type);
+                break;
+            case ABSTRACT_SET_STATE_OPERATION_DESCRIPTOR_ONE_OF:
+                return map(protoMsg.getAbstractSetStateOperationDescriptorOneOf());
+            case SET_VALUE_OPERATION_DESCRIPTOR:
+                instanceLogger.error("Descriptor mapping not implemented: {}", type);
+                break;
+            case ABSTRACT_OPERATION_DESCRIPTOR:
+            case ABSTRACTOPERATIONDESCRIPTORONEOF_NOT_SET:
+            default:
+                instanceLogger.error("Descriptor mapping not implemented: {}", type);
+        }
+
+        return Util.invalidOperationDescriptor();
+    }
+
+    public AbstractSetStateOperationDescriptor map(AbstractSetStateOperationDescriptorOneOfMsg protoMsg) {
+        var type = protoMsg.getAbstractSetStateOperationDescriptorOneOfCase();
+        switch (type) {
+            case SET_COMPONENT_STATE_OPERATION_DESCRIPTOR:
+                instanceLogger.error("Descriptor mapping not implemented: {}", type);
+                break;
+            case SET_ALERT_STATE_OPERATION_DESCRIPTOR:
+                instanceLogger.error("Descriptor mapping not implemented: {}", type);
+                break;
+            case SET_METRIC_STATE_OPERATION_DESCRIPTOR:
+                return operationMapper.map(protoMsg.getSetMetricStateOperationDescriptor());
+            case SET_CONTEXT_STATE_OPERATION_DESCRIPTOR:
+                instanceLogger.error("Descriptor mapping not implemented: {}", type);
+                break;
+            case ACTIVATE_OPERATION_DESCRIPTOR:
+                instanceLogger.error("Descriptor mapping not implemented: {}", type);
+                break;
+            case ABSTRACT_SET_STATE_OPERATION_DESCRIPTOR:
+            case ABSTRACTSETSTATEOPERATIONDESCRIPTORONEOF_NOT_SET:
+            default:
+                instanceLogger.error("Descriptor mapping not implemented: {}", type);
+        }
+
+        return Util.invalidSetStateOperationDescriptor();
     }
 
     private AbstractAlertDescriptor map(AbstractAlertDescriptorOneOfMsg protoMsg) {
@@ -193,8 +243,7 @@ public class ProtoToPojoOneOfMapper {
                 instanceLogger.error("State mapping not implemented: {}", type);
                 break;
             case ABSTRACT_OPERATION_STATE_ONE_OF:
-                instanceLogger.error("State mapping not implemented: {}", type);
-                break;
+                return map(protoMsg.getAbstractOperationStateOneOf());
             case ABSTRACT_ALERT_STATE_ONE_OF:
                 return map(protoMsg.getAbstractAlertStateOneOf());
             case ABSTRACT_MULTI_STATE_ONE_OF:
@@ -211,6 +260,37 @@ public class ProtoToPojoOneOfMapper {
         return Util.invalidState();
     }
 
+    private AbstractOperationState map(final AbstractOperationStateOneOfMsg protoMsg) {
+        var type = protoMsg.getAbstractOperationStateOneOfCase();
+        switch (type) {
+            case SET_CONTEXT_STATE_OPERATION_STATE:
+                instanceLogger.error("State mapping not implemented: {}", type);
+                break;
+            case SET_VALUE_OPERATION_STATE:
+                instanceLogger.error("State mapping not implemented: {}", type);
+                break;
+            case SET_COMPONENT_STATE_OPERATION_STATE:
+                instanceLogger.error("State mapping not implemented: {}", type);
+                break;
+            case SET_METRIC_STATE_OPERATION_STATE:
+                return operationMapper.map(protoMsg.getSetMetricStateOperationState());
+            case SET_ALERT_STATE_OPERATION_STATE:
+                instanceLogger.error("State mapping not implemented: {}", type);
+                break;
+            case SET_STRING_OPERATION_STATE:
+                instanceLogger.error("State mapping not implemented: {}", type);
+                break;
+            case ACTIVATE_OPERATION_STATE:
+                instanceLogger.error("State mapping not implemented: {}", type);
+                break;
+            case ABSTRACT_OPERATION_STATE:
+            case ABSTRACTOPERATIONSTATEONEOF_NOT_SET:
+            default:
+                instanceLogger.error("State mapping not implemented: {}", type);
+        }
+
+        return Util.invalidOperationState();
+    }
 
     private AbstractAlertState map(final AbstractAlertStateOneOfMsg protoMsg) {
         var type = protoMsg.getAbstractAlertStateOneOfCase();

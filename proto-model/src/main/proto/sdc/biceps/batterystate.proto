@@ -22,7 +22,7 @@ message BatteryStateMsg {
       FUL = 0;
       CH_B = 1;
       DIS_CH_B = 2;
-      D_E_B = 3;
+      DEB = 3;
     }
     EnumType enum_value = 1;
   }

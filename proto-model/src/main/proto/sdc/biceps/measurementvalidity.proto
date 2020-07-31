@@ -17,7 +17,7 @@ message MeasurementValidityMsg {
     INV = 5;
     OFLW = 6;
     UFLW = 7;
-    N_A = 8;
+    NA = 8;
   }
   EnumType enum_value = 1;
 }

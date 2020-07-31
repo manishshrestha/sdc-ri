@@ -19,9 +19,9 @@ message AbstractOperationDescriptorMsg {
   message AccessLevelMsg {
     enum EnumType {
       USR = 0;
-      C_S_USR = 1;
-      R_O = 2;
-      S_P = 3;
+      CS_USR = 1;
+      RO = 2;
+      SP = 3;
       OTH = 4;
     }
     EnumType enum_value = 1;

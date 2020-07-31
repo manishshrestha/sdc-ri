@@ -11,7 +11,7 @@ message OperatingModeMsg {
   enum EnumType {
     DIS = 0;
     EN = 1;
-    N_A = 2;
+    NA = 2;
   }
   EnumType enum_value = 1;
 }

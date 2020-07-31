@@ -25,6 +25,7 @@ import org.somda.sdc.biceps.model.participant.NumericMetricDescriptor;
 import org.somda.sdc.biceps.model.participant.ObjectFactory;
 import org.somda.sdc.biceps.model.participant.RealTimeSampleArrayMetricDescriptor;
 import org.somda.sdc.biceps.model.participant.ScoDescriptor;
+import org.somda.sdc.biceps.model.participant.SetMetricStateOperationDescriptor;
 import org.somda.sdc.biceps.model.participant.StringMetricDescriptor;
 import org.somda.sdc.biceps.model.participant.SystemContextDescriptor;
 import org.somda.sdc.biceps.model.participant.VmdDescriptor;
@@ -34,6 +35,8 @@ import org.somda.sdc.common.util.ObjectUtil;
 import org.somda.sdc.glue.common.ModificationsBuilder;
 import org.somda.sdc.proto.model.biceps.AbstractComplexDeviceComponentDescriptorMsg;
 import org.somda.sdc.proto.model.biceps.AbstractMetricDescriptorOneOfMsg;
+import org.somda.sdc.proto.model.biceps.AbstractOperationDescriptorOneOfMsg;
+import org.somda.sdc.proto.model.biceps.AbstractSetStateOperationDescriptorOneOfMsg;
 import org.somda.sdc.proto.model.biceps.AlertConditionDescriptorOneOfMsg;
 import org.somda.sdc.proto.model.biceps.ChannelDescriptorMsg;
 import org.somda.sdc.proto.model.biceps.MdDescriptionMsg;
@@ -41,6 +44,7 @@ import org.somda.sdc.proto.model.biceps.MdStateMsg;
 import org.somda.sdc.proto.model.biceps.MdibMsg;
 import org.somda.sdc.proto.model.biceps.MdibVersionGroupMsg;
 import org.somda.sdc.proto.model.biceps.MdsDescriptorMsg;
+import org.somda.sdc.proto.model.biceps.ScoDescriptorMsg;
 import org.somda.sdc.proto.model.biceps.StringMetricDescriptorOneOfMsg;
 import org.somda.sdc.proto.model.biceps.SystemContextDescriptorMsg;
 import org.somda.sdc.proto.model.biceps.VmdDescriptorMsg;
@@ -52,6 +56,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 /**
@@ -382,14 +388,41 @@ public class PojoToProtoTreeMapper {
     private void mapSco(AbstractComplexDeviceComponentDescriptorMsg.Builder parent, List<MdibEntity> scos) {
         for (MdibEntity sco : scos) {
             sco.getDescriptor(ScoDescriptor.class).ifPresent(scoDescriptor -> {
-                var builder = componentMapper.mapScoDescriptor(scoDescriptor);
-//                mapZeroOrMoreDescriptors(
-//                        builder,
-//                        mdibAccess.getChildrenByType(sco.getHandle(), AbstractOperationDescriptor.class),
-//                        "getOperation");
-                parent.setSco(builder);
+                var scoBuilder = componentMapper.mapScoDescriptor(scoDescriptor);
+
+                mapOperationDescriptor(
+                        mdibAccess.getChildrenByType(sco.getHandle(), SetMetricStateOperationDescriptor.class),
+                        SetMetricStateOperationDescriptor.class,
+                        descriptor -> {
+                            var opBuilder = operationMapper.mapSetMetricStateOperationDescriptor(descriptor);
+                            scoBuilder.addOperation(AbstractOperationDescriptorOneOfMsg.newBuilder()
+                                    .setAbstractSetStateOperationDescriptorOneOf(
+                                            AbstractSetStateOperationDescriptorOneOfMsg.newBuilder()
+                                                    .setSetMetricStateOperationDescriptor(opBuilder)));
+                        });
+
+//                mapOperationDescriptor(
+//                        mdibAccess.getChildrenByType(sco.getHandle(), SetMetricStateOperationDescriptor.class),
+//                        SetMetricStateOperationDescriptor.class,
+//                        descriptor -> {
+//                            var opBuilder = operationMapper.mapSetMetricStateOperationDescriptor(descriptor);
+//                            scoBuilder.addOperation(AbstractOperationDescriptorOneOfMsg.newBuilder()
+//                                    .setAbstractSetStateOperationDescriptorOneOf(
+//                                            AbstractSetStateOperationDescriptorOneOfMsg.newBuilder()
+//                                                    .setSetMetricStateOperationDescriptor(opBuilder)));
+//                        });
+
+                parent.setSco(scoBuilder);
             });
             break;
+        }
+    }
+
+    private <T extends AbstractDescriptor> void mapOperationDescriptor(List<MdibEntity> descriptors,
+                                                                       Class<T> descrClass,
+                                                                       Consumer<T> doMap) {
+        for (MdibEntity descriptor : descriptors) {
+            descriptor.getDescriptor(descrClass).ifPresent(doMap);
         }
     }
 
