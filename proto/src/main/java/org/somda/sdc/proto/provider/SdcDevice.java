@@ -8,6 +8,6 @@ import org.somda.sdc.proto.discovery.provider.TargetService;
  * <p>
  * The purpose of the {@linkplain SdcDevice} class is to provide SDC data on the network.
  */
-public interface SdcDevice extends Service, TargetService, SdcDeviceContext {
+public interface SdcDevice extends Service, SdcDeviceContext {
     String getEprAddress();
 }

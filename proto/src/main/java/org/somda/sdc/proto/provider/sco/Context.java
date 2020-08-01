@@ -18,10 +18,8 @@ import org.somda.sdc.common.CommonConfig;
 import org.somda.sdc.common.logging.InstanceLogger;
 import org.somda.sdc.common.util.ObjectStringifier;
 import org.somda.sdc.common.util.Stringified;
-import org.somda.sdc.dpws.device.EventSourceAccess;
-import org.somda.sdc.dpws.soap.exception.MarshallingException;
-import org.somda.sdc.dpws.soap.exception.TransportException;
 import org.somda.sdc.glue.common.ActionConstants;
+import org.somda.sdc.proto.provider.EventSource;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -41,7 +39,7 @@ public class Context {
     @Stringified
     private final InstanceIdentifier invocationSource;
 
-    private final EventSourceAccess eventSource;
+    private final EventSource eventSource;
     private final LocalMdibAccess mdibAccess;
     private final ObjectFactory messageModelFactory;
     private final Logger instanceLogger;
@@ -54,7 +52,7 @@ public class Context {
     Context(@Assisted long transactionId,
             @Assisted String operationHandle,
             @Assisted InstanceIdentifier invocationSource,
-            @Assisted EventSourceAccess eventSource,
+            @Assisted EventSource eventSource,
             @Assisted LocalMdibAccess mdibAccess,
             ObjectFactory messageModelFactory,
             @Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier) {
@@ -269,11 +267,7 @@ public class Context {
 
         try {
             eventSource.sendNotification(ActionConstants.ACTION_OPERATION_INVOKED_REPORT, operationInvokedReport);
-        } catch (MarshallingException e) {
-            instanceLogger.warn("Could not marshal operation invoked report notification of transaction {} " +
-                            "with invocation state {}",
-                    transactionId, invocationState);
-        } catch (TransportException e) {
+        } catch (Exception e) {
             instanceLogger.warn("Could not deliver operation invoked report notification of transaction {} " +
                             "with invocation state {}",
                     transactionId, invocationState);

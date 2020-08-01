@@ -18,7 +18,7 @@ import org.somda.sdc.proto.crypto.CryptoUtil;
 import org.somda.sdc.proto.model.discovery.DiscoveryMessages;
 import org.somda.sdc.proto.model.discovery.MetadataServiceGrpc;
 import org.somda.sdc.proto.provider.ProviderSettings;
-import org.somda.sdc.proto.provider.guice.ProviderImplFactory;
+import org.somda.sdc.proto.guice.ProviderImplFactory;
 import test.org.somda.common.LoggingTestWatcher;
 
 import javax.net.ssl.SSLException;

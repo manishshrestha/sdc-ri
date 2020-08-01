@@ -13,13 +13,14 @@ import org.somda.sdc.biceps.model.participant.ObjectFactory;
 import org.somda.sdc.biceps.provider.access.LocalMdibAccess;
 import org.somda.sdc.common.CommonConfig;
 import org.somda.sdc.common.logging.InstanceLogger;
-import org.somda.sdc.dpws.device.EventSourceAccess;
+import org.somda.sdc.proto.provider.EventSource;
 import org.somda.sdc.proto.provider.sco.factory.ContextFactory;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -32,7 +33,7 @@ public class ScoController {
 
     private final Map<String, ReflectionInfo> invocationReceivers;
     private final List<ReflectionInfo> defaultInvocationReceivers;
-    private final EventSourceAccess eventSourceAccess;
+    private final EventSource eventSource;
     private final LocalMdibAccess mdibAccess;
     private final ContextFactory contextFactory;
     private final ObjectFactory participantModelFactory;
@@ -41,13 +42,13 @@ public class ScoController {
     private long transactionCounter;
 
     @AssistedInject
-    ScoController(@Assisted EventSourceAccess eventSourceAccess,
+    ScoController(@Assisted EventSource eventSource,
                   @Assisted LocalMdibAccess mdibAccess,
                   ContextFactory contextFactory,
                   ObjectFactory participantModelFactory,
                   @Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier) {
         this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);
-        this.eventSourceAccess = eventSourceAccess;
+        this.eventSource = eventSource;
         this.mdibAccess = mdibAccess;
         this.contextFactory = contextFactory;
         this.participantModelFactory = participantModelFactory;
@@ -70,7 +71,7 @@ public class ScoController {
      */
     public <T> InvocationResponse processIncomingSetOperation(String handle, InstanceIdentifier source, T payload) {
         final Context context =
-                contextFactory.createContext(transactionCounter++, handle, source, eventSourceAccess, mdibAccess);
+                contextFactory.createContext(transactionCounter++, handle, source, eventSource, mdibAccess);
 
         final LocalizedText localizedText = participantModelFactory.createLocalizedText();
         localizedText.setLang("en");
@@ -142,7 +143,7 @@ public class ScoController {
                 mdibAccess.getMdibVersion(),
                 InvocationState.FAIL,
                 InvocationError.UNSPEC,
-                Arrays.asList(localizedText));
+                Collections.singletonList(localizedText));
     }
 
     /**

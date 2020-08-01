@@ -25,7 +25,7 @@ import org.somda.sdc.proto.model.GetServiceGrpc;
 import org.somda.sdc.proto.model.SdcMessages;
 import org.somda.sdc.proto.model.discovery.DiscoveryTypes;
 import org.somda.sdc.proto.provider.ProviderSettings;
-import org.somda.sdc.proto.provider.guice.ProviderImplFactory;
+import org.somda.sdc.proto.guice.ProviderImplFactory;
 import test.org.somda.common.LoggingTestWatcher;
 import test.org.somda.common.TimedWait;
 

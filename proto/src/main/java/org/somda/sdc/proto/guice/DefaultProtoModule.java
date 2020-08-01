@@ -22,7 +22,6 @@ import org.somda.sdc.proto.mapping.participant.factory.PojoToProtoTreeMapperFact
 import org.somda.sdc.proto.mapping.participant.factory.ProtoToPojoModificationsBuilderFactory;
 import org.somda.sdc.proto.provider.Provider;
 import org.somda.sdc.proto.provider.ProviderImpl;
-import org.somda.sdc.proto.provider.guice.ProviderImplFactory;
 import org.somda.sdc.proto.server.Server;
 import org.somda.sdc.proto.server.ServerImpl;
 import org.somda.sdc.proto.server.guice.ServerImplFactory;

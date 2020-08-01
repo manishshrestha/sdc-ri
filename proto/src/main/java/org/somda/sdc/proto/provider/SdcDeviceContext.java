@@ -6,6 +6,7 @@ import org.somda.sdc.biceps.model.participant.MdibVersion;
 import org.somda.sdc.biceps.provider.access.LocalMdibAccess;
 import org.somda.sdc.dpws.device.Device;
 import org.somda.sdc.glue.provider.sco.OperationInvocationReceiver;
+import org.somda.sdc.proto.discovery.provider.TargetService;
 
 import java.util.Collection;
 import java.util.List;
@@ -58,4 +59,10 @@ public interface SdcDeviceContext {
      * @param <T>         the state type that.
      */
     <T extends AbstractState> void sendPeriodicStateReport(List<T> states, MdibVersion mdibVersion);
+
+    /**
+     * Gets the target service to alter scopes and physical addresses.
+     * @return the target service instance.
+     */
+    TargetService getTargetService();
 }
