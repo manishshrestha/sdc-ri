@@ -22,6 +22,8 @@ import org.somda.sdc.proto.mapping.participant.factory.ProtoToPojoModificationsB
 import org.somda.sdc.proto.provider.Provider;
 import org.somda.sdc.proto.provider.ProviderImpl;
 import org.somda.sdc.proto.provider.guice.ProviderImplFactory;
+import org.somda.sdc.proto.provider.services.HighPriorityServices;
+import org.somda.sdc.proto.provider.services.guice.ServiceFactory;
 import org.somda.sdc.proto.server.Server;
 import org.somda.sdc.proto.server.ServerImpl;
 import org.somda.sdc.proto.server.guice.ServerImplFactory;
@@ -52,11 +54,11 @@ public class DefaultProtoModule extends AbstractModule {
                 .implement(TargetService.class, TargetService.class)
                 .build(TargetServiceFactory.class));
         install(new FactoryModuleBuilder()
-            .implement(Provider.class, ProviderImpl.class)
-            .build(ProviderImplFactory.class));
+                .implement(Provider.class, ProviderImpl.class)
+                .build(ProviderImplFactory.class));
         install(new FactoryModuleBuilder()
-            .implement(Server.class, ServerImpl.class)
-            .build(ServerImplFactory.class));
+                .implement(Server.class, ServerImpl.class)
+                .build(ServerImplFactory.class));
         install(new FactoryModuleBuilder()
                 .implement(PojoToProtoTreeMapper.class, PojoToProtoTreeMapper.class)
                 .build(PojoToProtoTreeMapperFactory.class));
@@ -64,13 +66,17 @@ public class DefaultProtoModule extends AbstractModule {
                 .implement(ProtoToPojoModificationsBuilder.class, ProtoToPojoModificationsBuilder.class)
                 .build(ProtoToPojoModificationsBuilderFactory.class));
 
+        install(new FactoryModuleBuilder()
+                .implement(HighPriorityServices.class, HighPriorityServices.class)
+                .build(ServiceFactory.class));
+
         bind(Consumer.class).to(ConsumerImpl.class);
 
         bind(UdpUtil.class).annotatedWith(ProtoDiscovery.class).to(UdpUtil.class).asEagerSingleton();
     }
 
 
-//    private void configureCommon() {
+    //    private void configureCommon() {
 //        install(new FactoryModuleBuilder()
 //                .implement(MdibMapper.class, MdibMapper.class)
 //                .build(MdibMapperFactory.class));

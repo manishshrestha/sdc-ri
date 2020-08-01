@@ -224,16 +224,20 @@ message EpisodicReportRequest {
   Filter filter = 2;
 }
 
+message EpisodicReport {
+  oneof type {
+    sdc.biceps.EpisodicAlertReportMsg alert = 1;
+    sdc.biceps.EpisodicComponentReportMsg component = 2;
+    sdc.biceps.EpisodicMetricReportMsg metric = 3;
+    sdc.biceps.EpisodicOperationalStateReportMsg operational_state = 4;
+    sdc.biceps.EpisodicContextReportMsg context = 5;
+    sdc.biceps.WaveformStreamMsg waveform = 6;
+  }
+}
+
 message EpisodicReportStream {
   sdc.addressing.Addressing addressing = 1;
-  oneof type {
-    sdc.biceps.EpisodicAlertReportMsg alert = 2;
-    sdc.biceps.EpisodicComponentReportMsg component = 3;
-    sdc.biceps.EpisodicMetricReportMsg metric = 4;
-    sdc.biceps.EpisodicOperationalStateReportMsg operational_state = 5;
-    sdc.biceps.EpisodicContextReportMsg context = 6;
-    sdc.biceps.WaveformStreamMsg waveform = 7;
-  }
+  EpisodicReport report = 2;
 }
 
 message PeriodicReportRequest {

@@ -9,4 +9,6 @@ public class ProtoConstants {
             .setNamespace(PROTOSDC_NAMESPACE).setLocalName("Get").build();
     public static CommonTypes.QName SET_SERVICE_QNAME = CommonTypes.QName.newBuilder()
             .setNamespace(PROTOSDC_NAMESPACE).setLocalName("Set").build();
+    public static CommonTypes.QName MDIB_REPORTING_SERVICE_QNAME = CommonTypes.QName.newBuilder()
+            .setNamespace(PROTOSDC_NAMESPACE).setLocalName("MdibReporting").build();
 }
