@@ -14,6 +14,7 @@ import org.somda.sdc.proto.consumer.Consumer;
 import org.somda.sdc.proto.consumer.ConsumerImpl;
 import org.somda.sdc.proto.discovery.common.UdpUtil;
 import org.somda.sdc.proto.discovery.provider.TargetService;
+import org.somda.sdc.proto.discovery.provider.TargetServiceImpl;
 import org.somda.sdc.proto.discovery.provider.factory.TargetServiceFactory;
 import org.somda.sdc.proto.mapping.participant.PojoToProtoTreeMapper;
 import org.somda.sdc.proto.mapping.participant.ProtoToPojoModificationsBuilder;
@@ -49,7 +50,7 @@ public class DefaultProtoModule extends AbstractModule {
                 .implement(AddressingValidator.class, AddressingValidator.class)
                 .build(AddressingValidatorFactory.class));
         install(new FactoryModuleBuilder()
-                .implement(TargetService.class, TargetService.class)
+                .implement(TargetService.class, TargetServiceImpl.class)
                 .build(TargetServiceFactory.class));
         install(new FactoryModuleBuilder()
             .implement(Provider.class, ProviderImpl.class)
