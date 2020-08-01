@@ -16,6 +16,7 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.function.Supplier;
 
+@SuppressWarnings("UnstableApiUsage")
 public class ProbeCallable implements Callable<List<DiscoveryTypes.Endpoint>> {
     private final EventBus helloByeProbeEvents;
     private final Lock lock;

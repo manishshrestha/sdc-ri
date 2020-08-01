@@ -38,6 +38,7 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
+@SuppressWarnings("UnstableApiUsage")
 public class Client extends AbstractIdleService implements Service, UdpMessageQueueObserver {
     private static final Logger LOG = LogManager.getLogger(Client.class);
     private static final AtomicInteger discoveryIdCounter = new AtomicInteger(0);
@@ -47,7 +48,7 @@ public class Client extends AbstractIdleService implements Service, UdpMessageQu
     private final ExecutorWrapperService<ListeningExecutorService> executorService;
     private final AddressingUtil addressingUtil;
     private final EventBus helloByeProbeEventBus;
-    private EvictingQueue<DiscoveryMessages.DiscoveryUdpMessage> messageBuffer;
+    private final EvictingQueue<DiscoveryMessages.DiscoveryUdpMessage> messageBuffer;
 
     private final Lock probeLock;
     private final Lock resolveLock;
@@ -58,8 +59,7 @@ public class Client extends AbstractIdleService implements Service, UdpMessageQu
     @Inject
     Client(@Named(WsDiscoveryConfig.MAX_WAIT_FOR_PROBE_MATCHES) Duration maxWaitForProbeMatches,
            @Named(WsDiscoveryConfig.MAX_WAIT_FOR_RESOLVE_MATCHES) Duration maxWaitForResolveMatches,
-           @Named(WsDiscoveryConfig.PROBE_MATCHES_BUFFER_SIZE) Integer probeMatchesBufferSize,
-           @Named(WsDiscoveryConfig.RESOLVE_MATCHES_BUFFER_SIZE) Integer resolveMatchesBufferSize,
+           @Named(WsDiscoveryConfig.PROBE_MATCHES_BUFFER_SIZE) Integer messageBufferSize,
            @ProtoDiscovery UdpUtil udpUtil,
            @ProtoDiscovery ExecutorWrapperService<ListeningExecutorService> executorService,
            AddressingUtil addressingUtil,
@@ -77,7 +77,7 @@ public class Client extends AbstractIdleService implements Service, UdpMessageQu
         this.probeCondition = probeLock.newCondition();
         this.resolveCondition = resolveLock.newCondition();
 
-        this.messageBuffer = EvictingQueue.create(probeMatchesBufferSize);
+        this.messageBuffer = EvictingQueue.create(messageBufferSize);
 
         udpUtil.registerObserver(this);
     }
