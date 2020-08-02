@@ -8,14 +8,9 @@ import io.grpc.BindableService;
 import io.grpc.stub.StreamObserver;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.somda.sdc.biceps.model.participant.AbstractState;
-import org.somda.sdc.biceps.model.participant.MdibVersion;
-import org.somda.sdc.biceps.provider.access.LocalMdibAccess;
 import org.somda.sdc.common.CommonConfig;
 import org.somda.sdc.common.logging.InstanceLogger;
 import org.somda.sdc.dpws.soap.SoapUtil;
-import org.somda.sdc.glue.provider.SdcDevicePlugin;
-import org.somda.sdc.glue.provider.sco.OperationInvocationReceiver;
 import org.somda.sdc.proto.discovery.provider.TargetService;
 import org.somda.sdc.proto.discovery.provider.factory.TargetServiceFactory;
 import org.somda.sdc.proto.model.common.LocalizedString;
@@ -26,7 +21,7 @@ import org.somda.sdc.proto.model.discovery.GetMetadataResponse;
 import org.somda.sdc.proto.model.discovery.HostedService;
 import org.somda.sdc.proto.model.discovery.MetadataServiceGrpc;
 import org.somda.sdc.proto.server.Server;
-import org.somda.sdc.proto.server.guice.ServerImplFactory;
+import org.somda.sdc.proto.server.guice.ServerFactory;
 
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
@@ -49,7 +44,7 @@ public class ProviderImpl extends AbstractIdleService implements Provider {
                  @Assisted ProviderSettings providerSettings,
                  @Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier,
                  TargetServiceFactory targetServiceFactory,
-                 ServerImplFactory serverFactory,
+                 ServerFactory serverFactory,
                  SoapUtil soapUtil
     ) {
         this.eprAddress = eprAddress;

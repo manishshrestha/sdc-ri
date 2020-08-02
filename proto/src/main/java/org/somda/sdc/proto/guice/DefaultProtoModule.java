@@ -33,7 +33,7 @@ import org.somda.sdc.proto.provider.service.HighPriorityServices;
 import org.somda.sdc.proto.provider.service.guice.ServiceFactory;
 import org.somda.sdc.proto.server.Server;
 import org.somda.sdc.proto.server.ServerImpl;
-import org.somda.sdc.proto.server.guice.ServerImplFactory;
+import org.somda.sdc.proto.server.guice.ServerFactory;
 
 import javax.inject.Named;
 import java.util.concurrent.Callable;
@@ -65,7 +65,7 @@ public class DefaultProtoModule extends AbstractModule {
                 .build(ProviderFactory.class));
         install(new FactoryModuleBuilder()
                 .implement(Server.class, ServerImpl.class)
-                .build(ServerImplFactory.class));
+                .build(ServerFactory.class));
         install(new FactoryModuleBuilder()
                 .implement(PojoToProtoTreeMapper.class, PojoToProtoTreeMapper.class)
                 .build(PojoToProtoTreeMapperFactory.class));
