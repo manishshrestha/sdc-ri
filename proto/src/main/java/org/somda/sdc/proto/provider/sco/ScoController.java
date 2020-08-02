@@ -19,7 +19,6 @@ import org.somda.sdc.proto.provider.sco.factory.ContextFactory;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -71,7 +70,7 @@ public class ScoController {
      */
     public <T> InvocationResponse processIncomingSetOperation(String handle, InstanceIdentifier source, T payload) {
         final Context context =
-                contextFactory.createContext(transactionCounter++, handle, source, eventSource, mdibAccess);
+                contextFactory.create(transactionCounter++, handle, source, eventSource, mdibAccess);
 
         final LocalizedText localizedText = participantModelFactory.createLocalizedText();
         localizedText.setLang("en");

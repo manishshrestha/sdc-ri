@@ -20,7 +20,7 @@ import org.somda.sdc.proto.model.discovery.GetMetadataRequest;
 import org.somda.sdc.proto.model.discovery.GetMetadataResponse;
 import org.somda.sdc.proto.model.discovery.MetadataServiceGrpc;
 import org.somda.sdc.proto.provider.ProviderSettings;
-import org.somda.sdc.proto.provider.factory.ProviderImplFactory;
+import org.somda.sdc.proto.provider.factory.ProviderFactory;
 import test.org.somda.common.LoggingTestWatcher;
 
 import javax.net.ssl.SSLException;
@@ -57,7 +57,7 @@ public class ProviderImplIT {
 
     @Test
     void testProvider() throws SSLException {
-        var providerFactory = providerInjector.getInstance(ProviderImplFactory.class);
+        var providerFactory = providerInjector.getInstance(ProviderFactory.class);
         var serverAddr = new InetSocketAddress("127.0.0.1", 0);
         var providerSettings = ProviderSettings.builder()
                 .setNetworkAddress(serverAddr)
@@ -65,11 +65,7 @@ public class ProviderImplIT {
                 .build();
 
         var epr = "urn:uuid:" + UUID.randomUUID().toString();
-        var mdibAccess = providerInjector.getInstance(LocalMdibAccessFactory.class).createLocalMdibAccess();
-        var provider = providerFactory.create(
-                epr, providerSettings,
-                mdibAccess, Collections.emptyList(),
-                Collections.emptyList());
+        var provider = providerFactory.create(epr, providerSettings);
         provider.startAsync().awaitRunning();
 
 

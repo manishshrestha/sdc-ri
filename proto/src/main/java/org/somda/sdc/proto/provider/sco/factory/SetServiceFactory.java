@@ -6,6 +6,6 @@ import org.somda.sdc.proto.provider.sco.ScoController;
 import org.somda.sdc.proto.provider.sco.SetService;
 
 public interface SetServiceFactory {
-    SetService createSetService(@Assisted ScoController scoController,
-                                @Assisted OperationInvokedEventSource eventSource);
+    SetService create(@Assisted ScoController scoController,
+                      @Assisted OperationInvokedEventSource eventSource);
 }

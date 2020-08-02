@@ -37,24 +37,16 @@ import java.util.List;
 public class ProviderImpl extends AbstractIdleService implements Provider {
     private static final Logger LOG = LogManager.getLogger();
 
-    private final TargetServiceFactory targetServiceFactory;
     private final Server server;
     private final Logger instanceLogger;
     private final ProviderSettings providerSettings;
     private final String eprAddress;
     private final TargetService targetService;
     private final List<QName> types;
-    private final LocalMdibAccess mdibAccess;
-    private final Collection<OperationInvocationReceiver> operationInvocationReceivers;
-    private final Collection<SdcDevicePlugin> plugins;
 
     @AssistedInject
     ProviderImpl(@Assisted String eprAddress,
-                 @Assisted LocalMdibAccess mdibAccess,
                  @Assisted ProviderSettings providerSettings,
-                 @Assisted("operationInvocationReceivers")
-                         Collection<OperationInvocationReceiver> operationInvocationReceivers,
-                 @Assisted("plugins") Collection<SdcDevicePlugin> plugins,
                  @Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier,
                  TargetServiceFactory targetServiceFactory,
                  ServerImplFactory serverFactory,
@@ -62,10 +54,6 @@ public class ProviderImpl extends AbstractIdleService implements Provider {
     ) {
         this.eprAddress = eprAddress;
         this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);
-        this.mdibAccess = mdibAccess;
-        this.operationInvocationReceivers = operationInvocationReceivers;
-        this.plugins = plugins;
-        this.targetServiceFactory = targetServiceFactory;
         this.providerSettings = providerSettings;
         this.server = serverFactory.create(providerSettings);
         this.targetService = targetServiceFactory.create(this.eprAddress);
@@ -78,8 +66,8 @@ public class ProviderImpl extends AbstractIdleService implements Provider {
                 "Starting gRPC Provider {} at address {} with epr {}",
                 providerSettings.getProviderName(),
                 providerSettings.getNetworkAddress(),
-                eprAddress
-        );
+                eprAddress);
+
         // the metadata service is always required
         server.registerService(new MetadataService(providerSettings, types));
         server.startAsync().awaitRunning();
@@ -101,11 +89,6 @@ public class ProviderImpl extends AbstractIdleService implements Provider {
     }
 
     @Override
-    public String getEpr() {
-        return eprAddress;
-    }
-
-    @Override
     public InetSocketAddress getAddress() {
         return server.getAddress();
     }
@@ -118,37 +101,16 @@ public class ProviderImpl extends AbstractIdleService implements Provider {
     }
 
     @Override
-    public String getEprAddress() {
-        return getEpr();
+    public void updateScopes(Collection<String> scopes) {
+        targetService.updateScopes(scopes);
     }
 
     @Override
-    public LocalMdibAccess getLocalMdibAccess() {
-        return mdibAccess;
-    }
-
-    @Override
-    public Collection<OperationInvocationReceiver> getOperationInvocationReceivers() {
-        return operationInvocationReceivers;
-    }
-
-    @Override
-    public State getServiceState() {
-        return state();
-    }
-
-    @Override
-    public <T extends AbstractState> void sendPeriodicStateReport(final List<T> states, final MdibVersion mdibVersion) {
-        // TODO
-    }
-
-    @Override
-    public TargetService getTargetService() {
-        return targetService;
+    public void updateXAddrs(Collection<String> xAddrs) {
+        targetService.updateXAddrs(xAddrs);
     }
 
     static class MetadataService extends MetadataServiceGrpc.MetadataServiceImplBase {
-
         private final ProviderSettings providerSettings;
         private final List<QName> types;
 

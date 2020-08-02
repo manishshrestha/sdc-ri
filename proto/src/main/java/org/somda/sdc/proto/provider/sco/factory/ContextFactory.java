@@ -21,9 +21,9 @@ public interface ContextFactory {
      * @param mdibAccess       the MDIB access be used to read and/or modify on function callback.
      * @return the new instance.
      */
-    Context createContext(@Assisted long transactionId,
-                          @Assisted String operationHandle,
-                          @Assisted InstanceIdentifier invocationSource,
-                          @Assisted EventSource eventSource,
-                          @Assisted LocalMdibAccess mdibAccess);
+    Context create(@Assisted long transactionId,
+                   @Assisted String operationHandle,
+                   @Assisted InstanceIdentifier invocationSource,
+                   @Assisted EventSource eventSource,
+                   @Assisted LocalMdibAccess mdibAccess);
 }

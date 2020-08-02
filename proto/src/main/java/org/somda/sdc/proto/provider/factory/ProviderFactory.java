@@ -6,12 +6,11 @@ import org.somda.sdc.glue.provider.SdcDevice;
 import org.somda.sdc.glue.provider.SdcDevicePlugin;
 import org.somda.sdc.glue.provider.sco.OperationInvocationReceiver;
 import org.somda.sdc.proto.provider.Provider;
-import org.somda.sdc.proto.provider.ProviderImpl;
 import org.somda.sdc.proto.provider.ProviderSettings;
 
 import java.util.Collection;
 
-public interface ProviderImplFactory {
+public interface ProviderFactory {
     /**
      * Creates a new {@linkplain Provider} instance.
      *
@@ -30,10 +29,6 @@ public interface ProviderImplFactory {
      * @return a new {@link SdcDevice}.
      * Use {@link SdcDevice#startAsync()} in order to start exposing the device on the network.
      */
-    ProviderImpl create(@Assisted String eprAddress,
-                        @Assisted ProviderSettings providerSettings,
-                        @Assisted LocalMdibAccess mdibAccess,
-                        @Assisted("operationInvocationReceivers")
-                                Collection<OperationInvocationReceiver> operationInvocationReceivers,
-                        @Assisted("plugins") Collection<SdcDevicePlugin> plugins);
+    Provider create(@Assisted String eprAddress,
+                    @Assisted ProviderSettings providerSettings);
 }

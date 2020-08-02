@@ -28,7 +28,7 @@ import org.somda.sdc.proto.model.GetServiceGrpc;
 import org.somda.sdc.proto.model.discovery.Endpoint;
 import org.somda.sdc.proto.model.discovery.ScopeMatcher;
 import org.somda.sdc.proto.provider.ProviderSettings;
-import org.somda.sdc.proto.provider.factory.ProviderImplFactory;
+import org.somda.sdc.proto.provider.factory.ProviderFactory;
 import test.org.somda.common.LoggingTestWatcher;
 import test.org.somda.common.TimedWait;
 
@@ -104,7 +104,7 @@ public class ConsumerProviderIT {
     @Test
     @DisplayName("Probe, connect, GetMdib, disconnect.")
     void testBasicExchange() throws Exception {
-        var providerFactory = providerInjector.getInstance(ProviderImplFactory.class);
+        var providerFactory = providerInjector.getInstance(ProviderFactory.class);
         var serverAddr = new InetSocketAddress("127.0.0.1", 0);
         var providerSettings = ProviderSettings.builder()
                 .setNetworkAddress(serverAddr)
@@ -113,11 +113,7 @@ public class ConsumerProviderIT {
 
 
         var epr = "urn:uuid:" + UUID.randomUUID().toString();
-        var mdibAccess = providerInjector.getInstance(LocalMdibAccessFactory.class).createLocalMdibAccess();
-        var provider = providerFactory.create(
-                epr, providerSettings,
-                mdibAccess, Collections.emptyList(),
-                Collections.emptyList());
+        var provider = providerFactory.create(epr, providerSettings);
 
         var getService = new GetService();
         provider.addService(ProtoConstants.GET_SERVICE_QNAME, getService);

@@ -16,6 +16,6 @@ public interface ScoControllerFactory {
      * @param mdibAccess  required to fetch MDIB versions and pass to invocation contexts.
      * @return the new instance.
      */
-    ScoController createScoController(@Assisted EventSource eventSource,
-                                      @Assisted LocalMdibAccess mdibAccess);
+    ScoController create(@Assisted EventSource eventSource,
+                         @Assisted LocalMdibAccess mdibAccess);
 }

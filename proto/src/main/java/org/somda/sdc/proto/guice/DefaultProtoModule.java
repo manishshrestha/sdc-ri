@@ -22,14 +22,12 @@ import org.somda.sdc.proto.mapping.participant.factory.PojoToProtoTreeMapperFact
 import org.somda.sdc.proto.mapping.participant.factory.ProtoToPojoModificationsBuilderFactory;
 import org.somda.sdc.proto.provider.Provider;
 import org.somda.sdc.proto.provider.ProviderImpl;
-import org.somda.sdc.proto.provider.factory.ProviderImplFactory;
+import org.somda.sdc.proto.provider.factory.ProviderFactory;
 import org.somda.sdc.proto.provider.sco.Context;
 import org.somda.sdc.proto.provider.sco.ScoController;
-import org.somda.sdc.proto.provider.sco.ScoProvider;
 import org.somda.sdc.proto.provider.sco.SetService;
 import org.somda.sdc.proto.provider.sco.factory.ContextFactory;
 import org.somda.sdc.proto.provider.sco.factory.ScoControllerFactory;
-import org.somda.sdc.proto.provider.sco.factory.ScoProviderFactory;
 import org.somda.sdc.proto.provider.sco.factory.SetServiceFactory;
 import org.somda.sdc.proto.provider.service.HighPriorityServices;
 import org.somda.sdc.proto.provider.service.guice.ServiceFactory;
@@ -64,7 +62,7 @@ public class DefaultProtoModule extends AbstractModule {
                 .build(TargetServiceFactory.class));
         install(new FactoryModuleBuilder()
                 .implement(Provider.class, ProviderImpl.class)
-                .build(ProviderImplFactory.class));
+                .build(ProviderFactory.class));
         install(new FactoryModuleBuilder()
                 .implement(Server.class, ServerImpl.class)
                 .build(ServerImplFactory.class));
@@ -86,9 +84,6 @@ public class DefaultProtoModule extends AbstractModule {
         install(new FactoryModuleBuilder()
                 .implement(SetService.class, SetService.class)
                 .build(SetServiceFactory.class));
-        install(new FactoryModuleBuilder()
-                .implement(ScoProvider.class, ScoProvider.class)
-                .build(ScoProviderFactory.class));
 
         bind(Consumer.class).to(ConsumerImpl.class);
 

@@ -2,14 +2,14 @@ package org.somda.sdc.proto.provider;
 
 import com.google.common.util.concurrent.Service;
 import io.grpc.BindableService;
+import org.somda.sdc.proto.discovery.provider.TargetService;
 import org.somda.sdc.proto.model.common.CommonTypes;
 import org.somda.sdc.proto.model.common.QName;
 
 import java.net.InetSocketAddress;
 
 @SuppressWarnings("UnstableApiUsage")
-public interface Provider extends SdcDevice, Service {
-
+public interface Provider extends Service, TargetService {
     /**
      * Add a service to the provider.
      * <p>
@@ -20,13 +20,6 @@ public interface Provider extends SdcDevice, Service {
      * @throws IllegalStateException if registering a service on running provider
      */
     void addService(QName serviceType, BindableService service);
-
-    /**
-     * Returns the EPR used by the provider
-     *
-     * @return epr
-     */
-    String getEpr();
 
     /**
      * Retrieves the address the server is running on
