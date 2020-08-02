@@ -22,8 +22,9 @@ import org.somda.sdc.proto.mapping.participant.factory.PojoToProtoTreeMapperFact
 import org.somda.sdc.proto.mapping.participant.factory.ProtoToPojoModificationsBuilderFactory;
 import org.somda.sdc.proto.provider.Provider;
 import org.somda.sdc.proto.provider.ProviderImpl;
-import org.somda.sdc.proto.provider.services.HighPriorityServices;
-import org.somda.sdc.proto.provider.services.guice.ServiceFactory;
+import org.somda.sdc.proto.provider.factory.ProviderImplFactory;
+import org.somda.sdc.proto.provider.service.HighPriorityServices;
+import org.somda.sdc.proto.provider.service.guice.ServiceFactory;
 import org.somda.sdc.proto.server.Server;
 import org.somda.sdc.proto.server.ServerImpl;
 import org.somda.sdc.proto.server.guice.ServerImplFactory;
@@ -65,7 +66,6 @@ public class DefaultProtoModule extends AbstractModule {
         install(new FactoryModuleBuilder()
                 .implement(ProtoToPojoModificationsBuilder.class, ProtoToPojoModificationsBuilder.class)
                 .build(ProtoToPojoModificationsBuilderFactory.class));
-
         install(new FactoryModuleBuilder()
                 .implement(HighPriorityServices.class, HighPriorityServices.class)
                 .build(ServiceFactory.class));

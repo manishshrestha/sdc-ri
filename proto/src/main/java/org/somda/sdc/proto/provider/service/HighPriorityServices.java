@@ -1,4 +1,4 @@
-package org.somda.sdc.proto.provider.services;
+package org.somda.sdc.proto.provider.service;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ListMultimap;
@@ -14,32 +14,22 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.somda.sdc.biceps.model.message.AbstractReport;
 import org.somda.sdc.biceps.model.message.EpisodicAlertReport;
+import org.somda.sdc.biceps.model.message.EpisodicComponentReport;
+import org.somda.sdc.biceps.model.message.EpisodicContextReport;
 import org.somda.sdc.biceps.model.message.EpisodicMetricReport;
+import org.somda.sdc.biceps.model.message.EpisodicOperationalStateReport;
+import org.somda.sdc.biceps.model.message.WaveformStream;
 import org.somda.sdc.biceps.provider.access.LocalMdibAccess;
 import org.somda.sdc.common.logging.InstanceLogger;
 import org.somda.sdc.proto.common.ProtoConstants;
 import org.somda.sdc.proto.mapping.message.PojoToProtoMapper;
 import org.somda.sdc.proto.mapping.participant.PojoToProtoTreeMapper;
 import org.somda.sdc.proto.mapping.participant.factory.PojoToProtoTreeMapperFactory;
-import org.somda.sdc.proto.model.EpisodicReport;
-import org.somda.sdc.proto.model.EpisodicReportRequest;
-import org.somda.sdc.proto.model.EpisodicReportStream;
-import org.somda.sdc.proto.model.GetMdDescriptionRequest;
-import org.somda.sdc.proto.model.GetMdDescriptionResponse;
-import org.somda.sdc.proto.model.GetMdStateRequest;
-import org.somda.sdc.proto.model.GetMdStateResponse;
-import org.somda.sdc.proto.model.GetMdibRequest;
-import org.somda.sdc.proto.model.GetMdibResponse;
-import org.somda.sdc.proto.model.GetServiceGrpc;
-import org.somda.sdc.proto.model.MdibReportingServiceGrpc;
-import org.somda.sdc.proto.model.PeriodicReportRequest;
-import org.somda.sdc.proto.model.PeriodicReportStream;
+import org.somda.sdc.proto.model.*;
 import org.somda.sdc.proto.model.addressing.Addressing;
-import org.somda.sdc.proto.model.addressing.AddressingTypes;
 import org.somda.sdc.proto.model.biceps.GetMdDescriptionResponseMsg;
 import org.somda.sdc.proto.model.biceps.GetMdStateResponseMsg;
 import org.somda.sdc.proto.model.biceps.GetMdibResponseMsg;
-import org.somda.sdc.proto.model.common.CommonTypes;
 import org.somda.sdc.proto.model.common.QName;
 
 import java.util.Collections;
@@ -94,6 +84,14 @@ public class HighPriorityServices {
             episodicReport.setMetric(messageMapper.mapEpisodicMetricReport((EpisodicMetricReport) payload));
         } else if (payload instanceof EpisodicAlertReport) {
             episodicReport.setAlert(messageMapper.mapEpisodicAlertReport((EpisodicAlertReport) payload));
+        } else if (payload instanceof EpisodicComponentReport) {
+            episodicReport.setComponent(messageMapper.mapEpisodicComponentReport((EpisodicComponentReport) payload));
+        } else if (payload instanceof EpisodicContextReport) {
+            episodicReport.setContext(messageMapper.mapEpisodicContextReport((EpisodicContextReport) payload));
+        } else if (payload instanceof EpisodicOperationalStateReport) {
+            episodicReport.setOperationalState(messageMapper.mapEpisodicOperationalStateReport((EpisodicOperationalStateReport) payload));
+        } else if (payload instanceof WaveformStream) {
+            episodicReport.setWaveform(messageMapper.mapWaveformStream((WaveformStream) payload));
         } else {
             throw new RuntimeException("Unsupported report type " + payload.getClass().getSimpleName());
         }
@@ -147,6 +145,12 @@ public class HighPriorityServices {
 
             responseObserver.onNext(response.build());
             responseObserver.onCompleted();
+        }
+
+        @Override
+        public void getContextStates(final GetContextStatesRequest request, final StreamObserver<GetContextStatesResponse> responseObserver) {
+            // TODO
+            super.getContextStates(request, responseObserver);
         }
     }
 

@@ -8,17 +8,19 @@ import io.grpc.BindableService;
 import io.grpc.stub.StreamObserver;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.somda.sdc.biceps.model.participant.AbstractState;
+import org.somda.sdc.biceps.model.participant.MdibVersion;
+import org.somda.sdc.biceps.provider.access.LocalMdibAccess;
 import org.somda.sdc.common.CommonConfig;
 import org.somda.sdc.common.logging.InstanceLogger;
 import org.somda.sdc.dpws.soap.SoapUtil;
+import org.somda.sdc.glue.provider.SdcDevicePlugin;
+import org.somda.sdc.glue.provider.sco.OperationInvocationReceiver;
 import org.somda.sdc.proto.discovery.provider.TargetService;
 import org.somda.sdc.proto.discovery.provider.factory.TargetServiceFactory;
-import org.somda.sdc.proto.model.common.CommonTypes;
 import org.somda.sdc.proto.model.common.LocalizedString;
 import org.somda.sdc.proto.model.common.QName;
 import org.somda.sdc.proto.model.discovery.DeviceMetadata;
-import org.somda.sdc.proto.model.discovery.DiscoveryMessages;
-import org.somda.sdc.proto.model.discovery.DiscoveryTypes;
 import org.somda.sdc.proto.model.discovery.GetMetadataRequest;
 import org.somda.sdc.proto.model.discovery.GetMetadataResponse;
 import org.somda.sdc.proto.model.discovery.HostedService;
@@ -28,6 +30,7 @@ import org.somda.sdc.proto.server.guice.ServerImplFactory;
 
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 @SuppressWarnings("UnstableApiUsage")
@@ -38,24 +41,34 @@ public class ProviderImpl extends AbstractIdleService implements Provider {
     private final Server server;
     private final Logger instanceLogger;
     private final ProviderSettings providerSettings;
-    private final String epr;
+    private final String eprAddress;
     private final TargetService targetService;
     private final List<QName> types;
+    private final LocalMdibAccess mdibAccess;
+    private final Collection<OperationInvocationReceiver> operationInvocationReceivers;
+    private final Collection<SdcDevicePlugin> plugins;
 
     @AssistedInject
-    ProviderImpl(
-            @Assisted ProviderSettings providerSettings,
-            TargetServiceFactory targetServiceFactory,
-            ServerImplFactory serverFactory,
-            SoapUtil soapUtil,
-            @Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier
+    ProviderImpl(@Assisted String eprAddress,
+                 @Assisted LocalMdibAccess mdibAccess,
+                 @Assisted ProviderSettings providerSettings,
+                 @Assisted("operationInvocationReceivers")
+                         Collection<OperationInvocationReceiver> operationInvocationReceivers,
+                 @Assisted("plugins") Collection<SdcDevicePlugin> plugins,
+                 @Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier,
+                 TargetServiceFactory targetServiceFactory,
+                 ServerImplFactory serverFactory,
+                 SoapUtil soapUtil
     ) {
+        this.eprAddress = eprAddress;
         this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);
+        this.mdibAccess = mdibAccess;
+        this.operationInvocationReceivers = operationInvocationReceivers;
+        this.plugins = plugins;
         this.targetServiceFactory = targetServiceFactory;
         this.providerSettings = providerSettings;
         this.server = serverFactory.create(providerSettings);
-        this.epr = soapUtil.createRandomUuidUri();
-        this.targetService = targetServiceFactory.create(epr);
+        this.targetService = targetServiceFactory.create(this.eprAddress);
         this.types = new ArrayList<>();
     }
 
@@ -65,7 +78,7 @@ public class ProviderImpl extends AbstractIdleService implements Provider {
                 "Starting gRPC Provider {} at address {} with epr {}",
                 providerSettings.getProviderName(),
                 providerSettings.getNetworkAddress(),
-                epr
+                eprAddress
         );
         // the metadata service is always required
         server.registerService(new MetadataService(providerSettings, types));
@@ -89,7 +102,7 @@ public class ProviderImpl extends AbstractIdleService implements Provider {
 
     @Override
     public String getEpr() {
-        return epr;
+        return eprAddress;
     }
 
     @Override
@@ -102,6 +115,36 @@ public class ProviderImpl extends AbstractIdleService implements Provider {
         this.server.registerService(service);
         // since registering throws if unavailable, we can safely add the QName
         this.types.add(serviceType);
+    }
+
+    @Override
+    public String getEprAddress() {
+        return getEpr();
+    }
+
+    @Override
+    public LocalMdibAccess getLocalMdibAccess() {
+        return mdibAccess;
+    }
+
+    @Override
+    public Collection<OperationInvocationReceiver> getOperationInvocationReceivers() {
+        return operationInvocationReceivers;
+    }
+
+    @Override
+    public State getServiceState() {
+        return state();
+    }
+
+    @Override
+    public <T extends AbstractState> void sendPeriodicStateReport(final List<T> states, final MdibVersion mdibVersion) {
+        // TODO
+    }
+
+    @Override
+    public TargetService getTargetService() {
+        return targetService;
     }
 
     static class MetadataService extends MetadataServiceGrpc.MetadataServiceImplBase {

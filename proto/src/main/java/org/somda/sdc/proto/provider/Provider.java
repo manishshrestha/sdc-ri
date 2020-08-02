@@ -8,7 +8,7 @@ import org.somda.sdc.proto.model.common.QName;
 import java.net.InetSocketAddress;
 
 @SuppressWarnings("UnstableApiUsage")
-public interface Provider extends Service {
+public interface Provider extends SdcDevice, Service {
 
     /**
      * Add a service to the provider.

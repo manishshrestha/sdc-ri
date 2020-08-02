@@ -11,20 +11,22 @@ import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.somda.sdc.biceps.provider.access.factory.LocalMdibAccessFactory;
 import org.somda.sdc.common.guice.AbstractConfigurationModule;
 import org.somda.sdc.dpws.crypto.CryptoConfig;
 import org.somda.sdc.dpws.crypto.CryptoSettings;
 import org.somda.sdc.proto.crypto.CryptoUtil;
-import org.somda.sdc.proto.model.discovery.DiscoveryMessages;
 import org.somda.sdc.proto.model.discovery.GetMetadataRequest;
 import org.somda.sdc.proto.model.discovery.GetMetadataResponse;
 import org.somda.sdc.proto.model.discovery.MetadataServiceGrpc;
 import org.somda.sdc.proto.provider.ProviderSettings;
-import org.somda.sdc.proto.guice.ProviderImplFactory;
+import org.somda.sdc.proto.provider.factory.ProviderImplFactory;
 import test.org.somda.common.LoggingTestWatcher;
 
 import javax.net.ssl.SSLException;
 import java.net.InetSocketAddress;
+import java.util.Collections;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -62,7 +64,12 @@ public class ProviderImplIT {
                 .setProviderName(PROVIDER_NAME)
                 .build();
 
-        var provider = providerFactory.create(providerSettings);
+        var epr = "urn:uuid:" + UUID.randomUUID().toString();
+        var mdibAccess = providerInjector.getInstance(LocalMdibAccessFactory.class).createLocalMdibAccess();
+        var provider = providerFactory.create(
+                epr, providerSettings,
+                mdibAccess, Collections.emptyList(),
+                Collections.emptyList());
         provider.startAsync().awaitRunning();
 
 

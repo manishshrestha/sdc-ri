@@ -12,6 +12,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.somda.sdc.biceps.provider.access.factory.LocalMdibAccessFactory;
 import org.somda.sdc.common.guice.AbstractConfigurationModule;
 import org.somda.sdc.dpws.DpwsFramework;
 import org.somda.sdc.dpws.crypto.CryptoConfig;
@@ -24,12 +25,10 @@ import org.somda.sdc.proto.discovery.consumer.event.ProbedDeviceFoundMessage;
 import org.somda.sdc.proto.model.GetMdibRequest;
 import org.somda.sdc.proto.model.GetMdibResponse;
 import org.somda.sdc.proto.model.GetServiceGrpc;
-import org.somda.sdc.proto.model.SdcMessages;
-import org.somda.sdc.proto.model.discovery.DiscoveryTypes;
 import org.somda.sdc.proto.model.discovery.Endpoint;
 import org.somda.sdc.proto.model.discovery.ScopeMatcher;
 import org.somda.sdc.proto.provider.ProviderSettings;
-import org.somda.sdc.proto.guice.ProviderImplFactory;
+import org.somda.sdc.proto.provider.factory.ProviderImplFactory;
 import test.org.somda.common.LoggingTestWatcher;
 import test.org.somda.common.TimedWait;
 
@@ -39,7 +38,9 @@ import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -110,8 +111,15 @@ public class ConsumerProviderIT {
                 .setProviderName(PROVIDER_NAME)
                 .build();
 
+
+        var epr = "urn:uuid:" + UUID.randomUUID().toString();
+        var mdibAccess = providerInjector.getInstance(LocalMdibAccessFactory.class).createLocalMdibAccess();
+        var provider = providerFactory.create(
+                epr, providerSettings,
+                mdibAccess, Collections.emptyList(),
+                Collections.emptyList());
+
         var getService = new GetService();
-        var provider = providerFactory.create(providerSettings);
         provider.addService(ProtoConstants.GET_SERVICE_QNAME, getService);
         provider.startAsync().awaitRunning();
 
