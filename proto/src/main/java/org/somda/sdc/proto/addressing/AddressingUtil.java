@@ -40,4 +40,8 @@ public class AddressingUtil {
                                                          @Nullable String to) {
         return assemblyAddressing(action, to, null);
     }
+
+    public AddressingTypes.Addressing assemblyAddressing(@Nullable String action) {
+        return assemblyAddressing(action, null, null);
+    }
 }
