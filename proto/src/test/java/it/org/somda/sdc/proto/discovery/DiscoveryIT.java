@@ -16,6 +16,8 @@ import org.somda.sdc.proto.discovery.consumer.event.ProbedDeviceFoundMessage;
 import org.somda.sdc.proto.discovery.provider.TargetService;
 import org.somda.sdc.proto.discovery.provider.factory.TargetServiceFactory;
 import org.somda.sdc.proto.model.discovery.DiscoveryTypes;
+import org.somda.sdc.proto.model.discovery.Endpoint;
+import org.somda.sdc.proto.model.discovery.ScopeMatcher;
 import test.org.somda.common.LoggingTestWatcher;
 import test.org.somda.common.TimedWait;
 
@@ -78,7 +80,7 @@ public class DiscoveryIT {
         targetService.startAsync().awaitRunning();
         client.registerObserver(observer);
         client.startAsync().awaitRunning();
-        var probe = client.probe(DiscoveryTypes.ScopeMatcher.newBuilder().addScopes(scope).build(), 1);
+        var probe = client.probe(ScopeMatcher.newBuilder().addScopes(scope).build(), 1);
         var endpoints = probe.get(5, TimeUnit.SECONDS);
         assertEquals(1, endpoints.size());
         assertEquals(1, endpoints.get(0).getScopeList().size());
@@ -110,7 +112,7 @@ public class DiscoveryIT {
     }
 
     private class DiscoveryObserver implements org.somda.sdc.proto.discovery.consumer.DiscoveryObserver {
-        TimedWait<List<DiscoveryTypes.Endpoint>> timedWait = new TimedWait<>(ArrayList::new);
+        TimedWait<List<Endpoint>> timedWait = new TimedWait<>(ArrayList::new);
 
         @Subscribe
         void onEnteredDevice(DeviceEnteredMessage message) {

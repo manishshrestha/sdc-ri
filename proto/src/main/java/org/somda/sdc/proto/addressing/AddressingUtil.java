@@ -2,6 +2,7 @@ package org.somda.sdc.proto.addressing;
 
 import com.google.inject.Inject;
 import org.somda.sdc.dpws.soap.SoapUtil;
+import org.somda.sdc.proto.model.addressing.Addressing;
 import org.somda.sdc.proto.model.addressing.AddressingTypes;
 
 import javax.annotation.Nullable;
@@ -15,10 +16,10 @@ public class AddressingUtil {
         this.soapUtil = soapUtil;
     }
 
-    public AddressingTypes.Addressing assemblyAddressing(@Nullable String action,
-                                                         @Nullable String to,
-                                                         @Nullable String relatesToMessageId) {
-        var builder = AddressingTypes.Addressing.newBuilder()
+    public Addressing assemblyAddressing(@Nullable String action,
+                                         @Nullable String to,
+                                         @Nullable String relatesToMessageId) {
+        var builder = Addressing.newBuilder()
                 .setMessageId(soapUtil.createRandomUuidUri());
 
         if (action != null && !action.isEmpty()) {
@@ -36,12 +37,12 @@ public class AddressingUtil {
         return builder.build();
     }
 
-    public AddressingTypes.Addressing assemblyAddressing(@Nullable String action,
+    public Addressing assemblyAddressing(@Nullable String action,
                                                          @Nullable String to) {
         return assemblyAddressing(action, to, null);
     }
 
-    public AddressingTypes.Addressing assemblyAddressing(@Nullable String action) {
+    public Addressing assemblyAddressing(@Nullable String action) {
         return assemblyAddressing(action, null, null);
     }
 }

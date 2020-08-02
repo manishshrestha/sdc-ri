@@ -21,9 +21,13 @@ import org.somda.sdc.proto.consumer.Consumer;
 import org.somda.sdc.proto.discovery.consumer.Client;
 import org.somda.sdc.proto.discovery.consumer.event.DeviceEnteredMessage;
 import org.somda.sdc.proto.discovery.consumer.event.ProbedDeviceFoundMessage;
+import org.somda.sdc.proto.model.GetMdibRequest;
+import org.somda.sdc.proto.model.GetMdibResponse;
 import org.somda.sdc.proto.model.GetServiceGrpc;
 import org.somda.sdc.proto.model.SdcMessages;
 import org.somda.sdc.proto.model.discovery.DiscoveryTypes;
+import org.somda.sdc.proto.model.discovery.Endpoint;
+import org.somda.sdc.proto.model.discovery.ScopeMatcher;
 import org.somda.sdc.proto.provider.ProviderSettings;
 import org.somda.sdc.proto.guice.ProviderImplFactory;
 import test.org.somda.common.LoggingTestWatcher;
@@ -112,14 +116,14 @@ public class ConsumerProviderIT {
         provider.startAsync().awaitRunning();
 
         discoveryClient.registerObserver(observer);
-        var probeResponse = discoveryClient.probe(DiscoveryTypes.ScopeMatcher.newBuilder().build(), 1).get();
+        var probeResponse = discoveryClient.probe(ScopeMatcher.newBuilder().build(), 1).get();
         discoveryClient.unregisterObserver(observer);
         assertFalse(probeResponse.isEmpty());
 
         var consumer = consumerInjector.getInstance(Consumer.class);
         consumer.connect(probeResponse.get(0));
         var consumerGetService = consumer.getGetService().orElseThrow(() -> new Exception("No get service"));
-        var getMdibResponse = consumerGetService.getMdib(SdcMessages.GetMdibRequest.getDefaultInstance());
+        var getMdibResponse = consumerGetService.getMdib(GetMdibRequest.getDefaultInstance());
         LOG.debug("getMdibResponse {}", getMdibResponse);
         assertTrue(consumer.getSetService().isEmpty(), "SetService stub should not be present.");
 
@@ -138,15 +142,15 @@ public class ConsumerProviderIT {
         }
 
         @Override
-        public void getMdib(final SdcMessages.GetMdibRequest request, final StreamObserver<SdcMessages.GetMdibResponse> responseObserver) {
+        public void getMdib(final GetMdibRequest request, final StreamObserver<GetMdibResponse> responseObserver) {
             getMdibCalled = true;
-            responseObserver.onNext(SdcMessages.GetMdibResponse.getDefaultInstance());
+            responseObserver.onNext(GetMdibResponse.getDefaultInstance());
             responseObserver.onCompleted();
         }
     }
 
     private static class DiscoveryObserver implements org.somda.sdc.proto.discovery.consumer.DiscoveryObserver {
-        TimedWait<List<DiscoveryTypes.Endpoint>> timedWait = new TimedWait<>(ArrayList::new);
+        TimedWait<List<Endpoint>> timedWait = new TimedWait<>(ArrayList::new);
 
         @Subscribe
         void onEnteredDevice(DeviceEnteredMessage message) {

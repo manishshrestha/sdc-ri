@@ -4,6 +4,7 @@ import io.grpc.Channel;
 import org.somda.sdc.proto.model.GetServiceGrpc;
 import org.somda.sdc.proto.model.SetServiceGrpc;
 import org.somda.sdc.proto.model.discovery.DiscoveryTypes;
+import org.somda.sdc.proto.model.discovery.Endpoint;
 
 import java.io.IOException;
 import java.util.Optional;
@@ -17,7 +18,7 @@ public interface Consumer {
      * @throws IOException           on connection errors
      * @throws IllegalStateException if consumer is already connected
      */
-    void connect(DiscoveryTypes.Endpoint endpoint) throws IOException;
+    void connect(Endpoint endpoint) throws IOException;
 
     /**
      * Disconnect from the currently connected provider.

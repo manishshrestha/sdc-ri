@@ -3,8 +3,8 @@ package org.somda.sdc.proto.provider;
 import com.google.common.util.concurrent.Service;
 import io.grpc.BindableService;
 import org.somda.sdc.proto.model.common.CommonTypes;
+import org.somda.sdc.proto.model.common.QName;
 
-import javax.xml.namespace.QName;
 import java.net.InetSocketAddress;
 
 @SuppressWarnings("UnstableApiUsage")
@@ -19,7 +19,7 @@ public interface Provider extends Service {
      * @param service     the new service
      * @throws IllegalStateException if registering a service on running provider
      */
-    void addService(CommonTypes.QName serviceType, BindableService service);
+    void addService(QName serviceType, BindableService service);
 
     /**
      * Returns the EPR used by the provider

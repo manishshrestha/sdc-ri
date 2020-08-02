@@ -1,22 +1,24 @@
 package org.somda.sdc.proto.discovery.provider;
 
 import org.somda.sdc.proto.model.common.CommonTypes;
+import org.somda.sdc.proto.model.common.LocalizedString;
 import org.somda.sdc.proto.model.discovery.DiscoveryMessages;
+import org.somda.sdc.proto.model.discovery.Fault;
 
 import javax.xml.namespace.QName;
 
 public class FaultException extends Exception {
-    private final DiscoveryMessages.Fault fault;
+    private final Fault fault;
 
     public FaultException(QName code, QName subCode, String reason) {
-        this.fault = DiscoveryMessages.Fault.newBuilder()
+        this.fault = Fault.newBuilder()
                 .setCode(map(code))
                 .setSubCode(map(subCode))
-                .setReason(CommonTypes.LocalizedString.newBuilder().setValue(reason).build())
+                .setReason(LocalizedString.newBuilder().setValue(reason).build())
                 .build();
     }
 
-    public DiscoveryMessages.Fault getFault() {
+    public Fault getFault() {
         return fault;
     }
 
@@ -25,8 +27,8 @@ public class FaultException extends Exception {
         return fault.getReason().getValue();
     }
 
-    private CommonTypes.QName map(QName qName) {
-        return CommonTypes.QName.newBuilder()
+    private org.somda.sdc.proto.model.common.QName map(QName qName) {
+        return org.somda.sdc.proto.model.common.QName.newBuilder()
                 .setNamespace(qName.getNamespaceURI())
                 .setLocalName(qName.getLocalPart())
                 .build();

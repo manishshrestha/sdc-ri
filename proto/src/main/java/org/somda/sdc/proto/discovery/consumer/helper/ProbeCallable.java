@@ -5,6 +5,8 @@ import org.somda.sdc.proto.discovery.consumer.event.DeviceProbeTimeoutMessage;
 import org.somda.sdc.proto.discovery.consumer.event.ProbedDeviceFoundMessage;
 import org.somda.sdc.proto.model.discovery.DiscoveryMessages;
 import org.somda.sdc.proto.model.discovery.DiscoveryTypes;
+import org.somda.sdc.proto.model.discovery.Endpoint;
+import org.somda.sdc.proto.model.discovery.ProbeMatches;
 
 import java.time.Duration;
 import java.util.ArrayList;
@@ -17,15 +19,15 @@ import java.util.concurrent.locks.Lock;
 import java.util.function.Supplier;
 
 @SuppressWarnings("UnstableApiUsage")
-public class ProbeCallable implements Callable<List<DiscoveryTypes.Endpoint>> {
+public class ProbeCallable implements Callable<List<Endpoint>> {
     private final EventBus helloByeProbeEvents;
     private final Lock lock;
     private final String probeId;
     private final Integer maxResults;
     private final long maxWaitInMillis;
     private final Condition condition;
-    private final Supplier<Optional<DiscoveryMessages.ProbeMatches>> findMatch;
-    private final List<DiscoveryTypes.Endpoint> endpoints;
+    private final Supplier<Optional<ProbeMatches>> findMatch;
+    private final List<Endpoint> endpoints;
 
     public ProbeCallable(String probeId,
                          Integer maxResults,
@@ -33,7 +35,7 @@ public class ProbeCallable implements Callable<List<DiscoveryTypes.Endpoint>> {
                          Lock lock,
                          Condition condition,
                          EventBus helloByeProbeEvents,
-                         Supplier<Optional<DiscoveryMessages.ProbeMatches>> findMatch) {
+                         Supplier<Optional<ProbeMatches>> findMatch) {
         this.probeId = probeId;
         this.maxResults = maxResults;
         this.maxWaitInMillis = maxWait.toMillis();
@@ -45,7 +47,7 @@ public class ProbeCallable implements Callable<List<DiscoveryTypes.Endpoint>> {
     }
 
     @Override
-    public List<DiscoveryTypes.Endpoint> call() throws Exception {
+    public List<Endpoint> call() throws Exception {
         Integer probeMatchesCount = 0;
         long wait = maxWaitInMillis;
         try {

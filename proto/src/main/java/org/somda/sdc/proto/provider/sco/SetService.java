@@ -4,20 +4,30 @@ import com.google.common.util.concurrent.AbstractIdleService;
 import com.google.common.util.concurrent.Service;
 import com.google.inject.Inject;
 import com.google.inject.assistedinject.Assisted;
-import com.google.inject.assistedinject.AssistedInject;
 import io.grpc.stub.StreamObserver;
-import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.somda.sdc.biceps.model.message.AbstractReport;
 import org.somda.sdc.biceps.model.message.AbstractSetResponse;
-import org.somda.sdc.biceps.model.message.ActivateResponse;
 import org.somda.sdc.biceps.model.message.InvocationInfo;
 import org.somda.sdc.biceps.model.participant.InstanceIdentifier;
 import org.somda.sdc.proto.addressing.AddressingUtil;
 import org.somda.sdc.proto.mapping.message.PojoToProtoMapper;
 import org.somda.sdc.proto.mapping.message.ProtoToPojoMapper;
 import org.somda.sdc.proto.mapping.participant.PojoToProtoTreeMapper;
-import org.somda.sdc.proto.model.SdcMessages;
+import org.somda.sdc.proto.model.ActivateRequest;
+import org.somda.sdc.proto.model.ActivateResponse;
+import org.somda.sdc.proto.model.OperationInvokedReportRequest;
+import org.somda.sdc.proto.model.OperationInvokedReportStream;
+import org.somda.sdc.proto.model.SetAlertStateRequest;
+import org.somda.sdc.proto.model.SetAlertStateResponse;
+import org.somda.sdc.proto.model.SetComponentStateRequest;
+import org.somda.sdc.proto.model.SetComponentStateResponse;
+import org.somda.sdc.proto.model.SetContextStateRequest;
+import org.somda.sdc.proto.model.SetContextStateResponse;
 import org.somda.sdc.proto.model.SetServiceGrpc;
+import org.somda.sdc.proto.model.SetStringRequest;
+import org.somda.sdc.proto.model.SetStringResponse;
+import org.somda.sdc.proto.model.SetValueRequest;
+import org.somda.sdc.proto.model.SetValueResponse;
 import org.somda.sdc.proto.model.biceps.OperationInvokedReportMsg;
 import org.somda.sdc.proto.provider.EventSource;
 
@@ -91,59 +101,60 @@ class SetService extends AbstractIdleService implements Service, EventSource {
         }
 
         @Override
-        public void activate(SdcMessages.ActivateRequest request,
-                StreamObserver<SdcMessages.ActivateResponse> responseObserver) {
+        public void activate(ActivateRequest request,
+                             StreamObserver<ActivateResponse> responseObserver) {
             var resp = scoController.processIncomingSetOperation(
                     request.getPayload().getAbstractSet().getOperationHandleRef(),
                     new InstanceIdentifier(), // todo pass certificate common name here
                     fromProtoMessageMapper.map(request.getPayload()));
 
-            var message = SdcMessages.ActivateResponse.newBuilder();
+            var message = ActivateResponse.newBuilder();
             message.setAddressing(addressingUtil.assemblyAddressing("activate"));
-            message.setPayload(fromPojoMessageMapper.mapActivateResponse(createResponse(ActivateResponse.class, resp)));
+            message.setPayload(fromPojoMessageMapper.mapActivateResponse(
+                    createResponse(org.somda.sdc.biceps.model.message.ActivateResponse.class, resp)));
             responseObserver.onNext(message.build());
             responseObserver.onCompleted();
         }
 
         @Override
-        public void setMetricState(SdcMessages.ActivateRequest request,
-                StreamObserver<SdcMessages.ActivateResponse> responseObserver) {
+        public void setMetricState(ActivateRequest request,
+                                   StreamObserver<ActivateResponse> responseObserver) {
             super.setMetricState(request, responseObserver);
         }
 
         @Override
-        public void setComponentState(SdcMessages.SetComponentStateRequest request,
-                StreamObserver<SdcMessages.SetComponentStateResponse> responseObserver) {
+        public void setComponentState(SetComponentStateRequest request,
+                                      StreamObserver<SetComponentStateResponse> responseObserver) {
             super.setComponentState(request, responseObserver);
         }
 
         @Override
-        public void setContextState(SdcMessages.SetContextStateRequest request,
-                StreamObserver<SdcMessages.SetContextStateResponse> responseObserver) {
+        public void setContextState(SetContextStateRequest request,
+                                    StreamObserver<SetContextStateResponse> responseObserver) {
             super.setContextState(request, responseObserver);
         }
 
         @Override
-        public void setAlertState(SdcMessages.SetAlertStateRequest request,
-                StreamObserver<SdcMessages.SetAlertStateResponse> responseObserver) {
+        public void setAlertState(SetAlertStateRequest request,
+                                  StreamObserver<SetAlertStateResponse> responseObserver) {
             super.setAlertState(request, responseObserver);
         }
 
         @Override
-        public void setString(SdcMessages.SetStringRequest request,
-                StreamObserver<SdcMessages.SetStringResponse> responseObserver) {
+        public void setString(SetStringRequest request,
+                              StreamObserver<SetStringResponse> responseObserver) {
             super.setString(request, responseObserver);
         }
 
         @Override
-        public void setValue(SdcMessages.SetValueRequest request,
-                StreamObserver<SdcMessages.SetValueResponse> responseObserver) {
+        public void setValue(SetValueRequest request,
+                             StreamObserver<SetValueResponse> responseObserver) {
             super.setValue(request, responseObserver);
         }
 
         @Override
-        public void operationInvokedReport(SdcMessages.OperationInvokedReportRequest request,
-                StreamObserver<SdcMessages.OperationInvokedReportStream> responseObserver) {
+        public void operationInvokedReport(OperationInvokedReportRequest request,
+                                           StreamObserver<OperationInvokedReportStream> responseObserver) {
             var queue = new ArrayBlockingQueue<QueueItem>(QUEUE_SIZE);
             var subscriptionNumber = susbcriptions.incrementAndGet();
             subscribedInvokedReports.put(subscriptionNumber, queue);
@@ -157,7 +168,7 @@ class SetService extends AbstractIdleService implements Service, EventSource {
                         return;
                     } else if (element instanceof InvokedReportItem) {
                         var report = ((InvokedReportItem) element).getReport();
-                        var message = SdcMessages.OperationInvokedReportStream.newBuilder()
+                        var message = OperationInvokedReportStream.newBuilder()
                                 .setOperationInvoked(report)
                                 .setAddressing(addressingUtil.assemblyAddressing("action"));
                         responseObserver.onNext(message.build());

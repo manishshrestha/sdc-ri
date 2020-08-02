@@ -2,6 +2,7 @@ package org.somda.sdc.proto.addressing;
 
 import com.google.inject.Inject;
 import com.google.inject.assistedinject.Assisted;
+import org.somda.sdc.proto.model.addressing.Addressing;
 import org.somda.sdc.proto.model.addressing.AddressingTypes;
 
 import javax.annotation.Nullable;
@@ -14,7 +15,7 @@ public class AddressingValidator {
         this.messageDuplicateDetection = messageDuplicateDetection;
     }
 
-    public Validator validate(AddressingTypes.Addressing addressing) {
+    public Validator validate(Addressing addressing) {
         return new Validator() {
             @Override
             public Validator validateAction(@Nullable String action) throws ValidationException {

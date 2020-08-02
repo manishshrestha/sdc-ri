@@ -4,6 +4,7 @@ package sdc.discovery;
 
 import "sdc/discovery/discovery_messages.proto";
 
+option java_multiple_files = true;
 option java_package = "org.somda.sdc.proto.model.discovery";
 option java_outer_classname = "Discovery";
 

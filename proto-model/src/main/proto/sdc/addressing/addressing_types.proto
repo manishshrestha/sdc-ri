@@ -4,6 +4,7 @@ package sdc.addressing;
 
 import "google/protobuf/any.proto";
 
+option java_multiple_files = true;
 option java_package = "org.somda.sdc.proto.model.addressing";
 option java_outer_classname = "AddressingTypes";
 

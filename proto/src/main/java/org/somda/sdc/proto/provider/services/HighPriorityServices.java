@@ -21,14 +21,26 @@ import org.somda.sdc.proto.common.ProtoConstants;
 import org.somda.sdc.proto.mapping.message.PojoToProtoMapper;
 import org.somda.sdc.proto.mapping.participant.PojoToProtoTreeMapper;
 import org.somda.sdc.proto.mapping.participant.factory.PojoToProtoTreeMapperFactory;
+import org.somda.sdc.proto.model.EpisodicReport;
+import org.somda.sdc.proto.model.EpisodicReportRequest;
+import org.somda.sdc.proto.model.EpisodicReportStream;
+import org.somda.sdc.proto.model.GetMdDescriptionRequest;
+import org.somda.sdc.proto.model.GetMdDescriptionResponse;
+import org.somda.sdc.proto.model.GetMdStateRequest;
+import org.somda.sdc.proto.model.GetMdStateResponse;
+import org.somda.sdc.proto.model.GetMdibRequest;
+import org.somda.sdc.proto.model.GetMdibResponse;
 import org.somda.sdc.proto.model.GetServiceGrpc;
 import org.somda.sdc.proto.model.MdibReportingServiceGrpc;
-import org.somda.sdc.proto.model.SdcMessages;
+import org.somda.sdc.proto.model.PeriodicReportRequest;
+import org.somda.sdc.proto.model.PeriodicReportStream;
+import org.somda.sdc.proto.model.addressing.Addressing;
 import org.somda.sdc.proto.model.addressing.AddressingTypes;
 import org.somda.sdc.proto.model.biceps.GetMdDescriptionResponseMsg;
 import org.somda.sdc.proto.model.biceps.GetMdStateResponseMsg;
 import org.somda.sdc.proto.model.biceps.GetMdibResponseMsg;
 import org.somda.sdc.proto.model.common.CommonTypes;
+import org.somda.sdc.proto.model.common.QName;
 
 import java.util.Collections;
 import java.util.Map;
@@ -41,7 +53,7 @@ public class HighPriorityServices {
     private final MdibReportingService reportingService;
     private final PojoToProtoMapper messageMapper;
     private final Logger instanceLogger;
-    private final Map<CommonTypes.QName, BindableService> services;
+    private final Map<QName, BindableService> services;
 
     @AssistedInject
     HighPriorityServices(@Assisted LocalMdibAccess mdibAccess,
@@ -64,18 +76,19 @@ public class HighPriorityServices {
     /**
      * @return all {@linkplain BindableService} instances handled by this container
      */
-    public Map<CommonTypes.QName, BindableService> getServices() {
+    public Map<QName, BindableService> getServices() {
         return services;
     }
 
     /**
      * Sends an episodic report to all subscribers
-     * @param action of the episodic report
+     *
+     * @param action  of the episodic report
      * @param payload JAXB message
      * @throws RuntimeException if message cannot be mapped to proto
      */
     public void sendEpisodicNotification(String action, AbstractReport payload) throws RuntimeException {
-        var episodicReport = SdcMessages.EpisodicReport.newBuilder();
+        var episodicReport = EpisodicReport.newBuilder();
 
         if (payload instanceof EpisodicMetricReport) {
             episodicReport.setMetric(messageMapper.mapEpisodicMetricReport((EpisodicMetricReport) payload));
@@ -105,11 +118,11 @@ public class HighPriorityServices {
         }
 
         @Override
-        public void getMdib(final SdcMessages.GetMdibRequest request, final StreamObserver<SdcMessages.GetMdibResponse> responseObserver) {
+        public void getMdib(final GetMdibRequest request, final StreamObserver<GetMdibResponse> responseObserver) {
             // payload is for suckers
 
             var responseBody = treeMapper.mapMdib();
-            var response = SdcMessages.GetMdibResponse.newBuilder()
+            var response = GetMdibResponse.newBuilder()
                     .setPayload(GetMdibResponseMsg.newBuilder().setMdib(responseBody).build());
 
             responseObserver.onNext(response.build());
@@ -117,9 +130,9 @@ public class HighPriorityServices {
         }
 
         @Override
-        public void getMdDescription(final SdcMessages.GetMdDescriptionRequest request, final StreamObserver<SdcMessages.GetMdDescriptionResponse> responseObserver) {
+        public void getMdDescription(final GetMdDescriptionRequest request, final StreamObserver<GetMdDescriptionResponse> responseObserver) {
             var responseBody = treeMapper.mapMdDescription(Collections.emptyList());
-            var response = SdcMessages.GetMdDescriptionResponse.newBuilder()
+            var response = GetMdDescriptionResponse.newBuilder()
                     .setPayload(GetMdDescriptionResponseMsg.newBuilder().setMdDescription(responseBody).build());
 
             responseObserver.onNext(response.build());
@@ -127,9 +140,9 @@ public class HighPriorityServices {
         }
 
         @Override
-        public void getMdState(final SdcMessages.GetMdStateRequest request, final StreamObserver<SdcMessages.GetMdStateResponse> responseObserver) {
+        public void getMdState(final GetMdStateRequest request, final StreamObserver<GetMdStateResponse> responseObserver) {
             var responseBody = treeMapper.mapMdState(Collections.emptyList());
-            var response = SdcMessages.GetMdStateResponse.newBuilder()
+            var response = GetMdStateResponse.newBuilder()
                     .setPayload(GetMdStateResponseMsg.newBuilder().setMdState(responseBody).build());
 
             responseObserver.onNext(response.build());
@@ -144,7 +157,7 @@ public class HighPriorityServices {
         private static final String END_ACTION = "STOP THE PRESSES";
         private static final int QUEUE_SIZE = 50;
 
-        private final ListMultimap<String, Queue<Pair<String, SdcMessages.EpisodicReport>>> queueMap;
+        private final ListMultimap<String, Queue<Pair<String, EpisodicReport>>> queueMap;
         private final Logger instanceLogger;
 
         MdibReportingService(String frameworkIdentifier) {
@@ -152,7 +165,7 @@ public class HighPriorityServices {
             this.queueMap = Multimaps.synchronizedListMultimap(ArrayListMultimap.create());
         }
 
-        public void offerNotification(String action, SdcMessages.EpisodicReport report) {
+        public void offerNotification(String action, EpisodicReport report) {
             // filter by actions here
             instanceLogger.debug("Offering notification for action {} to all handlers", action);
             var reportQueues = this.queueMap.get(action);
@@ -166,11 +179,11 @@ public class HighPriorityServices {
         }
 
         @Override
-        public void episodicReport(final SdcMessages.EpisodicReportRequest request, final StreamObserver<SdcMessages.EpisodicReportStream> responseObserver) {
+        public void episodicReport(final EpisodicReportRequest request, final StreamObserver<EpisodicReportStream> responseObserver) {
 
             // get id for this handle
             var actions = request.getFilter().getActionFilter().getActionList();
-            var queue = new ArrayBlockingQueue<Pair<String, SdcMessages.EpisodicReport>>(QUEUE_SIZE);
+            var queue = new ArrayBlockingQueue<Pair<String, EpisodicReport>>(QUEUE_SIZE);
             try {
                 // add queue to map for all requested actions
                 actions.forEach(action -> queueMap.put(action, queue));
@@ -185,9 +198,9 @@ public class HighPriorityServices {
                         return;
                     }
                     var report = element.getRight();
-                    var message = SdcMessages.EpisodicReportStream.newBuilder()
+                    var message = EpisodicReportStream.newBuilder()
                             .setReport(report)
-                            .setAddressing(AddressingTypes.Addressing.newBuilder().setAction(action).build());
+                            .setAddressing(Addressing.newBuilder().setAction(action).build());
                     responseObserver.onNext(message.build());
                 }
             } finally {
@@ -196,7 +209,7 @@ public class HighPriorityServices {
         }
 
         @Override
-        public void periodicReport(final SdcMessages.PeriodicReportRequest request, final StreamObserver<SdcMessages.PeriodicReportStream> responseObserver) {
+        public void periodicReport(final PeriodicReportRequest request, final StreamObserver<PeriodicReportStream> responseObserver) {
             super.periodicReport(request, responseObserver);
         }
     }

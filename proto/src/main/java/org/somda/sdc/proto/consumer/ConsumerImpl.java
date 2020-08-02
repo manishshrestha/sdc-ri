@@ -18,6 +18,8 @@ import org.somda.sdc.proto.model.GetServiceGrpc;
 import org.somda.sdc.proto.model.SetServiceGrpc;
 import org.somda.sdc.proto.model.discovery.DiscoveryMessages;
 import org.somda.sdc.proto.model.discovery.DiscoveryTypes;
+import org.somda.sdc.proto.model.discovery.Endpoint;
+import org.somda.sdc.proto.model.discovery.GetMetadataRequest;
 import org.somda.sdc.proto.model.discovery.MetadataServiceGrpc;
 
 import javax.annotation.Nullable;
@@ -50,7 +52,7 @@ public class ConsumerImpl implements Consumer {
     }
 
     @Override
-    public void connect(final DiscoveryTypes.Endpoint endpoint) throws IOException {
+    public void connect(final Endpoint endpoint) throws IOException {
         if (channel != null) {
             throw new IllegalStateException("Consumer is already connected to a server");
         }
@@ -83,7 +85,7 @@ public class ConsumerImpl implements Consumer {
 
         // get metadata to determine available services
         metadataStub = MetadataServiceGrpc.newBlockingStub(channel);
-        var metadata = metadataStub.getMetadata(DiscoveryMessages.GetMetadataRequest.getDefaultInstance());
+        var metadata = metadataStub.getMetadata(GetMetadataRequest.getDefaultInstance());
 
         metadata.getHostedServiceList().forEach(hostedService -> {
             var type = hostedService.getType();

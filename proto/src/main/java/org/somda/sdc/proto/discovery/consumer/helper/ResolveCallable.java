@@ -2,6 +2,8 @@ package org.somda.sdc.proto.discovery.consumer.helper;
 
 import org.somda.sdc.proto.model.discovery.DiscoveryMessages;
 import org.somda.sdc.proto.model.discovery.DiscoveryTypes;
+import org.somda.sdc.proto.model.discovery.Endpoint;
+import org.somda.sdc.proto.model.discovery.ResolveMatches;
 
 import java.time.Duration;
 import java.util.Optional;
@@ -11,18 +13,18 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.function.Supplier;
 
-public class ResolveCallable implements Callable<DiscoveryTypes.Endpoint> {
+public class ResolveCallable implements Callable<Endpoint> {
     private final String expectedMessageId;
     private final Lock lock;
     private final long maxWaitInMillis;
     private final Condition condition;
-    private final Supplier<Optional<DiscoveryMessages.ResolveMatches>> findMatch;
+    private final Supplier<Optional<ResolveMatches>> findMatch;
 
     public ResolveCallable(Duration maxWait,
                            String expectedMessageId,
                            Lock lock,
                            Condition condition,
-                           Supplier<Optional<DiscoveryMessages.ResolveMatches>> findMatch) {
+                           Supplier<Optional<ResolveMatches>> findMatch) {
         this.maxWaitInMillis = maxWait.toMillis();
         this.expectedMessageId = expectedMessageId;
         this.lock = lock;
@@ -31,7 +33,7 @@ public class ResolveCallable implements Callable<DiscoveryTypes.Endpoint> {
     }
 
     @Override
-    public DiscoveryTypes.Endpoint call() throws Exception {
+    public Endpoint call() throws Exception {
         try {
             lock.lock();
             var wait = maxWaitInMillis;

@@ -6,6 +6,7 @@ import "google/protobuf/any.proto";
 import "sdc/addressing/addressing_types.proto";
 import "sdc/common/common_types.proto";
 
+option java_multiple_files = true;
 option java_package = "org.somda.sdc.proto.model.discovery";
 option java_outer_classname = "DiscoveryTypes";
 

@@ -14,8 +14,14 @@ import org.somda.sdc.dpws.soap.SoapUtil;
 import org.somda.sdc.proto.discovery.provider.TargetService;
 import org.somda.sdc.proto.discovery.provider.factory.TargetServiceFactory;
 import org.somda.sdc.proto.model.common.CommonTypes;
+import org.somda.sdc.proto.model.common.LocalizedString;
+import org.somda.sdc.proto.model.common.QName;
+import org.somda.sdc.proto.model.discovery.DeviceMetadata;
 import org.somda.sdc.proto.model.discovery.DiscoveryMessages;
 import org.somda.sdc.proto.model.discovery.DiscoveryTypes;
+import org.somda.sdc.proto.model.discovery.GetMetadataRequest;
+import org.somda.sdc.proto.model.discovery.GetMetadataResponse;
+import org.somda.sdc.proto.model.discovery.HostedService;
 import org.somda.sdc.proto.model.discovery.MetadataServiceGrpc;
 import org.somda.sdc.proto.server.Server;
 import org.somda.sdc.proto.server.guice.ServerImplFactory;
@@ -34,7 +40,7 @@ public class ProviderImpl extends AbstractIdleService implements Provider {
     private final ProviderSettings providerSettings;
     private final String epr;
     private final TargetService targetService;
-    private final List<CommonTypes.QName> types;
+    private final List<QName> types;
 
     @AssistedInject
     ProviderImpl(
@@ -92,7 +98,7 @@ public class ProviderImpl extends AbstractIdleService implements Provider {
     }
 
     @Override
-    public void addService(final CommonTypes.QName serviceType, final BindableService service) {
+    public void addService(final QName serviceType, final BindableService service) {
         this.server.registerService(service);
         // since registering throws if unavailable, we can safely add the QName
         this.types.add(serviceType);
@@ -101,27 +107,27 @@ public class ProviderImpl extends AbstractIdleService implements Provider {
     static class MetadataService extends MetadataServiceGrpc.MetadataServiceImplBase {
 
         private final ProviderSettings providerSettings;
-        private final List<CommonTypes.QName> types;
+        private final List<QName> types;
 
-        MetadataService(ProviderSettings providerSettings, List<CommonTypes.QName> types) {
+        MetadataService(ProviderSettings providerSettings, List<QName> types) {
             this.providerSettings = providerSettings;
             this.types = types;
         }
 
         @Override
-        public void getMetadata(DiscoveryMessages.GetMetadataRequest request,
-                                StreamObserver<DiscoveryMessages.GetMetadataResponse> responseObserver) {
-            var response = DiscoveryMessages.GetMetadataResponse.newBuilder();
-            var metadata = DiscoveryTypes.DeviceMetadata.newBuilder()
+        public void getMetadata(GetMetadataRequest request,
+                                StreamObserver<GetMetadataResponse> responseObserver) {
+            var response = GetMetadataResponse.newBuilder();
+            var metadata = DeviceMetadata.newBuilder()
                     .setFriendlyName(
-                            CommonTypes.LocalizedString.newBuilder()
+                            LocalizedString.newBuilder()
                                     .setValue(providerSettings.getProviderName())
                                     .setLocale("en_US")
                     );
 
             types.forEach(type -> {
                 response.addHostedService(
-                        DiscoveryTypes.HostedService.newBuilder()
+                        HostedService.newBuilder()
                                 .setType(type)
                                 .build()
                 );
