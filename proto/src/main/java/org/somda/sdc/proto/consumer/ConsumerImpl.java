@@ -16,8 +16,8 @@ import org.somda.sdc.proto.common.ProtoConstants;
 import org.somda.sdc.proto.crypto.CryptoUtil;
 import org.somda.sdc.proto.model.GetServiceGrpc;
 import org.somda.sdc.proto.model.SetServiceGrpc;
-import org.somda.sdc.proto.model.discovery.DiscoveryMessages;
-import org.somda.sdc.proto.model.discovery.DiscoveryTypes;
+import org.somda.sdc.proto.model.addressing.EndpointReference;
+import org.somda.sdc.proto.model.discovery.DeviceMetadata;
 import org.somda.sdc.proto.model.discovery.Endpoint;
 import org.somda.sdc.proto.model.discovery.GetMetadataRequest;
 import org.somda.sdc.proto.model.discovery.MetadataServiceGrpc;
@@ -26,7 +26,6 @@ import javax.annotation.Nullable;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.Optional;
 
 public class ConsumerImpl implements Consumer {
@@ -37,12 +36,12 @@ public class ConsumerImpl implements Consumer {
     private MetadataServiceGrpc.MetadataServiceBlockingStub metadataStub;
     private GetServiceGrpc.GetServiceBlockingStub getServiceStub;
     private SetServiceGrpc.SetServiceBlockingStub setServiceStub;
+    private DeviceMetadata metadata;
+    private EndpointReference epr;
 
     @Inject
-    ConsumerImpl(
-            @Nullable @Named(CryptoConfig.CRYPTO_SETTINGS) CryptoSettings cryptoSettings,
-            @Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier
-    ) {
+    ConsumerImpl(@Nullable @Named(CryptoConfig.CRYPTO_SETTINGS) CryptoSettings cryptoSettings,
+                 @Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier) {
         this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);
         this.cryptoSettings = cryptoSettings;
         this.metadataStub = null;
@@ -62,7 +61,6 @@ public class ConsumerImpl implements Consumer {
 
         instanceLogger.info("connecting to {} on address {}", endpoint.getEndpointReference(), address);
 
-        // odd workaround to determine host and port
         var host = new InetSocketAddress(address.getHost(), address.getPort());
         var channelBuilder = NettyChannelBuilder.forAddress(host);
         if (cryptoSettings != null) {
@@ -79,9 +77,10 @@ public class ConsumerImpl implements Consumer {
 
         // get metadata to determine available services
         metadataStub = MetadataServiceGrpc.newBlockingStub(channel);
-        var metadata = metadataStub.getMetadata(GetMetadataRequest.getDefaultInstance());
-
-        metadata.getHostedServiceList().forEach(hostedService -> {
+        var getMetadataResponse = metadataStub.getMetadata(GetMetadataRequest.getDefaultInstance());
+        this.metadata = getMetadataResponse.getMetadata();
+        this.epr = getMetadataResponse.getEndpointReference();
+        getMetadataResponse.getHostedServiceList().forEach(hostedService -> {
             var type = hostedService.getType();
             instanceLogger.info("Device provides type {{{}}}{}", type.getNamespace(), type.getLocalName());
 
@@ -93,6 +92,16 @@ public class ConsumerImpl implements Consumer {
         });
 
         instanceLogger.info("Consumer connected to {}", endpoint.getEndpointReference());
+    }
+
+    @Override
+    public DeviceMetadata getMetadata() {
+        return metadata;
+    }
+
+    @Override
+    public String getEprAddress() {
+        return epr.getAddress();
     }
 
     @Override

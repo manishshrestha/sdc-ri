@@ -3,6 +3,7 @@ package org.somda.sdc.proto.consumer;
 import io.grpc.Channel;
 import org.somda.sdc.proto.model.GetServiceGrpc;
 import org.somda.sdc.proto.model.SetServiceGrpc;
+import org.somda.sdc.proto.model.discovery.DeviceMetadata;
 import org.somda.sdc.proto.model.discovery.DiscoveryTypes;
 import org.somda.sdc.proto.model.discovery.Endpoint;
 
@@ -39,4 +40,8 @@ public interface Consumer {
      * @return channel to current provider if connected
      */
     Optional<Channel> getChannel();
+
+    DeviceMetadata getMetadata();
+
+    String getEprAddress();
 }
