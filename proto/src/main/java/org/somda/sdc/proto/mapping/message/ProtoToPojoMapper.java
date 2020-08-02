@@ -10,6 +10,7 @@ import org.somda.sdc.biceps.model.message.InvocationError;
 import org.somda.sdc.biceps.model.message.InvocationInfo;
 import org.somda.sdc.biceps.model.message.InvocationState;
 import org.somda.sdc.biceps.model.message.OperationInvokedReport;
+import org.somda.sdc.biceps.model.message.SetString;
 import org.somda.sdc.common.CommonConfig;
 import org.somda.sdc.common.logging.InstanceLogger;
 import org.somda.sdc.proto.mapping.Util;
@@ -20,6 +21,7 @@ import org.somda.sdc.proto.model.biceps.ActivateMsg;
 import org.somda.sdc.proto.model.biceps.InvocationInfoMsg;
 import org.somda.sdc.proto.model.biceps.MdibVersionGroupMsg;
 import org.somda.sdc.proto.model.biceps.OperationInvokedReportMsg;
+import org.somda.sdc.proto.model.biceps.SetStringMsg;
 
 import java.util.stream.Collectors;
 
@@ -38,6 +40,12 @@ public class ProtoToPojoMapper {
     public Activate map(ActivateMsg protoMsg) {
         var pojo = new Activate();
         // todo map params - it's an any; should be a one of simple types
+        return pojo;
+    }
+
+    public SetString map(SetStringMsg protoMsg) {
+        var pojo = new SetString();
+        pojo.setRequestedStringValue(protoMsg.getRequestedStringValue());
         return pojo;
     }
 

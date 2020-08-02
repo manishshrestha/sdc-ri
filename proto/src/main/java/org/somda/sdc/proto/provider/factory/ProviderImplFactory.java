@@ -31,9 +31,9 @@ public interface ProviderImplFactory {
      * Use {@link SdcDevice#startAsync()} in order to start exposing the device on the network.
      */
     ProviderImpl create(@Assisted String eprAddress,
-                                 @Assisted ProviderSettings providerSettings,
-                                 @Assisted LocalMdibAccess mdibAccess,
-                                 @Assisted("operationInvocationReceivers")
-                                         Collection<OperationInvocationReceiver> operationInvocationReceivers,
-                                 @Assisted("plugins") Collection<SdcDevicePlugin> plugins);
+                        @Assisted ProviderSettings providerSettings,
+                        @Assisted LocalMdibAccess mdibAccess,
+                        @Assisted("operationInvocationReceivers")
+                                Collection<OperationInvocationReceiver> operationInvocationReceivers,
+                        @Assisted("plugins") Collection<SdcDevicePlugin> plugins);
 }

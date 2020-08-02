@@ -51,6 +51,11 @@ public class PojoToProtoBaseMapper {
 //        return builder.build();
 //    }
 
+    public InstanceIdentifierOneOfMsg mapInstanceIdentifierOneOf(InstanceIdentifier instanceIdentifier) {
+        return InstanceIdentifierOneOfMsg.newBuilder()
+                .setInstanceIdentifier(mapInstanceIdentifier(instanceIdentifier)).build();
+    }
+
     public InstanceIdentifierMsg mapInstanceIdentifier(InstanceIdentifier instanceIdentifier) {
         var builder = InstanceIdentifierMsg.newBuilder();
         Util.doIfNotNull(instanceIdentifier.getRootName(), it -> builder.setARoot(Util.toStringValue(it)));
