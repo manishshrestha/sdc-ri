@@ -57,19 +57,13 @@ public class ConsumerImpl implements Consumer {
             throw new IllegalStateException("Consumer is already connected to a server");
         }
         // TODO: Handle multiple addresses
-        var address = endpoint.getXAddrList().stream().findFirst()
-                .orElseThrow(() -> new IOException("Endpoint does not provide any xAddr"));
+        var address = URI.create(endpoint.getXAddrList().stream().findFirst()
+                .orElseThrow(() -> new IOException("Endpoint does not provide any xAddr")));
 
         instanceLogger.info("connecting to {} on address {}", endpoint.getEndpointReference(), address);
 
         // odd workaround to determine host and port
-        URI uri;
-        try {
-            uri = new URI("my://" + address);
-        } catch (URISyntaxException e) {
-            throw new IOException(e);
-        }
-        var host = new InetSocketAddress(uri.getHost(), uri.getPort());
+        var host = new InetSocketAddress(address.getHost(), address.getPort());
         var channelBuilder = NettyChannelBuilder.forAddress(host);
         if (cryptoSettings != null) {
             channelBuilder.sslContext(GrpcSslContexts.forClient()

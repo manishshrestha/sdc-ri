@@ -2,7 +2,6 @@ package it.org.somda.sdc.proto.sco;
 
 import com.google.inject.Injector;
 import it.org.somda.sdc.dpws.soap.Ssl;
-import it.org.somda.sdc.proto.ConsumerProviderIT;
 import it.org.somda.sdc.proto.IntegrationTestUtil;
 import it.org.somda.sdc.proto.provider.ProviderImplIT;
 import org.apache.logging.log4j.LogManager;
@@ -15,7 +14,6 @@ import org.somda.sdc.common.guice.AbstractConfigurationModule;
 import org.somda.sdc.dpws.DpwsFramework;
 import org.somda.sdc.dpws.crypto.CryptoConfig;
 import org.somda.sdc.dpws.crypto.CryptoSettings;
-import org.somda.sdc.proto.discovery.consumer.Client;
 import test.org.somda.common.LoggingTestWatcher;
 
 import java.net.InetAddress;

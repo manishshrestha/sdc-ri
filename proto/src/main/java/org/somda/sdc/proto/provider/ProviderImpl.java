@@ -72,7 +72,9 @@ public class ProviderImpl extends AbstractIdleService implements Provider {
         server.registerService(new MetadataService(providerSettings, types));
         server.startAsync().awaitRunning();
 
-        var xAddr = String.format("%s:%s", server.getAddress().getHostName(), server.getAddress().getPort());
+        var serverAddress = server.getAddress();
+        // todo https is assumed always - correct depending on secured or unsecured comm channel
+        var xAddr = String.format("https://%s:%s", serverAddress.getHostName(), serverAddress.getPort());
         targetService.updateXAddrs(List.of(xAddr));
         targetService.startAsync().awaitRunning();
     }
