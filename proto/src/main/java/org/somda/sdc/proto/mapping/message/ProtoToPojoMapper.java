@@ -5,6 +5,7 @@ import com.google.inject.name.Named;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.somda.sdc.biceps.model.message.AbstractReport;
+import org.somda.sdc.biceps.model.message.Activate;
 import org.somda.sdc.biceps.model.message.InvocationError;
 import org.somda.sdc.biceps.model.message.InvocationInfo;
 import org.somda.sdc.biceps.model.message.InvocationState;
@@ -15,6 +16,7 @@ import org.somda.sdc.proto.mapping.Util;
 import org.somda.sdc.proto.mapping.participant.PojoToProtoBaseMapper;
 import org.somda.sdc.proto.mapping.participant.ProtoToPojoBaseMapper;
 import org.somda.sdc.proto.model.biceps.AbstractReportMsg;
+import org.somda.sdc.proto.model.biceps.ActivateMsg;
 import org.somda.sdc.proto.model.biceps.InvocationInfoMsg;
 import org.somda.sdc.proto.model.biceps.MdibVersionGroupMsg;
 import org.somda.sdc.proto.model.biceps.OperationInvokedReportMsg;
@@ -31,6 +33,12 @@ public class ProtoToPojoMapper {
                       ProtoToPojoBaseMapper baseMapper) {
         this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);
         this.baseMapper = baseMapper;
+    }
+
+    public Activate map(ActivateMsg protoMsg) {
+        var pojo = new Activate();
+        // todo map params - it's an any; should be a one of simple types
+        return pojo;
     }
 
     public OperationInvokedReport map(OperationInvokedReportMsg protoMsg) {

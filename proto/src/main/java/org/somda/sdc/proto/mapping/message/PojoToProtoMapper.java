@@ -7,8 +7,11 @@ import org.apache.logging.log4j.Logger;
 import org.somda.sdc.biceps.model.message.AbstractAlertReport;
 import org.somda.sdc.biceps.model.message.AbstractMetricReport;
 import org.somda.sdc.biceps.model.message.AbstractReport;
+import org.somda.sdc.biceps.model.message.AbstractSetResponse;
+import org.somda.sdc.biceps.model.message.ActivateResponse;
 import org.somda.sdc.biceps.model.message.EpisodicAlertReport;
 import org.somda.sdc.biceps.model.message.EpisodicMetricReport;
+import org.somda.sdc.biceps.model.message.InvocationInfo;
 import org.somda.sdc.common.CommonConfig;
 import org.somda.sdc.common.logging.InstanceLogger;
 import org.somda.sdc.proto.mapping.Util;
@@ -19,8 +22,13 @@ import org.somda.sdc.proto.mapping.participant.PojoToProtoOneOfMapper;
 import org.somda.sdc.proto.model.biceps.AbstractAlertReportMsg;
 import org.somda.sdc.proto.model.biceps.AbstractMetricReportMsg;
 import org.somda.sdc.proto.model.biceps.AbstractReportMsg;
+import org.somda.sdc.proto.model.biceps.AbstractSetResponseMsg;
+import org.somda.sdc.proto.model.biceps.ActivateResponseMsg;
 import org.somda.sdc.proto.model.biceps.EpisodicAlertReportMsg;
 import org.somda.sdc.proto.model.biceps.EpisodicMetricReportMsg;
+import org.somda.sdc.proto.model.biceps.InvocationErrorMsg;
+import org.somda.sdc.proto.model.biceps.InvocationInfoMsg;
+import org.somda.sdc.proto.model.biceps.InvocationStateMsg;
 import org.somda.sdc.proto.model.biceps.MdibVersionGroupMsg;
 
 public class PojoToProtoMapper {
@@ -95,6 +103,36 @@ public class PojoToProtoMapper {
         );
 
         builder.setAMdibVersionGroup(mdibVersionGroup);
+        return builder.build();
+    }
+
+    public ActivateResponseMsg mapActivateResponse(ActivateResponse pojo) {
+        return ActivateResponseMsg.newBuilder().setAbstractSetResponse(mapAbstractSetResponse(pojo)).build();
+    }
+
+    public AbstractSetResponseMsg mapAbstractSetResponse(AbstractSetResponse pojo) {
+        var builder = AbstractSetResponseMsg.newBuilder();
+        var mdibVersionGroup = MdibVersionGroupMsg.newBuilder();
+        Util.doIfNotNull(pojo.getInstanceId(), instanceId ->
+                mdibVersionGroup.setAInstanceId(Util.toUInt64(instanceId))
+        );
+        mdibVersionGroup.setASequenceId(pojo.getSequenceId());
+        Util.doIfNotNull(pojo.getMdibVersion(), version ->
+                mdibVersionGroup.setAMdibVersion(Util.toUInt64(version))
+        );
+
+        builder.setAMdibVersionGroup(mdibVersionGroup);
+        builder.setInvocationInfo(mapInvocationInfo(pojo.getInvocationInfo()));
+        return builder.build();
+    }
+
+    public InvocationInfoMsg mapInvocationInfo(InvocationInfo invocationInfo) {
+        var builder = InvocationInfoMsg.newBuilder();
+        Util.doIfNotNull(invocationInfo.getInvocationError(), it ->
+                builder.setInvocationError(Util.mapToProtoEnum(it, InvocationErrorMsg.class)));
+        Util.doIfNotNull(invocationInfo.getInvocationState(), it ->
+                builder.setInvocationState(Util.mapToProtoEnum(it, InvocationStateMsg.class)));
+        builder.addAllInvocationErrorMessage(baseMapper.mapLocalizedTexts(invocationInfo.getInvocationErrorMessage()));
         return builder.build();
     }
 }
