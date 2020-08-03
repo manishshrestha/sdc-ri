@@ -14,6 +14,8 @@ import org.somda.sdc.dpws.udp.UdpBindingServiceImpl;
 import org.somda.sdc.dpws.udp.UdpMessageQueueService;
 import org.somda.sdc.dpws.udp.UdpMessageQueueServiceImpl;
 import org.somda.sdc.dpws.udp.factory.UdpBindingServiceFactory;
+import org.somda.sdc.glue.provider.services.helper.ReportGenerator;
+import org.somda.sdc.glue.provider.services.helper.factory.ReportGeneratorFactory;
 import org.somda.sdc.proto.addressing.AddressingValidator;
 import org.somda.sdc.proto.addressing.factory.AddressingValidatorFactory;
 import org.somda.sdc.proto.consumer.Consumer;
@@ -113,6 +115,9 @@ public class DefaultProtoModule extends AbstractModule {
         install(new FactoryModuleBuilder()
                 .implement(UdpBindingService.class, UdpBindingServiceImpl.class)
                 .build(UdpBindingServiceFactory.class));
+        install(new FactoryModuleBuilder()
+                .implement(ReportGenerator.class, ReportGenerator.class)
+                .build(ReportGeneratorFactory.class));
 
         bind(Consumer.class).to(ConsumerImpl.class);
         bind(SdcRemoteDevicesConnector.class).to(SdcRemoteDevicesConnectorImpl.class);
