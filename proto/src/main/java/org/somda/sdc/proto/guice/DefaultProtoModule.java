@@ -22,7 +22,10 @@ import org.somda.sdc.proto.mapping.participant.factory.PojoToProtoTreeMapperFact
 import org.somda.sdc.proto.mapping.participant.factory.ProtoToPojoModificationsBuilderFactory;
 import org.somda.sdc.proto.provider.Provider;
 import org.somda.sdc.proto.provider.ProviderImpl;
+import org.somda.sdc.proto.provider.SdcDevice;
+import org.somda.sdc.proto.provider.SdcDeviceImpl;
 import org.somda.sdc.proto.provider.factory.ProviderFactory;
+import org.somda.sdc.proto.provider.factory.SdcDeviceFactory;
 import org.somda.sdc.proto.provider.sco.Context;
 import org.somda.sdc.proto.provider.sco.ScoController;
 import org.somda.sdc.proto.provider.sco.SetService;
@@ -84,12 +87,13 @@ public class DefaultProtoModule extends AbstractModule {
         install(new FactoryModuleBuilder()
                 .implement(SetService.class, SetService.class)
                 .build(SetServiceFactory.class));
-
+        install(new FactoryModuleBuilder()
+                .implement(SdcDevice.class, SdcDeviceImpl.class)
+                .build(SdcDeviceFactory.class));
         bind(Consumer.class).to(ConsumerImpl.class);
 
         bind(UdpUtil.class).annotatedWith(ProtoDiscovery.class).to(UdpUtil.class).asEagerSingleton();
     }
-
 
     //    private void configureCommon() {
 //        install(new FactoryModuleBuilder()

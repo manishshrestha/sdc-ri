@@ -12,20 +12,19 @@ import org.somda.sdc.biceps.model.participant.MdibVersion;
 import org.somda.sdc.biceps.provider.access.LocalMdibAccess;
 import org.somda.sdc.common.CommonConfig;
 import org.somda.sdc.common.logging.InstanceLogger;
-import org.somda.sdc.glue.provider.SdcDevicePlugin;
-import org.somda.sdc.glue.provider.sco.OperationInvocationReceiver;
 import org.somda.sdc.proto.common.ProtoConstants;
 import org.somda.sdc.proto.discovery.provider.TargetService;
-import org.somda.sdc.proto.discovery.provider.factory.TargetServiceFactory;
 import org.somda.sdc.proto.provider.factory.ProviderFactory;
+import org.somda.sdc.proto.provider.sco.OperationInvocationReceiver;
 import org.somda.sdc.proto.provider.sco.OperationInvokedEventSource;
 import org.somda.sdc.proto.provider.sco.ScoController;
 import org.somda.sdc.proto.provider.sco.SetService;
 import org.somda.sdc.proto.provider.sco.factory.ScoControllerFactory;
 import org.somda.sdc.proto.provider.sco.factory.SetServiceFactory;
+import org.somda.sdc.proto.provider.service.HighPriorityServices;
+import org.somda.sdc.proto.provider.service.guice.ServiceFactory;
 
 import java.net.InetSocketAddress;
-import java.net.NetworkInterface;
 import java.util.Collection;
 import java.util.List;
 
@@ -41,10 +40,12 @@ public class SdcDeviceImpl extends AbstractIdleService implements SdcDevice {
     private final String eprAddress;
     private final SetService setService;
     private final ScoController scoController;
+    private final SdcDevicePluginProcessor pluginProcessor;
+    private final HighPriorityServices highPriorityServices;
 
     @Inject
     SdcDeviceImpl(@Assisted String eprAddress,
-                  @Assisted NetworkInterface networkInterface,
+                  @Assisted InetSocketAddress networkAddress,
                   @Assisted LocalMdibAccess mdibAccess,
                   @Assisted("operationInvocationReceivers")
                           Collection<OperationInvocationReceiver> operationInvocationReceivers,
@@ -53,19 +54,22 @@ public class SdcDeviceImpl extends AbstractIdleService implements SdcDevice {
                   ProviderFactory providerFactory,
                   ScoControllerFactory scoControllerFactory,
                   SetServiceFactory setServiceFactory,
+                  ServiceFactory serviceFactory,
                   OperationInvokedEventSource operationInvokedEventSource) {
         this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);
         this.eprAddress = eprAddress;
         this.mdibAccess = mdibAccess;
         this.operationInvocationReceivers = operationInvocationReceivers;
         this.plugins = plugins;
-        var nifAddresses = networkInterface.getInetAddresses();
         var providerSettings = ProviderSettings.builder()
                 .setProviderName("SdcDevice " + eprAddress)
-                .setNetworkAddress(new InetSocketAddress(nifAddresses.nextElement(), 0)).build();
+                .setNetworkAddress(networkAddress).build();
         this.provider = providerFactory.create(eprAddress, providerSettings);
+        this.highPriorityServices = serviceFactory.createHighPriorityServices(mdibAccess);
         this.scoController = scoControllerFactory.create(operationInvokedEventSource, mdibAccess);
         this.setService = setServiceFactory.create(scoController, operationInvokedEventSource);
+
+        this.pluginProcessor = new SdcDevicePluginProcessor(this.plugins, this);
     }
 
     @Override
@@ -100,14 +104,17 @@ public class SdcDeviceImpl extends AbstractIdleService implements SdcDevice {
 
     @Override
     protected void startUp() throws Exception {
-        // todo provider.addService(ProtoConstants.GET_SERVICE_QNAME, ...);
-        // todo provider provider.addService(ProtoConstants.MDIB_REPORTING_SERVICE_QNAME, ...);
+        pluginProcessor.beforeStartUp();
         provider.addService(ProtoConstants.SET_SERVICE_QNAME, setService);
+        highPriorityServices.getServices().forEach(provider::addService);
         provider.startAsync().awaitRunning();
+        pluginProcessor.afterStartUp();
     }
 
     @Override
-    protected void shutDown() throws Exception {
+    protected void shutDown() {
+        pluginProcessor.beforeShutDown();
         provider.stopAsync().awaitTerminated();
+        pluginProcessor.afterShutDown();
     }
 }

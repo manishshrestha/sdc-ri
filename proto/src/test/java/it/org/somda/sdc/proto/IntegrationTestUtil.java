@@ -10,8 +10,9 @@ import org.somda.sdc.common.guice.DefaultCommonConfigModule;
 import org.somda.sdc.common.guice.DefaultHelperModule;
 import org.somda.sdc.dpws.guice.DefaultDpwsConfigModule;
 import org.somda.sdc.dpws.guice.DefaultDpwsModule;
-import org.somda.sdc.proto.guice.DefaultProtoModule;
 import org.somda.sdc.proto.guice.DefaultGrpcConfigModule;
+import org.somda.sdc.proto.guice.DefaultProtoConfigModule;
+import org.somda.sdc.proto.guice.DefaultProtoModule;
 import test.org.somda.common.TestLogging;
 
 import java.util.ArrayList;
@@ -34,11 +35,12 @@ public class IntegrationTestUtil {
                         new DefaultDpwsModule(),
                         new DefaultDpwsConfigModule(),
                         new DefaultProtoModule(),
+                        new DefaultProtoConfigModule(),
                         new DefaultGrpcConfigModule(),
                         new DefaultBicepsConfigModule(),
                         new DefaultBicepsModule()
                 ).with(
-                    overrideList
+                        overrideList
                 ));
     }
 

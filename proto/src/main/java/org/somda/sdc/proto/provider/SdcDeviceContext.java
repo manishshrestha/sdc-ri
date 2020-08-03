@@ -4,9 +4,8 @@ import com.google.common.util.concurrent.Service;
 import org.somda.sdc.biceps.model.participant.AbstractState;
 import org.somda.sdc.biceps.model.participant.MdibVersion;
 import org.somda.sdc.biceps.provider.access.LocalMdibAccess;
-import org.somda.sdc.dpws.device.Device;
-import org.somda.sdc.glue.provider.sco.OperationInvocationReceiver;
 import org.somda.sdc.proto.discovery.provider.TargetService;
+import org.somda.sdc.proto.provider.sco.OperationInvocationReceiver;
 
 import java.util.Collection;
 import java.util.List;

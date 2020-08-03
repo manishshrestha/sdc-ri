@@ -2,11 +2,11 @@ package org.somda.sdc.proto.provider.factory;
 
 import com.google.inject.assistedinject.Assisted;
 import org.somda.sdc.biceps.provider.access.LocalMdibAccess;
-import org.somda.sdc.glue.provider.SdcDevice;
-import org.somda.sdc.glue.provider.SdcDevicePlugin;
-import org.somda.sdc.glue.provider.sco.OperationInvocationReceiver;
+import org.somda.sdc.proto.provider.SdcDevice;
+import org.somda.sdc.proto.provider.SdcDevicePlugin;
+import org.somda.sdc.proto.provider.sco.OperationInvocationReceiver;
 
-import java.net.NetworkInterface;
+import java.net.InetSocketAddress;
 import java.util.Collection;
 
 /**
@@ -32,7 +32,7 @@ public interface SdcDeviceFactory {
      * Use {@link SdcDevice#startAsync()} in order to start exposing the device on the network.
      */
     SdcDevice createSdcDevice(@Assisted String eprAddress,
-                              @Assisted NetworkInterface networkInterface,
+                              @Assisted InetSocketAddress networkInterface,
                               @Assisted LocalMdibAccess mdibAccess,
                               @Assisted("operationInvocationReceivers")
                                       Collection<OperationInvocationReceiver> operationInvocationReceivers,
