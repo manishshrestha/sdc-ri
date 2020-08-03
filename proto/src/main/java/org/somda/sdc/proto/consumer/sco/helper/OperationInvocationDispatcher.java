@@ -119,7 +119,7 @@ public class OperationInvocationDispatcher {
     }
 
     private void applyReportsOnTransaction(BlockingQueue<OperationInvokedReport.ReportPart> queue,
-                                           ScoTransactionImpl transaction) {
+                                           ScoTransactionImpl<?> transaction) {
         while (!queue.isEmpty()) {
             try {
                 final OperationInvokedReport.ReportPart reportFromQueue = queue.take();

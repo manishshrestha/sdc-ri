@@ -129,78 +129,78 @@ public class SdcRemoteDeviceWatchdog extends AbstractIdleService {
     private class WatchdogJob implements Runnable {
         @Override
         public void run() {
-            Duration timeout = watchdogPeriod;
-            boolean watchdogRequestSent = false;
-            for (String serviceId : subscriptions.keySet()) {
-                final Instant start = Instant.now();
-                final SubscribeResult subscribeResult = subscriptions.get(serviceId);
-                final HostedServiceProxy hostedServiceProxy = hostingServiceProxy.getHostedServices().get(serviceId);
-                if (hostedServiceProxy == null) {
-                    instanceLogger.warn("Could not find expected hosted service with id {}", serviceId);
-                    postWatchdogMessage(new Exception(String.format(
-                            "Could not find expected hosted service with id %s", serviceId)));
-                    return;
-                }
-
-                final ListenableFuture<Duration> renewFuture = hostedServiceProxy.getEventSinkAccess()
-                        .renew(subscribeResult.getSubscriptionId(), requestedExpires);
-
-                try {
-                    final Duration grantedExpires = renewFuture.get(timeout.toMillis(), TimeUnit.MILLISECONDS);
-                    if (grantedExpires.compareTo(watchdogPeriod) < 0) {
-                        instanceLogger.warn("Too little time granted for subscription on service {} " +
-                                        "(expected at least {}, got {})",
-                                serviceId, watchdogPeriod, grantedExpires);
-                        postWatchdogMessage(new Exception(String.format(
-                                "Too little time granted for subscription on service %s (expected at least %s, got %s)",
-                                serviceId, watchdogPeriod, grantedExpires)));
-                        return;
-                    }
-                } catch (Exception e) {
-                    instanceLogger.warn("Trying to renew subscription running on service {} failed", serviceId);
-                    postWatchdogMessage(new Exception(String.format(
-                            "Trying to renew subscription running on service %s failed", serviceId), e));
-                    return;
-                }
-
-                final Instant finish = Instant.now();
-                timeout = timeout.minus(Duration.between(start, finish));
-                if (timeout.toMillis() < 0) {
-                    instanceLogger.warn("Watchdog timeout exceeded. " +
-                            "Could not get watchdog triggers served in time.");
-                    postWatchdogMessage(new Exception("Watchdog timeout exceeded. " +
-                            "Could not get watchdog triggers served in time."));
-                    return;
-                }
-
-                watchdogRequestSent = true;
-            }
-
-            if (!watchdogRequestSent) {
-                final Instant start = Instant.now();
-                final ListenableFuture<ProbeMatchesType> probeFuture =
-                        client.directedProbe(hostingServiceProxy.getActiveXAddr());
-                try {
-                    probeFuture.get(timeout.toMillis(), TimeUnit.MILLISECONDS);
-                    final Instant finish = Instant.now();
-                    timeout = timeout.minus(Duration.between(start, finish));
-                } catch (Exception e) {
-                    instanceLogger.warn("Trying to request a directed probe failed");
-                    postWatchdogMessage(new Exception("Trying to request a directed probe failed", e));
-                    return;
-                }
-            }
-
-            if (isRunning() && watchdogExecutor.isRunning()) {
-                currentJob =
-                        watchdogExecutor.get().schedule(new WatchdogJob(), timeout.toMillis(), TimeUnit.MILLISECONDS);
-            } else {
-                currentJob = null;
-                instanceLogger.info(
-                        "WatchdogJob has ended, SdcRemoteDeviceWatchdog ({}) or WatchdogExecutor ({}) have ended",
-                        state(), watchdogExecutor.state()
-                );
-            }
+//            Duration timeout = watchdogPeriod;
+//            boolean watchdogRequestSent = false;
+//            for (String serviceId : subscriptions.keySet()) {
+//                final Instant start = Instant.now();
+//                final SubscribeResult subscribeResult = subscriptions.get(serviceId);
+//                final HostedServiceProxy hostedServiceProxy = hostingServiceProxy.getHostedServices().get(serviceId);
+//                if (hostedServiceProxy == null) {
+//                    instanceLogger.warn("Could not find expected hosted service with id {}", serviceId);
+//                    postWatchdogMessage(new Exception(String.format(
+//                            "Could not find expected hosted service with id %s", serviceId)));
+//                    return;
+//                }
+//
+//                final ListenableFuture<Duration> renewFuture = hostedServiceProxy.getEventSinkAccess()
+//                        .renew(subscribeResult.getSubscriptionId(), requestedExpires);
+//
+//                try {
+//                    final Duration grantedExpires = renewFuture.get(timeout.toMillis(), TimeUnit.MILLISECONDS);
+//                    if (grantedExpires.compareTo(watchdogPeriod) < 0) {
+//                        instanceLogger.warn("Too little time granted for subscription on service {} " +
+//                                        "(expected at least {}, got {})",
+//                                serviceId, watchdogPeriod, grantedExpires);
+//                        postWatchdogMessage(new Exception(String.format(
+//                                "Too little time granted for subscription on service %s (expected at least %s, got %s)",
+//                                serviceId, watchdogPeriod, grantedExpires)));
+//                        return;
+//                    }
+//                } catch (Exception e) {
+//                    instanceLogger.warn("Trying to renew subscription running on service {} failed", serviceId);
+//                    postWatchdogMessage(new Exception(String.format(
+//                            "Trying to renew subscription running on service %s failed", serviceId), e));
+//                    return;
+//                }
+//
+//                final Instant finish = Instant.now();
+//                timeout = timeout.minus(Duration.between(start, finish));
+//                if (timeout.toMillis() < 0) {
+//                    instanceLogger.warn("Watchdog timeout exceeded. " +
+//                            "Could not get watchdog triggers served in time.");
+//                    postWatchdogMessage(new Exception("Watchdog timeout exceeded. " +
+//                            "Could not get watchdog triggers served in time."));
+//                    return;
+//                }
+//
+//                watchdogRequestSent = true;
+//            }
+//
+//            if (!watchdogRequestSent) {
+//                final Instant start = Instant.now();
+//                final ListenableFuture<ProbeMatchesType> probeFuture =
+//                        client.directedProbe(hostingServiceProxy.getActiveXAddr());
+//                try {
+//                    probeFuture.get(timeout.toMillis(), TimeUnit.MILLISECONDS);
+//                    final Instant finish = Instant.now();
+//                    timeout = timeout.minus(Duration.between(start, finish));
+//                } catch (Exception e) {
+//                    instanceLogger.warn("Trying to request a directed probe failed");
+//                    postWatchdogMessage(new Exception("Trying to request a directed probe failed", e));
+//                    return;
+//                }
+//            }
+//
+//            if (isRunning() && watchdogExecutor.isRunning()) {
+//                currentJob =
+//                        watchdogExecutor.get().schedule(new WatchdogJob(), timeout.toMillis(), TimeUnit.MILLISECONDS);
+//            } else {
+//                currentJob = null;
+//                instanceLogger.info(
+//                        "WatchdogJob has ended, SdcRemoteDeviceWatchdog ({}) or WatchdogExecutor ({}) have ended",
+//                        state(), watchdogExecutor.state()
+//                );
+//            }
         }
     }
 }

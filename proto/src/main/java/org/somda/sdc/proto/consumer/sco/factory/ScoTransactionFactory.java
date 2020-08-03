@@ -16,7 +16,7 @@ public class ScoTransactionFactory {
     @Inject
     private Injector injector;
 
-    public <T extends AbstractSetResponse> ScoTransactionImpl<T> createScoTransaction(
+    public <T extends AbstractSetResponse> ScoTransactionImpl<T> create(
             @Assisted T response,
             @Assisted @Nullable Consumer<OperationInvokedReport.ReportPart> reportListener) {
         return new ScoTransactionImpl<>(response, reportListener,

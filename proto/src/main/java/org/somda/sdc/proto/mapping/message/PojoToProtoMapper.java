@@ -11,6 +11,7 @@ import org.somda.sdc.biceps.model.message.AbstractMetricReport;
 import org.somda.sdc.biceps.model.message.AbstractOperationalStateReport;
 import org.somda.sdc.biceps.model.message.AbstractReport;
 import org.somda.sdc.biceps.model.message.AbstractSetResponse;
+import org.somda.sdc.biceps.model.message.Activate;
 import org.somda.sdc.biceps.model.message.ActivateResponse;
 import org.somda.sdc.biceps.model.message.EpisodicAlertReport;
 import org.somda.sdc.biceps.model.message.EpisodicComponentReport;
@@ -19,6 +20,7 @@ import org.somda.sdc.biceps.model.message.EpisodicMetricReport;
 import org.somda.sdc.biceps.model.message.EpisodicOperationalStateReport;
 import org.somda.sdc.biceps.model.message.InvocationInfo;
 import org.somda.sdc.biceps.model.message.OperationInvokedReport;
+import org.somda.sdc.biceps.model.message.SetString;
 import org.somda.sdc.biceps.model.message.SetStringResponse;
 import org.somda.sdc.biceps.model.message.WaveformStream;
 import org.somda.sdc.common.CommonConfig;
@@ -35,6 +37,7 @@ import org.somda.sdc.proto.model.biceps.AbstractMetricReportMsg;
 import org.somda.sdc.proto.model.biceps.AbstractOperationalStateReportMsg;
 import org.somda.sdc.proto.model.biceps.AbstractReportMsg;
 import org.somda.sdc.proto.model.biceps.AbstractSetResponseMsg;
+import org.somda.sdc.proto.model.biceps.ActivateMsg;
 import org.somda.sdc.proto.model.biceps.ActivateResponseMsg;
 import org.somda.sdc.proto.model.biceps.EpisodicAlertReportMsg;
 import org.somda.sdc.proto.model.biceps.EpisodicComponentReportMsg;
@@ -46,6 +49,7 @@ import org.somda.sdc.proto.model.biceps.InvocationInfoMsg;
 import org.somda.sdc.proto.model.biceps.InvocationStateMsg;
 import org.somda.sdc.proto.model.biceps.MdibVersionGroupMsg;
 import org.somda.sdc.proto.model.biceps.OperationInvokedReportMsg;
+import org.somda.sdc.proto.model.biceps.SetStringMsg;
 import org.somda.sdc.proto.model.biceps.SetStringResponseMsg;
 import org.somda.sdc.proto.model.biceps.WaveformStreamMsg;
 
@@ -247,6 +251,19 @@ public class PojoToProtoMapper {
         Util.doIfNotNull(invocationInfo.getInvocationState(), it ->
                 builder.setInvocationState(Util.mapToProtoEnum(it, InvocationStateMsg.class)));
         builder.addAllInvocationErrorMessage(baseMapper.mapLocalizedTexts(invocationInfo.getInvocationErrorMessage()));
+        return builder.build();
+    }
+
+    public ActivateMsg mapActivate(Activate pojo) {
+        var builder = ActivateMsg.newBuilder();
+        // todo map arguments
+        //pojo.getArgument()
+        return builder.build();
+    }
+
+    public SetStringMsg mapSetString(SetString pojo) {
+        var builder = SetStringMsg.newBuilder();
+        builder.setRequestedStringValue(pojo.getRequestedStringValue());
         return builder.build();
     }
 }

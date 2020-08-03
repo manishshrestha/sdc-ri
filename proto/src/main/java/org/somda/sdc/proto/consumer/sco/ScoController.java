@@ -9,24 +9,23 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.somda.sdc.biceps.model.message.AbstractSet;
 import org.somda.sdc.biceps.model.message.AbstractSetResponse;
+import org.somda.sdc.biceps.model.message.Activate;
 import org.somda.sdc.biceps.model.message.OperationInvokedReport;
-import org.somda.sdc.biceps.model.message.SetContextState;
+import org.somda.sdc.biceps.model.message.SetString;
 import org.somda.sdc.common.CommonConfig;
+import org.somda.sdc.common.logging.InstanceLogger;
 import org.somda.sdc.common.util.ExecutorWrapperService;
-import org.somda.sdc.dpws.service.HostedServiceProxy;
-import org.somda.sdc.dpws.service.HostingServiceProxy;
-import org.somda.sdc.dpws.soap.SoapMessage;
-import org.somda.sdc.dpws.soap.SoapUtil;
-import org.somda.sdc.dpws.soap.exception.MarshallingException;
-import org.somda.sdc.dpws.soap.exception.SoapFaultException;
-import org.somda.sdc.dpws.soap.exception.TransportException;
-import org.somda.sdc.dpws.soap.interception.InterceptorException;
-import org.somda.sdc.glue.common.ActionConstants;
 import org.somda.sdc.glue.common.WsdlConstants;
+import org.somda.sdc.proto.addressing.AddressingUtil;
 import org.somda.sdc.proto.consumer.SetServiceAccess;
 import org.somda.sdc.proto.consumer.sco.factory.ScoTransactionFactory;
 import org.somda.sdc.proto.consumer.sco.helper.OperationInvocationDispatcher;
 import org.somda.sdc.proto.guice.ProtoConsumer;
+import org.somda.sdc.proto.mapping.message.PojoToProtoMapper;
+import org.somda.sdc.proto.mapping.message.ProtoToPojoMapper;
+import org.somda.sdc.proto.model.ActivateRequest;
+import org.somda.sdc.proto.model.SetServiceGrpc;
+import org.somda.sdc.proto.model.SetStringRequest;
 
 import javax.annotation.Nullable;
 
@@ -35,31 +34,32 @@ import javax.annotation.Nullable;
  */
 public class ScoController implements SetServiceAccess {
     private static final Logger LOG = LogManager.getLogger(ScoController.class);
-    private final HostedServiceProxy setServiceProxy;
-    private final HostedServiceProxy contextServiceProxy;
+    private final SetServiceGrpc.SetServiceBlockingStub setServiceProxy;
     private final OperationInvocationDispatcher operationInvocationDispatcher;
     private final ExecutorWrapperService<ListeningExecutorService> executorService;
-    private final SoapUtil soapUtil;
     private final ScoTransactionFactory scoTransactionFactory;
-    //private final Logger instanceLogger;
+    private final PojoToProtoMapper pojoToProtoMapper;
+    private final ProtoToPojoMapper protoToPojoMapper;
+    private final AddressingUtil addressingUtil;
+    private final Logger instanceLogger;
 
     @AssistedInject
-    ScoController(@Assisted HostingServiceProxy hostingServiceProxy,
-                  @Assisted("setServiceProxy") @Nullable HostedServiceProxy setServiceProxy,
-                  @Assisted("contextServiceProxy") @Nullable HostedServiceProxy contextServiceProxy,
+    ScoController(@Assisted SetServiceGrpc.SetServiceBlockingStub setServiceProxy,
                   OperationInvocationDispatcher operationInvocationDispatcher,
                   @ProtoConsumer ExecutorWrapperService<ListeningExecutorService> executorService,
-                  SoapUtil soapUtil,
                   ScoTransactionFactory scoTransactionFactory,
+                  PojoToProtoMapper pojoToProtoMapper,
+                  ProtoToPojoMapper protoToPojoMapper,
+                  AddressingUtil addressingUtil,
                   @Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier) {
-        //this.instanceLogger = HostingServiceLogger.getLogger(LOG, hostingServiceProxy, frameworkIdentifier);
+        this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);
         this.setServiceProxy = setServiceProxy;
-        this.contextServiceProxy = contextServiceProxy;
         this.operationInvocationDispatcher = operationInvocationDispatcher;
         this.executorService = executorService;
-        this.soapUtil = soapUtil;
         this.scoTransactionFactory = scoTransactionFactory;
-
+        this.pojoToProtoMapper = pojoToProtoMapper;
+        this.protoToPojoMapper = protoToPojoMapper;
+        this.addressingUtil = addressingUtil;
     }
 
     @Override
@@ -75,14 +75,14 @@ public class ScoController implements SetServiceAccess {
             @Nullable java.util.function.Consumer<OperationInvokedReport.ReportPart> reportListener,
             Class<V> responseClass) {
         return executorService.get().submit(() -> {
-//            instanceLogger.debug("Invoke {} operation with payload: {}",
-//                    setRequest.getClass().getSimpleName(), setRequest.toString());
-            final V response = responseClass.cast(sendMessage(setRequest, responseClass));
-//            instanceLogger.debug("Received {} message with payload: {}",
-//                    response.getClass().getSimpleName(), response.toString());
+            instanceLogger.debug("Invoke {} operation with payload: {}",
+                    setRequest.getClass().getSimpleName(), setRequest.toString());
+            final V response = responseClass.cast(sendMessage(setRequest));
+            instanceLogger.debug("Received {} message with payload: {}",
+                    response.getClass().getSimpleName(), response.toString());
 
             final ScoTransactionImpl<V> transaction =
-                    scoTransactionFactory.createScoTransaction(response, reportListener);
+                    scoTransactionFactory.create(response, reportListener);
 
             operationInvocationDispatcher.registerTransaction(transaction);
 
@@ -101,32 +101,25 @@ public class ScoController implements SetServiceAccess {
         operationInvocationDispatcher.dispatchReport(report);
     }
 
-    private <T extends AbstractSet> Object sendMessage(T setRequest, Class<?> expectedResponseClass)
+    private <T extends AbstractSet> Object sendMessage(T setRequest)
             throws InvocationException {
-        String action = WsdlConstants.ACTION_SET_PREFIX + setRequest.getClass().getSimpleName();
-        HostedServiceProxy hostedServiceProxy;
-        if (setRequest.getClass().equals(SetContextState.class)) {
-            if (contextServiceProxy == null) {
-                throw new InvocationException("SetContextState request could not be sent: " +
-                        "no context service available");
-            }
-            action = ActionConstants.ACTION_SET_CONTEXT_STATE;
-            hostedServiceProxy = contextServiceProxy;
-        } else {
-            if (setServiceProxy == null) {
-                throw new InvocationException("Set request could not be sent: no set service available");
-            }
-            hostedServiceProxy = setServiceProxy;
+        var action = WsdlConstants.ACTION_SET_PREFIX + setRequest.getClass().getSimpleName();
+        var addressing = addressingUtil.assemblyAddressing(action);
+        if (setRequest instanceof Activate) {
+            var request = ActivateRequest.newBuilder()
+                    .setAddressing(addressing)
+                    .setPayload(pojoToProtoMapper.mapActivate((Activate) setRequest))
+                    .build();
+            return protoToPojoMapper.map(setServiceProxy.activate(request).getPayload());
+        } else if (setRequest instanceof SetString) {
+            var request = SetStringRequest.newBuilder()
+                    .setAddressing(addressing)
+                    .setPayload(pojoToProtoMapper.mapSetString((SetString) setRequest))
+                    .build();
+            return protoToPojoMapper.map(setServiceProxy.setString(request).getPayload());
         }
 
-        final SoapMessage request = soapUtil.createMessage(action, setRequest);
-        try {
-            final SoapMessage response = hostedServiceProxy.getRequestResponseClient().sendRequestResponse(request);
-            return soapUtil.getBody(response, expectedResponseClass).orElseThrow(() ->
-                    new InvocationException("Received unexpected response"));
-        } catch (InterceptorException | SoapFaultException | MarshallingException | TransportException e) {
-            throw new InvocationException(String.format("Request to %s failed: %s",
-                    hostedServiceProxy.getActiveEprAddress(), e.getMessage()), e);
-        }
+        throw new InvocationException(String.format("Operation type not supported at the moment: %s",
+                setRequest.getClass()));
     }
 }

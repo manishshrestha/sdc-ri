@@ -45,6 +45,7 @@ import javax.xml.namespace.QName;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -182,29 +183,8 @@ public class SdcRemoteDevicesConnectorImpl extends AbstractIdleService
         return reportProcessorProvider.get();
     }
 
-    private Optional<ScoController> createScoController(org.somda.sdc.proto.consumer.Consumer consumerhostingServiceProxy) {
-        throw new RuntimeException("createScoController() NOT IMPLEMENTED YET");
-//        HostedServiceProxy contextServiceProxy = null;
-//        try {
-//            contextServiceProxy = findHostedServiceProxy(hostingServiceProxy, WsdlConstants.PORT_TYPE_CONTEXT_QNAME);
-//        } catch (PrerequisitesException e) {
-//            // ignore and proceed with empty context service
-//        }
-//
-//        HostedServiceProxy setServiceProxy = null;
-//        try {
-//            setServiceProxy = findHostedServiceProxy(hostingServiceProxy, WsdlConstants.PORT_TYPE_SET_QNAME);
-//
-//        } catch (PrerequisitesException e) {
-//            // ignore and proceed with empty set service
-//        }
-//
-//        if (contextServiceProxy == null && setServiceProxy == null) {
-//            return Optional.empty();
-//        }
-//
-//        return Optional.of(scoControllerFactory.createScoController(
-//                hostingServiceProxy, setServiceProxy, contextServiceProxy));
+    private Optional<ScoController> createScoController(org.somda.sdc.proto.consumer.Consumer consumer) {
+        return consumer.getSetService().map(scoControllerFactory::create);
     }
 
     @Override
@@ -262,7 +242,17 @@ public class SdcRemoteDevicesConnectorImpl extends AbstractIdleService
                                                            ReportProcessor reportProcessor,
                                                            @Nullable ScoController scoController)
             throws PrerequisitesException {
-        throw new RuntimeException("subscribeServices() NOT IMPLEMENTED YET");
+        consumer.getSetService().ifPresent(setService -> {
+            if (scoController == null) {
+                return;
+            }
+
+            // setService.operationInvokedReport()
+        });
+
+        return Collections.emptyMap();
+
+
 //        // Multimap<ServiceId, ActionUri>
 //        final Multimap<String, String> subscriptions =
 //                getServiceIdWithActionsToSubscribe(hostingServiceProxy, actionsToSubscribe);
