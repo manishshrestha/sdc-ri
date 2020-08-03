@@ -196,16 +196,18 @@ public class HighPriorityServices {
                     var element = queue.poll();
                     // this will throw and kill the subscription, should be changed at some point
                     assert element != null;
-                    var action = element.getLeft();
-                    if (END_ACTION.equals(action)) {
-                        responseObserver.onCompleted();
-                        return;
+                    if (element != null) {
+                        var action = element.getLeft();
+                        if (END_ACTION.equals(action)) {
+                            responseObserver.onCompleted();
+                            return;
+                        }
+                        var report = element.getRight();
+                        var message = EpisodicReportStream.newBuilder()
+                                .setReport(report)
+                                .setAddressing(Addressing.newBuilder().setAction(action).build());
+                        responseObserver.onNext(message.build());
                     }
-                    var report = element.getRight();
-                    var message = EpisodicReportStream.newBuilder()
-                            .setReport(report)
-                            .setAddressing(Addressing.newBuilder().setAction(action).build());
-                    responseObserver.onNext(message.build());
                 }
             } finally {
                 actions.forEach(action -> queueMap.remove(action, queue));

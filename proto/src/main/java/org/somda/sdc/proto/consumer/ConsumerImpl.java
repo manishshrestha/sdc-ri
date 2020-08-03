@@ -15,6 +15,7 @@ import org.somda.sdc.dpws.crypto.CryptoSettings;
 import org.somda.sdc.proto.common.ProtoConstants;
 import org.somda.sdc.proto.crypto.CryptoUtil;
 import org.somda.sdc.proto.model.GetServiceGrpc;
+import org.somda.sdc.proto.model.MdibReportingServiceGrpc;
 import org.somda.sdc.proto.model.SetServiceGrpc;
 import org.somda.sdc.proto.model.addressing.EndpointReference;
 import org.somda.sdc.proto.model.discovery.DeviceMetadata;
@@ -38,6 +39,7 @@ public class ConsumerImpl implements Consumer {
     private SetServiceGrpc.SetServiceBlockingStub setServiceStub;
     private DeviceMetadata metadata;
     private EndpointReference epr;
+    private MdibReportingServiceGrpc.MdibReportingServiceStub reportingServiceStub;
 
     @Inject
     ConsumerImpl(@Nullable @Named(CryptoConfig.CRYPTO_SETTINGS) CryptoSettings cryptoSettings,
@@ -48,6 +50,7 @@ public class ConsumerImpl implements Consumer {
 
         this.getServiceStub = null;
         this.setServiceStub = null;
+        this.reportingServiceStub = null;
     }
 
     @Override
@@ -88,6 +91,8 @@ public class ConsumerImpl implements Consumer {
                 getServiceStub = GetServiceGrpc.newBlockingStub(channel);
             } else if (ProtoConstants.SET_SERVICE_QNAME.equals(type)) {
                 setServiceStub = SetServiceGrpc.newBlockingStub(channel);
+            } else if (ProtoConstants.MDIB_REPORTING_SERVICE_QNAME.equals(type)) {
+                reportingServiceStub = MdibReportingServiceGrpc.newStub(channel);
             }
         });
 
@@ -112,6 +117,10 @@ public class ConsumerImpl implements Consumer {
     @Override
     public Optional<SetServiceGrpc.SetServiceBlockingStub> getSetService() {
         return Optional.ofNullable(setServiceStub);
+    }
+
+    public Optional<MdibReportingServiceGrpc.MdibReportingServiceStub> getMdibReportingService() {
+        return Optional.of(reportingServiceStub);
     }
 
     @Override

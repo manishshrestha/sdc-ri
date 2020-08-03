@@ -23,11 +23,10 @@ import org.somda.sdc.dpws.soap.exception.TransportException;
 import org.somda.sdc.dpws.soap.interception.InterceptorException;
 import org.somda.sdc.glue.common.ActionConstants;
 import org.somda.sdc.glue.common.WsdlConstants;
-import org.somda.sdc.glue.guice.Consumer;
 import org.somda.sdc.proto.consumer.SetServiceAccess;
-import org.somda.sdc.proto.consumer.sco.factory.OperationInvocationDispatcherFactory;
 import org.somda.sdc.proto.consumer.sco.factory.ScoTransactionFactory;
 import org.somda.sdc.proto.consumer.sco.helper.OperationInvocationDispatcher;
+import org.somda.sdc.proto.guice.ProtoConsumer;
 
 import javax.annotation.Nullable;
 
@@ -48,16 +47,15 @@ public class ScoController implements SetServiceAccess {
     ScoController(@Assisted HostingServiceProxy hostingServiceProxy,
                   @Assisted("setServiceProxy") @Nullable HostedServiceProxy setServiceProxy,
                   @Assisted("contextServiceProxy") @Nullable HostedServiceProxy contextServiceProxy,
-                  OperationInvocationDispatcherFactory operationInvocationDispatcherFactory,
-                  @Consumer ExecutorWrapperService<ListeningExecutorService> executorService,
+                  OperationInvocationDispatcher operationInvocationDispatcher,
+                  @ProtoConsumer ExecutorWrapperService<ListeningExecutorService> executorService,
                   SoapUtil soapUtil,
                   ScoTransactionFactory scoTransactionFactory,
                   @Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier) {
         //this.instanceLogger = HostingServiceLogger.getLogger(LOG, hostingServiceProxy, frameworkIdentifier);
         this.setServiceProxy = setServiceProxy;
         this.contextServiceProxy = contextServiceProxy;
-        this.operationInvocationDispatcher =
-                operationInvocationDispatcherFactory.createOperationInvocationDispatcher(hostingServiceProxy);
+        this.operationInvocationDispatcher = operationInvocationDispatcher;
         this.executorService = executorService;
         this.soapUtil = soapUtil;
         this.scoTransactionFactory = scoTransactionFactory;

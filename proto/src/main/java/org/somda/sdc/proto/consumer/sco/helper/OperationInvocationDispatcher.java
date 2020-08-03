@@ -8,6 +8,7 @@ import org.apache.logging.log4j.Logger;
 import org.somda.sdc.biceps.model.message.AbstractSetResponse;
 import org.somda.sdc.biceps.model.message.OperationInvokedReport;
 import org.somda.sdc.common.CommonConfig;
+import org.somda.sdc.common.logging.InstanceLogger;
 import org.somda.sdc.dpws.service.HostingServiceProxy;
 import org.somda.sdc.glue.consumer.ConsumerConfig;
 import org.somda.sdc.glue.consumer.helper.HostingServiceLogger;
@@ -36,12 +37,11 @@ public class OperationInvocationDispatcher {
     private final Logger instanceLogger;
 
     @Inject
-    OperationInvocationDispatcher(@Assisted HostingServiceProxy hostingServiceProxy,
-                                  ScoUtil scoUtil,
+    OperationInvocationDispatcher(ScoUtil scoUtil,
                                   @Named(ConsumerConfig.AWAITING_TRANSACTION_TIMEOUT)
                                           Duration awaitingTransactionTimeout,
                                   @Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier) {
-        this.instanceLogger = HostingServiceLogger.getLogger(LOG, hostingServiceProxy, frameworkIdentifier);
+        this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);
         this.scoUtil = scoUtil;
         this.awaitingTransactionTimeout = awaitingTransactionTimeout;
         this.pendingReports = new HashMap<>();

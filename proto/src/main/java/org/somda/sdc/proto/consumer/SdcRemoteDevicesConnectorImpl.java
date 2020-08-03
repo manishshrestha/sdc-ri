@@ -14,12 +14,8 @@ import org.apache.logging.log4j.Logger;
 import org.somda.sdc.biceps.common.storage.PreprocessingException;
 import org.somda.sdc.biceps.consumer.access.RemoteMdibAccess;
 import org.somda.sdc.biceps.consumer.access.factory.RemoteMdibAccessFactory;
-import org.somda.sdc.biceps.model.message.AbstractReport;
 import org.somda.sdc.biceps.model.message.GetContextStatesResponse;
-import org.somda.sdc.biceps.model.message.GetMdibResponse;
 import org.somda.sdc.biceps.model.message.ObjectFactory;
-import org.somda.sdc.biceps.model.message.OperationInvokedReport;
-import org.somda.sdc.biceps.model.participant.Mdib;
 import org.somda.sdc.common.CommonConfig;
 import org.somda.sdc.common.logging.InstanceLogger;
 import org.somda.sdc.common.util.ExecutorWrapperService;
@@ -27,17 +23,8 @@ import org.somda.sdc.dpws.DpwsConfig;
 import org.somda.sdc.dpws.DpwsFramework;
 import org.somda.sdc.dpws.service.HostedServiceProxy;
 import org.somda.sdc.dpws.service.HostingServiceProxy;
-import org.somda.sdc.dpws.soap.SoapMessage;
 import org.somda.sdc.dpws.soap.SoapUtil;
-import org.somda.sdc.dpws.soap.exception.MarshallingException;
-import org.somda.sdc.dpws.soap.exception.SoapFaultException;
-import org.somda.sdc.dpws.soap.exception.TransportException;
-import org.somda.sdc.dpws.soap.interception.Interceptor;
-import org.somda.sdc.dpws.soap.interception.InterceptorException;
-import org.somda.sdc.dpws.soap.interception.MessageInterceptor;
-import org.somda.sdc.dpws.soap.interception.NotificationObject;
 import org.somda.sdc.dpws.soap.wseventing.SubscribeResult;
-
 import org.somda.sdc.glue.common.MdibVersionUtil;
 import org.somda.sdc.glue.common.SubscribableActionsMapping;
 import org.somda.sdc.glue.common.factory.ModificationsBuilderFactory;
@@ -45,12 +32,11 @@ import org.somda.sdc.glue.consumer.ConsumerConfig;
 import org.somda.sdc.proto.consumer.event.RemoteDeviceConnectedMessage;
 import org.somda.sdc.proto.consumer.event.WatchdogMessage;
 import org.somda.sdc.proto.consumer.factory.SdcRemoteDeviceFactory;
-import org.somda.sdc.proto.consumer.factory.SdcRemoteDeviceWatchdogFactory;
 import org.somda.sdc.proto.consumer.report.ReportProcessingException;
 import org.somda.sdc.proto.consumer.report.ReportProcessor;
 import org.somda.sdc.proto.consumer.sco.ScoController;
 import org.somda.sdc.proto.consumer.sco.factory.ScoControllerFactory;
-import org.somda.sdc.proto.model.discovery.Endpoint;
+import org.somda.sdc.proto.guice.ProtoConsumer;
 
 import javax.annotation.Nullable;
 import javax.inject.Inject;
@@ -59,15 +45,10 @@ import javax.xml.namespace.QName;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 @SuppressWarnings("UnstableApiUsage")
 public class SdcRemoteDevicesConnectorImpl extends AbstractIdleService
@@ -88,11 +69,10 @@ public class SdcRemoteDevicesConnectorImpl extends AbstractIdleService
     private final ObjectFactory messageModelFactory;
     private final MdibVersionUtil mdibVersionUtil;
     private final SdcRemoteDeviceFactory sdcRemoteDeviceFactory;
-    private final SdcRemoteDeviceWatchdogFactory watchdogFactory;
     private final String frameworkIdentifier;
 
     @Inject
-    SdcRemoteDevicesConnectorImpl(@org.somda.sdc.glue.guice.Consumer ExecutorWrapperService<ListeningExecutorService> executorService,
+    SdcRemoteDevicesConnectorImpl(@ProtoConsumer ExecutorWrapperService<ListeningExecutorService> executorService,
                                   ConcurrentHashMap<String, SdcRemoteDevice> sdcRemoteDevices,
                                   EventBus eventBus,
                                   Provider<ReportProcessor> reportProcessorProvider,
@@ -105,7 +85,6 @@ public class SdcRemoteDevicesConnectorImpl extends AbstractIdleService
                                   ObjectFactory messageModelFactory,
                                   MdibVersionUtil mdibVersionUtil,
                                   SdcRemoteDeviceFactory sdcRemoteDeviceFactory,
-                                  SdcRemoteDeviceWatchdogFactory watchdogFactory,
                                   DpwsFramework dpwsFramework,
                                   @Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier) {
         this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);
@@ -122,7 +101,6 @@ public class SdcRemoteDevicesConnectorImpl extends AbstractIdleService
         this.messageModelFactory = messageModelFactory;
         this.mdibVersionUtil = mdibVersionUtil;
         this.sdcRemoteDeviceFactory = sdcRemoteDeviceFactory;
-        this.watchdogFactory = watchdogFactory;
         this.frameworkIdentifier = frameworkIdentifier;
 
         dpwsFramework.registerService(List.of(executorService, this));
@@ -165,8 +143,6 @@ public class SdcRemoteDevicesConnectorImpl extends AbstractIdleService
                 }
 
                 //tempLog.info("Start watchdog");
-                var watchdog =
-                        watchdogFactory.create(consumer, subscribeResults, this);
 
                 //tempLog.info("Create and run remote device structure");
                 var sdcRemoteDevice = sdcRemoteDeviceFactory.create(
@@ -174,7 +150,8 @@ public class SdcRemoteDevicesConnectorImpl extends AbstractIdleService
                         mdibAccess,
                         reportProcessor,
                         scoController.orElse(null),
-                        watchdog);
+                        null
+                );
                 sdcRemoteDevice.startAsync().awaitRunning();
                 //tempLog.info("Remote device is running");
 

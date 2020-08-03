@@ -2,6 +2,7 @@ package org.somda.sdc.proto.consumer;
 
 import io.grpc.Channel;
 import org.somda.sdc.proto.model.GetServiceGrpc;
+import org.somda.sdc.proto.model.MdibReportingServiceGrpc;
 import org.somda.sdc.proto.model.SetServiceGrpc;
 import org.somda.sdc.proto.model.discovery.DeviceMetadata;
 import org.somda.sdc.proto.model.discovery.DiscoveryTypes;
@@ -35,6 +36,8 @@ public interface Consumer {
      * @return set service stub if connected
      */
     Optional<SetServiceGrpc.SetServiceBlockingStub> getSetService();
+
+    Optional<MdibReportingServiceGrpc.MdibReportingServiceStub> getMdibReportingService();
 
     /**
      * @return channel to current provider if connected

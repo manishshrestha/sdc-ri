@@ -8,10 +8,23 @@ import com.google.inject.Provides;
 import com.google.inject.assistedinject.FactoryModuleBuilder;
 import org.somda.sdc.common.CommonConfig;
 import org.somda.sdc.common.util.ExecutorWrapperService;
+import org.somda.sdc.dpws.guice.DiscoveryUdpQueue;
+import org.somda.sdc.dpws.udp.UdpBindingService;
+import org.somda.sdc.dpws.udp.UdpBindingServiceImpl;
+import org.somda.sdc.dpws.udp.UdpMessageQueueService;
+import org.somda.sdc.dpws.udp.UdpMessageQueueServiceImpl;
+import org.somda.sdc.dpws.udp.factory.UdpBindingServiceFactory;
 import org.somda.sdc.proto.addressing.AddressingValidator;
 import org.somda.sdc.proto.addressing.factory.AddressingValidatorFactory;
 import org.somda.sdc.proto.consumer.Consumer;
 import org.somda.sdc.proto.consumer.ConsumerImpl;
+import org.somda.sdc.proto.consumer.SdcRemoteDevice;
+import org.somda.sdc.proto.consumer.SdcRemoteDeviceImpl;
+import org.somda.sdc.proto.consumer.SdcRemoteDeviceWatchdog;
+import org.somda.sdc.proto.consumer.SdcRemoteDevicesConnector;
+import org.somda.sdc.proto.consumer.SdcRemoteDevicesConnectorImpl;
+import org.somda.sdc.proto.consumer.factory.SdcRemoteDeviceFactory;
+import org.somda.sdc.proto.consumer.factory.SdcRemoteDeviceWatchdogFactory;
 import org.somda.sdc.proto.discovery.common.UdpUtil;
 import org.somda.sdc.proto.discovery.provider.TargetService;
 import org.somda.sdc.proto.discovery.provider.TargetServiceImpl;
@@ -48,6 +61,7 @@ import java.util.concurrent.Executors;
 public class DefaultProtoModule extends AbstractModule {
 
     private ExecutorWrapperService<ListeningExecutorService> discoveryExecutor;
+    private ExecutorWrapperService<ListeningExecutorService> consumerExecutor;
 //    private ExecutorWrapperService<ScheduledExecutorService> watchdogScheduledExecutor;
 
 //    public DefaultProtoDiscoveryModule() {
@@ -85,14 +99,25 @@ public class DefaultProtoModule extends AbstractModule {
                 .implement(ScoController.class, ScoController.class)
                 .build(ScoControllerFactory.class));
         install(new FactoryModuleBuilder()
+                .implement(org.somda.sdc.proto.consumer.sco.ScoController.class, org.somda.sdc.proto.consumer.sco.ScoController.class)
+                .build(org.somda.sdc.proto.consumer.sco.factory.ScoControllerFactory.class));
+        install(new FactoryModuleBuilder()
                 .implement(SetService.class, SetService.class)
                 .build(SetServiceFactory.class));
         install(new FactoryModuleBuilder()
                 .implement(SdcDevice.class, SdcDeviceImpl.class)
                 .build(SdcDeviceFactory.class));
-        bind(Consumer.class).to(ConsumerImpl.class);
+        install(new FactoryModuleBuilder()
+                .implement(SdcRemoteDevice.class, SdcRemoteDeviceImpl.class)
+                .build(SdcRemoteDeviceFactory.class));
+        install(new FactoryModuleBuilder()
+                .implement(UdpBindingService.class, UdpBindingServiceImpl.class)
+                .build(UdpBindingServiceFactory.class));
 
+        bind(Consumer.class).to(ConsumerImpl.class);
+        bind(SdcRemoteDevicesConnector.class).to(SdcRemoteDevicesConnectorImpl.class);
         bind(UdpUtil.class).annotatedWith(ProtoDiscovery.class).to(UdpUtil.class).asEagerSingleton();
+        bind(UdpMessageQueueService.class).annotatedWith(DiscoveryUdpQueue.class).to(UdpMessageQueueServiceImpl.class).asEagerSingleton();
     }
 
     //    private void configureCommon() {
@@ -160,6 +185,24 @@ public class DefaultProtoModule extends AbstractModule {
             discoveryExecutor = new ExecutorWrapperService<>(executor, "ProtoDiscovery", frameworkIdentifier);
         }
         return discoveryExecutor;
+    }
+
+    @Provides
+    @ProtoConsumer
+    ExecutorWrapperService<ListeningExecutorService> getConsumerExecutor(
+            @com.google.inject.name.Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier) {
+        if (consumerExecutor == null) {
+            Callable<ListeningExecutorService> executor =
+                    () -> MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(
+                            10,
+                            new ThreadFactoryBuilder()
+                                    .setNameFormat("Consumer-thread-%d")
+                                    .setDaemon(true)
+                                    .build()
+                    ));
+            consumerExecutor = new ExecutorWrapperService<>(executor, "Consumer", frameworkIdentifier);
+        }
+        return consumerExecutor;
     }
 //
 //    @Provides

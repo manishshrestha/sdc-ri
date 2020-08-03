@@ -2,8 +2,10 @@ package it.org.somda.sdc.proto.example1.provider;
 
 import com.example.Constants;
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Streams;
 import com.google.common.util.concurrent.AbstractIdleService;
 import com.google.inject.Injector;
+import com.google.inject.Key;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.Test;
@@ -15,6 +17,12 @@ import org.somda.sdc.biceps.common.storage.PreprocessingException;
 import org.somda.sdc.biceps.model.participant.*;
 import org.somda.sdc.biceps.provider.access.LocalMdibAccess;
 import org.somda.sdc.biceps.provider.access.factory.LocalMdibAccessFactory;
+import org.somda.sdc.dpws.DpwsConstants;
+import org.somda.sdc.dpws.guice.DiscoveryUdpQueue;
+import org.somda.sdc.dpws.soap.wsdiscovery.WsDiscoveryConstants;
+import org.somda.sdc.dpws.udp.UdpBindingService;
+import org.somda.sdc.dpws.udp.UdpMessageQueueService;
+import org.somda.sdc.dpws.udp.factory.UdpBindingServiceFactory;
 import org.somda.sdc.glue.common.FallbackInstanceIdentifier;
 import org.somda.sdc.glue.common.MdibXmlIo;
 import org.somda.sdc.glue.common.factory.ModificationsBuilderFactory;
@@ -26,7 +34,9 @@ import java.io.InputStream;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.RoundingMode;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.time.Instant;
@@ -45,6 +55,8 @@ public class Provider extends AbstractIdleService {
     private static final Logger LOG = LogManager.getLogger(com.example.provider1.Provider.class);
 
     private static final int MAX_ENUM_ITERATIONS = 17;
+    private final UdpMessageQueueService udpQueue;
+    private final UdpBindingService udpBindingService;
 
     private Injector injector;
     private LocalMdibAccess mdibAccess;
@@ -60,11 +72,14 @@ public class Provider extends AbstractIdleService {
      * @throws SocketException      thrown if network adapter cannot be set up
      * @throws UnknownHostException if provided address cannot be resolved to an adapter
      */
-    public Provider(ProviderUtil providerUtil) throws SocketException, UnknownHostException {
+    public Provider(ProviderUtil providerUtil) throws Exception {
         this.injector = providerUtil.getInjector();
 
         var serverAddr = new InetSocketAddress("127.0.0.1", 13373);
-        var epr = "urn:uuid:" + UUID.randomUUID().toString();
+//        var epr = "urn:uuid:" + UUID.randomUUID().toString();
+        // TODO: Unmagic me.
+        var epr = "urn:uuid:d4e63551-8546-492c-bead-ae764dad89f6";
+
         this.mdibAccess = injector.getInstance(LocalMdibAccessFactory.class).createLocalMdibAccess();
 
         var handler = new OperationHandler(this.mdibAccess);
@@ -76,6 +91,24 @@ public class Provider extends AbstractIdleService {
         this.instanceIdentifier.setRootName("AwesomeExampleInstance");
 
         this.currentLocation = null;
+
+        var networkInterface = NetworkInterface.networkInterfaces()
+                .filter(iface -> Streams.stream(iface.getInetAddresses().asIterator())
+                        .map(InetAddress::getHostAddress)
+                        .anyMatch(addr -> addr.contains(serverAddr.getAddress().getHostAddress()))
+                ).findFirst().orElseThrow(Exception::new);
+
+        udpQueue = injector.getInstance(Key.get(UdpMessageQueueService.class, DiscoveryUdpQueue.class));
+
+        var wsdMulticastAddress = InetAddress.getByName(WsDiscoveryConstants.IPV4_MULTICAST_ADDRESS);
+
+        udpBindingService = injector.getInstance(UdpBindingServiceFactory.class).createUdpBindingService(
+                networkInterface,
+                wsdMulticastAddress,
+                DpwsConstants.DISCOVERY_PORT,
+                DpwsConstants.MAX_UDP_ENVELOPE_SIZE);
+        udpQueue.setUdpBinding(udpBindingService);
+        udpBindingService.setMessageReceiver(udpQueue);
     }
 
     @Override
@@ -98,11 +131,15 @@ public class Provider extends AbstractIdleService {
             this.setLocation(currentLocation);
         }
         this.sdcDevice.startAsync().awaitRunning();
+        udpQueue.startAsync().awaitRunning();
+        udpBindingService.startAsync().awaitRunning();
     }
 
     @Override
     protected void shutDown() throws Exception {
         this.sdcDevice.stopAsync().awaitTerminated();
+        udpQueue.stopAsync().awaitTerminated();
+        udpBindingService.stopAsync().awaitTerminated();
 
     }
 
