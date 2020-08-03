@@ -35,7 +35,12 @@ public interface Consumer {
     /**
      * @return set service stub if connected
      */
-    Optional<SetServiceGrpc.SetServiceBlockingStub> getSetService();
+    Optional<SetServiceGrpc.SetServiceStub> getNonblockingSetService();
+
+    /**
+     * @return set service stub if connected
+     */
+    Optional<SetServiceGrpc.SetServiceBlockingStub> getBlockingSetService();
 
     Optional<MdibReportingServiceGrpc.MdibReportingServiceStub> getMdibReportingService();
 

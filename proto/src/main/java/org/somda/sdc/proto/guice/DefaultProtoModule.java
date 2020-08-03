@@ -118,7 +118,9 @@ public class DefaultProtoModule extends AbstractModule {
         install(new FactoryModuleBuilder()
                 .implement(ReportGenerator.class, ReportGenerator.class)
                 .build(ReportGeneratorFactory.class));
-
+        install(new FactoryModuleBuilder()
+                .implement(SdcRemoteDeviceWatchdog.class, SdcRemoteDeviceWatchdog.class)
+                .build(SdcRemoteDeviceWatchdogFactory.class));
         bind(Consumer.class).to(ConsumerImpl.class);
         bind(SdcRemoteDevicesConnector.class).to(SdcRemoteDevicesConnectorImpl.class);
         bind(UdpUtil.class).annotatedWith(ProtoDiscovery.class).to(UdpUtil.class).asEagerSingleton();

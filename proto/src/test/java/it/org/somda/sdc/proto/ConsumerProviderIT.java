@@ -129,7 +129,7 @@ public class ConsumerProviderIT {
         var consumerGetService = consumer.getGetService().orElseThrow(() -> new Exception("No get service"));
         var getMdibResponse = consumerGetService.getMdib(GetMdibRequest.getDefaultInstance());
         LOG.debug("getMdibResponse {}", getMdibResponse);
-        assertTrue(consumer.getSetService().isEmpty(), "SetService stub should not be present.");
+        assertTrue(consumer.getBlockingSetService().isEmpty(), "SetService stub should not be present.");
 
         consumer.disconnect();
         provider.stopAsync().awaitTerminated();

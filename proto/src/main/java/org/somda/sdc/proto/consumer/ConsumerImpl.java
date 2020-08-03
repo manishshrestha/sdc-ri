@@ -36,7 +36,8 @@ public class ConsumerImpl implements Consumer {
     private final CryptoSettings cryptoSettings;
     private MetadataServiceGrpc.MetadataServiceBlockingStub metadataStub;
     private GetServiceGrpc.GetServiceBlockingStub getServiceStub;
-    private SetServiceGrpc.SetServiceBlockingStub setServiceStub;
+    private SetServiceGrpc.SetServiceStub nonBlockingSetServiceStub;
+    private SetServiceGrpc.SetServiceBlockingStub blockingSetServiceStub;
     private DeviceMetadata metadata;
     private EndpointReference epr;
     private MdibReportingServiceGrpc.MdibReportingServiceStub reportingServiceStub;
@@ -49,7 +50,8 @@ public class ConsumerImpl implements Consumer {
         this.metadataStub = null;
 
         this.getServiceStub = null;
-        this.setServiceStub = null;
+        this.nonBlockingSetServiceStub = null;
+        this.blockingSetServiceStub = null;
         this.reportingServiceStub = null;
     }
 
@@ -90,7 +92,8 @@ public class ConsumerImpl implements Consumer {
             if (ProtoConstants.GET_SERVICE_QNAME.equals(type)) {
                 getServiceStub = GetServiceGrpc.newBlockingStub(channel);
             } else if (ProtoConstants.SET_SERVICE_QNAME.equals(type)) {
-                setServiceStub = SetServiceGrpc.newBlockingStub(channel);
+                nonBlockingSetServiceStub = SetServiceGrpc.newStub(channel);
+                blockingSetServiceStub = SetServiceGrpc.newBlockingStub(channel);
             } else if (ProtoConstants.MDIB_REPORTING_SERVICE_QNAME.equals(type)) {
                 reportingServiceStub = MdibReportingServiceGrpc.newStub(channel);
             }
@@ -115,8 +118,13 @@ public class ConsumerImpl implements Consumer {
     }
 
     @Override
-    public Optional<SetServiceGrpc.SetServiceBlockingStub> getSetService() {
-        return Optional.ofNullable(setServiceStub);
+    public Optional<SetServiceGrpc.SetServiceStub> getNonblockingSetService() {
+        return Optional.ofNullable(nonBlockingSetServiceStub);
+    }
+
+    @Override
+    public Optional<SetServiceGrpc.SetServiceBlockingStub> getBlockingSetService() {
+        return Optional.ofNullable(blockingSetServiceStub);
     }
 
     public Optional<MdibReportingServiceGrpc.MdibReportingServiceStub> getMdibReportingService() {
@@ -136,7 +144,7 @@ public class ConsumerImpl implements Consumer {
 
             metadataStub = null;
             getServiceStub = null;
-            setServiceStub = null;
+            nonBlockingSetServiceStub = null;
         }
     }
 }

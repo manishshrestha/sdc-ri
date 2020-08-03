@@ -9,6 +9,7 @@ import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.inject.Provider;
+import io.grpc.stub.StreamObserver;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.somda.sdc.biceps.common.storage.PreprocessingException;
@@ -29,14 +30,19 @@ import org.somda.sdc.glue.common.MdibVersionUtil;
 import org.somda.sdc.glue.common.SubscribableActionsMapping;
 import org.somda.sdc.glue.common.factory.ModificationsBuilderFactory;
 import org.somda.sdc.glue.consumer.ConsumerConfig;
+import org.somda.sdc.proto.addressing.AddressingUtil;
 import org.somda.sdc.proto.consumer.event.RemoteDeviceConnectedMessage;
 import org.somda.sdc.proto.consumer.event.WatchdogMessage;
 import org.somda.sdc.proto.consumer.factory.SdcRemoteDeviceFactory;
+import org.somda.sdc.proto.consumer.factory.SdcRemoteDeviceWatchdogFactory;
 import org.somda.sdc.proto.consumer.report.ReportProcessingException;
 import org.somda.sdc.proto.consumer.report.ReportProcessor;
 import org.somda.sdc.proto.consumer.sco.ScoController;
 import org.somda.sdc.proto.consumer.sco.factory.ScoControllerFactory;
 import org.somda.sdc.proto.guice.ProtoConsumer;
+import org.somda.sdc.proto.mapping.message.ProtoToPojoMapper;
+import org.somda.sdc.proto.model.OperationInvokedReportRequest;
+import org.somda.sdc.proto.model.OperationInvokedReportStream;
 
 import javax.annotation.Nullable;
 import javax.inject.Inject;
@@ -59,6 +65,10 @@ public class SdcRemoteDevicesConnectorImpl extends AbstractIdleService
     private ExecutorWrapperService<ListeningExecutorService> executorService;
     private Map<String, SdcRemoteDevice> sdcRemoteDevices;
     private EventBus eventBus;
+    private final DpwsFramework dpwsFramework;
+    private final AddressingUtil addressingUtil;
+    private final ProtoToPojoMapper protoToPojoMapper;
+    private final SdcRemoteDeviceWatchdogFactory watchdogFactory;
     private final Logger instanceLogger;
     private final Provider<ReportProcessor> reportProcessorProvider;
     private final ScoControllerFactory scoControllerFactory;
@@ -87,7 +97,14 @@ public class SdcRemoteDevicesConnectorImpl extends AbstractIdleService
                                   MdibVersionUtil mdibVersionUtil,
                                   SdcRemoteDeviceFactory sdcRemoteDeviceFactory,
                                   DpwsFramework dpwsFramework,
+                                  AddressingUtil addressingUtil,
+                                  ProtoToPojoMapper protoToPojoMapper,
+                                  SdcRemoteDeviceWatchdogFactory watchdogFactory,
                                   @Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier) {
+        this.dpwsFramework = dpwsFramework;
+        this.addressingUtil = addressingUtil;
+        this.protoToPojoMapper = protoToPojoMapper;
+        this.watchdogFactory = watchdogFactory;
         this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);
         this.executorService = executorService;
         this.sdcRemoteDevices = sdcRemoteDevices;
@@ -125,9 +142,13 @@ public class SdcRemoteDevicesConnectorImpl extends AbstractIdleService
                 var mdibAccess = createRemoteMdibAccess(consumer);
                 var scoController = createScoController(consumer);
 
+                //tempLog.info("Start watchdog");
+
+                var watchdog = watchdogFactory.create(consumer, this);
+
                 // Map<ServiceId, SubscribeResult>
                 // use these later for watchdog, which is in charge of automatic renew
-                var subscribeResults = subscribeServices(consumer,
+                var subscribeResults = subscribeServices(consumer, watchdog,
                         connectConfiguration.getActions(), reportProcessor, scoController.orElse(null));
 
                 GetContextStatesResponse getContextStatesResponse = null;
@@ -143,16 +164,15 @@ public class SdcRemoteDevicesConnectorImpl extends AbstractIdleService
                     throw new PrerequisitesException("Could not start applying reports on remote MDIB access", e);
                 }
 
-                //tempLog.info("Start watchdog");
-
                 //tempLog.info("Create and run remote device structure");
                 var sdcRemoteDevice = sdcRemoteDeviceFactory.create(
                         consumer,
                         mdibAccess,
                         reportProcessor,
                         scoController.orElse(null),
-                        null
+                        watchdog
                 );
+
                 sdcRemoteDevice.startAsync().awaitRunning();
                 //tempLog.info("Remote device is running");
 
@@ -184,7 +204,7 @@ public class SdcRemoteDevicesConnectorImpl extends AbstractIdleService
     }
 
     private Optional<ScoController> createScoController(org.somda.sdc.proto.consumer.Consumer consumer) {
-        return consumer.getSetService().map(scoControllerFactory::create);
+        return consumer.getBlockingSetService().map(scoControllerFactory::create);
     }
 
     @Override
@@ -238,18 +258,42 @@ public class SdcRemoteDevicesConnectorImpl extends AbstractIdleService
     }
 
     private Map<String, SubscribeResult> subscribeServices(org.somda.sdc.proto.consumer.Consumer consumer,
+                                                           SdcRemoteDeviceWatchdog watchdog,
                                                            Collection<String> actionsToSubscribe,
                                                            ReportProcessor reportProcessor,
                                                            @Nullable ScoController scoController)
             throws PrerequisitesException {
-        consumer.getSetService().ifPresent(setService -> {
+        consumer.getNonblockingSetService().ifPresent(setService -> {
             if (scoController == null) {
                 return;
             }
 
-            // setService.operationInvokedReport()
+            setService.operationInvokedReport(OperationInvokedReportRequest.newBuilder()
+                            .setAddressing(addressingUtil.assemblyAddressing("subscribe-operations")).build(),
+                    new StreamObserver<>() {
+                        @Override
+                        public void onNext(OperationInvokedReportStream operationInvokedReportStream) {
+                            scoController.processOperationInvokedReport(
+                                    protoToPojoMapper.map(operationInvokedReportStream.getOperationInvoked()));
+                        }
+
+                        @Override
+                        public void onError(Throwable throwable) {
+                            watchdog.postWatchdogMessage(new Exception("OperationInvokedReports are no longer " +
+                                    String.format("subscribed as there was an unexpected error: %s",
+                                            throwable.getMessage()), throwable));
+                        }
+
+                        @Override
+                        public void onCompleted() {
+                            watchdog.postWatchdogMessage(
+                                    new Exception("OperationInvokedReports are no longer subscribed as the remote " +
+                                            "device cancelled the report stream"));
+                        }
+                    });
         });
 
+        // todo implement subscription to MDIB changes
         return Collections.emptyMap();
 
 
