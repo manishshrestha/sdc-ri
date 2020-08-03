@@ -15,9 +15,9 @@ import java.util.Optional;
  * @see <a href="https://www.w3.org/TR/2007/REC-soap12-part1-20070427/#soapfault">SOAP Fault</a>
  */
 public class SoapFaultException extends Exception {
+    private static final String UNSPECIFIED_MESSAGE = "http://www.w3.org/2005/08/addressing/unspecified";
     private final SoapMessage faultMessage;
     private final Fault fault;
-    private static final String UNSPECIFIED_MESSAGE = "http://www.w3.org/2005/08/addressing/unspecified";
 
     /**
      * Constructor that requires an wrapped SOAP fault message.

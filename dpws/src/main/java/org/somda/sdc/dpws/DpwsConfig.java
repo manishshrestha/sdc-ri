@@ -1,7 +1,5 @@
 package org.somda.sdc.dpws;
 
-import org.somda.sdc.dpws.http.jetty.JettyHttpServerHandler;
-
 /**
  * Configuration of the DPWS top level package.
  *

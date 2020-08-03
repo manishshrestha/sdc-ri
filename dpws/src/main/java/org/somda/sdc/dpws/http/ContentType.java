@@ -170,8 +170,13 @@ public class ContentType {
         // mdpws (tries) to enforce UTF-8 for all soap+xml messages
         APPLICATION_SOAP_XML(SoapConstants.MEDIA_TYPE_SOAP, StandardCharsets.UTF_8);
 
-        public final String contentType;
-        public final Charset defaultEncoding;
+        private final String contentType;
+        private final Charset defaultEncoding;
+
+        ContentTypes(String contentType, @Nullable Charset defaultEncoding) {
+            this.contentType = contentType;
+            this.defaultEncoding = defaultEncoding;
+        }
 
         /**
          * Maps a mime-type to the respective {@linkplain ContentTypes} enum value.
@@ -188,9 +193,12 @@ public class ContentType {
             return Optional.empty();
         }
 
-        ContentTypes(String contentType, @Nullable Charset defaultEncoding) {
-            this.contentType = contentType;
-            this.defaultEncoding = defaultEncoding;
+        public String getContentType() {
+            return contentType;
+        }
+
+        public Charset getDefaultEncoding() {
+            return defaultEncoding;
         }
     }
 }
