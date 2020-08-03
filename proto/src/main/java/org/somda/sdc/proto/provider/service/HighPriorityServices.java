@@ -21,6 +21,12 @@ import org.somda.sdc.biceps.model.message.EpisodicOperationalStateReport;
 import org.somda.sdc.biceps.model.message.WaveformStream;
 import org.somda.sdc.biceps.provider.access.LocalMdibAccess;
 import org.somda.sdc.common.logging.InstanceLogger;
+import org.somda.sdc.dpws.device.EventSourceAccess;
+import org.somda.sdc.dpws.soap.exception.MarshallingException;
+import org.somda.sdc.dpws.soap.exception.TransportException;
+import org.somda.sdc.dpws.soap.wseventing.model.WsEventingStatus;
+import org.somda.sdc.glue.provider.services.helper.ReportGenerator;
+import org.somda.sdc.glue.provider.services.helper.factory.ReportGeneratorFactory;
 import org.somda.sdc.proto.common.ProtoConstants;
 import org.somda.sdc.proto.mapping.message.PojoToProtoMapper;
 import org.somda.sdc.proto.mapping.participant.PojoToProtoTreeMapper;
@@ -37,17 +43,19 @@ import java.util.Map;
 import java.util.Queue;
 import java.util.concurrent.ArrayBlockingQueue;
 
-public class HighPriorityServices {
+public class HighPriorityServices implements EventSourceAccess {
     private static final Logger LOG = LogManager.getLogger(HighPriorityServices.class);
 
     private final MdibReportingService reportingService;
     private final PojoToProtoMapper messageMapper;
     private final Logger instanceLogger;
     private final Map<QName, BindableService> services;
+    private final ReportGenerator reportGenerator;
 
     @AssistedInject
     HighPriorityServices(@Assisted LocalMdibAccess mdibAccess,
                          @Named(org.somda.sdc.common.CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier,
+                         ReportGeneratorFactory reportGeneratorFactory,
                          PojoToProtoTreeMapperFactory treeMapperFactory,
                          PojoToProtoMapper messageMapper) {
         this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);
@@ -61,6 +69,9 @@ public class HighPriorityServices {
                 ProtoConstants.GET_SERVICE_QNAME, getService,
                 ProtoConstants.MDIB_REPORTING_SERVICE_QNAME, reportingService
         );
+
+        this.reportGenerator = reportGeneratorFactory.createReportGenerator(this);
+        mdibAccess.registerObserver(reportGenerator);
     }
 
     /**
@@ -100,11 +111,17 @@ public class HighPriorityServices {
         reportingService.offerNotification(action, episodicReport.build());
     }
 
+
     /**
      * Ends all subscriptions currently active.
      */
-    public void subscriptionEndToAll() {
+    public void subscriptionEndToAll(final WsEventingStatus status) {
         reportingService.endAll();
+    }
+
+    @Override
+    public void sendNotification(final String action, final Object payload) throws MarshallingException, TransportException {
+        sendEpisodicNotification(action, (AbstractReport) payload);
     }
 
     static class GetService extends GetServiceGrpc.GetServiceImplBase {
