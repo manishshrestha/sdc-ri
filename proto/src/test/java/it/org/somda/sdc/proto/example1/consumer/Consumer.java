@@ -3,15 +3,19 @@ package it.org.somda.sdc.proto.example1.consumer;
 import com.google.common.collect.Streams;
 import com.google.common.eventbus.Subscribe;
 import com.google.common.util.concurrent.AbstractIdleService;
+import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.common.util.concurrent.SettableFuture;
 import com.google.inject.Injector;
 import com.google.inject.Key;
+import com.google.inject.TypeLiteral;
 import com.google.inject.name.Names;
 import io.grpc.stub.StreamObserver;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.somda.sdc.common.util.ExecutorWrapperService;
 import org.somda.sdc.dpws.DpwsConstants;
 import org.somda.sdc.dpws.guice.DiscoveryUdpQueue;
+import org.somda.sdc.dpws.guice.WsDiscovery;
 import org.somda.sdc.dpws.soap.wsdiscovery.WsDiscoveryConstants;
 import org.somda.sdc.dpws.udp.UdpBindingService;
 import org.somda.sdc.dpws.udp.UdpMessageQueueService;
@@ -24,6 +28,7 @@ import org.somda.sdc.proto.consumer.SdcRemoteDevicesConnector;
 import org.somda.sdc.proto.discovery.consumer.Client;
 import org.somda.sdc.proto.discovery.consumer.DiscoveryObserver;
 import org.somda.sdc.proto.discovery.consumer.event.ProbedDeviceFoundMessage;
+import org.somda.sdc.proto.guice.ProtoConsumer;
 import org.somda.sdc.proto.model.ActionFilter;
 import org.somda.sdc.proto.model.EpisodicReportRequest;
 import org.somda.sdc.proto.model.EpisodicReportStream;
@@ -77,14 +82,21 @@ public class Consumer extends AbstractIdleService {
         this.connector = injector.getInstance(SdcRemoteDevicesConnector.class);
         this.discoveryClient = injector.getInstance(Client.class);
         var serverAddr = new InetSocketAddress("127.0.0.1", 13373);
-        var epr = "urn:uuid:" + UUID.randomUUID().toString();
         var networkInterface = NetworkInterface.networkInterfaces()
                 .filter(iface -> Streams.stream(iface.getInetAddresses().asIterator())
                         .map(InetAddress::getHostAddress)
-                                .anyMatch(addr -> addr.contains(serverAddr.getAddress().getHostAddress()))
+                        .anyMatch(addr -> addr.contains(serverAddr.getAddress().getHostAddress()))
                 ).findFirst().orElseThrow(Exception::new);
 
         udpQueue = injector.getInstance(Key.get(UdpMessageQueueService.class, DiscoveryUdpQueue.class));
+
+        // start required thread pool(s)
+        injector.getInstance(Key.get(
+                new TypeLiteral<ExecutorWrapperService<ListeningExecutorService>>() {
+                },
+                ProtoConsumer.class
+        )).startAsync().awaitRunning();
+
 
         var wsdMulticastAddress = InetAddress.getByName(WsDiscoveryConstants.IPV4_MULTICAST_ADDRESS);
 
@@ -97,9 +109,8 @@ public class Consumer extends AbstractIdleService {
         udpBindingService.setMessageReceiver(udpQueue);
     }
 
-    SdcRemoteDevice connect() throws PrerequisitesException, ExecutionException, InterruptedException {
-        var fut = connector.connect(consumer, ConnectConfiguration.create(ConnectConfiguration.ALL_EPISODIC_AND_WAVEFORM_REPORTS));
-        return fut.get();
+    public SdcRemoteDevicesConnector getConnector() {
+        return connector;
     }
 
     public org.somda.sdc.proto.consumer.Consumer getConsumer() {
@@ -172,38 +183,20 @@ public class Consumer extends AbstractIdleService {
         consumer.getConsumer().connect(endpoint);
 
 
-
         var mdib = consumer.getConsumer().getGetService().get().getMdib(GetMdibRequest.newBuilder().build());
 
         assert mdib != null;
 
-        var reporting = consumer.getConsumer().getMdibReportingService().get();
-        var requested_subs = EpisodicReportRequest.newBuilder().setFilter(
-                Filter.newBuilder().setActionFilter(ActionFilter.newBuilder()
-                        .addAllAction(EPISODIC_REPORTS)
-                        .addAllAction(STREAMING_REPORTS)
-                        .build()
-                ).build()
-        ).build();
-
-        reporting.episodicReport(requested_subs, new StreamObserver<EpisodicReportStream>() {
-            @Override
-            public void onNext(final EpisodicReportStream value) {
-                LOG.info("new report:\n{}", value);
-            }
-
-            @Override
-            public void onError(final Throwable t) {
-                LOG.error("Observer died", t);
-            }
-
-            @Override
-            public void onCompleted() {
-                LOG.info("Observer finished");
-            }
-        });
-
         LOG.info("Mdib:\n{}", mdib);
+
+        var fut = consumer.getConnector().connect(
+                consumer.getConsumer(),
+                ConnectConfiguration.create(ConnectConfiguration.ALL_EPISODIC_AND_WAVEFORM_REPORTS)
+        );
+        var sdcRemoteDevice = fut.get();
+        var reportProcessor = new ConsumerReportProcessor();
+
+        sdcRemoteDevice.getMdibAccessObservable().registerObserver(reportProcessor);
 
         Thread.sleep(10000);
         consumer.stopAsync().awaitTerminated();

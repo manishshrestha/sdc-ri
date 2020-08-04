@@ -57,7 +57,7 @@ public class SetService extends SetServiceGrpc.SetServiceImplBase {
                 protoToPojoMapper.map(request.getPayload()));
 
         var responseMsg = ActivateResponse.newBuilder();
-        responseMsg.setAddressing(addressingUtil.assemblyAddressing("activate"));
+        responseMsg.setAddressing(addressingUtil.assembleAddressing("activate"));
         responseMsg.setPayload(pojoToProtoMapper.mapActivateResponse(
                 createResponse(org.somda.sdc.biceps.model.message.ActivateResponse.class, resp)));
         responseObserver.onNext(responseMsg.build());
@@ -97,7 +97,7 @@ public class SetService extends SetServiceGrpc.SetServiceImplBase {
                 protoToPojoMapper.map(request.getPayload()));
 
         var responseMsg = SetStringResponse.newBuilder();
-        responseMsg.setAddressing(addressingUtil.assemblyAddressing("setstring"));
+        responseMsg.setAddressing(addressingUtil.assembleAddressing("setstring"));
         responseMsg.setPayload(pojoToProtoMapper.mapSetStringResponse(
                 createResponse(org.somda.sdc.biceps.model.message.SetStringResponse.class, resp)));
         responseObserver.onNext(responseMsg.build());

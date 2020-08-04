@@ -7,7 +7,9 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.somda.sdc.biceps.model.participant.AbstractAlertDescriptor;
 import org.somda.sdc.biceps.model.participant.AbstractAlertState;
+import org.somda.sdc.biceps.model.participant.AbstractContextState;
 import org.somda.sdc.biceps.model.participant.AbstractDescriptor;
+import org.somda.sdc.biceps.model.participant.AbstractDeviceComponentState;
 import org.somda.sdc.biceps.model.participant.AbstractMetricState;
 import org.somda.sdc.biceps.model.participant.AbstractOperationDescriptor;
 import org.somda.sdc.biceps.model.participant.AbstractOperationState;
@@ -308,7 +310,7 @@ public class ProtoToPojoOneOfMapper {
         return Util.invalidState();
     }
 
-    private AbstractOperationState map(final AbstractOperationStateOneOfMsg protoMsg) {
+    public AbstractOperationState map(final AbstractOperationStateOneOfMsg protoMsg) {
         var type = protoMsg.getAbstractOperationStateOneOfCase();
         switch (type) {
             case SET_CONTEXT_STATE_OPERATION_STATE:
@@ -334,7 +336,7 @@ public class ProtoToPojoOneOfMapper {
         return Util.invalidOperationState();
     }
 
-    private AbstractAlertState map(final AbstractAlertStateOneOfMsg protoMsg) {
+    public AbstractAlertState map(final AbstractAlertStateOneOfMsg protoMsg) {
         var type = protoMsg.getAbstractAlertStateOneOfCase();
         switch (type) {
             case ALERT_SYSTEM_STATE:
@@ -369,7 +371,7 @@ public class ProtoToPojoOneOfMapper {
         return Util.invalidAlertState();
     }
 
-    private AbstractMetricState map(AbstractMetricStateOneOfMsg protoMsg) {
+    public AbstractMetricState map(AbstractMetricStateOneOfMsg protoMsg) {
         var type = protoMsg.getAbstractMetricStateOneOfCase();
         switch (type) {
             case STRING_METRIC_STATE_ONE_OF:
@@ -419,7 +421,7 @@ public class ProtoToPojoOneOfMapper {
         return Util.invalidState();
     }
 
-    private AbstractState map(AbstractContextStateOneOfMsg protoMsg) {
+    public AbstractContextState map(AbstractContextStateOneOfMsg protoMsg) {
         var type = protoMsg.getAbstractContextStateOneOfCase();
         switch (type) {
             case ABSTRACT_CONTEXT_STATE:
@@ -446,10 +448,10 @@ public class ProtoToPojoOneOfMapper {
                 instanceLogger.error("State mapping not implemented: {}", type);
         }
 
-        return Util.invalidState();
+        return Util.invalidContextState();
     }
 
-    private AbstractState map(AbstractDeviceComponentStateOneOfMsg protoMsg) {
+    public AbstractDeviceComponentState map(AbstractDeviceComponentStateOneOfMsg protoMsg) {
         var type = protoMsg.getAbstractDeviceComponentStateOneOfCase();
         switch (type) {
             case ABSTRACT_DEVICE_COMPONENT_STATE:
@@ -475,10 +477,10 @@ public class ProtoToPojoOneOfMapper {
                 break;
         }
 
-        return Util.invalidState();
+        return Util.invalidDeviceComponentState();
     }
 
-    private AbstractState map(AbstractComplexDeviceComponentStateOneOfMsg protoMsg) {
+    private AbstractDeviceComponentState map(AbstractComplexDeviceComponentStateOneOfMsg protoMsg) {
         var type = protoMsg.getAbstractComplexDeviceComponentStateOneOfCase();
         switch (type) {
             case ABSTRACT_COMPLEX_DEVICE_COMPONENT_STATE:
@@ -494,6 +496,6 @@ public class ProtoToPojoOneOfMapper {
                 break;
         }
 
-        return Util.invalidState();
+        return Util.invalidDeviceComponentState();
     }
 }

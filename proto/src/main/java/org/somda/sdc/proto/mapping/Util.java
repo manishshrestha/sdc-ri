@@ -9,7 +9,9 @@ import com.google.protobuf.UInt32Value;
 import com.google.protobuf.UInt64Value;
 import org.somda.sdc.biceps.model.participant.AbstractAlertDescriptor;
 import org.somda.sdc.biceps.model.participant.AbstractAlertState;
+import org.somda.sdc.biceps.model.participant.AbstractContextState;
 import org.somda.sdc.biceps.model.participant.AbstractDescriptor;
+import org.somda.sdc.biceps.model.participant.AbstractDeviceComponentState;
 import org.somda.sdc.biceps.model.participant.AbstractMetricState;
 import org.somda.sdc.biceps.model.participant.AbstractOperationDescriptor;
 import org.somda.sdc.biceps.model.participant.AbstractOperationState;
@@ -273,8 +275,20 @@ public class Util {
     }
 
     public static AbstractOperationState invalidOperationState() {
-        var descriptor = new AbstractOperationState();
-        descriptor.setDescriptorHandle("[mapping failed]");
-        return descriptor;
+        var state = new AbstractOperationState();
+        state.setDescriptorHandle("[mapping failed]");
+        return state;
+    }
+
+    public static AbstractContextState invalidContextState() {
+        var state = new AbstractContextState();
+        state.setDescriptorHandle("[mapping failed]");
+        return state;
+    }
+
+    public static AbstractDeviceComponentState invalidDeviceComponentState() {
+        var state = new AbstractDeviceComponentState();
+        state.setDescriptorHandle("[mapping failed]");
+        return state;
     }
 }

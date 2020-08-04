@@ -15,8 +15,10 @@ import org.apache.logging.log4j.Logger;
 import org.somda.sdc.biceps.common.storage.PreprocessingException;
 import org.somda.sdc.biceps.consumer.access.RemoteMdibAccess;
 import org.somda.sdc.biceps.consumer.access.factory.RemoteMdibAccessFactory;
+import org.somda.sdc.biceps.model.message.AbstractReport;
 import org.somda.sdc.biceps.model.message.GetContextStatesResponse;
 import org.somda.sdc.biceps.model.message.ObjectFactory;
+import org.somda.sdc.biceps.model.participant.MdibVersion;
 import org.somda.sdc.common.CommonConfig;
 import org.somda.sdc.common.logging.InstanceLogger;
 import org.somda.sdc.common.util.ExecutorWrapperService;
@@ -41,6 +43,12 @@ import org.somda.sdc.proto.consumer.sco.ScoController;
 import org.somda.sdc.proto.consumer.sco.factory.ScoControllerFactory;
 import org.somda.sdc.proto.guice.ProtoConsumer;
 import org.somda.sdc.proto.mapping.message.ProtoToPojoMapper;
+import org.somda.sdc.proto.mapping.participant.factory.ProtoToPojoModificationsBuilderFactory;
+import org.somda.sdc.proto.model.ActionFilter;
+import org.somda.sdc.proto.model.EpisodicReportRequest;
+import org.somda.sdc.proto.model.EpisodicReportStream;
+import org.somda.sdc.proto.model.Filter;
+import org.somda.sdc.proto.model.GetMdibRequest;
 import org.somda.sdc.proto.model.OperationInvokedReportRequest;
 import org.somda.sdc.proto.model.OperationInvokedReportStream;
 
@@ -48,6 +56,7 @@ import javax.annotation.Nullable;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.xml.namespace.QName;
+import java.math.BigInteger;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -65,6 +74,7 @@ public class SdcRemoteDevicesConnectorImpl extends AbstractIdleService
     private ExecutorWrapperService<ListeningExecutorService> executorService;
     private Map<String, SdcRemoteDevice> sdcRemoteDevices;
     private EventBus eventBus;
+    private final ProtoToPojoModificationsBuilderFactory protoToPojoMapperFactory;
     private final DpwsFramework dpwsFramework;
     private final AddressingUtil addressingUtil;
     private final ProtoToPojoMapper protoToPojoMapper;
@@ -100,6 +110,7 @@ public class SdcRemoteDevicesConnectorImpl extends AbstractIdleService
                                   AddressingUtil addressingUtil,
                                   ProtoToPojoMapper protoToPojoMapper,
                                   SdcRemoteDeviceWatchdogFactory watchdogFactory,
+                                  ProtoToPojoModificationsBuilderFactory protoToPojoMapperFactory,
                                   @Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier) {
         this.dpwsFramework = dpwsFramework;
         this.addressingUtil = addressingUtil;
@@ -120,6 +131,7 @@ public class SdcRemoteDevicesConnectorImpl extends AbstractIdleService
         this.mdibVersionUtil = mdibVersionUtil;
         this.sdcRemoteDeviceFactory = sdcRemoteDeviceFactory;
         this.frameworkIdentifier = frameworkIdentifier;
+        this.protoToPojoMapperFactory = protoToPojoMapperFactory;
 
         dpwsFramework.registerService(List.of(executorService, this));
     }
@@ -269,7 +281,7 @@ public class SdcRemoteDevicesConnectorImpl extends AbstractIdleService
             }
 
             setService.operationInvokedReport(OperationInvokedReportRequest.newBuilder()
-                            .setAddressing(addressingUtil.assemblyAddressing("subscribe-operations")).build(),
+                            .setAddressing(addressingUtil.assembleAddressing("subscribe-operations")).build(),
                     new StreamObserver<>() {
                         @Override
                         public void onNext(OperationInvokedReportStream operationInvokedReportStream) {
@@ -293,61 +305,63 @@ public class SdcRemoteDevicesConnectorImpl extends AbstractIdleService
                     });
         });
 
-        // todo implement subscription to MDIB changes
+        consumer.getMdibReportingService().ifPresent(reportingService -> {
+            var requested_subs = EpisodicReportRequest.newBuilder()
+                    .setAddressing(addressingUtil.assembleAddressing("subscribe-events"))
+                    .setFilter(
+                            Filter.newBuilder().setActionFilter(ActionFilter.newBuilder()
+                                    .addAllAction(actionsToSubscribe)
+                                    .build()
+                            ).build()
+                    ).build();
+
+            reportingService.episodicReport(requested_subs, new StreamObserver<EpisodicReportStream>() {
+
+                @Override
+                public void onNext(final EpisodicReportStream value) {
+                    // convert report into pojo
+                    // TODO: Move to a better place. The code, I mean.
+                    var reportType = value.getReport().getTypeCase();
+                    AbstractReport report = null;
+                    switch (reportType) {
+                        case ALERT:
+                            report = protoToPojoMapper.map(value.getReport().getAlert());
+                            break;
+                        case COMPONENT:
+                            report = protoToPojoMapper.map(value.getReport().getComponent());
+                            break;
+                        case CONTEXT:
+                            report = protoToPojoMapper.map(value.getReport().getContext());
+                            break;
+                        case METRIC:
+                            report = protoToPojoMapper.map(value.getReport().getMetric());
+                            break;
+                        case WAVEFORM:
+                            report = protoToPojoMapper.map(value.getReport().getWaveform());
+                            break;
+                        default:
+                            instanceLogger.error("Unsupported type {}", reportType);
+                    }
+
+                    if (report != null) {
+                        reportProcessor.processReport(report);
+                    }
+                }
+
+                @Override
+                public void onError(final Throwable t) {
+                    instanceLogger.error("onError called", t);
+                }
+
+                @Override
+                public void onCompleted() {
+                    instanceLogger.info("Subscription done");
+                }
+            });
+        });
+
+        // TODO: What do we return now?
         return Collections.emptyMap();
-
-
-//        // Multimap<ServiceId, ActionUri>
-//        final Multimap<String, String> subscriptions =
-//                getServiceIdWithActionsToSubscribe(hostingServiceProxy, actionsToSubscribe);
-//        Map<String, SubscribeResult> subscribeResults = new HashMap<>(subscriptions.size());
-//
-//        for (String serviceId : subscriptions.keySet()) {
-//            final Collection<String> actions = subscriptions.get(serviceId);
-//            if (actions.isEmpty()) {
-//                instanceLogger.warn("Expect to find at least one action to subscribe for service id {}, " +
-//                        "but none found", serviceId);
-//                continue;
-//            }
-//            final HostedServiceProxy hostedServiceProxy = hostingServiceProxy.getHostedServices().get(serviceId);
-//            if (hostedServiceProxy == null) {
-//                instanceLogger.warn("Expect to found a hosted service proxy to access for service id {}, " +
-//                        "but none found", serviceId);
-//                continue;
-//            }
-//
-//            final ListenableFuture<SubscribeResult> subscribeResult = hostedServiceProxy.getEventSinkAccess().subscribe(
-//                    new ArrayList<>(actions),
-//                    requestedExpires,
-//                    new Interceptor() {
-//                        @MessageInterceptor
-//                        void onNotification(NotificationObject notificationObject) {
-//                            final AbstractReport report = soapUtil.getBody(notificationObject.getNotification(),
-//                                    AbstractReport.class).orElseThrow(() -> new RuntimeException(
-//                                    String.format("Received unexpected report message from service %s", serviceId)));
-//                            instanceLogger.debug("Incoming SOAP/HTTP notification: {}", report);
-//                            if (report instanceof OperationInvokedReport) {
-//                                if (scoController != null) {
-//                                    scoController.processOperationInvokedReport((OperationInvokedReport) report);
-//                                }
-//                            } else {
-//                                reportProcessor.processReport(report);
-//                            }
-//                        }
-//                    });
-//
-//            try {
-//                subscribeResults.put(serviceId, subscribeResult.get(responseWaitingTime.toSeconds(), TimeUnit.SECONDS));
-//            } catch (InterruptedException | ExecutionException | TimeoutException e) {
-//                throw new PrerequisitesException(
-//                        String.format("Subscribe request towards service with service id %s failed. " +
-//                                        "Physical target address: %s",
-//                                serviceId,
-//                                hostedServiceProxy.getActiveEprAddress().toString()), e);
-//            }
-//        }
-//
-//        return subscribeResults;
     }
 
     private Multimap<String, String> getServiceIdWithActionsToSubscribe(HostingServiceProxy hostingServiceProxy,
@@ -372,40 +386,49 @@ public class SdcRemoteDevicesConnectorImpl extends AbstractIdleService
 
     private RemoteMdibAccess createRemoteMdibAccess(org.somda.sdc.proto.consumer.Consumer consumer)
             throws PrerequisitesException {
-        throw new RuntimeException("createRemoteMdibAccess() NOT IMPLEMENTED YET");
-//        // find get service
-//        final HostedServiceProxy getServiceProxy =
-//                findHostedServiceProxy(consumer, WsdlConstants.PORT_TYPE_GET_QNAME);
-//
-//        final RemoteMdibAccess mdibAccess = remoteMdibAccessFactory.createRemoteMdibAccess();
-//
-//        try {
-//            final SoapMessage getMdibResponseMessage = getServiceProxy.getRequestResponseClient().sendRequestResponse(
-//                    soapUtil.createMessage(ActionConstants.ACTION_GET_MDIB, messageModelFactory.createGetMdib()));
-//            final GetMdibResponse getMdibResponse = soapUtil.getBody(getMdibResponseMessage,
-//                    GetMdibResponse.class).orElseThrow(() -> new PrerequisitesException(
-//                    "Remote endpoint did not send a GetMdibResponse message in response to " +
-//                            String.format("a GetMdib to service %s with physical address %s",
-//                                    getServiceProxy.getType().getServiceId(), getServiceProxy.getActiveEprAddress())));
-//
-//            final Mdib mdib = getMdibResponse.getMdib();
-//            final ModificationsBuilder modBuilder = modificationsBuilderFactory.createModificationsBuilder(mdib);
-//
-//            mdibAccess.writeDescription(
-//                    mdibVersionUtil.getMdibVersion(getMdibResponse),
-//                    mdib.getMdDescription().getDescriptionVersion(),
-//                    mdib.getMdState().getStateVersion(),
-//                    modBuilder.get());
-//
-//        } catch (MarshallingException | InterceptorException | TransportException | SoapFaultException e) {
-//            throw new PrerequisitesException(String.format(
-//                    "Could not send a GetMdib request to service %s with physical address %s",
-//                    getServiceProxy.getType().getServiceId(), getServiceProxy.getActiveEprAddress()), e);
-//        } catch (PreprocessingException e) {
-//            throw new PrerequisitesException("Could not write initial MDIB to remote MDIB access", e);
-//        }
-//
-//        return mdibAccess;
+        var getService = consumer.getGetService()
+                .orElseThrow(() -> new RuntimeException("GetService not present"));
+
+        final RemoteMdibAccess mdibAccess = remoteMdibAccessFactory.createRemoteMdibAccess();
+
+        try {
+            var getMdibResponse = getService.getMdib(GetMdibRequest.newBuilder().build());
+            var mdib = getMdibResponse.getPayload().getMdib();
+
+            var modificationsBuilder = protoToPojoMapperFactory.create(mdib);
+
+
+            BigInteger mdibVersion = null;
+            if (mdib.getAMdibVersionGroup().hasAMdibVersion()) {
+                mdibVersion = BigInteger.valueOf(mdib.getAMdibVersionGroup().getAMdibVersion().getValue());
+            }
+            // TODO: instanceid
+            MdibVersion mdibVersionX = null;
+            if (mdibVersion != null) {
+                mdibVersionX = new MdibVersion(mdib.getAMdibVersionGroup().getASequenceId(), mdibVersion);
+            } else {
+                mdibVersionX = new MdibVersion(mdib.getAMdibVersionGroup().getASequenceId());
+            }
+
+            BigInteger descriptorVersion = null;
+            if (mdib.getMdDescription().hasADescriptionVersion()) {
+                descriptorVersion = BigInteger.valueOf(mdib.getMdDescription().getADescriptionVersion().getValue());
+            }
+
+            BigInteger stateVersion = null;
+            if (mdib.getMdState().hasAStateVersion()) {
+                stateVersion = BigInteger.valueOf(mdib.getMdState().getAStateVersion().getValue());
+            }
+
+            mdibAccess.writeDescription(
+                    mdibVersionX,
+                    descriptorVersion,
+                    stateVersion,
+                    modificationsBuilder.get());
+            return mdibAccess;
+        } catch (PreprocessingException e) {
+            throw new PrerequisitesException("Could not write initial MDIB to remote MDIB access", e);
+        }
     }
 
     private HostedServiceProxy findHostedServiceProxy(HostingServiceProxy hostingServiceProxy, QName portType)

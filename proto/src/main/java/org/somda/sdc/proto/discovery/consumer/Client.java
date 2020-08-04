@@ -23,10 +23,7 @@ import org.somda.sdc.proto.discovery.consumer.event.DeviceEnteredMessage;
 import org.somda.sdc.proto.discovery.consumer.helper.ProbeCallable;
 import org.somda.sdc.proto.discovery.consumer.helper.ResolveCallable;
 import org.somda.sdc.proto.guice.ProtoDiscovery;
-import org.somda.sdc.proto.model.addressing.AddressingTypes;
 import org.somda.sdc.proto.model.addressing.EndpointReference;
-import org.somda.sdc.proto.model.discovery.DiscoveryMessages;
-import org.somda.sdc.proto.model.discovery.DiscoveryTypes;
 import org.somda.sdc.proto.model.discovery.DiscoveryUdpMessage;
 import org.somda.sdc.proto.model.discovery.Endpoint;
 import org.somda.sdc.proto.model.discovery.Probe;
@@ -133,7 +130,7 @@ public class Client extends AbstractIdleService implements Service, UdpMessageQu
         var probeId = String.format("probeId(%s@%s)", discoveryIdCounter.incrementAndGet(), this);
         var probe = Probe.newBuilder()
                 .setScopesMatcher(scopeMatcher).build();
-        var addressing = addressingUtil.assemblyAddressing(
+        var addressing = addressingUtil.assembleAddressing(
                 WsDiscoveryConstants.WSA_ACTION_PROBE,
                 WsDiscoveryConstants.WSA_UDP_TO);
         var future = executorService.get().submit(
@@ -156,7 +153,7 @@ public class Client extends AbstractIdleService implements Service, UdpMessageQu
         var resolve = Resolve.newBuilder()
                 .setEndpointReference(EndpointReference.newBuilder().setAddress(eprAddress).build())
                 .build();
-        var addressing = addressingUtil.assemblyAddressing(
+        var addressing = addressingUtil.assembleAddressing(
                 WsDiscoveryConstants.WSA_ACTION_RESOLVE,
                 WsDiscoveryConstants.WSA_UDP_TO);
         var future = executorService.get().submit(

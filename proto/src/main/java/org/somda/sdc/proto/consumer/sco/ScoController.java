@@ -104,7 +104,7 @@ public class ScoController implements SetServiceAccess {
     private <T extends AbstractSet> Object sendMessage(T setRequest)
             throws InvocationException {
         var action = WsdlConstants.ACTION_SET_PREFIX + setRequest.getClass().getSimpleName();
-        var addressing = addressingUtil.assemblyAddressing(action);
+        var addressing = addressingUtil.assembleAddressing(action);
         if (setRequest instanceof Activate) {
             var request = ActivateRequest.newBuilder()
                     .setAddressing(addressing)

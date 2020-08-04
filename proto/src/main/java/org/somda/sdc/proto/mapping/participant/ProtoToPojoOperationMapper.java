@@ -3,6 +3,7 @@ package org.somda.sdc.proto.mapping.participant;
 import com.google.common.base.Splitter;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
+import com.google.protobuf.BoolValue;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.somda.sdc.biceps.model.participant.AbstractOperationDescriptor;
@@ -160,7 +161,8 @@ public class ProtoToPojoOperationMapper {
             pojo.setMaxTimeToFinish(Util.fromProtoDuration(protoMsg.getAMaxTimeToFinish()));
         }
 
-        pojo.setRetriggerable(Util.optional(protoMsg, "ARetriggerable", Boolean.class));
+        Util.doIfNotNull(Util.optional(protoMsg, "ARetriggerable", BoolValue.class), boolValue ->
+                pojo.setRetriggerable(boolValue.getValue()));
 
         baseMapper.map(pojo, protoMsg.getAbstractDescriptor());
     }

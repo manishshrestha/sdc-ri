@@ -65,7 +65,7 @@ public class OperationInvokedEventSource extends AbstractIdleService implements 
                     var reportItem = ((InvokedReportItem) element);
                     var message = OperationInvokedReportStream.newBuilder()
                             .setOperationInvoked(reportItem.getReport())
-                            .setAddressing(addressingUtil.assemblyAddressing(reportItem.getAction()));
+                            .setAddressing(addressingUtil.assembleAddressing(reportItem.getAction()));
                     responseObserver.onNext(message.build());
                 }
             }

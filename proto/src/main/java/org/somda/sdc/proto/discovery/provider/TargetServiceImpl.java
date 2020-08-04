@@ -9,12 +9,10 @@ import com.google.protobuf.InvalidProtocolBufferException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.somda.sdc.dpws.soap.SoapConstants;
-import org.somda.sdc.dpws.soap.SoapUtil;
 import org.somda.sdc.dpws.soap.wsdiscovery.MatchBy;
 import org.somda.sdc.dpws.soap.wsdiscovery.WsDiscoveryConstants;
 import org.somda.sdc.dpws.soap.wsdiscovery.WsDiscoveryUtil;
 import org.somda.sdc.dpws.udp.UdpMessage;
-import org.somda.sdc.dpws.udp.UdpMessageQueueObserver;
 import org.somda.sdc.proto.addressing.AddressingUtil;
 import org.somda.sdc.proto.addressing.AddressingValidator;
 import org.somda.sdc.proto.addressing.MessageDuplicateDetection;
@@ -22,11 +20,8 @@ import org.somda.sdc.proto.addressing.ValidationException;
 import org.somda.sdc.proto.addressing.factory.AddressingValidatorFactory;
 import org.somda.sdc.proto.discovery.common.UdpUtil;
 import org.somda.sdc.proto.model.addressing.Addressing;
-import org.somda.sdc.proto.model.addressing.AddressingTypes;
 import org.somda.sdc.proto.model.addressing.EndpointReference;
 import org.somda.sdc.proto.model.discovery.AppSequence;
-import org.somda.sdc.proto.model.discovery.DiscoveryMessages;
-import org.somda.sdc.proto.model.discovery.DiscoveryTypes;
 import org.somda.sdc.proto.model.discovery.DiscoveryUdpMessage;
 import org.somda.sdc.proto.model.discovery.Endpoint;
 import org.somda.sdc.proto.model.discovery.Hello;
@@ -156,7 +151,7 @@ public class TargetServiceImpl extends AbstractIdleService implements Service, T
                 .addEndpoint(createEndpoint(getCurrentMetadataVersion()));
 
         udpUtil.sendResponse(DiscoveryUdpMessage.newBuilder()
-                .setAddressing(addressingUtil.assemblyAddressing(
+                .setAddressing(addressingUtil.assembleAddressing(
                         WsDiscoveryConstants.WSA_ACTION_PROBE_MATCHES,
                         WsDiscoveryConstants.WSA_UDP_TO,
                         addressing.getMessageId()))
@@ -179,7 +174,7 @@ public class TargetServiceImpl extends AbstractIdleService implements Service, T
                 .setEndpoint(createEndpoint(getCurrentMetadataVersion()));
 
         udpUtil.sendResponse(DiscoveryUdpMessage.newBuilder()
-                .setAddressing(addressingUtil.assemblyAddressing(
+                .setAddressing(addressingUtil.assembleAddressing(
                         WsDiscoveryConstants.WSA_ACTION_RESOLVE_MATCHES,
                         WsDiscoveryConstants.WSA_UDP_TO,
                         addressing.getMessageId()))
