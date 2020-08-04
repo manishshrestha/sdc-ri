@@ -132,9 +132,9 @@ public class EventSourceInterceptor extends AbstractIdleService implements Event
 
         // Find subscription ids that are affected by the action
         subscribedActionsLock.lock();
-        Collection<String> affectedSubscriptionIds;
+        Set<String> affectedSubscriptionIds;
         try {
-            affectedSubscriptionIds = subscribedActionsToSubManIds.get(action);
+            affectedSubscriptionIds = new HashSet<>(subscribedActionsToSubManIds.get(action));
             if (affectedSubscriptionIds.isEmpty()) {
                 return;
             }

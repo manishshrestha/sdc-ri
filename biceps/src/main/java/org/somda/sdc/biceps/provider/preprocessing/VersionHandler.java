@@ -153,32 +153,31 @@ public class VersionHandler implements DescriptionPreprocessingSegment, StatePre
     }
 
     private void processUpdate(AbstractDescriptor descriptor,
-                               List<? extends AbstractState> states,
+                               List<AbstractState> states,
                                MdibStorage storage) throws VersioningException {
         if (isUpdatedAlready(descriptor)) {
             return;
         }
 
-        var statesRef = states;
         if (mdibTypeValidator.isMultiStateDescriptor(descriptor)) {
-            processUpdateWithMultiState(descriptor, statesRef, storage);
+            processUpdateWithMultiState(descriptor, states, storage);
         } else {
-            if (statesRef.isEmpty()) {
+            if (states.isEmpty()) {
                 Optional<AbstractState> state = storage.getState(descriptor.getHandle());
                 if (state.isEmpty()) {
                     throw new VersioningException("State is missing to complete the update operation");
                 } else {
-                    statesRef = Collections.singletonList(state.get());
+                    states.add(state.get());
                 }
             }
-            processUpdateWithSingleState(descriptor, statesRef.get(0));
+            processUpdateWithSingleState(descriptor, states.get(0));
         }
 
         setUpdated(descriptor);
     }
 
     private void processUpdateWithMultiState(AbstractDescriptor descriptor,
-                                             List<? extends AbstractState> states,
+                                             List<AbstractState> states,
                                              MdibStorage storage) throws VersioningException {
         final VersionPair versionPair = getVersionPair(descriptor).orElseThrow(() ->
                 new VersioningException("Expected existing version on update, but none found"));
@@ -207,6 +206,7 @@ public class VersionHandler implements DescriptionPreprocessingSegment, StatePre
         // increment versions from states in MDIB storage that are not in change set
         for (Map.Entry<String, AbstractMultiState> multiState : multiStatesFromStorage.entrySet()) {
             replaceVersions.accept(multiState.getValue());
+            states.add(multiState.getValue());
         }
     }
 

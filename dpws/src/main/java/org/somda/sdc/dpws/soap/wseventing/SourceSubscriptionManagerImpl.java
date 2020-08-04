@@ -172,7 +172,7 @@ public class SourceSubscriptionManagerImpl extends AbstractExecutionThreadServic
 
     @Override
     protected void run() {
-        while (isRunning()) {
+        while (true) {
             try {
                 final QueueItem queueItem = notificationQueue.take();
                 if (queueItem instanceof QueueShutDownItem) {
