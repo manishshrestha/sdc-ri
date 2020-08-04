@@ -90,13 +90,13 @@ public class WsAddressingServerInterceptor implements Interceptor {
         if (action.isEmpty() || Optional.ofNullable(action.get().getValue()).isEmpty()) {
             throw new SoapFaultException(soapFaultFactory.createSenderFault(
                     "WS-Addressing header 'Action' required, but not given"),
-                    msg.getWsAddressingHeader().getMessageId().get());
+                    msg.getWsAddressingHeader().getMessageId().orElse(null));
         }
 
         if (action.get().getValue().isEmpty()) {
             throw new SoapFaultException(soapFaultFactory.createSenderFault(
                     "WS-Addressing header 'Action' given, but empty"),
-                    msg.getWsAddressingHeader().getMessageId().get());
+                    msg.getWsAddressingHeader().getMessageId().orElse(null));
         }
     }
 

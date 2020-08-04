@@ -119,7 +119,7 @@ public class WsDiscoveryTargetServiceInterceptor implements WsDiscoveryTargetSer
         MatchBy matcher = Arrays.stream(MatchBy.values())
                 .filter(item -> item.getUri().equals(requestMatchBy))
                 .findAny().orElseThrow(() -> new SoapFaultException(wsdFaultFactory.createMatchingRuleNotSupported(),
-                        rrObj.getRequest().getWsAddressingHeader().getMessageId().get()));
+                        rrObj.getRequest().getWsAddressingHeader().getMessageId().orElse(null)));
 
         EndpointReferenceType endpointReference = getEndpointReference();
         List<String> copyScopes = getScopes();
@@ -161,11 +161,11 @@ public class WsDiscoveryTargetServiceInterceptor implements WsDiscoveryTargetSer
 
         Optional.ofNullable(resolveType.getEndpointReference()).orElseThrow(() ->
                 new SoapFaultException(soapFaultFactory.createSenderFault("Missing Endpoint Reference"),
-                        rrObj.getRequest().getWsAddressingHeader().getMessageId().get()));
+                        rrObj.getRequest().getWsAddressingHeader().getMessageId().orElse(null)));
 
         Optional.ofNullable(resolveType.getEndpointReference().getAddress()).orElseThrow(() ->
                 new SoapFaultException(soapFaultFactory.createSenderFault("Missing Endpoint Reference Address"),
-                        rrObj.getRequest().getWsAddressingHeader().getMessageId().get()));
+                        rrObj.getRequest().getWsAddressingHeader().getMessageId().orElse(null)));
 
         EndpointReferenceType endpointReference = getEndpointReference();
         List<String> copyScopes = getScopes();
@@ -401,17 +401,17 @@ public class WsDiscoveryTargetServiceInterceptor implements WsDiscoveryTargetSer
                 new SoapFaultException(soapFaultFactory.createSenderFault(
                         String.format("wsa:To field is invalid. Expected '%s', but none found ",
                                 WsDiscoveryConstants.WSA_UDP_TO)),
-                        request.getWsAddressingHeader().getMessageId().get())).getValue();
+                        request.getWsAddressingHeader().getMessageId().orElse(null))).getValue();
 
         if (!to.equals(WsDiscoveryConstants.WSA_UDP_TO)) {
             throw new SoapFaultException(soapFaultFactory.createSenderFault(
                     String.format("wsa:To field is invalid. Expected '%s', but actual is '%s'",
                             WsDiscoveryConstants.WSA_UDP_TO, to)),
-                    request.getWsAddressingHeader().getMessageId().get());
+                    request.getWsAddressingHeader().getMessageId().orElse(null));
         }
 
         return soapUtil.getBody(request, bodyType).orElseThrow(() ->
                 new SoapFaultException(soapFaultFactory.createSenderFault("Body type is invalid"),
-                        request.getWsAddressingHeader().getMessageId().get()));
+                        request.getWsAddressingHeader().getMessageId().orElse(null)));
     }
 }

@@ -46,7 +46,7 @@ public class DpwsTestService2 extends WebService {
                 .setAction(wsaUtil.createAttributedURIType(TestServiceMetadata.ACTION_OPERATION_RESPONSE_3));
 
         TestOperationRequest req = soapUtil.getBody(rrObj.getRequest(), TestOperationRequest.class).orElseThrow(() ->
-                new SoapFaultException(soapFaultFactory.createSenderFault("SOAP body is malformed."), rrObj.getRequest().getWsAddressingHeader().getMessageId().get()));
+                new SoapFaultException(soapFaultFactory.createSenderFault("SOAP body is malformed."), rrObj.getRequest().getWsAddressingHeader().getMessageId().orElse(null)));
 
         TestOperationResponse res = objectFactory.createTestOperationResponse();
         res.setResult1(new StringBuilder(req.getParam1()).append(req.getParam1()).reverse().toString());

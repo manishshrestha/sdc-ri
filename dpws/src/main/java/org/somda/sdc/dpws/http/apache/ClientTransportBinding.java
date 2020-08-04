@@ -156,7 +156,7 @@ public class ClientTransportBinding implements TransportBinding {
                 SoapMessage msg = soapUtil.createMessage(envelope);
                 if (msg.isFault()) {
                     throw new SoapFaultException(msg, new HttpException(response.getStatusLine().getStatusCode()),
-                            request.getWsAddressingHeader().getMessageId().get());
+                            request.getWsAddressingHeader().getMessageId().orElse(null));
                 }
 
                 return msg;

@@ -1,11 +1,11 @@
 package org.somda.sdc.dpws.soap.exception;
 
-import com.sun.istack.Nullable;
 import org.somda.sdc.dpws.soap.SoapMessage;
 import org.somda.sdc.dpws.soap.model.Fault;
 import org.somda.sdc.dpws.soap.model.Reasontext;
 import org.somda.sdc.dpws.soap.wsaddressing.model.AttributedURIType;
 
+import javax.annotation.Nullable;
 import javax.xml.bind.JAXBElement;
 import java.util.List;
 import java.util.Optional;
