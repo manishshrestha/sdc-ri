@@ -21,7 +21,7 @@ public class SoapFaultException extends Exception {
     private final Fault fault;
 
     /**
-     * Constructor that requires an wrapped SOAP fault message.
+     * Constructor that requires an wrapped SOAP fault message and a messageId.
      *
      * @param faultMessage SOAP message that shall include a {@linkplain JAXBElement} with {@link Fault} body.
      *                     Otherwise, a {@linkplain ClassCastException} is thrown.
@@ -35,7 +35,17 @@ public class SoapFaultException extends Exception {
     }
 
     /**
-     * Constructor that requires a wrapped SOAP fault message plus a nested cause.
+     * Constructor that requires an wrapped SOAP fault message.
+     *
+     * @param faultMessage SOAP message that shall include a {@linkplain JAXBElement} with {@link Fault} body.
+     *                     Otherwise, a {@linkplain ClassCastException} is thrown.
+     */
+    public SoapFaultException(SoapMessage faultMessage) {
+        this(faultMessage, (AttributedURIType) null);
+    }
+
+    /**
+     * Constructor that requires a wrapped SOAP fault message plus a nested cause and a messageId.
      *
      * @param faultMessage SOAP message that shall include a {@linkplain JAXBElement} with {@link Fault} body.
      *                     Otherwise, a {@linkplain ClassCastException} is thrown.
@@ -49,11 +59,23 @@ public class SoapFaultException extends Exception {
         setRelatesTo(messageId);
     }
 
+    /**
+     * Constructor that requires a wrapped SOAP fault message plus a nested cause.
+     *
+     * @param faultMessage SOAP message that shall include a {@linkplain JAXBElement} with {@link Fault} body.
+     *                     Otherwise, a {@linkplain ClassCastException} is thrown.
+     * @param throwable    extended information, e.g. transport layer info.
+     */
+    public SoapFaultException(SoapMessage faultMessage, Throwable throwable) {
+        this(faultMessage, throwable, null);
+    }
+
     private void setRelatesTo(@Nullable AttributedURIType messageId) {
         final AttributedURIType unspecifiedMessageUri = new AttributedURIType();
         unspecifiedMessageUri.setValue(UNSPECIFIED_MESSAGE);
         if (faultMessage.getWsAddressingHeader().getRelatesTo().isEmpty()) {
-            faultMessage.getWsAddressingHeader().setRelatesTo(Optional.ofNullable(messageId).orElse(unspecifiedMessageUri));
+            faultMessage.getWsAddressingHeader().setRelatesTo(Optional.ofNullable(messageId)
+                    .orElse(unspecifiedMessageUri));
         }
     }
 

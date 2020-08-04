@@ -430,8 +430,7 @@ public class HighPriorityServices extends WebService {
             return response;
         } catch (Exception e) {
             throw new SoapFaultException(faultFactory.createReceiverFault(
-                    String.format("Response message could not be generated. Reason: %s", e.getMessage())),
-                    null);
+                    String.format("Response message could not be generated. Reason: %s", e.getMessage())));
         }
     }
 
@@ -464,6 +463,6 @@ public class HighPriorityServices extends WebService {
         }
         throw new SoapFaultException(faultFactory.createReceiverFault(String.format(
                 "Could not resolve entry type the requested descriptor %s. Operation aborted.",
-                entity.getHandle())), null);
+                entity.getHandle())));
     }
 }
