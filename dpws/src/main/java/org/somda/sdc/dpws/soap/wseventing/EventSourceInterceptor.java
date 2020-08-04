@@ -169,7 +169,8 @@ public class EventSourceInterceptor extends AbstractIdleService implements Event
     void processSubscribe(RequestResponseObject rrObj) throws SoapFaultException {
         removeStaleSubscriptions();
         final Supplier<SoapFaultException> soapFaultExceptionSupplier = () ->
-                new SoapFaultException(createInvalidMsg(rrObj));
+                new SoapFaultException(createInvalidMsg(rrObj),
+                        rrObj.getRequest().getWsAddressingHeader().getMessageId().orElse(null));
         Subscribe subscribe = soapUtil.getBody(rrObj.getRequest(), Subscribe.class)
                 .orElseThrow(soapFaultExceptionSupplier);
 
@@ -177,12 +178,14 @@ public class EventSourceInterceptor extends AbstractIdleService implements Event
         String deliveryMode = Optional.ofNullable(subscribe.getDelivery().getMode())
                 .orElse(WsEventingConstants.SUPPORTED_DELIVERY_MODE);
         if (!deliveryMode.equals(WsEventingConstants.SUPPORTED_DELIVERY_MODE)) {
-            throw new SoapFaultException(faultFactory.createDeliveryModeRequestedUnavailable());
+            throw new SoapFaultException(faultFactory.createDeliveryModeRequestedUnavailable(),
+                    rrObj.getRequest().getWsAddressingHeader().getMessageId().orElse(null));
         }
 
         // Validate delivery endpoint reference
         if (subscribe.getDelivery().getContent().size() != 1) {
-            throw new SoapFaultException(createInvalidMsg(rrObj));
+            throw new SoapFaultException(createInvalidMsg(rrObj),
+                    rrObj.getRequest().getWsAddressingHeader().getMessageId().orElse(null));
         }
 
         EndpointReferenceType notifyTo = jaxbUtil.extractElement(subscribe.getDelivery().getContent().get(0),
@@ -207,12 +210,13 @@ public class EventSourceInterceptor extends AbstractIdleService implements Event
         // Validate filter type
         FilterType filterType = Optional.ofNullable(subscribe.getFilter()).orElseThrow(() ->
                 new SoapFaultException(faultFactory.createEventSourceUnableToProcess("No filter given, " +
-                        "but required.")));
+                        "but required."), rrObj.getRequest().getWsAddressingHeader().getMessageId().orElse(null)));
 
         // Validate filter dialect
         String filterDialect = Optional.ofNullable(filterType.getDialect()).orElse("");
         if (filterDialect.isEmpty() || !filterDialect.equals(DpwsConstants.WS_EVENTING_SUPPORTED_DIALECT)) {
-            throw new SoapFaultException(faultFactory.createFilteringRequestedUnavailable());
+            throw new SoapFaultException(faultFactory.createFilteringRequestedUnavailable(),
+                    rrObj.getRequest().getWsAddressingHeader().getMessageId().orElse(null));
         }
 
         List<String> uris = explodeUriList(filterType);
@@ -289,7 +293,8 @@ public class EventSourceInterceptor extends AbstractIdleService implements Event
             expires = Duration.between(LocalDateTime.now(), subMan.getExpiresTimeout());
             if (expires.isNegative() || expires.isZero()) {
                 throw new SoapFaultException(createInvalidMsg(rrObj,
-                        String.format("Given wse:Identifier '%s' is invalid.", subMan.getSubscriptionId())));
+                        String.format("Given wse:Identifier '%s' is invalid.", subMan.getSubscriptionId())),
+                        rrObj.getRequest().getWsAddressingHeader().getMessageId().orElse(null));
             }
         } finally {
             subscribedActionsLock.unlock();
@@ -380,16 +385,19 @@ public class EventSourceInterceptor extends AbstractIdleService implements Event
 
     private <T> T validateRequestBody(RequestResponseObject rrObj, Class<T> expectedType) throws SoapFaultException {
         return soapUtil.getBody(rrObj.getRequest(), expectedType).orElseThrow(() ->
-                new SoapFaultException(createInvalidMsg(rrObj)));
+                new SoapFaultException(createInvalidMsg(rrObj),
+                        rrObj.getRequest().getWsAddressingHeader().getMessageId().orElse(null)));
     }
 
     private SourceSubscriptionManager validateSubscriptionEpr(RequestResponseObject rrObj) throws SoapFaultException {
         AttributedURIType toUri = rrObj.getRequest().getWsAddressingHeader().getTo().orElseThrow(() ->
-                new SoapFaultException(createInvalidMsg(rrObj)));
+                new SoapFaultException(createInvalidMsg(rrObj),
+                        rrObj.getRequest().getWsAddressingHeader().getMessageId().orElse(null)));
 
         return subscriptionRegistry.getSubscription(toUri.getValue()).orElseThrow(() ->
                 new SoapFaultException(createInvalidMsg(rrObj,
-                        String.format("Subscription manager '%s' does not exist.", toUri.getValue()))));
+                        String.format("Subscription manager '%s' does not exist.", toUri.getValue())),
+                        rrObj.getRequest().getWsAddressingHeader().getMessageId().orElse(null)));
     }
 
     private List<String> explodeUriList(FilterType filterType) {

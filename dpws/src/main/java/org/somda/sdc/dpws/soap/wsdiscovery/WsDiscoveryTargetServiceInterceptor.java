@@ -118,7 +118,8 @@ public class WsDiscoveryTargetServiceInterceptor implements WsDiscoveryTargetSer
         String requestMatchBy = Optional.ofNullable(scopesFromProbe.getMatchBy()).orElse(MatchBy.RFC3986.getUri());
         MatchBy matcher = Arrays.stream(MatchBy.values())
                 .filter(item -> item.getUri().equals(requestMatchBy))
-                .findAny().orElseThrow(() -> new SoapFaultException(wsdFaultFactory.createMatchingRuleNotSupported()));
+                .findAny().orElseThrow(() -> new SoapFaultException(wsdFaultFactory.createMatchingRuleNotSupported(),
+                        rrObj.getRequest().getWsAddressingHeader().getMessageId().orElse(null)));
 
         EndpointReferenceType endpointReference = getEndpointReference();
         List<String> copyScopes = getScopes();
@@ -159,10 +160,12 @@ public class WsDiscoveryTargetServiceInterceptor implements WsDiscoveryTargetSer
         ResolveType resolveType = validateIncomingMessage(inMsg, ResolveType.class);
 
         Optional.ofNullable(resolveType.getEndpointReference()).orElseThrow(() ->
-                new SoapFaultException(soapFaultFactory.createSenderFault("Missing Endpoint Reference")));
+                new SoapFaultException(soapFaultFactory.createSenderFault("Missing Endpoint Reference"),
+                        rrObj.getRequest().getWsAddressingHeader().getMessageId().orElse(null)));
 
         Optional.ofNullable(resolveType.getEndpointReference().getAddress()).orElseThrow(() ->
-                new SoapFaultException(soapFaultFactory.createSenderFault("Missing Endpoint Reference Address")));
+                new SoapFaultException(soapFaultFactory.createSenderFault("Missing Endpoint Reference Address"),
+                        rrObj.getRequest().getWsAddressingHeader().getMessageId().orElse(null)));
 
         EndpointReferenceType endpointReference = getEndpointReference();
         List<String> copyScopes = getScopes();
@@ -397,15 +400,18 @@ public class WsDiscoveryTargetServiceInterceptor implements WsDiscoveryTargetSer
         String to = request.getWsAddressingHeader().getTo().orElseThrow(() ->
                 new SoapFaultException(soapFaultFactory.createSenderFault(
                         String.format("wsa:To field is invalid. Expected '%s', but none found ",
-                                WsDiscoveryConstants.WSA_UDP_TO)))).getValue();
+                                WsDiscoveryConstants.WSA_UDP_TO)),
+                        request.getWsAddressingHeader().getMessageId().orElse(null))).getValue();
 
         if (!to.equals(WsDiscoveryConstants.WSA_UDP_TO)) {
             throw new SoapFaultException(soapFaultFactory.createSenderFault(
                     String.format("wsa:To field is invalid. Expected '%s', but actual is '%s'",
-                            WsDiscoveryConstants.WSA_UDP_TO, to)));
+                            WsDiscoveryConstants.WSA_UDP_TO, to)),
+                    request.getWsAddressingHeader().getMessageId().orElse(null));
         }
 
         return soapUtil.getBody(request, bodyType).orElseThrow(() ->
-                new SoapFaultException(soapFaultFactory.createSenderFault("Body type is invalid")));
+                new SoapFaultException(soapFaultFactory.createSenderFault("Body type is invalid"),
+                        request.getWsAddressingHeader().getMessageId().orElse(null)));
     }
 }

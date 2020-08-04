@@ -55,7 +55,8 @@ public class DpwsTestService1 extends WebService {
                 .setAction(wsaUtil.createAttributedURIType(TestServiceMetadata.ACTION_OPERATION_RESPONSE_1));
 
         TestOperationRequest req = soapUtil.getBody(rrObj.getRequest(), TestOperationRequest.class).orElseThrow(() ->
-                new SoapFaultException(soapFaultFactory.createSenderFault("SOAP body is malformed.")));
+                new SoapFaultException(soapFaultFactory.createSenderFault("SOAP body is malformed."),
+                        rrObj.getRequest().getWsAddressingHeader().getMessageId().orElse(null)));
 
         if (transportInfoCallback != null && rrObj.getCommunicationContext().isPresent()) {
             transportInfoCallback.onRequest(rrObj.getCommunicationContext().get().getTransportInfo());
@@ -74,7 +75,8 @@ public class DpwsTestService1 extends WebService {
                 .setAction(wsaUtil.createAttributedURIType(TestServiceMetadata.ACTION_OPERATION_RESPONSE_2));
 
         TestOperationRequest req = soapUtil.getBody(rrObj.getRequest(), TestOperationRequest.class).orElseThrow(() ->
-                new SoapFaultException(soapFaultFactory.createSenderFault("SOAP body is malformed.")));
+                new SoapFaultException(soapFaultFactory.createSenderFault("SOAP body is malformed."),
+                        rrObj.getRequest().getWsAddressingHeader().getMessageId().orElse(null)));
 
         if (transportInfoCallback != null && rrObj.getCommunicationContext().isPresent()) {
             transportInfoCallback.onRequest(rrObj.getCommunicationContext().get().getTransportInfo());

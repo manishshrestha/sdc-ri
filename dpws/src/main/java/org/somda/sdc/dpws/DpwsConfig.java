@@ -1,7 +1,5 @@
 package org.somda.sdc.dpws;
 
-import org.somda.sdc.dpws.http.jetty.JettyHttpServerHandler;
-
 /**
  * Configuration of the DPWS top level package.
  *
@@ -126,7 +124,7 @@ public class DpwsConfig {
 
     /**
      * Enforces chunked requests and responses.
-     *
+     * <p>
      * Note, that chunked responses and requests can still occur when this is turned off.
      *
      * <ul>
