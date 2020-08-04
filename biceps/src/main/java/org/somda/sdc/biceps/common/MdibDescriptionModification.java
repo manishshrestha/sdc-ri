@@ -5,7 +5,6 @@ import org.somda.sdc.biceps.model.participant.AbstractState;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 

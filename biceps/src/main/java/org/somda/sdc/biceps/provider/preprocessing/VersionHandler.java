@@ -17,7 +17,6 @@ import org.somda.sdc.biceps.provider.preprocessing.helper.VersionPair;
 import org.somda.sdc.common.util.ObjectUtil;
 
 import java.math.BigInteger;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
