@@ -42,6 +42,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Namespace prefix mappings which were missing for SDC Glue-related XML fragments. (#169)
 - `org.somda.sdc.dpws.http.jetty.CommunicationLogHandlerWrapper` determined TLS usage by whether CryptoSettings were present, not based on request. (#171)
 - `org.somda.sdc.dpws.http.jetty.JettyHttpServerRegistry` is now compliant with RFC 2616 instead of RFC 7230. (#172)
+- Fix swallowed state updates during description modification. (#179) 
+- Prevent suspension of notification source and duplication of notification messages. (#179) 
 
 ## [1.1.0] - 2020-04-18
 
