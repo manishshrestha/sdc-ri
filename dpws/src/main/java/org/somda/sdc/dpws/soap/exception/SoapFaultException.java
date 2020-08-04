@@ -1,5 +1,6 @@
 package org.somda.sdc.dpws.soap.exception;
 
+import com.sun.istack.Nullable;
 import org.somda.sdc.dpws.soap.SoapMessage;
 import org.somda.sdc.dpws.soap.model.Fault;
 import org.somda.sdc.dpws.soap.model.Reasontext;
@@ -27,7 +28,7 @@ public class SoapFaultException extends Exception {
      * @param messageId    of the request, to properly set the relatesTo field.
      */
     @SuppressWarnings("unchecked")
-    public SoapFaultException(SoapMessage faultMessage, Optional<AttributedURIType> messageId) {
+    public SoapFaultException(SoapMessage faultMessage, @Nullable AttributedURIType messageId) {
         this.faultMessage = faultMessage;
         this.fault = ((JAXBElement<Fault>) faultMessage.getOriginalEnvelope().getBody().getAny().get(0)).getValue();
         setRelatesTo(messageId);
@@ -41,18 +42,18 @@ public class SoapFaultException extends Exception {
      * @param throwable    extended information, e.g. transport layer info.
      * @param messageId    of the request, to properly set the relatesTo field.
      */
-    public SoapFaultException(SoapMessage faultMessage, Throwable throwable, Optional<AttributedURIType> messageId) {
+    public SoapFaultException(SoapMessage faultMessage, Throwable throwable, @Nullable AttributedURIType messageId) {
         super(throwable);
         this.faultMessage = faultMessage;
         this.fault = ((JAXBElement<Fault>) faultMessage.getOriginalEnvelope().getBody().getAny().get(0)).getValue();
         setRelatesTo(messageId);
     }
 
-    private void setRelatesTo(Optional<AttributedURIType> messageId) {
+    private void setRelatesTo(@Nullable AttributedURIType messageId) {
         final AttributedURIType unspecifiedMessageUri = new AttributedURIType();
         unspecifiedMessageUri.setValue(UNSPECIFIED_MESSAGE);
         if (faultMessage.getWsAddressingHeader().getRelatesTo().isEmpty()) {
-            faultMessage.getWsAddressingHeader().setRelatesTo(messageId.orElse(unspecifiedMessageUri));
+            faultMessage.getWsAddressingHeader().setRelatesTo(Optional.ofNullable(messageId).orElse(unspecifiedMessageUri));
         }
     }
 

@@ -50,7 +50,7 @@ public class RequestResponseClientImpl implements RequestResponseClient {
 
         SoapMessage response = networkCallback.onRequestResponse(request);
         if (response.isFault()) {
-            throw new SoapFaultException(response, request.getWsAddressingHeader().getMessageId());
+            throw new SoapFaultException(response, request.getWsAddressingHeader().getMessageId().get());
         }
 
         RequestResponseObject rrObj = new RequestResponseObject(request, response);

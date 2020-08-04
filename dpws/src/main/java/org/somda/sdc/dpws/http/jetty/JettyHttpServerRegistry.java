@@ -403,7 +403,7 @@ public class JettyHttpServerRegistry extends AbstractIdleService implements Http
         this.contextHandlerMap.put(server, context);
 
         CommunicationLogHandlerWrapper commlogHandler = new CommunicationLogHandlerWrapper(
-            communicationLog, frameworkIdentifier);
+                communicationLog, frameworkIdentifier);
         commlogHandler.setHandler(server.getHandler());
         server.setHandler(commlogHandler);
 
@@ -475,17 +475,17 @@ public class JettyHttpServerRegistry extends AbstractIdleService implements Http
             ServerConnector httpsConnector;
 
             HttpConnectionFactory httpConnectionFactory = new HttpConnectionFactory(httpsConfig,
-                HttpCompliance.RFC2616);
+                    HttpCompliance.RFC2616);
 
             if (enableHttp) {
                 httpsConnector = new ServerConnector(server,
                         new OptionalSslConnectionFactory(connectionFactory, HttpVersion.HTTP_1_1.asString()),
                         connectionFactory,
-                    httpConnectionFactory);
+                        httpConnectionFactory);
             } else {
                 httpsConnector = new ServerConnector(server,
                         connectionFactory,
-                    httpConnectionFactory);
+                        httpConnectionFactory);
             }
             httpsConnector.setIdleTimeout(connectionTimeout.toMillis());
             httpsConnector.setHost(uri.getHost());

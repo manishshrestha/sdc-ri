@@ -252,7 +252,7 @@ public class HighPriorityServices extends WebService {
         // todo DGr implement getContextStatesByFilter
         throw new SoapFaultException(faultFactory.createReceiverFault(
                 "GetContextStatesByFilter is not available on this device"),
-            requestResponseObject.getRequest().getWsAddressingHeader().getMessageId());
+                requestResponseObject.getRequest().getWsAddressingHeader().getMessageId().get());
     }
 
     @MessageInterceptor(ActionConstants.ACTION_GET_CONTEXT_STATES_BY_IDENTIFICATION)
@@ -260,7 +260,7 @@ public class HighPriorityServices extends WebService {
         // todo DGr implement getContextStatesByIdentification
         throw new SoapFaultException(faultFactory.createReceiverFault(
                 "GetContextStatesByIdentification is not available on this device"),
-            requestResponseObject.getRequest().getWsAddressingHeader().getMessageId());
+                requestResponseObject.getRequest().getWsAddressingHeader().getMessageId().get());
     }
 
     @MessageInterceptor(ActionConstants.ACTION_SET_VALUE)
@@ -395,7 +395,7 @@ public class HighPriorityServices extends WebService {
         return soapUtil.getBody(requestResponseObject.getRequest(), bodyType).orElseThrow(() ->
                 new SoapFaultException(faultFactory.createSenderFault(String.format("%s SOAP request body is malformed",
                         bodyType.getSimpleName())),
-                    requestResponseObject.getRequest().getWsAddressingHeader().getMessageId()));
+                        requestResponseObject.getRequest().getWsAddressingHeader().getMessageId().get()));
     }
 
     private <T> void setResponse(RequestResponseObject requestResponseObject,
@@ -406,7 +406,7 @@ public class HighPriorityServices extends WebService {
             mdibVersionUtil.setMdibVersion(mdibVersion, response);
         } catch (Exception e) {
             throw new SoapFaultException(faultFactory.createReceiverFault("Could not create MDIB version."),
-                requestResponseObject.getRequest().getWsAddressingHeader().getMessageId());
+                    requestResponseObject.getRequest().getWsAddressingHeader().getMessageId().get());
         }
         requestResponseObject.getResponse().getWsAddressingHeader().setAction(wsaUtil.createAttributedURIType(
                 responseAction));
@@ -431,7 +431,7 @@ public class HighPriorityServices extends WebService {
         } catch (Exception e) {
             throw new SoapFaultException(faultFactory.createReceiverFault(
                     String.format("Response message could not be generated. Reason: %s", e.getMessage())),
-                Optional.empty());
+                    null);
         }
     }
 
@@ -449,7 +449,7 @@ public class HighPriorityServices extends WebService {
         } catch (Exception e) {
             throw new SoapFaultException(faultFactory.createReceiverFault(
                     String.format("Error while processing set service request: %s", e.getMessage())),
-                requestResponseObject.getRequest().getWsAddressingHeader().getMessageId());
+                    requestResponseObject.getRequest().getWsAddressingHeader().getMessageId().get());
         }
 
         setResponse(requestResponseObject, getResponseObjectAsTypeOrThrow(invocationResponse, responseClass),
@@ -464,6 +464,6 @@ public class HighPriorityServices extends WebService {
         }
         throw new SoapFaultException(faultFactory.createReceiverFault(String.format(
                 "Could not resolve entry type the requested descriptor %s. Operation aborted.",
-            entity.getHandle())), Optional.empty());
+                entity.getHandle())), null);
     }
 }
