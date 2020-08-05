@@ -114,7 +114,7 @@ public class HighPriorityServices implements EventSourceAccess {
         } else if (payload instanceof WaveformStream) {
             episodicReport.setWaveform(messageMapper.mapWaveformStream((WaveformStream) payload));
         } else if (payload instanceof DescriptionModificationReport) {
-            messageMapper.mapDescriptionModificationReport((DescriptionModificationReport) payload);
+            episodicReport.setDescription(messageMapper.mapDescriptionModificationReport((DescriptionModificationReport) payload));
         } else {
             throw new RuntimeException("Unsupported report type " + payload.getClass().getSimpleName());
         }

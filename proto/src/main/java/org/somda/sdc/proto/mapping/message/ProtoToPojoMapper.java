@@ -71,12 +71,12 @@ public class ProtoToPojoMapper {
         return pojo;
     }
 
-//    public DescriptionModificationReport map(DescriptionModificationReportMsg protoMsg) {
-//        var pojo = new DescriptionModificationReport();
-//        map(pojo, protoMsg.getAbstractReport());
-//        protoMsg.getReportPartList().forEach();
-//        return pojo;
-//    }
+    public DescriptionModificationReport map(DescriptionModificationReportMsg protoMsg) {
+        var pojo = new DescriptionModificationReport();
+        map(pojo, protoMsg.getAbstractReport());
+        protoMsg.getReportPartList().forEach(part -> pojo.getReportPart().add(map(part)));
+        return pojo;
+    }
 
     public Activate map(ActivateMsg protoMsg) {
         var pojo = new Activate();

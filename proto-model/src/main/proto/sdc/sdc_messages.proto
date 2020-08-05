@@ -8,6 +8,7 @@ import "sdc/addressing/addressing_types.proto";
 
 import "sdc/biceps/activate.proto";
 import "sdc/biceps/activateresponse.proto";
+import "sdc/biceps/descriptionmodificationreport.proto";
 import "sdc/biceps/episodicalertreport.proto";
 import "sdc/biceps/episodiccomponentreport.proto";
 import "sdc/biceps/episodiccontextreport.proto";
@@ -233,6 +234,7 @@ message EpisodicReport {
     sdc.biceps.EpisodicOperationalStateReportMsg operational_state = 4;
     sdc.biceps.EpisodicContextReportMsg context = 5;
     sdc.biceps.WaveformStreamMsg waveform = 6;
+    sdc.biceps.DescriptionModificationReportMsg description = 7;
   }
 }
 
