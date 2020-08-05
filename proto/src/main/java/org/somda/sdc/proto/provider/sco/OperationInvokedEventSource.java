@@ -3,6 +3,8 @@ package org.somda.sdc.proto.provider.sco;
 import com.google.common.util.concurrent.AbstractIdleService;
 import com.google.inject.Inject;
 import io.grpc.stub.StreamObserver;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.somda.sdc.biceps.model.message.AbstractReport;
 import org.somda.sdc.biceps.model.message.OperationInvokedReport;
 import org.somda.sdc.proto.addressing.AddressingUtil;
@@ -20,6 +22,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class OperationInvokedEventSource extends AbstractIdleService implements EventSource {
+    private static final Logger LOG = LogManager.getLogger(OperationInvokedEventSource.class);
     private final static int QUEUE_SIZE = 100;
 
     private final Map<Integer, BlockingQueue<QueueItem>> subscribedInvokedReports;
@@ -56,7 +59,7 @@ public class OperationInvokedEventSource extends AbstractIdleService implements 
         try {
             while (true) {
                 var element = queue.take();
-                // this will throw and kill the subscription, should be changed at some point
+                LOG.trace("Element: {}", element);
                 if (element instanceof QueueTerminationItem) {
                     responseObserver.onCompleted();
                     return;
@@ -69,7 +72,7 @@ public class OperationInvokedEventSource extends AbstractIdleService implements 
                 }
             }
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            LOG.warn("Queue interrupted", e);
         } finally {
             subscribedInvokedReports.remove(subscriptionNumber);
         }

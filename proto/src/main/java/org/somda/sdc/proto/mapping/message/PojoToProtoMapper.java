@@ -11,9 +11,11 @@ import org.somda.sdc.biceps.model.message.AbstractMetricReport;
 import org.somda.sdc.biceps.model.message.AbstractOperationalStateReport;
 import org.somda.sdc.biceps.model.message.AbstractReport;
 import org.somda.sdc.biceps.model.message.AbstractSet;
+import org.somda.sdc.biceps.model.message.AbstractReportPart;
 import org.somda.sdc.biceps.model.message.AbstractSetResponse;
 import org.somda.sdc.biceps.model.message.Activate;
 import org.somda.sdc.biceps.model.message.ActivateResponse;
+import org.somda.sdc.biceps.model.message.DescriptionModificationReport;
 import org.somda.sdc.biceps.model.message.EpisodicAlertReport;
 import org.somda.sdc.biceps.model.message.EpisodicComponentReport;
 import org.somda.sdc.biceps.model.message.EpisodicContextReport;
@@ -38,9 +40,12 @@ import org.somda.sdc.proto.model.biceps.AbstractMetricReportMsg;
 import org.somda.sdc.proto.model.biceps.AbstractOperationalStateReportMsg;
 import org.somda.sdc.proto.model.biceps.AbstractReportMsg;
 import org.somda.sdc.proto.model.biceps.AbstractSetMsg;
+import org.somda.sdc.proto.model.biceps.AbstractReportPartMsg;
 import org.somda.sdc.proto.model.biceps.AbstractSetResponseMsg;
 import org.somda.sdc.proto.model.biceps.ActivateMsg;
 import org.somda.sdc.proto.model.biceps.ActivateResponseMsg;
+import org.somda.sdc.proto.model.biceps.DescriptionModificationReportMsg;
+import org.somda.sdc.proto.model.biceps.DescriptionModificationTypeMsg;
 import org.somda.sdc.proto.model.biceps.EpisodicAlertReportMsg;
 import org.somda.sdc.proto.model.biceps.EpisodicComponentReportMsg;
 import org.somda.sdc.proto.model.biceps.EpisodicContextReportMsg;
@@ -115,6 +120,28 @@ public class PojoToProtoMapper {
         return builder.build();
     }
 
+    public DescriptionModificationReportMsg mapDescriptionModificationReport(DescriptionModificationReport report) {
+        var builder = DescriptionModificationReportMsg.newBuilder()
+                .setAbstractReport(mapAbstractReport(report));
+        report.getReportPart().forEach(part -> builder.addReportPart(mapDescriptionModificationReportReportPart(part)));
+        return builder.build();
+    }
+
+    public DescriptionModificationReportMsg.ReportPartMsg mapDescriptionModificationReportReportPart(
+            DescriptionModificationReport.ReportPart reportPart
+        ) {
+        var builder = DescriptionModificationReportMsg.ReportPartMsg.newBuilder()
+                .setAbstractReportPart(mapAbstractReportPart(reportPart));
+        Util.doIfNotNull(reportPart.getParentDescriptor(),
+                val -> builder.setAParentDescriptor(Util.toStringValue(val)));
+        Util.doIfNotNull(reportPart.getModificationType(),
+                val -> Util.mapToProtoEnum(val, DescriptionModificationTypeMsg.class));
+        reportPart.getDescriptor().forEach(descriptor -> builder.addDescriptorxXx(oneOfMapper.mapAbstractDescriptor(descriptor)));
+        reportPart.getState().forEach(state -> builder.addState(oneOfMapper.mapAbstractStateOneOf(state)));
+
+        return builder.build();
+    }
+
     public AbstractMetricReportMsg mapAbstractMetricReport(AbstractMetricReport report) {
         var builder = AbstractMetricReportMsg.newBuilder()
                 .setAbstractReport(mapAbstractReport(report));
@@ -123,7 +150,8 @@ public class PojoToProtoMapper {
     }
 
     public AbstractMetricReportMsg.ReportPartMsg mapAbstractMetricReportReportPart(AbstractMetricReport.ReportPart reportPart) {
-        var builder = AbstractMetricReportMsg.ReportPartMsg.newBuilder();
+        var builder = AbstractMetricReportMsg.ReportPartMsg.newBuilder()
+                .setAbstractReportPart(mapAbstractReportPart(reportPart));
         reportPart.getMetricState().forEach(state -> builder.addMetricState(oneOfMapper.mapAbstractMetricStateOneOf(state)));
         Util.doIfNotNull(reportPart.getSourceMds(), reportPart::setSourceMds);
         return builder.build();
@@ -137,7 +165,8 @@ public class PojoToProtoMapper {
     }
 
     public AbstractAlertReportMsg.ReportPartMsg mapAbstractAlertReportMsgReportPart(AbstractAlertReport.ReportPart reportPart) {
-        var builder = AbstractAlertReportMsg.ReportPartMsg.newBuilder();
+        var builder = AbstractAlertReportMsg.ReportPartMsg.newBuilder()
+                .setAbstractReportPart(mapAbstractReportPart(reportPart));
         reportPart.getAlertState().forEach(state -> builder.addAlertState(oneOfMapper.mapAbstractAlertStateOneOf(state)));
         Util.doIfNotNull(reportPart.getSourceMds(), reportPart::setSourceMds);
         return builder.build();
@@ -151,7 +180,8 @@ public class PojoToProtoMapper {
     }
 
     public AbstractComponentReportMsg.ReportPartMsg mapAbstractComponentReportReportPart(AbstractComponentReport.ReportPart reportPart) {
-        var builder = AbstractComponentReportMsg.ReportPartMsg.newBuilder();
+        var builder = AbstractComponentReportMsg.ReportPartMsg.newBuilder()
+                .setAbstractReportPart(mapAbstractReportPart(reportPart));
         reportPart.getComponentState().forEach(state -> builder.addComponentState(oneOfMapper.mapAbstractDeviceComponentStateOneOf(state)));
         Util.doIfNotNull(reportPart.getSourceMds(), reportPart::setSourceMds);
         return builder.build();
@@ -165,7 +195,8 @@ public class PojoToProtoMapper {
     }
 
     public AbstractContextReportMsg.ReportPartMsg mapAbstractContextReportReportPart(AbstractContextReport.ReportPart reportPart) {
-        var builder = AbstractContextReportMsg.ReportPartMsg.newBuilder();
+        var builder = AbstractContextReportMsg.ReportPartMsg.newBuilder()
+                .setAbstractReportPart(mapAbstractReportPart(reportPart));
         reportPart.getContextState().forEach(state -> builder.addContextState(oneOfMapper.mapAbstractContextStateOneOf(state)));
         Util.doIfNotNull(reportPart.getSourceMds(), reportPart::setSourceMds);
         return builder.build();
@@ -179,7 +210,8 @@ public class PojoToProtoMapper {
     }
 
     public AbstractOperationalStateReportMsg.ReportPartMsg mapAbstractOperationalStateReportReportPart(AbstractOperationalStateReport.ReportPart reportPart) {
-        var builder = AbstractOperationalStateReportMsg.ReportPartMsg.newBuilder();
+        var builder = AbstractOperationalStateReportMsg.ReportPartMsg.newBuilder()
+                .setAbstractReportPart(mapAbstractReportPart(reportPart));
         reportPart.getOperationState().forEach(state -> builder.addOperationState(oneOfMapper.mapAbstractOperationStateOneOf(state)));
         Util.doIfNotNull(reportPart.getSourceMds(), reportPart::setSourceMds);
         return builder.build();
@@ -201,6 +233,12 @@ public class PojoToProtoMapper {
         return builder.build();
     }
 
+    public AbstractReportPartMsg mapAbstractReportPart(AbstractReportPart reportPart) {
+        var builder = AbstractReportPartMsg.newBuilder();
+        Util.doIfNotNull(reportPart.getSourceMds(), mds -> builder.setSourceMds(Util.toStringValue(mds)));
+        return builder.build();
+    }
+
     public ActivateResponseMsg mapActivateResponse(ActivateResponse pojo) {
         return ActivateResponseMsg.newBuilder().setAbstractSetResponse(mapAbstractSetResponse(pojo)).build();
     }
@@ -214,7 +252,8 @@ public class PojoToProtoMapper {
 
         var reportParts = pojo.getReportPart();
         builder.addAllReportPart(reportParts.stream().map(reportPart -> {
-            var reportPartBuilder = OperationInvokedReportMsg.ReportPartMsg.newBuilder();
+            var reportPartBuilder = OperationInvokedReportMsg.ReportPartMsg.newBuilder()
+                    .setAbstractReportPart(mapAbstractReportPart(reportPart));
 
             // todo map AbstractReportPartMsg
             //reportPartBuilder.setAbstractReportPart()
