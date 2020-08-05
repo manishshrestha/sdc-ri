@@ -243,7 +243,7 @@ public class HighPriorityServices implements EventSourceAccess {
 
                 while (!isCanceled.get()) {
                     var element = queue.take();
-                    // this will throw and kill the subscription, should be changed at some point
+
                     var action = element.getLeft();
                     if (END_ACTION.equals(action)) {
                         responseObserver.onCompleted();

@@ -59,7 +59,6 @@ public class OperationInvokedEventSource extends AbstractIdleService implements 
         try {
             while (true) {
                 var element = queue.take();
-                // this will throw and kill the subscription, should be changed at some point
                 LOG.trace("Element: {}", element);
                 if (element instanceof QueueTerminationItem) {
                     responseObserver.onCompleted();
