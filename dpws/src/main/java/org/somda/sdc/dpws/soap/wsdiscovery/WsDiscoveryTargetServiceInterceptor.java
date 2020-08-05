@@ -161,11 +161,11 @@ public class WsDiscoveryTargetServiceInterceptor implements WsDiscoveryTargetSer
 
         Optional.ofNullable(resolveType.getEndpointReference()).orElseThrow(() ->
                 new SoapFaultException(soapFaultFactory.createSenderFault("Missing Endpoint Reference"),
-                        rrObj.getRequest().getWsAddressingHeader().getMessageId().orElse(null)));
+                        inMsg.getWsAddressingHeader().getMessageId().orElse(null)));
 
         Optional.ofNullable(resolveType.getEndpointReference().getAddress()).orElseThrow(() ->
                 new SoapFaultException(soapFaultFactory.createSenderFault("Missing Endpoint Reference Address"),
-                        rrObj.getRequest().getWsAddressingHeader().getMessageId().orElse(null)));
+                        inMsg.getWsAddressingHeader().getMessageId().orElse(null)));
 
         EndpointReferenceType endpointReference = getEndpointReference();
         List<String> copyScopes = getScopes();

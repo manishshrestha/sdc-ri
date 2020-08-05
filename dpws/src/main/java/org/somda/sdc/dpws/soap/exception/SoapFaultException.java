@@ -10,13 +10,14 @@ import javax.xml.bind.JAXBElement;
 import java.util.List;
 import java.util.Optional;
 
+import static org.somda.sdc.dpws.soap.SoapConstants.UNSPECIFIED_MESSAGE;
+
 /**
  * Defines an exception that is supposed to be used to convey SOAP fault information.
  *
  * @see <a href="https://www.w3.org/TR/2007/REC-soap12-part1-20070427/#soapfault">SOAP Fault</a>
  */
 public class SoapFaultException extends Exception {
-    private static final String UNSPECIFIED_MESSAGE = "http://www.w3.org/2005/08/addressing/unspecified";
     private final SoapMessage faultMessage;
     private final Fault fault;
 
@@ -41,7 +42,6 @@ public class SoapFaultException extends Exception {
      * @param faultMessage SOAP message that shall include a {@linkplain JAXBElement} with {@link Fault} body.
      *                     Otherwise, a {@linkplain ClassCastException} is thrown.
      */
-    @SuppressWarnings("unchecked")
     public SoapFaultException(SoapMessage faultMessage) {
         this(faultMessage, (AttributedURIType) null);
     }
@@ -54,6 +54,7 @@ public class SoapFaultException extends Exception {
      * @param throwable    extended information, e.g. transport layer info.
      * @param messageId    of the request, to properly set the relatesTo field.
      */
+    @SuppressWarnings("unchecked")
     public SoapFaultException(SoapMessage faultMessage, Throwable throwable, @Nullable AttributedURIType messageId) {
         super(throwable);
         this.faultMessage = faultMessage;
