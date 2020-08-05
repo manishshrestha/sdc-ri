@@ -4,87 +4,11 @@ import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.somda.sdc.biceps.model.participant.AbstractAlertDescriptor;
-import org.somda.sdc.biceps.model.participant.AbstractAlertState;
-import org.somda.sdc.biceps.model.participant.AbstractComplexDeviceComponentDescriptor;
-import org.somda.sdc.biceps.model.participant.AbstractComplexDeviceComponentState;
-import org.somda.sdc.biceps.model.participant.AbstractContextState;
-import org.somda.sdc.biceps.model.participant.AbstractDescriptor;
-import org.somda.sdc.biceps.model.participant.AbstractDeviceComponentDescriptor;
-import org.somda.sdc.biceps.model.participant.AbstractDeviceComponentState;
-import org.somda.sdc.biceps.model.participant.AbstractMetricDescriptor;
-import org.somda.sdc.biceps.model.participant.AbstractMetricState;
-import org.somda.sdc.biceps.model.participant.AbstractMultiState;
-import org.somda.sdc.biceps.model.participant.AbstractOperationDescriptor;
-import org.somda.sdc.biceps.model.participant.AbstractOperationState;
-import org.somda.sdc.biceps.model.participant.AbstractSetStateOperationDescriptor;
-import org.somda.sdc.biceps.model.participant.AbstractState;
-import org.somda.sdc.biceps.model.participant.ActivateOperationDescriptor;
-import org.somda.sdc.biceps.model.participant.ActivateOperationState;
-import org.somda.sdc.biceps.model.participant.AlertConditionDescriptor;
-import org.somda.sdc.biceps.model.participant.AlertConditionState;
-import org.somda.sdc.biceps.model.participant.AlertSignalDescriptor;
-import org.somda.sdc.biceps.model.participant.AlertSignalState;
-import org.somda.sdc.biceps.model.participant.AlertSystemDescriptor;
-import org.somda.sdc.biceps.model.participant.AlertSystemState;
-import org.somda.sdc.biceps.model.participant.BatteryDescriptor;
-import org.somda.sdc.biceps.model.participant.ChannelDescriptor;
-import org.somda.sdc.biceps.model.participant.ChannelState;
-import org.somda.sdc.biceps.model.participant.ClockDescriptor;
-import org.somda.sdc.biceps.model.participant.DistributionSampleArrayMetricDescriptor;
-import org.somda.sdc.biceps.model.participant.EnsembleContextState;
-import org.somda.sdc.biceps.model.participant.EnumStringMetricDescriptor;
-import org.somda.sdc.biceps.model.participant.EnumStringMetricState;
-import org.somda.sdc.biceps.model.participant.LimitAlertConditionDescriptor;
-import org.somda.sdc.biceps.model.participant.LimitAlertConditionState;
-import org.somda.sdc.biceps.model.participant.LocationContextState;
-import org.somda.sdc.biceps.model.participant.MdsDescriptor;
-import org.somda.sdc.biceps.model.participant.MdsState;
-import org.somda.sdc.biceps.model.participant.NumericMetricDescriptor;
-import org.somda.sdc.biceps.model.participant.NumericMetricState;
-import org.somda.sdc.biceps.model.participant.RealTimeSampleArrayMetricDescriptor;
-import org.somda.sdc.biceps.model.participant.RealTimeSampleArrayMetricState;
-import org.somda.sdc.biceps.model.participant.ScoDescriptor;
-import org.somda.sdc.biceps.model.participant.ScoState;
-import org.somda.sdc.biceps.model.participant.SetAlertStateOperationDescriptor;
-import org.somda.sdc.biceps.model.participant.SetAlertStateOperationState;
-import org.somda.sdc.biceps.model.participant.SetComponentStateOperationDescriptor;
-import org.somda.sdc.biceps.model.participant.SetComponentStateOperationState;
-import org.somda.sdc.biceps.model.participant.SetContextStateOperationDescriptor;
-import org.somda.sdc.biceps.model.participant.SetContextStateOperationState;
-import org.somda.sdc.biceps.model.participant.SetMetricStateOperationDescriptor;
-import org.somda.sdc.biceps.model.participant.SetMetricStateOperationState;
-import org.somda.sdc.biceps.model.participant.SetStringOperationDescriptor;
-import org.somda.sdc.biceps.model.participant.SetStringOperationState;
-import org.somda.sdc.biceps.model.participant.SetValueOperationDescriptor;
-import org.somda.sdc.biceps.model.participant.SetValueOperationState;
-import org.somda.sdc.biceps.model.participant.StringMetricDescriptor;
-import org.somda.sdc.biceps.model.participant.StringMetricState;
-import org.somda.sdc.biceps.model.participant.SystemContextDescriptor;
-import org.somda.sdc.biceps.model.participant.SystemContextState;
-import org.somda.sdc.biceps.model.participant.VmdDescriptor;
-import org.somda.sdc.biceps.model.participant.VmdState;
+import org.somda.sdc.biceps.model.participant.*;
 import org.somda.sdc.common.CommonConfig;
 import org.somda.sdc.common.logging.InstanceLogger;
-import org.somda.sdc.proto.model.biceps.AbstractAlertDescriptorOneOfMsg;
-import org.somda.sdc.proto.model.biceps.AbstractAlertStateOneOfMsg;
-import org.somda.sdc.proto.model.biceps.AbstractComplexDeviceComponentDescriptorOneOfMsg;
-import org.somda.sdc.proto.model.biceps.AbstractComplexDeviceComponentStateOneOfMsg;
-import org.somda.sdc.proto.model.biceps.AbstractContextStateOneOfMsg;
-import org.somda.sdc.proto.model.biceps.AbstractDescriptorOneOfMsg;
-import org.somda.sdc.proto.model.biceps.AbstractDeviceComponentDescriptorOneOfMsg;
-import org.somda.sdc.proto.model.biceps.AbstractDeviceComponentStateOneOfMsg;
-import org.somda.sdc.proto.model.biceps.AbstractMetricDescriptorOneOfMsg;
-import org.somda.sdc.proto.model.biceps.AbstractMetricStateOneOfMsg;
-import org.somda.sdc.proto.model.biceps.AbstractMultiStateOneOfMsg;
-import org.somda.sdc.proto.model.biceps.AbstractOperationDescriptorOneOfMsg;
-import org.somda.sdc.proto.model.biceps.AbstractOperationStateOneOfMsg;
-import org.somda.sdc.proto.model.biceps.AbstractSetStateOperationDescriptorOneOfMsg;
-import org.somda.sdc.proto.model.biceps.AbstractStateOneOfMsg;
-import org.somda.sdc.proto.model.biceps.AlertConditionDescriptorOneOfMsg;
-import org.somda.sdc.proto.model.biceps.AlertConditionStateOneOfMsg;
-import org.somda.sdc.proto.model.biceps.StringMetricDescriptorOneOfMsg;
-import org.somda.sdc.proto.model.biceps.StringMetricStateOneOfMsg;
+import org.somda.sdc.proto.mapping.Util;
+import org.somda.sdc.proto.model.biceps.*;
 
 public class PojoToProtoOneOfMapper {
     private static final Logger LOG = LogManager.getLogger(PojoToProtoOneOfMapper.class);
@@ -111,6 +35,22 @@ public class PojoToProtoOneOfMapper {
         this.contextMapper = contextMapper;
         this.metricMapper = metricMapper;
         this.operationMapper = operationMapper;
+    }
+
+    public PatientDemographicsCoreDataOneOfMsg mapPatientDemographicsCoreDataOneOf(PatientDemographicsCoreData coreData) {
+        var builder = PatientDemographicsCoreDataOneOfMsg.newBuilder();
+
+        if (coreData instanceof NeonatalPatientDemographicsCoreData) {
+            builder.setNeonatalPatientDemographicsCoreData(
+                    contextMapper.mapNeonatalPatientDemographicsCoreData((NeonatalPatientDemographicsCoreData) coreData)
+            );
+        } else {
+            builder.setPatientDemographicsCoreData(
+                    contextMapper.mapPatientDemographicsCoreData(coreData)
+            );
+        }
+
+        return builder.build();
     }
 
     public AbstractStateOneOfMsg mapAbstractStateOneOf(AbstractState state) {
@@ -149,8 +89,12 @@ public class PojoToProtoOneOfMapper {
             builder.setAbstractOperationDescriptorOneOf(
                     mapAbstractOperationDescriptor((AbstractOperationDescriptor) descriptor)
             );
+        } else if (descriptor instanceof AbstractContextDescriptor) {
+            builder.setAbstractContextDescriptorOneOf(
+                    mapAbstractContextDescriptor((AbstractContextDescriptor) descriptor)
+            );
         } else {
-            instanceLogger.error("Class {} not supported", descriptor.getClass());
+            instanceLogger.error("Class {} not supported", descriptor.getClass().getSimpleName());
         }
 
         return builder.build();
@@ -172,6 +116,24 @@ public class PojoToProtoOneOfMapper {
             );
         } else {
             instanceLogger.error("Class {} not supported", descriptor.getClass());
+        }
+
+        return builder.build();
+    }
+
+    public AbstractContextDescriptorOneOfMsg mapAbstractContextDescriptor(AbstractContextDescriptor descriptor) {
+        var builder = AbstractContextDescriptorOneOfMsg.newBuilder();
+        if (descriptor instanceof PatientContextDescriptor) {
+            builder.setPatientContextDescriptor(
+                    contextMapper.mapPatientContextDescriptor((PatientContextDescriptor) descriptor));
+        } else if (descriptor instanceof LocationContextDescriptor) {
+            builder.setLocationContextDescriptor(
+                    contextMapper.mapLocationContextDescriptor((LocationContextDescriptor) descriptor));
+        } else if (descriptor instanceof EnsembleContextDescriptor) {
+            builder.setEnsembleContextDescriptor(
+                    contextMapper.mapEnsembleContextDescriptor((EnsembleContextDescriptor) descriptor));
+        } else {
+            instanceLogger.error("Class {} not supported", descriptor.getClass().getSimpleName());
         }
 
         return builder.build();
@@ -399,6 +361,8 @@ public class PojoToProtoOneOfMapper {
             builder.setEnsembleContextState(contextMapper.mapEnsembleContextState((EnsembleContextState) state));
         } else if (state instanceof LocationContextState) {
             builder.setLocationContextState(contextMapper.mapLocationContextState((LocationContextState) state));
+        } else if (state instanceof PatientContextState) {
+            builder.setPatientContextState(contextMapper.mapPatientContextState((PatientContextState) state));
         } else {
             instanceLogger.error("Class {} not supported", state.getClass());
         }
@@ -437,6 +401,28 @@ public class PojoToProtoOneOfMapper {
             // throw new IllegalArgumentException(String.format("Class %s not supported", state.getClass()));
         }
 
+        return builder.build();
+    }
+
+    public PersonReferenceOneOfMsg mapPersonReferenceOneOf(PersonReference personReference) {
+        var builder = PersonReferenceOneOfMsg.newBuilder();
+        if (personReference instanceof PersonParticipation) {
+            builder.setPersonParticipation(contextMapper.mapPersonParticipation((PersonParticipation) personReference));
+        } else {
+            builder.setPersonReference(contextMapper.mapPersonReference(personReference));
+        }
+        return builder.build();
+    }
+
+    public InstanceIdentifierOneOfMsg mapInstanceIdentifier(InstanceIdentifier instanceIdentifier) {
+        var builder = InstanceIdentifierOneOfMsg.newBuilder();
+
+        if (instanceIdentifier instanceof OperatingJurisdiction) {
+//            builder.setOperatingJurisdiction()
+            instanceLogger.error("Class {} not supported", instanceIdentifier.getClass().getSimpleName());
+        } else {
+            builder.setInstanceIdentifier(baseMapper.mapInstanceIdentifier(instanceIdentifier));
+        }
         return builder.build();
     }
 }

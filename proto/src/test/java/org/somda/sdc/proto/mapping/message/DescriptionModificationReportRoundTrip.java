@@ -32,7 +32,6 @@ public class DescriptionModificationReportRoundTrip {
         var pojoToProtoMapper = UT.getInjector().getInstance(PojoToProtoMapper.class);
         var protoToPojoMapper = UT.getInjector().getInstance(ProtoToPojoMapper.class);
 
-
         var report = new DescriptionModificationReport();
         report.setMdibVersion(BigInteger.TEN);
         report.setInstanceId(BigInteger.TWO);
@@ -41,6 +40,7 @@ public class DescriptionModificationReportRoundTrip {
         var reportPart = new DescriptionModificationReport.ReportPart();
         reportPart.setParentDescriptor("Somewhere");
         reportPart.setModificationType(DescriptionModificationType.UPT);
+        reportPart.setSourceMds("Hello");
 
         var descriptor = new SetStringOperationDescriptor();
         reportPart.getDescriptor().add(descriptor);
