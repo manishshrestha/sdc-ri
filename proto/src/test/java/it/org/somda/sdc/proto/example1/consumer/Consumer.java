@@ -10,8 +10,6 @@ import com.google.common.util.concurrent.SettableFuture;
 import com.google.inject.Injector;
 import com.google.inject.Key;
 import com.google.inject.TypeLiteral;
-import com.google.inject.name.Names;
-import io.grpc.stub.StreamObserver;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.somda.sdc.biceps.model.message.Activate;
@@ -25,15 +23,11 @@ import org.somda.sdc.biceps.model.message.SetValueResponse;
 import org.somda.sdc.common.util.ExecutorWrapperService;
 import org.somda.sdc.dpws.DpwsConstants;
 import org.somda.sdc.dpws.guice.DiscoveryUdpQueue;
-import org.somda.sdc.dpws.guice.WsDiscovery;
 import org.somda.sdc.dpws.soap.wsdiscovery.WsDiscoveryConstants;
 import org.somda.sdc.dpws.udp.UdpBindingService;
 import org.somda.sdc.dpws.udp.UdpMessageQueueService;
-import org.somda.sdc.dpws.udp.UdpMessageQueueServiceImpl;
 import org.somda.sdc.dpws.udp.factory.UdpBindingServiceFactory;
 import org.somda.sdc.proto.consumer.ConnectConfiguration;
-import org.somda.sdc.proto.consumer.PrerequisitesException;
-import org.somda.sdc.proto.consumer.SdcRemoteDevice;
 import org.somda.sdc.proto.consumer.SdcRemoteDevicesConnector;
 import org.somda.sdc.proto.consumer.SetServiceAccess;
 import org.somda.sdc.proto.consumer.sco.ScoTransaction;
@@ -41,23 +35,17 @@ import org.somda.sdc.proto.discovery.consumer.Client;
 import org.somda.sdc.proto.discovery.consumer.DiscoveryObserver;
 import org.somda.sdc.proto.discovery.consumer.event.ProbedDeviceFoundMessage;
 import org.somda.sdc.proto.guice.ProtoConsumer;
-import org.somda.sdc.proto.model.ActionFilter;
-import org.somda.sdc.proto.model.EpisodicReportRequest;
-import org.somda.sdc.proto.model.EpisodicReportStream;
-import org.somda.sdc.proto.model.Filter;
 import org.somda.sdc.proto.model.GetContextStatesRequest;
 import org.somda.sdc.proto.model.GetMdibRequest;
 import org.somda.sdc.proto.model.biceps.AbstractContextStateOneOfMsg;
 import org.somda.sdc.proto.model.discovery.Endpoint;
 import org.somda.sdc.proto.model.discovery.ScopeMatcher;
 
-import java.io.IOException;
 import java.math.BigDecimal;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
-import java.net.URI;
 import java.net.UnknownHostException;
 import java.time.Duration;
 import java.util.ArrayList;
@@ -65,14 +53,10 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
-
-import static org.somda.sdc.proto.consumer.ConnectConfiguration.EPISODIC_REPORTS;
-import static org.somda.sdc.proto.consumer.ConnectConfiguration.STREAMING_REPORTS;
 
 public class Consumer extends AbstractIdleService {
 
@@ -319,7 +303,7 @@ public class Consumer extends AbstractIdleService {
             consumer.getDiscoveryClient().unregisterObserver(obs);
             consumer.getDiscoveryClient().stopAsync().awaitTerminated();
 
-            LOG.info("Connecting to {} at ", targetEpr, endpoint);
+            LOG.info("Connecting to {} at {}", targetEpr, endpoint);
             consumer.getConsumer().connect(endpoint);
             resultMap.put(2, true);
 
@@ -357,7 +341,7 @@ public class Consumer extends AbstractIdleService {
             resultMap.put(6, numLocationContexts >= 1);
 
             LOG.info("Number of patient context states: {}", numPatientContexts);
-            LOG.info("Number of patient context states: {}", numLocationContexts);
+            LOG.info("Number of location context states: {}", numLocationContexts);
 
             Thread.sleep(REPORT_TIMEOUT);
 
