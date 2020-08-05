@@ -14,6 +14,7 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.somda.sdc.biceps.common.access.MdibAccess;
 import org.somda.sdc.biceps.model.message.AbstractReport;
 import org.somda.sdc.biceps.model.message.EpisodicAlertReport;
 import org.somda.sdc.biceps.model.message.EpisodicComponentReport;
@@ -21,6 +22,7 @@ import org.somda.sdc.biceps.model.message.EpisodicContextReport;
 import org.somda.sdc.biceps.model.message.EpisodicMetricReport;
 import org.somda.sdc.biceps.model.message.EpisodicOperationalStateReport;
 import org.somda.sdc.biceps.model.message.WaveformStream;
+import org.somda.sdc.biceps.model.participant.AbstractContextState;
 import org.somda.sdc.biceps.provider.access.LocalMdibAccess;
 import org.somda.sdc.common.logging.InstanceLogger;
 import org.somda.sdc.dpws.device.EventSourceAccess;
@@ -31,10 +33,12 @@ import org.somda.sdc.glue.provider.services.helper.ReportGenerator;
 import org.somda.sdc.glue.provider.services.helper.factory.ReportGeneratorFactory;
 import org.somda.sdc.proto.common.ProtoConstants;
 import org.somda.sdc.proto.mapping.message.PojoToProtoMapper;
+import org.somda.sdc.proto.mapping.participant.PojoToProtoOneOfMapper;
 import org.somda.sdc.proto.mapping.participant.PojoToProtoTreeMapper;
 import org.somda.sdc.proto.mapping.participant.factory.PojoToProtoTreeMapperFactory;
 import org.somda.sdc.proto.model.*;
 import org.somda.sdc.proto.model.addressing.Addressing;
+import org.somda.sdc.proto.model.biceps.GetContextStatesResponseMsg;
 import org.somda.sdc.proto.model.biceps.GetMdDescriptionResponseMsg;
 import org.somda.sdc.proto.model.biceps.GetMdStateResponseMsg;
 import org.somda.sdc.proto.model.biceps.GetMdibResponseMsg;
@@ -60,12 +64,13 @@ public class HighPriorityServices implements EventSourceAccess {
                          @Named(org.somda.sdc.common.CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier,
                          ReportGeneratorFactory reportGeneratorFactory,
                          PojoToProtoTreeMapperFactory treeMapperFactory,
-                         PojoToProtoMapper messageMapper) {
+                         PojoToProtoMapper messageMapper,
+                         PojoToProtoOneOfMapper oneOfMapper) {
         this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);
         final PojoToProtoTreeMapper treeMapper = treeMapperFactory.create(mdibAccess);
         this.messageMapper = messageMapper;
 
-        final GetService getService = new GetService(treeMapper);
+        final GetService getService = new GetService(mdibAccess, treeMapper, oneOfMapper);
         this.reportingService = new MdibReportingService(frameworkIdentifier);
 
         this.services = Map.of(
@@ -130,9 +135,16 @@ public class HighPriorityServices implements EventSourceAccess {
     static class GetService extends GetServiceGrpc.GetServiceImplBase {
 
         private final PojoToProtoTreeMapper treeMapper;
+        private final LocalMdibAccess mdibAccess;
+        private final PojoToProtoOneOfMapper oneOfMapper;
 
-        GetService(PojoToProtoTreeMapper treeMapper) {
+        GetService(
+                LocalMdibAccess mdibAccess,
+                PojoToProtoTreeMapper treeMapper,
+                PojoToProtoOneOfMapper oneOfMapper) {
+            this.mdibAccess = mdibAccess;
             this.treeMapper = treeMapper;
+            this.oneOfMapper = oneOfMapper;
         }
 
         @Override
@@ -169,8 +181,13 @@ public class HighPriorityServices implements EventSourceAccess {
 
         @Override
         public void getContextStates(final GetContextStatesRequest request, final StreamObserver<GetContextStatesResponse> responseObserver) {
-            // TODO
-            super.getContextStates(request, responseObserver);
+            var responsePayload = GetContextStatesResponseMsg.newBuilder();
+            mdibAccess.findContextStatesByType(AbstractContextState.class)
+                    .forEach(state -> responsePayload.addContextState(oneOfMapper.mapAbstractContextStateOneOf(state)));
+            var response = GetContextStatesResponse.newBuilder().setPayload(responsePayload.build());
+
+            responseObserver.onNext(response.build());
+            responseObserver.onCompleted();
         }
     }
 
