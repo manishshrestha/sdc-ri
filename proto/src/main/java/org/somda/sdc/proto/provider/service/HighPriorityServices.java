@@ -242,22 +242,21 @@ public class HighPriorityServices implements EventSourceAccess {
                 actions.forEach(action -> queueMap.put(action, queue));
 
                 while (!isCanceled.get()) {
-                    var element = queue.poll();
+                    var element = queue.take();
                     // this will throw and kill the subscription, should be changed at some point
-                    assert element != null;
-                    if (element != null) {
-                        var action = element.getLeft();
-                        if (END_ACTION.equals(action)) {
-                            responseObserver.onCompleted();
-                            return;
-                        }
-                        var report = element.getRight();
-                        var message = EpisodicReportStream.newBuilder()
-                                .setReport(report)
-                                .setAddressing(Addressing.newBuilder().setAction(action).build());
-                        responseObserver.onNext(message.build());
+                    var action = element.getLeft();
+                    if (END_ACTION.equals(action)) {
+                        responseObserver.onCompleted();
+                        return;
                     }
+                    var report = element.getRight();
+                    var message = EpisodicReportStream.newBuilder()
+                            .setReport(report)
+                            .setAddressing(Addressing.newBuilder().setAction(action).build());
+                    responseObserver.onNext(message.build());
                 }
+            } catch (InterruptedException e) {
+                LOG.warn("Queue interrupted", e);
             } finally {
                 LOG.info("Episodic report ended");
                 actions.forEach(action -> queueMap.remove(action, queue));
