@@ -50,8 +50,7 @@ public class ConsumerUtil extends BaseUtil {
                                 super.customConfigure();
                                 bind(CryptoConfig.CRYPTO_SETTINGS,
                                         CryptoSettings.class,
-                                        null);
-//                                        new CustomCryptoSettings());
+                                        new CustomCryptoSettings());
                             }
                         }
                 ));

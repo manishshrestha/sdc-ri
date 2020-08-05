@@ -14,8 +14,8 @@ import java.util.Optional;
 public class CustomCryptoSettings implements CryptoSettings {
     private static final Logger LOG = LogManager.getLogger(CustomCryptoSettings.class);
 
-    private static final String DEFAULT_KEYSTORE = "crypto/root.jks";
-    private static final String DEFAULT_TRUSTSTORE = "crypto/sdcparticipant.jks";
+    private static final String DEFAULT_KEYSTORE = "crypto/sdcparticipant.jks";
+    private static final String DEFAULT_TRUSTSTORE = "crypto/root.jks";
     private static final String DEFAULT_KEYSTORE_PASSWORD = "whatever";
     private static final String DEFAULT_TRUSTSTORE_PASSWORD = "whatever";
 

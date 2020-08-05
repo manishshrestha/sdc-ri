@@ -68,11 +68,7 @@ public class ProviderUtil extends BaseUtil {
                                 super.customConfigure();
                                 bind(CryptoConfig.CRYPTO_SETTINGS,
                                         CryptoSettings.class,
-                                        null);
-//                                        new CustomCryptoSettings());
-                                bind(GrpcConfig.GRPC_SERVER_INSECURE,
-                                        Boolean.class,
-                                        true);
+                                        new CustomCryptoSettings());
                             }
                         }
                 ));
