@@ -233,7 +233,7 @@ public class PojoToProtoMapper {
 
     public AbstractReportPartMsg mapAbstractReportPart(AbstractReportPart reportPart) {
         var builder = AbstractReportPartMsg.newBuilder();
-        Util.doIfNotNull(reportPart.getSourceMds(), builder::setSourceMds);
+        Util.doIfNotNull(reportPart.getSourceMds(), mds -> builder.setSourceMds(Util.toStringValue(mds)));
         return builder.build();
     }
 

@@ -163,7 +163,7 @@ public class ProtoToPojoMapper {
                 pojo::setModificationType
         );
         Util.doIfNotNull(Util.optionalStr(protoMsg, "AParentDescriptor"), pojo::setParentDescriptor);
-//        map(pojo, protoMsg.getAbstractReportPart())
+        map(pojo, protoMsg.getAbstractReportPart());
         return pojo;
     }
 
@@ -200,7 +200,7 @@ public class ProtoToPojoMapper {
     }
 
     private void map(AbstractReportPart pojo, AbstractReportPartMsg protoMsg) {
-        pojo.setSourceMds(protoMsg.getSourceMds());
+        Util.doIfNotNull(Util.optionalStr(protoMsg, "SourceMds"), pojo::setSourceMds);
     }
 
     private void map(AbstractSetResponse pojo, AbstractSetResponseMsg protoMsg) {
