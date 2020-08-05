@@ -115,4 +115,10 @@ public class WsAddressingConstants {
      */
     public static final QName QNAME_ACTION = new QName(NAMESPACE, "Action");
 
+    /**
+     * Predefined URI for the relationship property in WSAdressing, when messageId is missing
+     *
+     * @see <a href="https://www.w3.org/TR/2006/REC-ws-addr-core-20060509/#abstractmaps">WSAddressing Property Definitions</a>
+     */
+    public static final String UNSPECIFIED_MESSAGE = "http://www.w3.org/2005/08/addressing/unspecified";
 }

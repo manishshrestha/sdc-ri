@@ -10,7 +10,7 @@ import javax.xml.bind.JAXBElement;
 import java.util.List;
 import java.util.Optional;
 
-import static org.somda.sdc.dpws.soap.SoapConstants.UNSPECIFIED_MESSAGE;
+import static org.somda.sdc.dpws.soap.wsaddressing.WsAddressingConstants.UNSPECIFIED_MESSAGE;
 
 /**
  * Defines an exception that is supposed to be used to convey SOAP fault information.
