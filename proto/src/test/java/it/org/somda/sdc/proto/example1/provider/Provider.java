@@ -57,6 +57,7 @@ public class Provider extends AbstractIdleService {
     private static final int MAX_ENUM_ITERATIONS = 17;
     private final UdpMessageQueueService udpQueue;
     private final UdpBindingService udpBindingService;
+    private final OperationHandler handler;
 
     private Injector injector;
     private LocalMdibAccess mdibAccess;

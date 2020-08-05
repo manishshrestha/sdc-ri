@@ -16,6 +16,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.somda.sdc.biceps.common.access.MdibAccess;
 import org.somda.sdc.biceps.model.message.AbstractReport;
+import org.somda.sdc.biceps.model.message.DescriptionModificationReport;
 import org.somda.sdc.biceps.model.message.EpisodicAlertReport;
 import org.somda.sdc.biceps.model.message.EpisodicComponentReport;
 import org.somda.sdc.biceps.model.message.EpisodicContextReport;
@@ -43,6 +44,7 @@ import org.somda.sdc.proto.model.biceps.GetMdDescriptionResponseMsg;
 import org.somda.sdc.proto.model.biceps.GetMdStateResponseMsg;
 import org.somda.sdc.proto.model.biceps.GetMdibResponseMsg;
 import org.somda.sdc.proto.model.common.QName;
+import org.somda.sdc.proto.provider.sco.OperationInvocationReceiver;
 
 import java.util.Collections;
 import java.util.Map;
@@ -111,6 +113,8 @@ public class HighPriorityServices implements EventSourceAccess {
             episodicReport.setOperationalState(messageMapper.mapEpisodicOperationalStateReport((EpisodicOperationalStateReport) payload));
         } else if (payload instanceof WaveformStream) {
             episodicReport.setWaveform(messageMapper.mapWaveformStream((WaveformStream) payload));
+        } else if (payload instanceof DescriptionModificationReport) {
+            messageMapper.mapDescriptionModificationReport((DescriptionModificationReport) payload);
         } else {
             throw new RuntimeException("Unsupported report type " + payload.getClass().getSimpleName());
         }

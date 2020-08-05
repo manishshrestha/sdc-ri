@@ -8,50 +8,18 @@ import org.apache.logging.log4j.Logger;
 import org.somda.sdc.biceps.common.MdibDescriptionModifications;
 import org.somda.sdc.biceps.common.MdibEntity;
 import org.somda.sdc.biceps.common.access.MdibAccess;
-import org.somda.sdc.biceps.model.participant.AbstractDescriptor;
-import org.somda.sdc.biceps.model.participant.ActivateOperationDescriptor;
-import org.somda.sdc.biceps.model.participant.AlertConditionDescriptor;
-import org.somda.sdc.biceps.model.participant.AlertSignalDescriptor;
-import org.somda.sdc.biceps.model.participant.AlertSystemDescriptor;
-import org.somda.sdc.biceps.model.participant.ChannelDescriptor;
-import org.somda.sdc.biceps.model.participant.EnsembleContextDescriptor;
-import org.somda.sdc.biceps.model.participant.EnumStringMetricDescriptor;
-import org.somda.sdc.biceps.model.participant.LimitAlertConditionDescriptor;
-import org.somda.sdc.biceps.model.participant.LocationContextDescriptor;
-import org.somda.sdc.biceps.model.participant.MdDescription;
-import org.somda.sdc.biceps.model.participant.MdState;
-import org.somda.sdc.biceps.model.participant.Mdib;
-import org.somda.sdc.biceps.model.participant.MdsDescriptor;
-import org.somda.sdc.biceps.model.participant.NumericMetricDescriptor;
-import org.somda.sdc.biceps.model.participant.ObjectFactory;
-import org.somda.sdc.biceps.model.participant.RealTimeSampleArrayMetricDescriptor;
-import org.somda.sdc.biceps.model.participant.ScoDescriptor;
-import org.somda.sdc.biceps.model.participant.SetAlertStateOperationDescriptor;
-import org.somda.sdc.biceps.model.participant.SetComponentStateOperationDescriptor;
-import org.somda.sdc.biceps.model.participant.SetContextStateOperationDescriptor;
-import org.somda.sdc.biceps.model.participant.SetMetricStateOperationDescriptor;
-import org.somda.sdc.biceps.model.participant.SetStringOperationDescriptor;
-import org.somda.sdc.biceps.model.participant.SetValueOperationDescriptor;
-import org.somda.sdc.biceps.model.participant.StringMetricDescriptor;
-import org.somda.sdc.biceps.model.participant.SystemContextDescriptor;
-import org.somda.sdc.biceps.model.participant.VmdDescriptor;
+import org.somda.sdc.biceps.model.participant.*;
 import org.somda.sdc.common.CommonConfig;
 import org.somda.sdc.common.logging.InstanceLogger;
 import org.somda.sdc.common.util.ObjectUtil;
 import org.somda.sdc.glue.common.ModificationsBuilder;
 import org.somda.sdc.proto.mapping.Util;
 import org.somda.sdc.proto.model.biceps.AbstractComplexDeviceComponentDescriptorMsg;
-import org.somda.sdc.proto.model.biceps.AbstractMetricDescriptorOneOfMsg;
-import org.somda.sdc.proto.model.biceps.AbstractOperationDescriptorOneOfMsg;
-import org.somda.sdc.proto.model.biceps.AbstractSetStateOperationDescriptorOneOfMsg;
-import org.somda.sdc.proto.model.biceps.AlertConditionDescriptorOneOfMsg;
-import org.somda.sdc.proto.model.biceps.ChannelDescriptorMsg;
 import org.somda.sdc.proto.model.biceps.MdDescriptionMsg;
 import org.somda.sdc.proto.model.biceps.MdStateMsg;
 import org.somda.sdc.proto.model.biceps.MdibMsg;
 import org.somda.sdc.proto.model.biceps.MdibVersionGroupMsg;
 import org.somda.sdc.proto.model.biceps.MdsDescriptorMsg;
-import org.somda.sdc.proto.model.biceps.StringMetricDescriptorOneOfMsg;
 import org.somda.sdc.proto.model.biceps.SystemContextDescriptorMsg;
 import org.somda.sdc.proto.model.biceps.VmdDescriptorMsg;
 
@@ -62,7 +30,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 /**
@@ -318,75 +285,16 @@ public class PojoToProtoTreeMapper {
                 var builder = componentMapper.mapChannelDescriptor(channelDescriptor);
 
                 // TODO: Handle other types.
-                mapEnumStringMetricDescriptor(
-                        builder,
-                        mdibAccess.getChildrenByType(channelDescriptor.getHandle(), EnumStringMetricDescriptor.class)
-                );
-                mapStringMetricDescriptor(
-                        builder,
-                        mdibAccess.getChildrenByType(channelDescriptor.getHandle(), StringMetricDescriptor.class)
-                );
-                mapNumericMetricDescriptor(
-                        builder,
-                        mdibAccess.getChildrenByType(channelDescriptor.getHandle(), NumericMetricDescriptor.class)
-                );
-                mapRealTimeSampleArrayDescriptor(
-                        builder,
-                        mdibAccess.getChildrenByType(channelDescriptor.getHandle(), RealTimeSampleArrayMetricDescriptor.class)
-                );
+
+                mdibAccess.getChildrenByType(channelDescriptor.getHandle(), AbstractMetricDescriptor.class)
+                        .forEach(entity -> {
+                            var descriptor = entity.getDescriptor(AbstractMetricDescriptor.class)
+                                    .orElseThrow(() -> new RuntimeException("No descriptor in entity"));
+                            builder.addMetric(oneOfMapper.mapAbstractMetricDescriptor(descriptor));
+                        });
 
                 parent.addChannel(builder);
             });
-        }
-    }
-
-    private void mapRealTimeSampleArrayDescriptor(ChannelDescriptorMsg.Builder parent, List<MdibEntity> descriptors) {
-        for (MdibEntity descriptor : descriptors) {
-            descriptor.getDescriptor(RealTimeSampleArrayMetricDescriptor.class).ifPresent(rtsDescriptor -> {
-                        var builder = metricMapper.mapRealTimeSampleArrayMetricDescriptor(rtsDescriptor);
-                        parent.addMetric(AbstractMetricDescriptorOneOfMsg.newBuilder().setRealTimeSampleArrayMetricDescriptor(builder));
-                    }
-            );
-        }
-    }
-
-    private void mapNumericMetricDescriptor(ChannelDescriptorMsg.Builder parent, List<MdibEntity> descriptors) {
-        for (MdibEntity descriptor : descriptors) {
-            descriptor.getDescriptor(NumericMetricDescriptor.class).ifPresent(numericMetricDescriptor -> {
-                        var builder = metricMapper.mapNumericMetricDescriptor(numericMetricDescriptor);
-                        parent.addMetric(AbstractMetricDescriptorOneOfMsg.newBuilder().setNumericMetricDescriptor(builder));
-                    }
-            );
-        }
-    }
-
-    private void mapEnumStringMetricDescriptor(ChannelDescriptorMsg.Builder parent, List<MdibEntity> descriptors) {
-        for (MdibEntity descriptor : descriptors) {
-            descriptor.getDescriptor(EnumStringMetricDescriptor.class).ifPresent(enumStringMetricDescriptor -> {
-                        var builder = metricMapper.mapEnumStringMetricDescriptor(enumStringMetricDescriptor);
-                        parent.addMetric(
-                                AbstractMetricDescriptorOneOfMsg.newBuilder().setStringMetricDescriptorOneOf(
-                                        StringMetricDescriptorOneOfMsg.newBuilder().setEnumStringMetricDescriptor(builder)
-                                )
-                        );
-                    }
-            );
-        }
-    }
-
-    private void mapStringMetricDescriptor(ChannelDescriptorMsg.Builder parent, List<MdibEntity> descriptors) {
-        for (MdibEntity descriptor : descriptors) {
-            descriptor.getDescriptor(StringMetricDescriptor.class)
-                    // is this filter necessary? yes, because stupid inheritance
-                    .filter(desc -> !(desc instanceof EnumStringMetricDescriptor)).ifPresent(stringMetricDescriptor -> {
-                        var builder = metricMapper.mapStringMetricDescriptor(stringMetricDescriptor);
-                        parent.addMetric(
-                                AbstractMetricDescriptorOneOfMsg.newBuilder().setStringMetricDescriptorOneOf(
-                                        StringMetricDescriptorOneOfMsg.newBuilder().setStringMetricDescriptor(builder)
-                                )
-                        );
-                    }
-            );
         }
     }
 
@@ -395,78 +303,14 @@ public class PojoToProtoTreeMapper {
             sco.getDescriptor(ScoDescriptor.class).ifPresent(scoDescriptor -> {
                 var scoBuilder = componentMapper.mapScoDescriptor(scoDescriptor);
 
-                mapOperationDescriptor(
-                        mdibAccess.getChildrenByType(sco.getHandle(), ActivateOperationDescriptor.class),
-                        ActivateOperationDescriptor.class,
-                        descriptor -> {
-                            var opBuilder = operationMapper.mapActivateOperationDescriptor((descriptor));
-                            scoBuilder.addOperation(AbstractOperationDescriptorOneOfMsg.newBuilder()
-                                    .setAbstractSetStateOperationDescriptorOneOf(
-                                            AbstractSetStateOperationDescriptorOneOfMsg.newBuilder()
-                                                    .setActivateOperationDescriptor(opBuilder)));
-                        });
+                var operationDescriptors = mdibAccess.getChildrenByType(sco.getHandle(), AbstractOperationDescriptor.class);
 
-                mapOperationDescriptor(
-                        mdibAccess.getChildrenByType(sco.getHandle(), SetStringOperationDescriptor.class),
-                        SetStringOperationDescriptor.class,
-                        descriptor -> {
-                            var opBuilder = operationMapper.mapSetStringOperationDescriptor((descriptor));
-                            scoBuilder.addOperation(AbstractOperationDescriptorOneOfMsg.newBuilder()
-                                    .setSetStringOperationDescriptor(opBuilder));
-                        });
+                operationDescriptors.forEach(entity -> {
+                    var descriptor = entity.getDescriptor(AbstractOperationDescriptor.class)
+                            .orElseThrow(() -> new RuntimeException("No descriptor in entity"));
 
-                mapOperationDescriptor(
-                        mdibAccess.getChildrenByType(sco.getHandle(), SetValueOperationDescriptor.class),
-                        SetValueOperationDescriptor.class,
-                        descriptor -> {
-                            var opBuilder = operationMapper.mapSetValueOperationDescriptor((descriptor));
-                            scoBuilder.addOperation(AbstractOperationDescriptorOneOfMsg.newBuilder()
-                                    .setSetValueOperationDescriptor(opBuilder));
-                        });
-
-                mapOperationDescriptor(
-                        mdibAccess.getChildrenByType(sco.getHandle(), SetMetricStateOperationDescriptor.class),
-                        SetMetricStateOperationDescriptor.class,
-                        descriptor -> {
-                            var opBuilder = operationMapper.mapSetMetricStateOperationDescriptor(descriptor);
-                            scoBuilder.addOperation(AbstractOperationDescriptorOneOfMsg.newBuilder()
-                                    .setAbstractSetStateOperationDescriptorOneOf(
-                                            AbstractSetStateOperationDescriptorOneOfMsg.newBuilder()
-                                                    .setSetMetricStateOperationDescriptor(opBuilder)));
-                        });
-
-                mapOperationDescriptor(
-                        mdibAccess.getChildrenByType(sco.getHandle(), SetComponentStateOperationDescriptor.class),
-                        SetComponentStateOperationDescriptor.class,
-                        descriptor -> {
-                            var opBuilder = operationMapper.mapSetComponentStateOperationDescriptor(descriptor);
-                            scoBuilder.addOperation(AbstractOperationDescriptorOneOfMsg.newBuilder()
-                                    .setAbstractSetStateOperationDescriptorOneOf(
-                                            AbstractSetStateOperationDescriptorOneOfMsg.newBuilder()
-                                                    .setSetComponentStateOperationDescriptor(opBuilder)));
-                        });
-
-                mapOperationDescriptor(
-                        mdibAccess.getChildrenByType(sco.getHandle(), SetAlertStateOperationDescriptor.class),
-                        SetAlertStateOperationDescriptor.class,
-                        descriptor -> {
-                            var opBuilder = operationMapper.mapSetAlertStateOperationDescriptor(descriptor);
-                            scoBuilder.addOperation(AbstractOperationDescriptorOneOfMsg.newBuilder()
-                                    .setAbstractSetStateOperationDescriptorOneOf(
-                                            AbstractSetStateOperationDescriptorOneOfMsg.newBuilder()
-                                                    .setSetAlertStateOperationDescriptor(opBuilder)));
-                        });
-
-                mapOperationDescriptor(
-                        mdibAccess.getChildrenByType(sco.getHandle(), SetContextStateOperationDescriptor.class),
-                        SetContextStateOperationDescriptor.class,
-                        descriptor -> {
-                            var opBuilder = operationMapper.mapSetContextStateOperationDescriptor(descriptor);
-                            scoBuilder.addOperation(AbstractOperationDescriptorOneOfMsg.newBuilder()
-                                    .setAbstractSetStateOperationDescriptorOneOf(
-                                            AbstractSetStateOperationDescriptorOneOfMsg.newBuilder()
-                                                    .setSetContextStateOperationDescriptor(opBuilder)));
-                        });
+                    scoBuilder.addOperation(oneOfMapper.mapAbstractOperationDescriptor(descriptor));
+                });
 
                 parent.setSco(scoBuilder);
             });
@@ -474,18 +318,11 @@ public class PojoToProtoTreeMapper {
         }
     }
 
-    private <T extends AbstractDescriptor> void mapOperationDescriptor(List<MdibEntity> descriptors,
-                                                                       Class<T> descrClass,
-                                                                       Consumer<T> doMap) {
-        for (MdibEntity descriptor : descriptors) {
-            descriptor.getDescriptor(descrClass).ifPresent(doMap);
-        }
-    }
-
     private void mapSystemContext(MdsDescriptorMsg.Builder parent, List<MdibEntity> systemContexts) {
         for (MdibEntity systemContext : systemContexts) {
             systemContext.getDescriptor(SystemContextDescriptor.class).ifPresent(systemContextDescriptor -> {
                 var builder = componentMapper.mapSystemContextDescriptor(systemContextDescriptor);
+
                 mapEnsembleContextDescriptor(builder, mdibAccess.getChildrenByType(systemContext.getHandle(),
                         EnsembleContextDescriptor.class));
                 mapLocationContextDescriptor(builder, mdibAccess.getChildrenByType(systemContext.getHandle(),
@@ -553,19 +390,14 @@ public class PojoToProtoTreeMapper {
                 var builder = alertMapper.mapAlertSystemDescriptor(alertSystemDescriptor);
 
                 mdibAccess.getChildrenByType(alertSystemDescriptor.getHandle(), AlertConditionDescriptor.class)
-                        .forEach(condition ->
-                                condition.getDescriptor(AlertConditionDescriptor.class).ifPresent(descriptor -> {
-                                    var oneOf = AlertConditionDescriptorOneOfMsg.newBuilder();
-                                    if (descriptor instanceof LimitAlertConditionDescriptor) {
-                                        instanceLogger.error("LimitAlertConditionDescriptor not implemented");
-                                    } else {
-                                        oneOf.setAlertConditionDescriptor(alertMapper.mapAlertConditionDescriptor(descriptor));
-                                    }
-                                    builder.addAlertCondition(oneOf.build());
-                                })
+                        .forEach(entity -> entity.getDescriptor(AlertConditionDescriptor.class)
+                                .ifPresent(descriptor ->
+                                        builder.addAlertCondition(oneOfMapper.mapAlertConditionDescriptor(descriptor)))
                         );
                 mdibAccess.getChildrenByType(alertSystemDescriptor.getHandle(), AlertSignalDescriptor.class).forEach(signal ->
-                        signal.getDescriptor(AlertSignalDescriptor.class).ifPresent(signalDesc -> builder.addAlertSignal(alertMapper.mapAlertSignalDescriptor(signalDesc)))
+                        signal.getDescriptor(AlertSignalDescriptor.class)
+                                .ifPresent(signalDesc ->
+                                        builder.addAlertSignal(alertMapper.mapAlertSignalDescriptor(signalDesc)))
                 );
 
                 parent.setAlertSystem(builder);

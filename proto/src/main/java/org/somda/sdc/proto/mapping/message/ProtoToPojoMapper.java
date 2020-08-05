@@ -71,6 +71,13 @@ public class ProtoToPojoMapper {
         return pojo;
     }
 
+//    public DescriptionModificationReport map(DescriptionModificationReportMsg protoMsg) {
+//        var pojo = new DescriptionModificationReport();
+//        map(pojo, protoMsg.getAbstractReport());
+//        protoMsg.getReportPartList().forEach();
+//        return pojo;
+//    }
+
     public Activate map(ActivateMsg protoMsg) {
         var pojo = new Activate();
         // todo map params - it's an any; should be a one of simple types
@@ -150,6 +157,16 @@ public class ProtoToPojoMapper {
         return pojo;
     }
 
+    public DescriptionModificationReport.ReportPart map(DescriptionModificationReportMsg.ReportPartMsg protoMsg) {
+        var pojo = new DescriptionModificationReport.ReportPart();
+        Util.doIfNotNull(Util.optional(protoMsg, "AModificationType", DescriptionModificationType.class),
+                pojo::setModificationType
+        );
+        Util.doIfNotNull(Util.optionalStr(protoMsg, "AParentDescriptor"), pojo::setParentDescriptor);
+        map(pojo, protoMsg.getAbstractReportPart())
+        return pojo;
+    }
+
     private void map(AbstractMetricReport pojo, AbstractMetricReportMsg protoMsg) {
         map(pojo, protoMsg.getAbstractReport());
         protoMsg.getReportPartList().forEach(part -> pojo.getReportPart().add(map(part)));
@@ -180,6 +197,10 @@ public class ProtoToPojoMapper {
         pojo.setInstanceId(Util.optionalBigIntOfLong(mdibVersion, "AInstanceId"));
         pojo.setMdibVersion(Util.optionalBigIntOfLong(mdibVersion, "AMdibVersion"));
         pojo.setSequenceId(mdibVersion.getASequenceId());
+    }
+
+    private void map(AbstractReportPart pojo, AbstractReportPartMsg protoMsg) {
+        pojo.setSourceMds(protoMsg.getSourceMds());
     }
 
     private void map(AbstractSetResponse pojo, AbstractSetResponseMsg protoMsg) {
