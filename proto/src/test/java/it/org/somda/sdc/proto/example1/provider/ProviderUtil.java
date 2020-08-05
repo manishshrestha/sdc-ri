@@ -44,7 +44,7 @@ public class ProviderUtil extends BaseUtil {
     private final Duration waveformInterval;
 
     public ProviderUtil(String[] args) {
-        Configurator.reconfigure(localLoggerConfig(Level.DEBUG));
+        Configurator.reconfigure(localLoggerConfig(Level.INFO));
 
         reportInterval = Duration.ofMillis(Long.parseLong(DEFAULT_REPORT_INTERVAL));
         waveformInterval = Duration.ofMillis(Long.parseLong(DEFAULT_WAVEFORM_INTERVAL));

@@ -30,7 +30,7 @@ public class ConsumerUtil extends BaseUtil {
     private final Injector injector;
 
     public ConsumerUtil() {
-        Configurator.reconfigure(localLoggerConfig(Level.DEBUG));
+        Configurator.reconfigure(localLoggerConfig(Level.INFO));
 
         injector = Guice.createInjector(
                 Modules.override(

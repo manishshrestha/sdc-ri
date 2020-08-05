@@ -3,10 +3,12 @@ package org.somda.sdc.proto.provider.service;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Multimaps;
+import com.google.common.util.concurrent.MoreExecutors;
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
 import com.google.inject.name.Named;
 import io.grpc.BindableService;
+import io.grpc.Context;
 import io.grpc.stub.StreamObserver;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
@@ -42,6 +44,7 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Queue;
 import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class HighPriorityServices implements EventSourceAccess {
     private static final Logger LOG = LogManager.getLogger(HighPriorityServices.class);
@@ -202,6 +205,18 @@ public class HighPriorityServices implements EventSourceAccess {
         @Override
         public void episodicReport(final EpisodicReportRequest request, final StreamObserver<EpisodicReportStream> responseObserver) {
 
+            var context = Context.current();
+            AtomicBoolean isCanceled = new AtomicBoolean(false);
+            context.addListener(
+                    new Context.CancellationListener() {
+                        @Override
+                        public void cancelled(Context context) {
+                            isCanceled.set(true);
+                        }
+                    },
+                    MoreExecutors.directExecutor()
+            );
+
             // get id for this handle
             var actions = request.getFilter().getActionFilter().getActionList();
             var queue = new ArrayBlockingQueue<Pair<String, EpisodicReport>>(QUEUE_SIZE);
@@ -209,7 +224,7 @@ public class HighPriorityServices implements EventSourceAccess {
                 // add queue to map for all requested actions
                 actions.forEach(action -> queueMap.put(action, queue));
 
-                while (true) {
+                while (!isCanceled.get()) {
                     var element = queue.poll();
                     // this will throw and kill the subscription, should be changed at some point
                     assert element != null;
@@ -227,6 +242,7 @@ public class HighPriorityServices implements EventSourceAccess {
                     }
                 }
             } finally {
+                LOG.info("Episodic report ended");
                 actions.forEach(action -> queueMap.remove(action, queue));
             }
         }
