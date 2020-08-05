@@ -7,8 +7,9 @@ option java_package = "org.somda.sdc.proto.model.biceps";
 option java_outer_classname = "AbstractReportPartProto";
 
 import "sdc/biceps/extension.proto";
+import "google/protobuf/wrappers.proto";
 
 message AbstractReportPartMsg {
   ExtensionMsg element1 = 1;
-  string source_mds = 2;
+  google.protobuf.StringValue source_mds = 2;
 }

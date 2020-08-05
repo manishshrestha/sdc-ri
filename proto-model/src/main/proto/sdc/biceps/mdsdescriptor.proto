@@ -9,6 +9,7 @@ option java_outer_classname = "MdsDescriptorProto";
 import "sdc/biceps/abstractcomplexdevicecomponentdescriptor.proto";
 import "sdc/biceps/extension.proto";
 import "sdc/biceps/instanceidentifieroneof.proto";
+import "google/protobuf/wrappers.proto";
 import "sdc/biceps/localizedtext.proto";
 import "sdc/biceps/systemcontextdescriptor.proto";
 import "sdc/biceps/clockdescriptor.proto";
@@ -28,12 +29,12 @@ message MdsDescriptorMsg {
       InstanceIdentifierOneOfMsg jurisdiction = 5;
     }
     repeated UdiMsg udi = 2;
-    string lot_number = 3;
+    google.protobuf.StringValue lot_number = 3;
     repeated LocalizedTextMsg manufacturer = 4;
-    string manufacture_date = 5;
-    string expiration_date = 6;
+    google.protobuf.StringValue manufacture_date = 5;
+    google.protobuf.StringValue expiration_date = 6;
     repeated LocalizedTextMsg model_name = 7;
-    string model_number = 8;
+    google.protobuf.StringValue model_number = 8;
     repeated string serial_number = 9;
   }
   MetaDataMsg meta_data = 2;

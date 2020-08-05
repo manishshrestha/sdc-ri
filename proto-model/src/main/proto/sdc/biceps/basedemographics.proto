@@ -7,14 +7,15 @@ option java_package = "org.somda.sdc.proto.model.biceps";
 option java_outer_classname = "BaseDemographicsProto";
 
 import "sdc/biceps/extension.proto";
+import "google/protobuf/wrappers.proto";
 
 message BaseDemographicsMsg {
   ExtensionMsg element1 = 1;
-  string givenname = 2;
+  google.protobuf.StringValue givenname = 2;
   repeated string middlename = 3;
-  string familyname = 4;
-  string birthname = 5;
-  string title = 6;
+  google.protobuf.StringValue familyname = 4;
+  google.protobuf.StringValue birthname = 5;
+  google.protobuf.StringValue title = 6;
 }
 import "sdc/biceps/sex.proto";
 import "sdc/biceps/patienttype.proto";
