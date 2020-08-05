@@ -163,7 +163,7 @@ public class ProtoToPojoMapper {
                 pojo::setModificationType
         );
         Util.doIfNotNull(Util.optionalStr(protoMsg, "AParentDescriptor"), pojo::setParentDescriptor);
-        map(pojo, protoMsg.getAbstractReportPart())
+//        map(pojo, protoMsg.getAbstractReportPart())
         return pojo;
     }
 
