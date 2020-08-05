@@ -85,7 +85,7 @@ public class Provider extends AbstractIdleService {
         var handler = new OperationHandler(this.mdibAccess);
         String finalEpr = epr;
         this.sdcDevice = injector.getInstance(SdcDeviceFactory.class).createSdcDevice(
-                epr, serverAddr, mdibAccess, Collections.emptyList(), Collections.emptyList()
+                epr, serverAddr, mdibAccess, Collections.singletonList(handler), Collections.emptyList()
         );
         this.instanceIdentifier = new InstanceIdentifier();
         this.instanceIdentifier.setRootName("AwesomeExampleInstance");

@@ -67,6 +67,7 @@ public class SdcDeviceImpl extends AbstractIdleService implements SdcDevice {
         this.provider = providerFactory.create(eprAddress, providerSettings);
         this.highPriorityServices = serviceFactory.createHighPriorityServices(mdibAccess);
         this.scoController = scoControllerFactory.create(operationInvokedEventSource, mdibAccess);
+        operationInvocationReceivers.forEach(scoController::addOperationInvocationReceiver);
         this.setService = setServiceFactory.create(scoController, operationInvokedEventSource);
 
         this.pluginProcessor = new SdcDevicePluginProcessor(this.plugins, this);

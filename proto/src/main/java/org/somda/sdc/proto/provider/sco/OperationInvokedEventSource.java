@@ -55,9 +55,8 @@ public class OperationInvokedEventSource extends AbstractIdleService implements 
         subscribedInvokedReports.put(subscriptionNumber, queue);
         try {
             while (true) {
-                var element = queue.poll();
+                var element = queue.take();
                 // this will throw and kill the subscription, should be changed at some point
-                assert element != null;
                 if (element instanceof QueueTerminationItem) {
                     responseObserver.onCompleted();
                     return;
@@ -69,6 +68,8 @@ public class OperationInvokedEventSource extends AbstractIdleService implements 
                     responseObserver.onNext(message.build());
                 }
             }
+        } catch (InterruptedException e) {
+            e.printStackTrace();
         } finally {
             subscribedInvokedReports.remove(subscriptionNumber);
         }

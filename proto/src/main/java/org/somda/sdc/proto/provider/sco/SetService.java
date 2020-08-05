@@ -94,7 +94,7 @@ public class SetService extends SetServiceGrpc.SetServiceImplBase {
         var resp = scoController.processIncomingSetOperation(
                 request.getPayload().getAbstractSet().getOperationHandleRef(),
                 new InstanceIdentifier(), // todo pass certificate common name here
-                protoToPojoMapper.map(request.getPayload()));
+                request.getPayload().getRequestedStringValue());
 
         var responseMsg = SetStringResponse.newBuilder();
         responseMsg.setAddressing(addressingUtil.assembleAddressing("setstring"));

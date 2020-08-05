@@ -10,6 +10,7 @@ import org.somda.sdc.biceps.model.message.AbstractContextReport;
 import org.somda.sdc.biceps.model.message.AbstractMetricReport;
 import org.somda.sdc.biceps.model.message.AbstractOperationalStateReport;
 import org.somda.sdc.biceps.model.message.AbstractReport;
+import org.somda.sdc.biceps.model.message.AbstractSet;
 import org.somda.sdc.biceps.model.message.AbstractSetResponse;
 import org.somda.sdc.biceps.model.message.Activate;
 import org.somda.sdc.biceps.model.message.ActivateResponse;
@@ -36,6 +37,7 @@ import org.somda.sdc.proto.model.biceps.AbstractContextReportMsg;
 import org.somda.sdc.proto.model.biceps.AbstractMetricReportMsg;
 import org.somda.sdc.proto.model.biceps.AbstractOperationalStateReportMsg;
 import org.somda.sdc.proto.model.biceps.AbstractReportMsg;
+import org.somda.sdc.proto.model.biceps.AbstractSetMsg;
 import org.somda.sdc.proto.model.biceps.AbstractSetResponseMsg;
 import org.somda.sdc.proto.model.biceps.ActivateMsg;
 import org.somda.sdc.proto.model.biceps.ActivateResponseMsg;
@@ -244,6 +246,13 @@ public class PojoToProtoMapper {
         return builder.build();
     }
 
+
+    public AbstractSetMsg mapAbstractSet(AbstractSet pojo) {
+        var builder = AbstractSetMsg.newBuilder();
+        builder.setOperationHandleRef(pojo.getOperationHandleRef());
+        return builder.build();
+    }
+
     public InvocationInfoMsg mapInvocationInfo(InvocationInfo invocationInfo) {
         var builder = InvocationInfoMsg.newBuilder();
         Util.doIfNotNull(invocationInfo.getInvocationError(), it ->
@@ -256,6 +265,7 @@ public class PojoToProtoMapper {
 
     public ActivateMsg mapActivate(Activate pojo) {
         var builder = ActivateMsg.newBuilder();
+        builder.setAbstractSet(mapAbstractSet(pojo));
         // todo map arguments
         //pojo.getArgument()
         return builder.build();
@@ -263,6 +273,7 @@ public class PojoToProtoMapper {
 
     public SetStringMsg mapSetString(SetString pojo) {
         var builder = SetStringMsg.newBuilder();
+        builder.setAbstractSet(mapAbstractSet(pojo));
         builder.setRequestedStringValue(pojo.getRequestedStringValue());
         return builder.build();
     }

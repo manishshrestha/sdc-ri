@@ -100,8 +100,7 @@ public class SdcRemoteDeviceImpl extends AbstractIdleService implements SdcRemot
             };
         }
 
-        throw new RuntimeException("getSetServiceAccess() NOT IMPLEMENTED YET");
-        //return scoController;
+        return scoController;
     }
 
     @Override
