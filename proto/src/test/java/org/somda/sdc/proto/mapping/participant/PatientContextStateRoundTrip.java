@@ -11,6 +11,7 @@ import org.somda.sdc.biceps.testutil.Handles;
 import java.util.function.BiConsumer;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 public class PatientContextStateRoundTrip implements BiConsumer<LocalMdibAccess, RemoteMdibAccess> {
     private static final String HANDLE = Handles.CONTEXTDESCRIPTOR_2;
@@ -60,6 +61,10 @@ public class PatientContextStateRoundTrip implements BiConsumer<LocalMdibAccess,
             var expectedState = localMdibAccess.getState(HANDLE_STATE_MIN, PatientContextState.class);
             var actualDescriptor = remoteMdibAccess.getDescriptor(HANDLE_MIN, PatientContextDescriptor.class);
             var actualState = remoteMdibAccess.getState(HANDLE_STATE_MIN, PatientContextState.class);
+
+            // if everything is empty, everything is equal...
+            assertFalse(actualDescriptor.isEmpty());
+            assertFalse(actualState.isEmpty());
 
             assertEquals(expectedDescriptor, actualDescriptor);
             assertEquals(expectedState, actualState);

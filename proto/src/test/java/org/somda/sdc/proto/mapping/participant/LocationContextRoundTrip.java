@@ -47,9 +47,10 @@ public class LocationContextRoundTrip implements BiConsumer<LocalMdibAccess, Rem
         var expectedDescriptor = localMdibAccess.getDescriptor(Handles.CONTEXTDESCRIPTOR_1, LocationContextDescriptor.class);
         var expectedState = localMdibAccess.getState(Handles.CONTEXT_1, LocationContextState.class);
         var actualDescriptor = remoteMdibAccess.getDescriptor(Handles.CONTEXTDESCRIPTOR_1, LocationContextDescriptor.class);
-        var actualState = remoteMdibAccess.getContextStates(Handles.CONTEXTDESCRIPTOR_1, LocationContextState.class)
-                .stream().filter(state -> Handles.CONTEXT_1.equals(state.getHandle())).findFirst();
+        var actualState = remoteMdibAccess.getState(Handles.CONTEXT_1, LocationContextState.class);
 
+        // if everything is empty, everything is equal...
+        assertFalse(actualDescriptor.isEmpty());
         assertFalse(actualState.isEmpty());
 
         assertEquals(expectedDescriptor, actualDescriptor);
