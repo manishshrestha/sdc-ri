@@ -31,4 +31,17 @@ public class CommonConfig {
      * </ul>
      */
     public static final String COPY_MDIB_OUTPUT = "Biceps.Common.CopyMdibInput";
+
+    /**
+     * If true context states which are not associated are not stored.
+     * <p>
+     * Since there is no mechanism which allows discarding context states, enabling this feature
+     * automatically prunes likely irrelevant data from the storage.
+     * <ul>
+     * <li>Data type: {@linkplain Boolean}
+     * <li>Use: optional
+     * </ul>
+     */
+    public static final String STORE_NOT_ASSOCIATED_CONTEXT_STATES = "Biceps.Common.StoreNotAssociatedContextStates";
+
 }

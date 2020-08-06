@@ -20,5 +20,9 @@ public class DefaultBicepsConfigModule extends AbstractConfigurationModule {
         bind(CommonConfig.COPY_MDIB_OUTPUT,
                 Boolean.class,
                 true);
+
+        bind(CommonConfig.STORE_NOT_ASSOCIATED_CONTEXT_STATES,
+                Boolean.class,
+                false);
     }
 }
