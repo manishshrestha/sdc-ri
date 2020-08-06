@@ -13,8 +13,10 @@ import org.somda.sdc.proto.UnitTestUtil;
 
 import java.math.BigInteger;
 import java.util.function.BiConsumer;
+import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 public class LocationContextRoundTrip implements BiConsumer<LocalMdibAccess, RemoteMdibAccess> {
     public LocationContextRoundTrip(MdibDescriptionModifications modifications) {
@@ -27,7 +29,9 @@ public class LocationContextRoundTrip implements BiConsumer<LocalMdibAccess, Rem
         {
             state.setHandle(Handles.CONTEXT_1);
             state.setUnbindingMdibVersion(BigInteger.ONE);
-            state.setBindingEndTime(UnitTestUtil.makeTestTimestamp());
+            state.setBindingStartTime(UnitTestUtil.makeTestTimestamp());
+            // this needs to be set, otherwise MdibEntityImpl drops the state
+            state.setContextAssociation(ContextAssociation.ASSOC);
 
             var detail = new LocationDetail();
             detail.setRoom("Room");
@@ -40,10 +44,13 @@ public class LocationContextRoundTrip implements BiConsumer<LocalMdibAccess, Rem
 
     @Override
     public void accept(LocalMdibAccess localMdibAccess, RemoteMdibAccess remoteMdibAccess) {
-        var expectedDescriptor = localMdibAccess.getDescriptor(Handles.CONTEXTDESCRIPTOR_1, EnsembleContextDescriptor.class);
-        var expectedState = localMdibAccess.getState(Handles.CONTEXT_1, EnsembleContextState.class);
-        var actualDescriptor = remoteMdibAccess.getDescriptor(Handles.CONTEXTDESCRIPTOR_1, EnsembleContextDescriptor.class);
-        var actualState = remoteMdibAccess.getState(Handles.CONTEXT_1, EnsembleContextState.class);
+        var expectedDescriptor = localMdibAccess.getDescriptor(Handles.CONTEXTDESCRIPTOR_1, LocationContextDescriptor.class);
+        var expectedState = localMdibAccess.getState(Handles.CONTEXT_1, LocationContextState.class);
+        var actualDescriptor = remoteMdibAccess.getDescriptor(Handles.CONTEXTDESCRIPTOR_1, LocationContextDescriptor.class);
+        var actualState = remoteMdibAccess.getContextStates(Handles.CONTEXTDESCRIPTOR_1, LocationContextState.class)
+                .stream().filter(state -> Handles.CONTEXT_1.equals(state.getHandle())).findFirst();
+
+        assertFalse(actualState.isEmpty());
 
         assertEquals(expectedDescriptor, actualDescriptor);
         assertEquals(expectedState, actualState);

@@ -63,6 +63,8 @@ public class ProtoToPojoOneOfMapper {
             return contextMapper.map((EnsembleContextDescriptorMsg) protoMsg);
         } else if (protoMsg instanceof LocationContextDescriptorMsg) {
             return contextMapper.map((LocationContextDescriptorMsg) protoMsg);
+        } else if (protoMsg instanceof PatientContextDescriptorMsg) {
+            return contextMapper.map((PatientContextDescriptorMsg) protoMsg);
         } else if (protoMsg instanceof AlertSystemDescriptorMsg) {
             return alertMapper.map((AlertSystemDescriptorMsg) protoMsg);
         } else if (protoMsg instanceof ScoDescriptorMsg) {

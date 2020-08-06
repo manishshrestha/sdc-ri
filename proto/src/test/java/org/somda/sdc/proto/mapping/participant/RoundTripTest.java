@@ -77,5 +77,6 @@ class RoundTripTest {
         resultsToCompare.add(new ActivateOperationRoundTrip(modifications));
         resultsToCompare.add(new SetStringOperationRoundTrip(modifications));
         resultsToCompare.add(new SetValueOperationRoundTrip(modifications));
+        resultsToCompare.add(new PatientContextStateRoundTrip(modifications));
     }
 }
