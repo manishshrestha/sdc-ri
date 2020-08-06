@@ -12,6 +12,7 @@ import org.somda.sdc.biceps.model.message.AbstractSetResponse;
 import org.somda.sdc.biceps.model.message.Activate;
 import org.somda.sdc.biceps.model.message.OperationInvokedReport;
 import org.somda.sdc.biceps.model.message.SetString;
+import org.somda.sdc.biceps.model.message.SetValue;
 import org.somda.sdc.common.CommonConfig;
 import org.somda.sdc.common.logging.InstanceLogger;
 import org.somda.sdc.common.util.ExecutorWrapperService;
@@ -26,6 +27,7 @@ import org.somda.sdc.proto.mapping.message.ProtoToPojoMapper;
 import org.somda.sdc.proto.model.ActivateRequest;
 import org.somda.sdc.proto.model.SetServiceGrpc;
 import org.somda.sdc.proto.model.SetStringRequest;
+import org.somda.sdc.proto.model.SetValueRequest;
 
 import javax.annotation.Nullable;
 
@@ -117,6 +119,12 @@ public class ScoController implements SetServiceAccess {
                     .setPayload(pojoToProtoMapper.mapSetString((SetString) setRequest))
                     .build();
             return protoToPojoMapper.map(setServiceProxy.setString(request).getPayload());
+        } else if (setRequest instanceof SetValue) {
+            var request = SetValueRequest.newBuilder()
+                    .setAddressing(addressing)
+                    .setPayload(pojoToProtoMapper.mapSetValue((SetValue) setRequest))
+                    .build();
+            return protoToPojoMapper.map(setServiceProxy.setValue(request).getPayload());
         }
 
         throw new InvocationException(String.format("Operation type not supported at the moment: %s",

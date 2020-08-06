@@ -2,6 +2,8 @@ package org.somda.sdc.proto.mapping.message;
 
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
+import com.google.protobuf.Any;
+import com.google.protobuf.StringValue;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.somda.sdc.biceps.model.message.AbstractAlertReport;
@@ -10,8 +12,8 @@ import org.somda.sdc.biceps.model.message.AbstractContextReport;
 import org.somda.sdc.biceps.model.message.AbstractMetricReport;
 import org.somda.sdc.biceps.model.message.AbstractOperationalStateReport;
 import org.somda.sdc.biceps.model.message.AbstractReport;
-import org.somda.sdc.biceps.model.message.AbstractSet;
 import org.somda.sdc.biceps.model.message.AbstractReportPart;
+import org.somda.sdc.biceps.model.message.AbstractSet;
 import org.somda.sdc.biceps.model.message.AbstractSetResponse;
 import org.somda.sdc.biceps.model.message.Activate;
 import org.somda.sdc.biceps.model.message.ActivateResponse;
@@ -25,6 +27,8 @@ import org.somda.sdc.biceps.model.message.InvocationInfo;
 import org.somda.sdc.biceps.model.message.OperationInvokedReport;
 import org.somda.sdc.biceps.model.message.SetString;
 import org.somda.sdc.biceps.model.message.SetStringResponse;
+import org.somda.sdc.biceps.model.message.SetValue;
+import org.somda.sdc.biceps.model.message.SetValueResponse;
 import org.somda.sdc.biceps.model.message.WaveformStream;
 import org.somda.sdc.common.CommonConfig;
 import org.somda.sdc.common.logging.InstanceLogger;
@@ -39,8 +43,8 @@ import org.somda.sdc.proto.model.biceps.AbstractContextReportMsg;
 import org.somda.sdc.proto.model.biceps.AbstractMetricReportMsg;
 import org.somda.sdc.proto.model.biceps.AbstractOperationalStateReportMsg;
 import org.somda.sdc.proto.model.biceps.AbstractReportMsg;
-import org.somda.sdc.proto.model.biceps.AbstractSetMsg;
 import org.somda.sdc.proto.model.biceps.AbstractReportPartMsg;
+import org.somda.sdc.proto.model.biceps.AbstractSetMsg;
 import org.somda.sdc.proto.model.biceps.AbstractSetResponseMsg;
 import org.somda.sdc.proto.model.biceps.ActivateMsg;
 import org.somda.sdc.proto.model.biceps.ActivateResponseMsg;
@@ -58,6 +62,8 @@ import org.somda.sdc.proto.model.biceps.MdibVersionGroupMsg;
 import org.somda.sdc.proto.model.biceps.OperationInvokedReportMsg;
 import org.somda.sdc.proto.model.biceps.SetStringMsg;
 import org.somda.sdc.proto.model.biceps.SetStringResponseMsg;
+import org.somda.sdc.proto.model.biceps.SetValueMsg;
+import org.somda.sdc.proto.model.biceps.SetValueResponseMsg;
 import org.somda.sdc.proto.model.biceps.WaveformStreamMsg;
 
 import java.util.stream.Collectors;
@@ -129,7 +135,7 @@ public class PojoToProtoMapper {
 
     public DescriptionModificationReportMsg.ReportPartMsg mapDescriptionModificationReportReportPart(
             DescriptionModificationReport.ReportPart reportPart
-        ) {
+    ) {
         var builder = DescriptionModificationReportMsg.ReportPartMsg.newBuilder()
                 .setAbstractReportPart(mapAbstractReportPart(reportPart));
         Util.doIfNotNull(reportPart.getParentDescriptor(),
@@ -247,6 +253,10 @@ public class PojoToProtoMapper {
         return SetStringResponseMsg.newBuilder().setAbstractSetResponse(mapAbstractSetResponse(pojo)).build();
     }
 
+    public SetValueResponseMsg mapSetValueResponse(SetValueResponse pojo) {
+        return SetValueResponseMsg.newBuilder().setAbstractSetResponse(mapAbstractSetResponse(pojo)).build();
+    }
+
     public OperationInvokedReportMsg mapOperationInvokedReport(OperationInvokedReport pojo) {
         var builder = OperationInvokedReportMsg.newBuilder();
 
@@ -294,6 +304,7 @@ public class PojoToProtoMapper {
 
     public InvocationInfoMsg mapInvocationInfo(InvocationInfo invocationInfo) {
         var builder = InvocationInfoMsg.newBuilder();
+        builder.setTransactionId((int)invocationInfo.getTransactionId());
         Util.doIfNotNull(invocationInfo.getInvocationError(), it ->
                 builder.setInvocationError(Util.mapToProtoEnum(it, InvocationErrorMsg.class)));
         Util.doIfNotNull(invocationInfo.getInvocationState(), it ->
@@ -305,8 +316,17 @@ public class PojoToProtoMapper {
     public ActivateMsg mapActivate(Activate pojo) {
         var builder = ActivateMsg.newBuilder();
         builder.setAbstractSet(mapAbstractSet(pojo));
-        // todo map arguments
-        //pojo.getArgument()
+        builder.addAllArgument(pojo.getArgument().stream()
+                .map(argument -> {
+                    var argMsg = ActivateMsg.ArgumentMsg.newBuilder();
+                    if (argument.getArgValue() instanceof String) {
+                        argMsg.setArgValue(Any.pack(StringValue.newBuilder()
+                                .setValue((String) argument.getArgValue()).build()));
+                    }
+                    return argMsg.build();
+                })
+                .filter(ActivateMsg.ArgumentMsg::hasArgValue)
+                .collect(Collectors.toList()));
         return builder.build();
     }
 
@@ -314,6 +334,13 @@ public class PojoToProtoMapper {
         var builder = SetStringMsg.newBuilder();
         builder.setAbstractSet(mapAbstractSet(pojo));
         builder.setRequestedStringValue(pojo.getRequestedStringValue());
+        return builder.build();
+    }
+
+    public SetValueMsg mapSetValue(SetValue pojo) {
+        var builder = SetValueMsg.newBuilder();
+        builder.setAbstractSet(mapAbstractSet(pojo));
+        builder.setRequestedNumericValue(pojo.getRequestedNumericValue().toPlainString());
         return builder.build();
     }
 }

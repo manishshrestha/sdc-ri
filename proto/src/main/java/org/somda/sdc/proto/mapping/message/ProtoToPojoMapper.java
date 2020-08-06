@@ -2,18 +2,68 @@ package org.somda.sdc.proto.mapping.message;
 
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
+import com.google.protobuf.InvalidProtocolBufferException;
+import com.google.protobuf.StringValue;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.somda.sdc.biceps.model.message.*;
+import org.somda.sdc.biceps.model.message.AbstractAlertReport;
+import org.somda.sdc.biceps.model.message.AbstractComponentReport;
+import org.somda.sdc.biceps.model.message.AbstractContextReport;
+import org.somda.sdc.biceps.model.message.AbstractMetricReport;
+import org.somda.sdc.biceps.model.message.AbstractOperationalStateReport;
+import org.somda.sdc.biceps.model.message.AbstractReport;
+import org.somda.sdc.biceps.model.message.AbstractReportPart;
+import org.somda.sdc.biceps.model.message.AbstractSetResponse;
+import org.somda.sdc.biceps.model.message.Activate;
+import org.somda.sdc.biceps.model.message.ActivateResponse;
+import org.somda.sdc.biceps.model.message.DescriptionModificationReport;
+import org.somda.sdc.biceps.model.message.DescriptionModificationType;
+import org.somda.sdc.biceps.model.message.EpisodicAlertReport;
+import org.somda.sdc.biceps.model.message.EpisodicComponentReport;
+import org.somda.sdc.biceps.model.message.EpisodicContextReport;
+import org.somda.sdc.biceps.model.message.EpisodicMetricReport;
+import org.somda.sdc.biceps.model.message.EpisodicOperationalStateReport;
+import org.somda.sdc.biceps.model.message.InvocationError;
+import org.somda.sdc.biceps.model.message.InvocationInfo;
+import org.somda.sdc.biceps.model.message.InvocationState;
+import org.somda.sdc.biceps.model.message.OperationInvokedReport;
+import org.somda.sdc.biceps.model.message.SetString;
+import org.somda.sdc.biceps.model.message.SetStringResponse;
+import org.somda.sdc.biceps.model.message.SetValue;
+import org.somda.sdc.biceps.model.message.SetValueResponse;
+import org.somda.sdc.biceps.model.message.WaveformStream;
 import org.somda.sdc.common.CommonConfig;
 import org.somda.sdc.common.logging.InstanceLogger;
 import org.somda.sdc.proto.mapping.Util;
-import org.somda.sdc.proto.mapping.participant.PojoToProtoBaseMapper;
 import org.somda.sdc.proto.mapping.participant.ProtoToPojoBaseMapper;
 import org.somda.sdc.proto.mapping.participant.ProtoToPojoMetricMapper;
 import org.somda.sdc.proto.mapping.participant.ProtoToPojoOneOfMapper;
-import org.somda.sdc.proto.model.biceps.*;
+import org.somda.sdc.proto.model.biceps.AbstractAlertReportMsg;
+import org.somda.sdc.proto.model.biceps.AbstractComponentReportMsg;
+import org.somda.sdc.proto.model.biceps.AbstractContextReportMsg;
+import org.somda.sdc.proto.model.biceps.AbstractMetricReportMsg;
+import org.somda.sdc.proto.model.biceps.AbstractOperationalStateReportMsg;
+import org.somda.sdc.proto.model.biceps.AbstractReportMsg;
+import org.somda.sdc.proto.model.biceps.AbstractReportPartMsg;
+import org.somda.sdc.proto.model.biceps.AbstractSetResponseMsg;
+import org.somda.sdc.proto.model.biceps.ActivateMsg;
+import org.somda.sdc.proto.model.biceps.ActivateResponseMsg;
+import org.somda.sdc.proto.model.biceps.DescriptionModificationReportMsg;
+import org.somda.sdc.proto.model.biceps.EpisodicAlertReportMsg;
+import org.somda.sdc.proto.model.biceps.EpisodicComponentReportMsg;
+import org.somda.sdc.proto.model.biceps.EpisodicContextReportMsg;
+import org.somda.sdc.proto.model.biceps.EpisodicMetricReportMsg;
+import org.somda.sdc.proto.model.biceps.EpisodicOperationalStateReportMsg;
+import org.somda.sdc.proto.model.biceps.InvocationInfoMsg;
+import org.somda.sdc.proto.model.biceps.OperationInvokedReportMsg;
+import org.somda.sdc.proto.model.biceps.SetStringMsg;
+import org.somda.sdc.proto.model.biceps.SetStringResponseMsg;
+import org.somda.sdc.proto.model.biceps.SetValueMsg;
+import org.somda.sdc.proto.model.biceps.SetValueResponseMsg;
+import org.somda.sdc.proto.model.biceps.WaveformStreamMsg;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.stream.Collectors;
 
 public class ProtoToPojoMapper {
@@ -80,12 +130,39 @@ public class ProtoToPojoMapper {
 
     public Activate map(ActivateMsg protoMsg) {
         var pojo = new Activate();
-        // todo map params - it's an any; should be a one of simple types
+        pojo.setArgument(protoMsg.getArgumentList().stream()
+                .map(argumentMsg -> {
+                    var arg = new Activate.Argument();
+                    arg.setArgValue(null);
+                    if (argumentMsg.getArgValue().getTypeUrl().endsWith(StringValue.getDescriptor().getFullName())) {
+                        try {
+                            var strVal = argumentMsg.getArgValue().unpack(StringValue.class);
+                            arg.setArgValue(strVal.getValue());
+                        } catch (InvalidProtocolBufferException e) {
+                            // ignore
+                        }
+                    }
+                    return arg;
+                })
+                .filter(arg -> arg.getArgValue() != null)
+                .collect(Collectors.toList()));
         return pojo;
     }
 
     public ActivateResponse map(ActivateResponseMsg protoMsg) {
         var pojo = new ActivateResponse();
+        map(pojo, protoMsg.getAbstractSetResponse());
+        return pojo;
+    }
+
+    public SetValue map(SetValueMsg protoMsg) {
+        var pojo = new SetValue();
+        pojo.setRequestedNumericValue(new BigDecimal(protoMsg.getRequestedNumericValue()));
+        return pojo;
+    }
+
+    public SetValueResponse map(SetValueResponseMsg protoMsg) {
+        var pojo = new SetValueResponse();
         map(pojo, protoMsg.getAbstractSetResponse());
         return pojo;
     }

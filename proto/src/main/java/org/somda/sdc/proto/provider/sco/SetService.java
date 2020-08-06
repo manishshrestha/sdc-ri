@@ -26,6 +26,7 @@ import org.somda.sdc.proto.model.SetValueRequest;
 import org.somda.sdc.proto.model.SetValueResponse;
 
 import java.lang.reflect.InvocationTargetException;
+import java.math.BigDecimal;
 
 public class SetService extends SetServiceGrpc.SetServiceImplBase {
 
@@ -54,7 +55,7 @@ public class SetService extends SetServiceGrpc.SetServiceImplBase {
         var resp = scoController.processIncomingSetOperation(
                 request.getPayload().getAbstractSet().getOperationHandleRef(),
                 new InstanceIdentifier(), // todo pass certificate common name here
-                protoToPojoMapper.map(request.getPayload()));
+                protoToPojoMapper.map(request.getPayload()).getArgument());
 
         var responseMsg = ActivateResponse.newBuilder();
         responseMsg.setAddressing(addressingUtil.assembleAddressing("activate"));
@@ -107,7 +108,17 @@ public class SetService extends SetServiceGrpc.SetServiceImplBase {
     @Override
     public void setValue(SetValueRequest request,
                          StreamObserver<SetValueResponse> responseObserver) {
-        super.setValue(request, responseObserver);
+        var resp = scoController.processIncomingSetOperation(
+                request.getPayload().getAbstractSet().getOperationHandleRef(),
+                new InstanceIdentifier(), // todo pass certificate common name here
+                new BigDecimal(request.getPayload().getRequestedNumericValue()));
+
+        var responseMsg = SetValueResponse.newBuilder();
+        responseMsg.setAddressing(addressingUtil.assembleAddressing("setvalue"));
+        responseMsg.setPayload(pojoToProtoMapper.mapSetValueResponse(
+                createResponse(org.somda.sdc.biceps.model.message.SetValueResponse.class, resp)));
+        responseObserver.onNext(responseMsg.build());
+        responseObserver.onCompleted();
     }
 
     @Override

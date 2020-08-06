@@ -1,11 +1,15 @@
 package it.org.somda.sdc.proto.sco;
 
 import com.google.inject.Injector;
+import com.google.protobuf.Any;
+import com.google.protobuf.InvalidProtocolBufferException;
+import com.google.protobuf.StringValue;
 import it.org.somda.sdc.dpws.soap.Ssl;
 import it.org.somda.sdc.proto.IntegrationTestUtil;
 import it.org.somda.sdc.proto.provider.ProviderImplIT;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -14,6 +18,8 @@ import org.somda.sdc.common.guice.AbstractConfigurationModule;
 import org.somda.sdc.dpws.DpwsFramework;
 import org.somda.sdc.dpws.crypto.CryptoConfig;
 import org.somda.sdc.dpws.crypto.CryptoSettings;
+import org.somda.sdc.proto.model.addressing.Addressing;
+import org.somda.sdc.proto.model.common.QName;
 import test.org.somda.common.LoggingTestWatcher;
 
 import java.net.InetAddress;
@@ -30,7 +36,7 @@ public class ScoIT {
     private DpwsFramework consumerDpwsFramework;
 
 
-    @BeforeEach
+    //@BeforeEach
     void beforeEach() throws SocketException {
         this.providerInjector = new IntegrationTestUtil(
                 new AbstractConfigurationModule() {
@@ -64,7 +70,18 @@ public class ScoIT {
 
     @Test
     @DisplayName("SCO SetString round trip")
-    void testSetString() {
+    void testSetString() throws InvalidProtocolBufferException {
+        var qName = StringValue.newBuilder().setValue("test").build();
+        var any = Any.pack(qName);
+        var addrOriginal = Addressing.newBuilder().addExtension(any).build();
+        var bytes = addrOriginal.toByteArray();
+        var addrCopy = Addressing.parseFrom(bytes);
 
+        if (addrCopy.getExtension(0).getTypeUrl().endsWith(qName.getDescriptorForType().getFullName())) {
+            var unpack = addrCopy.getExtension(0).unpack(StringValue.class);
+            Assertions.assertEquals(qName.getValue(), unpack.getValue());
+        } else {
+            Assertions.fail();
+        }
     }
 }
