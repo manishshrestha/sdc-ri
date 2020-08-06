@@ -425,4 +425,17 @@ public class PojoToProtoOneOfMapper {
         }
         return builder.build();
     }
+
+    public BaseDemographicsOneOfMsg mapBaseDemographics(BaseDemographics baseDemographics) {
+        var builder = BaseDemographicsOneOfMsg.newBuilder();
+
+        if (baseDemographics instanceof PatientDemographicsCoreData) {
+            builder.setPatientDemographicsCoreDataOneOf(
+                    mapPatientDemographicsCoreDataOneOf((PatientDemographicsCoreData) baseDemographics)
+            );
+        } else {
+            builder.setBaseDemographics(baseMapper.mapBaseDemographics(baseDemographics));
+        }
+        return builder.build();
+    }
 }

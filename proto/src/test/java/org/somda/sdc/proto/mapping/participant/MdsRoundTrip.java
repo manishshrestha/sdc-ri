@@ -23,7 +23,7 @@ public class MdsRoundTrip implements BiConsumer<LocalMdibAccess, RemoteMdibAcces
     private OperatingJurisdiction operatingJurisdiction;
 
     private static final String HANDLE = Handles.MDS_0;
-    private static final String HANDLE_MIN = HANDLE + "Min";
+    private static final String HANDLE_MIN = Handles.MDS_1;
 
     public MdsRoundTrip(MdibDescriptionModifications modifications) {
         bigSet(modifications);

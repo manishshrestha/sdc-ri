@@ -122,11 +122,12 @@ public class ProtoToPojoContextMapper {
 
     public NeonatalPatientDemographicsCoreData map(NeonatalPatientDemographicsCoreDataMsg protoMsg) {
         var pojo = new NeonatalPatientDemographicsCoreData();
+        map(pojo, protoMsg.getPatientDemographicsCoreData());
         Util.doIfNotNull(Util.optional(protoMsg, "GestationalAge", MeasurementMsg.class),
                 age -> pojo.setGestationalAge(baseMapper.map(age)));
         Util.doIfNotNull(Util.optional(protoMsg, "BirthLength", MeasurementMsg.class),
                 length -> pojo.setBirthLength(baseMapper.map(length)));
-        Util.doIfNotNull(Util.optional(protoMsg, "BirthWeight(", MeasurementMsg.class),
+        Util.doIfNotNull(Util.optional(protoMsg, "BirthWeight", MeasurementMsg.class),
                 weight -> pojo.setBirthWeight(baseMapper.map(weight)));
         Util.doIfNotNull(Util.optional(protoMsg, "HeadCircumference", MeasurementMsg.class),
                 head -> pojo.setHeadCircumference(baseMapper.map(head)));

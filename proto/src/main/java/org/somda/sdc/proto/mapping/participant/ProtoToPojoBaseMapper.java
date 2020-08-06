@@ -40,6 +40,8 @@ public class ProtoToPojoBaseMapper {
 
     void map(AbstractMultiState pojo, AbstractMultiStateMsg protoMsg) {
         pojo.setHandle(protoMsg.getAHandle());
+        Util.doIfNotNull(Util.optional(protoMsg, "Category", CodedValueMsg.class), category ->
+                pojo.setCategory(map(category)));
         map(pojo, protoMsg.getAbstractState());
     }
 

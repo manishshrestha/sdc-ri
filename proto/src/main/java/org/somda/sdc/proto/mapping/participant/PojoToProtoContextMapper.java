@@ -143,6 +143,8 @@ public class PojoToProtoContextMapper {
         personReference.getIdentification()
                 .forEach(identification -> builder.addIdentification(getOneOfMapper()
                         .mapInstanceIdentifier(identification)));
+        Util.doIfNotNull(personReference.getName(), name ->
+                builder.setName(oneOfMapper.mapBaseDemographics(personReference.getName())));
         return builder.build();
     }
 
