@@ -17,6 +17,7 @@ import org.somda.sdc.biceps.testutil.Handles;
 import java.util.function.BiConsumer;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 public class MdsRoundTrip implements BiConsumer<LocalMdibAccess, RemoteMdibAccess> {
     private ApprovedJurisdictions approvedJurisdictions;
@@ -76,6 +77,10 @@ public class MdsRoundTrip implements BiConsumer<LocalMdibAccess, RemoteMdibAcces
             var actualDescriptor = remoteMdibAccess.getDescriptor(HANDLE, MdsDescriptor.class);
             var actualState = remoteMdibAccess.getState(HANDLE, MdsState.class);
 
+            // if everything is empty, everything is equal...
+            assertFalse(actualDescriptor.isEmpty());
+            assertFalse(actualState.isEmpty());
+
             assertEquals(expectedDescriptor, actualDescriptor);
             assertEquals(expectedState, actualState);
         }
@@ -84,6 +89,10 @@ public class MdsRoundTrip implements BiConsumer<LocalMdibAccess, RemoteMdibAcces
             var expectedState = localMdibAccess.getState(HANDLE_MIN, MdsState.class);
             var actualDescriptor = remoteMdibAccess.getDescriptor(HANDLE_MIN, MdsDescriptor.class);
             var actualState = remoteMdibAccess.getState(HANDLE_MIN, MdsState.class);
+
+            // if everything is empty, everything is equal...
+            assertFalse(actualDescriptor.isEmpty());
+            assertFalse(actualState.isEmpty());
 
             assertEquals(expectedDescriptor, actualDescriptor);
             assertEquals(expectedState, actualState);

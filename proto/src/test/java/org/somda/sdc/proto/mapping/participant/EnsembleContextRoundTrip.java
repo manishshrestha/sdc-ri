@@ -14,6 +14,7 @@ import java.time.Instant;
 import java.util.function.BiConsumer;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 public class EnsembleContextRoundTrip implements BiConsumer<LocalMdibAccess, RemoteMdibAccess> {
     public EnsembleContextRoundTrip(MdibDescriptionModifications modifications) {
@@ -41,6 +42,10 @@ public class EnsembleContextRoundTrip implements BiConsumer<LocalMdibAccess, Rem
         var expectedState = localMdibAccess.getState(Handles.CONTEXT_0, EnsembleContextState.class);
         var actualDescriptor = remoteMdibAccess.getDescriptor(Handles.CONTEXTDESCRIPTOR_0, EnsembleContextDescriptor.class);
         var actualState = remoteMdibAccess.getState(Handles.CONTEXT_0, EnsembleContextState.class);
+
+        // if everything is empty, everything is equal...
+        assertFalse(actualDescriptor.isEmpty());
+        assertFalse(actualState.isEmpty());
 
         assertEquals(expectedDescriptor, actualDescriptor);
         assertEquals(expectedState, actualState);
