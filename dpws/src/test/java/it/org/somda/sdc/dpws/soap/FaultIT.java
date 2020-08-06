@@ -23,7 +23,10 @@ import org.somda.sdc.dpws.soap.factory.SoapFaultFactory;
 import org.somda.sdc.dpws.soap.interception.InterceptorException;
 import org.somda.sdc.dpws.soap.wsaddressing.WsAddressingConstants;
 import org.somda.sdc.dpws.soap.wsaddressing.model.AttributedQNameType;
+import org.somda.sdc.dpws.soap.wsaddressing.model.AttributedURIType;
 import org.somda.sdc.dpws.soap.wsaddressing.model.ProblemActionType;
+import org.somda.sdc.dpws.soap.wsdiscovery.WsDiscoveryConstants;
+import org.somda.sdc.dpws.soap.wstransfer.WsTransferConstants;
 import test.org.somda.common.LoggingTestWatcher;
 
 import javax.xml.bind.JAXBElement;
@@ -130,13 +133,31 @@ class FaultIT {
         assertNotNull(srv1);
 
         {
-            // Test relatesTo is set
+            // Test relatesTo is present, without messageId
             final SoapMessage reqMsg = soapUtil.createMessage();
             try {
                 srv1.sendRequestResponse(reqMsg);
                 fail("Expected a SoapFaultException to be thrown in case of a missing action");
             } catch (SoapFaultException e) {
-                assertTrue(e.getFaultMessage().getWsAddressingHeader().getRelatesTo().isPresent());
+                final var relatesTo = e.getFaultMessage().getWsAddressingHeader().getRelatesTo();
+                assertTrue(relatesTo.isPresent());
+                assertEquals(WsAddressingConstants.UNSPECIFIED_MESSAGE, relatesTo.get().getValue());
+            }
+        }
+
+        {
+            // Test relatesTo is present, with messageId
+            final SoapMessage reqMsg = soapUtil.createMessage();
+            final var msgId = new AttributedURIType();
+            msgId.setValue(soapUtil.createRandomUuidUri());
+            reqMsg.getWsAddressingHeader().setMessageId(msgId);
+            try {
+                srv1.sendRequestResponse(reqMsg);
+                fail("Expected a SoapFaultException to be thrown in case of a missing action");
+            } catch (SoapFaultException e) {
+                final var relatesTo = e.getFaultMessage().getWsAddressingHeader().getRelatesTo();
+                assertTrue(relatesTo.isPresent());
+                assertEquals(msgId.getValue(), relatesTo.get().getValue());
             }
         }
     }
