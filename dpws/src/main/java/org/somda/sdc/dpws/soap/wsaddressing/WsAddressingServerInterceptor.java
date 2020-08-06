@@ -67,10 +67,10 @@ public class WsAddressingServerInterceptor implements Interceptor {
     void processMessage(RequestResponseObject rrInfo) throws SoapFaultException {
         var logMissingMessageId = resolveLogCallForMissingMessageIds(rrInfo.getCommunicationContext().orElse(null));
         processMessage(rrInfo.getRequest(), logMissingMessageId);
-            rrInfo.getResponse().getWsAddressingHeader().setRelatesTo(
-                    rrInfo.getRequest().getWsAddressingHeader().getMessageId().orElse(null));
-            rrInfo.getResponse().getWsAddressingHeader().setMessageId(wsaUtil.createAttributedURIType(
-                    soapUtil.createRandomUuidUri()));
+        rrInfo.getResponse().getWsAddressingHeader().setRelatesTo(
+                rrInfo.getRequest().getWsAddressingHeader().getMessageId().orElse(null));
+        rrInfo.getResponse().getWsAddressingHeader().setMessageId(wsaUtil.createAttributedURIType(
+                soapUtil.createRandomUuidUri()));
     }
 
     @MessageInterceptor
@@ -89,12 +89,14 @@ public class WsAddressingServerInterceptor implements Interceptor {
 
         if (action.isEmpty() || Optional.ofNullable(action.get().getValue()).isEmpty()) {
             throw new SoapFaultException(soapFaultFactory.createSenderFault(
-                    "WS-Addressing header 'Action' required, but not given"));
+                    "WS-Addressing header 'Action' required, but not given"),
+                    msg.getWsAddressingHeader().getMessageId().orElse(null));
         }
 
         if (action.get().getValue().isEmpty()) {
             throw new SoapFaultException(soapFaultFactory.createSenderFault(
-                    "WS-Addressing header 'Action' given, but empty"));
+                    "WS-Addressing header 'Action' given, but empty"),
+                    msg.getWsAddressingHeader().getMessageId().orElse(null));
         }
     }
 

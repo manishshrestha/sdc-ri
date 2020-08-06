@@ -63,7 +63,7 @@ public class RequestResponseServerImpl implements RequestResponseServer {
                     "A required header representing a Message Addressing Property is not present",
                     wsaObjectFactory.createProblemHeaderQName(wsAddressingUtil.createAttributedQNameType(
                             WsAddressingConstants.QNAME_ACTION
-                    ))));
+                    ))), request.getWsAddressingHeader().getMessageId().orElse(null));
         }
 
         var action = wsAddressingUtil.getAddressUriString(actionHeader.orElse(new AttributedURIType()));
@@ -78,7 +78,8 @@ public class RequestResponseServerImpl implements RequestResponseServer {
                     SoapConstants.SENDER,
                     WsAddressingConstants.ACTION_NOT_SUPPORTED,
                     "The [action] cannot be processed at the receiver",
-                    wsaObjectFactory.createProblemAction(problemActionType)));
+                    wsaObjectFactory.createProblemAction(problemActionType)),
+                    request.getWsAddressingHeader().getMessageId().orElse(null));
         }
 
         RequestResponseObject rrObj = new RequestResponseObject(request, response, communicationContext);

@@ -99,7 +99,8 @@ public class HostingServiceInterceptor implements HostingService {
         if (!rrObj.getRequest().getOriginalEnvelope().getBody().getAny().isEmpty()) {
             throw new SoapFaultException(soapFaultFactory
                     .createSenderFault(String.format("SOAP envelope body for action %s shall be empty",
-                            WsTransferConstants.WSA_ACTION_GET)));
+                            WsTransferConstants.WSA_ACTION_GET)),
+                    rrObj.getRequest().getWsAddressingHeader().getMessageId().orElse(null));
         }
 
         Metadata metadata = mexFactory.createMetadata();
