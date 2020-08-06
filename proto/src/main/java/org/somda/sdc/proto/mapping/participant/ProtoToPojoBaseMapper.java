@@ -4,30 +4,13 @@ import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.somda.sdc.biceps.model.participant.AbstractDescriptor;
-import org.somda.sdc.biceps.model.participant.AbstractDeviceComponentDescriptor;
-import org.somda.sdc.biceps.model.participant.AbstractMultiState;
-import org.somda.sdc.biceps.model.participant.AbstractState;
-import org.somda.sdc.biceps.model.participant.CodedValue;
-import org.somda.sdc.biceps.model.participant.InstanceIdentifier;
-import org.somda.sdc.biceps.model.participant.LocalizedText;
-import org.somda.sdc.biceps.model.participant.LocationDetail;
-import org.somda.sdc.biceps.model.participant.OperatingJurisdiction;
-import org.somda.sdc.biceps.model.participant.SafetyClassification;
+import org.somda.sdc.biceps.model.participant.*;
 import org.somda.sdc.common.logging.InstanceLogger;
 import org.somda.sdc.proto.mapping.Util;
-import org.somda.sdc.proto.model.biceps.AbstractDescriptorMsg;
-import org.somda.sdc.proto.model.biceps.AbstractDeviceComponentDescriptorMsg;
-import org.somda.sdc.proto.model.biceps.AbstractMultiStateMsg;
-import org.somda.sdc.proto.model.biceps.AbstractStateMsg;
-import org.somda.sdc.proto.model.biceps.CodedValueMsg;
-import org.somda.sdc.proto.model.biceps.InstanceIdentifierMsg;
-import org.somda.sdc.proto.model.biceps.InstanceIdentifierOneOfMsg;
-import org.somda.sdc.proto.model.biceps.LocalizedTextMsg;
-import org.somda.sdc.proto.model.biceps.LocationDetailMsg;
-import org.somda.sdc.proto.model.biceps.OperatingJurisdictionMsg;
+import org.somda.sdc.proto.model.biceps.*;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -148,6 +131,31 @@ public class ProtoToPojoBaseMapper {
         pojo.setFloor(Util.optionalStr(protoMsg, "AFloor"));
         pojo.setPoC(Util.optionalStr(protoMsg, "APoC"));
         pojo.setRoom(Util.optionalStr(protoMsg, "ARoom"));
+        return pojo;
+    }
+
+    protected void map(BaseDemographics pojo, BaseDemographicsMsg protoMsg) {
+        Util.doIfNotNull(Util.optionalStr(protoMsg, "Givenname"), pojo::setGivenname);
+        protoMsg.getMiddlenameList().forEach(name -> pojo.getMiddlename().add(name));
+        Util.doIfNotNull(Util.optionalStr(protoMsg, "Familyname"), pojo::setFamilyname);
+        Util.doIfNotNull(Util.optionalStr(protoMsg, "Birthname"), pojo::setBirthname);
+        Util.doIfNotNull(Util.optionalStr(protoMsg, "Title"), pojo::setTitle);
+    }
+
+    public Measurement map(MeasurementMsg protoMsg) {
+        var pojo = new Measurement();
+        pojo.setMeasuredValue(new BigDecimal(protoMsg.getAMeasuredValue()));
+        pojo.setMeasurementUnit(map(protoMsg.getMeasurementUnit()));
+        return pojo;
+    }
+
+    public BaseDemographics map(BaseDemographicsMsg protoMsg) {
+        var pojo = new BaseDemographics();
+        pojo.setGivenname(Util.optionalStr(protoMsg, "Givenname"));
+        protoMsg.getMiddlenameList().forEach(name -> pojo.getMiddlename().add(name));
+        pojo.setFamilyname(Util.optionalStr(protoMsg, "Familyname"));
+        pojo.setBirthname(Util.optionalStr(protoMsg, "Birthname"));
+        pojo.setTitle(Util.optionalStr(protoMsg, "Title"));
         return pojo;
     }
 }

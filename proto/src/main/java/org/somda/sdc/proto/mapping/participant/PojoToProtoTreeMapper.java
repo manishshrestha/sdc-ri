@@ -327,6 +327,8 @@ public class PojoToProtoTreeMapper {
                         EnsembleContextDescriptor.class));
                 mapLocationContextDescriptor(builder, mdibAccess.getChildrenByType(systemContext.getHandle(),
                         LocationContextDescriptor.class));
+                mapPatientContextDescriptor(builder, mdibAccess.getChildrenByType(systemContext.getHandle(),
+                        PatientContextDescriptor.class));
 //                mapZeroOrOneDescriptor(
 //                        systemContextDescriptorCopy,
 //                        mdibAccess.getChildrenByType(parentHandle, PatientContextDescriptor.class),
@@ -372,6 +374,17 @@ public class PojoToProtoTreeMapper {
             descriptor.getDescriptor(LocationContextDescriptor.class).ifPresent(locationContextDescriptor -> {
                         var builder = contextMapper.mapLocationContextDescriptor(locationContextDescriptor);
                         parent.setLocationContext(builder);
+                    }
+            );
+            return;
+        }
+    }
+
+    private void mapPatientContextDescriptor(SystemContextDescriptorMsg.Builder parent, List<MdibEntity> descriptors) {
+        for (MdibEntity entity : descriptors) {
+            entity.getDescriptor(PatientContextDescriptor.class).ifPresent(descriptor -> {
+                        var builder = contextMapper.mapPatientContextDescriptor(descriptor);
+                        parent.setPatientContext(builder);
                     }
             );
             return;

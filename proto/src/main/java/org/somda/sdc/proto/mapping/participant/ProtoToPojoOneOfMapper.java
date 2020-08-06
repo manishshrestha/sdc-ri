@@ -5,61 +5,11 @@ import com.google.inject.name.Named;
 import com.google.protobuf.MessageOrBuilder;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.somda.sdc.biceps.model.participant.AbstractAlertDescriptor;
-import org.somda.sdc.biceps.model.participant.AbstractAlertState;
-import org.somda.sdc.biceps.model.participant.AbstractContextState;
-import org.somda.sdc.biceps.model.participant.AbstractDescriptor;
-import org.somda.sdc.biceps.model.participant.AbstractDeviceComponentState;
-import org.somda.sdc.biceps.model.participant.AbstractMetricState;
-import org.somda.sdc.biceps.model.participant.AbstractOperationDescriptor;
-import org.somda.sdc.biceps.model.participant.AbstractOperationState;
-import org.somda.sdc.biceps.model.participant.AbstractSetStateOperationDescriptor;
-import org.somda.sdc.biceps.model.participant.AbstractState;
-import org.somda.sdc.biceps.model.participant.StringMetricState;
+import org.somda.sdc.biceps.model.participant.*;
 import org.somda.sdc.common.logging.InstanceLogger;
 import org.somda.sdc.common.util.TimestampAdapter;
 import org.somda.sdc.proto.mapping.Util;
-import org.somda.sdc.proto.model.biceps.AbstractAlertDescriptorOneOfMsg;
-import org.somda.sdc.proto.model.biceps.AbstractAlertStateOneOfMsg;
-import org.somda.sdc.proto.model.biceps.AbstractComplexDeviceComponentDescriptorOneOfMsg;
-import org.somda.sdc.proto.model.biceps.AbstractComplexDeviceComponentStateOneOfMsg;
-import org.somda.sdc.proto.model.biceps.AbstractContextStateOneOfMsg;
-import org.somda.sdc.proto.model.biceps.AbstractDescriptorOneOfMsg;
-import org.somda.sdc.proto.model.biceps.AbstractDeviceComponentDescriptorOneOfMsg;
-import org.somda.sdc.proto.model.biceps.AbstractDeviceComponentStateOneOfMsg;
-import org.somda.sdc.proto.model.biceps.AbstractMetricStateOneOfMsg;
-import org.somda.sdc.proto.model.biceps.AbstractMultiStateOneOfMsg;
-import org.somda.sdc.proto.model.biceps.AbstractOperationDescriptorOneOfMsg;
-import org.somda.sdc.proto.model.biceps.AbstractOperationStateOneOfMsg;
-import org.somda.sdc.proto.model.biceps.AbstractSetStateOperationDescriptorOneOfMsg;
-import org.somda.sdc.proto.model.biceps.AbstractStateOneOfMsg;
-import org.somda.sdc.proto.model.biceps.ActivateOperationDescriptorMsg;
-import org.somda.sdc.proto.model.biceps.AlertConditionDescriptorMsg;
-import org.somda.sdc.proto.model.biceps.AlertConditionStateOneOfMsg;
-import org.somda.sdc.proto.model.biceps.AlertSignalDescriptorMsg;
-import org.somda.sdc.proto.model.biceps.AlertSystemDescriptorMsg;
-import org.somda.sdc.proto.model.biceps.ChannelDescriptorMsg;
-import org.somda.sdc.proto.model.biceps.ChannelStateMsg;
-import org.somda.sdc.proto.model.biceps.EnsembleContextDescriptorMsg;
-import org.somda.sdc.proto.model.biceps.EnumStringMetricDescriptorMsg;
-import org.somda.sdc.proto.model.biceps.LocationContextDescriptorMsg;
-import org.somda.sdc.proto.model.biceps.MdsDescriptorMsg;
-import org.somda.sdc.proto.model.biceps.MdsStateMsg;
-import org.somda.sdc.proto.model.biceps.NumericMetricDescriptorMsg;
-import org.somda.sdc.proto.model.biceps.RealTimeSampleArrayMetricDescriptorMsg;
-import org.somda.sdc.proto.model.biceps.ScoDescriptorMsg;
-import org.somda.sdc.proto.model.biceps.SetAlertStateOperationDescriptorMsg;
-import org.somda.sdc.proto.model.biceps.SetComponentStateOperationDescriptorMsg;
-import org.somda.sdc.proto.model.biceps.SetContextStateOperationDescriptorMsg;
-import org.somda.sdc.proto.model.biceps.SetMetricStateOperationDescriptorMsg;
-import org.somda.sdc.proto.model.biceps.SetStringOperationDescriptorMsg;
-import org.somda.sdc.proto.model.biceps.SetValueOperationDescriptorMsg;
-import org.somda.sdc.proto.model.biceps.StringMetricDescriptorMsg;
-import org.somda.sdc.proto.model.biceps.StringMetricStateOneOfMsg;
-import org.somda.sdc.proto.model.biceps.SystemContextDescriptorMsg;
-import org.somda.sdc.proto.model.biceps.SystemContextStateMsg;
-import org.somda.sdc.proto.model.biceps.VmdDescriptorMsg;
-import org.somda.sdc.proto.model.biceps.VmdStateMsg;
+import org.somda.sdc.proto.model.biceps.*;
 
 public class ProtoToPojoOneOfMapper {
     private static final Logger LOG = LogManager.getLogger(ProtoToPojoOneOfMapper.class);
@@ -113,6 +63,8 @@ public class ProtoToPojoOneOfMapper {
             return contextMapper.map((EnsembleContextDescriptorMsg) protoMsg);
         } else if (protoMsg instanceof LocationContextDescriptorMsg) {
             return contextMapper.map((LocationContextDescriptorMsg) protoMsg);
+        } else if (protoMsg instanceof PatientContextDescriptorMsg) {
+            return contextMapper.map((PatientContextDescriptorMsg) protoMsg);
         } else if (protoMsg instanceof AlertSystemDescriptorMsg) {
             return alertMapper.map((AlertSystemDescriptorMsg) protoMsg);
         } else if (protoMsg instanceof ScoDescriptorMsg) {
@@ -436,8 +388,7 @@ public class ProtoToPojoOneOfMapper {
                 instanceLogger.error("State mapping not implemented: {}", type);
                 break;
             case PATIENT_CONTEXT_STATE:
-                instanceLogger.error("State mapping not implemented: {}", type);
-                break;
+                return contextMapper.map(protoMsg.getPatientContextState());
             case LOCATION_CONTEXT_STATE:
                 return contextMapper.map(protoMsg.getLocationContextState());
             case MEANS_CONTEXT_STATE:
@@ -497,5 +448,58 @@ public class ProtoToPojoOneOfMapper {
         }
 
         return Util.invalidDeviceComponentState();
+    }
+
+    public PatientDemographicsCoreData map(PatientDemographicsCoreDataOneOfMsg protoMsg) {
+        var type = protoMsg.getPatientDemographicsCoreDataOneOfCase();
+        switch (type) {
+            case NEONATAL_PATIENT_DEMOGRAPHICS_CORE_DATA:
+                return contextMapper.map(protoMsg.getNeonatalPatientDemographicsCoreData());
+            case PATIENT_DEMOGRAPHICS_CORE_DATA:
+                return contextMapper.map(protoMsg.getPatientDemographicsCoreData());
+            default:
+                instanceLogger.error("Mapping not implemented: {}", type);
+                break;
+        }
+        return Util.invalidPatientDemographicsCoreData();
+    }
+
+    public PersonReference map(PersonReferenceOneOfMsg protoMsg) {
+        var type = protoMsg.getPersonReferenceOneOfCase();
+        switch (type) {
+            case PERSON_REFERENCE:
+                return contextMapper.map(protoMsg.getPersonReference());
+            case PERSON_PARTICIPATION:
+                return contextMapper.map(protoMsg.getPersonParticipation());
+        }
+        return Util.invalidPersonReference();
+    }
+
+    public InstanceIdentifier map(InstanceIdentifierOneOfMsg protoMsg) {
+        var type = protoMsg.getInstanceIdentifierOneOfCase();
+        switch (type) {
+            case INSTANCE_IDENTIFIER:
+                return baseMapper.map(protoMsg.getInstanceIdentifier());
+            case OPERATING_JURISDICTION:
+            default:
+                instanceLogger.error("Mapping not implemented: {}", type);
+                break;
+        }
+        return Util.invalidInstanceIdentifier();
+    }
+
+    public BaseDemographics map(BaseDemographicsOneOfMsg protoMsg) {
+        var type = protoMsg.getBaseDemographicsOneOfCase();
+        switch (type) {
+            case PATIENT_DEMOGRAPHICS_CORE_DATA_ONE_OF:
+                return map(protoMsg.getPatientDemographicsCoreDataOneOf());
+            case BASE_DEMOGRAPHICS:
+                return baseMapper.map(protoMsg.getBaseDemographics());
+            default:
+                instanceLogger.error("Mapping not implemented: {}", type);
+                break;
+        }
+
+        return Util.invalidBaseDemographics();
     }
 }

@@ -5,31 +5,27 @@ import org.somda.sdc.biceps.model.participant.AbstractDescriptor;
 import org.somda.sdc.biceps.model.participant.AbstractDeviceComponentDescriptor;
 import org.somda.sdc.biceps.model.participant.AbstractMultiState;
 import org.somda.sdc.biceps.model.participant.AbstractState;
+import org.somda.sdc.biceps.model.participant.BaseDemographics;
 import org.somda.sdc.biceps.model.participant.CodedValue;
 import org.somda.sdc.biceps.model.participant.InstanceIdentifier;
 import org.somda.sdc.biceps.model.participant.LocalizedText;
+import org.somda.sdc.biceps.model.participant.Measurement;
+import org.somda.sdc.biceps.model.participant.NeonatalPatientDemographicsCoreData;
 import org.somda.sdc.biceps.model.participant.OperatingJurisdiction;
+import org.somda.sdc.biceps.model.participant.PatientDemographicsCoreData;
+import org.somda.sdc.biceps.model.participant.PersonParticipation;
+import org.somda.sdc.biceps.model.participant.PersonReference;
 import org.somda.sdc.proto.mapping.Util;
-import org.somda.sdc.proto.model.biceps.AbstractDescriptorMsg;
-import org.somda.sdc.proto.model.biceps.AbstractDeviceComponentDescriptorMsg;
-import org.somda.sdc.proto.model.biceps.AbstractMultiStateMsg;
-import org.somda.sdc.proto.model.biceps.AbstractStateMsg;
-import org.somda.sdc.proto.model.biceps.CodedValueMsg;
-import org.somda.sdc.proto.model.biceps.InstanceIdentifierMsg;
-import org.somda.sdc.proto.model.biceps.InstanceIdentifierOneOfMsg;
-import org.somda.sdc.proto.model.biceps.LocalizedTextMsg;
-import org.somda.sdc.proto.model.biceps.LocalizedTextWidthMsg;
-import org.somda.sdc.proto.model.biceps.OperatingJurisdictionMsg;
-import org.somda.sdc.proto.model.biceps.SafetyClassificationMsg;
+import org.somda.sdc.proto.model.biceps.*;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
 public class PojoToProtoBaseMapper {
 
+
     @Inject
     PojoToProtoBaseMapper() {
-
     }
 
     public OperatingJurisdictionMsg mapOperatingJurisdiction(
@@ -137,6 +133,23 @@ public class PojoToProtoBaseMapper {
                 builder.setCategory(mapCodedValue(codedValue)));
         builder.setAHandle(abstractMultiState.getHandle());
         builder.setAbstractState(mapAbstractState(abstractMultiState));
+        return builder.build();
+    }
+
+    BaseDemographicsMsg mapBaseDemographics(BaseDemographics baseDemographics) {
+        var builder = BaseDemographicsMsg.newBuilder();
+        Util.doIfNotNull(baseDemographics.getBirthname(), name -> builder.setBirthname(Util.toStringValue(name)));
+        Util.doIfNotNull(baseDemographics.getGivenname(), name -> builder.setGivenname(Util.toStringValue(name)));
+        baseDemographics.getMiddlename().forEach(builder::addMiddlename);
+        Util.doIfNotNull(baseDemographics.getFamilyname(), name -> builder.setFamilyname(Util.toStringValue(name)));
+        Util.doIfNotNull(baseDemographics.getTitle(), title -> builder.setTitle(Util.toStringValue(title)));
+        return builder.build();
+    }
+
+    MeasurementMsg mapMeasurement(Measurement measurement) {
+        var builder = MeasurementMsg.newBuilder();
+        builder.setAMeasuredValue(measurement.getMeasuredValue().toPlainString());
+        builder.setMeasurementUnit(mapCodedValue(measurement.getMeasurementUnit()));
         return builder.build();
     }
 }

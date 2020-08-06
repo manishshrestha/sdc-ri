@@ -7,17 +7,7 @@ import com.google.protobuf.Int64Value;
 import com.google.protobuf.StringValue;
 import com.google.protobuf.UInt32Value;
 import com.google.protobuf.UInt64Value;
-import org.somda.sdc.biceps.model.participant.AbstractAlertDescriptor;
-import org.somda.sdc.biceps.model.participant.AbstractAlertState;
-import org.somda.sdc.biceps.model.participant.AbstractContextState;
-import org.somda.sdc.biceps.model.participant.AbstractDescriptor;
-import org.somda.sdc.biceps.model.participant.AbstractDeviceComponentState;
-import org.somda.sdc.biceps.model.participant.AbstractMetricState;
-import org.somda.sdc.biceps.model.participant.AbstractOperationDescriptor;
-import org.somda.sdc.biceps.model.participant.AbstractOperationState;
-import org.somda.sdc.biceps.model.participant.AbstractSetStateOperationDescriptor;
-import org.somda.sdc.biceps.model.participant.AbstractState;
-import org.somda.sdc.biceps.model.participant.StringMetricState;
+import org.somda.sdc.biceps.model.participant.*;
 
 import javax.annotation.Nullable;
 import java.lang.reflect.InvocationTargetException;
@@ -290,5 +280,21 @@ public class Util {
         var state = new AbstractDeviceComponentState();
         state.setDescriptorHandle("[mapping failed]");
         return state;
+    }
+
+    public static PatientDemographicsCoreData invalidPatientDemographicsCoreData() {
+        return new PatientDemographicsCoreData();
+    }
+
+    public static PersonReference invalidPersonReference() {
+        return new PersonReference();
+    }
+
+    public static InstanceIdentifier invalidInstanceIdentifier() {
+        return new InstanceIdentifier();
+    }
+
+    public static BaseDemographics invalidBaseDemographics() {
+        return new BaseDemographics();
     }
 }
