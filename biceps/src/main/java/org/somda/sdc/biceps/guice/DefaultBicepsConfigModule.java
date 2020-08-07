@@ -24,5 +24,9 @@ public class DefaultBicepsConfigModule extends AbstractConfigurationModule {
         bind(CommonConfig.STORE_NOT_ASSOCIATED_CONTEXT_STATES,
                 Boolean.class,
                 false);
+
+        bind(CommonConfig.ALLOW_STATES_WITHOUT_DESCRIPTORS,
+                Boolean.class,
+                true);
     }
 }

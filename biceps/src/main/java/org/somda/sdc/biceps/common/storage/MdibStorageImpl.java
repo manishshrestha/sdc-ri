@@ -48,6 +48,7 @@ public class MdibStorageImpl implements MdibStorage {
     private final MdibTypeValidator typeValidator;
     private final Logger instanceLogger;
     private final Boolean storeNotAssociatedContextStates;
+    private final Boolean allowStatesWithoutDescriptors;
 
     private MdibVersion mdibVersion;
     private BigInteger mdDescriptionVersion;
@@ -64,11 +65,14 @@ public class MdibStorageImpl implements MdibStorage {
                     MdibTypeValidator typeValidator,
                     @Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier,
                     @Named(org.somda.sdc.biceps.common.CommonConfig.STORE_NOT_ASSOCIATED_CONTEXT_STATES)
-                            Boolean storeNotAssociatedContextStates) {
+                            Boolean storeNotAssociatedContextStates,
+                    @Named(org.somda.sdc.biceps.common.CommonConfig.ALLOW_STATES_WITHOUT_DESCRIPTORS)
+                            Boolean allowStatesWithoutDescriptors) {
         this(
                 MdibVersion.create(), BigInteger.valueOf(-1),
                 BigInteger.valueOf(-1), entityFactory, util,
-                typeValidator, frameworkIdentifier, storeNotAssociatedContextStates
+                typeValidator, frameworkIdentifier,
+                storeNotAssociatedContextStates, allowStatesWithoutDescriptors
         );
     }
 
@@ -79,11 +83,14 @@ public class MdibStorageImpl implements MdibStorage {
                     MdibTypeValidator typeValidator,
                     @Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier,
                     @Named(org.somda.sdc.biceps.common.CommonConfig.STORE_NOT_ASSOCIATED_CONTEXT_STATES)
-                            Boolean storeNotAssociatedContextStates) {
+                            Boolean storeNotAssociatedContextStates,
+                    @Named(org.somda.sdc.biceps.common.CommonConfig.ALLOW_STATES_WITHOUT_DESCRIPTORS)
+                            Boolean allowStatesWithoutDescriptors) {
         this(
                 initialMdibVersion, BigInteger.valueOf(-1),
                 BigInteger.valueOf(-1), entityFactory, util,
-                typeValidator, frameworkIdentifier, storeNotAssociatedContextStates
+                typeValidator, frameworkIdentifier,
+                storeNotAssociatedContextStates, allowStatesWithoutDescriptors
         );
     }
 
@@ -96,7 +103,9 @@ public class MdibStorageImpl implements MdibStorage {
                     MdibTypeValidator typeValidator,
                     @Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier,
                     @Named(org.somda.sdc.biceps.common.CommonConfig.STORE_NOT_ASSOCIATED_CONTEXT_STATES)
-                            Boolean storeNotAssociatedContextStates) {
+                            Boolean storeNotAssociatedContextStates,
+                    @Named(org.somda.sdc.biceps.common.CommonConfig.ALLOW_STATES_WITHOUT_DESCRIPTORS)
+                            Boolean allowStatesWithoutDescriptors) {
         this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);
         this.mdibVersion = initialMdibVersion;
         this.mdDescriptionVersion = mdDescriptionVersion;
@@ -105,6 +114,7 @@ public class MdibStorageImpl implements MdibStorage {
         this.util = util;
         this.typeValidator = typeValidator;
         this.storeNotAssociatedContextStates = storeNotAssociatedContextStates;
+        this.allowStatesWithoutDescriptors = allowStatesWithoutDescriptors;
 
         this.entities = new HashMap<>();
         this.rootEntities = new ArrayList<>();
@@ -397,7 +407,7 @@ public class MdibStorageImpl implements MdibStorage {
     @Override
     public WriteStateResult apply(MdibVersion mdibVersion,
                                   @Nullable BigInteger mdStateVersion,
-                                  MdibStateModifications stateModifications) {
+                                  MdibStateModifications stateModifications) throws RuntimeException {
         this.mdibVersion = mdibVersion;
         Optional.ofNullable(mdStateVersion).ifPresent(version -> this.mdStateVersion = version);
 
@@ -429,7 +439,18 @@ public class MdibStorageImpl implements MdibStorage {
                 // this will insert states even if no descriptor/MDIB entity exists
                 // to be used in remote MDIBS in case
                 if (descriptionModifications == null) {
-                    descriptionModifications = MdibDescriptionModifications.create();
+                    if (allowStatesWithoutDescriptors) {
+                        descriptionModifications = MdibDescriptionModifications.create();
+                    } else {
+                        instanceLogger.error(
+                                "Inserting states without descriptors is disabled, descriptor handle {}",
+                                modification.getDescriptorHandle()
+                        );
+                        throw new RuntimeException(
+                                "Inserting states without descriptors is disabled,"
+                                        + " descriptor handle " + modification.getDescriptorHandle()
+                        );
+                    }
                 }
                 AbstractDescriptor descr;
                 try {

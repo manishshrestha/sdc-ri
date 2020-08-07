@@ -429,6 +429,7 @@ public class MdibStorageImplTest {
                 bind(CommonConfig.COPY_MDIB_INPUT, Boolean.class, true);
                 bind(CommonConfig.COPY_MDIB_OUTPUT, Boolean.class, true);
                 bind(CommonConfig.STORE_NOT_ASSOCIATED_CONTEXT_STATES, Boolean.class, true);
+                bind(CommonConfig.ALLOW_STATES_WITHOUT_DESCRIPTORS, Boolean.class, true);
             }
         }).getInjector();
         return injector.getInstance(MdibStorageFactory.class).createMdibStorage();
@@ -571,5 +572,57 @@ public class MdibStorageImplTest {
         }
     }
 
+    @Test
+    void testStateUpdateWithoutDescriptor() {
+        Injector injector = new UnitTestUtil(new AbstractConfigurationModule() {
+            @Override
+            protected void defaultConfigure() {
+                bind(CommonConfig.COPY_MDIB_INPUT, Boolean.class, true);
+                bind(CommonConfig.COPY_MDIB_OUTPUT, Boolean.class, true);
+                bind(CommonConfig.STORE_NOT_ASSOCIATED_CONTEXT_STATES, Boolean.class, true);
+                bind(CommonConfig.ALLOW_STATES_WITHOUT_DESCRIPTORS, Boolean.class, false);
+            }
+        }).getInjector();
+        var localMdibStorage = injector.getInstance(MdibStorageFactory.class).createMdibStorage();
+
+        {
+            // Write a new context state as not-associated
+            var contextState = new PatientContextState();
+            contextState.setHandle(Handles.CONTEXT_3);
+            contextState.setDescriptorHandle(Handles.CONTEXTDESCRIPTOR_0);
+
+            assertThrows(
+                    RuntimeException.class,
+                    () -> localMdibStorage.apply(
+                            mock(MdibVersion.class), mock(BigInteger.class),
+                            MdibStateModifications.create(MdibStateModifications.Type.CONTEXT).add(contextState)
+                    )
+            );
+        }
+        {
+            // Make sure there are no states in the MDIB for tested patient context
+            var states = localMdibStorage.findContextStatesByType(EnsembleContextState.class);
+            assertEquals(0, states.size());
+
+            // Get states and add another one as not associated
+            var newDescriptor = new EnsembleContextDescriptor();
+            newDescriptor.setHandle(Handles.CONTEXTDESCRIPTOR_2);
+            var newState = new EnsembleContextState();
+            newState.setDescriptorHandle(Handles.CONTEXTDESCRIPTOR_2);
+            newState.setHandle(Handles.CONTEXT_3);
+            newState.setContextAssociation(ContextAssociation.NO);
+            states.add(newState);
+            var modifications = MdibDescriptionModifications.create()
+                    .insert(newDescriptor, states);
+            var result = localMdibStorage.apply(mock(MdibVersion.class), mock(BigInteger.class), mock(BigInteger.class), modifications);
+
+            // After write check that there was one inserted entity with one inserted state where that one state is not associated
+            assertEquals(1, result.getInsertedEntities().size());
+            assertEquals(1, result.getInsertedEntities().get(0).getStates().size());
+            states = result.getInsertedEntities().get(0).getStates(EnsembleContextState.class);
+            assertEquals(Handles.CONTEXT_3, states.get(0).getHandle());
+            assertEquals(ContextAssociation.NO, states.get(0).getContextAssociation());
+        }
+    }
 
 }
