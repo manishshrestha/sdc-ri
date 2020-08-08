@@ -81,20 +81,6 @@ public class PojoToProtoBaseMapper {
         return builder.build();
     }
 
-    public AbstractDeviceComponentDescriptorMsg.ProductionSpecificationMsg mapProductionSpecification(
-            AbstractDeviceComponentDescriptor.ProductionSpecification productionSpecification) {
-        var builder = AbstractDeviceComponentDescriptorMsg.ProductionSpecificationMsg
-                .newBuilder();
-        var compIdBuilder = InstanceIdentifierOneOfMsg.newBuilder();
-        Util.doIfNotNull(productionSpecification.getComponentId(), instanceIdentifier ->
-                compIdBuilder.setInstanceIdentifier(mapInstanceIdentifier(instanceIdentifier)));
-        builder.setComponentId(compIdBuilder);
-        Util.doIfNotNull(productionSpecification.getProductionSpec(), builder::setProductionSpec);
-        Util.doIfNotNull(productionSpecification.getSpecType(), codedValue ->
-                builder.setSpecType(mapCodedValue(codedValue)));
-        return builder.build();
-    }
-
     AbstractDescriptorMsg mapAbstractDescriptor(AbstractDescriptor abstractDescriptor) {
         var builder = AbstractDescriptorMsg.newBuilder();
         builder.setADescriptorVersion(Util.toUInt64(abstractDescriptor.getDescriptorVersion()));

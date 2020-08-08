@@ -1,6 +1,7 @@
 package org.somda.sdc.proto.mapping.participant;
 
 import com.google.inject.Inject;
+import com.google.inject.Provider;
 import com.google.inject.name.Named;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -24,22 +25,7 @@ import org.somda.sdc.biceps.model.participant.VmdState;
 import org.somda.sdc.common.CommonConfig;
 import org.somda.sdc.common.logging.InstanceLogger;
 import org.somda.sdc.proto.mapping.Util;
-import org.somda.sdc.proto.model.biceps.AbstractComplexDeviceComponentDescriptorMsg;
-import org.somda.sdc.proto.model.biceps.AbstractComplexDeviceComponentStateMsg;
-import org.somda.sdc.proto.model.biceps.AbstractDeviceComponentDescriptorMsg;
-import org.somda.sdc.proto.model.biceps.AbstractDeviceComponentStateMsg;
-import org.somda.sdc.proto.model.biceps.ApprovedJurisdictionsMsg;
-import org.somda.sdc.proto.model.biceps.ChannelDescriptorMsg;
-import org.somda.sdc.proto.model.biceps.ChannelStateMsg;
-import org.somda.sdc.proto.model.biceps.MdsDescriptorMsg;
-import org.somda.sdc.proto.model.biceps.MdsStateMsg;
-import org.somda.sdc.proto.model.biceps.OperatingJurisdictionMsg;
-import org.somda.sdc.proto.model.biceps.ScoDescriptorMsg;
-import org.somda.sdc.proto.model.biceps.ScoStateMsg;
-import org.somda.sdc.proto.model.biceps.SystemContextDescriptorMsg;
-import org.somda.sdc.proto.model.biceps.SystemContextStateMsg;
-import org.somda.sdc.proto.model.biceps.VmdDescriptorMsg;
-import org.somda.sdc.proto.model.biceps.VmdStateMsg;
+import org.somda.sdc.proto.model.biceps.*;
 
 import java.util.stream.Collectors;
 
@@ -47,12 +33,24 @@ public class ProtoToPojoComponentMapper {
     private static final Logger LOG = LogManager.getLogger(ProtoToPojoComponentMapper.class);
     private final Logger instanceLogger;
     private final ProtoToPojoBaseMapper baseMapper;
+    private final Provider<ProtoToPojoOneOfMapper> oneOfMapperProvider;
+    private ProtoToPojoOneOfMapper oneOfMapper;
 
     @Inject
     ProtoToPojoComponentMapper(@Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier,
-                               ProtoToPojoBaseMapper baseMapper) {
+                               ProtoToPojoBaseMapper baseMapper,
+                               Provider<ProtoToPojoOneOfMapper> oneOfMapperProvider) {
         this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);
         this.baseMapper = baseMapper;
+        this.oneOfMapperProvider = oneOfMapperProvider;
+        this.oneOfMapper = null;
+    }
+
+    public ProtoToPojoOneOfMapper getOneOfMapper() {
+        if (this.oneOfMapper == null) {
+            this.oneOfMapper = oneOfMapperProvider.get();
+        }
+        return oneOfMapper;
     }
 
     public MdsDescriptor map(MdsDescriptorMsg protoMsg) {
@@ -146,7 +144,7 @@ public class ProtoToPojoComponentMapper {
 
     private void map(AbstractDeviceComponentDescriptor pojo, AbstractDeviceComponentDescriptorMsg protoMsg) {
         pojo.setProductionSpecification(protoMsg.getProductionSpecificationList()
-                .stream().map(baseMapper::map).collect(Collectors.toList()));
+                .stream().map(this::map).collect(Collectors.toList()));
         baseMapper.map(pojo, protoMsg.getAbstractDescriptor());
     }
 
@@ -158,5 +156,15 @@ public class ProtoToPojoComponentMapper {
         instanceLogger.error("NextCalibration mapping is missing");
         instanceLogger.error("PhysicalConnectorInfo mapping is missing");
         baseMapper.map(pojo, protoMsg.getAbstractState());
+    }
+
+    public AbstractDeviceComponentDescriptor.ProductionSpecification map(
+            AbstractDeviceComponentDescriptorMsg.ProductionSpecificationMsg protoMsg) {
+        var pojo = new AbstractDeviceComponentDescriptor.ProductionSpecification();
+        pojo.setProductionSpec(protoMsg.getProductionSpec());
+        pojo.setSpecType(baseMapper.map(Util.optional(protoMsg, "SpecType", CodedValueMsg.class)));
+        Util.doIfNotNull(Util.optional(protoMsg, "ComponentId", InstanceIdentifierOneOfMsg.class), component ->
+                pojo.setComponentId(getOneOfMapper().map(component)));
+        return pojo;
     }
 }

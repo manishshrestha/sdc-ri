@@ -1,6 +1,7 @@
 package org.somda.sdc.proto.mapping.participant;
 
 import com.google.inject.Inject;
+import com.google.inject.Provider;
 import com.google.inject.name.Named;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -22,24 +23,7 @@ import org.somda.sdc.biceps.model.participant.VmdState;
 import org.somda.sdc.common.CommonConfig;
 import org.somda.sdc.common.logging.InstanceLogger;
 import org.somda.sdc.proto.mapping.Util;
-import org.somda.sdc.proto.model.biceps.AbstractComplexDeviceComponentDescriptorMsg;
-import org.somda.sdc.proto.model.biceps.AbstractComplexDeviceComponentStateMsg;
-import org.somda.sdc.proto.model.biceps.AbstractDeviceComponentDescriptorMsg;
-import org.somda.sdc.proto.model.biceps.AbstractDeviceComponentStateMsg;
-import org.somda.sdc.proto.model.biceps.ApprovedJurisdictionsMsg;
-import org.somda.sdc.proto.model.biceps.ChannelDescriptorMsg;
-import org.somda.sdc.proto.model.biceps.ChannelStateMsg;
-import org.somda.sdc.proto.model.biceps.ComponentActivationMsg;
-import org.somda.sdc.proto.model.biceps.MdsDescriptorMsg;
-import org.somda.sdc.proto.model.biceps.MdsOperatingModeMsg;
-import org.somda.sdc.proto.model.biceps.MdsStateMsg;
-import org.somda.sdc.proto.model.biceps.OperationRefMsg;
-import org.somda.sdc.proto.model.biceps.ScoDescriptorMsg;
-import org.somda.sdc.proto.model.biceps.ScoStateMsg;
-import org.somda.sdc.proto.model.biceps.SystemContextDescriptorMsg;
-import org.somda.sdc.proto.model.biceps.SystemContextStateMsg;
-import org.somda.sdc.proto.model.biceps.VmdDescriptorMsg;
-import org.somda.sdc.proto.model.biceps.VmdStateMsg;
+import org.somda.sdc.proto.model.biceps.*;
 
 import java.util.List;
 
@@ -48,14 +32,26 @@ public class PojoToProtoComponentMapper {
     private final Logger instanceLogger;
     private final PojoToProtoBaseMapper baseMapper;
     private final PojoToProtoAlertMapper alertMapper;
+    private final Provider<PojoToProtoOneOfMapper> oneOfMapperProvider;
+    private PojoToProtoOneOfMapper oneOfMapper;
 
     @Inject
     PojoToProtoComponentMapper(@Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier,
                                PojoToProtoBaseMapper baseMapper,
-                               PojoToProtoAlertMapper alertMapper) {
+                               PojoToProtoAlertMapper alertMapper,
+                               Provider<PojoToProtoOneOfMapper> oneOfMapperProvider) {
         this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);
         this.baseMapper = baseMapper;
         this.alertMapper = alertMapper;
+        this.oneOfMapperProvider = oneOfMapperProvider;
+        this.oneOfMapper = null;
+    }
+
+    public PojoToProtoOneOfMapper getOneOfMapper() {
+        if (this.oneOfMapper == null) {
+            this.oneOfMapper = oneOfMapperProvider.get();
+        }
+        return oneOfMapper;
     }
 
     public SystemContextDescriptorMsg.Builder mapSystemContextDescriptor(SystemContextDescriptor systemContextDescriptor) {
@@ -147,7 +143,7 @@ public class PojoToProtoComponentMapper {
         var builder = AbstractDeviceComponentDescriptorMsg.newBuilder();
         builder.setAbstractDescriptor(baseMapper.mapAbstractDescriptor(componentDescriptor));
         componentDescriptor.getProductionSpecification().forEach(productionSpecification ->
-                builder.addProductionSpecification(baseMapper.mapProductionSpecification(productionSpecification)));
+                builder.addProductionSpecification(mapProductionSpecification(productionSpecification)));
         return builder.build();
     }
 
@@ -175,5 +171,17 @@ public class PojoToProtoComponentMapper {
             AbstractComplexDeviceComponentState state) {
         return AbstractComplexDeviceComponentStateMsg.newBuilder()
                 .setAbstractDeviceComponentState(mapAbstractDeviceComponentState(state)).build();
+    }
+
+    public AbstractDeviceComponentDescriptorMsg.ProductionSpecificationMsg mapProductionSpecification(
+            AbstractDeviceComponentDescriptor.ProductionSpecification productionSpecification) {
+        var builder = AbstractDeviceComponentDescriptorMsg.ProductionSpecificationMsg
+                .newBuilder();
+        Util.doIfNotNull(productionSpecification.getComponentId(), instanceIdentifier ->
+                builder.setComponentId(oneOfMapper.mapInstanceIdentifier(instanceIdentifier)));
+        Util.doIfNotNull(productionSpecification.getProductionSpec(), builder::setProductionSpec);
+        Util.doIfNotNull(productionSpecification.getSpecType(), codedValue ->
+                builder.setSpecType(baseMapper.mapCodedValue(codedValue)));
+        return builder.build();
     }
 }

@@ -116,15 +116,6 @@ public class ProtoToPojoBaseMapper {
         return protoMsgs.stream().map(this::map).collect(Collectors.toList());
     }
 
-    public AbstractDeviceComponentDescriptor.ProductionSpecification map(
-            AbstractDeviceComponentDescriptorMsg.ProductionSpecificationMsg protoMsg) {
-        var pojo = new AbstractDeviceComponentDescriptor.ProductionSpecification();
-        pojo.setProductionSpec(protoMsg.getProductionSpec());
-        pojo.setSpecType(map(Util.optional(protoMsg, "SpecType", CodedValueMsg.class)));
-        pojo.setComponentId(map(Util.optional(protoMsg, "ComponentId", InstanceIdentifierMsg.class)));
-        return pojo;
-    }
-
     public LocationDetail map(LocationDetailMsg protoMsg) {
         var pojo = new LocationDetail();
         pojo.setBed(Util.optionalStr(protoMsg, "ABed"));
