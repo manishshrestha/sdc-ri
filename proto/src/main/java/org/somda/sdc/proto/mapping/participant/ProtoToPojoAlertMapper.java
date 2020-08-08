@@ -9,32 +9,22 @@ import com.google.protobuf.StringValue;
 import com.google.protobuf.UInt32Value;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.somda.sdc.biceps.model.participant.AbstractAlertDescriptor;
-import org.somda.sdc.biceps.model.participant.AbstractAlertState;
-import org.somda.sdc.biceps.model.participant.AlertActivation;
-import org.somda.sdc.biceps.model.participant.AlertConditionDescriptor;
-import org.somda.sdc.biceps.model.participant.AlertConditionKind;
-import org.somda.sdc.biceps.model.participant.AlertConditionPriority;
-import org.somda.sdc.biceps.model.participant.AlertConditionState;
-import org.somda.sdc.biceps.model.participant.AlertSignalDescriptor;
-import org.somda.sdc.biceps.model.participant.AlertSignalManifestation;
-import org.somda.sdc.biceps.model.participant.AlertSignalPresence;
-import org.somda.sdc.biceps.model.participant.AlertSignalPrimaryLocation;
-import org.somda.sdc.biceps.model.participant.AlertSignalState;
-import org.somda.sdc.biceps.model.participant.AlertSystemDescriptor;
-import org.somda.sdc.biceps.model.participant.AlertSystemState;
+import org.somda.sdc.biceps.model.participant.*;
 import org.somda.sdc.common.CommonConfig;
 import org.somda.sdc.common.logging.InstanceLogger;
 import org.somda.sdc.common.util.TimestampAdapter;
 import org.somda.sdc.proto.mapping.Util;
 import org.somda.sdc.proto.model.biceps.AbstractAlertDescriptorMsg;
 import org.somda.sdc.proto.model.biceps.AbstractAlertStateMsg;
+import org.somda.sdc.proto.model.biceps.AlertActivationMsg;
 import org.somda.sdc.proto.model.biceps.AlertConditionDescriptorMsg;
 import org.somda.sdc.proto.model.biceps.AlertConditionStateMsg;
 import org.somda.sdc.proto.model.biceps.AlertSignalDescriptorMsg;
 import org.somda.sdc.proto.model.biceps.AlertSignalStateMsg;
 import org.somda.sdc.proto.model.biceps.AlertSystemDescriptorMsg;
 import org.somda.sdc.proto.model.biceps.AlertSystemStateMsg;
+import org.somda.sdc.proto.model.biceps.LimitAlertConditionDescriptorMsg;
+import org.somda.sdc.proto.model.biceps.LimitAlertConditionStateMsg;
 
 public class ProtoToPojoAlertMapper {
     private static final Logger LOG = LogManager.getLogger(ProtoToPojoAlertMapper.class);
@@ -67,8 +57,22 @@ public class ProtoToPojoAlertMapper {
         return pojo;
     }
 
+    public LimitAlertConditionDescriptor map(LimitAlertConditionDescriptorMsg protoMsg) {
+        var pojo = new LimitAlertConditionDescriptor();
+        map(pojo, protoMsg.getAlertConditionDescriptor());
+        Util.doIfNotNull(Util.optional(protoMsg, "AAutoLimitSupported", BoolValue.class), supported ->
+                pojo.setAutoLimitSupported(supported.getValue()));
+        pojo.setMaxLimits(baseMapper.map(protoMsg.getMaxLimits()));
+        return pojo;
+    }
+
     public AlertConditionDescriptor map(AlertConditionDescriptorMsg protoMsg) {
         var pojo = new AlertConditionDescriptor();
+        map(pojo, protoMsg);
+        return pojo;
+    }
+
+    private void map(AlertConditionDescriptor pojo, AlertConditionDescriptorMsg protoMsg) {
         map(pojo, protoMsg.getAbstractAlertDescriptor());
 
         pojo.setKind(Util.mapToPojoEnum(protoMsg, "AKind", AlertConditionKind.class));
@@ -83,7 +87,6 @@ public class ProtoToPojoAlertMapper {
 //        pojo.setSource();
 //        pojo.setCauseInfo();
 
-        return pojo;
     }
 
     public AlertSignalDescriptor map(AlertSignalDescriptorMsg protoMsg) {
@@ -132,19 +135,18 @@ public class ProtoToPojoAlertMapper {
         return pojo;
     }
 
+    public LimitAlertConditionState map(LimitAlertConditionStateMsg protoMsg) {
+        var pojo = new LimitAlertConditionState();
+        map(pojo, protoMsg.getAlertConditionState());
+        pojo.setMonitoredAlertLimits(Util.mapToPojoEnum(protoMsg, "AMonitoredAlertLimits", AlertConditionMonitoredLimits.class));
+        pojo.setAutoLimitActivationState(Util.mapToPojoEnum(protoMsg, "AAutoLimitActivationState", AlertActivation.class));
+        pojo.setLimits(baseMapper.map(protoMsg.getLimits()));
+        return pojo;
+    }
+
     public AlertConditionState map(AlertConditionStateMsg protoMsg) {
         var pojo = new AlertConditionState();
-        map(pojo, protoMsg.getAbstractAlertState());
-
-        Util.doIfNotNull(Util.optional(protoMsg, "AActualConditionGenerationDelay", Duration.class), duration ->
-                pojo.setActualConditionGenerationDelay(Util.fromProtoDuration(duration)));
-        pojo.setActualPriority(Util.mapToPojoEnum(protoMsg, "AActualPriority", AlertConditionPriority.class));
-        pojo.setRank(Util.optionalIntOfInt(protoMsg, "ARank"));
-        Util.doIfNotNull(Util.optional(protoMsg, "APresence", BoolValue.class), presence ->
-                pojo.setPresence(presence.getValue()));
-        Util.doIfNotNull(Util.optionalBigIntOfLong(protoMsg, "ADeterminationTime"), check ->
-                pojo.setDeterminationTime(timestampAdapter.unmarshal(check)));
-
+        map(pojo, protoMsg);
         return pojo;
     }
 
@@ -159,6 +161,18 @@ public class ProtoToPojoAlertMapper {
         pojo.setSlot(Util.optionalLongOfInt(protoMsg, "ASlot"));
 
         return pojo;
+    }
+
+    private void map(AlertConditionState pojo, AlertConditionStateMsg protoMsg) {
+        map(pojo, protoMsg.getAbstractAlertState());
+        Util.doIfNotNull(Util.optional(protoMsg, "AActualConditionGenerationDelay", Duration.class), duration ->
+                pojo.setActualConditionGenerationDelay(Util.fromProtoDuration(duration)));
+        pojo.setActualPriority(Util.mapToPojoEnum(protoMsg, "AActualPriority", AlertConditionPriority.class));
+        pojo.setRank(Util.optionalIntOfInt(protoMsg, "ARank"));
+        Util.doIfNotNull(Util.optional(protoMsg, "APresence", BoolValue.class), presence ->
+                pojo.setPresence(presence.getValue()));
+        Util.doIfNotNull(Util.optionalBigIntOfLong(protoMsg, "ADeterminationTime"), check ->
+                pojo.setDeterminationTime(timestampAdapter.unmarshal(check)));
     }
 
     private void map(AbstractAlertState pojo, AbstractAlertStateMsg protoMsg) {

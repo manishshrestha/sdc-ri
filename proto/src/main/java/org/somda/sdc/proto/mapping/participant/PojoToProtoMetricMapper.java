@@ -34,7 +34,7 @@ public class PojoToProtoMetricMapper {
 
         builder.setAResolution(rtsDescriptor.getResolution().toPlainString());
         builder.setASamplePeriod(Util.fromJavaDuration(rtsDescriptor.getSamplePeriod()));
-        builder.addAllTechnicalRange(rtsDescriptor.getTechnicalRange().stream().map(this::mapRange).collect(Collectors.toList()));
+        builder.addAllTechnicalRange(rtsDescriptor.getTechnicalRange().stream().map(baseMapper::mapRange).collect(Collectors.toList()));
 
         return builder;
     }
@@ -47,7 +47,7 @@ public class PojoToProtoMetricMapper {
                 builder.setAAveragingPeriod(Util.fromJavaDuration(period))
                 );
         builder.setAResolution(numericMetricDescriptor.getResolution().toPlainString());
-        builder.addAllTechnicalRange(numericMetricDescriptor.getTechnicalRange().stream().map(this::mapRange).collect(Collectors.toList()));
+        builder.addAllTechnicalRange(numericMetricDescriptor.getTechnicalRange().stream().map(baseMapper::mapRange).collect(Collectors.toList()));
 
         return builder;
     }
@@ -111,7 +111,7 @@ public class PojoToProtoMetricMapper {
                 value -> builder.setMetricValue(mapSampleArrayMetricValue(value))
         );
         builder.addAllPhysiologicalRange(
-                state.getPhysiologicalRange().stream().map(this::mapRange).collect(Collectors.toList())
+                state.getPhysiologicalRange().stream().map(baseMapper::mapRange).collect(Collectors.toList())
         );
         return builder.build();
     }
@@ -129,7 +129,7 @@ public class PojoToProtoMetricMapper {
                 value -> builder.setMetricValue(mapNumericMetricValue(value))
         );
         builder.addAllPhysiologicalRange(
-                state.getPhysiologicalRange().stream().map(this::mapRange).collect(Collectors.toList())
+                state.getPhysiologicalRange().stream().map(baseMapper::mapRange).collect(Collectors.toList())
         );
         return builder.build();
     }
@@ -221,30 +221,6 @@ public class PojoToProtoMetricMapper {
                 builder.setAValidity(Util.mapToProtoEnum(validity, MeasurementValidityMsg.class)));
         Util.doIfNotNull(quality.getQi(), qi -> builder.setAQi(Util.toStringValue(qi.toPlainString())));
 
-        return builder.build();
-    }
-
-    private RangeMsg mapRange(Range range) {
-        var builder = RangeMsg.newBuilder();
-
-        Util.doIfNotNull(range.getAbsoluteAccuracy(), accuracy ->
-            builder.setAAbsoluteAccuracy(Util.toStringValue(accuracy.toPlainString()))
-        );
-        Util.doIfNotNull(range.getRelativeAccuracy(), accuracy ->
-                builder.setARelativeAccuracy(Util.toStringValue(accuracy.toPlainString()))
-        );
-        Util.doIfNotNull(range.getAbsoluteAccuracy(), accuracy ->
-                builder.setAAbsoluteAccuracy(Util.toStringValue(accuracy.toPlainString()))
-        );
-        Util.doIfNotNull(range.getLower(), accuracy ->
-                builder.setALower(Util.toStringValue(accuracy.toPlainString()))
-        );
-        Util.doIfNotNull(range.getUpper(), accuracy ->
-                builder.setAUpper(Util.toStringValue(accuracy.toPlainString()))
-        );
-        Util.doIfNotNull(range.getStepWidth(), accuracy ->
-                builder.setAStepWidth(Util.toStringValue(accuracy.toPlainString()))
-        );
         return builder.build();
     }
 }

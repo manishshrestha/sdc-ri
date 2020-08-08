@@ -186,7 +186,9 @@ public class PojoToProtoOneOfMapper {
     public AlertConditionDescriptorOneOfMsg mapAlertConditionDescriptor(AlertConditionDescriptor descriptor) {
         var builder = AlertConditionDescriptorOneOfMsg.newBuilder();
         if (descriptor instanceof LimitAlertConditionDescriptor) {
-            instanceLogger.error("Class {} not supported", descriptor.getClass());
+            builder.setLimitAlertConditionDescriptor(
+                    alertMapper.mapLimitAlertConditionDescriptor((LimitAlertConditionDescriptor) descriptor)
+            );
         } else {
             builder.setAlertConditionDescriptor(alertMapper.mapAlertConditionDescriptor(descriptor));
         }
@@ -338,7 +340,9 @@ public class PojoToProtoOneOfMapper {
     public AlertConditionStateOneOfMsg mapAlertConditionStateOneOf(AlertConditionState state) {
         var builder = AlertConditionStateOneOfMsg.newBuilder();
         if (state instanceof LimitAlertConditionState) {
-            instanceLogger.error("Class {} not supported", state.getClass());
+            builder.setLimitAlertConditionState(
+                    alertMapper.mapLimitAlertConditionState((LimitAlertConditionState) state)
+            );
         } else {
             builder.setAlertConditionState(alertMapper.mapAlertConditionState(state));
         }

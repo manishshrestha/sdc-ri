@@ -6,12 +6,16 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.somda.sdc.biceps.model.participant.AbstractAlertDescriptor;
 import org.somda.sdc.biceps.model.participant.AbstractAlertState;
+import org.somda.sdc.biceps.model.participant.AlertActivation;
 import org.somda.sdc.biceps.model.participant.AlertConditionDescriptor;
+import org.somda.sdc.biceps.model.participant.AlertConditionMonitoredLimits;
 import org.somda.sdc.biceps.model.participant.AlertConditionState;
 import org.somda.sdc.biceps.model.participant.AlertSignalDescriptor;
 import org.somda.sdc.biceps.model.participant.AlertSignalState;
 import org.somda.sdc.biceps.model.participant.AlertSystemDescriptor;
 import org.somda.sdc.biceps.model.participant.AlertSystemState;
+import org.somda.sdc.biceps.model.participant.LimitAlertConditionDescriptor;
+import org.somda.sdc.biceps.model.participant.LimitAlertConditionState;
 import org.somda.sdc.common.CommonConfig;
 import org.somda.sdc.common.logging.InstanceLogger;
 import org.somda.sdc.common.util.TimestampAdapter;
@@ -50,6 +54,15 @@ public class PojoToProtoAlertMapper {
 //        builder.setAlertCondition();
 //        builder.setAlertSignal();
         return builder;
+    }
+
+    public LimitAlertConditionDescriptorMsg mapLimitAlertConditionDescriptor(LimitAlertConditionDescriptor descriptor) {
+        var builder = LimitAlertConditionDescriptorMsg.newBuilder()
+                .setAlertConditionDescriptor(mapAlertConditionDescriptor(descriptor));
+        Util.doIfNotNull(descriptor.isAutoLimitSupported(),
+                limit -> builder.setAAutoLimitSupported(Util.toBoolValue(limit)));
+        builder.setMaxLimits(baseMapper.mapRange(descriptor.getMaxLimits()));
+        return builder.build();
     }
 
     public AlertConditionDescriptorMsg mapAlertConditionDescriptor(AlertConditionDescriptor descriptor) {
@@ -106,6 +119,20 @@ public class PojoToProtoAlertMapper {
                 builder.setASelfCheckCount(Util.toInt64(count)));
         builder.setAPresentPhysiologicalAlarmConditions(mapAlertConditionReference(state.getPresentPhysiologicalAlarmConditions()));
         builder.setAPresentTechnicalAlarmConditions(mapAlertConditionReference(state.getPresentTechnicalAlarmConditions()));
+
+        return builder.build();
+    }
+
+    public LimitAlertConditionStateMsg mapLimitAlertConditionState(LimitAlertConditionState state) {
+        var builder = LimitAlertConditionStateMsg.newBuilder()
+                .setAlertConditionState(mapAlertConditionState(state));
+
+        builder.setAMonitoredAlertLimits(
+                Util.mapToProtoEnum(state.getMonitoredAlertLimits(), AlertConditionMonitoredLimitsMsg.class)
+        );
+        Util.doIfNotNull(state.getAutoLimitActivationState(), activation ->
+                builder.setAAutoLimitActivationState(Util.mapToProtoEnum(activation, AlertActivationMsg.class)));
+        builder.setLimits(baseMapper.mapRange(state.getLimits()));
 
         return builder.build();
     }

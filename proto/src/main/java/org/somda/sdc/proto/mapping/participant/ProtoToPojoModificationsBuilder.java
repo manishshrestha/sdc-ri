@@ -16,24 +16,7 @@ import org.somda.sdc.glue.common.DefaultStateValues;
 import org.somda.sdc.glue.common.MdibMapper;
 import org.somda.sdc.glue.common.RequiredDefaultStateValues;
 import org.somda.sdc.glue.common.helper.DefaultStateValuesDispatcher;
-import org.somda.sdc.proto.model.biceps.AbstractComplexDeviceComponentDescriptorMsg;
-import org.somda.sdc.proto.model.biceps.AbstractMetricDescriptorOneOfMsg;
-import org.somda.sdc.proto.model.biceps.AbstractSetStateOperationDescriptorOneOfMsg;
-import org.somda.sdc.proto.model.biceps.AlertConditionDescriptorMsg;
-import org.somda.sdc.proto.model.biceps.AlertConditionDescriptorOneOfMsg;
-import org.somda.sdc.proto.model.biceps.AlertSignalDescriptorMsg;
-import org.somda.sdc.proto.model.biceps.AlertSystemDescriptorMsg;
-import org.somda.sdc.proto.model.biceps.ChannelDescriptorMsg;
-import org.somda.sdc.proto.model.biceps.EnumStringMetricDescriptorMsg;
-import org.somda.sdc.proto.model.biceps.MdibMsg;
-import org.somda.sdc.proto.model.biceps.MdsDescriptorMsg;
-import org.somda.sdc.proto.model.biceps.NumericMetricDescriptorMsg;
-import org.somda.sdc.proto.model.biceps.RealTimeSampleArrayMetricDescriptorMsg;
-import org.somda.sdc.proto.model.biceps.ScoDescriptorMsg;
-import org.somda.sdc.proto.model.biceps.StringMetricDescriptorMsg;
-import org.somda.sdc.proto.model.biceps.StringMetricDescriptorOneOfMsg;
-import org.somda.sdc.proto.model.biceps.SystemContextDescriptorMsg;
-import org.somda.sdc.proto.model.biceps.VmdDescriptorMsg;
+import org.somda.sdc.proto.model.biceps.*;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -234,7 +217,7 @@ public class ProtoToPojoModificationsBuilder {
                 build(conditionMsg.getAlertConditionDescriptor(), parent);
                 break;
             case LIMIT_ALERT_CONDITION_DESCRIPTOR:
-                instanceLogger.error("Case not implemented {}", type);
+                build(conditionMsg.getLimitAlertConditionDescriptor(), parent);
                 break;
             default:
                 instanceLogger.error("Case not implemented {}", type);
@@ -245,6 +228,11 @@ public class ProtoToPojoModificationsBuilder {
     private void build(AlertConditionDescriptorMsg conditionMsg, AlertSystemDescriptor parent) {
         var addedDescr = insert(conditionMsg, AlertConditionDescriptor.class, parent.getHandle());
     }
+
+    private void build(LimitAlertConditionDescriptorMsg conditionMsg, AlertSystemDescriptor parent) {
+        var addedDescr = insert(conditionMsg, LimitAlertConditionDescriptor.class, parent.getHandle());
+    }
+
 
 
     private void build(SystemContextDescriptorMsg systemContext, MdsDescriptor parent) {

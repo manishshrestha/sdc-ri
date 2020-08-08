@@ -1,20 +1,7 @@
 package org.somda.sdc.proto.mapping.participant;
 
 import com.google.inject.Inject;
-import org.somda.sdc.biceps.model.participant.AbstractDescriptor;
-import org.somda.sdc.biceps.model.participant.AbstractDeviceComponentDescriptor;
-import org.somda.sdc.biceps.model.participant.AbstractMultiState;
-import org.somda.sdc.biceps.model.participant.AbstractState;
-import org.somda.sdc.biceps.model.participant.BaseDemographics;
-import org.somda.sdc.biceps.model.participant.CodedValue;
-import org.somda.sdc.biceps.model.participant.InstanceIdentifier;
-import org.somda.sdc.biceps.model.participant.LocalizedText;
-import org.somda.sdc.biceps.model.participant.Measurement;
-import org.somda.sdc.biceps.model.participant.NeonatalPatientDemographicsCoreData;
-import org.somda.sdc.biceps.model.participant.OperatingJurisdiction;
-import org.somda.sdc.biceps.model.participant.PatientDemographicsCoreData;
-import org.somda.sdc.biceps.model.participant.PersonParticipation;
-import org.somda.sdc.biceps.model.participant.PersonReference;
+import org.somda.sdc.biceps.model.participant.*;
 import org.somda.sdc.proto.mapping.Util;
 import org.somda.sdc.proto.model.biceps.*;
 
@@ -150,6 +137,30 @@ public class PojoToProtoBaseMapper {
         var builder = MeasurementMsg.newBuilder();
         builder.setAMeasuredValue(measurement.getMeasuredValue().toPlainString());
         builder.setMeasurementUnit(mapCodedValue(measurement.getMeasurementUnit()));
+        return builder.build();
+    }
+
+    RangeMsg mapRange(Range range) {
+        var builder = RangeMsg.newBuilder();
+
+        Util.doIfNotNull(range.getAbsoluteAccuracy(), accuracy ->
+                builder.setAAbsoluteAccuracy(Util.toStringValue(accuracy.toPlainString()))
+        );
+        Util.doIfNotNull(range.getRelativeAccuracy(), accuracy ->
+                builder.setARelativeAccuracy(Util.toStringValue(accuracy.toPlainString()))
+        );
+        Util.doIfNotNull(range.getAbsoluteAccuracy(), accuracy ->
+                builder.setAAbsoluteAccuracy(Util.toStringValue(accuracy.toPlainString()))
+        );
+        Util.doIfNotNull(range.getLower(), accuracy ->
+                builder.setALower(Util.toStringValue(accuracy.toPlainString()))
+        );
+        Util.doIfNotNull(range.getUpper(), accuracy ->
+                builder.setAUpper(Util.toStringValue(accuracy.toPlainString()))
+        );
+        Util.doIfNotNull(range.getStepWidth(), accuracy ->
+                builder.setAStepWidth(Util.toStringValue(accuracy.toPlainString()))
+        );
         return builder.build();
     }
 }

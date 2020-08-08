@@ -33,7 +33,7 @@ public class ProtoToPojoMetricMapper {
     public RealTimeSampleArrayMetricDescriptor map(RealTimeSampleArrayMetricDescriptorMsg protoMsg) {
         var pojo = new RealTimeSampleArrayMetricDescriptor();
         map(pojo, protoMsg.getAbstractMetricDescriptor());
-        pojo.setTechnicalRange(protoMsg.getTechnicalRangeList().stream().map(this::map).collect(Collectors.toList()));
+        pojo.setTechnicalRange(protoMsg.getTechnicalRangeList().stream().map(baseMapper::map).collect(Collectors.toList()));
         pojo.setResolution(new BigDecimal(protoMsg.getAResolution()));
         Util.doIfNotNull(Util.optional(protoMsg, "ASamplePeriod", Duration.class), period ->
                 pojo.setSamplePeriod(Util.fromProtoDuration(period)));
@@ -45,14 +45,14 @@ public class ProtoToPojoMetricMapper {
         map(pojo, protoMsg.getAbstractMetricState());
         Util.doIfNotNull(Util.optional(protoMsg, "MetricValue", SampleArrayValueMsg.class),
                 value -> pojo.setMetricValue(map(value)));
-        pojo.setPhysiologicalRange(protoMsg.getPhysiologicalRangeList().stream().map(this::map).collect(Collectors.toList()));
+        pojo.setPhysiologicalRange(protoMsg.getPhysiologicalRangeList().stream().map(baseMapper::map).collect(Collectors.toList()));
         return pojo;
     }
 
     public NumericMetricDescriptor map(NumericMetricDescriptorMsg protoMsg) {
         var pojo = new NumericMetricDescriptor();
         map(pojo, protoMsg.getAbstractMetricDescriptor());
-        pojo.setTechnicalRange(protoMsg.getTechnicalRangeList().stream().map(this::map).collect(Collectors.toList()));
+        pojo.setTechnicalRange(protoMsg.getTechnicalRangeList().stream().map(baseMapper::map).collect(Collectors.toList()));
         pojo.setResolution(new BigDecimal(protoMsg.getAResolution()));
         Util.doIfNotNull(Util.optional(protoMsg, "AAveragingPeriod", Duration.class), period ->
                 pojo.setAveragingPeriod(Util.fromProtoDuration(period)));
@@ -62,7 +62,7 @@ public class ProtoToPojoMetricMapper {
     public NumericMetricState map(NumericMetricStateMsg protoMsg) {
         var pojo = new NumericMetricState();
         map(pojo, protoMsg.getAbstractMetricState());
-        pojo.setPhysiologicalRange(protoMsg.getPhysiologicalRangeList().stream().map(this::map).collect(Collectors.toList()));
+        pojo.setPhysiologicalRange(protoMsg.getPhysiologicalRangeList().stream().map(baseMapper::map).collect(Collectors.toList()));
         Util.doIfNotNull(Util.optional(protoMsg, "AActiveAveragingPeriod", Duration.class), period ->
                 pojo.setActiveAveragingPeriod(Util.fromProtoDuration(period))
         );
@@ -128,16 +128,6 @@ public class ProtoToPojoMetricMapper {
         var pojoValue = new NumericMetricValue();
         map(pojoValue, protoMsg.getAbstractMetricValue());
         pojoValue.setValue(Util.optionalBigDecimalOfString(protoMsg, "AValue"));
-        return pojoValue;
-    }
-
-    public Range map(RangeMsg protoMsg) {
-        var pojoValue = new Range();
-        pojoValue.setStepWidth(Util.optionalBigDecimalOfString(protoMsg, "AStepWidth"));
-        pojoValue.setRelativeAccuracy(Util.optionalBigDecimalOfString(protoMsg, "ARelativeAccuracy"));
-        pojoValue.setLower(Util.optionalBigDecimalOfString(protoMsg, "ALower"));
-        pojoValue.setUpper(Util.optionalBigDecimalOfString(protoMsg, "AUpper"));
-        pojoValue.setAbsoluteAccuracy(Util.optionalBigDecimalOfString(protoMsg, "AAbsoluteAccuracy"));
         return pojoValue;
     }
 

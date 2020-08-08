@@ -160,4 +160,14 @@ public class ProtoToPojoBaseMapper {
         pojo.setTitle(Util.optionalStr(protoMsg, "Title"));
         return pojo;
     }
+
+    public Range map(RangeMsg protoMsg) {
+        var pojoValue = new Range();
+        pojoValue.setStepWidth(Util.optionalBigDecimalOfString(protoMsg, "AStepWidth"));
+        pojoValue.setRelativeAccuracy(Util.optionalBigDecimalOfString(protoMsg, "ARelativeAccuracy"));
+        pojoValue.setLower(Util.optionalBigDecimalOfString(protoMsg, "ALower"));
+        pojoValue.setUpper(Util.optionalBigDecimalOfString(protoMsg, "AUpper"));
+        pojoValue.setAbsoluteAccuracy(Util.optionalBigDecimalOfString(protoMsg, "AAbsoluteAccuracy"));
+        return pojoValue;
+    }
 }
