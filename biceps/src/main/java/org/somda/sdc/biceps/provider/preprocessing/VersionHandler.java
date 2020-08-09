@@ -55,10 +55,16 @@ public class VersionHandler implements DescriptionPreprocessingSegment, StatePre
         this.updatedParents = new HashSet<>();
     }
 
+    private Map<String, VersionPair> copyVersions() {
+        Map<String, VersionPair> versionsCopy = new HashMap<>();
+        versions.forEach((key, value) -> versionsCopy.put(key, new VersionPair(value)));
+        return versionsCopy;
+    }
+
     @Override
     public void beforeFirstModification(MdibDescriptionModifications modifications, MdibStorage storage) {
         updatedParents.clear();
-        versionsWorkingCopy = objectUtil.deepCopy(versions);
+        versionsWorkingCopy = versions;
     }
 
     @Override
@@ -68,7 +74,7 @@ public class VersionHandler implements DescriptionPreprocessingSegment, StatePre
 
     @Override
     public void beforeFirstModification(MdibStateModifications modifications, MdibStorage storage) {
-        versionsWorkingCopy = objectUtil.deepCopy(versions);
+        versionsWorkingCopy = versions;
     }
 
     @Override

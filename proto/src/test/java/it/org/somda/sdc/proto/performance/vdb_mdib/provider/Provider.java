@@ -1,4 +1,4 @@
-package it.org.somda.sdc.proto.example1.provider;
+package it.org.somda.sdc.proto.performance.vdb_mdib.provider;
 
 import com.example.Constants;
 import com.google.common.collect.Iterables;
@@ -8,7 +8,6 @@ import com.google.inject.Injector;
 import com.google.inject.Key;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.junit.jupiter.api.Test;
 import org.somda.sdc.biceps.common.MdibDescriptionModifications;
 import org.somda.sdc.biceps.common.MdibEntity;
 import org.somda.sdc.biceps.common.MdibStateModifications;
@@ -45,7 +44,6 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -181,42 +179,47 @@ public class Provider extends AbstractIdleService {
     /**
      * Adds a sine wave to the data of a waveform.
      *
-     * @param handle descriptor handle of waveform state
+     * @param handles descriptor handles of waveform states
      * @throws PreprocessingException if changes could not be committed to mdib
      */
-    public void changeWaveform(String handle) throws PreprocessingException {
+    public void changeWaveform(String... handles) throws PreprocessingException {
         final MdibStateModifications modifications =
                 MdibStateModifications.create(MdibStateModifications.Type.WAVEFORM);
 
         try (ReadTransaction readTransaction = mdibAccess.startTransaction()) {
-            final var state = readTransaction.getState(handle, RealTimeSampleArrayMetricState.class).orElseThrow(() ->
-                    new RuntimeException(String.format("Could not find state for handle %s", handle)));
+            for (String handle : handles) {
+//                final var state = readTransaction.getState(handle, RealTimeSampleArrayMetricState.class).orElseThrow(() ->
+//                        new RuntimeException(String.format("Could not find state for handle %s", handle)));
 
-            final var metricQuality = new SampleArrayValue.MetricQuality();
-            metricQuality.setMode(GenerationMode.REAL);
-            metricQuality.setValidity(MeasurementValidity.VLD);
+                final var state = new RealTimeSampleArrayMetricState();
+                state.setDescriptorHandle(handle);
 
-            SampleArrayValue sampleArrayValue = new SampleArrayValue();
-            sampleArrayValue.setMetricQuality(metricQuality);
+                final var metricQuality = new SampleArrayValue.MetricQuality();
+                metricQuality.setMode(GenerationMode.REAL);
+                metricQuality.setValidity(MeasurementValidity.VLD);
 
-            int minValue = 0;
-            int maxValue = 50;
-            int sampleCapacity = 10;
+                SampleArrayValue sampleArrayValue = new SampleArrayValue();
+                sampleArrayValue.setMetricQuality(metricQuality);
 
-            // sine wave
-            var values = new LinkedList<BigDecimal>();
-            double delta = 2 * Math.PI / sampleCapacity;
-            IntStream.range(0, sampleCapacity).forEachOrdered(n -> {
-                values.add(
-                        new BigDecimal((Math.sin(n * delta) + 1) / 2.0 * (maxValue - minValue) + minValue)
-                                .setScale(15, RoundingMode.DOWN));
-            });
-            sampleArrayValue.setSamples(values);
-            sampleArrayValue.setDeterminationTime(Instant.now());
+                int minValue = 0;
+                int maxValue = 50;
+                int sampleCapacity = 10;
 
-            state.setMetricValue(sampleArrayValue);
+                // sine wave
+                var values = new LinkedList<BigDecimal>();
+                double delta = 2 * Math.PI / sampleCapacity;
+                IntStream.range(0, sampleCapacity).forEachOrdered(n -> {
+                    values.add(
+                            new BigDecimal((Math.sin(n * delta) + 1) / 2.0 * (maxValue - minValue) + minValue)
+                                    .setScale(15, RoundingMode.DOWN));
+                });
+                sampleArrayValue.setSamples(values);
+                sampleArrayValue.setDeterminationTime(Instant.now());
 
-            modifications.add(state);
+                state.setMetricValue(sampleArrayValue);
+
+                modifications.add(state);
+            }
         }
 
         mdibAccess.writeStates(modifications);
@@ -371,22 +374,29 @@ public class Provider extends AbstractIdleService {
 
         provider.startAsync().awaitRunning();
         // generate some data
-//        var waveformInterval = util.getWaveformInterval().toMillis();
-//        LOG.info("Sending waveforms every {}ms", waveformInterval);
-//        var t1 = new Thread(() -> {
-//            while (true) {
-//                try {
+        var waveformInterval = util.getWaveformInterval().toMillis();
+        LOG.info("Sending waveforms every {}ms", waveformInterval);
+        var t1 = new Thread(() -> {
+            // find all waveform handles
+            var waveforms = provider.mdibAccess
+                    .findEntitiesByType(RealTimeSampleArrayMetricDescriptor.class)
+                    .stream()
+                    .map(entity -> entity.getHandle())
+                    .collect(Collectors.toList());
+            var waveformArray = waveforms.toArray(new String[0]);
+            while (true) {
+                try {
 //                    Thread.sleep(waveformInterval);
-//                    provider.changeWaveform(Constants.HANDLE_WAVEFORM);
-//                } catch (Exception e) {
-//                    LOG.warn("Thread loop stopping", e);
-//                    break;
-//                }
-//            }
-//        });
-//        t1.setDaemon(true);
-//        t1.start();
-//
+                    provider.changeWaveform(waveformArray);
+                } catch (Exception e) {
+                    LOG.warn("Thread loop stopping", e);
+                    break;
+                }
+            }
+        });
+        t1.setDaemon(true);
+        t1.start();
+
 //        var reportInterval = util.getReportInterval().toMillis();
 //        LOG.info("Sending reports every {}ms", reportInterval);
 //        var t2 = new Thread(() -> {
@@ -409,7 +419,7 @@ public class Provider extends AbstractIdleService {
 
         // graceful shutdown using sigterm
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-//            t1.interrupt();
+            t1.interrupt();
 //            t2.interrupt();
 
             provider.stopAsync().awaitTerminated();
@@ -421,7 +431,7 @@ public class Provider extends AbstractIdleService {
             // pass and quit
         }
 
-//        t1.interrupt();
+        t1.interrupt();
 //        t2.interrupt();
 
         provider.stopAsync().awaitTerminated();

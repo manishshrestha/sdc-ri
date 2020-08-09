@@ -12,6 +12,8 @@ import org.somda.sdc.biceps.common.event.MetricStateModificationMessage;
 import org.somda.sdc.biceps.common.event.OperationStateModificationMessage;
 import org.somda.sdc.biceps.common.event.WaveformStateModificationMessage;
 
+import java.time.Instant;
+
 /**
  * This class handles incoming reports on the provider.
  * <p>
@@ -23,6 +25,10 @@ public class ConsumerReportProcessor implements MdibAccessObserver {
 
     public int numMetricChanges = 0;
     public int numConditionChanges = 0;
+    public int waveformReportFrequency = 5;
+    public long nextWaveformInfo = Instant.now().plusSeconds(waveformReportFrequency).toEpochMilli();
+    public long waveformCount = 0;
+    public long waveformStateCount = 0;
 
     @Subscribe
     void onUpdate(AbstractMdibAccessMessage updates) {
@@ -45,9 +51,19 @@ public class ConsumerReportProcessor implements MdibAccessObserver {
 
     @Subscribe
     void onWaveformChange(WaveformStateModificationMessage modificationMessage) {
-        LOG.info("New waveform");
+//        LOG.info("New waveform");
+        waveformCount++;
+        waveformStateCount += modificationMessage.getStates().size();
+        if (nextWaveformInfo < System.currentTimeMillis()) {
+            LOG.info(
+                    "Processed {} reports with a total of {} states over the last {}s",
+                    waveformCount, waveformStateCount, waveformReportFrequency
+            );
+            waveformCount = 0;
+            waveformStateCount = 0;
+            nextWaveformInfo = Instant.now().plusSeconds(5).toEpochMilli();
+        }
     }
-
     @Subscribe
     void onContextChange(ContextStateModificationMessage modificationMessage) {
         LOG.info("Context change");

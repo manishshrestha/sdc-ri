@@ -1,4 +1,4 @@
-package it.org.somda.sdc.proto.example1.consumer;
+package it.org.somda.sdc.proto.performance.vdb_mdib.consumer;
 
 import com.example.Constants;
 import com.google.common.collect.Streams;
@@ -48,7 +48,6 @@ import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.time.Duration;
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -65,7 +64,7 @@ public class Consumer extends AbstractIdleService {
     private static final Duration MAX_WAIT = Duration.ofSeconds(11);
     private static final long MAX_WAIT_SEC = MAX_WAIT.getSeconds();
 
-    private static final long REPORT_TIMEOUT = Duration.ofSeconds(30).toMillis();
+    private static final long REPORT_TIMEOUT = Duration.ofSeconds(30000).toMillis();
     private final ConsumerUtil consumerUtil;
     private final Injector injector;
     private final SdcRemoteDevicesConnector connector;
@@ -316,17 +315,6 @@ public class Consumer extends AbstractIdleService {
 
             LOG.trace("Mdib:\n{}", mdib);
 
-            var repetiton = 1000;
-            for (int i = 0; i < repetiton; i++) {
-                var startTime = System.currentTimeMillis();
-                getService.getMdib(GetMdibRequest.newBuilder().build());
-                var stopTime = System.currentTimeMillis();
-
-                LOG.info("GetMdib took {}ms", () -> stopTime - startTime);
-            }
-
-
-
             var fut = consumer.getConnector().connect(
                     consumer.getConsumer(),
                     ConnectConfiguration.create(ConnectConfiguration.ALL_EPISODIC_AND_WAVEFORM_REPORTS)
@@ -354,6 +342,16 @@ public class Consumer extends AbstractIdleService {
 
             LOG.info("Number of patient context states: {}", numPatientContexts);
             LOG.info("Number of location context states: {}", numLocationContexts);
+
+
+//            var repetiton = 1000;
+//            for (int i = 0; i < repetiton; i++) {
+//                var startTime = System.currentTimeMillis();
+//                getService.getMdib(GetMdibRequest.newBuilder().build());
+//                var stopTime = System.currentTimeMillis();
+//
+//                LOG.info("GetMdib took {}ms", () -> stopTime - startTime);
+//            }
 
             Thread.sleep(REPORT_TIMEOUT);
 

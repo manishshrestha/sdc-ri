@@ -186,7 +186,7 @@ public class DefaultDpwsConfigModule extends AbstractConfigurationModule {
                 "SubscriptionManager");
         bind(WsEventingConfig.NOTIFICATION_QUEUE_CAPACITY,
                 Integer.class,
-                500);
+                5000000);
     }
 
     private void configureSoapConfig() {

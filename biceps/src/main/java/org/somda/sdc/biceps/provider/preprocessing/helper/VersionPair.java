@@ -29,6 +29,11 @@ public class VersionPair {
         this.stateVersion = BigInteger.ZERO;
     }
 
+    public VersionPair(VersionPair pair) {
+        this.descriptorVersion = pair.getDescriptorVersion();
+        this.stateVersion = pair.getStateVersion();
+    }
+
     public BigInteger getDescriptorVersion() {
         return descriptorVersion;
     }

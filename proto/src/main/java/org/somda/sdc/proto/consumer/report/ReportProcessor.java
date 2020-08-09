@@ -60,7 +60,7 @@ public class ReportProcessor extends AbstractIdleService {
         this.mdibReadyCondition = mdibReadyLock.newCondition();
         this.mdibVersionUtil = mdibVersionUtil;
         this.reportWriter = reportWriter;
-        this.bufferedReports = new ArrayBlockingQueue<>(500); // todo make queue size configurable
+        this.bufferedReports = new ArrayBlockingQueue<>(5000000); // todo make queue size configurable
         this.mdibAccess = null;
         this.bufferingRequested = new AtomicBoolean(true);
 

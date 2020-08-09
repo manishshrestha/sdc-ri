@@ -10,6 +10,7 @@ import org.apache.logging.log4j.LogManager;
 import org.somda.sdc.biceps.model.message.Activate;
 import org.somda.sdc.biceps.model.message.ActivateResponse;
 import org.somda.sdc.biceps.model.message.InvocationState;
+import org.somda.sdc.biceps.model.message.ObjectFactory;
 import org.somda.sdc.biceps.model.message.OperationInvokedReport;
 import org.somda.sdc.biceps.model.message.SetString;
 import org.somda.sdc.biceps.model.message.SetStringResponse;
@@ -24,9 +25,13 @@ import org.somda.sdc.dpws.client.DiscoveredDevice;
 import org.somda.sdc.dpws.client.DiscoveryObserver;
 import org.somda.sdc.dpws.client.event.ProbedDeviceFoundMessage;
 import org.somda.sdc.dpws.service.HostingServiceProxy;
+import org.somda.sdc.dpws.soap.SoapUtil;
+import org.somda.sdc.dpws.soap.exception.MarshallingException;
+import org.somda.sdc.dpws.soap.exception.SoapFaultException;
 import org.somda.sdc.dpws.soap.exception.TransportException;
 import org.somda.sdc.dpws.soap.interception.InterceptorException;
 import org.somda.sdc.dpws.wsdl.WsdlRetriever;
+import org.somda.sdc.glue.common.ActionConstants;
 import org.somda.sdc.glue.consumer.ConnectConfiguration;
 import org.somda.sdc.glue.consumer.PrerequisitesException;
 import org.somda.sdc.glue.consumer.SdcDiscoveryFilterBuilder;
@@ -73,7 +78,7 @@ public class Consumer {
     private static final Duration MAX_WAIT = Duration.ofSeconds(11);
     private static final long MAX_WAIT_SEC = MAX_WAIT.getSeconds();
 
-    private static final long REPORT_TIMEOUT = Duration.ofSeconds(30).toMillis();
+    private static final long REPORT_TIMEOUT = Duration.ofSeconds(30000).toMillis();
 
     private final ConsumerUtil consumerUtil;
     private final Client client;
@@ -339,6 +344,11 @@ public class Consumer {
             System.exit(1);
         }
 
+        // get Mdib test
+        var soapUtil = consumer.getInjector().getInstance(SoapUtil.class);
+        var messageModelFactory = consumer.getInjector().getInstance(ObjectFactory.class);
+        var client = hostingServiceProxy.getHostedServices().get("HighPriorityServices").getRequestResponseClient();
+
         // attach report listener
         var reportObs = new ConsumerReportProcessor();
         sdcRemoteDevice.getMdibAccessObservable().registerObserver(reportObs);
@@ -354,6 +364,19 @@ public class Consumer {
         long numLocationContexts = contextStates.stream()
                 .filter(x -> LocationContextState.class.isAssignableFrom(x.getClass())).count();
         resultMap.put(6, numLocationContexts >= 1);
+
+//        var repetiton = 1000;
+//        for (int i = 0; i < repetiton; i++) {
+//            var startTime = System.currentTimeMillis();
+//            try {
+//                client.sendRequestResponse(soapUtil.createMessage(ActionConstants.ACTION_GET_MDIB, messageModelFactory.createGetMdib()));
+//            } catch (SoapFaultException | MarshallingException e) {
+//                throw new RuntimeException(e);
+//            }
+//            var stopTime = System.currentTimeMillis();
+//
+//            LOG.info("GetMdib took {}ms", () -> stopTime - startTime);
+//        }
 
         // wait for incoming reports
         Thread.sleep(REPORT_TIMEOUT);
