@@ -22,7 +22,6 @@ import org.somda.sdc.biceps.model.participant.AbstractState;
 import org.somda.sdc.biceps.model.participant.ContextAssociation;
 import org.somda.sdc.biceps.model.participant.MdibVersion;
 import org.somda.sdc.common.CommonConfig;
-import org.somda.sdc.common.logging.InstanceLogger;
 
 import javax.annotation.Nullable;
 import java.lang.reflect.InvocationTargetException;

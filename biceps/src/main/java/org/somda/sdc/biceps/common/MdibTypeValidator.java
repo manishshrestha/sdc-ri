@@ -232,7 +232,7 @@ public class MdibTypeValidator {
 
         var cachedClass = classCache.get(className);
         if (cachedClass != null) {
-            return (Class<V>)cachedClass;
+            return (Class<V>) cachedClass;
         }
         var clazz = Class.forName(className);
         classCache.put(className, clazz);
