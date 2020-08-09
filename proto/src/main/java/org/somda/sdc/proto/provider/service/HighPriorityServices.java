@@ -241,12 +241,19 @@ public class HighPriorityServices implements EventSourceAccess {
             // get id for this handle
             var actions = request.getFilter().getActionFilter().getActionList();
             var queue = new ArrayBlockingQueue<Pair<String, EpisodicReport>>(QUEUE_SIZE);
+            int i = 0;
+            int limit = 1000;
             try {
                 // add queue to map for all requested actions
                 actions.forEach(action -> queueMap.put(action, queue));
 
                 while (!isCanceled.get()) {
                     var element = queue.take();
+                    i++;
+                    if (limit <= i) {
+                        i = 0;
+                        LOG.info("Remaining queue size {}", queue.size());
+                    }
 
                     var action = element.getLeft();
                     if (END_ACTION.equals(action)) {

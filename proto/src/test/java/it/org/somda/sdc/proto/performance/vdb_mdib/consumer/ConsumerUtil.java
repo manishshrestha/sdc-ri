@@ -19,6 +19,7 @@ import org.somda.sdc.dpws.crypto.CryptoConfig;
 import org.somda.sdc.dpws.crypto.CryptoSettings;
 import org.somda.sdc.dpws.guice.DefaultDpwsConfigModule;
 import org.somda.sdc.dpws.guice.DefaultDpwsModule;
+import org.somda.sdc.dpws.soap.SoapConfig;
 import org.somda.sdc.proto.guice.DefaultGrpcConfigModule;
 import org.somda.sdc.proto.guice.DefaultProtoConfigModule;
 import org.somda.sdc.proto.guice.DefaultProtoModule;
@@ -58,6 +59,8 @@ public class ConsumerUtil extends BaseUtil {
                                 bind(CommonConfig.COPY_MDIB_OUTPUT,
                                         Boolean.class,
                                         false);
+
+                                bind(SoapConfig.VALIDATE_SOAP_MESSAGES, Boolean.class, false);
                             }
                         }
                 ));

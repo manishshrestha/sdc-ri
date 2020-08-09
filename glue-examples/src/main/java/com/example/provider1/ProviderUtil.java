@@ -21,6 +21,7 @@ import org.somda.sdc.dpws.DpwsConfig;
 import org.somda.sdc.dpws.crypto.CryptoConfig;
 import org.somda.sdc.dpws.crypto.CryptoSettings;
 import org.somda.sdc.dpws.guice.DefaultDpwsModule;
+import org.somda.sdc.dpws.soap.SoapConfig;
 import org.somda.sdc.glue.GlueConstants;
 import org.somda.sdc.glue.guice.DefaultGlueConfigModule;
 import org.somda.sdc.glue.guice.DefaultGlueModule;
@@ -94,6 +95,7 @@ public class ProviderUtil extends BaseUtil {
                         );
                         bind(DpwsConfig.HTTPS_SUPPORT, Boolean.class, isUseTls());
                         bind(DpwsConfig.HTTP_SUPPORT, Boolean.class, !isUseTls());
+                        bind(SoapConfig.VALIDATE_SOAP_MESSAGES, Boolean.class, false);
                         bind(CryptoConfig.CRYPTO_DEVICE_HOSTNAME_VERIFIER,
                                 HostnameVerifier.class,
                                 (hostname, session) -> {

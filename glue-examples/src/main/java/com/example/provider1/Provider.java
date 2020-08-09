@@ -36,6 +36,7 @@ import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.time.Instant;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -229,7 +230,7 @@ public class Provider extends AbstractIdleService {
                 MdibStateModifications.create(MdibStateModifications.Type.WAVEFORM);
 
         try (ReadTransaction readTransaction = mdibAccess.startTransaction()) {
-            for (String handle : handles) {
+            Arrays.stream(handles).parallel().forEach(handle -> {
                 final var state = readTransaction.getState(handle, RealTimeSampleArrayMetricState.class).orElseThrow(() ->
                         new RuntimeException(String.format("Could not find state for handle %s", handle)));
 
@@ -258,7 +259,7 @@ public class Provider extends AbstractIdleService {
                 state.setMetricValue(sampleArrayValue);
 
                 modifications.add(state);
-            }
+            });
         }
 
         mdibAccess.writeStates(modifications);

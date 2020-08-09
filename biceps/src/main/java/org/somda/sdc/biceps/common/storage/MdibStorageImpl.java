@@ -90,7 +90,7 @@ public class MdibStorageImpl implements MdibStorage {
                     MdibStorageUtil util,
                     MdibTypeValidator typeValidator,
                     @Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier) {
-        this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);
+        this.instanceLogger = LOG;
         this.mdibVersion = initialMdibVersion;
         this.mdDescriptionVersion = mdDescriptionVersion;
         this.mdStateVersion = mdStateVersion;

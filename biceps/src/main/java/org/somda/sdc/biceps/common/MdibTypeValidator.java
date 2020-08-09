@@ -8,6 +8,7 @@ import org.somda.sdc.biceps.model.participant.AbstractMultiState;
 import org.somda.sdc.biceps.model.participant.AbstractState;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 
@@ -22,9 +23,11 @@ public class MdibTypeValidator {
 
     private static final String STATE_SUFFIX = "State";
     private static final int STATE_SUFFIX_LENGTH = STATE_SUFFIX.length();
+    private final HashMap<String, Class<?>> classCache;
 
     @Inject
     MdibTypeValidator() {
+        this.classCache = new HashMap<>();
     }
 
     /**
@@ -225,6 +228,14 @@ public class MdibTypeValidator {
             throws ClassNotFoundException {
         final String baseName = descriptorClass.getCanonicalName()
                 .substring(0, descriptorClass.getCanonicalName().length() - DESCRIPTOR_SUFFIX_LENGTH);
-        return (Class<V>) Class.forName(baseName + STATE_SUFFIX);
+        var className = baseName + STATE_SUFFIX;
+
+        var cachedClass = classCache.get(className);
+        if (cachedClass != null) {
+            return (Class<V>)cachedClass;
+        }
+        var clazz = Class.forName(className);
+        classCache.put(className, clazz);
+        return (Class<V>) clazz;
     }
 }
