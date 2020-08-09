@@ -216,10 +216,70 @@ public class PojoToProtoMetricMapper {
     private AbstractMetricValueMsg.MetricQualityMsg mapMetricQuality(AbstractMetricValue.MetricQuality quality) {
         var builder = AbstractMetricValueMsg.MetricQualityMsg.newBuilder();
         Util.doIfNotNull(quality.getMode(), mode ->
-                builder.setAMode(Util.mapToProtoEnum(mode, GenerationModeMsg.class)));
+                builder.setAMode(mapGenerationMode(mode)));
         Util.doIfNotNull(quality.getValidity(), validity ->
-                builder.setAValidity(Util.mapToProtoEnum(validity, MeasurementValidityMsg.class)));
+                builder.setAValidity(mapMeasurementValidity(validity)));
         Util.doIfNotNull(quality.getQi(), qi -> builder.setAQi(Util.toStringValue(qi.toPlainString())));
+
+        return builder.build();
+    }
+
+    private GenerationModeMsg mapGenerationMode(GenerationMode mode) {
+        var builder = GenerationModeMsg.newBuilder();
+
+        switch (mode) {
+            case DEMO:
+                builder.setEnumValue(GenerationModeMsg.EnumType.DEMO);
+                break;
+            case REAL:
+                builder.setEnumValue(GenerationModeMsg.EnumType.REAL);
+                break;
+            case TEST:
+                builder.setEnumValue(GenerationModeMsg.EnumType.TEST);
+                break;
+            default:
+                LOG.error("unknown mode {}", mode);
+                break;
+        }
+
+        return builder.build();
+    }
+
+    private MeasurementValidityMsg mapMeasurementValidity(MeasurementValidity validity) {
+        var builder = MeasurementValidityMsg.newBuilder();
+
+        switch (validity) {
+            case NA:
+                builder.setEnumValue(MeasurementValidityMsg.EnumType.NA);
+                break;
+            case INV:
+                builder.setEnumValue(MeasurementValidityMsg.EnumType.INV);
+                break;
+            case ONG:
+                builder.setEnumValue(MeasurementValidityMsg.EnumType.ONG);
+                break;
+            case QST:
+                builder.setEnumValue(MeasurementValidityMsg.EnumType.QST);
+                break;
+            case VLD:
+                builder.setEnumValue(MeasurementValidityMsg.EnumType.VLD);
+                break;
+            case OFLW:
+                builder.setEnumValue(MeasurementValidityMsg.EnumType.OFLW);
+                break;
+            case UFLW:
+                builder.setEnumValue(MeasurementValidityMsg.EnumType.UFLW);
+                break;
+            case CALIB:
+                builder.setEnumValue(MeasurementValidityMsg.EnumType.CALIB);
+                break;
+            case VLDATED:
+                builder.setEnumValue(MeasurementValidityMsg.EnumType.VLDATED);
+                break;
+            default:
+                LOG.error("unknown validity {}", validity);
+                break;
+        }
 
         return builder.build();
     }
