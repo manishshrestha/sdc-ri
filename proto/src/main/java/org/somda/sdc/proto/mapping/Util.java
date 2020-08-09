@@ -175,7 +175,7 @@ public class Util {
 
             var nameMethod = pojoEnumValue.getClass().getMethod("name");
             var enumStringValue = (String) nameMethod.invoke(pojoEnumValue);
-            var enumType = Arrays.stream(protoEnumMsgType.getClasses())
+            var enumType = Arrays.stream(protoEnumMsgType.getDeclaredClasses())
                     .filter(aClass -> aClass.getName().endsWith("EnumType"))
                     .findFirst().orElseThrow(() -> new RuntimeException("No type named EnumType was found"));
 
