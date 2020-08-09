@@ -9,6 +9,7 @@ import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.config.Configurator;
+import org.somda.sdc.biceps.common.CommonConfig;
 import org.somda.sdc.biceps.guice.DefaultBicepsConfigModule;
 import org.somda.sdc.biceps.guice.DefaultBicepsModule;
 import org.somda.sdc.common.guice.AbstractConfigurationModule;
@@ -50,6 +51,13 @@ public class ConsumerUtil extends BaseUtil {
                                 bind(CryptoConfig.CRYPTO_SETTINGS,
                                         CryptoSettings.class,
                                         new CustomCryptoSettings());
+                                bind(CommonConfig.COPY_MDIB_INPUT,
+                                        Boolean.class,
+                                        false);
+
+                                bind(CommonConfig.COPY_MDIB_OUTPUT,
+                                        Boolean.class,
+                                        false);
                             }
                         }
                 ));

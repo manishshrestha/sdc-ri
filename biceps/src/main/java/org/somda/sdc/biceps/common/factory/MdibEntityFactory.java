@@ -2,6 +2,9 @@ package org.somda.sdc.biceps.common.factory;
 
 import com.google.inject.Inject;
 import org.somda.sdc.biceps.common.MdibEntity;
+import org.somda.sdc.biceps.common.MdibEntityImpl;
+import org.somda.sdc.biceps.common.MdibTypeValidator;
+import org.somda.sdc.biceps.common.access.CopyManager;
 import org.somda.sdc.biceps.model.participant.AbstractDescriptor;
 import org.somda.sdc.biceps.model.participant.AbstractState;
 import org.somda.sdc.biceps.model.participant.MdibVersion;
@@ -14,10 +17,16 @@ import java.util.List;
  */
 public class MdibEntityFactory {
     private final MdibEntityGuiceAssistedFactory factory;
+    private final MdibTypeValidator typeValidator;
+    private final CopyManager copyManager;
 
     @Inject
-    MdibEntityFactory(MdibEntityGuiceAssistedFactory factory) {
+    MdibEntityFactory(MdibEntityGuiceAssistedFactory factory,
+                      CopyManager copyManager,
+                      MdibTypeValidator typeValidator) {
         this.factory = factory;
+        this.copyManager = copyManager;
+        this.typeValidator = typeValidator;
     }
 
     /**
@@ -35,7 +44,7 @@ public class MdibEntityFactory {
                                        AbstractDescriptor descriptor,
                                        List<AbstractState> states,
                                        MdibVersion mdibVersion) {
-        return factory.createMdibEntity(parent, children, descriptor, states, mdibVersion);
+        return new MdibEntityImpl(parent, children, descriptor, states, mdibVersion, copyManager, typeValidator);
     }
 
     /**
@@ -49,8 +58,12 @@ public class MdibEntityFactory {
     public MdibEntity replaceDescriptorAndStates(MdibEntity mdibEntity,
                                                  AbstractDescriptor descriptor,
                                                  List<AbstractState> states) {
-        return factory.createMdibEntity(mdibEntity.getParent().orElse(null), mdibEntity.getChildren(),
-                descriptor, states, mdibEntity.getLastChanged());
+        return new MdibEntityImpl(
+                mdibEntity.getParent().orElse(null),
+                mdibEntity.getChildren(),
+                descriptor, states,
+                mdibEntity.getLastChanged(), copyManager, typeValidator
+        );
     }
 
     /**
@@ -73,7 +86,12 @@ public class MdibEntityFactory {
      * @return an {@link MdibEntity} instance with replaced children.
      */
     public MdibEntity replaceChildren(MdibEntity mdibEntity, List<String> children) {
-        return factory.createMdibEntity(mdibEntity.getParent().orElse(null), children,
-                mdibEntity.getDescriptor(), mdibEntity.getStates(), mdibEntity.getLastChanged());
+
+        return new MdibEntityImpl(
+                mdibEntity.getParent().orElse(null),
+                children,
+                mdibEntity.getDescriptor(), mdibEntity.getStates(), mdibEntity.getLastChanged(),
+                copyManager, typeValidator
+        );
     }
 }

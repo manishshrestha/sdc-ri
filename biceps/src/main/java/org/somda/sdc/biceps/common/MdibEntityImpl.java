@@ -28,7 +28,7 @@ public class MdibEntityImpl implements MdibEntity {
     private final Class<? extends AbstractState> stateClass;
 
     @AssistedInject
-    MdibEntityImpl(@Assisted @Nullable String parent,
+    public MdibEntityImpl(@Assisted @Nullable String parent,
                    @Assisted("children") List<String> children,
                    @Assisted AbstractDescriptor descriptor,
                    @Assisted("states") List<AbstractState> states,
