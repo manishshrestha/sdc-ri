@@ -30,6 +30,7 @@ import org.somda.sdc.biceps.model.message.SetStringResponse;
 import org.somda.sdc.biceps.model.message.SetValue;
 import org.somda.sdc.biceps.model.message.SetValueResponse;
 import org.somda.sdc.biceps.model.message.WaveformStream;
+import org.somda.sdc.biceps.model.participant.RealTimeSampleArrayMetricState;
 import org.somda.sdc.common.CommonConfig;
 import org.somda.sdc.common.logging.InstanceLogger;
 import org.somda.sdc.proto.mapping.Util;
@@ -66,6 +67,7 @@ import org.somda.sdc.proto.model.biceps.SetValueMsg;
 import org.somda.sdc.proto.model.biceps.SetValueResponseMsg;
 import org.somda.sdc.proto.model.biceps.WaveformStreamMsg;
 
+import java.util.ArrayList;
 import java.util.stream.Collectors;
 
 public class PojoToProtoMapper {
@@ -122,7 +124,11 @@ public class PojoToProtoMapper {
     public WaveformStreamMsg mapWaveformStream(WaveformStream report) {
         var builder = WaveformStreamMsg.newBuilder()
                 .setAbstractReport(mapAbstractReport(report));
-        report.getState().forEach(state -> builder.addState(metricMapper.mapRealTimeSampleArrayMetricState(state)));
+        var mappedStates = report.getState()
+                .parallelStream()
+                .map(state -> metricMapper.mapRealTimeSampleArrayMetricState(state))
+            .collect(Collectors.toList());
+        builder.addAllState(mappedStates);
         return builder.build();
     }
 

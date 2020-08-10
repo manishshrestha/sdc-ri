@@ -117,7 +117,8 @@ public class ProtoToPojoMapper {
     public WaveformStream map(WaveformStreamMsg protoMsg) {
         var pojo = new WaveformStream();
         map(pojo, protoMsg.getAbstractReport());
-        protoMsg.getStateList().forEach(state -> pojo.getState().add(metricMapper.map(state)));
+        var stateList = protoMsg.getStateList().parallelStream().map(metricMapper::map).collect(Collectors.toList());
+        pojo.setState(stateList);
         return pojo;
     }
 
