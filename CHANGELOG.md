@@ -30,6 +30,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Evaluate HTTP Content-Type header element to determine the appropriate charset for received messages. (#170)
 - `org.somda.sdc.common.guice.DefaultHelperModule` renamed to `DefaultCommonModule`. (#160)
 - `org.somda.sdc.dpws.soap.exception.SoapFaultException` is now compliant with DPWS R0040. (#181)
+- `org.somda.sdc.dpws.soap.wsaddressing.WsAddressingHeader` changed relatesTo element to RelatesToType instead of an AttributedURIType (#184)
  
 ### Removed
 
