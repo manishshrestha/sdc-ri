@@ -67,8 +67,8 @@ public class WsAddressingServerInterceptor implements Interceptor {
     void processMessage(RequestResponseObject rrInfo) throws SoapFaultException {
         var logMissingMessageId = resolveLogCallForMissingMessageIds(rrInfo.getCommunicationContext().orElse(null));
         processMessage(rrInfo.getRequest(), logMissingMessageId);
-        rrInfo.getResponse().getWsAddressingHeader().setRelatesTo(
-                rrInfo.getRequest().getWsAddressingHeader().getMessageId().orElse(null));
+        rrInfo.getResponse().getWsAddressingHeader().setRelatesTo(wsaUtil.createRelatesToType(
+                rrInfo.getRequest().getWsAddressingHeader().getMessageId().orElse(null)));
         rrInfo.getResponse().getWsAddressingHeader().setMessageId(wsaUtil.createAttributedURIType(
                 soapUtil.createRandomUuidUri()));
     }

@@ -4,11 +4,11 @@ import org.somda.sdc.dpws.soap.SoapMessage;
 import org.somda.sdc.dpws.soap.model.Fault;
 import org.somda.sdc.dpws.soap.model.Reasontext;
 import org.somda.sdc.dpws.soap.wsaddressing.model.AttributedURIType;
+import org.somda.sdc.dpws.soap.wsaddressing.model.RelatesToType;
 
 import javax.annotation.Nullable;
 import javax.xml.bind.JAXBElement;
 import java.util.List;
-import java.util.Optional;
 
 import static org.somda.sdc.dpws.soap.wsaddressing.WsAddressingConstants.UNSPECIFIED_MESSAGE;
 
@@ -74,11 +74,14 @@ public class SoapFaultException extends Exception {
     }
 
     private void setRelatesTo(@Nullable AttributedURIType messageId) {
-        final AttributedURIType unspecifiedMessageUri = new AttributedURIType();
-        unspecifiedMessageUri.setValue(UNSPECIFIED_MESSAGE);
         if (faultMessage.getWsAddressingHeader().getRelatesTo().isEmpty()) {
-            faultMessage.getWsAddressingHeader().setRelatesTo(Optional.ofNullable(messageId)
-                    .orElse(unspecifiedMessageUri));
+            final RelatesToType unspecifiedMessageUri = new RelatesToType();
+            if (messageId != null) {
+                unspecifiedMessageUri.setValue(messageId.getValue());
+            } else {
+                unspecifiedMessageUri.setValue(UNSPECIFIED_MESSAGE);
+            }
+            faultMessage.getWsAddressingHeader().setRelatesTo(unspecifiedMessageUri);
         }
     }
 

@@ -130,7 +130,7 @@ public class WsAddressingMapper {
 
             Optional<RelatesToType> rt = jaxbUtil.extractElement(jaxbObject, WsAddressingConstants.RELATES_TO);
             if (rt.isPresent() && dest.getRelatesTo().isEmpty()) {
-                dest.setRelatesTo(wsaUtil.createAttributedURIType(rt.get().getValue()));
+                dest.setRelatesTo(wsaUtil.createRelatesToType(rt.get().getValue()));
             }
 
             if (jaxbObject instanceof Element) {

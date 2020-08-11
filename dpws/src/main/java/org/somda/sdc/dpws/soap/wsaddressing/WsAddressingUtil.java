@@ -1,11 +1,9 @@
 package org.somda.sdc.dpws.soap.wsaddressing;
 
 import com.google.inject.Inject;
-import org.somda.sdc.dpws.soap.wsaddressing.model.AttributedQNameType;
-import org.somda.sdc.dpws.soap.wsaddressing.model.AttributedURIType;
-import org.somda.sdc.dpws.soap.wsaddressing.model.EndpointReferenceType;
-import org.somda.sdc.dpws.soap.wsaddressing.model.ObjectFactory;
+import org.somda.sdc.dpws.soap.wsaddressing.model.*;
 
+import javax.annotation.Nullable;
 import javax.xml.namespace.QName;
 import java.net.URI;
 import java.util.Optional;
@@ -53,6 +51,30 @@ public class WsAddressingUtil {
      */
     public AttributedURIType createAttributedURIType(URI uri) {
         return createAttributedURIType(uri.toString());
+    }
+
+    /**
+     * Shorthand method to create an {@link RelatesToType} from a simple String.
+     *
+     * @param uri the URI as string.
+     * @return an {@link RelatesToType} instance.
+     */
+    public RelatesToType createRelatesToType(String uri) {
+        RelatesToType relatesToType = wsaFactory.createRelatesToType();
+        relatesToType.setValue(uri);
+        return relatesToType;
+    }
+
+    /**
+     * Shorthand method to create an {@link RelatesToType} from an AttributedURIType.
+     *
+     * @param attributedURIType the URI as AttributedURIType.
+     * @return an {@link RelatesToType} instance.
+     */
+    public RelatesToType createRelatesToType(@Nullable AttributedURIType attributedURIType) {
+        String msgId = attributedURIType != null ? attributedURIType.getValue() :
+        WsAddressingConstants.UNSPECIFIED_MESSAGE;
+        return createRelatesToType(msgId);
     }
 
     /**
