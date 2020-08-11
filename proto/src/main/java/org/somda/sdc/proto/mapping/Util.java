@@ -11,13 +11,35 @@ import org.somda.sdc.biceps.model.participant.*;
 
 import javax.annotation.Nullable;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 import java.util.function.Consumer;
 
 public class Util {
+
+    public static Map<Class<?>, Map<String, Method>> classMethodCache = new HashMap<>();
+
+    public static Method cacheMethodLookup(Class<?> clazz, String methodName) throws NoSuchMethodException {
+        var methods = classMethodCache.get(clazz);
+        Method method;
+        if (methods == null) {
+            methods = new HashMap<>();
+            classMethodCache.put(clazz, methods);
+        }
+        method = methods.get(methodName);
+        if (method == null) {
+            method = clazz.getMethod(methodName);
+            methods.put(methodName, method);
+        }
+        return method;
+    }
+
     public static <T> void doIfNotNull(@Nullable T value, Consumer<T> consumer) {
         if (value != null) {
             consumer.accept(value);
@@ -132,8 +154,8 @@ public class Util {
         try {
             var hasValue = "has" + protoTypeName;
             var getValue = "get" + protoTypeName;
-            var getValueMethod = protoMsg.getClass().getMethod(getValue);
-            var hasValueMethod = protoMsg.getClass().getMethod(hasValue);
+            var getValueMethod = cacheMethodLookup(protoMsg.getClass(), getValue);
+            var hasValueMethod = cacheMethodLookup(protoMsg.getClass(), hasValue);
             if (!(Boolean) hasValueMethod.invoke(protoMsg)) {
                 return null;
             }
@@ -148,8 +170,10 @@ public class Util {
         try {
             var hasEnum = "has" + protoEnumName;
             var getEnum = "get" + protoEnumName;
-            var getEnumMethod = protoMsg.getClass().getMethod(getEnum);
-            var hasEnumMethod = protoMsg.getClass().getMethod(hasEnum);
+//            var getEnumMethod = protoMsg.getClass().getMethod(getEnum);
+//            var hasEnumMethod = protoMsg.getClass().getMethod(hasEnum);
+            var getEnumMethod = cacheMethodLookup(protoMsg.getClass(), getEnum);
+            var hasEnumMethod = cacheMethodLookup(protoMsg.getClass(), hasEnum);
             if (!(Boolean) hasEnumMethod.invoke(protoMsg)) {
                 return null;
             }
@@ -202,8 +226,8 @@ public class Util {
         try {
             var hasValue = "has" + typeName;
             var getValue = "get" + typeName;
-            var getValueMethod = protoMsg.getClass().getMethod(getValue);
-            var hasValueMethod = protoMsg.getClass().getMethod(hasValue);
+            var getValueMethod = cacheMethodLookup(protoMsg.getClass(), getValue);
+            var hasValueMethod = cacheMethodLookup(protoMsg.getClass(), hasValue);
             if (!(Boolean) hasValueMethod.invoke(protoMsg)) {
                 return null;
             }

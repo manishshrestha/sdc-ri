@@ -187,6 +187,19 @@ public class Provider extends AbstractIdleService {
         final MdibStateModifications modifications =
                 MdibStateModifications.create(MdibStateModifications.Type.WAVEFORM);
 
+        int minValue = 0;
+        int maxValue = 50;
+        int sampleCapacity = 10;
+
+        // sine wave
+        var values = new LinkedList<BigDecimal>();
+        double delta = 2 * Math.PI / sampleCapacity;
+        IntStream.range(0, sampleCapacity).forEachOrdered(n -> {
+            values.add(
+                    new BigDecimal((Math.sin(n * delta) + 1) / 2.0 * (maxValue - minValue) + minValue)
+                            .setScale(15, RoundingMode.DOWN));
+        });
+
         try (ReadTransaction readTransaction = mdibAccess.startTransaction()) {
             Arrays.stream(handles).parallel().forEach(handle -> {
 //                final var state = readTransaction.getState(handle, RealTimeSampleArrayMetricState.class).orElseThrow(() ->
@@ -202,18 +215,6 @@ public class Provider extends AbstractIdleService {
                 SampleArrayValue sampleArrayValue = new SampleArrayValue();
                 sampleArrayValue.setMetricQuality(metricQuality);
 
-                int minValue = 0;
-                int maxValue = 50;
-                int sampleCapacity = 10;
-
-                // sine wave
-                var values = new LinkedList<BigDecimal>();
-                double delta = 2 * Math.PI / sampleCapacity;
-                IntStream.range(0, sampleCapacity).forEachOrdered(n -> {
-                    values.add(
-                            new BigDecimal((Math.sin(n * delta) + 1) / 2.0 * (maxValue - minValue) + minValue)
-                                    .setScale(15, RoundingMode.DOWN));
-                });
                 sampleArrayValue.setSamples(values);
                 sampleArrayValue.setDeterminationTime(Instant.now());
 

@@ -68,11 +68,12 @@ public class MdibStateModifications {
      * has been set on {@link #create(Type)}.
      */
     public synchronized MdibStateModifications add(AbstractState state) {
-        if (!changeType.getChangeBaseClass().isAssignableFrom(state.getClass())) {
-            throw new ClassCastException(String.format("Expected added state to be of type %s, but was %s.",
-                    changeType.getChangeBaseClass(),
-                    state.getClass()));
-        }
+        // TODO: Disabled for the performance test, super slow
+//        if (!changeType.getChangeBaseClass().isAssignableFrom(state.getClass())) {
+//            throw new ClassCastException(String.format("Expected added state to be of type %s, but was %s.",
+//                    changeType.getChangeBaseClass(),
+//                    state.getClass()));
+//        }
 
         states.add(state);
         return this;

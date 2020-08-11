@@ -200,7 +200,7 @@ public class HighPriorityServices implements EventSourceAccess {
 
         // TODO: mechanic is dumb, fix!
         private static final String END_ACTION = "STOP THE PRESSES";
-        private static final int QUEUE_SIZE = 50;
+        private static final int QUEUE_SIZE = 50000;
 
         private final ListMultimap<String, Queue<Pair<String, EpisodicReport>>> queueMap;
         private final Logger instanceLogger;
