@@ -1,7 +1,11 @@
 package org.somda.sdc.dpws.soap.wsaddressing;
 
 import com.google.inject.Inject;
-import org.somda.sdc.dpws.soap.wsaddressing.model.*;
+import org.somda.sdc.dpws.soap.wsaddressing.model.AttributedQNameType;
+import org.somda.sdc.dpws.soap.wsaddressing.model.AttributedURIType;
+import org.somda.sdc.dpws.soap.wsaddressing.model.EndpointReferenceType;
+import org.somda.sdc.dpws.soap.wsaddressing.model.ObjectFactory;
+import org.somda.sdc.dpws.soap.wsaddressing.model.RelatesToType;
 
 import javax.annotation.Nullable;
 import javax.xml.namespace.QName;
