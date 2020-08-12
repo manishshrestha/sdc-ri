@@ -63,6 +63,7 @@ public class WsDiscoveryClientInterceptorTest extends DpwsTest {
     private EnvelopeFactory envelopeFactory;
     private NotificationSink notificationSink;
     private CommunicationContext communicationContextMock;
+    private WsAddressingUtil wsaUtil;
 
     @Override
     @BeforeEach
@@ -89,7 +90,7 @@ public class WsDiscoveryClientInterceptorTest extends DpwsTest {
         notificationSink = getInjector().getInstance(NotificationSinkFactory.class).createNotificationSink(
                 getInjector().getInstance(WsAddressingServerInterceptor.class));
 
-        WsAddressingUtil wsaUtil = getInjector().getInstance(WsAddressingUtil.class);
+        wsaUtil = getInjector().getInstance(WsAddressingUtil.class);
 
         WsDiscoveryClientFactory wsdClientFactory = getInjector().getInstance(WsDiscoveryClientFactory.class);
         wsDiscoveryClient = wsdClientFactory.createWsDiscoveryClient(notificationSource);
@@ -206,7 +207,8 @@ public class WsDiscoveryClientInterceptorTest extends DpwsTest {
                 WsDiscoveryConstants.WSA_UDP_TO, wsdFactory.createResolveMatches(resolveMatchesType));
         SoapMessage rMatches = soapMessageFactory.createSoapMessage(env);
 
-        rMatches.getWsAddressingHeader().setRelatesTo(msg.getWsAddressingHeader().getMessageId().orElse(null));
+        rMatches.getWsAddressingHeader().setRelatesTo(wsaUtil.createRelatesToType(
+                msg.getWsAddressingHeader().getMessageId().orElse(null)));
         return rMatches;
     }
 
@@ -221,7 +223,8 @@ public class WsDiscoveryClientInterceptorTest extends DpwsTest {
                 WsDiscoveryConstants.WSA_UDP_TO, wsdFactory.createProbeMatches(probeMatchesType));
         SoapMessage pMatches = soapMessageFactory.createSoapMessage(env);
 
-        pMatches.getWsAddressingHeader().setRelatesTo(msg.getWsAddressingHeader().getMessageId().orElse(null));
+        pMatches.getWsAddressingHeader().setRelatesTo(wsaUtil.createRelatesToType(
+                msg.getWsAddressingHeader().getMessageId().orElse(null)));
         var msgId = getInjector().getInstance(SoapUtil.class).createRandomUuidUri();
         AttributedURIType uriType = getInjector().getInstance(WsAddressingUtil.class).createAttributedURIType(msgId);
         pMatches.getWsAddressingHeader().setMessageId(uriType);
