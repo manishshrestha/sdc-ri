@@ -26,13 +26,9 @@ public class Util {
     public static Map<Class<?>, Map<String, Method>> classMethodCache = new HashMap<>();
 
     public static Method cacheMethodLookup(Class<?> clazz, String methodName) throws NoSuchMethodException {
-        var methods = classMethodCache.get(clazz);
-        Method method;
-        if (methods == null) {
-            methods = new HashMap<>();
-            classMethodCache.put(clazz, methods);
-        }
-        method = methods.get(methodName);
+        var methods = classMethodCache
+                .computeIfAbsent(clazz, k -> new HashMap<>());
+        Method method = methods.get(methodName);
         if (method == null) {
             method = clazz.getMethod(methodName);
             methods.put(methodName, method);

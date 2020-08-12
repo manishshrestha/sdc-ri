@@ -268,7 +268,7 @@ public class MdibStorageImpl implements MdibStorage {
         Optional.ofNullable(entities.get(modification.getHandle())).ifPresent(mdibEntity -> {
             instanceLogger.debug(
                     "[{}] Delete entity: {}",
-                    mdibVersion.getInstanceId(), modification.getDescriptor().getHandle()
+                    mdibVersion::getInstanceId, () -> modification.getDescriptor().getHandle()
             );
             mdibEntity.getParent().ifPresent(parentHandle ->
                     Optional.ofNullable(entities.get(parentHandle)).ifPresent(parentEntity ->
@@ -300,7 +300,7 @@ public class MdibStorageImpl implements MdibStorage {
                               List<MdibEntity> updatedEntities
     ) {
         Optional.ofNullable(entities.get(modification.getHandle())).ifPresent(mdibEntity -> {
-            instanceLogger.debug("[{}] Update entity: {}", mdibVersion.getInstanceId(), modification.getDescriptor());
+            instanceLogger.debug("[{}] Update entity: {}", mdibVersion::getInstanceId, modification::getDescriptor);
 
             entities.put(mdibEntity.getHandle(), entityFactory.replaceDescriptorAndStates(
                     mdibEntity,
@@ -368,7 +368,7 @@ public class MdibStorageImpl implements MdibStorage {
 
         instanceLogger.debug(
                 "[{}] Insert entity: {}",
-                mdibVersion.getInstanceId(), mdibEntityForStorage.getDescriptor()
+                mdibVersion::getInstanceId, mdibEntityForStorage::getDescriptor
         );
 
         // Add to context states if context entity
@@ -393,7 +393,9 @@ public class MdibStorageImpl implements MdibStorage {
         final List<AbstractState> modifiedStates = new ArrayList<>();
         for (AbstractState modification : stateModifications.getStates()) {
             if (instanceLogger.isDebugEnabled()) {
-                instanceLogger.debug("[{}] Update state: {}", mdibVersion.getSequenceId(), modification);
+                instanceLogger.debug(
+                        "[{}] Update state: {}",
+                        mdibVersion::getSequenceId, () -> modification);
             }
 
             modifiedStates.add(modification);
@@ -405,7 +407,7 @@ public class MdibStorageImpl implements MdibStorage {
                 if (contextState.isPresent()) {
                     instanceLogger.debug(
                             "Found update on context state {} with association=not-associated; do not store in MDIB",
-                            contextState.get().getHandle()
+                            () -> contextState.get().getHandle()
                     );
                     continue;
                 }
@@ -456,13 +458,13 @@ public class MdibStorageImpl implements MdibStorage {
                                         instanceLogger.debug(
                                                 "Found context state {} with association=not-associated;"
                                                         + " refuse storage in MDIB",
-                                                modificationAsMultiState.getHandle()
+                                                modificationAsMultiState::getHandle
                                         );
                                         contextStates.remove(multiState.getHandle());
                                     } else {
                                         instanceLogger.debug(
                                                 "Replacing already present multi-state {}",
-                                                multiState.getHandle()
+                                                multiState::getHandle
                                         );
                                         newStates.add(modificationAsMultiState);
                                     }
@@ -472,7 +474,10 @@ public class MdibStorageImpl implements MdibStorage {
                             }
 
                             if (!found && getNotAssociatedContextState(modificationAsMultiState).isEmpty()) {
-                                instanceLogger.debug("Adding new MultiState {}", modificationAsMultiState.getHandle());
+                                instanceLogger.debug(
+                                        "Adding new MultiState {}",
+                                        modificationAsMultiState::getHandle
+                                );
                                 newStates.add(modificationAsMultiState);
                             }
 

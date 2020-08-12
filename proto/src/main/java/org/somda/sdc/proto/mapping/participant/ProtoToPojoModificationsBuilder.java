@@ -270,12 +270,7 @@ public class ProtoToPojoModificationsBuilder {
 
     private void build(VmdDescriptorMsg vmd, MdsDescriptor parent) {
         var addedDescr = insert(vmd, VmdDescriptor.class, parent.getHandle());
-
-        instanceLogger.error("Missing mapping for VMD SCO");
-//        build(vmd.getSco(), vmd);
-//        vmd.setSco(null);
         build(vmd.getAbstractComplexDeviceComponentDescriptor(), parent);
-
         vmd.getChannelList().forEach(descr -> build(descr, addedDescr));
         addedDescr.setChannel(Collections.emptyList());
     }

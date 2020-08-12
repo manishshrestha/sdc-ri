@@ -37,7 +37,7 @@ public class BaseUtil {
                 .newLayout("PatternLayout")
                 .addAttribute("pattern", CUSTOM_PATTERN);
 
-        var rootLogger = builder.newRootLogger(Level.DEBUG);
+        var rootLogger = builder.newRootLogger(consoleLevel);
 
         {
             // create a console appender
