@@ -31,4 +31,29 @@ public class CommonConfig {
      * </ul>
      */
     public static final String COPY_MDIB_OUTPUT = "Biceps.Common.CopyMdibInput";
+
+    /**
+     * If true context states which are not associated are not stored.
+     * <p>
+     * Since there is no mechanism which allows discarding context states, enabling this feature
+     * automatically prunes likely irrelevant data from the storage.
+     * <ul>
+     * <li>Data type: {@linkplain Boolean}
+     * <li>Use: optional
+     * </ul>
+     */
+    public static final String STORE_NOT_ASSOCIATED_CONTEXT_STATES = "Biceps.Common.StoreNotAssociatedContextStates";
+
+    /**
+     * If true, states can be added to the storage without having a descriptor present.
+     * <p>
+     * If a consumer is only interested in state updates, it may not want to know about or care about
+     * having the descriptor in the storage.
+     * <em>Inserting a state without a descriptor will throw a RuntimeException if this is disabled!</em>
+     * <ul>
+     * <li>Data type: {@linkplain Boolean}
+     * <li>Use: optional
+     * </ul>
+     */
+    public static final String ALLOW_STATES_WITHOUT_DESCRIPTORS = "Biceps.Common.AllowStatesWithoutDescriptors";
 }
