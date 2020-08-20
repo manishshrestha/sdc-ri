@@ -123,9 +123,44 @@ public class MdibStorageImplTest {
         testWithVersion(testedHandles, BigInteger.TEN);
 
         applyDescriptionWithVersion(MdibDescriptionModification.Type.DELETE, BigInteger.ZERO);
-        testedHandles.forEach(handle -> {
+        for (String handle : testedHandles) {
             assertThat(mdibStorage.getEntity(handle).isPresent(), is(false));
-        });
+        }
+    }
+
+    @Test
+    void deleteChildUpdateParent() {
+        // create content
+        List<String> testedHandles = Arrays.asList(
+                Handles.MDS_0,
+                Handles.SYSTEMCONTEXT_0,
+                Handles.VMD_0,
+                Handles.CHANNEL_0,
+                Handles.CHANNEL_1,
+                Handles.CONTEXTDESCRIPTOR_0);
+
+        applyDescriptionWithVersion(MdibDescriptionModification.Type.INSERT, BigInteger.ZERO);
+        testWithVersion(testedHandles, BigInteger.ZERO);
+
+        final var parentHandle = Handles.VMD_0;
+        final var childHandle = Handles.CHANNEL_0;
+        final var untouchedChildHandle = Handles.CHANNEL_1;
+
+        assertTrue(mdibStorage.getEntity(parentHandle).get().getChildren().contains(childHandle));
+        assertTrue(mdibStorage.getEntity(parentHandle).get().getChildren().contains(untouchedChildHandle));
+        assertEquals(parentHandle, mdibStorage.getEntity(childHandle).get().getParent().get());
+
+
+        // delete the child
+        final MdibDescriptionModifications modifications = MdibDescriptionModifications.create();
+        modifications.add(MdibDescriptionModification.Type.DELETE,
+                MockModelFactory.createDescriptor(Handles.CHANNEL_0, BigInteger.ZERO, ChannelDescriptor.class),
+                MockModelFactory.createState(Handles.CHANNEL_0, BigInteger.ZERO, ChannelState.class),
+                Handles.VMD_0);
+        mdibStorage.apply(mock(MdibVersion.class), mock(BigInteger.class), mock(BigInteger.class), modifications);
+
+        assertFalse(mdibStorage.getEntity(parentHandle).get().getChildren().contains(childHandle));
+        assertTrue(mdibStorage.getEntity(parentHandle).get().getChildren().contains(untouchedChildHandle));
     }
 
     @Test

@@ -297,7 +297,8 @@ public class MdibStorageImpl implements MdibStorage {
                     Optional.ofNullable(entities.get(parentHandle)).ifPresent(parentEntity ->
                             entities.put(parentEntity.getHandle(), entityFactory.replaceChildren(parentEntity,
                                     parentEntity.getChildren().stream()
-                                            .filter(s -> s.equals(mdibEntity.getHandle()))
+                                            // filter out the removed entity only
+                                            .filter(s -> !s.equals(mdibEntity.getHandle()))
                                             .collect(Collectors.toList())))));
         });
 
