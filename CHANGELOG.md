@@ -49,6 +49,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `org.somda.sdc.biceps.consumer.preprocessing.VersionDuplicateHandler` can now handle implied state versions. (#182)
 - Fix swallowed state updates during description modification. (#179) 
 - Prevent suspension of notification source and duplication of notification messages. (#179) 
+- `org.somda.sdc.biceps.common.storage.MdibStorageImpl` correctly updates the list of children when removing an entity with a parent. (#186)
 
 ## [1.1.0] - 2020-04-18
 
