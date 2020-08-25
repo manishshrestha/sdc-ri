@@ -4,6 +4,7 @@ import org.somda.sdc.dpws.soap.CommunicationContext;
 
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Optional;
 
 /**
  * Communication log interface.
@@ -88,6 +89,30 @@ public interface CommunicationLog {
         @Override
         public String toString() {
             return stringRepresentation;
+        }
+    }
+
+    /**
+     * Defines the message type.
+     */
+    enum MessageType {
+        REQUEST("request"), RESPONSE("response"),
+        NOTIFICATION("notification"), UNKNOWN("unknown");
+
+        private final String stringRepresentation;
+        private String id;
+
+        MessageType(String stringRepresentation) { this.stringRepresentation = stringRepresentation; }
+
+        @Override
+        public  String toString() { return stringRepresentation; }
+
+        public String getId() {
+            return id != null ? id : "";
+        }
+
+        public void setId(String id) {
+            this.id = id;
         }
     }
 }
