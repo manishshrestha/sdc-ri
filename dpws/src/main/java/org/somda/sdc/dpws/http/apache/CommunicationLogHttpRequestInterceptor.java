@@ -7,8 +7,8 @@ import org.apache.http.HttpRequest;
 import org.apache.http.HttpRequestInterceptor;
 import org.apache.http.protocol.HttpContext;
 import org.apache.http.protocol.HttpCoreContext;
-import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.somda.sdc.common.logging.InstanceLogger;
 import org.somda.sdc.dpws.CommunicationLog;
 import org.somda.sdc.dpws.http.apache.helper.ApacheClientHelper;
@@ -60,6 +60,7 @@ public class CommunicationLogHttpRequestInterceptor implements HttpRequestInterc
         OutputStream commlogStream = commlog.logMessage(
                 CommunicationLog.Direction.OUTBOUND,
                 CommunicationLog.TransportType.HTTP,
+                CommunicationLog.MessageType.REQUEST,
                 requestCommContext);
 
         if (!(request instanceof HttpEntityEnclosingRequest)) {

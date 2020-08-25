@@ -51,6 +51,7 @@ public class CommunicationLogHandlerWrapper extends HandlerWrapper {
         OutputStream input = commLog.logMessage(
                 CommunicationLog.Direction.INBOUND,
                 CommunicationLog.TransportType.HTTP,
+                CommunicationLog.MessageType.REQUEST,
                 requestCommContext);
         var out = baseRequest.getResponse().getHttpOutput();
 

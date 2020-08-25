@@ -60,6 +60,7 @@ public class CommunicationLogHttpResponseInterceptor implements HttpResponseInte
         OutputStream commlogStream = commlog.logMessage(
                 CommunicationLog.Direction.INBOUND,
                 CommunicationLog.TransportType.HTTP,
+                CommunicationLog.MessageType.RESPONSE,
                 requestCommContext);
 
         response.setEntity(new CommunicationLogEntity(oldMessageEntity, commlogStream));

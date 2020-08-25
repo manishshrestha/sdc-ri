@@ -98,6 +98,7 @@ public class CommunicationLogOutputInterceptor implements HttpOutput.Interceptor
         return communicationLog.logMessage(
                 CommunicationLog.Direction.OUTBOUND,
                 CommunicationLog.TransportType.HTTP,
+                CommunicationLog.MessageType.RESPONSE,
                 responseCommContext);
     }
 

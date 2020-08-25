@@ -365,6 +365,7 @@ public class CommunicationLogIT extends DpwsTest {
         @Override
         public OutputStream createTargetStream(CommunicationLog.TransportType path,
                                                CommunicationLog.Direction direction,
+                                               CommunicationLog.MessageType messageType,
                                                CommunicationContext communicationContext) {
             var os = new ByteArrayOutputStream();
             var appInfo = (HttpApplicationInfo) communicationContext.getApplicationInfo();
