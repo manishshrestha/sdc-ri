@@ -32,5 +32,8 @@ public class DefaultGlueConfigModule extends AbstractConfigurationModule {
         bind(ConsumerConfig.REQUESTED_EXPIRES,
                 Duration.class,
                 Duration.ofSeconds(60));
+        bind(ConsumerConfig.APPLY_REPORTS_SAME_MDIB_VERSION,
+                Boolean.class,
+                false);
     }
 }
