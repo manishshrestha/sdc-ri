@@ -17,6 +17,7 @@ import org.somda.sdc.dpws.soap.TransportInfo;
 
 import java.io.OutputStream;
 import java.util.Collections;
+import java.util.Optional;
 
 /**
  * Response interceptor which writes the incoming response message and headers into the {@linkplain CommunicationLog}.
@@ -41,8 +42,12 @@ public class CommunicationLogHttpResponseInterceptor implements HttpResponseInte
 
         HttpEntity oldMessageEntity = response.getEntity();
 
+        var currentTransactionOpt = Optional.of(context.getAttribute(CommunicationLog.MessageType.REQUEST.name()));
+        var currentTransactionId = (String) currentTransactionOpt.orElse("");
+
         var requestHttpApplicationInfo = new HttpApplicationInfo(
-                ApacheClientHelper.allHeadersToMultimap(response.getAllHeaders())
+                ApacheClientHelper.allHeadersToMultimap(response.getAllHeaders()),
+                currentTransactionId
         );
 
         // collect information for TransportInfo

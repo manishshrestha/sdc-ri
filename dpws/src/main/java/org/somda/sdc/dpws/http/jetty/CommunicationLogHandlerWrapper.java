@@ -13,6 +13,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * {@linkplain HandlerWrapper} which enables {@linkplain CommunicationLog} capabilities for requests and responses.
@@ -21,18 +22,24 @@ public class CommunicationLogHandlerWrapper extends HandlerWrapper {
 
     private final CommunicationLog commLog;
     private final String frameworkIdentifier;
+    private final AtomicLong transactionId;
 
     CommunicationLogHandlerWrapper(CommunicationLog commLog, String frameworkIdentifier) {
         this.frameworkIdentifier = frameworkIdentifier;
         this.commLog = commLog;
+        this.transactionId = new AtomicLong(-1L);
     }
 
     @Override
     public void handle(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response)
             throws IOException, ServletException {
 
+        var currentTransactionId = String.valueOf(transactionId.incrementAndGet());
+        baseRequest.setAttribute(CommunicationLog.MessageType.REQUEST.name(), currentTransactionId);
+
         var requestHttpApplicationInfo = new HttpApplicationInfo(
-                JettyUtil.getRequestHeaders(request)
+                JettyUtil.getRequestHeaders(request),
+                currentTransactionId
         );
 
         // collect information for TransportInfo
@@ -66,7 +73,8 @@ public class CommunicationLogHandlerWrapper extends HandlerWrapper {
                     previousInterceptor,
                     commLog,
                     transportInfo,
-                    frameworkIdentifier
+                    frameworkIdentifier,
+                    currentTransactionId
             );
             out.setInterceptor(outInterceptor);
 

@@ -19,6 +19,7 @@ import org.somda.sdc.dpws.soap.TransportInfo;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Collections;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Request interceptor which writes the outgoing request message and headers into the {@linkplain CommunicationLog}.
@@ -28,10 +29,12 @@ public class CommunicationLogHttpRequestInterceptor implements HttpRequestInterc
 
     private final CommunicationLog commlog;
     private final Logger instanceLogger;
+    private final AtomicLong transactionId;
 
     CommunicationLogHttpRequestInterceptor(CommunicationLog communicationLog, String frameworkIdentifier) {
         this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);
         this.commlog = communicationLog;
+        this.transactionId = new AtomicLong(-1L);
     }
 
     @Override
@@ -41,8 +44,12 @@ public class CommunicationLogHttpRequestInterceptor implements HttpRequestInterc
         HttpHost target = (HttpHost) context.getAttribute(
                 HttpCoreContext.HTTP_TARGET_HOST);
 
+        var currentTransactionId = String.valueOf(transactionId.incrementAndGet());
+        context.setAttribute(CommunicationLog.MessageType.REQUEST.name(), currentTransactionId);
+
         var requestHttpApplicationInfo = new HttpApplicationInfo(
-                ApacheClientHelper.allHeadersToMultimap(request.getAllHeaders())
+                ApacheClientHelper.allHeadersToMultimap(request.getAllHeaders()),
+                currentTransactionId
         );
 
         // collect information for TransportInfo
