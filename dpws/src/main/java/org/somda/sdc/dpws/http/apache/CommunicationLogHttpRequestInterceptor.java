@@ -19,6 +19,7 @@ import org.somda.sdc.dpws.soap.TransportInfo;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Collections;
+import java.util.UUID;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
@@ -26,7 +27,7 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 public class CommunicationLogHttpRequestInterceptor implements HttpRequestInterceptor {
     private static final Logger LOG = LogManager.getLogger(CommunicationLogHttpRequestInterceptor.class);
-    private static final String TRANSACTION_ID_PREFIX_CLIENT = "rrId:client: ";
+    private static final String TRANSACTION_ID_PREFIX_CLIENT = "rrId:client:" + UUID.randomUUID() + ":";
     private final static AtomicLong TRANSACTION_ID = new AtomicLong(-1L);
 
     private final CommunicationLog commlog;

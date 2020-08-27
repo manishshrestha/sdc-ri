@@ -13,13 +13,14 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.UUID;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * {@linkplain HandlerWrapper} which enables {@linkplain CommunicationLog} capabilities for requests and responses.
  */
 public class CommunicationLogHandlerWrapper extends HandlerWrapper {
-    private static final String TRANSACTION_ID_PREFIX_SERVER = "rrId:server: ";
+    private static final String TRANSACTION_ID_PREFIX_SERVER = "rrId:server:" + UUID.randomUUID() + ":";
     private static final AtomicLong TRANSACTION_ID = new AtomicLong(-1L);
 
     private final CommunicationLog commLog;
