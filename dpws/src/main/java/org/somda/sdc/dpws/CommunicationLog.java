@@ -99,7 +99,7 @@ public interface CommunicationLog {
      */
     enum MessageType {
         REQUEST("request"), RESPONSE("response"),
-        NOTIFICATION("notification"), UNKNOWN("unknown");
+        UNKNOWN("unknown");
 
         private final String stringRepresentation;
 
