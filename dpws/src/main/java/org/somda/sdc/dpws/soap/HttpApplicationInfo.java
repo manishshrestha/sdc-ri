@@ -11,8 +11,6 @@ import java.util.Map;
  */
 public class HttpApplicationInfo extends ApplicationInfo {
 
-    private static final  String TRANSACTION_ID_PREFIX = "rrId:";
-
     private final ListMultimap<String, String> headers;
     private final String transactionId;
 
@@ -29,7 +27,7 @@ public class HttpApplicationInfo extends ApplicationInfo {
         this.headers = ArrayListMultimap.create();
         // convert all entries to lower case
         httpHeaders.forEach((key, value) -> headers.put(key.toLowerCase(), value));
-        this.transactionId = TRANSACTION_ID_PREFIX + transactionId;
+        this.transactionId = transactionId;
     }
 
     /**
@@ -44,7 +42,7 @@ public class HttpApplicationInfo extends ApplicationInfo {
         this.headers = ArrayListMultimap.create();
         // convert all entries to lower case
         httpHeaders.forEach((key, value) -> headers.put(key.toLowerCase(), value));
-        this.transactionId = TRANSACTION_ID_PREFIX + transactionId;
+        this.transactionId = transactionId;
     }
 
     /**

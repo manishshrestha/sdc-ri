@@ -19,6 +19,7 @@ import java.util.concurrent.atomic.AtomicLong;
  * {@linkplain HandlerWrapper} which enables {@linkplain CommunicationLog} capabilities for requests and responses.
  */
 public class CommunicationLogHandlerWrapper extends HandlerWrapper {
+    private static final String TRANSACTION_ID_PREFIX_SERVER = "rrId:server: ";
 
     private final CommunicationLog commLog;
     private final String frameworkIdentifier;
@@ -34,7 +35,7 @@ public class CommunicationLogHandlerWrapper extends HandlerWrapper {
     public void handle(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response)
             throws IOException, ServletException {
 
-        var currentTransactionId = String.valueOf(transactionId.incrementAndGet());
+        var currentTransactionId = TRANSACTION_ID_PREFIX_SERVER + transactionId.incrementAndGet();
         baseRequest.setAttribute(CommunicationLog.MessageType.REQUEST.name(), currentTransactionId);
 
         var requestHttpApplicationInfo = new HttpApplicationInfo(
