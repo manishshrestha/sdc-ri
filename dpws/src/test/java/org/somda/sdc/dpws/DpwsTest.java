@@ -37,6 +37,10 @@ public class DpwsTest {
     }
 
     protected void setUp() throws Exception {
+        injector = configureInjector(overridingModules);
+    }
+
+    protected Injector configureInjector(List<AbstractModule> overridingModules) {
         var dpwsConfigOverride = new DefaultDpwsConfigModule() {
             @Override
             protected void customConfigure() {
@@ -69,7 +73,7 @@ public class DpwsTest {
                 }
             }
         };
-
+        final Injector injector;
         if (overridingModules != null) {
             injector = Guice.createInjector(
                     Modules.override(
@@ -87,6 +91,7 @@ public class DpwsTest {
                     new DefaultCommonModule(), dpwsConfigOverride
             );
         }
+        return injector;
     }
 
     protected Injector getInjector() {
