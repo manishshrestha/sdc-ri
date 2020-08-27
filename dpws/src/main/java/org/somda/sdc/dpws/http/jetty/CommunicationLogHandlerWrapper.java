@@ -20,22 +20,21 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 public class CommunicationLogHandlerWrapper extends HandlerWrapper {
     private static final String TRANSACTION_ID_PREFIX_SERVER = "rrId:server: ";
+    private static final AtomicLong TRANSACTION_ID = new AtomicLong(-1L);
 
     private final CommunicationLog commLog;
     private final String frameworkIdentifier;
-    private final AtomicLong transactionId;
 
     CommunicationLogHandlerWrapper(CommunicationLog commLog, String frameworkIdentifier) {
         this.frameworkIdentifier = frameworkIdentifier;
         this.commLog = commLog;
-        this.transactionId = new AtomicLong(-1L);
     }
 
     @Override
     public void handle(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response)
             throws IOException, ServletException {
 
-        var currentTransactionId = TRANSACTION_ID_PREFIX_SERVER + transactionId.incrementAndGet();
+        var currentTransactionId = TRANSACTION_ID_PREFIX_SERVER + TRANSACTION_ID.incrementAndGet();
         baseRequest.setAttribute(CommunicationLog.MessageType.REQUEST.name(), currentTransactionId);
 
         var requestHttpApplicationInfo = new HttpApplicationInfo(

@@ -27,15 +27,14 @@ import java.util.concurrent.atomic.AtomicLong;
 public class CommunicationLogHttpRequestInterceptor implements HttpRequestInterceptor {
     private static final Logger LOG = LogManager.getLogger(CommunicationLogHttpRequestInterceptor.class);
     private static final String TRANSACTION_ID_PREFIX_CLIENT = "rrId:client: ";
+    private final static AtomicLong TRANSACTION_ID = new AtomicLong(-1L);
 
     private final CommunicationLog commlog;
     private final Logger instanceLogger;
-    private final AtomicLong transactionId;
 
     CommunicationLogHttpRequestInterceptor(CommunicationLog communicationLog, String frameworkIdentifier) {
         this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);
         this.commlog = communicationLog;
-        this.transactionId = new AtomicLong(-1L);
     }
 
     @Override
@@ -45,7 +44,7 @@ public class CommunicationLogHttpRequestInterceptor implements HttpRequestInterc
         HttpHost target = (HttpHost) context.getAttribute(
                 HttpCoreContext.HTTP_TARGET_HOST);
 
-        var currentTransactionId = TRANSACTION_ID_PREFIX_CLIENT + transactionId.incrementAndGet();
+        var currentTransactionId = TRANSACTION_ID_PREFIX_CLIENT + TRANSACTION_ID.incrementAndGet();
         context.setAttribute(CommunicationLog.MessageType.REQUEST.name(), currentTransactionId);
 
         var requestHttpApplicationInfo = new HttpApplicationInfo(

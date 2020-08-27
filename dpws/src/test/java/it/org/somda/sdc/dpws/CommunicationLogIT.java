@@ -42,14 +42,20 @@ import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 public class CommunicationLogIT extends DpwsTest {
     private static final Logger LOG = LogManager.getLogger(CommunicationLogIT.class);
@@ -180,6 +186,11 @@ public class CommunicationLogIT extends DpwsTest {
                             .contains(HttpServerUtil.GzipResponseHandler.TEST_HEADER_VALUE)
             );
 
+            assertEquals(CommunicationLog.MessageType.RESPONSE, logSink.getInboundMessageType());
+            assertEquals(CommunicationLog.MessageType.REQUEST, logSink.getOutboundMessageType());
+
+            compareTransactionIds(logSink.getInboundTransactionIds(), logSink.getOutboundTransactionIds());
+
             logSink.clear();
         }
     }
@@ -261,6 +272,12 @@ public class CommunicationLogIT extends DpwsTest {
                             .get(JettyHttpServerHandler.SERVER_HEADER_KEY)
                             .contains(JettyHttpServerHandler.SERVER_HEADER_VALUE)
             );
+
+            assertEquals(CommunicationLog.MessageType.REQUEST, logSink.getInboundMessageType());
+            assertEquals(CommunicationLog.MessageType.RESPONSE, logSink.getOutboundMessageType());
+
+            compareTransactionIds(logSink.getInboundTransactionIds(), logSink.getOutboundTransactionIds());
+
             logSink.clear();
         }
     }
@@ -343,6 +360,17 @@ public class CommunicationLogIT extends DpwsTest {
         }
     }
 
+    private void compareTransactionIds(ArrayList<String> inboundTransactionIds, ArrayList<String> outboundTransactionIds) {
+        final var inboundSet = new HashSet<>(inboundTransactionIds);
+        final var outboundSet = new HashSet<>(outboundTransactionIds);
+
+        //check uniqueness of transaction ids
+        assertEquals(inboundTransactionIds.size(), inboundSet.size());
+        assertEquals(outboundTransactionIds.size(), outboundSet.size());
+
+        //every request has a response
+        assertEquals(inboundSet, outboundSet);
+    }
 
     static class TestCommLogSink implements CommunicationLogSink {
 
@@ -352,6 +380,10 @@ public class CommunicationLogIT extends DpwsTest {
         private final ArrayList<ListMultimap<String, String>> outboundHeaders;
         private final ArrayList<Map<String, String>> inboundHeadersOld;
         private final ArrayList<Map<String, String>> outboundHeadersOld;
+        private CommunicationLog.MessageType inboundMessageType;
+        private CommunicationLog.MessageType outboundMessageType;
+        private final ArrayList<String> inboundTransactionIds;
+        private final ArrayList<String> outboundTransactionIds;
 
         TestCommLogSink() {
             this.inbound = new ArrayList<>();
@@ -360,6 +392,8 @@ public class CommunicationLogIT extends DpwsTest {
             this.outboundHeaders = new ArrayList<>();
             this.inboundHeadersOld = new ArrayList<>();
             this.outboundHeadersOld = new ArrayList<>();
+            this.inboundTransactionIds = new ArrayList<>();
+            this.outboundTransactionIds = new ArrayList<>();
         }
 
         @Override
@@ -373,10 +407,16 @@ public class CommunicationLogIT extends DpwsTest {
                 inbound.add(os);
                 inboundHeaders.add(appInfo.getHeaders());
                 inboundHeadersOld.add(appInfo.getHttpHeaders());
+                inboundMessageType = messageType;
+                inboundTransactionIds.add(
+                        ((HttpApplicationInfo) communicationContext.getApplicationInfo()).getTransactionId());
             } else {
                 outbound.add(os);
                 outboundHeaders.add(appInfo.getHeaders());
                 outboundHeadersOld.add(appInfo.getHttpHeaders());
+                outboundMessageType = messageType;
+                outboundTransactionIds.add(
+                        ((HttpApplicationInfo) communicationContext.getApplicationInfo()).getTransactionId());
             }
             return os;
         }
@@ -412,6 +452,22 @@ public class CommunicationLogIT extends DpwsTest {
             outboundHeaders.clear();
             inboundHeadersOld.clear();
             outboundHeadersOld.clear();
+        }
+
+        public CommunicationLog.MessageType getOutboundMessageType() {
+            return outboundMessageType;
+        }
+
+        public CommunicationLog.MessageType getInboundMessageType() {
+            return inboundMessageType;
+        }
+
+        public ArrayList<String> getInboundTransactionIds() {
+            return inboundTransactionIds;
+        }
+
+        public ArrayList<String> getOutboundTransactionIds() {
+            return outboundTransactionIds;
         }
     }
 
