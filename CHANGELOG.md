@@ -19,6 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `org.somda.sdc.dpws.http.apache.ClientTransportBinding` and `org.somda.sdc.dpws.http.jetty.JettyHttpServerHandler` added chunked flag to enforce chunked outgoing requests and chunked outgoing responses. Only one big chunk is used instead of splitting up, since it is currently only needed for testing purposes. (#173)
 - `org.somda.sdc.biceps.common.storage.MdibStorageImpl` can be configured not to remove not associated context states from storage. (#183)
 - `org.somda.sdc.biceps.common.storage.MdibStorageImpl` can be configured not to create descriptors for state updates missing descriptors. (#183)
+- `org.somda.sdc.glue.consumer.report.ReportProcessor` can be configured to apply reports which have the same MDIB version as the current MDIB. (#183)
 
 ### Changed
 

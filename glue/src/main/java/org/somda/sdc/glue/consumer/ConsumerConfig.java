@@ -39,4 +39,17 @@ public class ConsumerConfig {
      */
     public static final String AWAITING_TRANSACTION_TIMEOUT = "SdcGlue.Consumer.AwaitingTransactionTimeout";
 
+
+    /**
+     * Enable applying reports which have the same MDIB version as the current
+     * {@linkplain org.somda.sdc.biceps.common.storage.MdibStorage}.
+     * <p>
+     * This useful for testing purposes, as there are requirements where this behavior is of interest.
+     *
+     * <ul>
+     * <li>Data type: {@linkplain Boolean}
+     * <li>Use: optional
+     * </ul>
+     */
+    public static final String APPLY_REPORTS_SAME_MDIB_VERSION = "SdcGlue.Consumer.ApplyReportsWithSameMdibVersion";
 }
