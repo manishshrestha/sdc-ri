@@ -31,18 +31,21 @@ public class CommunicationLogOutputInterceptor implements HttpOutput.Interceptor
     private final Logger instanceLogger;
     private OutputStream commlogStream;
     private HttpOutput.Interceptor nextInterceptor;
+    private String currentTransactionId;
 
     CommunicationLogOutputInterceptor(HttpChannel channel,
                                       HttpOutput.Interceptor nextInterceptor,
                                       CommunicationLog communicationLog,
                                       TransportInfo transportInfo,
-                                      String frameworkIdentifier) {
+                                      String frameworkIdentifier,
+                                      String currentTransactionId) {
         this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);
         this.channel = channel;
         this.communicationLog = communicationLog;
         this.nextInterceptor = nextInterceptor;
         this.transportInfo = transportInfo;
         this.commlogStream = null;
+        this.currentTransactionId = currentTransactionId;
     }
 
     @Override
@@ -90,7 +93,8 @@ public class CommunicationLogOutputInterceptor implements HttpOutput.Interceptor
                 );
 
         var responseHttpApplicationInfo = new HttpApplicationInfo(
-                responseHeaderMap
+                responseHeaderMap,
+                currentTransactionId
         );
 
         var responseCommContext = new CommunicationContext(responseHttpApplicationInfo, transportInfo);
@@ -98,6 +102,7 @@ public class CommunicationLogOutputInterceptor implements HttpOutput.Interceptor
         return communicationLog.logMessage(
                 CommunicationLog.Direction.OUTBOUND,
                 CommunicationLog.TransportType.HTTP,
+                CommunicationLog.MessageType.RESPONSE,
                 responseCommContext);
     }
 

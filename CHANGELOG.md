@@ -34,6 +34,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `org.somda.sdc.common.guice.DefaultHelperModule` renamed to `DefaultCommonModule`. (#160)
 - `org.somda.sdc.dpws.soap.exception.SoapFaultException` is now compliant with DPWS R0040. (#181)
 - `org.somda.sdc.dpws.soap.wsaddressing.WsAddressingHeader` changed relatesTo element to RelatesToType instead of an AttributedURIType. (#184)
+- `org.somda.sdc.dpws.CommunicationLog` MessageType enum added, to mark messages as i.e. request, response. (#188)
+- `org.somda.sdc.dpws.soap.HttpApplicationInfo` additional transactionId added, to associate request response messages. (#188)
  
 ### Removed
 

@@ -55,6 +55,7 @@ public class CommunicationLogSinkImpl implements CommunicationLogSink {
     @Override
     public OutputStream createTargetStream(CommunicationLog.TransportType transportType,
                                            CommunicationLog.Direction direction,
+                                           CommunicationLog.MessageType messageType,
                                            CommunicationContext communicationContext) {
         var outputStream = OutputStream.nullOutputStream();
 

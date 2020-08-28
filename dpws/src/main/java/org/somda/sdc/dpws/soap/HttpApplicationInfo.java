@@ -12,6 +12,7 @@ import java.util.Map;
 public class HttpApplicationInfo extends ApplicationInfo {
 
     private final ListMultimap<String, String> headers;
+    private final String transactionId;
 
     /**
      * Creates an instance using http headers.
@@ -19,12 +20,14 @@ public class HttpApplicationInfo extends ApplicationInfo {
      * <em>All keys will be converted to lower case.</em>
      *
      * @param httpHeaders map of available headers.
+     * @param transactionId id of the request response transaction.
      */
     @Deprecated(since = "1.1.0", forRemoval = true)
-    public HttpApplicationInfo(Map<String, String> httpHeaders) {
+    public HttpApplicationInfo(Map<String, String> httpHeaders, String transactionId) {
         this.headers = ArrayListMultimap.create();
         // convert all entries to lower case
         httpHeaders.forEach((key, value) -> headers.put(key.toLowerCase(), value));
+        this.transactionId = transactionId;
     }
 
     /**
@@ -33,11 +36,13 @@ public class HttpApplicationInfo extends ApplicationInfo {
      * <em>All keys will be converted to lower case.</em>
      *
      * @param httpHeaders multimap of available headers.
+     * @param transactionId id of the request response transaction.
      */
-    public HttpApplicationInfo(ListMultimap<String, String> httpHeaders) {
+    public HttpApplicationInfo(ListMultimap<String, String> httpHeaders, String transactionId) {
         this.headers = ArrayListMultimap.create();
         // convert all entries to lower case
         httpHeaders.forEach((key, value) -> headers.put(key.toLowerCase(), value));
+        this.transactionId = transactionId;
     }
 
     /**
@@ -70,5 +75,9 @@ public class HttpApplicationInfo extends ApplicationInfo {
      */
     public ListMultimap<String, String> getHeaders() {
         return ArrayListMultimap.create(headers);
+    }
+
+    public String getTransactionId() {
+        return transactionId;
     }
 }
