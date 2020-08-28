@@ -144,13 +144,15 @@ public class SdcRemoteDevicesConnectorImpl extends AbstractIdleService
                 final Logger tempLog = HostingServiceLogger.getLogger(LOG, hostingServiceProxy, frameworkIdentifier);
                 tempLog.info("Start connecting");
                 ReportProcessor reportProcessor = createReportProcessor();
-                RemoteMdibAccess mdibAccess = createRemoteMdibAccess(hostingServiceProxy);
                 Optional<ScoController> scoController = createScoController(hostingServiceProxy);
 
                 // Map<ServiceId, SubscribeResult>
                 // use these later for watchdog, which is in charge of automatic renew
                 final Map<String, SubscribeResult> subscribeResults = subscribeServices(hostingServiceProxy,
                         connectConfiguration.getActions(), reportProcessor, scoController.orElse(null));
+
+                // retrieve mdib after subscribing
+                RemoteMdibAccess mdibAccess = createRemoteMdibAccess(hostingServiceProxy);
 
                 GetContextStatesResponse getContextStatesResponse = null;
                 if (mdibAccess.getContextStates().isEmpty()) {
