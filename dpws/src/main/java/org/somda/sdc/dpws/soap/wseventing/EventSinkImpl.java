@@ -13,6 +13,8 @@ import org.somda.sdc.common.logging.InstanceLogger;
 import org.somda.sdc.common.util.ExecutorWrapperService;
 import org.somda.sdc.dpws.DpwsConfig;
 import org.somda.sdc.dpws.DpwsConstants;
+import org.somda.sdc.dpws.TransportBinding;
+import org.somda.sdc.dpws.factory.TransportBindingFactory;
 import org.somda.sdc.dpws.guice.NetworkJobThreadPool;
 import org.somda.sdc.dpws.http.HttpException;
 import org.somda.sdc.dpws.http.HttpHandler;
@@ -24,8 +26,10 @@ import org.somda.sdc.dpws.soap.SoapMarshalling;
 import org.somda.sdc.dpws.soap.SoapMessage;
 import org.somda.sdc.dpws.soap.SoapUtil;
 import org.somda.sdc.dpws.soap.exception.MalformedSoapMessageException;
+import org.somda.sdc.dpws.soap.factory.RequestResponseClientFactory;
 import org.somda.sdc.dpws.soap.wsaddressing.WsAddressingUtil;
 import org.somda.sdc.dpws.soap.wsaddressing.model.EndpointReferenceType;
+import org.somda.sdc.dpws.soap.wseventing.exception.SubscriptionRequestResponseClientNotFoundException;
 import org.somda.sdc.dpws.soap.wseventing.exception.SubscriptionNotFoundException;
 import org.somda.sdc.dpws.soap.wseventing.factory.SubscriptionManagerFactory;
 import org.somda.sdc.dpws.soap.wseventing.model.DeliveryType;
@@ -66,6 +70,8 @@ public class EventSinkImpl implements EventSink {
     private static final String EVENT_SINK_NOTIFY_TO_CONTEXT_PREFIX = EVENT_SINK_CONTEXT_PREFIX + "NotifyTo/";
     private static final String EVENT_SINK_END_TO_CONTEXT_PREFIX = EVENT_SINK_CONTEXT_PREFIX + "EndTo/";
     private final RequestResponseClient requestResponseClient;
+    private final TransportBindingFactory transportBindingFactory;
+    private final RequestResponseClientFactory requestResponseClientFactory;
     private final String hostAddress;
     private final HttpServerRegistry httpServerRegistry;
     private final ObjectFactory wseFactory;
@@ -75,6 +81,7 @@ public class EventSinkImpl implements EventSink {
     private final ExecutorWrapperService<ListeningExecutorService> executorService;
     private final SubscriptionManagerFactory subscriptionManagerFactory;
     private final Map<String, SinkSubscriptionManager> subscriptionManagers;
+    private final Map<String, RequestResponseClient> subscriptionClients;
     private final Lock subscriptionsLock;
     private final Duration maxWaitForFutures;
     private final Logger instanceLogger;
@@ -90,9 +97,13 @@ public class EventSinkImpl implements EventSink {
                   SoapUtil soapUtil,
                   @NetworkJobThreadPool ExecutorWrapperService<ListeningExecutorService> executorService,
                   SubscriptionManagerFactory subscriptionManagerFactory,
-                  @Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier) {
+                  @Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier,
+                  TransportBindingFactory transportBindingFactory,
+                  RequestResponseClientFactory requestResponseClientFactory) {
         this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);
         this.requestResponseClient = requestResponseClient;
+        this.transportBindingFactory = transportBindingFactory;
+        this.requestResponseClientFactory = requestResponseClientFactory;
         this.hostAddress = hostAddress;
         this.maxWaitForFutures = maxWaitForFutures;
         this.httpServerRegistry = httpServerRegistry;
@@ -103,6 +114,7 @@ public class EventSinkImpl implements EventSink {
         this.executorService = executorService;
         this.subscriptionManagerFactory = subscriptionManagerFactory;
         this.subscriptionManagers = new ConcurrentHashMap<>();
+        this.subscriptionClients = new ConcurrentHashMap<>();
         this.subscriptionsLock = new ReentrantLock();
     }
 
@@ -181,10 +193,16 @@ public class EventSinkImpl implements EventSink {
                     endToEpr,
                     Collections.unmodifiableList(actions));
 
-            // Add sink subscription manager to internal registry
+            TransportBinding tBinding = transportBindingFactory.createTransportBinding(
+                    responseBody.getSubscriptionManager().getAddress().getValue());
+            RequestResponseClient rrClient = requestResponseClientFactory.createRequestResponseClient(tBinding);
+
+            // Add sink subscription manager and httpclient to handle renews to internal registry
             subscriptionsLock.lock();
             try {
                 subscriptionManagers.put(sinkSubMan.getSubscriptionId(), sinkSubMan);
+                subscriptionClients.put(sinkSubMan.getSubscriptionId(), rrClient);
+
             } finally {
                 subscriptionsLock.unlock();
             }
@@ -200,6 +218,8 @@ public class EventSinkImpl implements EventSink {
         return executorService.get().submit(() -> {
             // Search for subscription to renew
             SinkSubscriptionManager subMan = getSubscriptionManagerProxy(subscriptionId);
+            RequestResponseClient subscriptionRequestResponseClient =
+                    getSubscriptionRequestResponseClient(subscriptionId);
 
             // Create new request body
             Renew renew = wseFactory.createRenew();
@@ -216,7 +236,7 @@ public class EventSinkImpl implements EventSink {
             );
 
             // Invoke request-response
-            SoapMessage renewResMsg = requestResponseClient.sendRequestResponse(renewMsg);
+            SoapMessage renewResMsg = subscriptionRequestResponseClient.sendRequestResponse(renewMsg);
             RenewResponse renewResponse = soapUtil.getBody(renewResMsg, RenewResponse.class).orElseThrow(() ->
                     new MalformedSoapMessageException("WS-Eventing RenewResponse message is malformed"));
 
@@ -337,4 +357,13 @@ public class EventSinkImpl implements EventSink {
         }
     }
 
+    private RequestResponseClient getSubscriptionRequestResponseClient(String subscriptionId) {
+        subscriptionsLock.lock();
+        try {
+            return Optional.ofNullable(subscriptionClients.get(subscriptionId))
+                    .orElseThrow(SubscriptionRequestResponseClientNotFoundException::new);
+        } finally {
+            subscriptionsLock.unlock();
+        }
+    }
 }

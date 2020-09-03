@@ -1,10 +1,18 @@
 package org.somda.sdc.dpws;
 
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.ListMultimap;
 import com.google.inject.Inject;
+import org.apache.http.HttpHeaders;
 import org.somda.sdc.dpws.factory.TransportBindingFactory;
 import org.somda.sdc.dpws.http.HttpException;
 import org.somda.sdc.dpws.http.HttpHandler;
-import org.somda.sdc.dpws.soap.*;
+import org.somda.sdc.dpws.soap.CommunicationContext;
+import org.somda.sdc.dpws.soap.HttpApplicationInfo;
+import org.somda.sdc.dpws.soap.SoapConstants;
+import org.somda.sdc.dpws.soap.SoapMarshalling;
+import org.somda.sdc.dpws.soap.SoapMessage;
+import org.somda.sdc.dpws.soap.TransportInfo;
 import org.somda.sdc.dpws.soap.exception.MarshallingException;
 import org.somda.sdc.dpws.soap.exception.TransportException;
 import org.somda.sdc.dpws.soap.factory.SoapMessageFactory;
@@ -29,8 +37,10 @@ public class TransportBindingFactoryMock implements TransportBindingFactory {
                                 SoapMessageFactory soapMessageFactory) {
         this.soapMarshalling = soapMarshalling;
         this.soapMessageFactory = soapMessageFactory;
+        final ListMultimap<String, String> headers = ArrayListMultimap.create();
+        headers.put(HttpHeaders.CONTENT_TYPE, SoapConstants.MEDIA_TYPE_SOAP);
         mockCommunicationContext = new CommunicationContext(
-                new ApplicationInfo(),
+                new HttpApplicationInfo(headers, "mockTransactionId"),
                 new TransportInfo(
                         "mock.scheme",
                         "localhost",
