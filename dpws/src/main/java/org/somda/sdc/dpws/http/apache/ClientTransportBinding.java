@@ -120,9 +120,9 @@ public class ClientTransportBinding implements TransportBinding {
             instanceLogger.error("Unexpected SocketException on request to {}", this.clientUri, e);
             throw new TransportBindingException(e);
         } catch (IOException e) {
-            instanceLogger.error("Unexpected IO exception on request to {}", this.clientUri);
+            instanceLogger.error("Unexpected IO exception on request to {}. {}", this.clientUri, e.getMessage());
             instanceLogger.trace("Unexpected IO exception on request to {}", this.clientUri, e);
-            throw new TransportBindingException("No response received");
+            throw new TransportBindingException("No response received", e);
         }
 
         HttpEntity entity = response.getEntity();
