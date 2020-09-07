@@ -122,11 +122,13 @@ public class SdcRemoteDeviceImpl extends AbstractIdleService implements SdcRemot
     @Override
     public void registerWatchdogObserver(WatchdogObserver watchdogObserver) {
         checkRunning();
+        this.watchdog.registerObserver(watchdogObserver);
     }
 
     @Override
     public void unregisterWatchdogObserver(WatchdogObserver watchdogObserver) {
         checkRunning();
+        this.watchdog.unregisterObserver(watchdogObserver);
     }
 
     @Override
