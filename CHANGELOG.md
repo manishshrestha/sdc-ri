@@ -54,6 +54,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Prevent suspension of notification source and duplication of notification messages. (#179) 
 - `org.somda.sdc.biceps.common.storage.MdibStorageImpl` correctly updates the list of children when removing an entity with a parent. (#186)
 - `org.somda.sdc.glue.consumer.SdcRemoteDevicesConnectorImpl` no longer calls GetMdib before subscribing to reports. (#189)
+- `org.somda.sdc.glue.consumer.SdcRemoteDeviceImpl` no longer ignores registering and unregistering watchdog observers. (#192)
 
 ## [1.1.0] - 2020-04-18
 
