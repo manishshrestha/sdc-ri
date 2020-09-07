@@ -40,7 +40,7 @@ public class TransportBindingFactoryMock implements TransportBindingFactory {
         final ListMultimap<String, String> headers = ArrayListMultimap.create();
         headers.put(HttpHeaders.CONTENT_TYPE, SoapConstants.MEDIA_TYPE_SOAP);
         mockCommunicationContext = new CommunicationContext(
-                new HttpApplicationInfo(headers, "mockTransactionId"),
+                new HttpApplicationInfo(headers, "mockTransactionId", null),
                 new TransportInfo(
                         "mock.scheme",
                         "localhost",

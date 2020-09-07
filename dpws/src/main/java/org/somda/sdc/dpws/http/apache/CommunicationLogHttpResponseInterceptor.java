@@ -47,7 +47,8 @@ public class CommunicationLogHttpResponseInterceptor implements HttpResponseInte
 
         var requestHttpApplicationInfo = new HttpApplicationInfo(
                 ApacheClientHelper.allHeadersToMultimap(response.getAllHeaders()),
-                currentTransactionId
+                currentTransactionId,
+                null
         );
 
         // collect information for TransportInfo

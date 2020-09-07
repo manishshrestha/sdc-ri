@@ -85,7 +85,8 @@ public class JettyHttpServerHandler extends AbstractHandler {
 
         var requestHttpApplicationInfo = new HttpApplicationInfo(
                 JettyUtil.getRequestHeaders(request),
-                transactionId
+                transactionId,
+                null
         );
 
         try {

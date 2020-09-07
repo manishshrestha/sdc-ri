@@ -3,8 +3,10 @@ package org.somda.sdc.dpws.soap;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ListMultimap;
 
+import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * Utility class to provide application layer information for http.
@@ -13,6 +15,7 @@ public class HttpApplicationInfo extends ApplicationInfo {
 
     private final ListMultimap<String, String> headers;
     private final String transactionId;
+    private final String requestUri;
 
     /**
      * Creates an instance using http headers.
@@ -21,13 +24,15 @@ public class HttpApplicationInfo extends ApplicationInfo {
      *
      * @param httpHeaders map of available headers.
      * @param transactionId id of the request response transaction.
+     * @param requestUri the uri of the http request message.
      */
     @Deprecated(since = "1.1.0", forRemoval = true)
-    public HttpApplicationInfo(Map<String, String> httpHeaders, String transactionId) {
+    public HttpApplicationInfo(Map<String, String> httpHeaders, String transactionId, @Nullable String requestUri) {
         this.headers = ArrayListMultimap.create();
         // convert all entries to lower case
         httpHeaders.forEach((key, value) -> headers.put(key.toLowerCase(), value));
         this.transactionId = transactionId;
+        this.requestUri = requestUri;
     }
 
     /**
@@ -37,12 +42,14 @@ public class HttpApplicationInfo extends ApplicationInfo {
      *
      * @param httpHeaders multimap of available headers.
      * @param transactionId id of the request response transaction.
+     * @param requestUri the uri of the http request message.
      */
-    public HttpApplicationInfo(ListMultimap<String, String> httpHeaders, String transactionId) {
+    public HttpApplicationInfo(ListMultimap<String, String> httpHeaders, String transactionId, @Nullable String requestUri) {
         this.headers = ArrayListMultimap.create();
         // convert all entries to lower case
         httpHeaders.forEach((key, value) -> headers.put(key.toLowerCase(), value));
         this.transactionId = transactionId;
+        this.requestUri = requestUri;
     }
 
     /**
@@ -79,5 +86,9 @@ public class HttpApplicationInfo extends ApplicationInfo {
 
     public String getTransactionId() {
         return transactionId;
+    }
+
+    public Optional<String> getRequestUri() {
+        return Optional.of(requestUri);
     }
 }

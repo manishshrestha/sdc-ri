@@ -50,7 +50,8 @@ public class CommunicationLogHttpRequestInterceptor implements HttpRequestInterc
 
         var requestHttpApplicationInfo = new HttpApplicationInfo(
                 ApacheClientHelper.allHeadersToMultimap(request.getAllHeaders()),
-                currentTransactionId
+                currentTransactionId,
+                request.getRequestLine().getUri()
         );
 
         // collect information for TransportInfo
