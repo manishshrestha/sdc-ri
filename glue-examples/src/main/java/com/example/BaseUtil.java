@@ -146,7 +146,7 @@ public class BaseUtil {
 
     public CryptoSettings createCustomCryptoSettings() {
         var keyPath = this.parsedArgs.getOptionValue(OPT_KEYSTORE_PATH);
-        var trustPath = this.parsedArgs.getOptionValue(OPT_KEYSTORE_PATH);
+        var trustPath = this.parsedArgs.getOptionValue(OPT_TRUSTSTORE_PATH);
         var keyPass = this.parsedArgs.getOptionValue(OPT_KEYSTORE_PASSWORD);
         var trustPass = this.parsedArgs.getOptionValue(OPT_TRUSTSTORE_PASSWORD);
 
