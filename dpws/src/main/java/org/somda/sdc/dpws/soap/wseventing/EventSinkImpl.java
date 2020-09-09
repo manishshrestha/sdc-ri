@@ -253,6 +253,8 @@ public class EventSinkImpl implements EventSink {
         return executorService.get().submit(() -> {
             // Search for subscription to get status from
             SinkSubscriptionManager subMan = getSubscriptionManagerProxy(subscriptionId);
+            RequestResponseClient subscriptionRequestResponseClient =
+                    getSubscriptionRequestResponseClient(subscriptionId);
 
             GetStatus getStatus = wseFactory.createGetStatus();
             String subManAddress = wsaUtil.getAddressUri(subMan.getSubscriptionManagerEpr()).orElseThrow(() ->
@@ -267,7 +269,7 @@ public class EventSinkImpl implements EventSink {
             );
 
             // Invoke request-response
-            SoapMessage getStatusResMsg = requestResponseClient.sendRequestResponse(getStatusMsg);
+            SoapMessage getStatusResMsg = subscriptionRequestResponseClient.sendRequestResponse(getStatusMsg);
             GetStatusResponse getStatusResponse = soapUtil.getBody(getStatusResMsg, GetStatusResponse.class)
                     .orElseThrow(() ->
                             new MalformedSoapMessageException("WS-Eventing GetStatusResponse message is malformed"));
@@ -280,6 +282,8 @@ public class EventSinkImpl implements EventSink {
     @Override
     public ListenableFuture<Object> unsubscribe(String subscriptionId) {
         SinkSubscriptionManager subMan = getSubscriptionManagerProxy(subscriptionId);
+        RequestResponseClient subscriptionRequestResponseClient =
+                getSubscriptionRequestResponseClient(subscriptionId);
 
         return executorService.get().submit(() -> {
             Unsubscribe unsubscribe = wseFactory.createUnsubscribe();
@@ -295,7 +299,10 @@ public class EventSinkImpl implements EventSink {
             );
 
             // Invoke request-response and ignore result
-            requestResponseClient.sendRequestResponse(unsubscribeMsg);
+            subscriptionRequestResponseClient.sendRequestResponse(unsubscribeMsg);
+
+            removeSubscriptionManager(subscriptionId);
+            removeSubscriptionRequestResponseClient(subscriptionId);
             return new Object();
         });
     }
@@ -357,11 +364,29 @@ public class EventSinkImpl implements EventSink {
         }
     }
 
+    private void removeSubscriptionManager(String subscriptionId) {
+        subscriptionsLock.lock();
+        try {
+            subscriptionManagers.remove(subscriptionId);
+        } finally {
+            subscriptionsLock.unlock();
+        }
+    }
+
     private RequestResponseClient getSubscriptionRequestResponseClient(String subscriptionId) {
         subscriptionsLock.lock();
         try {
             return Optional.ofNullable(subscriptionClients.get(subscriptionId))
                     .orElseThrow(SubscriptionRequestResponseClientNotFoundException::new);
+        } finally {
+            subscriptionsLock.unlock();
+        }
+    }
+
+    private void removeSubscriptionRequestResponseClient(String subscriptionId) {
+        subscriptionsLock.lock();
+        try {
+            subscriptionClients.remove(subscriptionId);
         } finally {
             subscriptionsLock.unlock();
         }

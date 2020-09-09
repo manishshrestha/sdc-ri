@@ -24,7 +24,7 @@ public class HttpApplicationInfo extends ApplicationInfo {
      *
      * @param httpHeaders map of available headers.
      * @param transactionId id of the request response transaction.
-     * @param requestUri the uri of the http request message.
+     * @param requestUri the uri of the http request message, null for http response messages.
      */
     @Deprecated(since = "1.1.0", forRemoval = true)
     public HttpApplicationInfo(Map<String, String> httpHeaders, String transactionId, @Nullable String requestUri) {
@@ -42,7 +42,7 @@ public class HttpApplicationInfo extends ApplicationInfo {
      *
      * @param httpHeaders multimap of available headers.
      * @param transactionId id of the request response transaction.
-     * @param requestUri the uri of the http request message.
+     * @param requestUri the uri of the http request message, null for http response messages.
      */
     public HttpApplicationInfo(ListMultimap<String, String> httpHeaders, String transactionId, @Nullable String requestUri) {
         this.headers = ArrayListMultimap.create();
@@ -88,6 +88,11 @@ public class HttpApplicationInfo extends ApplicationInfo {
         return transactionId;
     }
 
+    /**
+     * Retrieve the Optional of http request uri, empty in case of a http response message.
+     *
+     * @return {@linkplain Optional} of the request uri
+     */
     public Optional<String> getRequestUri() {
         return Optional.of(requestUri);
     }

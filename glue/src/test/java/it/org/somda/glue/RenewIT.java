@@ -38,8 +38,10 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class RenewIT {
@@ -214,9 +216,10 @@ public class RenewIT {
         Thread.sleep(TestSdcClient.REQUESTED_EXPIRES.toMillis());
 
         var allRequests = logSink.getOutbound();
+        assertFalse(allRequests.isEmpty());
         var allRequestUris = logSink.getRequestUris();
         assertEquals(allRequests.size(), allRequestUris.size());
-
+        var seenRenew = new AtomicBoolean(false);
         for (int i = 0; i < allRequests.size(); i++) {
             var request = marshallingService.unmarshal(new ByteArrayInputStream(allRequests.get(i).toByteArray()));
             var requestAction = request.getWsAddressingHeader().getAction();
@@ -224,12 +227,14 @@ public class RenewIT {
             var requestUri = allRequestUris.get(i);
             // check just the renew messages
             if (requestAction.get().getValue().equals(WsEventingConstants.WSA_ACTION_RENEW)) {
+                seenRenew.set(true);
                 assertTrue(requestUri.isPresent());
                 var wsaToHeader = request.getWsAddressingHeader().getTo();
                 assertTrue(wsaToHeader.isPresent());
                 assertTrue(wsaToHeader.get().getValue().contains(requestUri.get()));
             }
         }
+        assertTrue(seenRenew.get());
     }
 
     static class TestCommLogSink implements CommunicationLogSink {
