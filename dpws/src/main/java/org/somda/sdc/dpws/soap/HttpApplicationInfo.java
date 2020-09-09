@@ -94,6 +94,6 @@ public class HttpApplicationInfo extends ApplicationInfo {
      * @return {@linkplain Optional} of the request uri
      */
     public Optional<String> getRequestUri() {
-        return Optional.of(requestUri);
+        return Optional.ofNullable(requestUri);
     }
 }

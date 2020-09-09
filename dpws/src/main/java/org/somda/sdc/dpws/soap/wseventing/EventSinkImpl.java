@@ -285,6 +285,9 @@ public class EventSinkImpl implements EventSink {
         RequestResponseClient subscriptionRequestResponseClient =
                 getSubscriptionRequestResponseClient(subscriptionId);
 
+        removeSubscriptionManager(subscriptionId);
+        removeSubscriptionRequestResponseClient(subscriptionId);
+
         return executorService.get().submit(() -> {
             Unsubscribe unsubscribe = wseFactory.createUnsubscribe();
             String subManAddress = wsaUtil.getAddressUri(subMan.getSubscriptionManagerEpr()).orElseThrow(() ->
@@ -301,8 +304,6 @@ public class EventSinkImpl implements EventSink {
             // Invoke request-response and ignore result
             subscriptionRequestResponseClient.sendRequestResponse(unsubscribeMsg);
 
-            removeSubscriptionManager(subscriptionId);
-            removeSubscriptionRequestResponseClient(subscriptionId);
             return new Object();
         });
     }
