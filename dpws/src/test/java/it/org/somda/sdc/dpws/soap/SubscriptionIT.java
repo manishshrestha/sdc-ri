@@ -2,6 +2,7 @@ package it.org.somda.sdc.dpws.soap;
 
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.SettableFuture;
+import com.google.inject.AbstractModule;
 import dpws_test_service.messages._2017._05._10.TestNotification;
 import it.org.somda.sdc.dpws.IntegrationTestUtil;
 import it.org.somda.sdc.dpws.MockedUdpBindingModule;
@@ -10,6 +11,9 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.somda.sdc.dpws.CommunicationLog;
+import org.somda.sdc.dpws.CommunicationLogImpl;
+import org.somda.sdc.dpws.CommunicationLogSink;
 import org.somda.sdc.dpws.DpwsConfig;
 import org.somda.sdc.dpws.crypto.CryptoConfig;
 import org.somda.sdc.dpws.crypto.CryptoSettings;
@@ -18,6 +22,9 @@ import org.somda.sdc.dpws.factory.TransportBindingFactory;
 import org.somda.sdc.dpws.guice.DefaultDpwsConfigModule;
 import org.somda.sdc.dpws.service.HostedServiceProxy;
 import org.somda.sdc.dpws.service.HostingServiceProxy;
+import org.somda.sdc.dpws.soap.CommunicationContext;
+import org.somda.sdc.dpws.soap.HttpApplicationInfo;
+import org.somda.sdc.dpws.soap.MarshallingService;
 import org.somda.sdc.dpws.soap.RequestResponseClient;
 import org.somda.sdc.dpws.soap.SoapConfig;
 import org.somda.sdc.dpws.soap.SoapUtil;
@@ -36,14 +43,19 @@ import org.somda.sdc.dpws.soap.wseventing.model.RenewResponse;
 import test.org.somda.common.LoggingTestWatcher;
 
 import javax.net.ssl.HostnameVerifier;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -64,6 +76,8 @@ public class SubscriptionIT {
     private BasicPopulatedDevice devicePeer;
     private ClientPeer clientPeer;
     private HostnameVerifier verifier;
+    private TestCommLogSink logSink;
+    private MarshallingService marshallingService;
 
     private TransportBindingFactory transportBindingFactory;
     private RequestResponseClientFactory requestResponseClientFactory;
@@ -110,6 +124,13 @@ public class SubscriptionIT {
         }, new MockedUdpBindingModule());
 
         final CryptoSettings clientCryptoSettings = Ssl.setupClient();
+        var override = new AbstractModule() {
+            @Override
+            protected void configure() {
+                bind(CommunicationLogSink.class).to(TestCommLogSink.class).asEagerSingleton();
+                bind(CommunicationLog.class).to(CommunicationLogImpl.class).asEagerSingleton();
+            }
+        };
         try {
             this.clientPeer = new ClientPeer(new DefaultDpwsConfigModule() {
                 @Override
@@ -124,7 +145,7 @@ public class SubscriptionIT {
                     bind(DpwsConfig.HTTP_SUPPORT, Boolean.class, false);
                     bind(DpwsConfig.HTTPS_SUPPORT, Boolean.class, true);
                 }
-            }, new MockedUdpBindingModule());
+            }, new MockedUdpBindingModule(), override);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -132,10 +153,13 @@ public class SubscriptionIT {
         transportBindingFactory = clientPeer.getInjector().getInstance(TransportBindingFactory.class);
         requestResponseClientFactory = clientPeer.getInjector().getInstance(RequestResponseClientFactory.class);
         wseFactory = clientPeer.getInjector().getInstance(org.somda.sdc.dpws.soap.wseventing.model.ObjectFactory.class);
+        marshallingService = clientPeer.getInjector().getInstance(MarshallingService.class);
+        logSink = (TestCommLogSink) clientPeer.getInjector().getInstance(CommunicationLogSink.class);
     }
 
     @AfterEach
     void tearDown() {
+        logSink.clear();
         this.devicePeer.stopAsync().awaitTerminated();
         this.clientPeer.stopAsync().awaitTerminated();
     }
@@ -279,5 +303,84 @@ public class SubscriptionIT {
         var unsubscribe = srv1.getEventSinkAccess().unsubscribe(subscribeResult.getSubscriptionId());
         unsubscribe.get(MAX_WAIT_TIME.getSeconds(), TimeUnit.SECONDS);
         assertEquals(0, devicePeer.getDevice().getActiveSubscriptions().size());
+
+        seenWseMessageWithCorrectRequestUri(WsEventingConstants.WSA_ACTION_GET_STATUS);
+        seenWseMessageWithCorrectRequestUri(WsEventingConstants.WSA_ACTION_RENEW);
+        seenWseMessageWithCorrectRequestUri(WsEventingConstants.WSA_ACTION_UNSUBSCRIBE);
+    }
+
+    private void seenWseMessageWithCorrectRequestUri(String wseAction) throws Exception {
+        var allRequests = logSink.getOutbound();
+        assertFalse(allRequests.isEmpty());
+        var allRequestUris = logSink.getRequestUris();
+        assertEquals(allRequests.size(), allRequestUris.size());
+        var seenWseAction = new AtomicBoolean(false);
+
+        for (int i = 0; i < allRequests.size(); i++) {
+            var request = marshallingService.unmarshal(new ByteArrayInputStream(allRequests.get(i).toByteArray()));
+            var requestAction = request.getWsAddressingHeader().getAction();
+            assertTrue(requestAction.isPresent());
+            var requestUri = allRequestUris.get(i);
+
+            if (requestAction.get().getValue().equals(wseAction)) {
+                seenWseAction.set(true);
+                assertTrue(requestUri.isPresent());
+                var wsaToHeader = request.getWsAddressingHeader().getTo();
+                assertTrue(wsaToHeader.isPresent());
+                assertTrue(wsaToHeader.get().getValue().contains(requestUri.get()));
+            }
+        }
+        assertTrue(seenWseAction.get());
+    }
+
+    static class TestCommLogSink implements CommunicationLogSink {
+
+        private final ArrayList<ByteArrayOutputStream> outbound;
+        private CommunicationLog.MessageType outboundMessageType;
+        private final ArrayList<String> outboundTransactionIds;
+        private final ArrayList<Optional<String>> requestUris;
+
+        TestCommLogSink() {
+            this.outbound = new ArrayList<>();
+            this.outboundTransactionIds = new ArrayList<>();
+            this.requestUris = new ArrayList<>();
+        }
+
+        @Override
+        public OutputStream createTargetStream(CommunicationLog.TransportType path,
+                                               CommunicationLog.Direction direction,
+                                               CommunicationLog.MessageType messageType,
+                                               CommunicationContext communicationContext) {
+            var os = new ByteArrayOutputStream();
+            var appInfo = (HttpApplicationInfo) communicationContext.getApplicationInfo();
+            if (CommunicationLog.Direction.OUTBOUND.equals(direction)) {
+                outbound.add(os);
+                outboundMessageType = messageType;
+                outboundTransactionIds.add(appInfo.getTransactionId());
+                requestUris.add(appInfo.getRequestUri());
+            }
+            return os;
+        }
+
+        public ArrayList<ByteArrayOutputStream> getOutbound() {
+            return outbound;
+        }
+
+        public void clear() {
+            outbound.clear();
+            requestUris.clear();
+        }
+
+        public CommunicationLog.MessageType getOutboundMessageType() {
+            return outboundMessageType;
+        }
+
+        public ArrayList<String> getOutboundTransactionIds() {
+            return outboundTransactionIds;
+        }
+
+        public ArrayList<Optional<String>> getRequestUris() {
+            return requestUris;
+        }
     }
 }

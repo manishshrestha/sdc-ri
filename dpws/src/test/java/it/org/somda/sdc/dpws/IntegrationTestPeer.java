@@ -11,11 +11,12 @@ import org.somda.sdc.dpws.guice.DefaultDpwsConfigModule;
 import org.somda.sdc.dpws.guice.DefaultDpwsModule;
 
 import javax.annotation.Nullable;
+import java.util.List;
 
 public abstract class IntegrationTestPeer extends AbstractIdleService {
     private Injector injector;
 
-    protected void setupInjector(DefaultDpwsConfigModule configModule, @Nullable AbstractModule overridingModule) {
+    protected void setupInjector(DefaultDpwsConfigModule configModule, @Nullable AbstractModule ... overridingModule) {
         if (overridingModule != null) {
             injector = Guice.createInjector(
                     Modules.override(
@@ -23,7 +24,7 @@ public abstract class IntegrationTestPeer extends AbstractIdleService {
                             new DefaultDpwsModule(),
                             new DefaultCommonModule(),
                             configModule
-                    ).with(overridingModule)
+                    ).with(List.of(overridingModule))
             );
         } else {
             injector = Guice.createInjector(new DefaultDpwsModule(), new DefaultCommonModule(), configModule);
