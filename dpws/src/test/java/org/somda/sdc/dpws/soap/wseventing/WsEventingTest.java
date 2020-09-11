@@ -92,10 +92,10 @@ public class WsEventingTest extends DpwsTest {
         notificationSink = getInjector().getInstance(NotificationSinkFactory.class).createNotificationSink(
                 getInjector().getInstance(WsAddressingServerInterceptor.class));
 
-        HttpServerRegistry httpSrvRegisty = getInjector().getInstance(HttpServerRegistry.class);
+        HttpServerRegistry httpSrvRegistry = getInjector().getInstance(HttpServerRegistry.class);
 
         var uri = "http://" + HOST + ":" + PORT;
-        var hostedServiceUri = httpSrvRegisty.registerContext(uri, HOSTED_SERVICE_PATH, new HttpHandler() {
+        var hostedServiceUri = httpSrvRegistry.registerContext(uri, HOSTED_SERVICE_PATH, new HttpHandler() {
             @Override
             public void handle(InputStream inStream, OutputStream outStream, CommunicationContext communicationContext) throws HttpException {
                 MarshallingHelper.handleRequestResponse(getInjector(), reqResSrv, inStream, outStream, communicationContext);

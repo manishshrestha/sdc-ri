@@ -39,6 +39,7 @@ import static org.somda.sdc.dpws.device.helper.RequestResponseServerHttpHandler.
 public class RequestResponseServerHttpHandlerTest extends DpwsTest {
 
     private static final String DUMMY_TRANSACTION_ID = "0";
+    private static final String DUMMY_REQUEST_URI = "someRequestUri";
     private Injector injector;
     private MarshallingService mockMarshalling;
 
@@ -70,7 +71,7 @@ public class RequestResponseServerHttpHandlerTest extends DpwsTest {
         headers.put(HttpHeaders.DATE, "tomorrow");
         var reqResServer = injector.getInstance(RequestResponseServerHttpHandler.class);
         var mockContext = mock(CommunicationContext.class);
-        var applicationInfo = new HttpApplicationInfo(headers, DUMMY_TRANSACTION_ID);
+        var applicationInfo = new HttpApplicationInfo(headers, DUMMY_TRANSACTION_ID, DUMMY_REQUEST_URI);
         when(mockContext.getApplicationInfo()).thenReturn(applicationInfo);
 
         // encoding doesn't matter here, we should fail before that
@@ -93,7 +94,7 @@ public class RequestResponseServerHttpHandlerTest extends DpwsTest {
         headers.put(HttpHeaders.CONTENT_TYPE.toLowerCase(), contentType.contentType);
         var reqResServer = injector.getInstance(RequestResponseServerHttpHandler.class);
         var mockContext = mock(CommunicationContext.class);
-        var applicationInfo = new HttpApplicationInfo(headers, DUMMY_TRANSACTION_ID);
+        var applicationInfo = new HttpApplicationInfo(headers, DUMMY_TRANSACTION_ID, DUMMY_REQUEST_URI);
         when(mockContext.getApplicationInfo()).thenReturn(applicationInfo);
 
         var requestStream = new ByteArrayInputStream(expectedString.getBytes(contentType.defaultEncoding)); // doesn't matter
@@ -120,7 +121,7 @@ public class RequestResponseServerHttpHandlerTest extends DpwsTest {
         headers.put(HttpHeaders.CONTENT_TYPE.toLowerCase(), contentType.contentType + "; charset=" + encoding.displayName());
         var reqResServer = injector.getInstance(RequestResponseServerHttpHandler.class);
         var mockContext = mock(CommunicationContext.class);
-        var applicationInfo = new HttpApplicationInfo(headers, DUMMY_TRANSACTION_ID);
+        var applicationInfo = new HttpApplicationInfo(headers, DUMMY_TRANSACTION_ID, DUMMY_REQUEST_URI);
         when(mockContext.getApplicationInfo()).thenReturn(applicationInfo);
 
         var requestStream = new ByteArrayInputStream(expectedString.getBytes(encoding)); // doesn't matter
@@ -147,7 +148,7 @@ public class RequestResponseServerHttpHandlerTest extends DpwsTest {
         headers.put(HttpHeaders.CONTENT_TYPE.toLowerCase(), contentType.contentType);
         var reqResServer = injector.getInstance(RequestResponseServerHttpHandler.class);
         var mockContext = mock(CommunicationContext.class);
-        var applicationInfo = new HttpApplicationInfo(headers, DUMMY_TRANSACTION_ID);
+        var applicationInfo = new HttpApplicationInfo(headers, DUMMY_TRANSACTION_ID, DUMMY_REQUEST_URI);
         when(mockContext.getApplicationInfo()).thenReturn(applicationInfo);
 
         var requestStream = new ByteArrayInputStream(expectedString.getBytes(encoding)); // doesn't matter

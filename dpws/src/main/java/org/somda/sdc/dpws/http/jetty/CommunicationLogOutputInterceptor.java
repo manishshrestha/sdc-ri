@@ -94,7 +94,8 @@ public class CommunicationLogOutputInterceptor implements HttpOutput.Interceptor
 
         var responseHttpApplicationInfo = new HttpApplicationInfo(
                 responseHeaderMap,
-                currentTransactionId
+                currentTransactionId,
+                null
         );
 
         var responseCommContext = new CommunicationContext(responseHttpApplicationInfo, transportInfo);

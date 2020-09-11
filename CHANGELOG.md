@@ -36,6 +36,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `org.somda.sdc.dpws.soap.wsaddressing.WsAddressingHeader` changed relatesTo element to RelatesToType instead of an AttributedURIType. (#184)
 - `org.somda.sdc.dpws.CommunicationLog` MessageType enum added, to mark messages as i.e. request, response. (#188)
 - `org.somda.sdc.dpws.soap.HttpApplicationInfo` additional transactionId added, to associate request response messages. (#188)
+- `org.somda.sdc.dpws.soap.HttpApplicationInfo` additional requestUri added, to determine the used POST address. (#190)
  
 ### Removed
 
@@ -55,6 +56,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `org.somda.sdc.biceps.common.storage.MdibStorageImpl` correctly updates the list of children when removing an entity with a parent. (#186)
 - `org.somda.sdc.glue.consumer.SdcRemoteDevicesConnectorImpl` no longer calls GetMdib before subscribing to reports. (#189)
 - `org.somda.sdc.glue.consumer.SdcRemoteDeviceImpl` no longer ignores registering and unregistering watchdog observers. (#192)
+- `org.somda.sdc.dpws.soap.wseventing.EventSinkImpl` getStatus, renew and unsubscribe messages are send to the epr of the SubscriptionManager. (#190)
 
 ## [1.1.0] - 2020-04-18
 
