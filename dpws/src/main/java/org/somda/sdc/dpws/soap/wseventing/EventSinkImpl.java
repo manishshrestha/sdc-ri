@@ -197,7 +197,8 @@ public class EventSinkImpl implements EventSink {
                     responseBody.getSubscriptionManager().getAddress().getValue());
             RequestResponseClient rrClient = requestResponseClientFactory.createRequestResponseClient(tBinding);
 
-            // Add sink subscription manager and httpclient to handle renews to internal registry
+            // Add sink subscription manager and httpclient for handling getStatus/renew/unsubscribe messages
+            // to internal registry
             subscriptionsLock.lock();
             try {
                 subscriptionManagers.put(sinkSubMan.getSubscriptionId(), sinkSubMan);
