@@ -41,7 +41,7 @@ public class CommunicationLogHandlerWrapper extends HandlerWrapper {
         var requestHttpApplicationInfo = new HttpApplicationInfo(
                 JettyUtil.getRequestHeaders(request),
                 currentTransactionId,
-                baseRequest.getRequestURI()
+                request.getRequestURL().toString()
         );
 
         // collect information for TransportInfo

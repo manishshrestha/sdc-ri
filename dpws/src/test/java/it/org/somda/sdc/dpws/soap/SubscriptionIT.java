@@ -51,7 +51,9 @@ import java.net.NetworkInterface;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
@@ -220,8 +222,6 @@ public class SubscriptionIT {
 
                             @MessageInterceptor(value = TestServiceMetadata.ACTION_NOTIFICATION_1)
                             void onNotification(NotificationObject message) {
-                                assertTrue(message.getCommunicationContext().isPresent());
-                                assertFalse(message.getCommunicationContext().get().getTransportInfo().getX509Certificates().isEmpty());
                                 receivedNotifications.add(
                                         soapUtil.getBody(message.getNotification(), TestNotification.class)
                                                 .orElseThrow(() -> new RuntimeException("TestNotification could not be converted")));
@@ -277,8 +277,6 @@ public class SubscriptionIT {
 
                             @MessageInterceptor(value = TestServiceMetadata.ACTION_NOTIFICATION_1)
                             void onNotification(NotificationObject message) {
-                                assertTrue(message.getCommunicationContext().isPresent());
-                                assertFalse(message.getCommunicationContext().get().getTransportInfo().getX509Certificates().isEmpty());
                                 receivedNotifications.add(
                                         soapUtil.getBody(message.getNotification(), TestNotification.class)
                                                 .orElseThrow(() -> new RuntimeException("TestNotification could not be converted")));
@@ -313,21 +311,21 @@ public class SubscriptionIT {
         var allRequests = logSink.getOutbound();
         assertFalse(allRequests.isEmpty());
         var allRequestUris = logSink.getRequestUris();
-        assertEquals(allRequests.size(), allRequestUris.size());
+        assertEquals(allRequests.keySet(), allRequestUris.keySet());
         var seenWseAction = new AtomicBoolean(false);
 
-        for (int i = 0; i < allRequests.size(); i++) {
-            var request = marshallingService.unmarshal(new ByteArrayInputStream(allRequests.get(i).toByteArray()));
+        for (var transactionId : allRequests.keySet()) {
+            var request = marshallingService.unmarshal(new ByteArrayInputStream(allRequests.get(transactionId).toByteArray()));
             var requestAction = request.getWsAddressingHeader().getAction();
             assertTrue(requestAction.isPresent());
-            var requestUri = allRequestUris.get(i);
+            var requestUri = allRequestUris.get(transactionId);
 
             if (requestAction.get().getValue().equals(wseAction)) {
                 seenWseAction.set(true);
                 assertTrue(requestUri.isPresent());
                 var wsaToHeader = request.getWsAddressingHeader().getTo();
                 assertTrue(wsaToHeader.isPresent());
-                assertTrue(wsaToHeader.get().getValue().contains(requestUri.get()));
+                assertEquals(requestUri.get(), wsaToHeader.get().getValue());
             }
         }
         assertTrue(seenWseAction.get());
@@ -335,15 +333,15 @@ public class SubscriptionIT {
 
     static class TestCommLogSink implements CommunicationLogSink {
 
-        private final ArrayList<ByteArrayOutputStream> outbound;
+        private final Map<String, ByteArrayOutputStream> outbound;
         private CommunicationLog.MessageType outboundMessageType;
         private final ArrayList<String> outboundTransactionIds;
-        private final ArrayList<Optional<String>> requestUris;
+        private final Map<String, Optional<String>> requestUris;
 
         TestCommLogSink() {
-            this.outbound = new ArrayList<>();
+            this.outbound = new HashMap<>();
             this.outboundTransactionIds = new ArrayList<>();
-            this.requestUris = new ArrayList<>();
+            this.requestUris = new HashMap<>();
         }
 
         @Override
@@ -354,15 +352,15 @@ public class SubscriptionIT {
             var os = new ByteArrayOutputStream();
             var appInfo = (HttpApplicationInfo) communicationContext.getApplicationInfo();
             if (CommunicationLog.Direction.OUTBOUND.equals(direction)) {
-                outbound.add(os);
+                outbound.put(appInfo.getTransactionId(), os);
                 outboundMessageType = messageType;
                 outboundTransactionIds.add(appInfo.getTransactionId());
-                requestUris.add(appInfo.getRequestUri());
+                requestUris.put(appInfo.getTransactionId(), appInfo.getRequestUri());
             }
             return os;
         }
 
-        public ArrayList<ByteArrayOutputStream> getOutbound() {
+        public Map<String, ByteArrayOutputStream> getOutbound() {
             return outbound;
         }
 
@@ -379,7 +377,7 @@ public class SubscriptionIT {
             return outboundTransactionIds;
         }
 
-        public ArrayList<Optional<String>> getRequestUris() {
+        public Map<String, Optional<String>> getRequestUris() {
             return requestUris;
         }
     }

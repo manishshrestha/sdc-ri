@@ -48,10 +48,11 @@ public class CommunicationLogHttpRequestInterceptor implements HttpRequestInterc
         var currentTransactionId = TRANSACTION_ID_PREFIX_CLIENT + TRANSACTION_ID.incrementAndGet();
         context.setAttribute(CommunicationLog.MessageType.REQUEST.name(), currentTransactionId);
 
+        var requestUri = target.toString().concat(request.getRequestLine().getUri());
         var requestHttpApplicationInfo = new HttpApplicationInfo(
                 ApacheClientHelper.allHeadersToMultimap(request.getAllHeaders()),
                 currentTransactionId,
-                request.getRequestLine().getUri()
+                requestUri
         );
 
         // collect information for TransportInfo
