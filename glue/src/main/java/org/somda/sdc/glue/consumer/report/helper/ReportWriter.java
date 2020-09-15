@@ -28,7 +28,6 @@ import javax.annotation.Nullable;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -103,8 +102,8 @@ public class ReportWriter {
                     ArrayListMultimap.create(reportPart.getState().size(), 1);
 
             reportPart.getState().forEach(state -> stateMap.put(state.getDescriptorHandle(), state));
-            final Set<String> stateHandles = reportPart.getState().stream().map(AbstractState::getDescriptorHandle).collect(Collectors.toSet());
-            final Set<String> descriptorHandles = reportPart.getDescriptor().stream().map(AbstractDescriptor::getHandle).collect(Collectors.toSet());
+            final var stateHandles = reportPart.getState().stream().map(AbstractState::getDescriptorHandle).collect(Collectors.toSet());
+            final var descriptorHandles = reportPart.getDescriptor().stream().map(AbstractDescriptor::getHandle).collect(Collectors.toSet());
             for (var handle: stateHandles) {
                 if (!descriptorHandles.contains(handle)) {
                     throw new ReportProcessingException(String.format("The state %s belongs to an " +
