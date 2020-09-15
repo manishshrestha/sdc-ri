@@ -61,6 +61,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -325,7 +326,8 @@ public class SubscriptionIT {
                 assertTrue(requestUri.isPresent());
                 var wsaToHeader = request.getWsAddressingHeader().getTo();
                 assertTrue(wsaToHeader.isPresent());
-                assertEquals(requestUri.get(), wsaToHeader.get().getValue());
+                assertNotEquals("", requestUri.get());
+                assertTrue(wsaToHeader.get().getValue().endsWith(requestUri.get()));
             }
         }
         assertTrue(seenWseAction.get());
