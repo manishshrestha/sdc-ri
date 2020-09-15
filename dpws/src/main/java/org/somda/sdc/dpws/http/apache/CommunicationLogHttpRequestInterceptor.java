@@ -1,5 +1,7 @@
 package org.somda.sdc.dpws.http.apache;
 
+import jregex.Matcher;
+import jregex.Pattern;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpEntityEnclosingRequest;
 import org.apache.http.HttpHost;
@@ -11,6 +13,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.somda.sdc.common.logging.InstanceLogger;
 import org.somda.sdc.dpws.CommunicationLog;
+import org.somda.sdc.dpws.DpwsConstants;
 import org.somda.sdc.dpws.http.apache.helper.ApacheClientHelper;
 import org.somda.sdc.dpws.soap.CommunicationContext;
 import org.somda.sdc.dpws.soap.HttpApplicationInfo;
@@ -29,6 +32,7 @@ public class CommunicationLogHttpRequestInterceptor implements HttpRequestInterc
     private static final Logger LOG = LogManager.getLogger(CommunicationLogHttpRequestInterceptor.class);
     private static final String TRANSACTION_ID_PREFIX_CLIENT = "rrId:client:" + UUID.randomUUID() + ":";
     private final static AtomicLong TRANSACTION_ID = new AtomicLong(-1L);
+    private static final Pattern URI_PATH = new Pattern(DpwsConstants.RELATIVE_URI_REGEX);
 
     private final CommunicationLog commlog;
     private final Logger instanceLogger;
@@ -48,10 +52,14 @@ public class CommunicationLogHttpRequestInterceptor implements HttpRequestInterc
         var currentTransactionId = TRANSACTION_ID_PREFIX_CLIENT + TRANSACTION_ID.incrementAndGet();
         context.setAttribute(CommunicationLog.MessageType.REQUEST.name(), currentTransactionId);
 
+        Matcher matcher = URI_PATH.matcher(request.getRequestLine().getUri());
+        matcher.matches();
+        var requestUri =  matcher.group("path");
+
         var requestHttpApplicationInfo = new HttpApplicationInfo(
                 ApacheClientHelper.allHeadersToMultimap(request.getAllHeaders()),
                 currentTransactionId,
-                request.getRequestLine().getUri()
+                requestUri
         );
 
         // collect information for TransportInfo

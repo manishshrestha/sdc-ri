@@ -4,19 +4,20 @@ import jregex.Matcher;
 import jregex.Pattern;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.somda.sdc.biceps.model.participant.SystemContextDescriptor;
-import org.somda.sdc.glue.GlueConstants;
+import org.somda.sdc.dpws.DpwsConstants;
 import test.org.somda.common.LoggingTestWatcher;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @ExtendWith(LoggingTestWatcher.class)
 public class RegexTest {
 
-    private static final Pattern AUTHORITY_PATTERN = new Pattern("^" + GlueConstants.AUTHORITY + "$");
-    private static final Pattern URI_PATTERN = new Pattern(GlueConstants.URI_REGEX);
-    private static final Pattern URI_PATH = new Pattern(GlueConstants.RELATIVE_URI_REGEX);
-    private static final Pattern SEGMENT_PATTERN = new Pattern(GlueConstants.AUTHORITY);
+    private static final Pattern AUTHORITY_PATTERN = new Pattern("^" + DpwsConstants.AUTHORITY + "$");
+    private static final Pattern URI_PATTERN = new Pattern(DpwsConstants.URI_REGEX);
+    private static final Pattern URI_PATH = new Pattern(DpwsConstants.RELATIVE_URI_REGEX);
+    private static final Pattern SEGMENT_PATTERN = new Pattern(DpwsConstants.AUTHORITY);
 
     @Test
     void segment() {
@@ -102,15 +103,6 @@ public class RegexTest {
     @Test
     void uriPath() {
         {
-            Matcher matcher = URI_PATTERN.matcher("scheme://@@");
-            matcher.matches();
-            assertFalse(matcher.matches());
-        }
-        {
-            Matcher matcher = URI_PATTERN.matcher("scheme://user@%C3%A4:123/path?#?query#fragment");
-            assertFalse(matcher.matches());
-        }
-        {
             Matcher matcher = URI_PATH.matcher("scheme://user@%C3%A4:123/path?query?query#fragment");
             assertTrue(matcher.matches());
             assertEquals("/path", matcher.group("path"));
@@ -165,8 +157,18 @@ public class RegexTest {
             assertTrue(matcher.matches());
             assertEquals("", matcher.group("path"));
         }
+//        /7a82887a-59ba-4aa7-a2e5-b1cc00b14056
+        {
+            Matcher matcher = URI_PATH.matcher("/7a82887a-59ba-4aa7-a2e5-b1cc00b14056");
+            assertTrue(matcher.matches());
+            assertEquals("/7a82887a-59ba-4aa7-a2e5-b1cc00b14056", matcher.group("path"));
+        }
         {
             Matcher matcher = URI_PATH.matcher("http://example.com/stuff.cgi?key= | http://bad-example.com/cgi-bin/stuff.cgi?key1=value1&key2");
+            assertFalse(matcher.matches());
+        }
+        {
+            Matcher matcher = URI_PATH.matcher("scheme://user@%C3%A4:123/path?#?query#fragment");
             assertFalse(matcher.matches());
         }
     }

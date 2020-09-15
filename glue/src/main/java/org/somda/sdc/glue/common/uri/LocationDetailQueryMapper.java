@@ -5,7 +5,7 @@ import jregex.Matcher;
 import jregex.Pattern;
 import org.somda.sdc.biceps.model.participant.InstanceIdentifier;
 import org.somda.sdc.biceps.model.participant.LocationDetail;
-import org.somda.sdc.glue.GlueConstants;
+import org.somda.sdc.dpws.DpwsConstants;
 import org.somda.sdc.glue.common.helper.UrlUtf8;
 
 import java.lang.reflect.InvocationTargetException;
@@ -20,8 +20,8 @@ import java.util.Map;
  */
 public class LocationDetailQueryMapper {
 
-    private static final Pattern PATTERN = new Pattern(GlueConstants.URI_REGEX);
-    private static final Pattern QUERY_VALIDATOR = new Pattern(GlueConstants.LOC_CTXT_QUERY);
+    private static final Pattern PATTERN = new Pattern(DpwsConstants.URI_REGEX);
+    private static final Pattern QUERY_VALIDATOR = new Pattern(DpwsConstants.LOC_CTXT_QUERY);
 
     /**
      * Creates a URI out of a location context instance identifier and location detail.

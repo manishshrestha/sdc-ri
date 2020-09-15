@@ -4,6 +4,7 @@ import jregex.Matcher;
 import jregex.Pattern;
 import org.somda.sdc.biceps.model.participant.AbstractComplexDeviceComponentDescriptor;
 import org.somda.sdc.biceps.model.participant.CodedValue;
+import org.somda.sdc.dpws.DpwsConstants;
 import org.somda.sdc.glue.GlueConstants;
 import org.somda.sdc.glue.common.helper.UrlUtf8;
 
@@ -22,11 +23,11 @@ public class ComplexDeviceComponentMapper {
                     // the standard to distinguish between authority and path
                     // Do not change the first of the following groups to "SEGMENT_REGEX" instead
                     // of "SEGMENT_NZ_REGEX|"
-                    "(({codingSystem}" + GlueConstants.SEGMENT_NZ_REGEX + ")|)/" +
+                    "(({codingSystem}" + DpwsConstants.SEGMENT_NZ_REGEX + ")|)/" +
                     "({codingSystemVersion}(?(codingSystem)" +
-                    GlueConstants.SEGMENT_REGEX + "|" +
-                    GlueConstants.AUTHORITY + "))/" +
-                    "({code}" + GlueConstants.SEGMENT_NZ_REGEX + ")" +
+                    DpwsConstants.SEGMENT_REGEX + "|" +
+                    DpwsConstants.AUTHORITY + "))/" +
+                    "({code}" + DpwsConstants.SEGMENT_NZ_REGEX + ")" +
                     ")$"
     );
 

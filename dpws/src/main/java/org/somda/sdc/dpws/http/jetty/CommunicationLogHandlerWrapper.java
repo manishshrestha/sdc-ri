@@ -1,9 +1,11 @@
 package org.somda.sdc.dpws.http.jetty;
 
+import jregex.Matcher;
 import org.eclipse.jetty.server.HttpOutput;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.handler.HandlerWrapper;
 import org.somda.sdc.dpws.CommunicationLog;
+import org.somda.sdc.dpws.DpwsConstants;
 import org.somda.sdc.dpws.soap.CommunicationContext;
 import org.somda.sdc.dpws.soap.HttpApplicationInfo;
 import org.somda.sdc.dpws.soap.TransportInfo;
@@ -15,6 +17,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicLong;
+import jregex.Pattern;
 
 /**
  * {@linkplain HandlerWrapper} which enables {@linkplain CommunicationLog} capabilities for requests and responses.
@@ -22,7 +25,7 @@ import java.util.concurrent.atomic.AtomicLong;
 public class CommunicationLogHandlerWrapper extends HandlerWrapper {
     private static final String TRANSACTION_ID_PREFIX_SERVER = "rrId:server:" + UUID.randomUUID() + ":";
     private static final AtomicLong TRANSACTION_ID = new AtomicLong(-1L);
-
+    private static final Pattern URI_PATH = new Pattern(DpwsConstants.RELATIVE_URI_REGEX);
     private final CommunicationLog commLog;
     private final String frameworkIdentifier;
 
@@ -38,10 +41,14 @@ public class CommunicationLogHandlerWrapper extends HandlerWrapper {
         var currentTransactionId = TRANSACTION_ID_PREFIX_SERVER + TRANSACTION_ID.incrementAndGet();
         baseRequest.setAttribute(CommunicationLog.MessageType.REQUEST.name(), currentTransactionId);
 
+        Matcher matcher = URI_PATH.matcher(baseRequest.getRequestURI());
+        matcher.matches();
+        var requestUri =  matcher.group("path");
+
         var requestHttpApplicationInfo = new HttpApplicationInfo(
                 JettyUtil.getRequestHeaders(request),
                 currentTransactionId,
-                baseRequest.getRequestURI()
+                requestUri
         );
 
         // collect information for TransportInfo
