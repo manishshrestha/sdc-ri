@@ -119,6 +119,19 @@ public class GlueConstants {
             "(#({fragment}" + FRAGMENT + "))?" +
             ")$";
 
+    public static final String RELATIVE_URI_REGEX = "^(" +
+            "(({scheme}" + SCHEME_SEGMENT + ")" +
+            ":" +
+            "//)?({authority}" + AUTHORITY + ")?" +
+            "({path}" +
+            "(?(authority)" +
+            "(((?=/)" + PATH + ")|)|((?!//)" + PATH + ")" +
+            ")" +
+            ")" +
+            "(\\?({query}" + QUERY + "))?" +
+            "(#({fragment}" + FRAGMENT + "))?" +
+            ")$";
+
     // The "&" character had to be excluded from the "pchar" definition as it already is used a delimiter.
     // This is a bug in the GLUE standard. The "&" should not be allowed, except as a delimiter.
     private static final String QUERY_ITEM_SEGMENT = "(?:(?:%[a-fA-F0-9]{2})+|(?:[a-zA-Z0-9\\-._~!$'()*+,;=:@])+)";

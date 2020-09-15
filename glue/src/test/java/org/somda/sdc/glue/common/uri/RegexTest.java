@@ -4,6 +4,7 @@ import jregex.Matcher;
 import jregex.Pattern;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.somda.sdc.biceps.model.participant.SystemContextDescriptor;
 import org.somda.sdc.glue.GlueConstants;
 import test.org.somda.common.LoggingTestWatcher;
 
@@ -14,7 +15,7 @@ public class RegexTest {
 
     private static final Pattern AUTHORITY_PATTERN = new Pattern("^" + GlueConstants.AUTHORITY + "$");
     private static final Pattern URI_PATTERN = new Pattern(GlueConstants.URI_REGEX);
-
+    private static final Pattern URI_PATH = new Pattern(GlueConstants.RELATIVE_URI_REGEX);
     private static final Pattern SEGMENT_PATTERN = new Pattern(GlueConstants.AUTHORITY);
 
     @Test
@@ -97,4 +98,77 @@ public class RegexTest {
             assertEquals("%2A-", matcher.group("path"));
         }
     }
+
+    @Test
+    void uriPath() {
+        {
+            Matcher matcher = URI_PATTERN.matcher("scheme://@@");
+            matcher.matches();
+            assertFalse(matcher.matches());
+        }
+        {
+            Matcher matcher = URI_PATTERN.matcher("scheme://user@%C3%A4:123/path?#?query#fragment");
+            assertFalse(matcher.matches());
+        }
+        {
+            Matcher matcher = URI_PATH.matcher("scheme://user@%C3%A4:123/path?query?query#fragment");
+            assertTrue(matcher.matches());
+            assertEquals("/path", matcher.group("path"));
+        }
+        {
+            Matcher matcher = URI_PATH.matcher("https://www.example.com");
+            assertTrue(matcher.matches());
+            assertEquals("", matcher.group("path"));
+        }
+        {
+            Matcher matcher = URI_PATH.matcher("www.example.com");
+            assertTrue(matcher.matches());
+            assertEquals("", matcher.group("path"));
+        }
+        {
+            Matcher matcher = URI_PATH.matcher("example.com");
+            assertTrue(matcher.matches());
+            assertEquals("", matcher.group("path"));
+        }
+        {
+            Matcher matcher = URI_PATH.matcher("http://www.example.com/examples");
+            assertTrue(matcher.matches());
+            assertEquals("/examples", matcher.group("path"));
+        }
+        {
+            Matcher matcher = URI_PATH.matcher("/examples");
+            assertTrue(matcher.matches());
+            assertEquals("/examples", matcher.group("path"));
+        }
+        {
+            Matcher matcher = URI_PATH.matcher("/examples/first?id=1");
+            assertTrue(matcher.matches());
+            assertEquals("/examples/first", matcher.group("path"));
+        }
+        {
+            Matcher matcher = URI_PATH.matcher("/examples/first?id=1#up");
+            assertTrue(matcher.matches());
+            assertEquals("/examples/first", matcher.group("path"));
+        }
+        {
+            Matcher matcher = URI_PATH.matcher("http://www.example.com/examples?id=1&page=2");
+            assertTrue(matcher.matches());
+            assertEquals("/examples", matcher.group("path"));
+        }
+        {
+            Matcher matcher = URI_PATH.matcher("http://www.example.com#up");
+            assertTrue(matcher.matches());
+            assertEquals("", matcher.group("path"));
+        }
+        {
+            Matcher matcher = URI_PATH.matcher("http://www.example.com:8008");
+            assertTrue(matcher.matches());
+            assertEquals("", matcher.group("path"));
+        }
+        {
+            Matcher matcher = URI_PATH.matcher("http://example.com/stuff.cgi?key= | http://bad-example.com/cgi-bin/stuff.cgi?key1=value1&key2");
+            assertFalse(matcher.matches());
+        }
+    }
+
 }
