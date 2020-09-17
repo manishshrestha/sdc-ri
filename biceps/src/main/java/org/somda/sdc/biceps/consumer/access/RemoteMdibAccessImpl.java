@@ -176,6 +176,13 @@ public class RemoteMdibAccessImpl implements RemoteMdibAccess {
     }
 
     @Override
+    public <T extends AbstractState> List<T> getStatesByType(Class<T> stateClass) {
+        try (ReadTransaction transaction = startTransaction()) {
+            return transaction.getStatesByType(stateClass);
+        }
+    }
+
+    @Override
     public <T extends AbstractContextState> List<T> getContextStates(String descriptorHandle, Class<T> stateClass) {
         try (ReadTransaction transaction = startTransaction()) {
             return transaction.getContextStates(descriptorHandle, stateClass);

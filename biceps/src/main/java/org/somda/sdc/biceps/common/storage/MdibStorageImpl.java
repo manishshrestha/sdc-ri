@@ -187,6 +187,19 @@ public class MdibStorageImpl implements MdibStorage {
     }
 
     @Override
+    public <T extends AbstractState> List<T> getStatesByType(Class<T> stateClass) {
+        var result = new ArrayList<T>();
+        for (MdibEntity entity : entities.values()) {
+            entity.getStates().forEach(state -> {
+                if (stateClass.isAssignableFrom(state.getClass())) {
+                    result.add(stateClass.cast(state));
+                }
+            });
+        }
+        return result;
+    }
+
+    @Override
     public <T extends AbstractContextState> List<T> getContextStates(String descriptorHandle, Class<T> stateClass) {
         final MdibEntity entity = entities.get(descriptorHandle);
         if (entity == null || entity.getStates().isEmpty()) {
