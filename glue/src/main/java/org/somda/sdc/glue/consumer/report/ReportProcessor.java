@@ -146,7 +146,7 @@ public class ReportProcessor extends AbstractIdleService {
         final MdibVersion mdibAccessMdibVersion = mdibAccess.getMdibVersion();
         final MdibVersion reportMdibVersion = mdibVersionUtil.getMdibVersion(report);
         if (!mdibAccessMdibVersion.getSequenceId().equals(reportMdibVersion.getSequenceId()) ||
-                !compareInstanceIds(mdibAccessMdibVersion.getInstanceId(), reportMdibVersion.getInstanceId())) {
+                !equalsInstanceIds(mdibAccessMdibVersion.getInstanceId(), reportMdibVersion.getInstanceId())) {
             throw new ReportProcessingException(String.format("MDIB version from MDIB (%s) and " +
                             "MDIB version from report (%s) do not match",
                     mdibAccessMdibVersion, reportMdibVersion));
@@ -208,7 +208,7 @@ public class ReportProcessor extends AbstractIdleService {
 
         final MdibVersion mdibVersion = mdibAccess.getMdibVersion();
         if (!URI.create(mdibVersion.getSequenceId()).equals(URI.create(contextStatesResponse.getSequenceId())) ||
-                !compareInstanceIds(mdibVersion.getInstanceId(), contextStatesResponse.getInstanceId())) {
+                !equalsInstanceIds(mdibVersion.getInstanceId(), contextStatesResponse.getInstanceId())) {
             throw new ReportProcessingException(String.format("Received context state report belongs to " +
                             "different MDIB sequence/instance. Expected: %s, actual: %s",
                     mdibVersionUtil.getMdibVersion(contextStatesResponse), mdibVersion));
@@ -227,13 +227,16 @@ public class ReportProcessor extends AbstractIdleService {
     }
 
     /**
+     * Compares two InstanceIds for equality.
+     *
      * This equals check is necessary, since InstanceId has a implied value of 0 and the report might actually have the
      * field set to null.
-     * @param mdibVersionInstanceId the mdibVersion instance id, implied value always set to 0
-     * @param reportInstanceId the report instance id, might be null instead of 0
+     *
+     * @param mdibVersionInstanceId the mdibVersion instance id
+     * @param reportInstanceId the report instance id, implied value always set to 0
      * @return true if equal, false otherwise
      */
-    private boolean compareInstanceIds(BigInteger mdibVersionInstanceId, @Nullable BigInteger reportInstanceId) {
+    private boolean equalsInstanceIds(BigInteger mdibVersionInstanceId, @Nullable BigInteger reportInstanceId) {
         return reportInstanceId == null ? mdibVersionInstanceId.equals(BigInteger.ZERO) : mdibVersionInstanceId.equals(reportInstanceId);
     }
 
