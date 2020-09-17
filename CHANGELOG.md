@@ -58,6 +58,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `org.somda.sdc.glue.consumer.SdcRemoteDeviceImpl` no longer ignores registering and unregistering watchdog observers. (#192)
 - `org.somda.sdc.dpws.soap.wseventing.EventSinkImpl` getStatus, renew and unsubscribe messages are send to the epr of the SubscriptionManager. (#190)
 - `org.somda.sdc.glue.consumer.report.helper.ReportWriter` no longer ignores states without descriptors in DescriptionModificationReports. (#193)
+- `org.somda.sdc.glue.consumer.report.ReportProcessor` correctly handles implied value when comparing instanceIds. (#194)
 
 ## [1.1.0] - 2020-04-18
 
