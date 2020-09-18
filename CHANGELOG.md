@@ -20,6 +20,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `org.somda.sdc.biceps.common.storage.MdibStorageImpl` can be configured not to remove not associated context states from storage. (#183)
 - `org.somda.sdc.biceps.common.storage.MdibStorageImpl` can be configured not to create descriptors for state updates missing descriptors. (#183)
 - `org.somda.sdc.glue.consumer.report.ReportProcessor` can be configured to apply reports which have the same MDIB version as the current MDIB. (#183)
+- `org.somda.sdc.biceps.common.access.MdibAccess` method added to retrieve a list of states of a specific type. (#195)
+- `org.somda.sdc.biceps.common.storage.MdibStorage` method added to retrieve a list of states of a specific type. (#195)
 
 ### Changed
 

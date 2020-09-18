@@ -125,6 +125,15 @@ public interface MdibAccess {
     <T extends AbstractState> Optional<T> getState(String handle, Class<T> stateClass);
 
     /**
+     * Gets all states of a specific type.
+     *
+     * @param stateClass the class information to filter for.
+     * @param <T>        the state type to filter for.
+     * @return a list of all states with the given type.
+     */
+    <T extends AbstractState> List<T> getStatesByType(Class<T> stateClass);
+
+    /**
      * Finds all context states of a certain descriptor given a state class.
      * <p>
      * <em>Attention: collections may be created on function call, hence be careful with performance issues.</em>
