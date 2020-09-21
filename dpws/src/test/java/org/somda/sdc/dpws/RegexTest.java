@@ -1,10 +1,9 @@
-package org.somda.sdc.glue.common.uri;
+package org.somda.sdc.dpws;
 
 import jregex.Matcher;
 import jregex.Pattern;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.somda.sdc.dpws.DpwsConstants;
 import test.org.somda.common.LoggingTestWatcher;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -16,8 +15,10 @@ public class RegexTest {
 
     private static final Pattern AUTHORITY_PATTERN = new Pattern("^" + DpwsConstants.AUTHORITY + "$");
     private static final Pattern URI_PATTERN = new Pattern(DpwsConstants.URI_REGEX);
-    private static final Pattern URI_PATH = new Pattern(DpwsConstants.RELATIVE_URI_REGEX);
     private static final Pattern SEGMENT_PATTERN = new Pattern(DpwsConstants.AUTHORITY);
+    private static final Pattern URI_REFERENCE_PATTERN = new Pattern(DpwsConstants.URI_REFERENCE);
+    private static final Pattern RELATIVE_URI = new Pattern(DpwsConstants.RELATIVE_URI);
+    private static final Pattern ABSOLUTE_URI = new Pattern(DpwsConstants.ABSOLUTE_URI);
 
     @Test
     void segment() {
@@ -101,76 +102,68 @@ public class RegexTest {
     }
 
     @Test
-    void uriPath() {
+    void uriReference() {
         {
-            Matcher matcher = URI_PATH.matcher("scheme://user@%C3%A4:123/path?query?query#fragment");
+            Matcher matcher = URI_REFERENCE_PATTERN.matcher("scheme://user@%C3%A4:123/path?query?query#fragment");
             assertTrue(matcher.matches());
+            assertEquals("scheme://user@%C3%A4:123/path?query?query", matcher.group("absoluteUri"));
+            assertEquals("user", matcher.group("userInfo"));
+            assertEquals("123", matcher.group("port"));
+            assertEquals("%C3%A4", matcher.group("host"));
             assertEquals("/path", matcher.group("path"));
+            assertEquals("query?query", matcher.group("query"));
+            assertEquals("fragment", matcher.group("fragment"));
         }
         {
-            Matcher matcher = URI_PATH.matcher("https://www.example.com");
+            Matcher matcher = URI_REFERENCE_PATTERN.matcher("/path?query?query#fragment");
             assertTrue(matcher.matches());
-            assertEquals("", matcher.group("path"));
+            assertEquals("/path?query?query", matcher.group("relativeUri"));
+            assertEquals("/path", matcher.group("path"));
+            assertEquals("query?query", matcher.group("query"));
+            assertEquals("fragment", matcher.group("fragment"));
         }
         {
-            Matcher matcher = URI_PATH.matcher("www.example.com");
+            Matcher matcher = URI_REFERENCE_PATTERN.matcher("//user@%C3%A4:123/path?query?query#fragment");
             assertTrue(matcher.matches());
-            assertEquals("", matcher.group("path"));
-        }
-        {
-            Matcher matcher = URI_PATH.matcher("example.com");
-            assertTrue(matcher.matches());
-            assertEquals("", matcher.group("path"));
-        }
-        {
-            Matcher matcher = URI_PATH.matcher("http://www.example.com/examples");
-            assertTrue(matcher.matches());
-            assertEquals("/examples", matcher.group("path"));
-        }
-        {
-            Matcher matcher = URI_PATH.matcher("/examples");
-            assertTrue(matcher.matches());
-            assertEquals("/examples", matcher.group("path"));
-        }
-        {
-            Matcher matcher = URI_PATH.matcher("/examples/first?id=1");
-            assertTrue(matcher.matches());
-            assertEquals("/examples/first", matcher.group("path"));
-        }
-        {
-            Matcher matcher = URI_PATH.matcher("/examples/first?id=1#up");
-            assertTrue(matcher.matches());
-            assertEquals("/examples/first", matcher.group("path"));
-        }
-        {
-            Matcher matcher = URI_PATH.matcher("http://www.example.com/examples?id=1&page=2");
-            assertTrue(matcher.matches());
-            assertEquals("/examples", matcher.group("path"));
-        }
-        {
-            Matcher matcher = URI_PATH.matcher("http://www.example.com#up");
-            assertTrue(matcher.matches());
-            assertEquals("", matcher.group("path"));
-        }
-        {
-            Matcher matcher = URI_PATH.matcher("http://www.example.com:8008");
-            assertTrue(matcher.matches());
-            assertEquals("", matcher.group("path"));
-        }
-//        /7a82887a-59ba-4aa7-a2e5-b1cc00b14056
-        {
-            Matcher matcher = URI_PATH.matcher("/7a82887a-59ba-4aa7-a2e5-b1cc00b14056");
-            assertTrue(matcher.matches());
-            assertEquals("/7a82887a-59ba-4aa7-a2e5-b1cc00b14056", matcher.group("path"));
-        }
-        {
-            Matcher matcher = URI_PATH.matcher("http://example.com/stuff.cgi?key= | http://bad-example.com/cgi-bin/stuff.cgi?key1=value1&key2");
-            assertFalse(matcher.matches());
-        }
-        {
-            Matcher matcher = URI_PATH.matcher("scheme://user@%C3%A4:123/path?#?query#fragment");
-            assertFalse(matcher.matches());
+            assertEquals("//user@%C3%A4:123/path?query?query", matcher.group("relativeUri"));
+            assertEquals("user", matcher.group("userInfo"));
+            assertEquals("123", matcher.group("port"));
+            assertEquals("%C3%A4", matcher.group("host"));
+            assertEquals("/path", matcher.group("path"));
+            assertEquals("query?query", matcher.group("query"));
+            assertEquals("fragment", matcher.group("fragment"));
         }
     }
 
+    @Test
+    void absoluteUri() {
+        {
+            Matcher matcher = ABSOLUTE_URI.matcher("scheme://user@%C3%A4:123/path?query?query");
+            assertTrue(matcher.matches());
+            assertEquals("user", matcher.group("userInfo"));
+            assertEquals("123", matcher.group("port"));
+            assertEquals("%C3%A4", matcher.group("host"));
+            assertEquals("/path", matcher.group("path"));
+            assertEquals("query?query", matcher.group("query"));
+        }
+    }
+
+    @Test
+    void relativeUri() {
+        {
+            Matcher matcher = RELATIVE_URI.matcher("/path?query?query");
+            assertTrue(matcher.matches());
+            assertEquals("/path", matcher.group("path"));
+            assertEquals("query?query", matcher.group("query"));
+        }
+        {
+            Matcher matcher = RELATIVE_URI.matcher("//user@%C3%A4:123/path?query?query");
+            assertTrue(matcher.matches());
+            assertEquals("user", matcher.group("userInfo"));
+            assertEquals("123", matcher.group("port"));
+            assertEquals("%C3%A4", matcher.group("host"));
+            assertEquals("/path", matcher.group("path"));
+            assertEquals("query?query", matcher.group("query"));
+        }
+    }
 }
