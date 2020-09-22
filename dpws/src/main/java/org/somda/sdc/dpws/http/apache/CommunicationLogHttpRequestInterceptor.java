@@ -32,7 +32,7 @@ public class CommunicationLogHttpRequestInterceptor implements HttpRequestInterc
     private static final Logger LOG = LogManager.getLogger(CommunicationLogHttpRequestInterceptor.class);
     private static final String TRANSACTION_ID_PREFIX_CLIENT = "rrId:client:" + UUID.randomUUID() + ":";
     private final static AtomicLong TRANSACTION_ID = new AtomicLong(-1L);
-    private static final Pattern URI_PATH = new Pattern(DpwsConstants.URI_REFERENCE);
+    private static final Pattern URI_PATTERN = new Pattern(DpwsConstants.URI_REFERENCE);
 
     private final CommunicationLog commlog;
     private final Logger instanceLogger;
@@ -51,11 +51,9 @@ public class CommunicationLogHttpRequestInterceptor implements HttpRequestInterc
 
         var currentTransactionId = TRANSACTION_ID_PREFIX_CLIENT + TRANSACTION_ID.incrementAndGet();
         context.setAttribute(CommunicationLog.MessageType.REQUEST.name(), currentTransactionId);
-
-        Matcher matcher = URI_PATH.matcher(request.getRequestLine().getUri());
-        matcher.matches();
-        var requestUri =  matcher.group("relativeUri");
-
+        var uriHost = buildMatchingMatcher(target.toURI()).group("absoluteUri");
+        var uriPath = buildMatchingMatcher(request.getRequestLine().getUri()).group("path");
+        var requestUri = buildMatchingMatcher(uriHost + uriPath).group("absoluteUri");
         var requestHttpApplicationInfo = new HttpApplicationInfo(
                 ApacheClientHelper.allHeadersToMultimap(request.getAllHeaders()),
                 currentTransactionId,
@@ -100,5 +98,11 @@ public class CommunicationLogHttpRequestInterceptor implements HttpRequestInterc
         entityRequest.setEntity(new CommunicationLogEntity(oldMessageEntity, commlogStream));
 
         instanceLogger.debug("Processing request done: {}", request.getRequestLine());
+    }
+
+    private Matcher buildMatchingMatcher(String targetToMatch) {
+        Matcher matcher = URI_PATTERN.matcher(targetToMatch);
+        matcher.matches();
+        return matcher;
     }
 }

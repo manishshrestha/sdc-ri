@@ -327,7 +327,7 @@ public class SubscriptionIT {
                 var wsaToHeader = request.getWsAddressingHeader().getTo();
                 assertTrue(wsaToHeader.isPresent());
                 assertNotEquals("", requestUri.get());
-                assertTrue(wsaToHeader.get().getValue().endsWith(requestUri.get()));
+                assertEquals(wsaToHeader.get().getValue(), requestUri.get());
             }
         }
         assertTrue(seenWseAction.get());
