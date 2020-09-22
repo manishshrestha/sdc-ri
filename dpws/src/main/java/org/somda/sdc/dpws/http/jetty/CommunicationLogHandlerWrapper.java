@@ -25,7 +25,7 @@ import jregex.Pattern;
 public class CommunicationLogHandlerWrapper extends HandlerWrapper {
     private static final String TRANSACTION_ID_PREFIX_SERVER = "rrId:server:" + UUID.randomUUID() + ":";
     private static final AtomicLong TRANSACTION_ID = new AtomicLong(-1L);
-    private static final Pattern URI_PATH = new Pattern(DpwsConstants.RELATIVE_URI_REGEX);
+    private static final Pattern URI_PATH = new Pattern(DpwsConstants.URI_REFERENCE);
     private final CommunicationLog commLog;
     private final String frameworkIdentifier;
 
@@ -43,7 +43,7 @@ public class CommunicationLogHandlerWrapper extends HandlerWrapper {
 
         Matcher matcher = URI_PATH.matcher(baseRequest.getRequestURI());
         matcher.matches();
-        var requestUri =  matcher.group("path");
+        var requestUri =  matcher.group("relativeUri");
 
         var requestHttpApplicationInfo = new HttpApplicationInfo(
                 JettyUtil.getRequestHeaders(request),

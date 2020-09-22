@@ -32,7 +32,7 @@ public class CommunicationLogHttpRequestInterceptor implements HttpRequestInterc
     private static final Logger LOG = LogManager.getLogger(CommunicationLogHttpRequestInterceptor.class);
     private static final String TRANSACTION_ID_PREFIX_CLIENT = "rrId:client:" + UUID.randomUUID() + ":";
     private final static AtomicLong TRANSACTION_ID = new AtomicLong(-1L);
-    private static final Pattern URI_PATH = new Pattern(DpwsConstants.RELATIVE_URI_REGEX);
+    private static final Pattern URI_PATH = new Pattern(DpwsConstants.URI_REFERENCE);
 
     private final CommunicationLog commlog;
     private final Logger instanceLogger;
@@ -54,7 +54,7 @@ public class CommunicationLogHttpRequestInterceptor implements HttpRequestInterc
 
         Matcher matcher = URI_PATH.matcher(request.getRequestLine().getUri());
         matcher.matches();
-        var requestUri =  matcher.group("path");
+        var requestUri =  matcher.group("relativeUri");
 
         var requestHttpApplicationInfo = new HttpApplicationInfo(
                 ApacheClientHelper.allHeadersToMultimap(request.getAllHeaders()),
