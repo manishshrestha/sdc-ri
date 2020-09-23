@@ -109,6 +109,7 @@ public class RegexTest {
             assertTrue(matcher.matches());
             assertEquals("scheme://user@%C3%A4:123/path?query?query", matcher.group("absoluteUri"));
             assertEquals("user", matcher.group("userInfo"));
+            assertEquals("user@%C3%A4:123", matcher.group("authority"));
             assertEquals("123", matcher.group("port"));
             assertEquals("%C3%A4", matcher.group("host"));
             assertEquals("/path", matcher.group("path"));
@@ -158,6 +159,7 @@ public class RegexTest {
             Matcher matcher = ABSOLUTE_URI_PATTERN.matcher("scheme://user@%C3%A4:123/path?query?query");
             assertTrue(matcher.matches());
             assertEquals("scheme://user@%C3%A4:123/path?query?query", matcher.group("absoluteUri"));
+            assertEquals("user@%C3%A4:123", matcher.group("authority"));
             assertEquals("user", matcher.group("userInfo"));
             assertEquals("123", matcher.group("port"));
             assertEquals("%C3%A4", matcher.group("host"));
@@ -203,6 +205,47 @@ public class RegexTest {
             assertEquals("*", matcher.group("relPath"));
             assertNull(matcher.group("path"));
             assertNull(matcher.group("authority"));
+        }
+    }
+
+    @Test
+    void requestUri() {
+        // test "*"
+        {
+            Matcher matcher = URI_REFERENCE_PATTERN.matcher("*");
+            assertTrue(matcher.matches());
+            assertEquals("*", matcher.group("relPath"));
+        }
+        // test absoluteUri
+        {
+            Matcher matcher = URI_REFERENCE_PATTERN.matcher("http://www.w3.org/pub/WWW/TheProject.html");
+            assertTrue(matcher.matches());
+            assertEquals("http://www.w3.org/pub/WWW/TheProject.html", matcher.group("absoluteUri"));
+            var scheme = matcher.group("scheme");
+            var authority = matcher.group("authority");
+            var path = matcher.group("path");
+            assertEquals("http://www.w3.org/pub/WWW/TheProject.html", scheme + "://" + authority + path);
+        }
+        {
+            Matcher matcher = URI_REFERENCE_PATTERN.matcher("http://my_email%40gmail.com:password@www.my_site.com/path?query#fragment");
+            assertTrue(matcher.matches());
+            assertEquals("http://my_email%40gmail.com:password@www.my_site.com/path?query", matcher.group("absoluteUri"));
+            var scheme = matcher.group("scheme");
+            var hostPort = matcher.group("hostPort");
+            var path = matcher.group("path");
+            assertEquals("http://www.my_site.com/path", scheme + "://" + hostPort + path);
+        }
+        // test abs_path
+        {
+            Matcher matcher = URI_REFERENCE_PATTERN.matcher("/pub/WWW/TheProject.html");
+            assertTrue(matcher.matches());
+            assertEquals("/pub/WWW/TheProject.html", matcher.group("path"));
+        }
+        // test authority
+        {
+            Matcher matcher = AUTHORITY_PATTERN.matcher("server.example.com:80");
+            assertTrue(matcher.matches());
+            assertEquals("server.example.com:80", matcher.group("authority"));
         }
     }
 }

@@ -1,5 +1,6 @@
 package it.org.somda.sdc.dpws.soap;
 
+import com.google.common.collect.ListMultimap;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.SettableFuture;
 import com.google.inject.AbstractModule;
@@ -7,6 +8,8 @@ import dpws_test_service.messages._2017._05._10.TestNotification;
 import it.org.somda.sdc.dpws.IntegrationTestUtil;
 import it.org.somda.sdc.dpws.MockedUdpBindingModule;
 import it.org.somda.sdc.dpws.TestServiceMetadata;
+import jregex.Matcher;
+import jregex.Pattern;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -15,6 +18,7 @@ import org.somda.sdc.dpws.CommunicationLog;
 import org.somda.sdc.dpws.CommunicationLogImpl;
 import org.somda.sdc.dpws.CommunicationLogSink;
 import org.somda.sdc.dpws.DpwsConfig;
+import org.somda.sdc.dpws.DpwsConstants;
 import org.somda.sdc.dpws.crypto.CryptoConfig;
 import org.somda.sdc.dpws.crypto.CryptoSettings;
 import org.somda.sdc.dpws.device.DeviceSettings;
@@ -61,7 +65,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -71,6 +75,9 @@ import static org.mockito.Mockito.when;
 @ExtendWith(LoggingTestWatcher.class)
 public class SubscriptionIT {
     private static final Duration MAX_WAIT_TIME = Duration.ofMinutes(3);
+
+    private static final Pattern URI_PATTERN = new Pattern(DpwsConstants.URI_REFERENCE);
+    private static final Pattern AUTHORITY_PATTERN = new Pattern(DpwsConstants.AUTHORITY);
 
     private final IntegrationTestUtil IT = new IntegrationTestUtil();
     private final SoapUtil soapUtil = IT.getInjector().getInstance(SoapUtil.class);
@@ -313,6 +320,10 @@ public class SubscriptionIT {
         assertFalse(allRequests.isEmpty());
         var allRequestUris = logSink.getRequestUris();
         assertEquals(allRequests.keySet(), allRequestUris.keySet());
+        var allOutboundHeaders = logSink.getOutboundHeaders();
+        assertEquals(allRequests.keySet(), allOutboundHeaders.keySet());
+        var allSchemes = logSink.getSchemes();
+        assertEquals(allRequests.keySet(), allSchemes.keySet());
         var seenWseAction = new AtomicBoolean(false);
 
         for (var transactionId : allRequests.keySet()) {
@@ -326,11 +337,38 @@ public class SubscriptionIT {
                 assertTrue(requestUri.isPresent());
                 var wsaToHeader = request.getWsAddressingHeader().getTo();
                 assertTrue(wsaToHeader.isPresent());
-                assertNotEquals("", requestUri.get());
-                assertEquals(wsaToHeader.get().getValue(), requestUri.get());
+                var reconstructedUri = reconstructUri(allSchemes.get(transactionId), allOutboundHeaders.get(transactionId), requestUri.get());
+                assertNotNull(reconstructedUri, "Uri could not been reconstructed.");
+                assertEquals(wsaToHeader.get().getValue(), reconstructedUri);
             }
         }
         assertTrue(seenWseAction.get());
+    }
+
+    private String reconstructUri(String scheme, ListMultimap<String, String> headers, String requestUri) {
+        scheme = scheme + "://";
+        var host= headers.get("host").get(0);
+
+        Matcher matcher = URI_PATTERN.matcher(requestUri);
+        Matcher authMatcher = AUTHORITY_PATTERN.matcher(requestUri);
+        if (matcher.matches()) {
+            var absoluteUri = matcher.group("absoluteUri");
+            if (absoluteUri != null) {
+                return absoluteUri;
+            }
+            var absolutePath = matcher.group("path");
+            if (absolutePath != null) {
+                return scheme + host + absolutePath;
+            }
+            var asterisk = matcher.group("relPath");
+            if (asterisk != null) {
+                return scheme + host;
+            }
+        } else if (authMatcher.matches()) {
+            var authority = authMatcher.group("authority");
+            return scheme + authority;
+        }
+        return null;
     }
 
     static class TestCommLogSink implements CommunicationLogSink {
@@ -338,12 +376,16 @@ public class SubscriptionIT {
         private final Map<String, ByteArrayOutputStream> outbound;
         private CommunicationLog.MessageType outboundMessageType;
         private final ArrayList<String> outboundTransactionIds;
+        private final Map<String, ListMultimap<String, String>> outboundHeaders;
         private final Map<String, Optional<String>> requestUris;
+        private final Map<String, String> schemes;
 
         TestCommLogSink() {
             this.outbound = new HashMap<>();
             this.outboundTransactionIds = new ArrayList<>();
             this.requestUris = new HashMap<>();
+            this.outboundHeaders = new HashMap<>();
+            this.schemes = new HashMap<>();
         }
 
         @Override
@@ -354,8 +396,10 @@ public class SubscriptionIT {
             var os = new ByteArrayOutputStream();
             var appInfo = (HttpApplicationInfo) communicationContext.getApplicationInfo();
             if (CommunicationLog.Direction.OUTBOUND.equals(direction)) {
+                schemes.put(appInfo.getTransactionId(), communicationContext.getTransportInfo().getScheme());
                 outbound.put(appInfo.getTransactionId(), os);
                 outboundMessageType = messageType;
+                outboundHeaders.put(appInfo.getTransactionId(), appInfo.getHeaders());
                 outboundTransactionIds.add(appInfo.getTransactionId());
                 requestUris.put(appInfo.getTransactionId(), appInfo.getRequestUri());
             }
@@ -375,6 +419,10 @@ public class SubscriptionIT {
             return outboundMessageType;
         }
 
+        public Map<String, ListMultimap<String, String>> getOutboundHeaders() {
+            return outboundHeaders;
+        }
+
         public ArrayList<String> getOutboundTransactionIds() {
             return outboundTransactionIds;
         }
@@ -382,5 +430,7 @@ public class SubscriptionIT {
         public Map<String, Optional<String>> getRequestUris() {
             return requestUris;
         }
+
+        public Map<String, String> getSchemes() { return schemes; }
     }
 }

@@ -168,7 +168,7 @@ public class DpwsConstants {
             "(%[a-fA-F0-9]{2})?\\s*";
     private static final String IP_LITERAL = "\\[" + "((" + IPV6_ADDRESS + ")|(" + IPV_FUTURE + "))" + "\\]";
     private static final String HOST = "({=host}(" + REG_NAME + "|" + IPV4_ADDRESS + "|" + IP_LITERAL + "))";
-    public static final String AUTHORITY = "(({=userInfo}" + USER_INFO + ")@)?" + HOST + "(:({=port}[0-9]*))?";
+    public static final String AUTHORITY = "({=authority}((({=userInfo}" + USER_INFO + ")@)?" + "({=hostPort}" + HOST + "(:({=port}[0-9]*))?))|" + REG_NAME + ")";
     private static final String PATH_EMPTY = "";
     private static final String PATH_ROOTLESS = SEGMENT_NZ_REGEX + "(/" + SEGMENT_REGEX + ")*";
     private static final String PATH_NOSCHEME = "[a-zA-Z0-9\\-._~!$&'()*+,;=@]+" + "(/" + SEGMENT_REGEX + ")*";
@@ -194,14 +194,14 @@ public class DpwsConstants {
     private static final String REL_SEGMENT = "(" + UNRESERVED + "|" + ESCAPED + "|[;@&=+$,])+";
 
     private static final String ABS_PATH = "({=path}/" + PATH_SEGMENTS + ")";
-    private static final String NET_PATH = "({=netPath}//({=authority}" + AUTHORITY + ")(" + ABS_PATH + ")?)";
+    private static final String NET_PATH = "({=netPath}//(" + AUTHORITY + ")(" + ABS_PATH + ")?)";
     private static final String REL_PATH = "({relPath}" + REL_SEGMENT + "(" + ABS_PATH + ")?)";
 
     public static final String RELATIVE_URI = "({relativeUri}(" + NET_PATH + "|" + ABS_PATH + "|" + REL_PATH + ")(\\?({=relativeUriQuery}" + QUERY + "))?)";
 
     private static final String URIC = "(" + RESERVED + "|" + UNRESERVED + "|" + ESCAPED + ")";
     private static final String URIC_NO_SLASH = "(" + UNRESERVED + "|" + ESCAPED + "|" + "[;?:@&=+$,])";
-    private static final String OPAQUE_PART = "({opaquePart}(" + URIC_NO_SLASH + URIC + ")*)";
+    private static final String OPAQUE_PART = "({opaquePart}(" + URIC_NO_SLASH + "(" + URIC + ")*))";
     private static final String HIER_PART = "({hierPart}(" + NET_PATH + "|" + ABS_PATH + ")(\\?({=absoluteUriQuery}" + QUERY + "))?)";
 
     public static final String ABSOLUTE_URI = "({absoluteUri}({scheme}" + SCHEME_SEGMENT + ")" +

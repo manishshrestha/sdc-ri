@@ -1,6 +1,5 @@
 package org.somda.sdc.dpws.http.apache;
 
-import jregex.Matcher;
 import jregex.Pattern;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpEntityEnclosingRequest;
@@ -51,13 +50,10 @@ public class CommunicationLogHttpRequestInterceptor implements HttpRequestInterc
 
         var currentTransactionId = TRANSACTION_ID_PREFIX_CLIENT + TRANSACTION_ID.incrementAndGet();
         context.setAttribute(CommunicationLog.MessageType.REQUEST.name(), currentTransactionId);
-        var uriHost = buildMatchingMatcher(target.toURI()).group("absoluteUri");
-        var uriPath = buildMatchingMatcher(request.getRequestLine().getUri()).group("path");
-        var requestUri = buildMatchingMatcher(uriHost + uriPath).group("absoluteUri");
         var requestHttpApplicationInfo = new HttpApplicationInfo(
                 ApacheClientHelper.allHeadersToMultimap(request.getAllHeaders()),
                 currentTransactionId,
-                requestUri
+                request.getRequestLine().getUri()
         );
 
         // collect information for TransportInfo
@@ -98,11 +94,5 @@ public class CommunicationLogHttpRequestInterceptor implements HttpRequestInterc
         entityRequest.setEntity(new CommunicationLogEntity(oldMessageEntity, commlogStream));
 
         instanceLogger.debug("Processing request done: {}", request.getRequestLine());
-    }
-
-    private Matcher buildMatchingMatcher(String targetToMatch) {
-        Matcher matcher = URI_PATTERN.matcher(targetToMatch);
-        matcher.matches();
-        return matcher;
     }
 }
