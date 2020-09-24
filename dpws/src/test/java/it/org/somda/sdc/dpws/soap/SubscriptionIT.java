@@ -78,6 +78,7 @@ public class SubscriptionIT {
 
     private static final Pattern URI_PATTERN = new Pattern(DpwsConstants.URI_REFERENCE);
     private static final Pattern AUTHORITY_PATTERN = new Pattern(DpwsConstants.AUTHORITY);
+    private static final Pattern ABS_PATH_PATTERN = new Pattern(DpwsConstants.ABS_PATH);
 
     private final IntegrationTestUtil IT = new IntegrationTestUtil();
     private final SoapUtil soapUtil = IT.getInjector().getInstance(SoapUtil.class);
@@ -338,7 +339,7 @@ public class SubscriptionIT {
                 var wsaToHeader = request.getWsAddressingHeader().getTo();
                 assertTrue(wsaToHeader.isPresent());
                 var reconstructedUri = reconstructUri(allSchemes.get(transactionId), allOutboundHeaders.get(transactionId), requestUri.get());
-                assertNotNull(reconstructedUri, "Uri could not been reconstructed.");
+                assertNotNull(reconstructedUri, "Uri could not be reconstructed.");
                 assertEquals(wsaToHeader.get().getValue(), reconstructedUri);
             }
         }
@@ -347,26 +348,32 @@ public class SubscriptionIT {
 
     private String reconstructUri(String scheme, ListMultimap<String, String> headers, String requestUri) {
         scheme = scheme + "://";
-        var host= headers.get("host").get(0);
+        var host = headers.get("host").get(0);
+
+        if (requestUri.equals("*")) {
+            return scheme + host;
+        }
 
         Matcher matcher = URI_PATTERN.matcher(requestUri);
+        Matcher absPathMatcher = ABS_PATH_PATTERN.matcher(requestUri);
         Matcher authMatcher = AUTHORITY_PATTERN.matcher(requestUri);
         if (matcher.matches()) {
             var absoluteUri = matcher.group("absoluteUri");
             if (absoluteUri != null) {
                 return absoluteUri;
             }
-            var absolutePath = matcher.group("path");
+        }
+        if (absPathMatcher.matches()) {
+            var absolutePath = absPathMatcher.group("path");
             if (absolutePath != null) {
                 return scheme + host + absolutePath;
             }
-            var asterisk = matcher.group("relPath");
-            if (asterisk != null) {
-                return scheme + host;
-            }
-        } else if (authMatcher.matches()) {
+        }
+        if (authMatcher.matches()) {
             var authority = authMatcher.group("authority");
-            return scheme + authority;
+            if (authority != null) {
+                return scheme + authority;
+            }
         }
         return null;
     }
@@ -431,6 +438,8 @@ public class SubscriptionIT {
             return requestUris;
         }
 
-        public Map<String, String> getSchemes() { return schemes; }
+        public Map<String, String> getSchemes() {
+            return schemes;
+        }
     }
 }

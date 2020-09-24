@@ -193,7 +193,7 @@ public class DpwsConstants {
     private static final String UNRESERVED = "[a-zA-Z0-9\\-_.!~*'()]";
     private static final String REL_SEGMENT = "(" + UNRESERVED + "|" + ESCAPED + "|[;@&=+$,])+";
 
-    private static final String ABS_PATH = "({=path}/" + PATH_SEGMENTS + ")";
+    public static final String ABS_PATH = "({=path}/" + PATH_SEGMENTS + ")";
     private static final String NET_PATH = "({=netPath}//(" + AUTHORITY + ")(" + ABS_PATH + ")?)";
     private static final String REL_PATH = "({relPath}" + REL_SEGMENT + "(" + ABS_PATH + ")?)";
 
