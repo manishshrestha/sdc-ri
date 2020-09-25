@@ -18,7 +18,7 @@ import org.somda.sdc.dpws.CommunicationLog;
 import org.somda.sdc.dpws.CommunicationLogImpl;
 import org.somda.sdc.dpws.CommunicationLogSink;
 import org.somda.sdc.dpws.DpwsConfig;
-import org.somda.sdc.dpws.DpwsConstants;
+import org.somda.sdc.dpws.RFC2396Constants;
 import org.somda.sdc.dpws.crypto.CryptoConfig;
 import org.somda.sdc.dpws.crypto.CryptoSettings;
 import org.somda.sdc.dpws.device.DeviceSettings;
@@ -76,9 +76,9 @@ import static org.mockito.Mockito.when;
 public class SubscriptionIT {
     private static final Duration MAX_WAIT_TIME = Duration.ofMinutes(3);
 
-    private static final Pattern URI_PATTERN = new Pattern(DpwsConstants.URI_REFERENCE);
-    private static final Pattern AUTHORITY_PATTERN = new Pattern(DpwsConstants.AUTHORITY);
-    private static final Pattern ABS_PATH_PATTERN = new Pattern(DpwsConstants.ABS_PATH);
+    private static final Pattern URI_PATTERN = new Pattern(RFC2396Constants.URI_REFERENCE);
+    private static final Pattern AUTHORITY_PATTERN = new Pattern(RFC2396Constants.AUTHORITY);
+    private static final Pattern ABS_PATH_PATTERN = new Pattern(RFC2396Constants.ABS_PATH);
 
     private final IntegrationTestUtil IT = new IntegrationTestUtil();
     private final SoapUtil soapUtil = IT.getInjector().getInstance(SoapUtil.class);
@@ -361,7 +361,7 @@ public class SubscriptionIT {
         }
         Matcher absPathMatcher = ABS_PATH_PATTERN.matcher(requestUri);
         if (absPathMatcher.matches()) {
-            var absolutePath = absPathMatcher.group("path");
+            var absolutePath = absPathMatcher.group("absPath");
             if (absolutePath != null) {
                 scheme = scheme + "://";
                 var host = headers.get("host").get(0);

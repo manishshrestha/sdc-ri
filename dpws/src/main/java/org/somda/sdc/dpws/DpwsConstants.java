@@ -139,8 +139,8 @@ public class DpwsConstants {
     public static final String SEGMENT_NZ_REGEX = P_CHAR + "+";
     public static final String SEGMENT_REGEX = P_CHAR + "*";
     private static final String DEC_OCTET = "(1[0-9][0-9])|(2[0-4][0-9])|(25[0-5]|[0-9])|([1-9][0-9])";
-    private static final String IPV4_ADDRESS = String.join(".", Collections.nCopies(4, DEC_OCTET));
-    private static final String REG_NAME = "(?:(?:%[a-fA-F0-9]{2})+|(?:" + "[a-zA-Z0-9\\-._~!$&'()*+,;=]" + ")+)*";
+    private static final String IPV4_ADDRESS = "({=ipv4}" + String.join(".", Collections.nCopies(4, DEC_OCTET)) + ")";
+    private static final String REG_NAME = "({=regName}(?:(?:%[a-fA-F0-9]{2})+|(?:" + "[a-zA-Z0-9\\-._~!$&'()*+,;=]" + ")+)*)";
     private static final String USER_INFO = "(?:(?:%[a-fA-F0-9]{2})+|(?:" + "[a-zA-Z0-9\\-._~!$&'()*+,;=:]" + ")+)*";
     private static final String HEXDIG = "[a-fA-F0-9]";
     private static final String IPV_FUTURE = "v" + HEXDIG + "." + "[a-zA-Z0-9\\-._~!$&'()*+,;=:]";
@@ -166,9 +166,9 @@ public class DpwsConstants {
             "((:[0-9A-Fa-f]{1,4}){0,5}:((25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)" +
             "(\\.(25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)){3}))|:)))" +
             "(%[a-fA-F0-9]{2})?\\s*";
-    private static final String IP_LITERAL = "\\[" + "((" + IPV6_ADDRESS + ")|(" + IPV_FUTURE + "))" + "\\]";
+    private static final String IP_LITERAL = "({=ipLiteral}\\[" + "((" + IPV6_ADDRESS + ")|(" + IPV_FUTURE + "))" + "\\])";
     private static final String HOST = "({=host}(" + REG_NAME + "|" + IPV4_ADDRESS + "|" + IP_LITERAL + "))";
-    public static final String AUTHORITY = "({=authority}((({=userInfo}" + USER_INFO + ")@)?" + "({=hostPort}" + HOST + "(:({=port}[0-9]*))?))|" + REG_NAME + ")";
+    public static final String AUTHORITY = "(({=userInfo}" + USER_INFO + ")@)?" + HOST + "(:({port}[0-9]*))?";
     private static final String PATH_EMPTY = "";
     private static final String PATH_ROOTLESS = SEGMENT_NZ_REGEX + "(/" + SEGMENT_REGEX + ")*";
     private static final String PATH_NOSCHEME = "[a-zA-Z0-9\\-._~!$&'()*+,;=@]+" + "(/" + SEGMENT_REGEX + ")*";
@@ -181,33 +181,9 @@ public class DpwsConstants {
             PATH_ROOTLESS + "|" +
             PATH_EMPTY + "|" +
             ")";
+
     private static final String QUERY = "(" + P_CHAR + "|/|\\?)*";
     private static final String FRAGMENT = QUERY;
-
-    private static final String PARAM = P_CHAR + "*";
-    private static final String SEGMENT = P_CHAR + "*(;" + PARAM + ")*";
-    private static final String PATH_SEGMENTS = SEGMENT + "(/" + SEGMENT + ")*";
-
-    private static final String ESCAPED = "(%" + HEXDIG + HEXDIG + ")";
-    private static final String RESERVED = "[;/?:@&=+$,]";
-    private static final String UNRESERVED = "[a-zA-Z0-9\\-_.!~*'()]";
-    private static final String REL_SEGMENT = "(" + UNRESERVED + "|" + ESCAPED + "|[;@&=+$,])+";
-
-    public static final String ABS_PATH = "({=path}/" + PATH_SEGMENTS + ")";
-    private static final String NET_PATH = "({=netPath}//(" + AUTHORITY + ")(" + ABS_PATH + ")?)";
-    private static final String REL_PATH = "({relPath}" + REL_SEGMENT + "(" + ABS_PATH + ")?)";
-
-    public static final String RELATIVE_URI = "({relativeUri}(" + NET_PATH + "|" + ABS_PATH + "|" + REL_PATH + ")(\\?({=relativeUriQuery}" + QUERY + "))?)";
-
-    private static final String URIC = "(" + RESERVED + "|" + UNRESERVED + "|" + ESCAPED + ")";
-    private static final String URIC_NO_SLASH = "(" + UNRESERVED + "|" + ESCAPED + "|" + "[;?:@&=+$,])";
-    private static final String OPAQUE_PART = "({opaquePart}(" + URIC_NO_SLASH + "(" + URIC + ")*))";
-    private static final String HIER_PART = "({hierPart}(" + NET_PATH + "|" + ABS_PATH + ")(\\?({=absoluteUriQuery}" + QUERY + "))?)";
-
-    public static final String ABSOLUTE_URI = "({absoluteUri}({scheme}" + SCHEME_SEGMENT + ")" +
-            ":" + "(" + HIER_PART + "|" + OPAQUE_PART + "))";
-
-    public static final String URI_REFERENCE = "(" + ABSOLUTE_URI + "|" + RELATIVE_URI + ")?(#({fragment}" + FRAGMENT + "))?";
 
     // Added negative lookahead for "//" to prevent authority from being interpreted as path
     public static final String URI_REGEX = "^(" +

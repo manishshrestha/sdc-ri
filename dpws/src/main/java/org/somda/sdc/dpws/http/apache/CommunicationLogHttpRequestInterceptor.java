@@ -13,6 +13,7 @@ import org.apache.logging.log4j.Logger;
 import org.somda.sdc.common.logging.InstanceLogger;
 import org.somda.sdc.dpws.CommunicationLog;
 import org.somda.sdc.dpws.DpwsConstants;
+import org.somda.sdc.dpws.RFC2396Constants;
 import org.somda.sdc.dpws.http.apache.helper.ApacheClientHelper;
 import org.somda.sdc.dpws.soap.CommunicationContext;
 import org.somda.sdc.dpws.soap.HttpApplicationInfo;
@@ -31,7 +32,6 @@ public class CommunicationLogHttpRequestInterceptor implements HttpRequestInterc
     private static final Logger LOG = LogManager.getLogger(CommunicationLogHttpRequestInterceptor.class);
     private static final String TRANSACTION_ID_PREFIX_CLIENT = "rrId:client:" + UUID.randomUUID() + ":";
     private final static AtomicLong TRANSACTION_ID = new AtomicLong(-1L);
-    private static final Pattern URI_PATTERN = new Pattern(DpwsConstants.URI_REFERENCE);
 
     private final CommunicationLog commlog;
     private final Logger instanceLogger;
