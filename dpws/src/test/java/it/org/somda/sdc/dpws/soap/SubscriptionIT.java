@@ -347,32 +347,32 @@ public class SubscriptionIT {
     }
 
     private String reconstructUri(String scheme, ListMultimap<String, String> headers, String requestUri) {
-        scheme = scheme + "://";
-        var host = headers.get("host").get(0);
 
         if (requestUri.equals("*")) {
-            return scheme + host;
+            return requestUri;
         }
 
         Matcher matcher = URI_PATTERN.matcher(requestUri);
-        Matcher absPathMatcher = ABS_PATH_PATTERN.matcher(requestUri);
-        Matcher authMatcher = AUTHORITY_PATTERN.matcher(requestUri);
         if (matcher.matches()) {
             var absoluteUri = matcher.group("absoluteUri");
             if (absoluteUri != null) {
                 return absoluteUri;
             }
         }
+        Matcher absPathMatcher = ABS_PATH_PATTERN.matcher(requestUri);
         if (absPathMatcher.matches()) {
             var absolutePath = absPathMatcher.group("path");
             if (absolutePath != null) {
+                scheme = scheme + "://";
+                var host = headers.get("host").get(0);
                 return scheme + host + absolutePath;
             }
         }
+        Matcher authMatcher = AUTHORITY_PATTERN.matcher(requestUri);
         if (authMatcher.matches()) {
             var authority = authMatcher.group("authority");
             if (authority != null) {
-                return scheme + authority;
+                return authority;
             }
         }
         return null;
