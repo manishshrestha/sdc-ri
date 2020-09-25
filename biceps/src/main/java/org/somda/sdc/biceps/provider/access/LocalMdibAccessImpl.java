@@ -21,6 +21,7 @@ import org.somda.sdc.biceps.common.storage.MdibStoragePreprocessingChain;
 import org.somda.sdc.biceps.common.storage.PreprocessingException;
 import org.somda.sdc.biceps.common.storage.factory.MdibStorageFactory;
 import org.somda.sdc.biceps.common.storage.factory.MdibStoragePreprocessingChainFactory;
+import org.somda.sdc.biceps.consumer.preprocessing.DuplicateHandleHandler;
 import org.somda.sdc.biceps.model.participant.AbstractContextState;
 import org.somda.sdc.biceps.model.participant.AbstractDescriptor;
 import org.somda.sdc.biceps.model.participant.AbstractState;
@@ -65,6 +66,7 @@ public class LocalMdibAccessImpl implements LocalMdibAccess {
                         ReentrantReadWriteLock readWriteLock,
                         ReadTransactionFactory readTransactionFactory,
                         DuplicateChecker duplicateChecker,
+                        DuplicateHandleHandler duplicateHandleHandler,
                         VersionHandler versionHandler,
                         TypeConsistencyChecker typeConsistencyChecker,
                         HandleReferenceHandler handleReferenceHandler,
@@ -89,7 +91,7 @@ public class LocalMdibAccessImpl implements LocalMdibAccess {
                         versionHandler, handleReferenceHandler,
                         descriptorChildRemover
                 ),
-                Arrays.asList(versionHandler));
+                Arrays.asList(versionHandler, duplicateHandleHandler));
 
         this.writeUtil = new WriteUtil(
                 instanceLogger, eventDistributor,
