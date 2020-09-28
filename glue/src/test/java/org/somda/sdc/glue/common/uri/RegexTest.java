@@ -1,9 +1,10 @@
-package org.somda.sdc.dpws;
+package org.somda.sdc.glue.common.uri;
 
 import jregex.Matcher;
 import jregex.Pattern;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.somda.sdc.glue.GlueConstants;
 import test.org.somda.common.LoggingTestWatcher;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -13,9 +14,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @ExtendWith(LoggingTestWatcher.class)
 public class RegexTest {
 
-    private static final Pattern AUTHORITY_PATTERN = new Pattern("^" + DpwsConstants.AUTHORITY + "$");
-    private static final Pattern SEGMENT_PATTERN = new Pattern(DpwsConstants.AUTHORITY);
-    private static final Pattern URI_PATTERN = new Pattern(DpwsConstants.URI_REGEX);
+    private static final Pattern AUTHORITY_PATTERN = new Pattern("^" + GlueConstants.AUTHORITY + "$");
+    private static final Pattern URI_PATTERN = new Pattern(GlueConstants.URI_REGEX);
+
+    private static final Pattern SEGMENT_PATTERN = new Pattern(GlueConstants.AUTHORITY);
 
     @Test
     void segment() {
@@ -78,7 +80,6 @@ public class RegexTest {
             assertEquals("user", matcher.group("userInfo"));
             assertEquals("123", matcher.group("port"));
             assertEquals("%C3%A4", matcher.group("host"));
-            assertEquals("%C3%A4", matcher.group("regName"));
             assertEquals("/path", matcher.group("path"));
             assertEquals("query?query", matcher.group("query"));
             assertEquals("fragment", matcher.group("fragment"));

@@ -1,7 +1,5 @@
 package org.somda.sdc.dpws;
 
-import java.util.Collections;
-
 public class RFC2396Constants {
     private static final String HEX = "[a-fA-F0-9]";
     private static final String ESCAPED = "(%" + HEX + HEX + ")";
@@ -18,11 +16,11 @@ public class RFC2396Constants {
     private static final String P_CHAR = "(" + UNRESERVED + "|" + ESCAPED + "|[:@&=+$,])";
     private static final String PARAM = "({=param}" + P_CHAR + "*)";
     private static final String SEGMENT = "({=segment}" + P_CHAR + "*(;" + PARAM + ")*)";
-    private static final String PATH_SEGMENTS = "({=pathSegment}({=pathSegment1}" + SEGMENT + ")({=pathSegment2}(/" + SEGMENT + ")*))";
+    private static final String PATH_SEGMENTS = "({=pathSegments}({=firstSegment}" + SEGMENT + ")({=followingSegment}(/" + SEGMENT + ")*))";
 
     private static final String PORT = "({=port}[0-9]*)";
-    private static final String DEC_OCTET = "(1[0-9][0-9])|(2[0-4][0-9])|(25[0-5]|[0-9])|([1-9][0-9])";
-    private static final String IPV4_ADDRESS = "({=ipv4}" + String.join(".", Collections.nCopies(4, DEC_OCTET)) + ")";
+
+    private static final String IPV4_ADDRESS = "({=ipv4}[0-9]+\\.[0-9]+\\.[0-9]+\\.[0-9]+)";
     private static final String TOPLABEL = "([a-zA-Z]|([a-zA-Z]([a-zA-Z0-9]|\\-)*[a-zA-Z0-9]))";
     private static final String DOMAINLABEL = "([a-zA-Z0-9]|([a-zA-Z0-9]([a-zA-Z0-9]|\\-)*[a-zA-Z0-9]))";
     private static final String HOSTNAME = "((" + DOMAINLABEL + "\\.)*" + TOPLABEL + "(\\.)?)";

@@ -10,7 +10,7 @@ import org.somda.sdc.biceps.model.participant.MeansContextState;
 import org.somda.sdc.biceps.model.participant.OperatorContextState;
 import org.somda.sdc.biceps.model.participant.PatientContextState;
 import org.somda.sdc.biceps.model.participant.WorkflowContextState;
-import org.somda.sdc.dpws.DpwsConstants;
+import org.somda.sdc.glue.GlueConstants;
 import org.somda.sdc.glue.common.helper.UrlUtf8;
 
 /**
@@ -22,17 +22,17 @@ public class ContextIdentificationMapper {
     private static final String NULL_FLAVOR_ROOT = "biceps.uri.unk";
     private static final String SCHEME_PREFIX = "sdc.ctxt.";
 
-    private static final Pattern URI_PATTERN = new Pattern(DpwsConstants.URI_REGEX);
+    private static final Pattern URI_PATTERN = new Pattern(GlueConstants.URI_REGEX);
 
     private static final Pattern CONTEXT_SOURCE_VALIDATOR = new Pattern(
             "^(?i:sdc.ctxt.(loc|pat|ens|wfl|opr|mns))$");
 
     private static final Pattern INSTANCE_IDENTIFIER_PATTERN = new Pattern(
-            "/({root}" + DpwsConstants.SEGMENT_NZ_REGEX + ")/" +
-                    "({extension}" + DpwsConstants.SEGMENT_REGEX + ")$"
+            "/({root}" + GlueConstants.SEGMENT_NZ_REGEX + ")/" +
+                    "({extension}" + GlueConstants.SEGMENT_REGEX + ")$"
     );
 
-    private static final Pattern SCHEME_VALIDATOR = new Pattern("^" + DpwsConstants.SCHEME_SEGMENT + "$");
+    private static final Pattern SCHEME_VALIDATOR = new Pattern("^" + GlueConstants.SCHEME_SEGMENT + "$");
 
     /**
      * Converts from an instance identifier to an URI.
