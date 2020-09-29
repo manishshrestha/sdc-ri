@@ -15,13 +15,13 @@ import java.util.Optional;
 /**
  * Preprocessing segment that throws an Exception, if a duplicate context state handle is used.
  */
-public class DuplicateHandleHandler implements StatePreprocessingSegment {
+public class DuplicateContextStateHandleHandler implements StatePreprocessingSegment {
     private final MdibTypeValidator typeValidator;
 
     private Map<String, AbstractMultiState> allContextStates;
 
     @Inject
-    DuplicateHandleHandler(MdibTypeValidator typeValidator) {
+    DuplicateContextStateHandleHandler(MdibTypeValidator typeValidator) {
         this.typeValidator = typeValidator;
     }
 

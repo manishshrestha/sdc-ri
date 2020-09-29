@@ -20,7 +20,7 @@ import org.somda.sdc.biceps.common.storage.MdibStoragePreprocessingChain;
 import org.somda.sdc.biceps.common.storage.PreprocessingException;
 import org.somda.sdc.biceps.common.storage.factory.MdibStorageFactory;
 import org.somda.sdc.biceps.common.storage.factory.MdibStoragePreprocessingChainFactory;
-import org.somda.sdc.biceps.consumer.preprocessing.DuplicateHandleHandler;
+import org.somda.sdc.biceps.consumer.preprocessing.DuplicateContextStateHandleHandler;
 import org.somda.sdc.biceps.consumer.preprocessing.VersionDuplicateHandler;
 import org.somda.sdc.biceps.model.participant.AbstractContextState;
 import org.somda.sdc.biceps.model.participant.AbstractDescriptor;
@@ -59,7 +59,7 @@ public class RemoteMdibAccessImpl implements RemoteMdibAccess {
                          ReentrantReadWriteLock readWriteLock,
                          ReadTransactionFactory readTransactionFactory,
                          VersionDuplicateHandler versionDuplicateHandler,
-                         DuplicateHandleHandler duplicateHandleHandler,
+                         DuplicateContextStateHandleHandler duplicateContextStateHandleHandler,
                          DescriptorChildRemover descriptorChildRemover,
                          @Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier) {
         this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);
@@ -71,7 +71,7 @@ public class RemoteMdibAccessImpl implements RemoteMdibAccess {
         this.localMdibAccessPreprocessing = chainFactory.createMdibStoragePreprocessingChain(
                 mdibStorage,
                 Arrays.asList(descriptorChildRemover),
-                Arrays.asList(versionDuplicateHandler, duplicateHandleHandler));
+                Arrays.asList(versionDuplicateHandler, duplicateContextStateHandleHandler));
 
         this.writeUtil = new WriteUtil(
                 instanceLogger, eventDistributor,
