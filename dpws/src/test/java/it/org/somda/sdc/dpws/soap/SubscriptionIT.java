@@ -361,7 +361,7 @@ public class SubscriptionIT {
         }
         Matcher absPathMatcher = ABS_PATH_PATTERN.matcher(requestUri);
         if (absPathMatcher.matches()) {
-            var absolutePath = absPathMatcher.group("absPath");
+            var absolutePath = absPathMatcher.group(0);
             if (absolutePath != null) {
                 scheme = scheme + "://";
                 var host = headers.get("host").get(0);
@@ -370,7 +370,7 @@ public class SubscriptionIT {
         }
         Matcher authMatcher = AUTHORITY_PATTERN.matcher(requestUri);
         if (authMatcher.matches()) {
-            var authority = authMatcher.group("authority");
+            var authority = authMatcher.group(0);
             if (authority != null) {
                 return authority;
             }

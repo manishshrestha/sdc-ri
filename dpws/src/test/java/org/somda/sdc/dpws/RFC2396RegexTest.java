@@ -13,6 +13,8 @@ public class RFC2396RegexTest {
     private static final Pattern URI_REFERENCE_PATTERN = new Pattern(RFC2396Constants.URI_REFERENCE);
     private static final Pattern RELATIVE_URI_PATTERN = new Pattern(RFC2396Constants.RELATIVE_URI);
     private static final Pattern ABSOLUTE_URI_PATTERN = new Pattern(RFC2396Constants.ABSOLUTE_URI);
+    private static final Pattern AUTHORITY_PATTERN = new Pattern(RFC2396Constants.AUTHORITY);
+    private static final Pattern ABS_PATH_PATTERN = new Pattern(RFC2396Constants.ABS_PATH);
 
     @Test
     void uriReference() {
@@ -20,61 +22,39 @@ public class RFC2396RegexTest {
             Matcher matcher = URI_REFERENCE_PATTERN.matcher("scheme://user@%C3%A4:123/path?query?query#fragment");
             assertTrue(matcher.matches());
             assertEquals("scheme://user@%C3%A4:123/path?query?query", matcher.group("absoluteUri"));
-            assertEquals("user@%C3%A4:123", matcher.group("authority"));
-            assertEquals("user@%C3%A4:123", matcher.group("regName"));
-            assertEquals("/path", matcher.group("absPath"));
             assertEquals("query?query", matcher.group("absoluteUriQuery"));
             assertEquals("fragment", matcher.group("fragment"));
-            assertEquals("//user@%C3%A4:123/path?query?query", matcher.group("hierPart"));
             assertNull(matcher.group("relativeUri"));
-            assertNull(matcher.group("opaquePart"));
         }
         {
             Matcher matcher = URI_REFERENCE_PATTERN.matcher("scheme://user@host:123/path?query?query#fragment");
             assertTrue(matcher.matches());
             assertEquals("scheme://user@host:123/path?query?query", matcher.group("absoluteUri"));
-            assertEquals("user", matcher.group("userInfo"));
-            assertEquals("user@host:123", matcher.group("authority"));
-            assertEquals("123", matcher.group("port"));
-            assertEquals("host", matcher.group("host"));
-            assertEquals("/path", matcher.group("absPath"));
             assertEquals("query?query", matcher.group("absoluteUriQuery"));
             assertEquals("fragment", matcher.group("fragment"));
-            assertEquals("//user@host:123/path?query?query", matcher.group("hierPart"));
             assertNull(matcher.group("relativeUri"));
-            assertNull(matcher.group("opaquePart"));
         }
         {
             Matcher matcher = URI_REFERENCE_PATTERN.matcher("scheme:aaahhh??");
             assertTrue(matcher.matches());
             assertEquals("scheme:aaahhh??", matcher.group("absoluteUri"));
-            assertEquals("aaahhh??", matcher.group("opaquePart"));
             assertNull(matcher.group("relativeUri"));
-            assertNull(matcher.group("hierPart"));
         }
         {
             Matcher matcher = URI_REFERENCE_PATTERN.matcher("/path?query?query#fragment");
             assertTrue(matcher.matches());
             assertEquals("/path?query?query", matcher.group("relativeUri"));
-            assertEquals("/path", matcher.group("absPath"));
             assertEquals("query?query", matcher.group("relativeUriQuery"));
             assertEquals("fragment", matcher.group("fragment"));
             assertNull(matcher.group("absoluteUri"));
-            assertNull(matcher.group("netPath"));
-            assertNull(matcher.group("relPath"));
         }
         {
             Matcher matcher = URI_REFERENCE_PATTERN.matcher("//user@C3A4:123/path?query?query#fragment");
             assertTrue(matcher.matches());
             assertEquals("//user@C3A4:123/path?query?query", matcher.group("relativeUri"));
-            assertEquals("user", matcher.group("userInfo"));
-            assertEquals("123", matcher.group("port"));
-            assertEquals("C3A4", matcher.group("host"));
-            assertEquals("/path", matcher.group("absPath"));
             assertEquals("query?query", matcher.group("relativeUriQuery"));
             assertEquals("fragment", matcher.group("fragment"));
             assertNull(matcher.group("absoluteUri"));
-            assertNull(matcher.group("relPath"));
         }
     }
 
@@ -84,32 +64,17 @@ public class RFC2396RegexTest {
             Matcher matcher = ABSOLUTE_URI_PATTERN.matcher("scheme://user@C3A4:123/path?query?query");
             assertTrue(matcher.matches());
             assertEquals("scheme://user@C3A4:123/path?query?query", matcher.group("absoluteUri"));
-            assertEquals("//user@C3A4:123/path?query?query", matcher.group("hierPart"));
-            assertEquals("//user@C3A4:123/path", matcher.group("netPath"));
-            assertEquals("user@C3A4:123", matcher.group("authority"));
-            assertNull(matcher.group("regName"));
-            assertEquals("C3A4:123", matcher.group("hostPort"));
-            assertEquals("user", matcher.group("userInfo"));
-            assertEquals("123", matcher.group("port"));
-            assertEquals("C3A4", matcher.group("host"));
-            assertEquals("/path", matcher.group("absPath"));
             assertEquals("query?query", matcher.group("absoluteUriQuery"));
-            assertNull(matcher.group("opaquePart"));
         }
         {
             Matcher matcher = ABSOLUTE_URI_PATTERN.matcher("scheme:aaahhh??");
             assertTrue(matcher.matches());
             assertEquals("scheme:aaahhh??", matcher.group("absoluteUri"));
-            assertEquals("aaahhh??", matcher.group("opaquePart"));
-            assertNull(matcher.group("hierPart"));
         }
         {
             Matcher matcher = ABSOLUTE_URI_PATTERN.matcher("scheme://@@");
             matcher.matches();
             assertEquals("scheme://@@", matcher.group("absoluteUri"));
-            assertEquals("//@@", matcher.group("hierPart"));
-            assertEquals("//@@", matcher.group("netPath"));
-            assertEquals("@@", matcher.group("authority"));
         }
         {
             Matcher matcher = ABSOLUTE_URI_PATTERN.matcher("scheme://user@C3A4:123/path?#?query#fragment");
@@ -120,14 +85,12 @@ public class RFC2396RegexTest {
             assertTrue(matcher.matches());
             assertEquals("urn:example:animal:ferret:nose", matcher.group("absoluteUri"));
             assertEquals("urn", matcher.group("scheme"));
-            assertEquals("example:animal:ferret:nose", matcher.group("opaquePart"));
         }
         {
             Matcher matcher = ABSOLUTE_URI_PATTERN.matcher("urn:%2A-");
             assertTrue(matcher.matches());
             assertEquals("urn:%2A-", matcher.group("absoluteUri"));
             assertEquals("urn", matcher.group("scheme"));
-            assertEquals("%2A-", matcher.group("opaquePart"));
         }
     }
 
@@ -137,29 +100,71 @@ public class RFC2396RegexTest {
             Matcher matcher = RELATIVE_URI_PATTERN.matcher("/path?query?query");
             assertTrue(matcher.matches());
             assertEquals("/path?query?query", matcher.group("relativeUri"));
-            assertEquals("/path", matcher.group("absPath"));
             assertEquals("query?query", matcher.group("relativeUriQuery"));
-            assertNull(matcher.group("authority"));
-            assertNull(matcher.group("relPath"));
         }
         {
             Matcher matcher = RELATIVE_URI_PATTERN.matcher("//user@C3A4:123/path?query?query");
             assertTrue(matcher.matches());
             assertEquals("//user@C3A4:123/path?query?query", matcher.group("relativeUri"));
-            assertEquals("user", matcher.group("userInfo"));
-            assertEquals("123", matcher.group("port"));
-            assertEquals("C3A4", matcher.group("host"));
-            assertEquals("/path", matcher.group("absPath"));
             assertEquals("query?query", matcher.group("relativeUriQuery"));
-            assertNull(matcher.group("relPath"));
         }
         {
             Matcher matcher = RELATIVE_URI_PATTERN.matcher("*");
             assertTrue(matcher.matches());
             assertEquals("*", matcher.group("relativeUri"));
-            assertEquals("*", matcher.group("relPath"));
-            assertNull(matcher.group("absPath"));
-            assertNull(matcher.group("authority"));
+        }
+    }
+
+    @Test
+    void authority() {
+        {
+            Matcher matcher = AUTHORITY_PATTERN.matcher("user@%C3%A4:123");
+            assertTrue(matcher.matches());
+            assertEquals("user@%C3%A4:123", matcher.group(0));
+        }
+        {
+            Matcher matcher = AUTHORITY_PATTERN.matcher("user@host:123");
+            assertTrue(matcher.matches());
+            assertEquals("user@host:123", matcher.group(0));
+        }
+        {
+            Matcher matcher = AUTHORITY_PATTERN.matcher("@@");
+            assertTrue(matcher.matches());
+            assertEquals("@@", matcher.group(0));
+        }
+        {
+            Matcher matcher = AUTHORITY_PATTERN.matcher("scheme://user@C3A4:123/path?query?query");
+            assertFalse(matcher.matches());
+        }
+        {
+            Matcher matcher = AUTHORITY_PATTERN.matcher("/path");
+            assertFalse(matcher.matches());
+        }
+    }
+
+    @Test
+    void absPath() {
+        {
+            Matcher matcher = ABS_PATH_PATTERN.matcher("/path");
+            assertTrue(matcher.matches());
+            assertEquals("/path", matcher.group(0));
+        }
+        {
+            Matcher matcher = ABS_PATH_PATTERN.matcher("/path/path/path");
+            assertTrue(matcher.matches());
+            assertEquals("/path/path/path", matcher.group(0));
+        }
+        {
+            Matcher matcher = ABS_PATH_PATTERN.matcher("/path/path/path?query");
+            assertFalse(matcher.matches());
+        }
+        {
+            Matcher matcher = ABS_PATH_PATTERN.matcher("/path/path/path#fragment");
+            assertFalse(matcher.matches());
+        }
+        {
+            Matcher matcher = ABS_PATH_PATTERN.matcher("scheme://user@C3A4:123/path");
+            assertFalse(matcher.matches());
         }
     }
 }
