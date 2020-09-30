@@ -18,10 +18,9 @@ import org.somda.sdc.biceps.common.preprocessing.DescriptorChildRemover;
 import org.somda.sdc.biceps.common.storage.MdibStorage;
 import org.somda.sdc.biceps.common.storage.MdibStoragePreprocessingChain;
 import org.somda.sdc.biceps.common.storage.PreprocessingException;
+import org.somda.sdc.biceps.common.storage.StatePreprocessingSegment;
 import org.somda.sdc.biceps.common.storage.factory.MdibStorageFactory;
 import org.somda.sdc.biceps.common.storage.factory.MdibStoragePreprocessingChainFactory;
-import org.somda.sdc.biceps.consumer.preprocessing.DuplicateContextStateHandleHandler;
-import org.somda.sdc.biceps.consumer.preprocessing.VersionDuplicateHandler;
 import org.somda.sdc.biceps.model.participant.AbstractContextState;
 import org.somda.sdc.biceps.model.participant.AbstractDescriptor;
 import org.somda.sdc.biceps.model.participant.AbstractState;
@@ -31,10 +30,12 @@ import org.somda.sdc.common.logging.InstanceLogger;
 
 import javax.annotation.Nullable;
 import java.math.BigInteger;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
@@ -58,10 +59,10 @@ public class RemoteMdibAccessImpl implements RemoteMdibAccess {
                          MdibStorageFactory mdibStorageFactory,
                          ReentrantReadWriteLock readWriteLock,
                          ReadTransactionFactory readTransactionFactory,
-                         VersionDuplicateHandler versionDuplicateHandler,
-                         DuplicateContextStateHandleHandler duplicateContextStateHandleHandler,
                          DescriptorChildRemover descriptorChildRemover,
-                         @Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier) {
+                         @Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier,
+                         @Named(org.somda.sdc.biceps.common.CommonConfig.CONSUMER_PREPROCESSING_SEGMENTS)
+                                 Set<StatePreprocessingSegment> preprocessingSegments) {
         this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);
         this.eventDistributor = eventDistributor;
         this.mdibStorage = mdibStorageFactory.createMdibStorage();
@@ -71,7 +72,7 @@ public class RemoteMdibAccessImpl implements RemoteMdibAccess {
         this.localMdibAccessPreprocessing = chainFactory.createMdibStoragePreprocessingChain(
                 mdibStorage,
                 Arrays.asList(descriptorChildRemover),
-                Arrays.asList(versionDuplicateHandler, duplicateContextStateHandleHandler));
+                new ArrayList<>(preprocessingSegments));
 
         this.writeUtil = new WriteUtil(
                 instanceLogger, eventDistributor,

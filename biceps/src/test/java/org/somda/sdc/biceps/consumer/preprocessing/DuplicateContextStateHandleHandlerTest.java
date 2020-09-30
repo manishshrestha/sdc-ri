@@ -66,7 +66,7 @@ public class DuplicateContextStateHandleHandlerTest {
     }
 
     @Test
-    void noDuplicateHandles() {
+    void noDuplicateHandles() throws DuplicateContextStateHandleException {
         final MdibStateModifications modifications = MdibStateModifications.create(MdibStateModifications.Type.CONTEXT);
         modifications.add(patientContextStateGoodModification);
 
@@ -87,7 +87,7 @@ public class DuplicateContextStateHandleHandlerTest {
 
         Mockito.when(mdibStorage.getState(contextStateHandle)).thenReturn(Optional.of(initialPatientContextState));
 
-        assertThrows(RuntimeException.class, () -> apply(modifications));
+        assertThrows(DuplicateContextStateHandleException.class, () -> apply(modifications));
     }
 
     @Test
@@ -98,7 +98,7 @@ public class DuplicateContextStateHandleHandlerTest {
         Mockito.when(mdibStorage.getStatesByType(any()))
                 .thenReturn(List.of(initialPatientContextState, locationContextStateBadInitial));
 
-        assertThrows(RuntimeException.class, () -> apply(modifications));
+        assertThrows(DuplicateContextStateHandleException.class, () -> apply(modifications));
     }
 
     @Test
@@ -109,10 +109,10 @@ public class DuplicateContextStateHandleHandlerTest {
 
         Mockito.when(mdibStorage.getState(contextStateHandle)).thenReturn(Optional.of(initialPatientContextState));
 
-        assertThrows(RuntimeException.class, () -> apply(modifications));
+        assertThrows(DuplicateContextStateHandleException.class, () -> apply(modifications));
     }
 
-    private void apply(MdibStateModifications modifications) {
+    private void apply(MdibStateModifications modifications) throws DuplicateContextStateHandleException {
         duplicateContextStateHandleHandler.beforeFirstModification(modifications, mdibStorage);
         for (var state : modifications.getStates()) {
             duplicateContextStateHandleHandler.process(modifications, state, mdibStorage);

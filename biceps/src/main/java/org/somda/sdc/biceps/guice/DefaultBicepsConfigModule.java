@@ -1,6 +1,11 @@
 package org.somda.sdc.biceps.guice;
 
+import com.google.inject.multibindings.Multibinder;
+import com.google.inject.name.Names;
 import org.somda.sdc.biceps.common.CommonConfig;
+import org.somda.sdc.biceps.common.storage.StatePreprocessingSegment;
+import org.somda.sdc.biceps.consumer.preprocessing.DuplicateContextStateHandleHandler;
+import org.somda.sdc.biceps.consumer.preprocessing.VersionDuplicateHandler;
 import org.somda.sdc.common.guice.AbstractConfigurationModule;
 
 /**
@@ -28,5 +33,10 @@ public class DefaultBicepsConfigModule extends AbstractConfigurationModule {
         bind(CommonConfig.ALLOW_STATES_WITHOUT_DESCRIPTORS,
                 Boolean.class,
                 true);
+
+        Multibinder<StatePreprocessingSegment> consumerPreProcessingSegments = Multibinder.newSetBinder(
+                binder(), StatePreprocessingSegment.class, Names.named(CommonConfig.CONSUMER_PREPROCESSING_SEGMENTS));
+        consumerPreProcessingSegments.addBinding().to(DuplicateContextStateHandleHandler.class);
+        consumerPreProcessingSegments.addBinding().to(VersionDuplicateHandler.class);
     }
 }

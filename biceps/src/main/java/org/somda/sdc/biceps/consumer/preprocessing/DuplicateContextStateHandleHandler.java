@@ -34,7 +34,9 @@ public class DuplicateContextStateHandleHandler implements StatePreprocessingSeg
     }
 
     @Override
-    public void process(MdibStateModifications modifications, AbstractState modification, MdibStorage storage) {
+    public void process(MdibStateModifications modifications, AbstractState modification, MdibStorage storage)
+            throws DuplicateContextStateHandleException {
+
         final Optional<AbstractMultiState> multiState = typeValidator.toMultiState(modification);
         if (multiState.isPresent()) {
             String handle = multiState.get().getHandle();
@@ -42,7 +44,7 @@ public class DuplicateContextStateHandleHandler implements StatePreprocessingSeg
             if (allContextStates.containsKey(handle)) {
                 var existingContextState = allContextStates.get(handle);
                 if (!existingContextState.getDescriptorHandle().equals(multiState.get().getDescriptorHandle())) {
-                    throw new RuntimeException(String.format("Two different descriptors:"
+                    throw new DuplicateContextStateHandleException(String.format("Two different descriptors:"
                                     + " %s and %s can not have the same context state: %s",
                             existingContextState.getDescriptorHandle(),
                             multiState.get().getDescriptorHandle(),

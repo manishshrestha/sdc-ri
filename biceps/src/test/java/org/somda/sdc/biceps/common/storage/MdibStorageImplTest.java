@@ -1,6 +1,8 @@
 package org.somda.sdc.biceps.common.storage;
 
 import com.google.inject.Injector;
+import com.google.inject.multibindings.Multibinder;
+import com.google.inject.name.Names;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -11,12 +13,33 @@ import org.somda.sdc.biceps.common.MdibDescriptionModification;
 import org.somda.sdc.biceps.common.MdibDescriptionModifications;
 import org.somda.sdc.biceps.common.MdibStateModifications;
 import org.somda.sdc.biceps.common.storage.factory.MdibStorageFactory;
-import org.somda.sdc.biceps.model.participant.*;
+import org.somda.sdc.biceps.consumer.preprocessing.DuplicateContextStateHandleHandler;
+import org.somda.sdc.biceps.consumer.preprocessing.VersionDuplicateHandler;
+import org.somda.sdc.biceps.model.participant.AbstractContextState;
+import org.somda.sdc.biceps.model.participant.AlertConditionDescriptor;
+import org.somda.sdc.biceps.model.participant.AlertConditionState;
+import org.somda.sdc.biceps.model.participant.AlertSystemDescriptor;
+import org.somda.sdc.biceps.model.participant.AlertSystemState;
+import org.somda.sdc.biceps.model.participant.ChannelDescriptor;
+import org.somda.sdc.biceps.model.participant.ChannelState;
+import org.somda.sdc.biceps.model.participant.ContextAssociation;
+import org.somda.sdc.biceps.model.participant.EnsembleContextDescriptor;
+import org.somda.sdc.biceps.model.participant.EnsembleContextState;
+import org.somda.sdc.biceps.model.participant.LocationContextDescriptor;
+import org.somda.sdc.biceps.model.participant.LocationContextState;
+import org.somda.sdc.biceps.model.participant.MdibVersion;
+import org.somda.sdc.biceps.model.participant.MdsDescriptor;
+import org.somda.sdc.biceps.model.participant.MdsState;
+import org.somda.sdc.biceps.model.participant.PatientContextDescriptor;
+import org.somda.sdc.biceps.model.participant.PatientContextState;
+import org.somda.sdc.biceps.model.participant.SystemContextDescriptor;
+import org.somda.sdc.biceps.model.participant.SystemContextState;
+import org.somda.sdc.biceps.model.participant.VmdDescriptor;
+import org.somda.sdc.biceps.model.participant.VmdState;
 import org.somda.sdc.biceps.testutil.Handles;
 import org.somda.sdc.biceps.testutil.MockModelFactory;
 import org.somda.sdc.common.guice.AbstractConfigurationModule;
 import test.org.somda.common.LoggingTestWatcher;
-import test.org.somda.common.TestLogging;
 
 import java.math.BigInteger;
 import java.util.Arrays;
@@ -24,7 +47,11 @@ import java.util.List;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 
 @ExtendWith(LoggingTestWatcher.class)
@@ -465,6 +492,10 @@ public class MdibStorageImplTest {
                 bind(CommonConfig.COPY_MDIB_OUTPUT, Boolean.class, true);
                 bind(CommonConfig.STORE_NOT_ASSOCIATED_CONTEXT_STATES, Boolean.class, true);
                 bind(CommonConfig.ALLOW_STATES_WITHOUT_DESCRIPTORS, Boolean.class, true);
+                Multibinder<StatePreprocessingSegment> consumerPreProcessingSegments = Multibinder.newSetBinder(
+                        binder(), StatePreprocessingSegment.class, Names.named(CommonConfig.CONSUMER_PREPROCESSING_SEGMENTS));
+                consumerPreProcessingSegments.addBinding().to(DuplicateContextStateHandleHandler.class);
+                consumerPreProcessingSegments.addBinding().to(VersionDuplicateHandler.class);
             }
         }).getInjector();
         return injector.getInstance(MdibStorageFactory.class).createMdibStorage();
@@ -616,6 +647,10 @@ public class MdibStorageImplTest {
                 bind(CommonConfig.COPY_MDIB_OUTPUT, Boolean.class, true);
                 bind(CommonConfig.STORE_NOT_ASSOCIATED_CONTEXT_STATES, Boolean.class, true);
                 bind(CommonConfig.ALLOW_STATES_WITHOUT_DESCRIPTORS, Boolean.class, false);
+                Multibinder<StatePreprocessingSegment> consumerPreProcessingSegments = Multibinder.newSetBinder(
+                        binder(), StatePreprocessingSegment.class, Names.named(CommonConfig.CONSUMER_PREPROCESSING_SEGMENTS));
+                consumerPreProcessingSegments.addBinding().to(DuplicateContextStateHandleHandler.class);
+                consumerPreProcessingSegments.addBinding().to(VersionDuplicateHandler.class);
             }
         }).getInjector();
         var localMdibStorage = injector.getInstance(MdibStorageFactory.class).createMdibStorage();
