@@ -1,8 +1,7 @@
 package org.somda.sdc.biceps.common.storage;
 
 import com.google.inject.Injector;
-import com.google.inject.multibindings.Multibinder;
-import com.google.inject.name.Names;
+import com.google.inject.TypeLiteral;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -492,10 +491,9 @@ public class MdibStorageImplTest {
                 bind(CommonConfig.COPY_MDIB_OUTPUT, Boolean.class, true);
                 bind(CommonConfig.STORE_NOT_ASSOCIATED_CONTEXT_STATES, Boolean.class, true);
                 bind(CommonConfig.ALLOW_STATES_WITHOUT_DESCRIPTORS, Boolean.class, true);
-                Multibinder<StatePreprocessingSegment> consumerPreProcessingSegments = Multibinder.newSetBinder(
-                        binder(), StatePreprocessingSegment.class, Names.named(CommonConfig.CONSUMER_PREPROCESSING_SEGMENTS));
-                consumerPreProcessingSegments.addBinding().to(DuplicateContextStateHandleHandler.class);
-                consumerPreProcessingSegments.addBinding().to(VersionDuplicateHandler.class);
+                bind(CommonConfig.CONSUMER_PREPROCESSING_SEGMENTS,
+                        new TypeLiteral<>() {},
+                        List.of(DuplicateContextStateHandleHandler.class, VersionDuplicateHandler.class));
             }
         }).getInjector();
         return injector.getInstance(MdibStorageFactory.class).createMdibStorage();
@@ -647,10 +645,9 @@ public class MdibStorageImplTest {
                 bind(CommonConfig.COPY_MDIB_OUTPUT, Boolean.class, true);
                 bind(CommonConfig.STORE_NOT_ASSOCIATED_CONTEXT_STATES, Boolean.class, true);
                 bind(CommonConfig.ALLOW_STATES_WITHOUT_DESCRIPTORS, Boolean.class, false);
-                Multibinder<StatePreprocessingSegment> consumerPreProcessingSegments = Multibinder.newSetBinder(
-                        binder(), StatePreprocessingSegment.class, Names.named(CommonConfig.CONSUMER_PREPROCESSING_SEGMENTS));
-                consumerPreProcessingSegments.addBinding().to(DuplicateContextStateHandleHandler.class);
-                consumerPreProcessingSegments.addBinding().to(VersionDuplicateHandler.class);
+                bind(CommonConfig.CONSUMER_PREPROCESSING_SEGMENTS,
+                        new TypeLiteral<>() {},
+                        List.of(DuplicateContextStateHandleHandler.class, VersionDuplicateHandler.class));
             }
         }).getInjector();
         var localMdibStorage = injector.getInstance(MdibStorageFactory.class).createMdibStorage();

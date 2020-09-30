@@ -1,6 +1,7 @@
 package org.somda.sdc.common.guice;
 
 import com.google.inject.AbstractModule;
+import com.google.inject.TypeLiteral;
 import com.google.inject.name.Names;
 import com.google.inject.util.Providers;
 import org.apache.logging.log4j.Logger;
@@ -42,6 +43,41 @@ public abstract class AbstractConfigurationModule extends AbstractModule {
                             .toProvider(Providers.of(null));
                 } else {
                     bind(dataType)
+                            .annotatedWith(Names.named(name))
+                            .toInstance(value);
+                }
+            };
+            ValueOrigin valueOrigin = configureStarted ? ValueOrigin.DEFAULTED : ValueOrigin.CUSTOMIZED;
+            boundValues.put(name, new ConfigurationValue(valueOrigin, runBind, value));
+
+        } else {
+            if (!configureStarted) {
+                LOG.warn("Try to populate configuration key '{}' twice. Attempt skipped.", name);
+            }
+        }
+    }
+
+    /**
+     * Binds a configuration key to a value from outside.
+     * <p>
+     * This operation can only be performed once per key.
+     * All unpopulated keys are supposed to be filled with a default value once {@link #configure()} is called by Guice.
+     *
+     * @param name     the configuration key.
+     * @param typeLiteral the data type bound by the key (should be defined in configuration class).
+     * @param value    the configuration value to set.
+     * @param <T>      type that is required by the given key.
+     */
+    public <T> void bind(String name, TypeLiteral<T> typeLiteral, @Nullable T value) {
+        if (!boundValues.containsKey(name)) {
+            // Wrap binding into closure and call later as Guice's bind() is only available during configure()
+            Runnable runBind = () -> {
+                if (value == null) {
+                    bind(typeLiteral)
+                            .annotatedWith(Names.named(name))
+                            .toProvider(Providers.of(null));
+                } else {
+                    bind(typeLiteral)
                             .annotatedWith(Names.named(name))
                             .toInstance(value);
                 }

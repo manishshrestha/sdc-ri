@@ -1,5 +1,6 @@
 package org.somda.sdc.biceps.consumer.access;
 
+import com.google.inject.Injector;
 import com.google.inject.assistedinject.AssistedInject;
 import com.google.inject.name.Named;
 import org.apache.logging.log4j.LogManager;
@@ -35,7 +36,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
@@ -62,17 +62,22 @@ public class RemoteMdibAccessImpl implements RemoteMdibAccess {
                          DescriptorChildRemover descriptorChildRemover,
                          @Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier,
                          @Named(org.somda.sdc.biceps.common.CommonConfig.CONSUMER_PREPROCESSING_SEGMENTS)
-                                 Set<StatePreprocessingSegment> preprocessingSegments) {
+                                 List<Class<? extends StatePreprocessingSegment>> segments,
+                         Injector injector) {
         this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);
         this.eventDistributor = eventDistributor;
         this.mdibStorage = mdibStorageFactory.createMdibStorage();
         this.readWriteLock = readWriteLock;
         this.readTransactionFactory = readTransactionFactory;
 
+        var stateSegments = new ArrayList<StatePreprocessingSegment>();
+        for (Class<? extends StatePreprocessingSegment> segment : segments) {
+            stateSegments.add(injector.getInstance(segment));
+        }
         this.localMdibAccessPreprocessing = chainFactory.createMdibStoragePreprocessingChain(
                 mdibStorage,
                 Arrays.asList(descriptorChildRemover),
-                new ArrayList<>(preprocessingSegments));
+                stateSegments);
 
         this.writeUtil = new WriteUtil(
                 instanceLogger, eventDistributor,

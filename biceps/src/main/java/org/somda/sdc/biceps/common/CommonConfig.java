@@ -2,7 +2,7 @@ package org.somda.sdc.biceps.common;
 
 import org.somda.sdc.biceps.common.storage.MdibStorage;
 
-import java.util.Set;
+import java.util.List;
 
 /**
  * General configuration of the BICEPS common package.
@@ -60,11 +60,11 @@ public class CommonConfig {
     public static final String ALLOW_STATES_WITHOUT_DESCRIPTORS = "Biceps.Common.AllowStatesWithoutDescriptors";
 
     /**
-     * A set of all StatePreprocessingSegments, which are applied during state modifications.
+     * A list of all StatePreprocessingSegments, which are applied during state modifications.
      * <p>
      * A consumer can specify which StatePreprocessingSegments should be used, by adding them to the set.
      * <ul>
-     * <li>Data type: {@link Set}
+     * <li>Data type: {@link List}
      * <li>Use: optional
      * </ul>
      */
