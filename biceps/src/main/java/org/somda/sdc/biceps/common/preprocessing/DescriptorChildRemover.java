@@ -18,9 +18,6 @@ import org.somda.sdc.biceps.model.participant.VmdDescriptor;
  */
 public class DescriptorChildRemover implements DescriptionPreprocessingSegment {
 
-    @Inject
-    DescriptorChildRemover() {}
-
     @Override
     public void process(MdibDescriptionModifications allModifications,
                         MdibDescriptionModification currentModification,
