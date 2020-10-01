@@ -62,7 +62,7 @@ public class CommonConfig {
     /**
      * A list of all StatePreprocessingSegments, which are applied during state modifications.
      * <p>
-     * A consumer can specify which StatePreprocessingSegments should be used, by adding them to the set.
+     * A consumer can specify which StatePreprocessingSegments should be used, by adding them to the list.
      * <ul>
      * <li>Data type: {@link List}
      * <li>Use: optional
