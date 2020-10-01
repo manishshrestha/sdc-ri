@@ -1,5 +1,6 @@
 package org.somda.sdc.biceps.common.preprocessing;
 
+import com.google.inject.Inject;
 import org.somda.sdc.biceps.common.MdibDescriptionModification;
 import org.somda.sdc.biceps.common.MdibDescriptionModifications;
 import org.somda.sdc.biceps.common.storage.DescriptionPreprocessingSegment;
@@ -16,6 +17,10 @@ import org.somda.sdc.biceps.model.participant.VmdDescriptor;
  * Removes children from descriptors in order to avoid redundant information in the MDIB storage.
  */
 public class DescriptorChildRemover implements DescriptionPreprocessingSegment {
+
+    @Inject
+    DescriptorChildRemover() {}
+
     @Override
     public void process(MdibDescriptionModifications allModifications,
                         MdibDescriptionModification currentModification,

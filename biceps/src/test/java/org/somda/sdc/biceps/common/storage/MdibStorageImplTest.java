@@ -11,6 +11,7 @@ import org.somda.sdc.biceps.common.CommonConfig;
 import org.somda.sdc.biceps.common.MdibDescriptionModification;
 import org.somda.sdc.biceps.common.MdibDescriptionModifications;
 import org.somda.sdc.biceps.common.MdibStateModifications;
+import org.somda.sdc.biceps.common.preprocessing.DescriptorChildRemover;
 import org.somda.sdc.biceps.common.storage.factory.MdibStorageFactory;
 import org.somda.sdc.biceps.consumer.preprocessing.DuplicateContextStateHandleHandler;
 import org.somda.sdc.biceps.consumer.preprocessing.VersionDuplicateHandler;
@@ -35,6 +36,10 @@ import org.somda.sdc.biceps.model.participant.SystemContextDescriptor;
 import org.somda.sdc.biceps.model.participant.SystemContextState;
 import org.somda.sdc.biceps.model.participant.VmdDescriptor;
 import org.somda.sdc.biceps.model.participant.VmdState;
+import org.somda.sdc.biceps.provider.preprocessing.DuplicateChecker;
+import org.somda.sdc.biceps.provider.preprocessing.HandleReferenceHandler;
+import org.somda.sdc.biceps.provider.preprocessing.TypeConsistencyChecker;
+import org.somda.sdc.biceps.provider.preprocessing.VersionHandler;
 import org.somda.sdc.biceps.testutil.Handles;
 import org.somda.sdc.biceps.testutil.MockModelFactory;
 import org.somda.sdc.common.guice.AbstractConfigurationModule;
@@ -491,9 +496,26 @@ public class MdibStorageImplTest {
                 bind(CommonConfig.COPY_MDIB_OUTPUT, Boolean.class, true);
                 bind(CommonConfig.STORE_NOT_ASSOCIATED_CONTEXT_STATES, Boolean.class, true);
                 bind(CommonConfig.ALLOW_STATES_WITHOUT_DESCRIPTORS, Boolean.class, true);
-                bind(CommonConfig.CONSUMER_PREPROCESSING_SEGMENTS,
-                        new TypeLiteral<>() {},
+                bind(CommonConfig.CONSUMER_STATE_PREPROCESSING_SEGMENTS,
+                        new TypeLiteral<List<Class<? extends StatePreprocessingSegment>>>() {
+                        },
                         List.of(DuplicateContextStateHandleHandler.class, VersionDuplicateHandler.class));
+
+                bind(CommonConfig.CONSUMER_DESCRIPTOR_PREPROCESSING_SEGMENTS,
+                        new TypeLiteral<List<Class<? extends DescriptionPreprocessingSegment>>>() {
+                        },
+                        List.of(DescriptorChildRemover.class));
+
+                bind(CommonConfig.PROVIDER_STATE_PREPROCESSING_SEGMENTS,
+                        new TypeLiteral<List<Class<? extends StatePreprocessingSegment>>>() {
+                        },
+                        List.of(DuplicateContextStateHandleHandler.class, VersionHandler.class));
+
+                bind(CommonConfig.PROVIDER_DESCRIPTOR_PREPROCESSING_SEGMENTS,
+                        new TypeLiteral<List<Class<? extends DescriptionPreprocessingSegment>>>() {
+                        },
+                        List.of(DuplicateChecker.class, TypeConsistencyChecker.class, VersionHandler.class,
+                                HandleReferenceHandler.class, DescriptorChildRemover.class));
             }
         }).getInjector();
         return injector.getInstance(MdibStorageFactory.class).createMdibStorage();
@@ -645,9 +667,26 @@ public class MdibStorageImplTest {
                 bind(CommonConfig.COPY_MDIB_OUTPUT, Boolean.class, true);
                 bind(CommonConfig.STORE_NOT_ASSOCIATED_CONTEXT_STATES, Boolean.class, true);
                 bind(CommonConfig.ALLOW_STATES_WITHOUT_DESCRIPTORS, Boolean.class, false);
-                bind(CommonConfig.CONSUMER_PREPROCESSING_SEGMENTS,
-                        new TypeLiteral<>() {},
+                bind(CommonConfig.CONSUMER_STATE_PREPROCESSING_SEGMENTS,
+                        new TypeLiteral<List<Class<? extends StatePreprocessingSegment>>>() {
+                        },
                         List.of(DuplicateContextStateHandleHandler.class, VersionDuplicateHandler.class));
+
+                bind(CommonConfig.CONSUMER_DESCRIPTOR_PREPROCESSING_SEGMENTS,
+                        new TypeLiteral<List<Class<? extends DescriptionPreprocessingSegment>>>() {
+                        },
+                        List.of(DescriptorChildRemover.class));
+
+                bind(CommonConfig.PROVIDER_STATE_PREPROCESSING_SEGMENTS,
+                        new TypeLiteral<List<Class<? extends StatePreprocessingSegment>>>() {
+                        },
+                        List.of(DuplicateContextStateHandleHandler.class, VersionHandler.class));
+
+                bind(CommonConfig.PROVIDER_DESCRIPTOR_PREPROCESSING_SEGMENTS,
+                        new TypeLiteral<List<Class<? extends DescriptionPreprocessingSegment>>>() {
+                        },
+                        List.of(DuplicateChecker.class, TypeConsistencyChecker.class, VersionHandler.class,
+                                HandleReferenceHandler.class, DescriptorChildRemover.class));
             }
         }).getInjector();
         var localMdibStorage = injector.getInstance(MdibStorageFactory.class).createMdibStorage();

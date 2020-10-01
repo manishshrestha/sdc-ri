@@ -15,7 +15,7 @@ import org.somda.sdc.biceps.common.access.WriteStateResult;
 import org.somda.sdc.biceps.common.access.factory.ReadTransactionFactory;
 import org.somda.sdc.biceps.common.access.helper.WriteUtil;
 import org.somda.sdc.biceps.common.event.Distributor;
-import org.somda.sdc.biceps.common.preprocessing.DescriptorChildRemover;
+import org.somda.sdc.biceps.common.storage.DescriptionPreprocessingSegment;
 import org.somda.sdc.biceps.common.storage.MdibStorage;
 import org.somda.sdc.biceps.common.storage.MdibStoragePreprocessingChain;
 import org.somda.sdc.biceps.common.storage.PreprocessingException;
@@ -32,7 +32,6 @@ import org.somda.sdc.common.logging.InstanceLogger;
 import javax.annotation.Nullable;
 import java.math.BigInteger;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -59,10 +58,11 @@ public class RemoteMdibAccessImpl implements RemoteMdibAccess {
                          MdibStorageFactory mdibStorageFactory,
                          ReentrantReadWriteLock readWriteLock,
                          ReadTransactionFactory readTransactionFactory,
-                         DescriptorChildRemover descriptorChildRemover,
                          @Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier,
-                         @Named(org.somda.sdc.biceps.common.CommonConfig.CONSUMER_PREPROCESSING_SEGMENTS)
-                                 List<Class<? extends StatePreprocessingSegment>> segments,
+                         @Named(org.somda.sdc.biceps.common.CommonConfig.CONSUMER_STATE_PREPROCESSING_SEGMENTS)
+                                 List<Class<? extends StatePreprocessingSegment>> stateSegments,
+                         @Named(org.somda.sdc.biceps.common.CommonConfig.CONSUMER_DESCRIPTOR_PREPROCESSING_SEGMENTS)
+                                 List<Class<? extends DescriptionPreprocessingSegment>> descriptorSegments,
                          Injector injector) {
         this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);
         this.eventDistributor = eventDistributor;
@@ -70,14 +70,28 @@ public class RemoteMdibAccessImpl implements RemoteMdibAccess {
         this.readWriteLock = readWriteLock;
         this.readTransactionFactory = readTransactionFactory;
 
-        var stateSegments = new ArrayList<StatePreprocessingSegment>();
-        for (Class<? extends StatePreprocessingSegment> segment : segments) {
-            stateSegments.add(injector.getInstance(segment));
+        var descriptorPreProcessingSegments = new ArrayList<DescriptionPreprocessingSegment>();
+        for (Class<? extends DescriptionPreprocessingSegment> segment : descriptorSegments) {
+            descriptorPreProcessingSegments.add(injector.getInstance(segment));
+        }
+
+        var statePreProcessingSegments = new ArrayList<StatePreprocessingSegment>();
+        for (Class<? extends StatePreprocessingSegment> segment : stateSegments) {
+            // if a segment from descriptorPreprocessingSegments list implements both DescriptionModificationSegment and
+            // StateModificationSegment it will also be added to the list statePreprocessingSegments, instead of
+            // a new instance
+            var existingSegment = descriptorPreProcessingSegments.stream()
+                    .filter(descSegment -> segment.isAssignableFrom(descSegment.getClass())).findFirst();
+            if (existingSegment.isPresent()) {
+                statePreProcessingSegments.add((StatePreprocessingSegment) existingSegment.get());
+            } else {
+                statePreProcessingSegments.add(injector.getInstance(segment));
+            }
         }
         this.localMdibAccessPreprocessing = chainFactory.createMdibStoragePreprocessingChain(
                 mdibStorage,
-                Arrays.asList(descriptorChildRemover),
-                stateSegments);
+                descriptorPreProcessingSegments,
+                statePreProcessingSegments);
 
         this.writeUtil = new WriteUtil(
                 instanceLogger, eventDistributor,

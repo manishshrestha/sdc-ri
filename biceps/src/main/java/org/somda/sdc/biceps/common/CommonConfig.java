@@ -60,6 +60,18 @@ public class CommonConfig {
     public static final String ALLOW_STATES_WITHOUT_DESCRIPTORS = "Biceps.Common.AllowStatesWithoutDescriptors";
 
     /**
+     * A list of all DescriptionPreprocessingSegments, which are applied during description modifications.
+     * <p>
+     * A consumer can specify which DescriptionPreprocessingSegments should be used, by adding them to the list.
+     * <ul>
+     * <li>Data type: {@link List}
+     * <li>Use: optional
+     * </ul>
+     */
+    public static final String CONSUMER_DESCRIPTOR_PREPROCESSING_SEGMENTS =
+            "Biceps.Common.ConsumerDescriptorPreprocessingSegments";
+
+    /**
      * A list of all StatePreprocessingSegments, which are applied during state modifications.
      * <p>
      * A consumer can specify which StatePreprocessingSegments should be used, by adding them to the list.
@@ -68,5 +80,30 @@ public class CommonConfig {
      * <li>Use: optional
      * </ul>
      */
-    public static final String CONSUMER_PREPROCESSING_SEGMENTS = "Biceps.Common.ConsumerPreprocessingSegments";
+    public static final String CONSUMER_STATE_PREPROCESSING_SEGMENTS =
+            "Biceps.Common.ConsumerStatePreprocessingSegments";
+
+    /**
+     * A list of all DescriptionPreprocessingSegments, which are applied during description modifications.
+     * <p>
+     * A provider can specify which DescriptionPreprocessingSegments should be used, by adding them to the list.
+     * <ul>
+     * <li>Data type: {@link List}
+     * <li>Use: optional
+     * </ul>
+     */
+    public static final String PROVIDER_DESCRIPTOR_PREPROCESSING_SEGMENTS =
+            "Biceps.Common.ProviderDescriptorPreprocessingSegments";
+
+    /**
+     * A list of all StatePreprocessingSegments, which are applied during state modifications.
+     * <p>
+     * A provider can specify which StatePreprocessingSegments should be used, by adding them to the list.
+     * <ul>
+     * <li>Data type: {@link List}
+     * <li>Use: optional
+     * </ul>
+     */
+    public static final String PROVIDER_STATE_PREPROCESSING_SEGMENTS =
+            "Biceps.Common.ProviderStatePreprocessingSegments";
 }

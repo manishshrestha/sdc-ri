@@ -1,5 +1,6 @@
 package org.somda.sdc.biceps.provider.access;
 
+import com.google.inject.Injector;
 import com.google.inject.assistedinject.AssistedInject;
 import com.google.inject.name.Named;
 import org.apache.logging.log4j.LogManager;
@@ -15,25 +16,22 @@ import org.somda.sdc.biceps.common.access.WriteStateResult;
 import org.somda.sdc.biceps.common.access.factory.ReadTransactionFactory;
 import org.somda.sdc.biceps.common.access.helper.WriteUtil;
 import org.somda.sdc.biceps.common.event.Distributor;
-import org.somda.sdc.biceps.common.preprocessing.DescriptorChildRemover;
+import org.somda.sdc.biceps.common.storage.DescriptionPreprocessingSegment;
 import org.somda.sdc.biceps.common.storage.MdibStorage;
 import org.somda.sdc.biceps.common.storage.MdibStoragePreprocessingChain;
 import org.somda.sdc.biceps.common.storage.PreprocessingException;
+import org.somda.sdc.biceps.common.storage.StatePreprocessingSegment;
 import org.somda.sdc.biceps.common.storage.factory.MdibStorageFactory;
 import org.somda.sdc.biceps.common.storage.factory.MdibStoragePreprocessingChainFactory;
 import org.somda.sdc.biceps.model.participant.AbstractContextState;
 import org.somda.sdc.biceps.model.participant.AbstractDescriptor;
 import org.somda.sdc.biceps.model.participant.AbstractState;
 import org.somda.sdc.biceps.model.participant.MdibVersion;
-import org.somda.sdc.biceps.provider.preprocessing.DuplicateChecker;
-import org.somda.sdc.biceps.provider.preprocessing.HandleReferenceHandler;
-import org.somda.sdc.biceps.provider.preprocessing.TypeConsistencyChecker;
-import org.somda.sdc.biceps.provider.preprocessing.VersionHandler;
 import org.somda.sdc.common.CommonConfig;
 import org.somda.sdc.common.logging.InstanceLogger;
 
 import java.math.BigInteger;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -64,13 +62,13 @@ public class LocalMdibAccessImpl implements LocalMdibAccess {
                         MdibStorageFactory mdibStorageFactory,
                         ReentrantReadWriteLock readWriteLock,
                         ReadTransactionFactory readTransactionFactory,
-                        DuplicateChecker duplicateChecker,
-                        VersionHandler versionHandler,
-                        TypeConsistencyChecker typeConsistencyChecker,
-                        HandleReferenceHandler handleReferenceHandler,
-                        DescriptorChildRemover descriptorChildRemover,
                         CopyManager copyManager,
-                        @Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier) {
+                        @Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier,
+                        @Named(org.somda.sdc.biceps.common.CommonConfig.PROVIDER_STATE_PREPROCESSING_SEGMENTS)
+                                List<Class<? extends StatePreprocessingSegment>> stateSegments,
+                        @Named(org.somda.sdc.biceps.common.CommonConfig.PROVIDER_DESCRIPTOR_PREPROCESSING_SEGMENTS)
+                                List<Class<? extends DescriptionPreprocessingSegment>> descriptorSegments,
+                        Injector injector) {
         this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);
         mdibVersion = MdibVersion.create();
         mdDescriptionVersion = BigInteger.ZERO;
@@ -82,14 +80,29 @@ public class LocalMdibAccessImpl implements LocalMdibAccess {
         this.readTransactionFactory = readTransactionFactory;
         this.copyManager = copyManager;
 
+        var descriptorPreProcessingSegments = new ArrayList<DescriptionPreprocessingSegment>();
+        for (Class<? extends DescriptionPreprocessingSegment> segment : descriptorSegments) {
+            descriptorPreProcessingSegments.add(injector.getInstance(segment));
+        }
+
+        var statePreProcessingSegments = new ArrayList<StatePreprocessingSegment>();
+        for (Class<? extends StatePreprocessingSegment> segment : stateSegments) {
+            // if a segment from descriptorPreprocessingSegments list implements both DescriptionModificationSegment and
+            // StateModificationSegment it will also be added to the list statePreprocessingSegments, instead of
+            // a new instance
+            var existingSegment = descriptorPreProcessingSegments.stream()
+                    .filter(descSegment -> segment.isAssignableFrom(descSegment.getClass())).findFirst();
+            if (existingSegment.isPresent()) {
+                statePreProcessingSegments.add((StatePreprocessingSegment) existingSegment.get());
+            } else {
+                statePreProcessingSegments.add(injector.getInstance(segment));
+            }
+        }
+
         MdibStoragePreprocessingChain localMdibAccessPreprocessing = chainFactory.createMdibStoragePreprocessingChain(
                 mdibStorage,
-                Arrays.asList(
-                        duplicateChecker, typeConsistencyChecker,
-                        versionHandler, handleReferenceHandler,
-                        descriptorChildRemover
-                ),
-                Arrays.asList(versionHandler));
+                descriptorPreProcessingSegments,
+                statePreProcessingSegments);
 
         this.writeUtil = new WriteUtil(
                 instanceLogger, eventDistributor,
