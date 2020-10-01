@@ -5,14 +5,12 @@ import com.google.inject.AbstractModule;
 import it.org.somda.glue.consumer.TestSdcClient;
 import it.org.somda.glue.provider.TestSdcDevice;
 import it.org.somda.glue.provider.VentilatorMdibRunner;
-import it.org.somda.sdc.dpws.soap.SubscriptionIT;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInfo;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.somda.sdc.biceps.common.storage.PreprocessingException;
 import org.somda.sdc.biceps.model.message.InvocationError;
@@ -22,9 +20,7 @@ import org.somda.sdc.dpws.CommunicationLogImpl;
 import org.somda.sdc.dpws.CommunicationLogSink;
 import org.somda.sdc.dpws.service.HostingServiceProxy;
 import org.somda.sdc.dpws.soap.CommunicationContext;
-import org.somda.sdc.dpws.soap.HttpApplicationInfo;
 import org.somda.sdc.dpws.soap.MarshallingService;
-import org.somda.sdc.dpws.soap.SoapMarshalling;
 import org.somda.sdc.dpws.soap.exception.MarshallingException;
 import org.somda.sdc.dpws.soap.interception.InterceptorException;
 import org.somda.sdc.dpws.soap.wseventing.WsEventingConstants;
@@ -42,7 +38,6 @@ import org.somda.sdc.glue.provider.sco.OperationInvocationReceiver;
 import test.org.somda.common.CIDetector;
 import test.org.somda.common.LoggingTestWatcher;
 
-import javax.xml.bind.JAXBException;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
@@ -50,9 +45,7 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -136,7 +129,7 @@ public class SdcRemoteDevicesConnectorImplIT {
     }
 
     @Test
-    @DisplayName("Ensure GetMdib is send after a Subscribe message")
+    @DisplayName("Ensure GetMdib is send after a SubscribeResponse message")
     void testGetMdibAfterSubscribe()
             throws TimeoutException, InterceptorException, ExecutionException, InterruptedException,
             MarshallingException, PrerequisitesException {
@@ -156,7 +149,7 @@ public class SdcRemoteDevicesConnectorImplIT {
 
         // collect actions in order
         var actions = new ArrayList<String>();
-        for (ByteArrayOutputStream byteArrayOutputStream : clientCommlog.getOutbound()) {
+        for (ByteArrayOutputStream byteArrayOutputStream : clientCommlog.getTraffic()) {
             var msg = soapMarshalling.unmarshal(new ByteArrayInputStream(byteArrayOutputStream.toByteArray()));
             msg.getWsAddressingHeader().getAction().ifPresent(action -> actions.add(action.getValue()));
         }
@@ -168,21 +161,21 @@ public class SdcRemoteDevicesConnectorImplIT {
             if (ActionConstants.ACTION_GET_MDIB.equals(action)) {
                 assertTrue(hadSubscribe, "Subscribe did not occur before GetMdib");
                 hadGetMdib = true;
-            } else if (WsEventingConstants.WSA_ACTION_SUBSCRIBE.equals(action)) {
+            } else if (WsEventingConstants.WSA_ACTION_SUBSCRIBE_RESPONSE.equals(action)) {
                 hadSubscribe = true;
             }
         }
 
         assertTrue(hadGetMdib, "Never saw any outgoing GetMdib");
-        assertTrue(hadSubscribe, "Never saw any outgoing Subscribe");
+        assertTrue(hadSubscribe, "Never saw any incoming SubscribeResponse");
     }
 
     static class TestCommLogSink implements CommunicationLogSink {
 
-        private final List<ByteArrayOutputStream> outbound;
+        private final List<ByteArrayOutputStream> traffic;
 
         TestCommLogSink() {
-            this.outbound = new ArrayList<>();
+            this.traffic = new ArrayList<>();
         }
 
         @Override
@@ -191,19 +184,16 @@ public class SdcRemoteDevicesConnectorImplIT {
                                                CommunicationLog.MessageType messageType,
                                                CommunicationContext communicationContext) {
             var os = new ByteArrayOutputStream();
-            var appInfo = (HttpApplicationInfo) communicationContext.getApplicationInfo();
-            if (CommunicationLog.Direction.OUTBOUND.equals(direction)) {
-                outbound.add(os);
-            }
+            traffic.add(os);
             return os;
         }
 
-        public List<ByteArrayOutputStream> getOutbound() {
-            return outbound;
+        public List<ByteArrayOutputStream> getTraffic() {
+            return traffic;
         }
 
         public void clear() {
-            outbound.clear();
+            traffic.clear();
         }
     }
 
