@@ -1,5 +1,6 @@
 package org.somda.sdc.biceps.consumer.preprocessing;
 
+import com.google.inject.Inject;
 import org.somda.sdc.biceps.common.MdibStateModifications;
 import org.somda.sdc.biceps.common.MdibTypeValidator;
 import org.somda.sdc.biceps.common.storage.MdibStorage;
@@ -7,7 +8,6 @@ import org.somda.sdc.biceps.common.storage.StatePreprocessingSegment;
 import org.somda.sdc.biceps.model.participant.AbstractMultiState;
 import org.somda.sdc.biceps.model.participant.AbstractState;
 
-import javax.inject.Inject;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
