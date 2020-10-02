@@ -60,11 +60,13 @@ public class CommonConfig {
     public static final String ALLOW_STATES_WITHOUT_DESCRIPTORS = "Biceps.Common.AllowStatesWithoutDescriptors";
 
     /**
-     * A list of all DescriptionPreprocessingSegments, which are applied during description modifications.
+     * A list of all {@linkplain org.somda.sdc.biceps.common.storage.DescriptionPreprocessingSegment}, which are applied
+     * during description modifications.
      * <p>
-     * A consumer can specify which DescriptionPreprocessingSegments should be used, by adding them to the list.
+     * A consumer can specify which {@linkplain org.somda.sdc.biceps.common.storage.DescriptionPreprocessingSegment}
+     * should be used, by adding them to the list.
      * <ul>
-     * <li>Data type: {@link List}
+     * <li>Data type: {@link List} of {@link org.somda.sdc.biceps.common.storage.DescriptionPreprocessingSegment}
      * <li>Use: optional
      * </ul>
      */
@@ -72,11 +74,13 @@ public class CommonConfig {
             "Biceps.Common.ConsumerDescriptorPreprocessingSegments";
 
     /**
-     * A list of all StatePreprocessingSegments, which are applied during state modifications.
+     * A list of all {@linkplain org.somda.sdc.biceps.common.storage.StatePreprocessingSegment}, which are applied
+     * during state modifications.
      * <p>
-     * A consumer can specify which StatePreprocessingSegments should be used, by adding them to the list.
+     * A consumer can specify which {@linkplain org.somda.sdc.biceps.common.storage.StatePreprocessingSegment} should
+     * be used, by adding them to the list.
      * <ul>
-     * <li>Data type: {@link List}
+     * <li>Data type: {@link List} of {@link org.somda.sdc.biceps.common.storage.StatePreprocessingSegment}
      * <li>Use: optional
      * </ul>
      */
@@ -84,11 +88,13 @@ public class CommonConfig {
             "Biceps.Common.ConsumerStatePreprocessingSegments";
 
     /**
-     * A list of all DescriptionPreprocessingSegments, which are applied during description modifications.
+     * A list of all {@linkplain org.somda.sdc.biceps.common.storage.DescriptionPreprocessingSegment}, which are applied
+     * during description modifications.
      * <p>
-     * A provider can specify which DescriptionPreprocessingSegments should be used, by adding them to the list.
+     * A provider can specify which {@linkplain org.somda.sdc.biceps.common.storage.DescriptionPreprocessingSegment}
+     * should be used, by adding them to the list.
      * <ul>
-     * <li>Data type: {@link List}
+     * <li>Data type: {@link List} of {@link org.somda.sdc.biceps.common.storage.DescriptionPreprocessingSegment}
      * <li>Use: optional
      * </ul>
      */
@@ -96,11 +102,13 @@ public class CommonConfig {
             "Biceps.Common.ProviderDescriptorPreprocessingSegments";
 
     /**
-     * A list of all StatePreprocessingSegments, which are applied during state modifications.
+     * A list of all {@linkplain org.somda.sdc.biceps.common.storage.StatePreprocessingSegment}, which are applied
+     * during state modifications.
      * <p>
-     * A provider can specify which StatePreprocessingSegments should be used, by adding them to the list.
+     * A provider can specify which {@linkplain org.somda.sdc.biceps.common.storage.StatePreprocessingSegment} should
+     * be used, by adding them to the list.
      * <ul>
-     * <li>Data type: {@link List}
+     * <li>Data type: {@link List} of {@link org.somda.sdc.biceps.common.storage.StatePreprocessingSegment}
      * <li>Use: optional
      * </ul>
      */

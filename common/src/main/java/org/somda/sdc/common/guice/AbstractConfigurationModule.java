@@ -63,10 +63,10 @@ public abstract class AbstractConfigurationModule extends AbstractModule {
      * This operation can only be performed once per key.
      * All unpopulated keys are supposed to be filled with a default value once {@link #configure()} is called by Guice.
      *
-     * @param name     the configuration key.
+     * @param name        the configuration key.
      * @param typeLiteral the data type bound by the key (should be defined in configuration class).
-     * @param value    the configuration value to set.
-     * @param <T>      type that is required by the given key.
+     * @param value       the configuration value to set.
+     * @param <T>         type that is required by the given key.
      */
     public <T> void bind(String name, TypeLiteral<T> typeLiteral, @Nullable T value) {
         if (!boundValues.containsKey(name)) {

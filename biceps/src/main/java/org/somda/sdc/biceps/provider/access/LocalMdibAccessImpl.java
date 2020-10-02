@@ -16,6 +16,7 @@ import org.somda.sdc.biceps.common.access.WriteStateResult;
 import org.somda.sdc.biceps.common.access.factory.ReadTransactionFactory;
 import org.somda.sdc.biceps.common.access.helper.WriteUtil;
 import org.somda.sdc.biceps.common.event.Distributor;
+import org.somda.sdc.biceps.common.preprocessing.PreprocessingUtil;
 import org.somda.sdc.biceps.common.storage.DescriptionPreprocessingSegment;
 import org.somda.sdc.biceps.common.storage.MdibStorage;
 import org.somda.sdc.biceps.common.storage.MdibStoragePreprocessingChain;
@@ -31,7 +32,6 @@ import org.somda.sdc.common.CommonConfig;
 import org.somda.sdc.common.logging.InstanceLogger;
 
 import java.math.BigInteger;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -65,9 +65,9 @@ public class LocalMdibAccessImpl implements LocalMdibAccess {
                         CopyManager copyManager,
                         @Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier,
                         @Named(org.somda.sdc.biceps.common.CommonConfig.PROVIDER_STATE_PREPROCESSING_SEGMENTS)
-                                List<Class<? extends StatePreprocessingSegment>> stateSegments,
+                                List<Class<? extends StatePreprocessingSegment>> stateSegmentClasses,
                         @Named(org.somda.sdc.biceps.common.CommonConfig.PROVIDER_DESCRIPTOR_PREPROCESSING_SEGMENTS)
-                                List<Class<? extends DescriptionPreprocessingSegment>> descriptorSegments,
+                                List<Class<? extends DescriptionPreprocessingSegment>> descriptonSegmentClasses,
                         Injector injector) {
         this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);
         mdibVersion = MdibVersion.create();
@@ -80,24 +80,11 @@ public class LocalMdibAccessImpl implements LocalMdibAccess {
         this.readTransactionFactory = readTransactionFactory;
         this.copyManager = copyManager;
 
-        var descriptorPreProcessingSegments = new ArrayList<DescriptionPreprocessingSegment>();
-        for (Class<? extends DescriptionPreprocessingSegment> segment : descriptorSegments) {
-            descriptorPreProcessingSegments.add(injector.getInstance(segment));
-        }
+        var descriptorPreProcessingSegments =
+                PreprocessingUtil.getDescriptionPreprocessingSegments(descriptonSegmentClasses, injector);
 
-        var statePreProcessingSegments = new ArrayList<StatePreprocessingSegment>();
-        for (Class<? extends StatePreprocessingSegment> segment : stateSegments) {
-            // if a segment from descriptorPreprocessingSegments list implements both DescriptionModificationSegment and
-            // StateModificationSegment it will also be added to the list statePreprocessingSegments, instead of
-            // a new instance
-            var existingSegment = descriptorPreProcessingSegments.stream()
-                    .filter(descSegment -> segment.isAssignableFrom(descSegment.getClass())).findFirst();
-            if (existingSegment.isPresent()) {
-                statePreProcessingSegments.add((StatePreprocessingSegment) existingSegment.get());
-            } else {
-                statePreProcessingSegments.add(injector.getInstance(segment));
-            }
-        }
+        var statePreProcessingSegments = PreprocessingUtil.getStatePreprocessingSegments(
+                stateSegmentClasses, descriptorPreProcessingSegments, injector);
 
         MdibStoragePreprocessingChain localMdibAccessPreprocessing = chainFactory.createMdibStoragePreprocessingChain(
                 mdibStorage,
