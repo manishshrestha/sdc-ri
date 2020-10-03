@@ -57,7 +57,7 @@ public class CommunicationLogEntity extends HttpEntityWrapper {
         // IMPORTANT: Please note all entity implementations must ensure that all allocated resources are properly
         // deallocated when this method returns.
         super.writeTo(splitOutputStream);
-        splitOutputStream.close();
+        communicationLogStream.close();
     }
 
     @Override
