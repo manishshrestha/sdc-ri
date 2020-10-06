@@ -8,17 +8,17 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Preprocessing Utilities.
+ * Preprocessing utilities.
  */
 public class PreprocessingUtil {
 
     /**
-     * Takes a list of Classes which extends {@linkplain DescriptionPreprocessingSegment} and
+     * Takes a list of classes which extends {@linkplain DescriptionPreprocessingSegment} and
      * returns a list with instances of these {@linkplain DescriptionPreprocessingSegment}.
      *
      * @param descriptorSegments list of injection types.
      * @param injector           to retrieve instances of injection types.
-     * @return List with instances of specified {@linkplain DescriptionPreprocessingSegment}.
+     * @return instances of specified {@linkplain DescriptionPreprocessingSegment}.
      */
     public static List<DescriptionPreprocessingSegment> getDescriptionPreprocessingSegments(
             List<Class<? extends DescriptionPreprocessingSegment>> descriptorSegments,
@@ -31,7 +31,7 @@ public class PreprocessingUtil {
     }
 
     /**
-     * Takes a list of Classes which extends {@linkplain StatePreprocessingSegment} and
+     * Takes a list of classes which extends {@linkplain StatePreprocessingSegment} and
      * returns a list with instances of these {@linkplain StatePreprocessingSegment}, when a class also implements
      * {@linkplain DescriptionPreprocessingSegment} the instance of the descriptorPreProcessingSegments is used, instead
      * of a new one.
@@ -39,7 +39,7 @@ public class PreprocessingUtil {
      * @param stateSegments                   list of injection types.
      * @param descriptorPreProcessingSegments list of already retrieved {@linkplain DescriptionPreprocessingSegment}.
      * @param injector                        to retrieve instances of injection types.
-     * @return List with instances of specified {@linkplain StatePreprocessingSegment}.
+     * @return instances of specified {@linkplain StatePreprocessingSegment}.
      */
     public static List<StatePreprocessingSegment> getStatePreprocessingSegments(
             List<Class<? extends StatePreprocessingSegment>> stateSegments,

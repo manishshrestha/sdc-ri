@@ -65,6 +65,7 @@ public class CommonConfig {
      * <p>
      * A consumer can specify which {@linkplain org.somda.sdc.biceps.common.storage.DescriptionPreprocessingSegment}
      * should be used, by adding them to the list.
+     * <em>If a preprocessing segment is used for descriptors and states the same instance will be shared!</em>
      * <ul>
      * <li>Data type: {@link List} of {@link org.somda.sdc.biceps.common.storage.DescriptionPreprocessingSegment}
      * <li>Use: optional
@@ -79,6 +80,7 @@ public class CommonConfig {
      * <p>
      * A consumer can specify which {@linkplain org.somda.sdc.biceps.common.storage.StatePreprocessingSegment} should
      * be used, by adding them to the list.
+     * <em>If a preprocessing segment is used for descriptors and states the same instance will be shared!</em>
      * <ul>
      * <li>Data type: {@link List} of {@link org.somda.sdc.biceps.common.storage.StatePreprocessingSegment}
      * <li>Use: optional
@@ -93,6 +95,7 @@ public class CommonConfig {
      * <p>
      * A provider can specify which {@linkplain org.somda.sdc.biceps.common.storage.DescriptionPreprocessingSegment}
      * should be used, by adding them to the list.
+     * <em>If a preprocessing segment is used for descriptors and states the same instance will be shared!</em>
      * <ul>
      * <li>Data type: {@link List} of {@link org.somda.sdc.biceps.common.storage.DescriptionPreprocessingSegment}
      * <li>Use: optional
@@ -107,6 +110,7 @@ public class CommonConfig {
      * <p>
      * A provider can specify which {@linkplain org.somda.sdc.biceps.common.storage.StatePreprocessingSegment} should
      * be used, by adding them to the list.
+     * <em>If a preprocessing segment is used for descriptors and states the same instance will be shared!</em>
      * <ul>
      * <li>Data type: {@link List} of {@link org.somda.sdc.biceps.common.storage.StatePreprocessingSegment}
      * <li>Use: optional
