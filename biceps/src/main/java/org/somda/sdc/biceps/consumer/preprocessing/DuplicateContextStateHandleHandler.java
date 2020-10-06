@@ -13,7 +13,9 @@ import java.util.Map;
 import java.util.Optional;
 
 /**
- * Preprocessing segment that throws an Exception, if a duplicate context state handle is used.
+ * Preprocessing segment that throws an Exception, if two context state have the same handle, but different
+ * descriptor handles. Which could mean that the context state handle is used multiple times or that the context
+ * state was assigned to a new descriptor. Both operations are not allowed.
  */
 public class DuplicateContextStateHandleHandler implements StatePreprocessingSegment {
     private final MdibTypeValidator typeValidator;

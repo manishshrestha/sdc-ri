@@ -67,7 +67,8 @@ public class CommonConfig {
      * should be used, by adding them to the list.
      * <em>If a preprocessing segment is used for descriptors and states the same instance will be shared!</em>
      * <ul>
-     * <li>Data type: {@link List} of {@link org.somda.sdc.biceps.common.storage.DescriptionPreprocessingSegment}
+     * <li>Data type: {@link List} of classes that implement
+     * {@link org.somda.sdc.biceps.common.storage.DescriptionPreprocessingSegment}
      * <li>Use: optional
      * </ul>
      */
@@ -82,7 +83,8 @@ public class CommonConfig {
      * be used, by adding them to the list.
      * <em>If a preprocessing segment is used for descriptors and states the same instance will be shared!</em>
      * <ul>
-     * <li>Data type: {@link List} of {@link org.somda.sdc.biceps.common.storage.StatePreprocessingSegment}
+     * <li>Data type: {@link List} of classes that implement
+     * {@link org.somda.sdc.biceps.common.storage.StatePreprocessingSegment}
      * <li>Use: optional
      * </ul>
      */
@@ -97,7 +99,8 @@ public class CommonConfig {
      * should be used, by adding them to the list.
      * <em>If a preprocessing segment is used for descriptors and states the same instance will be shared!</em>
      * <ul>
-     * <li>Data type: {@link List} of {@link org.somda.sdc.biceps.common.storage.DescriptionPreprocessingSegment}
+     * <li>Data type: {@link List} of classes that implement
+     * {@link org.somda.sdc.biceps.common.storage.DescriptionPreprocessingSegment}
      * <li>Use: optional
      * </ul>
      */
@@ -112,7 +115,8 @@ public class CommonConfig {
      * be used, by adding them to the list.
      * <em>If a preprocessing segment is used for descriptors and states the same instance will be shared!</em>
      * <ul>
-     * <li>Data type: {@link List} of {@link org.somda.sdc.biceps.common.storage.StatePreprocessingSegment}
+     * <li>Data type: {@link List} of classes that implement
+     * {@link org.somda.sdc.biceps.common.storage.StatePreprocessingSegment}
      * <li>Use: optional
      * </ul>
      */
