@@ -501,7 +501,7 @@ public class MdibStorageImplTest {
                         },
                         List.of(DuplicateContextStateHandleHandler.class, VersionDuplicateHandler.class));
 
-                bind(CommonConfig.CONSUMER_DESCRIPTOR_PREPROCESSING_SEGMENTS,
+                bind(CommonConfig.CONSUMER_DESCRIPTION_PREPROCESSING_SEGMENTS,
                         new TypeLiteral<List<Class<? extends DescriptionPreprocessingSegment>>>() {
                         },
                         List.of(DescriptorChildRemover.class));
@@ -511,7 +511,7 @@ public class MdibStorageImplTest {
                         },
                         List.of(DuplicateContextStateHandleHandler.class, VersionHandler.class));
 
-                bind(CommonConfig.PROVIDER_DESCRIPTOR_PREPROCESSING_SEGMENTS,
+                bind(CommonConfig.PROVIDER_DESCRIPTION_PREPROCESSING_SEGMENTS,
                         new TypeLiteral<List<Class<? extends DescriptionPreprocessingSegment>>>() {
                         },
                         List.of(DuplicateChecker.class, TypeConsistencyChecker.class, VersionHandler.class,
@@ -672,7 +672,7 @@ public class MdibStorageImplTest {
                         },
                         List.of(DuplicateContextStateHandleHandler.class, VersionDuplicateHandler.class));
 
-                bind(CommonConfig.CONSUMER_DESCRIPTOR_PREPROCESSING_SEGMENTS,
+                bind(CommonConfig.CONSUMER_DESCRIPTION_PREPROCESSING_SEGMENTS,
                         new TypeLiteral<List<Class<? extends DescriptionPreprocessingSegment>>>() {
                         },
                         List.of(DescriptorChildRemover.class));
@@ -682,7 +682,7 @@ public class MdibStorageImplTest {
                         },
                         List.of(DuplicateContextStateHandleHandler.class, VersionHandler.class));
 
-                bind(CommonConfig.PROVIDER_DESCRIPTOR_PREPROCESSING_SEGMENTS,
+                bind(CommonConfig.PROVIDER_DESCRIPTION_PREPROCESSING_SEGMENTS,
                         new TypeLiteral<List<Class<? extends DescriptionPreprocessingSegment>>>() {
                         },
                         List.of(DuplicateChecker.class, TypeConsistencyChecker.class, VersionHandler.class,

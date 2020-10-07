@@ -48,7 +48,7 @@ public class PreprocessingUtilTest {
 
         descriptionPreprocessingSegmentList = PreprocessingUtil.getDescriptionPreprocessingSegments(descriptionPreprocessingClassesList, injector);
         assertEquals(5, descriptionPreprocessingSegmentList.size(),
-                String.format("There should be 5 descriptorPreprocessingSegments, but there are %s", descriptionPreprocessingSegmentList.size()));
+                String.format("There should be 5 descriptionPreprocessingSegments, but there are %s", descriptionPreprocessingSegmentList.size()));
 
         //assert the right order
         assertTrue(descriptionPreprocessingSegmentList.get(0).getClass().isAssignableFrom(DuplicateChecker.class));
@@ -84,7 +84,7 @@ public class PreprocessingUtilTest {
 
         assertSame(versionHandlerFromDescriptionList.get(), versionHandlerFromStateList.get(),
                 String.format("StatePreprocessingSegments do not contain the same"
-                        + " VersionHandler instance as DescriptorPreprocessingSegments:"
+                        + " VersionHandler instance as DescriptionPreprocessingSegments:"
                         + " %s", versionHandlerFromDescriptionList.get()));
     }
 }

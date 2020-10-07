@@ -61,8 +61,8 @@ public class RemoteMdibAccessImpl implements RemoteMdibAccess {
                          @Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier,
                          @Named(org.somda.sdc.biceps.common.CommonConfig.CONSUMER_STATE_PREPROCESSING_SEGMENTS)
                                  List<Class<? extends StatePreprocessingSegment>> stateSegmentClasses,
-                         @Named(org.somda.sdc.biceps.common.CommonConfig.CONSUMER_DESCRIPTOR_PREPROCESSING_SEGMENTS)
-                                 List<Class<? extends DescriptionPreprocessingSegment>> descriptorSegmentClasses,
+                         @Named(org.somda.sdc.biceps.common.CommonConfig.CONSUMER_DESCRIPTION_PREPROCESSING_SEGMENTS)
+                                 List<Class<? extends DescriptionPreprocessingSegment>> descriptionSegmentClasses,
                          Injector injector) {
         this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);
         this.eventDistributor = eventDistributor;
@@ -70,16 +70,16 @@ public class RemoteMdibAccessImpl implements RemoteMdibAccess {
         this.readWriteLock = readWriteLock;
         this.readTransactionFactory = readTransactionFactory;
 
-        var descriptorPreProcessingSegments =
-                PreprocessingUtil.getDescriptionPreprocessingSegments(descriptorSegmentClasses, injector);
+        var descriptionPreprocessingSegments =
+                PreprocessingUtil.getDescriptionPreprocessingSegments(descriptionSegmentClasses, injector);
 
-        var statePreProcessingSegments = PreprocessingUtil.getStatePreprocessingSegments(
-                stateSegmentClasses, descriptorPreProcessingSegments, injector);
+        var statePreprocessingSegments = PreprocessingUtil.getStatePreprocessingSegments(
+                stateSegmentClasses, descriptionPreprocessingSegments, injector);
 
         this.localMdibAccessPreprocessing = chainFactory.createMdibStoragePreprocessingChain(
                 mdibStorage,
-                descriptorPreProcessingSegments,
-                statePreProcessingSegments);
+                descriptionPreprocessingSegments,
+                statePreprocessingSegments);
 
         this.writeUtil = new WriteUtil(
                 instanceLogger, eventDistributor,

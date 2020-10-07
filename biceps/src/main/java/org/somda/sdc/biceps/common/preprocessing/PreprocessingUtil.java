@@ -16,45 +16,45 @@ public class PreprocessingUtil {
      * Takes a list of classes which extends {@linkplain DescriptionPreprocessingSegment} and
      * returns a list with instances of these {@linkplain DescriptionPreprocessingSegment}.
      *
-     * @param descriptorSegments list of injection types.
+     * @param descriptionSegments list of injection types.
      * @param injector           to retrieve instances of injection types.
      * @return instances of specified {@linkplain DescriptionPreprocessingSegment}.
      */
     public static List<DescriptionPreprocessingSegment> getDescriptionPreprocessingSegments(
-            List<Class<? extends DescriptionPreprocessingSegment>> descriptorSegments,
+            List<Class<? extends DescriptionPreprocessingSegment>> descriptionSegments,
             Injector injector) {
-        var descriptorPreProcessingSegments = new ArrayList<DescriptionPreprocessingSegment>();
-        for (Class<? extends DescriptionPreprocessingSegment> segment : descriptorSegments) {
-            descriptorPreProcessingSegments.add(injector.getInstance(segment));
+        var descriptionPreprocessingSegments = new ArrayList<DescriptionPreprocessingSegment>();
+        for (Class<? extends DescriptionPreprocessingSegment> segment : descriptionSegments) {
+            descriptionPreprocessingSegments.add(injector.getInstance(segment));
         }
-        return descriptorPreProcessingSegments;
+        return descriptionPreprocessingSegments;
     }
 
     /**
      * Takes a list of classes which extends {@linkplain StatePreprocessingSegment} and
      * returns a list with instances of these {@linkplain StatePreprocessingSegment}, when a class also implements
-     * {@linkplain DescriptionPreprocessingSegment} the instance of the descriptorPreProcessingSegments is used, instead
-     * of a new one.
+     * {@linkplain DescriptionPreprocessingSegment} the instance of the descriptionPreprocessingSegments is used,
+     * instead of a new one.
      *
      * @param stateSegments                   list of injection types.
-     * @param descriptorPreProcessingSegments list of already retrieved {@linkplain DescriptionPreprocessingSegment}.
+     * @param descriptionPreprocessingSegments list of already retrieved {@linkplain DescriptionPreprocessingSegment}.
      * @param injector                        to retrieve instances of injection types.
      * @return instances of specified {@linkplain StatePreprocessingSegment}.
      */
     public static List<StatePreprocessingSegment> getStatePreprocessingSegments(
             List<Class<? extends StatePreprocessingSegment>> stateSegments,
-            List<DescriptionPreprocessingSegment> descriptorPreProcessingSegments,
+            List<DescriptionPreprocessingSegment> descriptionPreprocessingSegments,
             Injector injector) {
-        var statePreProcessingSegments = new ArrayList<StatePreprocessingSegment>();
+        var statePreprocessingSegments = new ArrayList<StatePreprocessingSegment>();
         for (Class<? extends StatePreprocessingSegment> segment : stateSegments) {
-            var existingSegment = descriptorPreProcessingSegments.stream()
+            var existingSegment = descriptionPreprocessingSegments.stream()
                     .filter(descSegment -> segment.isAssignableFrom(descSegment.getClass())).findFirst();
             if (existingSegment.isPresent()) {
-                statePreProcessingSegments.add((StatePreprocessingSegment) existingSegment.get());
+                statePreprocessingSegments.add((StatePreprocessingSegment) existingSegment.get());
             } else {
-                statePreProcessingSegments.add(injector.getInstance(segment));
+                statePreprocessingSegments.add(injector.getInstance(segment));
             }
         }
-        return statePreProcessingSegments;
+        return statePreprocessingSegments;
     }
 }

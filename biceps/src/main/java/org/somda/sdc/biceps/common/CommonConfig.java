@@ -72,8 +72,8 @@ public class CommonConfig {
      * <li>Use: optional
      * </ul>
      */
-    public static final String CONSUMER_DESCRIPTOR_PREPROCESSING_SEGMENTS =
-            "Biceps.Common.ConsumerDescriptorPreprocessingSegments";
+    public static final String CONSUMER_DESCRIPTION_PREPROCESSING_SEGMENTS =
+            "Biceps.Common.ConsumerDescriptionPreprocessingSegments";
 
     /**
      * A list of all {@linkplain org.somda.sdc.biceps.common.storage.StatePreprocessingSegment}, which are applied
@@ -104,8 +104,8 @@ public class CommonConfig {
      * <li>Use: optional
      * </ul>
      */
-    public static final String PROVIDER_DESCRIPTOR_PREPROCESSING_SEGMENTS =
-            "Biceps.Common.ProviderDescriptorPreprocessingSegments";
+    public static final String PROVIDER_DESCRIPTION_PREPROCESSING_SEGMENTS =
+            "Biceps.Common.ProviderDescriptionPreprocessingSegments";
 
     /**
      * A list of all {@linkplain org.somda.sdc.biceps.common.storage.StatePreprocessingSegment}, which are applied
