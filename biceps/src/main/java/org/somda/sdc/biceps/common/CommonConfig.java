@@ -2,6 +2,8 @@ package org.somda.sdc.biceps.common;
 
 import org.somda.sdc.biceps.common.storage.MdibStorage;
 
+import java.util.List;
+
 /**
  * General configuration of the BICEPS common package.
  *
@@ -56,4 +58,68 @@ public class CommonConfig {
      * </ul>
      */
     public static final String ALLOW_STATES_WITHOUT_DESCRIPTORS = "Biceps.Common.AllowStatesWithoutDescriptors";
+
+    /**
+     * A list of all {@linkplain org.somda.sdc.biceps.common.storage.DescriptionPreprocessingSegment}, which are applied
+     * during description modifications.
+     * <p>
+     * A consumer can specify which {@linkplain org.somda.sdc.biceps.common.storage.DescriptionPreprocessingSegment}
+     * should be used, by adding them to the list.
+     * <em>If a preprocessing segment is used for descriptors and states the same instance will be shared!</em>
+     * <ul>
+     * <li>Data type: {@link List} of classes that implement
+     * {@link org.somda.sdc.biceps.common.storage.DescriptionPreprocessingSegment}
+     * <li>Use: optional
+     * </ul>
+     */
+    public static final String CONSUMER_DESCRIPTION_PREPROCESSING_SEGMENTS =
+            "Biceps.Common.ConsumerDescriptionPreprocessingSegments";
+
+    /**
+     * A list of all {@linkplain org.somda.sdc.biceps.common.storage.StatePreprocessingSegment}, which are applied
+     * during state modifications.
+     * <p>
+     * A consumer can specify which {@linkplain org.somda.sdc.biceps.common.storage.StatePreprocessingSegment} should
+     * be used, by adding them to the list.
+     * <em>If a preprocessing segment is used for descriptors and states the same instance will be shared!</em>
+     * <ul>
+     * <li>Data type: {@link List} of classes that implement
+     * {@link org.somda.sdc.biceps.common.storage.StatePreprocessingSegment}
+     * <li>Use: optional
+     * </ul>
+     */
+    public static final String CONSUMER_STATE_PREPROCESSING_SEGMENTS =
+            "Biceps.Common.ConsumerStatePreprocessingSegments";
+
+    /**
+     * A list of all {@linkplain org.somda.sdc.biceps.common.storage.DescriptionPreprocessingSegment}, which are applied
+     * during description modifications.
+     * <p>
+     * A provider can specify which {@linkplain org.somda.sdc.biceps.common.storage.DescriptionPreprocessingSegment}
+     * should be used, by adding them to the list.
+     * <em>If a preprocessing segment is used for descriptors and states the same instance will be shared!</em>
+     * <ul>
+     * <li>Data type: {@link List} of classes that implement
+     * {@link org.somda.sdc.biceps.common.storage.DescriptionPreprocessingSegment}
+     * <li>Use: optional
+     * </ul>
+     */
+    public static final String PROVIDER_DESCRIPTION_PREPROCESSING_SEGMENTS =
+            "Biceps.Common.ProviderDescriptionPreprocessingSegments";
+
+    /**
+     * A list of all {@linkplain org.somda.sdc.biceps.common.storage.StatePreprocessingSegment}, which are applied
+     * during state modifications.
+     * <p>
+     * A provider can specify which {@linkplain org.somda.sdc.biceps.common.storage.StatePreprocessingSegment} should
+     * be used, by adding them to the list.
+     * <em>If a preprocessing segment is used for descriptors and states the same instance will be shared!</em>
+     * <ul>
+     * <li>Data type: {@link List} of classes that implement
+     * {@link org.somda.sdc.biceps.common.storage.StatePreprocessingSegment}
+     * <li>Use: optional
+     * </ul>
+     */
+    public static final String PROVIDER_STATE_PREPROCESSING_SEGMENTS =
+            "Biceps.Common.ProviderStatePreprocessingSegments";
 }

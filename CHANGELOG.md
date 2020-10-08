@@ -22,6 +22,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `org.somda.sdc.glue.consumer.report.ReportProcessor` can be configured to apply reports which have the same MDIB version as the current MDIB. (#183)
 - `org.somda.sdc.biceps.common.access.MdibAccess` method added to retrieve a list of states of a specific type. (#195)
 - `org.somda.sdc.biceps.common.storage.MdibStorage` method added to retrieve a list of states of a specific type. (#195)
+- `org.somda.sdc.biceps.consumer.preprocessing.DuplicateContextStateHandleHandler` to detect duplicate context state handles in MdibStateModifications. (#196)
+- `org.somda.sdc.biceps.consumer.access.RemoteMdibAccessImpl` and `org.somda.sdc.biceps.provider.access.LocalMdibAccessImpl` can be configured to specify which DescriptionPreprocessingSegments and StatePreprocessingSegments should be used for consumer or provider. (#196)
 
 ### Changed
 
