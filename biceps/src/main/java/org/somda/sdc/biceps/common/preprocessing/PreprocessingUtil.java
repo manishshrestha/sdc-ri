@@ -48,7 +48,7 @@ public class PreprocessingUtil {
         var statePreprocessingSegments = new ArrayList<StatePreprocessingSegment>();
         for (Class<? extends StatePreprocessingSegment> segment : stateSegments) {
             var existingSegment = descriptionPreprocessingSegments.stream()
-                    .filter(descSegment -> segment.isAssignableFrom(descSegment.getClass())).findFirst();
+                    .filter(descSegment -> segment.equals(descSegment.getClass())).findFirst();
             if (existingSegment.isPresent()) {
                 statePreprocessingSegments.add((StatePreprocessingSegment) existingSegment.get());
             } else {

@@ -1,6 +1,5 @@
 package org.somda.sdc.biceps.provider.access;
 
-import com.google.inject.Injector;
 import com.google.inject.assistedinject.AssistedInject;
 import com.google.inject.name.Named;
 import org.apache.logging.log4j.LogManager;
@@ -16,6 +15,7 @@ import org.somda.sdc.biceps.common.access.WriteStateResult;
 import org.somda.sdc.biceps.common.access.factory.ReadTransactionFactory;
 import org.somda.sdc.biceps.common.access.helper.WriteUtil;
 import org.somda.sdc.biceps.common.event.Distributor;
+import org.somda.sdc.biceps.common.preprocessing.PreprocessingInjectorWrapper;
 import org.somda.sdc.biceps.common.preprocessing.PreprocessingUtil;
 import org.somda.sdc.biceps.common.storage.DescriptionPreprocessingSegment;
 import org.somda.sdc.biceps.common.storage.MdibStorage;
@@ -68,7 +68,7 @@ public class LocalMdibAccessImpl implements LocalMdibAccess {
                                 List<Class<? extends StatePreprocessingSegment>> stateSegmentClasses,
                         @Named(org.somda.sdc.biceps.common.CommonConfig.PROVIDER_DESCRIPTION_PREPROCESSING_SEGMENTS)
                                 List<Class<? extends DescriptionPreprocessingSegment>> descriptionSegmentClasses,
-                        Injector injector) {
+                        PreprocessingInjectorWrapper injectorWrapper) {
         this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);
         mdibVersion = MdibVersion.create();
         mdDescriptionVersion = BigInteger.ZERO;
@@ -81,10 +81,11 @@ public class LocalMdibAccessImpl implements LocalMdibAccess {
         this.copyManager = copyManager;
 
         var descriptionPreprocessingSegments =
-                PreprocessingUtil.getDescriptionPreprocessingSegments(descriptionSegmentClasses, injector);
+                PreprocessingUtil.getDescriptionPreprocessingSegments(descriptionSegmentClasses,
+                        injectorWrapper.getInjector());
 
         var statePreprocessingSegments = PreprocessingUtil.getStatePreprocessingSegments(
-                stateSegmentClasses, descriptionPreprocessingSegments, injector);
+                stateSegmentClasses, descriptionPreprocessingSegments, injectorWrapper.getInjector());
 
         MdibStoragePreprocessingChain localMdibAccessPreprocessing = chainFactory.createMdibStoragePreprocessingChain(
                 mdibStorage,
