@@ -80,7 +80,7 @@ public class ProviderUtil extends BaseUtil {
                                 createCustomCryptoSettings()
                         );
                         bind(DpwsConfig.HTTPS_SUPPORT, Boolean.class, isUseTls());
-                        bind(DpwsConfig.HTTP_SUPPORT, Boolean.class, !isUseTls());
+                        bind(DpwsConfig.HTTP_SUPPORT, Boolean.class, true);
                         bind(CryptoConfig.CRYPTO_DEVICE_HOSTNAME_VERIFIER,
                                 HostnameVerifier.class,
                                 (hostname, session) -> {

@@ -41,4 +41,13 @@ public class WsDiscoveryConfig {
      * </ul>
      */
     public static final String RESOLVE_MATCHES_BUFFER_SIZE = "WsDiscovery.MaxResolveMatchesBufferSize";
+
+    /**
+     * An HTTP host that manages discovery requests.
+     * <ul>
+     * <li>Data type: {@linkplain String}
+     * <li>Use: optional
+     * </ul>
+     */
+    public static final String DISCOVERY_PROXY_HOST = "WsDiscovery.DiscoveryProxyHost";
 }

@@ -9,12 +9,16 @@ import org.apache.logging.log4j.Logger;
 import org.somda.sdc.common.CommonConfig;
 import org.somda.sdc.common.logging.InstanceLogger;
 import org.somda.sdc.common.util.ObjectUtilImpl;
+import org.somda.sdc.dpws.factory.TransportBindingFactory;
 import org.somda.sdc.dpws.soap.NotificationSource;
+import org.somda.sdc.dpws.soap.RequestResponseClient;
 import org.somda.sdc.dpws.soap.SoapMessage;
 import org.somda.sdc.dpws.soap.SoapUtil;
 import org.somda.sdc.dpws.soap.exception.MarshallingException;
 import org.somda.sdc.dpws.soap.exception.SoapFaultException;
 import org.somda.sdc.dpws.soap.exception.TransportException;
+import org.somda.sdc.dpws.soap.factory.NotificationSourceFactory;
+import org.somda.sdc.dpws.soap.factory.RequestResponseClientFactory;
 import org.somda.sdc.dpws.soap.factory.SoapFaultFactory;
 import org.somda.sdc.dpws.soap.interception.Direction;
 import org.somda.sdc.dpws.soap.interception.InterceptorException;
@@ -65,6 +69,7 @@ public class WsDiscoveryTargetServiceInterceptor implements WsDiscoveryTargetSer
     private final ObjectUtilImpl objectUtil;
     private final UnsignedInteger instanceId;
     private final Logger instanceLogger;
+    private final NotificationSource discoveryProxyClient;
     private List<QName> types;
     private List<String> scopes;
     private List<String> xAddrs;
@@ -84,6 +89,9 @@ public class WsDiscoveryTargetServiceInterceptor implements WsDiscoveryTargetSer
                                         WsAddressingUtil wsaUtil,
                                         WsDiscoveryUtil wsdUtil,
                                         ObjectUtilImpl objectUtil,
+                                        TransportBindingFactory transportBindingFactory,
+                                        NotificationSourceFactory notificationSourceFactory,
+                                        @Named(WsDiscoveryConfig.DISCOVERY_PROXY_HOST) String discoveryProxyHost,
                                         @Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier) {
         this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);
         this.targetServiceEpr = targetServiceEpr;
@@ -105,6 +113,13 @@ public class WsDiscoveryTargetServiceInterceptor implements WsDiscoveryTargetSer
         types = new ArrayList<>();
         scopes = new ArrayList<>();
         xAddrs = new ArrayList<>();
+
+        if (discoveryProxyHost.isEmpty()) {
+            discoveryProxyClient = null;
+        } else {
+            var tBinding = transportBindingFactory.createTransportBinding(discoveryProxyHost);
+            discoveryProxyClient = notificationSourceFactory.createNotificationSource(tBinding);
+        }
     }
 
     @MessageInterceptor(value = WsDiscoveryConstants.WSA_ACTION_PROBE, direction = Direction.REQUEST)
@@ -330,9 +345,21 @@ public class WsDiscoveryTargetServiceInterceptor implements WsDiscoveryTargetSer
         helloType.setMetadataVersion(currentMetadataVersion.longValue());
         helloType.setEndpointReference(getEndpointReference());
 
-        sendMulticast(WsDiscoveryConstants.WSA_ACTION_HELLO, wsdFactory.createHello(helloType));
         metadataModified.set(false);
 
+        if (discoveryProxyClient != null) {
+            SoapMessage soapMessage = soapUtil.createMessage(WsDiscoveryConstants.WSA_ACTION_HELLO,
+                    WsDiscoveryConstants.WSA_UDP_TO, wsdFactory.createHello(helloType));
+            soapMessage.getWsDiscoveryHeader().setAppSequence(wsdUtil.createAppSequence(instanceId));
+            try {
+                discoveryProxyClient.sendNotification(soapMessage);
+                return currentMetadataVersion;
+            } catch (MarshallingException | TransportException | InterceptorException e) {
+                LOG.warn("Hello to discovery proxy failed", e);
+            }
+        }
+
+        sendMulticast(WsDiscoveryConstants.WSA_ACTION_HELLO, wsdFactory.createHello(helloType));
         return currentMetadataVersion;
     }
 
@@ -346,6 +373,17 @@ public class WsDiscoveryTargetServiceInterceptor implements WsDiscoveryTargetSer
         byeType.setScopes(scopesType);
         byeType.setTypes(getTypes());
         byeType.setEndpointReference(getEndpointReference());
+
+        if (discoveryProxyClient != null) {
+            SoapMessage soapMessage = soapUtil.createMessage(WsDiscoveryConstants.WSA_ACTION_BYE,
+                    WsDiscoveryConstants.WSA_UDP_TO, wsdFactory.createBye(byeType));
+            soapMessage.getWsDiscoveryHeader().setAppSequence(wsdUtil.createAppSequence(instanceId));
+            try {
+                discoveryProxyClient.sendNotification(soapMessage);
+            } catch (MarshallingException | TransportException | InterceptorException e) {
+                LOG.warn("Bye to discovery proxy failed", e);
+            }
+        }
 
         sendMulticast(WsDiscoveryConstants.WSA_ACTION_BYE, wsdFactory.createBye(byeType));
     }

@@ -5,10 +5,14 @@ import com.google.common.eventbus.EventBus;
 import com.google.common.primitives.UnsignedInteger;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListeningExecutorService;
+import com.google.common.util.concurrent.SettableFuture;
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
 import com.google.inject.name.Named;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.somda.sdc.common.util.ExecutorWrapperService;
+import org.somda.sdc.dpws.factory.TransportBindingFactory;
 import org.somda.sdc.dpws.guice.WsDiscovery;
 import org.somda.sdc.dpws.soap.NotificationSource;
 import org.somda.sdc.dpws.soap.RequestResponseClient;
@@ -16,6 +20,7 @@ import org.somda.sdc.dpws.soap.SoapMessage;
 import org.somda.sdc.dpws.soap.SoapUtil;
 import org.somda.sdc.dpws.soap.exception.MarshallingException;
 import org.somda.sdc.dpws.soap.exception.TransportException;
+import org.somda.sdc.dpws.soap.factory.RequestResponseClientFactory;
 import org.somda.sdc.dpws.soap.interception.InterceptorException;
 import org.somda.sdc.dpws.soap.interception.MessageInterceptor;
 import org.somda.sdc.dpws.soap.interception.NotificationObject;
@@ -37,17 +42,17 @@ import org.somda.sdc.dpws.soap.wsdiscovery.model.ResolveMatchesType;
 import org.somda.sdc.dpws.soap.wsdiscovery.model.ResolveType;
 import org.somda.sdc.dpws.soap.wsdiscovery.model.ScopesType;
 
-
 import javax.xml.namespace.QName;
 import java.time.Duration;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -58,6 +63,7 @@ import static java.lang.System.currentTimeMillis;
  * Default implementation of {@linkplain WsDiscoveryClient}.
  */
 public class WsDiscoveryClientInterceptor implements WsDiscoveryClient {
+    private static final Logger LOG = LogManager.getLogger();
 
     private final Duration maxWaitForProbeMatches;
     private final Duration maxWaitForResolveMatches;
@@ -82,6 +88,8 @@ public class WsDiscoveryClientInterceptor implements WsDiscoveryClient {
     private final EventBus helloByeProbeEvents;
     private final WsAddressingUtil wsaUtil;
 
+    private final RequestResponseClient discoveryProxyClient;
+
     @AssistedInject
     WsDiscoveryClientInterceptor(@Assisted NotificationSource notificationSource,
                                  @Named(WsDiscoveryConfig.MAX_WAIT_FOR_PROBE_MATCHES) Duration maxWaitForProbeMatches,
@@ -89,12 +97,15 @@ public class WsDiscoveryClientInterceptor implements WsDiscoveryClient {
                                          Duration maxWaitForResolveMatches,
                                  @Named(WsDiscoveryConfig.PROBE_MATCHES_BUFFER_SIZE) Integer probeMatchesBufferSize,
                                  @Named(WsDiscoveryConfig.RESOLVE_MATCHES_BUFFER_SIZE) Integer resolveMatchesBufferSize,
+                                 @Named(WsDiscoveryConfig.DISCOVERY_PROXY_HOST) String discoveryProxyHost,
                                  WsDiscoveryUtil wsdUtil,
                                  @WsDiscovery ExecutorWrapperService<ListeningExecutorService> executorService,
                                  ObjectFactory wsdFactory,
                                  SoapUtil soapUtil,
                                  EventBus helloByeProbeEvents,
-                                 WsAddressingUtil wsaUtil) {
+                                 WsAddressingUtil wsaUtil,
+                                 TransportBindingFactory transportBindingFactory,
+                                 RequestResponseClientFactory requestResponseClientFactory) {
         this.maxWaitForProbeMatches = maxWaitForProbeMatches;
         this.maxWaitForResolveMatches = maxWaitForResolveMatches;
         this.probeMatchesBufferSize = probeMatchesBufferSize;
@@ -114,6 +125,13 @@ public class WsDiscoveryClientInterceptor implements WsDiscoveryClient {
 
         probeCondition = probeLock.newCondition();
         resolveCondition = resolveLock.newCondition();
+
+        if (discoveryProxyHost.isEmpty()) {
+            discoveryProxyClient = null;
+        } else {
+            var tBinding = transportBindingFactory.createTransportBinding(discoveryProxyHost);
+            discoveryProxyClient = requestResponseClientFactory.createRequestResponseClient(tBinding);
+        }
     }
 
     @MessageInterceptor(WsDiscoveryConstants.WSA_ACTION_PROBE)
@@ -181,6 +199,19 @@ public class WsDiscoveryClientInterceptor implements WsDiscoveryClient {
         var msgIdUri = soapUtil.createUriFromUuid(UUID.randomUUID());
         AttributedURIType msgId = wsaUtil.createAttributedURIType(msgIdUri);
         probeMsg.getWsAddressingHeader().setMessageId(msgId);
+
+        if (discoveryProxyClient != null) {
+            var future = sendDirectedProbe(discoveryProxyClient, new ArrayList<>(types), new ArrayList<>(scopes));
+            try {
+                var probeMatchesType = future.get(50000, TimeUnit.SECONDS);
+                helloByeProbeEvents.post(new ProbeMatchesMessage(probeId, probeMatchesType));
+                var result = SettableFuture.<Integer>create();
+                result.set(1);
+                return result;
+            } catch (InterruptedException | ExecutionException | TimeoutException e) {
+                LOG.error("Probe to discovery proxy failed; fallback to multicast", e);
+            }
+        }
 
         ListenableFuture<Integer> future = executorService.get().submit(new ProbeRunnable(probeId, maxResults,
                 maxWaitForProbeMatches, msgIdUri, probeLock, probeCondition, getProbeMatchesBuffer(),

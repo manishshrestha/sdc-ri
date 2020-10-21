@@ -111,11 +111,11 @@ public class ContentType {
      * Parses the content-type {@linkplain Header} element provided by apache http client.
      *
      * @param header to parse content-type from
-     * @return parsed content-type if parseable, empty optional otherweise
+     * @return parsed content-type if parseable, empty optional otherwise
      */
     public static Optional<ContentType> fromApache(@Nullable Header header) {
         if (header == null || header.getElements().length != 1) {
-            return Optional.empty();
+            return Optional.of(new ContentType(ContentTypes.TEXT_XML, null, null));
         }
         final var headerElement = header.getElements()[0];
         final var contentTypeOpt = ContentTypes.fromMime(headerElement.getName());
