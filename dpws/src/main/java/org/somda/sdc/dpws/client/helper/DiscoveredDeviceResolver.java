@@ -25,6 +25,8 @@ import org.somda.sdc.dpws.soap.wsdiscovery.model.ResolveMatchesType;
 
 import javax.xml.namespace.QName;
 import java.time.Duration;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -67,10 +69,13 @@ public class DiscoveredDeviceResolver {
      * @param helloMessage The hello message retrieved by a {@link WsDiscoveryClient} implementation.
      * @return The device proxy instance or {@link Optional#empty()} if resolving failed.
      */
-    public Optional<DiscoveredDevice> resolve(HelloMessage helloMessage) {
+    public Collection<DiscoveredDevice> resolve(HelloMessage helloMessage) {
         HelloType hm = helloMessage.getPayload();
-        return resolve(hm.getEndpointReference(), hm.getTypes(), hm.getScopes().getValue(), hm.getXAddrs(),
-                hm.getMetadataVersion());
+        var result = resolve(
+                hm.getEndpointReference(), hm.getTypes(), hm.getScopes().getValue(),
+                hm.getXAddrs(), hm.getMetadataVersion()
+        );
+        return result.<Collection<DiscoveredDevice>>map(List::of).orElse(Collections.emptyList());
     }
 
     /**
@@ -79,19 +84,20 @@ public class DiscoveredDeviceResolver {
      * @param probeMatchesMessage The probe matches message retrieved by a {@link WsDiscoveryClient} implementation.
      * @return The device proxy instance or {@link Optional#empty()} if resolving failed.
      */
-    public Optional<DiscoveredDevice> resolve(ProbeMatchesMessage probeMatchesMessage) {
+    public Collection<DiscoveredDevice> resolve(ProbeMatchesMessage probeMatchesMessage) {
         ProbeMatchesType probe = probeMatchesMessage.getPayload();
-        if (probe.getProbeMatch().size() != 1) {
-            return Optional.empty();
-        }
 
-        ProbeMatchType pm = probe.getProbeMatch().get(0);
-        List<String> scopes = Collections.emptyList();
-        if (pm.getScopes() != null) {
-            scopes = pm.getScopes().getValue();
+        var results = new ArrayList<DiscoveredDevice>();
+        for (var pm : probe.getProbeMatch()) {
+            List<String> scopes = Collections.emptyList();
+            if (pm.getScopes() != null) {
+                scopes = pm.getScopes().getValue();
+            }
+            var result = resolve(pm.getEndpointReference(), pm.getTypes(), scopes, pm.getXAddrs(),
+                    pm.getMetadataVersion());
+            result.ifPresent(results::add);
         }
-        return resolve(pm.getEndpointReference(), pm.getTypes(), scopes, pm.getXAddrs(),
-                pm.getMetadataVersion());
+        return results;
     }
 
     private Optional<DiscoveredDevice> resolve(EndpointReferenceType epr,

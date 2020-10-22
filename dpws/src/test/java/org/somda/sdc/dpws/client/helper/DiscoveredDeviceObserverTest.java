@@ -26,6 +26,7 @@ import org.somda.sdc.dpws.soap.wsdiscovery.model.ProbeMatchesType;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -79,7 +80,7 @@ public class DiscoveredDeviceObserverTest extends DpwsTest {
         HelloMessage hMsg = new HelloMessage(hType);
 
         when(discoveredDeviceResolver.resolve(hMsg))
-                .thenReturn(Optional.of(new DiscoveredDevice(
+                .thenReturn(List.of(new DiscoveredDevice(
                         expectedUri,
                         new ArrayList<>(),
                         new ArrayList<>(),
@@ -127,7 +128,7 @@ public class DiscoveredDeviceObserverTest extends DpwsTest {
         ProbeMatchesMessage pmMsg = new ProbeMatchesMessage(expectedId, pmsType);
 
         when(discoveredDeviceResolver.resolve(pmMsg))
-                .thenReturn(Optional.of(new DiscoveredDevice(
+                .thenReturn(List.of(new DiscoveredDevice(
                         expectedUri,
                         new ArrayList<>(),
                         new ArrayList<>(),

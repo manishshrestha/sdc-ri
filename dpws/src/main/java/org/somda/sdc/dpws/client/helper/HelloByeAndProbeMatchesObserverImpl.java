@@ -28,6 +28,7 @@ import org.somda.sdc.dpws.soap.wsdiscovery.event.ProbeMatchesMessage;
 import org.somda.sdc.dpws.soap.wsdiscovery.event.ProbeTimeoutMessage;
 
 import javax.annotation.Nullable;
+import java.util.Collection;
 import java.util.Optional;
 
 /**
@@ -69,18 +70,17 @@ public class HelloByeAndProbeMatchesObserverImpl implements HelloByeAndProbeMatc
 
     @Subscribe
     void onHello(HelloMessage helloMessage) {
-        ListenableFuture<Optional<DiscoveredDevice>> future = networkJobExecutor.get().submit(() ->
+        ListenableFuture<Collection<DiscoveredDevice>> future = networkJobExecutor.get().submit(() ->
                 discoveredDeviceResolver.resolve(helloMessage));
         Futures.addCallback(future, new FutureCallback<>() {
-            @SuppressWarnings("OptionalAssignedToNull")
             @Override
-            public void onSuccess(@Nullable Optional<DiscoveredDevice> discoveredDevice) {
+            public void onSuccess(@Nullable Collection<DiscoveredDevice> discoveredDevice) {
                 if (discoveredDevice == null) {
                     instanceLogger.warn("{} delivered null pointer", DiscoveredDeviceResolver.class);
                     return;
                 }
 
-                discoveredDevice.ifPresent(dp -> discoveryBus.post(new DeviceEnteredMessage(dp)));
+                discoveredDevice.forEach(dp -> discoveryBus.post(new DeviceEnteredMessage(dp)));
             }
 
             @Override
@@ -101,18 +101,17 @@ public class HelloByeAndProbeMatchesObserverImpl implements HelloByeAndProbeMatc
      */
     @Subscribe
     void onProbeMatches(ProbeMatchesMessage probeMatchesMessage) {
-        ListenableFuture<Optional<DiscoveredDevice>> future = networkJobExecutor.get().submit(() ->
+        ListenableFuture<Collection<DiscoveredDevice>> future = networkJobExecutor.get().submit(() ->
                 discoveredDeviceResolver.resolve(probeMatchesMessage));
         Futures.addCallback(future, new FutureCallback<>() {
-            @SuppressWarnings("OptionalAssignedToNull")
             @Override
-            public void onSuccess(@Nullable Optional<DiscoveredDevice> discoveredDevice) {
+            public void onSuccess(@Nullable Collection<DiscoveredDevice> discoveredDevice) {
                 if (discoveredDevice == null) {
                     instanceLogger.warn("{} delivered null pointer", DiscoveredDeviceResolver.class);
                     return;
                 }
 
-                discoveredDevice.ifPresent(dp -> discoveryBus.post(new ProbedDeviceFoundMessage(dp,
+                discoveredDevice.forEach(dp -> discoveryBus.post(new ProbedDeviceFoundMessage(dp,
                         probeMatchesMessage.getProbeRequestId())));
             }
 

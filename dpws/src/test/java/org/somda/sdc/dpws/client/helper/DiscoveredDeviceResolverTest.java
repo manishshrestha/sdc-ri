@@ -17,10 +17,12 @@ import org.somda.sdc.dpws.soap.wsdiscovery.model.ResolveMatchesType;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -61,15 +63,15 @@ public class DiscoveredDeviceResolverTest extends DpwsTest {
 
         DiscoveredDeviceResolver dpr = new DiscoveredDeviceResolver(wsdClient, Duration.ofSeconds(1), true, wsaUtil, "abcd");
 
-        Optional<DiscoveredDevice> actualWithResolveMatches = dpr.resolve(hMsg);
-        assertTrue(actualWithResolveMatches.isPresent());
-        assertEquals(expectedUri, actualWithResolveMatches.get().getEprAddress());
-        assertEquals(xAddrsInHello, actualWithResolveMatches.get().getXAddrs());
+        Collection<DiscoveredDevice> actualWithResolveMatches = dpr.resolve(hMsg);
+        assertEquals(1, actualWithResolveMatches.size());
+        assertEquals(expectedUri, actualWithResolveMatches.stream().findFirst().get().getEprAddress());
+        assertEquals(xAddrsInHello, actualWithResolveMatches.stream().findFirst().get().getXAddrs());
 
         hType.setXAddrs(new ArrayList<>());
-        Optional<DiscoveredDevice> actualWithoutResolveMatches = dpr.resolve(hMsg);
-        assertTrue(actualWithoutResolveMatches.isPresent());
-        assertEquals(expectedUri, actualWithoutResolveMatches.get().getEprAddress());
-        assertEquals(xAddrsInResolveMatches, actualWithoutResolveMatches.get().getXAddrs());
+        Collection<DiscoveredDevice> actualWithoutResolveMatches = dpr.resolve(hMsg);
+        assertEquals(1, actualWithoutResolveMatches.size());
+        assertEquals(expectedUri, actualWithoutResolveMatches.stream().findFirst().get().getEprAddress());
+        assertEquals(xAddrsInResolveMatches, actualWithoutResolveMatches.stream().findFirst().get().getXAddrs());
     }
 }
