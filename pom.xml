@@ -52,7 +52,6 @@
         <module>mdpws-model</module>
         <module>mdpws</module>
         <module>glue-examples</module>
-        <module>proto-model</module>
         <module>proto</module>
     </modules>
 
@@ -61,7 +60,7 @@
         <jaxbBasicsVersion>0.12.0</jaxbBasicsVersion>
         <log4j2Version>2.13.1</log4j2Version>
         <protoc.version>3.12.2</protoc.version>
-        <grpc.version>1.30.2</grpc.version>
+        <grpc.version>1.33.0</grpc.version>
     </properties>
 
     <build>
@@ -345,6 +344,13 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
+
+    <repositories>
+        <repository>
+            <id>gitlab-maven</id>
+            <url>https://gitlab.com/api/v4/projects/21967967/packages/maven</url>
+        </repository>
+    </repositories>
     <distributionManagement>
         <repository>
             <id>ossrh</id>
