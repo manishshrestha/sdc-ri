@@ -44,7 +44,10 @@ public class HttpApplicationInfo extends ApplicationInfo {
      * @param transactionId id of the request response transaction.
      * @param requestUri the uri of the http request message, null for http response messages.
      */
-    public HttpApplicationInfo(ListMultimap<String, String> httpHeaders, String transactionId, @Nullable String requestUri) {
+    public HttpApplicationInfo(
+            ListMultimap<String, String> httpHeaders,
+            String transactionId, @Nullable String requestUri
+    ) {
         this.headers = ArrayListMultimap.create();
         // convert all entries to lower case
         httpHeaders.forEach((key, value) -> headers.put(key.toLowerCase(), value));

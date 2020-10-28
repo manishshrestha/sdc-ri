@@ -27,6 +27,14 @@ public class MetadataSectionUtil {
         this.dpwsFactory = dpwsFactory;
     }
 
+    /**
+     * Creates a metadata section for a DPWS Host.
+     *
+     * @param hostingServiceEpr of the host
+     * @param hostingServiceTypes of the services
+     * @param hostedServices of the host
+     * @return a new metadata section containing host and services.
+     */
     public MetadataSection createRelationship(EndpointReferenceType hostingServiceEpr,
                                               List<QName> hostingServiceTypes,
                                               List<HostedService> hostedServices) {

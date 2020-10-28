@@ -351,10 +351,10 @@ public class WsdlRetrieverTest extends DpwsTest {
             var testString = "<dang>☂</dang>"; // use character outside of latin-1
             // default should be utf-8 when using no prolog and content type without specified encoding
             var contentType = ContentType.ContentTypes.APPLICATION_XML;
-            assertNull(contentType.defaultEncoding);
+            assertNull(contentType.getDefaultEncoding());
             var charset = StandardCharsets.UTF_8;
             ListMultimap<String, String> headers = ArrayListMultimap.create();
-            headers.put(HttpHeaders.CONTENT_TYPE.toLowerCase(), contentType.contentType);
+            headers.put(HttpHeaders.CONTENT_TYPE.toLowerCase(), contentType.getContentType());
             var response = new HttpResponse(200, testString.getBytes(charset), headers);
 
             var result = testClass.convertResponseToString(response);
