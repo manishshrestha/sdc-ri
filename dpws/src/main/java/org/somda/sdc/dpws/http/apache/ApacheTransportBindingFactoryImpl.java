@@ -35,6 +35,9 @@ import java.net.URI;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * Factory for creating apache http client backed transport bindings and clients.
+ */
 public class ApacheTransportBindingFactoryImpl implements TransportBindingFactory, HttpClientFactory {
 
     private static final Logger LOG = LogManager.getLogger(TransportBinding.class);

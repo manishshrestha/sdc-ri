@@ -18,6 +18,11 @@ public class WsDiscoveryHeader {
         return Optional.ofNullable(appSequence);
     }
 
+    /**
+     * Sets the wsd:AppSequence convenience header.
+     *
+     * @param appSequence to set to
+     */
     public void setAppSequence(@Nullable AppSequenceType appSequence) {
         this.appSequence = appSequence;
     }

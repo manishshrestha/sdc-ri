@@ -142,6 +142,7 @@ public class DpwsFrameworkImpl extends AbstractIdleService implements DpwsFramew
         udpBindingService.setMessageReceiver(udpMessageQueueService);
     }
 
+    @Override
     public void setNetworkInterface(NetworkInterface networkInterface) {
         if (isRunning()) {
             instanceLogger.warn("Framework is already running, cannot change network interface");
@@ -150,6 +151,7 @@ public class DpwsFrameworkImpl extends AbstractIdleService implements DpwsFramew
         this.networkInterface = networkInterface;
     }
 
+    @Override
     synchronized public void registerService(Collection<Service> services) {
         // don't add any duplicates
         services.forEach(

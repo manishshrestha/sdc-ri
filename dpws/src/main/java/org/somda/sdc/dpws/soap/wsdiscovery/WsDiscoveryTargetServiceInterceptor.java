@@ -350,6 +350,11 @@ public class WsDiscoveryTargetServiceInterceptor implements WsDiscoveryTargetSer
         sendMulticast(WsDiscoveryConstants.WSA_ACTION_BYE, wsdFactory.createBye(byeType));
     }
 
+    /**
+     * Increments the metadata version and retrieves the new value.
+     *
+     * @return new metadata version
+     */
     public UnsignedInteger incMetadataVersionAndGet() {
         try {
             lock.lock();
@@ -360,6 +365,12 @@ public class WsDiscoveryTargetServiceInterceptor implements WsDiscoveryTargetSer
         }
     }
 
+    /**
+     * Increments the metadata version and retrieve the new value if the metadata has changed,
+     * returns previous version otherwise.
+     *
+     * @return metadata version
+     */
     public UnsignedInteger incMetadataVersionIfModifiedAndGet() {
         try {
             lock.lock();

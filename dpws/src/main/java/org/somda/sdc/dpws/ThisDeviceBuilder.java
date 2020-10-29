@@ -29,16 +29,34 @@ public class ThisDeviceBuilder {
         thisDevice.setFriendlyName(friendlyName);
     }
 
+    /**
+     * Sets the friendly names.
+     *
+     * @param friendlyName names to set
+     * @return this builder
+     */
     public ThisDeviceBuilder setFriendlyName(List<LocalizedStringType> friendlyName) {
         thisDevice.setFriendlyName(friendlyName);
         return this;
     }
 
+    /**
+     * Sets the firmware version.
+     *
+     * @param firmwareVersion to set
+     * @return this builder
+     */
     public ThisDeviceBuilder setFirmwareVersion(String firmwareVersion) {
         thisDevice.setFirmwareVersion(firmwareVersion);
         return this;
     }
 
+    /**
+     * Sets the serial number.
+     *
+     * @param serialNumber to set
+     * @return this builder
+     */
     public ThisDeviceBuilder setSerialNumber(String serialNumber) {
         thisDevice.setSerialNumber(serialNumber);
         return this;

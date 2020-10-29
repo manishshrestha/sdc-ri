@@ -12,6 +12,9 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
+/**
+ * Container class for framework metadata such as framework version, java version etc.
+ */
 @Singleton
 public class FrameworkMetadata {
     private static final Logger LOG = LogManager.getLogger(FrameworkMetadata.class);

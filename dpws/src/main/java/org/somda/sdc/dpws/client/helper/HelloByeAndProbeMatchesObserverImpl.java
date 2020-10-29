@@ -45,7 +45,7 @@ public class HelloByeAndProbeMatchesObserverImpl implements HelloByeAndProbeMatc
     @Inject
     HelloByeAndProbeMatchesObserverImpl(@Assisted DiscoveredDeviceResolver discoveredDeviceResolver,
                                         @NetworkJobThreadPool
-                                        ExecutorWrapperService<ListeningExecutorService> networkJobExecutor,
+                                                ExecutorWrapperService<ListeningExecutorService> networkJobExecutor,
                                         WsAddressingUtil wsaUtil,
                                         @Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier) {
         this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);
@@ -55,14 +55,30 @@ public class HelloByeAndProbeMatchesObserverImpl implements HelloByeAndProbeMatc
         this.discoveryBus = new EventBus();
     }
 
+    /**
+     * Registers a new observer for discovery messages.
+     *
+     * @param observer to register
+     */
     public void registerDiscoveryObserver(org.somda.sdc.dpws.client.DiscoveryObserver observer) {
         discoveryBus.register(observer);
     }
 
+    /**
+     * Unregisters an observer from handling discovery messages.
+     *
+     * @param observer to unregister
+     */
     public void unregisterDiscoveryObserver(org.somda.sdc.dpws.client.DiscoveryObserver observer) {
         discoveryBus.unregister(observer);
     }
 
+    /**
+     * Publishes a message informing subscribers of a device having left.
+     *
+     * @param deviceUuid  of the device which has left
+     * @param triggeredBy reason of absence
+     */
     public void publishDeviceLeft(String deviceUuid, DeviceLeftMessage.TriggeredBy triggeredBy) {
         discoveryBus.post(new DeviceLeftMessage(deviceUuid, triggeredBy));
     }
