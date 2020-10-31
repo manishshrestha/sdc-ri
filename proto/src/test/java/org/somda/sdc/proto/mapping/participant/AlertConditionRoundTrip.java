@@ -11,9 +11,11 @@ import org.somda.sdc.biceps.model.participant.SafetyClassification;
 import org.somda.sdc.biceps.provider.access.LocalMdibAccess;
 import org.somda.sdc.biceps.testutil.Handles;
 import org.somda.sdc.proto.UnitTestUtil;
+import org.somda.sdc.proto.mapping.TypeCollection;
 
 import java.math.BigInteger;
 import java.time.Duration;
+import java.util.List;
 import java.util.function.BiConsumer;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -38,24 +40,31 @@ public class AlertConditionRoundTrip implements BiConsumer<LocalMdibAccess, Remo
             descriptor.setKind(AlertConditionKind.PHY);
             descriptor.setPriority(AlertConditionPriority.HI);
             descriptor.setDefaultConditionGenerationDelay(Duration.ofMillis(33));
-            descriptor.setCanDeescalate(AlertConditionPriority.LO);
             descriptor.setCanEscalate(AlertConditionPriority.LO);
+            descriptor.setCanDeescalate(AlertConditionPriority.LO);
 
-            // TODO
-//            descriptor.setSource();
-//            descriptor.setCauseInfo();
+            descriptor.setType(TypeCollection.CODED_VALUE);
+            descriptor.setSource(List.of("Ṯ̤͍̥͇͈h̲́e͏͓̼̗̙̼̣͔ ͇", "̜̱̠͓͍ͅN͕͠e̗̱z̘̝̜̺͙p̤̺̹͍̯͚e̠̻̠͜r̨̤͍̺̖͔̖̖d̠̟̭̬̝͟i̦͖̩͓͔̤a̠̗̬͉̙n͚͜ ", "̻̞̰͚ͅh̵͉i̳̞v̢͇ḙ͎͟-҉̭̩̼͔m̤̭̫i͕͇̝̦n̗͙ḍ̟"));
+            descriptor.setCauseInfo(List.of(TypeCollection.CAUSE_INFO));
+
+            // TODO: Extension
+//            descriptor.setExtension();
         }
         var state = new AlertConditionState();
         {
             state.setStateVersion(BigInteger.TEN);
-            state.setDescriptorHandle(HANDLE);
+            state.setDescriptorHandle(descriptor.getHandle());
             state.setDescriptorVersion(descriptor.getDescriptorVersion());
             state.setActivationState(AlertActivation.ON);
+
             state.setActualConditionGenerationDelay(Duration.ofDays(4));
             state.setActualPriority(AlertConditionPriority.LO);
             state.setRank(1337);
             state.setPresence(false);
             state.setDeterminationTime(UnitTestUtil.makeTestTimestamp());
+
+            // TODO: Extension
+//            state.setExtension();
         }
         modifications.insert(descriptor, state, Handles.ALERTSYSTEM_1);
     }
