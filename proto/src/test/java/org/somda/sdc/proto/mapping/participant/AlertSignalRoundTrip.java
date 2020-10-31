@@ -13,6 +13,7 @@ import org.somda.sdc.biceps.model.participant.AlertSignalState;
 import org.somda.sdc.biceps.model.participant.SafetyClassification;
 import org.somda.sdc.biceps.provider.access.LocalMdibAccess;
 import org.somda.sdc.biceps.testutil.Handles;
+import org.somda.sdc.proto.mapping.TypeCollection;
 
 import java.math.BigInteger;
 import java.time.Duration;
@@ -36,6 +37,9 @@ public class AlertSignalRoundTrip implements BiConsumer<LocalMdibAccess, RemoteM
             descriptor.setHandle(HANDLE);
             descriptor.setDescriptorVersion(BigInteger.valueOf(64646778));
             descriptor.setSafetyClassification(SafetyClassification.MED_A);
+
+            descriptor.setType(TypeCollection.CODED_VALUE);
+
             descriptor.setConditionSignaled("BEST CONDITION FITE ME");
             descriptor.setManifestation(AlertSignalManifestation.OTH);
             descriptor.setLatching(false);
@@ -45,6 +49,9 @@ public class AlertSignalRoundTrip implements BiConsumer<LocalMdibAccess, RemoteM
             descriptor.setSignalDelegationSupported(true);
             descriptor.setAcknowledgementSupported(false);
             descriptor.setAcknowledgeTimeout(Duration.ofMillis(5));
+
+            // TODO: Extension
+//            descriptor.setExtension();
         }
         var state = new AlertSignalState();
         {
@@ -52,10 +59,14 @@ public class AlertSignalRoundTrip implements BiConsumer<LocalMdibAccess, RemoteM
             state.setDescriptorHandle(descriptor.getHandle());
             state.setDescriptorVersion(descriptor.getDescriptorVersion());
             state.setActivationState(AlertActivation.ON);
+
             state.setActualSignalGenerationDelay(Duration.ofSeconds(8));
             state.setPresence(AlertSignalPresence.ON);
             state.setLocation(AlertSignalPrimaryLocation.REM);
             state.setSlot(8L);
+
+            // TODO: Extension
+//            state.setExtension();
         }
         modifications.insert(descriptor, state, Handles.ALERTSYSTEM_0);
     }
@@ -75,7 +86,7 @@ public class AlertSignalRoundTrip implements BiConsumer<LocalMdibAccess, RemoteM
         modifications.insert(descriptor, state, Handles.ALERTSYSTEM_0);
     }
 
-        @Override
+    @Override
     public void accept(final LocalMdibAccess localMdibAccess, final RemoteMdibAccess remoteMdibAccess) {
             {
                 var expectedDescriptor = localMdibAccess.getDescriptor(HANDLE, AlertSignalDescriptor.class).get();
