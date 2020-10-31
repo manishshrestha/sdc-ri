@@ -195,4 +195,12 @@ public class ProtoToPojoBaseMapper {
         pojoValue.setAbsoluteAccuracy(Util.optionalBigDecimalOfString(protoMsg, "AAbsoluteAccuracy"));
         return pojoValue;
     }
+
+
+    public PhysicalConnectorInfo map(PhysicalConnectorInfoMsg protoMsg) {
+        var pojo = new PhysicalConnectorInfo();
+        pojo.setNumber(Util.optionalIntOfInt(protoMsg, "ANumber"));
+        pojo.setLabel(mapLocalizedTexts(protoMsg.getLabelList()));
+        return pojo;
+    }
 }

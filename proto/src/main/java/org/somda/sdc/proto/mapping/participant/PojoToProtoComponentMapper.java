@@ -5,27 +5,15 @@ import com.google.inject.Provider;
 import com.google.inject.name.Named;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.somda.sdc.biceps.model.participant.AbstractComplexDeviceComponentDescriptor;
-import org.somda.sdc.biceps.model.participant.AbstractComplexDeviceComponentState;
-import org.somda.sdc.biceps.model.participant.AbstractDeviceComponentDescriptor;
-import org.somda.sdc.biceps.model.participant.AbstractDeviceComponentState;
-import org.somda.sdc.biceps.model.participant.ApprovedJurisdictions;
-import org.somda.sdc.biceps.model.participant.ChannelDescriptor;
-import org.somda.sdc.biceps.model.participant.ChannelState;
-import org.somda.sdc.biceps.model.participant.MdsDescriptor;
-import org.somda.sdc.biceps.model.participant.MdsState;
-import org.somda.sdc.biceps.model.participant.ScoDescriptor;
-import org.somda.sdc.biceps.model.participant.ScoState;
-import org.somda.sdc.biceps.model.participant.SystemContextDescriptor;
-import org.somda.sdc.biceps.model.participant.SystemContextState;
-import org.somda.sdc.biceps.model.participant.VmdDescriptor;
-import org.somda.sdc.biceps.model.participant.VmdState;
+import org.somda.sdc.biceps.model.participant.*;
 import org.somda.sdc.common.CommonConfig;
 import org.somda.sdc.common.logging.InstanceLogger;
+import org.somda.sdc.common.util.TimestampAdapter;
 import org.somda.sdc.proto.mapping.Util;
 import org.somda.sdc.proto.model.biceps.*;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class PojoToProtoComponentMapper {
     private static final Logger LOG = LogManager.getLogger(PojoToProtoComponentMapper.class);
@@ -33,18 +21,21 @@ public class PojoToProtoComponentMapper {
     private final PojoToProtoBaseMapper baseMapper;
     private final PojoToProtoAlertMapper alertMapper;
     private final Provider<PojoToProtoOneOfMapper> oneOfMapperProvider;
+    private final TimestampAdapter timestampAdapter;
     private PojoToProtoOneOfMapper oneOfMapper;
 
     @Inject
     PojoToProtoComponentMapper(@Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier,
                                PojoToProtoBaseMapper baseMapper,
                                PojoToProtoAlertMapper alertMapper,
-                               Provider<PojoToProtoOneOfMapper> oneOfMapperProvider) {
+                               Provider<PojoToProtoOneOfMapper> oneOfMapperProvider,
+                               TimestampAdapter timestampAdapter) {
         this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);
         this.baseMapper = baseMapper;
         this.alertMapper = alertMapper;
         this.oneOfMapperProvider = oneOfMapperProvider;
         this.oneOfMapper = null;
+        this.timestampAdapter = timestampAdapter;
     }
 
     public PojoToProtoOneOfMapper getOneOfMapper() {
@@ -154,9 +145,9 @@ public class PojoToProtoComponentMapper {
                 builder.setAActivationState(Util.mapToProtoEnum(componentActivation, ComponentActivationMsg.class)));
         Util.doIfNotNull(state.getOperatingHours(), it -> builder.setAOperatingHours(Util.toUInt32(it)));
         Util.doIfNotNull(state.getOperatingCycles(), it -> builder.setAOperatingCycles(Util.toInt32(it)));
-        // todo map CalibrationInfo
-        // todo map NextCalibration
-        // todo map PhysicalConnector
+        Util.doIfNotNull(state.getCalibrationInfo(), it -> builder.setCalibrationInfo(mapCalibrationInfo(it)));
+        Util.doIfNotNull(state.getNextCalibration(), it -> builder.setNextCalibration(mapCalibrationInfo(it)));
+        Util.doIfNotNull(state.getPhysicalConnector(), it -> builder.setPhysicalConnector(baseMapper.mapPhysicalConnectorInfo(it)));
         return builder.build();
     }
 
@@ -178,10 +169,44 @@ public class PojoToProtoComponentMapper {
         var builder = AbstractDeviceComponentDescriptorMsg.ProductionSpecificationMsg
                 .newBuilder();
         Util.doIfNotNull(productionSpecification.getComponentId(), instanceIdentifier ->
-                builder.setComponentId(oneOfMapper.mapInstanceIdentifier(instanceIdentifier)));
+                builder.setComponentId(getOneOfMapper().mapInstanceIdentifier(instanceIdentifier)));
         Util.doIfNotNull(productionSpecification.getProductionSpec(), builder::setProductionSpec);
         Util.doIfNotNull(productionSpecification.getSpecType(), codedValue ->
                 builder.setSpecType(baseMapper.mapCodedValue(codedValue)));
+        return builder.build();
+    }
+
+    public CalibrationInfoMsg mapCalibrationInfo(CalibrationInfo calibrationInfo) {
+        var builder = CalibrationInfoMsg.newBuilder();
+
+        Util.doIfNotNull(calibrationInfo.getComponentCalibrationState(), state ->
+                builder.setAComponentCalibrationState(Util.mapToProtoEnum(state, CalibrationStateMsg.class)));
+        Util.doIfNotNull(calibrationInfo.getType(), type ->
+                builder.setAType(Util.mapToProtoEnum(type, CalibrationTypeMsg.class)));
+        Util.doIfNotNull(calibrationInfo.getTime(), time ->
+                builder.setATime(Util.toUInt64(timestampAdapter.marshal(time))));
+
+        calibrationInfo.getCalibrationDocumentation().forEach(doc ->
+                builder.addCalibrationDocumentation(mapCalibrationDocumentation(doc)));
+
+        return builder.build();
+    }
+
+    public CalibrationInfoMsg.CalibrationDocumentationMsg mapCalibrationDocumentation(
+            CalibrationInfo.CalibrationDocumentation documentation
+    ) {
+        var builder = CalibrationInfoMsg.CalibrationDocumentationMsg.newBuilder();
+        builder.addAllDocumentation(baseMapper.mapLocalizedTexts(documentation.getDocumentation()));
+        builder.addAllCalibrationResult(documentation.getCalibrationResult().stream().map(this::mapCalibrationResult).collect(Collectors.toList()));
+        return builder.build();
+    }
+
+    public CalibrationInfoMsg.CalibrationDocumentationMsg.CalibrationResultMsg mapCalibrationResult(
+            CalibrationInfo.CalibrationDocumentation.CalibrationResult result
+    ) {
+        var builder = CalibrationInfoMsg.CalibrationDocumentationMsg.CalibrationResultMsg.newBuilder();
+        builder.setCode(baseMapper.mapCodedValue(result.getCode()));
+        builder.setValue(baseMapper.mapMeasurement(result.getValue()));
         return builder.build();
     }
 }

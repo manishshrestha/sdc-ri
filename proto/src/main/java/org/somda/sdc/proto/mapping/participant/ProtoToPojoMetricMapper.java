@@ -236,7 +236,7 @@ public class ProtoToPojoMetricMapper {
         protoMsg.getBodySiteList().forEach(codedValueMsg -> state.getBodySite().add(baseMapper.map(codedValueMsg)));
         Util.doIfNotNull(
                 Util.optional(protoMsg,"PhysicalConnector", PhysicalConnectorInfoMsg.class),
-                connector -> state.setPhysicalConnector(map(connector))
+                connector -> state.setPhysicalConnector(baseMapper.map(connector))
         );
 
         baseMapper.map(state, protoMsg.getAbstractState());
@@ -252,13 +252,6 @@ public class ProtoToPojoMetricMapper {
         Util.doIfNotNull(Util.optional(protoMsg, "Identification", InstanceIdentifierOneOfMsg.class),
                 instanceIdentifierOneOfMsg -> pojo.setIdentification(getOneOfMapper().map(instanceIdentifierOneOfMsg)));
 
-        return pojo;
-    }
-
-    private PhysicalConnectorInfo map(PhysicalConnectorInfoMsg protoMsg) {
-        var pojo = new PhysicalConnectorInfo();
-        pojo.setNumber(Util.optionalIntOfInt(protoMsg, "ANumber"));
-        pojo.setLabel(baseMapper.mapLocalizedTexts(protoMsg.getLabelList()));
         return pojo;
     }
 

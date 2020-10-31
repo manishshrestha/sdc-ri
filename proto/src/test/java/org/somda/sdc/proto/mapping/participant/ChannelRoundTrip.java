@@ -11,7 +11,10 @@ import org.somda.sdc.biceps.model.participant.SafetyClassification;
 import org.somda.sdc.biceps.model.participant.factory.InstanceIdentifierFactory;
 import org.somda.sdc.biceps.provider.access.LocalMdibAccess;
 import org.somda.sdc.biceps.testutil.Handles;
+import org.somda.sdc.proto.mapping.TypeCollection;
 
+import java.math.BigInteger;
+import java.util.List;
 import java.util.function.BiConsumer;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -25,6 +28,40 @@ public class ChannelRoundTrip implements BiConsumer<LocalMdibAccess, RemoteMdibA
         minimalSet(modifications);
     }
 
+    private void bigSet(MdibDescriptionModifications modifications) {
+        var descriptor = new ChannelDescriptor();
+        {
+            descriptor.setHandle(HANDLE);
+            descriptor.setDescriptorVersion(BigInteger.TEN);
+            descriptor.setSafetyClassification(SafetyClassification.MED_C);
+
+            descriptor.setType(TypeCollection.CODED_VALUE);
+            descriptor.setProductionSpecification(List.of(TypeCollection.PRODUCTION_SPECIFICATION));
+
+            // TODO: Extension
+//            descriptor.setExtension();
+        }
+
+        var state = new ChannelState();
+        {
+            state.setStateVersion(BigInteger.ONE);
+            state.setDescriptorHandle(descriptor.getHandle());
+            state.setDescriptorVersion(descriptor.getDescriptorVersion());
+            state.setActivationState(ComponentActivation.SHTDN);
+            state.setOperatingCycles(1000);
+            state.setOperatingHours(5L);
+
+            state.setCalibrationInfo(TypeCollection.CALIBRATION_INFO);
+            state.setNextCalibration(TypeCollection.CALIBRATION_INFO);
+            state.setPhysicalConnector(TypeCollection.PHYSICAL_CONNECTOR_INFO);
+
+            // TODO: Extension
+//            state.setExtension();
+        }
+
+        modifications.insert(descriptor, state, Handles.VMD_0);
+    }
+
     private void minimalSet(MdibDescriptionModifications modifications) {
         var descriptor = new ChannelDescriptor();
         {
@@ -33,23 +70,6 @@ public class ChannelRoundTrip implements BiConsumer<LocalMdibAccess, RemoteMdibA
 
         var state = new ChannelState();
         {
-        }
-
-        modifications.insert(descriptor, state, Handles.VMD_0);
-    }
-
-    private void bigSet(MdibDescriptionModifications modifications) {
-        var descriptor = new ChannelDescriptor();
-        {
-            descriptor.setHandle(HANDLE);
-            descriptor.setSafetyClassification(SafetyClassification.MED_C);
-        }
-
-        var state = new ChannelState();
-        {
-            state.setActivationState(ComponentActivation.SHTDN);
-            state.setOperatingCycles(1000);
-            state.setOperatingHours(5L);
         }
 
         modifications.insert(descriptor, state, Handles.VMD_0);

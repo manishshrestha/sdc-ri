@@ -178,7 +178,7 @@ public class PojoToProtoMetricMapper {
 
         state.getBodySite().forEach(site -> builder.addBodySite(baseMapper.mapCodedValue(site)));
         Util.doIfNotNull(state.getPhysicalConnector(), physicalConnectorInfo ->
-                builder.setPhysicalConnector(mapPhysicalConnectorInfo(physicalConnectorInfo)));
+                builder.setPhysicalConnector(baseMapper.mapPhysicalConnectorInfo(physicalConnectorInfo)));
 
         return builder.build();
     }
@@ -258,14 +258,6 @@ public class PojoToProtoMetricMapper {
         return builder.build();
     }
 
-    private PhysicalConnectorInfoMsg mapPhysicalConnectorInfo(PhysicalConnectorInfo physicalConnectorInfo) {
-        var builder = PhysicalConnectorInfoMsg.newBuilder();
-
-        builder.setANumber(Util.toInt32(physicalConnectorInfo.getNumber()));
-        builder.addAllLabel(baseMapper.mapLocalizedTexts(physicalConnectorInfo.getLabel()));
-
-        return builder.build();
-    }
 
 
 }

@@ -166,4 +166,14 @@ public class PojoToProtoBaseMapper {
         );
         return builder.build();
     }
+
+
+    public PhysicalConnectorInfoMsg mapPhysicalConnectorInfo(PhysicalConnectorInfo physicalConnectorInfo) {
+        var builder = PhysicalConnectorInfoMsg.newBuilder();
+
+        builder.setANumber(Util.toInt32(physicalConnectorInfo.getNumber()));
+        builder.addAllLabel(mapLocalizedTexts(physicalConnectorInfo.getLabel()));
+
+        return builder.build();
+    }
 }

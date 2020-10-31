@@ -1,6 +1,10 @@
 package org.somda.sdc.proto.mapping;
 
+import org.somda.sdc.biceps.model.participant.AbstractDeviceComponentDescriptor;
 import org.somda.sdc.biceps.model.participant.AbstractMetricDescriptor;
+import org.somda.sdc.biceps.model.participant.CalibrationInfo;
+import org.somda.sdc.biceps.model.participant.CalibrationState;
+import org.somda.sdc.biceps.model.participant.CalibrationType;
 import org.somda.sdc.biceps.model.participant.CauseInfo;
 import org.somda.sdc.biceps.model.participant.CodedValue;
 import org.somda.sdc.biceps.model.participant.InstanceIdentifier;
@@ -10,6 +14,7 @@ import org.somda.sdc.biceps.model.participant.Measurement;
 import org.somda.sdc.biceps.model.participant.PhysicalConnectorInfo;
 import org.somda.sdc.biceps.model.participant.Range;
 import org.somda.sdc.biceps.model.participant.RemedyInfo;
+import org.somda.sdc.proto.UnitTestUtil;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -121,4 +126,29 @@ public class TypeCollection {
         MEASUREMENT.setMeasurementUnit(CODED_VALUE);
     }
 
+    public static final AbstractDeviceComponentDescriptor.ProductionSpecification PRODUCTION_SPECIFICATION =
+            new AbstractDeviceComponentDescriptor.ProductionSpecification();
+    static {
+        PRODUCTION_SPECIFICATION.setSpecType(CODED_VALUE);
+        PRODUCTION_SPECIFICATION.setProductionSpec("Very yes");
+        PRODUCTION_SPECIFICATION.setComponentId(INSTANCE_IDENTIFIER);
+    }
+
+    public static final CalibrationInfo CALIBRATION_INFO = new CalibrationInfo();
+    static {
+        CALIBRATION_INFO.setComponentCalibrationState(CalibrationState.NO);
+        CALIBRATION_INFO.setType(CalibrationType.TP);
+        CALIBRATION_INFO.setTime(UnitTestUtil.makeTestTimestamp());
+
+        var doc = new CalibrationInfo.CalibrationDocumentation();
+        doc.setDocumentation(List.of(LOCALIZED_TEXT, LOCALIZED_TEXT));
+
+        var result = new CalibrationInfo.CalibrationDocumentation.CalibrationResult();
+        result.setCode(CODED_VALUE);
+        result.setValue(MEASUREMENT);
+
+        doc.setCalibrationResult(List.of(result, result));
+
+        CALIBRATION_INFO.setCalibrationDocumentation(List.of(doc, doc));
+    }
 }

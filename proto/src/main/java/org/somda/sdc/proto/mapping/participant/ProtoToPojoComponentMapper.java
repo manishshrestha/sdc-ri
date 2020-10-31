@@ -5,25 +5,10 @@ import com.google.inject.Provider;
 import com.google.inject.name.Named;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.somda.sdc.biceps.model.participant.AbstractComplexDeviceComponentDescriptor;
-import org.somda.sdc.biceps.model.participant.AbstractComplexDeviceComponentState;
-import org.somda.sdc.biceps.model.participant.AbstractDeviceComponentDescriptor;
-import org.somda.sdc.biceps.model.participant.AbstractDeviceComponentState;
-import org.somda.sdc.biceps.model.participant.ApprovedJurisdictions;
-import org.somda.sdc.biceps.model.participant.ChannelDescriptor;
-import org.somda.sdc.biceps.model.participant.ChannelState;
-import org.somda.sdc.biceps.model.participant.ComponentActivation;
-import org.somda.sdc.biceps.model.participant.MdsDescriptor;
-import org.somda.sdc.biceps.model.participant.MdsOperatingMode;
-import org.somda.sdc.biceps.model.participant.MdsState;
-import org.somda.sdc.biceps.model.participant.ScoDescriptor;
-import org.somda.sdc.biceps.model.participant.ScoState;
-import org.somda.sdc.biceps.model.participant.SystemContextDescriptor;
-import org.somda.sdc.biceps.model.participant.SystemContextState;
-import org.somda.sdc.biceps.model.participant.VmdDescriptor;
-import org.somda.sdc.biceps.model.participant.VmdState;
+import org.somda.sdc.biceps.model.participant.*;
 import org.somda.sdc.common.CommonConfig;
 import org.somda.sdc.common.logging.InstanceLogger;
+import org.somda.sdc.common.util.TimestampAdapter;
 import org.somda.sdc.proto.mapping.Util;
 import org.somda.sdc.proto.model.biceps.*;
 
@@ -34,16 +19,19 @@ public class ProtoToPojoComponentMapper {
     private final Logger instanceLogger;
     private final ProtoToPojoBaseMapper baseMapper;
     private final Provider<ProtoToPojoOneOfMapper> oneOfMapperProvider;
+    private final TimestampAdapter timestampAdapter;
     private ProtoToPojoOneOfMapper oneOfMapper;
 
     @Inject
     ProtoToPojoComponentMapper(@Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier,
                                ProtoToPojoBaseMapper baseMapper,
-                               Provider<ProtoToPojoOneOfMapper> oneOfMapperProvider) {
+                               Provider<ProtoToPojoOneOfMapper> oneOfMapperProvider,
+                               TimestampAdapter timestampAdapter) {
         this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);
         this.baseMapper = baseMapper;
         this.oneOfMapperProvider = oneOfMapperProvider;
         this.oneOfMapper = null;
+        this.timestampAdapter = timestampAdapter;
     }
 
     public ProtoToPojoOneOfMapper getOneOfMapper() {
@@ -152,9 +140,21 @@ public class ProtoToPojoComponentMapper {
         pojo.setActivationState(Util.mapToPojoEnum(protoMsg, "AActivationState", ComponentActivation.class));
         pojo.setOperatingCycles(Util.optionalIntOfInt(protoMsg, "AOperatingCycles"));
         pojo.setOperatingHours(Util.optionalLongOfInt(protoMsg, "AOperatingHours"));
-        instanceLogger.error("CalibrationInfo mapping is missing");
-        instanceLogger.error("NextCalibration mapping is missing");
-        instanceLogger.error("PhysicalConnectorInfo mapping is missing");
+
+        Util.doIfNotNull(
+                Util.optional(protoMsg, "CalibrationInfo", CalibrationInfoMsg.class),
+                calibrationInfoMsg -> pojo.setCalibrationInfo(map(calibrationInfoMsg))
+        );
+        Util.doIfNotNull(
+                Util.optional(protoMsg, "NextCalibration", CalibrationInfoMsg.class),
+                calibrationInfoMsg -> pojo.setNextCalibration(map(calibrationInfoMsg))
+        );
+
+        Util.doIfNotNull(
+                Util.optional(protoMsg, "PhysicalConnector", PhysicalConnectorInfoMsg.class),
+                connector -> pojo.setPhysicalConnector(baseMapper.map(connector))
+        );
+
         baseMapper.map(pojo, protoMsg.getAbstractState());
     }
 
@@ -165,6 +165,36 @@ public class ProtoToPojoComponentMapper {
         pojo.setSpecType(baseMapper.map(Util.optional(protoMsg, "SpecType", CodedValueMsg.class)));
         Util.doIfNotNull(Util.optional(protoMsg, "ComponentId", InstanceIdentifierOneOfMsg.class), component ->
                 pojo.setComponentId(getOneOfMapper().map(component)));
+        return pojo;
+    }
+
+    public CalibrationInfo map(CalibrationInfoMsg protoMsg) {
+        var pojo = new CalibrationInfo();
+
+        pojo.setComponentCalibrationState(Util.mapToPojoEnum(protoMsg, "AComponentCalibrationState", CalibrationState.class));
+        pojo.setType(Util.mapToPojoEnum(protoMsg, "AType", CalibrationType.class));
+        Util.doIfNotNull(
+                Util.optionalBigIntOfLong(protoMsg, "ATime"),
+                it -> pojo.setTime(timestampAdapter.unmarshal(it))
+        );
+        protoMsg.getCalibrationDocumentationList().forEach(doc -> pojo.getCalibrationDocumentation().add(map(doc)));
+
+        return pojo;
+    }
+
+    public CalibrationInfo.CalibrationDocumentation map(CalibrationInfoMsg.CalibrationDocumentationMsg protoMsg) {
+        var pojo = new CalibrationInfo.CalibrationDocumentation();
+        pojo.setDocumentation(baseMapper.mapLocalizedTexts(protoMsg.getDocumentationList()));
+        protoMsg.getCalibrationResultList().forEach(result -> pojo.getCalibrationResult().add(map(result)));
+        return pojo;
+    }
+
+    public CalibrationInfo.CalibrationDocumentation.CalibrationResult map(
+            CalibrationInfoMsg.CalibrationDocumentationMsg.CalibrationResultMsg protoMsg
+    ) {
+        var pojo = new CalibrationInfo.CalibrationDocumentation.CalibrationResult();
+        pojo.setCode(baseMapper.map(protoMsg.getCode()));
+        pojo.setValue(baseMapper.map(protoMsg.getValue()));
         return pojo;
     }
 }

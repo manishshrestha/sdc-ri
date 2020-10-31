@@ -45,6 +45,11 @@ public class AlertSystemRoundTrip implements BiConsumer<LocalMdibAccess, RemoteM
             descriptor.setMaxPhysiologicalParallelAlarms(1338L);
             descriptor.setSelfCheckPeriod(Duration.ofMillis(1)); // check yourself before you latch yourself
 
+            // these are handled in separate tests
+            // TODO: Do we still need children here?
+//            descriptor.setAlertSignal();
+//            descriptor.setAlertCondition();
+
             // TODO: Extension
 //            descriptor.setExtension();
         }
