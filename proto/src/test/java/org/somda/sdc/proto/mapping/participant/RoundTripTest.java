@@ -95,6 +95,8 @@ class RoundTripTest {
      * AlertConditionState ({@linkplain LimitAlertConditionRoundTrip}, {@linkplain AlertConditionRoundTrip})
      * AlertSignalDescriptor ({@linkplain AlertSignalRoundTrip})
      * AlertSignalState ({@linkplain AlertSignalRoundTrip})
+     * AlertSystemDescriptor ({@linkplain AlertSystemRoundTrip})
+     * AlertSystemState ({@linkplain AlertSystemRoundTrip})
      * EnumStringMetricDescriptor ({@linkplain EnumStringMetricRoundTrip})
      * EnumStringMetricState ({@linkplain EnumStringMetricRoundTrip})
      * LimitAlertConditionDescriptor ({@linkplain LimitAlertConditionRoundTrip})
@@ -122,8 +124,6 @@ class RoundTripTest {
      * AbstractOperationDescriptor
      * AbstractOperationState
      * AbstractSetStateOperationDescriptor
-     * AlertSystemDescriptor
-     * AlertSystemState
      * ApprovedJurisdictions
      * BaseDemographics
      * BatteryDescriptor

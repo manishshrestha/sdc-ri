@@ -6,12 +6,15 @@ import org.somda.sdc.biceps.model.participant.AlertActivation;
 import org.somda.sdc.biceps.model.participant.AlertConditionDescriptor;
 import org.somda.sdc.biceps.model.participant.AlertConditionKind;
 import org.somda.sdc.biceps.model.participant.AlertConditionPriority;
+import org.somda.sdc.biceps.model.participant.AlertSignalManifestation;
 import org.somda.sdc.biceps.model.participant.AlertSystemDescriptor;
 import org.somda.sdc.biceps.model.participant.AlertSystemState;
 import org.somda.sdc.biceps.model.participant.SafetyClassification;
+import org.somda.sdc.biceps.model.participant.SystemSignalActivation;
 import org.somda.sdc.biceps.provider.access.LocalMdibAccess;
 import org.somda.sdc.biceps.testutil.Handles;
 import org.somda.sdc.proto.UnitTestUtil;
+import org.somda.sdc.proto.mapping.TypeCollection;
 
 import java.math.BigInteger;
 import java.time.Duration;
@@ -36,20 +39,39 @@ public class AlertSystemRoundTrip implements BiConsumer<LocalMdibAccess, RemoteM
             descriptor.setHandle(HANDLE);
             descriptor.setDescriptorVersion(BigInteger.valueOf(1231231231));
             descriptor.setSafetyClassification(SafetyClassification.INF);
+            descriptor.setType(TypeCollection.CODED_VALUE);
+
             descriptor.setMaxTechnicalParallelAlarms(1337L);
             descriptor.setMaxPhysiologicalParallelAlarms(1338L);
             descriptor.setSelfCheckPeriod(Duration.ofMillis(1)); // check yourself before you latch yourself
+
+            // TODO: Extension
+//            descriptor.setExtension();
         }
         var state = new AlertSystemState();
         {
             state.setStateVersion(BigInteger.valueOf(123123123123L));
-            state.setDescriptorHandle(HANDLE);
+            state.setDescriptorHandle(descriptor.getHandle());
             state.setDescriptorVersion(descriptor.getDescriptorVersion());
             state.setActivationState(AlertActivation.ON);
+
             state.setLastSelfCheck(UnitTestUtil.makeTestTimestamp());
             state.setSelfCheckCount(55554444333L);
             state.setPresentTechnicalAlarmConditions(List.of("・(￣∀￣)・:*:"));
             state.setPresentPhysiologicalAlarmConditions(List.of("\uD83D\uDC35 \uD83D\uDE48 \uD83D\uDE49 \uD83D\uDE4A"));
+
+            var ssa = new SystemSignalActivation();
+            ssa.setManifestation(AlertSignalManifestation.VIS);
+            ssa.setState(AlertActivation.OFF);
+
+            var ssa2 = new SystemSignalActivation();
+            ssa2.setManifestation(AlertSignalManifestation.AUD);
+            ssa2.setState(AlertActivation.PSD);
+
+            state.setSystemSignalActivation(List.of(ssa, ssa2));
+
+            // TODO: Extension
+//            state.setExtension();
         }
 
         modifications.insert(descriptor, state, Handles.MDS_0);

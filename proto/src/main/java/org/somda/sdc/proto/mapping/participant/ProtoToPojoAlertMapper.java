@@ -9,14 +9,32 @@ import com.google.protobuf.StringValue;
 import com.google.protobuf.UInt32Value;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.somda.sdc.biceps.model.participant.*;
+import org.somda.sdc.biceps.model.participant.AbstractAlertDescriptor;
+import org.somda.sdc.biceps.model.participant.AbstractAlertState;
+import org.somda.sdc.biceps.model.participant.AlertActivation;
+import org.somda.sdc.biceps.model.participant.AlertConditionDescriptor;
+import org.somda.sdc.biceps.model.participant.AlertConditionKind;
+import org.somda.sdc.biceps.model.participant.AlertConditionMonitoredLimits;
+import org.somda.sdc.biceps.model.participant.AlertConditionPriority;
+import org.somda.sdc.biceps.model.participant.AlertConditionState;
+import org.somda.sdc.biceps.model.participant.AlertSignalDescriptor;
+import org.somda.sdc.biceps.model.participant.AlertSignalManifestation;
+import org.somda.sdc.biceps.model.participant.AlertSignalPresence;
+import org.somda.sdc.biceps.model.participant.AlertSignalPrimaryLocation;
+import org.somda.sdc.biceps.model.participant.AlertSignalState;
+import org.somda.sdc.biceps.model.participant.AlertSystemDescriptor;
+import org.somda.sdc.biceps.model.participant.AlertSystemState;
+import org.somda.sdc.biceps.model.participant.CauseInfo;
+import org.somda.sdc.biceps.model.participant.LimitAlertConditionDescriptor;
+import org.somda.sdc.biceps.model.participant.LimitAlertConditionState;
+import org.somda.sdc.biceps.model.participant.RemedyInfo;
+import org.somda.sdc.biceps.model.participant.SystemSignalActivation;
 import org.somda.sdc.common.CommonConfig;
 import org.somda.sdc.common.logging.InstanceLogger;
 import org.somda.sdc.common.util.TimestampAdapter;
 import org.somda.sdc.proto.mapping.Util;
 import org.somda.sdc.proto.model.biceps.AbstractAlertDescriptorMsg;
 import org.somda.sdc.proto.model.biceps.AbstractAlertStateMsg;
-import org.somda.sdc.proto.model.biceps.AlertActivationMsg;
 import org.somda.sdc.proto.model.biceps.AlertConditionDescriptorMsg;
 import org.somda.sdc.proto.model.biceps.AlertConditionStateMsg;
 import org.somda.sdc.proto.model.biceps.AlertSignalDescriptorMsg;
@@ -24,10 +42,10 @@ import org.somda.sdc.proto.model.biceps.AlertSignalStateMsg;
 import org.somda.sdc.proto.model.biceps.AlertSystemDescriptorMsg;
 import org.somda.sdc.proto.model.biceps.AlertSystemStateMsg;
 import org.somda.sdc.proto.model.biceps.CauseInfoMsg;
-import org.somda.sdc.proto.model.biceps.CodedValueMsg;
 import org.somda.sdc.proto.model.biceps.LimitAlertConditionDescriptorMsg;
 import org.somda.sdc.proto.model.biceps.LimitAlertConditionStateMsg;
 import org.somda.sdc.proto.model.biceps.RemedyInfoMsg;
+import org.somda.sdc.proto.model.biceps.SystemSignalActivationMsg;
 
 public class ProtoToPojoAlertMapper {
     private static final Logger LOG = LogManager.getLogger(ProtoToPojoAlertMapper.class);
@@ -152,6 +170,8 @@ public class ProtoToPojoAlertMapper {
                 pojo.setPresentTechnicalAlarmConditions(conditions.getAlertConditionReferenceList())
         );
 
+        protoMsg.getSystemSignalActivationList().forEach(ssa -> pojo.getSystemSignalActivation().add(map(ssa)));
+
         return pojo;
     }
 
@@ -198,5 +218,12 @@ public class ProtoToPojoAlertMapper {
     private void map(AbstractAlertState pojo, AbstractAlertStateMsg protoMsg) {
         baseMapper.map(pojo, protoMsg.getAbstractState());
         pojo.setActivationState(Util.mapToPojoEnum(protoMsg, "AActivationState", AlertActivation.class));
+    }
+
+    private SystemSignalActivation map(SystemSignalActivationMsg protoMsg) {
+        var pojo = new SystemSignalActivation();
+        pojo.setManifestation(Util.mapToPojoEnum(protoMsg, "AManifestation", AlertSignalManifestation.class));
+        pojo.setState(Util.mapToPojoEnum(protoMsg, "AState", AlertActivation.class));
+        return pojo;
     }
 }

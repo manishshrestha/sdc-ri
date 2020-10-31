@@ -6,9 +6,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.somda.sdc.biceps.model.participant.AbstractAlertDescriptor;
 import org.somda.sdc.biceps.model.participant.AbstractAlertState;
-import org.somda.sdc.biceps.model.participant.AlertActivation;
 import org.somda.sdc.biceps.model.participant.AlertConditionDescriptor;
-import org.somda.sdc.biceps.model.participant.AlertConditionMonitoredLimits;
 import org.somda.sdc.biceps.model.participant.AlertConditionState;
 import org.somda.sdc.biceps.model.participant.AlertSignalDescriptor;
 import org.somda.sdc.biceps.model.participant.AlertSignalState;
@@ -18,11 +16,32 @@ import org.somda.sdc.biceps.model.participant.CauseInfo;
 import org.somda.sdc.biceps.model.participant.LimitAlertConditionDescriptor;
 import org.somda.sdc.biceps.model.participant.LimitAlertConditionState;
 import org.somda.sdc.biceps.model.participant.RemedyInfo;
+import org.somda.sdc.biceps.model.participant.SystemSignalActivation;
 import org.somda.sdc.common.CommonConfig;
 import org.somda.sdc.common.logging.InstanceLogger;
 import org.somda.sdc.common.util.TimestampAdapter;
 import org.somda.sdc.proto.mapping.Util;
-import org.somda.sdc.proto.model.biceps.*;
+import org.somda.sdc.proto.model.biceps.AbstractAlertDescriptorMsg;
+import org.somda.sdc.proto.model.biceps.AbstractAlertStateMsg;
+import org.somda.sdc.proto.model.biceps.AlertActivationMsg;
+import org.somda.sdc.proto.model.biceps.AlertConditionDescriptorMsg;
+import org.somda.sdc.proto.model.biceps.AlertConditionKindMsg;
+import org.somda.sdc.proto.model.biceps.AlertConditionMonitoredLimitsMsg;
+import org.somda.sdc.proto.model.biceps.AlertConditionPriorityMsg;
+import org.somda.sdc.proto.model.biceps.AlertConditionReferenceMsg;
+import org.somda.sdc.proto.model.biceps.AlertConditionStateMsg;
+import org.somda.sdc.proto.model.biceps.AlertSignalDescriptorMsg;
+import org.somda.sdc.proto.model.biceps.AlertSignalManifestationMsg;
+import org.somda.sdc.proto.model.biceps.AlertSignalPresenceMsg;
+import org.somda.sdc.proto.model.biceps.AlertSignalPrimaryLocationMsg;
+import org.somda.sdc.proto.model.biceps.AlertSignalStateMsg;
+import org.somda.sdc.proto.model.biceps.AlertSystemDescriptorMsg;
+import org.somda.sdc.proto.model.biceps.AlertSystemStateMsg;
+import org.somda.sdc.proto.model.biceps.CauseInfoMsg;
+import org.somda.sdc.proto.model.biceps.LimitAlertConditionDescriptorMsg;
+import org.somda.sdc.proto.model.biceps.LimitAlertConditionStateMsg;
+import org.somda.sdc.proto.model.biceps.RemedyInfoMsg;
+import org.somda.sdc.proto.model.biceps.SystemSignalActivationMsg;
 
 import java.util.List;
 
@@ -136,6 +155,8 @@ public class PojoToProtoAlertMapper {
         builder.setAPresentPhysiologicalAlarmConditions(mapAlertConditionReference(state.getPresentPhysiologicalAlarmConditions()));
         builder.setAPresentTechnicalAlarmConditions(mapAlertConditionReference(state.getPresentTechnicalAlarmConditions()));
 
+        state.getSystemSignalActivation().forEach(ssa -> builder.addSystemSignalActivation(mapSystemSignalActivation(ssa)));
+
         return builder.build();
     }
 
@@ -203,6 +224,13 @@ public class PojoToProtoAlertMapper {
     private AlertConditionReferenceMsg mapAlertConditionReference(List<String> references) {
         var builder = AlertConditionReferenceMsg.newBuilder();
         references.forEach(builder::addAlertConditionReference);
+        return builder.build();
+    }
+
+    private SystemSignalActivationMsg mapSystemSignalActivation(SystemSignalActivation systemSignalActivation) {
+        var builder = SystemSignalActivationMsg.newBuilder();
+        builder.setAManifestation(Util.mapToProtoEnum(systemSignalActivation.getManifestation(), AlertSignalManifestationMsg.class));
+        builder.setAState(Util.mapToProtoEnum(systemSignalActivation.getState(), AlertActivationMsg.class));
         return builder.build();
     }
 }
