@@ -11,6 +11,7 @@ import org.somda.sdc.common.util.TimestampAdapter;
 import org.somda.sdc.proto.mapping.Util;
 import org.somda.sdc.proto.model.biceps.*;
 
+import java.util.List;
 import java.util.stream.Collectors;
 
 public class PojoToProtoMetricMapper {
@@ -59,9 +60,16 @@ public class PojoToProtoMetricMapper {
         enumStringMetricDescriptor.getAllowedValue().forEach(allowedValue -> {
             var valueBuilder = EnumStringMetricDescriptorMsg.AllowedValueMsg.newBuilder();
             valueBuilder.setValue(allowedValue.getValue());
-//            valueBuilder.setCharacteristic();
-//            valueBuilder.setIdentification();
-//            valueBuilder.setType();
+
+            Util.doIfNotNull(allowedValue.getCharacteristic(), measurement -> {
+                valueBuilder.setCharacteristic(baseMapper.mapMeasurement(measurement));
+            });
+            Util.doIfNotNull(allowedValue.getIdentification(), instanceIdentifier -> {
+                valueBuilder.setIdentification(baseMapper.mapInstanceIdentifierOneOf(instanceIdentifier));
+            });
+            Util.doIfNotNull(allowedValue.getType(), codedValue -> {
+                valueBuilder.setType(baseMapper.mapCodedValue(codedValue));
+            });
             builder.addAllowedValue(valueBuilder);
         });
 
@@ -80,23 +88,26 @@ public class PojoToProtoMetricMapper {
         Util.doIfNotNull(abstractMetricDescriptor.getMetricCategory(), category ->
                 builder.setAMetricCategory(Util.mapToProtoEnum(category, MetricCategoryMsg.class))
         );
+        Util.doIfNotNull(abstractMetricDescriptor.getDerivationMethod(), derivation ->
+                builder.setADerivationMethod(Util.mapToProtoEnum(derivation, DerivationMethodMsg.class)));
         Util.doIfNotNull(abstractMetricDescriptor.getMetricAvailability(), availability ->
                 builder.setAMetricAvailability(Util.mapToProtoEnum(availability, MetricAvailabilityMsg.class))
         );
-        Util.doIfNotNull(abstractMetricDescriptor.getActivationDuration(), duration ->
-                builder.setAActivationDuration(Util.fromJavaDuration(duration)));
-//        abstractMetricDescriptor.getBodySite();
-        Util.doIfNotNull(abstractMetricDescriptor.getDerivationMethod(), derivation ->
-                builder.setADerivationMethod(Util.mapToProtoEnum(derivation, DerivationMethodMsg.class)));
-        Util.doIfNotNull(abstractMetricDescriptor.getDeterminationPeriod(), period ->
-                builder.setADeterminationPeriod(Util.fromJavaDuration(period)));
-        Util.doIfNotNull(abstractMetricDescriptor.getLifeTimePeriod(), period ->
-                builder.setALifeTimePeriod(Util.fromJavaDuration(period)));
-
         Util.doIfNotNull(abstractMetricDescriptor.getMaxMeasurementTime(), time ->
                 builder.setAMaxMeasurementTime(Util.fromJavaDuration(time)));
         Util.doIfNotNull(abstractMetricDescriptor.getMaxDelayTime(), time ->
                 builder.setAMaxDelayTime(Util.fromJavaDuration(time)));
+        Util.doIfNotNull(abstractMetricDescriptor.getDeterminationPeriod(), period ->
+                builder.setADeterminationPeriod(Util.fromJavaDuration(period)));
+        Util.doIfNotNull(abstractMetricDescriptor.getLifeTimePeriod(), period ->
+                builder.setALifeTimePeriod(Util.fromJavaDuration(period)));
+        Util.doIfNotNull(abstractMetricDescriptor.getActivationDuration(), duration ->
+                builder.setAActivationDuration(Util.fromJavaDuration(duration)));
+
+        builder.setUnit(baseMapper.mapCodedValue(abstractMetricDescriptor.getUnit()));
+        abstractMetricDescriptor.getBodySite().forEach(codedValue -> builder.addBodySite(baseMapper.mapCodedValue(codedValue)));
+        abstractMetricDescriptor.getRelation().forEach(relation -> builder.addRelation(mapRelation(relation)));
+
 
         return builder;
     }
@@ -164,6 +175,11 @@ public class PojoToProtoMetricMapper {
                 state.getLifeTimePeriod(),
                 period -> builder.setALifeTimePeriod(Util.fromJavaDuration(period))
         );
+
+        state.getBodySite().forEach(site -> builder.addBodySite(baseMapper.mapCodedValue(site)));
+        Util.doIfNotNull(state.getPhysicalConnector(), physicalConnectorInfo ->
+                builder.setPhysicalConnector(mapPhysicalConnectorInfo(physicalConnectorInfo)));
+
         return builder.build();
     }
 
@@ -223,4 +239,33 @@ public class PojoToProtoMetricMapper {
 
         return builder.build();
     }
+
+    private AbstractMetricDescriptorMsg.RelationMsg mapRelation(AbstractMetricDescriptor.Relation relation) {
+        var builder = AbstractMetricDescriptorMsg.RelationMsg.newBuilder();
+
+        builder.setRelation(Util.mapToProtoEnum(relation.getKind(), AbstractMetricDescriptorMsg.RelationMsg.KindMsg.class));
+        builder.setAEntries(mapEntry(relation.getEntries()));
+        Util.doIfNotNull(relation.getCode(), codedValue -> builder.setCode(baseMapper.mapCodedValue(codedValue)));
+        Util.doIfNotNull(relation.getIdentification(), instanceIdentifier ->
+                builder.setIdentification(baseMapper.mapInstanceIdentifierOneOf(instanceIdentifier)));
+
+        return builder.build();
+    }
+
+    private EntryRefMsg mapEntry(List<String> entries) {
+        var builder = EntryRefMsg.newBuilder();
+        builder.addAllEntryRef(entries);
+        return builder.build();
+    }
+
+    private PhysicalConnectorInfoMsg mapPhysicalConnectorInfo(PhysicalConnectorInfo physicalConnectorInfo) {
+        var builder = PhysicalConnectorInfoMsg.newBuilder();
+
+        builder.setANumber(Util.toInt32(physicalConnectorInfo.getNumber()));
+        builder.addAllLabel(baseMapper.mapLocalizedTexts(physicalConnectorInfo.getLabel()));
+
+        return builder.build();
+    }
+
+
 }

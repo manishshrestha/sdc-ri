@@ -14,8 +14,10 @@ import org.somda.sdc.biceps.model.participant.AlertSignalDescriptor;
 import org.somda.sdc.biceps.model.participant.AlertSignalState;
 import org.somda.sdc.biceps.model.participant.AlertSystemDescriptor;
 import org.somda.sdc.biceps.model.participant.AlertSystemState;
+import org.somda.sdc.biceps.model.participant.CauseInfo;
 import org.somda.sdc.biceps.model.participant.LimitAlertConditionDescriptor;
 import org.somda.sdc.biceps.model.participant.LimitAlertConditionState;
+import org.somda.sdc.biceps.model.participant.RemedyInfo;
 import org.somda.sdc.common.CommonConfig;
 import org.somda.sdc.common.logging.InstanceLogger;
 import org.somda.sdc.common.util.TimestampAdapter;
@@ -78,10 +80,24 @@ public class PojoToProtoAlertMapper {
         Util.doIfNotNull(descriptor.getCanDeescalate(), escalate ->
                 builder.setCanDeescalate(Util.mapToProtoEnum(escalate, AlertConditionDescriptorMsg.CanDeescalateMsg.class)));
         descriptor.getSource().forEach(builder::addSource);
+        descriptor.getCauseInfo().forEach(info -> builder.addCauseInfo(mapCauseInfo(info)));
 
         // TODO
 //        builder.addCauseInfo()
 
+        return builder.build();
+    }
+
+    public CauseInfoMsg mapCauseInfo(CauseInfo causeInfo) {
+        var builder = CauseInfoMsg.newBuilder();
+        Util.doIfNotNull(causeInfo.getRemedyInfo(), info -> builder.setRemedyInfo(mapRemedyInfo(info)));
+        builder.addAllDescription(baseMapper.mapLocalizedTexts(causeInfo.getDescription()));
+        return builder.build();
+    }
+
+    public RemedyInfoMsg mapRemedyInfo(RemedyInfo remedyInfo) {
+        var builder = RemedyInfoMsg.newBuilder();
+        builder.addAllDescription(baseMapper.mapLocalizedTexts(remedyInfo.getDescription()));
         return builder.build();
     }
 

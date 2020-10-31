@@ -3,6 +3,7 @@ package org.somda.sdc.proto.mapping.participant;
 import org.somda.sdc.biceps.common.MdibDescriptionModifications;
 import org.somda.sdc.biceps.consumer.access.RemoteMdibAccess;
 import org.somda.sdc.biceps.model.participant.AbstractMetricValue;
+import org.somda.sdc.biceps.model.participant.DerivationMethod;
 import org.somda.sdc.biceps.model.participant.GenerationMode;
 import org.somda.sdc.biceps.model.participant.MeasurementValidity;
 import org.somda.sdc.biceps.model.participant.MetricAvailability;
@@ -11,9 +12,11 @@ import org.somda.sdc.biceps.model.participant.NumericMetricDescriptor;
 import org.somda.sdc.biceps.model.participant.NumericMetricState;
 import org.somda.sdc.biceps.model.participant.NumericMetricValue;
 import org.somda.sdc.biceps.model.participant.Range;
+import org.somda.sdc.biceps.model.participant.SafetyClassification;
 import org.somda.sdc.biceps.provider.access.LocalMdibAccess;
 import org.somda.sdc.biceps.testutil.Handles;
 import org.somda.sdc.proto.UnitTestUtil;
+import org.somda.sdc.proto.mapping.TypeCollection;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -39,10 +42,23 @@ public class NumericMetricRoundTrip implements BiConsumer<LocalMdibAccess, Remot
         {
             descriptor.setHandle(HANDLE);
             descriptor.setDescriptorVersion(BigInteger.ONE);
+            descriptor.setSafetyClassification(SafetyClassification.MED_A);
             descriptor.setMetricCategory(MetricCategory.SET);
+            descriptor.setDerivationMethod(DerivationMethod.MAN);
             descriptor.setMetricAvailability(MetricAvailability.INTR);
-            descriptor.setAveragingPeriod(Duration.ofHours(3));
+            descriptor.setMaxMeasurementTime(Duration.ofHours(1));
+            descriptor.setMaxDelayTime(Duration.ofHours(1));
+            descriptor.setDeterminationPeriod(Duration.ofHours(1));
+            descriptor.setLifeTimePeriod(Duration.ofHours(1));
+            descriptor.setActivationDuration(Duration.ofHours(1));
+
+            descriptor.setType(TypeCollection.CODED_VALUE);
+            descriptor.setUnit(TypeCollection.CODED_VALUE);
+            descriptor.setBodySite(List.of(TypeCollection.CODED_VALUE));
+            descriptor.setRelation(List.of(TypeCollection.RELATION, TypeCollection.RELATION, TypeCollection.RELATION));
+
             descriptor.setResolution(BigDecimal.TEN);
+            descriptor.setAveragingPeriod(Duration.ofHours(3));
 
             var range1 = new Range();
             range1.setAbsoluteAccuracy(BigDecimal.ONE);
@@ -86,10 +102,10 @@ public class NumericMetricRoundTrip implements BiConsumer<LocalMdibAccess, Remot
             descriptor.setHandle(HANDLE_MIN);
             descriptor.setMetricCategory(MetricCategory.SET);
             descriptor.setMetricAvailability(MetricAvailability.INTR);
-            descriptor.setResolution(BigDecimal.TEN);
 
-            var range1 = new Range();
-            descriptor.setTechnicalRange(List.of(range1));
+            descriptor.setUnit(TypeCollection.CODED_VALUE);
+
+            descriptor.setResolution(BigDecimal.TEN);
         }
 
         var state = new NumericMetricState();

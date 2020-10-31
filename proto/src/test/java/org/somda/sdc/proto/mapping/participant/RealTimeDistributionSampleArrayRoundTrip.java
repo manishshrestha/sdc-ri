@@ -11,10 +11,12 @@ import org.somda.sdc.biceps.model.participant.RealTimeSampleArrayMetricState;
 import org.somda.sdc.biceps.model.participant.SafetyClassification;
 import org.somda.sdc.biceps.provider.access.LocalMdibAccess;
 import org.somda.sdc.biceps.testutil.Handles;
+import org.somda.sdc.proto.mapping.TypeCollection;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.time.Duration;
+import java.util.List;
 import java.util.function.BiConsumer;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -41,10 +43,19 @@ public class RealTimeDistributionSampleArrayRoundTrip implements BiConsumer<Loca
             descriptor.setMetricAvailability(MetricAvailability.CONT);
             descriptor.setMaxMeasurementTime(Duration.ofMinutes(444));
             descriptor.setMaxDelayTime(Duration.ofMinutes(433));
+            descriptor.setDeterminationPeriod(Duration.ofHours(1));
             descriptor.setLifeTimePeriod(Duration.ofMinutes(555));
             descriptor.setActivationDuration(Duration.ofSeconds(1));
+
+            descriptor.setType(TypeCollection.CODED_VALUE);
+            descriptor.setUnit(TypeCollection.CODED_VALUE);
+            descriptor.setBodySite(List.of(TypeCollection.CODED_VALUE, TypeCollection.CODED_VALUE));
+            descriptor.setRelation(List.of(TypeCollection.RELATION));
+
             descriptor.setResolution(BigDecimal.valueOf(123123123));
             descriptor.setSamplePeriod(Duration.ofDays(365));
+
+            descriptor.setTechnicalRange(List.of(TypeCollection.RANGE, TypeCollection.RANGE));
         }
         var state = new RealTimeSampleArrayMetricState();
         {
@@ -64,6 +75,9 @@ public class RealTimeDistributionSampleArrayRoundTrip implements BiConsumer<Loca
             descriptor.setHandle(HANDLE_MIN);
             descriptor.setMetricCategory(MetricCategory.MSRMT);
             descriptor.setMetricAvailability(MetricAvailability.CONT);
+
+            descriptor.setUnit(TypeCollection.CODED_VALUE);
+
             descriptor.setResolution(BigDecimal.valueOf(123123123));
             descriptor.setSamplePeriod(Duration.ofDays(365));
         }

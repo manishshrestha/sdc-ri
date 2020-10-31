@@ -30,6 +30,10 @@ public class ProtoToPojoBaseMapper {
             pojo.setType(map(protoMsg.getType()));
         }
         pojo.setSafetyClassification(Util.mapToPojoEnum(protoMsg, "ASafetyClassification", SafetyClassification.class));
+
+        // TODO: Extension
+//        pojo.setExtension();
+
     }
 
     void map(AbstractState pojo, AbstractStateMsg protoMsg) {
@@ -96,6 +100,33 @@ public class ProtoToPojoBaseMapper {
         pojo.setCodingSystem(Util.optionalStr(protoMsg, "ACodingSystem"));
         pojo.setCodingSystemVersion(Util.optionalStr(protoMsg, "ACodingSystemVersion"));
         pojo.setSymbolicCodeName(Util.optionalStr(protoMsg, "ASymbolicCodeName"));
+
+        pojo.setCodingSystemName(mapLocalizedTexts(protoMsg.getCodingSystemNameList()));
+        pojo.setConceptDescription(mapLocalizedTexts(protoMsg.getConceptDescriptionList()));
+        protoMsg.getTranslationList().forEach(translationMsg ->
+                pojo.getTranslation().add(map(translationMsg))
+        );
+
+        // TODO: Extension
+//        pojo.setExtension();
+        return pojo;
+    }
+
+    public CodedValue.Translation map(@Nullable CodedValueMsg.TranslationMsg protoMsg) {
+        if (protoMsg == null) {
+            return null;
+        }
+
+        var pojo = new CodedValue.Translation();
+        pojo.setCode(protoMsg.getACode());
+        Util.doIfNotNull(Util.optionalStr(protoMsg, "ACodingSystem"),
+                system -> pojo.setCodingSystem(system));
+
+        Util.doIfNotNull(Util.optionalStr(protoMsg, "ACodingSystemVersion"),
+                version -> pojo.setCodingSystemVersion(version));
+
+        // TODO: Extension
+//        pojo.setExtension();
         return pojo;
     }
 
@@ -107,8 +138,11 @@ public class ProtoToPojoBaseMapper {
         var pojo = new LocalizedText();
         pojo.setLang(Util.optionalStr(protoMsg, "ALang"));
         pojo.setRef(Util.optionalStr(protoMsg, "ARef"));
-        pojo.setValue(protoMsg.getString());
         pojo.setVersion(Util.optionalBigIntOfLong(protoMsg, "AVersion"));
+        if (protoMsg.hasATextWidth()) {
+            pojo.setTextWidth(Util.mapToPojoEnum(protoMsg, "ATextWidth", LocalizedTextWidth.class));
+        }
+        pojo.setValue(protoMsg.getString());
         return pojo;
     }
 

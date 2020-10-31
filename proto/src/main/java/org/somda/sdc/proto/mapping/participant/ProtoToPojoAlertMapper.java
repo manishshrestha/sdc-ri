@@ -23,8 +23,11 @@ import org.somda.sdc.proto.model.biceps.AlertSignalDescriptorMsg;
 import org.somda.sdc.proto.model.biceps.AlertSignalStateMsg;
 import org.somda.sdc.proto.model.biceps.AlertSystemDescriptorMsg;
 import org.somda.sdc.proto.model.biceps.AlertSystemStateMsg;
+import org.somda.sdc.proto.model.biceps.CauseInfoMsg;
+import org.somda.sdc.proto.model.biceps.CodedValueMsg;
 import org.somda.sdc.proto.model.biceps.LimitAlertConditionDescriptorMsg;
 import org.somda.sdc.proto.model.biceps.LimitAlertConditionStateMsg;
+import org.somda.sdc.proto.model.biceps.RemedyInfoMsg;
 
 public class ProtoToPojoAlertMapper {
     private static final Logger LOG = LogManager.getLogger(ProtoToPojoAlertMapper.class);
@@ -83,10 +86,27 @@ public class ProtoToPojoAlertMapper {
         pojo.setCanEscalate(Util.mapToPojoEnum(protoMsg, "CanEscalate", AlertConditionPriority.class));
         pojo.setCanDeescalate(Util.mapToPojoEnum(protoMsg, "CanDeescalate", AlertConditionPriority.class));
 
-        // TODO:
-//        pojo.setSource();
-//        pojo.setCauseInfo();
+        protoMsg.getSourceList().forEach(src -> pojo.getSource().add(src));
+        protoMsg.getCauseInfoList().forEach(info -> pojo.getCauseInfo().add(map(info)));
 
+        // TODO: Extension
+//        pojo.setExtension();
+    }
+
+    public CauseInfo map(CauseInfoMsg protoMsg) {
+        var pojo = new CauseInfo();
+        Util.doIfNotNull(Util.optional(protoMsg, "RemedyInfo", RemedyInfoMsg.class), remedyInfoMsg -> {
+            pojo.setRemedyInfo(map(remedyInfoMsg));
+        });
+        pojo.setDescription(baseMapper.mapLocalizedTexts(protoMsg.getDescriptionList()));
+
+        return pojo;
+    }
+
+    public RemedyInfo map(RemedyInfoMsg protoMsg) {
+        var pojo = new RemedyInfo();
+        pojo.setDescription(baseMapper.mapLocalizedTexts(protoMsg.getDescriptionList()));
+        return pojo;
     }
 
     public AlertSignalDescriptor map(AlertSignalDescriptorMsg protoMsg) {

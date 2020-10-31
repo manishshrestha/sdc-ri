@@ -1,6 +1,7 @@
 package org.somda.sdc.proto.mapping.participant;
 
 import com.google.inject.Inject;
+import com.google.inject.Provider;
 import com.google.inject.name.Named;
 import com.google.protobuf.Duration;
 import org.apache.logging.log4j.LogManager;
@@ -13,6 +14,7 @@ import org.somda.sdc.proto.mapping.Util;
 import org.somda.sdc.proto.model.biceps.*;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.stream.Collectors;
 
 public class ProtoToPojoMetricMapper {
@@ -20,14 +22,26 @@ public class ProtoToPojoMetricMapper {
     private final Logger instanceLogger;
     private final TimestampAdapter timestampAdapter;
     private final ProtoToPojoBaseMapper baseMapper;
+    private final Provider<ProtoToPojoOneOfMapper> oneOfMapperProvider;
+    private ProtoToPojoOneOfMapper oneOfMapper;
 
     @Inject
     ProtoToPojoMetricMapper(@Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier,
                             TimestampAdapter timestampAdapter,
-                            ProtoToPojoBaseMapper baseMapper) {
+                            ProtoToPojoBaseMapper baseMapper,
+                            Provider<ProtoToPojoOneOfMapper> oneOfMapperProvider) {
         this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);
         this.timestampAdapter = timestampAdapter;
         this.baseMapper = baseMapper;
+        this.oneOfMapperProvider = oneOfMapperProvider;
+        this.oneOfMapper = null;
+    }
+
+    public ProtoToPojoOneOfMapper getOneOfMapper() {
+        if (this.oneOfMapper == null) {
+            this.oneOfMapper = oneOfMapperProvider.get();
+        }
+        return oneOfMapper;
     }
 
     public RealTimeSampleArrayMetricDescriptor map(RealTimeSampleArrayMetricDescriptorMsg protoMsg) {
@@ -88,9 +102,18 @@ public class ProtoToPojoMetricMapper {
     public EnumStringMetricDescriptor.AllowedValue map(EnumStringMetricDescriptorMsg.AllowedValueMsg protoMsg) {
         var pojo = new EnumStringMetricDescriptor.AllowedValue();
         pojo.setValue(protoMsg.getValue());
-//        pojo.setCharacteristic();
-//        pojo.setIdentification();
-//        pojo.setType();
+        Util.doIfNotNull(
+                Util.optional(protoMsg, "Characteristic", MeasurementMsg.class),
+                measurement -> pojo.setCharacteristic(baseMapper.map(measurement))
+        );
+        Util.doIfNotNull(
+                Util.optional(protoMsg, "Identification", InstanceIdentifierOneOfMsg.class),
+                identifier -> pojo.setIdentification(getOneOfMapper().map(identifier))
+        );
+        Util.doIfNotNull(
+                Util.optional(protoMsg, "Type", CodedValueMsg.class),
+                codedValue ->  pojo.setType(baseMapper.map(codedValue))
+        );
         return pojo;
     }
 
@@ -173,20 +196,26 @@ public class ProtoToPojoMetricMapper {
                 protoMsg.getAMetricCategory(),
                 category -> pojo.setMetricCategory(Util.mapToPojoEnum(protoMsg, "AMetricCategory", MetricCategory.class))
         );
+        Util.doIfNotNull(Util.optional(protoMsg, "ADerivationMethod", DerivationMethodMsg.class),
+                method -> pojo.setDerivationMethod(Util.mapToPojoEnum(protoMsg, "ADerivationMethod", DerivationMethod.class)));
         Util.doIfNotNull(
                 protoMsg.getAMetricAvailability(),
                 availability -> pojo.setMetricAvailability(Util.mapToPojoEnum(protoMsg, "AMetricAvailability", MetricAvailability.class))
         );
-        Util.doIfNotNull(Util.optional(protoMsg, "ADerivationMethod", DerivationMethodMsg.class),
-                method -> pojo.setDerivationMethod(Util.mapToPojoEnum(protoMsg, "ADerivationMethod", DerivationMethod.class)));
         Util.doIfNotNull(Util.optional(protoMsg, "AMaxMeasurementTime", Duration.class), duration ->
                 pojo.setMaxMeasurementTime(Util.fromProtoDuration(duration)));
         Util.doIfNotNull(Util.optional(protoMsg, "AMaxDelayTime", Duration.class), duration ->
                 pojo.setMaxDelayTime(Util.fromProtoDuration(duration)));
+        Util.doIfNotNull(Util.optional(protoMsg, "ADeterminationPeriod", Duration.class), duration ->
+                pojo.setDeterminationPeriod(Util.fromProtoDuration(duration)));
         Util.doIfNotNull(Util.optional(protoMsg, "ALifeTimePeriod", Duration.class), duration ->
                 pojo.setLifeTimePeriod(Util.fromProtoDuration(duration)));
         Util.doIfNotNull(Util.optional(protoMsg, "AActivationDuration", Duration.class), duration ->
                 pojo.setActivationDuration(Util.fromProtoDuration(duration)));
+
+        pojo.setUnit(baseMapper.map(protoMsg.getUnit()));
+        pojo.setBodySite(protoMsg.getBodySiteList().stream().map(baseMapper::map).collect(Collectors.toList()));
+        pojo.setRelation(protoMsg.getRelationList().stream().map(this::map).collect(Collectors.toList()));
 
     }
 
@@ -203,6 +232,34 @@ public class ProtoToPojoMetricMapper {
                 Util.optional(protoMsg, "ALifeTimePeriod", Duration.class),
                 period -> state.setLifeTimePeriod(Util.fromProtoDuration(period))
         );
+
+        protoMsg.getBodySiteList().forEach(codedValueMsg -> state.getBodySite().add(baseMapper.map(codedValueMsg)));
+        Util.doIfNotNull(
+                Util.optional(protoMsg,"PhysicalConnector", PhysicalConnectorInfoMsg.class),
+                connector -> state.setPhysicalConnector(map(connector))
+        );
+
         baseMapper.map(state, protoMsg.getAbstractState());
     }
+
+    private AbstractMetricDescriptor.Relation map(AbstractMetricDescriptorMsg.RelationMsg protoMsg) {
+        var pojo = new AbstractMetricDescriptor.Relation();
+        pojo.setKind(Util.mapToPojoEnum(protoMsg, "Relation", AbstractMetricDescriptor.Relation.Kind.class));
+        pojo.setEntries(new ArrayList<>(protoMsg.getAEntries().getEntryRefList()));
+
+        Util.doIfNotNull(Util.optional(protoMsg, "Code", CodedValueMsg.class), codedValueMsg ->
+                pojo.setCode(baseMapper.map(codedValueMsg)));
+        Util.doIfNotNull(Util.optional(protoMsg, "Identification", InstanceIdentifierOneOfMsg.class),
+                instanceIdentifierOneOfMsg -> pojo.setIdentification(getOneOfMapper().map(instanceIdentifierOneOfMsg)));
+
+        return pojo;
+    }
+
+    private PhysicalConnectorInfo map(PhysicalConnectorInfoMsg protoMsg) {
+        var pojo = new PhysicalConnectorInfo();
+        pojo.setNumber(Util.optionalIntOfInt(protoMsg, "ANumber"));
+        pojo.setLabel(baseMapper.mapLocalizedTexts(protoMsg.getLabelList()));
+        return pojo;
+    }
+
 }

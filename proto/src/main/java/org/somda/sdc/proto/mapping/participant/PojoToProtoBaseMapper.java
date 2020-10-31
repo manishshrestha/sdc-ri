@@ -65,8 +65,25 @@ public class PojoToProtoBaseMapper {
                 builder.setACodingSystemVersion(Util.toStringValue(codedValue.getCodingSystemVersion())));
         Util.doIfNotNull(codedValue.getSymbolicCodeName(), it ->
                 builder.setASymbolicCodeName(Util.toStringValue(codedValue.getSymbolicCodeName())));
-        builder.addAllConceptDescription(mapLocalizedTexts(codedValue.getConceptDescription()));
+
         builder.addAllCodingSystemName(mapLocalizedTexts(codedValue.getCodingSystemName()));
+        builder.addAllConceptDescription(mapLocalizedTexts(codedValue.getConceptDescription()));
+        builder.addAllTranslation(
+                codedValue.getTranslation().stream().map(this::mapTranslation).collect(Collectors.toList())
+        );
+
+        return builder.build();
+    }
+
+    public CodedValueMsg.TranslationMsg mapTranslation(CodedValue.Translation translation) {
+        var builder = CodedValueMsg.TranslationMsg.newBuilder();
+
+        builder.setACode(translation.getCode());
+        Util.doIfNotNull(translation.getCodingSystem(), it ->
+                builder.setACodingSystem(Util.toStringValue(translation.getCodingSystem())));
+        Util.doIfNotNull(translation.getCodingSystemVersion(), it ->
+                builder.setACodingSystemVersion(Util.toStringValue(translation.getCodingSystemVersion())));
+
         return builder.build();
     }
 
@@ -77,7 +94,7 @@ public class PojoToProtoBaseMapper {
         builder.setAVersion(Util.toUInt64(localizedText.getVersion()));
         builder.setARef(Util.toStringValue(localizedText.getRef()));
         Util.doIfNotNull(localizedText.getTextWidth(), width ->
-                builder.setATextWidth(Util.mapToPojoEnum(width, "LocalizedTextWidth", LocalizedTextWidthMsg.class)));
+                builder.setATextWidth(Util.mapToProtoEnum(width, LocalizedTextWidthMsg.class)));
         return builder.build();
     }
 

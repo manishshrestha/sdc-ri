@@ -3,11 +3,9 @@ package org.somda.sdc.proto.mapping.participant;
 import org.somda.sdc.biceps.common.MdibDescriptionModifications;
 import org.somda.sdc.biceps.consumer.access.RemoteMdibAccess;
 import org.somda.sdc.biceps.model.participant.AlertActivation;
-import org.somda.sdc.biceps.model.participant.AlertConditionDescriptor;
 import org.somda.sdc.biceps.model.participant.AlertConditionKind;
 import org.somda.sdc.biceps.model.participant.AlertConditionMonitoredLimits;
 import org.somda.sdc.biceps.model.participant.AlertConditionPriority;
-import org.somda.sdc.biceps.model.participant.AlertConditionState;
 import org.somda.sdc.biceps.model.participant.LimitAlertConditionDescriptor;
 import org.somda.sdc.biceps.model.participant.LimitAlertConditionState;
 import org.somda.sdc.biceps.model.participant.Range;
@@ -15,9 +13,11 @@ import org.somda.sdc.biceps.model.participant.SafetyClassification;
 import org.somda.sdc.biceps.provider.access.LocalMdibAccess;
 import org.somda.sdc.biceps.testutil.Handles;
 import org.somda.sdc.proto.UnitTestUtil;
+import org.somda.sdc.proto.mapping.TypeCollection;
 
 import java.math.BigInteger;
 import java.time.Duration;
+import java.util.List;
 import java.util.function.BiConsumer;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -42,14 +42,18 @@ public class LimitAlertConditionRoundTrip implements BiConsumer<LocalMdibAccess,
             descriptor.setKind(AlertConditionKind.PHY);
             descriptor.setPriority(AlertConditionPriority.HI);
             descriptor.setDefaultConditionGenerationDelay(Duration.ofMillis(33));
-            descriptor.setCanDeescalate(AlertConditionPriority.LO);
             descriptor.setCanEscalate(AlertConditionPriority.LO);
+            descriptor.setCanDeescalate(AlertConditionPriority.LO);
 
-            // TODO
-//            descriptor.setSource();
-//            descriptor.setCauseInfo();
+            descriptor.setType(TypeCollection.CODED_VALUE);
+            descriptor.setSource(List.of("Ṯ̤͍̥͇͈h̲́e͏͓̼̗̙̼̣͔ ͇", "̜̱̠͓͍ͅN͕͠e̗̱z̘̝̜̺͙p̤̺̹͍̯͚e̠̻̠͜r̨̤͍̺̖͔̖̖d̠̟̭̬̝͟i̦͖̩͓͔̤a̠̗̬͉̙n͚͜ ", "̻̞̰͚ͅh̵͉i̳̞v̢͇ḙ͎͟-҉̭̩̼͔m̤̭̫i͕͇̝̦n̗͙ḍ̟"));
+            descriptor.setCauseInfo(List.of(TypeCollection.CAUSE_INFO));
+
             descriptor.setAutoLimitSupported(false);
             descriptor.setMaxLimits(new Range());
+
+            // TODO: Extension
+//            descriptor.setExtension();
         }
         var state = new LimitAlertConditionState();
         {
@@ -65,7 +69,10 @@ public class LimitAlertConditionRoundTrip implements BiConsumer<LocalMdibAccess,
 
             state.setMonitoredAlertLimits(AlertConditionMonitoredLimits.ALL);
             state.setAutoLimitActivationState(AlertActivation.OFF);
-            state.setLimits(new Range());
+            state.setLimits(TypeCollection.RANGE);
+
+            // TODO: Extension
+//            state.setExtension();
         }
         modifications.insert(descriptor, state, Handles.ALERTSYSTEM_1);
     }

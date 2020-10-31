@@ -80,4 +80,168 @@ class RoundTripTest {
         resultsToCompare.add(new PatientContextStateRoundTrip(modifications));
         resultsToCompare.add(new LimitAlertConditionRoundTrip(modifications));
     }
+
+    /**
+     * List of already (fully, excluding extensions) covered participant model types
+     * with at least round trip using them.
+     *
+     * AbstractAlertDescriptor ({@linkplain LimitAlertConditionRoundTrip})
+     * AbstractAlertState ({@linkplain LimitAlertConditionRoundTrip})
+     * AbstractDescriptor ({@linkplain LimitAlertConditionRoundTrip})
+     * AbstractState ({@linkplain LimitAlertConditionRoundTrip})
+     * AlertConditionDescriptor ({@linkplain LimitAlertConditionRoundTrip})
+     * AlertConditionState ({@linkplain LimitAlertConditionRoundTrip})
+     * EnumStringMetricDescriptor ({@linkplain EnumStringMetricRoundTrip})
+     * EnumStringMetricState ({@linkplain EnumStringMetricRoundTrip})
+     * LimitAlertConditionDescriptor ({@linkplain LimitAlertConditionRoundTrip})
+     * LimitAlertConditionState ({@linkplain LimitAlertConditionRoundTrip})
+     * Range ({@linkplain LimitAlertConditionRoundTrip})
+     *
+     */
+    private static void covered() {
+        // holder for javadoc
+    }
+
+    /**
+     * List of not yet covered participant model types.
+     *
+     * AbstractComplexDeviceComponentDescriptor
+     * AbstractComplexDeviceComponentState
+     * AbstractContextDescriptor
+     * AbstractContextState
+     * AbstractDeviceComponentDescriptor
+     * AbstractDeviceComponentState
+     * AbstractMetricDescriptor
+     * AbstractMetricState
+     * AbstractMetricValue
+     * AbstractMultiState
+     * AbstractOperationDescriptor
+     * AbstractOperationState
+     * AbstractSetStateOperationDescriptor
+     * ActivateOperationDescriptor
+     * ActivateOperationState
+     * AlertSignalDescriptor
+     * AlertSignalState
+     * AlertSystemDescriptor
+     * AlertSystemState
+     * ApprovedJurisdictions
+     * BaseDemographics
+     * BatteryDescriptor
+     * BatteryState
+     * CalibrationInfo
+     * CauseInfo
+     * ChannelDescriptor
+     * ChannelState
+     * ClinicalInfo
+     * ClockDescriptor
+     * ClockState
+     * CodedValue
+     * ContainmentTree
+     * ContainmentTreeEntry
+     * DistributionSampleArrayMetricDescriptor
+     * DistributionSampleArrayMetricState
+     * EnsembleContextDescriptor
+     * EnsembleContextState
+     * ImagingProcedure
+     * InstanceIdentifier
+     * LocalizedText
+     * LocationContextDescriptor
+     * LocationContextState
+     * LocationDetail
+     * LocationReference
+     * MdDescription
+     * Mdib
+     * MdsDescriptor
+     * MdsState
+     * MdState
+     * MeansContextDescriptor
+     * MeansContextState
+     * Measurement
+     * NeonatalPatientDemographicsCoreData
+     * NumericMetricDescriptor
+     * NumericMetricState
+     * NumericMetricValue
+     * OperatingJurisdiction
+     * OperatorContextDescriptor
+     * OperatorContextState
+     * OrderDetail
+     * PatientContextDescriptor
+     * PatientContextState
+     * PatientDemographicsCoreData
+     * PersonParticipation
+     * PersonReference
+     * PhysicalConnectorInfo
+     * RealTimeSampleArrayMetricDescriptor
+     * RealTimeSampleArrayMetricState
+     * RemedyInfo
+     * SampleArrayValue
+     * ScoDescriptor
+     * ScoState
+     * SetAlertStateOperationDescriptor
+     * SetAlertStateOperationState
+     * SetComponentStateOperationDescriptor
+     * SetComponentStateOperationState
+     * SetContextStateOperationDescriptor
+     * SetContextStateOperationState
+     * SetMetricStateOperationDescriptor
+     * SetMetricStateOperationState
+     * SetStringOperationDescriptor
+     * SetStringOperationState
+     * SetValueOperationDescriptor
+     * SetValueOperationState
+     * StringMetricDescriptor
+     * StringMetricState
+     * StringMetricValue
+     * SystemContextDescriptor
+     * SystemContextState
+     * SystemSignalActivation
+     * VmdDescriptor
+     * VmdState
+     * WorkflowContextDescriptor
+     * WorkflowContextState
+     *
+     * AlertActivation
+     * AlertConditionKind
+     * AlertConditionMonitoredLimits
+     * AlertConditionPriority
+     * AlertConditionReference
+     * AlertSignalManifestation
+     * AlertSignalPresence
+     * AlertSignalPrimaryLocation
+     * CalibrationState
+     * CalibrationType
+     * CodeIdentifier
+     * ComponentActivation
+     * ContextAssociation
+     * DerivationMethod
+     * EntryRef
+     * GenerationMode
+     * Handle
+     * HandleRef
+     * LocalizedTextContent
+     * LocalizedTextRef
+     * LocalizedTextWidth
+     * MdsOperatingMode
+     * MeasurementValidity
+     * MetricAvailability
+     * MetricCategory
+     * OperatingMode
+     * OperationRef
+     * PatientType
+     * QualityIndicator
+     * RealTimeValueType
+     * ReferencedVersion
+     * SafetyClassification
+     * Sex
+     * SymbolicCodeName
+     * Timestamp
+     * TimeZone
+     * VersionCounter
+     *
+     * ContainmentTreeInfo
+     * MdibVersionGroup
+     */
+    static void uncovered() {
+        // holder for javadoc
+    }
 }
