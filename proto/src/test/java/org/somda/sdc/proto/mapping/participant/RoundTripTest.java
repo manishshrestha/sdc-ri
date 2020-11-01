@@ -113,6 +113,9 @@ class RoundTripTest {
      * PatientContextDescriptor ({@linkplain PatientContextRoundTrip})
      * PatientContextState ({@linkplain PatientContextRoundTrip})
      * Range ({@linkplain LimitAlertConditionRoundTrip})
+     * RealTimeSampleArrayMetricDescriptor ({@linkplain RealTimeDistributionSampleArrayRoundTrip})
+     * RealTimeSampleArrayMetricState ({@linkplain RealTimeDistributionSampleArrayRoundTrip})
+     * SampleArrayValue ({@linkplain RealTimeDistributionSampleArrayRoundTrip})
      *
      */
     private static void covered() {
@@ -171,10 +174,7 @@ class RoundTripTest {
      * PersonParticipation
      * PersonReference
      * PhysicalConnectorInfo
-     * RealTimeSampleArrayMetricDescriptor
-     * RealTimeSampleArrayMetricState
      * RemedyInfo
-     * SampleArrayValue
      * ScoDescriptor
      * ScoState
      * SetAlertStateOperationDescriptor

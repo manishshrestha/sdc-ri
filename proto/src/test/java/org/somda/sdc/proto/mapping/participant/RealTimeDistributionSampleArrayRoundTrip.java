@@ -28,9 +28,12 @@ public class RealTimeDistributionSampleArrayRoundTrip implements BiConsumer<Loca
 
     private static final String HANDLE = Handles.METRIC_3;
     private static final String HANDLE_MIN = HANDLE + "Min";
+    private static final String HANDLE_MED = HANDLE + "Med";
+
 
     RealTimeDistributionSampleArrayRoundTrip(MdibDescriptionModifications modifications) {
         bigSet(modifications);
+        mediumSet(modifications);
         minimalSet(modifications);
     }
 
@@ -62,8 +65,8 @@ public class RealTimeDistributionSampleArrayRoundTrip implements BiConsumer<Loca
         var state = new RealTimeSampleArrayMetricState();
         {
             state.setStateVersion(BigInteger.ZERO);
-            state.setDescriptorHandle(HANDLE);
-            state.setDescriptorVersion(BigInteger.TEN);
+            state.setDescriptorHandle(descriptor.getHandle());
+            state.setDescriptorVersion(descriptor.getDescriptorVersion());
             state.setActivationState(ComponentActivation.FAIL);
             state.setActiveDeterminationPeriod(Duration.ofDays(4));
             state.setLifeTimePeriod(Duration.ofMillis(1));
@@ -91,6 +94,30 @@ public class RealTimeDistributionSampleArrayRoundTrip implements BiConsumer<Loca
         modifications.insert(descriptor, state, Handles.CHANNEL_0);
     }
 
+    // only optional sample array fields
+    void mediumSet(MdibDescriptionModifications modifications) {
+        var descriptor = new RealTimeSampleArrayMetricDescriptor();
+        {
+            descriptor.setHandle(HANDLE_MED);
+            descriptor.setMetricCategory(MetricCategory.MSRMT);
+            descriptor.setMetricAvailability(MetricAvailability.CONT);
+
+            descriptor.setUnit(TypeCollection.CODED_VALUE);
+
+            descriptor.setResolution(BigDecimal.valueOf(123123123));
+            descriptor.setSamplePeriod(Duration.ofDays(365));
+        }
+        var state = new RealTimeSampleArrayMetricState();
+        {
+            state.setDescriptorHandle(HANDLE);
+
+            var value = new SampleArrayValue();
+            value.setMetricQuality(TypeCollection.METRIC_QUALITY);
+        }
+        modifications.insert(descriptor, state, Handles.CHANNEL_0);
+    }
+
+
     void minimalSet(MdibDescriptionModifications modifications) {
         var descriptor = new RealTimeSampleArrayMetricDescriptor();
         {
@@ -117,6 +144,15 @@ public class RealTimeDistributionSampleArrayRoundTrip implements BiConsumer<Loca
             var expectedState = localMdibAccess.getState(HANDLE, RealTimeSampleArrayMetricState.class).get();
             var actualDescriptor = remoteMdibAccess.getDescriptor(HANDLE, RealTimeSampleArrayMetricDescriptor.class).get();
             var actualState = remoteMdibAccess.getState(HANDLE, RealTimeSampleArrayMetricState.class).get();
+
+            assertEquals(expectedDescriptor, actualDescriptor);
+            assertEquals(expectedState, actualState);
+        }
+        {
+            var expectedDescriptor = localMdibAccess.getDescriptor(HANDLE_MED, RealTimeSampleArrayMetricDescriptor.class).get();
+            var expectedState = localMdibAccess.getState(HANDLE_MED, RealTimeSampleArrayMetricState.class).get();
+            var actualDescriptor = remoteMdibAccess.getDescriptor(HANDLE_MED, RealTimeSampleArrayMetricDescriptor.class).get();
+            var actualState = remoteMdibAccess.getState(HANDLE_MED, RealTimeSampleArrayMetricState.class).get();
 
             assertEquals(expectedDescriptor, actualDescriptor);
             assertEquals(expectedState, actualState);
