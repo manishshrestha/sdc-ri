@@ -19,6 +19,7 @@ import org.somda.sdc.dpws.soap.exception.TransportException;
 import org.somda.sdc.dpws.soap.interception.InterceptorException;
 import org.somda.sdc.dpws.soap.interception.MessageInterceptor;
 import org.somda.sdc.dpws.soap.interception.NotificationObject;
+import org.somda.sdc.dpws.soap.wsaddressing.WsAddressingConstants;
 import org.somda.sdc.dpws.soap.wsaddressing.WsAddressingUtil;
 import org.somda.sdc.dpws.soap.wsaddressing.model.AttributedURIType;
 import org.somda.sdc.dpws.soap.wsaddressing.model.EndpointReferenceType;
@@ -36,8 +37,10 @@ import org.somda.sdc.dpws.soap.wsdiscovery.model.ResolveMatchesType;
 import org.somda.sdc.dpws.soap.wsdiscovery.model.ResolveType;
 import org.somda.sdc.dpws.soap.wsdiscovery.model.ScopesType;
 
+
 import javax.xml.namespace.QName;
 import java.time.Duration;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -246,7 +249,8 @@ public class WsDiscoveryClientInterceptor implements WsDiscoveryClient {
 
     private Optional<SoapMessage> popMatches(EvictingQueue<SoapMessage> messageQueue, String messageId) {
         Optional<SoapMessage> item = messageQueue.stream().filter(message ->
-                messageId.equals(message.getWsAddressingHeader().getRelatesTo().orElse(new AttributedURIType())
+                messageId.equals(message.getWsAddressingHeader().getRelatesTo().orElse(wsaUtil.createRelatesToType(
+                        WsAddressingConstants.UNSPECIFIED_MESSAGE))
                         .getValue())).findFirst();
         item.ifPresent(messageQueue::remove);
         return item;

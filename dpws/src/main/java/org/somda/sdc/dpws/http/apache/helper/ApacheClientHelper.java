@@ -8,6 +8,9 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Utilities for the apache http client.
+ */
 public class ApacheClientHelper {
 
     /**

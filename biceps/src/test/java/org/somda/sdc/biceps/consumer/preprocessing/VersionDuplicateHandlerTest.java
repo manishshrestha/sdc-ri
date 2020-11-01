@@ -54,6 +54,10 @@ class VersionDuplicateHandlerTest {
                 MdsState.class, STATE_VERSION_COUNT);
         vmdStates = initVersions(version -> MockModelFactory.createState(vmdHandle, version, VmdState.class),
                 VmdState.class, STATE_VERSION_COUNT);
+
+        // explicitly set one state version to null, to trigger implied value handling
+        mdsStates[0].setStateVersion(null);
+
         patientContextStates = initVersions(version -> MockModelFactory.createContextState(patientContextHandle,
                 "parent", version, PatientContextState.class), PatientContextState.class, STATE_VERSION_COUNT);
         locationContextStates = initVersions(version -> MockModelFactory.createContextState(locationContextHandle,

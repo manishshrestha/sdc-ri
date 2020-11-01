@@ -121,4 +121,16 @@ public class DpwsConfig {
      * </ul>
      */
     public static final String HTTP_SUPPORT = "Dpws.EnableHttp";
+
+    /**
+     * Enforces chunked requests and responses.
+     * <p>
+     * Note, that chunked responses and requests can still occur when this is turned off.
+     *
+     * <ul>
+     * <li>Data type: {@linkplain Boolean}
+     * <li>Use: optional
+     * </ul>
+     */
+    public static final String ENFORCE_HTTP_CHUNKED_TRANSFER = "Dpws.EnforceHttpChunked";
 }

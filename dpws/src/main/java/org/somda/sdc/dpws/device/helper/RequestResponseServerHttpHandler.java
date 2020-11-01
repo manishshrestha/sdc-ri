@@ -39,8 +39,9 @@ import java.io.Reader;
  * {@link HttpHandler#handle(InputStream, OutputStream, CommunicationContext)}.
  */
 public class RequestResponseServerHttpHandler implements HttpHandler, InterceptorHandler {
-    private static final Logger LOG = LogManager.getLogger(RequestResponseServerHttpHandler.class);
     static final String NO_CONTENT_TYPE_MESSAGE = "Could not parse Content-Type header element";
+
+    private static final Logger LOG = LogManager.getLogger(RequestResponseServerHttpHandler.class);
 
     private final RequestResponseServer reqResServer;
     private final MarshallingService marshallingService;

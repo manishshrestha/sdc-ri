@@ -295,6 +295,7 @@ public class UdpBindingServiceImpl extends AbstractIdleService implements UdpBin
             communicationLog.logMessage(
                     direction,
                     CommunicationLog.TransportType.UDP,
+                    CommunicationLog.MessageType.UNKNOWN,
                     requestCommContext,
                     messageData
             );

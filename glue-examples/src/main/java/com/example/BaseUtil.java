@@ -8,6 +8,8 @@ import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.Filter;
 import org.apache.logging.log4j.core.appender.ConsoleAppender;
 import org.apache.logging.log4j.core.config.builder.api.ConfigurationBuilder;
@@ -23,6 +25,7 @@ import java.util.List;
  * Base utility which provides parsing of command line flags and certain environment variables.
  */
 public class BaseUtil {
+    private static final Logger LOG = LogManager.getLogger();
     private static final String OPT_EPR = "epr";
     private static final String OPT_ADDRESS = "address";
     private static final String OPT_IFACE = "iface";
@@ -31,6 +34,10 @@ public class BaseUtil {
     private static final String OPT_TRUSTSTORE_PATH = "truststore";
     private static final String OPT_KEYSTORE_PASSWORD = "keystore_password";
     private static final String OPT_TRUSTSTORE_PASSWORD = "truststore_password";
+    private static final String OPT_USERKEY_PATH = "userkey";
+    private static final String OPT_USERCERT_PATH = "usercert";
+    private static final String OPT_CACERT_PATH = "cacert";
+    private static final String OPT_USERKEY_PASSWORD = "userkey_password";
 
     private static final List<String> CHATTY_LOGGERS = List.of(
             "org.apache.http.wire",
@@ -118,6 +125,27 @@ public class BaseUtil {
             options.addOption(keystorePath);
         }
 
+        {
+            Option userKeyPath = new Option(null, OPT_USERKEY_PATH, true, "userkey path");
+            userKeyPath.setRequired(false);
+            options.addOption(userKeyPath);
+        }
+        {
+            Option userCertPath = new Option(null, OPT_USERCERT_PATH, true, "usercert path");
+            userCertPath.setRequired(false);
+            options.addOption(userCertPath);
+        }
+        {
+            Option caCertPath = new Option(null, OPT_CACERT_PATH, true, "cacert path");
+            caCertPath.setRequired(false);
+            options.addOption(caCertPath);
+        }
+        {
+            Option userKeyPassword = new Option(null, OPT_USERKEY_PASSWORD, true, "userkey password");
+            userKeyPassword.setRequired(false);
+            options.addOption(userKeyPassword);
+        }
+
         return options;
     }
 
@@ -145,13 +173,29 @@ public class BaseUtil {
     }
 
     public CryptoSettings createCustomCryptoSettings() {
-        var keyPath = this.parsedArgs.getOptionValue(OPT_KEYSTORE_PATH);
-        var trustPath = this.parsedArgs.getOptionValue(OPT_KEYSTORE_PATH);
-        var keyPass = this.parsedArgs.getOptionValue(OPT_KEYSTORE_PASSWORD);
-        var trustPass = this.parsedArgs.getOptionValue(OPT_TRUSTSTORE_PASSWORD);
+        // keystore & truststore method
+        {
+            var keyPath = this.parsedArgs.getOptionValue(OPT_KEYSTORE_PATH);
+            var trustPath = this.parsedArgs.getOptionValue(OPT_TRUSTSTORE_PATH);
+            var keyPass = this.parsedArgs.getOptionValue(OPT_KEYSTORE_PASSWORD);
+            var trustPass = this.parsedArgs.getOptionValue(OPT_TRUSTSTORE_PASSWORD);
 
-        if (keyPath != null && trustPath != null && keyPass != null && trustPass != null) {
-            return new CustomCryptoSettings(keyPath, trustPath, keyPass, trustPass);
+            if (keyPath != null && trustPath != null && keyPass != null && trustPass != null) {
+                LOG.info("Using keystore {} truststore {} ", keyPath, trustPath);
+                return CustomCryptoSettings.fromKeyStore(keyPath, trustPath, keyPass, trustPass);
+            }
+        }
+        // certificates method
+        {
+            var userKey = this.parsedArgs.getOptionValue(OPT_USERKEY_PATH);
+            var userCert = this.parsedArgs.getOptionValue(OPT_USERCERT_PATH);
+            var caCert = this.parsedArgs.getOptionValue(OPT_CACERT_PATH);
+            var userKeyPassword = this.parsedArgs.getOptionValue(OPT_USERKEY_PASSWORD);
+
+            if (userKey != null && userCert != null && caCert != null && userKeyPassword != null) {
+                LOG.info("Using certificate files. userKey {} userCert {} caCert {}", userKey, userCert, caCert);
+                return CustomCryptoSettings.fromKeyFile(userKey, userCert, caCert, userKeyPassword);
+            }
         }
         return new CustomCryptoSettings();
     }

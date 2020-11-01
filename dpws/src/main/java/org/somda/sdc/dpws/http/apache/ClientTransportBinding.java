@@ -15,6 +15,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.somda.sdc.common.CommonConfig;
 import org.somda.sdc.common.logging.InstanceLogger;
+import org.somda.sdc.dpws.DpwsConfig;
 import org.somda.sdc.dpws.TransportBinding;
 import org.somda.sdc.dpws.TransportBindingException;
 import org.somda.sdc.dpws.http.ContentType;
@@ -38,6 +39,9 @@ import java.io.Reader;
 import java.net.SocketException;
 import java.nio.charset.StandardCharsets;
 
+/**
+ * Binding providing request-response and notification capabilities using an {@linkplain HttpClient}.
+ */
 public class ClientTransportBinding implements TransportBinding {
 
     public static final String USER_AGENT_KEY = "X-User-Agent";
@@ -50,19 +54,22 @@ public class ClientTransportBinding implements TransportBinding {
     private final Logger instanceLogger;
     private HttpClient client;
     private final String clientUri;
+    private final boolean chunkedTransfer;
 
     @Inject
     ClientTransportBinding(@Assisted HttpClient client,
                            @Assisted String clientUri,
                            @Assisted SoapMarshalling marshalling,
                            @Assisted SoapUtil soapUtil,
-                           @Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier) {
+                           @Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier,
+                           @Named(DpwsConfig.ENFORCE_HTTP_CHUNKED_TRANSFER) boolean chunkedTransfer) {
         this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);
         instanceLogger.debug("Creating ClientTransportBinding for {}", clientUri);
         this.client = client;
         this.clientUri = clientUri;
         this.marshalling = marshalling;
         this.soapUtil = soapUtil;
+        this.chunkedTransfer = chunkedTransfer;
     }
 
     @Override
@@ -99,6 +106,11 @@ public class ClientTransportBinding implements TransportBinding {
 
         // attach payload
         var requestEntity = new ByteArrayEntity(byteArrayOutputStream.toByteArray());
+
+        if (this.chunkedTransfer) {
+            requestEntity.setChunked(true);
+        }
+
         post.setEntity(requestEntity);
 
         instanceLogger.debug("Sending POST request to {}", this.clientUri);
@@ -111,9 +123,9 @@ public class ClientTransportBinding implements TransportBinding {
             instanceLogger.error("Unexpected SocketException on request to {}", this.clientUri, e);
             throw new TransportBindingException(e);
         } catch (IOException e) {
-            instanceLogger.error("Unexpected IO exception on request to {}", this.clientUri);
+            instanceLogger.error("Unexpected IO exception on request to {}. {}", this.clientUri, e.getMessage());
             instanceLogger.trace("Unexpected IO exception on request to {}", this.clientUri, e);
-            throw new TransportBindingException("No response received");
+            throw new TransportBindingException("No response received", e);
         }
 
         HttpEntity entity = response.getEntity();
@@ -146,7 +158,8 @@ public class ClientTransportBinding implements TransportBinding {
 
                 SoapMessage msg = soapUtil.createMessage(envelope);
                 if (msg.isFault()) {
-                    throw new SoapFaultException(msg, new HttpException(response.getStatusLine().getStatusCode()));
+                    throw new SoapFaultException(msg, new HttpException(response.getStatusLine().getStatusCode()),
+                            request.getWsAddressingHeader().getMessageId().orElse(null));
                 }
 
                 return msg;

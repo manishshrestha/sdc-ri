@@ -16,18 +16,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `DeviceConfig.WSDL_PROVISIONING_MODE` to allow device-side configuration of different WSDL provisioning modes in accordance with WS-MetadataExchange. (#161)
 - `org.somda.sdc.dpws.http.HttpClient` interface for generic http requests. (#165)
 - `org.somda.sdc.dpws.wsdl.WsdlRetriever` to retrieve WSDLs from services using multiple methods. (#165)
+- `org.somda.sdc.dpws.http.apache.ClientTransportBinding` and `org.somda.sdc.dpws.http.jetty.JettyHttpServerHandler` added chunked flag to enforce chunked outgoing requests and chunked outgoing responses. Only one big chunk is used instead of splitting up, since it is currently only needed for testing purposes. (#173)
+- `org.somda.sdc.biceps.common.storage.MdibStorageImpl` can be configured not to remove not associated context states from storage. (#183)
+- `org.somda.sdc.biceps.common.storage.MdibStorageImpl` can be configured not to create descriptors for state updates missing descriptors. (#183)
+- `org.somda.sdc.glue.consumer.report.ReportProcessor` can be configured to apply reports which have the same MDIB version as the current MDIB. (#183)
+- `org.somda.sdc.biceps.common.access.MdibAccess` method added to retrieve a list of states of a specific type. (#195)
+- `org.somda.sdc.biceps.common.storage.MdibStorage` method added to retrieve a list of states of a specific type. (#195)
+- `org.somda.sdc.biceps.consumer.preprocessing.DuplicateContextStateHandleHandler` to detect duplicate context state handles in MdibStateModifications. (#196)
+- `org.somda.sdc.biceps.consumer.access.RemoteMdibAccessImpl` and `org.somda.sdc.biceps.provider.access.LocalMdibAccessImpl` can be configured to specify which DescriptionPreprocessingSegments and StatePreprocessingSegments should be used for consumer or provider. (#196)
 
 ### Changed
 
 - Use of `io.github.threetenjaxb.core.LocalDateTimeXmlAdapter` to `org.somda.sdc.common.util.AnyDateTimeAdapter` for any XML Schema DateTime in module `biceps-model`. (#151)
-- Use log4j2-api instead of slf4j for logging
+- Use log4j2-api instead of slf4j for logging. (#156)
 - Communication log file names to include SOAP action information and XML to be pretty-printed. (#153)
 - `GetContainmentTree` handling changed in order to allow traversal of the MDIB. (#150)
 - Change names in `org.somda.sdc.dpws.soap.wseventing.WsEventingConstants` from `WSE_ACTION[...]` to `WSA_ACTION[...]`. (#157)
 - `org.somda.sdc.common.util.ExecutorWrapperService` are bound as guice `Provider`. (#156)
 - `org.somda.sdc.glue.consumer.helper.LogPrepender` replaced by `HostingServiceLogger`. (#156)
 - Evaluate HTTP Content-Type header element to determine the appropriate charset for received messages. (#170)
-
+- `org.somda.sdc.common.guice.DefaultHelperModule` renamed to `DefaultCommonModule`. (#160)
+- `org.somda.sdc.dpws.soap.exception.SoapFaultException` is now compliant with DPWS R0040. (#181)
+- `org.somda.sdc.dpws.soap.wsaddressing.WsAddressingHeader` changed relatesTo element to RelatesToType instead of an AttributedURIType. (#184)
+- `org.somda.sdc.dpws.CommunicationLog` MessageType enum added, to mark messages as i.e. request, response. (#188)
+- `org.somda.sdc.dpws.soap.HttpApplicationInfo` additional transactionId added, to associate request response messages. (#188)
+- `org.somda.sdc.dpws.soap.HttpApplicationInfo` additional requestUri added, to determine the used POST address. (#190)
+ 
 ### Removed
 
 - `org.somda.sdc.dpws.CommunicationLogSink.getTargetStream()`; use `org.somda.sdc.dpws.CommunicationLogSink.createTargetStream()` instead. (#153)
@@ -39,8 +53,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `IEEE11073-20701-LowPriority-Services.wsdl` specified the wrong input and output messages for `GetStatesFromArchive` operation. (#167)
 - Namespace prefix mappings which were missing for SDC Glue-related XML fragments. (#169)
 - `org.somda.sdc.dpws.http.jetty.CommunicationLogHandlerWrapper` determined TLS usage by whether CryptoSettings were present, not based on request. (#171)
+- `org.somda.sdc.dpws.http.jetty.JettyHttpServerRegistry` is now compliant with RFC 2616 instead of RFC 7230. (#172)
+- `org.somda.sdc.biceps.consumer.preprocessing.VersionDuplicateHandler` can now handle implied state versions. (#182)
+- Fix swallowed state updates during description modification. (#179) 
+- Prevent suspension of notification source and duplication of notification messages. (#179) 
+- `org.somda.sdc.biceps.common.storage.MdibStorageImpl` correctly updates the list of children when removing an entity with a parent. (#186)
+- `org.somda.sdc.glue.consumer.SdcRemoteDevicesConnectorImpl` no longer calls GetMdib before subscribing to reports. (#189)
+- `org.somda.sdc.glue.consumer.SdcRemoteDeviceImpl` no longer ignores registering and unregistering watchdog observers. (#192)
+- `org.somda.sdc.dpws.soap.wseventing.EventSinkImpl` getStatus, renew and unsubscribe messages are send to the epr of the SubscriptionManager. (#190)
+- `org.somda.sdc.glue.consumer.report.helper.ReportWriter` no longer ignores states without descriptors in DescriptionModificationReports. (#193)
+- `org.somda.sdc.glue.consumer.report.ReportProcessor` correctly handles implied value when comparing instanceIds. (#194)
 
-## 1.1.0 - 2020-04-18
+## [1.1.0] - 2020-04-18
 
 ### Added
 

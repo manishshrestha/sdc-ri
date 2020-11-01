@@ -16,7 +16,7 @@ public class ClientPeer extends IntegrationTestPeer {
         this(configModule, null);
     }
 
-    public ClientPeer(DefaultDpwsConfigModule configModule, @Nullable AbstractModule overridingModule) {
+    public ClientPeer(DefaultDpwsConfigModule configModule, @Nullable AbstractModule ... overridingModule) {
         setupInjector(configModule, overridingModule);
         this.dpwsFramework = getInjector().getInstance(DpwsFramework.class);
         this.client = getInjector().getInstance(Client.class);

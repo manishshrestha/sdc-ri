@@ -16,6 +16,7 @@ import org.somda.sdc.biceps.model.participant.VmdDescriptor;
  * Removes children from descriptors in order to avoid redundant information in the MDIB storage.
  */
 public class DescriptorChildRemover implements DescriptionPreprocessingSegment {
+
     @Override
     public void process(MdibDescriptionModifications allModifications,
                         MdibDescriptionModification currentModification,

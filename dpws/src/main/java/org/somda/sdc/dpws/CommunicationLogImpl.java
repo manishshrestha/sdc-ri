@@ -34,35 +34,43 @@ public class CommunicationLogImpl implements CommunicationLog {
     @Override
     public TeeOutputStream logMessage(Direction direction,
                                       TransportType transportType,
+                                      MessageType messageType,
                                       CommunicationContext communicationContext,
                                       OutputStream message) {
-        OutputStream logFile = this.logSink.createTargetStream(transportType, direction, communicationContext);
+        OutputStream logFile = this.logSink.createTargetStream(
+                transportType,
+                direction,
+                messageType,
+                communicationContext);
         return new TeeOutputStream(message, logFile);
     }
 
     @Override
     public OutputStream logMessage(Direction direction,
                                    TransportType transportType,
+                                   MessageType messageType,
                                    CommunicationContext communicationContext) {
-        return this.logSink.createTargetStream(transportType, direction, communicationContext);
+        return this.logSink.createTargetStream(transportType, direction, messageType, communicationContext);
     }
 
     @Override
     public InputStream logMessage(Direction direction,
                                   TransportType transportType,
+                                  MessageType messageType,
                                   CommunicationContext communicationContext,
                                   InputStream message) {
-        return writeLogFile(transportType, direction, communicationContext, message);
+        return writeLogFile(transportType, direction, messageType, communicationContext, message);
     }
 
     private InputStream writeLogFile(TransportType transportType,
                                      Direction direction,
+                                     MessageType messageType,
                                      CommunicationContext communicationContext,
                                      InputStream inputStream) {
         try {
             final byte[] bytes = ByteStreams.toByteArray(inputStream);
 
-            try (OutputStream targetStream = this.logSink.createTargetStream(transportType, direction,
+            try (OutputStream targetStream = this.logSink.createTargetStream(transportType, direction, messageType,
                     communicationContext)) {
                 new ByteArrayInputStream(bytes).transferTo(targetStream);
             }

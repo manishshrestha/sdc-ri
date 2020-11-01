@@ -9,7 +9,7 @@ import org.somda.sdc.common.util.ObjectUtilImpl;
 /**
  * Guice module to bind util functionality.
  */
-public class DefaultHelperModule extends AbstractModule {
+public class DefaultCommonModule extends AbstractModule {
     @Override
     protected void configure() {
         bind(JaxbUtil.class).to(JaxbUtilImpl.class).asEagerSingleton();

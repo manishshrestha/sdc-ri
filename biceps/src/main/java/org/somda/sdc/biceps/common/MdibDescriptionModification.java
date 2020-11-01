@@ -4,7 +4,7 @@ import org.somda.sdc.biceps.model.participant.AbstractDescriptor;
 import org.somda.sdc.biceps.model.participant.AbstractState;
 
 import javax.annotation.Nullable;
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -24,7 +24,7 @@ public class MdibDescriptionModification {
                                        @Nullable String parentHandle) {
         this.modificationType = modificationType;
         this.descriptor = descriptor;
-        this.states = states == null ? Collections.emptyList() : states;
+        this.states = states == null ? new ArrayList<>() : new ArrayList<>(states);
         this.parentHandle = parentHandle;
     }
 

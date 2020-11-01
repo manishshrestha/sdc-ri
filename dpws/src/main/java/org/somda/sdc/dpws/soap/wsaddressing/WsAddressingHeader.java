@@ -1,6 +1,7 @@
 package org.somda.sdc.dpws.soap.wsaddressing;
 
 import org.somda.sdc.dpws.soap.wsaddressing.model.AttributedURIType;
+import org.somda.sdc.dpws.soap.wsaddressing.model.RelatesToType;
 import org.w3c.dom.Element;
 
 import javax.annotation.Nullable;
@@ -16,13 +17,17 @@ public class WsAddressingHeader {
     private AttributedURIType action;
     private AttributedURIType messageId;
     private AttributedURIType to;
-    private AttributedURIType relatesTo;
+    private RelatesToType relatesTo;
     private Collection<Element> referenceParameters;
 
     public Optional<AttributedURIType> getAction() {
         return Optional.ofNullable(action);
     }
 
+    /**
+     * Sets the wsa:Action element.
+     * @param action to set
+     */
     public void setAction(@Nullable AttributedURIType action) {
         this.action = action;
     }
@@ -31,6 +36,10 @@ public class WsAddressingHeader {
         return Optional.ofNullable(messageId);
     }
 
+    /**
+     * Sets the wsa:MessageID element.
+     * @param messageId to set
+     */
     public void setMessageId(@Nullable AttributedURIType messageId) {
         this.messageId = messageId;
     }
@@ -39,15 +48,23 @@ public class WsAddressingHeader {
         return Optional.ofNullable(to);
     }
 
+    /**
+     * Sets the wsa:To element.
+     * @param to to set
+     */
     public void setTo(@Nullable AttributedURIType to) {
         this.to = to;
     }
 
-    public Optional<AttributedURIType> getRelatesTo() {
+    public Optional<RelatesToType> getRelatesTo() {
         return Optional.ofNullable(relatesTo);
     }
 
-    public void setRelatesTo(@Nullable AttributedURIType relatesTo) {
+    /**
+     * Sets the wsa:RelatesTo element.
+     * @param relatesTo to set
+     */
+    public void setRelatesTo(@Nullable RelatesToType relatesTo) {
         this.relatesTo = relatesTo;
     }
 

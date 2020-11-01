@@ -3,8 +3,10 @@ package org.somda.sdc.dpws.soap;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ListMultimap;
 
+import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * Utility class to provide application layer information for http.
@@ -12,6 +14,8 @@ import java.util.Map;
 public class HttpApplicationInfo extends ApplicationInfo {
 
     private final ListMultimap<String, String> headers;
+    private final String transactionId;
+    private final String requestUri;
 
     /**
      * Creates an instance using http headers.
@@ -19,12 +23,16 @@ public class HttpApplicationInfo extends ApplicationInfo {
      * <em>All keys will be converted to lower case.</em>
      *
      * @param httpHeaders map of available headers.
+     * @param transactionId id of the request response transaction.
+     * @param requestUri the uri of the http request message, null for http response messages.
      */
     @Deprecated(since = "1.1.0", forRemoval = true)
-    public HttpApplicationInfo(Map<String, String> httpHeaders) {
+    public HttpApplicationInfo(Map<String, String> httpHeaders, String transactionId, @Nullable String requestUri) {
         this.headers = ArrayListMultimap.create();
         // convert all entries to lower case
         httpHeaders.forEach((key, value) -> headers.put(key.toLowerCase(), value));
+        this.transactionId = transactionId;
+        this.requestUri = requestUri;
     }
 
     /**
@@ -33,11 +41,18 @@ public class HttpApplicationInfo extends ApplicationInfo {
      * <em>All keys will be converted to lower case.</em>
      *
      * @param httpHeaders multimap of available headers.
+     * @param transactionId id of the request response transaction.
+     * @param requestUri the uri of the http request message, null for http response messages.
      */
-    public HttpApplicationInfo(ListMultimap<String, String> httpHeaders) {
+    public HttpApplicationInfo(
+            ListMultimap<String, String> httpHeaders,
+            String transactionId, @Nullable String requestUri
+    ) {
         this.headers = ArrayListMultimap.create();
         // convert all entries to lower case
         httpHeaders.forEach((key, value) -> headers.put(key.toLowerCase(), value));
+        this.transactionId = transactionId;
+        this.requestUri = requestUri;
     }
 
     /**
@@ -70,5 +85,18 @@ public class HttpApplicationInfo extends ApplicationInfo {
      */
     public ListMultimap<String, String> getHeaders() {
         return ArrayListMultimap.create(headers);
+    }
+
+    public String getTransactionId() {
+        return transactionId;
+    }
+
+    /**
+     * Retrieve the Optional of http request uri, empty in case of a http response message.
+     *
+     * @return {@linkplain Optional} of the request uri
+     */
+    public Optional<String> getRequestUri() {
+        return Optional.ofNullable(requestUri);
     }
 }

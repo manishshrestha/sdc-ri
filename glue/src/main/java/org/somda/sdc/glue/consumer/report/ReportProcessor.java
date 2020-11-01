@@ -15,9 +15,11 @@ import org.somda.sdc.common.CommonConfig;
 import org.somda.sdc.common.logging.InstanceLogger;
 import org.somda.sdc.common.util.AutoLock;
 import org.somda.sdc.glue.common.MdibVersionUtil;
+import org.somda.sdc.glue.consumer.ConsumerConfig;
 import org.somda.sdc.glue.consumer.report.helper.ReportWriter;
 
 import javax.annotation.Nullable;
+import java.math.BigInteger;
 import java.net.URI;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
@@ -45,6 +47,7 @@ public class ReportProcessor extends AbstractIdleService {
     private final ReportWriter reportWriter;
     private final BlockingQueue<AbstractReport> bufferedReports;
     private final Logger instanceLogger;
+    private final Boolean applyReportsSameMdibVersion;
 
     private AtomicBoolean bufferingRequested;
     private RemoteMdibAccess mdibAccess;
@@ -54,7 +57,8 @@ public class ReportProcessor extends AbstractIdleService {
     ReportProcessor(ReentrantLock mdibReadyLock,
                     MdibVersionUtil mdibVersionUtil,
                     ReportWriter reportWriter,
-                    @Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier) {
+                    @Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier,
+                    @Named(ConsumerConfig.APPLY_REPORTS_SAME_MDIB_VERSION) Boolean applyReportsSameMdibVersion) {
         this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);
         this.mdibReadyLock = mdibReadyLock;
         this.mdibReadyCondition = mdibReadyLock.newCondition();
@@ -63,6 +67,7 @@ public class ReportProcessor extends AbstractIdleService {
         this.bufferedReports = new ArrayBlockingQueue<>(500); // todo make queue size configurable
         this.mdibAccess = null;
         this.bufferingRequested = new AtomicBoolean(true);
+        this.applyReportsSameMdibVersion = applyReportsSameMdibVersion;
 
         startAsync().awaitRunning();
         initMdibAccessWait();
@@ -141,13 +146,22 @@ public class ReportProcessor extends AbstractIdleService {
         final MdibVersion mdibAccessMdibVersion = mdibAccess.getMdibVersion();
         final MdibVersion reportMdibVersion = mdibVersionUtil.getMdibVersion(report);
         if (!mdibAccessMdibVersion.getSequenceId().equals(reportMdibVersion.getSequenceId()) ||
-                !mdibAccessMdibVersion.getInstanceId().equals(reportMdibVersion.getInstanceId())) {
+                !equalsInstanceIds(mdibAccessMdibVersion.getInstanceId(), reportMdibVersion.getInstanceId())) {
             throw new ReportProcessingException(String.format("MDIB version from MDIB (%s) and " +
                             "MDIB version from report (%s) do not match",
                     mdibAccessMdibVersion, reportMdibVersion));
         }
 
-        if (mdibAccessMdibVersion.getVersion().compareTo(reportMdibVersion.getVersion()) >= 0) {
+        if (mdibAccessMdibVersion.getVersion().compareTo(reportMdibVersion.getVersion()) == 0) {
+            LOG.debug("Received a second report with Mdib Version {}", reportMdibVersion.getVersion());
+            if (!applyReportsSameMdibVersion) {
+                return;
+            }
+        } else if (mdibAccessMdibVersion.getVersion().compareTo(reportMdibVersion.getVersion()) > 0) {
+            LOG.debug(
+                    "Received a report older than current mdib. Mdib {}, report {}",
+                    mdibAccessMdibVersion.getVersion(), reportMdibVersion.getVersion()
+            );
             return;
         }
 
@@ -194,7 +208,7 @@ public class ReportProcessor extends AbstractIdleService {
 
         final MdibVersion mdibVersion = mdibAccess.getMdibVersion();
         if (!URI.create(mdibVersion.getSequenceId()).equals(URI.create(contextStatesResponse.getSequenceId())) ||
-                !mdibVersion.getInstanceId().equals(contextStatesResponse.getInstanceId())) {
+                !equalsInstanceIds(mdibVersion.getInstanceId(), contextStatesResponse.getInstanceId())) {
             throw new ReportProcessingException(String.format("Received context state report belongs to " +
                             "different MDIB sequence/instance. Expected: %s, actual: %s",
                     mdibVersionUtil.getMdibVersion(contextStatesResponse), mdibVersion));
@@ -210,6 +224,20 @@ public class ReportProcessor extends AbstractIdleService {
         final MdibStateModifications modifications = MdibStateModifications.create(MdibStateModifications.Type.CONTEXT)
                 .addAll(contextStatesResponse.getContextState());
         mdibAccess.writeStates(mdibVersion, modifications);
+    }
+
+    /**
+     * Compares two InstanceIds for equality.
+     *
+     * This equals check is necessary, since InstanceId has a implied value of 0 and the report might actually have the
+     * field set to null.
+     *
+     * @param mdibVersionInstanceId the mdibVersion instance id
+     * @param reportInstanceId the report instance id, implied value always set to 0
+     * @return true if equal, false otherwise
+     */
+    private boolean equalsInstanceIds(BigInteger mdibVersionInstanceId, @Nullable BigInteger reportInstanceId) {
+        return reportInstanceId == null ? mdibVersionInstanceId.equals(BigInteger.ZERO) : mdibVersionInstanceId.equals(reportInstanceId);
     }
 
     @Override

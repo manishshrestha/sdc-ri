@@ -8,6 +8,8 @@ import org.somda.sdc.biceps.common.storage.StatePreprocessingSegment;
 import org.somda.sdc.biceps.model.participant.AbstractMultiState;
 import org.somda.sdc.biceps.model.participant.AbstractState;
 
+import javax.annotation.Nullable;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -50,7 +52,8 @@ public class VersionDuplicateHandler implements StatePreprocessingSegment {
 
         // If state version from storage is greater or equal than the one to be updated,
         // then assume the modification to be outdated => add to skipped states
-        if (state.get().getStateVersion().compareTo(modification.getStateVersion()) >= 0) {
+        if (impliedValueMapper(state.get().getStateVersion())
+                .compareTo(impliedValueMapper(modification.getStateVersion())) >= 0) {
             if (omittedStates == null) {
                 omittedStates = new ArrayList<>(modifications.getStates().size());
             }
@@ -70,5 +73,12 @@ public class VersionDuplicateHandler implements StatePreprocessingSegment {
     @Override
     public String toString() {
         return this.getClass().getSimpleName();
+    }
+
+    private BigInteger impliedValueMapper(@Nullable BigInteger value) {
+        if (value != null) {
+            return value;
+        }
+        return BigInteger.ZERO;
     }
 }

@@ -61,6 +61,7 @@
         <log4j2Version>2.13.1</log4j2Version>
         <protoc.version>3.12.2</protoc.version>
         <grpc.version>1.33.0</grpc.version>
+        <bouncyCastleVersion>1.66</bouncyCastleVersion>
     </properties>
 
     <build>
@@ -288,7 +289,7 @@
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
-            <version>28.2-jre</version>
+            <version>29.0-jre</version>
         </dependency>
         <!-- https://mvnrepository.com/artifact/com.google.inject/guice -->
         <dependency>

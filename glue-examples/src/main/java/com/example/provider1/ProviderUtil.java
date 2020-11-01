@@ -15,7 +15,7 @@ import org.somda.sdc.biceps.model.participant.AbstractMetricValue;
 import org.somda.sdc.biceps.model.participant.GenerationMode;
 import org.somda.sdc.biceps.model.participant.MeasurementValidity;
 import org.somda.sdc.common.guice.DefaultCommonConfigModule;
-import org.somda.sdc.common.guice.DefaultHelperModule;
+import org.somda.sdc.common.guice.DefaultCommonModule;
 import org.somda.sdc.dpws.DpwsConfig;
 import org.somda.sdc.dpws.crypto.CryptoConfig;
 import org.somda.sdc.dpws.crypto.CryptoSettings;
@@ -69,7 +69,7 @@ public class ProviderUtil extends BaseUtil {
                 new DefaultGlueConfigModule(),
                 new DefaultBicepsModule(),
                 new DefaultBicepsConfigModule(),
-                new DefaultHelperModule(),
+                new DefaultCommonModule(),
                 new DefaultDpwsModule(),
                 new GlueDpwsConfigModule() {
                     @Override

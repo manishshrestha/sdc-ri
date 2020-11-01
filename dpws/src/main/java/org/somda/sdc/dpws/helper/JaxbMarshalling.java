@@ -105,6 +105,14 @@ public class JaxbMarshalling extends AbstractIdleService {
     }
 
 
+    /**
+     * Marshals a {@linkplain JAXBElement} into a stream.
+     *
+     * @param objectToMarshal to marshal
+     * @param outputStream    to marshal into
+     * @param <T>             type of the wrapped element
+     * @throws JAXBException on marshalling errors.
+     */
     public <T> void marshal(JAXBElement<T> objectToMarshal, OutputStream outputStream) throws JAXBException {
         checkRunning();
         var marshaller = jaxbContext.createMarshaller();

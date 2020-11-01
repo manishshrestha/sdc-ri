@@ -5,6 +5,7 @@ import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.eclipse.jetty.http.HttpCompliance;
 import org.eclipse.jetty.http.HttpMethod;
 import org.eclipse.jetty.http.HttpScheme;
 import org.eclipse.jetty.http.HttpVersion;
@@ -401,7 +402,9 @@ public class JettyHttpServerRegistry extends AbstractIdleService implements Http
         server.setHandler(context);
         this.contextHandlerMap.put(server, context);
 
-        CommunicationLogHandlerWrapper commlogHandler = new CommunicationLogHandlerWrapper(communicationLog, frameworkIdentifier);
+        CommunicationLogHandlerWrapper commlogHandler = new CommunicationLogHandlerWrapper(
+                communicationLog, frameworkIdentifier
+        );
         commlogHandler.setHandler(server.getHandler());
         server.setHandler(commlogHandler);
 
@@ -471,15 +474,19 @@ public class JettyHttpServerRegistry extends AbstractIdleService implements Http
 
             var connectionFactory = new SslConnectionFactory(contextFactory, HttpVersion.HTTP_1_1.asString());
             ServerConnector httpsConnector;
+
+            HttpConnectionFactory httpConnectionFactory = new HttpConnectionFactory(httpsConfig,
+                HttpCompliance.RFC2616);
+
             if (enableHttp) {
                 httpsConnector = new ServerConnector(server,
                         new OptionalSslConnectionFactory(connectionFactory, HttpVersion.HTTP_1_1.asString()),
                         connectionFactory,
-                        new HttpConnectionFactory(httpsConfig));
+                    httpConnectionFactory);
             } else {
                 httpsConnector = new ServerConnector(server,
                         connectionFactory,
-                        new HttpConnectionFactory(httpsConfig));
+                    httpConnectionFactory);
             }
             httpsConnector.setIdleTimeout(connectionTimeout.toMillis());
             httpsConnector.setHost(uri.getHost());
