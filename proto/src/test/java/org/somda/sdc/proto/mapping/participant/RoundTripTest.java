@@ -87,6 +87,10 @@ class RoundTripTest {
      *
      * AbstractAlertDescriptor ({@linkplain LimitAlertConditionRoundTrip})
      * AbstractAlertState ({@linkplain LimitAlertConditionRoundTrip})
+     * AbstractComplexDeviceComponentDescriptor ({@linkplain MdsRoundTrip}, {@linkplain VmdRoundTrip})
+     * AbstractComplexDeviceComponentState ({@linkplain MdsRoundTrip}, {@linkplain VmdRoundTrip})
+     * AbstractContextDescriptor ({@linkplain EnumStringMetricRoundTrip}, {@linkplain PatientContextRoundTrip})
+     * AbstractContextState ({@linkplain EnumStringMetricRoundTrip}, {@linkplain PatientContextRoundTrip})
      * AbstractDescriptor ({@linkplain LimitAlertConditionRoundTrip})
      * AbstractState ({@linkplain LimitAlertConditionRoundTrip})
      * ActivateOperationDescriptor ({@linkplain ActivateOperationRoundTrip})
@@ -136,12 +140,8 @@ class RoundTripTest {
     }
 
     /**
-     * List of not yet covered participant model types.
+     * List of not yet fully covered participant model types.
      *
-     * AbstractComplexDeviceComponentDescriptor
-     * AbstractComplexDeviceComponentState
-     * AbstractContextDescriptor
-     * AbstractContextState
      * AbstractDeviceComponentDescriptor
      * AbstractDeviceComponentState
      * AbstractMetricDescriptor
