@@ -12,6 +12,7 @@ import org.somda.sdc.biceps.model.participant.StringMetricState;
 import org.somda.sdc.biceps.model.participant.StringMetricValue;
 import org.somda.sdc.biceps.provider.access.LocalMdibAccess;
 import org.somda.sdc.biceps.testutil.Handles;
+import org.somda.sdc.proto.UnitTestUtil;
 import org.somda.sdc.proto.mapping.TypeCollection;
 
 import java.math.BigInteger;
@@ -25,9 +26,11 @@ public class StringMetricRoundTrip implements BiConsumer<LocalMdibAccess, Remote
 
     private static final String HANDLE = Handles.METRIC_0;
     private static final String HANDLE_MIN = HANDLE + "Min";
+    private static final String HANDLE_MED = HANDLE + "Med";
 
     public StringMetricRoundTrip(MdibDescriptionModifications modifications) {
         bigSet(modifications);
+        mediumSet(modifications);
         minimalSet(modifications);
     }
 
@@ -50,12 +53,15 @@ public class StringMetricRoundTrip implements BiConsumer<LocalMdibAccess, Remote
             descriptor.setUnit(TypeCollection.CODED_VALUE);
             descriptor.setBodySite(List.of(TypeCollection.CODED_VALUE, TypeCollection.CODED_VALUE));
             descriptor.setRelation(List.of(TypeCollection.RELATION));
+
+            // TODO: Extension
+//            descriptor.setExtension();
         }
 
         var state = new StringMetricState();
         {
             state.setStateVersion(BigInteger.TEN);
-            state.setDescriptorHandle(HANDLE);
+            state.setDescriptorHandle(descriptor.getHandle());
             state.setDescriptorVersion(descriptor.getDescriptorVersion());
             state.setActivationState(ComponentActivation.NOT_RDY);
             state.setActiveDeterminationPeriod(Duration.ofHours(2));
@@ -65,7 +71,39 @@ public class StringMetricRoundTrip implements BiConsumer<LocalMdibAccess, Remote
             state.setPhysicalConnector(TypeCollection.PHYSICAL_CONNECTOR_INFO);
 
             var value = new StringMetricValue();
+            value.setStartTime(UnitTestUtil.makeTestTimestamp());
+            value.setStopTime(UnitTestUtil.makeTestTimestamp());
+            value.setDeterminationTime(UnitTestUtil.makeTestTimestamp());
+
+            value.setMetricQuality(TypeCollection.METRIC_QUALITY);
+            value.setAnnotation(List.of(TypeCollection.ANNOTATION));
             value.setValue("ﾟ･✿ヾ╲(｡◕‿◕｡)╱✿･ﾟ");
+
+            state.setMetricValue(value);
+
+            // TODO: Extension
+//            state.setExtension();
+//            value.setExtension();
+        }
+
+        modifications.insert(descriptor, state, Handles.CHANNEL_0);
+    }
+
+    // only mandatory fields in metric value
+    public void mediumSet(MdibDescriptionModifications modifications) {
+        var descriptor = new StringMetricDescriptor();
+        {
+            descriptor.setHandle(HANDLE_MED);
+            descriptor.setMetricCategory(MetricCategory.SET);
+            descriptor.setMetricAvailability(MetricAvailability.INTR);
+            descriptor.setUnit(TypeCollection.CODED_VALUE);
+        }
+
+        var state = new StringMetricState();
+        {
+            state.setDescriptorHandle(HANDLE_MIN);
+
+            var value = new StringMetricValue();
             value.setMetricQuality(TypeCollection.METRIC_QUALITY);
 
             state.setMetricValue(value);
@@ -99,6 +137,15 @@ public class StringMetricRoundTrip implements BiConsumer<LocalMdibAccess, Remote
             var expectedState = localMdibAccess.getState(HANDLE, StringMetricState.class).get();
             var actualDescriptor = remoteMdibAccess.getDescriptor(HANDLE, StringMetricDescriptor.class).get();
             var actualState = remoteMdibAccess.getState(HANDLE, StringMetricState.class).get();
+
+            assertEquals(expectedDescriptor, actualDescriptor);
+            assertEquals(expectedState, actualState);
+        }
+        {
+            var expectedDescriptor = localMdibAccess.getDescriptor(HANDLE_MED, StringMetricDescriptor.class).get();
+            var expectedState = localMdibAccess.getState(HANDLE_MED, StringMetricState.class).get();
+            var actualDescriptor = remoteMdibAccess.getDescriptor(HANDLE_MED, StringMetricDescriptor.class).get();
+            var actualState = remoteMdibAccess.getState(HANDLE_MED, StringMetricState.class).get();
 
             assertEquals(expectedDescriptor, actualDescriptor);
             assertEquals(expectedState, actualState);

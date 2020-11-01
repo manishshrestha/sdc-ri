@@ -206,8 +206,10 @@ public class PojoToProtoMetricMapper {
 
     private StringMetricValueMsg mapStringMetricValue(StringMetricValue value) {
         var builder = StringMetricValueMsg.newBuilder();
-        builder.setAValue(Util.toStringValue(value.getValue()));
+
         builder.setAbstractMetricValue(mapAbstractMetricValue(value));
+        Util.doIfNotNull(value.getValue(), it -> builder.setAValue(Util.toStringValue(it)));
+
         return builder.build();
     }
 

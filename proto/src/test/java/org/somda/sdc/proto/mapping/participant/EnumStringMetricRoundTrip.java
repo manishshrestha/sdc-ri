@@ -32,7 +32,6 @@ public class EnumStringMetricRoundTrip implements BiConsumer<LocalMdibAccess, Re
     }
 
     public void bigSet(MdibDescriptionModifications modifications) {
-        // TODO: Complete
         var descriptor = new EnumStringMetricDescriptor();
         {
             descriptor.setHandle(HANDLE);
@@ -62,6 +61,9 @@ public class EnumStringMetricRoundTrip implements BiConsumer<LocalMdibAccess, Re
             allowed2.setValue("ಭ_ಭ");
 
             descriptor.setAllowedValue(List.of(allowed1, allowed2));
+
+            // TODO: Extension
+//            descriptor.setExtension();
         }
 
         var state = new EnumStringMetricState();
