@@ -76,8 +76,6 @@ public class EnsembleContextRoundTrip implements BiConsumer<LocalMdibAccess, Rem
         {
             state.setDescriptorHandle(descriptor.getHandle());
             state.setHandle(HANDLE_STATE_MIN);
-            // this needs to be set, otherwise MdibEntityImpl drops the state
-            state.setContextAssociation(ContextAssociation.ASSOC);
         }
 
         modifications.insert(descriptor, state, Handles.SYSTEMCONTEXT_1);

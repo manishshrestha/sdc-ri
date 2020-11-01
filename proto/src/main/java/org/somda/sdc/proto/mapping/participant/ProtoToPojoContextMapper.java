@@ -92,7 +92,10 @@ public class ProtoToPojoContextMapper {
         pojo.setBindingStartTime(timestampAdapter.unmarshal(Util.optionalBigIntOfLong(protoMsg, "ABindingStartTime")));
         pojo.setBindingMdibVersion(Util.optionalBigIntOfLong(protoMsg, "ABindingMdibVersion"));
         pojo.setUnbindingMdibVersion(Util.optionalBigIntOfLong(protoMsg, "AUnbindingMdibVersion"));
-        pojo.setContextAssociation(Util.mapToPojoEnum(protoMsg, "AContextAssociation", ContextAssociation.class));
+        Util.doIfNotNull(
+                Util.optional(protoMsg, "AContextAssociation", ContextAssociationMsg.class),
+                assoc -> pojo.setContextAssociation(Util.mapToPojoEnum(protoMsg, "AContextAssociation", ContextAssociation.class))
+        );
         pojo.setIdentification(baseMapper.mapInstanceIdentifiers(protoMsg.getIdentificationList()));
         pojo.setValidator(baseMapper.mapInstanceIdentifiers(protoMsg.getValidatorList()));
         baseMapper.map(pojo, protoMsg.getAbstractMultiState());

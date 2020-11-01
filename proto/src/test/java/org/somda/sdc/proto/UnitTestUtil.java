@@ -5,6 +5,7 @@ import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.util.Modules;
 import it.org.somda.sdc.proto.MockedUdpBindingModule;
+import org.somda.sdc.biceps.common.CommonConfig;
 import org.somda.sdc.biceps.guice.DefaultBicepsConfigModule;
 import org.somda.sdc.biceps.guice.DefaultBicepsModule;
 import org.somda.sdc.common.guice.DefaultCommonConfigModule;
@@ -38,7 +39,16 @@ public class UnitTestUtil {
                         new DefaultProtoModule(),
                         new DefaultProtoConfigModule(),
                         new DefaultGrpcConfigModule(),
-                        new DefaultBicepsConfigModule(),
+                        new DefaultBicepsConfigModule() {
+                            @Override
+                            protected void customConfigure() {
+                                super.customConfigure();
+                                // enable this so the round trip tests don't have to work around it
+                                bind(CommonConfig.STORE_NOT_ASSOCIATED_CONTEXT_STATES,
+                                        Boolean.class,
+                                        true);
+                            }
+                        },
                         new DefaultBicepsModule()
                 ).with(
                     overrideList

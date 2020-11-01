@@ -121,8 +121,10 @@ public class PojoToProtoContextMapper {
                 builder.setABindingMdibVersion(Util.toUInt64(it)));
         Util.doIfNotNull(contextState.getUnbindingMdibVersion(), it ->
                 builder.setAUnbindingMdibVersion(Util.toUInt64(it)));
-        builder.setAContextAssociation(
-                Util.mapToProtoEnum(contextState.getContextAssociation(), ContextAssociationMsg.class));
+        Util.doIfNotNull(
+                contextState.getContextAssociation(),
+                assoc -> builder.setAContextAssociation(Util.mapToProtoEnum(assoc, ContextAssociationMsg.class))
+        );
         Util.doIfNotNull(contextState.getIdentification(), it ->
                 builder.addAllIdentification(baseMapper.mapInstanceIdentifiers(it)));
         Util.doIfNotNull(contextState.getValidator(), it ->
