@@ -73,6 +73,7 @@ abstract public class OperationRoundTrip<
 
             var state = stateClass.getConstructor().newInstance();
             {
+                state.setOperatingMode(OperatingMode.DIS);
             }
             modifications.insert(descriptor, state, Handles.SCO_0);
         } catch (Exception e) {

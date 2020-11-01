@@ -74,15 +74,27 @@ public class PojoToProtoOperationMapper {
 
     public SetStringOperationDescriptorMsg mapSetStringOperationDescriptor(
             SetStringOperationDescriptor descriptor) {
-        return SetStringOperationDescriptorMsg.newBuilder()
-                .setAbstractOperationDescriptor(mapAbstractOperationDescriptor(descriptor))
-                .build();
+        var builder = SetStringOperationDescriptorMsg.newBuilder();
+
+        builder.setAbstractOperationDescriptor(mapAbstractOperationDescriptor(descriptor));
+        Util.doIfNotNull(descriptor.getMaxLength(), it -> builder.setAMaxLength(Util.toUInt64(it)));
+
+        return builder.build();
     }
 
     public SetStringOperationStateMsg mapSetStringOperationState(SetStringOperationState state) {
-        return SetStringOperationStateMsg.newBuilder()
-                .setAbstractOperationState(mapAbstractOperationState(state))
-                .build();
+        var builder = SetStringOperationStateMsg.newBuilder();
+
+        builder.setAbstractOperationState(mapAbstractOperationState(state));
+        Util.doIfNotNull(state.getAllowedValues(), it -> builder.setAllowedValues(mapAllowedValues(it)));
+
+        return builder.build();
+    }
+
+    public SetStringOperationStateMsg.AllowedValuesMsg mapAllowedValues(SetStringOperationState.AllowedValues values) {
+        var builder = SetStringOperationStateMsg.AllowedValuesMsg.newBuilder();
+        builder.addAllValue(values.getValue());
+        return builder.build();
     }
 
     public SetValueOperationDescriptorMsg mapSetValueOperationDescriptor(
@@ -176,8 +188,7 @@ public class PojoToProtoOperationMapper {
     private AbstractOperationStateMsg mapAbstractOperationState(AbstractOperationState state) {
         var builder = AbstractOperationStateMsg.newBuilder();
         builder.setAbstractState(baseMapper.mapAbstractState(state));
-        Util.doIfNotNull(state.getOperatingMode(), it ->
-                builder.setAOperatingMode(Util.mapToProtoEnum(state.getOperatingMode(), OperatingModeMsg.class)));
+        builder.setAOperatingMode(Util.mapToProtoEnum(state.getOperatingMode(), OperatingModeMsg.class));
         return builder.build();
     }
 

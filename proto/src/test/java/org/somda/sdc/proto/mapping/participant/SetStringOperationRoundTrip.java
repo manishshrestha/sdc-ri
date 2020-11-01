@@ -6,15 +6,19 @@ import org.somda.sdc.biceps.model.participant.AbstractOperationDescriptor;
 import org.somda.sdc.biceps.model.participant.ActivateOperationDescriptor;
 import org.somda.sdc.biceps.model.participant.ActivateOperationState;
 import org.somda.sdc.biceps.model.participant.OperatingMode;
+import org.somda.sdc.biceps.model.participant.SafetyClassification;
 import org.somda.sdc.biceps.model.participant.SetStringOperationDescriptor;
 import org.somda.sdc.biceps.model.participant.SetStringOperationState;
 import org.somda.sdc.biceps.model.participant.factory.CodedValueFactory;
 import org.somda.sdc.biceps.provider.access.LocalMdibAccess;
 import org.somda.sdc.biceps.testutil.Handles;
+import org.somda.sdc.proto.mapping.TypeCollection;
 
 import javax.xml.namespace.QName;
+import java.math.BigInteger;
 import java.time.Duration;
 import java.util.Arrays;
+import java.util.List;
 import java.util.function.BiConsumer;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -30,31 +34,43 @@ public class SetStringOperationRoundTrip implements BiConsumer<LocalMdibAccess, 
 
     private void bigSet(MdibDescriptionModifications modifications) {
         try {
-            // TODO: Complete
             var descriptor = new SetStringOperationDescriptor();
             {
                 descriptor.setHandle(HANDLE);
+                descriptor.setDescriptorVersion(BigInteger.valueOf(665324));
+                descriptor.setSafetyClassification(SafetyClassification.MED_A);
                 descriptor.setOperationTarget(Handles.MDS_0);
-                descriptor.setAccessLevel(AbstractOperationDescriptor.AccessLevel.RO);
-                descriptor.setInvocationEffectiveTimeout(Duration.ofMinutes(1));
                 descriptor.setMaxTimeToFinish(Duration.ofMinutes(12));
+                descriptor.setInvocationEffectiveTimeout(Duration.ofMinutes(1));
+                descriptor.setRetriggerable(true);
+                descriptor.setAccessLevel(AbstractOperationDescriptor.AccessLevel.RO);
+
+                descriptor.setType(TypeCollection.CODED_VALUE);
+
+                descriptor.setMaxLength(BigInteger.valueOf(5));
+                // TODO: Extension
+//                descriptor.setExtension();
             }
 
             var state = new SetStringOperationState();
             {
+                state.setStateVersion(BigInteger.valueOf(634));
+                state.setDescriptorHandle(descriptor.getHandle());
+                state.setDescriptorVersion(descriptor.getDescriptorVersion());
                 state.setOperatingMode(OperatingMode.DIS);
+
+                var allowedValues = new SetStringOperationState.AllowedValues();
+                allowedValues.setValue(List.of("A", ""));
+
+                state.setAllowedValues(allowedValues);
+
+                // TODO: Extension
+//                state.setExtension();
             }
             modifications.insert(descriptor, state, Handles.SCO_0);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-    }
-
-    private ActivateOperationDescriptor.Argument createArg(String label) {
-        var arg = new ActivateOperationDescriptor.Argument();
-        arg.setArgName(CodedValueFactory.createIeeeCodedValue(label));
-        arg.setArg(new QName("http://test", label));
-        return arg;
     }
 
     private void minimalSet(MdibDescriptionModifications modifications) {
@@ -67,6 +83,8 @@ public class SetStringOperationRoundTrip implements BiConsumer<LocalMdibAccess, 
 
             var state = new SetStringOperationState();
             {
+                state.setDescriptorHandle(descriptor.getHandle());
+                state.setOperatingMode(OperatingMode.DIS);
             }
             modifications.insert(descriptor, state, Handles.SCO_0);
         } catch (Exception e) {

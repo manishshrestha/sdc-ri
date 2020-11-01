@@ -46,6 +46,7 @@ import org.somda.sdc.proto.model.biceps.SetValueOperationDescriptorMsg;
 import org.somda.sdc.proto.model.biceps.SetValueOperationStateMsg;
 
 import javax.xml.namespace.QName;
+import java.util.ArrayList;
 import java.util.stream.Collectors;
 
 public class ProtoToPojoOperationMapper {
@@ -76,6 +77,7 @@ public class ProtoToPojoOperationMapper {
     public SetStringOperationDescriptor map(SetStringOperationDescriptorMsg protoMsg) {
         var pojo = new SetStringOperationDescriptor();
         map(pojo, protoMsg.getAbstractOperationDescriptor());
+        Util.doIfNotNull(Util.optionalBigIntOfLong(protoMsg, "AMaxLength"), pojo::setMaxLength);
         return pojo;
     }
 
@@ -94,6 +96,16 @@ public class ProtoToPojoOperationMapper {
     public SetStringOperationState map(SetStringOperationStateMsg protoMsg) {
         var pojo = new SetStringOperationState();
         map(pojo, protoMsg.getAbstractOperationState());
+        Util.doIfNotNull(
+                Util.optional(protoMsg, "AllowedValues", SetStringOperationStateMsg.AllowedValuesMsg.class),
+                it -> pojo.setAllowedValues(map(it))
+        );
+        return pojo;
+    }
+
+    public SetStringOperationState.AllowedValues map(SetStringOperationStateMsg.AllowedValuesMsg protoMsg) {
+        var pojo = new SetStringOperationState.AllowedValues();
+        pojo.setValue(new ArrayList<>(protoMsg.getValueList()));
         return pojo;
     }
 

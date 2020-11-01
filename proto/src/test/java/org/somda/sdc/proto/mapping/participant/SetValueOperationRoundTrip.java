@@ -65,6 +65,7 @@ public class SetValueOperationRoundTrip implements BiConsumer<LocalMdibAccess, R
 
             var state = new SetValueOperationState();
             {
+                state.setOperatingMode(OperatingMode.NA);
             }
             modifications.insert(descriptor, state, Handles.SCO_0);
         } catch (Exception e) {
