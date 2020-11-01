@@ -8,6 +8,7 @@ import org.apache.logging.log4j.Logger;
 import org.somda.sdc.biceps.model.participant.*;
 import org.somda.sdc.common.CommonConfig;
 import org.somda.sdc.common.logging.InstanceLogger;
+import org.somda.sdc.common.util.AnyDateTimeAdapter;
 import org.somda.sdc.common.util.TimestampAdapter;
 import org.somda.sdc.proto.mapping.Util;
 import org.somda.sdc.proto.model.biceps.*;
@@ -22,6 +23,7 @@ public class PojoToProtoComponentMapper {
     private final PojoToProtoAlertMapper alertMapper;
     private final Provider<PojoToProtoOneOfMapper> oneOfMapperProvider;
     private final TimestampAdapter timestampAdapter;
+    private final AnyDateTimeAdapter anyDateTimeAdapter;
     private PojoToProtoOneOfMapper oneOfMapper;
 
     @Inject
@@ -29,13 +31,15 @@ public class PojoToProtoComponentMapper {
                                PojoToProtoBaseMapper baseMapper,
                                PojoToProtoAlertMapper alertMapper,
                                Provider<PojoToProtoOneOfMapper> oneOfMapperProvider,
-                               TimestampAdapter timestampAdapter) {
+                               TimestampAdapter timestampAdapter,
+                               AnyDateTimeAdapter anyDateTimeAdapter) {
         this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);
         this.baseMapper = baseMapper;
         this.alertMapper = alertMapper;
         this.oneOfMapperProvider = oneOfMapperProvider;
         this.oneOfMapper = null;
         this.timestampAdapter = timestampAdapter;
+        this.anyDateTimeAdapter = anyDateTimeAdapter;
     }
 
     public PojoToProtoOneOfMapper getOneOfMapper() {
@@ -78,6 +82,8 @@ public class PojoToProtoComponentMapper {
 
     public MdsDescriptorMsg.Builder mapMdsDescriptor(MdsDescriptor mdsDescriptor) {
         var builder = MdsDescriptorMsg.newBuilder();
+        Util.doIfNotNull(mdsDescriptor.getMetaData(), it ->
+                builder.setMetaData(mapMetadata(it)));
         Util.doIfNotNull(mdsDescriptor.getApprovedJurisdictions(), it ->
                 builder.setApprovedJurisdictions(mapApprovedJurisdictions(it)));
         return builder.setAbstractComplexDeviceComponentDescriptor(
@@ -207,6 +213,35 @@ public class PojoToProtoComponentMapper {
         var builder = CalibrationInfoMsg.CalibrationDocumentationMsg.CalibrationResultMsg.newBuilder();
         builder.setCode(baseMapper.mapCodedValue(result.getCode()));
         builder.setValue(baseMapper.mapMeasurement(result.getValue()));
+        return builder.build();
+    }
+
+    public MdsDescriptorMsg.MetaDataMsg mapMetadata(MdsDescriptor.MetaData metadata) {
+        var builder = MdsDescriptorMsg.MetaDataMsg.newBuilder();
+
+        metadata.getUdi().forEach(it -> builder.addUdi(mapUdi(it)));
+        Util.doIfNotNull(metadata.getLotNumber(), it -> builder.setLotNumber(Util.toStringValue(it)));
+        metadata.getManufacturer().forEach(it -> builder.addManufacturer(baseMapper.mapLocalizedText(it)));
+        Util.doIfNotNull(metadata.getManufactureDate(), it ->
+                builder.setManufactureDate(Util.toStringValue(anyDateTimeAdapter.marshal(it))));
+        Util.doIfNotNull(metadata.getExpirationDate(), it ->
+                builder.setExpirationDate(Util.toStringValue(anyDateTimeAdapter.marshal(it))));
+        metadata.getModelName().forEach(it -> builder.addModelName(baseMapper.mapLocalizedText(it)));
+        Util.doIfNotNull(metadata.getModelNumber(), it -> builder.setModelNumber(Util.toStringValue(it)));
+        builder.addAllSerialNumber(metadata.getSerialNumber());
+
+        return builder.build();
+    }
+
+    public MdsDescriptorMsg.MetaDataMsg.UdiMsg mapUdi(MdsDescriptor.MetaData.Udi udi) {
+        var builder = MdsDescriptorMsg.MetaDataMsg.UdiMsg.newBuilder();
+
+        builder.setDeviceIdentifier(udi.getDeviceIdentifier());
+        builder.setHumanReadableForm(udi.getHumanReadableForm());
+        builder.setIssuer(getOneOfMapper().mapInstanceIdentifier(udi.getIssuer()));
+        Util.doIfNotNull(udi.getJurisdiction(), it ->
+                builder.setJurisdiction(getOneOfMapper().mapInstanceIdentifier(it)));
+
         return builder.build();
     }
 }

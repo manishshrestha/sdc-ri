@@ -8,6 +8,7 @@ import org.apache.logging.log4j.Logger;
 import org.somda.sdc.biceps.model.participant.*;
 import org.somda.sdc.common.CommonConfig;
 import org.somda.sdc.common.logging.InstanceLogger;
+import org.somda.sdc.common.util.AnyDateTimeAdapter;
 import org.somda.sdc.common.util.TimestampAdapter;
 import org.somda.sdc.proto.mapping.Util;
 import org.somda.sdc.proto.model.biceps.*;
@@ -20,18 +21,21 @@ public class ProtoToPojoComponentMapper {
     private final ProtoToPojoBaseMapper baseMapper;
     private final Provider<ProtoToPojoOneOfMapper> oneOfMapperProvider;
     private final TimestampAdapter timestampAdapter;
+    private final AnyDateTimeAdapter anyDateTimeAdapter;
     private ProtoToPojoOneOfMapper oneOfMapper;
 
     @Inject
     ProtoToPojoComponentMapper(@Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier,
                                ProtoToPojoBaseMapper baseMapper,
                                Provider<ProtoToPojoOneOfMapper> oneOfMapperProvider,
-                               TimestampAdapter timestampAdapter) {
+                               TimestampAdapter timestampAdapter,
+                               AnyDateTimeAdapter anyDateTimeAdapter) {
         this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);
         this.baseMapper = baseMapper;
         this.oneOfMapperProvider = oneOfMapperProvider;
         this.oneOfMapper = null;
         this.timestampAdapter = timestampAdapter;
+        this.anyDateTimeAdapter = anyDateTimeAdapter;
     }
 
     public ProtoToPojoOneOfMapper getOneOfMapper() {
@@ -43,6 +47,9 @@ public class ProtoToPojoComponentMapper {
 
     public MdsDescriptor map(MdsDescriptorMsg protoMsg) {
         var pojo = new MdsDescriptor();
+        if (protoMsg.hasMetaData()) {
+            pojo.setMetaData(map(protoMsg.getMetaData()));
+        }
         if (protoMsg.hasApprovedJurisdictions()) {
             pojo.setApprovedJurisdictions(map(protoMsg.getApprovedJurisdictions()));
         }
@@ -81,6 +88,37 @@ public class ProtoToPojoComponentMapper {
         var apj = new ApprovedJurisdictions();
         apj.setApprovedJurisdiction(baseMapper.mapInstanceIdentifiers(protoMsg.getApprovedJurisdictionList()));
         return apj;
+    }
+
+    private MdsDescriptor.MetaData map(MdsDescriptorMsg.MetaDataMsg protoMsg) {
+        var pojo = new MdsDescriptor.MetaData();
+
+        protoMsg.getUdiList().forEach(it -> pojo.getUdi().add(map(it)));
+        Util.doIfNotNull(Util.optionalStr(protoMsg, "LotNumber"), pojo::setLotNumber);
+        protoMsg.getManufacturerList().forEach(it -> pojo.getManufacturer().add(baseMapper.map(it)));
+        Util.doIfNotNull(Util.optionalStr(protoMsg, "ManufactureDate"), it ->
+                pojo.setManufactureDate(anyDateTimeAdapter.unmarshal(it)));
+        Util.doIfNotNull(Util.optionalStr(protoMsg, "ExpirationDate"), it ->
+                pojo.setExpirationDate(anyDateTimeAdapter.unmarshal(it)));
+        protoMsg.getModelNameList().forEach(it -> pojo.getModelName().add(baseMapper.map(it)));
+        Util.doIfNotNull(Util.optionalStr(protoMsg, "ModelNumber"), pojo::setModelNumber);
+        protoMsg.getSerialNumberList().forEach(pojo.getSerialNumber()::add);
+
+        return pojo;
+    }
+
+    private MdsDescriptor.MetaData.Udi map(MdsDescriptorMsg.MetaDataMsg.UdiMsg protoMsg) {
+        var pojo = new MdsDescriptor.MetaData.Udi();
+
+        pojo.setDeviceIdentifier(protoMsg.getDeviceIdentifier());
+        pojo.setHumanReadableForm(protoMsg.getHumanReadableForm());
+        pojo.setIssuer(getOneOfMapper().map(protoMsg.getIssuer()));
+        Util.doIfNotNull(
+                Util.optional(protoMsg, "Jurisdiction", InstanceIdentifierOneOfMsg.class),
+                it -> pojo.setJurisdiction(getOneOfMapper().map(it))
+        );
+
+        return pojo;
     }
 
     public ChannelDescriptor map(ChannelDescriptorMsg protoMsg) {
