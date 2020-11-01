@@ -92,6 +92,15 @@ class RoundTripTest {
      * AbstractContextDescriptor ({@linkplain EnumStringMetricRoundTrip}, {@linkplain PatientContextRoundTrip})
      * AbstractContextState ({@linkplain EnumStringMetricRoundTrip}, {@linkplain PatientContextRoundTrip})
      * AbstractDescriptor ({@linkplain LimitAlertConditionRoundTrip})
+     * AbstractDeviceComponentDescriptor ({@linkplain ScoRoundTrip})
+     * AbstractDeviceComponentState ({@linkplain ScoRoundTrip})
+     * AbstractMetricDescriptor ({@linkplain NumericMetricRoundTrip})
+     * AbstractMetricState ({@linkplain NumericMetricRoundTrip})
+     * AbstractMetricValue ({@linkplain NumericMetricRoundTrip})
+     * AbstractMultiState ({@linkplain NumericMetricRoundTrip})
+     * AbstractOperationDescriptor ({@linkplain SetStringOperationRoundTrip})
+     * AbstractOperationState ({@linkplain SetStringOperationRoundTrip})
+     * AbstractSetStateOperationDescriptor ({@linkplain SetAlertStateOperationRoundTrip})
      * AbstractState ({@linkplain LimitAlertConditionRoundTrip})
      * ActivateOperationDescriptor ({@linkplain ActivateOperationRoundTrip})
      * ActivateOperationState ({@linkplain ActivateOperationRoundTrip})
@@ -150,15 +159,6 @@ class RoundTripTest {
     /**
      * List of not yet fully covered participant model types.
      *
-     * AbstractDeviceComponentDescriptor
-     * AbstractDeviceComponentState
-     * AbstractMetricDescriptor
-     * AbstractMetricState
-     * AbstractMetricValue
-     * AbstractMultiState
-     * AbstractOperationDescriptor
-     * AbstractOperationState
-     * AbstractSetStateOperationDescriptor
      * ApprovedJurisdictions
      * BaseDemographics
      * BatteryDescriptor
