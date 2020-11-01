@@ -122,6 +122,14 @@ class RoundTripTest {
      * SampleArrayValue ({@linkplain RealTimeDistributionSampleArrayRoundTrip})
      * ScoDescriptor ({@linkplain ScoRoundTrip})
      * ScoState ({@linkplain ScoRoundTrip})
+     * SetAlertStateOperationDescriptor ({@linkplain SetAlertStateOperationRoundTrip})
+     * SetAlertStateOperationState ({@linkplain SetAlertStateOperationRoundTrip})
+     * SetComponentStateOperationDescriptor ({@linkplain SetComponentStateOperationRoundTrip})
+     * SetComponentStateOperationState  ({@linkplain SetComponentStateOperationRoundTrip})
+     * SetContextStateOperationDescriptor  ({@linkplain SetContextStateOperationRoundTrip})
+     * SetContextStateOperationState  ({@linkplain SetContextStateOperationRoundTrip})
+     * SetMetricStateOperationDescriptor  ({@linkplain SetMetricStateOperationRoundTrip})
+     * SetMetricStateOperationState  ({@linkplain SetMetricStateOperationRoundTrip})
      * SetStringOperationDescriptor ({@linkplain SetStringOperationRoundTrip})
      * SetStringOperationState ({@linkplain SetStringOperationRoundTrip})
      * SetValueOperationDescriptor ({@linkplain SetValueOperationRoundTrip})
@@ -188,14 +196,6 @@ class RoundTripTest {
      * PersonReference
      * PhysicalConnectorInfo
      * RemedyInfo
-     * SetAlertStateOperationDescriptor
-     * SetAlertStateOperationState
-     * SetComponentStateOperationDescriptor
-     * SetComponentStateOperationState
-     * SetContextStateOperationDescriptor
-     * SetContextStateOperationState
-     * SetMetricStateOperationDescriptor
-     * SetMetricStateOperationState
      * SystemSignalActivation
      * WorkflowContextDescriptor
      * WorkflowContextState

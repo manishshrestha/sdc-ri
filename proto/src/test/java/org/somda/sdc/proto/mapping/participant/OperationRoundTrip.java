@@ -8,10 +8,13 @@ import org.somda.sdc.biceps.model.participant.AbstractSetStateOperationDescripto
 import org.somda.sdc.biceps.model.participant.NumericMetricDescriptor;
 import org.somda.sdc.biceps.model.participant.NumericMetricState;
 import org.somda.sdc.biceps.model.participant.OperatingMode;
+import org.somda.sdc.biceps.model.participant.SafetyClassification;
 import org.somda.sdc.biceps.model.participant.SetMetricStateOperationState;
 import org.somda.sdc.biceps.provider.access.LocalMdibAccess;
 import org.somda.sdc.biceps.testutil.Handles;
+import org.somda.sdc.proto.mapping.TypeCollection;
 
+import java.math.BigInteger;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.function.BiConsumer;
@@ -42,20 +45,33 @@ abstract public class OperationRoundTrip<
 
     private void bigSet(MdibDescriptionModifications modifications) {
         try {
-            // TODO: Complete
             var descriptor = descrClass.getConstructor().newInstance();
             {
                 descriptor.setHandle(handle);
+                descriptor.setDescriptorVersion(BigInteger.valueOf(62391));
+                descriptor.setSafetyClassification(SafetyClassification.MED_C);
                 descriptor.setOperationTarget(Handles.MDS_0);
-                descriptor.setAccessLevel(AbstractOperationDescriptor.AccessLevel.RO);
-                descriptor.setInvocationEffectiveTimeout(Duration.ofMinutes(1));
                 descriptor.setMaxTimeToFinish(Duration.ofMinutes(12));
+                descriptor.setInvocationEffectiveTimeout(Duration.ofMinutes(1));
+                descriptor.setRetriggerable(false);
+                descriptor.setAccessLevel(AbstractOperationDescriptor.AccessLevel.RO);
+
+                descriptor.setType(TypeCollection.CODED_VALUE);
                 descriptor.setModifiableData(Arrays.asList("a", "b", "c"));
+
+                // TODO: Extension
+//                descriptor.setExtension();
             }
 
             var state = stateClass.getConstructor().newInstance();
             {
+                state.setStateVersion(BigInteger.valueOf(23480));
+                state.setDescriptorHandle(descriptor.getHandle());
+                state.setDescriptorVersion(descriptor.getDescriptorVersion());
                 state.setOperatingMode(OperatingMode.DIS);
+
+                // TODO: Extension
+//                state.setExtension();
             }
             modifications.insert(descriptor, state, Handles.SCO_0);
         } catch (Exception e) {
@@ -73,6 +89,7 @@ abstract public class OperationRoundTrip<
 
             var state = stateClass.getConstructor().newInstance();
             {
+                state.setDescriptorHandle(descriptor.getHandle());
                 state.setOperatingMode(OperatingMode.DIS);
             }
             modifications.insert(descriptor, state, Handles.SCO_0);
@@ -84,19 +101,19 @@ abstract public class OperationRoundTrip<
     @Override
     public void accept(final LocalMdibAccess localMdibAccess, final RemoteMdibAccess remoteMdibAccess) {
         {
-            var expectedDescriptor = localMdibAccess.getDescriptor(handle, descrClass);
-            var expectedState = localMdibAccess.getState(handle, stateClass);
-            var actualDescriptor = remoteMdibAccess.getDescriptor(handle, descrClass);
-            var actualState = remoteMdibAccess.getState(handle, stateClass);
+            var expectedDescriptor = localMdibAccess.getDescriptor(handle, descrClass).get();
+            var expectedState = localMdibAccess.getState(handle, stateClass).get();
+            var actualDescriptor = remoteMdibAccess.getDescriptor(handle, descrClass).get();
+            var actualState = remoteMdibAccess.getState(handle, stateClass).get();
 
             assertEquals(expectedDescriptor, actualDescriptor);
             assertEquals(expectedState, actualState);
         }
         {
-            var expectedDescriptor = localMdibAccess.getDescriptor(handleMin, descrClass);
-            var expectedState = localMdibAccess.getState(handleMin, stateClass);
-            var actualDescriptor = remoteMdibAccess.getDescriptor(handleMin, descrClass);
-            var actualState = remoteMdibAccess.getState(handleMin, stateClass);
+            var expectedDescriptor = localMdibAccess.getDescriptor(handleMin, descrClass).get();
+            var expectedState = localMdibAccess.getState(handleMin, stateClass).get();
+            var actualDescriptor = remoteMdibAccess.getDescriptor(handleMin, descrClass).get();
+            var actualState = remoteMdibAccess.getState(handleMin, stateClass).get();
 
             assertEquals(expectedDescriptor, actualDescriptor);
             assertEquals(expectedState, actualState);
