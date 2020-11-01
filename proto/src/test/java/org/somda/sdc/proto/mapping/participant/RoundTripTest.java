@@ -77,7 +77,7 @@ class RoundTripTest {
         resultsToCompare.add(new ActivateOperationRoundTrip(modifications));
         resultsToCompare.add(new SetStringOperationRoundTrip(modifications));
         resultsToCompare.add(new SetValueOperationRoundTrip(modifications));
-        resultsToCompare.add(new PatientContextStateRoundTrip(modifications));
+        resultsToCompare.add(new PatientContextRoundTrip(modifications));
         resultsToCompare.add(new LimitAlertConditionRoundTrip(modifications));
     }
 
@@ -103,13 +103,15 @@ class RoundTripTest {
      * EnumStringMetricState ({@linkplain EnumStringMetricRoundTrip})
      * LimitAlertConditionDescriptor ({@linkplain LimitAlertConditionRoundTrip})
      * LimitAlertConditionState ({@linkplain LimitAlertConditionRoundTrip})
+     * LocationContextDescriptor ({@linkplain LocationContextRoundTrip})
+     * LocationContextState ({@linkplain LocationContextRoundTrip})
      * MdsDescriptor ({@linkplain MdsRoundTrip})
      * MdsState ({@linkplain MdsRoundTrip})
      * NumericMetricDescriptor ({@linkplain NumericMetricRoundTrip})
      * NumericMetricState ({@linkplain NumericMetricRoundTrip})
      * NumericMetricValue ({@linkplain NumericMetricRoundTrip})
-     * LocationContextDescriptor ({@linkplain LocationContextRoundTrip})
-     * LocationContextState ({@linkplain LocationContextRoundTrip})
+     * PatientContextDescriptor ({@linkplain PatientContextRoundTrip})
+     * PatientContextState ({@linkplain PatientContextRoundTrip})
      * Range ({@linkplain LimitAlertConditionRoundTrip})
      *
      */
@@ -165,8 +167,6 @@ class RoundTripTest {
      * OperatorContextDescriptor
      * OperatorContextState
      * OrderDetail
-     * PatientContextDescriptor
-     * PatientContextState
      * PatientDemographicsCoreData
      * PersonParticipation
      * PersonReference
