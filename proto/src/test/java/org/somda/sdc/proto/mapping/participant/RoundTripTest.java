@@ -103,6 +103,8 @@ class RoundTripTest {
      * EnumStringMetricState ({@linkplain EnumStringMetricRoundTrip})
      * LimitAlertConditionDescriptor ({@linkplain LimitAlertConditionRoundTrip})
      * LimitAlertConditionState ({@linkplain LimitAlertConditionRoundTrip})
+     * LocationContextDescriptor ({@linkplain LocationContextRoundTrip})
+     * LocationContextState ({@linkplain LocationContextRoundTrip})
      * Range ({@linkplain LimitAlertConditionRoundTrip})
      *
      */
@@ -145,8 +147,6 @@ class RoundTripTest {
      * ImagingProcedure
      * InstanceIdentifier
      * LocalizedText
-     * LocationContextDescriptor
-     * LocationContextState
      * LocationDetail
      * LocationReference
      * MdDescription
