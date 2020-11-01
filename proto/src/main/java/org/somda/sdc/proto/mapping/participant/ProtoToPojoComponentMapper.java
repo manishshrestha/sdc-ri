@@ -13,6 +13,7 @@ import org.somda.sdc.common.util.TimestampAdapter;
 import org.somda.sdc.proto.mapping.Util;
 import org.somda.sdc.proto.model.biceps.*;
 
+import java.util.ArrayList;
 import java.util.stream.Collectors;
 
 public class ProtoToPojoComponentMapper {
@@ -141,9 +142,23 @@ public class ProtoToPojoComponentMapper {
 
     ScoState map(ScoStateMsg protoMsg) {
         var pojo = new ScoState();
+        map(pojo, protoMsg.getAbstractDeviceComponentState());
         pojo.setInvocationRequested(protoMsg.getAInvocationRequested().getOperationRefList());
         pojo.setInvocationRequired(protoMsg.getAInvocationRequired().getOperationRefList());
-        map(pojo, protoMsg.getAbstractDeviceComponentState());
+        protoMsg.getOperationGroupList().forEach(it -> pojo.getOperationGroup().add(map(it)));
+        return pojo;
+    }
+
+    ScoState.OperationGroup map(ScoStateMsg.OperationGroupMsg protoMsg) {
+        var pojo = new ScoState.OperationGroup();
+
+        pojo.setOperatingMode(Util.mapToPojoEnum(protoMsg, "AOperatingMode", OperatingMode.class));
+        Util.doIfNotNull(
+                Util.optional(protoMsg, "AOperations", OperationRefMsg.class),
+                it -> pojo.setOperations(new ArrayList<>(it.getOperationRefList()))
+        );
+        pojo.setType(baseMapper.map(protoMsg.getType()));
+
         return pojo;
     }
 

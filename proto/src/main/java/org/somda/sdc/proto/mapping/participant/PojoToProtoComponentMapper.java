@@ -67,17 +67,31 @@ public class PojoToProtoComponentMapper {
 
     public ScoStateMsg mapScoState(ScoState scoState) {
         var builder = ScoStateMsg.newBuilder();
+
         if (!scoState.getInvocationRequested().isEmpty()) {
             builder.setAInvocationRequested(mapOperationRefs(scoState.getInvocationRequested()));
         }
         if (!scoState.getInvocationRequired().isEmpty()) {
             builder.setAInvocationRequired(mapOperationRefs(scoState.getInvocationRequired()));
         }
+
+        scoState.getOperationGroup().forEach(it -> builder.addOperationGroup(mapOperationGroup(it)));
+
         return builder.setAbstractDeviceComponentState(mapAbstractDeviceComponentState(scoState)).build();
     }
 
     public OperationRefMsg mapOperationRefs(List<String> opRefs) {
         return OperationRefMsg.newBuilder().addAllOperationRef(opRefs).build();
+    }
+
+    public ScoStateMsg.OperationGroupMsg mapOperationGroup(ScoState.OperationGroup group) {
+        var builder = ScoStateMsg.OperationGroupMsg.newBuilder();
+        Util.doIfNotNull(group.getOperatingMode(), it -> builder.setAOperatingMode(Util.mapToProtoEnum(it, OperatingModeMsg.class)));
+        if (!group.getOperations().isEmpty()) {
+            builder.setAOperations(mapOperationRefs(group.getOperations()));
+        }
+        builder.setType(baseMapper.mapCodedValue(group.getType()));
+        return builder.build();
     }
 
     public MdsDescriptorMsg.Builder mapMdsDescriptor(MdsDescriptor mdsDescriptor) {

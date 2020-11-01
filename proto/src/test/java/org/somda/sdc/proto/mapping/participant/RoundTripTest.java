@@ -116,6 +116,8 @@ class RoundTripTest {
      * RealTimeSampleArrayMetricDescriptor ({@linkplain RealTimeDistributionSampleArrayRoundTrip})
      * RealTimeSampleArrayMetricState ({@linkplain RealTimeDistributionSampleArrayRoundTrip})
      * SampleArrayValue ({@linkplain RealTimeDistributionSampleArrayRoundTrip})
+     * ScoDescriptor ({@linkplain ScoRoundTrip})
+     * ScoState ({@linkplain ScoRoundTrip})
      *
      */
     private static void covered() {
@@ -175,8 +177,6 @@ class RoundTripTest {
      * PersonReference
      * PhysicalConnectorInfo
      * RemedyInfo
-     * ScoDescriptor
-     * ScoState
      * SetAlertStateOperationDescriptor
      * SetAlertStateOperationState
      * SetComponentStateOperationDescriptor
