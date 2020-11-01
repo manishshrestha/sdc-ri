@@ -1,19 +1,6 @@
 package org.somda.sdc.proto.mapping;
 
-import org.somda.sdc.biceps.model.participant.AbstractDeviceComponentDescriptor;
-import org.somda.sdc.biceps.model.participant.AbstractMetricDescriptor;
-import org.somda.sdc.biceps.model.participant.CalibrationInfo;
-import org.somda.sdc.biceps.model.participant.CalibrationState;
-import org.somda.sdc.biceps.model.participant.CalibrationType;
-import org.somda.sdc.biceps.model.participant.CauseInfo;
-import org.somda.sdc.biceps.model.participant.CodedValue;
-import org.somda.sdc.biceps.model.participant.InstanceIdentifier;
-import org.somda.sdc.biceps.model.participant.LocalizedText;
-import org.somda.sdc.biceps.model.participant.LocalizedTextWidth;
-import org.somda.sdc.biceps.model.participant.Measurement;
-import org.somda.sdc.biceps.model.participant.PhysicalConnectorInfo;
-import org.somda.sdc.biceps.model.participant.Range;
-import org.somda.sdc.biceps.model.participant.RemedyInfo;
+import org.somda.sdc.biceps.model.participant.*;
 import org.somda.sdc.proto.UnitTestUtil;
 
 import java.math.BigDecimal;
@@ -150,5 +137,23 @@ public class TypeCollection {
         doc.setCalibrationResult(List.of(result, result));
 
         CALIBRATION_INFO.setCalibrationDocumentation(List.of(doc, doc));
+
+        // TODO: Extension
+//        CALIBRATION_INFO.setExtension();
+    }
+
+    public static final AbstractMetricValue.Annotation ANNOTATION = new AbstractMetricValue.Annotation();
+    static {
+        ANNOTATION.setType(CODED_VALUE);
+
+        // TODO: Extension
+//        ANNOTATION.setExtension();
+    }
+
+    public static final AbstractMetricValue.MetricQuality METRIC_QUALITY = new AbstractMetricValue.MetricQuality();
+    static {
+        METRIC_QUALITY.setValidity(MeasurementValidity.INV);
+        METRIC_QUALITY.setMode(GenerationMode.DEMO);
+        METRIC_QUALITY.setQi(BigDecimal.valueOf(7331));
     }
 }

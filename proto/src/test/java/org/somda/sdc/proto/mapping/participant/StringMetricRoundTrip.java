@@ -66,6 +66,7 @@ public class StringMetricRoundTrip implements BiConsumer<LocalMdibAccess, Remote
 
             var value = new StringMetricValue();
             value.setValue("ﾟ･✿ヾ╲(｡◕‿◕｡)╱✿･ﾟ");
+            value.setMetricQuality(TypeCollection.METRIC_QUALITY);
 
             state.setMetricValue(value);
         }

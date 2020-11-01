@@ -214,10 +214,6 @@ public class PojoToProtoMetricMapper {
     private AbstractMetricValueMsg mapAbstractMetricValue(AbstractMetricValue value) {
         var builder = AbstractMetricValueMsg.newBuilder();
         Util.doIfNotNull(
-                value.getDeterminationTime(),
-                time -> builder.setADeterminationTime(Util.toUInt64(timestampAdapter.marshal(time)))
-        );
-        Util.doIfNotNull(
                 value.getStartTime(),
                 time -> builder.setAStartTime(Util.toUInt64(timestampAdapter.marshal(time)))
         );
@@ -225,7 +221,12 @@ public class PojoToProtoMetricMapper {
                 value.getStopTime(),
                 time -> builder.setAStopTime(Util.toUInt64(timestampAdapter.marshal(time)))
         );
-        Util.doIfNotNull(value.getMetricQuality(), quality -> builder.setMetricQuality(mapMetricQuality(quality)));
+        Util.doIfNotNull(
+                value.getDeterminationTime(),
+                time -> builder.setADeterminationTime(Util.toUInt64(timestampAdapter.marshal(time)))
+        );
+        builder.setMetricQuality(mapMetricQuality(value.getMetricQuality()));
+        value.getAnnotation().forEach(it -> builder.addAnnotation(mapAnnotation(it)));
         return builder.build();
     }
 
@@ -237,6 +238,12 @@ public class PojoToProtoMetricMapper {
                 builder.setAValidity(Util.mapToProtoEnum(validity, MeasurementValidityMsg.class)));
         Util.doIfNotNull(quality.getQi(), qi -> builder.setAQi(Util.toStringValue(qi.toPlainString())));
 
+        return builder.build();
+    }
+
+    private AbstractMetricValueMsg.AnnotationMsg mapAnnotation(AbstractMetricValue.Annotation annotation) {
+        var builder = AbstractMetricValueMsg.AnnotationMsg.newBuilder();
+        builder.setType(baseMapper.mapCodedValue(annotation.getType()));
         return builder.build();
     }
 

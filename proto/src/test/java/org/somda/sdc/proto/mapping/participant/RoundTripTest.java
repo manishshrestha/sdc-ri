@@ -105,6 +105,9 @@ class RoundTripTest {
      * LimitAlertConditionState ({@linkplain LimitAlertConditionRoundTrip})
      * MdsDescriptor ({@linkplain MdsRoundTrip})
      * MdsState ({@linkplain MdsRoundTrip})
+     * NumericMetricDescriptor ({@linkplain NumericMetricRoundTrip})
+     * NumericMetricState ({@linkplain NumericMetricRoundTrip})
+     * NumericMetricValue ({@linkplain NumericMetricRoundTrip})
      * LocationContextDescriptor ({@linkplain LocationContextRoundTrip})
      * LocationContextState ({@linkplain LocationContextRoundTrip})
      * Range ({@linkplain LimitAlertConditionRoundTrip})
@@ -158,9 +161,6 @@ class RoundTripTest {
      * MeansContextState
      * Measurement
      * NeonatalPatientDemographicsCoreData
-     * NumericMetricDescriptor
-     * NumericMetricState
-     * NumericMetricValue
      * OperatingJurisdiction
      * OperatorContextDescriptor
      * OperatorContextState

@@ -3,6 +3,7 @@ package org.somda.sdc.proto.mapping.participant;
 import org.somda.sdc.biceps.common.MdibDescriptionModifications;
 import org.somda.sdc.biceps.consumer.access.RemoteMdibAccess;
 import org.somda.sdc.biceps.model.participant.AbstractMetricValue;
+import org.somda.sdc.biceps.model.participant.ComponentActivation;
 import org.somda.sdc.biceps.model.participant.DerivationMethod;
 import org.somda.sdc.biceps.model.participant.GenerationMode;
 import org.somda.sdc.biceps.model.participant.MeasurementValidity;
@@ -30,14 +31,15 @@ public class NumericMetricRoundTrip implements BiConsumer<LocalMdibAccess, Remot
 
     private static final String HANDLE = Handles.METRIC_2;
     private static final String HANDLE_MIN = HANDLE + "Min";
+    private static final String HANDLE_MED = HANDLE + "Med";
 
     NumericMetricRoundTrip(MdibDescriptionModifications modifications) {
         bigSet(modifications);
+        mediumSet(modifications);
         minimalSet(modifications);
     }
 
     private void bigSet(MdibDescriptionModifications modifications) {
-        // TODO: Complete
         var descriptor = new NumericMetricDescriptor();
         {
             descriptor.setHandle(HANDLE);
@@ -47,10 +49,10 @@ public class NumericMetricRoundTrip implements BiConsumer<LocalMdibAccess, Remot
             descriptor.setDerivationMethod(DerivationMethod.MAN);
             descriptor.setMetricAvailability(MetricAvailability.INTR);
             descriptor.setMaxMeasurementTime(Duration.ofHours(1));
-            descriptor.setMaxDelayTime(Duration.ofHours(1));
-            descriptor.setDeterminationPeriod(Duration.ofHours(1));
-            descriptor.setLifeTimePeriod(Duration.ofHours(1));
-            descriptor.setActivationDuration(Duration.ofHours(1));
+            descriptor.setMaxDelayTime(Duration.ofHours(2));
+            descriptor.setDeterminationPeriod(Duration.ofHours(3));
+            descriptor.setLifeTimePeriod(Duration.ofHours(4));
+            descriptor.setActivationDuration(Duration.ofHours(5));
 
             descriptor.setType(TypeCollection.CODED_VALUE);
             descriptor.setUnit(TypeCollection.CODED_VALUE);
@@ -66,13 +68,26 @@ public class NumericMetricRoundTrip implements BiConsumer<LocalMdibAccess, Remot
             range1.setUpper(BigDecimal.TEN);
             range1.setRelativeAccuracy(BigDecimal.valueOf(2));
             range1.setStepWidth(BigDecimal.valueOf(222));
-            descriptor.setTechnicalRange(List.of(range1));
+            descriptor.setTechnicalRange(List.of(range1, new Range()));
+
+            // TODO: Extension
+//            descriptor.setExtension();
+//            range1.setExtension();
         }
 
         var state = new NumericMetricState();
         {
+            state.setStateVersion(BigInteger.valueOf(636345));
             state.setDescriptorHandle(HANDLE);
-            state.setActiveAveragingPeriod(Duration.ofMinutes(55));
+            state.setDescriptorVersion(descriptor.getDescriptorVersion());
+            state.setActivationState(ComponentActivation.ON);
+            state.setActiveDeterminationPeriod(Duration.ofMinutes(55));
+            state.setLifeTimePeriod(Duration.ofHours(8));
+
+            state.setBodySite(List.of(TypeCollection.CODED_VALUE));
+            state.setPhysicalConnector(TypeCollection.PHYSICAL_CONNECTOR_INFO);
+
+            state.setActiveAveragingPeriod(Duration.ofHours(77));
 
             var range1 = new Range();
             range1.setAbsoluteAccuracy(BigDecimal.ONE);
@@ -80,18 +95,50 @@ public class NumericMetricRoundTrip implements BiConsumer<LocalMdibAccess, Remot
             range1.setUpper(BigDecimal.TEN);
             range1.setRelativeAccuracy(BigDecimal.valueOf(2));
             range1.setStepWidth(BigDecimal.valueOf(222));
-            state.setPhysiologicalRange(List.of(range1));
+            state.setPhysiologicalRange(List.of(range1, TypeCollection.RANGE, new Range()));
 
             var value = new NumericMetricValue();
-            state.setMetricValue(value);
-            value.setValue(BigDecimal.valueOf(1337));
+            value.setStartTime(UnitTestUtil.makeTestTimestamp());
+            value.setStopTime(UnitTestUtil.makeTestTimestamp());
             value.setDeterminationTime(UnitTestUtil.makeTestTimestamp());
+            value.setValue(BigDecimal.valueOf(1337));
+            value.setMetricQuality(TypeCollection.METRIC_QUALITY);
+            value.setAnnotation(List.of(TypeCollection.ANNOTATION));
+
+            state.setMetricValue(value);
+
+            // TODO: Extension
+//            state.setExtension();
+//            range1.setExtension();
+//            value.setExtension();
+        }
+        modifications.insert(descriptor, state, Handles.CHANNEL_0);
+    }
+
+    // only mandatory fields in metric value set
+    private void mediumSet(MdibDescriptionModifications modifications) {
+        var descriptor = new NumericMetricDescriptor();
+        {
+            descriptor.setHandle(HANDLE_MED);
+            descriptor.setMetricCategory(MetricCategory.SET);
+            descriptor.setMetricAvailability(MetricAvailability.INTR);
+
+            descriptor.setUnit(TypeCollection.CODED_VALUE);
+
+            descriptor.setResolution(BigDecimal.TEN);
+        }
+
+        var state = new NumericMetricState();
+        {
+            state.setDescriptorHandle(descriptor.getHandle());
 
             var quality = new AbstractMetricValue.MetricQuality();
-            value.setMetricQuality(quality);
-            quality.setValidity(MeasurementValidity.INV);
             quality.setMode(GenerationMode.DEMO);
-            quality.setQi(BigDecimal.valueOf(7331));
+
+            var value = new NumericMetricValue();
+            value.setMetricQuality(quality);
+
+            state.setMetricValue(value);
         }
         modifications.insert(descriptor, state, Handles.CHANNEL_0);
     }

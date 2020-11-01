@@ -155,14 +155,14 @@ public class ProtoToPojoMetricMapper {
     }
 
     private void map(AbstractMetricValue pojo, AbstractMetricValueMsg protoMsg) {
-        Util.doIfNotNull(Util.optional(protoMsg, "MetricQuality", AbstractMetricValueMsg.MetricQualityMsg.class),
-                quality -> pojo.setMetricQuality(map(quality)));
-        pojo.setDeterminationTime(timestampAdapter.unmarshal(
-                Util.optionalBigIntOfLong(protoMsg, "ADeterminationTime")));
         pojo.setStartTime(timestampAdapter.unmarshal(
                 Util.optionalBigIntOfLong(protoMsg, "AStartTime")));
         pojo.setStopTime(timestampAdapter.unmarshal(
                 Util.optionalBigIntOfLong(protoMsg, "AStopTime")));
+        pojo.setDeterminationTime(timestampAdapter.unmarshal(
+                Util.optionalBigIntOfLong(protoMsg, "ADeterminationTime")));
+        pojo.setMetricQuality(map(protoMsg.getMetricQuality()));
+        protoMsg.getAnnotationList().forEach(it -> pojo.getAnnotation().add(map(it)));
     }
 
     private AbstractMetricValue.MetricQuality map(AbstractMetricValueMsg.MetricQualityMsg protoMsg) {
@@ -172,9 +172,14 @@ public class ProtoToPojoMetricMapper {
         );
         Util.doIfNotNull(protoMsg.getAValidity(), validity ->
                 pojo.setValidity(Util.mapToPojoEnum(protoMsg, "AValidity", MeasurementValidity.class))
-
         );
         pojo.setQi(Util.optionalBigDecimalOfString(protoMsg, "AQi"));
+        return pojo;
+    }
+
+    private AbstractMetricValue.Annotation map(AbstractMetricValueMsg.AnnotationMsg protoMsg) {
+        var pojo = new AbstractMetricValue.Annotation();
+        pojo.setType(baseMapper.map(protoMsg.getType()));
         return pojo;
     }
 

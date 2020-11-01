@@ -78,6 +78,7 @@ public class EnumStringMetricRoundTrip implements BiConsumer<LocalMdibAccess, Re
 
             var value = new StringMetricValue();
             value.setValue("ಭ_ಭ");
+            value.setMetricQuality(TypeCollection.METRIC_QUALITY);
 
             state.setMetricValue(value);
 
