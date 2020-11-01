@@ -84,6 +84,7 @@ public class ProtoToPojoOperationMapper {
     public SetValueOperationState map(SetValueOperationStateMsg protoMsg) {
         var pojo = new SetValueOperationState();
         map(pojo, protoMsg.getAbstractOperationState());
+        protoMsg.getAllowedRangeList().forEach(it -> pojo.getAllowedRange().add(baseMapper.map(it)));
         return pojo;
     }
 

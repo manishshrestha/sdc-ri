@@ -120,6 +120,8 @@ class RoundTripTest {
      * ScoState ({@linkplain ScoRoundTrip})
      * SetStringOperationDescriptor ({@linkplain SetStringOperationRoundTrip})
      * SetStringOperationState ({@linkplain SetStringOperationRoundTrip})
+     * SetValueOperationDescriptor ({@linkplain SetValueOperationRoundTrip})
+     * SetValueOperationState ({@linkplain SetValueOperationRoundTrip})
      *
      */
     private static void covered() {
@@ -187,8 +189,6 @@ class RoundTripTest {
      * SetContextStateOperationState
      * SetMetricStateOperationDescriptor
      * SetMetricStateOperationState
-     * SetValueOperationDescriptor
-     * SetValueOperationState
      * StringMetricDescriptor
      * StringMetricState
      * StringMetricValue

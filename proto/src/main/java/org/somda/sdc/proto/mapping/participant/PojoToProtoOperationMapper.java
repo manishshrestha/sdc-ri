@@ -105,9 +105,12 @@ public class PojoToProtoOperationMapper {
     }
 
     public SetValueOperationStateMsg mapSetValueOperationState(SetValueOperationState state) {
-        return SetValueOperationStateMsg.newBuilder()
-                .setAbstractOperationState(mapAbstractOperationState(state))
-                .build();
+        var builder = SetValueOperationStateMsg.newBuilder();
+
+        builder.setAbstractOperationState(mapAbstractOperationState(state));
+        state.getAllowedRange().forEach(it -> builder.addAllowedRange(baseMapper.mapRange(it)));
+
+        return builder.build();
     }
 
     public SetMetricStateOperationDescriptorMsg mapSetMetricStateOperationDescriptor(
