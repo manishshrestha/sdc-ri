@@ -97,6 +97,8 @@ class RoundTripTest {
      * AlertSignalState ({@linkplain AlertSignalRoundTrip})
      * AlertSystemDescriptor ({@linkplain AlertSystemRoundTrip})
      * AlertSystemState ({@linkplain AlertSystemRoundTrip})
+     * EnsembleContextDescriptor ({@linkplain EnsembleContextRoundTrip})
+     * EnsembleContextState ({@linkplain EnsembleContextRoundTrip})
      * EnumStringMetricDescriptor ({@linkplain EnumStringMetricRoundTrip})
      * EnumStringMetricState ({@linkplain EnumStringMetricRoundTrip})
      * LimitAlertConditionDescriptor ({@linkplain LimitAlertConditionRoundTrip})
@@ -140,8 +142,6 @@ class RoundTripTest {
      * ContainmentTreeEntry
      * DistributionSampleArrayMetricDescriptor
      * DistributionSampleArrayMetricState
-     * EnsembleContextDescriptor
-     * EnsembleContextState
      * ImagingProcedure
      * InstanceIdentifier
      * LocalizedText
