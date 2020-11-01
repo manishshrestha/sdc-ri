@@ -127,6 +127,8 @@ class RoundTripTest {
      * StringMetricValue ({@linkplain StringMetricRoundTrip})
      * SystemContextDescriptor ({@linkplain SystemContextRoundTrip})
      * SystemContextState ({@linkplain SystemContextRoundTrip})
+     * VmdDescriptor ({@linkplain VmdRoundTrip})
+     * VmdState ({@linkplain VmdRoundTrip})
      *
      */
     private static void covered() {
@@ -195,8 +197,6 @@ class RoundTripTest {
      * SetMetricStateOperationDescriptor
      * SetMetricStateOperationState
      * SystemSignalActivation
-     * VmdDescriptor
-     * VmdState
      * WorkflowContextDescriptor
      * WorkflowContextState
      *
