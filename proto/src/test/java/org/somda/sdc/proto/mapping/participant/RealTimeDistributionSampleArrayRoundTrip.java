@@ -6,11 +6,14 @@ import org.somda.sdc.biceps.model.participant.ComponentActivation;
 import org.somda.sdc.biceps.model.participant.DerivationMethod;
 import org.somda.sdc.biceps.model.participant.MetricAvailability;
 import org.somda.sdc.biceps.model.participant.MetricCategory;
+import org.somda.sdc.biceps.model.participant.Range;
 import org.somda.sdc.biceps.model.participant.RealTimeSampleArrayMetricDescriptor;
 import org.somda.sdc.biceps.model.participant.RealTimeSampleArrayMetricState;
 import org.somda.sdc.biceps.model.participant.SafetyClassification;
+import org.somda.sdc.biceps.model.participant.SampleArrayValue;
 import org.somda.sdc.biceps.provider.access.LocalMdibAccess;
 import org.somda.sdc.biceps.testutil.Handles;
+import org.somda.sdc.proto.UnitTestUtil;
 import org.somda.sdc.proto.mapping.TypeCollection;
 
 import java.math.BigDecimal;
@@ -32,7 +35,6 @@ public class RealTimeDistributionSampleArrayRoundTrip implements BiConsumer<Loca
     }
 
     void bigSet(MdibDescriptionModifications modifications) {
-        // TODO: Complete
         var descriptor = new RealTimeSampleArrayMetricDescriptor();
         {
             descriptor.setHandle(HANDLE);
@@ -55,7 +57,7 @@ public class RealTimeDistributionSampleArrayRoundTrip implements BiConsumer<Loca
             descriptor.setResolution(BigDecimal.valueOf(123123123));
             descriptor.setSamplePeriod(Duration.ofDays(365));
 
-            descriptor.setTechnicalRange(List.of(TypeCollection.RANGE, TypeCollection.RANGE));
+            descriptor.setTechnicalRange(List.of(TypeCollection.RANGE, TypeCollection.RANGE, new Range()));
         }
         var state = new RealTimeSampleArrayMetricState();
         {
@@ -65,6 +67,26 @@ public class RealTimeDistributionSampleArrayRoundTrip implements BiConsumer<Loca
             state.setActivationState(ComponentActivation.FAIL);
             state.setActiveDeterminationPeriod(Duration.ofDays(4));
             state.setLifeTimePeriod(Duration.ofMillis(1));
+
+            state.setBodySite(List.of(TypeCollection.CODED_VALUE));
+            state.setPhysicalConnector(TypeCollection.PHYSICAL_CONNECTOR_INFO);
+
+            var annotation = new SampleArrayValue.ApplyAnnotation();
+            annotation.setAnnotationIndex(1);
+            annotation.setSampleIndex(3);
+
+            var value = new SampleArrayValue();
+            value.setStartTime(UnitTestUtil.makeTestTimestamp());
+            value.setStopTime(UnitTestUtil.makeTestTimestamp());
+            value.setDeterminationTime(UnitTestUtil.makeTestTimestamp());
+            value.setSamples(List.of(BigDecimal.ZERO, BigDecimal.ONE, BigDecimal.valueOf(2)));
+
+            value.setMetricQuality(TypeCollection.METRIC_QUALITY);
+            value.setAnnotation(List.of(TypeCollection.ANNOTATION));
+
+            value.setApplyAnnotation(List.of(annotation, annotation));
+
+            state.setPhysiologicalRange(List.of(TypeCollection.RANGE, new Range()));
         }
         modifications.insert(descriptor, state, Handles.CHANNEL_0);
     }
