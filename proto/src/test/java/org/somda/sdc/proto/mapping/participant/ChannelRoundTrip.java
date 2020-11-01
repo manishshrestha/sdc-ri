@@ -70,6 +70,7 @@ public class ChannelRoundTrip implements BiConsumer<LocalMdibAccess, RemoteMdibA
 
         var state = new ChannelState();
         {
+            state.setDescriptorHandle(descriptor.getHandle());
         }
 
         modifications.insert(descriptor, state, Handles.VMD_0);
