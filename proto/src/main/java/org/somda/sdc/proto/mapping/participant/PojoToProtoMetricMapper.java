@@ -252,7 +252,7 @@ public class PojoToProtoMetricMapper {
     private AbstractMetricDescriptorMsg.RelationMsg mapRelation(AbstractMetricDescriptor.Relation relation) {
         var builder = AbstractMetricDescriptorMsg.RelationMsg.newBuilder();
 
-        builder.setRelation(Util.mapToProtoEnum(relation.getKind(), AbstractMetricDescriptorMsg.RelationMsg.KindMsg.class));
+        builder.setARelation(Util.mapToProtoEnum(relation.getKind(), AbstractMetricDescriptorMsg.RelationMsg.KindMsg.class));
         builder.setAEntries(mapEntry(relation.getEntries()));
         Util.doIfNotNull(relation.getCode(), codedValue -> builder.setCode(baseMapper.mapCodedValue(codedValue)));
         Util.doIfNotNull(relation.getIdentification(), instanceIdentifier ->
