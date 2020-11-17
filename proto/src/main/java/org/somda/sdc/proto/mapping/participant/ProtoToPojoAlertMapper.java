@@ -101,8 +101,8 @@ public class ProtoToPojoAlertMapper {
 
         Util.doIfNotNull(Util.optional(protoMsg, "ADefaultConditionGenerationDelay", Duration.class), duration ->
                 pojo.setDefaultConditionGenerationDelay(Util.fromProtoDuration(duration)));
-        pojo.setCanEscalate(Util.mapToPojoEnum(protoMsg, "CanEscalate", AlertConditionPriority.class));
-        pojo.setCanDeescalate(Util.mapToPojoEnum(protoMsg, "CanDeescalate", AlertConditionPriority.class));
+        pojo.setCanEscalate(Util.mapToPojoEnum(protoMsg, "ACanEscalate", AlertConditionPriority.class));
+        pojo.setCanDeescalate(Util.mapToPojoEnum(protoMsg, "ACanDeescalate", AlertConditionPriority.class));
 
         protoMsg.getSourceList().forEach(src -> pojo.getSource().add(src));
         protoMsg.getCauseInfoList().forEach(info -> pojo.getCauseInfo().add(map(info)));

@@ -177,7 +177,7 @@ public class PojoToProtoOperationMapper {
         var builder = AbstractOperationDescriptorMsg.newBuilder();
         builder.setAbstractDescriptor(baseMapper.mapAbstractDescriptor(descriptor));
         Util.doIfNotNull(descriptor.getAccessLevel(), it ->
-                builder.setAccessLevel(Util.mapToProtoEnum(it, AbstractOperationDescriptorMsg.AccessLevelMsg.class)));
+                builder.setAAccessLevel(Util.mapToProtoEnum(it, AbstractOperationDescriptorMsg.AccessLevelMsg.class)));
         Util.doIfNotNull(descriptor.getInvocationEffectiveTimeout(), it ->
                 builder.setAInvocationEffectiveTimeout(Util.fromJavaDuration(it)));
         Util.doIfNotNull(descriptor.getMaxTimeToFinish(), it ->

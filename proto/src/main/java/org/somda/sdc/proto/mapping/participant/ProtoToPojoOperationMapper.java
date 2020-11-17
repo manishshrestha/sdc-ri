@@ -164,7 +164,7 @@ public class ProtoToPojoOperationMapper {
     }
 
     private void map(AbstractOperationDescriptor pojo, AbstractOperationDescriptorMsg protoMsg) {
-        pojo.setAccessLevel(Util.mapToPojoEnum(protoMsg, "AccessLevel",
+        pojo.setAccessLevel(Util.mapToPojoEnum(protoMsg, "AAccessLevel",
                 AbstractOperationDescriptor.AccessLevel.class));
         pojo.setOperationTarget(protoMsg.getAOperationTarget());
         if (protoMsg.hasAInvocationEffectiveTimeout()) {

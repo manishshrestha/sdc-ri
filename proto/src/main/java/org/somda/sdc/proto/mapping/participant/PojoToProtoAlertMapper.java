@@ -95,9 +95,9 @@ public class PojoToProtoAlertMapper {
         Util.doIfNotNull(descriptor.getDefaultConditionGenerationDelay(), delay ->
                 builder.setADefaultConditionGenerationDelay(Util.fromJavaDuration(delay)));
         Util.doIfNotNull(descriptor.getCanEscalate(), escalate ->
-                builder.setCanEscalate(Util.mapToProtoEnum(escalate, AlertConditionDescriptorMsg.CanEscalateMsg.class)));
+                builder.setACanEscalate(Util.mapToProtoEnum(escalate, AlertConditionDescriptorMsg.CanEscalateMsg.class)));
         Util.doIfNotNull(descriptor.getCanDeescalate(), escalate ->
-                builder.setCanDeescalate(Util.mapToProtoEnum(escalate, AlertConditionDescriptorMsg.CanDeescalateMsg.class)));
+                builder.setACanDeescalate(Util.mapToProtoEnum(escalate, AlertConditionDescriptorMsg.CanDeescalateMsg.class)));
         descriptor.getSource().forEach(builder::addSource);
         descriptor.getCauseInfo().forEach(info -> builder.addCauseInfo(mapCauseInfo(info)));
 
