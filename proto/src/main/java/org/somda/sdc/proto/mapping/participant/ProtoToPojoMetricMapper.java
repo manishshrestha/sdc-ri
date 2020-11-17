@@ -249,7 +249,7 @@ public class ProtoToPojoMetricMapper {
 
     private AbstractMetricDescriptor.Relation map(AbstractMetricDescriptorMsg.RelationMsg protoMsg) {
         var pojo = new AbstractMetricDescriptor.Relation();
-        pojo.setKind(Util.mapToPojoEnum(protoMsg, "ARelation", AbstractMetricDescriptor.Relation.Kind.class));
+        pojo.setKind(Util.mapToPojoEnum(protoMsg, "AKind", AbstractMetricDescriptor.Relation.Kind.class));
         pojo.setEntries(new ArrayList<>(protoMsg.getAEntries().getEntryRefList()));
 
         Util.doIfNotNull(Util.optional(protoMsg, "Code", CodedValueMsg.class), codedValueMsg ->
