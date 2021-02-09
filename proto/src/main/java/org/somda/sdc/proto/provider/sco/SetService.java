@@ -19,6 +19,8 @@ import org.somda.sdc.proto.model.SetComponentStateRequest;
 import org.somda.sdc.proto.model.SetComponentStateResponse;
 import org.somda.sdc.proto.model.SetContextStateRequest;
 import org.somda.sdc.proto.model.SetContextStateResponse;
+import org.somda.sdc.proto.model.SetMetricStateRequest;
+import org.somda.sdc.proto.model.SetMetricStateResponse;
 import org.somda.sdc.proto.model.SetServiceGrpc;
 import org.somda.sdc.proto.model.SetStringRequest;
 import org.somda.sdc.proto.model.SetStringResponse;
@@ -66,8 +68,7 @@ public class SetService extends SetServiceGrpc.SetServiceImplBase {
     }
 
     @Override
-    public void setMetricState(ActivateRequest request,
-                               StreamObserver<ActivateResponse> responseObserver) {
+    public void setMetricState(final SetMetricStateRequest request, final StreamObserver<SetMetricStateResponse> responseObserver) {
         super.setMetricState(request, responseObserver);
     }
 

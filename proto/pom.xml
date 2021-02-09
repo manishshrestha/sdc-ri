@@ -23,7 +23,7 @@
 		<dependency>
 			<groupId>org.somda.sdc</groupId>
 			<artifactId>proto-model</artifactId>
-			<version>0.0.1.14</version>
+			<version>0.0.1.15</version>
 		</dependency>
 
 		<dependency>
