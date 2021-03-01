@@ -159,14 +159,36 @@ public class ProtoToPojoModificationsBuilder {
                             SetStringOperationDescriptor.class,
                             addedDesc.getHandle());
                     break;
-                case ABSTRACT_SET_STATE_OPERATION_DESCRIPTOR_ONE_OF:
-                    build(it.getAbstractSetStateOperationDescriptorOneOf(), addedDesc.getHandle());
+                case SET_ALERT_STATE_OPERATION_DESCRIPTOR:
+                    insert(it.getSetAlertStateOperationDescriptor(),
+                            SetAlertStateOperationDescriptor.class,
+                            addedDesc.getHandle());
+                    break;
+                case SET_COMPONENT_STATE_OPERATION_DESCRIPTOR:
+                    insert(it.getSetComponentStateOperationDescriptor(),
+                            SetComponentStateOperationDescriptor.class,
+                            addedDesc.getHandle());
+                    break;
+                case SET_METRIC_STATE_OPERATION_DESCRIPTOR:
+                    insert(it.getSetMetricStateOperationDescriptor(),
+                            SetMetricStateOperationDescriptor.class,
+                            addedDesc.getHandle());
+                    break;
+                case SET_CONTEXT_STATE_OPERATION_DESCRIPTOR:
+                    insert(it.getSetContextStateOperationDescriptor(),
+                            SetContextStateOperationDescriptor.class,
+                            addedDesc.getHandle());
                     break;
                 case SET_VALUE_OPERATION_DESCRIPTOR:
                     insert(it.getSetValueOperationDescriptor(),
                             SetValueOperationDescriptor.class,
                             addedDesc.getHandle());
                     break;
+                case ACTIVATE_OPERATION_DESCRIPTOR:
+                    insert(it.getActivateOperationDescriptor(),
+                            ActivateOperationDescriptor.class,
+                        addedDesc.getHandle());
+                case ABSTRACT_SET_STATE_OPERATION_DESCRIPTOR:
                 case ABSTRACT_OPERATION_DESCRIPTOR:
                 case ABSTRACTOPERATIONDESCRIPTORONEOF_NOT_SET:
                 default:
@@ -290,8 +312,11 @@ public class ProtoToPojoModificationsBuilder {
     private void build(AbstractMetricDescriptorOneOfMsg metric, ChannelDescriptor parent) {
         var type = metric.getAbstractMetricDescriptorOneOfCase();
         switch (type) {
-            case STRING_METRIC_DESCRIPTOR_ONE_OF:
-                build(metric.getStringMetricDescriptorOneOf(), parent);
+            case ENUM_STRING_METRIC_DESCRIPTOR:
+                build(metric.getEnumStringMetricDescriptor(), parent);
+                break;
+            case STRING_METRIC_DESCRIPTOR:
+                build(metric.getStringMetricDescriptor(), parent);
                 break;
             case NUMERIC_METRIC_DESCRIPTOR:
                 build(metric.getNumericMetricDescriptor(), parent);
@@ -299,6 +324,7 @@ public class ProtoToPojoModificationsBuilder {
             case REAL_TIME_SAMPLE_ARRAY_METRIC_DESCRIPTOR:
                 build(metric.getRealTimeSampleArrayMetricDescriptor(), parent);
                 break;
+            case DISTRIBUTION_SAMPLE_ARRAY_METRIC_DESCRIPTOR:
             default:
                 instanceLogger.error("Missing mapping for {}", type);
                 break;

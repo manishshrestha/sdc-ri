@@ -113,24 +113,70 @@ public class ProtoToPojoOneOfMapper {
     public AbstractDescriptor map(AbstractDescriptorOneOfMsg protoMsg) {
         var type = protoMsg.getAbstractDescriptorOneOfCase();
         switch (type) {
+            case MDS_DESCRIPTOR:
+                return componentMapper.map(protoMsg.getMdsDescriptor());
+            case VMD_DESCRIPTOR:
+                return componentMapper.map(protoMsg.getVmdDescriptor());
+            case CHANNEL_DESCRIPTOR:
+                return componentMapper.map(protoMsg.getChannelDescriptor());
+            case SCO_DESCRIPTOR:
+                return componentMapper.map(protoMsg.getScoDescriptor());
+            case SYSTEM_CONTEXT_DESCRIPTOR:
+                return componentMapper.map(protoMsg.getSystemContextDescriptor());
+            case NUMERIC_METRIC_DESCRIPTOR:
+                return metricMapper.map(protoMsg.getNumericMetricDescriptor());
+            case REAL_TIME_SAMPLE_ARRAY_METRIC_DESCRIPTOR:
+                return metricMapper.map(protoMsg.getRealTimeSampleArrayMetricDescriptor());
+            case ENUM_STRING_METRIC_DESCRIPTOR:
+                return metricMapper.map(protoMsg.getEnumStringMetricDescriptor());
+            case STRING_METRIC_DESCRIPTOR:
+                return metricMapper.map(protoMsg.getStringMetricDescriptor());
+            case ENSEMBLE_CONTEXT_DESCRIPTOR:
+                return contextMapper.map(protoMsg.getEnsembleContextDescriptor());
+            case LOCATION_CONTEXT_DESCRIPTOR:
+                return contextMapper.map(protoMsg.getLocationContextDescriptor());
+            case PATIENT_CONTEXT_DESCRIPTOR:
+                return contextMapper.map(protoMsg.getPatientContextDescriptor());
+            case LIMIT_ALERT_CONDITION_DESCRIPTOR:
+                return alertMapper.map(protoMsg.getLimitAlertConditionDescriptor());
+            case ALERT_CONDITION_DESCRIPTOR:
+                return alertMapper.map(protoMsg.getAlertConditionDescriptor());
+            case ALERT_SIGNAL_DESCRIPTOR:
+                return alertMapper.map(protoMsg.getAlertSignalDescriptor());
+            case ALERT_SYSTEM_DESCRIPTOR:
+                return alertMapper.map(protoMsg.getAlertSystemDescriptor());
+            case ACTIVATE_OPERATION_DESCRIPTOR:
+                return operationMapper.map(protoMsg.getActivateOperationDescriptor());
+            case SET_ALERT_STATE_OPERATION_DESCRIPTOR:
+                return operationMapper.map(protoMsg.getSetAlertStateOperationDescriptor());
+            case SET_COMPONENT_STATE_OPERATION_DESCRIPTOR:
+                return operationMapper.map(protoMsg.getSetComponentStateOperationDescriptor());
+            case SET_CONTEXT_STATE_OPERATION_DESCRIPTOR:
+                return operationMapper.map(protoMsg.getSetContextStateOperationDescriptor());
+            case SET_METRIC_STATE_OPERATION_DESCRIPTOR:
+                return operationMapper.map(protoMsg.getSetMetricStateOperationDescriptor());
+            case SET_STRING_OPERATION_DESCRIPTOR:
+                return operationMapper.map(protoMsg.getSetStringOperationDescriptor());
+            case SET_VALUE_OPERATION_DESCRIPTOR:
+                return operationMapper.map(protoMsg.getSetValueOperationDescriptor());
+            case BATTERY_DESCRIPTOR:
+            case CLOCK_DESCRIPTOR:
+            case DISTRIBUTION_SAMPLE_ARRAY_METRIC_DESCRIPTOR:
+            case MEANS_CONTEXT_DESCRIPTOR:
+            case OPERATOR_CONTEXT_DESCRIPTOR:
+            case WORKFLOW_CONTEXT_DESCRIPTOR:
             case ABSTRACT_DESCRIPTOR:
-                instanceLogger.error("Descriptor mapping not implemented: {}", type);
-                break;
-            case ABSTRACT_ALERT_DESCRIPTOR_ONE_OF:
-                return map(protoMsg.getAbstractAlertDescriptorOneOf());
-            case ABSTRACT_DEVICE_COMPONENT_DESCRIPTOR_ONE_OF:
-                return map(protoMsg.getAbstractDeviceComponentDescriptorOneOf());
-            case ABSTRACT_OPERATION_DESCRIPTOR_ONE_OF:
-                return map(protoMsg.getAbstractOperationDescriptorOneOf());
-            case ABSTRACT_METRIC_DESCRIPTOR_ONE_OF:
-                instanceLogger.error("Descriptor mapping not implemented: {}", type);
-                break;
-            case ABSTRACT_CONTEXT_DESCRIPTOR_ONE_OF:
-                instanceLogger.error("Descriptor mapping not implemented: {}", type);
-                break;
+            case ABSTRACT_COMPLEX_DEVICE_COMPONENT_DESCRIPTOR:
+            case ABSTRACT_OPERATION_DESCRIPTOR:
+            case ABSTRACT_DEVICE_COMPONENT_DESCRIPTOR:
+            case ABSTRACT_SET_STATE_OPERATION_DESCRIPTOR:
+            case ABSTRACT_ALERT_DESCRIPTOR:
+            case ABSTRACT_CONTEXT_DESCRIPTOR:
+            case ABSTRACT_METRIC_DESCRIPTOR:
             case ABSTRACTDESCRIPTORONEOF_NOT_SET:
             default:
                 instanceLogger.error("Descriptor mapping not implemented: {}", type);
+                break;
         }
 
         return Util.invalidDescriptor();
@@ -139,14 +185,20 @@ public class ProtoToPojoOneOfMapper {
     public AbstractOperationDescriptor map(AbstractOperationDescriptorOneOfMsg protoMsg) {
         var type = protoMsg.getAbstractOperationDescriptorOneOfCase();
         switch (type) {
+            case ACTIVATE_OPERATION_DESCRIPTOR:
+                return operationMapper.map(protoMsg.getActivateOperationDescriptor());
+            case SET_ALERT_STATE_OPERATION_DESCRIPTOR:
+                return operationMapper.map(protoMsg.getSetAlertStateOperationDescriptor());
+            case SET_COMPONENT_STATE_OPERATION_DESCRIPTOR:
+                return operationMapper.map(protoMsg.getSetComponentStateOperationDescriptor());
+            case SET_CONTEXT_STATE_OPERATION_DESCRIPTOR:
+                return operationMapper.map(protoMsg.getSetContextStateOperationDescriptor());
+            case SET_METRIC_STATE_OPERATION_DESCRIPTOR:
+                return operationMapper.map(protoMsg.getSetMetricStateOperationDescriptor());
             case SET_STRING_OPERATION_DESCRIPTOR:
-                instanceLogger.error("Descriptor mapping not implemented: {}", type);
-                break;
-            case ABSTRACT_SET_STATE_OPERATION_DESCRIPTOR_ONE_OF:
-                return map(protoMsg.getAbstractSetStateOperationDescriptorOneOf());
+                return operationMapper.map(protoMsg.getSetStringOperationDescriptor());
             case SET_VALUE_OPERATION_DESCRIPTOR:
-                instanceLogger.error("Descriptor mapping not implemented: {}", type);
-                break;
+                return operationMapper.map(protoMsg.getSetValueOperationDescriptor());
             case ABSTRACT_OPERATION_DESCRIPTOR:
             case ABSTRACTOPERATIONDESCRIPTORONEOF_NOT_SET:
             default:
@@ -159,20 +211,16 @@ public class ProtoToPojoOneOfMapper {
     public AbstractSetStateOperationDescriptor map(AbstractSetStateOperationDescriptorOneOfMsg protoMsg) {
         var type = protoMsg.getAbstractSetStateOperationDescriptorOneOfCase();
         switch (type) {
-            case SET_COMPONENT_STATE_OPERATION_DESCRIPTOR:
-                instanceLogger.error("Descriptor mapping not implemented: {}", type);
-                break;
+            case ACTIVATE_OPERATION_DESCRIPTOR:
+                return operationMapper.map(protoMsg.getActivateOperationDescriptor());
             case SET_ALERT_STATE_OPERATION_DESCRIPTOR:
-                instanceLogger.error("Descriptor mapping not implemented: {}", type);
-                break;
+                return operationMapper.map(protoMsg.getSetAlertStateOperationDescriptor());
+            case SET_COMPONENT_STATE_OPERATION_DESCRIPTOR:
+                return operationMapper.map(protoMsg.getSetComponentStateOperationDescriptor());
+            case SET_CONTEXT_STATE_OPERATION_DESCRIPTOR:
+                return operationMapper.map(protoMsg.getSetContextStateOperationDescriptor());
             case SET_METRIC_STATE_OPERATION_DESCRIPTOR:
                 return operationMapper.map(protoMsg.getSetMetricStateOperationDescriptor());
-            case SET_CONTEXT_STATE_OPERATION_DESCRIPTOR:
-                instanceLogger.error("Descriptor mapping not implemented: {}", type);
-                break;
-            case ACTIVATE_OPERATION_DESCRIPTOR:
-                instanceLogger.error("Descriptor mapping not implemented: {}", type);
-                break;
             case ABSTRACT_SET_STATE_OPERATION_DESCRIPTOR:
             case ABSTRACTSETSTATEOPERATIONDESCRIPTORONEOF_NOT_SET:
             default:
@@ -185,6 +233,12 @@ public class ProtoToPojoOneOfMapper {
     private AbstractAlertDescriptor map(AbstractAlertDescriptorOneOfMsg protoMsg) {
         var type = protoMsg.getAbstractAlertDescriptorOneOfCase();
         switch (type) {
+            case LIMIT_ALERT_CONDITION_DESCRIPTOR:
+                return alertMapper.map(protoMsg.getLimitAlertConditionDescriptor());
+            case ALERT_CONDITION_DESCRIPTOR:
+                return alertMapper.map(protoMsg.getAlertConditionDescriptor());
+            case ALERT_SIGNAL_DESCRIPTOR:
+                return alertMapper.map(protoMsg.getAlertSignalDescriptor());
             case ALERT_SYSTEM_DESCRIPTOR:
                 return alertMapper.map(protoMsg.getAlertSystemDescriptor());
             default:
@@ -197,22 +251,20 @@ public class ProtoToPojoOneOfMapper {
     private AbstractDescriptor map(AbstractDeviceComponentDescriptorOneOfMsg protoMsg) {
         var type = protoMsg.getAbstractDeviceComponentDescriptorOneOfCase();
         switch (type) {
-            case ABSTRACT_DEVICE_COMPONENT_DESCRIPTOR:
-                break;
-            case CLOCK_DESCRIPTOR:
-                instanceLogger.error("Descriptor mapping not implemented: {}", type);
-                break;
-            case BATTERY_DESCRIPTOR:
-                instanceLogger.error("Descriptor mapping not implemented: {}", type);
-                break;
+            case MDS_DESCRIPTOR:
+                return componentMapper.map(protoMsg.getMdsDescriptor());
+            case VMD_DESCRIPTOR:
+                return componentMapper.map(protoMsg.getVmdDescriptor());
             case CHANNEL_DESCRIPTOR:
                 return componentMapper.map(protoMsg.getChannelDescriptor());
             case SCO_DESCRIPTOR:
                 return componentMapper.map(protoMsg.getScoDescriptor());
             case SYSTEM_CONTEXT_DESCRIPTOR:
                 return componentMapper.map(protoMsg.getSystemContextDescriptor());
-            case ABSTRACT_COMPLEX_DEVICE_COMPONENT_DESCRIPTOR_ONE_OF:
-                break;
+            case CLOCK_DESCRIPTOR:
+            case BATTERY_DESCRIPTOR:
+            case ABSTRACT_DEVICE_COMPONENT_DESCRIPTOR:
+            case ABSTRACT_COMPLEX_DEVICE_COMPONENT_DESCRIPTOR:
             case ABSTRACTDEVICECOMPONENTDESCRIPTORONEOF_NOT_SET:
             default:
                 instanceLogger.error("Descriptor mapping not implemented: {}", type);
@@ -225,13 +277,11 @@ public class ProtoToPojoOneOfMapper {
     private AbstractDescriptor map(AbstractComplexDeviceComponentDescriptorOneOfMsg protoMsg) {
         var type = protoMsg.getAbstractComplexDeviceComponentDescriptorOneOfCase();
         switch (type) {
-            case ABSTRACT_COMPLEX_DEVICE_COMPONENT_DESCRIPTOR:
-                instanceLogger.error("Descriptor mapping not implemented: {}", type);
-                break;
-            case VMD_DESCRIPTOR:
-                return componentMapper.map(protoMsg.getVmdDescriptor());
             case MDS_DESCRIPTOR:
                 return componentMapper.map(protoMsg.getMdsDescriptor());
+            case VMD_DESCRIPTOR:
+                return componentMapper.map(protoMsg.getVmdDescriptor());
+            case ABSTRACT_COMPLEX_DEVICE_COMPONENT_DESCRIPTOR:
             case ABSTRACTCOMPLEXDEVICECOMPONENTDESCRIPTORONEOF_NOT_SET:
             default:
                 instanceLogger.error("Descriptor mapping not implemented: {}", type);
@@ -243,19 +293,66 @@ public class ProtoToPojoOneOfMapper {
     public AbstractState map(AbstractStateOneOfMsg protoMsg) {
         var type = protoMsg.getAbstractStateOneOfCase();
         switch (type) {
+            case MDS_STATE:
+                return componentMapper.map(protoMsg.getMdsState());
+            case VMD_STATE:
+                return componentMapper.map(protoMsg.getVmdState());
+            case CHANNEL_STATE:
+                return componentMapper.map(protoMsg.getChannelState());
+            case SCO_STATE:
+                return componentMapper.map(protoMsg.getScoState());
+            case SYSTEM_CONTEXT_STATE:
+                return componentMapper.map(protoMsg.getSystemContextState());
+            case NUMERIC_METRIC_STATE:
+                return metricMapper.map(protoMsg.getNumericMetricState());
+            case REAL_TIME_SAMPLE_ARRAY_METRIC_STATE:
+                return metricMapper.map(protoMsg.getRealTimeSampleArrayMetricState());
+            case ENUM_STRING_METRIC_STATE:
+                return metricMapper.map(protoMsg.getEnumStringMetricState());
+            case STRING_METRIC_STATE:
+                return metricMapper.map(protoMsg.getStringMetricState());
+            case ENSEMBLE_CONTEXT_STATE:
+                return contextMapper.map(protoMsg.getEnsembleContextState());
+            case LOCATION_CONTEXT_STATE:
+                return contextMapper.map(protoMsg.getLocationContextState());
+            case PATIENT_CONTEXT_STATE:
+                return contextMapper.map(protoMsg.getPatientContextState());
+            case LIMIT_ALERT_CONDITION_STATE:
+                return alertMapper.map(protoMsg.getLimitAlertConditionState());
+            case ALERT_CONDITION_STATE:
+                return alertMapper.map(protoMsg.getAlertConditionState());
+            case ALERT_SIGNAL_STATE:
+                return alertMapper.map(protoMsg.getAlertSignalState());
+            case ALERT_SYSTEM_STATE:
+                return alertMapper.map(protoMsg.getAlertSystemState());
+            case ACTIVATE_OPERATION_STATE:
+                return operationMapper.map(protoMsg.getActivateOperationState());
+            case SET_ALERT_STATE_OPERATION_STATE:
+                return operationMapper.map(protoMsg.getSetAlertStateOperationState());
+            case SET_COMPONENT_STATE_OPERATION_STATE:
+                return operationMapper.map(protoMsg.getSetComponentStateOperationState());
+            case SET_CONTEXT_STATE_OPERATION_STATE:
+                return operationMapper.map(protoMsg.getSetContextStateOperationState());
+            case SET_METRIC_STATE_OPERATION_STATE:
+                return operationMapper.map(protoMsg.getSetMetricStateOperationState());
+            case SET_STRING_OPERATION_STATE:
+                return operationMapper.map(protoMsg.getSetStringOperationState());
+            case SET_VALUE_OPERATION_STATE:
+                return operationMapper.map(protoMsg.getSetValueOperationState());
+            case BATTERY_STATE:
+            case CLOCK_STATE:
+            case DISTRIBUTION_SAMPLE_ARRAY_METRIC_STATE:
+            case MEANS_CONTEXT_STATE:
+            case OPERATOR_CONTEXT_STATE:
+            case WORKFLOW_CONTEXT_STATE:
             case ABSTRACT_STATE:
-                instanceLogger.error("State mapping not implemented: {}", type);
-                break;
-            case ABSTRACT_OPERATION_STATE_ONE_OF:
-                return map(protoMsg.getAbstractOperationStateOneOf());
-            case ABSTRACT_ALERT_STATE_ONE_OF:
-                return map(protoMsg.getAbstractAlertStateOneOf());
-            case ABSTRACT_MULTI_STATE_ONE_OF:
-                return map(protoMsg.getAbstractMultiStateOneOf());
-            case ABSTRACT_METRIC_STATE_ONE_OF:
-                return map(protoMsg.getAbstractMetricStateOneOf());
-            case ABSTRACT_DEVICE_COMPONENT_STATE_ONE_OF:
-                return map(protoMsg.getAbstractDeviceComponentStateOneOf());
+            case ABSTRACT_COMPLEX_DEVICE_COMPONENT_STATE:
+            case ABSTRACT_OPERATION_STATE:
+            case ABSTRACT_DEVICE_COMPONENT_STATE:
+            case ABSTRACT_MULTI_STATE:
+            case ABSTRACT_ALERT_STATE:
+            case ABSTRACT_CONTEXT_STATE:
+            case ABSTRACT_METRIC_STATE:
             case ABSTRACTSTATEONEOF_NOT_SET:
             default:
                 instanceLogger.error("State mapping not implemented: {}", type);
@@ -293,12 +390,14 @@ public class ProtoToPojoOneOfMapper {
     public AbstractAlertState map(final AbstractAlertStateOneOfMsg protoMsg) {
         var type = protoMsg.getAbstractAlertStateOneOfCase();
         switch (type) {
-            case ALERT_SYSTEM_STATE:
-                return alertMapper.map(protoMsg.getAlertSystemState());
-            case ALERT_CONDITION_STATE_ONE_OF:
-                return map(protoMsg.getAlertConditionStateOneOf());
+            case LIMIT_ALERT_CONDITION_STATE:
+                return alertMapper.map(protoMsg.getLimitAlertConditionState());
+            case ALERT_CONDITION_STATE:
+                return alertMapper.map(protoMsg.getAlertConditionState());
             case ALERT_SIGNAL_STATE:
                 return alertMapper.map(protoMsg.getAlertSignalState());
+            case ALERT_SYSTEM_STATE:
+                return alertMapper.map(protoMsg.getAlertSystemState());
             default:
                 instanceLogger.error("State mapping not implemented: {}", type);
                 break;
@@ -327,18 +426,17 @@ public class ProtoToPojoOneOfMapper {
     public AbstractMetricState map(AbstractMetricStateOneOfMsg protoMsg) {
         var type = protoMsg.getAbstractMetricStateOneOfCase();
         switch (type) {
-            case STRING_METRIC_STATE_ONE_OF:
-                return map(protoMsg.getStringMetricStateOneOf());
             case NUMERIC_METRIC_STATE:
                 return metricMapper.map(protoMsg.getNumericMetricState());
             case REAL_TIME_SAMPLE_ARRAY_METRIC_STATE:
                 return metricMapper.map(protoMsg.getRealTimeSampleArrayMetricState());
+            case ENUM_STRING_METRIC_STATE:
+                return metricMapper.map(protoMsg.getEnumStringMetricState());
+            case STRING_METRIC_STATE:
+                return metricMapper.map(protoMsg.getStringMetricState());
             case DISTRIBUTION_SAMPLE_ARRAY_METRIC_STATE:
-                instanceLogger.error("State mapping not implemented: {}", type);
-                break;
             case ABSTRACT_METRIC_STATE:
-                instanceLogger.error("State mapping not implemented: {}", type);
-                break;
+            case ABSTRACTMETRICSTATEONEOF_NOT_SET:
             default:
                 instanceLogger.error("State mapping not implemented: {}", type);
                 break;
@@ -361,11 +459,17 @@ public class ProtoToPojoOneOfMapper {
     private AbstractState map(AbstractMultiStateOneOfMsg protoMsg) {
         var type = protoMsg.getAbstractMultiStateOneOfCase();
         switch (type) {
+            case ENSEMBLE_CONTEXT_STATE:
+                return contextMapper.map(protoMsg.getEnsembleContextState());
+            case PATIENT_CONTEXT_STATE:
+                return contextMapper.map(protoMsg.getPatientContextState());
+            case LOCATION_CONTEXT_STATE:
+                return contextMapper.map(protoMsg.getLocationContextState());
+            case ABSTRACT_CONTEXT_STATE:
+            case MEANS_CONTEXT_STATE:
+            case OPERATOR_CONTEXT_STATE:
+            case WORKFLOW_CONTEXT_STATE:
             case ABSTRACT_MULTI_STATE:
-                instanceLogger.error("State mapping not implemented: {}", type);
-                break;
-            case ABSTRACT_CONTEXT_STATE_ONE_OF:
-                return map(protoMsg.getAbstractContextStateOneOf());
             case ABSTRACTMULTISTATEONEOF_NOT_SET:
             default:
                 instanceLogger.error("State mapping not implemented: {}", type);
@@ -377,24 +481,16 @@ public class ProtoToPojoOneOfMapper {
     public AbstractContextState map(AbstractContextStateOneOfMsg protoMsg) {
         var type = protoMsg.getAbstractContextStateOneOfCase();
         switch (type) {
-            case ABSTRACT_CONTEXT_STATE:
-                instanceLogger.error("State mapping not implemented: {}", type);
-                break;
-            case OPERATOR_CONTEXT_STATE:
-                instanceLogger.error("State mapping not implemented: {}", type);
-                break;
             case ENSEMBLE_CONTEXT_STATE:
                 return contextMapper.map(protoMsg.getEnsembleContextState());
-            case WORKFLOW_CONTEXT_STATE:
-                instanceLogger.error("State mapping not implemented: {}", type);
-                break;
             case PATIENT_CONTEXT_STATE:
                 return contextMapper.map(protoMsg.getPatientContextState());
             case LOCATION_CONTEXT_STATE:
                 return contextMapper.map(protoMsg.getLocationContextState());
+            case ABSTRACT_CONTEXT_STATE:
             case MEANS_CONTEXT_STATE:
-                instanceLogger.error("State mapping not implemented: {}", type);
-                break;
+            case OPERATOR_CONTEXT_STATE:
+            case WORKFLOW_CONTEXT_STATE:
             case ABSTRACTCONTEXTSTATEONEOF_NOT_SET:
             default:
                 instanceLogger.error("State mapping not implemented: {}", type);
@@ -406,23 +502,20 @@ public class ProtoToPojoOneOfMapper {
     public AbstractDeviceComponentState map(AbstractDeviceComponentStateOneOfMsg protoMsg) {
         var type = protoMsg.getAbstractDeviceComponentStateOneOfCase();
         switch (type) {
-            case ABSTRACT_DEVICE_COMPONENT_STATE:
-                instanceLogger.error("State mapping not implemented: {}", type);
-                break;
-            case CLOCK_STATE:
-                instanceLogger.error("State mapping not implemented: {}", type);
-                break;
+            case MDS_STATE:
+                return componentMapper.map(protoMsg.getMdsState());
+            case VMD_STATE:
+                return componentMapper.map(protoMsg.getVmdState());
             case CHANNEL_STATE:
                 return componentMapper.map(protoMsg.getChannelState());
-            case SYSTEM_CONTEXT_STATE:
-                return componentMapper.map(protoMsg.getSystemContextState());
-            case ABSTRACT_COMPLEX_DEVICE_COMPONENT_STATE_ONE_OF:
-                return map(protoMsg.getAbstractComplexDeviceComponentStateOneOf());
-            case BATTERY_STATE:
-                instanceLogger.error("State mapping not implemented: {}", type);
-                break;
             case SCO_STATE:
                 return componentMapper.map(protoMsg.getScoState());
+            case SYSTEM_CONTEXT_STATE:
+                return componentMapper.map(protoMsg.getSystemContextState());
+            case BATTERY_STATE:
+            case CLOCK_STATE:
+            case ABSTRACT_DEVICE_COMPONENT_STATE:
+            case ABSTRACT_COMPLEX_DEVICE_COMPONENT_STATE:
             case ABSTRACTDEVICECOMPONENTSTATEONEOF_NOT_SET:
             default:
                 instanceLogger.error("State mapping not implemented: {}", type);
@@ -435,13 +528,11 @@ public class ProtoToPojoOneOfMapper {
     private AbstractDeviceComponentState map(AbstractComplexDeviceComponentStateOneOfMsg protoMsg) {
         var type = protoMsg.getAbstractComplexDeviceComponentStateOneOfCase();
         switch (type) {
-            case ABSTRACT_COMPLEX_DEVICE_COMPONENT_STATE:
-                instanceLogger.error("State mapping not implemented: {}", type);
-                break;
-            case VMD_STATE:
-                return componentMapper.map(protoMsg.getVmdState());
             case MDS_STATE:
                 return componentMapper.map(protoMsg.getMdsState());
+            case VMD_STATE:
+                return componentMapper.map(protoMsg.getVmdState());
+            case ABSTRACT_COMPLEX_DEVICE_COMPONENT_STATE:
             case ABSTRACTCOMPLEXDEVICECOMPONENTSTATEONEOF_NOT_SET:
             default:
                 instanceLogger.error("State mapping not implemented: {}", type);
@@ -492,8 +583,10 @@ public class ProtoToPojoOneOfMapper {
     public BaseDemographics map(BaseDemographicsOneOfMsg protoMsg) {
         var type = protoMsg.getBaseDemographicsOneOfCase();
         switch (type) {
-            case PATIENT_DEMOGRAPHICS_CORE_DATA_ONE_OF:
-                return map(protoMsg.getPatientDemographicsCoreDataOneOf());
+            case NEONATAL_PATIENT_DEMOGRAPHICS_CORE_DATA:
+                return contextMapper.map(protoMsg.getNeonatalPatientDemographicsCoreData());
+            case PATIENT_DEMOGRAPHICS_CORE_DATA:
+                return contextMapper.map(protoMsg.getPatientDemographicsCoreData());
             case BASE_DEMOGRAPHICS:
                 return baseMapper.map(protoMsg.getBaseDemographics());
             default:

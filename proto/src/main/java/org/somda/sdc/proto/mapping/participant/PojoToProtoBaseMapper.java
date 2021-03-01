@@ -5,6 +5,8 @@ import org.somda.sdc.biceps.model.participant.*;
 import org.somda.sdc.proto.mapping.Util;
 import org.somda.sdc.proto.model.biceps.*;
 
+import javax.annotation.Nullable;
+import java.math.BigInteger;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -41,9 +43,9 @@ public class PojoToProtoBaseMapper {
 
     public InstanceIdentifierMsg mapInstanceIdentifier(InstanceIdentifier instanceIdentifier) {
         var builder = InstanceIdentifierMsg.newBuilder();
-        Util.doIfNotNull(instanceIdentifier.getRootName(), it -> builder.setARoot(Util.toStringValue(it)));
+        Util.doIfNotNull(instanceIdentifier.getRootName(), it -> builder.setARoot(mapARoot(it)));
         Util.doIfNotNull(instanceIdentifier.getExtensionName(), it ->
-                builder.setAExtension(Util.toStringValue(instanceIdentifier.getExtensionName())));
+                builder.setAExtension(mapAExtension(instanceIdentifier.getExtensionName())));
         Util.doIfNotNull(instanceIdentifier.getType(), codedValue -> builder.setType(mapCodedValue(codedValue)));
         builder.addAllIdentifierName(mapLocalizedTexts(instanceIdentifier.getIdentifierName()));
         return builder.build();
@@ -58,13 +60,13 @@ public class PojoToProtoBaseMapper {
 
     public CodedValueMsg mapCodedValue(CodedValue codedValue) {
         var builder = CodedValueMsg.newBuilder();
-        Util.doIfNotNull(codedValue.getCode(), builder::setACode);
+        Util.doIfNotNull(codedValue.getCode(), code -> builder.setACode(mapCodeIdentifier(code)));
         Util.doIfNotNull(codedValue.getCodingSystem(), it ->
                 builder.setACodingSystem(Util.toStringValue(codedValue.getCodingSystem())));
         Util.doIfNotNull(codedValue.getCodingSystemVersion(), it ->
                 builder.setACodingSystemVersion(Util.toStringValue(codedValue.getCodingSystemVersion())));
         Util.doIfNotNull(codedValue.getSymbolicCodeName(), it ->
-                builder.setASymbolicCodeName(Util.toStringValue(codedValue.getSymbolicCodeName())));
+                builder.setASymbolicCodeName(mapSymbolicCodeName(codedValue.getSymbolicCodeName())));
 
         builder.addAllCodingSystemName(mapLocalizedTexts(codedValue.getCodingSystemName()));
         builder.addAllConceptDescription(mapLocalizedTexts(codedValue.getConceptDescription()));
@@ -78,7 +80,7 @@ public class PojoToProtoBaseMapper {
     public CodedValueMsg.TranslationMsg mapTranslation(CodedValue.Translation translation) {
         var builder = CodedValueMsg.TranslationMsg.newBuilder();
 
-        builder.setACode(translation.getCode());
+        builder.setACode(mapCodeIdentifier(translation.getCode()));
         Util.doIfNotNull(translation.getCodingSystem(), it ->
                 builder.setACodingSystem(Util.toStringValue(translation.getCodingSystem())));
         Util.doIfNotNull(translation.getCodingSystemVersion(), it ->
@@ -90,9 +92,9 @@ public class PojoToProtoBaseMapper {
     public LocalizedTextMsg mapLocalizedText(LocalizedText localizedText) {
         var builder = LocalizedTextMsg.newBuilder();
         builder.setALang(Util.toStringValue(localizedText.getLang()));
-        Util.doIfNotNull(localizedText.getValue(), builder::setString);
-        builder.setAVersion(Util.toUInt64(localizedText.getVersion()));
-        builder.setARef(Util.toStringValue(localizedText.getRef()));
+        Util.doIfNotNull(localizedText.getValue(), value -> builder.setLocalizedTextContent(mapLocalizedTextContent(value)));
+        builder.setAVersion(mapReferencedVersion(localizedText.getVersion()));
+        builder.setARef(mapLocalizedTextRef(localizedText.getRef()));
         Util.doIfNotNull(localizedText.getTextWidth(), width ->
                 builder.setATextWidth(Util.mapToProtoEnum(width, LocalizedTextWidthMsg.class)));
         return builder.build();
@@ -100,8 +102,8 @@ public class PojoToProtoBaseMapper {
 
     AbstractDescriptorMsg mapAbstractDescriptor(AbstractDescriptor abstractDescriptor) {
         var builder = AbstractDescriptorMsg.newBuilder();
-        builder.setADescriptorVersion(Util.toUInt64(abstractDescriptor.getDescriptorVersion()));
-        Util.doIfNotNull(abstractDescriptor.getHandle(), builder::setAHandle);
+        builder.setADescriptorVersion(mapVersionCounter(abstractDescriptor.getDescriptorVersion()));
+        Util.doIfNotNull(abstractDescriptor.getHandle(), handle -> builder.setAHandle(mapHandle(handle)));
         Util.doIfNotNull(abstractDescriptor.getSafetyClassification(), safetyClassification ->
                 builder.setASafetyClassification(Util.mapToProtoEnum(safetyClassification, SafetyClassificationMsg.class)));
         Util.doIfNotNull(abstractDescriptor.getType(), codedValue ->
@@ -111,9 +113,10 @@ public class PojoToProtoBaseMapper {
 
     AbstractStateMsg mapAbstractState(AbstractState abstractState) {
         var builder = AbstractStateMsg.newBuilder();
-        builder.setADescriptorHandle(abstractState.getDescriptorHandle());
-        builder.setADescriptorVersion(Util.toUInt64(abstractState.getDescriptorVersion()));
-        builder.setAStateVersion(Util.toUInt64(abstractState.getStateVersion()));
+        builder.setADescriptorHandle(mapHandleRef(abstractState.getDescriptorHandle()));
+        // TODO: This can be null, riiiiight?
+        builder.setADescriptorVersion(mapReferencedVersion(abstractState.getDescriptorVersion()));
+        builder.setAStateVersion(mapVersionCounter(abstractState.getStateVersion()));
         return builder.build();
     }
 
@@ -121,7 +124,7 @@ public class PojoToProtoBaseMapper {
         var builder = AbstractMultiStateMsg.newBuilder();
         Util.doIfNotNull(abstractMultiState.getCategory(), codedValue ->
                 builder.setCategory(mapCodedValue(codedValue)));
-        builder.setAHandle(abstractMultiState.getHandle());
+        builder.setAHandle(mapHandle(abstractMultiState.getHandle()));
         builder.setAbstractState(mapAbstractState(abstractMultiState));
         return builder.build();
     }
@@ -175,5 +178,53 @@ public class PojoToProtoBaseMapper {
         builder.addAllLabel(mapLocalizedTexts(physicalConnectorInfo.getLabel()));
 
         return builder.build();
+    }
+
+    public VersionCounterMsg mapVersionCounter(BigInteger versionCounter) {
+        return VersionCounterMsg.newBuilder()
+                .setUnsignedLong(versionCounter.longValue())
+                .build();
+    }
+
+    public HandleMsg mapHandle(String handle) {
+        return HandleMsg.newBuilder().setString(handle).build();
+    }
+
+    public HandleRefMsg mapHandleRef(String handle) {
+        return HandleRefMsg.newBuilder().setString(handle).build();
+    }
+
+    public TimestampMsg mapTimestamp(BigInteger timestamp) {
+        return TimestampMsg.newBuilder().setUnsignedLong(timestamp.longValue()).build();
+    }
+
+    public InstanceIdentifierMsg.ARootMsg mapARoot(String aRoot) {
+        return InstanceIdentifierMsg.ARootMsg.newBuilder().setAnyURI(aRoot).build();
+    }
+
+    public InstanceIdentifierMsg.AExtensionMsg mapAExtension(String aExtension) {
+        return InstanceIdentifierMsg.AExtensionMsg.newBuilder().setString(aExtension).build();
+    }
+
+    public CodeIdentifierMsg mapCodeIdentifier(String identifier) {
+        return CodeIdentifierMsg.newBuilder().setString(identifier).build();
+    }
+
+    public SymbolicCodeNameMsg mapSymbolicCodeName(String symbolicMessageName) {
+        return SymbolicCodeNameMsg.newBuilder().setString(symbolicMessageName).build();
+    }
+
+    public LocalizedTextContentMsg mapLocalizedTextContent(String value) {
+        return LocalizedTextContentMsg.newBuilder().setString(value).build();
+    }
+
+    public ReferencedVersionMsg mapReferencedVersion(BigInteger value) {
+        return ReferencedVersionMsg.newBuilder()
+                .setVersionCounter(mapVersionCounter(value))
+                .build();
+    }
+
+    public LocalizedTextRefMsg mapLocalizedTextRef(@Nullable String value) {
+        return LocalizedTextRefMsg.newBuilder().setString(value).build();
     }
 }

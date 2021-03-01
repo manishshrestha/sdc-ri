@@ -37,34 +37,7 @@ import org.somda.sdc.proto.mapping.participant.PojoToProtoAlertMapper;
 import org.somda.sdc.proto.mapping.participant.PojoToProtoBaseMapper;
 import org.somda.sdc.proto.mapping.participant.PojoToProtoMetricMapper;
 import org.somda.sdc.proto.mapping.participant.PojoToProtoOneOfMapper;
-import org.somda.sdc.proto.model.biceps.AbstractAlertReportMsg;
-import org.somda.sdc.proto.model.biceps.AbstractComponentReportMsg;
-import org.somda.sdc.proto.model.biceps.AbstractContextReportMsg;
-import org.somda.sdc.proto.model.biceps.AbstractMetricReportMsg;
-import org.somda.sdc.proto.model.biceps.AbstractOperationalStateReportMsg;
-import org.somda.sdc.proto.model.biceps.AbstractReportMsg;
-import org.somda.sdc.proto.model.biceps.AbstractReportPartMsg;
-import org.somda.sdc.proto.model.biceps.AbstractSetMsg;
-import org.somda.sdc.proto.model.biceps.AbstractSetResponseMsg;
-import org.somda.sdc.proto.model.biceps.ActivateMsg;
-import org.somda.sdc.proto.model.biceps.ActivateResponseMsg;
-import org.somda.sdc.proto.model.biceps.DescriptionModificationReportMsg;
-import org.somda.sdc.proto.model.biceps.DescriptionModificationTypeMsg;
-import org.somda.sdc.proto.model.biceps.EpisodicAlertReportMsg;
-import org.somda.sdc.proto.model.biceps.EpisodicComponentReportMsg;
-import org.somda.sdc.proto.model.biceps.EpisodicContextReportMsg;
-import org.somda.sdc.proto.model.biceps.EpisodicMetricReportMsg;
-import org.somda.sdc.proto.model.biceps.EpisodicOperationalStateReportMsg;
-import org.somda.sdc.proto.model.biceps.InvocationErrorMsg;
-import org.somda.sdc.proto.model.biceps.InvocationInfoMsg;
-import org.somda.sdc.proto.model.biceps.InvocationStateMsg;
-import org.somda.sdc.proto.model.biceps.MdibVersionGroupMsg;
-import org.somda.sdc.proto.model.biceps.OperationInvokedReportMsg;
-import org.somda.sdc.proto.model.biceps.SetStringMsg;
-import org.somda.sdc.proto.model.biceps.SetStringResponseMsg;
-import org.somda.sdc.proto.model.biceps.SetValueMsg;
-import org.somda.sdc.proto.model.biceps.SetValueResponseMsg;
-import org.somda.sdc.proto.model.biceps.WaveformStreamMsg;
+import org.somda.sdc.proto.model.biceps.*;
 
 import java.util.stream.Collectors;
 
@@ -139,10 +112,10 @@ public class PojoToProtoMapper {
         var builder = DescriptionModificationReportMsg.ReportPartMsg.newBuilder()
                 .setAbstractReportPart(mapAbstractReportPart(reportPart));
         Util.doIfNotNull(reportPart.getParentDescriptor(),
-                val -> builder.setAParentDescriptor(Util.toStringValue(val)));
+                val -> builder.setAParentDescriptor(baseMapper.mapHandleRef(val)));
         Util.doIfNotNull(reportPart.getModificationType(),
                 val -> Util.mapToProtoEnum(val, DescriptionModificationTypeMsg.class));
-        reportPart.getDescriptor().forEach(descriptor -> builder.addDescriptorxXx(oneOfMapper.mapAbstractDescriptor(descriptor)));
+        reportPart.getDescriptor().forEach(descriptor -> builder.addPDescriptor(oneOfMapper.mapAbstractDescriptor(descriptor)));
         reportPart.getState().forEach(state -> builder.addState(oneOfMapper.mapAbstractStateOneOf(state)));
 
         return builder.build();
@@ -232,7 +205,7 @@ public class PojoToProtoMapper {
         );
         mdibVersionGroup.setASequenceId(report.getSequenceId());
         Util.doIfNotNull(report.getMdibVersion(), version ->
-                mdibVersionGroup.setAMdibVersion(Util.toUInt64(version))
+                mdibVersionGroup.setAMdibVersion(baseMapper.mapVersionCounter(version))
         );
 
         builder.setAMdibVersionGroup(mdibVersionGroup);
@@ -241,7 +214,7 @@ public class PojoToProtoMapper {
 
     public AbstractReportPartMsg mapAbstractReportPart(AbstractReportPart reportPart) {
         var builder = AbstractReportPartMsg.newBuilder();
-        Util.doIfNotNull(reportPart.getSourceMds(), mds -> builder.setSourceMds(Util.toStringValue(mds)));
+        Util.doIfNotNull(reportPart.getSourceMds(), mds -> builder.setSourceMds(baseMapper.mapHandleRef(mds)));
         return builder.build();
     }
 
@@ -267,9 +240,9 @@ public class PojoToProtoMapper {
 
             // todo map AbstractReportPartMsg
             //reportPartBuilder.setAbstractReportPart()
-            reportPartBuilder.setAOperationHandleRef(reportPart.getOperationHandleRef());
+            reportPartBuilder.setAOperationHandleRef(baseMapper.mapHandleRef(reportPart.getOperationHandleRef()));
             Util.doIfNotNull(reportPart.getOperationTarget(), it ->
-                    reportPartBuilder.setAOperationTarget(Util.toStringValue(it)));
+                    reportPartBuilder.setAOperationTarget(baseMapper.mapHandleRef(it)));
             reportPartBuilder.setInvocationInfo(mapInvocationInfo(reportPart.getInvocationInfo()));
             reportPartBuilder.setInvocationSource(
                     baseMapper.mapInstanceIdentifierOneOf(reportPart.getInvocationSource()));
@@ -287,7 +260,7 @@ public class PojoToProtoMapper {
         );
         mdibVersionGroup.setASequenceId(pojo.getSequenceId());
         Util.doIfNotNull(pojo.getMdibVersion(), version ->
-                mdibVersionGroup.setAMdibVersion(Util.toUInt64(version))
+                mdibVersionGroup.setAMdibVersion(baseMapper.mapVersionCounter(version))
         );
 
         builder.setAMdibVersionGroup(mdibVersionGroup);
@@ -298,13 +271,17 @@ public class PojoToProtoMapper {
 
     public AbstractSetMsg mapAbstractSet(AbstractSet pojo) {
         var builder = AbstractSetMsg.newBuilder();
-        builder.setOperationHandleRef(pojo.getOperationHandleRef());
+        builder.setOperationHandleRef(baseMapper.mapHandleRef(pojo.getOperationHandleRef()));
         return builder.build();
+    }
+
+    public TransactionIdMsg mapTransactionId(long transactionId) {
+        return TransactionIdMsg.newBuilder().setUnsignedInt((int) transactionId).build();
     }
 
     public InvocationInfoMsg mapInvocationInfo(InvocationInfo invocationInfo) {
         var builder = InvocationInfoMsg.newBuilder();
-        builder.setTransactionId((int)invocationInfo.getTransactionId());
+        builder.setTransactionId(mapTransactionId(invocationInfo.getTransactionId()));
         Util.doIfNotNull(invocationInfo.getInvocationError(), it ->
                 builder.setInvocationError(Util.mapToProtoEnum(it, InvocationErrorMsg.class)));
         Util.doIfNotNull(invocationInfo.getInvocationState(), it ->

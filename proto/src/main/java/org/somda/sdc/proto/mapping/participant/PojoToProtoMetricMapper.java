@@ -188,7 +188,7 @@ public class PojoToProtoMetricMapper {
                 .setAbstractMetricValue(mapAbstractMetricValue(value));
 
         var valueBuilder = RealTimeValueTypeMsg.newBuilder();
-        value.getSamples().forEach(sample -> valueBuilder.addRealTimeValueType(sample.toPlainString()));
+        value.getSamples().forEach(sample -> valueBuilder.addDecimal(sample.toPlainString()));
         builder.setASamples(valueBuilder);
 
         return builder.build();
@@ -217,19 +217,23 @@ public class PojoToProtoMetricMapper {
         var builder = AbstractMetricValueMsg.newBuilder();
         Util.doIfNotNull(
                 value.getStartTime(),
-                time -> builder.setAStartTime(Util.toUInt64(timestampAdapter.marshal(time)))
+                time -> builder.setAStartTime(baseMapper.mapTimestamp(timestampAdapter.marshal(time)))
         );
         Util.doIfNotNull(
                 value.getStopTime(),
-                time -> builder.setAStopTime(Util.toUInt64(timestampAdapter.marshal(time)))
+                time -> builder.setAStopTime(baseMapper.mapTimestamp(timestampAdapter.marshal(time)))
         );
         Util.doIfNotNull(
                 value.getDeterminationTime(),
-                time -> builder.setADeterminationTime(Util.toUInt64(timestampAdapter.marshal(time)))
+                time -> builder.setADeterminationTime(baseMapper.mapTimestamp(timestampAdapter.marshal(time)))
         );
         builder.setMetricQuality(mapMetricQuality(value.getMetricQuality()));
         value.getAnnotation().forEach(it -> builder.addAnnotation(mapAnnotation(it)));
         return builder.build();
+    }
+
+    private QualityIndicatorMsg mapQualityIndicator(String qualityIndicator) {
+        return QualityIndicatorMsg.newBuilder().setDecimal(qualityIndicator).build();
     }
 
     private AbstractMetricValueMsg.MetricQualityMsg mapMetricQuality(AbstractMetricValue.MetricQuality quality) {
@@ -238,7 +242,7 @@ public class PojoToProtoMetricMapper {
                 builder.setAMode(Util.mapToProtoEnum(mode, GenerationModeMsg.class)));
         Util.doIfNotNull(quality.getValidity(), validity ->
                 builder.setAValidity(Util.mapToProtoEnum(validity, MeasurementValidityMsg.class)));
-        Util.doIfNotNull(quality.getQi(), qi -> builder.setAQi(Util.toStringValue(qi.toPlainString())));
+        Util.doIfNotNull(quality.getQi(), qi -> builder.setAQi(mapQualityIndicator(qi.toPlainString())));
 
         return builder.build();
     }
@@ -252,7 +256,7 @@ public class PojoToProtoMetricMapper {
     private AbstractMetricDescriptorMsg.RelationMsg mapRelation(AbstractMetricDescriptor.Relation relation) {
         var builder = AbstractMetricDescriptorMsg.RelationMsg.newBuilder();
 
-        builder.setAKind(Util.mapToProtoEnum(relation.getKind(), AbstractMetricDescriptorMsg.RelationMsg.KindMsg.class));
+        builder.setAKind(Util.mapToProtoEnum(relation.getKind(), AbstractMetricDescriptorMsg.RelationMsg.AKindMsg.class));
         builder.setAEntries(mapEntry(relation.getEntries()));
         Util.doIfNotNull(relation.getCode(), codedValue -> builder.setCode(baseMapper.mapCodedValue(codedValue)));
         Util.doIfNotNull(relation.getIdentification(), instanceIdentifier ->
@@ -263,7 +267,7 @@ public class PojoToProtoMetricMapper {
 
     private EntryRefMsg mapEntry(List<String> entries) {
         var builder = EntryRefMsg.newBuilder();
-        builder.addAllEntryRef(entries);
+        entries.forEach(entry -> builder.addHandleRef(baseMapper.mapHandleRef(entry)));
         return builder.build();
     }
 

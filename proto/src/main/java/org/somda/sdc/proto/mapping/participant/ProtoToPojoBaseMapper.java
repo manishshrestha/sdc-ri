@@ -24,8 +24,8 @@ public class ProtoToPojoBaseMapper {
     }
 
     void map(AbstractDescriptor pojo, AbstractDescriptorMsg protoMsg) {
-        pojo.setHandle(protoMsg.getAHandle());
-        pojo.setDescriptorVersion(Util.optionalBigIntOfLong(protoMsg, "ADescriptorVersion"));
+        pojo.setHandle(protoMsg.getAHandle().getString());
+        pojo.setDescriptorVersion(Util.optionalVersionCounter(protoMsg, "ADescriptorVersion"));
         if (protoMsg.hasType()) {
             pojo.setType(map(protoMsg.getType()));
         }
@@ -37,13 +37,13 @@ public class ProtoToPojoBaseMapper {
     }
 
     void map(AbstractState pojo, AbstractStateMsg protoMsg) {
-        pojo.setDescriptorHandle(protoMsg.getADescriptorHandle());
-        pojo.setDescriptorVersion(Util.optionalBigIntOfLong(protoMsg, "ADescriptorVersion"));
-        pojo.setStateVersion(Util.optionalBigIntOfLong(protoMsg, "AStateVersion"));
+        pojo.setDescriptorHandle(protoMsg.getADescriptorHandle().getString());
+        pojo.setDescriptorVersion(Util.optionalReferencedVersion(protoMsg, "ADescriptorVersion"));
+        pojo.setStateVersion(Util.optionalVersionCounter(protoMsg, "AStateVersion"));
     }
 
     void map(AbstractMultiState pojo, AbstractMultiStateMsg protoMsg) {
-        pojo.setHandle(protoMsg.getAHandle());
+        pojo.setHandle(protoMsg.getAHandle().getString());
         Util.doIfNotNull(Util.optional(protoMsg, "Category", CodedValueMsg.class), category ->
                 pojo.setCategory(map(category)));
         map(pojo, protoMsg.getAbstractState());
@@ -55,8 +55,15 @@ public class ProtoToPojoBaseMapper {
         }
 
         var pojo = new InstanceIdentifier();
-        pojo.setExtensionName(Util.optionalStr(protoMsg, "AExtension"));
-        pojo.setRootName(Util.optionalStr(protoMsg, "ARoot"));
+        Util.doIfNotNull(
+                Util.optional(protoMsg, "AExtension", InstanceIdentifierMsg.AExtensionMsg.class),
+                ext -> pojo.setExtensionName(ext.getString())
+        );
+        Util.doIfNotNull(Util.optional(
+                protoMsg, "ARoot", InstanceIdentifierMsg.ARootMsg.class),
+                msg -> pojo.setRootName(msg.getAnyURI())
+        );
+
         pojo.setType(map(Util.optional(protoMsg, "Type", CodedValueMsg.class)));
         pojo.setIdentifierName(mapLocalizedTexts(protoMsg.getIdentifierNameList()));
         return pojo;
@@ -96,10 +103,13 @@ public class ProtoToPojoBaseMapper {
         }
 
         var pojo = new CodedValue();
-        pojo.setCode(protoMsg.getACode());
+        pojo.setCode(protoMsg.getACode().getString());
         pojo.setCodingSystem(Util.optionalStr(protoMsg, "ACodingSystem"));
         pojo.setCodingSystemVersion(Util.optionalStr(protoMsg, "ACodingSystemVersion"));
-        pojo.setSymbolicCodeName(Util.optionalStr(protoMsg, "ASymbolicCodeName"));
+        Util.doIfNotNull(
+                Util.optional(protoMsg, "ASymbolicCodeName", SymbolicCodeNameMsg.class),
+                name -> pojo.setSymbolicCodeName(name.getString())
+        );
 
         pojo.setCodingSystemName(mapLocalizedTexts(protoMsg.getCodingSystemNameList()));
         pojo.setConceptDescription(mapLocalizedTexts(protoMsg.getConceptDescriptionList()));
@@ -118,7 +128,7 @@ public class ProtoToPojoBaseMapper {
         }
 
         var pojo = new CodedValue.Translation();
-        pojo.setCode(protoMsg.getACode());
+        pojo.setCode(protoMsg.getACode().getString());
         Util.doIfNotNull(Util.optionalStr(protoMsg, "ACodingSystem"),
                 system -> pojo.setCodingSystem(system));
 
@@ -137,12 +147,15 @@ public class ProtoToPojoBaseMapper {
 
         var pojo = new LocalizedText();
         pojo.setLang(Util.optionalStr(protoMsg, "ALang"));
-        pojo.setRef(Util.optionalStr(protoMsg, "ARef"));
-        pojo.setVersion(Util.optionalBigIntOfLong(protoMsg, "AVersion"));
+        Util.doIfNotNull(
+                Util.optional(protoMsg, "ARef", LocalizedTextRefMsg.class),
+                ref -> pojo.setRef(ref.getString())
+        );
+        pojo.setVersion(Util.optionalReferencedVersion(protoMsg, "AVersion"));
         if (protoMsg.hasATextWidth()) {
             pojo.setTextWidth(Util.mapToPojoEnum(protoMsg, "ATextWidth", LocalizedTextWidth.class));
         }
-        pojo.setValue(protoMsg.getString());
+        pojo.setValue(protoMsg.getLocalizedTextContent().getString());
         return pojo;
     }
 
@@ -202,5 +215,13 @@ public class ProtoToPojoBaseMapper {
         pojo.setNumber(Util.optionalIntOfInt(protoMsg, "ANumber"));
         pojo.setLabel(mapLocalizedTexts(protoMsg.getLabelList()));
         return pojo;
+    }
+
+    public String map(HandleRefMsg handleRefMsg) {
+        return handleRefMsg.getString();
+    }
+
+    public int map(TransactionIdMsg transactionIdMsg) {
+        return transactionIdMsg.getUnsignedInt();
     }
 }

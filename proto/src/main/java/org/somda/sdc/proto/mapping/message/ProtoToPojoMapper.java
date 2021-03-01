@@ -38,29 +38,7 @@ import org.somda.sdc.proto.mapping.Util;
 import org.somda.sdc.proto.mapping.participant.ProtoToPojoBaseMapper;
 import org.somda.sdc.proto.mapping.participant.ProtoToPojoMetricMapper;
 import org.somda.sdc.proto.mapping.participant.ProtoToPojoOneOfMapper;
-import org.somda.sdc.proto.model.biceps.AbstractAlertReportMsg;
-import org.somda.sdc.proto.model.biceps.AbstractComponentReportMsg;
-import org.somda.sdc.proto.model.biceps.AbstractContextReportMsg;
-import org.somda.sdc.proto.model.biceps.AbstractMetricReportMsg;
-import org.somda.sdc.proto.model.biceps.AbstractOperationalStateReportMsg;
-import org.somda.sdc.proto.model.biceps.AbstractReportMsg;
-import org.somda.sdc.proto.model.biceps.AbstractReportPartMsg;
-import org.somda.sdc.proto.model.biceps.AbstractSetResponseMsg;
-import org.somda.sdc.proto.model.biceps.ActivateMsg;
-import org.somda.sdc.proto.model.biceps.ActivateResponseMsg;
-import org.somda.sdc.proto.model.biceps.DescriptionModificationReportMsg;
-import org.somda.sdc.proto.model.biceps.EpisodicAlertReportMsg;
-import org.somda.sdc.proto.model.biceps.EpisodicComponentReportMsg;
-import org.somda.sdc.proto.model.biceps.EpisodicContextReportMsg;
-import org.somda.sdc.proto.model.biceps.EpisodicMetricReportMsg;
-import org.somda.sdc.proto.model.biceps.EpisodicOperationalStateReportMsg;
-import org.somda.sdc.proto.model.biceps.InvocationInfoMsg;
-import org.somda.sdc.proto.model.biceps.OperationInvokedReportMsg;
-import org.somda.sdc.proto.model.biceps.SetStringMsg;
-import org.somda.sdc.proto.model.biceps.SetStringResponseMsg;
-import org.somda.sdc.proto.model.biceps.SetValueMsg;
-import org.somda.sdc.proto.model.biceps.SetValueResponseMsg;
-import org.somda.sdc.proto.model.biceps.WaveformStreamMsg;
+import org.somda.sdc.proto.model.biceps.*;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -184,7 +162,7 @@ public class ProtoToPojoMapper {
         pojo.setReportPart(protoMsg.getReportPartList().stream().map(reportPartMsg -> {
             var reportPart = new OperationInvokedReport.ReportPart();
             reportPart.setInvocationSource(baseMapper.map(reportPartMsg.getInvocationSource().getInstanceIdentifier()));
-            reportPart.setOperationHandleRef(reportPartMsg.getAOperationHandleRef());
+            reportPart.setOperationHandleRef(baseMapper.map(reportPartMsg.getAOperationHandleRef()));
             reportPart.setOperationTarget(Util.optionalStr(reportPartMsg, "AOperationTarget"));
             // todo map abstract report part
             // reportPartMsg.getAbstractReportPart().
@@ -200,7 +178,7 @@ public class ProtoToPojoMapper {
         pojo.setInvocationError(Util.mapToPojoEnum(protoMsg, "InvocationError", InvocationError.class));
         pojo.setInvocationState(Util.mapToPojoEnum(protoMsg, "InvocationState", InvocationState.class));
         pojo.setInvocationErrorMessage(baseMapper.mapLocalizedTexts(protoMsg.getInvocationErrorMessageList()));
-        pojo.setTransactionId(protoMsg.getTransactionId());
+        pojo.setTransactionId(baseMapper.map(protoMsg.getTransactionId()));
         return pojo;
     }
 
@@ -272,7 +250,10 @@ public class ProtoToPojoMapper {
     private void map(AbstractReport pojo, AbstractReportMsg protoMsg) {
         var mdibVersion = protoMsg.getAMdibVersionGroup();
         pojo.setInstanceId(Util.optionalBigIntOfLong(mdibVersion, "AInstanceId"));
-        pojo.setMdibVersion(Util.optionalBigIntOfLong(mdibVersion, "AMdibVersion"));
+        Util.doIfNotNull(
+                Util.optional(mdibVersion, "AMdibVersion", VersionCounterMsg.class),
+                versionCounterMsg -> pojo.setMdibVersion(BigInteger.valueOf(versionCounterMsg.getUnsignedLong()))
+        );
         pojo.setSequenceId(mdibVersion.getASequenceId());
     }
 

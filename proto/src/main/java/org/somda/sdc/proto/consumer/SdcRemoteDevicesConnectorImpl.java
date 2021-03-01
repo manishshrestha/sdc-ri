@@ -400,7 +400,7 @@ public class SdcRemoteDevicesConnectorImpl extends AbstractIdleService
 
             BigInteger mdibVersion = null;
             if (mdib.getAMdibVersionGroup().hasAMdibVersion()) {
-                mdibVersion = BigInteger.valueOf(mdib.getAMdibVersionGroup().getAMdibVersion().getValue());
+                mdibVersion = BigInteger.valueOf(mdib.getAMdibVersionGroup().getAMdibVersion().getUnsignedLong());
             }
             // TODO: instanceid
             MdibVersion mdibVersionX = null;
@@ -412,12 +412,12 @@ public class SdcRemoteDevicesConnectorImpl extends AbstractIdleService
 
             BigInteger descriptorVersion = null;
             if (mdib.getMdDescription().hasADescriptionVersion()) {
-                descriptorVersion = BigInteger.valueOf(mdib.getMdDescription().getADescriptionVersion().getValue());
+                descriptorVersion = BigInteger.valueOf(mdib.getMdDescription().getADescriptionVersion().getUnsignedLong());
             }
 
             BigInteger stateVersion = null;
             if (mdib.getMdState().hasAStateVersion()) {
-                stateVersion = BigInteger.valueOf(mdib.getMdState().getAStateVersion().getValue());
+                stateVersion = BigInteger.valueOf(mdib.getMdState().getAStateVersion().getUnsignedLong());
             }
 
             mdibAccess.writeDescription(

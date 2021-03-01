@@ -104,7 +104,7 @@ public class ProtoToPojoAlertMapper {
         pojo.setCanEscalate(Util.mapToPojoEnum(protoMsg, "ACanEscalate", AlertConditionPriority.class));
         pojo.setCanDeescalate(Util.mapToPojoEnum(protoMsg, "ACanDeescalate", AlertConditionPriority.class));
 
-        protoMsg.getSourceList().forEach(src -> pojo.getSource().add(src));
+        protoMsg.getSourceList().forEach(src -> pojo.getSource().add(src.getString()));
         protoMsg.getCauseInfoList().forEach(info -> pojo.getCauseInfo().add(map(info)));
 
         // TODO: Extension
@@ -131,8 +131,8 @@ public class ProtoToPojoAlertMapper {
         var pojo = new AlertSignalDescriptor();
         map(pojo, protoMsg.getAbstractAlertDescriptor());
 
-        Util.doIfNotNull(Util.optional(protoMsg, "AConditionSignaled", StringValue.class), condition ->
-                pojo.setConditionSignaled(condition.getValue()));
+
+        pojo.setConditionSignaled(Util.optionalHandleRef(protoMsg, "AConditionSignaled"));
         pojo.setManifestation(Util.mapToPojoEnum(protoMsg, "AManifestation", AlertSignalManifestation.class));
         pojo.setLatching(protoMsg.getALatching());
         Util.doIfNotNull(Util.optional(protoMsg, "ADefaultSignalGenerationDelay", Duration.class), duration ->
@@ -159,15 +159,14 @@ public class ProtoToPojoAlertMapper {
         var pojo = new AlertSystemState();
         map(pojo, protoMsg.getAbstractAlertState());
 
-        Util.doIfNotNull(Util.optionalBigIntOfLong(protoMsg, "ALastSelfCheck"), check ->
-                pojo.setLastSelfCheck(timestampAdapter.unmarshal(check)));
+        pojo.setLastSelfCheck(Util.optionalTimestamp(protoMsg, "ALastSelfCheck", timestampAdapter));
         Util.doIfNotNull(Util.optional(protoMsg, "ASelfCheckCount", Int64Value.class), value ->
                 pojo.setSelfCheckCount(value.getValue()));
         Util.doIfNotNull(protoMsg.getAPresentPhysiologicalAlarmConditions(), conditions ->
-                pojo.setPresentPhysiologicalAlarmConditions(conditions.getAlertConditionReferenceList())
+                conditions.getHandleRefList().forEach(handle -> pojo.getPresentPhysiologicalAlarmConditions().add(handle.getString()))
         );
         Util.doIfNotNull(protoMsg.getAPresentTechnicalAlarmConditions(), conditions ->
-                pojo.setPresentTechnicalAlarmConditions(conditions.getAlertConditionReferenceList())
+                conditions.getHandleRefList().forEach(handle -> pojo.getPresentTechnicalAlarmConditions().add(handle.getString()))
         );
 
         protoMsg.getSystemSignalActivationList().forEach(ssa -> pojo.getSystemSignalActivation().add(map(ssa)));
@@ -211,8 +210,7 @@ public class ProtoToPojoAlertMapper {
         pojo.setRank(Util.optionalIntOfInt(protoMsg, "ARank"));
         Util.doIfNotNull(Util.optional(protoMsg, "APresence", BoolValue.class), presence ->
                 pojo.setPresence(presence.getValue()));
-        Util.doIfNotNull(Util.optionalBigIntOfLong(protoMsg, "ADeterminationTime"), check ->
-                pojo.setDeterminationTime(timestampAdapter.unmarshal(check)));
+        pojo.setDeterminationTime(Util.optionalTimestamp(protoMsg, "ADeterminationTime", timestampAdapter));
     }
 
     private void map(AbstractAlertState pojo, AbstractAlertStateMsg protoMsg) {

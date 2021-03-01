@@ -92,7 +92,7 @@ public class PojoToProtoTreeMapper {
         var mdibVersionGroup = MdibVersionGroupMsg.newBuilder();
         mdibVersionGroup.setAInstanceId(Util.toUInt64(mdibVersion.getInstanceId()));
         Util.doIfNotNull(mdibVersion.getSequenceId(), mdibVersionGroup::setASequenceId);
-        mdibVersionGroup.setAMdibVersion(Util.toUInt64(mdibVersion.getVersion()));
+        mdibVersionGroup.setAMdibVersion(baseMapper.mapVersionCounter(mdibVersion.getVersion()));
 
         mdib.setAMdibVersionGroup(mdibVersionGroup.build());
         mdib.setMdDescription(mapMdDescription(Collections.emptyList()));
@@ -116,7 +116,7 @@ public class PojoToProtoTreeMapper {
      */
     public MdStateMsg mapMdState(List<String> handleFilter) {
         var mdState = MdStateMsg.newBuilder();
-        mdState.setAStateVersion(Util.toUInt64(mdibAccess.getMdStateVersion()));
+        mdState.setAStateVersion(baseMapper.mapVersionCounter(mdibAccess.getMdStateVersion()));
 
         if (handleFilter.isEmpty()) {
             for (MdibEntity rootEntity : mdibAccess.getRootEntities()) {
@@ -150,7 +150,7 @@ public class PojoToProtoTreeMapper {
     public MdDescriptionMsg mapMdDescription(List<String> handleFilter) {
         var mdDescription = MdDescriptionMsg.newBuilder();
         var handleFilterCopy = new HashSet<>(handleFilter);
-        mdDescription.setADescriptionVersion(Util.toUInt64(mdibAccess.getMdDescriptionVersion()));
+        mdDescription.setADescriptionVersion(baseMapper.mapVersionCounter(mdibAccess.getMdDescriptionVersion()));
 
         List<MdibEntity> rootEntities;
         if (handleFilter.isEmpty()) {

@@ -21,27 +21,7 @@ import org.somda.sdc.common.CommonConfig;
 import org.somda.sdc.common.logging.InstanceLogger;
 import org.somda.sdc.common.util.TimestampAdapter;
 import org.somda.sdc.proto.mapping.Util;
-import org.somda.sdc.proto.model.biceps.AbstractAlertDescriptorMsg;
-import org.somda.sdc.proto.model.biceps.AbstractAlertStateMsg;
-import org.somda.sdc.proto.model.biceps.AlertActivationMsg;
-import org.somda.sdc.proto.model.biceps.AlertConditionDescriptorMsg;
-import org.somda.sdc.proto.model.biceps.AlertConditionKindMsg;
-import org.somda.sdc.proto.model.biceps.AlertConditionMonitoredLimitsMsg;
-import org.somda.sdc.proto.model.biceps.AlertConditionPriorityMsg;
-import org.somda.sdc.proto.model.biceps.AlertConditionReferenceMsg;
-import org.somda.sdc.proto.model.biceps.AlertConditionStateMsg;
-import org.somda.sdc.proto.model.biceps.AlertSignalDescriptorMsg;
-import org.somda.sdc.proto.model.biceps.AlertSignalManifestationMsg;
-import org.somda.sdc.proto.model.biceps.AlertSignalPresenceMsg;
-import org.somda.sdc.proto.model.biceps.AlertSignalPrimaryLocationMsg;
-import org.somda.sdc.proto.model.biceps.AlertSignalStateMsg;
-import org.somda.sdc.proto.model.biceps.AlertSystemDescriptorMsg;
-import org.somda.sdc.proto.model.biceps.AlertSystemStateMsg;
-import org.somda.sdc.proto.model.biceps.CauseInfoMsg;
-import org.somda.sdc.proto.model.biceps.LimitAlertConditionDescriptorMsg;
-import org.somda.sdc.proto.model.biceps.LimitAlertConditionStateMsg;
-import org.somda.sdc.proto.model.biceps.RemedyInfoMsg;
-import org.somda.sdc.proto.model.biceps.SystemSignalActivationMsg;
+import org.somda.sdc.proto.model.biceps.*;
 
 import java.util.List;
 
@@ -95,10 +75,10 @@ public class PojoToProtoAlertMapper {
         Util.doIfNotNull(descriptor.getDefaultConditionGenerationDelay(), delay ->
                 builder.setADefaultConditionGenerationDelay(Util.fromJavaDuration(delay)));
         Util.doIfNotNull(descriptor.getCanEscalate(), escalate ->
-                builder.setACanEscalate(Util.mapToProtoEnum(escalate, AlertConditionDescriptorMsg.CanEscalateMsg.class)));
+                builder.setACanEscalate(Util.mapToProtoEnum(escalate, AlertConditionDescriptorMsg.ACanEscalateMsg.class)));
         Util.doIfNotNull(descriptor.getCanDeescalate(), escalate ->
-                builder.setACanDeescalate(Util.mapToProtoEnum(escalate, AlertConditionDescriptorMsg.CanDeescalateMsg.class)));
-        descriptor.getSource().forEach(builder::addSource);
+                builder.setACanDeescalate(Util.mapToProtoEnum(escalate, AlertConditionDescriptorMsg.ACanDeescalateMsg.class)));
+        descriptor.getSource().forEach(source -> builder.addSource(baseMapper.mapHandleRef(source)));
         descriptor.getCauseInfo().forEach(info -> builder.addCauseInfo(mapCauseInfo(info)));
 
         // TODO
@@ -125,7 +105,7 @@ public class PojoToProtoAlertMapper {
                 .setAbstractAlertDescriptor(mapAbstractAlertDescriptor(descriptor));
 
         Util.doIfNotNull(descriptor.getConditionSignaled(), condition ->
-                builder.setAConditionSignaled(Util.toStringValue(condition)));
+                builder.setAConditionSignaled(baseMapper.mapHandleRef(condition)));
         builder.setAManifestation(Util.mapToProtoEnum(descriptor.getManifestation(), AlertSignalManifestationMsg.class));
         builder.setALatching(descriptor.isLatching());
         Util.doIfNotNull(descriptor.getDefaultSignalGenerationDelay(), duration ->
@@ -149,7 +129,7 @@ public class PojoToProtoAlertMapper {
                 .setAbstractAlertState(mapAbstractAlertState(state));
 
         Util.doIfNotNull(state.getLastSelfCheck(), timestamp ->
-                builder.setALastSelfCheck(Util.toUInt64(timestampAdapter.marshal(timestamp))));
+                builder.setALastSelfCheck(baseMapper.mapTimestamp(timestampAdapter.marshal(timestamp))));
         Util.doIfNotNull(state.getSelfCheckCount(), count ->
                 builder.setASelfCheckCount(Util.toInt64(count)));
         builder.setAPresentPhysiologicalAlarmConditions(mapAlertConditionReference(state.getPresentPhysiologicalAlarmConditions()));
@@ -187,7 +167,7 @@ public class PojoToProtoAlertMapper {
         Util.doIfNotNull(state.isPresence(), presence ->
                 builder.setAPresence(Util.toBoolValue(presence)));
         Util.doIfNotNull(state.getDeterminationTime(), timestamp ->
-                builder.setADeterminationTime(Util.toUInt64(timestampAdapter.marshal(timestamp))));
+                builder.setADeterminationTime(baseMapper.mapTimestamp(timestampAdapter.marshal(timestamp))));
 
         return builder.build();
     }
@@ -223,7 +203,7 @@ public class PojoToProtoAlertMapper {
 
     private AlertConditionReferenceMsg mapAlertConditionReference(List<String> references) {
         var builder = AlertConditionReferenceMsg.newBuilder();
-        references.forEach(builder::addAlertConditionReference);
+        references.forEach(ref -> builder.addHandleRef(baseMapper.mapHandleRef(ref)));
         return builder.build();
     }
 

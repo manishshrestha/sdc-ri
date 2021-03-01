@@ -81,7 +81,9 @@ public class PojoToProtoComponentMapper {
     }
 
     public OperationRefMsg mapOperationRefs(List<String> opRefs) {
-        return OperationRefMsg.newBuilder().addAllOperationRef(opRefs).build();
+        var builder = OperationRefMsg.newBuilder();
+        opRefs.forEach(ref -> builder.addHandleRef(baseMapper.mapHandleRef(ref)));
+        return builder.build();
     }
 
     public ScoStateMsg.OperationGroupMsg mapOperationGroup(ScoState.OperationGroup group) {
@@ -204,7 +206,7 @@ public class PojoToProtoComponentMapper {
         Util.doIfNotNull(calibrationInfo.getType(), type ->
                 builder.setAType(Util.mapToProtoEnum(type, CalibrationTypeMsg.class)));
         Util.doIfNotNull(calibrationInfo.getTime(), time ->
-                builder.setATime(Util.toUInt64(timestampAdapter.marshal(time))));
+                builder.setATime(baseMapper.mapTimestamp(timestampAdapter.marshal(time))));
 
         calibrationInfo.getCalibrationDocumentation().forEach(doc ->
                 builder.addCalibrationDocumentation(mapCalibrationDocumentation(doc)));

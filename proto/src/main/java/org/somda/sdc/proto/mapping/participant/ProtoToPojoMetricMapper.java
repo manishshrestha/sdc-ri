@@ -14,6 +14,7 @@ import org.somda.sdc.proto.mapping.Util;
 import org.somda.sdc.proto.model.biceps.*;
 
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.stream.Collectors;
 
@@ -132,7 +133,7 @@ public class ProtoToPojoMetricMapper {
     public SampleArrayValue map(SampleArrayValueMsg protoMsg) {
         var pojo = new SampleArrayValue();
         pojo.setSamples(
-                protoMsg.getASamples().getRealTimeValueTypeList().stream()
+                protoMsg.getASamples().getDecimalList().stream()
                         .map(BigDecimal::new)
                         .collect(Collectors.toList())
         );
@@ -155,12 +156,9 @@ public class ProtoToPojoMetricMapper {
     }
 
     private void map(AbstractMetricValue pojo, AbstractMetricValueMsg protoMsg) {
-        pojo.setStartTime(timestampAdapter.unmarshal(
-                Util.optionalBigIntOfLong(protoMsg, "AStartTime")));
-        pojo.setStopTime(timestampAdapter.unmarshal(
-                Util.optionalBigIntOfLong(protoMsg, "AStopTime")));
-        pojo.setDeterminationTime(timestampAdapter.unmarshal(
-                Util.optionalBigIntOfLong(protoMsg, "ADeterminationTime")));
+        pojo.setStartTime(Util.optionalTimestamp(protoMsg, "AStartTime", timestampAdapter));
+        pojo.setStopTime(Util.optionalTimestamp(protoMsg, "AStopTime", timestampAdapter));
+        pojo.setDeterminationTime(Util.optionalTimestamp(protoMsg, "ADeterminationTime", timestampAdapter));
         pojo.setMetricQuality(map(protoMsg.getMetricQuality()));
         protoMsg.getAnnotationList().forEach(it -> pojo.getAnnotation().add(map(it)));
     }
@@ -173,7 +171,10 @@ public class ProtoToPojoMetricMapper {
         Util.doIfNotNull(protoMsg.getAValidity(), validity ->
                 pojo.setValidity(Util.mapToPojoEnum(protoMsg, "AValidity", MeasurementValidity.class))
         );
-        pojo.setQi(Util.optionalBigDecimalOfString(protoMsg, "AQi"));
+        Util.doIfNotNull(
+                Util.optional(protoMsg, "AQi", QualityIndicatorMsg.class),
+                qi -> pojo.setQi(new BigDecimal(qi.getDecimal()))
+        );
         return pojo;
     }
 
@@ -250,7 +251,7 @@ public class ProtoToPojoMetricMapper {
     private AbstractMetricDescriptor.Relation map(AbstractMetricDescriptorMsg.RelationMsg protoMsg) {
         var pojo = new AbstractMetricDescriptor.Relation();
         pojo.setKind(Util.mapToPojoEnum(protoMsg, "AKind", AbstractMetricDescriptor.Relation.Kind.class));
-        pojo.setEntries(new ArrayList<>(protoMsg.getAEntries().getEntryRefList()));
+        protoMsg.getAEntries().getHandleRefList().forEach(handle -> pojo.getEntries().add(handle.getString()));
 
         Util.doIfNotNull(Util.optional(protoMsg, "Code", CodedValueMsg.class), codedValueMsg ->
                 pojo.setCode(baseMapper.map(codedValueMsg)));

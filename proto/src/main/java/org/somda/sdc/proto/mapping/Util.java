@@ -8,11 +8,18 @@ import com.google.protobuf.StringValue;
 import com.google.protobuf.UInt32Value;
 import com.google.protobuf.UInt64Value;
 import org.somda.sdc.biceps.model.participant.*;
+import org.somda.sdc.common.util.TimestampAdapter;
+import org.somda.sdc.proto.model.biceps.HandleRefMsg;
+import org.somda.sdc.proto.model.biceps.MdsOperatingModeMsg;
+import org.somda.sdc.proto.model.biceps.ReferencedVersionMsg;
+import org.somda.sdc.proto.model.biceps.TimestampMsg;
+import org.somda.sdc.proto.model.biceps.VersionCounterMsg;
 
 import javax.annotation.Nullable;
 import java.lang.reflect.InvocationTargetException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.time.Instant;
 import java.util.Arrays;
 import java.util.Optional;
 import java.util.function.Consumer;
@@ -144,6 +151,38 @@ public class Util {
         }
     }
 
+    public static Instant optionalTimestamp(Object protoMsg, String protoTypeName, TimestampAdapter timestampAdapter) {
+        var timestampMsg = Util.optional(protoMsg, protoTypeName, TimestampMsg.class);
+        if (timestampMsg != null) {
+            return timestampAdapter.unmarshal(BigInteger.valueOf(timestampMsg.getUnsignedLong()));
+        }
+        return null;
+    }
+
+    public static BigInteger optionalReferencedVersion(Object protoMsg, String protoTypeName) {
+        var version = Util.optional(protoMsg, protoTypeName, ReferencedVersionMsg.class);
+        if (version != null) {
+            return BigInteger.valueOf(version.getVersionCounter().getUnsignedLong());
+        }
+        return null;
+    }
+
+    public static BigInteger optionalVersionCounter(Object protoMsg, String protoTypeName) {
+        var version = Util.optional(protoMsg, protoTypeName, VersionCounterMsg.class);
+        if (version != null) {
+            return BigInteger.valueOf(version.getUnsignedLong());
+        }
+        return null;
+    }
+
+    public static String optionalHandleRef(Object protoMsg, String protoTypeName) {
+        var handleRef = Util.optional(protoMsg, protoTypeName, HandleRefMsg.class);
+        if (handleRef != null) {
+            return handleRef.getString();
+        }
+        return null;
+    }
+
     public static <T> T mapToPojoEnum(Object protoMsg, String protoEnumName, Class<T> pojoEnumType) {
         try {
             var hasEnum = "has" + protoEnumName;
@@ -154,7 +193,7 @@ public class Util {
                 return null;
             }
             var enumContainer = getEnumMethod.invoke(protoMsg);
-            var getEnumValueMethod = enumContainer.getClass().getMethod("getEnumValue");
+            var getEnumValueMethod = enumContainer.getClass().getMethod("getEnumType");
             var protoEnumValue = getEnumValueMethod.invoke(enumContainer);
             var protoEnumNameMethod = protoEnumValue.getClass().getMethod("name");
             var valueOfMethod = pojoEnumType.getMethod("valueOf", String.class);
@@ -179,7 +218,7 @@ public class Util {
                     .filter(aClass -> aClass.getName().endsWith("EnumType"))
                     .findFirst().orElseThrow(() -> new RuntimeException("No type named EnumType was found"));
 
-            var setValueMethod = protoEnumMsg.getClass().getMethod("setEnumValue", enumType);
+            var setValueMethod = protoEnumMsg.getClass().getMethod("setEnumType", enumType);
             var valueOfMethod = enumType.getMethod("valueOf", String.class);
             setValueMethod.invoke(protoEnumMsg, valueOfMethod.invoke(null, enumStringValue));
             return protoEnumMsgType.cast(buildMethod.invoke(protoEnumMsg));

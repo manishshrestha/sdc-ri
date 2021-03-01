@@ -114,13 +114,13 @@ public class PojoToProtoContextMapper {
     public AbstractContextStateMsg mapAbstractContextState(AbstractContextState contextState) {
         var builder = AbstractContextStateMsg.newBuilder();
         Util.doIfNotNull(contextState.getBindingStartTime(), it ->
-                builder.setABindingStartTime(Util.toUInt64(timestampAdapter.marshal(it))));
+                builder.setABindingStartTime(baseMapper.mapTimestamp(timestampAdapter.marshal(it))));
         Util.doIfNotNull(contextState.getBindingEndTime(), it ->
-                builder.setABindingEndTime(Util.toUInt64(timestampAdapter.marshal(it))));
+                builder.setABindingEndTime(baseMapper.mapTimestamp(timestampAdapter.marshal(it))));
         Util.doIfNotNull(contextState.getBindingMdibVersion(), it ->
-                builder.setABindingMdibVersion(Util.toUInt64(it)));
+                builder.setABindingMdibVersion(baseMapper.mapReferencedVersion(it)));
         Util.doIfNotNull(contextState.getUnbindingMdibVersion(), it ->
-                builder.setAUnbindingMdibVersion(Util.toUInt64(it)));
+                builder.setAUnbindingMdibVersion(baseMapper.mapReferencedVersion(it)));
         Util.doIfNotNull(
                 contextState.getContextAssociation(),
                 assoc -> builder.setAContextAssociation(Util.mapToProtoEnum(assoc, ContextAssociationMsg.class))

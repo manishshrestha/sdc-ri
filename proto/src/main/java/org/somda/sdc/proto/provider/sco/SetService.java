@@ -55,7 +55,7 @@ public class SetService extends SetServiceGrpc.SetServiceImplBase {
     public void activate(ActivateRequest request,
                          StreamObserver<ActivateResponse> responseObserver) {
         var resp = scoController.processIncomingSetOperation(
-                request.getPayload().getAbstractSet().getOperationHandleRef(),
+                request.getPayload().getAbstractSet().getOperationHandleRef().getString(),
                 new InstanceIdentifier(), // todo pass certificate common name here
                 protoToPojoMapper.map(request.getPayload()).getArgument());
 
@@ -94,7 +94,7 @@ public class SetService extends SetServiceGrpc.SetServiceImplBase {
     public void setString(SetStringRequest request,
                           StreamObserver<SetStringResponse> responseObserver) {
         var resp = scoController.processIncomingSetOperation(
-                request.getPayload().getAbstractSet().getOperationHandleRef(),
+                request.getPayload().getAbstractSet().getOperationHandleRef().getString(),
                 new InstanceIdentifier(), // todo pass certificate common name here
                 request.getPayload().getRequestedStringValue());
 
@@ -110,7 +110,7 @@ public class SetService extends SetServiceGrpc.SetServiceImplBase {
     public void setValue(SetValueRequest request,
                          StreamObserver<SetValueResponse> responseObserver) {
         var resp = scoController.processIncomingSetOperation(
-                request.getPayload().getAbstractSet().getOperationHandleRef(),
+                request.getPayload().getAbstractSet().getOperationHandleRef().getString(),
                 new InstanceIdentifier(), // todo pass certificate common name here
                 new BigDecimal(request.getPayload().getRequestedNumericValue()));
 

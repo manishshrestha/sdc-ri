@@ -16,6 +16,8 @@ import org.somda.sdc.proto.model.biceps.*;
 import java.util.ArrayList;
 import java.util.stream.Collectors;
 
+import static org.somda.sdc.proto.mapping.Util.optionalTimestamp;
+
 public class ProtoToPojoComponentMapper {
     private static final Logger LOG = LogManager.getLogger(ProtoToPojoComponentMapper.class);
     private final Logger instanceLogger;
@@ -143,8 +145,8 @@ public class ProtoToPojoComponentMapper {
     ScoState map(ScoStateMsg protoMsg) {
         var pojo = new ScoState();
         map(pojo, protoMsg.getAbstractDeviceComponentState());
-        pojo.setInvocationRequested(protoMsg.getAInvocationRequested().getOperationRefList());
-        pojo.setInvocationRequired(protoMsg.getAInvocationRequired().getOperationRefList());
+        protoMsg.getAInvocationRequested().getHandleRefList().forEach(handle -> pojo.getInvocationRequested().add(handle.getString()));
+        protoMsg.getAInvocationRequired().getHandleRefList().forEach(handle -> pojo.getInvocationRequired().add(handle.getString()));
         protoMsg.getOperationGroupList().forEach(it -> pojo.getOperationGroup().add(map(it)));
         return pojo;
     }
@@ -155,7 +157,7 @@ public class ProtoToPojoComponentMapper {
         pojo.setOperatingMode(Util.mapToPojoEnum(protoMsg, "AOperatingMode", OperatingMode.class));
         Util.doIfNotNull(
                 Util.optional(protoMsg, "AOperations", OperationRefMsg.class),
-                it -> pojo.setOperations(new ArrayList<>(it.getOperationRefList()))
+                it -> it.getHandleRefList().forEach(handle -> pojo.getOperations().add(handle.getString()))
         );
         pojo.setType(baseMapper.map(protoMsg.getType()));
 
@@ -226,10 +228,7 @@ public class ProtoToPojoComponentMapper {
 
         pojo.setComponentCalibrationState(Util.mapToPojoEnum(protoMsg, "AComponentCalibrationState", CalibrationState.class));
         pojo.setType(Util.mapToPojoEnum(protoMsg, "AType", CalibrationType.class));
-        Util.doIfNotNull(
-                Util.optionalBigIntOfLong(protoMsg, "ATime"),
-                it -> pojo.setTime(timestampAdapter.unmarshal(it))
-        );
+        pojo.setTime(optionalTimestamp(protoMsg, "ATime", timestampAdapter));
         protoMsg.getCalibrationDocumentationList().forEach(doc -> pojo.getCalibrationDocumentation().add(map(doc)));
 
         return pojo;
