@@ -93,8 +93,8 @@ public class PojoToProtoBaseMapper {
         var builder = LocalizedTextMsg.newBuilder();
         builder.setALang(Util.toStringValue(localizedText.getLang()));
         Util.doIfNotNull(localizedText.getValue(), value -> builder.setLocalizedTextContent(mapLocalizedTextContent(value)));
-        builder.setAVersion(mapReferencedVersion(localizedText.getVersion()));
-        builder.setARef(mapLocalizedTextRef(localizedText.getRef()));
+        Util.doIfNotNull(localizedText.getVersion(), value -> builder.setAVersion(mapReferencedVersion(value)));
+        Util.doIfNotNull(localizedText.getRef(), value -> builder.setARef(mapLocalizedTextRef(value)));
         Util.doIfNotNull(localizedText.getTextWidth(), width ->
                 builder.setATextWidth(Util.mapToProtoEnum(width, LocalizedTextWidthMsg.class)));
         return builder.build();
