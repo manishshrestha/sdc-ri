@@ -18,8 +18,8 @@ import org.somda.sdc.common.guice.AbstractConfigurationModule;
 import org.somda.sdc.dpws.DpwsFramework;
 import org.somda.sdc.dpws.crypto.CryptoConfig;
 import org.somda.sdc.dpws.crypto.CryptoSettings;
-import org.somda.sdc.proto.model.addressing.Addressing;
-import org.somda.sdc.proto.model.common.QName;
+import org.somda.protosdc.proto.model.addressing.Addressing;
+import org.somda.protosdc.proto.model.common.QName;
 import test.org.somda.common.LoggingTestWatcher;
 
 import java.net.InetAddress;

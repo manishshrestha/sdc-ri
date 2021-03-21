@@ -8,7 +8,7 @@ import org.somda.sdc.biceps.model.participant.*;
 import org.somda.sdc.common.CommonConfig;
 import org.somda.sdc.common.logging.InstanceLogger;
 import org.somda.sdc.proto.mapping.Util;
-import org.somda.sdc.proto.model.biceps.*;
+import org.somda.protosdc.proto.model.biceps.*;
 
 import javax.annotation.Nullable;
 import java.util.function.Function;

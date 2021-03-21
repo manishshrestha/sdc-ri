@@ -3,7 +3,7 @@ package org.somda.sdc.proto.mapping.participant;
 import com.google.inject.Inject;
 import org.somda.sdc.biceps.model.participant.*;
 import org.somda.sdc.proto.mapping.Util;
-import org.somda.sdc.proto.model.biceps.*;
+import org.somda.protosdc.proto.model.biceps.*;
 
 import javax.annotation.Nullable;
 import java.math.BigInteger;

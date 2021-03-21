@@ -37,7 +37,7 @@ import org.somda.sdc.proto.mapping.participant.PojoToProtoAlertMapper;
 import org.somda.sdc.proto.mapping.participant.PojoToProtoBaseMapper;
 import org.somda.sdc.proto.mapping.participant.PojoToProtoMetricMapper;
 import org.somda.sdc.proto.mapping.participant.PojoToProtoOneOfMapper;
-import org.somda.sdc.proto.model.biceps.*;
+import org.somda.protosdc.proto.model.biceps.*;
 
 import java.util.stream.Collectors;
 

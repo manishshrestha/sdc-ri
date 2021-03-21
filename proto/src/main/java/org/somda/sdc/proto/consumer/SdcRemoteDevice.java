@@ -4,7 +4,7 @@ import com.google.common.util.concurrent.Service;
 import org.somda.sdc.biceps.common.access.MdibAccess;
 import org.somda.sdc.biceps.common.access.MdibAccessObservable;
 import org.somda.sdc.biceps.model.message.AbstractSet;
-import org.somda.sdc.proto.model.discovery.DeviceMetadata;
+import org.somda.protosdc.proto.model.discovery.DeviceMetadata;
 
 import java.util.function.Consumer;
 

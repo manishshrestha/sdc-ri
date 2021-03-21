@@ -1,12 +1,12 @@
 package org.somda.sdc.proto.consumer;
 
 import io.grpc.Channel;
-import org.somda.sdc.proto.model.GetServiceGrpc;
-import org.somda.sdc.proto.model.MdibReportingServiceGrpc;
-import org.somda.sdc.proto.model.SetServiceGrpc;
-import org.somda.sdc.proto.model.discovery.DeviceMetadata;
-import org.somda.sdc.proto.model.discovery.DiscoveryTypes;
-import org.somda.sdc.proto.model.discovery.Endpoint;
+import org.somda.protosdc.proto.model.GetServiceGrpc;
+import org.somda.protosdc.proto.model.MdibReportingServiceGrpc;
+import org.somda.protosdc.proto.model.SetServiceGrpc;
+import org.somda.protosdc.proto.model.discovery.DeviceMetadata;
+import org.somda.protosdc.proto.model.discovery.DiscoveryTypes;
+import org.somda.protosdc.proto.model.discovery.Endpoint;
 
 import java.io.IOException;
 import java.util.Optional;

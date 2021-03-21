@@ -3,7 +3,7 @@ package org.somda.sdc.proto.mapping.participant.factory;
 import com.google.inject.assistedinject.Assisted;
 import org.somda.sdc.glue.common.DefaultStateValues;
 import org.somda.sdc.proto.mapping.participant.ProtoToPojoModificationsBuilder;
-import org.somda.sdc.proto.model.biceps.MdibMsg;
+import org.somda.protosdc.proto.model.biceps.MdibMsg;
 
 import javax.annotation.Nullable;
 

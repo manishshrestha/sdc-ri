@@ -1,7 +1,7 @@
 package org.somda.sdc.proto.common;
 
-import org.somda.sdc.proto.model.common.CommonTypes;
-import org.somda.sdc.proto.model.common.QName;
+import org.somda.protosdc.proto.model.common.CommonTypes;
+import org.somda.protosdc.proto.model.common.QName;
 
 public class ProtoConstants {
     public static final String PROTOSDC_NAMESPACE = "https://somda.org/proto-sdc";

@@ -2,8 +2,8 @@ package org.somda.sdc.proto.addressing;
 
 import com.google.inject.Inject;
 import com.google.inject.assistedinject.Assisted;
-import org.somda.sdc.proto.model.addressing.Addressing;
-import org.somda.sdc.proto.model.addressing.AddressingTypes;
+import org.somda.protosdc.proto.model.addressing.Addressing;
+import org.somda.protosdc.proto.model.addressing.AddressingTypes;
 
 import javax.annotation.Nullable;
 

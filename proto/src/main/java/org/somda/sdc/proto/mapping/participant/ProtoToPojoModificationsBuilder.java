@@ -16,7 +16,7 @@ import org.somda.sdc.glue.common.DefaultStateValues;
 import org.somda.sdc.glue.common.MdibMapper;
 import org.somda.sdc.glue.common.RequiredDefaultStateValues;
 import org.somda.sdc.glue.common.helper.DefaultStateValuesDispatcher;
-import org.somda.sdc.proto.model.biceps.*;
+import org.somda.protosdc.proto.model.biceps.*;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;

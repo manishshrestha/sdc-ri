@@ -23,7 +23,7 @@
 		<dependency>
 			<groupId>org.somda.sdc.protosdc</groupId>
 			<artifactId>protosdc-model-java</artifactId>
-			<version>0.0.2.18</version>
+			<version>0.0.2.22</version>
 		</dependency>
 
 		<dependency>

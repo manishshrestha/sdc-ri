@@ -2,7 +2,7 @@ package org.somda.sdc.proto.addressing;
 
 import com.google.inject.Inject;
 import org.somda.sdc.dpws.soap.SoapUtil;
-import org.somda.sdc.proto.model.addressing.Addressing;
+import org.somda.protosdc.proto.model.addressing.Addressing;
 
 import javax.annotation.Nullable;
 

@@ -13,7 +13,7 @@ import org.somda.sdc.common.CommonConfig;
 import org.somda.sdc.common.logging.InstanceLogger;
 import org.somda.sdc.common.util.TimestampAdapter;
 import org.somda.sdc.proto.mapping.Util;
-import org.somda.sdc.proto.model.biceps.*;
+import org.somda.protosdc.proto.model.biceps.*;
 
 public class ProtoToPojoContextMapper {
     private static final Logger LOG = LogManager.getLogger(ProtoToPojoContextMapper.class);

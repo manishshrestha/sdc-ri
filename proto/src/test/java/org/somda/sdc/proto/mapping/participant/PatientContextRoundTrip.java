@@ -19,7 +19,7 @@ import org.somda.sdc.biceps.provider.access.LocalMdibAccess;
 import org.somda.sdc.biceps.testutil.Handles;
 import org.somda.sdc.proto.UnitTestUtil;
 import org.somda.sdc.proto.mapping.TypeCollection;
-import org.somda.sdc.proto.model.biceps.CodedValueMsg;
+import org.somda.protosdc.proto.model.biceps.CodedValueMsg;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;

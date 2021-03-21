@@ -3,8 +3,8 @@ package org.somda.sdc.proto.provider;
 import com.google.common.util.concurrent.Service;
 import io.grpc.BindableService;
 import org.somda.sdc.proto.discovery.provider.TargetService;
-import org.somda.sdc.proto.model.common.CommonTypes;
-import org.somda.sdc.proto.model.common.QName;
+import org.somda.protosdc.proto.model.common.CommonTypes;
+import org.somda.protosdc.proto.model.common.QName;
 
 import java.net.InetSocketAddress;
 

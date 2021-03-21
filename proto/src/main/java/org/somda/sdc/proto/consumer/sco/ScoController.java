@@ -24,10 +24,10 @@ import org.somda.sdc.proto.consumer.sco.helper.OperationInvocationDispatcher;
 import org.somda.sdc.proto.guice.ProtoConsumer;
 import org.somda.sdc.proto.mapping.message.PojoToProtoMapper;
 import org.somda.sdc.proto.mapping.message.ProtoToPojoMapper;
-import org.somda.sdc.proto.model.ActivateRequest;
-import org.somda.sdc.proto.model.SetServiceGrpc;
-import org.somda.sdc.proto.model.SetStringRequest;
-import org.somda.sdc.proto.model.SetValueRequest;
+import org.somda.protosdc.proto.model.ActivateRequest;
+import org.somda.protosdc.proto.model.SetServiceGrpc;
+import org.somda.protosdc.proto.model.SetStringRequest;
+import org.somda.protosdc.proto.model.SetValueRequest;
 
 import javax.annotation.Nullable;
 

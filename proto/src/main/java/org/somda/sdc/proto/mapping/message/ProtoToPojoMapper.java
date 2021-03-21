@@ -38,7 +38,7 @@ import org.somda.sdc.proto.mapping.Util;
 import org.somda.sdc.proto.mapping.participant.ProtoToPojoBaseMapper;
 import org.somda.sdc.proto.mapping.participant.ProtoToPojoMetricMapper;
 import org.somda.sdc.proto.mapping.participant.ProtoToPojoOneOfMapper;
-import org.somda.sdc.proto.model.biceps.*;
+import org.somda.protosdc.proto.model.biceps.*;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;

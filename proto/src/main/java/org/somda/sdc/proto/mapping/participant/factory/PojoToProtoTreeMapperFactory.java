@@ -10,10 +10,10 @@ import org.somda.sdc.proto.mapping.participant.PojoToProtoTreeMapper;
 public interface PojoToProtoTreeMapperFactory {
     /**
      * Creates a new {@linkplain PojoToProtoTreeMapper} that maps from {@linkplain MdibAccess}
-     * to {@linkplain org.somda.sdc.proto.model.biceps.MdibMsg}.
+     * to {@linkplain org.somda.protosdc.proto.model.biceps.MdibMsg}.
      *
      * @param mdibAccess the MDIB access where to map data from.
-     * @return a new instance to map to {@link org.somda.sdc.proto.model.biceps.MdibMsg}.
+     * @return a new instance to map to {@link org.somda.protosdc.proto.model.biceps.MdibMsg}.
      */
     PojoToProtoTreeMapper create(@Assisted MdibAccess mdibAccess);
 }

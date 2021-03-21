@@ -35,11 +35,11 @@ import org.somda.sdc.proto.discovery.consumer.Client;
 import org.somda.sdc.proto.discovery.consumer.DiscoveryObserver;
 import org.somda.sdc.proto.discovery.consumer.event.ProbedDeviceFoundMessage;
 import org.somda.sdc.proto.guice.ProtoConsumer;
-import org.somda.sdc.proto.model.GetContextStatesRequest;
-import org.somda.sdc.proto.model.GetMdibRequest;
-import org.somda.sdc.proto.model.biceps.AbstractContextStateOneOfMsg;
-import org.somda.sdc.proto.model.discovery.Endpoint;
-import org.somda.sdc.proto.model.discovery.ScopeMatcher;
+import org.somda.protosdc.proto.model.GetContextStatesRequest;
+import org.somda.protosdc.proto.model.GetMdibRequest;
+import org.somda.protosdc.proto.model.biceps.AbstractContextStateOneOfMsg;
+import org.somda.protosdc.proto.model.discovery.Endpoint;
+import org.somda.protosdc.proto.model.discovery.ScopeMatcher;
 
 import java.math.BigDecimal;
 import java.net.InetAddress;

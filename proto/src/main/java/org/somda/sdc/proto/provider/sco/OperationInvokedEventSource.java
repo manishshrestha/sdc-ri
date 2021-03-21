@@ -10,9 +10,9 @@ import org.somda.sdc.biceps.model.message.OperationInvokedReport;
 import org.somda.sdc.proto.addressing.AddressingUtil;
 import org.somda.sdc.proto.mapping.message.PojoToProtoMapper;
 import org.somda.sdc.proto.mapping.message.ProtoToPojoMapper;
-import org.somda.sdc.proto.model.OperationInvokedReportRequest;
-import org.somda.sdc.proto.model.OperationInvokedReportStream;
-import org.somda.sdc.proto.model.biceps.OperationInvokedReportMsg;
+import org.somda.protosdc.proto.model.OperationInvokedReportRequest;
+import org.somda.protosdc.proto.model.OperationInvokedReportStream;
+import org.somda.protosdc.proto.model.biceps.OperationInvokedReportMsg;
 import org.somda.sdc.proto.provider.EventSource;
 
 import java.util.Map;

@@ -3,10 +3,10 @@ package org.somda.sdc.proto.discovery.consumer.helper;
 import com.google.common.eventbus.EventBus;
 import org.somda.sdc.proto.discovery.consumer.event.DeviceProbeTimeoutMessage;
 import org.somda.sdc.proto.discovery.consumer.event.ProbedDeviceFoundMessage;
-import org.somda.sdc.proto.model.discovery.DiscoveryMessages;
-import org.somda.sdc.proto.model.discovery.DiscoveryTypes;
-import org.somda.sdc.proto.model.discovery.Endpoint;
-import org.somda.sdc.proto.model.discovery.ProbeMatches;
+import org.somda.protosdc.proto.model.discovery.DiscoveryMessages;
+import org.somda.protosdc.proto.model.discovery.DiscoveryTypes;
+import org.somda.protosdc.proto.model.discovery.Endpoint;
+import org.somda.protosdc.proto.model.discovery.ProbeMatches;
 
 import java.time.Duration;
 import java.util.ArrayList;

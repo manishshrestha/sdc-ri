@@ -9,11 +9,11 @@ import com.google.protobuf.UInt32Value;
 import com.google.protobuf.UInt64Value;
 import org.somda.sdc.biceps.model.participant.*;
 import org.somda.sdc.common.util.TimestampAdapter;
-import org.somda.sdc.proto.model.biceps.HandleRefMsg;
-import org.somda.sdc.proto.model.biceps.MdsOperatingModeMsg;
-import org.somda.sdc.proto.model.biceps.ReferencedVersionMsg;
-import org.somda.sdc.proto.model.biceps.TimestampMsg;
-import org.somda.sdc.proto.model.biceps.VersionCounterMsg;
+import org.somda.protosdc.proto.model.biceps.HandleRefMsg;
+import org.somda.protosdc.proto.model.biceps.MdsOperatingModeMsg;
+import org.somda.protosdc.proto.model.biceps.ReferencedVersionMsg;
+import org.somda.protosdc.proto.model.biceps.TimestampMsg;
+import org.somda.protosdc.proto.model.biceps.VersionCounterMsg;
 
 import javax.annotation.Nullable;
 import java.lang.reflect.InvocationTargetException;

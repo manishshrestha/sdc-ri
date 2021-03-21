@@ -1,9 +1,9 @@
 package org.somda.sdc.proto.discovery.consumer.helper;
 
-import org.somda.sdc.proto.model.discovery.DiscoveryMessages;
-import org.somda.sdc.proto.model.discovery.DiscoveryTypes;
-import org.somda.sdc.proto.model.discovery.Endpoint;
-import org.somda.sdc.proto.model.discovery.ResolveMatches;
+import org.somda.protosdc.proto.model.discovery.DiscoveryMessages;
+import org.somda.protosdc.proto.model.discovery.DiscoveryTypes;
+import org.somda.protosdc.proto.model.discovery.Endpoint;
+import org.somda.protosdc.proto.model.discovery.ResolveMatches;
 
 import java.time.Duration;
 import java.util.Optional;

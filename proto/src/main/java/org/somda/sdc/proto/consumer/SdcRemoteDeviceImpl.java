@@ -19,8 +19,8 @@ import org.somda.sdc.dpws.DpwsConfig;
 import org.somda.sdc.proto.consumer.report.ReportProcessor;
 import org.somda.sdc.proto.consumer.sco.ScoController;
 import org.somda.sdc.proto.consumer.sco.ScoTransaction;
-import org.somda.sdc.proto.model.discovery.DeviceMetadata;
-import org.somda.sdc.proto.model.discovery.Endpoint;
+import org.somda.protosdc.proto.model.discovery.DeviceMetadata;
+import org.somda.protosdc.proto.model.discovery.Endpoint;
 
 import javax.annotation.Nullable;
 import java.io.IOException;

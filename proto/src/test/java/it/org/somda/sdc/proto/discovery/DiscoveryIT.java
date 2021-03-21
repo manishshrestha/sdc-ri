@@ -15,9 +15,9 @@ import org.somda.sdc.proto.discovery.consumer.event.DeviceEnteredMessage;
 import org.somda.sdc.proto.discovery.consumer.event.ProbedDeviceFoundMessage;
 import org.somda.sdc.proto.discovery.provider.TargetService;
 import org.somda.sdc.proto.discovery.provider.factory.TargetServiceFactory;
-import org.somda.sdc.proto.model.discovery.DiscoveryTypes;
-import org.somda.sdc.proto.model.discovery.Endpoint;
-import org.somda.sdc.proto.model.discovery.ScopeMatcher;
+import org.somda.protosdc.proto.model.discovery.DiscoveryTypes;
+import org.somda.protosdc.proto.model.discovery.Endpoint;
+import org.somda.protosdc.proto.model.discovery.ScopeMatcher;
 import test.org.somda.common.LoggingTestWatcher;
 import test.org.somda.common.TimedWait;
 
