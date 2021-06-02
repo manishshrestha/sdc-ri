@@ -33,7 +33,8 @@ public class CommunicationLogSinkImpl implements CommunicationLogSink {
     @Inject
     CommunicationLogSinkImpl(@Named(DpwsConfig.COMMUNICATION_LOG_SINK_DIRECTORY) File logDirectory,
                              @Named(DpwsConfig.COMMUNICATION_LOG_WITH_HTTP_HEADERS) Boolean createHttpHeaders,
-                             @Named(DpwsConfig.COMMUNICATION_LOG_WITH_HTTP_REQUEST_RESPONSE_ID) Boolean createHttpRequestResponseId,
+                             @Named(DpwsConfig.COMMUNICATION_LOG_WITH_HTTP_REQUEST_RESPONSE_ID)
+                                     Boolean createHttpRequestResponseId,
                              @Named(DpwsConfig.COMMUNICATION_LOG_PRETTY_PRINT_XML) Boolean prettyPrintXml,
                              @Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier) {
         this.createHttpRequestResponseId = createHttpRequestResponseId;
@@ -98,11 +99,13 @@ public class CommunicationLogSinkImpl implements CommunicationLogSink {
             if (createHttpRequestResponseId) {
                 var appInfo = (HttpApplicationInfo) communicationContext.getApplicationInfo();
                 var requestResponseIdFilePath = dir.getAbsolutePath() +
-                        File.separator + CommunicationLogFileName.append(fileNamePrefix, validFilenameOfTransactionId(appInfo.getTransactionId()));
+                        File.separator + CommunicationLogFileName.append(fileNamePrefix,
+                        validFilenameOfTransactionId(appInfo.getTransactionId()));
 
                 try {
                     if (!new File(requestResponseIdFilePath).createNewFile()) {
-                        instanceLogger.warn("File {} could not be created as it was existing already", requestResponseIdFilePath);
+                        instanceLogger.warn("File {} could not be created as it was existing already",
+                                requestResponseIdFilePath);
                     }
                 } catch (IOException e) {
                     instanceLogger.error("Could not write headers to header file {}",
