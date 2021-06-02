@@ -87,6 +87,11 @@ public class HttpApplicationInfo extends ApplicationInfo {
         return ArrayListMultimap.create(headers);
     }
 
+    /**
+     * Returns an identifier for the underlying HTTP request.
+     *
+     * @return the identifier, e.g. to be used to deduce relations between request and response messages.
+     */
     public String getTransactionId() {
         return transactionId;
     }

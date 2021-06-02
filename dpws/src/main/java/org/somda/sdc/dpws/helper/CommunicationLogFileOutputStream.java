@@ -23,14 +23,17 @@ public class CommunicationLogFileOutputStream extends OutputStream {
     private final static CommunicationLogSoapXmlUtils SOAP_UTILS = new CommunicationLogSoapXmlUtils();
 
     private final File targetDirectory;
+    private boolean prettyPrint;
     private final String fileNamePrefix;
     private ByteArrayOutputStream outputStream;
     private AtomicBoolean closed = new AtomicBoolean(false);
 
     public CommunicationLogFileOutputStream(File targetDirectory,
-                                            String fileNamePrefix) {
+                                            String fileNamePrefix,
+                                            boolean prettyPrint) {
         this.fileNamePrefix = fileNamePrefix;
         this.targetDirectory = targetDirectory;
+        this.prettyPrint = prettyPrint;
         this.outputStream = new ByteArrayOutputStream();
     }
 
@@ -53,7 +56,13 @@ public class CommunicationLogFileOutputStream extends OutputStream {
 
         outputStream.close();
 
-        var xmlDoc = SOAP_UTILS.prettyPrint(outputStream.toByteArray());
+        byte[] xmlDoc;
+        if (prettyPrint) {
+            xmlDoc = SOAP_UTILS.prettyPrint(outputStream.toByteArray());
+        } else {
+            xmlDoc = outputStream.toByteArray();
+        }
+
         var name = SOAP_UTILS.makeNameElement(xmlDoc);
         var commLogFile = Path.of(targetDirectory.getAbsolutePath(),
                 CommunicationLogFileName.appendSoapSuffix(CommunicationLogFileName.append(fileNamePrefix, name)));

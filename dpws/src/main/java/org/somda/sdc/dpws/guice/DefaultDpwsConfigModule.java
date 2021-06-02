@@ -68,6 +68,14 @@ public class DefaultDpwsConfigModule extends AbstractConfigurationModule {
                 Boolean.class,
                 true);
 
+        bind(DpwsConfig.COMMUNICATION_LOG_WITH_HTTP_REQUEST_RESPONSE_ID,
+                Boolean.class,
+                true);
+
+        bind(DpwsConfig.COMMUNICATION_LOG_PRETTY_PRINT_XML,
+                Boolean.class,
+                false);
+
         bind(DpwsConfig.HTTP_GZIP_COMPRESSION,
                 Boolean.class,
                 true);
