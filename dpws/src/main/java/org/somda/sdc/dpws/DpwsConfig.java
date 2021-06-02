@@ -62,7 +62,8 @@ public class DpwsConfig {
      * <li>Use: optional
      * </ul>
      */
-    public static final String COMMUNICATION_LOG_WITH_HTTP_REQUEST_RESPONSE_ID = "Dpws.CommunicationLogWithRequestResponseId";
+    public static final String COMMUNICATION_LOG_WITH_HTTP_REQUEST_RESPONSE_ID =
+            "Dpws.CommunicationLogWithRequestResponseId";
 
     /**
      * Defines if the communication log shall pretty print XML documents.
