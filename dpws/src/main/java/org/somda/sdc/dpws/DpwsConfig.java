@@ -67,6 +67,8 @@ public class DpwsConfig {
 
     /**
      * Defines if the communication log shall pretty print XML documents.
+     * <p>
+     * Implementations of {@link CommunicationLogSink} may ignore this configuration item.
      *
      * <ul>
      * <li>Data type: {@linkplain Boolean}
