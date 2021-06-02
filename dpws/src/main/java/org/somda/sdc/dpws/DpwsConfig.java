@@ -53,6 +53,29 @@ public class DpwsConfig {
     public static final String COMMUNICATION_LOG_WITH_HTTP_HEADERS = "Dpws.CommunicationLogWithHttpHeaders";
 
     /**
+     * Defines if the communication log shall include an additional file to relate HTTP request response information.
+     * <p>
+     * Implementations of {@link CommunicationLogSink} may ignore this configuration item.
+     *
+     * <ul>
+     * <li>Data type: {@linkplain Boolean}
+     * <li>Use: optional
+     * </ul>
+     */
+    public static final String COMMUNICATION_LOG_WITH_HTTP_REQUEST_RESPONSE_ID = "Dpws.CommunicationLogWithRequestResponseId";
+
+    /**
+     * Defines if the communication log shall pretty print XML documents.
+     *
+     * <ul>
+     * <li>Data type: {@linkplain Boolean}
+     * <li>Use: optional
+     * </ul>
+     */
+    public static final String COMMUNICATION_LOG_PRETTY_PRINT_XML = "Dpws.CommunicationLogPrettyPrintXml";
+
+
+    /**
      * Defines the timeout the http client uses when connecting to an endpoint.
      *
      * <ul>
