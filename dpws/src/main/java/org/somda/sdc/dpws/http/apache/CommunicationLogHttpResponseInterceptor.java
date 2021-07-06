@@ -58,8 +58,13 @@ public class CommunicationLogHttpResponseInterceptor implements HttpResponseInte
         );
 
         final List<X509Certificate> x509certificates = new ArrayList<>();
-        ManagedHttpClientConnection routedConnection = (ManagedHttpClientConnection) context.getAttribute(
-                HttpCoreContext.HTTP_CONNECTION);
+        ManagedHttpClientConnection routedConnection = null;
+        try {
+            routedConnection = (ManagedHttpClientConnection) context.getAttribute(
+                    HttpCoreContext.HTTP_CONNECTION);
+        } catch(ClassCastException e) {
+            LOG.error("Error retrieving managed http client connection" + e);
+        }
         if (routedConnection != null && routedConnection.isOpen()) {
             SSLSession sslSession = routedConnection.getSSLSession();
             if (sslSession != null
