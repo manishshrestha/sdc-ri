@@ -85,8 +85,8 @@ public class SslMetadata extends AbstractIdleService implements Service {
         final KeyStore serverTrustStore = createTrustStore(serverAlias, commonPassword, clientCert);
         final KeyStore clientTrustStore = createTrustStore(clientAlias, commonPassword, serverCert);
 
-        serverKeySet = new KeySet(serverKeyStore, commonPassword, serverTrustStore, commonPassword);
-        clientKeySet = new KeySet(clientKeyStore, commonPassword, clientTrustStore, commonPassword);
+        serverKeySet = new KeySet(serverKeyStore, commonPassword, serverTrustStore, commonPassword, serverCert);
+        clientKeySet = new KeySet(clientKeyStore, commonPassword, clientTrustStore, commonPassword, clientCert);
     }
 
     @Override
@@ -180,11 +180,14 @@ public class SslMetadata extends AbstractIdleService implements Service {
         private final KeyStore trustStore;
         private final String trustStorePassword;
 
-        public KeySet(KeyStore keyStore, String keyStorePassword, KeyStore trustStore, String trustStorePassword) {
+        private X509Certificate certificate;
+
+        public KeySet(KeyStore keyStore, String keyStorePassword, KeyStore trustStore, String trustStorePassword, X509Certificate certificate) {
             this.keyStore = keyStore;
             this.keyStorePassword = keyStorePassword;
             this.trustStore = trustStore;
             this.trustStorePassword = trustStorePassword;
+            this.certificate = certificate;
         }
 
         public KeyStore getKeyStore() {
@@ -202,6 +205,8 @@ public class SslMetadata extends AbstractIdleService implements Service {
         public String getTrustStorePassword() {
             return trustStorePassword;
         }
+
+        public X509Certificate getCertificate() { return certificate; }
     }
 }
 

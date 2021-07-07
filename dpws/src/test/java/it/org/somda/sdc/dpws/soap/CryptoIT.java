@@ -1,7 +1,9 @@
 package it.org.somda.sdc.dpws.soap;
 
+import com.google.common.collect.ListMultimap;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.SettableFuture;
+import com.google.inject.AbstractModule;
 import dpws_test_service.messages._2017._05._10.ObjectFactory;
 import dpws_test_service.messages._2017._05._10.TestNotification;
 import dpws_test_service.messages._2017._05._10.TestOperationRequest;
@@ -12,6 +14,9 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.somda.sdc.dpws.CommunicationLog;
+import org.somda.sdc.dpws.CommunicationLogImpl;
+import org.somda.sdc.dpws.CommunicationLogSink;
 import org.somda.sdc.dpws.DpwsConfig;
 import org.somda.sdc.dpws.client.DiscoveredDevice;
 import org.somda.sdc.dpws.crypto.CryptoConfig;
@@ -20,8 +25,11 @@ import org.somda.sdc.dpws.device.DeviceSettings;
 import org.somda.sdc.dpws.guice.DefaultDpwsConfigModule;
 import org.somda.sdc.dpws.service.HostedServiceProxy;
 import org.somda.sdc.dpws.service.HostingServiceProxy;
+import org.somda.sdc.dpws.soap.CommunicationContext;
+import org.somda.sdc.dpws.soap.HttpApplicationInfo;
 import org.somda.sdc.dpws.soap.SoapConfig;
 import org.somda.sdc.dpws.soap.SoapUtil;
+import org.somda.sdc.dpws.soap.TransportInfo;
 import org.somda.sdc.dpws.soap.interception.Interceptor;
 import org.somda.sdc.dpws.soap.interception.MessageInterceptor;
 import org.somda.sdc.dpws.soap.interception.NotificationObject;
@@ -32,15 +40,20 @@ import org.somda.sdc.dpws.soap.wseventing.SubscribeResult;
 import test.org.somda.common.LoggingTestWatcher;
 
 import javax.net.ssl.HostnameVerifier;
+import java.io.ByteArrayOutputStream;
+import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
+import java.security.cert.X509Certificate;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -65,6 +78,8 @@ public class CryptoIT {
     private BasicPopulatedDevice devicePeer;
     private ClientPeer clientPeer;
     private HostnameVerifier verifier;
+    private TestCommLogSink logSink;
+    private X509Certificate clientCertificate;
 
     CryptoIT() {
         IntegrationTestUtil.preferIpV4Usage();
@@ -121,16 +136,25 @@ public class CryptoIT {
                     bind(DpwsConfig.HTTP_SUPPORT, Boolean.class, false);
                     bind(DpwsConfig.HTTPS_SUPPORT, Boolean.class, true);
                 }
-            }, new MockedUdpBindingModule());
+            }, new MockedUdpBindingModule(), new AbstractModule() {
+                @Override
+                protected void configure() {
+                    bind(CommunicationLogSink.class).to(TestCommLogSink.class).asEagerSingleton();
+                    bind(CommunicationLog.class).to(CommunicationLogImpl.class).asEagerSingleton();
+                }
+            });
         } catch (Exception e) {
             e.printStackTrace();
         }
+        logSink = (TestCommLogSink) clientPeer.getInjector().getInstance(CommunicationLogSink.class);
+        clientCertificate = Ssl.getClientCertificate();
     }
 
     @AfterEach
     void tearDown() {
         this.devicePeer.stopAsync().awaitTerminated();
         this.clientPeer.stopAsync().awaitTerminated();
+        this.logSink.clear();
     }
 
     @Test
@@ -173,6 +197,32 @@ public class CryptoIT {
         hostedServiceProxy.getRequestResponseClient().sendRequestResponse(reqMsg);
         assertEquals(1, devicePeer.getTransportInfosReceivedFromService1().size());
         assertFalse(devicePeer.getTransportInfosReceivedFromService1().get(0).getX509Certificates().isEmpty());
+    }
+
+    @Test
+    void testTransportInfoInRequestResponseClient() throws Exception {
+        devicePeer.startAsync().awaitRunning();
+        clientPeer.startAsync().awaitRunning();
+
+        var connectFuture = clientPeer.getClient().connect(devicePeer.getEprAddress());
+        var hostingServiceProxy = connectFuture.get(MAX_WAIT_TIME.getSeconds(), TimeUnit.SECONDS);
+        var hostedServiceProxy = hostingServiceProxy.getHostedServices().get(TestServiceMetadata.SERVICE_ID_1);
+        assertNotNull(hostedServiceProxy);
+
+        final TestOperationRequest request = new TestOperationRequest();
+        request.setParam1("testString");
+        request.setParam2(11);
+
+        var reqMsg = clientPeer.getInjector().getInstance(SoapUtil.class)
+                .createMessage(TestServiceMetadata.ACTION_OPERATION_REQUEST_1, request);
+        final var numberBeforeRR = logSink.getInboundTransportInfos().stream().filter(info -> info.getX509Certificates().size() > 0).count();
+        hostedServiceProxy.getRequestResponseClient().sendRequestResponse(reqMsg);
+        final var numberAfterRR = logSink.getInboundTransportInfos().stream().filter(info -> info.getX509Certificates().size() > 0).count();
+
+        assertEquals(1, numberAfterRR - numberBeforeRR);
+        for (var certificate : logSink.getInboundTransportInfos().stream().map(TransportInfo::getX509Certificates).flatMap(List::stream).collect(Collectors.toList())) {
+            assertEquals(clientCertificate, certificate);
+        }
     }
 
     @Test
@@ -408,5 +458,43 @@ public class CryptoIT {
 
         // don't fix what ain't broke
         testNotificationSecured();
+    }
+
+    static class TestCommLogSink implements CommunicationLogSink {
+
+        private final ArrayList<TransportInfo> inboundTransportInfos;
+        private final ArrayList<TransportInfo> outboundTransportInfos;
+
+        TestCommLogSink() {
+            this.inboundTransportInfos = new ArrayList<>();
+            this.outboundTransportInfos = new ArrayList<>();
+        }
+
+        @Override
+        public OutputStream createTargetStream(CommunicationLog.TransportType path,
+                                               CommunicationLog.Direction direction,
+                                               CommunicationLog.MessageType messageType,
+                                               CommunicationContext communicationContext) {
+            var os = new ByteArrayOutputStream();
+            if (CommunicationLog.Direction.INBOUND.equals(direction)) {
+                inboundTransportInfos.add(communicationContext.getTransportInfo());
+            } else {
+                outboundTransportInfos.add(communicationContext.getTransportInfo());
+            }
+            return os;
+        }
+
+        public void clear() {
+            inboundTransportInfos.clear();
+            outboundTransportInfos.clear();
+        }
+
+        public ArrayList<TransportInfo> getInboundTransportInfos() {
+            return inboundTransportInfos;
+        }
+
+        public ArrayList<TransportInfo> getOutboundTransportInfos() {
+            return outboundTransportInfos;
+        }
     }
 }

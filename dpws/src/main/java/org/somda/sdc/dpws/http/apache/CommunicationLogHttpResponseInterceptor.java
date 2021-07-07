@@ -62,7 +62,7 @@ public class CommunicationLogHttpResponseInterceptor implements HttpResponseInte
         try {
             routedConnection = (ManagedHttpClientConnection) context.getAttribute(
                     HttpCoreContext.HTTP_CONNECTION);
-        } catch(ClassCastException e) {
+        } catch (ClassCastException e) {
             LOG.error("Error retrieving managed http client connection" + e);
         }
         if (routedConnection != null && routedConnection.isOpen()) {
