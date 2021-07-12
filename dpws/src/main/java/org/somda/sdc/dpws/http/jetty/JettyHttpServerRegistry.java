@@ -393,6 +393,7 @@ public class JettyHttpServerRegistry extends AbstractIdleService implements Http
         }
         HttpConfiguration httpConfig = new HttpConfiguration();
         httpConfig.setSecureScheme(HttpScheme.HTTPS.asString());
+        httpConfig.setHttpCompliance(HttpCompliance.RFC2616);
 
         var server = new Server(new InetSocketAddress(
                 uri.getHost(),
@@ -441,8 +442,11 @@ public class JettyHttpServerRegistry extends AbstractIdleService implements Http
             contextFactory.setExcludeCipherSuites();
             contextFactory.setIncludeCipherSuites(enabledCiphers);
 
-            HttpConfiguration httpsConfig = new HttpConfiguration(httpConfig);
             SecureRequestCustomizer src = new SecureRequestCustomizer();
+            // disable hostname validation, does not match sdc behavior
+            src.setSniHostCheck(false);
+
+            HttpConfiguration httpsConfig = new HttpConfiguration(httpConfig);
             var clientVerifier = new HttpConfiguration.Customizer() {
                 @Override
                 public void customize(Connector connector, HttpConfiguration channelConfig, Request request) {
@@ -475,8 +479,7 @@ public class JettyHttpServerRegistry extends AbstractIdleService implements Http
             var connectionFactory = new SslConnectionFactory(contextFactory, HttpVersion.HTTP_1_1.asString());
             ServerConnector httpsConnector;
 
-            HttpConnectionFactory httpConnectionFactory = new HttpConnectionFactory(httpsConfig,
-                HttpCompliance.RFC2616);
+            HttpConnectionFactory httpConnectionFactory = new HttpConnectionFactory(httpsConfig);
 
             if (enableHttp) {
                 httpsConnector = new ServerConnector(server,

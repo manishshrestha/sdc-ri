@@ -18,8 +18,8 @@ import org.somda.sdc.dpws.soap.CommunicationContext;
 import org.somda.sdc.dpws.soap.HttpApplicationInfo;
 import org.somda.sdc.dpws.soap.TransportInfo;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -155,7 +155,7 @@ public class JettyHttpServerHandler extends AbstractHandler {
             return Collections.emptyList();
         }
 
-        var anonymousCertificates = request.getAttribute("javax.servlet.request.X509Certificate");
+        var anonymousCertificates = request.getAttribute("jakarta.servlet.request.X509Certificate");
         if (anonymousCertificates == null) {
             LOG.error("Certificate information is missing from HTTP request data");
             throw new IOException("Certificate information is missing from HTTP request data");
