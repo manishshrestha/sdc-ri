@@ -59,6 +59,8 @@
         <jaxbBasicsVersion>0.12.0</jaxbBasicsVersion>
         <log4j2Version>2.14.1</log4j2Version>
         <bouncyCastleVersion>1.66</bouncyCastleVersion>
+        <junitVersion>5.7.2</junitVersion>
+        <junitPlatformVersion>1.7.2</junitPlatformVersion>
     </properties>
 
     <build>
@@ -312,21 +314,21 @@
         <dependency>
             <groupId>org.junit.platform</groupId>
             <artifactId>junit-platform-engine</artifactId>
-            <version>1.6.0</version>
+            <version>${junitPlatformVersion}</version>
             <scope>test</scope>
         </dependency>
         <!-- https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter-api -->
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-api</artifactId>
-            <version>5.6.0</version>
+            <version>${junitVersion}</version>
             <scope>test</scope>
         </dependency>
         <!-- https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter-engine -->
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-engine</artifactId>
-            <version>5.6.0</version>
+            <version>${junitVersion}</version>
             <scope>test</scope>
         </dependency>
         <!-- https://mvnrepository.com/artifact/org.mockito/mockito-core -->
