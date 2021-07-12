@@ -112,8 +112,4 @@ public class CommunicationLogOutputInterceptor implements HttpOutput.Interceptor
         return nextInterceptor;
     }
 
-    @Override
-    public boolean isOptimizedForDirectBuffers() {
-        return false;
-    }
 }
