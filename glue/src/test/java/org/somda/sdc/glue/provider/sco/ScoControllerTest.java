@@ -92,11 +92,19 @@ class ScoControllerTest {
     }
 
     @Test
+    void testSuccessfulInvocationWithLists() {
+        final InstanceIdentifier expectedInstanceIdentifier = new InstanceIdentifier();
+        assertEquals(InvocationState.FIN,
+                scoController.processIncomingSetOperation(Handles.OPERATION_3, expectedInstanceIdentifier,
+                        Collections.singletonList(new PatientContextState())).getInvocationState());
+    }
+
+    @Test
     void testUnsuccessfulInvocation() {
         final InstanceIdentifier expectedInstanceIdentifier = new InstanceIdentifier();
         assertEquals(InvocationState.FAIL,
                 scoController.processIncomingSetOperation(Handles.OPERATION_1, expectedInstanceIdentifier,
-                        Arrays.asList(new LocationContextState())).getInvocationState());
+                        Collections.singletonList(new LocationContextState())).getInvocationState());
     }
 
     @Test
@@ -107,8 +115,10 @@ class ScoControllerTest {
 
         final InstanceIdentifier expectedInstanceIdentifier = new InstanceIdentifier();
         scoController.processIncomingSetOperation("any-handle", expectedInstanceIdentifier, "Test");
-        scoController.processIncomingSetOperation("any-handle", expectedInstanceIdentifier, Arrays.asList(new NumericMetricState()));
-        scoController.processIncomingSetOperation("any-handle", expectedInstanceIdentifier, Arrays.asList(new ClockState()));
+        scoController.processIncomingSetOperation("any-handle", expectedInstanceIdentifier,
+                Collections.singletonList(new NumericMetricState()));
+        scoController.processIncomingSetOperation("any-handle", expectedInstanceIdentifier,
+                Collections.singletonList(new ClockState()));
 
         assertEquals(2, receiver.getItems().size());
         assertEquals(0, receiver.getItems().get(0).getContext().getTransactionId());
@@ -145,24 +155,21 @@ class ScoControllerTest {
 
 
     @Test
-    void testNoImplicitOperationInvokeReport() throws MarshallingException, TransportException {
+    void testNoImplicitOperationInvokedReport() throws MarshallingException, TransportException {
         final InstanceIdentifier expectedInstanceIdentifier = new InstanceIdentifier();
         var expectedInvocationState = InvocationState.FIN;
         var operationHandle = Handles.OPERATION_2;
         var invokeOp = scoController.processIncomingSetOperation(operationHandle, expectedInstanceIdentifier,
                 "Test");
-        assertEquals(expectedInvocationState,
-                invokeOp.getInvocationState());
+        assertEquals(expectedInvocationState, invokeOp.getInvocationState());
 
         verify(eventSourceAccessMock).sendNotification(actionCaptor.capture(), reportCaptor.capture());
         assertEquals(1, reportCaptor.getAllValues().size());
 
         assertEquals(ActionConstants.ACTION_OPERATION_INVOKED_REPORT, actionCaptor.getValue());
-        assertEquals(expectedInvocationState, reportCaptor.getValue().getReportPart().get(0).getInvocationInfo().getInvocationState());
+        assertEquals(expectedInvocationState,
+                reportCaptor.getValue().getReportPart().get(0).getInvocationInfo().getInvocationState());
         assertEquals(operationHandle, reportCaptor.getValue().getReportPart().get(0).getOperationHandleRef());
-
-        // these are different between report and response!
-        assertNotEquals(invokeOp.getInvocationError(), reportCaptor.getValue().getReportPart().get(0).getInvocationInfo());
     }
 
     private class Receiver implements OperationInvocationReceiver {
@@ -180,12 +187,19 @@ class ScoControllerTest {
             return context.createUnsuccessfulResponse(MdibVersion.create(), InvocationState.FAIL, InvocationError.UNSPEC, Collections.EMPTY_LIST);
         }
 
+        @IncomingSetServiceRequest(operationHandle = Handles.OPERATION_3, listType = AbstractContextState.class)
+        InvocationResponse setContextSuccessfully(Context context, List<AbstractContextState> data) {
+            items.add(new Item(context, data));
+            return context.createSuccessfulResponse(MdibVersion.create(), InvocationState.FIN);
+        }
+
         @IncomingSetServiceRequest(operationHandle = Handles.OPERATION_2)
         InvocationResponse setStringWithReport(Context context, List<AbstractContextState> data) {
             items.add(new Item(context, data));
             context.sendUnsuccessfulReport(MdibVersion.create(), InvocationState.FAIL, InvocationError.INV, Collections.EMPTY_LIST);
             return context.createUnsuccessfulResponse(MdibVersion.create(), InvocationState.FAIL, InvocationError.UNSPEC, Collections.EMPTY_LIST);
         }
+
 
         @IncomingSetServiceRequest(listType = AbstractMetricState.class)
         InvocationResponse setMetricAll(Context context, List<AbstractMetricState> data) {
@@ -204,7 +218,7 @@ class ScoControllerTest {
         }
     }
 
-    private class SecondReceiver implements OperationInvocationReceiver {
+    private static class SecondReceiver implements OperationInvocationReceiver {
         private final List<Item> items = new ArrayList<>();
 
         @IncomingSetServiceRequest(listType = AbstractDeviceComponentState.class)
@@ -218,7 +232,7 @@ class ScoControllerTest {
         }
     }
 
-    private class Item {
+    private static class Item {
         private final Context context;
         private final Object data;
 
@@ -236,6 +250,6 @@ class ScoControllerTest {
         }
     }
 
-    private class UnknownPayload {
+    private static class UnknownPayload {
     }
 }

@@ -16,13 +16,10 @@ import org.somda.sdc.common.logging.InstanceLogger;
 import org.somda.sdc.dpws.device.EventSourceAccess;
 import org.somda.sdc.glue.provider.sco.factory.ContextFactory;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Manages callbacks for incoming set service requests.
@@ -72,60 +69,52 @@ public class ScoController {
         final Context context =
                 contextFactory.createContext(transactionCounter++, handle, source, eventSourceAccess, mdibAccess);
 
-        final LocalizedText localizedText = participantModelFactory.createLocalizedText();
-        localizedText.setLang("en");
-        localizedText.setValue(
-                String.format("There is no ultimate invocation processor available for operation %s", handle)
-        );
+        final var localizedText = createLocalizedText(
+                String.format("There is no ultimate invocation processor available for operation %s", handle));
 
         try {
-            final ReflectionInfo reflectionInfo = invocationReceivers.get(handle);
+
+            // seek specific handle-based invocation receivers
+            final var reflectionInfo = invocationReceivers.get(handle);
             if (reflectionInfo != null) {
+                final var invocationResponse = handleListType(
+                        reflectionInfo,
+                        context,
+                        handle,
+                        payload
+                );
+
+                if (invocationResponse.isPresent()) {
+                    return invocationResponse.get();
+                }
+
                 if (reflectionInfo.getCallbackMethod().getParameters()[1]
                         .getType().isAssignableFrom(payload.getClass())) {
-                    return (InvocationResponse) reflectionInfo.getCallbackMethod()
-                            .invoke(reflectionInfo.getReceiver(),
-                                    context, payload);
+                    return additionallySendResponseAsReport(context,
+                            (InvocationResponse) reflectionInfo.getCallbackMethod()
+                                    .invoke(reflectionInfo.getReceiver(), context, payload));
                 }
             }
 
+            // fallback to default invocation receivers
             for (ReflectionInfo receiver : defaultInvocationReceivers) {
-                if (payload instanceof List) {
-                    final List<?> payloadList = (List<?>) payload;
-                    if (payloadList.isEmpty()) {
-                        throw new Exception();
-                    }
-
-                    if (receiver.getAnnotation().listType().equals(IncomingSetServiceRequest.NoList.class)) {
-                        instanceLogger.warn("For default invocation receivers each method annotation " +
-                                        "requires a listType attribute." +
-                                        " Callback for method {} on object {} ignored.",
-                                receiver.getCallbackMethod().getName(), receiver.getReceiver());
-                        continue;
-                    }
-
-                    if (!receiver.getAnnotation().listType().isAssignableFrom(payloadList.get(0).getClass())) {
-                        continue;
-                    }
+                final var invocationResponse = handleListType(
+                        receiver,
+                        context,
+                        handle,
+                        payload
+                );
+                if (invocationResponse.isPresent()) {
+                    return invocationResponse.get();
                 }
 
-                if (receiver.getCallbackMethod().getParameters()[1].getType().isAssignableFrom(payload.getClass())) {
-                    var response = (InvocationResponse) receiver.getCallbackMethod().invoke(receiver.getReceiver(),
-                            context, payload);
-                    if (!response.getInvocationState().equals(context.getCurrentReportInvocationState())) {
-                        instanceLogger.debug(
-                                "No matching OperationInvokedReport was sent before sending response." +
-                                        " TransactionId: {} - InvocationState: {}",
-                                response.getTransactionId(), response.getInvocationState()
-                        );
-                        context.sendUnsuccessfulReport(
-                                response.getMdibVersion(),
-                                response.getInvocationState(),
-                                response.getInvocationError(),
-                                response.getInvocationErrorMessage()
-                        );
+                if (!(payload instanceof List)) {
+                    if (receiver.getCallbackMethod().getParameters()[1].getType()
+                            .isAssignableFrom(payload.getClass())) {
+                        return additionallySendResponseAsReport(context,
+                                (InvocationResponse) receiver.getCallbackMethod()
+                                        .invoke(receiver.getReceiver(), context, payload));
                     }
-                    return response;
                 }
             }
         } catch (Exception e) {
@@ -142,7 +131,72 @@ public class ScoController {
                 mdibAccess.getMdibVersion(),
                 InvocationState.FAIL,
                 InvocationError.UNSPEC,
-                Arrays.asList(localizedText));
+                Collections.singletonList(localizedText));
+    }
+
+    private LocalizedText createLocalizedText(String text) {
+        var localizedText = participantModelFactory.createLocalizedText();
+        localizedText.setLang("en");
+        localizedText.setValue(text);
+        return localizedText;
+    }
+
+    private InvocationResponse additionallySendResponseAsReport(Context context, InvocationResponse response) {
+        if (!response.getInvocationState().equals(context.getCurrentReportInvocationState())) {
+            instanceLogger.debug(
+                    "No matching OperationInvokedReport was sent before sending response." +
+                            " TransactionId: {} - InvocationState: {}",
+                    response.getTransactionId(), response.getInvocationState()
+            );
+            context.sendUnsuccessfulReport(
+                    response.getMdibVersion(),
+                    response.getInvocationState(),
+                    response.getInvocationError(),
+                    response.getInvocationErrorMessage()
+            );
+        }
+        return response;
+    }
+
+    private <T> Optional<InvocationResponse> handleListType(
+            ReflectionInfo reflectionInfo,
+            Context context,
+            String handle,
+            T payload) throws InvocationTargetException, IllegalAccessException {
+
+        if (!(payload instanceof List)) {
+            return Optional.empty();
+        }
+
+        final var payloadList = (List<?>) payload;
+        if (reflectionInfo.getAnnotation().listType().equals(IncomingSetServiceRequest.NoList.class)) {
+            instanceLogger.warn("Each method annotation that processes a list requires a " +
+                            "listType attribute != NoList. " +
+                            "Callback for method {} on object {} ignored.",
+                    reflectionInfo.getCallbackMethod().getName(), reflectionInfo.getReceiver());
+            return Optional.empty();
+        }
+
+        if (reflectionInfo.getAnnotation().listType().isAssignableFrom(payloadList.get(0).getClass())) {
+            return Optional.of((InvocationResponse) reflectionInfo.getCallbackMethod()
+                    .invoke(reflectionInfo.getReceiver(), context, payload));
+        }
+        return Optional.empty();
+//        else {
+//            final var localizedText = createLocalizedText(String.format(
+//                    "Unexpected type in list found for operation with handle %s", handle));
+//            instanceLogger.warn(
+//                    "Unexpected type in list found for operation with handle {}. " +
+//                            "Expected {}, found {}.",
+//                    handle,
+//                    reflectionInfo.getAnnotation().listType(),
+//                    payloadList.get(0).getClass());
+//            return Optional.of(context.createUnsuccessfulResponse(
+//                    mdibAccess.getMdibVersion(),
+//                    InvocationState.FAIL,
+//                    InvocationError.UNSPEC,
+//                    Collections.singletonList(localizedText)));
+//        }
     }
 
     /**
