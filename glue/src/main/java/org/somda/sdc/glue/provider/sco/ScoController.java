@@ -16,10 +16,13 @@ import org.somda.sdc.common.logging.InstanceLogger;
 import org.somda.sdc.dpws.device.EventSourceAccess;
 import org.somda.sdc.glue.provider.sco.factory.ContextFactory;
 
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Manages callbacks for incoming set service requests.
@@ -66,72 +69,39 @@ public class ScoController {
      * returned.
      */
     public <T> InvocationResponse processIncomingSetOperation(String handle, InstanceIdentifier source, T payload) {
-        final Context context =
+        final var context =
                 contextFactory.createContext(transactionCounter++, handle, source, eventSourceAccess, mdibAccess);
-
-        final var localizedText = createLocalizedText(
-                String.format("There is no ultimate invocation processor available for operation %s", handle));
+        final var errorMessage =
+                String.format("There is no ultimate invocation processor available for operation %s", handle);
 
         try {
+            // in order to also seek a specific handle-based invocation receiver
+            // prepend default receivers with handle-based receiver
+            final var thisCallReceivers = new ArrayList<ReflectionInfo>(defaultInvocationReceivers.size() + 1);
+            thisCallReceivers.add(invocationReceivers.get(handle));
+            thisCallReceivers.addAll(defaultInvocationReceivers);
 
-            // seek specific handle-based invocation receivers
-            final var reflectionInfo = invocationReceivers.get(handle);
-            if (reflectionInfo != null) {
-                final var invocationResponse = handleListType(
-                        reflectionInfo,
-                        context,
-                        handle,
-                        payload
-                );
-
-                if (invocationResponse.isPresent()) {
-                    return invocationResponse.get();
+            // iterate receivers until a suitable one is found
+            for (var receiver : thisCallReceivers) {
+                if (receiver == null) {
+                    continue;
                 }
-
-                if (reflectionInfo.getCallbackMethod().getParameters()[1]
-                        .getType().isAssignableFrom(payload.getClass())) {
-                    return additionallySendResponseAsReport(context,
-                            (InvocationResponse) reflectionInfo.getCallbackMethod()
-                                    .invoke(reflectionInfo.getReceiver(), context, payload));
-                }
-            }
-
-            // fallback to default invocation receivers
-            for (ReflectionInfo receiver : defaultInvocationReceivers) {
-                final var invocationResponse = handleListType(
-                        receiver,
-                        context,
-                        handle,
-                        payload
-                );
-                if (invocationResponse.isPresent()) {
-                    return invocationResponse.get();
-                }
-
-                if (!(payload instanceof List)) {
-                    if (receiver.getCallbackMethod().getParameters()[1].getType()
-                            .isAssignableFrom(payload.getClass())) {
-                        return additionallySendResponseAsReport(context,
-                                (InvocationResponse) receiver.getCallbackMethod()
-                                        .invoke(receiver.getReceiver(), context, payload));
-                    }
+                if (receiver.getCallbackMethod().getParameters()[1].getType().isAssignableFrom(payload.getClass())) {
+                    return (InvocationResponse) receiver.getCallbackMethod()
+                            .invoke(receiver.getReceiver(), context, payload);
                 }
             }
         } catch (Exception e) {
-            instanceLogger.error("The invocation request could not be forwarded to or processed " +
-                    "by the ultimate invocation processor.");
-            instanceLogger.trace("The invocation request could not be forwarded to or processed " +
-                    "by the ultimate invocation processor.", e);
-            localizedText.setValue("The invocation request could not be forwarded to or processed " +
-                    "by the ultimate invocation processor");
+            instanceLogger.warn(errorMessage);
+            instanceLogger.trace(errorMessage, e);
         }
 
-        // send error report
-        return context.createUnsuccessfulResponse(
+        // if no suitable receiver was found, send error report
+        return additionallySendResponseAsReport(context, context.createUnsuccessfulResponse(
                 mdibAccess.getMdibVersion(),
                 InvocationState.FAIL,
                 InvocationError.UNSPEC,
-                Collections.singletonList(localizedText));
+                Collections.singletonList(createLocalizedText(errorMessage))));
     }
 
     private LocalizedText createLocalizedText(String text) {
@@ -142,61 +112,14 @@ public class ScoController {
     }
 
     private InvocationResponse additionallySendResponseAsReport(Context context, InvocationResponse response) {
-        if (!response.getInvocationState().equals(context.getCurrentReportInvocationState())) {
-            instanceLogger.debug(
-                    "No matching OperationInvokedReport was sent before sending response." +
-                            " TransactionId: {} - InvocationState: {}",
-                    response.getTransactionId(), response.getInvocationState()
-            );
-            context.sendUnsuccessfulReport(
-                    response.getMdibVersion(),
-                    response.getInvocationState(),
-                    response.getInvocationError(),
-                    response.getInvocationErrorMessage()
-            );
-        }
+        context.sendReport(
+                response.getMdibVersion(),
+                response.getInvocationState(),
+                response.getInvocationError(),
+                response.getInvocationErrorMessage(),
+                null
+        );
         return response;
-    }
-
-    private <T> Optional<InvocationResponse> handleListType(
-            ReflectionInfo reflectionInfo,
-            Context context,
-            String handle,
-            T payload) throws InvocationTargetException, IllegalAccessException {
-
-        if (!(payload instanceof List)) {
-            return Optional.empty();
-        }
-
-        final var payloadList = (List<?>) payload;
-        if (reflectionInfo.getAnnotation().listType().equals(IncomingSetServiceRequest.NoList.class)) {
-            instanceLogger.warn("Each method annotation that processes a list requires a " +
-                            "listType attribute != NoList. " +
-                            "Callback for method {} on object {} ignored.",
-                    reflectionInfo.getCallbackMethod().getName(), reflectionInfo.getReceiver());
-            return Optional.empty();
-        }
-
-        if (reflectionInfo.getAnnotation().listType().isAssignableFrom(payloadList.get(0).getClass())) {
-            return Optional.of((InvocationResponse) reflectionInfo.getCallbackMethod()
-                    .invoke(reflectionInfo.getReceiver(), context, payload));
-        }
-        return Optional.empty();
-//        else {
-//            final var localizedText = createLocalizedText(String.format(
-//                    "Unexpected type in list found for operation with handle %s", handle));
-//            instanceLogger.warn(
-//                    "Unexpected type in list found for operation with handle {}. " +
-//                            "Expected {}, found {}.",
-//                    handle,
-//                    reflectionInfo.getAnnotation().listType(),
-//                    payloadList.get(0).getClass());
-//            return Optional.of(context.createUnsuccessfulResponse(
-//                    mdibAccess.getMdibVersion(),
-//                    InvocationState.FAIL,
-//                    InvocationError.UNSPEC,
-//                    Collections.singletonList(localizedText)));
-//        }
     }
 
     /**
