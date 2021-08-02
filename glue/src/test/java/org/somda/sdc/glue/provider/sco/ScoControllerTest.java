@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -115,9 +116,6 @@ class ScoControllerTest {
             assertTrue(receiver.getItems().get(itemIndex).getData() instanceof List);
             assertEquals(expectedPayload, receiver.getItems().get(itemIndex).getData());
         }
-    }
-
-    private void assertTrue(boolean b) {
     }
 
     @Test
