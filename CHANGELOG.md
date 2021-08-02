@@ -43,7 +43,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `org.somda.sdc.dpws.CommunicationLog` MessageType enum added, to mark messages as i.e. request, response. (#188)
 - `org.somda.sdc.dpws.soap.HttpApplicationInfo` additional transactionId added, to associate request response messages. (#188)
 - `org.somda.sdc.dpws.soap.HttpApplicationInfo` additional requestUri added, to determine the used POST address. (#190)
- 
+- `org.somda.sdc.glue.provider.sco.ScoController` to process lists independent of a specific list type as otherwise 
+  activate operations do not integrate well. (#207) 
+  
 ### Removed
 
 - `org.somda.sdc.dpws.CommunicationLogSink.getTargetStream()`; use `org.somda.sdc.dpws.CommunicationLogSink.createTargetStream()` instead. (#153)
@@ -51,6 +53,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `org.somda.sdc.dpws.service.HostedService.getWsdlLocations()` as data is exclusively accessible through `getWsdlDocument()`. (#161)
 
 ### Fixed
+
 - `org.somda.sdc.dpws.soap.wseventing.EventSourceInterceptor` no longer tries to send SubscriptionEnd messages to stale subscriptions on shutdown. (#164)
 - `IEEE11073-20701-LowPriority-Services.wsdl` specified the wrong input and output messages for `GetStatesFromArchive` operation. (#167)
 - Namespace prefix mappings which were missing for SDC Glue-related XML fragments. (#169)
@@ -65,6 +68,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `org.somda.sdc.dpws.soap.wseventing.EventSinkImpl` getStatus, renew and unsubscribe messages are send to the epr of the SubscriptionManager. (#190)
 - `org.somda.sdc.glue.consumer.report.helper.ReportWriter` no longer ignores states without descriptors in DescriptionModificationReports. (#193)
 - `org.somda.sdc.glue.consumer.report.ReportProcessor` correctly handles implied value when comparing instanceIds. (#194)
+- `org.somda.sdc.glue.provider.sco.ScoController` to invoke list callbacks correctly (handle-based and catch-all) 
+  which have formerly not been invoked by the controller. (#207)
 
 ## [1.1.0] - 2020-04-18
 
