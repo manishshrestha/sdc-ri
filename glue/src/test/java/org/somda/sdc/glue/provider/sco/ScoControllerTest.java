@@ -1,6 +1,7 @@
 package org.somda.sdc.glue.provider.sco;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -21,11 +22,8 @@ import test.org.somda.common.LoggingTestWatcher;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.instanceOf;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -55,6 +53,7 @@ class ScoControllerTest {
     }
 
     @Test
+    @DisplayName("Test that handle-based invocation receivers are processed correctly")
     void testHandleSpecificReceiver() {
         final var instanceIdentifier = new InstanceIdentifier();
 
@@ -71,9 +70,8 @@ class ScoControllerTest {
             assertEquals(instanceIdentifier, receiver.getItems().get(itemIndex).getContext().getInvocationSource());
             assertEquals(operation, receiver.getItems().get(itemIndex).getContext().getOperationHandle());
             assertEquals(transactionId, receiver.getItems().get(itemIndex).getContext().getTransactionId());
-            assertThat(receiver.getItems().get(itemIndex).getData(), instanceOf(String.class));
+            assertTrue(receiver.getItems().get(itemIndex).getData() instanceof String);
             assertEquals(expectedPayload, receiver.getItems().get(itemIndex).getData());
-
         }
 
         operation = Handles.OPERATION_1;
@@ -82,11 +80,9 @@ class ScoControllerTest {
         itemIndex++;
         transactionId++;
         {
-            final var contextState1 = new PatientContextState();
-            contextState1.setHandle("TestHandle1");
-            final var contextState2 = new LocationContextState();
-            contextState2.setHandle("TestHandle2");
-            final var expectedPayload = Arrays.asList(contextState1, contextState2);
+            final var arg1 = "Test";
+            final var arg2 = Integer.valueOf(100);
+            final var expectedPayload = List.of(arg1, arg2);
             scoController.processIncomingSetOperation(operation, instanceIdentifier, expectedPayload);
 
             assertEquals(itemSize, receiver.getItems().size());
@@ -94,14 +90,8 @@ class ScoControllerTest {
             assertEquals(instanceIdentifier, receiver.getItems().get(itemIndex).getContext().getInvocationSource());
             assertEquals(operation, receiver.getItems().get(itemIndex).getContext().getOperationHandle());
             assertEquals(transactionId, receiver.getItems().get(itemIndex).getContext().getTransactionId());
-            assertThat(receiver.getItems().get(itemIndex).getData(), instanceOf(List.class));
-            final var list = (List<?>) receiver.getItems().get(itemIndex).getData();
-            assertEquals(2, list.size());
-
-            assertThat(list.get(0), instanceOf(PatientContextState.class));
-            assertEquals(contextState1.getHandle(), ((AbstractContextState) list.get(0)).getHandle());
-            assertThat(list.get(1), instanceOf(LocationContextState.class));
-            assertEquals(contextState2.getHandle(), ((AbstractContextState) list.get(1)).getHandle());
+            assertTrue(receiver.getItems().get(itemIndex).getData() instanceof List);
+            assertEquals(expectedPayload, receiver.getItems().get(itemIndex).getData());
         }
 
         operation = Handles.OPERATION_2;
@@ -110,9 +100,11 @@ class ScoControllerTest {
         itemIndex++;
         transactionId++;
         {
-            final var arg1 = "Test";
-            final var arg2 = Integer.valueOf(100);
-            final var expectedPayload = Arrays.asList(arg1, arg2);
+            final var contextState1 = new PatientContextState();
+            contextState1.setHandle("TestHandle1");
+            final var contextState2 = new LocationContextState();
+            contextState2.setHandle("TestHandle2");
+            final var expectedPayload = List.of(contextState1, contextState2);
             scoController.processIncomingSetOperation(operation, instanceIdentifier, expectedPayload);
 
             assertEquals(itemSize, receiver.getItems().size());
@@ -120,18 +112,16 @@ class ScoControllerTest {
             assertEquals(instanceIdentifier, receiver.getItems().get(itemIndex).getContext().getInvocationSource());
             assertEquals(operation, receiver.getItems().get(itemIndex).getContext().getOperationHandle());
             assertEquals(transactionId, receiver.getItems().get(itemIndex).getContext().getTransactionId());
-            assertThat(receiver.getItems().get(itemIndex).getData(), instanceOf(List.class));
-            final var list = (List<?>) receiver.getItems().get(itemIndex).getData();
-            assertEquals(2, list.size());
-
-            assertThat(list.get(0), instanceOf(String.class));
-            assertEquals(arg1, list.get(0));
-            assertThat(list.get(1), instanceOf(Integer.class));
-            assertEquals(arg2, list.get(1));
+            assertTrue(receiver.getItems().get(itemIndex).getData() instanceof List);
+            assertEquals(expectedPayload, receiver.getItems().get(itemIndex).getData());
         }
     }
 
+    private void assertTrue(boolean b) {
+    }
+
     @Test
+    @DisplayName("Test that catch-all invocation receivers are processed correctly")
     void testHandleDefaultReceiver() {
         final var instanceIdentifier = new InstanceIdentifier();
 
@@ -148,9 +138,8 @@ class ScoControllerTest {
             assertEquals(instanceIdentifier, receiver.getItems().get(itemIndex).getContext().getInvocationSource());
             assertEquals(operation, receiver.getItems().get(itemIndex).getContext().getOperationHandle());
             assertEquals(transactionId, receiver.getItems().get(itemIndex).getContext().getTransactionId());
-            assertThat(receiver.getItems().get(itemIndex).getData(), instanceOf(String.class));
+            assertTrue(receiver.getItems().get(itemIndex).getData() instanceof String);
             assertEquals(expectedPayload, receiver.getItems().get(itemIndex).getData());
-
         }
 
         callbackId = Receiver.ID_LIST_ALL;
@@ -162,7 +151,7 @@ class ScoControllerTest {
             contextState1.setHandle("TestHandle1");
             final var contextState2 = new LocationContextState();
             contextState2.setHandle("TestHandle2");
-            final var expectedPayload = Arrays.asList(contextState1, contextState2);
+            final var expectedPayload = List.of(contextState1, contextState2);
             scoController.processIncomingSetOperation(operation, instanceIdentifier, expectedPayload);
 
             assertEquals(itemSize, receiver.getItems().size());
@@ -170,24 +159,18 @@ class ScoControllerTest {
             assertEquals(instanceIdentifier, receiver.getItems().get(itemIndex).getContext().getInvocationSource());
             assertEquals(operation, receiver.getItems().get(itemIndex).getContext().getOperationHandle());
             assertEquals(transactionId, receiver.getItems().get(itemIndex).getContext().getTransactionId());
-            assertThat(receiver.getItems().get(itemIndex).getData(), instanceOf(List.class));
-            final var list = (List<?>) receiver.getItems().get(itemIndex).getData();
-            assertEquals(2, list.size());
-
-            assertThat(list.get(0), instanceOf(PatientContextState.class));
-            assertEquals(contextState1.getHandle(), ((AbstractContextState) list.get(0)).getHandle());
-            assertThat(list.get(1), instanceOf(LocationContextState.class));
-            assertEquals(contextState2.getHandle(), ((AbstractContextState) list.get(1)).getHandle());
+            assertTrue(receiver.getItems().get(itemIndex).getData() instanceof List);
+            assertEquals(expectedPayload, receiver.getItems().get(itemIndex).getData());
         }
 
-        // callbackId = Receiver.ID_LIST_ALL;
+        callbackId = Receiver.ID_LIST_ALL;
         itemSize++;
         itemIndex++;
         transactionId++;
         {
             final var arg1 = "Test";
             final var arg2 = Integer.valueOf(100);
-            final var expectedPayload = Arrays.asList(arg1, arg2);
+            final var expectedPayload = List.of(arg1, arg2);
             scoController.processIncomingSetOperation(operation, instanceIdentifier, expectedPayload);
 
             assertEquals(itemSize, receiver.getItems().size());
@@ -195,19 +178,14 @@ class ScoControllerTest {
             assertEquals(instanceIdentifier, receiver.getItems().get(itemIndex).getContext().getInvocationSource());
             assertEquals(operation, receiver.getItems().get(itemIndex).getContext().getOperationHandle());
             assertEquals(transactionId, receiver.getItems().get(itemIndex).getContext().getTransactionId());
-            assertThat(receiver.getItems().get(itemIndex).getData(), instanceOf(List.class));
-            final var list = (List<?>) receiver.getItems().get(itemIndex).getData();
-            assertEquals(2, list.size());
-
-            assertThat(list.get(0), instanceOf(String.class));
-            assertEquals(arg1, list.get(0));
-            assertThat(list.get(1), instanceOf(Integer.class));
-            assertEquals(arg2, list.get(1));
+            assertTrue(receiver.getItems().get(itemIndex).getData() instanceof List);
+            assertEquals(expectedPayload, receiver.getItems().get(itemIndex).getData());
         }
     }
 
     @Test
-    void testHandleMultipleReceivers() {
+    @DisplayName("Test precedence of handle-based invocation receivers over catch-all invocation receivers")
+    void testInvocationReceiverPrecedence() {
         SecondReceiver secondReceiver = new SecondReceiver();
 
         scoController.addOperationInvocationReceiver(secondReceiver);
@@ -227,14 +205,14 @@ class ScoControllerTest {
             assertEquals(instanceIdentifier, receiver.getItems().get(itemIndex).getContext().getInvocationSource());
             assertEquals(operation, receiver.getItems().get(itemIndex).getContext().getOperationHandle());
             assertEquals(transactionId, receiver.getItems().get(itemIndex).getContext().getTransactionId());
-            assertThat(receiver.getItems().get(itemIndex).getData(), instanceOf(String.class));
+            assertTrue(receiver.getItems().get(itemIndex).getData() instanceof String);
             assertEquals(expectedPayload, receiver.getItems().get(itemIndex).getData());
         }
 
         operation = Handles.OPERATION_3;
         callbackId = SecondReceiver.ID_SET_STRING_SPECIFIC;
-        // itemSize = 1;
-        // itemIndex = 0;
+        itemSize = 1;
+        itemIndex = 0;
         transactionId++;
         {
             final var expectedPayload = "Test";
@@ -244,13 +222,14 @@ class ScoControllerTest {
             assertEquals(instanceIdentifier, secondReceiver.getItems().get(itemIndex).getContext().getInvocationSource());
             assertEquals(operation, secondReceiver.getItems().get(itemIndex).getContext().getOperationHandle());
             assertEquals(transactionId, secondReceiver.getItems().get(itemIndex).getContext().getTransactionId());
-            assertThat(secondReceiver.getItems().get(itemIndex).getData(), instanceOf(String.class));
+            assertTrue(secondReceiver.getItems().get(itemIndex).getData() instanceof String);
             assertEquals(expectedPayload, secondReceiver.getItems().get(itemIndex).getData());
 
         }
     }
 
     @Test
+    @DisplayName("Test that unknown receivers result in a failed invocation result")
     void testInvocationForUnknownReceiver() {
         final var instanceIdentifier = new InstanceIdentifier();
         final var operation = "<any handle>";
@@ -260,15 +239,18 @@ class ScoControllerTest {
     }
 
     @Test
+    @DisplayName("Test that an invocation result generated by the SCO controller also triggers an invocation invoked report")
     void testImplicitOperationInvokedReportOnErrorGeneratedInScoController() throws Exception {
         final var expectedInstanceIdentifier = new InstanceIdentifier();
         final var expectedInvocationState = InvocationState.FAIL;
         final var operationHandle = "<unknown operation handle>";
 
         // pass a big decimal to make sure no receiver will be found
-        assertEquals(expectedInvocationState,
-                scoController.processIncomingSetOperation(operationHandle, expectedInstanceIdentifier,
-                        BigDecimal.ZERO).getInvocationState());
+        final var response = scoController.processIncomingSetOperation(
+                operationHandle,
+                expectedInstanceIdentifier,
+                BigDecimal.ZERO);
+        assertEquals(expectedInvocationState, response.getInvocationState());
 
         // make sure the error result is also sent as report
         verify(eventSourceAccessMock).sendNotification(actionCaptor.capture(), reportCaptor.capture());
@@ -276,6 +258,7 @@ class ScoControllerTest {
         assertEquals(ActionConstants.ACTION_OPERATION_INVOKED_REPORT, actionCaptor.getValue());
         assertEquals(expectedInvocationState, reportCaptor.getValue().getReportPart().get(0).getInvocationInfo().getInvocationState());
         assertEquals(operationHandle, reportCaptor.getValue().getReportPart().get(0).getOperationHandleRef());
+        assertEquals(response.getTransactionId(), reportCaptor.getValue().getReportPart().get(0).getInvocationInfo().getTransactionId());
     }
 
     private static class Receiver implements OperationInvocationReceiver {

@@ -24,7 +24,6 @@ import org.somda.sdc.dpws.soap.exception.TransportException;
 import org.somda.sdc.glue.common.ActionConstants;
 
 import javax.annotation.Nullable;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -232,6 +231,9 @@ public class Context {
                            @Nullable List<LocalizedText> invocationErrorMessage,
                            @Nullable String operationTarget) {
 
+        LOG.debug("Sending report for context {} at MDIB version {} with invocation state: {}",
+                this, mdibVersion, invocationState);
+
         final InvocationInfo invocationInfo = messageModelFactory.createInvocationInfo();
         invocationInfo.setInvocationState(invocationState);
         invocationInfo.setTransactionId(transactionId);
@@ -246,7 +248,7 @@ public class Context {
         reportPart.setInvocationInfo(invocationInfo);
 
         final OperationInvokedReport operationInvokedReport = messageModelFactory.createOperationInvokedReport();
-        operationInvokedReport.setSequenceId(mdibVersion.getSequenceId().toString());
+        operationInvokedReport.setSequenceId(mdibVersion.getSequenceId());
         operationInvokedReport.setInstanceId(mdibVersion.getInstanceId());
         operationInvokedReport.setMdibVersion(mdibVersion.getVersion());
         operationInvokedReport.getReportPart().add(reportPart);

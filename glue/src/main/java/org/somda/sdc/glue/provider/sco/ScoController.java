@@ -71,8 +71,6 @@ public class ScoController {
     public <T> InvocationResponse processIncomingSetOperation(String handle, InstanceIdentifier source, T payload) {
         final var context =
                 contextFactory.createContext(transactionCounter++, handle, source, eventSourceAccess, mdibAccess);
-        final var errorMessage =
-                String.format("There is no ultimate invocation processor available for operation %s", handle);
 
         try {
             // in order to also seek a specific handle-based invocation receiver
@@ -92,8 +90,16 @@ public class ScoController {
                 }
             }
         } catch (Exception e) {
+            final var errorMessage =
+                    String.format("Invocation of operation with handle '%s' failed: %s", handle, e.getMessage());
             instanceLogger.warn(errorMessage);
             instanceLogger.trace(errorMessage, e);
+
+            return additionallySendResponseAsReport(context, context.createUnsuccessfulResponse(
+                    mdibAccess.getMdibVersion(),
+                    InvocationState.FAIL,
+                    InvocationError.UNSPEC,
+                    Collections.singletonList(createLocalizedText(errorMessage))));
         }
 
         // if no suitable receiver was found, send error report
@@ -101,7 +107,9 @@ public class ScoController {
                 mdibAccess.getMdibVersion(),
                 InvocationState.FAIL,
                 InvocationError.UNSPEC,
-                Collections.singletonList(createLocalizedText(errorMessage))));
+                Collections.singletonList(createLocalizedText(
+                        String.format("A handler for the operation with handle '%s' could not be found",
+                                handle)))));
     }
 
     private LocalizedText createLocalizedText(String text) {
