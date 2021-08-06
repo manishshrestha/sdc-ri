@@ -16,6 +16,7 @@ import org.somda.sdc.dpws.soap.CommunicationContext;
 import org.somda.sdc.dpws.soap.HttpApplicationInfo;
 import org.somda.sdc.dpws.soap.TransportInfo;
 
+import javax.net.ssl.SSLPeerUnverifiedException;
 import javax.net.ssl.SSLSession;
 import java.io.OutputStream;
 import java.security.cert.X509Certificate;
@@ -63,15 +64,19 @@ public class CommunicationLogHttpResponseInterceptor implements HttpResponseInte
             routedConnection = (ManagedHttpClientConnection) context.getAttribute(
                     HttpCoreContext.HTTP_CONNECTION);
         } catch (ClassCastException e) {
-            LOG.error("Error retrieving managed http client connection" + e);
+            LOG.error("Error retrieving managed http client connection " + e);
         }
         if (routedConnection != null && routedConnection.isOpen()) {
             SSLSession sslSession = routedConnection.getSSLSession();
-            if (sslSession != null
-                    && sslSession.getLocalCertificates() != null) {
-                x509certificates.addAll(Arrays.stream(sslSession.getLocalCertificates())
-                        .filter(certificate -> certificate instanceof X509Certificate)
-                        .map(certificate -> (X509Certificate) certificate).collect(Collectors.toList()));
+            try {
+                if (sslSession != null
+                        && sslSession.getPeerCertificates() != null) {
+                    x509certificates.addAll(Arrays.stream(sslSession.getPeerCertificates())
+                            .filter(certificate -> certificate instanceof X509Certificate)
+                            .map(certificate -> (X509Certificate) certificate).collect(Collectors.toList()));
+                }
+            } catch (SSLPeerUnverifiedException e) {
+                LOG.error("Error retrieving peer certificates " + e);
             }
         }
 
