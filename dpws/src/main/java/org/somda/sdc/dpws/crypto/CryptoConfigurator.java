@@ -3,8 +3,12 @@ package org.somda.sdc.dpws.crypto;
 import com.google.inject.Inject;
 import org.apache.http.ssl.SSLContextBuilder;
 import org.apache.http.ssl.SSLContexts;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
+import javax.annotation.Nullable;
 import javax.net.ssl.SSLContext;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.security.KeyManagementException;
 import java.security.KeyStore;
@@ -12,6 +16,9 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Supports generation of server and client SSL configurations.
@@ -19,6 +26,7 @@ import java.security.cert.CertificateException;
  * Can either generate default configurations or derive configurations based on {@link CryptoSettings} objects.
  */
 public class CryptoConfigurator {
+    private static final Logger LOG = LogManager.getLogger(CryptoConfigurator.class);
 
     @Inject
     CryptoConfigurator() {
@@ -69,6 +77,40 @@ public class CryptoConfigurator {
         }
 
         return sslContextBuilder.build();
+    }
+
+    /**
+     * Accepts a {@link CryptoSettings} object and extracts all certificates from the keystore.
+     * <p>
+     *
+     * @param cryptoSettings the crypto settings.
+     *                       Please note that key store files take precedence over key store streams.
+     * @return a list of all X509 certificates from the keystore or an empty list.
+     */
+    public List<X509Certificate> getCertificates(@Nullable CryptoSettings cryptoSettings) {
+        List<X509Certificate> certificates = new ArrayList<>();
+        if (cryptoSettings == null) return certificates;
+        try {
+            KeyStore ks = KeyStore.getInstance(KeyStore.getDefaultType());
+            if (cryptoSettings.getKeyStoreFile().isPresent()) {
+                ks.load(new FileInputStream(cryptoSettings.getKeyStoreFile().get()),
+                        cryptoSettings.getKeyStorePassword().toCharArray());
+            } else if (cryptoSettings.getKeyStoreStream().isPresent()) {
+                ks.load(cryptoSettings.getKeyStoreStream().get(), cryptoSettings.getKeyStorePassword().toCharArray());
+            } else {
+                return certificates;
+            }
+            var aliases = ks.aliases().asIterator();
+            while (aliases.hasNext()) {
+                var cert = ks.getCertificate(aliases.next());
+                if (cert instanceof X509Certificate) {
+                    certificates.add((X509Certificate) cert);
+                }
+            }
+        } catch (CertificateException | KeyStoreException | IOException | NoSuchAlgorithmException e) {
+            LOG.error(String.format("Error retrieving certificates from keystore %s", e));
+        }
+        return certificates;
     }
 
     /**
