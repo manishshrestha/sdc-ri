@@ -196,8 +196,7 @@ public class EventSourceInterceptor extends AbstractIdleService implements Event
         Duration grantedExpires = grantExpires(validateExpires(subscribe.getExpires()));
 
         // Create subscription
-        var transportInfo = rrObj.getCommunicationContext().orElseThrow(() ->
-                new RuntimeException("Fatal error. Missing transport information.")).getTransportInfo();
+        var transportInfo = rrObj.getCommunicationContext().getTransportInfo();
         EndpointReferenceType epr = createSubscriptionManagerEprAndRegisterHttpHandler(
                 transportInfo.getScheme(),
                 transportInfo.getLocalAddress().orElseThrow(() ->
