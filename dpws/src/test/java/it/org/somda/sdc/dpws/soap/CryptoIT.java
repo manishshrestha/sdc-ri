@@ -1,6 +1,5 @@
 package it.org.somda.sdc.dpws.soap;
 
-import com.google.common.collect.ListMultimap;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.SettableFuture;
 import com.google.inject.AbstractModule;
@@ -26,7 +25,6 @@ import org.somda.sdc.dpws.guice.DefaultDpwsConfigModule;
 import org.somda.sdc.dpws.service.HostedServiceProxy;
 import org.somda.sdc.dpws.service.HostingServiceProxy;
 import org.somda.sdc.dpws.soap.CommunicationContext;
-import org.somda.sdc.dpws.soap.HttpApplicationInfo;
 import org.somda.sdc.dpws.soap.SoapConfig;
 import org.somda.sdc.dpws.soap.SoapUtil;
 import org.somda.sdc.dpws.soap.TransportInfo;
@@ -49,7 +47,6 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -80,6 +77,7 @@ public class CryptoIT {
     private HostnameVerifier verifier;
     private TestCommLogSink logSink;
     private X509Certificate clientCertificate;
+    private X509Certificate serverCertificate;
 
     CryptoIT() {
         IntegrationTestUtil.preferIpV4Usage();
@@ -148,6 +146,7 @@ public class CryptoIT {
         }
         logSink = (TestCommLogSink) clientPeer.getInjector().getInstance(CommunicationLogSink.class);
         clientCertificate = Ssl.getClientCertificate();
+        serverCertificate = Ssl.getServerCertificate();
     }
 
     @AfterEach
@@ -200,7 +199,7 @@ public class CryptoIT {
     }
 
     @Test
-    void testTransportInfoInRequestResponseClient() throws Exception {
+    void testTransportInfoInRequestResponseServer() throws Exception {
         devicePeer.startAsync().awaitRunning();
         clientPeer.startAsync().awaitRunning();
 
@@ -221,6 +220,32 @@ public class CryptoIT {
 
         assertEquals(1, numberAfterRR - numberBeforeRR);
         for (var certificate : logSink.getInboundTransportInfos().stream().map(TransportInfo::getX509Certificates).flatMap(List::stream).collect(Collectors.toList())) {
+            assertEquals(serverCertificate, certificate);
+        }
+    }
+
+    @Test
+    void testTransportInfoInRequestResponseClient() throws Exception {
+        devicePeer.startAsync().awaitRunning();
+        clientPeer.startAsync().awaitRunning();
+
+        var connectFuture = clientPeer.getClient().connect(devicePeer.getEprAddress());
+        var hostingServiceProxy = connectFuture.get(MAX_WAIT_TIME.getSeconds(), TimeUnit.SECONDS);
+        var hostedServiceProxy = hostingServiceProxy.getHostedServices().get(TestServiceMetadata.SERVICE_ID_1);
+        assertNotNull(hostedServiceProxy);
+
+        final TestOperationRequest request = new TestOperationRequest();
+        request.setParam1("testString");
+        request.setParam2(11);
+
+        var reqMsg = clientPeer.getInjector().getInstance(SoapUtil.class)
+                .createMessage(TestServiceMetadata.ACTION_OPERATION_REQUEST_1, request);
+        final var numberBeforeRR = logSink.getOutboundTransportInfos().stream().filter(info -> info.getX509Certificates().size() > 0).count();
+        hostedServiceProxy.getRequestResponseClient().sendRequestResponse(reqMsg);
+        final var numberAfterRR = logSink.getOutboundTransportInfos().stream().filter(info -> info.getX509Certificates().size() > 0).count();
+
+        assertEquals(1, numberAfterRR - numberBeforeRR);
+        for (var certificate : logSink.getOutboundTransportInfos().stream().map(TransportInfo::getX509Certificates).flatMap(List::stream).collect(Collectors.toList())) {
             assertEquals(clientCertificate, certificate);
         }
     }

@@ -29,6 +29,10 @@ public class Ssl {
         return setup(SSL_METADATA.getClientKeySet());
     }
 
+    public static X509Certificate getServerCertificate() {
+        return SSL_METADATA.getServerKeySet().getCertificate();
+    }
+
     public static X509Certificate getClientCertificate() {
         return SSL_METADATA.getClientKeySet().getCertificate();
     }
