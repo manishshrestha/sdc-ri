@@ -70,11 +70,12 @@ public class JettyHttpServerHandler extends AbstractHandler {
     @Override
     public void handle(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response)
             throws IOException {
-
-        var transactionIdOpt = Optional.of(baseRequest.getAttribute(CommunicationLog.MessageType.REQUEST.name()));
+        final var remoteNodeInfo = getRemoteNodeInfo(request);
+        var transactionIdOpt = Optional.ofNullable(
+                baseRequest.getAttribute(CommunicationLog.MessageType.REQUEST.name()));
         var transactionId = (String) transactionIdOpt.orElse("");
 
-        instanceLogger.debug("Request to {}", request.getRequestURL());
+        instanceLogger.debug("{}: Request to {}", remoteNodeInfo, request.getRequestURL());
         response.setStatus(HttpStatus.OK_200);
         response.setContentType(mediaType);
         response.setHeader(SERVER_HEADER_KEY, SERVER_HEADER_VALUE);
@@ -104,8 +105,12 @@ public class JettyHttpServerHandler extends AbstractHandler {
             );
 
         } catch (HttpException e) {
-            instanceLogger.warn("An HTTP exception occurred during HTTP request processing. {}", e.getMessage());
-            instanceLogger.trace("An HTTP exception occurred during HTTP request processing", e);
+            instanceLogger.warn("{}: An HTTP exception occurred during HTTP request processing. Error message: {}",
+                    remoteNodeInfo,
+                    e.getMessage());
+            instanceLogger.trace("{}: An HTTP exception occurred during HTTP request processing",
+                    remoteNodeInfo,
+                    e);
             response.setStatus(e.getStatusCode());
             if (!e.getMessage().isEmpty()) {
                 tempOut.write(e.getMessage().getBytes());
@@ -130,10 +135,16 @@ public class JettyHttpServerHandler extends AbstractHandler {
             output.flush();
             output.close();
         } catch (IOException e) {
-            instanceLogger.error("Could not close input/output streams from incoming HTTP request to {}. Reason: {}",
-                    request.getRequestURL(), e.getMessage());
-            instanceLogger.trace("Could not close input/output streams from incoming HTTP request to {}",
-                    request.getRequestURL(), e);
+            instanceLogger.error(
+                    "{}: Could not close input/output streams from incoming HTTP request to {}. Reason: {}",
+                    remoteNodeInfo,
+                    request.getRequestURL(),
+                    e.getMessage());
+            instanceLogger.trace(
+                    "{}: Could not close input/output streams from incoming HTTP request to {}",
+                    remoteNodeInfo,
+                    request.getRequestURL(),
+                    e);
         }
     }
 
@@ -157,7 +168,8 @@ public class JettyHttpServerHandler extends AbstractHandler {
 
         var anonymousCertificates = request.getAttribute("javax.servlet.request.X509Certificate");
         if (anonymousCertificates == null) {
-            LOG.error("Certificate information is missing from HTTP request data");
+            LOG.error("{}: Certificate information is missing from HTTP request data",
+                    getRemoteNodeInfo(request));
             throw new IOException("Certificate information is missing from HTTP request data");
         } else {
             if (anonymousCertificates instanceof X509Certificate[]) {
@@ -168,5 +180,9 @@ public class JettyHttpServerHandler extends AbstractHandler {
                         anonymousCertificates.getClass()));
             }
         }
+    }
+
+    private static String getRemoteNodeInfo(HttpServletRequest request) {
+        return String.format("%s://%s:%s", request.getScheme(), request.getRemoteAddr(), request.getRemotePort());
     }
 }

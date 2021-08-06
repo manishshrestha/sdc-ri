@@ -3,8 +3,6 @@ package org.somda.sdc.dpws.soap.interception;
 import org.somda.sdc.dpws.soap.CommunicationContext;
 import org.somda.sdc.dpws.soap.SoapMessage;
 
-import java.util.Optional;
-
 /**
  * Object passed to interceptors to provide both a SOAP request and response message.
  */
@@ -33,8 +31,7 @@ public class RequestResponseObject implements InterceptorCallbackType {
         return response;
     }
 
-    public Optional<CommunicationContext> getCommunicationContext() {
-        return Optional.ofNullable(communicationContext);
+    public CommunicationContext getCommunicationContext() {
+        return communicationContext;
     }
-
 }

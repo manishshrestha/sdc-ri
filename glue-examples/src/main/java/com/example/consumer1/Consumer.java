@@ -251,7 +251,8 @@ public class Consumer {
                         6, false,
                         7, false,
                         8, false,
-                        9, false
+                        9, false,
+                        10, false
                 )
         );
 
@@ -266,14 +267,14 @@ public class Consumer {
 
         // see if device using the provided epr address is available
         LOG.info("Starting discovery for {}", targetEpr);
-        final SettableFuture<List<String>> xAddrs = SettableFuture.create();
+        final SettableFuture<DiscoveredDevice> xAddrs = SettableFuture.create();
         DiscoveryObserver obs = new DiscoveryObserver() {
             @Subscribe
             void deviceFound(ProbedDeviceFoundMessage message) {
                 DiscoveredDevice payload = message.getPayload();
                 if (payload.getEprAddress().equals(targetEpr)) {
                     LOG.info("Found device with epr {}", payload.getEprAddress());
-                    xAddrs.set(payload.getXAddrs());
+                    xAddrs.set(payload);
                 } else {
                     LOG.info("Found non-matching device with epr {}", payload.getEprAddress());
                 }
@@ -285,8 +286,10 @@ public class Consumer {
         SdcDiscoveryFilterBuilder discoveryFilterBuilder = SdcDiscoveryFilterBuilder.create();
         consumer.getClient().probe(discoveryFilterBuilder.get());
 
+        DiscoveredDevice d = null;
         try {
-            List<String> targetXAddrs = xAddrs.get(MAX_WAIT_SEC, TimeUnit.SECONDS);
+            List<String> targetXAddrs = xAddrs.get(MAX_WAIT_SEC, TimeUnit.SECONDS).getXAddrs();
+            d = xAddrs.get();
             resultMap.put(1, true);
         } catch (InterruptedException | TimeoutException | ExecutionException e) {
             LOG.error("Couldn't find target with EPR {}", targetEpr, e);
@@ -296,7 +299,7 @@ public class Consumer {
 
         var deviceUri = targetEpr;
         LOG.info("Connecting to {}", targetEpr);
-        var hostingServiceFuture = consumer.getClient().connect(deviceUri);
+        var hostingServiceFuture = consumer.getClient().connect(d);
 
         HostingServiceProxy hostingServiceProxy = null;
         try {
@@ -403,8 +406,12 @@ public class Consumer {
         sdcRemoteDevice.getMdibAccessObservable().unregisterObserver(reportObs);
         sdcRemoteDevice.stopAsync().awaitTerminated();
 
-        consumer.getConnector().disconnect(deviceUri);
-        consumer.shutDown();
+        try {
+            var disconnectDone = consumer.getConnector().disconnect(deviceUri).isDone();
+            consumer.shutDown();
+            resultMap.put(10, disconnectDone);
+        } catch (Exception e) {
+            LOG.warn("Disconnect failed", e);
+        }
     }
-
 }

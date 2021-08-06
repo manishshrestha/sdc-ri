@@ -139,7 +139,10 @@ public class RequestResponseServerHttpHandler implements HttpHandler, Intercepto
             reqResServer.receiveRequestResponse(requestMsg, responseMsg, communicationContext);
         } catch (SoapFaultException e) {
             responseMsg = e.getFaultMessage();
-            instanceLogger.warn("Processing message triggered soap fault: {}", e.getMessage());
+            instanceLogger.warn("{}: Processing message triggered soap fault: {}",
+                    communicationContext.getTransportInfo().getRemoteNodeInfo(),
+                    e.getMessage());
+            instanceLogger.trace("Processing message triggered soap fault", e);
             httpExceptionToThrow = new HttpException(SoapFaultHttpStatusCodeMapping.get(e.getFault()));
         }
 
