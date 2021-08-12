@@ -84,10 +84,10 @@ class ReportWriterTest {
         final String expectedDeleteParent = "delete-parent";
         reportPartDelete.setModificationType(DescriptionModificationType.DEL);
         reportPartDelete.setParentDescriptor(expectedDeleteParent);
-        addEntry(reportPartDelete, Handles.METRIC_0, NumericMetricDescriptor.class, false);
-        addEntry(reportPartDelete, Handles.METRIC_1, StringMetricDescriptor.class, false);
-        addEntry(reportPartDelete, Handles.METRIC_2, EnumStringMetricDescriptor.class, false);
-        addEntry(reportPartDelete, Handles.METRIC_3, RealTimeSampleArrayMetricDescriptor.class, false);
+        addEntryDescriptor(reportPartDelete, Handles.METRIC_0, NumericMetricDescriptor.class);
+        addEntryDescriptor(reportPartDelete, Handles.METRIC_1, StringMetricDescriptor.class);
+        addEntryDescriptor(reportPartDelete, Handles.METRIC_2, EnumStringMetricDescriptor.class);
+        addEntryDescriptor(reportPartDelete, Handles.METRIC_3, RealTimeSampleArrayMetricDescriptor.class);
 
         report.getReportPart().addAll(Arrays.asList(reportPartInsert, reportPartUpdate, reportPartDelete));
 
@@ -139,10 +139,14 @@ class ReportWriterTest {
 
     private void testSingleState(MdibDescriptionModification modification, String handle, MdibDescriptionModification.Type type, Optional<String> parentHandle) {
         assertEquals(handle, modification.getDescriptor().getHandle());
-        assertEquals(1, modification.getStates().size());
-        assertEquals(handle, modification.getStates().get(0).getDescriptorHandle());
-        assertEquals(type, modification.getModificationType());
         assertEquals(parentHandle, modification.getParentHandle());
+        assertEquals(type, modification.getModificationType());
+        if (type != MdibDescriptionModification.Type.DELETE) {
+            assertEquals(1, modification.getStates().size());
+            assertEquals(handle, modification.getStates().get(0).getDescriptorHandle());
+        } else {
+            assertEquals(0, modification.getStates().size());
+        }
     }
 
     private void testMultiState(MdibDescriptionModification modification, String handle, List<String> stateHandles, MdibDescriptionModification.Type type, Optional<String> parentHandle) {
@@ -157,6 +161,11 @@ class ReportWriterTest {
 
         assertEquals(type, modification.getModificationType());
         assertEquals(parentHandle, modification.getParentHandle());
+    }
+
+    private void addEntryDescriptor(DescriptionModificationReport.ReportPart reportPart, String handle, Class<? extends AbstractDescriptor> type) throws Exception {
+        final MdibDescriptionModifications.Entry entry = mockEntryFactory.entry(handle, type);
+        reportPart.getDescriptor().add(entry.getDescriptor());
     }
 
     private void addEntry(DescriptionModificationReport.ReportPart reportPart, String handle, Class<? extends AbstractDescriptor> type, boolean addStateWithoutDescriptor) throws Exception {
