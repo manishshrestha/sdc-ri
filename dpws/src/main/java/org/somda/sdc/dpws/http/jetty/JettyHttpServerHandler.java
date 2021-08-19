@@ -27,6 +27,7 @@ import java.security.cert.X509Certificate;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Supplier;
 
 
 /**
@@ -70,12 +71,12 @@ public class JettyHttpServerHandler extends AbstractHandler {
     @Override
     public void handle(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response)
             throws IOException {
-        final var remoteNodeInfo = getRemoteNodeInfo(request);
+        final Supplier<String> remoteNodeInfo = () -> getRemoteNodeInfo(request);
         var transactionIdOpt = Optional.ofNullable(
                 baseRequest.getAttribute(CommunicationLog.MessageType.REQUEST.name()));
         var transactionId = (String) transactionIdOpt.orElse("");
 
-        instanceLogger.debug("{}: Request to {}", remoteNodeInfo, request.getRequestURL());
+        instanceLogger.debug("{}: Request to {}", remoteNodeInfo::get, request::getRequestURL);
         response.setStatus(HttpStatus.OK_200);
         response.setContentType(mediaType);
         response.setHeader(SERVER_HEADER_KEY, SERVER_HEADER_VALUE);
@@ -106,10 +107,11 @@ public class JettyHttpServerHandler extends AbstractHandler {
 
         } catch (HttpException e) {
             instanceLogger.warn("{}: An HTTP exception occurred during HTTP request processing. Error message: {}",
-                    remoteNodeInfo,
-                    e.getMessage());
-            instanceLogger.trace("{}: An HTTP exception occurred during HTTP request processing",
-                    remoteNodeInfo,
+                    remoteNodeInfo::get,
+                    e::getMessage);
+            instanceLogger.trace(() -> String.format(
+                    "%s: An HTTP exception occurred during HTTP request processing",
+                    remoteNodeInfo.get()),
                     e);
             response.setStatus(e.getStatusCode());
             if (!e.getMessage().isEmpty()) {
@@ -137,13 +139,13 @@ public class JettyHttpServerHandler extends AbstractHandler {
         } catch (IOException e) {
             instanceLogger.error(
                     "{}: Could not close input/output streams from incoming HTTP request to {}. Reason: {}",
-                    remoteNodeInfo,
-                    request.getRequestURL(),
-                    e.getMessage());
-            instanceLogger.trace(
-                    "{}: Could not close input/output streams from incoming HTTP request to {}",
-                    remoteNodeInfo,
-                    request.getRequestURL(),
+                    remoteNodeInfo::get,
+                    request::getRequestURL,
+                    e::getMessage);
+            instanceLogger.trace(() -> String.format(
+                    "%s: Could not close input/output streams from incoming HTTP request to %s",
+                    remoteNodeInfo.get(),
+                    request.getRequestURL()),
                     e);
         }
     }
@@ -169,7 +171,7 @@ public class JettyHttpServerHandler extends AbstractHandler {
         var anonymousCertificates = request.getAttribute("javax.servlet.request.X509Certificate");
         if (anonymousCertificates == null) {
             LOG.error("{}: Certificate information is missing from HTTP request data",
-                    getRemoteNodeInfo(request));
+                    () -> getRemoteNodeInfo(request));
             throw new IOException("Certificate information is missing from HTTP request data");
         } else {
             if (anonymousCertificates instanceof X509Certificate[]) {

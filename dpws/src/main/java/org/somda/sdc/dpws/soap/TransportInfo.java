@@ -26,7 +26,6 @@ public class TransportInfo {
     private final Integer remotePort;
 
     private final List<X509Certificate> x509Certificates;
-    private final String remoteNodeInfo;
 
     @Deprecated(since = "1.1.0", forRemoval = true)
     public TransportInfo(String scheme,
@@ -43,7 +42,6 @@ public class TransportInfo {
         // convert provided collection into a list
         this.x509Certificates = new ArrayList<>();
         this.x509Certificates.addAll(x509Certificates);
-        this.remoteNodeInfo = generateRemoteNodeInfo();
     }
 
     public TransportInfo(String scheme,
@@ -58,14 +56,6 @@ public class TransportInfo {
         this.remoteAddress = remoteAddress;
         this.remotePort = remotePort;
         this.x509Certificates = x509Certificates;
-        this.remoteNodeInfo = generateRemoteNodeInfo();
-    }
-
-    private String generateRemoteNodeInfo() {
-        return String.format("%s://%s:%s",
-                scheme,
-                remoteAddress != null ? remoteAddress : "<unknown-addr>",
-                remotePort != null ? remotePort : "<unknown-port>");
     }
 
     /**
@@ -128,6 +118,9 @@ public class TransportInfo {
      * @return string representation comprising scheme, address and port.
      */
     public String getRemoteNodeInfo() {
-        return remoteNodeInfo;
+        return String.format("%s://%s:%s",
+                scheme,
+                remoteAddress != null ? remoteAddress : "<unknown-addr>",
+                remotePort != null ? remotePort : "<unknown-port>");
     }
 }
