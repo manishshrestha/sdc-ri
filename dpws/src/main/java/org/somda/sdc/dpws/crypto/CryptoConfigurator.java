@@ -29,7 +29,7 @@ public class CryptoConfigurator {
      * <p>
      *
      * @param cryptoSettings the crypto settings.
-     *                       Please note that key store files take precedence over key store streams.
+     *
      * @return an SSlContext matching the given crypto settings.
      */
     public SSLContext createSslContextFromCryptoConfig(CryptoSettings cryptoSettings)
@@ -38,14 +38,7 @@ public class CryptoConfigurator {
         final SSLContextBuilder sslContextBuilder = SSLContexts.custom();
 
         // key store
-        if (cryptoSettings.getKeyStoreFile().isPresent()) {
-            sslContextBuilder
-                    .loadKeyMaterial(
-                            cryptoSettings.getKeyStoreFile().get(),
-                            cryptoSettings.getKeyStorePassword().toCharArray(),
-                            cryptoSettings.getKeyStorePassword().toCharArray()
-                    );
-        } else if (cryptoSettings.getKeyStoreStream().isPresent()) {
+        if (cryptoSettings.getKeyStoreStream().isPresent()) {
             KeyStore ks = KeyStore.getInstance(KeyStore.getDefaultType());
             ks.load(cryptoSettings.getKeyStoreStream().get(), cryptoSettings.getKeyStorePassword().toCharArray());
             sslContextBuilder.loadKeyMaterial(ks, cryptoSettings.getKeyStorePassword().toCharArray());
@@ -54,13 +47,7 @@ public class CryptoConfigurator {
         }
 
         // trust store
-        if (cryptoSettings.getTrustStoreFile().isPresent()) {
-            sslContextBuilder
-                    .loadTrustMaterial(
-                            cryptoSettings.getTrustStoreFile().get(),
-                            cryptoSettings.getTrustStorePassword().toCharArray()
-                    );
-        } else if (cryptoSettings.getTrustStoreStream().isPresent()) {
+        if (cryptoSettings.getTrustStoreStream().isPresent()) {
             KeyStore ts = KeyStore.getInstance(KeyStore.getDefaultType());
             ts.load(cryptoSettings.getTrustStoreStream().get(), cryptoSettings.getTrustStorePassword().toCharArray());
             sslContextBuilder.loadTrustMaterial(ts, null);

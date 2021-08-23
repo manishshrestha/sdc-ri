@@ -16,7 +16,6 @@ import org.somda.sdc.dpws.crypto.CryptoSettings;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -181,11 +180,6 @@ public class CustomCryptoSettings implements CryptoSettings {
     }
 
     @Override
-    public Optional<File> getKeyStoreFile() {
-        return Optional.empty();
-    }
-
-    @Override
     public Optional<InputStream> getKeyStoreStream() {
         if (keyStore != null) {
             return Optional.of(new ByteArrayInputStream(keyStore));
@@ -196,11 +190,6 @@ public class CustomCryptoSettings implements CryptoSettings {
     @Override
     public String getKeyStorePassword() {
         return Objects.requireNonNullElse(this.keyStorePassword, DEFAULT_KEYSTORE_PASSWORD);
-    }
-
-    @Override
-    public Optional<File> getTrustStoreFile() {
-        return Optional.empty();
     }
 
     @Override
