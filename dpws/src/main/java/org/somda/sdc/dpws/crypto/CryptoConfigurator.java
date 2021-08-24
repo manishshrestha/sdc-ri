@@ -8,7 +8,6 @@ import org.apache.logging.log4j.Logger;
 
 import javax.annotation.Nullable;
 import javax.net.ssl.SSLContext;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.security.KeyManagementException;
 import java.security.KeyStore;
@@ -79,10 +78,7 @@ public class CryptoConfigurator {
         if (cryptoSettings == null) return certificates;
         try {
             KeyStore ks = KeyStore.getInstance(KeyStore.getDefaultType());
-            if (cryptoSettings.getKeyStoreFile().isPresent()) {
-                ks.load(new FileInputStream(cryptoSettings.getKeyStoreFile().get()),
-                        cryptoSettings.getKeyStorePassword().toCharArray());
-            } else if (cryptoSettings.getKeyStoreStream().isPresent()) {
+            if (cryptoSettings.getKeyStoreStream().isPresent()) {
                 ks.load(cryptoSettings.getKeyStoreStream().get(), cryptoSettings.getKeyStorePassword().toCharArray());
             } else {
                 return certificates;
