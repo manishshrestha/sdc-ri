@@ -52,11 +52,6 @@ public class Ssl {
 
         return new CryptoSettings() {
             @Override
-            public Optional<File> getKeyStoreFile() {
-                return Optional.empty();
-            }
-
-            @Override
             public Optional<InputStream> getKeyStoreStream() {
                 if(finalKeyStoreBytes == null) {
                     return Optional.empty();
@@ -67,11 +62,6 @@ public class Ssl {
             @Override
             public String getKeyStorePassword() {
                 return keySet.getKeyStorePassword();
-            }
-
-            @Override
-            public Optional<File> getTrustStoreFile() {
-                return Optional.empty();
             }
 
             @Override
