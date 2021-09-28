@@ -17,12 +17,6 @@ public class RequestResponseObject implements InterceptorCallbackType {
         this.communicationContext = communicationContext;
     }
 
-    public RequestResponseObject(SoapMessage request, SoapMessage response) {
-        this.request = request;
-        this.response = response;
-        this.communicationContext = null;
-    }
-
     public SoapMessage getRequest() {
         return request;
     }
