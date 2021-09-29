@@ -24,7 +24,8 @@ public class TransportInfo {
     private final Integer localPort;
     private final String remoteAddress;
     private final Integer remotePort;
-    private List<X509Certificate> x509Certificates;
+
+    private final List<X509Certificate> x509Certificates;
 
     @Deprecated(since = "1.1.0", forRemoval = true)
     public TransportInfo(String scheme,
@@ -109,5 +110,17 @@ public class TransportInfo {
      */
     public List<X509Certificate> getX509Certificates() {
         return x509Certificates;
+    }
+
+    /**
+     * Returns information of the remote node intended to be used for logging purposes.
+     *
+     * @return string representation comprising scheme, address and port.
+     */
+    public String getRemoteNodeInfo() {
+        return String.format("%s://%s:%s",
+                scheme,
+                remoteAddress != null ? remoteAddress : "<unknown-addr>",
+                remotePort != null ? remotePort : "<unknown-port>");
     }
 }
