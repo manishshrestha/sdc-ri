@@ -1,5 +1,7 @@
 package com.example;
 
+import java.util.Arrays;
+import java.util.Objects;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
@@ -180,9 +182,13 @@ public class BaseUtil {
             var keyPass = this.parsedArgs.getOptionValue(OPT_KEYSTORE_PASSWORD);
             var trustPass = this.parsedArgs.getOptionValue(OPT_TRUSTSTORE_PASSWORD);
 
-            if (keyPath != null && trustPath != null && keyPass != null && trustPass != null) {
+            String[] argsValues = {keyPath, trustPath, keyPass, trustPass};
+            if (Arrays.stream(argsValues).allMatch(Objects::nonNull)) {
                 LOG.info("Using keystore {} truststore {} ", keyPath, trustPath);
                 return CustomCryptoSettings.fromKeyStore(keyPath, trustPath, keyPass, trustPass);
+            }
+            if (Arrays.stream(argsValues).anyMatch(Objects::nonNull)) {
+                logArgsErrorAndExit(OPT_KEYSTORE_PATH, OPT_TRUSTSTORE_PATH, OPT_KEYSTORE_PASSWORD, OPT_TRUSTSTORE_PASSWORD);
             }
         }
         // certificates method
@@ -192,12 +198,22 @@ public class BaseUtil {
             var caCert = this.parsedArgs.getOptionValue(OPT_CACERT_PATH);
             var userKeyPassword = this.parsedArgs.getOptionValue(OPT_USERKEY_PASSWORD);
 
-            if (userKey != null && userCert != null && caCert != null && userKeyPassword != null) {
+            String[] argsValues = {userKey, userCert, caCert, userKeyPassword};
+            if (Arrays.stream(argsValues).allMatch(Objects::nonNull)) {
                 LOG.info("Using certificate files. userKey {} userCert {} caCert {}", userKey, userCert, caCert);
                 return CustomCryptoSettings.fromKeyFile(userKey, userCert, caCert, userKeyPassword);
             }
+            if (Arrays.stream(argsValues).anyMatch(Objects::nonNull)) {
+                logArgsErrorAndExit(OPT_USERKEY_PATH, OPT_USERCERT_PATH, OPT_CACERT_PATH, OPT_USERKEY_PASSWORD);
+            }
         }
         return new CustomCryptoSettings();
+    }
+
+    private void logArgsErrorAndExit(String... args) {
+        LOG.error("Either none or all required arguments needs to be provided ({})",
+                String.join(", ", args));
+        System.exit(1);
     }
 
     protected static BuiltConfiguration localLoggerConfig(Level consoleLevel) {
