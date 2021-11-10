@@ -26,7 +26,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `org.somda.sdc.biceps.consumer.access.RemoteMdibAccessImpl` and `org.somda.sdc.biceps.provider.access.LocalMdibAccessImpl` can be configured to specify which DescriptionPreprocessingSegments and StatePreprocessingSegments should be used for consumer or provider. (#196)
 - `org.somda.sdc.dpws.DpwsConfig#COMMUNICATION_LOG_WITH_HTTP_REQUEST_RESPONSE_ID`: configuration parameter to enable/disable generating HTTP request response transaction identifiers in communication logs. (#203)
 - `org.somda.sdc.dpws.DpwsConfig#COMMUNICATION_LOG_PRETTY_PRINT_XML`: configuration parameter to enable/disable pretty printing in communication logs. (#203)
-- `org.somda.sdc.dpws.soap.TransportInfo.getRemoteNodeInfo()`to retrieve a remote node's requested scheme, address 
+- `org.somda.sdc.dpws.soap.TransportInfo.getRemoteNodeInfo()`  to retrieve a remote node's requested scheme, address 
   and port. (#208)
   
 ### Changed
