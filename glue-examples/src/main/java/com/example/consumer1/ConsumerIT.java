@@ -82,6 +82,7 @@ public class ConsumerIT {
         consumer.startUp();
 
         var targetEpr = discoverDevice(consumer);
+        assert targetEpr != null;
         var hostingService = connectDevice(consumer, targetEpr);
         var remoteDevice = connectMdibAndSubscribe(consumer, hostingService);
         verifyContexts(remoteDevice);

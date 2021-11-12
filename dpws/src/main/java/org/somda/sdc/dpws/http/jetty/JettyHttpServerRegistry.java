@@ -389,8 +389,8 @@ public class JettyHttpServerRegistry extends AbstractIdleService implements Http
         if (!isSupportedScheme(uri)) {
             throw new RuntimeException(String.format("HTTP server setup failed. Unsupported scheme: %s",
                     uri.getScheme()));
-
         }
+
         HttpConfiguration httpConfig = new HttpConfiguration();
         httpConfig.setSecureScheme(HttpScheme.HTTPS.asString());
 

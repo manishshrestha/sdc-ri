@@ -15,6 +15,8 @@ import org.somda.sdc.dpws.soap.interception.RequestResponseCallback;
 import org.somda.sdc.dpws.soap.interception.RequestResponseObject;
 import org.somda.sdc.dpws.soap.wsaddressing.WsAddressingClientInterceptor;
 
+import java.util.Collections;
+
 /**
  * Default implementation of {@linkplain RequestResponseClient}.
  */
@@ -53,7 +55,21 @@ public class RequestResponseClientImpl implements RequestResponseClient {
             throw new SoapFaultException(response, request.getWsAddressingHeader().getMessageId().orElse(null));
         }
 
-        RequestResponseObject rrObj = new RequestResponseObject(request, response);
+        // create dummy object as actual transport info has to be populated by the ultimate segment in the interceptor
+        // chain
+        final var transportInfo = new TransportInfo(
+                "",
+                null,
+                null,
+                null,
+                null,
+                Collections.emptyList()
+        );
+
+        RequestResponseObject rrObj = new RequestResponseObject(
+                request,
+                response,
+                new CommunicationContext(new ApplicationInfo(), transportInfo));
         clientDispatcher.invokeDispatcher(Direction.RESPONSE, interceptorRegistry, response, rrObj);
 
         return response;
