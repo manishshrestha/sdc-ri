@@ -200,7 +200,7 @@ public class WsEventingTest extends DpwsTest {
         verify(spySink, times(0)).receiveNotification(any(), any());
     }
 
-    private class DpwsModuleReplacements extends AbstractModule {
+    private static class DpwsModuleReplacements extends AbstractModule {
         @Override
         protected void configure() {
             TransportBindingFactoryMock.setHandlerRegistry(HttpServerRegistryMock.getRegistry());

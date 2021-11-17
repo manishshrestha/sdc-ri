@@ -59,7 +59,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 
 @ExtendWith(LoggingTestWatcher.class)
-public class MdibStorageImplTest {
+class MdibStorageImplTest {
     private static final UnitTestUtil UT = new UnitTestUtil();
 
     private MdibStorage mdibStorage;

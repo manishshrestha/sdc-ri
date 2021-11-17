@@ -16,7 +16,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(LoggingTestWatcher.class)
-public class HostingServiceLoggerTest {
+class HostingServiceLoggerTest {
 
     private static final String LOGGER_NAME = "com.example.HostingServiceLoggerTest.some_logger";
     private static Logger logger;

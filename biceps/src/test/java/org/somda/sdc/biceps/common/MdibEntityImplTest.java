@@ -21,7 +21,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @ExtendWith(LoggingTestWatcher.class)
-public class MdibEntityImplTest {
+class MdibEntityImplTest {
     private static final UnitTestUtil UT = new UnitTestUtil();
 
     private MdibEntityFactory mdibEntityFactory;

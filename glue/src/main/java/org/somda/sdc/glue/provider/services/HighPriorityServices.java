@@ -22,7 +22,6 @@ import org.somda.sdc.biceps.model.message.GetMdib;
 import org.somda.sdc.biceps.model.message.GetMdibResponse;
 import org.somda.sdc.biceps.model.message.InvocationInfo;
 import org.somda.sdc.biceps.model.message.ObjectFactory;
-import org.somda.sdc.biceps.model.message.ObjectFactory;
 import org.somda.sdc.biceps.model.message.SetAlertState;
 import org.somda.sdc.biceps.model.message.SetAlertStateResponse;
 import org.somda.sdc.biceps.model.message.SetComponentState;
@@ -416,7 +415,7 @@ public class HighPriorityServices extends WebService {
             InvocationResponse responseData, Class<T> type) throws SoapFaultException {
         try {
             final T response = type.getConstructor().newInstance();
-            response.setSequenceId(responseData.getMdibVersion().getSequenceId().toString());
+            response.setSequenceId(responseData.getMdibVersion().getSequenceId());
             response.setInstanceId(responseData.getMdibVersion().getInstanceId());
             response.setMdibVersion(responseData.getMdibVersion().getVersion());
 

@@ -36,7 +36,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @ExtendWith(LoggingTestWatcher.class)
-public class SdcRemoteDeviceWatchdogIT {
+class SdcRemoteDeviceWatchdogIT {
     private static final Logger LOG = LogManager.getLogger(SdcRemoteDeviceWatchdogIT.class);
     private static final IntegrationTestUtil IT = new IntegrationTestUtil();
 

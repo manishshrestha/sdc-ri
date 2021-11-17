@@ -235,8 +235,8 @@ public class JaxbMarshalling extends AbstractIdleService {
             }
             var targetNamespace = resolveTargetNamespace(schemaUrl);
             instanceLogger.info("Register namespace for validation: {}, read from {}", targetNamespace,
-                    schemaUrl.toString());
-            stringBuilder.append(String.format(importPattern, targetNamespace, schemaUrl.toString()));
+                    schemaUrl);
+            stringBuilder.append(String.format(importPattern, targetNamespace, schemaUrl));
         }
         stringBuilder.append(topLevelSchemaEnd);
         SchemaFactory schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);

@@ -2,6 +2,9 @@ package it.org.somda.sdc.dpws.udp;
 
 import com.google.common.util.concurrent.SettableFuture;
 import it.org.somda.sdc.dpws.IntegrationTestUtil;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.somda.sdc.dpws.DpwsConstants;
 import org.somda.sdc.dpws.soap.ApplicationInfo;
 import org.somda.sdc.dpws.soap.CommunicationContext;
@@ -10,12 +13,8 @@ import org.somda.sdc.dpws.soap.wsdiscovery.WsDiscoveryConstants;
 import org.somda.sdc.dpws.udp.UdpBindingService;
 import org.somda.sdc.dpws.udp.UdpMessage;
 import org.somda.sdc.dpws.udp.factory.UdpBindingServiceFactory;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import test.org.somda.common.LoggingTestWatcher;
 
-import java.io.IOException;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.util.Arrays;
@@ -25,10 +24,12 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.fail;
 
 @ExtendWith(LoggingTestWatcher.class)
-public class UdpBindingServiceImplIT {
+class UdpBindingServiceImplIT {
     private final IntegrationTestUtil IT = new IntegrationTestUtil();
 
     private Lock lock;
@@ -50,7 +51,7 @@ public class UdpBindingServiceImplIT {
     }
 
     @Test
-    public void testSendMulticastMessage() throws Exception {
+    void testSendMulticastMessage() throws Exception {
         final byte[] expectedMessage = "SAMPLE".getBytes();
         actualMessage = null;
 

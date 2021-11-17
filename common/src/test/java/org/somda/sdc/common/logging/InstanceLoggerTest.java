@@ -17,7 +17,7 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 
 @ExtendWith(LoggingTestWatcher.class)
-public class InstanceLoggerTest {
+class InstanceLoggerTest {
 
     private static final String LOGGER_NAME = "com.example.some_logger";
     private static Logger logger;

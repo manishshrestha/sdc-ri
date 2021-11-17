@@ -22,7 +22,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 /**
  * Tests for {@link PreprocessingUtil}.
  */
-public class PreprocessingUtilTest {
+class PreprocessingUtilTest {
     private static final UnitTestUtil UT = new UnitTestUtil();
 
     private List<DescriptionPreprocessingSegment> descriptionPreprocessingSegmentList;

@@ -7,11 +7,11 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 
-public class AutoLockTest {
+class AutoLockTest {
 
 
     @Test
-    public void autoClose() {
+    void autoClose() {
         final ReentrantReadWriteLock mutex = new ReentrantReadWriteLock();
         {
             // Without auto-closable

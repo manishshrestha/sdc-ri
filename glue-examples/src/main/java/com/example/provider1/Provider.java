@@ -266,7 +266,7 @@ public class Provider extends AbstractIdleService {
             double delta = 2 * Math.PI / sampleCapacity;
             IntStream.range(0, sampleCapacity).forEachOrdered(n -> {
                 values.add(
-                        new BigDecimal((Math.sin(n * delta) + 1) / 2.0 * (maxValue - minValue) + minValue)
+                        BigDecimal.valueOf((Math.sin(n * delta) + 1) / 2.0 * (maxValue - minValue) + minValue)
                                 .setScale(15, RoundingMode.DOWN));
             });
             sampleArrayValue.setSamples(values);

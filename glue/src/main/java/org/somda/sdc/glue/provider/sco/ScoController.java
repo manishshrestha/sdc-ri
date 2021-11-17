@@ -178,7 +178,7 @@ public class ScoController {
 
         if (!annotationFound) {
             instanceLogger.warn("No callback function found in object {} of type {}",
-                    receiver.toString(), receiver.getClass().getName());
+                    receiver, receiver.getClass().getName());
         }
     }
 

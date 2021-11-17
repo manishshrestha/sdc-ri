@@ -8,7 +8,7 @@ import org.somda.sdc.dpws.soap.model.Envelope;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-public class DefaultEnvelopeUnmarshallerTest extends DpwsTest {
+class DefaultEnvelopeUnmarshallerTest extends DpwsTest {
     @Override
     @BeforeEach
     public void setUp() throws Exception {
@@ -16,7 +16,7 @@ public class DefaultEnvelopeUnmarshallerTest extends DpwsTest {
     }
 
     @Test
-    public void testUnmarshal() throws Exception {
+    void testUnmarshal() throws Exception {
         getInjector().getInstance(JaxbMarshalling.class).startAsync().awaitRunning();
         SoapMarshalling unmarshaller = getInjector().getInstance(SoapMarshalling.class);
         unmarshaller.startAsync().awaitRunning();

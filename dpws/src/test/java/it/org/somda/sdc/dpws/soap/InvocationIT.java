@@ -41,7 +41,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @ExtendWith(LoggingTestWatcher.class)
-public class InvocationIT {
+class InvocationIT {
     private static final Duration MAX_WAIT_TIME = IntegrationTestUtil.MAX_WAIT_TIME;
 
     private final IntegrationTestUtil IT = new IntegrationTestUtil();
@@ -85,7 +85,7 @@ public class InvocationIT {
     }
 
     @Test
-    public void requestResponse() throws Exception {
+    void requestResponse() throws Exception {
         final int COUNT = 100;
 
         final HostedServiceProxy srv1 = hostingServiceProxy.getHostedServices().get(TestServiceMetadata.SERVICE_ID_1);
@@ -135,7 +135,7 @@ public class InvocationIT {
     }
 
     @Test
-    public void notification() throws Exception {
+    void notification() throws Exception {
         final int COUNT = 100;
         final SettableFuture<List<TestNotification>> notificationFuture = SettableFuture.create();
         final HostedServiceProxy srv1 = hostingServiceProxy.getHostedServices().get(TestServiceMetadata.SERVICE_ID_1);
@@ -174,7 +174,7 @@ public class InvocationIT {
     }
 
     @Test
-    public void notificationWithMultipleSubscriptions() throws Exception {
+    void notificationWithMultipleSubscriptions() throws Exception {
         final int COUNT = 100;
         final SettableFuture<List<TestNotification>> notificationFuture1 = SettableFuture.create();
         final SettableFuture<List<TestNotification>> notificationFuture2 = SettableFuture.create();
@@ -259,7 +259,7 @@ public class InvocationIT {
     }
 
     @Test
-    public void notificationSubscribeMultipleActions() throws Exception {
+    void notificationSubscribeMultipleActions() throws Exception {
         final int COUNT = 100;
         final SettableFuture<List<TestNotification>> notificationFuture = SettableFuture.create();
         final HostedServiceProxy srv1 = hostingServiceProxy.getHostedServices().get(TestServiceMetadata.SERVICE_ID_1);

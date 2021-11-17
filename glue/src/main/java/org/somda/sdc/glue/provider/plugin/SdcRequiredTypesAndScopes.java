@@ -100,8 +100,8 @@ public class SdcRequiredTypesAndScopes implements SdcDevicePlugin, MdibAccessObs
         newScopes.addAll(mdsTypes);
 
         instanceLogger.debug("Append scopes [{}] to internal scope set [{}]",
-                Joiner.on(",").join(scopes),
-                Joiner.on(",").join(newScopes));
+                             () -> Joiner.on(",").join(scopes),
+                             () -> Joiner.on(",").join(newScopes));
 
         newScopes.addAll(scopes);
 
@@ -168,8 +168,8 @@ public class SdcRequiredTypesAndScopes implements SdcDevicePlugin, MdibAccessObs
             try {
                 uris.add(ComplexDeviceComponentMapper.fromComplexDeviceComponent(mdsDescriptor));
             } catch (UriMapperGenerationArgumentException e) {
-                instanceLogger.warn("The URI generation based on the given MdsDescriptor with the handle " +
-                        mdsDescriptor.getHandle() + " failed", e);
+                instanceLogger.warn("The URI generation based on the given MdsDescriptor with the handle {} failed",
+                        mdsDescriptor.getHandle(), e);
             }
         }
 

@@ -6,6 +6,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -20,7 +21,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * </ul>
  */
 public class CommunicationLogFileOutputStream extends OutputStream {
-    private final static CommunicationLogSoapXmlUtils SOAP_UTILS = new CommunicationLogSoapXmlUtils();
+    private static final CommunicationLogSoapXmlUtils SOAP_UTILS = new CommunicationLogSoapXmlUtils();
 
     private final File targetDirectory;
     private boolean prettyPrint;
@@ -40,6 +41,11 @@ public class CommunicationLogFileOutputStream extends OutputStream {
     @Override
     public void write(int b) {
         outputStream.write(b);
+    }
+
+    @Override
+    public void write(byte[] b, int off, int len) throws IOException {
+        outputStream.writeBytes(Arrays.copyOfRange(b, off, off + len));
     }
 
     @Override

@@ -13,7 +13,7 @@ import java.util.function.Consumer;
  * Required as both local and offset representation are supported by XML Schema DateTime.
  */
 public class AnyDateTime {
-    private final static ZoneOffset DEFAULT_OFFSET = OffsetDateTime.now().getOffset();
+    private static final ZoneOffset DEFAULT_OFFSET = OffsetDateTime.now().getOffset();
 
     private LocalDateTime local;
     private OffsetDateTime offset;

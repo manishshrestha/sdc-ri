@@ -16,7 +16,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 
 @ExtendWith(LoggingTestWatcher.class)
-public class ObjectUtilImplTest {
+class ObjectUtilImplTest {
 
     private Injector inj;
     private ObjectUtil objectUtil;
@@ -34,7 +34,7 @@ public class ObjectUtilImplTest {
     }
 
     @Test
-    public void deepCopy() {
+    void deepCopy() {
         StandalonePojoClass obj = new StandalonePojoClass("test", 13, Arrays.asList("entry1", "entry2"));
         StandalonePojoClass objCopy = objectUtil.deepCopy(obj);
 

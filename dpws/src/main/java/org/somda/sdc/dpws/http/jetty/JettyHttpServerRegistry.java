@@ -116,8 +116,8 @@ public class JettyHttpServerRegistry extends AbstractIdleService implements Http
         this.enabledCiphers = enabledCiphers;
         this.hostnameVerifier = hostnameVerifier;
         this.communicationLog = communicationLog;
-        this.enableHttps = enableHttps | legacyEnableHttps;
-        this.enableHttp = enableHttp | legacyEnableHttp;
+        this.enableHttps = enableHttps || legacyEnableHttps;
+        this.enableHttp = enableHttp || legacyEnableHttp;
         this.connectionTimeout = connectionTimeout;
         serverRegistry = new HashMap<>();
         handlerRegistry = new HashMap<>();
@@ -524,9 +524,7 @@ public class JettyHttpServerRegistry extends AbstractIdleService implements Http
     }
 
     private boolean isSupportedScheme(URI address) {
-        return (enableHttp && HttpScheme.HTTP.asString().toLowerCase()
-                .equals(address.getScheme().toLowerCase()))
-                || (enableHttps && HttpScheme.HTTPS.asString().toLowerCase()
-                .equals(address.getScheme().toLowerCase()));
+        return (enableHttp && HttpScheme.HTTP.asString().equalsIgnoreCase(address.getScheme()))
+                || (enableHttps && HttpScheme.HTTPS.asString().equalsIgnoreCase(address.getScheme()));
     }
 }

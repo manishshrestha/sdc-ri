@@ -188,7 +188,7 @@ public class DeviceImpl extends AbstractIdleService implements Device, Service, 
         // Create WS-Discovery target service
         wsdTargetService = targetServiceFactory.createWsDiscoveryTargetService(deviceEpr, wsdNotificationSource);
         wsdTargetService.setXAddrs(actualHostingServiceBindings.stream()
-                .map(uri -> uri.toString() + hostingServerCtxtPath)
+                .map(uriString -> uriString + hostingServerCtxtPath)
                 .collect(Collectors.toList()));
 
         // Register target service to a request response server interceptor chain

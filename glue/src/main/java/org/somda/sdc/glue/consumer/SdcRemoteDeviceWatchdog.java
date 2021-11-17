@@ -118,12 +118,6 @@ public class SdcRemoteDeviceWatchdog extends AbstractIdleService {
         }
     }
 
-    private void postWatchdogMessage(Exception reason) {
-        if (isRunning()) {
-            eventBus.post(new WatchdogMessage(hostingServiceProxy.getEndpointReferenceAddress(), reason));
-        }
-    }
-
     private class WatchdogJob implements Runnable {
         @Override
         public void run() {
@@ -198,6 +192,12 @@ public class SdcRemoteDeviceWatchdog extends AbstractIdleService {
                         "WatchdogJob has ended, SdcRemoteDeviceWatchdog ({}) or WatchdogExecutor ({}) have ended",
                         state(), watchdogExecutor.state()
                 );
+            }
+        }
+
+        private void postWatchdogMessage(Exception reason) {
+            if (isRunning()) {
+                eventBus.post(new WatchdogMessage(hostingServiceProxy.getEndpointReferenceAddress(), reason));
             }
         }
     }

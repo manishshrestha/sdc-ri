@@ -19,7 +19,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class RequestResponseServerImplTest extends DpwsTest {
+class RequestResponseServerImplTest extends DpwsTest {
     private List<String> dispatchedSequence;
     private CommunicationContext mockCommunicationContext;
 
@@ -45,7 +45,7 @@ public class RequestResponseServerImplTest extends DpwsTest {
     }
 
     @Test
-    public void receiveRequestResponse() throws Exception {
+    void receiveRequestResponse() throws Exception {
         SoapMarshalling unmarshaller = getInjector().getInstance(SoapMarshalling.class);
         RequestResponseServer rrServer = getInjector().getInstance(RequestResponseServer.class);
         Envelope soapEnv = unmarshaller.unmarshal(getClass().getResourceAsStream("soap-envelope.xml"));

@@ -308,7 +308,7 @@ public class WsDiscoveryClientInterceptor implements WsDiscoveryClient {
 
             throw new RuntimeException(String.format(
                     "No ResolveMatches message received in %s milliseconds, Resolve MessageID was %s",
-                    Long.valueOf(maxWaitInMillis).toString(),
+                    maxWaitInMillis,
                     wsaRelatesTo
             ));
         }

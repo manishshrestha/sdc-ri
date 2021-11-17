@@ -332,7 +332,7 @@ public class SdcRemoteDevicesConnectorImpl extends AbstractIdleService
                         String.format("Subscribe request towards service with service id %s failed. " +
                                         "Physical target address: %s",
                                 serviceId,
-                                hostedServiceProxy.getActiveEprAddress().toString()), e);
+                                hostedServiceProxy.getActiveEprAddress()), e);
             }
         }
 
