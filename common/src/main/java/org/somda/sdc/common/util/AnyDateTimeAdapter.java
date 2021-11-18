@@ -24,8 +24,9 @@ public class AnyDateTimeAdapter extends XmlAdapter<String, AnyDateTime> {
 
     @Override
     public String marshal(AnyDateTime v) {
-        if (v.getOffset().isPresent()) {
-            return OFFSET_FORMATTER.format(v.getOffset().get());
+        var offset = v.getOffset();
+        if (offset.isPresent()) {
+            return OFFSET_FORMATTER.format(offset.get());
         } else {
             return LOCAL_FORMATTER.format(v.getLocal().orElseThrow(
                     () -> new RuntimeException(

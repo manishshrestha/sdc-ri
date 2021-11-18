@@ -26,10 +26,10 @@ import java.util.function.Consumer;
  */
 public class ScoTransactionImpl<T extends AbstractSetResponse> implements ScoTransaction<T> {
     private final T response;
-    private Consumer<OperationInvokedReport.ReportPart> reportListener;
-    private ArrayList<OperationInvokedReport.ReportPart> collectedReports;
-    private ReentrantLock reportsLock;
-    private Condition reportsCondition;
+    private final Consumer<OperationInvokedReport.ReportPart> reportListener;
+    private final ArrayList<OperationInvokedReport.ReportPart> collectedReports;
+    private final ReentrantLock reportsLock;
+    private final Condition reportsCondition;
     private final ObjectUtil objectUtil;
     private final ScoUtil scoUtil;
 
@@ -53,7 +53,7 @@ public class ScoTransactionImpl<T extends AbstractSetResponse> implements ScoTra
 
     @Override
     public List<OperationInvokedReport.ReportPart> getReports() {
-        try (AutoLock unused = AutoLock.lock(reportsLock)) {
+        try (var ignored = AutoLock.lock(reportsLock)) {
             return objectUtil.deepCopy(collectedReports);
         }
     }
@@ -66,7 +66,7 @@ public class ScoTransactionImpl<T extends AbstractSetResponse> implements ScoTra
     @Override
     public List<OperationInvokedReport.ReportPart> waitForFinalReport(Duration waitTime) {
         var copyWaitTime = waitTime;
-        try (AutoLock ignored = AutoLock.lock(reportsLock)) {
+        try (var ignored = AutoLock.lock(reportsLock)) {
             if (scoUtil.hasFinalReport(collectedReports)) {
                 return objectUtil.deepCopy(collectedReports);
             }
@@ -104,7 +104,7 @@ public class ScoTransactionImpl<T extends AbstractSetResponse> implements ScoTra
      * @param report the report to receive.
      */
     public void receiveIncomingReport(OperationInvokedReport.ReportPart report) {
-        try (AutoLock ignored = AutoLock.lock(reportsLock)) {
+        try (var ignored = AutoLock.lock(reportsLock)) {
             collectedReports.add(report);
             reportsCondition.signalAll();
         }

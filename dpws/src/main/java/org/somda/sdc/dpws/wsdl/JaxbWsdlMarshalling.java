@@ -20,7 +20,7 @@ import java.io.OutputStream;
  * Creates XML input and output streams from WSDL {@link TDefinitions} instances by using JAXB.
  */
 public class JaxbWsdlMarshalling extends AbstractIdleService implements WsdlMarshalling {
-    private static final Logger LOG = LogManager.getLogger(org.somda.sdc.dpws.soap.JaxbSoapMarshalling.class);
+    private static final Logger LOG = LogManager.getLogger(JaxbWsdlMarshalling.class);
 
     private final Logger instanceLogger;
     private final ObjectFactory wsdlFactory;

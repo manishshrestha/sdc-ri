@@ -99,13 +99,13 @@ public abstract class AbstractConfigurationModule extends AbstractModule {
      */
     @Override
     @SuppressWarnings("Unchecked")
-    final protected void configure() {
+    protected final void configure() {
         customConfigure();
         configureStarted = true;
         defaultConfigure();
         logConfiguredValues();
 
-        boundValues.entrySet().forEach(configValue -> configValue.getValue().getBinder().run());
+        boundValues.forEach((key, value) -> value.getBinder().run());
     }
 
     /**
@@ -128,11 +128,10 @@ public abstract class AbstractConfigurationModule extends AbstractModule {
     }
 
     private void logConfiguredValues() {
-        boundValues.entrySet().forEach(value ->
-                LOG.info("{} {} := {}",
-                        value.getValue().getValueOrigin(),
-                        value.getKey(),
-                        value.getValue().getValue()));
+        boundValues.forEach((key, value) -> LOG.info("{} {} := {}",
+                                                      value.getValueOrigin(),
+                                                      key,
+                                                      value.getValue()));
     }
 
     private enum ValueOrigin {

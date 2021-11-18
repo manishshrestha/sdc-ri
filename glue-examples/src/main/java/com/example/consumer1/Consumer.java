@@ -120,7 +120,7 @@ public class Consumer {
         return connector;
     }
 
-    protected void startUp() throws SocketException {
+    protected void startUp() {
         // provide the name of your network adapter
         this.dpwsFramework = injector.getInstance(DpwsFramework.class);
         this.dpwsFramework.setNetworkInterface(networkInterface);
@@ -315,9 +315,7 @@ public class Consumer {
             var wsdls = wsdlRetriever.retrieveWsdls(hostingServiceProxy);
             LOG.debug("Retrieved WSDLs");
             if (LOG.isDebugEnabled()) {
-                wsdls.forEach((service, data) -> {
-                    LOG.debug("WSDLs for service {}: {}", service, data);
-                });
+                wsdls.forEach((service, data) -> LOG.debug("WSDLs for service {}: {}", service, data));
             }
         } catch (IOException e) {
             LOG.error("Could not retrieve WSDL", e);
