@@ -53,7 +53,7 @@ public class WsDiscoveryUtil {
                         URI.create((String) o1).equals(URI.create((String) o2)) ? 0 : 1
                 );
             case STRCMP0:
-                isMatching(superset, subset, (o1, o2) -> o1.equals(o2) ? 0 : 1);
+                return isMatching(superset, subset, (o1, o2) -> o1.equals(o2) ? 0 : 1);
             default:
                 return false;
         }
