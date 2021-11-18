@@ -20,7 +20,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class UdpMessageQueueServiceImpl extends AbstractIdleService implements Service, UdpMessageQueueService {
     private static final Logger LOG = LogManager.getLogger(UdpMessageQueueServiceImpl.class);
-    private static final AtomicInteger instanceIdCounter = new AtomicInteger(0);
+    private static final AtomicInteger INSTANCE_ID_COUNTER = new AtomicInteger(0);
     private final int instanceId;
     private final LinkedBlockingDeque<UdpMessage> incomingMessageQueue;
     private final LinkedBlockingDeque<UdpMessage> outgoingMessageQueue;
@@ -34,7 +34,7 @@ public class UdpMessageQueueServiceImpl extends AbstractIdleService implements S
     @Inject
     UdpMessageQueueServiceImpl(EventBus eventBus, @Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier) {
         this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);
-        this.instanceId = instanceIdCounter.getAndIncrement();
+        this.instanceId = INSTANCE_ID_COUNTER.getAndIncrement();
         this.incomingMessageQueue = new LinkedBlockingDeque<>();
         this.outgoingMessageQueue = new LinkedBlockingDeque<>();
         this.eventBus = eventBus;
