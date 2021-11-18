@@ -240,6 +240,9 @@ public class JaxbMarshalling extends AbstractIdleService {
         }
         stringBuilder.append(topLevelSchemaEnd);
         SchemaFactory schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
+        // #218 prevent XXE attacks
+        schemaFactory.setProperty(XMLConstants.ACCESS_EXTERNAL_DTD, "");
+        schemaFactory.setProperty(XMLConstants.ACCESS_EXTERNAL_SCHEMA, "");
         return schemaFactory.newSchema(new StreamSource(new ByteArrayInputStream(stringBuilder.toString()
                 .getBytes(StandardCharsets.UTF_8))));
     }
@@ -247,6 +250,9 @@ public class JaxbMarshalling extends AbstractIdleService {
     private String resolveTargetNamespace(URL url) throws IOException, ParserConfigurationException, SAXException {
         try (InputStream inputStream = url.openStream()) {
             var factory = DocumentBuilderFactory.newInstance();
+            // #218 prevent XXE attacks
+            factory.setFeature("http://xml.org/sax/features/external-general-entities", false);
+            factory.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
             var builder = factory.newDocumentBuilder();
             var document = builder.parse(inputStream);
             return document.getDocumentElement().getAttribute("targetNamespace");
