@@ -22,7 +22,6 @@ import org.somda.sdc.dpws.http.HttpServerRegistry;
 import org.somda.sdc.dpws.model.HostedServiceType;
 import org.somda.sdc.dpws.model.ObjectFactory;
 import org.somda.sdc.dpws.network.LocalAddressResolver;
-import org.somda.sdc.dpws.service.factory.HostedServiceFactory;
 import org.somda.sdc.dpws.soap.CommunicationContext;
 import org.somda.sdc.dpws.soap.NotificationSink;
 import org.somda.sdc.dpws.soap.RequestResponseClient;
@@ -56,7 +55,7 @@ import static org.mockito.Mockito.verify;
 /**
  * Round trip test for WS-Eventing (Source+Sink).
  */
-public class WsEventingTest extends DpwsTest {
+class WsEventingTest extends DpwsTest {
     private static final String HOST = "mock-host";
     private static final Integer PORT = 8080;
     private static final String HOSTED_SERVICE_PATH = "/hosted-service";
@@ -85,7 +84,6 @@ public class WsEventingTest extends DpwsTest {
 
         WsAddressingUtil wsaUtil = getInjector().getInstance(WsAddressingUtil.class);
         ObjectFactory dpwsFactory = getInjector().getInstance(ObjectFactory.class);
-        HostedServiceFactory hostedServiceFactory = getInjector().getInstance(HostedServiceFactory.class);
         wseSource = getInjector().getInstance(EventSource.class);
         RequestResponseServer reqResSrv = getInjector().getInstance(RequestResponseServer.class);
         reqResSrv.register(wseSource);

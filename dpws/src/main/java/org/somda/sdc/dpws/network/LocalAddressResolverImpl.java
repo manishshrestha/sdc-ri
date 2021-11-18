@@ -36,53 +36,5 @@ public class LocalAddressResolverImpl implements LocalAddressResolver {
             return Optional.empty();
         }
 
-//        Enumeration<NetworkInterface> networkInterfaces;
-//        try {
-//            networkInterfaces = NetworkInterface.getNetworkInterfaces();
-//        } catch (SocketException e) {
-//            return Optional.empty();
-//        }
-//
-//        Optional<InetAddress> localAddress = Optional.empty();
-//        for (NetworkInterface networkInterface : Collections.list(networkInterfaces)) {
-//            try {
-//                if (!networkInterface.isUp()) {
-//                    continue;
-//                }
-//
-//                localAddress = Collections.list(networkInterface.getInetAddresses()).stream()
-//                        .filter(inetAddress -> {
-//                            try {
-//                                if (!inetAddress.isReachable(2000)) {
-//                                    return false;
-//                                }
-//                            } catch (IOException e) {
-//                                return false;
-//                            }
-//
-//                            try (SocketChannel socket = SocketChannel.open()) {
-//                                // Bind socket to local interface
-//                                socket.bind(new InetSocketAddress(inetAddress, 8080));
-//
-//                                // Try to connect to given host
-//                                socket.connect(new InetSocketAddress(host, port));
-//                            } catch (IOException e) {
-//                                return false;
-//                            }
-//
-//                            return true;
-//                        }).findFirst();
-//
-//                if (localAddress.isPresent()) {
-//                    break;
-//                }
-//            } catch (SocketException e) {
-//                LOG.info("Caught socket exception while trying to get local address.", e);
-//            }
-//        }
-//
-//        if (localAddress.isPresent()) {
-//            return Optional.ofNullable(localAddress.get().getHostAddress());
-//        }
     }
 }

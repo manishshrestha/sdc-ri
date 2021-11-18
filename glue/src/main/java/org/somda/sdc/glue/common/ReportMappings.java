@@ -112,22 +112,28 @@ public class ReportMappings {
 
     public String getEpisodicAction(Class<? extends AbstractReport> reportClass) {
         return getAction(reportClass, episodicReportActionMapping).orElseThrow(() ->
-                new RuntimeException(String.format("Unknown report class found: %s", reportClass)));
+                new UnknownReportClassFoundException(reportClass));
     }
 
     public String getPeriodicAction(Class<? extends AbstractReport> reportClass) {
         return getAction(reportClass, periodicReportActionMapping).orElseThrow(() ->
-                new RuntimeException(String.format("Unknown report class found: %s", reportClass)));
+               new UnknownReportClassFoundException(reportClass));
     }
 
     public String getAction(Class<? extends AbstractReport> reportClass) {
         return getAction(reportClass, episodicReportActionMapping).orElseGet(() ->
                 getAction(reportClass, periodicReportActionMapping).orElseThrow(() ->
-                        new RuntimeException(String.format("Unknown report class found: %s", reportClass))));
+                            new UnknownReportClassFoundException(reportClass)));
     }
 
     private Optional<String> getAction(Class<? extends AbstractReport> reportClass,
                                        Map<Class<? extends AbstractReport>, String> mapping) {
         return Optional.ofNullable(mapping.get(reportClass));
+    }
+
+    public static class UnknownReportClassFoundException extends RuntimeException {
+        public UnknownReportClassFoundException(Class<? extends AbstractReport> reportClass) {
+            super(String.format("Unknown report class found: %s", reportClass));
+        }
     }
 }
