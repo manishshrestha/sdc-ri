@@ -76,6 +76,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `org.somda.sdc.glue.provider.sco.ScoController` to invoke list callbacks correctly (handle-based and catch-all) 
   which have formerly not been invoked by the controller. (#207)
 - `org.somda.sdc.glue.consumer.report.helper.ReportWriter` no longer fails on descriptors without states in description modification report parts with modification type del. (#210)
+- `org.somda.sdc.dpws.soap.wsdiscovery.WsDiscoveryUtil` correctly compares scope sets using STRCMP0 rules. (#217)
 
 ## [1.1.0] - 2020-04-18
 
