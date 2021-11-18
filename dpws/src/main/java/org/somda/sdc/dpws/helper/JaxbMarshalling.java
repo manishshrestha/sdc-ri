@@ -47,10 +47,12 @@ import java.nio.charset.StandardCharsets;
  */
 public class JaxbMarshalling extends AbstractIdleService {
 
-    public static final String SAX_FEATURE_EXTERNAL_GENERAL_ENTITIES = "http://xml.org/sax/features/external-general-entities";
-    public static final String SAX_FEATURE_EXTERNAL_PARAMETER_ENTITIES = "http://xml.org/sax/features/external-parameter-entities";
-
     private static final Logger LOG = LogManager.getLogger(JaxbMarshalling.class);
+
+    private static final String SAX_FEATURE_EXTERNAL_GENERAL_ENTITIES =
+            "http://xml.org/sax/features/external-general-entities";
+    private static final String SAX_FEATURE_EXTERNAL_PARAMETER_ENTITIES =
+            "http://xml.org/sax/features/external-parameter-entities";
 
     private static final String PKG_DELIM = ":";
     private static final String SCHEMA_DELIM = ":";
@@ -108,7 +110,6 @@ public class JaxbMarshalling extends AbstractIdleService {
         instanceLogger.info("JAXB service stopped");
     }
 
-
     /**
      * Marshals a {@linkplain JAXBElement} into a stream.
      *
@@ -162,7 +163,6 @@ public class JaxbMarshalling extends AbstractIdleService {
         return unmarshaller.unmarshal(inputStream);
     }
 
-
     /**
      * Takes a reader and unmarshals it.
      *
@@ -178,7 +178,6 @@ public class JaxbMarshalling extends AbstractIdleService {
         }
         return unmarshaller.unmarshal(reader);
     }
-
 
     private void initializeJaxb() throws SAXException, IOException, ParserConfigurationException {
         if (!contextPackages.isEmpty()) {
