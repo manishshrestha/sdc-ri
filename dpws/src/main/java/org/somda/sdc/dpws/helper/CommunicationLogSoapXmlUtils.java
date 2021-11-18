@@ -6,6 +6,7 @@ import org.somda.sdc.dpws.soap.wseventing.WsEventingConstants;
 import org.somda.sdc.dpws.soap.wsmetadataexchange.WsMetadataExchangeConstants;
 import org.somda.sdc.dpws.soap.wstransfer.WsTransferConstants;
 
+import javax.xml.XMLConstants;
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamConstants;
@@ -52,6 +53,8 @@ class CommunicationLogSoapXmlUtils {
         }
         try {
             XMLInputFactory factory = XMLInputFactory.newInstance();
+            // #218 prevent XXE attacks
+            factory.setProperty(XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES, Boolean.FALSE);
             XMLStreamReader parser = factory.createXMLStreamReader(new ByteArrayInputStream(xmlDocument));
             QName actionElement = null;
             while (parser.hasNext()) {
@@ -170,6 +173,9 @@ class CommunicationLogSoapXmlUtils {
         try {
             TransformerFactory transformerFactory = TransformerFactory.newInstance();
             transformerFactory.setAttribute("indent-number", 4);
+            // #218 prevent XXE attacks
+            transformerFactory.setAttribute(XMLConstants.ACCESS_EXTERNAL_DTD, "");
+            transformerFactory.setAttribute(XMLConstants.ACCESS_EXTERNAL_STYLESHEET, "");
 
             Transformer transformer = transformerFactory.newTransformer();
             transformer.setOutputProperty(OutputKeys.INDENT, "yes");
