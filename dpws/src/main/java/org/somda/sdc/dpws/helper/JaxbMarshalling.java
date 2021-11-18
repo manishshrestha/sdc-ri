@@ -239,10 +239,11 @@ public class JaxbMarshalling extends AbstractIdleService {
             stringBuilder.append(String.format(importPattern, targetNamespace, schemaUrl.toString()));
         }
         stringBuilder.append(topLevelSchemaEnd);
+        // we *do* need external schema processing here (we build our schema with multiple xsd:import directives),
+        // which causes an XXE warning by Sonarlint; but the schemas imported are fully under our control,
+        // read from local files in our resource directory, and thus can be trusted.
+        @SuppressWarnings("java:S2755")
         SchemaFactory schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
-        // #218 prevent XXE attacks
-        schemaFactory.setProperty(XMLConstants.ACCESS_EXTERNAL_DTD, "");
-        schemaFactory.setProperty(XMLConstants.ACCESS_EXTERNAL_SCHEMA, "");
         return schemaFactory.newSchema(new StreamSource(new ByteArrayInputStream(stringBuilder.toString()
                 .getBytes(StandardCharsets.UTF_8))));
     }
