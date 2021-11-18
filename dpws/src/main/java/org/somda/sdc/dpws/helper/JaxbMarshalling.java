@@ -46,6 +46,10 @@ import java.nio.charset.StandardCharsets;
  * Creates XML input and output streams from/to JAXB instances.
  */
 public class JaxbMarshalling extends AbstractIdleService {
+
+    public static final String SAX_FEATURE_EXTERNAL_GENERAL_ENTITIES = "http://xml.org/sax/features/external-general-entities";
+    public static final String SAX_FEATURE_EXTERNAL_PARAMETER_ENTITIES = "http://xml.org/sax/features/external-parameter-entities";
+
     private static final Logger LOG = LogManager.getLogger(JaxbMarshalling.class);
 
     private static final String PKG_DELIM = ":";
@@ -252,8 +256,8 @@ public class JaxbMarshalling extends AbstractIdleService {
         try (InputStream inputStream = url.openStream()) {
             var factory = DocumentBuilderFactory.newInstance();
             // #218 prevent XXE attacks
-            factory.setFeature("http://xml.org/sax/features/external-general-entities", false);
-            factory.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
+            factory.setFeature(SAX_FEATURE_EXTERNAL_GENERAL_ENTITIES, false);
+            factory.setFeature(SAX_FEATURE_EXTERNAL_PARAMETER_ENTITIES, false);
             var builder = factory.newDocumentBuilder();
             var document = builder.parse(inputStream);
             return document.getDocumentElement().getAttribute("targetNamespace");
