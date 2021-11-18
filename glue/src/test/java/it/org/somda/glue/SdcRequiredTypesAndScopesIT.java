@@ -54,7 +54,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @ExtendWith(LoggingTestWatcher.class)
-public class SdcRequiredTypesAndScopesIT {
+class SdcRequiredTypesAndScopesIT {
     private static final Logger LOG = LogManager.getLogger(SdcRequiredTypesAndScopesIT.class);
     private static final IntegrationTestUtil IT = new IntegrationTestUtil();
 

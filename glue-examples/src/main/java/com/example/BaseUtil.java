@@ -212,7 +212,7 @@ public class BaseUtil {
 
     private void logArgsErrorAndExit(String... args) {
         LOG.error("Either none or all required arguments needs to be provided ({})",
-                String.join(", ", args));
+                  () -> String.join(", ", args));
         System.exit(1);
     }
 

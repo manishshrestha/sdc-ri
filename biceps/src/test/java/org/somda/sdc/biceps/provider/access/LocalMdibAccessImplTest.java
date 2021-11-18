@@ -46,7 +46,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @ExtendWith(LoggingTestWatcher.class)
-public class LocalMdibAccessImplTest {
+class LocalMdibAccessImplTest {
     private static final UnitTestUtil UT = new UnitTestUtil(new DefaultBicepsConfigModule() {
         @Override
         protected void customConfigure() {

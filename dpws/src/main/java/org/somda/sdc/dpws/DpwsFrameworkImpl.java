@@ -152,7 +152,7 @@ public class DpwsFrameworkImpl extends AbstractIdleService implements DpwsFramew
     }
 
     @Override
-    synchronized public void registerService(Collection<Service> services) {
+    public synchronized void registerService(Collection<Service> services) {
         // don't add any duplicates
         services.forEach(
                 service -> {

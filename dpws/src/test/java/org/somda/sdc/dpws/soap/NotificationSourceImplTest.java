@@ -18,7 +18,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class NotificationSourceImplTest extends DpwsTest {
+class NotificationSourceImplTest extends DpwsTest {
     private List<String> dispatchedSequence;
 
     @Override
@@ -31,7 +31,7 @@ public class NotificationSourceImplTest extends DpwsTest {
     }
 
     @Test
-    public void sendNotification() throws Exception {
+    void sendNotification() throws Exception {
         SoapMarshalling unmarshaller = getInjector().getInstance(SoapMarshalling.class);
         Envelope soapEnv = unmarshaller.unmarshal(getClass().getResourceAsStream("soap-envelope.xml"));
 

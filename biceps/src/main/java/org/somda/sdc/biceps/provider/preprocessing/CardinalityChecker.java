@@ -60,11 +60,11 @@ public class CardinalityChecker implements DescriptionPreprocessingSegment {
         final Optional<MdibEntity> parentEntityFromStorage = storage.getEntity(parentHandle.get());
         if (parentEntityFromStorage.isEmpty()) {
             // No parent in the storage yet - early exit
-            instanceLogger.warn("Expected a parent in the MDIB storage, but none found: %s", parentHandle.get());
+            instanceLogger.warn("Expected a parent in the MDIB storage, but none found: {}", parentHandle.get());
             return;
         }
 
-        if (storage.getChildrenByType(parentHandle.get(), descriptor.getClass()).size() > 0 &&
+        if (!storage.getChildrenByType(parentHandle.get(), descriptor.getClass()).isEmpty() &&
                 !treeValidator.isManyAllowed(descriptor)) {
             // There is at least one child of given type, but multiple children of that type are not allowed
             throwException(descriptor);

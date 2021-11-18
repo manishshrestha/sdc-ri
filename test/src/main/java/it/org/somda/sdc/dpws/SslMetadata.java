@@ -173,7 +173,7 @@ public class SslMetadata extends AbstractIdleService implements Service {
 
     }
 
-    public class KeySet {
+    public static class KeySet {
         private final KeyStore keyStore;
         private final String keyStorePassword;
 

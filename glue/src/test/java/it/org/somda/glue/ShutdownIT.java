@@ -45,7 +45,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @ExtendWith(LoggingTestWatcher.class)
-public class ShutdownIT {
+class ShutdownIT {
     private static final Logger LOG = LogManager.getLogger(ShutdownIT.class);
     private static Duration WAIT_TIME = Duration.ofSeconds(30);
 

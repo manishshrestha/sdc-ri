@@ -101,7 +101,7 @@ public class DeviceImplTest implements Runnable {
         System.out.println("Device stopped");
     }
 
-    private class DpwsConfig extends AbstractModule {
+    private static class DpwsConfig extends AbstractModule {
         @Override
         protected void configure() {
             bind(Boolean.class)

@@ -411,7 +411,7 @@ public class MdibStorageImpl implements MdibStorage {
         // Add to context states if context entity
         if (mdibEntityForStorage.getDescriptor() instanceof AbstractContextDescriptor) {
             contextStates.putAll(mdibEntityForStorage.getStates().stream()
-                    .map(state -> (AbstractContextState) state)
+                    .map(AbstractContextState.class::cast)
                     .collect(Collectors.toMap(AbstractMultiState::getHandle, state -> state)));
         }
 
@@ -532,8 +532,8 @@ public class MdibStorageImpl implements MdibStorage {
                             entities.put(mdibEntity.getHandle(), entityFactory.replaceStates(mdibEntity,
                                     Collections.unmodifiableList(newStates)));
                             newStates.stream()
-                                    .filter(abstractMultiState -> abstractMultiState instanceof AbstractContextState)
-                                    .map(abstractMultiState -> (AbstractContextState) abstractMultiState)
+                                    .filter(AbstractContextState.class::isInstance)
+                                    .map(AbstractContextState.class::cast)
                                     .collect(Collectors.toList())
                                     .forEach(abstractContextState ->
                                             contextStates.put(abstractContextState.getHandle(), abstractContextState));

@@ -68,6 +68,7 @@ class CommunicationLogSoapXmlUtils {
                         if (WsAddressingConstants.ACTION.equals(actionElement) && !parser.isWhiteSpace()) {
                             return parser.getText();
                         }
+                        break;
 
                     default:
                         break;

@@ -18,7 +18,7 @@ import java.util.concurrent.LinkedBlockingDeque;
  * Default implementation of {@linkplain UdpMessageQueueService}.
  */
 public class UdpMessageQueueServiceImpl extends AbstractIdleService implements Service, UdpMessageQueueService {
-    private final static Logger LOG = LogManager.getLogger(UdpMessageQueueServiceImpl.class);
+    private static final Logger LOG = LogManager.getLogger(UdpMessageQueueServiceImpl.class);
     private static int instanceIdCounter = 0;
     private final int instanceId;
     private final LinkedBlockingDeque<UdpMessage> incomingMessageQueue;

@@ -19,7 +19,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 
 @ExtendWith(LoggingTestWatcher.class)
-public class MdibStateModificationsTest {
+class MdibStateModificationsTest {
     private HandleGenerator handleGenerator;
 
     @BeforeEach
@@ -28,7 +28,7 @@ public class MdibStateModificationsTest {
     }
 
     @Test
-    public void differentStateTypes() {
+    void differentStateTypes() {
         int stateCount = 10;
         Collection<MdibStateModifications.Type> changeTypes = EnumSet.allOf(MdibStateModifications.Type.class);
         for (MdibStateModifications.Type changeType : changeTypes) {
@@ -46,7 +46,7 @@ public class MdibStateModificationsTest {
         assertThat(states.size(), is(stateCount));
 
         final MdibStateModifications stateModifications = MdibStateModifications.create(type);
-        states.stream().forEach(state -> stateModifications.add(state));
+        states.stream().forEach(stateModifications::add);
         assertThat(stateModifications.getStates().size(), is(states.size()));
         for (int i = 0; i < states.size(); ++i) {
             assertThat(stateModifications.getStates().get(i), is(states.get(i)));
@@ -54,7 +54,7 @@ public class MdibStateModificationsTest {
     }
 
     @Test
-    public void typeMismatch()  {
+    void typeMismatch()  {
         final List<AbstractState> validMismatch = Arrays.asList(
                 MockModelFactory.createState(handleGenerator.next(), NumericMetricState.class),
                 MockModelFactory.createState(handleGenerator.next(), StringMetricState.class),

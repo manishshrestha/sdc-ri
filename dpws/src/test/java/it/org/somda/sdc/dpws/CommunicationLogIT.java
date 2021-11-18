@@ -53,7 +53,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class CommunicationLogIT extends DpwsTest {
+class CommunicationLogIT extends DpwsTest {
     private static final Logger LOG = LogManager.getLogger(CommunicationLogIT.class);
 
     private TransportBindingFactory transportBindingFactory;

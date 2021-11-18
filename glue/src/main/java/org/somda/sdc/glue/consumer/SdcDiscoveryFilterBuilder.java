@@ -39,7 +39,7 @@ public class SdcDiscoveryFilterBuilder {
     private SdcDiscoveryFilterBuilder() {
         this.discoveryFilterBuilder = new DiscoveryFilterBuilder();
         this.discoveryFilterBuilder.addType(CommonConstants.MEDICAL_DEVICE_TYPE);
-        this.discoveryFilterBuilder.addScope(GlueConstants.SCOPE_SDC_PROVIDER.toString());
+        this.discoveryFilterBuilder.addScope(GlueConstants.SCOPE_SDC_PROVIDER);
     }
 
     public static SdcDiscoveryFilterBuilder create() {
@@ -77,7 +77,7 @@ public class SdcDiscoveryFilterBuilder {
      */
     public <T extends AbstractContextState> SdcDiscoveryFilterBuilder addContext(T state) {
         try {
-            createScopeFromContext(state).ifPresent(scope -> addScope(scope));
+            createScopeFromContext(state).ifPresent(this::addScope);
         } catch (UriMapperGenerationArgumentException e) {
             LOG.warn("Context state could not be encoded as an URI", e);
         }
@@ -126,7 +126,7 @@ public class SdcDiscoveryFilterBuilder {
 
         ContextIdentificationMapper.ContextSource contextSource = mapToContextSource(contextState);
         return Optional.of(ContextIdentificationMapper.fromInstanceIdentifier(contextState.getIdentification().get(0),
-                contextSource).toString());
+                                                                              contextSource));
     }
 
     private static ContextIdentificationMapper.ContextSource mapToContextSource(AbstractContextState contextState) {

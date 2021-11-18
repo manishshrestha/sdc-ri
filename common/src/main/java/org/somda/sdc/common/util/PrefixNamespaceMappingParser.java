@@ -70,7 +70,7 @@ public class PrefixNamespaceMappingParser {
 
         @Override
         public String toString() {
-            return String.format("{%s:%s}", prefix, namespace.toString());
+            return String.format("{%s:%s}", prefix, namespace);
         }
 
         @Override

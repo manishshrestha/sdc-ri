@@ -23,9 +23,10 @@ import java.io.InputStream;
 import java.util.Collections;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-public class WsAddressingServerInterceptorTest extends DpwsTest {
+class WsAddressingServerInterceptorTest extends DpwsTest {
 
     private SoapMessage request;
     private SoapMessage response;
@@ -49,6 +50,7 @@ public class WsAddressingServerInterceptorTest extends DpwsTest {
         );
 
         InputStream soapStrm = getClass().getResourceAsStream("soap-envelope.xml");
+        assertNotNull(soapStrm);
         getInjector().getInstance(JaxbMarshalling.class).startAsync().awaitRunning();
         getInjector().getInstance(SoapMarshalling.class).startAsync().awaitRunning();
         Envelope soapEnv = getInjector().getInstance(SoapMarshalling.class).unmarshal(soapStrm);
@@ -70,7 +72,7 @@ public class WsAddressingServerInterceptorTest extends DpwsTest {
     }
 
     @Test
-    public void testMessageIdDuplicationDetection() throws SoapFaultException {
+    void testMessageIdDuplicationDetection() {
         assertDoesNotThrow(() -> server.receiveRequestResponse(request, response, mockCommunicationContext));
         assertThrows(SoapFaultException.class, () ->
                 server.receiveRequestResponse(request, response, mockCommunicationContext));

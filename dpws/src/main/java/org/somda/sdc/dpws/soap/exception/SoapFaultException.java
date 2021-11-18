@@ -103,7 +103,7 @@ public class SoapFaultException extends Exception {
         StringBuilder sb = new StringBuilder();
         sb.append(getFault().getCode().getValue().toString());
         List<Reasontext> text = getFault().getReason().getText();
-        if (text.size() > 0) {
+        if (!text.isEmpty()) {
             sb.append(": ");
             sb.append(text.get(0).getValue());
         }
