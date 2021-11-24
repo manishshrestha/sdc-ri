@@ -21,7 +21,6 @@ public class DeviceLeftMessage extends AbstractEventMessage<String> {
      * Possible ways the absence of a device has been determined.
      */
     public enum TriggeredBy {
-        BYE,
-        WATCHDOG
+        BYE
     }
 }

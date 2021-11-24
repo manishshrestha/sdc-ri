@@ -109,7 +109,7 @@ public class HelloByeAndProbeMatchesObserverImpl implements HelloByeAndProbeMatc
     @Subscribe
     void onBye(ByeMessage byeMessage) {
         wsaUtil.getAddressUri(byeMessage.getPayload().getEndpointReference()).ifPresent(uri ->
-                discoveryBus.post(new DeviceLeftMessage(uri, DeviceLeftMessage.TriggeredBy.BYE)));
+                publishDeviceLeft(uri, DeviceLeftMessage.TriggeredBy.BYE));
     }
 
     /**
