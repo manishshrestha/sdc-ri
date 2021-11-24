@@ -17,10 +17,8 @@ public class JaxbUtilImpl implements JaxbUtil {
     @Override
     public <T> Optional<T> extractElement(Object element, QName elementType, Class<T> typeClass) {
         Optional<Object> extractedObj = extractElement(element, elementType);
-        if (extractedObj.isPresent()) {
-            if (typeClass.isAssignableFrom(extractedObj.get().getClass())) {
-                return Optional.ofNullable(typeClass.cast(extractedObj.get()));
-            }
+        if (extractedObj.isPresent() && typeClass.isAssignableFrom(extractedObj.get().getClass())) {
+            return Optional.of(typeClass.cast(extractedObj.get()));
         }
         return Optional.empty();
     }
@@ -63,7 +61,7 @@ public class JaxbUtilImpl implements JaxbUtil {
         Optional<T> first = extractElement(anyList.get(0), elementType, typeClass);
         if (first.isPresent()) {
             try {
-                return Optional.ofNullable(typeClass.cast(first.get()));
+                return Optional.of(typeClass.cast(first.get()));
             } catch (ClassCastException ignored) {
                 // ignore, empty optional will be returned
             }
@@ -81,7 +79,7 @@ public class JaxbUtilImpl implements JaxbUtil {
         Optional<T> first = extractElement(anyList.get(0), typeClass);
         if (first.isPresent()) {
             try {
-                return Optional.ofNullable(typeClass.cast(first.get()));
+                return Optional.of(typeClass.cast(first.get()));
             } catch (ClassCastException ignored) {
                 // ignore, empty optional will be returned
             }

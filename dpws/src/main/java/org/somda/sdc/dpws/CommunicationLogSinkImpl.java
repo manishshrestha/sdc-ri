@@ -28,7 +28,7 @@ public class CommunicationLogSinkImpl implements CommunicationLogSink {
     private final Boolean prettyPrintXml;
     private final Logger instanceLogger;
 
-    private EnumMap<CommunicationLog.TransportType, File> dirMapping;
+    private final EnumMap<CommunicationLog.TransportType, File> dirMapping;
 
     @Inject
     CommunicationLogSinkImpl(@Named(DpwsConfig.COMMUNICATION_LOG_SINK_DIRECTORY) File logDirectory,
@@ -84,9 +84,9 @@ public class CommunicationLogSinkImpl implements CommunicationLogSink {
                     for (Map.Entry<String, String> entry : appInfo.getHeaders().entries()) {
                         String targetString;
                         if (entry.getValue() == null) {
-                            targetString = String.format("%s\n", entry.getKey());
+                            targetString = String.format("%s%n", entry.getKey());
                         } else {
-                            targetString = String.format("%s = %s\n", entry.getKey(), entry.getValue());
+                            targetString = String.format("%s = %s%n", entry.getKey(), entry.getValue());
                         }
                         headerFile.write(targetString.getBytes());
                     }

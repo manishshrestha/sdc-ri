@@ -104,7 +104,7 @@ public class SoapMessage {
         if (getOriginalEnvelope().getBody().getAny().size() == 1) {
             Object obj = getOriginalEnvelope().getBody().getAny().get(0);
             if (JAXBElement.class.isAssignableFrom(obj.getClass())) {
-                JAXBElement jaxbElem = (JAXBElement) obj;
+                var jaxbElem = (JAXBElement) obj;
                 return jaxbElem.getName().equals(SoapConstants.FAULT);
             }
         }

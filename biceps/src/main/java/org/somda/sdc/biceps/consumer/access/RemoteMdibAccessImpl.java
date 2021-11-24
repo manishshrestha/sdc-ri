@@ -106,7 +106,6 @@ public class RemoteMdibAccessImpl implements RemoteMdibAccess {
                                         MdibStateModifications mdibStateModifications) throws PreprocessingException {
         // No copy of mdibStateModifications here as data is read from network source
         // SDCri takes over responsibility to not change elements after write
-        // return writeUtil.writeStates(mdibStateModifications);
         return writeUtil.writeStates(stateModifications ->
                         mdibStorage.apply(mdibVersion, null, stateModifications),
                 mdibStateModifications);

@@ -1,7 +1,6 @@
 package org.somda.sdc.dpws.network;
 
 import java.net.Inet4Address;
-import java.net.Inet6Address;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.util.Iterator;
@@ -22,9 +21,7 @@ public class NetworkInterfaceUtil {
         final Iterator<InetAddress> inetAddressIterator = networkInterface.getInetAddresses().asIterator();
         while (inetAddressIterator.hasNext()) {
             final InetAddress nextAddress = inetAddressIterator.next();
-            if (nextAddress instanceof Inet6Address) {
-                continue;
-            } else if (nextAddress instanceof Inet4Address) {
+            if (nextAddress instanceof Inet4Address) {
                 return Optional.of(nextAddress);
             }
         }

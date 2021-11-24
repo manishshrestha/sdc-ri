@@ -23,8 +23,7 @@ import java.net.URI;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 
-public class ApacheHttpClientTransportBindingFactoryImplIT extends DpwsTest {
-    private static final Logger LOG = LogManager.getLogger(ApacheHttpClientTransportBindingFactoryImplIT.class);
+class ApacheHttpClientTransportBindingFactoryImplIT extends DpwsTest {
 
     private TransportBindingFactory transportBindingFactory;
     private SoapMessageFactory soapMessageFactory;

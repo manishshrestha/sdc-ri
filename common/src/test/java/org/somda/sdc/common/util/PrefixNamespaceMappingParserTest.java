@@ -18,7 +18,7 @@ class PrefixNamespaceMappingParserTest {
                 {"http://namespace4", new PrefixNamespaceMappingParser.PrefixNamespacePair("prefix4", "http://namespace4")}
         }).collect(Collectors.toMap(data -> (String) data[0], data -> (PrefixNamespaceMappingParser.PrefixNamespacePair) data[1]));
 
-        final StringBuffer stringToParse = new StringBuffer();
+        final StringBuilder stringToParse = new StringBuilder();
         expectedMappings.forEach((key, value) -> stringToParse.append(value.toString()));
 
         final PrefixNamespaceMappingParser parser = new PrefixNamespaceMappingParser();
