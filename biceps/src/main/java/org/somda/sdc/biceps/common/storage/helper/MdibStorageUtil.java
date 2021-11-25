@@ -78,7 +78,7 @@ public class MdibStorageUtil {
     public List<MdibEntity> exposeEntityList(Map<String, MdibEntity> entities, Collection<String> collection) {
         return collection.stream()
                 .filter(handle -> entities.get(handle) != null)
-                .map(handle -> entities.get(handle))
+                .map(entities::get)
                 .collect(Collectors.toList());
     }
 }

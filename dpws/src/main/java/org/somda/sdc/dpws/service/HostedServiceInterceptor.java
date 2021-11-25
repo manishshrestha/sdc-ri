@@ -166,8 +166,8 @@ public class HostedServiceInterceptor implements Interceptor {
 
             var uriFromEpr = wsaUtil.getAddressUri(epr);
             if (uriFromEpr.isEmpty()) {
-                throw new RuntimeException(String.format("Invalid EPR detected while trying to create WSDL resource. " +
-                        String.format("Skip EPR %s.", epr)));
+                throw new RuntimeException("Invalid EPR detected while trying to create WSDL resource. " +
+                                                   String.format("Skip EPR %s.", epr));
             }
 
             URI uri;

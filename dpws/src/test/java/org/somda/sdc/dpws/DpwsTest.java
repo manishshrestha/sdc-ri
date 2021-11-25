@@ -24,7 +24,7 @@ import java.util.Optional;
  * Test base class to provide common test functionality.
  */
 @ExtendWith(LoggingTestWatcher.class)
-public class DpwsTest {
+public abstract class DpwsTest {
     private static final Logger LOG = LogManager.getLogger(DpwsTest.class);
 
     private Injector injector;

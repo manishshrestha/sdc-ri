@@ -134,7 +134,7 @@ public class Consumer extends AbstractIdleService {
     }
 
     private void triggerConnect() {
-        try (AutoLock ignored = AutoLock.lock(connectLock)) {
+        try (var ignored = AutoLock.lock(connectLock)) {
             connectCount++;
             connectCondition.signalAll();
         }
@@ -144,7 +144,7 @@ public class Consumer extends AbstractIdleService {
         @Override
         public void run() {
             while (!Thread.interrupted()) {
-                try (AutoLock ignored = AutoLock.lock(connectLock)) {
+                try (var ignored = AutoLock.lock(connectLock)) {
                     if (connectCount == 0) {
                         connectCondition.await();
                         if (connectCount == 0) {

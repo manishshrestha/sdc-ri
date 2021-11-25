@@ -1,7 +1,7 @@
 package org.somda.sdc.glue.consumer;
 
-import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.somda.sdc.biceps.model.participant.AbstractComplexDeviceComponentDescriptor;
 import org.somda.sdc.biceps.model.participant.AbstractContextState;
 import org.somda.sdc.biceps.model.participant.ContextAssociation;
@@ -13,11 +13,7 @@ import org.somda.sdc.glue.common.uri.ContextIdentificationMapper;
 import org.somda.sdc.glue.common.uri.UriMapperGenerationArgumentException;
 import org.somda.sdc.mdpws.common.CommonConstants;
 
-import javax.annotation.Nullable;
 import javax.xml.namespace.QName;
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 
 /**
@@ -138,7 +134,4 @@ public class SdcDiscoveryFilterBuilder {
         throw new RuntimeException(String.format("Reached unknown context: %s", contextState.getClass().toString()));
     }
 
-    private static String encode(@Nullable String text) throws UnsupportedEncodingException {
-        return text == null ? "" : URLEncoder.encode(text, StandardCharsets.UTF_8);
-    }
 }

@@ -106,7 +106,7 @@ class UdpBindingServiceImplIT {
     }
 
     @Test
-    public void testSendMulticastMessageWithReply() throws Exception {
+    void testSendMulticastMessageWithReply() throws Exception {
         final String expectedRequestStr = "REQUEST";
         final String expectedResponseStr = "RESPONSE";
         final byte[] expectedRequestBytes = expectedRequestStr.getBytes();

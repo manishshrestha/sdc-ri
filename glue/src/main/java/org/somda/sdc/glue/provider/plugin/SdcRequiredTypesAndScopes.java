@@ -147,14 +147,14 @@ public class SdcRequiredTypesAndScopes implements SdcDevicePlugin, MdibAccessObs
                 mdibAccess.findContextStatesByType(LocationContextState.class));
 
         instanceLogger.info("Location context scopes updated from [{}] to [{}]",
-                Joiner.on(",").join(locationContextsBefore),
-                Joiner.on(",").join(locationContexts));
+                            () -> Joiner.on(",").join(locationContextsBefore),
+                            () -> Joiner.on(",").join(locationContexts));
 
         var mdsTypesBefore = mdsTypes;
         mdsTypes = extractMdsTypes(mdibAccess.findEntitiesByType(MdsDescriptor.class));
         instanceLogger.info("MDS type scopes updated from [{}] to [{}]",
-                Joiner.on(",").join(mdsTypesBefore),
-                Joiner.on(",").join(mdsTypes));
+                            () -> Joiner.on(",").join(mdsTypesBefore),
+                            () -> Joiner.on(",").join(mdsTypes));
     }
 
     private Set<String> extractMdsTypes(Collection<MdibEntity> entities) {

@@ -64,10 +64,8 @@ class InterceptorProcessor {
 
                 Direction directionFromAnnotation = callbackMethod.getDeclaredAnnotation(
                         MessageInterceptor.class).direction();
-                if (directionFromAnnotation != Direction.ANY) {
-                    if (direction != directionFromAnnotation) {
-                        continue;
-                    }
+                if (directionFromAnnotation != Direction.ANY && direction != directionFromAnnotation) {
+                    continue;
                 }
 
                 callbackMethod.invoke(interceptorInfo.getCallbackObject(), callbackParam);

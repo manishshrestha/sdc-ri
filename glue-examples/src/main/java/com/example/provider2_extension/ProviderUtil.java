@@ -111,14 +111,13 @@ class ProviderUtil extends BaseUtil {
     protected Options configureOptions() {
         var options = super.configureOptions();
 
-        {
-            String message = "Interval in ms in which reports are being generated."
-                    + " Default: " + DEFAULT_REPORT_INTERVAL;
-            Option reportIntervalOpt = new Option(null, OPT_REPORT_INTERVAL,
-                    true, message);
-            reportIntervalOpt.setType(Long.class);
-            options.addOption(reportIntervalOpt);
-        }
+        var reportIntervalOpt = Option.builder(null)
+                .desc("Interval in ms in which reports are being generated. Default: " + DEFAULT_REPORT_INTERVAL)
+                .longOpt(OPT_REPORT_INTERVAL)
+                .hasArg()
+                .type(Long.class)
+                .build();
+        options.addOption(reportIntervalOpt);
 
         return options;
     }

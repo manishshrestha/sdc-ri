@@ -51,10 +51,8 @@ public class TimedWait<T> {
                     if (dataCondition.test(data)) {
                         return true;
                     }
-                    if (condition.await(copyWaitTime.toMillis(), TimeUnit.MILLISECONDS)) {
-                        if (dataCondition.test(data)) {
-                            return true;
-                        }
+                    if (condition.await(copyWaitTime.toMillis(), TimeUnit.MILLISECONDS) && dataCondition.test(data)) {
+                        return true;
                     }
                 } catch (InterruptedException e) {
                     return dataCondition.test(data);
