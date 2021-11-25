@@ -266,7 +266,7 @@ public class MdibStorageImpl implements MdibStorage {
                     updateEntity(modification, sanitizedStates, updatedEntities);
                     break;
                 case DELETE:
-                    deleteEntity(modification, deletedEntities);
+                    deleteEntity(modification, deletedEntities, updatedEntities);
                     break;
                 default:
                     instanceLogger.warn(
@@ -300,19 +300,29 @@ public class MdibStorageImpl implements MdibStorage {
         return result;
     }
 
-    private void deleteEntity(MdibDescriptionModification modification, List<MdibEntity> deletedEntities) {
+    private void deleteEntity(MdibDescriptionModification modification,
+                              List<MdibEntity> deletedEntities,
+                              List<MdibEntity> updatedEntities) {
         Optional.ofNullable(entities.get(modification.getHandle())).ifPresent(mdibEntity -> {
             instanceLogger.debug(
                     "[{}] Delete entity: {}",
                     mdibVersion.getInstanceId(), modification.getDescriptor().getHandle()
             );
             mdibEntity.getParent().ifPresent(parentHandle ->
-                    Optional.ofNullable(entities.get(parentHandle)).ifPresent(parentEntity ->
-                            entities.put(parentEntity.getHandle(), entityFactory.replaceChildren(parentEntity,
-                                    parentEntity.getChildren().stream()
-                                            // filter out the removed entity only
-                                            .filter(s -> !s.equals(mdibEntity.getHandle()))
-                                            .collect(Collectors.toList())))));
+                    Optional.ofNullable(entities.get(parentHandle)).ifPresent(parentEntity -> {
+                        var updatedParent = entityFactory.replaceChildren(parentEntity,
+                                parentEntity.getChildren().stream()
+                                        // filter out the removed entity only
+                                        .filter(s -> !s.equals(mdibEntity.getHandle()))
+                                        .collect(Collectors.toList()));
+
+                        entities.put(updatedParent.getHandle(), updatedParent);
+                        // if the child was found and removed - add parent to the updated entities list
+                        if (parentEntity.getChildren().size() != updatedParent.getChildren().size()) {
+                            updatedEntities.add(updatedParent);
+                        }
+                    })
+            );
         });
 
         final MdibEntity deletedEntity = entities.get(modification.getHandle());
