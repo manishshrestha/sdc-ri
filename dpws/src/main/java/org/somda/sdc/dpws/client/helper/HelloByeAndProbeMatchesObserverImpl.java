@@ -77,10 +77,9 @@ public class HelloByeAndProbeMatchesObserverImpl implements HelloByeAndProbeMatc
      * Publishes a message informing subscribers of a device having left.
      *
      * @param deviceUuid  of the device which has left
-     * @param triggeredBy reason of absence
      */
-    public void publishDeviceLeft(String deviceUuid, DeviceLeftMessage.TriggeredBy triggeredBy) {
-        discoveryBus.post(new DeviceLeftMessage(deviceUuid, triggeredBy));
+    public void publishDeviceLeft(String deviceUuid) {
+        discoveryBus.post(new DeviceLeftMessage(deviceUuid));
     }
 
     @Subscribe
@@ -108,8 +107,7 @@ public class HelloByeAndProbeMatchesObserverImpl implements HelloByeAndProbeMatc
 
     @Subscribe
     void onBye(ByeMessage byeMessage) {
-        wsaUtil.getAddressUri(byeMessage.getPayload().getEndpointReference()).ifPresent(uri ->
-                publishDeviceLeft(uri, DeviceLeftMessage.TriggeredBy.BYE));
+        wsaUtil.getAddressUri(byeMessage.getPayload().getEndpointReference()).ifPresent(this::publishDeviceLeft);
     }
 
     /**

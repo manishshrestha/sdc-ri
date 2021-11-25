@@ -68,7 +68,7 @@ class DiscoveredDeviceObserverTest extends DpwsTest {
             }
         });
 
-        helloByeAndProbeMatchesObserverImpl.publishDeviceLeft(expectedUri, DeviceLeftMessage.TriggeredBy.BYE);
+        helloByeAndProbeMatchesObserverImpl.publishDeviceLeft(expectedUri);
         assertEquals(1, callbackVisitCount);
     }
 
