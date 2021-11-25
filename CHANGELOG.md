@@ -48,6 +48,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `org.somda.sdc.glue.provider.sco.ScoController` to process lists independent of a specific list type as otherwise 
   activate operations do not integrate well. (#207) 
 - `org.somda.sdc.dpws.soap.interception.RequestResponseObject` return non-optional `CommunicationContext` instances. (#208)
+- `org.somda.sdc.glue.consumer.SdcRemoteDevicesConnectorImpl.disconnect()` now sends `RemoteDeviceDisconnectedMessage` message 
+  if device lost connection or was disconnected. (#216)
 - `org.somda.sdc.biceps.common.storage.MdibStorageImpl.deleteEntity()` updates parent entity and returns it in the updated entity list 
   if child descriptor is deleted (#211)
   

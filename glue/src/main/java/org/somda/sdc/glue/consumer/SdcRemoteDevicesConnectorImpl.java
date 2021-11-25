@@ -44,6 +44,7 @@ import org.somda.sdc.glue.common.SubscribableActionsMapping;
 import org.somda.sdc.glue.common.WsdlConstants;
 import org.somda.sdc.glue.common.factory.ModificationsBuilderFactory;
 import org.somda.sdc.glue.consumer.event.RemoteDeviceConnectedMessage;
+import org.somda.sdc.glue.consumer.event.RemoteDeviceDisconnectedMessage;
 import org.somda.sdc.glue.consumer.event.WatchdogMessage;
 import org.somda.sdc.glue.consumer.factory.SdcRemoteDeviceFactory;
 import org.somda.sdc.glue.consumer.factory.SdcRemoteDeviceWatchdogFactory;
@@ -58,6 +59,7 @@ import javax.annotation.Nullable;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.xml.namespace.QName;
+import java.net.URI;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -241,7 +243,7 @@ public class SdcRemoteDevicesConnectorImpl extends AbstractIdleService
                     // invalidate sdcRemoteDevice
                     // unsubscribe everything
                     sdcRemoteDevice.stopAsync().awaitTerminated();
-
+                    eventBus.post(new RemoteDeviceDisconnectedMessage(URI.create(eprAddress)));
                 });
             }
         } else {
