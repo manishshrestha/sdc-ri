@@ -22,7 +22,6 @@ import org.somda.sdc.biceps.model.message.GetMdib;
 import org.somda.sdc.biceps.model.message.GetMdibResponse;
 import org.somda.sdc.biceps.model.message.InvocationInfo;
 import org.somda.sdc.biceps.model.message.ObjectFactory;
-import org.somda.sdc.biceps.model.message.ObjectFactory;
 import org.somda.sdc.biceps.model.message.SetAlertState;
 import org.somda.sdc.biceps.model.message.SetAlertStateResponse;
 import org.somda.sdc.biceps.model.message.SetComponentState;
@@ -246,6 +245,8 @@ public class HighPriorityServices extends WebService {
         }
     }
 
+    // NOTE: the GetContextStatesByFilter-Message cannot be properly implemented as the BICEPS standard fails
+    //       to specify the XPath version to use. This Message should hence not be used.
     @MessageInterceptor(ActionConstants.ACTION_GET_CONTEXT_STATES_BY_FILTER)
     void getContextStatesByFilter(RequestResponseObject requestResponseObject) throws SoapFaultException {
         // todo DGr implement getContextStatesByFilter
@@ -254,6 +255,8 @@ public class HighPriorityServices extends WebService {
                 requestResponseObject.getRequest().getWsAddressingHeader().getMessageId().orElse(null));
     }
 
+    // NOTE: the GetContextStatesByIdentification-Message cannot be properly implemented as the BICEPS standard fails
+    //       to specify a way to match Identifications. This Message should hence not be used.
     @MessageInterceptor(ActionConstants.ACTION_GET_CONTEXT_STATES_BY_IDENTIFICATION)
     void getContextStatesByIdentification(RequestResponseObject requestResponseObject) throws SoapFaultException {
         // todo DGr implement getContextStatesByIdentification

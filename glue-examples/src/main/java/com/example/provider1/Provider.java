@@ -74,6 +74,8 @@ public class Provider extends AbstractIdleService {
     private static final Logger LOG = LogManager.getLogger(Provider.class);
 
     private static final int MAX_ENUM_ITERATIONS = 17;
+    private static final String GRPC_HOST = "localhost";
+    private static final int GRPC_PORT = 50051;
 
     private Injector injector;
     private LocalMdibAccess mdibAccess;
@@ -191,6 +193,8 @@ public class Provider extends AbstractIdleService {
         dpwsFramework.startAsync().awaitRunning();
         sdcDevice.startAsync().awaitRunning();
 
+        GrpcServer.startGrpcServer(GRPC_PORT, GRPC_HOST, this);
+        System.out.println("GRPC Server started on " + GRPC_HOST + ":" + GRPC_PORT);
     }
 
     @Override
