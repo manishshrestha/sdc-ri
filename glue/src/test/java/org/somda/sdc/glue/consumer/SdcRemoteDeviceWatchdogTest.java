@@ -20,6 +20,7 @@ import org.somda.sdc.dpws.service.HostedServiceProxy;
 import org.somda.sdc.dpws.service.HostingServiceProxy;
 import org.somda.sdc.dpws.service.factory.HostingServiceFactory;
 import org.somda.sdc.dpws.soap.RequestResponseClient;
+import org.somda.sdc.dpws.soap.wsdiscovery.model.ProbeMatchesType;
 import org.somda.sdc.dpws.soap.wseventing.SubscribeResult;
 import org.somda.sdc.glue.UnitTestUtil;
 import org.somda.sdc.glue.consumer.event.WatchdogMessage;
@@ -39,9 +40,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
-import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(LoggingTestWatcher.class)
@@ -70,7 +72,8 @@ class SdcRemoteDeviceWatchdogTest {
         injector = new UnitTestUtil().createInjectorWithOverrides(new AbstractModule() {
             @Override
             protected void configure() {
-                bind(new TypeLiteral<ExecutorWrapperService<ScheduledExecutorService>>(){})
+                bind(new TypeLiteral<ExecutorWrapperService<ScheduledExecutorService>>() {
+                })
                         .annotatedWith(WatchdogScheduledExecutor.class)
                         .toInstance(new ExecutorWrapperService<>(() -> mockExecutor, "WatchdogScheduledExecutorMock", "abcd"));
                 bind(Client.class)
@@ -80,7 +83,8 @@ class SdcRemoteDeviceWatchdogTest {
 
         // start required thread pool(s)
         injector.getInstance(Key.get(
-                new TypeLiteral<ExecutorWrapperService<ScheduledExecutorService>>(){},
+                new TypeLiteral<ExecutorWrapperService<ScheduledExecutorService>>() {
+                },
                 WatchdogScheduledExecutor.class
         )).startAsync().awaitRunning();
 
@@ -156,7 +160,7 @@ class SdcRemoteDeviceWatchdogTest {
         String subscriptionId1 = "subId1";
         subscribeResults.put(serviceId1, new SubscribeResult(subscriptionId1, Duration.ZERO));
         final SdcRemoteDeviceWatchdog watchdog = watchdogFactory.createSdcRemoteDeviceWatchdog(hostingServiceProxy,
-                                                                                               subscribeResults, watchdogSpy);
+                subscribeResults, watchdogSpy);
         watchdog.startAsync().awaitRunning();
         verify(mockExecutor).schedule(jobCaptor.capture(), any(Long.class), any(TimeUnit.class));
         when(mockEventSinkAccess1.renew(eq(subscriptionId1), any(Duration.class)))
@@ -175,7 +179,7 @@ class SdcRemoteDeviceWatchdogTest {
         String subscriptionId2 = "subId2";
         subscribeResults.put(serviceId2, new SubscribeResult(subscriptionId2, Duration.ZERO));
         final SdcRemoteDeviceWatchdog watchdog = watchdogFactory.createSdcRemoteDeviceWatchdog(hostingServiceProxy,
-                                                                                               subscribeResults, watchdogSpy);
+                subscribeResults, watchdogSpy);
 
         verifyNoInteractions(mockExecutor);
         watchdog.startAsync().awaitRunning();
@@ -195,27 +199,41 @@ class SdcRemoteDeviceWatchdogTest {
 
     @Test
     void testReschedule() {
-        Map<String, SubscribeResult> subscribeResults = new HashMap<>();
-        final SdcRemoteDeviceWatchdog watchdog = watchdogFactory.createSdcRemoteDeviceWatchdog(hostingServiceProxy,
-                                                                                               subscribeResults, null);
+        final var subscribeResults = new HashMap<String, SubscribeResult>();
+        final var watchdog = watchdogFactory.createSdcRemoteDeviceWatchdog(hostingServiceProxy,
+                subscribeResults, null);
 
+        // return mock ProbeMatchesType on directed probe for successful watchdog interaction
+        when(mockClient.directedProbe(any(String.class)))
+                .thenReturn(Futures.immediateFuture(mock(ProbeMatchesType.class)));
+
+        // watchdog just instantiated, no interaction so far
         verifyNoInteractions(mockExecutor);
+
         watchdog.startAsync().awaitRunning();
-        verify(mockExecutor).schedule(jobCaptor.capture(), any(Long.class), any(TimeUnit.class));
+
+        // watchdog started, expect watchdog job to be scheduled
+        verify(mockExecutor, times(1))
+                .schedule(jobCaptor.capture(), any(Long.class), any(TimeUnit.class));
 
         jobCaptor.getValue().run();
-        verify(mockExecutor).schedule(jobCaptor.capture(), any(Long.class), any(TimeUnit.class));
+
+        // watchdog ran first time, expect job to be re-scheduled
+        verify(mockExecutor, times(2))
+                .schedule(jobCaptor.capture(), any(Long.class), any(TimeUnit.class));
 
         watchdog.stopAsync().awaitTerminated();
         jobCaptor.getValue().run();
-        verifyZeroInteractions(mockExecutor);
+
+        // watchdog was stopped, expect no further re-schedule
+        verifyNoMoreInteractions(mockExecutor);
     }
 
     @Test
     void testDirectedProbe() {
         Map<String, SubscribeResult> subscribeResults = new HashMap<>();
         final SdcRemoteDeviceWatchdog watchdog = watchdogFactory.createSdcRemoteDeviceWatchdog(hostingServiceProxy,
-                                                                                               subscribeResults, null);
+                subscribeResults, null);
 
         verifyNoInteractions(mockExecutor);
         watchdog.startAsync().awaitRunning();
