@@ -52,6 +52,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   if device lost connection or was disconnected. (#216)
 - `org.somda.sdc.biceps.common.storage.MdibStorageImpl.deleteEntity()` updates parent entity and returns it in the updated entity list 
   if child descriptor is deleted (#211)
+- `org.somda.sdc.dpws.soap.wsdiscovery.WsDiscoveryUtil.isScopesMatching()` extends scope matcher to be compatible with RFC3986 URIs 
+  and follow WS-Discovery rules (#212)
   
 ### Removed
 
