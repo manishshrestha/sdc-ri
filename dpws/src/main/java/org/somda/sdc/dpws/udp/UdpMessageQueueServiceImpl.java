@@ -13,13 +13,14 @@ import org.somda.sdc.dpws.soap.exception.TransportException;
 
 import java.io.IOException;
 import java.util.concurrent.LinkedBlockingDeque;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Default implementation of {@linkplain UdpMessageQueueService}.
  */
 public class UdpMessageQueueServiceImpl extends AbstractIdleService implements Service, UdpMessageQueueService {
-    private final static Logger LOG = LogManager.getLogger(UdpMessageQueueServiceImpl.class);
-    private static int instanceIdCounter = 0;
+    private static final Logger LOG = LogManager.getLogger(UdpMessageQueueServiceImpl.class);
+    private static final AtomicInteger INSTANCE_ID_COUNTER = new AtomicInteger(0);
     private final int instanceId;
     private final LinkedBlockingDeque<UdpMessage> incomingMessageQueue;
     private final LinkedBlockingDeque<UdpMessage> outgoingMessageQueue;
@@ -33,7 +34,7 @@ public class UdpMessageQueueServiceImpl extends AbstractIdleService implements S
     @Inject
     UdpMessageQueueServiceImpl(EventBus eventBus, @Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier) {
         this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);
-        this.instanceId = instanceIdCounter++;
+        this.instanceId = INSTANCE_ID_COUNTER.getAndIncrement();
         this.incomingMessageQueue = new LinkedBlockingDeque<>();
         this.outgoingMessageQueue = new LinkedBlockingDeque<>();
         this.eventBus = eventBus;

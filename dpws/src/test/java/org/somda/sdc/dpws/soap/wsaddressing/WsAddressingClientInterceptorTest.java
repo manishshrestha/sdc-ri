@@ -11,7 +11,7 @@ import org.somda.sdc.dpws.soap.factory.SoapMessageFactory;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class WsAddressingClientInterceptorTest extends DpwsTest {
+class WsAddressingClientInterceptorTest extends DpwsTest {
 
     private RequestResponseClient client;
     private EnvelopeFactory envelopeFactory;
@@ -38,7 +38,7 @@ public class WsAddressingClientInterceptorTest extends DpwsTest {
     }
 
     @Test
-    public void processMessage() throws Exception {
+    void processMessage() throws Exception {
         SoapMessage req = soapMessageFactory.createSoapMessage(envelopeFactory
                 .createEnvelope("http://request", null));
         SoapMessage res = client.sendRequestResponse(req);

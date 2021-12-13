@@ -40,7 +40,7 @@ import java.util.concurrent.TimeUnit;
  */
 public class ApacheTransportBindingFactoryImpl implements TransportBindingFactory, HttpClientFactory {
 
-    private static final Logger LOG = LogManager.getLogger(TransportBinding.class);
+    private static final Logger LOG = LogManager.getLogger(ApacheTransportBindingFactoryImpl.class);
 
     private static final String SCHEME_SOAP_OVER_UDP = DpwsConstants.URI_SCHEME_SOAP_OVER_UDP;
     private static final String SCHEME_HTTP = "http";

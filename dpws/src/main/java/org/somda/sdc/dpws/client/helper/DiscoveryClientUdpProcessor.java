@@ -49,7 +49,7 @@ public class DiscoveryClientUdpProcessor implements UdpMessageQueueObserver {
         try {
             notification = marshallingService.unmarshal(new ByteArrayInputStream(msg.getData(), 0, msg.getLength()));
         } catch (MarshallingException e) {
-            instanceLogger.warn("Incoming UDP message could not be unmarshalled. Message Bytes: {}", msg.toString());
+            instanceLogger.warn("Incoming UDP message could not be unmarshalled. Message Bytes: {}", msg);
             return;
         }
 

@@ -25,7 +25,7 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-public class JaxbSoapMarshallingSchemaTest extends DpwsTest {
+class JaxbSoapMarshallingSchemaTest extends DpwsTest {
     @Override
     @BeforeEach
     public void setUp() throws Exception {
@@ -43,7 +43,7 @@ public class JaxbSoapMarshallingSchemaTest extends DpwsTest {
     }
 
     @Test
-    public void marshallValidMessage() throws Exception {
+    void marshallValidMessage() throws Exception {
         ObjectFactory wsdFactory = getInjector().getInstance(ObjectFactory.class);
         // create a hello message with EndpointReference present
         HelloType helloType = wsdFactory.createHelloType();
@@ -74,7 +74,7 @@ public class JaxbSoapMarshallingSchemaTest extends DpwsTest {
     }
 
     @Test
-    public void marshallInvalidMessage() throws Exception {
+    void marshallInvalidMessage() throws Exception {
         ObjectFactory wsdFactory = getInjector().getInstance(ObjectFactory.class);
 
         // create a hello message with missing EndpointReference, which should trigger a marshalling error
@@ -100,7 +100,7 @@ public class JaxbSoapMarshallingSchemaTest extends DpwsTest {
     }
 
     @Test
-    public void testUnmarshallingValidMessage() throws Exception {
+    void testUnmarshallingValidMessage() throws Exception {
         ObjectFactory wsdFactory = getInjector().getInstance(ObjectFactory.class);
         // create a hello message with EndpointReference present
         HelloType helloType = wsdFactory.createHelloType();
@@ -139,7 +139,7 @@ public class JaxbSoapMarshallingSchemaTest extends DpwsTest {
     }
 
     @Test
-    public void unmarshallInvalidMessage() throws Exception {
+    void unmarshallInvalidMessage() throws Exception {
 
         // missing EndpointReference but otherwise valid message
         final String wrongMessage = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n" +

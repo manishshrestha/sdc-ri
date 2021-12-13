@@ -71,8 +71,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-
-public class WsEventingReferenceParametersTest extends DpwsTest {
+class WsEventingReferenceParametersTest extends DpwsTest {
 
     private static final String HOST = "mock-host";
     private static final Integer PORT = 8080;

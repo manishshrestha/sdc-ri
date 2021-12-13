@@ -21,7 +21,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class NotificationSinkImplTest extends DpwsTest {
+class NotificationSinkImplTest extends DpwsTest {
     private List<String> dispatchedSequence;
 
     @Override
@@ -34,7 +34,7 @@ public class NotificationSinkImplTest extends DpwsTest {
     }
 
     @Test
-    public void receiveNotification() throws Exception {
+    void receiveNotification() throws Exception {
         SoapMarshalling unmarshaller = getInjector().getInstance(SoapMarshalling.class);
 
         NotificationSink nSink = getInjector().getInstance(NotificationSinkFactory.class).createNotificationSink(

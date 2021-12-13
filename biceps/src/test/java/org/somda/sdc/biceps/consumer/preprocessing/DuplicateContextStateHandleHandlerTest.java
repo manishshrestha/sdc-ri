@@ -22,7 +22,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 
 @ExtendWith(LoggingTestWatcher.class)
-public class DuplicateContextStateHandleHandlerTest {
+class DuplicateContextStateHandleHandlerTest {
 
     private static final UnitTestUtil UT = new UnitTestUtil();
 

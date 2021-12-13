@@ -26,7 +26,7 @@ import java.util.List;
  */
 public class MdibStateModifications {
     private final MdibStateModifications.Type changeType;
-    private List<AbstractState> states;
+    private final List<AbstractState> states;
 
     private MdibStateModifications(Type changeType) {
         this.changeType = changeType;
@@ -88,7 +88,7 @@ public class MdibStateModifications {
      * has been set on {@link #create(Type)}.
      */
     public <T extends AbstractState> MdibStateModifications addAll(Collection<T> states) {
-        states.stream().forEach(state -> add(state));
+        states.forEach(this::add);
         return this;
     }
 
@@ -127,8 +127,8 @@ public class MdibStateModifications {
         OPERATION(AbstractOperationState.class, OperationStateModificationMessage.class),
         WAVEFORM(RealTimeSampleArrayMetricState.class, WaveformStateModificationMessage.class);
 
-        private Class<? extends AbstractState> changeBaseClass;
-        private Class<? extends StateModificationMessage<?>> eventMessageClass;
+        private final Class<? extends AbstractState> changeBaseClass;
+        private final Class<? extends StateModificationMessage<?>> eventMessageClass;
 
         Type(Class<? extends AbstractState> changeBaseClass,
              Class<? extends StateModificationMessage<?>> eventMessageClass) {

@@ -5,7 +5,7 @@ import org.somda.sdc.common.event.AbstractEventMessage;
 import java.net.URI;
 
 public class RemoteDeviceDisconnectedMessage extends AbstractEventMessage<URI> {
-    protected RemoteDeviceDisconnectedMessage(URI payload) {
+    public RemoteDeviceDisconnectedMessage(URI payload) {
         super(payload);
     }
 }

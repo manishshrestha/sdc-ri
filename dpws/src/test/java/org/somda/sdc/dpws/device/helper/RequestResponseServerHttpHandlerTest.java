@@ -36,7 +36,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.somda.sdc.dpws.device.helper.RequestResponseServerHttpHandler.NO_CONTENT_TYPE_MESSAGE;
 
-public class RequestResponseServerHttpHandlerTest extends DpwsTest {
+class RequestResponseServerHttpHandlerTest extends DpwsTest {
 
     private static final String DUMMY_TRANSACTION_ID = "0";
     private static final String DUMMY_REQUEST_URI = "someRequestUri";

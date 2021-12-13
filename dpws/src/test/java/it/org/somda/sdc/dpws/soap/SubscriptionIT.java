@@ -68,7 +68,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(LoggingTestWatcher.class)
-public class SubscriptionIT {
+class SubscriptionIT {
     private static final Duration MAX_WAIT_TIME = Duration.ofMinutes(3);
 
     private final IntegrationTestUtil IT = new IntegrationTestUtil();

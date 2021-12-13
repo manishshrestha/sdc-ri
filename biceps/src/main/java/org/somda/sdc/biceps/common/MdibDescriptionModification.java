@@ -13,10 +13,10 @@ import java.util.Optional;
  */
 public class MdibDescriptionModification {
 
-    final private Type modificationType;
-    final private AbstractDescriptor descriptor;
-    final private List<AbstractState> states;
-    final private String parentHandle;
+    private final Type modificationType;
+    private final AbstractDescriptor descriptor;
+    private final List<AbstractState> states;
+    private final String parentHandle;
 
     public MdibDescriptionModification(Type modificationType,
                                        AbstractDescriptor descriptor,

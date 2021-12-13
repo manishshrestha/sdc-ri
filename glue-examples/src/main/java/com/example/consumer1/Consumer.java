@@ -120,7 +120,7 @@ public class Consumer {
         return connector;
     }
 
-    protected void startUp() throws SocketException {
+    protected void startUp() {
         // provide the name of your network adapter
         this.dpwsFramework = injector.getInstance(DpwsFramework.class);
         this.dpwsFramework.setNetworkInterface(networkInterface);
@@ -260,9 +260,7 @@ public class Consumer {
             var keys = new ArrayList<>(resultMap.keySet());
             Collections.sort(keys);
 
-            keys.forEach(key -> System.out.println(
-                    String.format("### Test %s ### %s", key, resultMap.get(key) ? "passed" : "failed")
-            ));
+            keys.forEach(key -> System.out.printf("### Test %s ### %s%n", key, resultMap.get(key) ? "passed" : "failed"));
         }));
 
         // see if device using the provided epr address is available
@@ -317,9 +315,7 @@ public class Consumer {
             var wsdls = wsdlRetriever.retrieveWsdls(hostingServiceProxy);
             LOG.debug("Retrieved WSDLs");
             if (LOG.isDebugEnabled()) {
-                wsdls.forEach((service, data) -> {
-                    LOG.debug("WSDLs for service {}: {}", service, data);
-                });
+                wsdls.forEach((service, data) -> LOG.debug("WSDLs for service {}: {}", service, data));
             }
         } catch (IOException e) {
             LOG.error("Could not retrieve WSDL", e);
@@ -365,9 +361,9 @@ public class Consumer {
         int minNumberReports = (int) (REPORT_TIMEOUT / Duration.ofSeconds(5).toMillis()) - 1;
 
         // verify the number of reports for the expected metrics is at least five during the timeout
-        var metricChangesOk = reportObs.numMetricChanges >= minNumberReports;
+        var metricChangesOk = reportObs.getNumMetricChanges() >= minNumberReports;
         resultMap.put(7, metricChangesOk);
-        var conditionChangesOk = reportObs.numConditionChanges >= minNumberReports;
+        var conditionChangesOk = reportObs.getNumConditionChanges() >= minNumberReports;
         resultMap.put(8, conditionChangesOk);
 
 

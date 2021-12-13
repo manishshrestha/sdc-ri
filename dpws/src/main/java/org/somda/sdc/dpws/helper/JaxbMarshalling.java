@@ -46,7 +46,13 @@ import java.nio.charset.StandardCharsets;
  * Creates XML input and output streams from/to JAXB instances.
  */
 public class JaxbMarshalling extends AbstractIdleService {
+
     private static final Logger LOG = LogManager.getLogger(JaxbMarshalling.class);
+
+    private static final String SAX_FEATURE_EXTERNAL_GENERAL_ENTITIES =
+            "http://xml.org/sax/features/external-general-entities";
+    private static final String SAX_FEATURE_EXTERNAL_PARAMETER_ENTITIES =
+            "http://xml.org/sax/features/external-parameter-entities";
 
     private static final String PKG_DELIM = ":";
     private static final String SCHEMA_DELIM = ":";
@@ -104,7 +110,6 @@ public class JaxbMarshalling extends AbstractIdleService {
         instanceLogger.info("JAXB service stopped");
     }
 
-
     /**
      * Marshals a {@linkplain JAXBElement} into a stream.
      *
@@ -158,7 +163,6 @@ public class JaxbMarshalling extends AbstractIdleService {
         return unmarshaller.unmarshal(inputStream);
     }
 
-
     /**
      * Takes a reader and unmarshals it.
      *
@@ -174,7 +178,6 @@ public class JaxbMarshalling extends AbstractIdleService {
         }
         return unmarshaller.unmarshal(reader);
     }
-
 
     private void initializeJaxb() throws SAXException, IOException, ParserConfigurationException {
         if (!contextPackages.isEmpty()) {
@@ -235,10 +238,14 @@ public class JaxbMarshalling extends AbstractIdleService {
             }
             var targetNamespace = resolveTargetNamespace(schemaUrl);
             instanceLogger.info("Register namespace for validation: {}, read from {}", targetNamespace,
-                    schemaUrl.toString());
-            stringBuilder.append(String.format(importPattern, targetNamespace, schemaUrl.toString()));
+                    schemaUrl);
+            stringBuilder.append(String.format(importPattern, targetNamespace, schemaUrl));
         }
         stringBuilder.append(topLevelSchemaEnd);
+        // we *do* need external schema processing here (we build our schema with multiple xsd:import directives),
+        // which causes an XXE warning by Sonarlint; but the schemas imported are fully under our control,
+        // read from local files in our resource directory, and thus can be trusted.
+        @SuppressWarnings("java:S2755")
         SchemaFactory schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
         return schemaFactory.newSchema(new StreamSource(new ByteArrayInputStream(stringBuilder.toString()
                 .getBytes(StandardCharsets.UTF_8))));
@@ -247,6 +254,9 @@ public class JaxbMarshalling extends AbstractIdleService {
     private String resolveTargetNamespace(URL url) throws IOException, ParserConfigurationException, SAXException {
         try (InputStream inputStream = url.openStream()) {
             var factory = DocumentBuilderFactory.newInstance();
+            // #218 prevent XXE attacks
+            factory.setFeature(SAX_FEATURE_EXTERNAL_GENERAL_ENTITIES, false);
+            factory.setFeature(SAX_FEATURE_EXTERNAL_PARAMETER_ENTITIES, false);
             var builder = factory.newDocumentBuilder();
             var document = builder.parse(inputStream);
             return document.getDocumentElement().getAttribute("targetNamespace");

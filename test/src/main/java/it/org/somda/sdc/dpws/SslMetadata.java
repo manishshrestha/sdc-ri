@@ -104,7 +104,7 @@ public class SslMetadata extends AbstractIdleService implements Service {
 
     private static KeyPair generateKeyPair() throws NoSuchAlgorithmException {
         KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("RSA");
-        keyPairGenerator.initialize(1024);
+        keyPairGenerator.initialize(2048);
         return keyPairGenerator.generateKeyPair();
     }
 
@@ -173,7 +173,7 @@ public class SslMetadata extends AbstractIdleService implements Service {
 
     }
 
-    public class KeySet {
+    public static class KeySet {
         private final KeyStore keyStore;
         private final String keyStorePassword;
 

@@ -50,7 +50,7 @@ import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
-public class JettyHttpServerRegistryIT extends DpwsTest {
+class JettyHttpServerRegistryIT extends DpwsTest {
     private static final int COMPRESSION_MIN_SIZE = 32;
 
     private JettyHttpServerRegistry httpServerRegistry;

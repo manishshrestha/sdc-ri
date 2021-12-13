@@ -87,7 +87,7 @@ public class ReportProcessor extends AbstractIdleService {
      * @param <T>    any report type in terms of the SDC protocol.
      */
     public <T extends AbstractReport> void processReport(T report) {
-        try (AutoLock ignored = AutoLock.lock(mdibReadyLock)) {
+        try (var ignored = AutoLock.lock(mdibReadyLock)) {
             this.writeReport.accept(report);
         }
     }
@@ -105,7 +105,7 @@ public class ReportProcessor extends AbstractIdleService {
     public void startApplyingReportsOnMdib(RemoteMdibAccess mdibAccess,
                                            @Nullable GetContextStatesResponse contextStatesResponse)
             throws PreprocessingException, ReportProcessingException {
-        try (AutoLock ignored = AutoLock.lock(mdibReadyLock)) {
+        try (var ignored = AutoLock.lock(mdibReadyLock)) {
             if (this.mdibAccess != null) {
                 instanceLogger.warn("Tried to invoke startApplyingReportsOnMdib() multiple times. " +
                         "Make sure to call it only once. " +
@@ -120,7 +120,7 @@ public class ReportProcessor extends AbstractIdleService {
         bufferingRequested.set(false);
         applyReportsFromBuffer(mdibAccess);
 
-        try (AutoLock ignored = AutoLock.lock(mdibReadyLock)) {
+        try (var ignored = AutoLock.lock(mdibReadyLock)) {
             this.mdibAccess = mdibAccess;
             mdibReadyCondition.signalAll();
         }
@@ -175,7 +175,7 @@ public class ReportProcessor extends AbstractIdleService {
                 return;
             }
 
-            try (AutoLock ignored = AutoLock.lock(mdibReadyLock)) {
+            try (var ignored = AutoLock.lock(mdibReadyLock)) {
                 if (mdibAccess == null) {
                     if (!mdibReadyCondition.await(10000, TimeUnit.MILLISECONDS)) {
                         throw new TimeoutException("No MDIB access set within 10s");
@@ -247,7 +247,7 @@ public class ReportProcessor extends AbstractIdleService {
 
     @Override
     protected void shutDown() {
-        try (AutoLock ignored = AutoLock.lock(mdibReadyLock)) {
+        try (var ignored = AutoLock.lock(mdibReadyLock)) {
             writeReport = abstractReport -> {
                 // stop processing reports by doing nothing
             };

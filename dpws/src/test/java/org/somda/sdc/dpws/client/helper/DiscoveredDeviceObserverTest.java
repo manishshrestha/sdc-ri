@@ -32,7 +32,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class DiscoveredDeviceObserverTest extends DpwsTest {
+class DiscoveredDeviceObserverTest extends DpwsTest {
 
     private DiscoveredDeviceResolver discoveredDeviceResolver;
     private String expectedUri;
@@ -68,7 +68,7 @@ public class DiscoveredDeviceObserverTest extends DpwsTest {
             }
         });
 
-        helloByeAndProbeMatchesObserverImpl.publishDeviceLeft(expectedUri, DeviceLeftMessage.TriggeredBy.BYE);
+        helloByeAndProbeMatchesObserverImpl.publishDeviceLeft(expectedUri);
         assertEquals(1, callbackVisitCount);
     }
 

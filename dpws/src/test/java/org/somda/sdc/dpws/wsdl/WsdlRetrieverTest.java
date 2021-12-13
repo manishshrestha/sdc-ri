@@ -42,7 +42,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @SuppressWarnings("UnstableApiUsage")
-public class WsdlRetrieverTest extends DpwsTest {
+class WsdlRetrieverTest extends DpwsTest {
     private static final Duration DEFAULT_TIMEOUT = Duration.ofSeconds(10);
 
     private static final String METADATA_TEMPLATE;
@@ -128,7 +128,7 @@ public class WsdlRetrieverTest extends DpwsTest {
      * @throws Exception on any exception
      */
     @Test
-    public void testWsdlEmbedded() throws Exception {
+    void testWsdlEmbedded() throws Exception {
         Envelope message;
         try (var messageStream = WsdlRetrieverTest.class.getResourceAsStream("WsdlRetrieverTest/MetadataWsdlEmbedded.xml")) {
             message = marshalling.unmarshal(messageStream);
@@ -151,7 +151,7 @@ public class WsdlRetrieverTest extends DpwsTest {
      * @throws Exception on any exception
      */
     @Test
-    public void testWsdlLocation() throws Exception {
+    void testWsdlLocation() throws Exception {
         var testResponseContent = "Huhuhihihaha";
         var testLocation = "ftp://some.place/somewhere?overtherainbow";
         var testResponse = mock(HttpResponse.class, Mockito.RETURNS_DEEP_STUBS);
@@ -192,7 +192,7 @@ public class WsdlRetrieverTest extends DpwsTest {
      */
     @Test
     @SuppressWarnings("unchecked")
-    public void testLocationEprRequest() throws Exception {
+    void testLocationEprRequest() throws Exception {
         var testLocation = "http://mahnamahna.dododododo";
         var testIdentifier = "Rubber duckie you're the one, you make bath time lots of fun";
 
@@ -245,7 +245,7 @@ public class WsdlRetrieverTest extends DpwsTest {
      * @throws Exception on any exception
      */
     @Test
-    public void testLocationEprRequestNoRefParm() throws Exception {
+    void testLocationEprRequestNoRefParm() throws Exception {
         var testLocation = "http://mahnamahna.dododododo";
 
         var referenceMessageData = String.format(
@@ -283,7 +283,7 @@ public class WsdlRetrieverTest extends DpwsTest {
     }
 
     @Test
-    public void testConvertResponseToStringHttpHeader() {
+    void testConvertResponseToStringHttpHeader() {
         var testString = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><dang>å</dang>";
         {
             var charset = StandardCharsets.UTF_16LE;
@@ -316,7 +316,7 @@ public class WsdlRetrieverTest extends DpwsTest {
 
 
     @Test
-    public void testConvertResponseToStringProlog() {
+    void testConvertResponseToStringProlog() {
         {
             var testString = "<?xml version=\"1.0\" encoding=\"UTF-16LE\"?><dang>å</dang>";
             var charset = StandardCharsets.UTF_16LE;

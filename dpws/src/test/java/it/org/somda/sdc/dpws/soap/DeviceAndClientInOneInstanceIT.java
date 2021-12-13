@@ -6,7 +6,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import test.org.somda.common.LoggingTestWatcher;
 
 @ExtendWith(LoggingTestWatcher.class)
-public class DeviceAndClientInOneInstanceIT {
+class DeviceAndClientInOneInstanceIT {
     // private final IntegrationTestUtil IT = new IntegrationTestUtil();
     private String eprAddress1;
     private String eprAddress2;

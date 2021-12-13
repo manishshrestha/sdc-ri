@@ -16,7 +16,7 @@ public class SoapDebug {
      * @return string consisting of the message's action, message id and message type.
      */
     public static String get(SoapMessage msg) {
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         sb.append("SoapMsg(");
 
         appendAction(sb, msg);
@@ -48,17 +48,17 @@ public class SoapDebug {
         return sb.toString();
     }
 
-    private static void appendAction(StringBuffer sb, SoapMessage msg) {
+    private static void appendAction(StringBuilder sb, SoapMessage msg) {
         msg.getWsAddressingHeader().getAction().ifPresent(uri ->
                 sb.append(String.format("action=[%s];", uri.getValue())));
     }
 
-    private static void appendMsgId(StringBuffer sb, SoapMessage msg) {
+    private static void appendMsgId(StringBuilder sb, SoapMessage msg) {
         msg.getWsAddressingHeader().getMessageId().ifPresent(uri ->
                 sb.append(String.format("msgId=[%s];", uri.getValue())));
     }
 
-    private static void appendMsgType(StringBuffer sb, SoapMessage msg) {
+    private static void appendMsgType(StringBuilder sb, SoapMessage msg) {
         if (msg.getOriginalEnvelope().getBody().getAny().size() == 0) {
             sb.append("bodyType=[n/a];");
         } else {

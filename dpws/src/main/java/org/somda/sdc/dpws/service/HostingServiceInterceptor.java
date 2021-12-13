@@ -182,7 +182,7 @@ public class HostingServiceInterceptor implements HostingService {
 
     @Override
     public String toString() {
-        String str = getEndpointReferenceAddress().toString();
+        String str = getEndpointReferenceAddress();
         if (!getThisDevice().getFriendlyName().isEmpty()) {
             str += " (" + getThisDevice().getFriendlyName().get(0).getValue() + ")";
         }

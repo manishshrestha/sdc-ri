@@ -71,7 +71,7 @@ public class OperationInvocationDispatcher {
      *
      * @param transaction the transaction to
      */
-    synchronized public void registerTransaction(ScoTransactionImpl<? extends AbstractSetResponse> transaction) {
+    public synchronized void registerTransaction(ScoTransactionImpl<? extends AbstractSetResponse> transaction) {
         long transactionId = transaction.getTransactionId();
         final ScoTransaction<? extends AbstractSetResponse> runningTransaction = runningTransactions.get(transactionId);
         if (runningTransaction != null) {
@@ -88,7 +88,7 @@ public class OperationInvocationDispatcher {
         }
     }
 
-    synchronized private void dispatchReport(OperationInvokedReport.ReportPart reportPart) {
+    private synchronized void dispatchReport(OperationInvokedReport.ReportPart reportPart) {
 
         final long transactionId = reportPart.getInvocationInfo().getTransactionId();
 
@@ -119,7 +119,7 @@ public class OperationInvocationDispatcher {
     }
 
     private void applyReportsOnTransaction(BlockingQueue<OperationInvokedReport.ReportPart> queue,
-                                           ScoTransactionImpl transaction) {
+                                           ScoTransactionImpl<? extends AbstractSetResponse> transaction) {
         while (!queue.isEmpty()) {
             try {
                 final OperationInvokedReport.ReportPart reportFromQueue = queue.take();

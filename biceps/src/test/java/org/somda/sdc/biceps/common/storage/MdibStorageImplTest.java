@@ -59,7 +59,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 
 @ExtendWith(LoggingTestWatcher.class)
-public class MdibStorageImplTest {
+class MdibStorageImplTest {
     private static final UnitTestUtil UT = new UnitTestUtil();
 
     private MdibStorage mdibStorage;
@@ -188,10 +188,12 @@ public class MdibStorageImplTest {
                 MockModelFactory.createDescriptor(Handles.CHANNEL_0, BigInteger.ZERO, ChannelDescriptor.class),
                 MockModelFactory.createState(Handles.CHANNEL_0, BigInteger.ZERO, ChannelState.class),
                 Handles.VMD_0);
-        mdibStorage.apply(mock(MdibVersion.class), mock(BigInteger.class), mock(BigInteger.class), modifications);
+        var result = mdibStorage.apply(mock(MdibVersion.class), mock(BigInteger.class), mock(BigInteger.class), modifications);
 
         assertFalse(mdibStorage.getEntity(parentHandle).get().getChildren().contains(childHandle));
         assertTrue(mdibStorage.getEntity(parentHandle).get().getChildren().contains(untouchedChildHandle));
+        assertEquals(1, result.getDeletedEntities().size());
+        assertEquals(1, result.getUpdatedEntities().size());
     }
 
     @Test

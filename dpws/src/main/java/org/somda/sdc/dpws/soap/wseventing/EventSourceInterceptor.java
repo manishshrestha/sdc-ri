@@ -212,7 +212,7 @@ public class EventSourceInterceptor extends AbstractIdleService implements Event
 
         // Validate filter dialect
         String filterDialect = Optional.ofNullable(filterType.getDialect()).orElse("");
-        if (filterDialect.isEmpty() || !filterDialect.equals(DpwsConstants.WS_EVENTING_SUPPORTED_DIALECT)) {
+        if (!filterDialect.equals(DpwsConstants.WS_EVENTING_SUPPORTED_DIALECT)) {
             throw new SoapFaultException(faultFactory.createFilteringRequestedUnavailable(), requestMsgId);
         }
 
@@ -319,21 +319,19 @@ public class EventSourceInterceptor extends AbstractIdleService implements Event
     }
 
     private void removeStaleSubscriptions() {
-        subscriptionRegistry.getSubscriptions().entrySet().forEach(entry -> {
-            SourceSubscriptionManager subMan = entry.getValue();
+        subscriptionRegistry.getSubscriptions().forEach((key, subMan) -> {
             if (!subMan.isRunning() || isSubscriptionExpired(subMan)) {
-                subscriptionRegistry.removeSubscription(entry.getKey());
+                subscriptionRegistry.removeSubscription(key);
                 unregisterHttpHandler(subMan);
                 subscribedActionsLock.lock();
                 try {
                     HashSet<String> uris = new HashSet<>(subscribedActionsToSubManIds.keySet());
-                    uris.forEach(uri ->
-                            subscribedActionsToSubManIds.remove(uri, entry.getKey()));
+                    uris.forEach(uri -> subscribedActionsToSubManIds.remove(uri, key));
                 } finally {
                     subscribedActionsLock.unlock();
                 }
                 subMan.stopAsync();
-                instanceLogger.info("Remove expired subscription: {}", entry.getKey());
+                instanceLogger.info("Remove expired subscription: {}", key);
             }
         });
     }
@@ -342,7 +340,7 @@ public class EventSourceInterceptor extends AbstractIdleService implements Event
                                                                                      String address,
                                                                                      Integer port) {
         var hostPart = httpUriBuilder.buildUri(scheme, address, port);
-        String contextPath = "/" + UUID.randomUUID().toString() + "/" + subscriptionManagerPath;
+        String contextPath = "/" + UUID.randomUUID() + "/" + subscriptionManagerPath;
         String eprAddress = hostPart + contextPath;
 
         RequestResponseServerHttpHandler handler = rrServerHttpHandlerProvider.get();
@@ -369,7 +367,7 @@ public class EventSourceInterceptor extends AbstractIdleService implements Event
                 return null;
             }
             if (requestedExpires.isZero() || requestedExpires.isNegative()) {
-                throw new Exception(String.format("Expires is lower equal 0", requestedExpires.toString()));
+                throw new Exception(String.format("Expires is less than or equal to 0: {}", requestedExpires));
             } else {
                 return requestedExpires;
             }
@@ -408,7 +406,7 @@ public class EventSourceInterceptor extends AbstractIdleService implements Event
         }
 
         String listOfAnyUri = (String) filterType.getContent().get(0);
-        Arrays.asList(listOfAnyUri.split("\\s+")).forEach(s -> result.add(s));
+        result.addAll(Arrays.asList(listOfAnyUri.split("\\s+")));
 
         return result;
     }
@@ -456,7 +454,7 @@ public class EventSourceInterceptor extends AbstractIdleService implements Event
     public Map<String, SubscriptionManager> getActiveSubscriptions() {
         removeStaleSubscriptions();
         return subscriptionRegistry.getSubscriptions().entrySet()
-                .stream().collect(Collectors.toMap(Map.Entry::getKey, e -> (SubscriptionManager) e.getValue()));
+                .stream().collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 
     @Override

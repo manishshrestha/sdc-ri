@@ -14,7 +14,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 
-public class UdpMessageQueueServiceTest extends DpwsTest {
+class UdpMessageQueueServiceTest extends DpwsTest {
     private UdpMessageQueueServiceImpl udpMsgQueue;
     private byte[] actualMessage;
     private Condition condition;
@@ -33,7 +33,7 @@ public class UdpMessageQueueServiceTest extends DpwsTest {
     }
 
     @Test
-    public void sendAndReceiveMessage() throws Exception {
+    void sendAndReceiveMessage() throws Exception {
         String expectedMsg = "sample";
         udpMsgQueue.startAsync().awaitRunning();
         udpMsgQueue.registerUdpMessageQueueObserver(new UdpMessageQueueObserver() {

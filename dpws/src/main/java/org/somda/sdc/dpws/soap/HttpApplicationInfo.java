@@ -25,6 +25,7 @@ public class HttpApplicationInfo extends ApplicationInfo {
      * @param httpHeaders map of available headers.
      * @param transactionId id of the request response transaction.
      * @param requestUri the uri of the http request message, null for http response messages.
+     * @deprecated use {@link #HttpApplicationInfo(ListMultimap, String, String)} instead
      */
     @Deprecated(since = "1.1.0", forRemoval = true)
     public HttpApplicationInfo(Map<String, String> httpHeaders, String transactionId, @Nullable String requestUri) {
@@ -62,6 +63,7 @@ public class HttpApplicationInfo extends ApplicationInfo {
      * All keys are lower case.
      *
      * @return {@linkplain Map} of all headers
+     * @deprecated use {@link #getHeaders()} instead
      */
     @Deprecated(since = "1.1.0", forRemoval = true)
     public Map<String, String> getHttpHeaders() {

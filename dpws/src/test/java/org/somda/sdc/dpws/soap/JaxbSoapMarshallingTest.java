@@ -23,7 +23,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
@@ -34,7 +33,7 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class JaxbSoapMarshallingTest extends DpwsTest {
+class JaxbSoapMarshallingTest extends DpwsTest {
     @Override
     @BeforeEach
     public void setUp() throws Exception {
@@ -54,7 +53,7 @@ public class JaxbSoapMarshallingTest extends DpwsTest {
 
     @SuppressWarnings("unchecked")
     @Test
-    public void marshallCompositeSoapMessage() throws JAXBException, IOException {
+    void marshallCompositeSoapMessage() throws JAXBException, IOException {
         ObjectFactory wsdFactory = getInjector().getInstance(ObjectFactory.class);
         HelloType helloType = wsdFactory.createHelloType();
         List<String> xAddrs = new ArrayList<>();
@@ -84,7 +83,7 @@ public class JaxbSoapMarshallingTest extends DpwsTest {
     }
 
     @Test
-    public void marshalFault() throws Exception {
+    void marshalFault() throws Exception {
         SoapFaultFactory sff = getInjector().getInstance(SoapFaultFactory.class);
         SoapMessage faultMsg = sff.createReceiverFault("Test");
         SoapMarshalling marshalling = getInjector().getInstance(SoapMarshalling.class);
@@ -92,13 +91,13 @@ public class JaxbSoapMarshallingTest extends DpwsTest {
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         Envelope envelopeWithMappedHeaders = faultMsg.getEnvelopeWithMappedHeaders();
         marshalling.marshal(envelopeWithMappedHeaders, bos);
-        System.out.println(bos.toString());
+        System.out.println(bos);
         assertTrue(true);
     }
 
     @Test
     @DisplayName("Test whether a marshalled message created using SoapUtil contains the Action element only once")
-    public void testDuplicateHeaders() throws Exception {
+    void testDuplicateHeaders() throws Exception {
         var action = "ftp://somda.org/upload";
         var soapUtil = getInjector().getInstance(SoapUtil.class);
         SoapMarshalling marshalling = getInjector().getInstance(SoapMarshalling.class);
@@ -116,7 +115,7 @@ public class JaxbSoapMarshallingTest extends DpwsTest {
 
     @Test
     @DisplayName("Ignore XML Prolog if Reader encoding is set")
-    public void testOverrideXmlPrologEncoding() throws Exception {
+    void testOverrideXmlPrologEncoding() throws Exception {
         // create a utf-16 message with utf-8 prolog
         // chose a character with different encoding in utf-8 and utf-16le, it must survive the translation in tact
         // unicode:  U+00E5

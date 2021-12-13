@@ -35,7 +35,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
-public class ClientTransportBindingTest extends DpwsTest {
+class ClientTransportBindingTest extends DpwsTest {
 
     private ClientTransportBindingFactory fac;
     private Injector injector;

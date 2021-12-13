@@ -83,70 +83,55 @@ public class BaseUtil {
     protected Options configureOptions() {
         Options options = new Options();
 
-        {
-            Option eprAddressProvider = new Option("e", OPT_EPR, true, "epr address of provider");
-            eprAddressProvider.setRequired(false);
-            options.addOption(eprAddressProvider);
-        }
-        {
-            Option networkInterface = new Option("i", OPT_IFACE, true, "network interface to use");
-            networkInterface.setRequired(false);
-            options.addOption(networkInterface);
-        }
-        {
-            Option ipAddress = new Option(
-                    "a", OPT_ADDRESS, true,
-                    "ip address to bind to. if an adapter has been selected, this will be ignored"
-            );
-            ipAddress.setRequired(false);
-            options.addOption(ipAddress);
-        }
-        {
-            Option tls = new Option("u", OPT_NO_TLS, false, "disable tls");
-            tls.setRequired(false);
-            options.addOption(tls);
-        }
-        {
-            Option keyStorePath = new Option(null, OPT_KEYSTORE_PATH, true, "keystore path");
-            keyStorePath.setRequired(false);
-            options.addOption(keyStorePath);
-        }
-        {
-            Option trustStorePath = new Option(null, OPT_TRUSTSTORE_PATH, true, "truststore path");
-            trustStorePath.setRequired(false);
-            options.addOption(trustStorePath);
-        }
-        {
-            Option keyStorePassword = new Option(null, OPT_KEYSTORE_PASSWORD, true, "keystore password");
-            keyStorePassword.setRequired(false);
-            options.addOption(keyStorePassword);
-        }
-        {
-            Option keystorePath = new Option(null, OPT_TRUSTSTORE_PASSWORD, true, "truststore password");
-            keystorePath.setRequired(false);
-            options.addOption(keystorePath);
-        }
+        Option eprAddressProvider = new Option("e", OPT_EPR, true, "epr address of provider");
+        eprAddressProvider.setRequired(false);
+        options.addOption(eprAddressProvider);
 
-        {
-            Option userKeyPath = new Option(null, OPT_USERKEY_PATH, true, "userkey path");
-            userKeyPath.setRequired(false);
-            options.addOption(userKeyPath);
-        }
-        {
-            Option userCertPath = new Option(null, OPT_USERCERT_PATH, true, "usercert path");
-            userCertPath.setRequired(false);
-            options.addOption(userCertPath);
-        }
-        {
-            Option caCertPath = new Option(null, OPT_CACERT_PATH, true, "cacert path");
-            caCertPath.setRequired(false);
-            options.addOption(caCertPath);
-        }
-        {
-            Option userKeyPassword = new Option(null, OPT_USERKEY_PASSWORD, true, "userkey password");
-            userKeyPassword.setRequired(false);
-            options.addOption(userKeyPassword);
-        }
+        Option networkInterface = new Option("i", OPT_IFACE, true, "network interface to use");
+        networkInterface.setRequired(false);
+        options.addOption(networkInterface);
+
+        Option ipAddress = new Option(
+                "a", OPT_ADDRESS, true,
+                "ip address to bind to. if an adapter has been selected, this will be ignored");
+        ipAddress.setRequired(false);
+        options.addOption(ipAddress);
+
+        Option tls = new Option("u", OPT_NO_TLS, false, "disable tls");
+        tls.setRequired(false);
+        options.addOption(tls);
+
+        Option keyStorePath = new Option(null, OPT_KEYSTORE_PATH, true, "keystore path");
+        keyStorePath.setRequired(false);
+        options.addOption(keyStorePath);
+
+        Option trustStorePath = new Option(null, OPT_TRUSTSTORE_PATH, true, "truststore path");
+        trustStorePath.setRequired(false);
+        options.addOption(trustStorePath);
+
+        Option keyStorePassword = new Option(null, OPT_KEYSTORE_PASSWORD, true, "keystore password");
+        keyStorePassword.setRequired(false);
+        options.addOption(keyStorePassword);
+
+        Option trustStorePassword = new Option(null, OPT_TRUSTSTORE_PASSWORD, true, "truststore password");
+        trustStorePassword.setRequired(false);
+        options.addOption(trustStorePassword);
+
+        Option userKeyPath = new Option(null, OPT_USERKEY_PATH, true, "userkey path");
+        userKeyPath.setRequired(false);
+        options.addOption(userKeyPath);
+
+        Option userCertPath = new Option(null, OPT_USERCERT_PATH, true, "usercert path");
+        userCertPath.setRequired(false);
+        options.addOption(userCertPath);
+
+        Option caCertPath = new Option(null, OPT_CACERT_PATH, true, "cacert path");
+        caCertPath.setRequired(false);
+        options.addOption(caCertPath);
+
+        Option userKeyPassword = new Option(null, OPT_USERKEY_PASSWORD, true, "userkey password");
+        userKeyPassword.setRequired(false);
+        options.addOption(userKeyPassword);
 
         return options;
     }
@@ -212,7 +197,7 @@ public class BaseUtil {
 
     private void logArgsErrorAndExit(String... args) {
         LOG.error("Either none or all required arguments needs to be provided ({})",
-                String.join(", ", args));
+                  () -> String.join(", ", args));
         System.exit(1);
     }
 

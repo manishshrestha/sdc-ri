@@ -66,7 +66,7 @@ class ReportProcessorTest {
     @Test
     void applyMdibWithoutPreviousReportsWithoutContexts() throws PreprocessingException, ReportProcessingException {
         reportProcessor.startApplyingReportsOnMdib(mdibAccess, null);
-        verifyZeroInteractions(mdibAccess);
+        verifyNoInteractions(mdibAccess);
     }
 
     @Test
