@@ -160,6 +160,10 @@ class CommunicationLogIT extends DpwsTest {
             assertArrayEquals(actualRequestStream.toByteArray(), req.toByteArray());
             assertArrayEquals(expectedResponseStream.toByteArray(), resp.toByteArray());
 
+            // ensure streams were closed
+            assertTrue(req.getClosed());
+            assertTrue(resp.getClosed());
+
             // ensure request headers are logged
             assertTrue(
                     logSink.getOutboundHeaders().get(0)
@@ -251,6 +255,7 @@ class CommunicationLogIT extends DpwsTest {
             assertArrayEquals(expectedRequest.getBytes(), req.toByteArray());
             assertArrayEquals(expectedResponse.getBytes(), resp.toByteArray());
 
+            // ensure streams were closed by interceptors
             assertTrue(req.getClosed());
             assertTrue(resp.getClosed());
 
