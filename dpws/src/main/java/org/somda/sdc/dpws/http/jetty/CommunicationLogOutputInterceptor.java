@@ -48,6 +48,9 @@ public class CommunicationLogOutputInterceptor implements HttpOutput.Interceptor
         this.currentTransactionId = currentTransactionId;
     }
 
+    /***
+     * Closes the underlying communication log stream if present.
+     */
     public void close() {
         try {
             if (commlogStream != null) {
