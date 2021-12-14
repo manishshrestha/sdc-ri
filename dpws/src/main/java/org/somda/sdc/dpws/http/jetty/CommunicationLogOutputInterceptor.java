@@ -50,7 +50,9 @@ public class CommunicationLogOutputInterceptor implements HttpOutput.Interceptor
 
     public void close() {
         try {
-            commlogStream.close();
+            if (commlogStream != null) {
+                commlogStream.close();
+            }
         } catch (IOException e) {
             instanceLogger.error("Error while closing communication log stream", e);
         }
