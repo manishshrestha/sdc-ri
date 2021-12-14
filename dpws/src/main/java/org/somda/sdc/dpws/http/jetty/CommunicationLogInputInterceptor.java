@@ -10,7 +10,6 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.channels.Channels;
 import java.nio.channels.WritableByteChannel;
-import java.nio.charset.StandardCharsets;
 
 /**
  * {@linkplain HttpInput.Interceptor} which logs messages to a stream.
