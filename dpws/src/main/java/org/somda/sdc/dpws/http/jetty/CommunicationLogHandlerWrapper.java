@@ -90,6 +90,7 @@ public class CommunicationLogHandlerWrapper extends HandlerWrapper {
             // TODO: Jetty 11 does not call destroy on input interceptors anymore, which is why we have to call it
             //  manually here. To retain the order of close operations, the output interceptor is closed here as well,
             //  even though it does work correctly. Fix this one once Jetty changes this behavior.
+            //  See https://github.com/eclipse/jetty.project/issues/7280 
             inputInterceptor.destroy();
             if (outInterceptor != null) {
                 outInterceptor.close();
