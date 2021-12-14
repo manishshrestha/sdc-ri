@@ -65,24 +65,36 @@ public class CommunicationLogHandlerWrapper extends HandlerWrapper {
         var out = baseRequest.getResponse().getHttpOutput();
 
         // attach interceptor to log request
-        baseRequest.getHttpInput().addInterceptor(new CommunicationLogInputInterceptor(input, frameworkIdentifier));
+        var inputInterceptor = new CommunicationLogInputInterceptor(input, frameworkIdentifier);
+        baseRequest.getHttpInput().addInterceptor(inputInterceptor);
 
         HttpOutput.Interceptor previousInterceptor = out.getInterceptor();
+
+        CommunicationLogOutputInterceptor outInterceptor = null;
         try {
             // attach interceptor to log response
-            var outInterceptor = new CommunicationLogOutputInterceptor(
-                    baseRequest.getHttpChannel(),
-                    previousInterceptor,
-                    commLog,
-                    transportInfo,
-                    frameworkIdentifier,
-                    currentTransactionId
+            outInterceptor = new CommunicationLogOutputInterceptor(
+                baseRequest.getHttpChannel(),
+                previousInterceptor,
+                commLog,
+                transportInfo,
+                frameworkIdentifier,
+                currentTransactionId
             );
+
             out.setInterceptor(outInterceptor);
 
             // trigger request handling
             super.handle(target, baseRequest, request, response);
         } finally {
+            // TODO: Jetty 11 does not call destroy on input interceptors anymore, which is why we have to call it
+            //  manually here. To retain the order of close operations, the output interceptor is closed here as well,
+            //  even though it does work correctly. Fix this one once Jetty changes this behavior.
+            inputInterceptor.destroy();
+            if (outInterceptor != null) {
+                outInterceptor.close();
+            }
+
             // reset interceptor if request not handled
             if (!baseRequest.isHandled() && !baseRequest.isAsyncStarted())
                 out.setInterceptor(previousInterceptor);

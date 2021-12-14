@@ -36,7 +36,8 @@ public class CommunicationLogInputInterceptor implements HttpInput.Interceptor, 
         try {
             if (content.isSpecial()) {
                 if (content.isEof()) {
-                    var msg = "EOF element in input interceptor. In Jetty 11.0.6, enabling this was a TODO. You must have changed the jetty version, now this behavior must be evaluated.";
+                    var msg = "EOF element in input interceptor. In Jetty 11.0.6, enabling this was a TODO. You must"
+                        + " have changed the jetty version, now this behavior must be evaluated.";
                     instanceLogger.error(msg);
                     throw new RuntimeException(msg);
                 } else if (content.getError() != null) {
@@ -49,10 +50,6 @@ public class CommunicationLogInputInterceptor implements HttpInput.Interceptor, 
 
                 WritableByteChannel writableByteChannel = Channels.newChannel(commlogStream);
                 writableByteChannel.write(content.getByteBuffer());
-
-                if (content.isEmpty()) {
-                    commlogStream.close();
-                }
 
                 // rewind the bytebuffer we just went through
                 content.getByteBuffer().position(oldPosition);
