@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.channels.Channels;
 import java.nio.channels.WritableByteChannel;
+import java.nio.charset.StandardCharsets;
 
 /**
  * {@linkplain HttpInput.Interceptor} which logs messages to a stream.
@@ -32,20 +33,35 @@ public class CommunicationLogInputInterceptor implements HttpInput.Interceptor, 
             return null;
         }
 
-        int oldPosition = content.getByteBuffer().position();
         try {
-            WritableByteChannel writableByteChannel = Channels.newChannel(commlogStream);
-            writableByteChannel.write(content.getByteBuffer());
-            if (content instanceof HttpInput.EofContent) {
-                commlogStream.close();
+            if (content.isSpecial()) {
+                if (content.isEof()) {
+                    var msg = "EOF element in input interceptor. In Jetty 11.0.6, enabling this was a TODO. You must have changed the jetty version, now this behavior must be evaluated.";
+                    instanceLogger.error(msg);
+                    throw new RuntimeException(msg);
+                } else if (content.getError() != null) {
+                    commlogStream.close();
+                    instanceLogger.debug("Commlog closed, jetty reported error ", content.getError());
+                }
+                // don't do anything about other special types
+            } else {
+                int oldPosition = content.getByteBuffer().position();
+
+                WritableByteChannel writableByteChannel = Channels.newChannel(commlogStream);
+                writableByteChannel.write(content.getByteBuffer());
+
+                if (content.isEmpty()) {
+                    commlogStream.close();
+                }
+
+                // rewind the bytebuffer we just went through
+                content.getByteBuffer().position(oldPosition);
             }
         } catch (IOException e) {
             instanceLogger.error("Error while writing to communication log stream", e);
         }
 
-        // rewind the bytebuffer we just went through
-        content.getByteBuffer().position(oldPosition);
-        return new HttpInput.Content(content.getByteBuffer());
+        return content;
     }
 
     @Override

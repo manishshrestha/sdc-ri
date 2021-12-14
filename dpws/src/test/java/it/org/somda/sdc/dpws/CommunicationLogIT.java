@@ -38,6 +38,7 @@ import org.somda.sdc.dpws.soap.factory.SoapMessageFactory;
 import javax.xml.bind.JAXBElement;
 import javax.xml.namespace.QName;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
@@ -114,7 +115,7 @@ class CommunicationLogIT extends DpwsTest {
         responseEnvelope.getOriginalEnvelope().getBody().getAny().add(jaxbElement);
 
         // make bytes out of the expected response
-        ByteArrayOutputStream expectedResponseStream = new ByteArrayOutputStream();
+        var expectedResponseStream = new ClosableByteArrayOutputStream();
         marshalling.marshal(responseEnvelope.getEnvelopeWithMappedHeaders(), expectedResponseStream);
 
         var responseBytes = expectedResponseStream.toByteArray();
@@ -141,12 +142,12 @@ class CommunicationLogIT extends DpwsTest {
 
             var requestMessage = createASoapMessage();
 
-            ByteArrayOutputStream actualRequestStream = new ByteArrayOutputStream();
+            var actualRequestStream = new ClosableByteArrayOutputStream();
             marshalling.marshal(requestMessage.getEnvelopeWithMappedHeaders(), actualRequestStream);
 
             SoapMessage response = httpBinding1.onRequestResponse(requestMessage);
 
-            ByteArrayOutputStream actualResponseStream = new ByteArrayOutputStream();
+            var actualResponseStream = new ClosableByteArrayOutputStream();
             marshalling.marshal(response.getEnvelopeWithMappedHeaders(), actualResponseStream);
 
             // response bytes should exactly match our expected bytes
@@ -230,6 +231,8 @@ class CommunicationLogIT extends DpwsTest {
 
         // attach payload
         var requestEntity = new ByteArrayEntity(expectedRequest.getBytes());
+        // force chunking to test for completeness
+        requestEntity.setChunked(true);
         post.setEntity(requestEntity);
 
         for (int i = 0; i < 100; i++) {
@@ -247,6 +250,9 @@ class CommunicationLogIT extends DpwsTest {
 
             assertArrayEquals(expectedRequest.getBytes(), req.toByteArray());
             assertArrayEquals(expectedResponse.getBytes(), resp.toByteArray());
+
+            assertTrue(req.getClosed());
+            assertTrue(resp.getClosed());
 
             // ensure request headers are logged
             assertTrue(
@@ -401,7 +407,7 @@ class CommunicationLogIT extends DpwsTest {
         responseEnvelope.getOriginalEnvelope().getBody().getAny().add(jaxbElement);
 
         // make bytes out of the expected response
-        ByteArrayOutputStream expectedResponseStream = new ByteArrayOutputStream();
+        var expectedResponseStream = new ClosableByteArrayOutputStream();
         marshalling.marshal(responseEnvelope.getEnvelopeWithMappedHeaders(), expectedResponseStream);
 
         var responseBytes = expectedResponseStream.toByteArray();
@@ -442,12 +448,12 @@ class CommunicationLogIT extends DpwsTest {
     private void testSharedLogSink(SoapMarshalling soapMarshalling, TransportBinding httpBinding, TestCommLogSink logSink, ByteArrayOutputStream expectedResponseStream) throws Exception {
         var requestMessage2 = createASoapMessage();
 
-        ByteArrayOutputStream actualRequestStream2 = new ByteArrayOutputStream();
+        var actualRequestStream2 = new ClosableByteArrayOutputStream();
         soapMarshalling.marshal(requestMessage2.getEnvelopeWithMappedHeaders(), actualRequestStream2);
 
         SoapMessage response2 = httpBinding.onRequestResponse(requestMessage2);
 
-        ByteArrayOutputStream actualResponseStream2 = new ByteArrayOutputStream();
+        var actualResponseStream2 = new ClosableByteArrayOutputStream();
         soapMarshalling.marshal(response2.getEnvelopeWithMappedHeaders(), actualResponseStream2);
 
         // response bytes should exactly match our expected bytes
@@ -498,10 +504,28 @@ class CommunicationLogIT extends DpwsTest {
         assertEquals(inboundSet, outboundSet, "Not all responses are associated with a request.");
     }
 
+    static class ClosableByteArrayOutputStream extends ByteArrayOutputStream {
+        private Boolean closed;
+
+        ClosableByteArrayOutputStream() {
+            this.closed = false;
+        }
+
+        @Override
+        public void close() throws IOException {
+            super.close();
+            this.closed = true;
+        }
+
+        public Boolean getClosed() {
+            return closed;
+        }
+    }
+
     static class TestCommLogSink implements CommunicationLogSink {
 
-        private final ArrayList<ByteArrayOutputStream> inbound;
-        private final ArrayList<ByteArrayOutputStream> outbound;
+        private final ArrayList<ClosableByteArrayOutputStream> inbound;
+        private final ArrayList<ClosableByteArrayOutputStream> outbound;
         private final ArrayList<ListMultimap<String, String>> inboundHeaders;
         private final ArrayList<ListMultimap<String, String>> outboundHeaders;
         private final ArrayList<Map<String, String>> inboundHeadersOld;
@@ -527,7 +551,7 @@ class CommunicationLogIT extends DpwsTest {
                                                CommunicationLog.Direction direction,
                                                CommunicationLog.MessageType messageType,
                                                CommunicationContext communicationContext) {
-            var os = new ByteArrayOutputStream();
+            var os = new ClosableByteArrayOutputStream();
             var appInfo = (HttpApplicationInfo) communicationContext.getApplicationInfo();
             if (CommunicationLog.Direction.INBOUND.equals(direction)) {
                 inbound.add(os);
@@ -547,11 +571,11 @@ class CommunicationLogIT extends DpwsTest {
             return os;
         }
 
-        public ArrayList<ByteArrayOutputStream> getInbound() {
+        public ArrayList<ClosableByteArrayOutputStream> getInbound() {
             return inbound;
         }
 
-        public ArrayList<ByteArrayOutputStream> getOutbound() {
+        public ArrayList<ClosableByteArrayOutputStream> getOutbound() {
             return outbound;
         }
 
