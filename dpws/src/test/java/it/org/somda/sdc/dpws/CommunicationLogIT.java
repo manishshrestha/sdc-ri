@@ -6,7 +6,9 @@ import com.google.inject.Injector;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.AbstractHttpEntity;
 import org.apache.http.entity.ByteArrayEntity;
+import org.apache.http.entity.InputStreamEntity;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 import org.apache.logging.log4j.LogManager;
@@ -198,6 +200,134 @@ class CommunicationLogIT extends DpwsTest {
         }
     }
 
+    static class SlowInputStream extends InputStream {
+
+        private final byte[] payload;
+        private final long sleep;
+
+        private int nextIndex;
+
+        SlowInputStream(byte[] payload, int sleep) {
+            this.payload = payload;
+            this.sleep = sleep;
+
+            this.nextIndex = 0;
+        }
+
+        @Override
+        public int read() throws IOException {
+            // only sleep sometimes
+            if (nextIndex % 10000 == 0) {
+                try {
+                    Thread.sleep(sleep);
+                } catch (InterruptedException e) {
+                    throw new IOException(e);
+                }
+            }
+            if (payload.length <= nextIndex) {
+                return -1;
+            }
+            return payload[nextIndex++];
+        }
+    }
+
+    @Test
+    void testServerCommlogStreamedRequest() throws Exception {
+        var baseUri = "http://127.0.0.1:0";
+        var contextPath = "/ctxt/path1";
+
+        final String baseRequest = "The quick brown fox jumps over the lazy dog";
+        final String expectedResponse = "Franz jagt im komplett verwahrlosten Taxi quer durch Bayern";
+        AtomicReference<String> resultString = new AtomicReference<>();
+
+        httpServerRegistry.startAsync().awaitRunning();
+        var srvUri1 = httpServerRegistry.registerContext(
+            baseUri, contextPath, new HttpHandler() {
+                @Override
+                public void handle(InputStream inStream, OutputStream outStream, CommunicationContext communicationContext) throws HttpException {
+                    try {
+                        byte[] bytes = inStream.readAllBytes();
+                        resultString.set(new String(bytes));
+
+                        // write response
+                        outStream.write(expectedResponse.getBytes());
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+            });
+
+        // as we explicitly want to set http headers and avoid the commlog, we build our own client
+        HttpClient client = HttpClients.custom().setMaxConnPerRoute(1).build();
+
+        // create post request and set custom header
+        HttpPost post = new HttpPost(srvUri1);
+        String customHeaderKey = "thecustomheader";
+        String customHeaderValue = "theCUSTOMvalue";
+        post.setHeader(customHeaderKey, customHeaderValue);
+
+        // construct our request payload to be sure it is longer than one chunk
+        var expectedRequest = baseRequest.repeat(100000);
+
+        // attach payload
+        var requestEntity = new InputStreamEntity(new SlowInputStream(expectedRequest.getBytes(), 50));
+        // force chunking because of stream
+        requestEntity.setChunked(true);
+        post.setEntity(requestEntity);
+
+        for (int i = 0; i < 1; i++) {
+            HttpResponse response = client.execute(post);
+            var responseBytes = response.getEntity().getContent().readAllBytes();
+
+            // slurp up any leftover data
+            EntityUtils.consume(response.getEntity());
+
+            assertEquals(expectedRequest, resultString.get());
+            assertArrayEquals(expectedResponse.getBytes(), responseBytes);
+
+            var req = logSink.getInbound().get(0);
+            var resp = logSink.getOutbound().get(0);
+
+            assertArrayEquals(expectedRequest.getBytes(), req.toByteArray());
+            assertArrayEquals(expectedResponse.getBytes(), resp.toByteArray());
+
+            // ensure streams were closed by interceptors
+            assertTrue(req.getClosed());
+            assertTrue(resp.getClosed());
+
+            // ensure request headers are logged
+            assertTrue(
+                logSink.getInboundHeaders().get(0).get(customHeaderKey)
+                    .contains(customHeaderValue)
+            );
+            // ensure response headers are logged
+            assertTrue(
+                logSink.getOutboundHeaders().get(0)
+                    .get(JettyHttpServerHandler.SERVER_HEADER_KEY.toLowerCase())
+                    .contains(JettyHttpServerHandler.SERVER_HEADER_VALUE)
+            );
+
+            // all headers must've been converted to lower case, these must be false
+            assertFalse(
+                logSink.getInboundHeaders().get(0).get(customHeaderKey.toUpperCase())
+                    .contains(customHeaderValue)
+            );
+            assertFalse(
+                logSink.getOutboundHeaders().get(0)
+                    .get(JettyHttpServerHandler.SERVER_HEADER_KEY)
+                    .contains(JettyHttpServerHandler.SERVER_HEADER_VALUE)
+            );
+
+            assertEquals(CommunicationLog.MessageType.REQUEST, logSink.getInboundMessageType());
+            assertEquals(CommunicationLog.MessageType.RESPONSE, logSink.getOutboundMessageType());
+
+            compareTransactionIds(logSink.getInboundTransactionIds(), logSink.getOutboundTransactionIds());
+
+            logSink.clear();
+        }
+
+    }
+
     @Test
     void testServerCommlog() throws Exception {
         var baseUri = "http://127.0.0.1:0";
@@ -239,9 +369,10 @@ class CommunicationLogIT extends DpwsTest {
         requestEntity.setChunked(true);
         post.setEntity(requestEntity);
 
-        for (int i = 0; i < 100; i++) {
+        for (int i = 0; i < 10; i++) {
             HttpResponse response = client.execute(post);
             var responseBytes = response.getEntity().getContent().readAllBytes();
+            Thread.sleep(10);
 
             // slurp up any leftover data
             EntityUtils.consume(response.getEntity());
@@ -520,6 +651,30 @@ class CommunicationLogIT extends DpwsTest {
         public void close() throws IOException {
             super.close();
             this.closed = true;
+        }
+
+        private void ensureNotClosed() {
+            if (closed) {
+                throw new RuntimeException("Stream closed");
+            }
+        }
+
+        @Override
+        public synchronized void write(final int b) {
+            ensureNotClosed();
+            super.write(b);
+        }
+
+        @Override
+        public synchronized void write(final byte[] b, final int off, final int len) {
+            ensureNotClosed();
+            super.write(b, off, len);
+        }
+
+        @Override
+        public void write(final byte[] b) throws IOException {
+            ensureNotClosed();
+            super.write(b);
         }
 
         public Boolean getClosed() {
