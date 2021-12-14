@@ -6,7 +6,6 @@ import com.google.inject.Injector;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.AbstractHttpEntity;
 import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.entity.InputStreamEntity;
 import org.apache.http.impl.client.HttpClients;
@@ -117,7 +116,7 @@ class CommunicationLogIT extends DpwsTest {
         responseEnvelope.getOriginalEnvelope().getBody().getAny().add(jaxbElement);
 
         // make bytes out of the expected response
-        var expectedResponseStream = new ClosableByteArrayOutputStream();
+        var expectedResponseStream = new CloseableByteArrayOutputStream();
         marshalling.marshal(responseEnvelope.getEnvelopeWithMappedHeaders(), expectedResponseStream);
 
         var responseBytes = expectedResponseStream.toByteArray();
@@ -144,12 +143,12 @@ class CommunicationLogIT extends DpwsTest {
 
             var requestMessage = createASoapMessage();
 
-            var actualRequestStream = new ClosableByteArrayOutputStream();
+            var actualRequestStream = new CloseableByteArrayOutputStream();
             marshalling.marshal(requestMessage.getEnvelopeWithMappedHeaders(), actualRequestStream);
 
             SoapMessage response = httpBinding1.onRequestResponse(requestMessage);
 
-            var actualResponseStream = new ClosableByteArrayOutputStream();
+            var actualResponseStream = new CloseableByteArrayOutputStream();
             marshalling.marshal(response.getEnvelopeWithMappedHeaders(), actualResponseStream);
 
             // response bytes should exactly match our expected bytes
@@ -163,8 +162,8 @@ class CommunicationLogIT extends DpwsTest {
             assertArrayEquals(expectedResponseStream.toByteArray(), resp.toByteArray());
 
             // ensure streams were closed
-            assertTrue(req.getClosed());
-            assertTrue(resp.getClosed());
+            assertTrue(req.isClosed());
+            assertTrue(resp.isClosed());
 
             // ensure request headers are logged
             assertTrue(
@@ -203,13 +202,13 @@ class CommunicationLogIT extends DpwsTest {
     static class SlowInputStream extends InputStream {
 
         private final byte[] payload;
-        private final long sleep;
+        private final long delayMs;
 
         private int nextIndex;
 
         SlowInputStream(byte[] payload, int sleep) {
             this.payload = payload;
-            this.sleep = sleep;
+            this.delayMs = sleep;
 
             this.nextIndex = 0;
         }
@@ -219,7 +218,7 @@ class CommunicationLogIT extends DpwsTest {
             // only sleep sometimes
             if (nextIndex % 10000 == 0) {
                 try {
-                    Thread.sleep(sleep);
+                    Thread.sleep(delayMs);
                 } catch (InterruptedException e) {
                     throw new IOException(e);
                 }
@@ -292,8 +291,8 @@ class CommunicationLogIT extends DpwsTest {
             assertArrayEquals(expectedResponse.getBytes(), resp.toByteArray());
 
             // ensure streams were closed by interceptors
-            assertTrue(req.getClosed());
-            assertTrue(resp.getClosed());
+            assertTrue(req.isClosed());
+            assertTrue(resp.isClosed());
 
             // ensure request headers are logged
             assertTrue(
@@ -389,8 +388,8 @@ class CommunicationLogIT extends DpwsTest {
             assertArrayEquals(expectedResponse.getBytes(), resp.toByteArray());
 
             // ensure streams were closed by interceptors
-            assertTrue(req.getClosed());
-            assertTrue(resp.getClosed());
+            assertTrue(req.isClosed());
+            assertTrue(resp.isClosed());
 
             // ensure request headers are logged
             assertTrue(
@@ -545,7 +544,7 @@ class CommunicationLogIT extends DpwsTest {
         responseEnvelope.getOriginalEnvelope().getBody().getAny().add(jaxbElement);
 
         // make bytes out of the expected response
-        var expectedResponseStream = new ClosableByteArrayOutputStream();
+        var expectedResponseStream = new CloseableByteArrayOutputStream();
         marshalling.marshal(responseEnvelope.getEnvelopeWithMappedHeaders(), expectedResponseStream);
 
         var responseBytes = expectedResponseStream.toByteArray();
@@ -586,12 +585,12 @@ class CommunicationLogIT extends DpwsTest {
     private void testSharedLogSink(SoapMarshalling soapMarshalling, TransportBinding httpBinding, TestCommLogSink logSink, ByteArrayOutputStream expectedResponseStream) throws Exception {
         var requestMessage2 = createASoapMessage();
 
-        var actualRequestStream2 = new ClosableByteArrayOutputStream();
+        var actualRequestStream2 = new CloseableByteArrayOutputStream();
         soapMarshalling.marshal(requestMessage2.getEnvelopeWithMappedHeaders(), actualRequestStream2);
 
         SoapMessage response2 = httpBinding.onRequestResponse(requestMessage2);
 
-        var actualResponseStream2 = new ClosableByteArrayOutputStream();
+        var actualResponseStream2 = new CloseableByteArrayOutputStream();
         soapMarshalling.marshal(response2.getEnvelopeWithMappedHeaders(), actualResponseStream2);
 
         // response bytes should exactly match our expected bytes
@@ -642,10 +641,10 @@ class CommunicationLogIT extends DpwsTest {
         assertEquals(inboundSet, outboundSet, "Not all responses are associated with a request.");
     }
 
-    static class ClosableByteArrayOutputStream extends ByteArrayOutputStream {
-        private Boolean closed;
+    static class CloseableByteArrayOutputStream extends ByteArrayOutputStream {
+        private boolean closed;
 
-        ClosableByteArrayOutputStream() {
+        CloseableByteArrayOutputStream() {
             this.closed = false;
         }
 
@@ -679,15 +678,15 @@ class CommunicationLogIT extends DpwsTest {
             super.write(b);
         }
 
-        public Boolean getClosed() {
+        public boolean isClosed() {
             return closed;
         }
     }
 
     static class TestCommLogSink implements CommunicationLogSink {
 
-        private final ArrayList<ClosableByteArrayOutputStream> inbound;
-        private final ArrayList<ClosableByteArrayOutputStream> outbound;
+        private final ArrayList<CloseableByteArrayOutputStream> inbound;
+        private final ArrayList<CloseableByteArrayOutputStream> outbound;
         private final ArrayList<ListMultimap<String, String>> inboundHeaders;
         private final ArrayList<ListMultimap<String, String>> outboundHeaders;
         private final ArrayList<Map<String, String>> inboundHeadersOld;
@@ -713,7 +712,7 @@ class CommunicationLogIT extends DpwsTest {
                                                CommunicationLog.Direction direction,
                                                CommunicationLog.MessageType messageType,
                                                CommunicationContext communicationContext) {
-            var os = new ClosableByteArrayOutputStream();
+            var os = new CloseableByteArrayOutputStream();
             var appInfo = (HttpApplicationInfo) communicationContext.getApplicationInfo();
             if (CommunicationLog.Direction.INBOUND.equals(direction)) {
                 inbound.add(os);
@@ -733,11 +732,11 @@ class CommunicationLogIT extends DpwsTest {
             return os;
         }
 
-        public ArrayList<ClosableByteArrayOutputStream> getInbound() {
+        public ArrayList<CloseableByteArrayOutputStream> getInbound() {
             return inbound;
         }
 
-        public ArrayList<ClosableByteArrayOutputStream> getOutbound() {
+        public ArrayList<CloseableByteArrayOutputStream> getOutbound() {
             return outbound;
         }
 
