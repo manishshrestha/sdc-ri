@@ -45,6 +45,8 @@ class WsDiscoveryUtilTest extends DpwsTest {
         assertTrue(doesMatch(superset, "http://a.de"));
         // query parameters are ignored during comparison
         assertTrue(doesMatch(superset, "http://a.de/abc?a=x&b=y"));
+        // fragments are ignored
+        assertTrue(doesMatch(superset, "http://a.de/abc#fragement1"));
 
         // case sensitive segment
         assertFalse(doesMatch(superset, "http://a.de/Abc/d"));
