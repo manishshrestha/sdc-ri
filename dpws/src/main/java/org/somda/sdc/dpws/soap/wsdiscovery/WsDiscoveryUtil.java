@@ -10,6 +10,7 @@ import java.net.URI;
 import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.regex.Pattern;
 
 /**
  * Utility class for the WS-Discovery plugin.
@@ -82,6 +83,12 @@ public class WsDiscoveryUtil {
     private boolean uriCompare(Object o1, Object o2) {
         var supersetUri = URI.create((String) o1);
         var subsetUri = URI.create((String) o2);
+
+        // paths must not have /./ or /../ segments
+        var pattern = Pattern.compile("/\\.*/");
+        if (pattern.matcher(supersetUri.getPath()).find() || pattern.matcher(subsetUri.getPath()).find()) {
+            return false;
+        }
         if (supersetUri.toString().equals(subsetUri.toString())) {
             return true;
         }

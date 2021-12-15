@@ -31,7 +31,6 @@ class WsDiscoveryUtilTest extends DpwsTest {
     @Test
     void isScopesMatchingRfc3986Test() {
         var superset = List.of("http://a.de/abc/d");
-
         // equals
         assertTrue(doesMatch(superset, "http://a.de/abc/d"));
         // case insensitive schema
@@ -44,6 +43,8 @@ class WsDiscoveryUtilTest extends DpwsTest {
         assertTrue(doesMatch(superset, "http://a.de/abc/"));
         // match if subset has no segments
         assertTrue(doesMatch(superset, "http://a.de"));
+        // query parameters are ignored during comparison
+        assertTrue(doesMatch(superset, "http://a.de/abc?a=x&b=y"));
 
         // case sensitive segment
         assertFalse(doesMatch(superset, "http://a.de/Abc/d"));
@@ -56,6 +57,8 @@ class WsDiscoveryUtilTest extends DpwsTest {
         // doesn't match if subset has '.' or '..' in path
         assertFalse(doesMatch(superset, "http://a.de/abc/./d"));
         assertFalse(doesMatch(superset, "http://a.de/abc/../d"));
+        // doesn't match if superset and subset equals but contains '.' segment
+        assertFalse(doesMatch(List.of("http://a.de/abc/./d"), "http://a.de/abc/./d"));
     }
 
     private boolean doesMatch(List<String> superset, String s) {
