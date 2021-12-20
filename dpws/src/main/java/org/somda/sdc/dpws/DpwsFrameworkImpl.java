@@ -17,6 +17,7 @@ import org.somda.sdc.dpws.guice.NetworkJobThreadPool;
 import org.somda.sdc.dpws.guice.WsDiscovery;
 import org.somda.sdc.dpws.helper.JaxbMarshalling;
 import org.somda.sdc.dpws.http.HttpServerRegistry;
+import org.somda.sdc.dpws.http.helper.HttpServerClientSelfTest;
 import org.somda.sdc.dpws.soap.SoapMarshalling;
 import org.somda.sdc.dpws.soap.wsdiscovery.WsDiscoveryConstants;
 import org.somda.sdc.dpws.udp.UdpBindingService;
@@ -48,6 +49,7 @@ public class DpwsFrameworkImpl extends AbstractIdleService implements DpwsFramew
 
     private final List<Service> registeredServices;
     private UdpBindingService udpBindingService;
+    private final HttpServerClientSelfTest httpServerClientSelfTest;
 
     @Inject
     DpwsFrameworkImpl(@DiscoveryUdpQueue UdpMessageQueueService udpMessageQueueService,
@@ -60,7 +62,8 @@ public class DpwsFrameworkImpl extends AbstractIdleService implements DpwsFramew
                       @NetworkJobThreadPool ExecutorWrapperService<ListeningExecutorService> networkJobExecutor,
                       @WsDiscovery ExecutorWrapperService<ListeningExecutorService> wsDiscoveryExecutor,
                       FrameworkMetadata metadata,
-                      @Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier) {
+                      @Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier,
+                      HttpServerClientSelfTest httpServerClientSelfTest) {
         this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);
         this.udpMessageQueueService = udpMessageQueueService;
         this.udpBindingServiceFactory = udpBindingServiceFactory;
@@ -72,6 +75,7 @@ public class DpwsFrameworkImpl extends AbstractIdleService implements DpwsFramew
                 // dpws services
                 jaxbMarshalling, soapMarshalling, wsdlMarshalling, httpServerRegistry
         ));
+        this.httpServerClientSelfTest = httpServerClientSelfTest;
     }
 
     @Override
@@ -93,6 +97,9 @@ public class DpwsFrameworkImpl extends AbstractIdleService implements DpwsFramew
                 udpBindingService, udpMessageQueueService
         ));
         registeredServices.forEach(service -> service.startAsync().awaitRunning());
+
+        httpServerClientSelfTest.testConnection();
+
         instanceLogger.info("SDCri DPWS framework is ready for use");
     }
 

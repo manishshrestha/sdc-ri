@@ -28,6 +28,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `org.somda.sdc.dpws.DpwsConfig#COMMUNICATION_LOG_PRETTY_PRINT_XML`: configuration parameter to enable/disable pretty printing in communication logs. (#203)
 - `org.somda.sdc.dpws.soap.TransportInfo.getRemoteNodeInfo()`  to retrieve a remote node's requested scheme, address 
   and port. (#208)
+- `org.somda.sdc.dpws.http.helper.HttpServerClientSelfTest` to perform HTTP server & client connection self-test 
+   and print certificate information during `DpwsFramework` startup. (#113) 
   
 ### Changed
 

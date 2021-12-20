@@ -38,6 +38,7 @@ import java.security.cert.X509Certificate;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 /**
  * SSL metadata used for crypto related tests.
@@ -82,11 +83,12 @@ public class SslMetadata extends AbstractIdleService implements Service {
         final KeyStore clientKeyStore = createKeyStore(clientAlias, clientKeyPair.getPrivate(),
                 commonPassword, Collections.singletonList(clientCert));
 
-        final KeyStore serverTrustStore = createTrustStore(serverAlias, commonPassword, clientCert);
-        final KeyStore clientTrustStore = createTrustStore(clientAlias, commonPassword, serverCert);
+        Map<String, X509Certificate> certsMap = Map.of(serverAlias, serverCert, clientAlias, clientCert);
+        // use one trust store with trusted server & client certificates, otherwise HTTP connection self-test fails
+        final KeyStore trustStore = createTrustStore(certsMap, commonPassword);
 
-        serverKeySet = new KeySet(serverKeyStore, commonPassword, serverTrustStore, commonPassword);
-        clientKeySet = new KeySet(clientKeyStore, commonPassword, clientTrustStore, commonPassword);
+        serverKeySet = new KeySet(serverKeyStore, commonPassword, trustStore, commonPassword);
+        clientKeySet = new KeySet(clientKeyStore, commonPassword, trustStore, commonPassword);
     }
 
     @Override
@@ -122,14 +124,18 @@ public class SslMetadata extends AbstractIdleService implements Service {
         return keyStore;
     }
 
-    private static KeyStore createTrustStore(String alias,
-                                             String password,
-                                             X509Certificate trustedCertificate)
+    private static KeyStore createTrustStore(Map<String, X509Certificate> certificateMap, String password)
             throws KeyStoreException, IOException, CertificateException, NoSuchAlgorithmException {
 
         final KeyStore keyStore = KeyStore.getInstance(KeyStore.getDefaultType());
         keyStore.load(null, password.toCharArray());
-        keyStore.setCertificateEntry(alias, trustedCertificate);
+
+        for (Map.Entry<String, X509Certificate> entry : certificateMap.entrySet()) {
+            String alias = entry.getKey();
+            X509Certificate cert = entry.getValue();
+            keyStore.setCertificateEntry(alias, cert);
+        }
+
         return keyStore;
     }
 
