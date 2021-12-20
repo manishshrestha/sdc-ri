@@ -17,6 +17,7 @@ import org.eclipse.jetty.http.HttpVersion;
 import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.HttpConfiguration;
 import org.eclipse.jetty.server.HttpConnectionFactory;
+import org.eclipse.jetty.server.SecureRequestCustomizer;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.server.SslConnectionFactory;
@@ -203,8 +204,16 @@ public class HttpServerClientSelfTest {
     }
 
     private ServerConnector getServerConnector(URI uri, Server server) {
+        var httpsConfig = new HttpConfiguration();
+        httpsConfig.setHttpCompliance(HttpCompliance.RFC2616);
+
+        SecureRequestCustomizer src = new SecureRequestCustomizer();
+        // disable hostname validation, does not match sdc behavior
+        src.setSniHostCheck(false);
+        httpsConfig.addCustomizer(src);
+
         ServerConnector httpsConnector = new ServerConnector(server, getContextFactory(),
-                new HttpConnectionFactory(new HttpConfiguration(), HttpCompliance.RFC2616));
+                new HttpConnectionFactory(httpsConfig));
         httpsConnector.setIdleTimeout(connectionTimeout.toMillis());
         httpsConnector.setHost(uri.getHost());
         httpsConnector.setPort(uri.getPort());
