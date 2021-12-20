@@ -244,8 +244,8 @@ class CryptoIT {
                     .getProbeMatch().get(0).getEndpointReference().getAddress().getValue());
         }
 
-        // hostname verifier must becalled exactly once for the connection
-        verify(verifier, times(1)).verify(any(), any());
+        // hostname verifier is called two times: SSLConnectionSockerFactory, JettyHttpServerRegistry
+        verify(verifier, times(2)).verify(any(), any());
     }
 
     @Test
