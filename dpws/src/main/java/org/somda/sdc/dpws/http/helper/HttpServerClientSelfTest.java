@@ -204,7 +204,7 @@ public class HttpServerClientSelfTest {
 
     private ServerConnector getServerConnector(URI uri, Server server) {
         ServerConnector httpsConnector = new ServerConnector(server, getContextFactory(),
-                new HttpConnectionFactory(new HttpConfiguration(), HttpCompliance.RFC2616));
+                new HttpConnectionFactory(new HttpConfiguration()));
         httpsConnector.setIdleTimeout(connectionTimeout.toMillis());
         httpsConnector.setHost(uri.getHost());
         httpsConnector.setPort(uri.getPort());
