@@ -28,6 +28,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `org.somda.sdc.dpws.DpwsConfig#COMMUNICATION_LOG_PRETTY_PRINT_XML`: configuration parameter to enable/disable pretty printing in communication logs. (#203)
 - `org.somda.sdc.dpws.soap.TransportInfo.getRemoteNodeInfo()`  to retrieve a remote node's requested scheme, address 
   and port. (#208)
+- `org.somda.sdc.dpws.http.helper.HttpServerClientSelfTest` to perform HTTP server & client connection self-test 
+   and print certificate information during `DpwsFramework` startup. (#113) 
   
 ### Changed
 
@@ -53,6 +55,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `org.somda.sdc.biceps.common.storage.MdibStorageImpl.deleteEntity()` updates parent entity and returns it in the updated entity list 
   if child descriptor is deleted (#211)
 - `org.somda.sdc.common.util.AnyDateTime` methods `equals()`, `hashCode()`, `toString()` implemented (#201)
+- `org.somda.sdc.dpws.soap.wsdiscovery.WsDiscoveryUtil.isScopesMatching()` extends scope matcher to be compatible with RFC3986 URIs 
+  and follow WS-Discovery rules (#212)
   
 ### Removed
 

@@ -57,7 +57,7 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <jaxbBasicsVersion>0.12.0</jaxbBasicsVersion>
-        <log4j2Version>2.15.0</log4j2Version>
+        <log4j2Version>2.17.0</log4j2Version>
         <bouncyCastleVersion>1.66</bouncyCastleVersion>
         <junitVersion>5.8.2</junitVersion>
         <junitPlatformVersion>1.8.2</junitPlatformVersion>
