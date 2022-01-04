@@ -15,25 +15,23 @@ import org.somda.sdc.biceps.common.access.WriteStateResult;
 import org.somda.sdc.biceps.common.access.factory.ReadTransactionFactory;
 import org.somda.sdc.biceps.common.access.helper.WriteUtil;
 import org.somda.sdc.biceps.common.event.Distributor;
-import org.somda.sdc.biceps.common.preprocessing.DescriptorChildRemover;
+import org.somda.sdc.biceps.common.preprocessing.PreprocessingInjectorWrapper;
+import org.somda.sdc.biceps.common.preprocessing.PreprocessingUtil;
+import org.somda.sdc.biceps.common.storage.DescriptionPreprocessingSegment;
 import org.somda.sdc.biceps.common.storage.MdibStorage;
 import org.somda.sdc.biceps.common.storage.MdibStoragePreprocessingChain;
 import org.somda.sdc.biceps.common.storage.PreprocessingException;
+import org.somda.sdc.biceps.common.storage.StatePreprocessingSegment;
 import org.somda.sdc.biceps.common.storage.factory.MdibStorageFactory;
 import org.somda.sdc.biceps.common.storage.factory.MdibStoragePreprocessingChainFactory;
 import org.somda.sdc.biceps.model.participant.AbstractContextState;
 import org.somda.sdc.biceps.model.participant.AbstractDescriptor;
 import org.somda.sdc.biceps.model.participant.AbstractState;
 import org.somda.sdc.biceps.model.participant.MdibVersion;
-import org.somda.sdc.biceps.provider.preprocessing.DuplicateChecker;
-import org.somda.sdc.biceps.provider.preprocessing.HandleReferenceHandler;
-import org.somda.sdc.biceps.provider.preprocessing.TypeConsistencyChecker;
-import org.somda.sdc.biceps.provider.preprocessing.VersionHandler;
 import org.somda.sdc.common.CommonConfig;
 import org.somda.sdc.common.logging.InstanceLogger;
 
 import java.math.BigInteger;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -64,13 +62,13 @@ public class LocalMdibAccessImpl implements LocalMdibAccess {
                         MdibStorageFactory mdibStorageFactory,
                         ReentrantReadWriteLock readWriteLock,
                         ReadTransactionFactory readTransactionFactory,
-                        DuplicateChecker duplicateChecker,
-                        VersionHandler versionHandler,
-                        TypeConsistencyChecker typeConsistencyChecker,
-                        HandleReferenceHandler handleReferenceHandler,
-                        DescriptorChildRemover descriptorChildRemover,
                         CopyManager copyManager,
-                        @Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier) {
+                        @Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier,
+                        @Named(org.somda.sdc.biceps.common.CommonConfig.PROVIDER_STATE_PREPROCESSING_SEGMENTS)
+                                List<Class<? extends StatePreprocessingSegment>> stateSegmentClasses,
+                        @Named(org.somda.sdc.biceps.common.CommonConfig.PROVIDER_DESCRIPTION_PREPROCESSING_SEGMENTS)
+                                List<Class<? extends DescriptionPreprocessingSegment>> descriptionSegmentClasses,
+                        PreprocessingInjectorWrapper injectorWrapper) {
         this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);
         mdibVersion = MdibVersion.create();
         mdDescriptionVersion = BigInteger.ZERO;
@@ -82,14 +80,17 @@ public class LocalMdibAccessImpl implements LocalMdibAccess {
         this.readTransactionFactory = readTransactionFactory;
         this.copyManager = copyManager;
 
+        var descriptionPreprocessingSegments =
+                PreprocessingUtil.getDescriptionPreprocessingSegments(descriptionSegmentClasses,
+                        injectorWrapper.getInjector());
+
+        var statePreprocessingSegments = PreprocessingUtil.getStatePreprocessingSegments(
+                stateSegmentClasses, descriptionPreprocessingSegments, injectorWrapper.getInjector());
+
         MdibStoragePreprocessingChain localMdibAccessPreprocessing = chainFactory.createMdibStoragePreprocessingChain(
                 mdibStorage,
-                Arrays.asList(
-                        duplicateChecker, typeConsistencyChecker,
-                        versionHandler, handleReferenceHandler,
-                        descriptorChildRemover
-                ),
-                Arrays.asList(versionHandler));
+                descriptionPreprocessingSegments,
+                statePreprocessingSegments);
 
         this.writeUtil = new WriteUtil(
                 instanceLogger, eventDistributor,
@@ -192,6 +193,13 @@ public class LocalMdibAccessImpl implements LocalMdibAccess {
     public <T extends AbstractState> Optional<T> getState(String handle, Class<T> stateClass) {
         try (ReadTransaction transaction = startTransaction()) {
             return transaction.getState(handle, stateClass);
+        }
+    }
+
+    @Override
+    public <T extends AbstractState> List<T> getStatesByType(Class<T> stateClass) {
+        try (ReadTransaction transaction = startTransaction()) {
+            return transaction.getStatesByType(stateClass);
         }
     }
 

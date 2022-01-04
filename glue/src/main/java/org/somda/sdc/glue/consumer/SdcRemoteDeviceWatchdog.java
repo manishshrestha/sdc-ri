@@ -118,20 +118,15 @@ public class SdcRemoteDeviceWatchdog extends AbstractIdleService {
         }
     }
 
-    private void postWatchdogMessage(Exception reason) {
-        if (isRunning()) {
-            eventBus.post(new WatchdogMessage(hostingServiceProxy.getEndpointReferenceAddress(), reason));
-        }
-    }
-
     private class WatchdogJob implements Runnable {
         @Override
         public void run() {
             Duration timeout = watchdogPeriod;
             boolean watchdogRequestSent = false;
-            for (String serviceId : subscriptions.keySet()) {
+            for (var entry : subscriptions.entrySet()) {
+                final String serviceId = entry.getKey();
+                final SubscribeResult subscribeResult = entry.getValue();
                 final Instant start = Instant.now();
-                final SubscribeResult subscribeResult = subscriptions.get(serviceId);
                 final HostedServiceProxy hostedServiceProxy = hostingServiceProxy.getHostedServices().get(serviceId);
                 if (hostedServiceProxy == null) {
                     instanceLogger.warn("Could not find expected hosted service with id {}", serviceId);
@@ -198,6 +193,12 @@ public class SdcRemoteDeviceWatchdog extends AbstractIdleService {
                         "WatchdogJob has ended, SdcRemoteDeviceWatchdog ({}) or WatchdogExecutor ({}) have ended",
                         state(), watchdogExecutor.state()
                 );
+            }
+        }
+
+        private void postWatchdogMessage(Exception reason) {
+            if (isRunning()) {
+                eventBus.post(new WatchdogMessage(hostingServiceProxy.getEndpointReferenceAddress(), reason));
             }
         }
     }

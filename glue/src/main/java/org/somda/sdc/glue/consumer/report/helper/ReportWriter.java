@@ -28,6 +28,7 @@ import javax.annotation.Nullable;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Helper class that accepts any state reports and writes them to a {@linkplain RemoteMdibAccess} instance.
@@ -101,33 +102,45 @@ public class ReportWriter {
                     ArrayListMultimap.create(reportPart.getState().size(), 1);
 
             reportPart.getState().forEach(state -> stateMap.put(state.getDescriptorHandle(), state));
+            final var stateHandles = reportPart.getState().stream().map(AbstractState::getDescriptorHandle).collect(Collectors.toSet());
+            final var descriptorHandles = reportPart.getDescriptor().stream().map(AbstractDescriptor::getHandle).collect(Collectors.toSet());
+            for (var handle: stateHandles) {
+                if (!descriptorHandles.contains(handle)) {
+                    throw new ReportProcessingException(String.format("The state %s belongs to an " +
+                            "unknown descriptor", handle));
+                }
+            }
             for (AbstractDescriptor descriptor : reportPart.getDescriptor()) {
                 final List<AbstractState> stateList = stateMap.get(descriptor.getHandle());
-                if (typeValidator.isSingleStateDescriptor(descriptor)) {
-                    if (stateList.size() != 1) {
-                        throw new ReportProcessingException(String.format("Change of single state descriptor %s " +
-                                        "comes with unexpected number of states: %s",
-                                descriptor.getHandle(), stateList.size()));
-                    }
+                if (modType != MdibDescriptionModification.Type.DELETE) {
+                    if (typeValidator.isSingleStateDescriptor(descriptor)) {
+                        if (stateList.size() != 1) {
+                            throw new ReportProcessingException(String.format("Change of single state descriptor %s " +
+                                            "comes with unexpected number of states: %s",
+                                    descriptor.getHandle(), stateList.size()));
+                        }
 
-                    modifications.add(modType, descriptor, stateList.get(0), reportPart.getParentDescriptor());
-                } else {
-                    try {
-                        List<AbstractMultiState> multiStates = new ArrayList<>(stateList.size());
-                        stateList.forEach(state -> {
-                            if (state instanceof AbstractMultiState) {
-                                multiStates.add((AbstractMultiState) state);
-                            } else {
-                                throw new RuntimeException(String.format("Data type mismatch. " +
-                                                "Expected an AbstractMultiState, got %s",
-                                        state.getClass().getName()));
-                            }
-                        });
-                        modifications.add(modType, descriptor, multiStates, reportPart.getParentDescriptor());
-                    } catch (Exception e) {
-                        throw new ReportProcessingException(String.format(
-                                "Type mismatch between descriptor %s and state", descriptor.getHandle()));
+                        modifications.add(modType, descriptor, stateList.get(0), reportPart.getParentDescriptor());
+                    } else {
+                        try {
+                            List<AbstractMultiState> multiStates = new ArrayList<>(stateList.size());
+                            stateList.forEach(state -> {
+                                if (state instanceof AbstractMultiState) {
+                                    multiStates.add((AbstractMultiState) state);
+                                } else {
+                                    throw new RuntimeException(String.format("Data type mismatch. " +
+                                                    "Expected an AbstractMultiState, got %s",
+                                            state.getClass().getName()));
+                                }
+                            });
+                            modifications.add(modType, descriptor, multiStates, reportPart.getParentDescriptor());
+                        } catch (Exception e) {
+                            throw new ReportProcessingException(String.format(
+                                    "Type mismatch between descriptor %s and state", descriptor.getHandle()));
+                        }
                     }
+                } else {
+                    modifications.add(modType, descriptor, reportPart.getParentDescriptor());
                 }
             }
         }
@@ -215,7 +228,7 @@ public class ReportWriter {
             default:
                 throw new RuntimeException(String.format("Unexpected description modification type detected. " +
                                 "Processing branch is missing: %s",
-                        modificationType.toString()));
+                        modificationType));
         }
     }
 }

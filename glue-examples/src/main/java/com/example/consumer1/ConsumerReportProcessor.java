@@ -21,12 +21,12 @@ import org.somda.sdc.biceps.common.event.WaveformStateModificationMessage;
 public class ConsumerReportProcessor implements MdibAccessObserver {
     private static final Logger LOG = LogManager.getLogger(ConsumerReportProcessor.class);
 
-    public int numMetricChanges = 0;
-    public int numConditionChanges = 0;
+    private long numMetricChanges = 0;
+    private long numConditionChanges = 0;
 
     @Subscribe
     void onUpdate(AbstractMdibAccessMessage updates) {
-        LOG.debug("onUpdate: {}", updates.toString());
+        LOG.debug("onUpdate: {}", updates);
     }
 
     @Subscribe
@@ -69,4 +69,11 @@ public class ConsumerReportProcessor implements MdibAccessObserver {
         LOG.info("onOperationChange");
     }
 
+    public long getNumMetricChanges() {
+        return numMetricChanges;
+    }
+
+    public long getNumConditionChanges() {
+        return numConditionChanges;
+    }
 }

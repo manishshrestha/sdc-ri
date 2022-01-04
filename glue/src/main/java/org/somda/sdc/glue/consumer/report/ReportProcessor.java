@@ -19,6 +19,7 @@ import org.somda.sdc.glue.consumer.ConsumerConfig;
 import org.somda.sdc.glue.consumer.report.helper.ReportWriter;
 
 import javax.annotation.Nullable;
+import java.math.BigInteger;
 import java.net.URI;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
@@ -86,7 +87,7 @@ public class ReportProcessor extends AbstractIdleService {
      * @param <T>    any report type in terms of the SDC protocol.
      */
     public <T extends AbstractReport> void processReport(T report) {
-        try (AutoLock ignored = AutoLock.lock(mdibReadyLock)) {
+        try (var ignored = AutoLock.lock(mdibReadyLock)) {
             this.writeReport.accept(report);
         }
     }
@@ -104,7 +105,7 @@ public class ReportProcessor extends AbstractIdleService {
     public void startApplyingReportsOnMdib(RemoteMdibAccess mdibAccess,
                                            @Nullable GetContextStatesResponse contextStatesResponse)
             throws PreprocessingException, ReportProcessingException {
-        try (AutoLock ignored = AutoLock.lock(mdibReadyLock)) {
+        try (var ignored = AutoLock.lock(mdibReadyLock)) {
             if (this.mdibAccess != null) {
                 instanceLogger.warn("Tried to invoke startApplyingReportsOnMdib() multiple times. " +
                         "Make sure to call it only once. " +
@@ -119,7 +120,7 @@ public class ReportProcessor extends AbstractIdleService {
         bufferingRequested.set(false);
         applyReportsFromBuffer(mdibAccess);
 
-        try (AutoLock ignored = AutoLock.lock(mdibReadyLock)) {
+        try (var ignored = AutoLock.lock(mdibReadyLock)) {
             this.mdibAccess = mdibAccess;
             mdibReadyCondition.signalAll();
         }
@@ -145,7 +146,7 @@ public class ReportProcessor extends AbstractIdleService {
         final MdibVersion mdibAccessMdibVersion = mdibAccess.getMdibVersion();
         final MdibVersion reportMdibVersion = mdibVersionUtil.getMdibVersion(report);
         if (!mdibAccessMdibVersion.getSequenceId().equals(reportMdibVersion.getSequenceId()) ||
-                !mdibAccessMdibVersion.getInstanceId().equals(reportMdibVersion.getInstanceId())) {
+                !equalsInstanceIds(mdibAccessMdibVersion.getInstanceId(), reportMdibVersion.getInstanceId())) {
             throw new ReportProcessingException(String.format("MDIB version from MDIB (%s) and " +
                             "MDIB version from report (%s) do not match",
                     mdibAccessMdibVersion, reportMdibVersion));
@@ -174,7 +175,7 @@ public class ReportProcessor extends AbstractIdleService {
                 return;
             }
 
-            try (AutoLock ignored = AutoLock.lock(mdibReadyLock)) {
+            try (var ignored = AutoLock.lock(mdibReadyLock)) {
                 if (mdibAccess == null) {
                     if (!mdibReadyCondition.await(10000, TimeUnit.MILLISECONDS)) {
                         throw new TimeoutException("No MDIB access set within 10s");
@@ -207,7 +208,7 @@ public class ReportProcessor extends AbstractIdleService {
 
         final MdibVersion mdibVersion = mdibAccess.getMdibVersion();
         if (!URI.create(mdibVersion.getSequenceId()).equals(URI.create(contextStatesResponse.getSequenceId())) ||
-                !mdibVersion.getInstanceId().equals(contextStatesResponse.getInstanceId())) {
+                !equalsInstanceIds(mdibVersion.getInstanceId(), contextStatesResponse.getInstanceId())) {
             throw new ReportProcessingException(String.format("Received context state report belongs to " +
                             "different MDIB sequence/instance. Expected: %s, actual: %s",
                     mdibVersionUtil.getMdibVersion(contextStatesResponse), mdibVersion));
@@ -225,6 +226,20 @@ public class ReportProcessor extends AbstractIdleService {
         mdibAccess.writeStates(mdibVersion, modifications);
     }
 
+    /**
+     * Compares two InstanceIds for equality.
+     *
+     * This equals check is necessary, since InstanceId has a implied value of 0 and the report might actually have the
+     * field set to null.
+     *
+     * @param mdibVersionInstanceId the mdibVersion instance id
+     * @param reportInstanceId the report instance id, implied value always set to 0
+     * @return true if equal, false otherwise
+     */
+    private boolean equalsInstanceIds(BigInteger mdibVersionInstanceId, @Nullable BigInteger reportInstanceId) {
+        return reportInstanceId == null ? mdibVersionInstanceId.equals(BigInteger.ZERO) : mdibVersionInstanceId.equals(reportInstanceId);
+    }
+
     @Override
     protected void startUp() {
         // nothing to be done
@@ -232,7 +247,7 @@ public class ReportProcessor extends AbstractIdleService {
 
     @Override
     protected void shutDown() {
-        try (AutoLock ignored = AutoLock.lock(mdibReadyLock)) {
+        try (var ignored = AutoLock.lock(mdibReadyLock)) {
             writeReport = abstractReport -> {
                 // stop processing reports by doing nothing
             };

@@ -35,7 +35,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
-public class ClientTransportBindingTest extends DpwsTest {
+class ClientTransportBindingTest extends DpwsTest {
 
     private ClientTransportBindingFactory fac;
     private Injector injector;
@@ -91,7 +91,7 @@ public class ClientTransportBindingTest extends DpwsTest {
 
         var responseContent = "The quick brown fox jumps over the lazy dog ý";
         var responseType = ContentType.ContentTypes.TEXT_XML;
-        var responseEncoding = responseType.defaultEncoding;
+        var responseEncoding = responseType.getDefaultEncoding();
         assertNotNull(responseEncoding);
 
         doAnswer(invocation -> {
@@ -100,7 +100,7 @@ public class ClientTransportBindingTest extends DpwsTest {
             return null;
         }).when(mockMarshalling).marshal(any(), any());
 
-        var header = new BasicHeader(HttpHeaders.CONTENT_TYPE, responseType.contentType);
+        var header = new BasicHeader(HttpHeaders.CONTENT_TYPE, responseType.getContentType());
         var mockEntity = mock(HttpEntity.class);
         when(mockEntity.getContentType()).thenReturn(header);
         when(mockEntity.getContent()).thenReturn(new ByteArrayInputStream(responseContent.getBytes(responseEncoding)));
@@ -137,7 +137,7 @@ public class ClientTransportBindingTest extends DpwsTest {
             return null;
         }).when(mockMarshalling).marshal(any(), any());
 
-        var header = new BasicHeader(HttpHeaders.CONTENT_TYPE, responseType.contentType + "; charset=" + responseEncoding.displayName());
+        var header = new BasicHeader(HttpHeaders.CONTENT_TYPE, responseType.getContentType() + "; charset=" + responseEncoding.displayName());
         var mockEntity = mock(HttpEntity.class);
         when(mockEntity.getContentType()).thenReturn(header);
         when(mockEntity.getContent()).thenReturn(new ByteArrayInputStream(responseContent.getBytes(responseEncoding)));
@@ -175,7 +175,7 @@ public class ClientTransportBindingTest extends DpwsTest {
             return null;
         }).when(mockMarshalling).marshal(any(), any());
 
-        var header = new BasicHeader(HttpHeaders.CONTENT_TYPE, responseType.contentType);
+        var header = new BasicHeader(HttpHeaders.CONTENT_TYPE, responseType.getContentType());
         var mockEntity = mock(HttpEntity.class);
         when(mockEntity.getContentType()).thenReturn(header);
         when(mockEntity.getContent()).thenReturn(new ByteArrayInputStream(responseContent.getBytes(responseEncoding)));

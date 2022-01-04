@@ -43,11 +43,6 @@
         <tag>sdc-ri-1.0.0</tag>
     </scm>
 
-    <properties>
-        <junitVersion>5.6.1</junitVersion>
-        <junitPlatformVersion>1.6.1</junitPlatformVersion>
-    </properties>
-
     <build>
         <plugins>
             <plugin>
@@ -131,6 +126,19 @@
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-engine</artifactId>
             <version>${junitVersion}</version>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/org.bouncycastle/bcprov-jdk15on -->
+        <dependency>
+            <groupId>org.bouncycastle</groupId>
+            <artifactId>bcprov-jdk15on</artifactId>
+            <version>${bouncyCastleVersion}</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/org.bouncycastle/bcpkix-jdk15on -->
+        <dependency>
+            <groupId>org.bouncycastle</groupId>
+            <artifactId>bcpkix-jdk15on</artifactId>
+            <version>${bouncyCastleVersion}</version>
         </dependency>
 
     </dependencies>

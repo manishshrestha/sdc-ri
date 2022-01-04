@@ -12,7 +12,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @ExtendWith(LoggingTestWatcher.class)
-public class RegexTest {
+class RegexTest {
 
     private static final Pattern AUTHORITY_PATTERN = new Pattern("^" + GlueConstants.AUTHORITY + "$");
     private static final Pattern URI_PATTERN = new Pattern(GlueConstants.URI_REGEX);
@@ -32,16 +32,16 @@ public class RegexTest {
         {
             Matcher matcher = AUTHORITY_PATTERN.matcher("@host:");
             assertTrue(matcher.matches());
-            assertEquals(matcher.group("userInfo"), "");
-            assertEquals(matcher.group("port"), "");
-            assertEquals(matcher.group("host"), "host");
+            assertEquals("", matcher.group("userInfo"));
+            assertEquals("", matcher.group("port"));
+            assertEquals("host", matcher.group("host"));
         }
         {
             Matcher matcher = AUTHORITY_PATTERN.matcher("user@host:123");
             assertTrue(matcher.matches());
-            assertEquals(matcher.group("userInfo"), "user");
-            assertEquals(matcher.group("port"), "123");
-            assertEquals(matcher.group("host"), "host");
+            assertEquals("user", matcher.group("userInfo"));
+            assertEquals("123", matcher.group("port"));
+            assertEquals("host", matcher.group("host"));
         }
         {
             Matcher matcher = AUTHORITY_PATTERN.matcher("user@[10೬0:0:0:0:8:800:200C:417A]:123");
@@ -50,16 +50,16 @@ public class RegexTest {
         {
             Matcher matcher = AUTHORITY_PATTERN.matcher("user@[1060:0:0:0:8:800:200C:417A]:123");
             assertTrue(matcher.matches());
-            assertEquals(matcher.group("userInfo"), "user");
-            assertEquals(matcher.group("port"), "123");
-            assertEquals(matcher.group("host"), "[1060:0:0:0:8:800:200C:417A]");
+            assertEquals("user", matcher.group("userInfo"));
+            assertEquals("123", matcher.group("port"));
+            assertEquals("[1060:0:0:0:8:800:200C:417A]", matcher.group("host"));
         }
         {
             Matcher matcher = AUTHORITY_PATTERN.matcher("user@%C3%A4:123");
             assertTrue(matcher.matches());
-            assertEquals(matcher.group("userInfo"), "user");
-            assertEquals(matcher.group("port"), "123");
-            assertEquals(matcher.group("host"), "%C3%A4");
+            assertEquals("user", matcher.group("userInfo"));
+            assertEquals("123", matcher.group("port"));
+            assertEquals("%C3%A4", matcher.group("host"));
         }
         {
             Matcher matcher = AUTHORITY_PATTERN.matcher("user@@:123");

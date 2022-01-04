@@ -38,7 +38,7 @@ public class MdibVersionUtil {
         final Method setInstanceId = target.getClass().getMethod("setInstanceId", BigInteger.class);
         final Method setMdibVersion = target.getClass().getMethod("setMdibVersion", BigInteger.class);
 
-        setSequenceId.invoke(target, mdibVersion.getSequenceId().toString());
+        setSequenceId.invoke(target, mdibVersion.getSequenceId());
         setInstanceId.invoke(target, mdibVersion.getInstanceId());
         setMdibVersion.invoke(target, mdibVersion.getVersion());
     }

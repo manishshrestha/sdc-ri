@@ -80,22 +80,22 @@ public class DeviceImpl extends AbstractIdleService implements Device, Service, 
     private final HostedServiceFactory hostedServiceFactory;
     private final HostedServiceInterceptorFactory hostedServiceInterceptorFactory;
     private final String eprAddress;
+    private final Logger instanceLogger;
+    private final NetworkInterfaceUtil networkInterfaceUtil;
+    private final HttpUriBuilder httpUriBuilder;
     private final boolean enableHttps;
     private final boolean enableHttp;
-    private final Logger instanceLogger;
-    private NetworkInterfaceUtil networkInterfaceUtil;
-    private HttpUriBuilder httpUriBuilder;
 
+    private final List<HostedService> hostedServicesOnStartup;
+    private final List<EventSource> eventSources;
 
     private WsDiscoveryTargetService wsdTargetService;
     private HostingService hostingService;
-    private final List<HostedService> hostedServicesOnStartup;
     private Collection<String> scopesOnStartup;
     private List<QName> typesOnStartup;
     private ThisDeviceType thisDeviceOnStartup;
     private ThisModelType thisModelOnStartup;
     private DiscoveryDeviceUdpMessageProcessor udpMsgProcessor;
-    private List<EventSource> eventSources;
 
     @AssistedInject
     DeviceImpl(@Assisted DeviceSettings deviceSettings,
@@ -136,10 +136,10 @@ public class DeviceImpl extends AbstractIdleService implements Device, Service, 
         this.hostedServiceInterceptorFactory = hostedServiceInterceptorFactory;
         this.networkInterfaceUtil = networkInterfaceUtil;
         this.httpUriBuilder = httpUriBuilder;
-        this.hostedServicesOnStartup = new ArrayList<>();
-        this.eventSources = new ArrayList<>();
         this.enableHttps = enableHttps;
         this.enableHttp = enableHttp;
+        this.hostedServicesOnStartup = new ArrayList<>();
+        this.eventSources = new ArrayList<>();
 
         this.eprAddress = wsaUtil.getAddressUri(deviceSettings.getEndpointReference()).orElseThrow(() ->
                 new RuntimeException("No valid endpoint reference found in device deviceSettings"));
@@ -188,7 +188,7 @@ public class DeviceImpl extends AbstractIdleService implements Device, Service, 
         // Create WS-Discovery target service
         wsdTargetService = targetServiceFactory.createWsDiscoveryTargetService(deviceEpr, wsdNotificationSource);
         wsdTargetService.setXAddrs(actualHostingServiceBindings.stream()
-                .map(uri -> uri.toString() + hostingServerCtxtPath)
+                .map(uriString -> uriString + hostingServerCtxtPath)
                 .collect(Collectors.toList()));
 
         // Register target service to a request response server interceptor chain
@@ -285,12 +285,6 @@ public class DeviceImpl extends AbstractIdleService implements Device, Service, 
     @Override
     public String getEprAddress() {
         return eprAddress;
-    }
-
-    private void checkRunning() {
-        if (!isRunning()) {
-            throw new IllegalStateException("Device is not running");
-        }
     }
 
     @Override

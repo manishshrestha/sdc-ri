@@ -82,6 +82,7 @@ public class ConsumerIT {
         consumer.startUp();
 
         var targetEpr = discoverDevice(consumer);
+        assert targetEpr != null;
         var hostingService = connectDevice(consumer, targetEpr);
         var remoteDevice = connectMdibAndSubscribe(consumer, hostingService);
         verifyContexts(remoteDevice);
@@ -210,19 +211,19 @@ public class ConsumerIT {
 
         // verify the number of reports for the expected metrics is at least five during the timeout
         assertTrue(
-                reportObs.numMetricChanges >= minNumberReports,
+                reportObs.getNumMetricChanges() >= minNumberReports,
                 "Did not receive metric reports, expected at least "
                         + minNumberReports
                         + " but received "
-                        + reportObs.numMetricChanges
+                        + reportObs.getNumMetricChanges()
                         + " instead."
         );
         assertTrue(
-                reportObs.numConditionChanges >= minNumberReports,
+                reportObs.getNumConditionChanges() >= minNumberReports,
                 "Did not receive alert condition reports, expected at least "
                         + minNumberReports
                         + " but received "
-                        + reportObs.numConditionChanges
+                        + reportObs.getNumConditionChanges()
                         + " instead."
         );
     }
@@ -278,11 +279,10 @@ public class ConsumerIT {
         launcher.execute(request);
 
         TestExecutionSummary summary = listener.getSummary();
-        long testFoundCount = summary.getTestsFoundCount();
         List<TestExecutionSummary.Failure> failures = summary.getFailures();
         LOG.info("getTestsSucceededCount() - {}", summary.getTestsSucceededCount());
         failures.forEach(failure -> LOG.error("failure", failure.getException()));
 
-        System.exit(failures.size() > 0 ? 1 : 0);
+        System.exit(!failures.isEmpty() ? 1 : 0);
     }
 }

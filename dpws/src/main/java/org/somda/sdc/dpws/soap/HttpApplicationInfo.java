@@ -25,6 +25,7 @@ public class HttpApplicationInfo extends ApplicationInfo {
      * @param httpHeaders map of available headers.
      * @param transactionId id of the request response transaction.
      * @param requestUri the http request-uri, null for http response messages.
+     * @deprecated use {@link #HttpApplicationInfo(ListMultimap, String, String)} instead
      */
     @Deprecated(since = "1.1.0", forRemoval = true)
     public HttpApplicationInfo(Map<String, String> httpHeaders, String transactionId, @Nullable String requestUri) {
@@ -44,8 +45,10 @@ public class HttpApplicationInfo extends ApplicationInfo {
      * @param transactionId id of the request response transaction.
      * @param requestUri the http request-uri, null for http response messages.
      */
-    public HttpApplicationInfo(ListMultimap<String, String> httpHeaders,
-                               String transactionId, @Nullable String requestUri) {
+    public HttpApplicationInfo(
+            ListMultimap<String, String> httpHeaders,
+            String transactionId, @Nullable String requestUri
+    ) {
         this.headers = ArrayListMultimap.create();
         // convert all entries to lower case
         httpHeaders.forEach((key, value) -> headers.put(key.toLowerCase(), value));
@@ -60,6 +63,7 @@ public class HttpApplicationInfo extends ApplicationInfo {
      * All keys are lower case.
      *
      * @return {@linkplain Map} of all headers
+     * @deprecated use {@link #getHeaders()} instead
      */
     @Deprecated(since = "1.1.0", forRemoval = true)
     public Map<String, String> getHttpHeaders() {
@@ -85,6 +89,11 @@ public class HttpApplicationInfo extends ApplicationInfo {
         return ArrayListMultimap.create(headers);
     }
 
+    /**
+     * Returns an identifier for the underlying HTTP request.
+     *
+     * @return the identifier, e.g. to be used to deduce relations between request and response messages.
+     */
     public String getTransactionId() {
         return transactionId;
     }

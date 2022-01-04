@@ -223,7 +223,10 @@ public class WsdlRetriever {
         // find xml declaration if there is one and content-type didn't specify the encoding
         if (charset == null) {
             try {
-                XMLStreamReader xmlStreamReader = XMLInputFactory.newInstance().createXMLStreamReader(
+                var factory = XMLInputFactory.newInstance();
+                // #218 prevent XXE attacks
+                factory.setProperty(XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES, Boolean.FALSE);
+                XMLStreamReader xmlStreamReader = factory.createXMLStreamReader(
                         new ByteArrayInputStream(response.getBody())
                 );
                 var encoding = xmlStreamReader.getCharacterEncodingScheme();

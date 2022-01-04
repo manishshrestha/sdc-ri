@@ -24,6 +24,10 @@ public class WsAddressingHeader {
         return Optional.ofNullable(action);
     }
 
+    /**
+     * Sets the wsa:Action element.
+     * @param action to set
+     */
     public void setAction(@Nullable AttributedURIType action) {
         this.action = action;
     }
@@ -32,6 +36,10 @@ public class WsAddressingHeader {
         return Optional.ofNullable(messageId);
     }
 
+    /**
+     * Sets the wsa:MessageID element.
+     * @param messageId to set
+     */
     public void setMessageId(@Nullable AttributedURIType messageId) {
         this.messageId = messageId;
     }
@@ -40,6 +48,10 @@ public class WsAddressingHeader {
         return Optional.ofNullable(to);
     }
 
+    /**
+     * Sets the wsa:To element.
+     * @param to to set
+     */
     public void setTo(@Nullable AttributedURIType to) {
         this.to = to;
     }
@@ -48,6 +60,10 @@ public class WsAddressingHeader {
         return Optional.ofNullable(relatesTo);
     }
 
+    /**
+     * Sets the wsa:RelatesTo element.
+     * @param relatesTo to set
+     */
     public void setRelatesTo(@Nullable RelatesToType relatesTo) {
         this.relatesTo = relatesTo;
     }

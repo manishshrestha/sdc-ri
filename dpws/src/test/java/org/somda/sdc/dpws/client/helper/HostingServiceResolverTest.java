@@ -53,7 +53,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class HostingServiceResolverTest extends DpwsTest {
+class HostingServiceResolverTest extends DpwsTest {
     private MockTransferGetClient mockTransferGetClient;
     private MockGetMetadataClient mockGetMetadataClient;
 
@@ -129,7 +129,7 @@ public class HostingServiceResolverTest extends DpwsTest {
     }
 
     @Test
-    public void resolveHostingService() {
+    void resolveHostingService() {
         // When no existing service is found in registry on resolving
         // Then expect the resolver to resolve the service according to the following message
         mockTransferGetClient.setTransferGetMessages(Collections.singletonList(createTransferGetMessage(

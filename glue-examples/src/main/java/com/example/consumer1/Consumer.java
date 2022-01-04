@@ -120,7 +120,7 @@ public class Consumer {
         return connector;
     }
 
-    protected void startUp() throws SocketException {
+    protected void startUp() {
         // provide the name of your network adapter
         this.dpwsFramework = injector.getInstance(DpwsFramework.class);
         this.dpwsFramework.setNetworkInterface(networkInterface);
@@ -251,7 +251,8 @@ public class Consumer {
                         6, false,
                         7, false,
                         8, false,
-                        9, false
+                        9, false,
+                        10, false
                 )
         );
 
@@ -259,21 +260,19 @@ public class Consumer {
             var keys = new ArrayList<>(resultMap.keySet());
             Collections.sort(keys);
 
-            keys.forEach(key -> System.out.println(
-                    String.format("### Test %s ### %s", key, resultMap.get(key) ? "passed" : "failed")
-            ));
+            keys.forEach(key -> System.out.printf("### Test %s ### %s%n", key, resultMap.get(key) ? "passed" : "failed"));
         }));
 
         // see if device using the provided epr address is available
         LOG.info("Starting discovery for {}", targetEpr);
-        final SettableFuture<List<String>> xAddrs = SettableFuture.create();
+        final SettableFuture<DiscoveredDevice> xAddrs = SettableFuture.create();
         DiscoveryObserver obs = new DiscoveryObserver() {
             @Subscribe
             void deviceFound(ProbedDeviceFoundMessage message) {
                 DiscoveredDevice payload = message.getPayload();
                 if (payload.getEprAddress().equals(targetEpr)) {
                     LOG.info("Found device with epr {}", payload.getEprAddress());
-                    xAddrs.set(payload.getXAddrs());
+                    xAddrs.set(payload);
                 } else {
                     LOG.info("Found non-matching device with epr {}", payload.getEprAddress());
                 }
@@ -285,8 +284,10 @@ public class Consumer {
         SdcDiscoveryFilterBuilder discoveryFilterBuilder = SdcDiscoveryFilterBuilder.create();
         consumer.getClient().probe(discoveryFilterBuilder.get());
 
+        DiscoveredDevice d = null;
         try {
-            List<String> targetXAddrs = xAddrs.get(MAX_WAIT_SEC, TimeUnit.SECONDS);
+            List<String> targetXAddrs = xAddrs.get(MAX_WAIT_SEC, TimeUnit.SECONDS).getXAddrs();
+            d = xAddrs.get();
             resultMap.put(1, true);
         } catch (InterruptedException | TimeoutException | ExecutionException e) {
             LOG.error("Couldn't find target with EPR {}", targetEpr, e);
@@ -296,7 +297,7 @@ public class Consumer {
 
         var deviceUri = targetEpr;
         LOG.info("Connecting to {}", targetEpr);
-        var hostingServiceFuture = consumer.getClient().connect(deviceUri);
+        var hostingServiceFuture = consumer.getClient().connect(d);
 
         HostingServiceProxy hostingServiceProxy = null;
         try {
@@ -314,9 +315,7 @@ public class Consumer {
             var wsdls = wsdlRetriever.retrieveWsdls(hostingServiceProxy);
             LOG.debug("Retrieved WSDLs");
             if (LOG.isDebugEnabled()) {
-                wsdls.forEach((service, data) -> {
-                    LOG.debug("WSDLs for service {}: {}", service, data);
-                });
+                wsdls.forEach((service, data) -> LOG.debug("WSDLs for service {}: {}", service, data));
             }
         } catch (IOException e) {
             LOG.error("Could not retrieve WSDL", e);
@@ -362,9 +361,9 @@ public class Consumer {
         int minNumberReports = (int) (REPORT_TIMEOUT / Duration.ofSeconds(5).toMillis()) - 1;
 
         // verify the number of reports for the expected metrics is at least five during the timeout
-        var metricChangesOk = reportObs.numMetricChanges >= minNumberReports;
+        var metricChangesOk = reportObs.getNumMetricChanges() >= minNumberReports;
         resultMap.put(7, metricChangesOk);
-        var conditionChangesOk = reportObs.numConditionChanges >= minNumberReports;
+        var conditionChangesOk = reportObs.getNumConditionChanges() >= minNumberReports;
         resultMap.put(8, conditionChangesOk);
 
 
@@ -403,8 +402,12 @@ public class Consumer {
         sdcRemoteDevice.getMdibAccessObservable().unregisterObserver(reportObs);
         sdcRemoteDevice.stopAsync().awaitTerminated();
 
-        consumer.getConnector().disconnect(deviceUri);
-        consumer.shutDown();
+        try {
+            var disconnectDone = consumer.getConnector().disconnect(deviceUri).isDone();
+            consumer.shutDown();
+            resultMap.put(10, disconnectDone);
+        } catch (Exception e) {
+            LOG.warn("Disconnect failed", e);
+        }
     }
-
 }

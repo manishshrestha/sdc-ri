@@ -55,7 +55,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(LoggingTestWatcher.class)
-public class CryptoIT {
+class CryptoIT {
     private static final Duration MAX_WAIT_TIME = Duration.ofMinutes(3);
 
     private final IntegrationTestUtil IT = new IntegrationTestUtil();
@@ -235,7 +235,7 @@ public class CryptoIT {
         var uri = xAddrs.get(0);
 
         // Then expect the EPR address returned by a directed probe to be the DUT's EPR address
-        final String expectedEprAddress = devicePeer.getEprAddress().toString();
+        final String expectedEprAddress = devicePeer.getEprAddress();
 
         // make five requests using this connection
         for (int i = 0; i < 5; i++) {
@@ -244,8 +244,8 @@ public class CryptoIT {
                     .getProbeMatch().get(0).getEndpointReference().getAddress().getValue());
         }
 
-        // hostname verifier must becalled exactly once for the connection
-        verify(verifier, times(1)).verify(any(), any());
+        // hostname verifier is called two times: SSLConnectionSockerFactory, JettyHttpServerRegistry
+        verify(verifier, times(2)).verify(any(), any());
     }
 
     @Test

@@ -39,8 +39,9 @@ import java.io.Reader;
  * {@link HttpHandler#handle(InputStream, OutputStream, CommunicationContext)}.
  */
 public class RequestResponseServerHttpHandler implements HttpHandler, InterceptorHandler {
-    private static final Logger LOG = LogManager.getLogger(RequestResponseServerHttpHandler.class);
     static final String NO_CONTENT_TYPE_MESSAGE = "Could not parse Content-Type header element";
+
+    private static final Logger LOG = LogManager.getLogger(RequestResponseServerHttpHandler.class);
 
     private final RequestResponseServer reqResServer;
     private final MarshallingService marshallingService;
@@ -138,7 +139,10 @@ public class RequestResponseServerHttpHandler implements HttpHandler, Intercepto
             reqResServer.receiveRequestResponse(requestMsg, responseMsg, communicationContext);
         } catch (SoapFaultException e) {
             responseMsg = e.getFaultMessage();
-            instanceLogger.warn("Processing message triggered soap fault: {}", e.getMessage());
+            instanceLogger.warn("{}: Processing message triggered soap fault: {}",
+                    communicationContext.getTransportInfo().getRemoteNodeInfo(),
+                    e.getMessage());
+            instanceLogger.trace("Processing message triggered soap fault", e);
             httpExceptionToThrow = new HttpException(SoapFaultHttpStatusCodeMapping.get(e.getFault()));
         }
 

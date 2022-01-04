@@ -185,7 +185,7 @@ public class VersionHandler implements DescriptionPreprocessingSegment, StatePre
         putVersionPair(descriptor);
 
         final Map<String, AbstractMultiState> multiStatesFromStorage = storage.getMultiStates(descriptor.getHandle())
-                .stream().collect(Collectors.toMap(o -> o.getHandle(), o -> o));
+                .stream().collect(Collectors.toMap(AbstractMultiState::getHandle, o -> o));
 
         Consumer<AbstractMultiState> replaceVersions = multiState -> {
             final VersionPair stateVersionPair = getVersionPair(multiState).orElse(new VersionPair());

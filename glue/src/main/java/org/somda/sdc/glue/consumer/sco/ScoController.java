@@ -79,10 +79,10 @@ public class ScoController implements SetServiceAccess {
             Class<V> responseClass) {
         return executorService.get().submit(() -> {
             instanceLogger.debug("Invoke {} operation with payload: {}",
-                    setRequest.getClass().getSimpleName(), setRequest.toString());
+                    setRequest.getClass().getSimpleName(), setRequest);
             final V response = responseClass.cast(sendMessage(setRequest, responseClass));
             instanceLogger.debug("Received {} message with payload: {}",
-                    response.getClass().getSimpleName(), response.toString());
+                    response.getClass().getSimpleName(), response);
 
             final ScoTransactionImpl<V> transaction =
                     scoTransactionFactory.createScoTransaction(response, reportListener);

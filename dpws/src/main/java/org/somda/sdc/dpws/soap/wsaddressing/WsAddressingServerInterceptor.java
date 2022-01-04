@@ -21,7 +21,6 @@ import org.somda.sdc.dpws.soap.interception.RequestResponseObject;
 import org.somda.sdc.dpws.soap.wsaddressing.factory.WsAddressingFaultFactory;
 import org.somda.sdc.dpws.soap.wsaddressing.model.AttributedURIType;
 
-import javax.annotation.Nullable;
 import java.util.Optional;
 import java.util.function.Consumer;
 
@@ -65,7 +64,7 @@ public class WsAddressingServerInterceptor implements Interceptor {
 
     @MessageInterceptor(direction = Direction.REQUEST)
     void processMessage(RequestResponseObject rrInfo) throws SoapFaultException {
-        var logMissingMessageId = resolveLogCallForMissingMessageIds(rrInfo.getCommunicationContext().orElse(null));
+        var logMissingMessageId = resolveLogCallForMissingMessageIds(rrInfo.getCommunicationContext());
         processMessage(rrInfo.getRequest(), logMissingMessageId);
         rrInfo.getResponse().getWsAddressingHeader().setRelatesTo(wsaUtil.createRelatesToType(
                 rrInfo.getRequest().getWsAddressingHeader().getMessageId().orElse(null)));
@@ -130,16 +129,14 @@ public class WsAddressingServerInterceptor implements Interceptor {
         messageIdCache.add(messageId.get().getValue());
     }
 
-    private Consumer<SoapMessage> resolveLogCallForMissingMessageIds(
-            @Nullable CommunicationContext communicationContext) {
+    private Consumer<SoapMessage> resolveLogCallForMissingMessageIds(CommunicationContext communicationContext) {
         var logMsg = "Incoming message {} had no MessageID element in its header";
 
         // Typically missing message IDs are ok as long as the enclosing SOAP messages are conveyed using a
         // connection-agnostic protocol (e.g. TCP)
         Consumer<SoapMessage> logCall = soapMessage -> instanceLogger.debug(logMsg, soapMessage);
-        if (communicationContext != null &&
-                communicationContext.getTransportInfo().getScheme()
-                        .equalsIgnoreCase(DpwsConstants.URI_SCHEME_SOAP_OVER_UDP)) {
+        if (communicationContext.getTransportInfo().getScheme()
+                .equalsIgnoreCase(DpwsConstants.URI_SCHEME_SOAP_OVER_UDP)) {
             // In DPWS only UDP SOAP messages are required to enclose message IDs
             // - promote missing message IDs to warn here
             logCall = soapMessage -> instanceLogger.warn(logMsg, soapMessage);

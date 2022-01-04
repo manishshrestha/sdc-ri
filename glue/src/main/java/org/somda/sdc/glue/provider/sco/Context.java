@@ -27,7 +27,7 @@ import javax.annotation.Nullable;
 import java.util.List;
 
 /**
- * Transaction context to be used on incomibg set service requests in order to send reports and the initial response.
+ * Transaction context to be used on incoming set service requests in order to send reports and the initial response.
  *
  * @see InvocationResponse
  */
@@ -46,10 +46,6 @@ public class Context {
     private final ObjectFactory messageModelFactory;
     private final Logger instanceLogger;
 
-    // this is used to track whether the last OperationInvokedReport state
-    // matches the Responses state, and sends an OperationInvokedReport in case it doesn't
-    private InvocationState currentReportInvocationState;
-
     @AssistedInject
     Context(@Assisted long transactionId,
             @Assisted String operationHandle,
@@ -65,7 +61,6 @@ public class Context {
         this.eventSource = eventSource;
         this.mdibAccess = mdibAccess;
         this.messageModelFactory = messageModelFactory;
-        this.currentReportInvocationState = null;
     }
 
     public LocalMdibAccess getMdibAccess() {
@@ -86,9 +81,6 @@ public class Context {
 
     /**
      * Creates a successful initial invocation response based on this context.
-     * <p>
-     * <em>Creating the response will send an {@linkplain OperationInvokedReport} matching the response
-     * if no report matching this invocation state has been sent before.</em>
      *
      * @param mdibVersion     the MDIB version that is put to the response message.
      * @param invocationState the invocation state that is put to the response message.
@@ -97,22 +89,11 @@ public class Context {
      */
     public InvocationResponse createSuccessfulResponse(MdibVersion mdibVersion,
                                                        InvocationState invocationState) {
-        if (!invocationState.equals(this.currentReportInvocationState)) {
-            instanceLogger.debug(
-                    "No matching OperationInvokedReport was sent before creating response." +
-                            " Sending response as OperationInvokedReport as well. Operation: {} - State: {}",
-                    this.operationHandle, invocationState
-            );
-            sendSuccessfulReport(mdibVersion, invocationState);
-        }
         return new InvocationResponse(mdibVersion, transactionId, invocationState, null, null);
     }
 
     /**
      * Creates a successful initial invocation response based on this context with latest MDIB version.
-     * <p>
-     * <em>Creating the response will send an {@linkplain OperationInvokedReport} matching the response
-     * if no report matching this invocation state has been sent before.</em>
      *
      * @param invocationState the invocation state that is put to the response message.
      *                        The enumeration is not verified.
@@ -124,9 +105,6 @@ public class Context {
 
     /**
      * Creates an unsuccessful initial invocation response based on this context.
-     * <p>
-     * <em>Creating the response will send an {@linkplain OperationInvokedReport} matching the response
-     * if no report matching this invocation state has been sent before.</em>
      *
      * @param mdibVersion            the MDIB version that is put to the response message.
      * @param invocationState        the invocation state that is put to the response message.
@@ -145,9 +123,6 @@ public class Context {
 
     /**
      * Creates an unsuccessful initial invocation response based on this context with latest MDIB version.
-     * <p>
-     * <em>Creating the response will send an {@linkplain OperationInvokedReport} matching the response
-     * if no report matching this invocation state has been sent before.</em>
      *
      * @param invocationState        the invocation state that is put to the response message.
      *                               The enumeration is not verified.
@@ -240,13 +215,24 @@ public class Context {
         sendReport(mdibAccess.getMdibVersion(), invocationState, invocationError, invocationErrorMessage, null);
     }
 
-    private void sendReport(MdibVersion mdibVersion,
-                            InvocationState invocationState,
-                            @Nullable InvocationError invocationError,
-                            @Nullable List<LocalizedText> invocationErrorMessage,
-                            @Nullable String operationTarget) {
+    /**
+     * Sends an operation invoked report with the information passed as arguments.
+     *
+     * @param mdibVersion            the invocation state that is put to the notification message.
+     *                               The enumeration is not verified.
+     * @param invocationState        the invocation state to send.
+     * @param invocationError        the specified error or null if this is not an error report.
+     * @param invocationErrorMessage a human-readable text to describe the error or null if this is not an error report.
+     * @param operationTarget        the operation target if available or null if unknown/irrelevant.
+     */
+    public void sendReport(MdibVersion mdibVersion,
+                           InvocationState invocationState,
+                           @Nullable InvocationError invocationError,
+                           @Nullable List<LocalizedText> invocationErrorMessage,
+                           @Nullable String operationTarget) {
 
-        this.currentReportInvocationState = invocationState;
+        LOG.debug("Sending report for context {} at MDIB version {} with invocation state: {}",
+                this, mdibVersion, invocationState);
 
         final InvocationInfo invocationInfo = messageModelFactory.createInvocationInfo();
         invocationInfo.setInvocationState(invocationState);
@@ -262,7 +248,7 @@ public class Context {
         reportPart.setInvocationInfo(invocationInfo);
 
         final OperationInvokedReport operationInvokedReport = messageModelFactory.createOperationInvokedReport();
-        operationInvokedReport.setSequenceId(mdibVersion.getSequenceId().toString());
+        operationInvokedReport.setSequenceId(mdibVersion.getSequenceId());
         operationInvokedReport.setInstanceId(mdibVersion.getInstanceId());
         operationInvokedReport.setMdibVersion(mdibVersion.getVersion());
         operationInvokedReport.getReportPart().add(reportPart);
@@ -279,16 +265,6 @@ public class Context {
                     transactionId, invocationState);
         }
     }
-
-    /**
-     * Returns the last {@linkplain InvocationState} for which an {@linkplain OperationInvokedReport} was sent out.
-     *
-     * @return The last {@linkplain InvocationState} sent as a report.
-     */
-    public InvocationState getCurrentReportInvocationState() {
-        return currentReportInvocationState;
-    }
-
 
     @Override
     public String toString() {

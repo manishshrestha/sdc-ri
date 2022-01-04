@@ -10,6 +10,7 @@ import java.net.URI;
 import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.regex.Pattern;
 
 /**
  * Utility class for the WS-Discovery plugin.
@@ -48,12 +49,11 @@ public class WsDiscoveryUtil {
     public boolean isScopesMatching(List<String> superset, List<String> subset, MatchBy matchBy) {
         switch (matchBy) {
             case RFC3986:
-                // \todo this is probably wrong/incomplete RFC3986 matching - room for improvement here!
                 return isMatching(superset, subset, (o1, o2) ->
-                        URI.create((String) o1).equals(URI.create((String) o2)) ? 0 : 1
+                        uriCompare(o1, o2) ? 0 : 1
                 );
             case STRCMP0:
-                isMatching(superset, subset, (o1, o2) -> o1.equals(o2) ? 0 : 1);
+                return isMatching(superset, subset, (o1, o2) -> o1.equals(o2) ? 0 : 1);
             default:
                 return false;
         }
@@ -78,5 +78,40 @@ public class WsDiscoveryUtil {
         return superset.size() >= subset.size() && superset.stream()
                 .filter(qName1 -> subset.stream()
                         .anyMatch(qName2 -> comp.compare(qName1, qName2) == 0)).count() == subset.size();
+    }
+
+    private boolean uriCompare(Object o1, Object o2) {
+        var supersetUri = URI.create((String) o1);
+        var subsetUri = URI.create((String) o2);
+
+        // paths must not have /./ or /../ segments
+        var pattern = Pattern.compile("/\\.*/");
+        if (pattern.matcher(supersetUri.getPath()).find() || pattern.matcher(subsetUri.getPath()).find()) {
+            return false;
+        }
+        if (supersetUri.toString().equals(subsetUri.toString())) {
+            return true;
+        }
+        if (!supersetUri.getScheme().equalsIgnoreCase(subsetUri.getScheme())) {
+            return false;
+        }
+        if (!supersetUri.getAuthority().equalsIgnoreCase(subsetUri.getAuthority())) {
+            return false;
+        }
+        var supersetSegments = supersetUri.getPath().split("/");
+        var subsetSegments = subsetUri.getPath().split("/");
+
+        if (subsetSegments.length > supersetSegments.length) {
+            // subset is bigger than superset, its not equal even if all superset paths matches.
+            return false;
+        }
+
+        for (var i = 0; i < supersetSegments.length; i++) {
+            if (subsetSegments.length > i && !supersetSegments[i].equals(subsetSegments[i])) {
+                return false;
+            }
+        }
+
+        return true;
     }
 }

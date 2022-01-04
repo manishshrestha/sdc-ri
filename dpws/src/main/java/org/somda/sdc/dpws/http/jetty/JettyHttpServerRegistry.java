@@ -116,8 +116,8 @@ public class JettyHttpServerRegistry extends AbstractIdleService implements Http
         this.enabledCiphers = enabledCiphers;
         this.hostnameVerifier = hostnameVerifier;
         this.communicationLog = communicationLog;
-        this.enableHttps = enableHttps | legacyEnableHttps;
-        this.enableHttp = enableHttp | legacyEnableHttp;
+        this.enableHttps = enableHttps || legacyEnableHttps;
+        this.enableHttp = enableHttp || legacyEnableHttp;
         this.connectionTimeout = connectionTimeout;
         serverRegistry = new HashMap<>();
         handlerRegistry = new HashMap<>();
@@ -389,10 +389,11 @@ public class JettyHttpServerRegistry extends AbstractIdleService implements Http
         if (!isSupportedScheme(uri)) {
             throw new RuntimeException(String.format("HTTP server setup failed. Unsupported scheme: %s",
                     uri.getScheme()));
-
         }
+
         HttpConfiguration httpConfig = new HttpConfiguration();
         httpConfig.setSecureScheme(HttpScheme.HTTPS.asString());
+        httpConfig.setHttpCompliance(HttpCompliance.RFC2616);
 
         var server = new Server(new InetSocketAddress(
                 uri.getHost(),
@@ -402,8 +403,9 @@ public class JettyHttpServerRegistry extends AbstractIdleService implements Http
         server.setHandler(context);
         this.contextHandlerMap.put(server, context);
 
-        CommunicationLogHandlerWrapper commlogHandler =
-                new CommunicationLogHandlerWrapper(communicationLog, frameworkIdentifier);
+        CommunicationLogHandlerWrapper commlogHandler = new CommunicationLogHandlerWrapper(
+                communicationLog, frameworkIdentifier
+        );
         commlogHandler.setHandler(server.getHandler());
         server.setHandler(commlogHandler);
 
@@ -440,8 +442,11 @@ public class JettyHttpServerRegistry extends AbstractIdleService implements Http
             contextFactory.setExcludeCipherSuites();
             contextFactory.setIncludeCipherSuites(enabledCiphers);
 
-            HttpConfiguration httpsConfig = new HttpConfiguration(httpConfig);
             SecureRequestCustomizer src = new SecureRequestCustomizer();
+            // disable hostname validation, does not match sdc behavior
+            src.setSniHostCheck(false);
+
+            HttpConfiguration httpsConfig = new HttpConfiguration(httpConfig);
             var clientVerifier = new HttpConfiguration.Customizer() {
                 @Override
                 public void customize(Connector connector, HttpConfiguration channelConfig, Request request) {
@@ -474,8 +479,7 @@ public class JettyHttpServerRegistry extends AbstractIdleService implements Http
             var connectionFactory = new SslConnectionFactory(contextFactory, HttpVersion.HTTP_1_1.asString());
             ServerConnector httpsConnector;
 
-            HttpConnectionFactory httpConnectionFactory = new HttpConnectionFactory(httpsConfig,
-                HttpCompliance.RFC2616);
+            HttpConnectionFactory httpConnectionFactory = new HttpConnectionFactory(httpsConfig);
 
             if (enableHttp) {
                 httpsConnector = new ServerConnector(server,
@@ -523,9 +527,7 @@ public class JettyHttpServerRegistry extends AbstractIdleService implements Http
     }
 
     private boolean isSupportedScheme(URI address) {
-        return (enableHttp && HttpScheme.HTTP.asString().toLowerCase()
-                .equals(address.getScheme().toLowerCase()))
-                || (enableHttps && HttpScheme.HTTPS.asString().toLowerCase()
-                .equals(address.getScheme().toLowerCase()));
+        return (enableHttp && HttpScheme.HTTP.asString().equalsIgnoreCase(address.getScheme()))
+                || (enableHttps && HttpScheme.HTTPS.asString().equalsIgnoreCase(address.getScheme()));
     }
 }

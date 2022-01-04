@@ -81,6 +81,11 @@ public class ReadTransactionImpl implements ReadTransaction {
     }
 
     @Override
+    public <T extends AbstractState> List<T> getStatesByType(Class<T> stateClass) {
+        return mdibStorage.getStatesByType(stateClass);
+    }
+
+    @Override
     public <T extends AbstractContextState> List<T> getContextStates(String descriptorHandle, Class<T> stateClass) {
         return mdibStorage.getContextStates(descriptorHandle, stateClass);
     }

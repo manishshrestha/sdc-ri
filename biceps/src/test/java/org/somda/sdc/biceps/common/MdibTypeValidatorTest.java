@@ -14,7 +14,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @ExtendWith(LoggingTestWatcher.class)
-public class MdibTypeValidatorTest {
+class MdibTypeValidatorTest {
     private MdibTypeValidator matcher;
 
     private static final Map<Class<? extends AbstractDescriptor>, Class<? extends AbstractState>> singleStateMap
@@ -59,7 +59,7 @@ public class MdibTypeValidatorTest {
     }
 
     @Test
-    public void matchingClassTypes() {
+    void matchingClassTypes() {
 
         singleStateMap.forEach(
                 (descOuter, stateOuter) -> {
@@ -102,7 +102,7 @@ public class MdibTypeValidatorTest {
     }
 
     @Test
-    public <T extends AbstractDescriptor, U extends AbstractState> void matchSingleStateInstance() {
+    <T extends AbstractDescriptor, U extends AbstractState> void matchSingleStateInstance() {
 
         singleStateMap.forEach(
                 (descOuter, stateOuter) -> {
@@ -139,7 +139,7 @@ public class MdibTypeValidatorTest {
     }
 
     @Test
-    public <T extends AbstractDescriptor, U extends AbstractState, V extends AbstractContextState> void matchingMultiStateInstance() {
+    <T extends AbstractDescriptor, U extends AbstractState, V extends AbstractContextState> void matchingMultiStateInstance() {
         multiStateMap.forEach(
                 (descOuter, stateOuter) -> {
                     Class<T> descOuterCast = (Class<T>) descOuter; // to force one warning up here
@@ -197,7 +197,7 @@ public class MdibTypeValidatorTest {
     }
 
     @Test
-    public <T extends AbstractDescriptor, U extends AbstractState, V extends AbstractContextState> void singleAndMultiStateMatchers() {
+    <T extends AbstractDescriptor, U extends AbstractState, V extends AbstractContextState> void singleAndMultiStateMatchers() {
         singleStateMap.forEach(
                 (descOuter, stateOuter) -> {
                     Class<T> descOuterCast = (Class<T>) descOuter; // to force one warning up here

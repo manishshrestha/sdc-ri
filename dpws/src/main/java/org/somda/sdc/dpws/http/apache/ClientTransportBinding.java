@@ -39,6 +39,9 @@ import java.io.Reader;
 import java.net.SocketException;
 import java.nio.charset.StandardCharsets;
 
+/**
+ * Binding providing request-response and notification capabilities using an {@linkplain HttpClient}.
+ */
 public class ClientTransportBinding implements TransportBinding {
 
     public static final String USER_AGENT_KEY = "X-User-Agent";

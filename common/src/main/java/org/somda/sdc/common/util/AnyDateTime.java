@@ -13,7 +13,7 @@ import java.util.function.Consumer;
  * Required as both local and offset representation are supported by XML Schema DateTime.
  */
 public class AnyDateTime {
-    private final static ZoneOffset DEFAULT_OFFSET = OffsetDateTime.now().getOffset();
+    private static final ZoneOffset DEFAULT_OFFSET = OffsetDateTime.now().getOffset();
 
     private LocalDateTime local;
     private OffsetDateTime offset;
@@ -130,5 +130,30 @@ public class AnyDateTime {
          * @param consumer the code to execute.
          */
         void orElse(Consumer<T> consumer);
+    }
+
+    /**
+     * Compares two {@linkplain AnyDateTime} objects on equality.
+     *
+     * @param object the right-hand side to compare against with this object.
+     * @return true if all attributes equal true, otherwise false.
+     */
+    @Override
+    public boolean equals(final Object object) {
+        if (this == object) return true;
+        if (object == null || getClass() != object.getClass()) return false;
+        final AnyDateTime that = (AnyDateTime) object;
+        return Objects.equals(local, that.local) &&
+                Objects.equals(offset, that.offset);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(local, offset);
+    }
+
+    @Override
+    public String toString() {
+        return ObjectStringifier.stringify(this);
     }
 }

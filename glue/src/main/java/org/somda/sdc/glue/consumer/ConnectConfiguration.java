@@ -176,7 +176,7 @@ public class ConnectConfiguration {
             }
         });
         if (qNames.isEmpty()) {
-            LOG.warn("No matching QNames found for actions {}", Arrays.toString(actions.toArray()));
+            LOG.warn("No matching QNames found for actions {}", () -> Arrays.toString(actions.toArray()));
         }
         return qNames;
     }

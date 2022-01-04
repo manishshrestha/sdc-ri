@@ -20,7 +20,7 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
 
-public class RequestResponseClientImplTest extends DpwsTest {
+class RequestResponseClientImplTest extends DpwsTest {
     private List<String> dispatchedSequence;
 
     @Override
@@ -33,7 +33,7 @@ public class RequestResponseClientImplTest extends DpwsTest {
     }
 
     @Test
-    public void sendRequestResponse() throws Exception {
+    void sendRequestResponse() throws Exception {
         SoapMarshalling unmarshaller = getInjector().getInstance(SoapMarshalling.class);
         Envelope soapEnv = unmarshaller.unmarshal(getClass().getResourceAsStream("soap-envelope.xml"));
 

@@ -31,7 +31,7 @@ import java.util.concurrent.atomic.AtomicLong;
 public class CommunicationLogHttpRequestInterceptor implements HttpRequestInterceptor {
     private static final Logger LOG = LogManager.getLogger(CommunicationLogHttpRequestInterceptor.class);
     private static final String TRANSACTION_ID_PREFIX_CLIENT = "rrId:client:" + UUID.randomUUID() + ":";
-    private final static AtomicLong TRANSACTION_ID = new AtomicLong(-1L);
+    private static final AtomicLong TRANSACTION_ID = new AtomicLong(-1L);
 
     private final CommunicationLog commlog;
     private final Logger instanceLogger;

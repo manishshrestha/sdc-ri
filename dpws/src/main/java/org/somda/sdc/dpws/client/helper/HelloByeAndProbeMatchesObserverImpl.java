@@ -45,7 +45,7 @@ public class HelloByeAndProbeMatchesObserverImpl implements HelloByeAndProbeMatc
     @Inject
     HelloByeAndProbeMatchesObserverImpl(@Assisted DiscoveredDeviceResolver discoveredDeviceResolver,
                                         @NetworkJobThreadPool
-                                        ExecutorWrapperService<ListeningExecutorService> networkJobExecutor,
+                                                ExecutorWrapperService<ListeningExecutorService> networkJobExecutor,
                                         WsAddressingUtil wsaUtil,
                                         @Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier) {
         this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);
@@ -55,16 +55,31 @@ public class HelloByeAndProbeMatchesObserverImpl implements HelloByeAndProbeMatc
         this.discoveryBus = new EventBus();
     }
 
+    /**
+     * Registers a new observer for discovery messages.
+     *
+     * @param observer to register
+     */
     public void registerDiscoveryObserver(org.somda.sdc.dpws.client.DiscoveryObserver observer) {
         discoveryBus.register(observer);
     }
 
+    /**
+     * Unregisters an observer from handling discovery messages.
+     *
+     * @param observer to unregister
+     */
     public void unregisterDiscoveryObserver(org.somda.sdc.dpws.client.DiscoveryObserver observer) {
         discoveryBus.unregister(observer);
     }
 
-    public void publishDeviceLeft(String deviceUuid, DeviceLeftMessage.TriggeredBy triggeredBy) {
-        discoveryBus.post(new DeviceLeftMessage(deviceUuid, triggeredBy));
+    /**
+     * Publishes a message informing subscribers of a device having left.
+     *
+     * @param deviceUuid  of the device which has left
+     */
+    public void publishDeviceLeft(String deviceUuid) {
+        discoveryBus.post(new DeviceLeftMessage(deviceUuid));
     }
 
     @Subscribe
@@ -92,8 +107,7 @@ public class HelloByeAndProbeMatchesObserverImpl implements HelloByeAndProbeMatc
 
     @Subscribe
     void onBye(ByeMessage byeMessage) {
-        wsaUtil.getAddressUri(byeMessage.getPayload().getEndpointReference()).ifPresent(uri ->
-                discoveryBus.post(new DeviceLeftMessage(uri, DeviceLeftMessage.TriggeredBy.BYE)));
+        wsaUtil.getAddressUri(byeMessage.getPayload().getEndpointReference()).ifPresent(this::publishDeviceLeft);
     }
 
     /**

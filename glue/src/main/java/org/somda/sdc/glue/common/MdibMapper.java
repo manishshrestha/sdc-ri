@@ -152,7 +152,7 @@ public class MdibMapper {
             List<MdibEntity> allRootEntities = mdibAccess.getRootEntities();
             rootEntities = allRootEntities.stream()
                     .filter(mdibEntity -> handleFilterCopy.stream()
-                            .filter(handle -> mdibEntity.getHandle().equals(handle)).findAny().isPresent())
+                            .anyMatch(handle -> mdibEntity.getHandle().equals(handle)))
                     .collect(Collectors.toList());
             rootEntities.forEach(mdibEntity -> {
                 handleFilterCopy.remove(mdibEntity.getHandle());

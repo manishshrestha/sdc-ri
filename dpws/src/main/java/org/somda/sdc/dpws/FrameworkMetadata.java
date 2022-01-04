@@ -12,6 +12,9 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
+/**
+ * Container class for framework metadata such as framework version, java version etc.
+ */
 @Singleton
 public class FrameworkMetadata {
     private static final Logger LOG = LogManager.getLogger(FrameworkMetadata.class);
@@ -57,20 +60,12 @@ public class FrameworkMetadata {
         try {
             // start the process
             Process process = processBuilder.start();
-            StringBuilder output = new StringBuilder();
-            BufferedReader reader = new BufferedReader(
-                    new InputStreamReader(process.getInputStream()));
-
-            // read all ines
-            String line;
-            while ((line = reader.readLine()) != null) {
-                output.append(line);
-            }
+            StringBuilder output = readProcessOutput(process);
 
             // wait for git to finish
             int exitVal = process.waitFor();
             if (exitVal == 0) {
-                return " " + output.toString();
+                return " " + output;
             } else {
                 instanceLogger.error("Could not call git to determine revision, exit code was {}", exitVal);
             }
@@ -78,5 +73,18 @@ public class FrameworkMetadata {
             instanceLogger.error("Could not call git to determine revision", e);
         }
         return " unknown revision";
+    }
+
+    private StringBuilder readProcessOutput(Process process) throws IOException {
+        StringBuilder output = new StringBuilder();
+
+        try (var reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
+            // read all ines
+            String line;
+            while ((line = reader.readLine()) != null) {
+                output.append(line);
+            }
+            return output;
+        }
     }
 }

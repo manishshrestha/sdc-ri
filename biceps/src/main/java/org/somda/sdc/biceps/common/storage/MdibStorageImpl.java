@@ -187,6 +187,19 @@ public class MdibStorageImpl implements MdibStorage {
     }
 
     @Override
+    public <T extends AbstractState> List<T> getStatesByType(Class<T> stateClass) {
+        var result = new ArrayList<T>();
+        for (MdibEntity entity : entities.values()) {
+            entity.getStates().forEach(state -> {
+                if (stateClass.isAssignableFrom(state.getClass())) {
+                    result.add(stateClass.cast(state));
+                }
+            });
+        }
+        return result;
+    }
+
+    @Override
     public <T extends AbstractContextState> List<T> getContextStates(String descriptorHandle, Class<T> stateClass) {
         final MdibEntity entity = entities.get(descriptorHandle);
         if (entity == null || entity.getStates().isEmpty()) {
@@ -253,7 +266,7 @@ public class MdibStorageImpl implements MdibStorage {
                     updateEntity(modification, sanitizedStates, updatedEntities);
                     break;
                 case DELETE:
-                    deleteEntity(modification, deletedEntities);
+                    deleteEntity(modification, deletedEntities, updatedEntities);
                     break;
                 default:
                     instanceLogger.warn(
@@ -287,19 +300,29 @@ public class MdibStorageImpl implements MdibStorage {
         return result;
     }
 
-    private void deleteEntity(MdibDescriptionModification modification, List<MdibEntity> deletedEntities) {
+    private void deleteEntity(MdibDescriptionModification modification,
+                              List<MdibEntity> deletedEntities,
+                              List<MdibEntity> updatedEntities) {
         Optional.ofNullable(entities.get(modification.getHandle())).ifPresent(mdibEntity -> {
             instanceLogger.debug(
                     "[{}] Delete entity: {}",
                     mdibVersion.getInstanceId(), modification.getDescriptor().getHandle()
             );
             mdibEntity.getParent().ifPresent(parentHandle ->
-                    Optional.ofNullable(entities.get(parentHandle)).ifPresent(parentEntity ->
-                            entities.put(parentEntity.getHandle(), entityFactory.replaceChildren(parentEntity,
-                                    parentEntity.getChildren().stream()
-                                            // filter out the removed entity only
-                                            .filter(s -> !s.equals(mdibEntity.getHandle()))
-                                            .collect(Collectors.toList())))));
+                    Optional.ofNullable(entities.get(parentHandle)).ifPresent(parentEntity -> {
+                        var updatedParent = entityFactory.replaceChildren(parentEntity,
+                                parentEntity.getChildren().stream()
+                                        // filter out the removed entity only
+                                        .filter(s -> !s.equals(mdibEntity.getHandle()))
+                                        .collect(Collectors.toList()));
+
+                        entities.put(updatedParent.getHandle(), updatedParent);
+                        // if the child was found and removed - add parent to the updated entities list
+                        if (parentEntity.getChildren().size() != updatedParent.getChildren().size()) {
+                            updatedEntities.add(updatedParent);
+                        }
+                    })
+            );
         });
 
         final MdibEntity deletedEntity = entities.get(modification.getHandle());
@@ -398,7 +421,7 @@ public class MdibStorageImpl implements MdibStorage {
         // Add to context states if context entity
         if (mdibEntityForStorage.getDescriptor() instanceof AbstractContextDescriptor) {
             contextStates.putAll(mdibEntityForStorage.getStates().stream()
-                    .map(state -> (AbstractContextState) state)
+                    .map(AbstractContextState.class::cast)
                     .collect(Collectors.toMap(AbstractMultiState::getHandle, state -> state)));
         }
 
@@ -519,8 +542,8 @@ public class MdibStorageImpl implements MdibStorage {
                             entities.put(mdibEntity.getHandle(), entityFactory.replaceStates(mdibEntity,
                                     Collections.unmodifiableList(newStates)));
                             newStates.stream()
-                                    .filter(abstractMultiState -> abstractMultiState instanceof AbstractContextState)
-                                    .map(abstractMultiState -> (AbstractContextState) abstractMultiState)
+                                    .filter(AbstractContextState.class::isInstance)
+                                    .map(AbstractContextState.class::cast)
                                     .collect(Collectors.toList())
                                     .forEach(abstractContextState ->
                                             contextStates.put(abstractContextState.getHandle(), abstractContextState));

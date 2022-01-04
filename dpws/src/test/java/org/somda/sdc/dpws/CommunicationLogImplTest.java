@@ -22,8 +22,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-
-public class CommunicationLogImplTest extends DpwsTest {
+class CommunicationLogImplTest extends DpwsTest {
 
     @Test
     void content() throws IOException {
@@ -34,7 +33,7 @@ public class CommunicationLogImplTest extends DpwsTest {
 
         try (ByteArrayOutputStream mockOutputStream = spy(new ByteArrayOutputStream());
              ByteArrayInputStream inputTestInputStream = new ByteArrayInputStream(content);
-             ByteArrayOutputStream outputTestOutputStream = new ByteArrayOutputStream();) {
+             ByteArrayOutputStream outputTestOutputStream = new ByteArrayOutputStream()) {
 
             when(communicationLogSinkImplMock.createTargetStream(eq(CommunicationLog.TransportType.HTTP), any(), any(), any()))
                     .thenReturn(mockOutputStream);

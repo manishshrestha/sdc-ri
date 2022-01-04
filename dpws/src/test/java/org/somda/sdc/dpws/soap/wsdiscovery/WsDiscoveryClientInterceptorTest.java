@@ -50,7 +50,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class WsDiscoveryClientInterceptorTest extends DpwsTest {
+class WsDiscoveryClientInterceptorTest extends DpwsTest {
     private List<SoapMessage> sentSoapMessages;
     private WsDiscoveryClient wsDiscoveryClient;
 
@@ -117,7 +117,7 @@ public class WsDiscoveryClientInterceptorTest extends DpwsTest {
     }
 
     @Test
-    public void processProbe() {
+    void processProbe() {
         processProbeOrResolveRequestWithCallback(() -> {
             try {
                 wsDiscoveryClient.sendProbe(UUID.randomUUID().toString(), expectedTypes, expectedScopes);
@@ -128,7 +128,7 @@ public class WsDiscoveryClientInterceptorTest extends DpwsTest {
     }
 
     @Test
-    public void processResolve() {
+    void processResolve() {
         processProbeOrResolveRequestWithCallback(() -> {
             try {
                 wsDiscoveryClient.sendResolve(expectedEpr);
@@ -151,7 +151,7 @@ public class WsDiscoveryClientInterceptorTest extends DpwsTest {
     }
 
     @Test
-    public void sendProbe() throws Exception {
+    void sendProbe() throws Exception {
         notificationSource.register(getInjector().getInstance(WsAddressingClientInterceptor.class));
         notificationSource.register(wsDiscoveryClient);
         notificationSink.register(wsDiscoveryClient);
@@ -176,7 +176,7 @@ public class WsDiscoveryClientInterceptorTest extends DpwsTest {
     }
 
     @Test
-    public void sendResolve() throws Exception {
+    void sendResolve() throws Exception {
         notificationSource.register(getInjector().getInstance(WsAddressingClientInterceptor.class));
         notificationSource.register(wsDiscoveryClient);
         notificationSink.register(wsDiscoveryClient);

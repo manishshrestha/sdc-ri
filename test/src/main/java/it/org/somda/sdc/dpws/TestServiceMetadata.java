@@ -14,17 +14,21 @@ public class TestServiceMetadata {
     public static final String PORT_TYPE_2 = NAMESPACE_SRV + "/" + PORT_TYPE_NAME_2;
     public static final String PORT_TYPE_3 = NAMESPACE_SRV + "/" + PORT_TYPE_NAME_3;
 
-    public static final String ACTION_OPERATION_REQUEST_1 = PORT_TYPE_1 + "/TestOperationRequest";
-    public static final String ACTION_OPERATION_RESPONSE_1 = PORT_TYPE_1 + "/TestOperationResponse";
-    public static final String ACTION_NOTIFICATION_1 = PORT_TYPE_1 + "/TestNotification";
+    public static final String OPERATION_REQUEST = "/TestOperationRequest";
+    public static final String OPERATION_RESPONSE = "/TestOperationResponse";
+    public static final String NOTIFICATION = "/TestNotification";
 
-    public static final String ACTION_OPERATION_REQUEST_2 = PORT_TYPE_2 + "/TestOperationRequest";
-    public static final String ACTION_OPERATION_RESPONSE_2 = PORT_TYPE_2 + "/TestOperationResponse";
-    public static final String ACTION_NOTIFICATION_2 = PORT_TYPE_2 + "/TestNotification";
+    public static final String ACTION_OPERATION_REQUEST_1 = PORT_TYPE_1 + OPERATION_REQUEST;
+    public static final String ACTION_OPERATION_RESPONSE_1 = PORT_TYPE_1 + OPERATION_RESPONSE;
+    public static final String ACTION_NOTIFICATION_1 = PORT_TYPE_1 + NOTIFICATION;
 
-    public static final String ACTION_OPERATION_REQUEST_3 = PORT_TYPE_3 + "/TestOperationRequest";
-    public static final String ACTION_OPERATION_RESPONSE_3 = PORT_TYPE_3 + "/TestOperationResponse";
-    public static final String ACTION_NOTIFICATION_3 = PORT_TYPE_3 + "/TestNotification";
+    public static final String ACTION_OPERATION_REQUEST_2 = PORT_TYPE_2 + OPERATION_REQUEST;
+    public static final String ACTION_OPERATION_RESPONSE_2 = PORT_TYPE_2 + OPERATION_RESPONSE;
+    public static final String ACTION_NOTIFICATION_2 = PORT_TYPE_2 + NOTIFICATION;
+
+    public static final String ACTION_OPERATION_REQUEST_3 = PORT_TYPE_3 + OPERATION_REQUEST;
+    public static final String ACTION_OPERATION_RESPONSE_3 = PORT_TYPE_3 + OPERATION_RESPONSE;
+    public static final String ACTION_NOTIFICATION_3 = PORT_TYPE_3 + NOTIFICATION;
 
     public static final String JAXB_CONTEXT_PATH = "dpws_test_service.messages._2017._05._10";
 

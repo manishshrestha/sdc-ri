@@ -25,7 +25,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class DiscoveredDeviceResolverTest extends DpwsTest {
+class DiscoveredDeviceResolverTest extends DpwsTest {
     private WsAddressingUtil wsaUtil;
     private ObjectFactory objFactory;
 
@@ -38,7 +38,7 @@ public class DiscoveredDeviceResolverTest extends DpwsTest {
     }
 
     @Test
-    public void resolve() throws Exception {
+    void resolve() throws Exception {
         var expectedUri = "http://expectedUri";
         List<String> xAddrsInHello = Arrays.asList("http://inHello1", "http://inHello2");
         EndpointReferenceType epr = wsaUtil.createEprWithAddress(expectedUri);

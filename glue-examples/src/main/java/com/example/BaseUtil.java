@@ -1,5 +1,7 @@
 package com.example;
 
+import java.util.Arrays;
+import java.util.Objects;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
@@ -8,6 +10,8 @@ import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.Filter;
 import org.apache.logging.log4j.core.appender.ConsoleAppender;
 import org.apache.logging.log4j.core.config.builder.api.ConfigurationBuilder;
@@ -23,6 +27,7 @@ import java.util.List;
  * Base utility which provides parsing of command line flags and certain environment variables.
  */
 public class BaseUtil {
+    private static final Logger LOG = LogManager.getLogger();
     private static final String OPT_EPR = "epr";
     private static final String OPT_ADDRESS = "address";
     private static final String OPT_IFACE = "iface";
@@ -31,6 +36,10 @@ public class BaseUtil {
     private static final String OPT_TRUSTSTORE_PATH = "truststore";
     private static final String OPT_KEYSTORE_PASSWORD = "keystore_password";
     private static final String OPT_TRUSTSTORE_PASSWORD = "truststore_password";
+    private static final String OPT_USERKEY_PATH = "userkey";
+    private static final String OPT_USERCERT_PATH = "usercert";
+    private static final String OPT_CACERT_PATH = "cacert";
+    private static final String OPT_USERKEY_PASSWORD = "userkey_password";
 
     private static final List<String> CHATTY_LOGGERS = List.of(
             "org.apache.http.wire",
@@ -74,49 +83,55 @@ public class BaseUtil {
     protected Options configureOptions() {
         Options options = new Options();
 
-        {
-            Option eprAddressProvider = new Option("e", OPT_EPR, true, "epr address of provider");
-            eprAddressProvider.setRequired(false);
-            options.addOption(eprAddressProvider);
-        }
-        {
-            Option networkInterface = new Option("i", OPT_IFACE, true, "network interface to use");
-            networkInterface.setRequired(false);
-            options.addOption(networkInterface);
-        }
-        {
-            Option ipAddress = new Option(
-                    "a", OPT_ADDRESS, true,
-                    "ip address to bind to. if an adapter has been selected, this will be ignored"
-            );
-            ipAddress.setRequired(false);
-            options.addOption(ipAddress);
-        }
-        {
-            Option tls = new Option("u", OPT_NO_TLS, false, "disable tls");
-            tls.setRequired(false);
-            options.addOption(tls);
-        }
-        {
-            Option keyStorePath = new Option(null, OPT_KEYSTORE_PATH, true, "keystore path");
-            keyStorePath.setRequired(false);
-            options.addOption(keyStorePath);
-        }
-        {
-            Option trustStorePath = new Option(null, OPT_TRUSTSTORE_PATH, true, "truststore path");
-            trustStorePath.setRequired(false);
-            options.addOption(trustStorePath);
-        }
-        {
-            Option keyStorePassword = new Option(null, OPT_KEYSTORE_PASSWORD, true, "keystore password");
-            keyStorePassword.setRequired(false);
-            options.addOption(keyStorePassword);
-        }
-        {
-            Option keystorePath = new Option(null, OPT_TRUSTSTORE_PASSWORD, true, "truststore password");
-            keystorePath.setRequired(false);
-            options.addOption(keystorePath);
-        }
+        Option eprAddressProvider = new Option("e", OPT_EPR, true, "epr address of provider");
+        eprAddressProvider.setRequired(false);
+        options.addOption(eprAddressProvider);
+
+        Option networkInterface = new Option("i", OPT_IFACE, true, "network interface to use");
+        networkInterface.setRequired(false);
+        options.addOption(networkInterface);
+
+        Option ipAddress = new Option(
+                "a", OPT_ADDRESS, true,
+                "ip address to bind to. if an adapter has been selected, this will be ignored");
+        ipAddress.setRequired(false);
+        options.addOption(ipAddress);
+
+        Option tls = new Option("u", OPT_NO_TLS, false, "disable tls");
+        tls.setRequired(false);
+        options.addOption(tls);
+
+        Option keyStorePath = new Option(null, OPT_KEYSTORE_PATH, true, "keystore path");
+        keyStorePath.setRequired(false);
+        options.addOption(keyStorePath);
+
+        Option trustStorePath = new Option(null, OPT_TRUSTSTORE_PATH, true, "truststore path");
+        trustStorePath.setRequired(false);
+        options.addOption(trustStorePath);
+
+        Option keyStorePassword = new Option(null, OPT_KEYSTORE_PASSWORD, true, "keystore password");
+        keyStorePassword.setRequired(false);
+        options.addOption(keyStorePassword);
+
+        Option trustStorePassword = new Option(null, OPT_TRUSTSTORE_PASSWORD, true, "truststore password");
+        trustStorePassword.setRequired(false);
+        options.addOption(trustStorePassword);
+
+        Option userKeyPath = new Option(null, OPT_USERKEY_PATH, true, "userkey path");
+        userKeyPath.setRequired(false);
+        options.addOption(userKeyPath);
+
+        Option userCertPath = new Option(null, OPT_USERCERT_PATH, true, "usercert path");
+        userCertPath.setRequired(false);
+        options.addOption(userCertPath);
+
+        Option caCertPath = new Option(null, OPT_CACERT_PATH, true, "cacert path");
+        caCertPath.setRequired(false);
+        options.addOption(caCertPath);
+
+        Option userKeyPassword = new Option(null, OPT_USERKEY_PASSWORD, true, "userkey password");
+        userKeyPassword.setRequired(false);
+        options.addOption(userKeyPassword);
 
         return options;
     }
@@ -145,15 +160,45 @@ public class BaseUtil {
     }
 
     public CryptoSettings createCustomCryptoSettings() {
-        var keyPath = this.parsedArgs.getOptionValue(OPT_KEYSTORE_PATH);
-        var trustPath = this.parsedArgs.getOptionValue(OPT_TRUSTSTORE_PATH);
-        var keyPass = this.parsedArgs.getOptionValue(OPT_KEYSTORE_PASSWORD);
-        var trustPass = this.parsedArgs.getOptionValue(OPT_TRUSTSTORE_PASSWORD);
+        // keystore & truststore method
+        {
+            var keyPath = this.parsedArgs.getOptionValue(OPT_KEYSTORE_PATH);
+            var trustPath = this.parsedArgs.getOptionValue(OPT_TRUSTSTORE_PATH);
+            var keyPass = this.parsedArgs.getOptionValue(OPT_KEYSTORE_PASSWORD);
+            var trustPass = this.parsedArgs.getOptionValue(OPT_TRUSTSTORE_PASSWORD);
 
-        if (keyPath != null && trustPath != null && keyPass != null && trustPass != null) {
-            return new CustomCryptoSettings(keyPath, trustPath, keyPass, trustPass);
+            String[] argsValues = {keyPath, trustPath, keyPass, trustPass};
+            if (Arrays.stream(argsValues).allMatch(Objects::nonNull)) {
+                LOG.info("Using keystore {} truststore {} ", keyPath, trustPath);
+                return CustomCryptoSettings.fromKeyStore(keyPath, trustPath, keyPass, trustPass);
+            }
+            if (Arrays.stream(argsValues).anyMatch(Objects::nonNull)) {
+                logArgsErrorAndExit(OPT_KEYSTORE_PATH, OPT_TRUSTSTORE_PATH, OPT_KEYSTORE_PASSWORD, OPT_TRUSTSTORE_PASSWORD);
+            }
+        }
+        // certificates method
+        {
+            var userKey = this.parsedArgs.getOptionValue(OPT_USERKEY_PATH);
+            var userCert = this.parsedArgs.getOptionValue(OPT_USERCERT_PATH);
+            var caCert = this.parsedArgs.getOptionValue(OPT_CACERT_PATH);
+            var userKeyPassword = this.parsedArgs.getOptionValue(OPT_USERKEY_PASSWORD);
+
+            String[] argsValues = {userKey, userCert, caCert, userKeyPassword};
+            if (Arrays.stream(argsValues).allMatch(Objects::nonNull)) {
+                LOG.info("Using certificate files. userKey {} userCert {} caCert {}", userKey, userCert, caCert);
+                return CustomCryptoSettings.fromKeyFile(userKey, userCert, caCert, userKeyPassword);
+            }
+            if (Arrays.stream(argsValues).anyMatch(Objects::nonNull)) {
+                logArgsErrorAndExit(OPT_USERKEY_PATH, OPT_USERCERT_PATH, OPT_CACERT_PATH, OPT_USERKEY_PASSWORD);
+            }
         }
         return new CustomCryptoSettings();
+    }
+
+    private void logArgsErrorAndExit(String... args) {
+        LOG.error("Either none or all required arguments needs to be provided ({})",
+                  () -> String.join(", ", args));
+        System.exit(1);
     }
 
     protected static BuiltConfiguration localLoggerConfig(Level consoleLevel) {

@@ -35,9 +35,12 @@ import java.net.URI;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * Factory for creating apache http client backed transport bindings and clients.
+ */
 public class ApacheTransportBindingFactoryImpl implements TransportBindingFactory, HttpClientFactory {
 
-    private static final Logger LOG = LogManager.getLogger(TransportBinding.class);
+    private static final Logger LOG = LogManager.getLogger(ApacheTransportBindingFactoryImpl.class);
 
     private static final String SCHEME_SOAP_OVER_UDP = DpwsConstants.URI_SCHEME_SOAP_OVER_UDP;
     private static final String SCHEME_HTTP = "http";

@@ -6,6 +6,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -20,23 +21,31 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * </ul>
  */
 public class CommunicationLogFileOutputStream extends OutputStream {
-    private final static CommunicationLogSoapXmlUtils SOAP_UTILS = new CommunicationLogSoapXmlUtils();
+    private static final CommunicationLogSoapXmlUtils SOAP_UTILS = new CommunicationLogSoapXmlUtils();
 
     private final File targetDirectory;
+    private boolean prettyPrint;
     private final String fileNamePrefix;
     private ByteArrayOutputStream outputStream;
     private AtomicBoolean closed = new AtomicBoolean(false);
 
     public CommunicationLogFileOutputStream(File targetDirectory,
-                                            String fileNamePrefix) {
+                                            String fileNamePrefix,
+                                            boolean prettyPrint) {
         this.fileNamePrefix = fileNamePrefix;
         this.targetDirectory = targetDirectory;
+        this.prettyPrint = prettyPrint;
         this.outputStream = new ByteArrayOutputStream();
     }
 
     @Override
     public void write(int b) {
         outputStream.write(b);
+    }
+
+    @Override
+    public void write(byte[] b, int off, int len) throws IOException {
+        outputStream.writeBytes(Arrays.copyOfRange(b, off, off + len));
     }
 
     @Override
@@ -53,7 +62,13 @@ public class CommunicationLogFileOutputStream extends OutputStream {
 
         outputStream.close();
 
-        var xmlDoc = SOAP_UTILS.prettyPrint(outputStream.toByteArray());
+        byte[] xmlDoc;
+        if (prettyPrint) {
+            xmlDoc = SOAP_UTILS.prettyPrint(outputStream.toByteArray());
+        } else {
+            xmlDoc = outputStream.toByteArray();
+        }
+
         var name = SOAP_UTILS.makeNameElement(xmlDoc);
         var commLogFile = Path.of(targetDirectory.getAbsolutePath(),
                 CommunicationLogFileName.appendSoapSuffix(CommunicationLogFileName.append(fileNamePrefix, name)));
