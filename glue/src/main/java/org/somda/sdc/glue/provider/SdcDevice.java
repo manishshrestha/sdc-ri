@@ -26,6 +26,7 @@ import org.somda.sdc.glue.provider.helper.SdcDevicePluginProcessor;
 import org.somda.sdc.glue.provider.plugin.SdcRequiredTypesAndScopes;
 import org.somda.sdc.glue.provider.sco.OperationInvocationReceiver;
 import org.somda.sdc.glue.provider.services.HighPriorityServices;
+import org.somda.sdc.glue.provider.services.LowPriorityServices;
 import org.somda.sdc.glue.provider.services.factory.ServicesFactory;
 import org.somda.sdc.mdpws.common.CommonConstants;
 
@@ -51,6 +52,7 @@ public class SdcDevice extends AbstractIdleService implements Device, EventSourc
     private final Collection<OperationInvocationReceiver> operationInvocationReceivers;
     private final LocalMdibAccess mdibAccess;
     private final SdcDevicePluginProcessor pluginProcessor;
+    private final LowPriorityServices lowPriorityServices;
 
     @AssistedInject
     SdcDevice(@Assisted DeviceSettings deviceSettings,
@@ -72,6 +74,7 @@ public class SdcDevice extends AbstractIdleService implements Device, EventSourc
         this.mdibAccess = mdibAccess;
         this.dpwsDevice = deviceFactory.createDevice(deviceSettings);
         this.highPriorityServices = servicesFactory.createHighPriorityServices(mdibAccess);
+        this.lowPriorityServices = servicesFactory.createLowPriorityServices(mdibAccess);
         this.hostedServiceFactory = hostedServiceFactory;
         this.operationInvocationReceivers = operationInvocationReceivers;
 
@@ -213,6 +216,17 @@ public class SdcDevice extends AbstractIdleService implements Device, EventSourc
                         new QName(WsdlConstants.TARGET_NAMESPACE, WsdlConstants.SERVICE_WAVEFORM)),
                 highPriorityServices,
                 ByteStreams.toByteArray(highPrioWsdlStream)));
+
+        InputStream lowPrioWsdlStream =
+                classLoader.getResourceAsStream("wsdl/IEEE11073-20701-LowPriority-Services.wsdl");
+        if (lowPrioWsdlStream != null) {
+            dpwsDevice.getHostingServiceAccess().addHostedService(hostedServiceFactory.createHostedService(
+                    "LowPriorityServices",
+                    List.of(new QName(WsdlConstants.TARGET_NAMESPACE, WsdlConstants.SERVICE_LOCALIZATION)),
+                    lowPriorityServices,
+                    ByteStreams.toByteArray(lowPrioWsdlStream)));
+        }
+
     }
 
     private void addOperationInvocationReceiver(OperationInvocationReceiver receiver) {

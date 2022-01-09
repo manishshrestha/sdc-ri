@@ -31,6 +31,9 @@ public class SubscribableActionsMapping {
         qnames.put(ActionConstants.ACTION_WAVEFORM_STREAM, WsdlConstants.PORT_TYPE_WAVEFORM_QNAME);
         qnames.put(ActionConstants.ACTION_OBSERVED_VALUE_STREAM, WsdlConstants.PORT_TYPE_WAVEFORM_QNAME);
 
+        qnames.put(ActionConstants.ACTION_GET_LOCALIZED_TEXT, WsdlConstants.PORT_TYPE_LOCALIZATION_QNAME);
+        qnames.put(ActionConstants.ACTION_GET_SUPPORTED_LANGUAGES, WsdlConstants.PORT_TYPE_LOCALIZATION_QNAME);
+
         TARGET_QNAMES = Collections.unmodifiableMap(qnames);
     }
 }
