@@ -234,7 +234,7 @@ class CryptoIT {
         var hostedServiceProxy = hostingServiceProxy.getHostedServices().get(TestServiceMetadata.SERVICE_ID_1);
         assertNotNull(hostedServiceProxy);
 
-        final TestOperationRequest request = new TestOperationRequest();
+        final var request = new TestOperationRequest();
         request.setParam1("testString");
         request.setParam2(11);
 

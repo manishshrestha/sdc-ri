@@ -64,7 +64,7 @@ public class CommunicationLogHttpResponseInterceptor implements HttpResponseInte
             routedConnection = (ManagedHttpClientConnection) context.getAttribute(
                     HttpCoreContext.HTTP_CONNECTION);
         } catch (ClassCastException e) {
-            LOG.error("Error retrieving managed http client connection " + e);
+            LOG.error("Error retrieving managed http client connection: {}", e.getMessage(), e);
         }
         if (routedConnection != null && routedConnection.isOpen()) {
             SSLSession sslSession = routedConnection.getSSLSession();
@@ -76,7 +76,7 @@ public class CommunicationLogHttpResponseInterceptor implements HttpResponseInte
                             .map(certificate -> (X509Certificate) certificate).collect(Collectors.toList()));
                 }
             } catch (SSLPeerUnverifiedException e) {
-                LOG.error("Error retrieving peer certificates " + e);
+                LOG.error("Error retrieving peer certificates: {} ", e.getMessage(), e);
             }
         }
 
