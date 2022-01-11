@@ -75,15 +75,15 @@ public class WsDiscoveryUtil {
         return appSequence;
     }
 
-    private boolean isMatching(List<?> superset, List<?> subset, Comparator<Object> comp) {
+    private <T> boolean isMatching(List<T> superset, List<T> subset, Comparator<T> comp) {
         return superset.size() >= subset.size() && superset.stream()
-                .filter(qName1 -> subset.stream()
-                        .anyMatch(qName2 -> comp.compare(qName1, qName2) == 0)).count() == subset.size();
+            .filter(qName1 -> subset.stream()
+                .anyMatch(qName2 -> comp.compare(qName1, qName2) == 0)).count() == subset.size();
     }
 
-    private boolean uriCompare(Object o1, Object o2) {
-        var supersetUri = URI.create((String) o1);
-        var subsetUri = URI.create((String) o2);
+    private boolean uriCompare(String o1, String o2) {
+        var supersetUri = URI.create(o1);
+        var subsetUri = URI.create(o2);
 
         // paths must not have /./ or /../ segments
         var pattern = Pattern.compile("/\\.*/");
