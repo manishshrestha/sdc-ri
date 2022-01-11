@@ -2,6 +2,7 @@ package org.somda.sdc.dpws.soap.wsdiscovery;
 
 import com.google.common.primitives.UnsignedInteger;
 import com.google.inject.Inject;
+import org.apache.commons.lang3.StringUtils;
 import org.somda.sdc.dpws.soap.wsdiscovery.model.AppSequenceType;
 import org.somda.sdc.dpws.soap.wsdiscovery.model.ObjectFactory;
 
@@ -86,20 +87,23 @@ public class WsDiscoveryUtil {
 
         // paths must not have /./ or /../ segments
         var pattern = Pattern.compile("/\\.*/");
-        if (pattern.matcher(supersetUri.getPath()).find() || pattern.matcher(subsetUri.getPath()).find()) {
+        var supersetPath = supersetUri.getPath();
+        var subsetPath = subsetUri.getPath();
+        if ((StringUtils.isNotBlank(supersetPath) && pattern.matcher(supersetPath).find()) ||
+                (StringUtils.isNotBlank(subsetPath) && pattern.matcher(subsetPath).find())) {
             return false;
         }
         if (supersetUri.toString().equals(subsetUri.toString())) {
             return true;
         }
-        if (!supersetUri.getScheme().equalsIgnoreCase(subsetUri.getScheme())) {
+        if (!StringUtils.equalsIgnoreCase(subsetUri.getScheme(), subsetUri.getScheme())) {
             return false;
         }
-        if (!supersetUri.getAuthority().equalsIgnoreCase(subsetUri.getAuthority())) {
+        if (!StringUtils.equalsIgnoreCase(supersetUri.getAuthority(), subsetUri.getAuthority())) {
             return false;
         }
-        var supersetSegments = supersetUri.getPath().split("/");
-        var subsetSegments = subsetUri.getPath().split("/");
+        var supersetSegments = supersetPath != null ? supersetPath.split("/") : new String[]{};
+        var subsetSegments = subsetPath != null ? subsetPath.split("/") : new String[]{};
 
         if (subsetSegments.length > supersetSegments.length) {
             // subset is bigger than superset, its not equal even if all superset paths matches.
@@ -110,6 +114,12 @@ public class WsDiscoveryUtil {
             if (subsetSegments.length > i && !supersetSegments[i].equals(subsetSegments[i])) {
                 return false;
             }
+        }
+
+        // we compare schemeSpecificPart only if authority is null
+        if (supersetUri.getAuthority() == null && subsetUri.getAuthority() == null &&
+                !StringUtils.equals(supersetUri.getSchemeSpecificPart(), subsetUri.getSchemeSpecificPart())) {
+            return false;
         }
 
         return true;

@@ -47,6 +47,10 @@ class WsDiscoveryUtilTest extends DpwsTest {
         assertTrue(doesMatch(superset, "http://a.de/abc?a=x&b=y"));
         // fragments are ignored
         assertTrue(doesMatch(superset, "http://a.de/abc#fragement1"));
+        // test different protocol (not HTTP, HTTPS, etc)
+        assertTrue(doesMatch(
+                List.of("sdc.mds.pkp:1.2.840.10004.20701.1.1"),
+                "sdc.mds.pkp:1.2.840.10004.20701.1.1"));
 
         // case sensitive segment
         assertFalse(doesMatch(superset, "http://a.de/Abc/d"));
@@ -61,6 +65,21 @@ class WsDiscoveryUtilTest extends DpwsTest {
         assertFalse(doesMatch(superset, "http://a.de/abc/../d"));
         // doesn't match if superset and subset equals but contains '.' segment
         assertFalse(doesMatch(List.of("http://a.de/abc/./d"), "http://a.de/abc/./d"));
+        // doesn't match if superset path is null
+        assertFalse(doesMatch(
+                List.of("http://a.de"), "http://a.de/a"));
+        // test different protocol (not HTTP, HTTPS, etc)
+        assertFalse(doesMatch(
+                List.of("sdc.mds.pkp:1.2.840.10004.20701.1.1"),
+                "sdc.mds.pkp:a.2.840.10004.20701"));
+        // not defined (null) scheme specifics
+        assertFalse(doesMatch(
+                List.of("sdc.mds.pkp:1.2.840.10004.20701.1.1"),
+                "sdc.mds.pkp"));
+        // case-sensitive scheme specifics compare
+        assertFalse(doesMatch(
+                List.of("sdc.mds.pkp:a.2.840.10004.20701.1.1"),
+                "sdc.mds.pkp:A.2.840.10004.20701"));
     }
 
     private boolean doesMatch(List<String> superset, String s) {
