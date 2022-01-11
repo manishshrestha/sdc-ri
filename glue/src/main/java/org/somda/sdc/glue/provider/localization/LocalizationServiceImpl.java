@@ -33,6 +33,7 @@ public class LocalizationServiceImpl implements LocalizationService {
                                                 List<BigInteger> numberOfLines) {
 
         var storage = storageHelper.getLocalizationStorageByVersion(version);
+        // TODO: do filtering in the Helper class.
         return new ArrayList<>(storage.values());
     }
 

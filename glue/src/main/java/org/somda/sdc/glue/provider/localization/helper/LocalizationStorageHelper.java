@@ -13,17 +13,42 @@ import java.util.Map;
 /**
  * Helper class to imitate localization database which provides translations.
  */
-public class LocalizationStorageHelper {
+public class LocalizationStorageHelper { //TODO: extend as guice service
+    //TODO: LocalizationStorage interface, Helper as default impl. in case real implementation not found
 
-    public final List<String> supportedLanguages = List.of("EN", "DE", "ES");
+    public final List<String> supportedLanguages = List.of("EN", "DE", "ES"); // TODO: generalize it (inject)+
+
     /*
      * Representation of Map<Version, Table<Row, Column, Value>>;
      * Where row = ref, column = lang, value = LocalizedText
+     * Currently generated records are:
+     *   Version = 1  |  REF1  |  EN  |  LocalizedText(...)
+     *   Version = 1  |  REF1  |  DE  |  LocalizedText(...)
+     *   Version = 1  |  REF1  |  ES  |  LocalizedText(...)
+     *   Version = 1  |  REF2  |  EN  |  LocalizedText(...)
+     *   Version = 1  |  REF2  |  DE  |  LocalizedText(...)
+     *   Version = 1  |  REF2  |  ES  |  LocalizedText(...)
+     *   Version = 1  |  REF3  |  EN  |  LocalizedText(...)
+     *   Version = 1  |  REF3  |  DE  |  LocalizedText(...)
+     *   Version = 1  |  REF3  |  ES  |  LocalizedText(...)
+     *   --------------------------------------------------
+     *   Version = 2  |  REF1  |  EN  |  LocalizedText(...)
+     *   Version = 2  |  REF1  |  DE  |  LocalizedText(...)
+     *   Version = 2  |  REF1  |  ES  |  LocalizedText(...)
+     *   Version = 2  |  REF2  |  EN  |  LocalizedText(...)
+     *   Version = 2  |  REF2  |  DE  |  LocalizedText(...)
+     *   Version = 2  |  REF2  |  ES  |  LocalizedText(...)
+     *   Version = 2  |  REF3  |  EN  |  LocalizedText(...)
+     *   Version = 2  |  REF3  |  DE  |  LocalizedText(...)
+     *   Version = 2  |  REF3  |  ES  |  LocalizedText(...)
+     *
+     * TODO: add new translations
      */
     public final Map<BigInteger, Table<String, String, LocalizedText>> localizationStorage = new HashMap<>();
 
-
     public LocalizationStorageHelper() {
+        // TODO: provide languages, provide translations / table during init, so provider can provide its own
+        //  translations
         populateData();
     }
 
