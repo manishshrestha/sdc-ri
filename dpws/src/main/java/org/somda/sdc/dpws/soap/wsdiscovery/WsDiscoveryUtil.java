@@ -96,7 +96,7 @@ public class WsDiscoveryUtil {
         if (supersetUri.toString().equals(subsetUri.toString())) {
             return true;
         }
-        if (!StringUtils.equalsIgnoreCase(subsetUri.getScheme(), subsetUri.getScheme())) {
+        if (!StringUtils.equalsIgnoreCase(supersetUri.getScheme(), subsetUri.getScheme())) {
             return false;
         }
         if (!StringUtils.equalsIgnoreCase(supersetUri.getAuthority(), subsetUri.getAuthority())) {
