@@ -4,7 +4,7 @@ variables:
   MAVEN_CLI_OPTS: "-s .m2/settings.xml --batch-mode"
 
 before_script:
-  - export MAVEN_OPTS=-Dmaven.repo.local=.m2/repository $MAVEN_OPTS
+  - export MAVEN_OPTS="-Dmaven.repo.local=.m2/repository $MAVEN_OPTS"
   # install latest jdk11 version
   - pacman -Syu --noconfirm jdk11-openjdk
   - export JAVA_HOME=/usr/lib/jvm/default
