@@ -1,8 +1,8 @@
 image: maven:3-jdk-11
 
 variables:
-  MAVEN_CLI_OPTS: "$MAVEN_CLI_OPTS -s .m2/settings.xml --batch-mode"
-  MAVEN_OPTS: "$MAVEN_OPTS -Dmaven.repo.local=.m2/repository"
+  MAVEN_CLI_OPTS: '"$MAVEN_CLI_OPTS" -s .m2/settings.xml --batch-mode'
+  MAVEN_OPTS: '"$FLAGS" -Dmaven.repo.local=.m2/repository'
 
 cache:
   paths:
