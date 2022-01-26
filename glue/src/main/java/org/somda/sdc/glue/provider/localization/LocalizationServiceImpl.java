@@ -1,44 +1,49 @@
 package org.somda.sdc.glue.provider.localization;
 
+import com.google.common.util.concurrent.AbstractIdleService;
+import com.google.inject.Inject;
 import org.somda.sdc.biceps.model.participant.LocalizedText;
 import org.somda.sdc.biceps.model.participant.LocalizedTextWidth;
-import org.somda.sdc.glue.provider.localization.helper.LocalizationStorageHelper;
+import org.somda.sdc.glue.provider.localization.factory.LocalizationStorageFactory;
+import org.somda.sdc.glue.provider.localization.helper.LocalizationDataProviderHelper;
 
 import java.math.BigInteger;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
  * Default implementation of {@linkplain LocalizationService}
  */
-public class LocalizationServiceImpl implements LocalizationService {
-    private final LocalizationStorageHelper storageHelper;
+public class LocalizationServiceImpl extends AbstractIdleService implements LocalizationService {
+    private final LocalizationStorage localizationStorage;
 
-    public LocalizationServiceImpl() {
-        storageHelper = new LocalizationStorageHelper();
+    @Inject
+    public LocalizationServiceImpl(LocalizationStorageFactory localizationStorageFactory) {
+        localizationStorage =
+                localizationStorageFactory.createLocalizationStorage(new LocalizationDataProviderHelper());
     }
 
-    /* TODO: do all param logic
-     List<LocalizedTextRef> ref; -> if not provided, return all, otherwise return TEXT for matching REF
-     ReferencedVersion version; -> if not provided, returns LATEST VERSION of the TEXT.
-     List<xsd:language> lang; -> if not provided, all TEXT translations returned.
-     List<LocalizedTextWidth> textWidth;
-     List<BigInteger> numberOfLines;
-     */
+    @Override
+    protected void startUp() throws Exception {
+        localizationStorage.startAsync().awaitRunning();
+    }
+
+    @Override
+    protected void shutDown() throws Exception {
+        localizationStorage.stopAsync().awaitTerminated();
+    }
+
     @Override
     public List<LocalizedText> getLocalizedText(List<String> ref,
                                                 BigInteger version,
                                                 List<String> lang,
                                                 List<LocalizedTextWidth> textWidth,
                                                 List<BigInteger> numberOfLines) {
-
-        var storage = storageHelper.getLocalizationStorageByVersion(version);
-        // TODO: do filtering in the Helper class.
-        return new ArrayList<>(storage.values());
+        // textWidth and numberOfLines parameters are currently ignored.
+        return localizationStorage.getLocalizedText(ref, version, lang);
     }
 
     @Override
     public List<String> getSupportedLanguages() {
-        return storageHelper.getSupportedLanguages();
+        return localizationStorage.getSupportedLanguages();
     }
 }

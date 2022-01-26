@@ -26,7 +26,10 @@ import org.somda.sdc.glue.provider.SdcDevice;
 import org.somda.sdc.glue.provider.factory.SdcDeviceFactory;
 import org.somda.sdc.glue.provider.localization.LocalizationService;
 import org.somda.sdc.glue.provider.localization.LocalizationServiceImpl;
+import org.somda.sdc.glue.provider.localization.LocalizationStorage;
 import org.somda.sdc.glue.provider.localization.factory.LocalizationServiceFactory;
+import org.somda.sdc.glue.provider.localization.factory.LocalizationStorageFactory;
+import org.somda.sdc.glue.provider.localization.helper.LocalizationStorageHelper;
 import org.somda.sdc.glue.provider.sco.Context;
 import org.somda.sdc.glue.provider.sco.ScoController;
 import org.somda.sdc.glue.provider.sco.factory.ContextFactory;
@@ -110,9 +113,15 @@ public class DefaultGlueModule extends AbstractModule {
         install(new FactoryModuleBuilder()
                 .implement(ReportGenerator.class, ReportGenerator.class)
                 .build(ReportGeneratorFactory.class));
+
+        install(new FactoryModuleBuilder()
+                .implement(LocalizationStorage.class, LocalizationStorageHelper.class)
+                .build(LocalizationStorageFactory.class));
+
         install(new FactoryModuleBuilder()
                 .implement(LocalizationService.class, LocalizationServiceImpl.class)
                 .build(LocalizationServiceFactory.class));
+
     }
 
     @Provides

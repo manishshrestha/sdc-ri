@@ -1,90 +1,104 @@
 package org.somda.sdc.glue.provider.localization.helper;
 
-import com.google.common.collect.HashBasedTable;
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.Multimap;
 import com.google.common.collect.Table;
+import com.google.common.util.concurrent.AbstractIdleService;
+import com.google.inject.assistedinject.Assisted;
+import com.google.inject.assistedinject.AssistedInject;
 import org.somda.sdc.biceps.model.participant.LocalizedText;
-import org.somda.sdc.biceps.model.participant.LocalizedTextWidth;
+import org.somda.sdc.glue.provider.localization.LocalizationDataProvider;
+import org.somda.sdc.glue.provider.localization.LocalizationException;
+import org.somda.sdc.glue.provider.localization.LocalizationStorage;
 
 import java.math.BigInteger;
-import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
- * Helper class to imitate localization database which provides translations.
+ * Default implementation of {@linkplain LocalizationStorage}.
  */
-public class LocalizationStorageHelper { //TODO: extend as guice service
-    //TODO: LocalizationStorage interface, Helper as default impl. in case real implementation not found
+public class LocalizationStorageHelper extends AbstractIdleService implements LocalizationStorage {
 
-    public final List<String> supportedLanguages = List.of("EN", "DE", "ES"); // TODO: generalize it (inject)+
+    private final LocalizationDataProvider localizationDataProvider;
 
-    /*
-     * Representation of Map<Version, Table<Row, Column, Value>>;
-     * Where row = ref, column = lang, value = LocalizedText
-     * Currently generated records are:
-     *   Version = 1  |  REF1  |  EN  |  LocalizedText(...)
-     *   Version = 1  |  REF1  |  DE  |  LocalizedText(...)
-     *   Version = 1  |  REF1  |  ES  |  LocalizedText(...)
-     *   Version = 1  |  REF2  |  EN  |  LocalizedText(...)
-     *   Version = 1  |  REF2  |  DE  |  LocalizedText(...)
-     *   Version = 1  |  REF2  |  ES  |  LocalizedText(...)
-     *   Version = 1  |  REF3  |  EN  |  LocalizedText(...)
-     *   Version = 1  |  REF3  |  DE  |  LocalizedText(...)
-     *   Version = 1  |  REF3  |  ES  |  LocalizedText(...)
-     *   --------------------------------------------------
-     *   Version = 2  |  REF1  |  EN  |  LocalizedText(...)
-     *   Version = 2  |  REF1  |  DE  |  LocalizedText(...)
-     *   Version = 2  |  REF1  |  ES  |  LocalizedText(...)
-     *   Version = 2  |  REF2  |  EN  |  LocalizedText(...)
-     *   Version = 2  |  REF2  |  DE  |  LocalizedText(...)
-     *   Version = 2  |  REF2  |  ES  |  LocalizedText(...)
-     *   Version = 2  |  REF3  |  EN  |  LocalizedText(...)
-     *   Version = 2  |  REF3  |  DE  |  LocalizedText(...)
-     *   Version = 2  |  REF3  |  ES  |  LocalizedText(...)
-     *
-     * TODO: add new translations
+    /**
+     * Representation of Map<Version, Table<Row, Column, Value>>,
+     * where row = ref, column = lang, value = LocalizedText
      */
-    public final Map<BigInteger, Table<String, String, LocalizedText>> localizationStorage = new HashMap<>();
+    private Map<BigInteger, Table<String, String, LocalizedText>> localizationStorage;
 
-    public LocalizationStorageHelper() {
-        // TODO: provide languages, provide translations / table during init, so provider can provide its own
-        //  translations
-        populateData();
+    @AssistedInject
+    public LocalizationStorageHelper(@Assisted LocalizationDataProvider localizationDataProvider) {
+        this.localizationDataProvider = localizationDataProvider;
     }
 
-    public Table<String, String, LocalizedText> getLocalizationStorageByVersion(BigInteger version) {
-        return localizationStorage.get(version);
+    @Override
+    protected void startUp() throws Exception {
+        localizationStorage = localizationDataProvider.getLocalizationData();
     }
 
+    @Override
+    protected void shutDown() throws Exception {
+    }
+
+    @Override
     public List<String> getSupportedLanguages() {
-        return supportedLanguages;
+        return localizationDataProvider.getSupportedLanguages();
     }
 
-    private void populateData() {
-        localizationStorage.put(BigInteger.ONE, createRecordsTable(BigInteger.ONE));
-        localizationStorage.put(BigInteger.TWO, createRecordsTable(BigInteger.TWO));
+    /* Filtering logic:
+         List<LocalizedTextRef> references: if not provided, return all, otherwise return TEXT for matching REF;
+         ReferencedVersion version: if not provided, returns LATEST VERSION of the TEXT;
+         List<xsd:language> languages: if not provided, all TEXT translations returned;
+    */
+    @Override
+    public List<LocalizedText> getLocalizedText(List<String> references,
+                                                BigInteger version,
+                                                List<String> languages) {
+
+        // if version not provided, get latest version from storage
+        if (BigInteger.ZERO.equals(version)) {
+            version = getLatestVersion();
+        }
+
+        Multimap<String, LocalizedText> refToValueMap = filterByLanguage(languages, version);
+
+        // if references not provided, return all records, otherwise filter by reference
+        return references.isEmpty() ? new ArrayList<>(refToValueMap.values()) : filterByReferences(references,
+                refToValueMap);
     }
 
-    private Table<String, String, LocalizedText> createRecordsTable(BigInteger version) {
-        Table<String, String, LocalizedText> localizedTextTable = HashBasedTable.create();
-
-        supportedLanguages.forEach(lang -> {
-            addLocalizedText(localizedTextTable, "REF1", lang, version);
-            addLocalizedText(localizedTextTable, "REF2", lang, version);
-            addLocalizedText(localizedTextTable, "REF3", lang, version);
-        });
-
-        return localizedTextTable;
+    private BigInteger getLatestVersion() {
+        return localizationStorage.entrySet()
+                .stream()
+                .max(Map.Entry.comparingByKey())
+                .map(Map.Entry::getKey)
+                .orElseThrow(() -> new LocalizationException("Failed to determine latest translations version"));
     }
 
-    private void addLocalizedText(Table<String, String, LocalizedText> localizedTextTable,
-                                  String ref, String lang, BigInteger version) {
-        var localizedText = new LocalizedText();
-        localizedText.setRef(ref);
-        localizedText.setLang(lang);
-        localizedText.setVersion(BigInteger.ONE);
-        localizedText.setTextWidth(LocalizedTextWidth.S);
-        localizedText.setValue(String.format("[version=%s, lang=%s] Translated text for REF: %s", version, lang, ref));
-        localizedTextTable.put(ref, lang, localizedText);
+    private Multimap<String, LocalizedText> filterByLanguage(List<String> languages, BigInteger version) {
+        var storage = localizationStorage.get(version);
+        Multimap<String, LocalizedText> refToValueMap = ArrayListMultimap.create();
+
+        // if language list provided filter records by language, otherwise include all languages
+        if (!languages.isEmpty()) {
+            languages.forEach(language -> storage.column(language).forEach(refToValueMap::put));
+        } else {
+            storage.columnKeySet().forEach(key -> storage.column(key).forEach(refToValueMap::put));
+        }
+        return refToValueMap;
+    }
+
+    private List<LocalizedText> filterByReferences(List<String> references,
+                                                   Multimap<String, LocalizedText> refToValueMap) {
+        return references.stream()
+                .filter(refToValueMap::containsKey)
+                .map(refToValueMap::get)
+                .flatMap(Collection::stream)
+                .collect(Collectors.toList());
     }
 }

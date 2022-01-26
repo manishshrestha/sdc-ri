@@ -1,7 +1,5 @@
 package org.somda.sdc.glue.provider.services;
 
-import com.google.common.collect.HashBasedTable;
-import com.google.common.collect.Table;
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
 import org.somda.sdc.biceps.common.access.ReadTransaction;
@@ -10,8 +8,6 @@ import org.somda.sdc.biceps.model.message.GetLocalizedTextResponse;
 import org.somda.sdc.biceps.model.message.GetSupportedLanguages;
 import org.somda.sdc.biceps.model.message.GetSupportedLanguagesResponse;
 import org.somda.sdc.biceps.model.message.ObjectFactory;
-import org.somda.sdc.biceps.model.participant.LocalizedText;
-import org.somda.sdc.biceps.model.participant.LocalizedTextWidth;
 import org.somda.sdc.biceps.model.participant.MdibVersion;
 import org.somda.sdc.biceps.provider.access.LocalMdibAccess;
 import org.somda.sdc.dpws.device.WebService;
@@ -25,9 +21,6 @@ import org.somda.sdc.glue.common.ActionConstants;
 import org.somda.sdc.glue.common.MdibVersionUtil;
 import org.somda.sdc.glue.provider.localization.LocalizationService;
 import org.somda.sdc.glue.provider.localization.factory.LocalizationServiceFactory;
-
-import java.math.BigInteger;
-import java.util.List;
 
 /**
  * Implementation of the low-priority services.
@@ -64,6 +57,7 @@ public class LowPriorityServices extends WebService {
         this.mdibVersionUtil = mdibVersionUtil;
         this.wsaUtil = wsaUtil;
         localizationService = localizationServiceFactory.createLocalizationService();
+        localizationService.startAsync().awaitRunning();
     }
 
     @MessageInterceptor(ActionConstants.ACTION_GET_LOCALIZED_TEXT)

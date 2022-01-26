@@ -1,5 +1,6 @@
 package org.somda.sdc.glue.provider.localization;
 
+import com.google.common.util.concurrent.Service;
 import org.somda.sdc.biceps.model.participant.LocalizedText;
 import org.somda.sdc.biceps.model.participant.LocalizedTextWidth;
 
@@ -9,15 +10,16 @@ import java.util.List;
 /**
  * Localization service provider side.
  */
-public interface LocalizationService {
+public interface LocalizationService extends Service {
 
     /**
      * Gets a localized text that is referenced in the MDIB.
      *
-     * @param ref a zero or more reference names of the texts that are requested.
-     * @param version of the referenced text that is requested.
-     * @param lang a zero or more language identifiers to get different translations of the requested text.
-     * @param textWidth a zero or more {@linkplain LocalizedTextWidth} identifiers to filter for different text widths.
+     * @param ref           a zero or more reference names of the texts that are requested.
+     * @param version       of the referenced text that is requested.
+     * @param lang          a zero or more language identifiers to get different translations of the requested text.
+     * @param textWidth     a zero or more {@linkplain LocalizedTextWidth} identifiers to filter for different text
+     *                      widths.
      * @param numberOfLines a zero or more {@linkplain BigInteger} to filter for number of lines.
      * @return a list of {@linkplain LocalizedText} texts that matches search criteria.
      */
