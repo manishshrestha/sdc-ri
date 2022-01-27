@@ -41,7 +41,6 @@ public class JettyHttpServerHandler extends AbstractHandler {
 
     private final String mediaType;
     private final HttpHandler handler;
-    private final CommunicationLog communicationLog;
     private final Logger instanceLogger;
     private final boolean chunkedTransfer;
 
@@ -49,22 +48,19 @@ public class JettyHttpServerHandler extends AbstractHandler {
     JettyHttpServerHandler(@Assisted Boolean expectTLS,
                            @Assisted String mediaType,
                            @Assisted HttpHandler handler,
-                           CommunicationLog communicationLog,
                            @Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier,
                            @Named(DpwsConfig.ENFORCE_HTTP_CHUNKED_TRANSFER) boolean chunkedTransfer) {
-        this(mediaType, handler, communicationLog, frameworkIdentifier, chunkedTransfer);
+        this(mediaType, handler, frameworkIdentifier, chunkedTransfer);
     }
 
     @AssistedInject
     JettyHttpServerHandler(@Assisted String mediaType,
                            @Assisted HttpHandler handler,
-                           CommunicationLog communicationLog,
                            @Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier,
                            @Named(DpwsConfig.ENFORCE_HTTP_CHUNKED_TRANSFER) boolean chunkedTransfer) {
         this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);
         this.mediaType = mediaType;
         this.handler = handler;
-        this.communicationLog = communicationLog;
         this.chunkedTransfer = chunkedTransfer;
     }
 

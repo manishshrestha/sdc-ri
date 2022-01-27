@@ -32,6 +32,7 @@ import org.somda.sdc.dpws.crypto.CryptoConfig;
 import org.somda.sdc.dpws.crypto.CryptoConfigurator;
 import org.somda.sdc.dpws.crypto.CryptoSettings;
 import org.somda.sdc.dpws.device.DeviceConfig;
+import org.somda.sdc.dpws.factory.CommunicationLogFactory;
 import org.somda.sdc.dpws.http.HttpHandler;
 import org.somda.sdc.dpws.http.HttpServerRegistry;
 import org.somda.sdc.dpws.http.HttpUriBuilder;
@@ -71,7 +72,7 @@ public class JettyHttpServerRegistry extends AbstractIdleService implements Http
 
     private final String frameworkIdentifier;
     private final Logger instanceLogger;
-    private final CommunicationLog communicationLog;
+    private final CommunicationLog defaultCommunicationLog;
     private final Map<String, Server> serverRegistry;
     private final Map<String, JettyHttpServerHandler> handlerRegistry;
     private final Map<String, ContextHandler> contextWrapperRegistry;
@@ -104,7 +105,7 @@ public class JettyHttpServerRegistry extends AbstractIdleService implements Http
                             // TODO: Remove these for 2.0.0
                             @Named(DeviceConfig.SECURED_ENDPOINT) boolean legacyEnableHttps,
                             @Named(DeviceConfig.UNSECURED_ENDPOINT) boolean legacyEnableHttp,
-                            CommunicationLog communicationLog,
+                            CommunicationLogFactory communicationLogFactory,
                             @Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier) {
         this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);
         this.frameworkIdentifier = frameworkIdentifier;
@@ -115,7 +116,7 @@ public class JettyHttpServerRegistry extends AbstractIdleService implements Http
         this.tlsProtocols = tlsProtocols;
         this.enabledCiphers = enabledCiphers;
         this.hostnameVerifier = hostnameVerifier;
-        this.communicationLog = communicationLog;
+        this.defaultCommunicationLog = communicationLogFactory.createCommunicationLog();
         this.enableHttps = enableHttps || legacyEnableHttps;
         this.enableHttp = enableHttp || legacyEnableHttp;
         this.connectionTimeout = connectionTimeout;
@@ -199,7 +200,7 @@ public class JettyHttpServerRegistry extends AbstractIdleService implements Http
     public String initHttpServer(String schemeAndAuthority) {
         registryLock.lock();
         try {
-            var server = makeHttpServer(schemeAndAuthority);
+            var server = makeHttpServer(schemeAndAuthority, defaultCommunicationLog);
             var uriString = server.getURI().toString();
             if (uriString.endsWith("/")) {
                 uriString = uriString.substring(0, uriString.length() - 1);
@@ -236,8 +237,30 @@ public class JettyHttpServerRegistry extends AbstractIdleService implements Http
 
     // TODO: 2.0.0 - return all created URIs, i.e. http and https
     @Override
+    public String registerContext(String schemeAndAuthority,
+                                  String contextPath,
+                                  @Nullable CommunicationLog communicationLog,
+                                  HttpHandler handler) {
+        return registerContext(schemeAndAuthority, contextPath, SoapConstants.MEDIA_TYPE_SOAP, communicationLog,
+                handler);
+    }
+
+    // TODO: 2.0.0 - return all created URIs, i.e. http and https
+    @Override
     public String registerContext(String schemeAndAuthority, String contextPath, String mediaType,
                                   HttpHandler handler) {
+        return registerContext(schemeAndAuthority, contextPath, mediaType, null, handler);
+    }
+
+    // TODO: 2.0.0 - return all created URIs, i.e. http and https
+    @Override
+    public String registerContext(String schemeAndAuthority,
+                                  String contextPath,
+                                  String mediaType,
+                                  @Nullable CommunicationLog communicationLog,
+                                  HttpHandler handler) {
+        final var commLogToUse = communicationLog == null ? defaultCommunicationLog : communicationLog;
+
         if (!contextPath.startsWith("/")) {
             throw new RuntimeException(String.format("Context path needs to start with a slash, but is %s",
                     contextPath));
@@ -245,7 +268,7 @@ public class JettyHttpServerRegistry extends AbstractIdleService implements Http
 
         registryLock.lock();
         try {
-            Server server = makeHttpServer(schemeAndAuthority);
+            Server server = makeHttpServer(schemeAndAuthority, commLogToUse);
             String mapKey;
             try {
                 mapKey = makeMapKey(server.getURI().toString(), contextPath);
@@ -348,7 +371,7 @@ public class JettyHttpServerRegistry extends AbstractIdleService implements Http
         }
     }
 
-    private Server makeHttpServer(String uri) {
+    private Server makeHttpServer(String uri, CommunicationLog communicationLog) {
         String mapKey;
         try {
             mapKey = makeMapKey(uri);
@@ -364,7 +387,7 @@ public class JettyHttpServerRegistry extends AbstractIdleService implements Http
         }
 
         instanceLogger.debug("Init new HTTP server from URI: {}", uri);
-        Server httpServer = createHttpServer(URI.create(uri));
+        Server httpServer = createHttpServer(URI.create(uri), communicationLog);
         try {
             httpServer.start();
             // CHECKSTYLE.OFF: IllegalCatch
@@ -384,7 +407,7 @@ public class JettyHttpServerRegistry extends AbstractIdleService implements Http
         return httpServer;
     }
 
-    private Server createHttpServer(URI uri) {
+    private Server createHttpServer(URI uri, CommunicationLog communicationLog) {
         instanceLogger.info("Setup HTTP server for address '{}'", uri);
         if (!isSupportedScheme(uri)) {
             throw new RuntimeException(String.format("HTTP server setup failed. Unsupported scheme: %s",

@@ -3,6 +3,7 @@ package it.org.somda.sdc.dpws;
 import com.google.common.collect.ListMultimap;
 import com.google.inject.AbstractModule;
 import com.google.inject.Injector;
+import com.google.inject.assistedinject.FactoryModuleBuilder;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
@@ -21,6 +22,7 @@ import org.somda.sdc.dpws.CommunicationLogSink;
 import org.somda.sdc.dpws.DpwsConfig;
 import org.somda.sdc.dpws.DpwsTest;
 import org.somda.sdc.dpws.TransportBinding;
+import org.somda.sdc.dpws.factory.CommunicationLogFactory;
 import org.somda.sdc.dpws.factory.TransportBindingFactory;
 import org.somda.sdc.dpws.guice.DefaultDpwsConfigModule;
 import org.somda.sdc.dpws.helper.JaxbMarshalling;
@@ -78,7 +80,9 @@ class CommunicationLogIT extends DpwsTest {
             @Override
             protected void configure() {
                 bind(CommunicationLogSink.class).to(TestCommLogSink.class).asEagerSingleton();
-                bind(CommunicationLog.class).to(CommunicationLogImpl.class).asEagerSingleton();
+                install(new FactoryModuleBuilder()
+                        .implement(CommunicationLog.class, CommunicationLogImpl.class)
+                        .build(CommunicationLogFactory.class));
             }
         };
         this.overrideBindings(List.of(dpwsOverride, override));
@@ -516,7 +520,9 @@ class CommunicationLogIT extends DpwsTest {
                     @Override
                     protected void configure() {
                         bind(CommunicationLogSink.class).toInstance(logSink);
-                        bind(CommunicationLog.class).to(CommunicationLogImpl.class).asEagerSingleton();
+                        install(new FactoryModuleBuilder()
+                                .implement(CommunicationLog.class, CommunicationLogImpl.class)
+                                .build(CommunicationLogFactory.class));
                     }
                 }
         ));

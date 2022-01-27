@@ -4,6 +4,7 @@ import com.example.BaseUtil;
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
+import com.google.inject.assistedinject.FactoryModuleBuilder;
 import com.google.inject.util.Modules;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
@@ -18,6 +19,7 @@ import org.somda.sdc.dpws.CommunicationLogImpl;
 import org.somda.sdc.dpws.DpwsConfig;
 import org.somda.sdc.dpws.crypto.CryptoConfig;
 import org.somda.sdc.dpws.crypto.CryptoSettings;
+import org.somda.sdc.dpws.factory.CommunicationLogFactory;
 import org.somda.sdc.dpws.guice.DefaultDpwsModule;
 import org.somda.sdc.glue.GlueConstants;
 import org.somda.sdc.glue.consumer.ConsumerConfig;
@@ -63,7 +65,9 @@ class ConsumerUtil extends BaseUtil {
                 Modules.override(new DefaultDpwsModule()).with(new AbstractModule() {
                     @Override
                     protected void configure() {
-                        bind(CommunicationLog.class).to(CommunicationLogImpl.class).asEagerSingleton();
+                        install(new FactoryModuleBuilder()
+                                .implement(CommunicationLog.class, CommunicationLogImpl.class)
+                                .build(CommunicationLogFactory.class));
                     }
                 }),
                 new GlueDpwsConfigModule() {

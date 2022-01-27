@@ -18,6 +18,7 @@ import org.somda.sdc.dpws.soap.exception.TransportException;
 import org.somda.sdc.dpws.soap.factory.SoapMessageFactory;
 import org.somda.sdc.dpws.soap.model.Envelope;
 
+import javax.annotation.Nullable;
 import javax.xml.bind.JAXBException;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -57,7 +58,7 @@ public class TransportBindingFactoryMock implements TransportBindingFactory {
     }
 
     @Override
-    public TransportBinding createTransportBinding(String endpointUri) {
+    public TransportBinding createTransportBinding(String endpointUri, @Nullable CommunicationLog communicationLog) {
         if (handlerRegistry == null) {
             handlerRegistry = new HashMap<>();
         }
@@ -111,7 +112,20 @@ public class TransportBindingFactoryMock implements TransportBindingFactory {
     }
 
     @Override
+    public TransportBinding createTransportBinding(String endpointUri) throws UnsupportedOperationException {
+        return createTransportBinding(endpointUri, null);
+    }
+
+    @Override
     public TransportBinding createHttpBinding(String endpointUri) {
         return createTransportBinding(endpointUri);
     }
+
+    @Override
+    public TransportBinding createHttpBinding(String endpointUri, @Nullable CommunicationLog communicationLog)
+            throws UnsupportedOperationException {
+        return createTransportBinding(endpointUri, communicationLog);
+    }
+
+
 }

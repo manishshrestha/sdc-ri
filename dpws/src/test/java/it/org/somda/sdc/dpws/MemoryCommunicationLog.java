@@ -2,10 +2,18 @@ package it.org.somda.sdc.dpws;
 
 
 import com.google.common.io.ByteStreams;
+import com.google.inject.assistedinject.Assisted;
+import com.google.inject.assistedinject.AssistedInject;
+import com.google.inject.name.Named;
 import org.apache.commons.io.output.TeeOutputStream;
+import org.somda.sdc.common.CommonConfig;
+import org.somda.sdc.common.logging.InstanceLogger;
 import org.somda.sdc.dpws.CommunicationLog;
+import org.somda.sdc.dpws.CommunicationLogContext;
+import org.somda.sdc.dpws.CommunicationLogSink;
 import org.somda.sdc.dpws.soap.CommunicationContext;
 
+import javax.annotation.Nullable;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -19,31 +27,43 @@ import static org.junit.jupiter.api.Assertions.fail;
 
 public class MemoryCommunicationLog implements CommunicationLog {
 
-    private final ArrayList<Message> messages;
+    private static final List<Message> messages = new ArrayList<>();
 
+    @AssistedInject
+    MemoryCommunicationLog(@Assisted @Nullable CommunicationLogContext communicationLogContext) {
+    }
+
+    @AssistedInject
     public MemoryCommunicationLog() {
-        this.messages = new ArrayList<>();
     }
 
     @Override
-    public OutputStream logMessage(Direction direction, TransportType transportType, MessageType messagePatternType,
-                                   CommunicationContext communicationContext, OutputStream message) {
+    public OutputStream logMessage(Direction direction,
+                                                TransportType transportType,
+                                                MessageType messagePatternType,
+                                                CommunicationContext communicationContext,
+                                                OutputStream message) {
         var messageType = new Message(direction, transportType, messagePatternType, communicationContext);
         messages.add(messageType);
         return new TeeOutputStream(message, messageType);
     }
 
     @Override
-    public OutputStream logMessage(Direction direction, TransportType transportType, MessageType messagePatternType,
-                                   CommunicationContext communicationContext) {
+    public OutputStream logMessage(Direction direction,
+                                                TransportType transportType,
+                                                MessageType messagePatternType,
+                                                CommunicationContext communicationContext) {
         var messageType = new Message(direction, transportType, messagePatternType, communicationContext);
         messages.add(messageType);
         return messageType;
     }
 
     @Override
-    public InputStream logMessage(Direction direction, TransportType transportType, MessageType messageType,
-                                  CommunicationContext communicationContext, InputStream message) {
+    public InputStream logMessage(Direction direction,
+                                               TransportType transportType,
+                                               MessageType messageType,
+                                               CommunicationContext communicationContext,
+                                               InputStream message) {
         try {
             final byte[] bytes = ByteStreams.toByteArray(message);
 
@@ -58,7 +78,7 @@ public class MemoryCommunicationLog implements CommunicationLog {
         return message;
     }
 
-    public List<Message> getMessages() {
+    public static List<Message> getMessages() {
         return new ArrayList<>(messages);
     }
 

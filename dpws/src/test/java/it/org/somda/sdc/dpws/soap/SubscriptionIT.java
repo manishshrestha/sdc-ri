@@ -3,6 +3,7 @@ package it.org.somda.sdc.dpws.soap;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.SettableFuture;
 import com.google.inject.AbstractModule;
+import com.google.inject.assistedinject.FactoryModuleBuilder;
 import dpws_test_service.messages._2017._05._10.TestNotification;
 import it.org.somda.sdc.dpws.IntegrationTestUtil;
 import it.org.somda.sdc.dpws.MockedUdpBindingModule;
@@ -18,6 +19,7 @@ import org.somda.sdc.dpws.DpwsConfig;
 import org.somda.sdc.dpws.crypto.CryptoConfig;
 import org.somda.sdc.dpws.crypto.CryptoSettings;
 import org.somda.sdc.dpws.device.DeviceSettings;
+import org.somda.sdc.dpws.factory.CommunicationLogFactory;
 import org.somda.sdc.dpws.factory.TransportBindingFactory;
 import org.somda.sdc.dpws.guice.DefaultDpwsConfigModule;
 import org.somda.sdc.dpws.service.HostedServiceProxy;
@@ -130,7 +132,9 @@ class SubscriptionIT {
             @Override
             protected void configure() {
                 bind(CommunicationLogSink.class).to(TestCommLogSink.class).asEagerSingleton();
-                bind(CommunicationLog.class).to(CommunicationLogImpl.class).asEagerSingleton();
+                install(new FactoryModuleBuilder()
+                        .implement(CommunicationLog.class, CommunicationLogImpl.class)
+                        .build(CommunicationLogFactory.class));
             }
         };
         try {

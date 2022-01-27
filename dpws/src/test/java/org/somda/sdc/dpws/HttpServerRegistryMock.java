@@ -30,15 +30,35 @@ public class HttpServerRegistryMock extends AbstractIdleService implements HttpS
     }
 
     @Override
-    public String registerContext(String host, @Nullable String contextPath, HttpHandler handler) {
-        URI uri = URI.create(host + contextPath);
+    public String registerContext(String schemeAndAuthority, String contextPath, HttpHandler handler) {
+        return registerContext(schemeAndAuthority, contextPath, "", null, handler);
+    }
+
+    @Override
+    public String registerContext(String schemeAndAuthority,
+                                  String contextPath,
+                                  @Nullable CommunicationLog communicationLog,
+                                  HttpHandler handler) {
+        URI uri = URI.create(schemeAndAuthority + contextPath);
         handlerRegistry.put(uri.toString(), handler);
         return uri.toString();
     }
 
     @Override
-    public String registerContext(String host, String contextPath, String mediaType, HttpHandler handler) {
-        URI uri = URI.create(host + contextPath);
+    public String registerContext(String schemeAndAuthority,
+                                  String contextPath,
+                                  String mediaType,
+                                  HttpHandler handler) {
+        return registerContext(schemeAndAuthority, contextPath, mediaType, null, handler);
+    }
+
+    @Override
+    public String registerContext(String schemeAndAuthority,
+                                  String contextPath,
+                                  String mediaType,
+                                  @Nullable CommunicationLog communicationLog,
+                                  HttpHandler handler) {
+        URI uri = URI.create(schemeAndAuthority + contextPath);
         handlerRegistry.put(uri.toString(), handler);
         return uri.toString();
     }

@@ -3,6 +3,7 @@ package it.org.somda.sdc.dpws.soap;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.SettableFuture;
 import com.google.inject.AbstractModule;
+import com.google.inject.assistedinject.FactoryModuleBuilder;
 import dpws_test_service.messages._2017._05._10.ObjectFactory;
 import dpws_test_service.messages._2017._05._10.TestNotification;
 import dpws_test_service.messages._2017._05._10.TestOperationRequest;
@@ -14,6 +15,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.somda.sdc.dpws.CommunicationLog;
+import org.somda.sdc.dpws.CommunicationLogDummyImpl;
 import org.somda.sdc.dpws.CommunicationLogImpl;
 import org.somda.sdc.dpws.CommunicationLogSink;
 import org.somda.sdc.dpws.DpwsConfig;
@@ -21,6 +23,7 @@ import org.somda.sdc.dpws.client.DiscoveredDevice;
 import org.somda.sdc.dpws.crypto.CryptoConfig;
 import org.somda.sdc.dpws.crypto.CryptoSettings;
 import org.somda.sdc.dpws.device.DeviceSettings;
+import org.somda.sdc.dpws.factory.CommunicationLogFactory;
 import org.somda.sdc.dpws.guice.DefaultDpwsConfigModule;
 import org.somda.sdc.dpws.service.HostedServiceProxy;
 import org.somda.sdc.dpws.service.HostingServiceProxy;
@@ -138,7 +141,9 @@ class CryptoIT {
                 @Override
                 protected void configure() {
                     bind(CommunicationLogSink.class).to(TestCommLogSink.class).asEagerSingleton();
-                    bind(CommunicationLog.class).to(CommunicationLogImpl.class).asEagerSingleton();
+                    install(new FactoryModuleBuilder()
+                            .implement(CommunicationLog.class, CommunicationLogImpl.class)
+                            .build(CommunicationLogFactory.class));
                 }
             });
         } catch (Exception e) {
@@ -319,7 +324,7 @@ class CryptoIT {
                     .getProbeMatch().get(0).getEndpointReference().getAddress().getValue());
         }
 
-        // hostname verifier is called two times: SSLConnectionSockerFactory, JettyHttpServerRegistry
+        // hostname verifier is called two times: SSLConnectionSocketFactory, JettyHttpServerRegistry
         verify(verifier, times(2)).verify(any(), any());
     }
 

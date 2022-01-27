@@ -1,8 +1,10 @@
 package org.somda.sdc.dpws.http;
 
 import com.google.common.util.concurrent.Service;
+import org.somda.sdc.dpws.CommunicationLog;
 import org.somda.sdc.dpws.soap.SoapConstants;
 
+import javax.annotation.Nullable;
 import java.io.InputStream;
 import java.io.OutputStream;
 
@@ -43,6 +45,26 @@ public interface HttpServerRegistry extends Service {
     String registerContext(String schemeAndAuthority, String contextPath, HttpHandler handler);
 
     /**
+     * Registers a handler for SOAP messages for the given scheme, authority and context path.
+     * <p>
+     * SOAP messages use the HTTP media type {@link SoapConstants#MEDIA_TYPE_SOAP} for request and response messages.
+     * <em>If the HTTP server supports both http and https schemes,
+     * the return value scheme will match the requested value.</em>
+     *
+     * @param schemeAndAuthority scheme and authority used to start a new or re-use an existing HTTP server.
+     * @param contextPath        the context path where the given registry shall listen to.<br>
+     *                           <em>Important note: the context path needs to start with a slash.</em>
+     * @param communicationLog   optional communication log to be used at incoming HTTP requests.
+     * @param handler            the handler callback that is invoked on a request to the given context path.
+     * @return the actual full path of the HTTP server address the given handler listens to.
+     * @see #initHttpServer(String)
+     */
+    String registerContext(String schemeAndAuthority,
+                           String contextPath,
+                           @Nullable CommunicationLog communicationLog,
+                           HttpHandler handler);
+
+    /**
      * Registers a handler for HTTP requests destined to the given scheme, authority and context path.
      * <p>
      * <em>If the HTTP server supports both http and https schemes,
@@ -57,6 +79,27 @@ public interface HttpServerRegistry extends Service {
      * @see #initHttpServer(String)
      */
     String registerContext(String schemeAndAuthority, String contextPath, String mediaType, HttpHandler handler);
+
+    /**
+     * Registers a handler for HTTP requests destined to the given scheme, authority and context path.
+     * <p>
+     * <em>If the HTTP server supports both http and https schemes,
+     * the return value scheme will match the requested value.</em>
+     *
+     * @param schemeAndAuthority scheme and authority used to start a new or re-use an existing HTTP server.
+     * @param contextPath        the context path where the given registry shall listen to.<br>
+     *                           <em>Important note: the context path needs to start with a slash.</em>
+     * @param mediaType          the media type of the response the handler will produce.
+     * @param communicationLog   optional communication log to be used at incoming HTTP requests.
+     * @param handler            the handler callback that is invoked on a request to the given context path.
+     * @return the actual full path of the HTTP server address the given handler listens to.
+     * @see #initHttpServer(String)
+     */
+    String registerContext(String schemeAndAuthority,
+                           String contextPath,
+                           String mediaType,
+                           @Nullable CommunicationLog communicationLog,
+                           HttpHandler handler);
 
     /**
      * Removes a handler for the given scheme, authority and context path.

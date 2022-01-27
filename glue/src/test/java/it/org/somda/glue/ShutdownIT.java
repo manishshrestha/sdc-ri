@@ -7,6 +7,7 @@ import com.google.inject.AbstractModule;
 import com.google.inject.Key;
 import com.google.inject.Singleton;
 import com.google.inject.TypeLiteral;
+import com.google.inject.assistedinject.FactoryModuleBuilder;
 import it.org.somda.glue.consumer.TestSdcClient;
 import it.org.somda.glue.provider.TestSdcDevice;
 import it.org.somda.sdc.dpws.MemoryCommunicationLog;
@@ -18,6 +19,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 import org.somda.sdc.common.util.ExecutorWrapperService;
 import org.somda.sdc.dpws.CommunicationLog;
+import org.somda.sdc.dpws.factory.CommunicationLogFactory;
 import org.somda.sdc.dpws.guice.AppDelayExecutor;
 import org.somda.sdc.dpws.guice.NetworkJobThreadPool;
 import org.somda.sdc.dpws.guice.WsDiscovery;
@@ -58,19 +60,18 @@ class ShutdownIT {
 
     private TestSdcDevice testDevice;
     private TestSdcClient testClient;
-    private MemoryCommunicationLog commLog;
 
     @BeforeEach
     void setUp() {
-        commLog = new MemoryCommunicationLog();
-
         testDevice = new TestSdcDevice(Collections.emptyList());
         testClient = new TestSdcClient(
                 new AbstractModule() {
                     @Override
                     protected void configure() {
                         super.configure();
-                        bind(CommunicationLog.class).toInstance(commLog);
+                        install(new FactoryModuleBuilder()
+                                .implement(CommunicationLog.class, MemoryCommunicationLog.class)
+                                .build(CommunicationLogFactory.class));
                         // make this a singleton to allow verifying the running state later
                         bind(SdcRemoteDevicesConnector.class)
                                 .to(SdcRemoteDevicesConnectorImpl.class).in(Singleton.class);
@@ -112,7 +113,7 @@ class ShutdownIT {
         assertTrue(testClient.getConnector().getConnectedDevices().isEmpty());
 
         // the last message must be the unsubscribe response
-        var clientMessages = commLog.getMessages();
+        var clientMessages = MemoryCommunicationLog.getMessages();
         assertFalse(clientMessages.isEmpty());
         var lastMessage = clientMessages.get(clientMessages.size() - 1);
         assertTrue(lastMessage.getMessage().contains("/UnsubscribeResponse"));
@@ -183,7 +184,7 @@ class ShutdownIT {
         testDevice.stopAsync().awaitTerminated(WAIT_TIME.getSeconds(), TimeUnit.SECONDS);
 
         // the last incoming message must be a subscriptionEnd
-        var clientMessages = commLog.getMessages();
+        var clientMessages = MemoryCommunicationLog.getMessages();
         assertFalse(clientMessages.isEmpty());
         var lastMessage = Lists.reverse(clientMessages).stream().filter(message -> CommunicationLog.Direction.INBOUND.equals(message.getDirection())).findFirst();
         assertTrue(lastMessage.get().getMessage().contains("/SubscriptionEnd"));
