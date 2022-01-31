@@ -68,7 +68,8 @@ public class ApacheTransportBindingFactoryImpl implements TransportBindingFactor
     private ClientTransportBindingFactory clientTransportBindingFactory;
 
     @Inject
-    ApacheTransportBindingFactoryImpl(SoapMarshalling marshalling, SoapUtil soapUtil,
+    ApacheTransportBindingFactoryImpl(SoapMarshalling marshalling,
+                                      SoapUtil soapUtil,
                                       CryptoConfigurator cryptoConfigurator,
                                       @Nullable @Named(CryptoConfig.CRYPTO_SETTINGS) CryptoSettings cryptoSettings,
                                       @Named(DpwsConfig.HTTP_CLIENT_CONNECT_TIMEOUT) Duration clientConnectTimeout,
@@ -85,7 +86,6 @@ public class ApacheTransportBindingFactoryImpl implements TransportBindingFactor
                                       @Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier) {
         this.cryptoConfigurator = cryptoConfigurator;
         this.cryptoSettings = cryptoSettings;
-        this.defaultCommunicationLog = communicationLogFactory.createCommunicationLog();
         this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);
         this.frameworkIdentifier = frameworkIdentifier;
         this.marshalling = marshalling;
@@ -94,6 +94,7 @@ public class ApacheTransportBindingFactoryImpl implements TransportBindingFactor
         this.clientReadTimeout = clientReadTimeout;
         this.enableGzipCompression = enableGzipCompression;
         this.clientTransportBindingFactory = clientTransportBindingFactory;
+        this.defaultCommunicationLog = communicationLogFactory.createCommunicationLog();
         this.tlsProtocols = tlsProtocols;
         this.enabledCiphers = enabledCiphers;
         this.hostnameVerifier = hostnameVerifier;

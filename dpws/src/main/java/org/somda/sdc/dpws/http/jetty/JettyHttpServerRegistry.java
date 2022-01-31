@@ -68,6 +68,8 @@ import java.util.concurrent.locks.ReentrantLock;
 public class JettyHttpServerRegistry extends AbstractIdleService implements HttpServerRegistry {
     private static final Logger LOG = LogManager.getLogger(JettyHttpServerRegistry.class);
 
+    private static final String URI_CONVERSION_ERROR_MSG = "Unexpected URI conversion error";
+
     private JettyHttpServerHandlerFactory jettyHttpServerHandlerFactory;
 
     private final String frameworkIdentifier;
@@ -273,8 +275,8 @@ public class JettyHttpServerRegistry extends AbstractIdleService implements Http
             try {
                 mapKey = makeMapKey(server.getURI().toString(), contextPath);
             } catch (UnknownHostException e) {
-                instanceLogger.error("Unexpected URI conversion error", e);
-                throw new RuntimeException("Unexpected URI conversion error");
+                instanceLogger.error(URI_CONVERSION_ERROR_MSG, e);
+                throw new RuntimeException(URI_CONVERSION_ERROR_MSG, e);
             }
             URI mapKeyUri = URI.create(mapKey);
 
@@ -316,8 +318,8 @@ public class JettyHttpServerRegistry extends AbstractIdleService implements Http
                 serverRegistryKey = makeMapKey(schemeAndAuthority);
                 httpHandlerRegistryKey = makeMapKey(schemeAndAuthority, contextPath);
             } catch (UnknownHostException e) {
-                instanceLogger.error("Unexpected URI conversion error", e);
-                throw new RuntimeException("Unexpected URI conversion error");
+                instanceLogger.error(URI_CONVERSION_ERROR_MSG, e);
+                throw new RuntimeException(URI_CONVERSION_ERROR_MSG, e);
             }
 
             Optional.ofNullable(serverRegistry.get(serverRegistryKey)).ifPresent(httpServer ->
@@ -376,8 +378,8 @@ public class JettyHttpServerRegistry extends AbstractIdleService implements Http
         try {
             mapKey = makeMapKey(uri);
         } catch (UnknownHostException e) {
-            instanceLogger.error("Unexpected URI conversion error", e);
-            throw new RuntimeException("Unexpected URI conversion error");
+            instanceLogger.error(URI_CONVERSION_ERROR_MSG, e);
+            throw new RuntimeException(URI_CONVERSION_ERROR_MSG, e);
         }
 
         Optional<Server> oldServer = Optional.ofNullable(serverRegistry.get(mapKey));
@@ -400,8 +402,8 @@ public class JettyHttpServerRegistry extends AbstractIdleService implements Http
         try {
             serverRegistry.put(makeMapKey(serverUri), httpServer);
         } catch (UnknownHostException e) {
-            instanceLogger.error("Unexpected URI conversion error", e);
-            throw new RuntimeException("Unexpected URI conversion error");
+            instanceLogger.error(URI_CONVERSION_ERROR_MSG, e);
+            throw new RuntimeException(URI_CONVERSION_ERROR_MSG, e);
         }
         instanceLogger.debug("New HTTP server initialized: {}", uri);
         return httpServer;
@@ -470,29 +472,28 @@ public class JettyHttpServerRegistry extends AbstractIdleService implements Http
             src.setSniHostCheck(false);
 
             HttpConfiguration httpsConfig = new HttpConfiguration(httpConfig);
-            var clientVerifier = new HttpConfiguration.Customizer() {
-                @Override
-                public void customize(Connector connector, HttpConfiguration channelConfig, Request request) {
-                    var numRequest = request.getHttpChannel().getRequests();
-                    if (numRequest != 1) {
-                        instanceLogger.debug("Connection already verified");
-                        return;
-                    }
-                    EndPoint endp = request.getHttpChannel().getEndPoint();
-                    if (endp instanceof SslConnection.DecryptedEndPoint) {
-                        SslConnection.DecryptedEndPoint sslEndp = (SslConnection.DecryptedEndPoint) endp;
-                        SslConnection sslConnection = sslEndp.getSslConnection();
-                        SSLEngine sslEngine = sslConnection.getSSLEngine();
+            HttpConfiguration.Customizer clientVerifier = (Connector connector,
+                                                           HttpConfiguration channelConfig,
+                                                           Request request) -> {
+                var numRequest = request.getHttpChannel().getRequests();
+                if (numRequest != 1) {
+                    instanceLogger.debug("Connection already verified");
+                    return;
+                }
+                EndPoint endp = request.getHttpChannel().getEndPoint();
+                if (endp instanceof SslConnection.DecryptedEndPoint) {
+                    SslConnection.DecryptedEndPoint sslEndp = (SslConnection.DecryptedEndPoint) endp;
+                    SslConnection sslConnection = sslEndp.getSslConnection();
+                    SSLEngine sslEngine = sslConnection.getSSLEngine();
 
-                        var session = sslEngine.getSession();
-                        endp.getLocalAddress().getHostName();
+                    var session = sslEngine.getSession();
+                    endp.getLocalAddress().getHostName();
 
-                        if (!hostnameVerifier.verify(sslEndp.getLocalAddress().getHostName(), session)) {
-                            instanceLogger.debug("HostnameVerifier has filtered request, marking request as " +
-                                    "handled and aborting request");
-                            request.setHandled(true);
-                            request.getHttpChannel().abort(new Exception("HostnameVerifier has rejected request"));
-                        }
+                    if (!hostnameVerifier.verify(sslEndp.getLocalAddress().getHostName(), session)) {
+                        instanceLogger.debug("HostnameVerifier has filtered request, marking request as " +
+                                "handled and aborting request");
+                        request.setHandled(true);
+                        request.getHttpChannel().abort(new Exception("HostnameVerifier has rejected request"));
                     }
                 }
             };
@@ -508,11 +509,11 @@ public class JettyHttpServerRegistry extends AbstractIdleService implements Http
                 httpsConnector = new ServerConnector(server,
                         new OptionalSslConnectionFactory(connectionFactory, HttpVersion.HTTP_1_1.asString()),
                         connectionFactory,
-                    httpConnectionFactory);
+                        httpConnectionFactory);
             } else {
                 httpsConnector = new ServerConnector(server,
                         connectionFactory,
-                    httpConnectionFactory);
+                        httpConnectionFactory);
             }
             httpsConnector.setIdleTimeout(connectionTimeout.toMillis());
             httpsConnector.setHost(uri.getHost());

@@ -31,7 +31,8 @@ public interface TransportBindingFactory {
      * {@link UnsupportedOperationException} is thrown.
      *
      * @param endpointUri      the URI to create a binding to.
-     * @param communicationLog the communication log to used on the endpoint. Null to be defaulted.
+     * @param communicationLog the communication log to be used for the endpoint.
+     *                         Set to null to use a default communication log.
      * @return a transport binding bound to endpointUri.
      * @throws UnsupportedOperationException if the URI scheme is not supported.
      */
@@ -52,7 +53,8 @@ public interface TransportBindingFactory {
      * Creates an HTTP or HTTPS binding.
      *
      * @param endpointUri      a valid HTTP/HTTPS URI to create a binding to.
-     * @param communicationLog the communication log to used on the endpoint. Null to be defaulted.
+     * @param communicationLog the communication log to be used for the endpoint.
+     *                         Set to null to use a default communication log.
      * @return a transport binding bound to endpointUri.
      * @throws UnsupportedOperationException if the URI scheme type is not supported.
      */

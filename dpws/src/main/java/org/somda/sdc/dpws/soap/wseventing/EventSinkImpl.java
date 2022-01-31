@@ -134,12 +134,12 @@ public class EventSinkImpl implements EventSink {
                   @Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier,
                   TransportBindingFactory transportBindingFactory,
                   RequestResponseClientFactory requestResponseClientFactory) {
-        this.communicationLog = communicationLog;
         this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);
         this.requestResponseClient = requestResponseClient;
         this.transportBindingFactory = transportBindingFactory;
         this.requestResponseClientFactory = requestResponseClientFactory;
         this.hostAddress = hostAddress;
+        this.communicationLog = communicationLog;
         this.maxWaitForFutures = maxWaitForFutures;
         this.httpServerRegistry = httpServerRegistry;
         this.wseFactory = wseFactory;

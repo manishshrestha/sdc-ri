@@ -21,20 +21,28 @@ public class CommunicationLogDummyImpl implements CommunicationLog {
     }
 
     @Override
-    public OutputStream logMessage(Direction direction, TransportType transportType, MessageType messageType,
-                                   CommunicationContext communicationContext, OutputStream message) {
+    public OutputStream logMessage(Direction direction,
+                                   TransportType transportType,
+                                   MessageType messageType,
+                                   CommunicationContext communicationContext,
+                                   OutputStream message) {
         return message;
     }
 
     @Override
-    public OutputStream logMessage(Direction direction, TransportType transportType, MessageType messageType,
+    public OutputStream logMessage(Direction direction,
+                                   TransportType transportType,
+                                   MessageType messageType,
                                    CommunicationContext communicationContext) {
         return OutputStream.nullOutputStream();
     }
 
     @Override
-    public InputStream logMessage(Direction direction, TransportType transportType, MessageType messageType,
-                                  CommunicationContext communicationContext, InputStream message) {
+    public InputStream logMessage(Direction direction,
+                                  TransportType transportType,
+                                  MessageType messageType,
+                                  CommunicationContext communicationContext,
+                                  InputStream message) {
         return message;
     }
 }
