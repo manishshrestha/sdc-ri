@@ -23,13 +23,11 @@ import static org.junit.jupiter.api.Assertions.fail;
 
 public class MemoryCommunicationLog implements CommunicationLog {
 
-    private static final List<Message> messages = new ArrayList<>();
+    private final List<Message> messages = new ArrayList<>();
 
-    @AssistedInject
-    MemoryCommunicationLog(@Assisted @Nullable CommunicationLogContext communicationLogContext) {
+    public MemoryCommunicationLog(@Nullable CommunicationLogContext communicationLogContext) {
     }
 
-    @AssistedInject
     public MemoryCommunicationLog() {
     }
 
@@ -74,7 +72,7 @@ public class MemoryCommunicationLog implements CommunicationLog {
         return message;
     }
 
-    public static List<Message> getMessages() {
+    public List<Message> getMessages() {
         return new ArrayList<>(messages);
     }
 

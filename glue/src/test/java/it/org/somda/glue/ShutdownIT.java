@@ -7,18 +7,18 @@ import com.google.inject.AbstractModule;
 import com.google.inject.Key;
 import com.google.inject.Singleton;
 import com.google.inject.TypeLiteral;
-import com.google.inject.assistedinject.FactoryModuleBuilder;
 import it.org.somda.glue.consumer.TestSdcClient;
 import it.org.somda.glue.provider.TestSdcDevice;
 import it.org.somda.sdc.dpws.MemoryCommunicationLog;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
 import org.somda.sdc.common.util.ExecutorWrapperService;
 import org.somda.sdc.dpws.CommunicationLog;
+import org.somda.sdc.dpws.CommunicationLogContext;
 import org.somda.sdc.dpws.factory.CommunicationLogFactory;
 import org.somda.sdc.dpws.guice.AppDelayExecutor;
 import org.somda.sdc.dpws.guice.NetworkJobThreadPool;
@@ -33,11 +33,13 @@ import org.somda.sdc.glue.guice.WatchdogScheduledExecutor;
 import test.org.somda.common.CIDetector;
 import test.org.somda.common.LoggingTestWatcher;
 
+import javax.annotation.Nullable;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
@@ -61,17 +63,19 @@ class ShutdownIT {
     private TestSdcDevice testDevice;
     private TestSdcClient testClient;
 
+    private MemoryCommunicationLogFactory communicationLogFactory;
+
     @BeforeEach
     void setUp() {
         testDevice = new TestSdcDevice(Collections.emptyList());
+        communicationLogFactory = new MemoryCommunicationLogFactory();
         testClient = new TestSdcClient(
                 new AbstractModule() {
                     @Override
                     protected void configure() {
                         super.configure();
-                        install(new FactoryModuleBuilder()
-                                .implement(CommunicationLog.class, MemoryCommunicationLog.class)
-                                .build(CommunicationLogFactory.class));
+                        bind(CommunicationLogFactory.class).toInstance(communicationLogFactory);
+
                         // make this a singleton to allow verifying the running state later
                         bind(SdcRemoteDevicesConnector.class)
                                 .to(SdcRemoteDevicesConnectorImpl.class).in(Singleton.class);
@@ -113,7 +117,7 @@ class ShutdownIT {
         assertTrue(testClient.getConnector().getConnectedDevices().isEmpty());
 
         // the last message must be the unsubscribe response
-        var clientMessages = MemoryCommunicationLog.getMessages();
+        var clientMessages = communicationLogFactory.getMemoryCommunicationLog().get().getMessages();
         assertFalse(clientMessages.isEmpty());
         var lastMessage = clientMessages.get(clientMessages.size() - 1);
         assertTrue(lastMessage.getMessage().contains("/UnsubscribeResponse"));
@@ -126,33 +130,33 @@ class ShutdownIT {
         services.add(sdcRemoteDevice);
         // scheduled
         List.of(AppDelayExecutor.class,
-                WatchdogScheduledExecutor.class)
+                        WatchdogScheduledExecutor.class)
                 .forEach(service ->
                         services.add(testClient.getInjector().getInstance(Key.get(
-                                new TypeLiteral<ExecutorWrapperService<ScheduledExecutorService>>() {
-                                },
-                                service
+                                        new TypeLiteral<ExecutorWrapperService<ScheduledExecutorService>>() {
+                                        },
+                                        service
                                 ))
                         )
                 );
 
         // listening
         List.of(NetworkJobThreadPool.class,
-                WsDiscovery.class,
-                Consumer.class)
+                        WsDiscovery.class,
+                        Consumer.class)
                 .forEach(service ->
                         services.add(testClient.getInjector().getInstance(Key.get(
-                                new TypeLiteral<ExecutorWrapperService<ListeningExecutorService>>() {
-                                },
-                                service
+                                        new TypeLiteral<ExecutorWrapperService<ListeningExecutorService>>() {
+                                        },
+                                        service
                                 ))
                         )
                 );
 
         // Collect all additional services
         List.of(SoapMarshalling.class,
-                HttpServerRegistry.class,
-                SdcRemoteDevicesConnector.class)
+                        HttpServerRegistry.class,
+                        SdcRemoteDevicesConnector.class)
                 .forEach(serviceClass -> services.add(testClient.getInjector().getInstance(serviceClass)));
 
 
@@ -184,7 +188,7 @@ class ShutdownIT {
         testDevice.stopAsync().awaitTerminated(WAIT_TIME.getSeconds(), TimeUnit.SECONDS);
 
         // the last incoming message must be a subscriptionEnd
-        var clientMessages = MemoryCommunicationLog.getMessages();
+        var clientMessages = communicationLogFactory.getMemoryCommunicationLog().get().getMessages();
         assertFalse(clientMessages.isEmpty());
         var lastMessage = Lists.reverse(clientMessages).stream().filter(message -> CommunicationLog.Direction.INBOUND.equals(message.getDirection())).findFirst();
         assertTrue(lastMessage.get().getMessage().contains("/SubscriptionEnd"));
@@ -216,28 +220,28 @@ class ShutdownIT {
         List.of(AppDelayExecutor.class)
                 .forEach(service ->
                         services.add(testDevice.getInjector().getInstance(Key.get(
-                                new TypeLiteral<ExecutorWrapperService<ScheduledExecutorService>>() {
-                                },
-                                service
+                                        new TypeLiteral<ExecutorWrapperService<ScheduledExecutorService>>() {
+                                        },
+                                        service
                                 ))
                         )
                 );
 
         // listening
         List.of(NetworkJobThreadPool.class,
-                WsDiscovery.class)
+                        WsDiscovery.class)
                 .forEach(service ->
                         services.add(testDevice.getInjector().getInstance(Key.get(
-                                new TypeLiteral<ExecutorWrapperService<ListeningExecutorService>>() {
-                                },
-                                service
+                                        new TypeLiteral<ExecutorWrapperService<ListeningExecutorService>>() {
+                                        },
+                                        service
                                 ))
                         )
                 );
 
         // Collect all additional services
         List.of(SoapMarshalling.class,
-                HttpServerRegistry.class)
+                        HttpServerRegistry.class)
                 .forEach(serviceClass -> services.add(testDevice.getInjector().getInstance(serviceClass)));
 
 
@@ -247,5 +251,29 @@ class ShutdownIT {
                     service.toString() + " did not shut down"
             );
         });
+    }
+
+    static class MemoryCommunicationLogFactory implements CommunicationLogFactory {
+        private static MemoryCommunicationLog communicationLog = null;
+
+        @Override
+        public CommunicationLog createCommunicationLog(@Nullable CommunicationLogContext context) {
+            if (communicationLog == null) {
+                communicationLog = new MemoryCommunicationLog(context);
+            }
+            return communicationLog;
+        }
+
+        @Override
+        public CommunicationLog createCommunicationLog() {
+            if (communicationLog == null) {
+                communicationLog = new MemoryCommunicationLog();
+            }
+            return communicationLog;
+        }
+
+        Optional<MemoryCommunicationLog> getMemoryCommunicationLog() {
+            return Optional.ofNullable(communicationLog);
+        }
     }
 }
