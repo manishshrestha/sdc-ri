@@ -59,6 +59,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `org.somda.sdc.common.util.AnyDateTime` methods `equals()`, `hashCode()`, `toString()` implemented (#201)
 - `org.somda.sdc.dpws.soap.wsdiscovery.WsDiscoveryUtil.isScopesMatching()` extends scope matcher to be compatible with RFC3986 URIs 
   and follow WS-Discovery rules (#212)
+- `org.somda.sdc.dpws.http.apache.CommunicationLogHttpRequestInterceptor` adds local certificates to TransportInfo and `org.somda.sdc.dpws.http.apache.CommunicationLogHttpResponseInterceptor` adds peer certificates to TransportInfo. (#204)
   
 ### Removed
 
