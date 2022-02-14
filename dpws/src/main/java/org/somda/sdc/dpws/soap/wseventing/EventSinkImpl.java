@@ -231,7 +231,8 @@ public class EventSinkImpl implements EventSink {
                     Collections.unmodifiableList(actions));
 
             TransportBinding tBinding = transportBindingFactory.createTransportBinding(
-                    responseBody.getSubscriptionManager().getAddress().getValue());
+                    responseBody.getSubscriptionManager().getAddress().getValue(),
+                    null);
             RequestResponseClient rrClient = requestResponseClientFactory.createRequestResponseClient(tBinding);
 
             // Add sink subscription manager and httpclient for handling getStatus/renew/unsubscribe messages

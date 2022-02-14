@@ -112,20 +112,8 @@ public class TransportBindingFactoryMock implements TransportBindingFactory {
     }
 
     @Override
-    public TransportBinding createTransportBinding(String endpointUri) throws UnsupportedOperationException {
-        return createTransportBinding(endpointUri, null);
-    }
-
-    @Override
-    public TransportBinding createHttpBinding(String endpointUri) {
-        return createTransportBinding(endpointUri);
-    }
-
-    @Override
     public TransportBinding createHttpBinding(String endpointUri, @Nullable CommunicationLog communicationLog)
             throws UnsupportedOperationException {
         return createTransportBinding(endpointUri, communicationLog);
     }
-
-
 }

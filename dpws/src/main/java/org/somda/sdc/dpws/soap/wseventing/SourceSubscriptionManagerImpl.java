@@ -153,13 +153,13 @@ public class SourceSubscriptionManagerImpl extends AbstractExecutionThreadServic
         notifyToUri = wsaUtil.getAddressUri(getNotifyTo()).orElseThrow(() ->
                 new RuntimeException("Invalid notify-to EPR"));
         this.notifyToSender = notificationSourceFactory.createNotificationSource(
-                transportBindingFactory.createTransportBinding(notifyToUri));
+                transportBindingFactory.createTransportBinding(notifyToUri, null));
 
         if (getEndTo().isPresent()) {
             final Optional<String> addressUriAsString = wsaUtil.getAddressUri(getEndTo().get());
             if (addressUriAsString.isPresent()) {
                 this.endToSender = notificationSourceFactory.createNotificationSource(
-                        transportBindingFactory.createTransportBinding(notifyToUri));
+                        transportBindingFactory.createTransportBinding(notifyToUri, null));
             }
         }
 

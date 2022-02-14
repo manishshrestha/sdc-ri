@@ -61,7 +61,6 @@ public class ApacheTransportBindingFactoryImpl implements TransportBindingFactor
     private final CryptoConfigurator cryptoConfigurator;
     @Nullable
     private final CryptoSettings cryptoSettings;
-    private final CommunicationLog defaultCommunicationLog;
     private final Logger instanceLogger;
     private final String frameworkIdentifier;
 
@@ -94,7 +93,6 @@ public class ApacheTransportBindingFactoryImpl implements TransportBindingFactor
         this.clientReadTimeout = clientReadTimeout;
         this.enableGzipCompression = enableGzipCompression;
         this.clientTransportBindingFactory = clientTransportBindingFactory;
-        this.defaultCommunicationLog = communicationLogFactory.createCommunicationLog();
         this.tlsProtocols = tlsProtocols;
         this.enabledCiphers = enabledCiphers;
         this.hostnameVerifier = hostnameVerifier;
@@ -105,13 +103,12 @@ public class ApacheTransportBindingFactoryImpl implements TransportBindingFactor
             throw new RuntimeException("Http and https are disabled, cannot continue");
         }
 
-        this.client = buildClient(cryptoConfigurator, cryptoSettings, null);
+        this.client = buildClient(cryptoConfigurator, cryptoSettings, communicationLogFactory.createCommunicationLog());
     }
 
     private HttpClient buildClient(CryptoConfigurator cryptoConfigurator,
                                    @Nullable CryptoSettings cryptoSettings,
-                                   @Nullable CommunicationLog communicationLog) {
-        final var commLogToUse = communicationLog == null ? defaultCommunicationLog : communicationLog;
+                                   CommunicationLog communicationLog) {
         var socketConfig = SocketConfig.custom().setTcpNoDelay(true).build();
 
         // set the timeout for all requests
@@ -121,9 +118,9 @@ public class ApacheTransportBindingFactoryImpl implements TransportBindingFactor
 
         var clientBuilder = HttpClients.custom().setDefaultSocketConfig(socketConfig)
                 // attach interceptors to enable communication log capabilities including message headers
-                .addInterceptorLast(new CommunicationLogHttpRequestInterceptor(commLogToUse, frameworkIdentifier,
+                .addInterceptorLast(new CommunicationLogHttpRequestInterceptor(communicationLog, frameworkIdentifier,
                         cryptoConfigurator.getCertificates(cryptoSettings)))
-                .addInterceptorLast(new CommunicationLogHttpResponseInterceptor(commLogToUse, frameworkIdentifier))
+                .addInterceptorLast(new CommunicationLogHttpResponseInterceptor(communicationLog, frameworkIdentifier))
                 .setDefaultRequestConfig(requestConfig)
                 // allow reusing ssl connections in the pool
                 .disableConnectionState()
@@ -202,12 +199,6 @@ public class ApacheTransportBindingFactoryImpl implements TransportBindingFactor
     }
 
     @Override
-    public TransportBinding createTransportBinding(String endpointUri)
-            throws UnsupportedOperationException {
-        return createTransportBinding(endpointUri, null);
-    }
-
-    @Override
     public TransportBinding createHttpBinding(String endpointUri, @Nullable CommunicationLog communicationLog)
             throws UnsupportedOperationException {
         var scheme = URI.create(endpointUri).getScheme();
@@ -220,11 +211,6 @@ public class ApacheTransportBindingFactoryImpl implements TransportBindingFactor
 
         throw new UnsupportedOperationException(
                 String.format("Binding with scheme %s is currently not supported", scheme));
-    }
-
-    @Override
-    public TransportBinding createHttpBinding(String endpointUri) throws UnsupportedOperationException {
-        return createHttpBinding(endpointUri, null);
     }
 
     @Override

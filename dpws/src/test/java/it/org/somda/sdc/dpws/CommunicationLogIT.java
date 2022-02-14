@@ -141,7 +141,7 @@ class CommunicationLogIT extends DpwsTest {
                 baseUri.getFragment());
 
         // make requests to our server
-        TransportBinding httpBinding1 = transportBindingFactory.createHttpBinding(baseUri.toString());
+        TransportBinding httpBinding1 = transportBindingFactory.createHttpBinding(baseUri.toString(), null);
 
         for (int i = 0; i < 100; i++) {
 
@@ -571,9 +571,9 @@ class CommunicationLogIT extends DpwsTest {
                 baseUri.getFragment());
 
         // make requests to our server
-        TransportBinding httpBinding1 = transportBindingFactory.createHttpBinding(baseUri.toString());
+        TransportBinding httpBinding1 = transportBindingFactory.createHttpBinding(baseUri.toString(), null);
 
-        TransportBinding httpBinding2 = secondTransportBindingFactory.createHttpBinding(baseUri.toString());
+        TransportBinding httpBinding2 = secondTransportBindingFactory.createHttpBinding(baseUri.toString(), null);
         for (int i = 0; i < 100; i++) {
 
             testSharedLogSink(marshalling, httpBinding1, logSink, expectedResponseStream);

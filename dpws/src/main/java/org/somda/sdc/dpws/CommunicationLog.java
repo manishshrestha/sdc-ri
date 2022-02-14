@@ -11,7 +11,7 @@ import java.io.OutputStream;
 public interface CommunicationLog {
 
     /**
-     * Logs an HTTP message based on an {@linkplain OutputStream}.
+     * Logs a message based on an {@linkplain OutputStream}.
      * <p>
      * It does not block i.e. it can return before data is written to the output.
      *
@@ -23,8 +23,11 @@ public interface CommunicationLog {
      * @return an output stream, that streams to the original output stream and optionally streams to another stream
      * similarly to the tee Unix command. The other stream can be a log file stream.
      */
-    OutputStream logMessage(Direction direction, TransportType transportType, MessageType messageType,
-                            CommunicationContext communicationContext, OutputStream message);
+    OutputStream logMessage(Direction direction,
+                            TransportType transportType,
+                            MessageType messageType,
+                            CommunicationContext communicationContext,
+                            OutputStream message);
 
     /**
      * Creates an {@linkplain OutputStream} to write the log message into.
@@ -35,12 +38,13 @@ public interface CommunicationLog {
      * @param communicationContext communication information such as target address and port.
      * @return an output stream to write the log message into.
      */
-    OutputStream logMessage(Direction direction, TransportType transportType, MessageType messageType,
+    OutputStream logMessage(Direction direction,
+                            TransportType transportType,
+                            MessageType messageType,
                             CommunicationContext communicationContext);
 
-
     /**
-     * Logs an HTTP message based on an {@linkplain InputStream}.
+     * Logs a message based on an {@linkplain InputStream}.
      * <p>
      * It blocks until everything has been read.
      *
@@ -54,8 +58,11 @@ public interface CommunicationLog {
      *                             see return value.
      * @return a new input stream that mirrors the data from the message input data.
      */
-    InputStream logMessage(Direction direction, TransportType transportType, MessageType messageType,
-                           CommunicationContext communicationContext, InputStream message);
+    InputStream logMessage(Direction direction,
+                           TransportType transportType,
+                           MessageType messageType,
+                           CommunicationContext communicationContext,
+                           InputStream message);
 
 
     /**
@@ -103,9 +110,13 @@ public interface CommunicationLog {
 
         private final String stringRepresentation;
 
-        MessageType(String stringRepresentation) { this.stringRepresentation = stringRepresentation; }
+        MessageType(String stringRepresentation) {
+            this.stringRepresentation = stringRepresentation;
+        }
 
         @Override
-        public  String toString() { return stringRepresentation; }
+        public String toString() {
+            return stringRepresentation;
+        }
     }
 }

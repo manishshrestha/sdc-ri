@@ -129,16 +129,14 @@ class ShutdownIT {
 
         services.add(sdcRemoteDevice);
         // scheduled
-        List.of(AppDelayExecutor.class,
-                        WatchdogScheduledExecutor.class)
-                .forEach(service ->
-                        services.add(testClient.getInjector().getInstance(Key.get(
-                                        new TypeLiteral<ExecutorWrapperService<ScheduledExecutorService>>() {
-                                        },
-                                        service
-                                ))
-                        )
-                );
+        List.of(AppDelayExecutor.class, WatchdogScheduledExecutor.class).forEach(service ->
+                services.add(testClient.getInjector().getInstance(Key.get(
+                                new TypeLiteral<ExecutorWrapperService<ScheduledExecutorService>>() {
+                                },
+                                service
+                        ))
+                )
+        );
 
         // listening
         List.of(NetworkJobThreadPool.class,

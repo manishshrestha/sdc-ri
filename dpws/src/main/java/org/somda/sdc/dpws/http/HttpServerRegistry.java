@@ -55,6 +55,7 @@ public interface HttpServerRegistry extends Service {
      * @param contextPath        the context path where the given registry shall listen to.<br>
      *                           <em>Important note: the context path needs to start with a slash.</em>
      * @param communicationLog   optional communication log to be used at incoming HTTP requests.
+     *                           Set to null to use a default communication log.
      * @param handler            the handler callback that is invoked on a request to the given context path.
      * @return the actual full path of the HTTP server address the given handler listens to.
      * @see #initHttpServer(String)
@@ -91,6 +92,7 @@ public interface HttpServerRegistry extends Service {
      *                           <em>Important note: the context path needs to start with a slash.</em>
      * @param mediaType          the media type of the response the handler will produce.
      * @param communicationLog   optional communication log to be used at incoming HTTP requests.
+     *                           Set to null to use a default communication log.
      * @param handler            the handler callback that is invoked on a request to the given context path.
      * @return the actual full path of the HTTP server address the given handler listens to.
      * @see #initHttpServer(String)

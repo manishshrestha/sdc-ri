@@ -200,7 +200,9 @@ class SubscriptionIT {
 
         subscribe.get(MAX_WAIT_TIME.getSeconds(), TimeUnit.SECONDS);
 
-        var transportBinding = transportBindingFactory.createHttpBinding(devicePeer.getDevice().getActiveSubscriptions().values().stream().findFirst().get().getSubscriptionManagerEpr().getAddress().getValue());
+        var transportBinding = transportBindingFactory.createHttpBinding(
+                devicePeer.getDevice().getActiveSubscriptions().values().stream().findFirst().get().getSubscriptionManagerEpr().getAddress().getValue(),
+                null);
         var requestResponseClient = requestResponseClientFactory.createRequestResponseClient(transportBinding);
 
         var subscriptionManagerOpt = devicePeer.getDevice().getActiveSubscriptions().values().stream().findFirst();
@@ -237,7 +239,7 @@ class SubscriptionIT {
 
         subscribe.get(MAX_WAIT_TIME.getSeconds(), TimeUnit.SECONDS);
 
-        var transportBinding = transportBindingFactory.createHttpBinding(srv1.getActiveEprAddress());
+        var transportBinding = transportBindingFactory.createHttpBinding(srv1.getActiveEprAddress(), null);
         var requestResponseClient = requestResponseClientFactory.createRequestResponseClient(transportBinding);
 
         var subscriptionManagerOpt = devicePeer.getDevice().getActiveSubscriptions().values().stream().findFirst();

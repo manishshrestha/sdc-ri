@@ -28,6 +28,7 @@ public interface WsEventingEventSinkFactory {
      * @param hostAddress           address where to bind a notification sink server.
      * @param communicationLog      optional communication log to be used for incoming notifications and subscription
      *                              end messages.
+     *                              Set to null to use a default communication log.
      * @return a new {@link EventSink} instance.
      */
     EventSink createWsEventingEventSink(@Assisted RequestResponseClient requestResponseClient,

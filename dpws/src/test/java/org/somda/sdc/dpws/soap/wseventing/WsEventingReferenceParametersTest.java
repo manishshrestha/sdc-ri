@@ -124,7 +124,7 @@ class WsEventingReferenceParametersTest extends DpwsTest {
         RequestResponseClientFactory rrcFactory = getInjector().getInstance(RequestResponseClientFactory.class);
         TransportBindingFactory tbFactory = getInjector().getInstance(TransportBindingFactory.class);
         RequestResponseClient rrc = rrcFactory.createRequestResponseClient(
-                tbFactory.createTransportBinding(hostedServiceUri));
+                tbFactory.createTransportBinding(hostedServiceUri, null));
 
         wseSink = getInjector().getInstance(WsEventingEventSinkFactory.class)
                 .createWsEventingEventSink(rrc, "http://localhost:1234");

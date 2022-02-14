@@ -140,7 +140,7 @@ public class ClientImpl extends AbstractIdleService implements Client, Service, 
     public ListenableFuture<ProbeMatchesType> directedProbe(String xAddr) {
         checkRunning();
 
-        TransportBinding tBinding = transportBindingFactory.createTransportBinding(xAddr);
+        TransportBinding tBinding = transportBindingFactory.createTransportBinding(xAddr, null);
         RequestResponseClient rrc = requestResponseClientFactory.createRequestResponseClient(tBinding);
         return wsDiscoveryClient.sendDirectedProbe(rrc, new ArrayList<>(), new ArrayList<>());
     }

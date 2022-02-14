@@ -20,7 +20,7 @@ public class HostedServiceTransportBinding implements TransportBinding {
     HostedServiceTransportBinding(@Assisted HostedServiceProxy hostedServiceProxy,
                                   TransportBindingFactory transportBindingFactory) {
         var activeEprAddress = hostedServiceProxy.getActiveEprAddress();
-        this.transportBinding = transportBindingFactory.createTransportBinding(activeEprAddress);
+        this.transportBinding = transportBindingFactory.createTransportBinding(activeEprAddress, null);
     }
 
     @Override
