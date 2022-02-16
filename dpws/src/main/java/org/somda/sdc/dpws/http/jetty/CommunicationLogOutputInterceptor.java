@@ -48,6 +48,19 @@ public class CommunicationLogOutputInterceptor implements HttpOutput.Interceptor
         this.currentTransactionId = currentTransactionId;
     }
 
+    /***
+     * Closes the underlying communication log stream if present.
+     */
+    public void close() {
+        try {
+            if (commlogStream != null) {
+                commlogStream.close();
+            }
+        } catch (IOException e) {
+            instanceLogger.error("Error while closing communication log stream", e);
+        }
+    }
+
     @Override
     public void write(ByteBuffer content, boolean last, Callback callback) {
         if (content == null) {
@@ -64,9 +77,6 @@ public class CommunicationLogOutputInterceptor implements HttpOutput.Interceptor
         try {
             WritableByteChannel writableByteChannel = Channels.newChannel(commlogStream);
             writableByteChannel.write(content);
-            if (last) {
-                commlogStream.close();
-            }
         } catch (IOException e) {
             instanceLogger.error("Error while writing to commlog", e);
         }

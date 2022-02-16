@@ -18,7 +18,8 @@ import org.somda.sdc.dpws.soap.TransportInfo;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.Collections;
+import java.security.cert.X509Certificate;
+import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -32,10 +33,13 @@ public class CommunicationLogHttpRequestInterceptor implements HttpRequestInterc
 
     private final CommunicationLog commlog;
     private final Logger instanceLogger;
+    private final List<X509Certificate> certificates;
 
-    CommunicationLogHttpRequestInterceptor(CommunicationLog communicationLog, String frameworkIdentifier) {
+    CommunicationLogHttpRequestInterceptor(CommunicationLog communicationLog, String frameworkIdentifier,
+                                           List<X509Certificate> certificateList) {
         this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);
         this.commlog = communicationLog;
+        this.certificates = certificateList;
     }
 
     @Override
@@ -62,7 +66,7 @@ public class CommunicationLogHttpRequestInterceptor implements HttpRequestInterc
                 null,
                 target.getHostName(),
                 target.getPort(),
-                Collections.emptyList()
+                certificates
         );
 
         var requestCommContext = new CommunicationContext(requestHttpApplicationInfo, requestTransportInfo);

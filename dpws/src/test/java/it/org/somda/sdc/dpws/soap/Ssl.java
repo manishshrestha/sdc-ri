@@ -7,6 +7,7 @@ import javax.net.ssl.HttpsURLConnection;
 import java.io.*;
 import java.security.*;
 import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
 import java.util.Optional;
 
 /**
@@ -26,6 +27,14 @@ public class Ssl {
 
     public static CryptoSettings setupClient() {
         return setup(SSL_METADATA.getClientKeySet());
+    }
+
+    public static X509Certificate getServerCertificate() {
+        return SSL_METADATA.getServerKeySet().getCertificate();
+    }
+
+    public static X509Certificate getClientCertificate() {
+        return SSL_METADATA.getClientKeySet().getCertificate();
     }
 
     private static CryptoSettings setup(SslMetadata.KeySet keySet) {
