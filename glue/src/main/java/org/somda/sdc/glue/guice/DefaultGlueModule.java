@@ -20,6 +20,8 @@ import org.somda.sdc.glue.consumer.SdcRemoteDevicesConnector;
 import org.somda.sdc.glue.consumer.SdcRemoteDevicesConnectorImpl;
 import org.somda.sdc.glue.consumer.factory.SdcRemoteDeviceFactory;
 import org.somda.sdc.glue.consumer.factory.SdcRemoteDeviceWatchdogFactory;
+import org.somda.sdc.glue.consumer.localization.LocalizationServiceProxy;
+import org.somda.sdc.glue.consumer.localization.factory.LocalizationServiceProxyFactory;
 import org.somda.sdc.glue.consumer.sco.factory.OperationInvocationDispatcherFactory;
 import org.somda.sdc.glue.consumer.sco.helper.OperationInvocationDispatcher;
 import org.somda.sdc.glue.provider.SdcDevice;
@@ -91,6 +93,10 @@ public class DefaultGlueModule extends AbstractModule {
         install(new FactoryModuleBuilder()
                 .implement(SdcRemoteDeviceWatchdog.class, SdcRemoteDeviceWatchdog.class)
                 .build(SdcRemoteDeviceWatchdogFactory.class));
+
+        install(new FactoryModuleBuilder()
+                .implement(LocalizationServiceProxy.class, LocalizationServiceProxy.class)
+                .build(LocalizationServiceProxyFactory.class));
     }
 
     private void configureProvider() {

@@ -12,12 +12,18 @@ import org.somda.sdc.biceps.common.access.MdibAccessObservable;
 import org.somda.sdc.biceps.consumer.access.RemoteMdibAccess;
 import org.somda.sdc.biceps.model.message.AbstractSet;
 import org.somda.sdc.biceps.model.message.AbstractSetResponse;
+import org.somda.sdc.biceps.model.message.GetLocalizedText;
+import org.somda.sdc.biceps.model.message.GetLocalizedTextResponse;
+import org.somda.sdc.biceps.model.message.GetSupportedLanguages;
+import org.somda.sdc.biceps.model.message.GetSupportedLanguagesResponse;
 import org.somda.sdc.biceps.model.message.OperationInvokedReport;
 import org.somda.sdc.common.CommonConfig;
 import org.somda.sdc.dpws.DpwsConfig;
 import org.somda.sdc.dpws.service.HostedServiceProxy;
 import org.somda.sdc.dpws.service.HostingServiceProxy;
 import org.somda.sdc.glue.consumer.helper.HostingServiceLogger;
+import org.somda.sdc.glue.consumer.localization.LocalizationServiceAccess;
+import org.somda.sdc.glue.consumer.localization.LocalizationServiceProxy;
 import org.somda.sdc.glue.consumer.report.ReportProcessor;
 import org.somda.sdc.glue.consumer.sco.ScoController;
 import org.somda.sdc.glue.consumer.sco.ScoTransaction;
@@ -38,6 +44,7 @@ public class SdcRemoteDeviceImpl extends AbstractIdleService implements SdcRemot
     private final ReportProcessor reportProcessor;
     private final ScoController scoController;
     private final HostingServiceProxy hostingServiceProxy;
+    private final LocalizationServiceProxy localizationServiceProxy;
     private final SdcRemoteDeviceWatchdog watchdog;
     private final Duration maxWait;
     private final Logger instanceLogger;
@@ -48,6 +55,7 @@ public class SdcRemoteDeviceImpl extends AbstractIdleService implements SdcRemot
                         @Assisted RemoteMdibAccess remoteMdibAccess,
                         @Assisted ReportProcessor reportProcessor,
                         @Assisted @Nullable ScoController scoController,
+                        @Assisted @Nullable LocalizationServiceProxy localizationServiceProxy,
                         @Named(DpwsConfig.MAX_WAIT_FOR_FUTURES) Duration maxWait,
                         @Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier) {
         this.instanceLogger = HostingServiceLogger.getLogger(LOG, hostingServiceProxy, frameworkIdentifier);
@@ -55,6 +63,7 @@ public class SdcRemoteDeviceImpl extends AbstractIdleService implements SdcRemot
         this.reportProcessor = reportProcessor;
         this.scoController = scoController;
         this.hostingServiceProxy = hostingServiceProxy;
+        this.localizationServiceProxy = localizationServiceProxy;
         this.watchdog = null;
         this.maxWait = maxWait;
     }
@@ -64,6 +73,7 @@ public class SdcRemoteDeviceImpl extends AbstractIdleService implements SdcRemot
                         @Assisted RemoteMdibAccess remoteMdibAccess,
                         @Assisted ReportProcessor reportProcessor,
                         @Assisted @Nullable ScoController scoController,
+                        @Assisted @Nullable LocalizationServiceProxy localizationServiceProxy,
                         @Assisted SdcRemoteDeviceWatchdog watchdog,
                         @Named(DpwsConfig.MAX_WAIT_FOR_FUTURES) Duration maxWait,
                         @Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier) {
@@ -72,6 +82,7 @@ public class SdcRemoteDeviceImpl extends AbstractIdleService implements SdcRemot
         this.reportProcessor = reportProcessor;
         this.scoController = scoController;
         this.hostingServiceProxy = hostingServiceProxy;
+        this.localizationServiceProxy = localizationServiceProxy;
         this.watchdog = watchdog;
         this.maxWait = maxWait;
     }
@@ -129,6 +140,31 @@ public class SdcRemoteDeviceImpl extends AbstractIdleService implements SdcRemot
     public void unregisterWatchdogObserver(WatchdogObserver watchdogObserver) {
         checkRunning();
         this.watchdog.unregisterObserver(watchdogObserver);
+    }
+
+    @Override
+    public LocalizationServiceAccess getLocalizationServiceAccess() {
+        checkRunning();
+        if (localizationServiceProxy == null) {
+            final String message = "Remote device does not provide a localization service. {} refused.";
+            return new LocalizationServiceAccess() {
+                @Override
+                public ListenableFuture<GetLocalizedTextResponse> getLocalizedText(
+                        GetLocalizedText getLocalizedTextRequest) {
+                    instanceLogger.warn(message, "GetLocalizedText");
+                    return Futures.immediateCancelledFuture();
+                }
+
+                @Override
+                public ListenableFuture<GetSupportedLanguagesResponse> getSupportedLanguages(
+                        GetSupportedLanguages getSupportedLanguagesRequest) {
+                    instanceLogger.warn(message, "GetSupportedLanguages");
+                    return Futures.immediateCancelledFuture();
+                }
+            };
+        }
+
+        return localizationServiceProxy;
     }
 
     @Override

@@ -4,8 +4,13 @@ import com.google.common.util.concurrent.Service;
 import org.somda.sdc.biceps.common.access.MdibAccess;
 import org.somda.sdc.biceps.common.access.MdibAccessObservable;
 import org.somda.sdc.biceps.model.message.AbstractSet;
+import org.somda.sdc.biceps.model.message.GetLocalizedText;
+import org.somda.sdc.biceps.model.message.GetSupportedLanguages;
 import org.somda.sdc.dpws.service.HostingServiceProxy;
+import org.somda.sdc.glue.consumer.localization.LocalizationServiceAccess;
 
+import java.math.BigInteger;
+import java.util.List;
 import java.util.function.Consumer;
 
 /**
@@ -67,4 +72,19 @@ public interface SdcRemoteDevice extends Service {
      * @param watchdogObserver the watchdog observer to remove.
      */
     void unregisterWatchdogObserver(WatchdogObserver watchdogObserver);
+
+    /**
+     * Gets a localization service invoker access.
+     * <p>
+     * Please note that the localization service access only works if service is available from the remote device.
+     * If not localization service exists, any call to the {@link LocalizationServiceAccess} interface
+     * results in an immediately cancelled future.
+     *
+     * @return a localization service invoker access interface.
+     * @see LocalizationServiceAccess#getLocalizedText(GetLocalizedText)
+     * @see LocalizationServiceAccess#getSupportedLanguages(GetSupportedLanguages)
+     * @see LocalizationServiceAccess#cachePrefetch(BigInteger)
+     * @see LocalizationServiceAccess#cachePrefetch(BigInteger, List)
+     */
+    LocalizationServiceAccess getLocalizationServiceAccess();
 }

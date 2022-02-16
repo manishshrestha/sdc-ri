@@ -1,5 +1,5 @@
 /**
- * Factories for the SDC provider side.
+ * Implementation of localization service provider.
  */
 @ParametersAreNonnullByDefault
 package org.somda.sdc.glue.provider.localization;

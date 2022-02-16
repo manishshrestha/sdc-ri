@@ -1,6 +1,5 @@
-package it.org.somda.glue.provider.services;
+package it.org.somda.glue;
 
-import it.org.somda.glue.IntegrationTestUtil;
 import it.org.somda.glue.consumer.TestSdcClient;
 import it.org.somda.glue.provider.TestSdcDevice;
 import org.apache.logging.log4j.LogManager;
@@ -12,34 +11,28 @@ import org.junit.jupiter.api.TestInfo;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.somda.sdc.biceps.model.message.GetLocalizedText;
 import org.somda.sdc.biceps.model.message.GetLocalizedTextResponse;
-import org.somda.sdc.biceps.model.message.GetSupportedLanguages;
 import org.somda.sdc.biceps.model.message.GetSupportedLanguagesResponse;
 import org.somda.sdc.biceps.model.message.ObjectFactory;
-import org.somda.sdc.biceps.testutil.MdibAccessObserverSpy;
-import org.somda.sdc.dpws.service.HostedServiceProxy;
-import org.somda.sdc.dpws.soap.SoapMessage;
-import org.somda.sdc.dpws.soap.SoapUtil;
-import org.somda.sdc.glue.common.ActionConstants;
 import org.somda.sdc.glue.consumer.ConnectConfiguration;
 import org.somda.sdc.glue.consumer.SdcRemoteDevice;
+import org.somda.sdc.glue.consumer.localization.LocalizationServiceAccess;
 import test.org.somda.common.CIDetector;
 import test.org.somda.common.LoggingTestWatcher;
 
 import java.math.BigInteger;
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @ExtendWith(LoggingTestWatcher.class)
 public class LocalizationIT {
     private static final Logger LOG = LogManager.getLogger(LocalizationIT.class);
-    private static final IntegrationTestUtil IT = new IntegrationTestUtil();
-    private static final String LOW_PRIORITY_SERVICES = "LowPriorityServices";
     private static final TimeUnit WAIT_TIME_UNIT = TimeUnit.SECONDS;
     private static int WAIT_IN_SECONDS = 30;
 
@@ -50,13 +43,10 @@ public class LocalizationIT {
         }
     }
 
-    private final SoapUtil soapUtil = IT.getInjector().getInstance(SoapUtil.class);
-    HostedServiceProxy lowPriorityService;
     private TestSdcDevice testDevice;
     private TestSdcClient testClient;
     private ObjectFactory factory;
-    private MdibAccessObserverSpy mdibSpy;
-    private SdcRemoteDevice sdcRemoteDevice;
+    private LocalizationServiceAccess localizationServiceAccess;
 
     @BeforeEach
     void beforeEach(TestInfo testInfo) throws Exception {
@@ -73,12 +63,9 @@ public class LocalizationIT {
         var hostingServiceProxy = hostingServiceFuture.get(WAIT_IN_SECONDS, WAIT_TIME_UNIT);
         var remoteDeviceFuture = testClient.getConnector().connect(hostingServiceProxy,
                 ConnectConfiguration.create(ConnectConfiguration.ALL_EPISODIC_AND_WAVEFORM_REPORTS));
-        sdcRemoteDevice = remoteDeviceFuture.get(WAIT_IN_SECONDS, WAIT_TIME_UNIT);
+        SdcRemoteDevice sdcRemoteDevice = remoteDeviceFuture.get(WAIT_IN_SECONDS, WAIT_TIME_UNIT);
 
-        mdibSpy = new MdibAccessObserverSpy();
-        sdcRemoteDevice.getMdibAccessObservable().registerObserver(mdibSpy);
-
-        lowPriorityService = sdcRemoteDevice.getHostingServiceProxy().getHostedServices().get(LOW_PRIORITY_SERVICES);
+        localizationServiceAccess = sdcRemoteDevice.getLocalizationServiceAccess();
     }
 
     @AfterEach
@@ -90,15 +77,9 @@ public class LocalizationIT {
 
     @Test
     void testSupportedLanguagesAction() throws Exception {
-        final GetSupportedLanguages request = factory.createGetSupportedLanguages();
-        final SoapMessage reqMsg = soapUtil.createMessage(ActionConstants.ACTION_GET_SUPPORTED_LANGUAGES, request);
-        final SoapMessage resMsg = lowPriorityService.sendRequestResponse(reqMsg);
-
-        final Optional<GetSupportedLanguagesResponse> resBody = soapUtil.getBody(resMsg,
-                GetSupportedLanguagesResponse.class);
-
-        assertTrue(resBody.isPresent());
-        final GetSupportedLanguagesResponse response = resBody.get();
+        final GetSupportedLanguagesResponse response = localizationServiceAccess
+                .getSupportedLanguages(factory.createGetSupportedLanguages())
+                .get(WAIT_IN_SECONDS, WAIT_TIME_UNIT);
 
         assertNotNull(response);
         assertEquals(response.getLang().size(), 3);
@@ -144,6 +125,33 @@ public class LocalizationIT {
         }
     }
 
+    @Test
+    void testLocalizationCachePrefetch() throws Exception {
+        localizationServiceAccess.cachePrefetch(BigInteger.ONE, List.of("EN"));
+
+        testDevice.stopAsync().awaitTerminated();
+        { // localized texts are cached on consumer side, so request works even if provider is down
+            final GetLocalizedTextResponse response = createRequestAndSend(
+                    BigInteger.ONE, List.of("REF1"), List.of("EN"));
+            assertNotNull(response);
+            assertEquals(response.getText().size(), 1);
+            assertEquals(response.getText().get(0).getRef(), "REF1");
+            assertEquals(response.getText().get(0).getLang(), "EN");
+        }
+
+        { // fails if languages doesn't exist in cache
+            assertThrows(
+                    ExecutionException.class,
+                    () -> createRequestAndSend(BigInteger.ONE, List.of("REF1"), List.of("DE")));
+        }
+
+        { // fails if version doesn't exist in cache
+            assertThrows(
+                    ExecutionException.class,
+                    () -> createRequestAndSend(BigInteger.TWO, List.of("REF1"), List.of("EN")));
+        }
+    }
+
     private GetLocalizedTextResponse createRequestAndSend(BigInteger version,
                                                           List<String> ref,
                                                           List<String> lang) throws Exception {
@@ -152,12 +160,8 @@ public class LocalizationIT {
         request.setRef(ref);
         request.setLang(lang);
 
-        final SoapMessage reqMsg = soapUtil.createMessage(ActionConstants.ACTION_GET_LOCALIZED_TEXT, request);
-        final SoapMessage resMsg = lowPriorityService.sendRequestResponse(reqMsg);
-
-        final Optional<GetLocalizedTextResponse> resBody = soapUtil.getBody(resMsg, GetLocalizedTextResponse.class);
-
-        assertTrue(resBody.isPresent());
-        return resBody.get();
+        return localizationServiceAccess
+                .getLocalizedText(request)
+                .get(WAIT_IN_SECONDS, WAIT_TIME_UNIT);
     }
 }
