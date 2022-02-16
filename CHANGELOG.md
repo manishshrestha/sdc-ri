@@ -137,6 +137,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Jetty server could select incorrect adapter when running https (#135)
 - `org.somda.sdc.dpws.soap.wsaddressing.WsAddressingMapper#mapToJaxbSoapHeader()` could cause duplicate header entries, e.g. Action elements (#140)
 - Http headers which occurred multiple times would only return the last value. (#146)
+- `org.somda.sdc.dpws.client.helper.HostingServiceResolver#resolveHostingService()` could cause deadlock due to 
+  chained tasks execution inside the same thread pool. (#225)
 
 ## [1.0.1] - 2020-03-11
 
