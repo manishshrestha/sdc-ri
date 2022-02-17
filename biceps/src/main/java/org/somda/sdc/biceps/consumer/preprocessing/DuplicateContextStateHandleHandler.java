@@ -13,7 +13,7 @@ import java.util.Map;
 import java.util.Optional;
 
 /**
- * Preprocessing segment that throws an Exception, if two context state have the same handle, but different
+ * Preprocessing segment that throws an Exception, if two context states have the same handle, but different
  * descriptor handles. Which could mean that the context state handle is used multiple times or that the context
  * state was assigned to a new descriptor. Both operations are not allowed.
  */
