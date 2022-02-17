@@ -110,6 +110,7 @@ public class DefaultDpwsModule extends AbstractModule {
     private ExecutorWrapperService<ScheduledExecutorService> appDelayExecutor;
     private ExecutorWrapperService<ListeningExecutorService> networkJobThreadPoolExecutor;
     private ExecutorWrapperService<ListeningExecutorService> wsDiscoveryExecutor;
+    private ExecutorWrapperService<ListeningExecutorService> resolveExecutor;
 
     /**
      * Constructor.
@@ -118,6 +119,7 @@ public class DefaultDpwsModule extends AbstractModule {
         appDelayExecutor = null;
         networkJobThreadPoolExecutor = null;
         wsDiscoveryExecutor = null;
+        resolveExecutor = null;
     }
 
     @Override
@@ -350,5 +352,25 @@ public class DefaultDpwsModule extends AbstractModule {
         }
 
         return wsDiscoveryExecutor;
+    }
+
+    @Provides
+    @ResolverThreadPool
+    ExecutorWrapperService<ListeningExecutorService> getResolverThreadPool(@Named(CommonConfig.INSTANCE_IDENTIFIER)
+                                                                                     String frameworkIdentifier) {
+        if (resolveExecutor == null) {
+            Callable<ListeningExecutorService> executor = () -> MoreExecutors.listeningDecorator(Executors
+                    .newFixedThreadPool(
+                            10,
+                            new ThreadFactoryBuilder()
+                                    .setNameFormat("ResolverThreadPool-thread-%d")
+                                    .setDaemon(true)
+                                    .build()
+                    ));
+            resolveExecutor = new ExecutorWrapperService<>(executor, "ResolverThreadPool",
+                    frameworkIdentifier);
+        }
+
+        return resolveExecutor;
     }
 }

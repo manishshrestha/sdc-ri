@@ -15,7 +15,7 @@ import org.somda.sdc.dpws.LocalAddressResolverMock;
 import org.somda.sdc.dpws.ThisDeviceBuilder;
 import org.somda.sdc.dpws.ThisModelBuilder;
 import org.somda.sdc.dpws.client.DiscoveredDevice;
-import org.somda.sdc.dpws.guice.NetworkJobThreadPool;
+import org.somda.sdc.dpws.guice.ResolverThreadPool;
 import org.somda.sdc.dpws.model.HostedServiceType;
 import org.somda.sdc.dpws.model.ThisDeviceType;
 import org.somda.sdc.dpws.model.ThisModelType;
@@ -95,7 +95,7 @@ class HostingServiceResolverTest extends DpwsTest {
         getInjector().getInstance(Key.get(
                 new TypeLiteral<ExecutorWrapperService<ListeningExecutorService>>() {
                 },
-                NetworkJobThreadPool.class
+                ResolverThreadPool.class
         )).startAsync().awaitRunning();
 
         wsaUtil = getInjector().getInstance(WsAddressingUtil.class);

@@ -14,6 +14,7 @@ import org.somda.sdc.common.util.ExecutorWrapperService;
 import org.somda.sdc.dpws.guice.AppDelayExecutor;
 import org.somda.sdc.dpws.guice.DiscoveryUdpQueue;
 import org.somda.sdc.dpws.guice.NetworkJobThreadPool;
+import org.somda.sdc.dpws.guice.ResolverThreadPool;
 import org.somda.sdc.dpws.guice.WsDiscovery;
 import org.somda.sdc.dpws.helper.JaxbMarshalling;
 import org.somda.sdc.dpws.http.HttpServerRegistry;
@@ -61,6 +62,7 @@ public class DpwsFrameworkImpl extends AbstractIdleService implements DpwsFramew
                       @AppDelayExecutor ExecutorWrapperService<ScheduledExecutorService> appDelayExecutor,
                       @NetworkJobThreadPool ExecutorWrapperService<ListeningExecutorService> networkJobExecutor,
                       @WsDiscovery ExecutorWrapperService<ListeningExecutorService> wsDiscoveryExecutor,
+                      @ResolverThreadPool ExecutorWrapperService<ListeningExecutorService> resolveExecutor,
                       FrameworkMetadata metadata,
                       @Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier,
                       HttpServerClientSelfTest httpServerClientSelfTest) {
@@ -71,7 +73,7 @@ public class DpwsFrameworkImpl extends AbstractIdleService implements DpwsFramew
         this.registeredServices = new ArrayList<>();
         registeredServices.addAll(List.of(
                 // dpws thread pools
-                appDelayExecutor, networkJobExecutor, wsDiscoveryExecutor,
+                appDelayExecutor, networkJobExecutor, wsDiscoveryExecutor, resolveExecutor,
                 // dpws services
                 jaxbMarshalling, soapMarshalling, wsdlMarshalling, httpServerRegistry
         ));
