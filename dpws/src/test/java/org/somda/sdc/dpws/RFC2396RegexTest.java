@@ -10,11 +10,11 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class RFC2396RegexTest {
-    private static final Pattern URI_REFERENCE_PATTERN = new Pattern(RFC2396Constants.URI_REFERENCE);
-    private static final Pattern RELATIVE_URI_PATTERN = new Pattern(RFC2396Constants.RELATIVE_URI);
-    private static final Pattern ABSOLUTE_URI_PATTERN = new Pattern(RFC2396Constants.ABSOLUTE_URI);
-    private static final Pattern AUTHORITY_PATTERN = new Pattern(RFC2396Constants.AUTHORITY);
-    private static final Pattern ABS_PATH_PATTERN = new Pattern(RFC2396Constants.ABS_PATH);
+    private static final Pattern URI_REFERENCE_PATTERN = new Pattern(RFC2396Patterns.URI_REFERENCE);
+    private static final Pattern RELATIVE_URI_PATTERN = new Pattern(RFC2396Patterns.RELATIVE_URI);
+    private static final Pattern ABSOLUTE_URI_PATTERN = new Pattern(RFC2396Patterns.ABSOLUTE_URI);
+    private static final Pattern AUTHORITY_PATTERN = new Pattern(RFC2396Patterns.AUTHORITY);
+    private static final Pattern ABS_PATH_PATTERN = new Pattern(RFC2396Patterns.ABS_PATH);
 
     @Test
     void uriReference() {

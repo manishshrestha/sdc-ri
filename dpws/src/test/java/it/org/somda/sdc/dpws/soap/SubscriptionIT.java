@@ -18,7 +18,7 @@ import org.somda.sdc.dpws.CommunicationLog;
 import org.somda.sdc.dpws.CommunicationLogImpl;
 import org.somda.sdc.dpws.CommunicationLogSink;
 import org.somda.sdc.dpws.DpwsConfig;
-import org.somda.sdc.dpws.RFC2396Constants;
+import org.somda.sdc.dpws.RFC2396Patterns;
 import org.somda.sdc.dpws.crypto.CryptoConfig;
 import org.somda.sdc.dpws.crypto.CryptoSettings;
 import org.somda.sdc.dpws.device.DeviceSettings;
@@ -76,9 +76,9 @@ import static org.mockito.Mockito.when;
 class SubscriptionIT {
     private static final Duration MAX_WAIT_TIME = Duration.ofMinutes(3);
 
-    private static final Pattern URI_PATTERN = new Pattern(RFC2396Constants.URI_REFERENCE);
-    private static final Pattern AUTHORITY_PATTERN = new Pattern(RFC2396Constants.AUTHORITY);
-    private static final Pattern ABS_PATH_PATTERN = new Pattern(RFC2396Constants.ABS_PATH);
+    private static final Pattern URI_PATTERN = new Pattern(RFC2396Patterns.URI_REFERENCE);
+    private static final Pattern AUTHORITY_PATTERN = new Pattern(RFC2396Patterns.AUTHORITY);
+    private static final Pattern ABS_PATH_PATTERN = new Pattern(RFC2396Patterns.ABS_PATH);
 
     private final IntegrationTestUtil IT = new IntegrationTestUtil();
     private final SoapUtil soapUtil = IT.getInjector().getInstance(SoapUtil.class);
@@ -311,34 +311,48 @@ class SubscriptionIT {
         unsubscribe.get(MAX_WAIT_TIME.getSeconds(), TimeUnit.SECONDS);
         assertEquals(0, devicePeer.getDevice().getActiveSubscriptions().size());
 
-        seenWseMessageWithCorrectRequestUri(WsEventingConstants.WSA_ACTION_GET_STATUS);
-        seenWseMessageWithCorrectRequestUri(WsEventingConstants.WSA_ACTION_RENEW);
-        seenWseMessageWithCorrectRequestUri(WsEventingConstants.WSA_ACTION_UNSUBSCRIBE);
+        var allRequests = logSink.getOutbound();
+        var allRequestUris = logSink.getRequestUris();
+        var allOutboundHeaders = logSink.getOutboundHeaders();
+        var allSchemes = logSink.getSchemes();
+
+        checkLogSinkConsistency(allRequests, allRequestUris, allOutboundHeaders, allSchemes);
+
+        seenWseMessageWithCorrectRequestUri(WsEventingConstants.WSA_ACTION_GET_STATUS, allRequests, allRequestUris, allOutboundHeaders, allSchemes);
+        seenWseMessageWithCorrectRequestUri(WsEventingConstants.WSA_ACTION_RENEW, allRequests, allRequestUris, allOutboundHeaders, allSchemes);
+        seenWseMessageWithCorrectRequestUri(WsEventingConstants.WSA_ACTION_UNSUBSCRIBE, allRequests, allRequestUris, allOutboundHeaders, allSchemes);
     }
 
-    private void seenWseMessageWithCorrectRequestUri(String wseAction) throws Exception {
-        var allRequests = logSink.getOutbound();
-        assertFalse(allRequests.isEmpty());
-        var allRequestUris = logSink.getRequestUris();
-        assertEquals(allRequests.keySet(), allRequestUris.keySet());
-        var allOutboundHeaders = logSink.getOutboundHeaders();
-        assertEquals(allRequests.keySet(), allOutboundHeaders.keySet());
-        var allSchemes = logSink.getSchemes();
-        assertEquals(allRequests.keySet(), allSchemes.keySet());
+    private void checkLogSinkConsistency(Map<String, ByteArrayOutputStream> requests,
+                                         Map<String, Optional<String>> requestUris,
+                                         Map<String, ListMultimap<String, String>> outboundHeaders,
+                                         Map<String, String> schemes) {
+        assertFalse(requests.isEmpty());
+        assertEquals(requests.keySet(), requestUris.keySet());
+        assertEquals(requests.keySet(), outboundHeaders.keySet());
+        assertEquals(requests.keySet(), schemes.keySet());
+    }
+
+    private void seenWseMessageWithCorrectRequestUri(String wseAction,
+                                                     Map<String, ByteArrayOutputStream> requests,
+                                                     Map<String, Optional<String>> requestUris,
+                                                     Map<String, ListMultimap<String, String>> outboundHeaders,
+                                                     Map<String, String> schemes) throws Exception {
+
         var seenWseAction = new AtomicBoolean(false);
 
-        for (var transactionId : allRequests.keySet()) {
-            var request = marshallingService.unmarshal(new ByteArrayInputStream(allRequests.get(transactionId).toByteArray()));
+        for (var transactionId : requests.keySet()) {
+            var request = marshallingService.unmarshal(new ByteArrayInputStream(requests.get(transactionId).toByteArray()));
             var requestAction = request.getWsAddressingHeader().getAction();
             assertTrue(requestAction.isPresent());
-            var requestUri = allRequestUris.get(transactionId);
+            var requestUri = requestUris.get(transactionId);
 
             if (requestAction.get().getValue().equals(wseAction)) {
                 seenWseAction.set(true);
                 assertTrue(requestUri.isPresent());
                 var wsaToHeader = request.getWsAddressingHeader().getTo();
                 assertTrue(wsaToHeader.isPresent());
-                var reconstructedUri = reconstructUri(allSchemes.get(transactionId), allOutboundHeaders.get(transactionId), requestUri.get());
+                var reconstructedUri = reconstructUri(schemes.get(transactionId), outboundHeaders.get(transactionId), requestUri.get());
                 assertNotNull(reconstructedUri, "Uri could not be reconstructed.");
                 assertEquals(wsaToHeader.get().getValue(), reconstructedUri);
             }

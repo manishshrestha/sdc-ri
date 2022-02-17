@@ -3,7 +3,7 @@ package org.somda.sdc.dpws;
 /**
  * Constants for the Uniform Resource Identifiers (URI): Generic Syntax.
  */
-public class RFC2396Constants {
+public class RFC2396Patterns {
     private static final String HEX = "[a-fA-F0-9]";
     private static final String ESCAPED = "(%" + HEX + HEX + ")";
 
@@ -12,7 +12,7 @@ public class RFC2396Constants {
     private static final String RESERVED = "[;/?:@&=+$,]";
     private static final String URIC = "(" + RESERVED + "|" + UNRESERVED + "|" + ESCAPED + ")";
 
-    private static final String FRAGMENT = "(" + URIC + "*)";
+    private static final String FRAGMENT = "({fragment}(" + URIC + "*))";
 
     private static final String QUERY = "(" + URIC + "*)";
 
@@ -35,8 +35,8 @@ public class RFC2396Constants {
 
     private static final String REG_NAME = "((" + UNRESERVED + "|" + ESCAPED + "|[$,;:@&=+])+)";
 
-    public static final String AUTHORITY = "^(" + SERVER + "|" + REG_NAME + ")$";
-    private static final String SCHEME_SEGMENT = "(?i:[a-z][a-z0-9+-.]*)";
+    public static final String AUTHORITY = "(" + SERVER + "|" + REG_NAME + ")";
+    private static final String SCHEME_SEGMENT = "({scheme}(?i:[a-z][a-z0-9+-.]*))";
     private static final String REL_SEGMENT = "(" + UNRESERVED + "|" + ESCAPED + "|[;@&=+$,])+";
 
     public static final String ABS_PATH = "(/" + PATH_SEGMENTS + ")";
@@ -45,19 +45,18 @@ public class RFC2396Constants {
 
     private static final String URIC_NO_SLASH = "(" + UNRESERVED + "|" + ESCAPED + "|" + "[;?:@&=+$,])";
 
-    private static final String OPAQUE_PART = "((" + URIC_NO_SLASH + "(" + URIC + ")*))";
+    private static final String OPAQUE_PART = "(" + URIC_NO_SLASH + "(" + URIC + ")*)";
     private static final String HIER_PART = "((" + NET_PATH + "|" + ABS_PATH + ")(\\?({absoluteUriQuery}" + QUERY
             + "))?)";
 
     public static final String RELATIVE_URI = "({relativeUri}(" + NET_PATH + "|" + ABS_PATH + "|" + REL_PATH
             + ")(\\?({relativeUriQuery}" + QUERY + "))?)";
 
-    public static final String ABSOLUTE_URI = "({absoluteUri}({scheme}" + SCHEME_SEGMENT + ")" +
-            ":" + "(" + HIER_PART + "|" + OPAQUE_PART + "))";
+    public static final String ABSOLUTE_URI = "({absoluteUri}" + SCHEME_SEGMENT + ":" + "(" + HIER_PART + "|"
+            + OPAQUE_PART + "))";
 
-    public static final String URI_REFERENCE = "(" + ABSOLUTE_URI + "|" + RELATIVE_URI + ")?(#({fragment}" + FRAGMENT
-            + "))?";
+    public static final String URI_REFERENCE = "(" + ABSOLUTE_URI + "|" + RELATIVE_URI + ")?(#" + FRAGMENT + ")?";
 
-    private RFC2396Constants() {
+    private RFC2396Patterns() {
     }
 }
