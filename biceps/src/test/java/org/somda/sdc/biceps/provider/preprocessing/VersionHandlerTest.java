@@ -13,7 +13,7 @@ import org.junit.jupiter.api.Test;
 import test.org.somda.common.LoggingTestWatcher;
 
 import java.math.BigInteger;
-import java.util.Arrays;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -308,7 +308,7 @@ class VersionHandlerTest {
             final MdibDescriptionModifications modifications = MdibDescriptionModifications.create();
             modifications.insert(mdsDescriptor, mdsState);
             modifications.insert(systemContextDescriptor, systemContextState, mdsHandle);
-            modifications.insert(patientContextDescriptor, Arrays.asList(patientContextState1, patientContextState2), systemContextHandle);
+            modifications.insert(patientContextDescriptor, List.of(patientContextState1, patientContextState2), systemContextHandle);
 
             apply(modifications, false);
 
@@ -325,17 +325,44 @@ class VersionHandlerTest {
             final MdibDescriptionModifications modifications = MdibDescriptionModifications.create();
             modifications.insert(mdsDescriptor, mdsState);
             modifications.insert(systemContextDescriptor, systemContextState, mdsHandle);
-            modifications.update(patientContextDescriptor, Arrays.asList(patientContextState1, patientContextState2));
+            modifications.update(patientContextDescriptor, List.of(patientContextState1, patientContextState2));
 
             apply(modifications, false);
 
             // Then expect the versioning to succeed
             assertEquals(BigInteger.TWO, patientContextDescriptor.getDescriptorVersion());
             assertEquals(BigInteger.TWO, patientContextState1.getDescriptorVersion());
-            assertEquals(BigInteger.TWO, patientContextState1.getDescriptorVersion());
+            assertEquals(BigInteger.TWO, patientContextState2.getDescriptorVersion());
             assertEquals(BigInteger.ONE, patientContextState1.getStateVersion());
-            assertEquals(BigInteger.ONE, patientContextState1.getStateVersion());
+            assertEquals(BigInteger.ONE, patientContextState2.getStateVersion());
         }
+    }
+
+    @Test
+    void insertionUpdateOfMultiStatesWithASubsetOfStates() throws VersioningException {
+        // Given a pre-inserted PatientContextDescriptor with two states
+        MdibDescriptionModifications modifications = MdibDescriptionModifications.create();
+        modifications.insert(mdsDescriptor, mdsState);
+        modifications.insert(systemContextDescriptor, systemContextState, mdsHandle);
+        modifications.insert(patientContextDescriptor, List.of(patientContextState1, patientContextState2),  systemContextHandle);
+        apply(modifications);
+        assertEquals(BigInteger.ZERO, patientContextDescriptor.getDescriptorVersion());
+        assertEquals(BigInteger.ZERO, patientContextState1.getStateVersion());
+        assertEquals(BigInteger.ZERO, patientContextState1.getDescriptorVersion());
+        assertEquals(BigInteger.ZERO, patientContextState2.getStateVersion());
+        assertEquals(BigInteger.ZERO, patientContextState2.getDescriptorVersion());
+
+        // When an update for a MultiState comes up that affects only a subset of the MultiStates
+        modifications = MdibDescriptionModifications.create();
+        modifications.update(patientContextDescriptor, List.of(patientContextState1));
+        apply(modifications);
+        assertEquals(BigInteger.ONE, patientContextDescriptor.getDescriptorVersion());
+        assertEquals(BigInteger.ONE, patientContextState1.getStateVersion());
+        assertEquals(BigInteger.ONE, patientContextState1.getDescriptorVersion());
+
+        // Then all non-affected states must also point to the new descriptor version and increase their state versionexpect the versioning to succeed
+        assertEquals(BigInteger.ONE, patientContextState2.getStateVersion());
+        assertEquals(BigInteger.ONE, patientContextState2.getDescriptorVersion());
     }
 
     @Test
@@ -385,7 +412,7 @@ class VersionHandlerTest {
         }
         versionHandler.afterLastModification(modifications, mdibStorage);
 
-        if (applyOnStorage == true) {
+        if (applyOnStorage) {
             mdibStorage.apply(mock(MdibVersion.class), mock(BigInteger.class), mock(BigInteger.class), modifications);
         }
     }
