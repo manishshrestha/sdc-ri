@@ -18,6 +18,7 @@ class RegexTest {
     private static final Pattern URI_PATTERN = new Pattern(GlueConstants.URI_REGEX);
 
     private static final Pattern SEGMENT_PATTERN = new Pattern(GlueConstants.AUTHORITY);
+    private static final Pattern IPV4_PATTERN = new Pattern(GlueConstants.IPV4_ADDRESS);
 
     @Test
     void segment() {
@@ -26,6 +27,19 @@ class RegexTest {
             assertTrue(matcher.matches());
         }
     }
+
+    @Test
+    void ipv4() {
+        {
+            Matcher matcher = IPV4_PATTERN.matcher("192x168y15z42");
+            assertFalse(matcher.matches());
+        }
+        {
+            Matcher matcher = IPV4_PATTERN.matcher("192.168.15.42");
+            assertTrue(matcher.matches());
+        }
+    }
+
 
     @Test
     void authority() {
