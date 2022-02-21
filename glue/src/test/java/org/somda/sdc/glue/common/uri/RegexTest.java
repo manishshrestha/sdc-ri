@@ -40,7 +40,6 @@ class RegexTest {
         }
     }
 
-
     @Test
     void authority() {
         {
