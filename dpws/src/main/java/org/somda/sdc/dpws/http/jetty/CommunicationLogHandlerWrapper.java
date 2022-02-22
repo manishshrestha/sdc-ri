@@ -22,7 +22,6 @@ import java.util.concurrent.atomic.AtomicLong;
 public class CommunicationLogHandlerWrapper extends HandlerWrapper {
     private static final String TRANSACTION_ID_PREFIX_SERVER = "rrId:server:" + UUID.randomUUID() + ":";
     private static final AtomicLong TRANSACTION_ID = new AtomicLong(-1L);
-
     private final CommunicationLog commLog;
     private final String frameworkIdentifier;
 
@@ -41,7 +40,7 @@ public class CommunicationLogHandlerWrapper extends HandlerWrapper {
         var requestHttpApplicationInfo = new HttpApplicationInfo(
                 JettyUtil.getRequestHeaders(request),
                 currentTransactionId,
-                request.getRequestURL().toString()
+                baseRequest.getRequestURI()
         );
 
         // collect information for TransportInfo

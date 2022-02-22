@@ -59,8 +59,8 @@ public class GlueConstants {
     private static final String P_CHAR = "(?:(?:%[a-fA-F0-9]{2})+|(?:" + ALLOWED_CHARS + ")+)";
     public static final String SEGMENT_NZ_REGEX = P_CHAR + "+";
     public static final String SEGMENT_REGEX = P_CHAR + "*";
-    private static final String DEC_OCTET = "(1[0-9][0-9])|(2[0-4][0-9])|(25[0-5]|[0-9])|([1-9][0-9])";
-    private static final String IPV4_ADDRESS = String.join(".", Collections.nCopies(4, DEC_OCTET));
+    private static final String DEC_OCTET = "((1[0-9][0-9])|(2[0-4][0-9])|(25[0-5])|([0-9])|([1-9][0-9]))";
+    public static final String IPV4_ADDRESS = String.join("\\.", Collections.nCopies(4, DEC_OCTET));
     private static final String REG_NAME = "(?:(?:%[a-fA-F0-9]{2})+|(?:" + "[a-zA-Z0-9\\-._~!$&'()*+,;=]" + ")+)*";
     private static final String USER_INFO = "(?:(?:%[a-fA-F0-9]{2})+|(?:" + "[a-zA-Z0-9\\-._~!$&'()*+,;=:]" + ")+)*";
     private static final String HEXDIG = "[a-fA-F0-9]";
