@@ -7,7 +7,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.somda.sdc.glue.GlueConstants;
 import test.org.somda.common.LoggingTestWatcher;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @ExtendWith(LoggingTestWatcher.class)
 class RegexTest {
@@ -16,11 +18,24 @@ class RegexTest {
     private static final Pattern URI_PATTERN = new Pattern(GlueConstants.URI_REGEX);
 
     private static final Pattern SEGMENT_PATTERN = new Pattern(GlueConstants.AUTHORITY);
+    private static final Pattern IPV4_PATTERN = new Pattern(GlueConstants.IPV4_ADDRESS);
 
     @Test
     void segment() {
         {
             Matcher matcher = SEGMENT_PATTERN.matcher("a%2A-&+");
+            assertTrue(matcher.matches());
+        }
+    }
+
+    @Test
+    void ipv4() {
+        {
+            Matcher matcher = IPV4_PATTERN.matcher("192x168y15z42");
+            assertFalse(matcher.matches());
+        }
+        {
+            Matcher matcher = IPV4_PATTERN.matcher("192.168.15.42");
             assertTrue(matcher.matches());
         }
     }

@@ -1,5 +1,6 @@
 package it.org.somda.sdc.dpws.soap;
 
+import com.google.common.collect.ListMultimap;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.SettableFuture;
 import com.google.inject.AbstractModule;
@@ -8,6 +9,8 @@ import dpws_test_service.messages._2017._05._10.TestNotification;
 import it.org.somda.sdc.dpws.IntegrationTestUtil;
 import it.org.somda.sdc.dpws.MockedUdpBindingModule;
 import it.org.somda.sdc.dpws.TestServiceMetadata;
+import jregex.Matcher;
+import jregex.Pattern;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -16,6 +19,7 @@ import org.somda.sdc.dpws.CommunicationLog;
 import org.somda.sdc.dpws.CommunicationLogImpl;
 import org.somda.sdc.dpws.CommunicationLogSink;
 import org.somda.sdc.dpws.DpwsConfig;
+import org.somda.sdc.dpws.RFC2396Patterns;
 import org.somda.sdc.dpws.crypto.CryptoConfig;
 import org.somda.sdc.dpws.crypto.CryptoSettings;
 import org.somda.sdc.dpws.device.DeviceSettings;
@@ -63,6 +67,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -72,6 +77,10 @@ import static org.mockito.Mockito.when;
 @ExtendWith(LoggingTestWatcher.class)
 class SubscriptionIT {
     private static final Duration MAX_WAIT_TIME = Duration.ofMinutes(3);
+
+    private static final Pattern URI_PATTERN = new Pattern(RFC2396Patterns.URI_REFERENCE);
+    private static final Pattern AUTHORITY_PATTERN = new Pattern(RFC2396Patterns.AUTHORITY);
+    private static final Pattern ABS_PATH_PATTERN = new Pattern(RFC2396Patterns.ABS_PATH);
 
     private final IntegrationTestUtil IT = new IntegrationTestUtil();
     private final SoapUtil soapUtil = IT.getInjector().getInstance(SoapUtil.class);
@@ -308,33 +317,85 @@ class SubscriptionIT {
         unsubscribe.get(MAX_WAIT_TIME.getSeconds(), TimeUnit.SECONDS);
         assertEquals(0, devicePeer.getDevice().getActiveSubscriptions().size());
 
-        seenWseMessageWithCorrectRequestUri(WsEventingConstants.WSA_ACTION_GET_STATUS);
-        seenWseMessageWithCorrectRequestUri(WsEventingConstants.WSA_ACTION_RENEW);
-        seenWseMessageWithCorrectRequestUri(WsEventingConstants.WSA_ACTION_UNSUBSCRIBE);
+        var allRequests = logSink.getOutbound();
+        var allRequestUris = logSink.getRequestUris();
+        var allOutboundHeaders = logSink.getOutboundHeaders();
+        var allSchemes = logSink.getSchemes();
+
+        checkLogSinkConsistency(allRequests, allRequestUris, allOutboundHeaders, allSchemes);
+
+        seenWseMessageWithCorrectRequestUri(WsEventingConstants.WSA_ACTION_GET_STATUS, allRequests, allRequestUris, allOutboundHeaders, allSchemes);
+        seenWseMessageWithCorrectRequestUri(WsEventingConstants.WSA_ACTION_RENEW, allRequests, allRequestUris, allOutboundHeaders, allSchemes);
+        seenWseMessageWithCorrectRequestUri(WsEventingConstants.WSA_ACTION_UNSUBSCRIBE, allRequests, allRequestUris, allOutboundHeaders, allSchemes);
     }
 
-    private void seenWseMessageWithCorrectRequestUri(String wseAction) throws Exception {
-        var allRequests = logSink.getOutbound();
-        assertFalse(allRequests.isEmpty());
-        var allRequestUris = logSink.getRequestUris();
-        assertEquals(allRequests.keySet(), allRequestUris.keySet());
+    private void checkLogSinkConsistency(Map<String, ByteArrayOutputStream> requests,
+                                         Map<String, Optional<String>> requestUris,
+                                         Map<String, ListMultimap<String, String>> outboundHeaders,
+                                         Map<String, String> schemes) {
+        assertFalse(requests.isEmpty());
+        assertEquals(requests.keySet(), requestUris.keySet());
+        assertEquals(requests.keySet(), outboundHeaders.keySet());
+        assertEquals(requests.keySet(), schemes.keySet());
+    }
+
+    private void seenWseMessageWithCorrectRequestUri(String wseAction,
+                                                     Map<String, ByteArrayOutputStream> requests,
+                                                     Map<String, Optional<String>> requestUris,
+                                                     Map<String, ListMultimap<String, String>> outboundHeaders,
+                                                     Map<String, String> schemes) throws Exception {
+
         var seenWseAction = new AtomicBoolean(false);
 
-        for (var transactionId : allRequests.keySet()) {
-            var request = marshallingService.unmarshal(new ByteArrayInputStream(allRequests.get(transactionId).toByteArray()));
+        for (var transactionId : requests.keySet()) {
+            var request = marshallingService.unmarshal(new ByteArrayInputStream(requests.get(transactionId).toByteArray()));
             var requestAction = request.getWsAddressingHeader().getAction();
             assertTrue(requestAction.isPresent());
-            var requestUri = allRequestUris.get(transactionId);
+            var requestUri = requestUris.get(transactionId);
 
             if (requestAction.get().getValue().equals(wseAction)) {
                 seenWseAction.set(true);
                 assertTrue(requestUri.isPresent());
                 var wsaToHeader = request.getWsAddressingHeader().getTo();
                 assertTrue(wsaToHeader.isPresent());
-                assertEquals(requestUri.get(), wsaToHeader.get().getValue());
+                var reconstructedUri = reconstructUri(schemes.get(transactionId), outboundHeaders.get(transactionId), requestUri.get());
+                assertNotNull(reconstructedUri, "Uri could not be reconstructed.");
+                assertEquals(wsaToHeader.get().getValue(), reconstructedUri);
             }
         }
         assertTrue(seenWseAction.get());
+    }
+
+    private String reconstructUri(String scheme, ListMultimap<String, String> headers, String requestUri) {
+
+        if (requestUri.equals("*")) {
+            return requestUri;
+        }
+
+        Matcher matcher = URI_PATTERN.matcher(requestUri);
+        if (matcher.matches()) {
+            var absoluteUri = matcher.group("absoluteUri");
+            if (absoluteUri != null) {
+                return absoluteUri;
+            }
+        }
+        Matcher absPathMatcher = ABS_PATH_PATTERN.matcher(requestUri);
+        if (absPathMatcher.matches()) {
+            var absolutePath = absPathMatcher.group(0);
+            if (absolutePath != null) {
+                scheme = scheme + "://";
+                var host = headers.get("host").get(0);
+                return scheme + host + absolutePath;
+            }
+        }
+        Matcher authMatcher = AUTHORITY_PATTERN.matcher(requestUri);
+        if (authMatcher.matches()) {
+            var authority = authMatcher.group(0);
+            if (authority != null) {
+                return authority;
+            }
+        }
+        return null;
     }
 
     static class TestCommLogSink implements CommunicationLogSink {
@@ -342,12 +403,16 @@ class SubscriptionIT {
         private final Map<String, ByteArrayOutputStream> outbound;
         private CommunicationLog.MessageType outboundMessageType;
         private final ArrayList<String> outboundTransactionIds;
+        private final Map<String, ListMultimap<String, String>> outboundHeaders;
         private final Map<String, Optional<String>> requestUris;
+        private final Map<String, String> schemes;
 
         TestCommLogSink() {
             this.outbound = new HashMap<>();
             this.outboundTransactionIds = new ArrayList<>();
             this.requestUris = new HashMap<>();
+            this.outboundHeaders = new HashMap<>();
+            this.schemes = new HashMap<>();
         }
 
         @Override
@@ -358,8 +423,10 @@ class SubscriptionIT {
             var os = new ByteArrayOutputStream();
             var appInfo = (HttpApplicationInfo) communicationContext.getApplicationInfo();
             if (CommunicationLog.Direction.OUTBOUND.equals(direction)) {
+                schemes.put(appInfo.getTransactionId(), communicationContext.getTransportInfo().getScheme());
                 outbound.put(appInfo.getTransactionId(), os);
                 outboundMessageType = messageType;
+                outboundHeaders.put(appInfo.getTransactionId(), appInfo.getHeaders());
                 outboundTransactionIds.add(appInfo.getTransactionId());
                 requestUris.put(appInfo.getTransactionId(), appInfo.getRequestUri());
             }
@@ -379,12 +446,20 @@ class SubscriptionIT {
             return outboundMessageType;
         }
 
+        public Map<String, ListMultimap<String, String>> getOutboundHeaders() {
+            return outboundHeaders;
+        }
+
         public ArrayList<String> getOutboundTransactionIds() {
             return outboundTransactionIds;
         }
 
         public Map<String, Optional<String>> getRequestUris() {
             return requestUris;
+        }
+
+        public Map<String, String> getSchemes() {
+            return schemes;
         }
     }
 }

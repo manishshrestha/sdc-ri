@@ -47,6 +47,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `org.somda.sdc.dpws.CommunicationLog` MessageType enum added, to mark messages as i.e. request, response. (#188)
 - `org.somda.sdc.dpws.soap.HttpApplicationInfo` additional transactionId added, to associate request response messages. (#188)
 - `org.somda.sdc.dpws.soap.HttpApplicationInfo` additional requestUri added, to determine the used POST address. (#190)
+- `org.somda.sdc.glue.GlueConstants` moved URI related regex constants to `org.somda.sdc.dpws.DpwsContants`. (#190)
+
 - `org.somda.sdc.glue.provider.sco.ScoController` to process lists independent of a specific list type as otherwise 
   activate operations do not integrate well. (#207) 
 - `org.somda.sdc.dpws.soap.interception.RequestResponseObject` return non-optional `CommunicationContext` instances. (#208)
@@ -137,6 +139,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Jetty server could select incorrect adapter when running https (#135)
 - `org.somda.sdc.dpws.soap.wsaddressing.WsAddressingMapper#mapToJaxbSoapHeader()` could cause duplicate header entries, e.g. Action elements (#140)
 - Http headers which occurred multiple times would only return the last value. (#146)
+- `org.somda.sdc.dpws.client.helper.HostingServiceResolver#resolveHostingService()` could cause deadlock due to 
+  chained tasks execution inside the same thread pool. (#225)
 
 ## [1.0.1] - 2020-03-11
 
