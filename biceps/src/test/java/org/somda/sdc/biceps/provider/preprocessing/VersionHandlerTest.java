@@ -352,7 +352,7 @@ class VersionHandlerTest {
         assertEquals(BigInteger.ZERO, patientContextState2.getStateVersion());
         assertEquals(BigInteger.ZERO, patientContextState2.getDescriptorVersion());
 
-        // When an update for a MultiState comes up that affects only a subset of the MultiStates
+        // When an update for a MultiState comes up that affects only a subset of the states
         modifications = MdibDescriptionModifications.create();
         modifications.update(patientContextDescriptor, List.of(patientContextState1));
         apply(modifications);
@@ -360,7 +360,7 @@ class VersionHandlerTest {
         assertEquals(BigInteger.ONE, patientContextState1.getStateVersion());
         assertEquals(BigInteger.ONE, patientContextState1.getDescriptorVersion());
 
-        // Then all non-affected states must also point to the new descriptor version and increase their state versionexpect the versioning to succeed
+        // Then all non-affected states must also point to the new descriptor version and increase their state version
         assertEquals(BigInteger.ONE, patientContextState2.getStateVersion());
         assertEquals(BigInteger.ONE, patientContextState2.getDescriptorVersion());
     }
