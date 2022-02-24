@@ -76,8 +76,8 @@ public interface SdcRemoteDevice extends Service {
     /**
      * Gets a localization service invoker access.
      * <p>
-     * Please note that the localization service access only works if service is available from the remote device.
-     * If not localization service exists, any call to the {@link LocalizationServiceAccess} interface
+     * Please note that the localization service access only works if the service is available from the remote device.
+     * If no localization service exists, any call to the {@link LocalizationServiceAccess} interface
      * results in an immediately cancelled future.
      *
      * @return a localization service invoker access interface.

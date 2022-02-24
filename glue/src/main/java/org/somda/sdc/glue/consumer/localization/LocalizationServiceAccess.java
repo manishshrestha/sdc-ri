@@ -46,8 +46,8 @@ public interface LocalizationServiceAccess {
      * Calls a synchronous cache prefetch of localized texts by provided version and languages.
      * @param version a version of localized texts to be included into cache.
      * @param lang optional list of languages to be included into cache.
+     *             If languages list is not provided or is empty - all languages are fetched.
      * @throws InvocationException if localization service is not available or something goes wrong during data fetch.
      */
     default void cachePrefetch(BigInteger version, List<String> lang) throws InvocationException {}
-
 }

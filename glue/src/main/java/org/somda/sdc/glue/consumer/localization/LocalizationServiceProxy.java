@@ -146,7 +146,7 @@ public class LocalizationServiceProxy implements LocalizationServiceAccess {
         // if references not provided, return all records, otherwise filter by reference
         var references = getLocalizedText.getRef();
         var texts = references.isEmpty() ? new ArrayList<>(refToValueMap.values()) :
-                LocalizationServiceFilterUtil.filterByReferences(references, refToValueMap);
+                LocalizationServiceFilterUtil.filterByReferences(refToValueMap, references);
 
         response.setText(texts);
 

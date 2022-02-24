@@ -70,7 +70,7 @@ public class LocalizationStorageHelper extends AbstractIdleService implements Lo
 
         // if references not provided, return all records, otherwise filter by reference
         return references.isEmpty() ? new ArrayList<>(refToValueMap.values()) :
-                LocalizationServiceFilterUtil.filterByReferences(references, refToValueMap);
+                LocalizationServiceFilterUtil.filterByReferences(refToValueMap, references);
     }
 
     private BigInteger getLatestVersion() {

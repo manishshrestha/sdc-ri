@@ -4,10 +4,9 @@ import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
 import org.somda.sdc.biceps.common.access.ReadTransaction;
 import org.somda.sdc.biceps.model.message.GetLocalizedText;
-import org.somda.sdc.biceps.model.message.GetLocalizedTextResponse;
 import org.somda.sdc.biceps.model.message.GetSupportedLanguages;
-import org.somda.sdc.biceps.model.message.GetSupportedLanguagesResponse;
 import org.somda.sdc.biceps.model.message.ObjectFactory;
+import org.somda.sdc.biceps.model.participant.LocalizedText;
 import org.somda.sdc.biceps.model.participant.MdibVersion;
 import org.somda.sdc.biceps.provider.access.LocalMdibAccess;
 import org.somda.sdc.dpws.device.WebService;
@@ -22,6 +21,8 @@ import org.somda.sdc.glue.common.MdibVersionUtil;
 import org.somda.sdc.glue.provider.localization.LocalizationService;
 import org.somda.sdc.glue.provider.localization.factory.LocalizationServiceFactory;
 
+import java.util.List;
+
 /**
  * Implementation of the low-priority services.
  * <p>
@@ -30,8 +31,6 @@ import org.somda.sdc.glue.provider.localization.factory.LocalizationServiceFacto
  * <li>Archive service
  * <li>Localization service
  * </ul>
- * <p>
- * todo DGr implementation of LowPriorityServices is missing
  */
 public class LowPriorityServices extends WebService {
     private final LocalMdibAccess mdibAccess;
@@ -62,32 +61,24 @@ public class LowPriorityServices extends WebService {
 
     @MessageInterceptor(ActionConstants.ACTION_GET_LOCALIZED_TEXT)
     void getLocalizedText(RequestResponseObject requestResponseObject) throws SoapFaultException {
-        final GetLocalizedText getLocalizedText = getRequest(requestResponseObject, GetLocalizedText.class);
-        final GetLocalizedTextResponse getLocalizedTextResponse = messageModelFactory.createGetLocalizedTextResponse();
-        try (ReadTransaction transaction = mdibAccess.startTransaction()) {
-            getLocalizedTextResponse.setText(localizationService.getLocalizedText(
-                    getLocalizedText.getRef(),
-                    getLocalizedText.getVersion(),
-                    getLocalizedText.getLang(),
-                    getLocalizedText.getTextWidth(),
-                    getLocalizedText.getNumberOfLines()));
+        var getLocalizedText = getRequest(requestResponseObject, GetLocalizedText.class);
+        var getLocalizedTextResponse = messageModelFactory.createGetLocalizedTextResponse();
+        getLocalizedTextResponse.setText(fetchTexts(getLocalizedText));
 
-            setResponse(requestResponseObject, getLocalizedTextResponse, transaction.getMdibVersion(),
-                    ActionConstants.getResponseAction(ActionConstants.ACTION_GET_LOCALIZED_TEXT));
-        }
+        setResponse(requestResponseObject, getLocalizedTextResponse, mdibAccess.getMdibVersion(),
+                ActionConstants.getResponseAction(ActionConstants.ACTION_GET_LOCALIZED_TEXT));
+
     }
 
     @MessageInterceptor(ActionConstants.ACTION_GET_SUPPORTED_LANGUAGES)
     void getSupportedLanguages(RequestResponseObject requestResponseObject) throws SoapFaultException {
-        final GetSupportedLanguages getSupportedLanguages = getRequest(requestResponseObject,
-                GetSupportedLanguages.class);
-        final GetSupportedLanguagesResponse getSupportedLanguagesResponse =
+        var getSupportedLanguagesResponse =
                 messageModelFactory.createGetSupportedLanguagesResponse();
-        try (ReadTransaction transaction = mdibAccess.startTransaction()) {
-            getSupportedLanguagesResponse.setLang(localizationService.getSupportedLanguages());
-            setResponse(requestResponseObject, getSupportedLanguagesResponse, transaction.getMdibVersion(),
-                    ActionConstants.getResponseAction(ActionConstants.ACTION_GET_SUPPORTED_LANGUAGES));
-        }
+        getSupportedLanguagesResponse.setLang(localizationService.getSupportedLanguages());
+
+        setResponse(requestResponseObject, getSupportedLanguagesResponse, mdibAccess.getMdibVersion(),
+                ActionConstants.getResponseAction(ActionConstants.ACTION_GET_SUPPORTED_LANGUAGES));
+
     }
 
     private <T> T getRequest(RequestResponseObject requestResponseObject, Class<T> bodyType) throws SoapFaultException {
@@ -110,5 +101,14 @@ public class LowPriorityServices extends WebService {
         requestResponseObject.getResponse().getWsAddressingHeader().setAction(wsaUtil.createAttributedURIType(
                 responseAction));
         soapUtil.setBody(response, requestResponseObject.getResponse());
+    }
+
+    private List<LocalizedText> fetchTexts(GetLocalizedText getLocalizedText) {
+        return localizationService.getLocalizedText(
+                getLocalizedText.getRef(),
+                getLocalizedText.getVersion(),
+                getLocalizedText.getLang(),
+                getLocalizedText.getTextWidth(),
+                getLocalizedText.getNumberOfLines());
     }
 }

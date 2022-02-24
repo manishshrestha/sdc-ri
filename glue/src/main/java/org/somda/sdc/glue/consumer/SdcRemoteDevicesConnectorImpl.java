@@ -247,7 +247,7 @@ public class SdcRemoteDevicesConnectorImpl extends AbstractIdleService
                     WsdlConstants.PORT_TYPE_LOCALIZATION_QNAME);
 
         } catch (PrerequisitesException e) {
-            // ignore if case localization service is not provided
+            // ignore in case localization service is not provided
         }
         return localizationServiceProxyFactory.createLocalizationServiceProxy(hostingServiceProxy,
                 localizationServiceProxy);
