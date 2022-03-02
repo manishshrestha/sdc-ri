@@ -6,6 +6,8 @@ import java.util.List;
 /**
  * Device information that is resolved through WS-Discovery.
  *
+ * <em>Note that all information provided by instances of this class are potentially unsecure!</em>
+ *
  * @see <a href="http://docs.oasis-open.org/ws-dd/discovery/1.1/wsdd-discovery-1.1-spec.html">WS-Discovery</a>
  */
 public class DiscoveredDevice {

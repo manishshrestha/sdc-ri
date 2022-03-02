@@ -15,6 +15,7 @@ import org.somda.sdc.dpws.LocalAddressResolverMock;
 import org.somda.sdc.dpws.ThisDeviceBuilder;
 import org.somda.sdc.dpws.ThisModelBuilder;
 import org.somda.sdc.dpws.client.DiscoveredDevice;
+import org.somda.sdc.dpws.client.exception.EprAddressMismatchException;
 import org.somda.sdc.dpws.guice.ResolverThreadPool;
 import org.somda.sdc.dpws.model.HostedServiceType;
 import org.somda.sdc.dpws.model.ThisDeviceType;
@@ -45,9 +46,11 @@ import java.util.EmptyStackException;
 import java.util.List;
 import java.util.Map;
 import java.util.Stack;
+import java.util.concurrent.ExecutionException;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Mockito.mock;
@@ -166,6 +169,38 @@ class HostingServiceResolverTest extends DpwsTest {
         } catch (Exception e) {
             fail(e.getMessage());
         }
+    }
+
+    @Test
+    public void resolveHostingServiceWithMismatchedEprAddress() {
+        // Enforce the resolution of a hosting service proxy with unexpected EPR address
+        var unexpectedDeviceEprAddress = "00001cb1-af6a-4dfb-ba11-283d88410000";
+        mockTransferGetClient.setTransferGetMessages(Collections.singletonList(createTransferGetMessage(
+                unexpectedDeviceEprAddress,
+                expectedHostingServiceQNameTypes,
+                expectedModelType,
+                expectedDeviceType,
+                Collections.singletonList(createHostedService(expectedServiceId,
+                        expectedHostedServiceQNameTypes,
+                        expectedHostedServiceEprs))
+        )));
+
+        mockGetMetadataClient.setGetMetadataMessages(
+                Arrays.asList(createGetMetadataMessage(), createGetMetadataMessage()));
+
+        var hostingServiceResolver = getInjector().getInstance(HostingServiceResolver.class);
+        var expectedMetadataVersion = 100L;
+        var expectedDiscoveredDevice = createDiscoveredDevice(
+                expectedDeviceEprAddress,
+                Collections.singletonList("http://xAddr"),
+                expectedMetadataVersion);
+        assertThrows(EprAddressMismatchException.class, () -> {
+            try {
+                hostingServiceResolver.resolveHostingService(expectedDiscoveredDevice).get();
+            } catch (ExecutionException e) {
+                throw e.getCause();
+            }
+        });
     }
 
     private HostedService createHostedService(String serviceId, List<QName> types, List<EndpointReferenceType> eprs) {
