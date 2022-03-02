@@ -35,14 +35,11 @@ public class CommunicationLogInputInterceptor implements HttpInput.Interceptor, 
         try {
             if (content.isSpecial()) {
                 if (content.isEof()) {
-                    // TODO: See jetty issue https://github.com/eclipse/jetty.project/issues/7281
-                    var msg = "EOF element in input interceptor. In Jetty 11.0.6, enabling this was a TODO. You must"
-                        + " have changed the jetty version, now this behavior must be evaluated.";
-                    instanceLogger.error(msg);
-                    throw new RuntimeException(msg);
+                    commlogStream.close();
+                    instanceLogger.trace("EOF received, commlog stream closed");
                 } else if (content.getError() != null) {
                     commlogStream.close();
-                    instanceLogger.debug("Commlog closed, jetty reported error ", content.getError());
+                    instanceLogger.debug("Commlog stream closed, jetty reported error ", content.getError());
                 }
                 // don't do anything about other special types
             } else {

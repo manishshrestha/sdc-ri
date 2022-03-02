@@ -64,8 +64,7 @@ public class CommunicationLogHandlerWrapper extends HandlerWrapper {
         var out = baseRequest.getResponse().getHttpOutput();
 
         // attach interceptor to log request
-        var inputInterceptor = new CommunicationLogInputInterceptor(input, frameworkIdentifier);
-        baseRequest.getHttpInput().addInterceptor(inputInterceptor);
+        baseRequest.getHttpInput().addInterceptor(new CommunicationLogInputInterceptor(input, frameworkIdentifier));
 
         HttpOutput.Interceptor previousInterceptor = out.getInterceptor();
 
@@ -86,15 +85,6 @@ public class CommunicationLogHandlerWrapper extends HandlerWrapper {
             // trigger request handling
             super.handle(target, baseRequest, request, response);
         } finally {
-            // TODO: Jetty 11 does not call destroy on input interceptors anymore, which is why we have to call it
-            //  manually here. To retain the order of close operations, the output interceptor is closed here as well,
-            //  even though it does work correctly. Fix this one once Jetty changes this behavior.
-            //  See https://github.com/eclipse/jetty.project/issues/7280 
-            inputInterceptor.destroy();
-            if (outInterceptor != null) {
-                outInterceptor.close();
-            }
-
             // reset interceptor if request not handled
             if (!baseRequest.isHandled() && !baseRequest.isAsyncStarted())
                 out.setInterceptor(previousInterceptor);
