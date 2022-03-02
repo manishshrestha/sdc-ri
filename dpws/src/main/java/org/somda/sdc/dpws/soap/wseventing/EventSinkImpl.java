@@ -92,36 +92,6 @@ public class EventSinkImpl implements EventSink {
     @AssistedInject
     EventSinkImpl(@Assisted RequestResponseClient requestResponseClient,
                   @Assisted String hostAddress,
-                  @Named(DpwsConfig.MAX_WAIT_FOR_FUTURES) Duration maxWaitForFutures,
-                  HttpServerRegistry httpServerRegistry,
-                  ObjectFactory wseFactory,
-                  WsAddressingUtil wsaUtil,
-                  SoapMarshalling marshalling,
-                  SoapUtil soapUtil,
-                  @NetworkJobThreadPool ExecutorWrapperService<ListeningExecutorService> executorService,
-                  SubscriptionManagerFactory subscriptionManagerFactory,
-                  @Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier,
-                  TransportBindingFactory transportBindingFactory,
-                  RequestResponseClientFactory requestResponseClientFactory) {
-        this(requestResponseClient,
-                hostAddress,
-                null,
-                maxWaitForFutures,
-                httpServerRegistry,
-                wseFactory,
-                wsaUtil,
-                marshalling,
-                soapUtil,
-                executorService,
-                subscriptionManagerFactory,
-                frameworkIdentifier,
-                transportBindingFactory,
-                requestResponseClientFactory);
-    }
-
-    @AssistedInject
-    EventSinkImpl(@Assisted RequestResponseClient requestResponseClient,
-                  @Assisted String hostAddress,
                   @Assisted @Nullable CommunicationLog communicationLog,
                   @Named(DpwsConfig.MAX_WAIT_FOR_FUTURES) Duration maxWaitForFutures,
                   HttpServerRegistry httpServerRegistry,

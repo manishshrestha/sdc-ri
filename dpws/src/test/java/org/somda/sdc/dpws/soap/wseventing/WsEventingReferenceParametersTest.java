@@ -127,7 +127,7 @@ class WsEventingReferenceParametersTest extends DpwsTest {
                 tbFactory.createTransportBinding(hostedServiceUri, null));
 
         wseSink = getInjector().getInstance(WsEventingEventSinkFactory.class)
-                .createWsEventingEventSink(rrc, "http://localhost:1234");
+                .createWsEventingEventSink(rrc, "http://localhost:1234", null);
 
     }
 
