@@ -68,10 +68,9 @@ public class CommunicationLogHandlerWrapper extends HandlerWrapper {
 
         HttpOutput.Interceptor previousInterceptor = out.getInterceptor();
 
-        CommunicationLogOutputInterceptor outInterceptor = null;
         try {
             // attach interceptor to log response
-            outInterceptor = new CommunicationLogOutputInterceptor(
+            var outInterceptor = new CommunicationLogOutputInterceptor(
                 baseRequest.getHttpChannel(),
                 previousInterceptor,
                 commLog,
