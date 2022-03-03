@@ -373,7 +373,7 @@ class CommunicationLogIT extends DpwsTest {
             var responseBytes = response.getEntity().getContent().readAllBytes();
 
             // TODO: Because of the Commlog in the server closing after the request is done, we need a little sleep here
-            Thread.sleep(10);
+            Thread.sleep(100);
 
             // slurp up any leftover data
             EntityUtils.consume(response.getEntity());
