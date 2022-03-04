@@ -74,7 +74,6 @@ class CommunicationLogIT extends DpwsTest {
     private TestCommLogSink logSink;
     private JettyHttpServerRegistry httpServerRegistry;
 
-    @BeforeEach
     public void setUpChunked() throws Exception {
         var dpwsOverride = new DefaultDpwsConfigModule() {
             @Override
@@ -533,7 +532,7 @@ class CommunicationLogIT extends DpwsTest {
 
     @Test
     void testDuplicateTransactionIds() throws Exception {
-
+        setUpChunked();
         final Injector secondInjector = configureInjector(List.of(
                 new DefaultDpwsConfigModule() {
                     @Override
@@ -613,7 +612,6 @@ class CommunicationLogIT extends DpwsTest {
     }
 
     private void testSharedLogSink(SoapMarshalling soapMarshalling, TransportBinding httpBinding, TestCommLogSink logSink, ByteArrayOutputStream expectedResponseStream) throws Exception {
-        setUpChunked();
         var requestMessage2 = createASoapMessage();
 
         var actualRequestStream2 = new CloseableByteArrayOutputStream();
