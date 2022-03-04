@@ -6,6 +6,7 @@ import com.google.inject.Injector;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.entity.InputStreamEntity;
 import org.apache.http.impl.client.HttpClients;
@@ -26,6 +27,7 @@ import org.somda.sdc.dpws.guice.DefaultDpwsConfigModule;
 import org.somda.sdc.dpws.helper.JaxbMarshalling;
 import org.somda.sdc.dpws.http.HttpException;
 import org.somda.sdc.dpws.http.HttpHandler;
+import org.somda.sdc.dpws.http.apache.ApacheTransportBindingFactoryImpl;
 import org.somda.sdc.dpws.http.apache.ClientTransportBinding;
 import org.somda.sdc.dpws.http.jetty.JettyHttpServerHandler;
 import org.somda.sdc.dpws.http.jetty.JettyHttpServerRegistry;
@@ -37,6 +39,7 @@ import org.somda.sdc.dpws.soap.factory.EnvelopeFactory;
 import org.somda.sdc.dpws.soap.factory.SoapMessageFactory;
 
 import javax.xml.bind.JAXBElement;
+import javax.xml.bind.JAXBException;
 import javax.xml.namespace.QName;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -44,6 +47,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -93,6 +97,9 @@ class CommunicationLogIT extends DpwsTest {
         marshalling = getInjector().getInstance(SoapMarshalling.class);
         logSink = (TestCommLogSink) getInjector().getInstance(CommunicationLogSink.class);
         marshalling.startAsync().awaitRunning();
+        transportBindingFactory = getInjector().getInstance(ApacheTransportBindingFactoryImpl.class);
+//        httpClient = ((ApacheTransportBindingFactoryImpl)transportBindingFactory).createHttpClient();
+//        httpClient = getInjector().getInstance(HttpClient.class);
     }
 
     @AfterEach
@@ -197,6 +204,59 @@ class CommunicationLogIT extends DpwsTest {
 
             logSink.clear();
         }
+    }
+
+    @Test
+    public void testHttpClientCommLogTest() throws JAXBException, IOException, URISyntaxException {
+
+        URI baseUri = URI.create("http://127.0.0.1:0/");
+        String expectedResponse = "Sehr geehrter Kaliba, netter Versuch\n" +
+            "Kritische Texte, Weltverbesserer-Blues;";
+
+        JAXBElement<String> jaxbElement = new JAXBElement<>(
+            new QName("root-element"),
+            String.class, expectedResponse
+        );
+
+        var responseEnvelope = createASoapMessage();
+        responseEnvelope.getOriginalEnvelope().getBody().getAny().add(jaxbElement);
+
+        // make bytes out of the expected response
+        var expectedResponseStream = new CloseableByteArrayOutputStream();
+        marshalling.marshal(responseEnvelope.getEnvelopeWithMappedHeaders(), expectedResponseStream);
+
+        var responseBytes = expectedResponseStream.toByteArray();
+
+        // spawn the http server
+        var handler = new HttpServerUtil.GzipResponseHandler(responseBytes);
+        var inetSocketAddress = new InetSocketAddress(baseUri.getHost(), baseUri.getPort());
+        var server = HttpServerUtil.spawnHttpServer(inetSocketAddress, handler);
+
+        // replace the port
+        baseUri = new URI(
+            baseUri.getScheme(),
+            baseUri.getUserInfo(),
+            baseUri.getHost(),
+            server.getAddress().getPort(),
+            baseUri.getPath(),
+            baseUri.getQuery(),
+            baseUri.getFragment());
+
+        // make requests to our server
+        TransportBinding httpBinding1 = transportBindingFactory.createHttpBinding(baseUri.toString());
+
+        // as we explicitly want to set http headers and avoid the commlog, we build our own client
+        HttpClient client = HttpClients.custom().setMaxConnPerRoute(1).build();
+        HttpUriRequest post = new HttpPost(baseUri);
+        final HttpResponse response = client.execute(post);
+
+        // read commlog
+        var req = logSink.getOutbound().get(0);
+        var resp = logSink.getInbound().get(0);
+
+
+        // DEBUG
+        System.out.println("end of test");
     }
 
     static class SlowInputStream extends InputStream {
