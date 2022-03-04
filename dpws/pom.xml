@@ -94,6 +94,12 @@
             <artifactId>jetty-servlet</artifactId>
             <version>11.0.8</version>
         </dependency>
+        <!-- https://mvnrepository.com/artifact/org.eclipse.jetty/jetty-http -->
+        <dependency>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-http</artifactId>
+            <version>11.0.8</version>
+        </dependency>
         <!-- https://mvnrepository.com/artifact/net.sourceforge.jregex/jregex -->
         <dependency>
             <groupId>net.sourceforge.jregex</groupId>

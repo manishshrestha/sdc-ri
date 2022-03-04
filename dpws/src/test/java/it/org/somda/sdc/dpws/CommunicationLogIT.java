@@ -3,6 +3,7 @@ package it.org.somda.sdc.dpws;
 import com.google.common.collect.ListMultimap;
 import com.google.inject.AbstractModule;
 import com.google.inject.Injector;
+import org.apache.http.HttpHeaders;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
@@ -22,6 +23,7 @@ import org.somda.sdc.dpws.CommunicationLogSink;
 import org.somda.sdc.dpws.DpwsConfig;
 import org.somda.sdc.dpws.DpwsTest;
 import org.somda.sdc.dpws.TransportBinding;
+import org.somda.sdc.dpws.TransportBindingException;
 import org.somda.sdc.dpws.factory.TransportBindingFactory;
 import org.somda.sdc.dpws.guice.DefaultDpwsConfigModule;
 import org.somda.sdc.dpws.helper.JaxbMarshalling;
@@ -33,8 +35,11 @@ import org.somda.sdc.dpws.http.jetty.JettyHttpServerHandler;
 import org.somda.sdc.dpws.http.jetty.JettyHttpServerRegistry;
 import org.somda.sdc.dpws.soap.CommunicationContext;
 import org.somda.sdc.dpws.soap.HttpApplicationInfo;
+import org.somda.sdc.dpws.soap.SoapConstants;
 import org.somda.sdc.dpws.soap.SoapMarshalling;
 import org.somda.sdc.dpws.soap.SoapMessage;
+import org.somda.sdc.dpws.soap.exception.MarshallingException;
+import org.somda.sdc.dpws.soap.exception.TransportException;
 import org.somda.sdc.dpws.soap.factory.EnvelopeFactory;
 import org.somda.sdc.dpws.soap.factory.SoapMessageFactory;
 
@@ -70,12 +75,13 @@ class CommunicationLogIT extends DpwsTest {
     private JettyHttpServerRegistry httpServerRegistry;
 
     @BeforeEach
-    public void setUp() throws Exception {
+    public void setUpChunked() throws Exception {
         var dpwsOverride = new DefaultDpwsConfigModule() {
             @Override
             public void customConfigure() {
                 // ensure commlog works with compression enabled and doesn't store compressed messages
                 bind(DpwsConfig.HTTP_GZIP_COMPRESSION, Boolean.class, true);
+                bind(DpwsConfig.ENFORCE_HTTP_CHUNKED_TRANSFER, Boolean.class, true);
             }
         };
         var override = new AbstractModule() {
@@ -98,8 +104,6 @@ class CommunicationLogIT extends DpwsTest {
         logSink = (TestCommLogSink) getInjector().getInstance(CommunicationLogSink.class);
         marshalling.startAsync().awaitRunning();
         transportBindingFactory = getInjector().getInstance(ApacheTransportBindingFactoryImpl.class);
-//        httpClient = ((ApacheTransportBindingFactoryImpl)transportBindingFactory).createHttpClient();
-//        httpClient = getInjector().getInstance(HttpClient.class);
     }
 
     @AfterEach
@@ -110,6 +114,7 @@ class CommunicationLogIT extends DpwsTest {
 
     @Test
     void testClientCommlog() throws Exception {
+        setUpChunked();
         URI baseUri = URI.create("http://127.0.0.1:0/");
         String expectedResponse = "Sehr geehrter Kaliba, netter Versuch\n" +
                 "Kritische Texte, Weltverbesserer-Blues;";
@@ -206,59 +211,6 @@ class CommunicationLogIT extends DpwsTest {
         }
     }
 
-    @Test
-    public void testHttpClientCommLogTest() throws JAXBException, IOException, URISyntaxException {
-
-        URI baseUri = URI.create("http://127.0.0.1:0/");
-        String expectedResponse = "Sehr geehrter Kaliba, netter Versuch\n" +
-            "Kritische Texte, Weltverbesserer-Blues;";
-
-        JAXBElement<String> jaxbElement = new JAXBElement<>(
-            new QName("root-element"),
-            String.class, expectedResponse
-        );
-
-        var responseEnvelope = createASoapMessage();
-        responseEnvelope.getOriginalEnvelope().getBody().getAny().add(jaxbElement);
-
-        // make bytes out of the expected response
-        var expectedResponseStream = new CloseableByteArrayOutputStream();
-        marshalling.marshal(responseEnvelope.getEnvelopeWithMappedHeaders(), expectedResponseStream);
-
-        var responseBytes = expectedResponseStream.toByteArray();
-
-        // spawn the http server
-        var handler = new HttpServerUtil.GzipResponseHandler(responseBytes);
-        var inetSocketAddress = new InetSocketAddress(baseUri.getHost(), baseUri.getPort());
-        var server = HttpServerUtil.spawnHttpServer(inetSocketAddress, handler);
-
-        // replace the port
-        baseUri = new URI(
-            baseUri.getScheme(),
-            baseUri.getUserInfo(),
-            baseUri.getHost(),
-            server.getAddress().getPort(),
-            baseUri.getPath(),
-            baseUri.getQuery(),
-            baseUri.getFragment());
-
-        // make requests to our server
-        TransportBinding httpBinding1 = transportBindingFactory.createHttpBinding(baseUri.toString());
-
-        // as we explicitly want to set http headers and avoid the commlog, we build our own client
-        HttpClient client = HttpClients.custom().setMaxConnPerRoute(1).build();
-        HttpUriRequest post = new HttpPost(baseUri);
-        final HttpResponse response = client.execute(post);
-
-        // read commlog
-        var req = logSink.getOutbound().get(0);
-        var resp = logSink.getInbound().get(0);
-
-
-        // DEBUG
-        System.out.println("end of test");
-    }
-
     static class SlowInputStream extends InputStream {
 
         private final byte[] payload;
@@ -292,6 +244,7 @@ class CommunicationLogIT extends DpwsTest {
 
     @Test
     void testServerCommlogStreamedRequest() throws Exception {
+        setUpChunked();
         var baseUri = "http://127.0.0.1:0";
         var contextPath = "/ctxt/path1";
 
@@ -387,8 +340,17 @@ class CommunicationLogIT extends DpwsTest {
 
     }
 
+    // DONE: check Server: chunked inbound Requests should be logged in commLog with header "Transfer-Encoding: chunked"
+    // TODO: check Server: non-chunked inbound Requests should be logged in commLog with header "Content-Length"
+    // TODO: check Server: gzipped inbound Requests should be logged in commLog with header "Content-Encoding: gzip"
+    // DONE: check Server: chunked outbound Responses should be logged in commLog with header "Transfer-Encoding: chunked"
+    // TODO: check Server: non-chunked outbound Responses should be logged in commLog with header "Content-Length"
+    // TODO: check Server: gzipped outbound Responses should be logged in commLog with header "Content-Encoding: gzip"
+
+
     @Test
-    void testServerCommlog() throws Exception {
+    void testServerCommlogChunked() throws Exception {
+        setUpChunked();
         var baseUri = "http://127.0.0.1:0";
         var contextPath = "/ctxt/path1";
 
@@ -456,6 +418,13 @@ class CommunicationLogIT extends DpwsTest {
                     logSink.getInboundHeaders().get(0).get(customHeaderKey)
                             .contains(customHeaderValue)
             );
+            // the request is chunked, so we expect the transfer-encoding header can be found in the inbound commLog.
+            assertTrue(logSink.getInboundHeaders().get(0).get("transfer-encoding").contains("chunked"),
+                "Expected \"Transfer-Encoding:chunked\"-Header could not be found in Commlog.");
+
+            // the response is chunked, so we expect the transfer-encoding header can be found in the outbound commLog.
+            assertTrue(logSink.getOutboundHeaders().get(0).get("transfer-encoding").contains("chunked"));
+
             // ensure response headers are logged
             assertTrue(
                     logSink.getOutboundHeaders().get(0)
@@ -485,6 +454,7 @@ class CommunicationLogIT extends DpwsTest {
 
     @Test
     void testServerCommlogDuplicateKeys() throws Exception {
+        setUpChunked();
         var baseUri = "http://127.0.0.1:0";
         var contextPath = "/ctxt/path1";
 
@@ -643,6 +613,7 @@ class CommunicationLogIT extends DpwsTest {
     }
 
     private void testSharedLogSink(SoapMarshalling soapMarshalling, TransportBinding httpBinding, TestCommLogSink logSink, ByteArrayOutputStream expectedResponseStream) throws Exception {
+        setUpChunked();
         var requestMessage2 = createASoapMessage();
 
         var actualRequestStream2 = new CloseableByteArrayOutputStream();
