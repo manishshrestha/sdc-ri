@@ -41,7 +41,6 @@ import org.somda.sdc.dpws.soap.wstransfer.TransferGetClient;
 import javax.xml.namespace.QName;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.EmptyStackException;
 import java.util.List;
 import java.util.Map;
@@ -135,12 +134,12 @@ class HostingServiceResolverTest extends DpwsTest {
     void resolveHostingService() {
         // When no existing service is found in registry on resolving
         // Then expect the resolver to resolve the service according to the following message
-        mockTransferGetClient.setTransferGetMessages(Collections.singletonList(createTransferGetMessage(
+        mockTransferGetClient.setTransferGetMessages(List.of(createTransferGetMessage(
                 expectedDeviceEprAddress,
                 expectedHostingServiceQNameTypes,
                 expectedModelType,
                 expectedDeviceType,
-                Collections.singletonList(createHostedService(expectedServiceId,
+                List.of(createHostedService(expectedServiceId,
                         expectedHostedServiceQNameTypes,
                         expectedHostedServiceEprs))
         )));
@@ -150,7 +149,7 @@ class HostingServiceResolverTest extends DpwsTest {
 
         HostingServiceResolver hostingServiceResolver = getInjector().getInstance(HostingServiceResolver.class);
         long expectedMetadataVersion = 100;
-        DiscoveredDevice expectedDiscoveredDevice = createDiscoveredDevice(expectedDeviceEprAddress, Collections.singletonList("http://xAddr"),
+        DiscoveredDevice expectedDiscoveredDevice = createDiscoveredDevice(expectedDeviceEprAddress, List.of("http://xAddr"),
                 expectedMetadataVersion);
         ListenableFuture<HostingServiceProxy> hsF = hostingServiceResolver.resolveHostingService(expectedDiscoveredDevice);
         try {
@@ -175,12 +174,12 @@ class HostingServiceResolverTest extends DpwsTest {
     public void resolveHostingServiceWithMismatchedEprAddress() {
         // Enforce the resolution of a hosting service proxy with unexpected EPR address
         var unexpectedDeviceEprAddress = "00001cb1-af6a-4dfb-ba11-283d88410000";
-        mockTransferGetClient.setTransferGetMessages(Collections.singletonList(createTransferGetMessage(
+        mockTransferGetClient.setTransferGetMessages(List.of(createTransferGetMessage(
                 unexpectedDeviceEprAddress,
                 expectedHostingServiceQNameTypes,
                 expectedModelType,
                 expectedDeviceType,
-                Collections.singletonList(createHostedService(expectedServiceId,
+                List.of(createHostedService(expectedServiceId,
                         expectedHostedServiceQNameTypes,
                         expectedHostedServiceEprs))
         )));
@@ -192,7 +191,7 @@ class HostingServiceResolverTest extends DpwsTest {
         var expectedMetadataVersion = 100L;
         var expectedDiscoveredDevice = createDiscoveredDevice(
                 expectedDeviceEprAddress,
-                Collections.singletonList("http://xAddr"),
+                List.of("http://xAddr"),
                 expectedMetadataVersion);
         assertThrows(EprAddressMismatchException.class, () -> {
             try {
