@@ -122,6 +122,11 @@ public class RemoteMdibAccessImpl implements RemoteMdibAccess {
     }
 
     @Override
+    public void unregisterAllObservers() {
+        eventDistributor.unregisterAllObservers();
+    }
+
+    @Override
     public MdibVersion getMdibVersion() {
         try (ReadTransaction transaction = startTransaction()) {
             return transaction.getMdibVersion();

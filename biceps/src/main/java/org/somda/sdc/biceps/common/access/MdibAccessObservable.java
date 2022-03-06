@@ -17,4 +17,9 @@ public interface MdibAccessObservable {
      * @param observer the observer to unsubscribe.
      */
     void unregisterObserver(MdibAccessObserver observer);
+
+    /**
+     * Unregisters all observers at once.
+     */
+    void unregisterAllObservers();
 }

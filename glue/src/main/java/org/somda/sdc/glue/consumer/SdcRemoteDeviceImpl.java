@@ -147,13 +147,16 @@ public class SdcRemoteDeviceImpl extends AbstractIdleService implements SdcRemot
                 instanceLogger.error("Could not stop the remote device watchdog", e);
             }
         }
+
         try {
             reportProcessor.stopAsync().awaitTerminated(maxWait.getSeconds(), TimeUnit.SECONDS);
         } catch (TimeoutException e) {
             instanceLogger.error("Could not stop the report processor", e);
         }
-        final ArrayList<HostedServiceProxy> hostedServices =
-                new ArrayList<>(hostingServiceProxy.getHostedServices().values());
+
+        remoteMdibAccess.unregisterAllObservers();
+
+        final var hostedServices = new ArrayList<>(hostingServiceProxy.getHostedServices().values());
         for (HostedServiceProxy hostedService : hostedServices) {
             hostedService.getEventSinkAccess().unsubscribeAll();
         }
