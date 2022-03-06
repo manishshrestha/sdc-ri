@@ -37,6 +37,8 @@ public class DiscoveredDevice {
      * <em>Note that all information provided by instances of {@linkplain DiscoveredDevice} are potentially unsecure!
      * Potentially unsecure because there are cases in which a consumer may connect to a discovery proxy that uses
      * secured transmission to exchange discovery information.</em>
+     *
+     * @return the EPR address of the discovered device.
      */
     public String getEprAddress() {
         return eprAddress;
@@ -48,6 +50,8 @@ public class DiscoveredDevice {
      * <em>Note that all information provided by instances of {@linkplain DiscoveredDevice} are potentially unsecure!
      * Potentially unsecure because there are cases in which a consumer may connect to a discovery proxy that uses
      * secured transmission to exchange discovery information.</em>
+     *
+     * @return the types of the discovered device.
      */
     public List<QName> getTypes() {
         return types;
@@ -59,6 +63,8 @@ public class DiscoveredDevice {
      * <em>Note that all information provided by instances of {@linkplain DiscoveredDevice} are potentially unsecure!
      * Potentially unsecure because there are cases in which a consumer may connect to a discovery proxy that uses
      * secured transmission to exchange discovery information.</em>
+     *
+     * @return the scopes of the discovered device.
      */
     public List<String> getScopes() {
         return scopes;
@@ -70,6 +76,8 @@ public class DiscoveredDevice {
      * <em>Note that all information provided by instances of {@linkplain DiscoveredDevice} are potentially unsecure!
      * Potentially unsecure because there are cases in which a consumer may connect to a discovery proxy that uses
      * secured transmission to exchange discovery information.</em>
+     *
+     * @return the physical addresses of the discovered device.
      */
     public List<String> getXAddrs() {
         return xAddrs;
@@ -81,6 +89,8 @@ public class DiscoveredDevice {
      * <em>Note that all information provided by instances of {@linkplain DiscoveredDevice} are potentially unsecure!
      * Potentially unsecure because there are cases in which a consumer may connect to a discovery proxy that uses
      * secured transmission to exchange discovery information.</em>
+     *
+     * @return the version of the device's meta information.
      */
     public long getMetadataVersion() {
         return metadataVersion;
