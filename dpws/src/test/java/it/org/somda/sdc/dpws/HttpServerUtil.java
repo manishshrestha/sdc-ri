@@ -32,28 +32,48 @@ public class HttpServerUtil {
         public static final String TEST_HEADER_VALUE = "anAmazingValue";
 
         private final byte[] compressedResponse;
+        private final boolean chunkedTransfer;
+        private final boolean gzippedTransfer;
 
         GzipResponseHandler(byte[] response) throws IOException {
+            this(response, false, true);
+        }
+
+        GzipResponseHandler(byte[] response, boolean chunkedTransfer, boolean gzippedTransfer) throws IOException {
             ByteArrayOutputStream responseBais = new ByteArrayOutputStream();
-            try (GZIPOutputStream gzos = new GZIPOutputStream(responseBais)) {
-                gzos.write(response);
+            if (gzippedTransfer) {
+                try (GZIPOutputStream gzos = new GZIPOutputStream(responseBais)) {
+                    gzos.write(response);
+                }
+            } else {
+                responseBais.write(response);
             }
+            this.gzippedTransfer = gzippedTransfer;
+            this.chunkedTransfer = chunkedTransfer;
             this.compressedResponse = responseBais.toByteArray();
         }
 
         @Override
         public void handle(HttpExchange t) throws IOException {
 
-            List<String> strings = t.getRequestHeaders().get(HttpHeaders.ACCEPT_ENCODING);
-            if (strings.stream().noneMatch(x -> x.contains("gzip"))) {
-                LOG.error("No Accept-Encoding with value gzip in request header");
-                throw new RuntimeException("No Accept-Encoding with value gzip in request header");
+            if (gzippedTransfer) {
+                List<String> strings = t.getRequestHeaders().get(HttpHeaders.ACCEPT_ENCODING);
+                if (strings.stream().noneMatch(x -> x.contains("gzip"))) {
+                    LOG.error("No Accept-Encoding with value gzip in request header");
+                    throw new RuntimeException("No Accept-Encoding with value gzip in request header");
+                }
             }
 
             t.getResponseHeaders().add(TEST_HEADER_KEY, TEST_HEADER_VALUE);
-            t.getResponseHeaders().add(HttpHeaders.CONTENT_ENCODING, "gzip");
+            if (gzippedTransfer) {
+                t.getResponseHeaders().add(HttpHeaders.CONTENT_ENCODING, "gzip");
+            }
             t.getResponseHeaders().add(HttpHeaders.CONTENT_TYPE, SoapConstants.MEDIA_TYPE_SOAP);
-            t.sendResponseHeaders(200, compressedResponse.length);
+            if (chunkedTransfer) {
+                t.sendResponseHeaders(200, 0); // use chunked encoding
+            } else {
+                t.sendResponseHeaders(200, compressedResponse.length);
+            }
             OutputStream os = t.getResponseBody();
             os.write(compressedResponse);
             os.close();

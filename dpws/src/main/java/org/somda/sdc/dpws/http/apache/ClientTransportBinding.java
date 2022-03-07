@@ -8,8 +8,8 @@ import org.apache.http.HttpEntity;
 import org.apache.http.HttpHeaders;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
+import org.apache.http.client.entity.EntityBuilder;
 import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.util.EntityUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -55,6 +55,7 @@ public class ClientTransportBinding implements TransportBinding {
     private HttpClient client;
     private final String clientUri;
     private final boolean chunkedTransfer;
+    private boolean gzippedTransfer;
 
     @Inject
     ClientTransportBinding(@Assisted HttpClient client,
@@ -70,6 +71,11 @@ public class ClientTransportBinding implements TransportBinding {
         this.marshalling = marshalling;
         this.soapUtil = soapUtil;
         this.chunkedTransfer = chunkedTransfer;
+        this.gzippedTransfer = false;
+    }
+
+    public void setGzippedTransfer(boolean toValue) {
+        this.gzippedTransfer = toValue;
     }
 
     @Override
@@ -105,13 +111,14 @@ public class ClientTransportBinding implements TransportBinding {
         }
 
         // attach payload
-        var requestEntity = new ByteArrayEntity(byteArrayOutputStream.toByteArray());
-
-        if (this.chunkedTransfer) {
-            requestEntity.setChunked(true);
+        EntityBuilder builder = EntityBuilder.create().setBinary(byteArrayOutputStream.toByteArray());
+        if (gzippedTransfer) {
+            builder = builder.gzipCompress();
         }
-
-        post.setEntity(requestEntity);
+        if (chunkedTransfer) {
+            builder = builder.chunked();
+        }
+        post.setEntity(builder.build());
 
         instanceLogger.debug("Sending POST request to {}", this.clientUri);
         HttpResponse response;
