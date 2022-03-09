@@ -114,7 +114,8 @@ public class ApacheTransportBindingFactoryImpl implements TransportBindingFactor
                 // attach interceptors to enable communication log capabilities including message headers
                 .addInterceptorLast(new CommunicationLogHttpRequestInterceptor(communicationLog, frameworkIdentifier,
                         cryptoConfigurator.getCertificates(cryptoSettings)))
-                .addInterceptorLast(new CommunicationLogHttpResponseInterceptor(communicationLog, frameworkIdentifier))
+                .addInterceptorLast(new CommunicationLogInnerHttpResponseInterceptor(communicationLog, frameworkIdentifier))
+                .addInterceptorFirst(new CommunicationLogOuterHttpResponseInterceptor(communicationLog, frameworkIdentifier))
                 .setDefaultRequestConfig(requestConfig)
                 // allow reusing ssl connections in the pool
                 .disableConnectionState()

@@ -403,7 +403,7 @@ public class JettyHttpServerRegistry extends AbstractIdleService implements Http
         server.setHandler(context);
         this.contextHandlerMap.put(server, context);
 
-        CommunicationLogHandlerWrapper commlogHandler = new CommunicationLogHandlerWrapper(
+        CommunicationLogInnerHandlerWrapper commlogHandler = new CommunicationLogInnerHandlerWrapper(
                 communicationLog, frameworkIdentifier
         );
         commlogHandler.setHandler(server.getHandler());
@@ -424,7 +424,13 @@ public class JettyHttpServerRegistry extends AbstractIdleService implements Http
                     "text/plain", "text/html",
                     SoapConstants.MEDIA_TYPE_SOAP, SoapConstants.MEDIA_TYPE_WSDL
             );
-            server.setHandler(gzipHandler);
+
+            // GzipHandler removes Content-Encoding Header. In order to capture these headers before they are removed,
+            // we need our extractor to run beneath the GzipHandler.
+            var commLogHeaderExtractor = new CommunicationLogOuterHandlerWrapper(communicationLog, frameworkIdentifier);
+            commLogHeaderExtractor.setHandler(gzipHandler);
+
+            server.setHandler(commLogHeaderExtractor);
         }
 
         if (sslContext != null && enableHttps) {

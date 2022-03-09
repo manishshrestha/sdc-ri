@@ -93,7 +93,6 @@ class CommunicationLogIT extends DpwsTest {
         super.setUp();
 
         httpServerRegistry = getInjector().getInstance(JettyHttpServerRegistry.class);
-        transportBindingFactory = getInjector().getInstance(TransportBindingFactory.class);
         soapMessageFactory = getInjector().getInstance(SoapMessageFactory.class);
         envelopeFactory = getInjector().getInstance(EnvelopeFactory.class);
         getInjector().getInstance(JaxbMarshalling.class).startAsync().awaitRunning();
@@ -134,7 +133,7 @@ class CommunicationLogIT extends DpwsTest {
     }
 
     @AfterEach
-    void tearDown() throws Exception {
+    void tearDown() {
         marshalling.stopAsync().awaitTerminated();
         logSink.clear();
     }
@@ -505,7 +504,7 @@ class CommunicationLogIT extends DpwsTest {
         var srvUri1 = httpServerRegistry.registerContext(
             baseUri, contextPath, new HttpHandler() {
                 @Override
-                public void handle(InputStream inStream, OutputStream outStream, CommunicationContext communicationContext) throws HttpException {
+                public void handle(InputStream inStream, OutputStream outStream, CommunicationContext communicationContext) {
                     try {
                         byte[] bytes = inStream.readAllBytes();
                         resultString.set(new String(bytes));
@@ -609,7 +608,7 @@ class CommunicationLogIT extends DpwsTest {
         var srvUri1 = httpServerRegistry.registerContext(
                 baseUri, contextPath, new HttpHandler() {
                     @Override
-                    public void handle(InputStream inStream, OutputStream outStream, CommunicationContext communicationContext) throws HttpException {
+                    public void handle(InputStream inStream, OutputStream outStream, CommunicationContext communicationContext) {
                         try {
                             byte[] bytes = inStream.readAllBytes();
                             resultString.set(new String(bytes));
@@ -713,7 +712,7 @@ class CommunicationLogIT extends DpwsTest {
         var srvUri1 = httpServerRegistry.registerContext(
             baseUri, contextPath, new HttpHandler() {
                 @Override
-                public void handle(InputStream inStream, OutputStream outStream, CommunicationContext communicationContext) throws HttpException {
+                public void handle(InputStream inStream, OutputStream outStream, CommunicationContext communicationContext) {
                     try {
                         byte[] bytes = inStream.readAllBytes();
                         resultString.set(new String(bytes));
@@ -773,7 +772,7 @@ class CommunicationLogIT extends DpwsTest {
             final int actualContentLength = logSink.getInbound().get(0).toString(StandardCharsets.UTF_8).length();
             assertEquals(logSink.getInboundHeaders().get(0).get(CONTENT_LENGTH_HEADER).get(0), Integer.toString(actualContentLength));
 
-            // the response is non-chunked, so we expect the transfer-encoding header to be present and correct in the outbound commLog.
+            // the response is non-chunked, so we expect the content-length header to be present and correct in the outbound commLog.
             final int actualContentLength2 = logSink.getOutbound().get(0).toString(StandardCharsets.UTF_8).length();
             assertEquals(logSink.getOutboundHeaders().get(0).get(CONTENT_LENGTH_HEADER).get(0), Integer.toString(actualContentLength2));
 
@@ -818,7 +817,7 @@ class CommunicationLogIT extends DpwsTest {
         var srvUri1 = httpServerRegistry.registerContext(
             baseUri, contextPath, new HttpHandler() {
                 @Override
-                public void handle(InputStream inStream, OutputStream outStream, CommunicationContext communicationContext) throws HttpException {
+                public void handle(InputStream inStream, OutputStream outStream, CommunicationContext communicationContext) {
                     try {
                         byte[] bytes = inStream.readAllBytes();
                         resultString.set(new String(bytes));
@@ -868,9 +867,12 @@ class CommunicationLogIT extends DpwsTest {
             assertArrayEquals(expectedResponse.getBytes(), resp.toByteArray());
 
             // expect request and response to be gzipped
+            // TODO: store both the headers before GzipHandler and the headers after GzipHandler
+            // TODO: assertTrue(logSink.getInboundNetworkHeaders().get(0).get(CONTENT_ENCODING_HEADER).contains("gzip"));
             assertTrue(logSink.getInboundHeaders().get(0).get(X_CONTENT_ENCODING_HEADER).contains("gzip"));
-            // Problem: "Content-Encoding"-Header is added by the GzipHandler beneath the CommLogHandler.
-            //          When the Server send a Response, it hence does not appear in our Logs.
+
+            // TODO: assertTrue(logSink.getOutboundNetworkHeaders().get(0).get(CONTENT_ENCODING_HEADER).contains("gzip"));
+            // TODO: does the Content-Encoding Header appear before the GzipHandler?
             assertTrue(logSink.getOutboundHeaders().get(0).get(CONTENT_ENCODING_HEADER).contains("gzip"));
 
             // ensure streams were closed by interceptors
@@ -923,7 +925,7 @@ class CommunicationLogIT extends DpwsTest {
         var srvUri1 = httpServerRegistry.registerContext(
                 baseUri, contextPath, new HttpHandler() {
                     @Override
-                    public void handle(InputStream inStream, OutputStream outStream, CommunicationContext communicationContext) throws HttpException {
+                    public void handle(InputStream inStream, OutputStream outStream, CommunicationContext communicationContext) {
                         try {
                             byte[] bytes = inStream.readAllBytes();
                             resultString.set(new String(bytes));

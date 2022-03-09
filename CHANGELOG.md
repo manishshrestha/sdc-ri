@@ -59,7 +59,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `org.somda.sdc.common.util.AnyDateTime` methods `equals()`, `hashCode()`, `toString()` implemented (#201)
 - `org.somda.sdc.dpws.soap.wsdiscovery.WsDiscoveryUtil.isScopesMatching()` extends scope matcher to be compatible with RFC3986 URIs 
   and follow WS-Discovery rules (#212)
-- `org.somda.sdc.dpws.http.apache.CommunicationLogHttpRequestInterceptor` adds local certificates to TransportInfo and `org.somda.sdc.dpws.http.apache.CommunicationLogHttpResponseInterceptor` adds peer certificates to TransportInfo. (#204)
+- `org.somda.sdc.dpws.http.apache.CommunicationLogHttpRequestInterceptor` adds local certificates to TransportInfo and `org.somda.sdc.dpws.http.apache.CommunicationLogInnerHttpResponseInterceptor` adds peer certificates to TransportInfo. (#204)
   
 ### Removed
 
@@ -74,7 +74,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `org.somda.sdc.dpws.soap.wseventing.EventSourceInterceptor` no longer tries to send SubscriptionEnd messages to stale subscriptions on shutdown. (#164)
 - `IEEE11073-20701-LowPriority-Services.wsdl` specified the wrong input and output messages for `GetStatesFromArchive` operation. (#167)
 - Namespace prefix mappings which were missing for SDC Glue-related XML fragments. (#169)
-- `org.somda.sdc.dpws.http.jetty.CommunicationLogHandlerWrapper` determined TLS usage by whether CryptoSettings were present, not based on request. (#171)
+- `org.somda.sdc.dpws.http.jetty.CommunicationLogInnerHandlerWrapper` determined TLS usage by whether CryptoSettings were present, not based on request. (#171)
 - `org.somda.sdc.dpws.http.jetty.JettyHttpServerRegistry` is now compliant with RFC 2616 instead of RFC 7230. (#172)
 - `org.somda.sdc.biceps.consumer.preprocessing.VersionDuplicateHandler` can now handle implied state versions. (#182)
 - Fix swallowed state updates during description modification. (#179) 
