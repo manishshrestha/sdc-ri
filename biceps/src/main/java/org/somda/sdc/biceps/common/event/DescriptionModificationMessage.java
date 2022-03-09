@@ -8,6 +8,8 @@ import java.util.List;
 
 /**
  * Subscribe to this message in order to receive description changes.
+ * <p>
+ * Message is also being used to communicate the initial set of changes from GetMdibResponse after device connection.
  */
 public class DescriptionModificationMessage extends AbstractMdibAccessMessage {
     private final List<MdibEntity> insertedEntities;
