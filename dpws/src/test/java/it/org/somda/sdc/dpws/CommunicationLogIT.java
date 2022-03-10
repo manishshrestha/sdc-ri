@@ -24,7 +24,6 @@ import org.somda.sdc.dpws.TransportBinding;
 import org.somda.sdc.dpws.factory.TransportBindingFactory;
 import org.somda.sdc.dpws.guice.DefaultDpwsConfigModule;
 import org.somda.sdc.dpws.helper.JaxbMarshalling;
-import org.somda.sdc.dpws.http.HttpException;
 import org.somda.sdc.dpws.http.HttpHandler;
 import org.somda.sdc.dpws.http.apache.ApacheTransportBindingFactoryImpl;
 import org.somda.sdc.dpws.http.apache.ClientTransportBinding;
@@ -957,6 +956,9 @@ class CommunicationLogIT extends DpwsTest {
         for (int i = 0; i < 100; i++) {
             HttpResponse response = client.execute(post);
             var responseBytes = response.getEntity().getContent().readAllBytes();
+
+            // TODO: Because of the Commlog in the server closing after the request is done, we need a little sleep here
+            Thread.sleep(10);
 
             // slurp up any leftover data
             EntityUtils.consume(response.getEntity());
