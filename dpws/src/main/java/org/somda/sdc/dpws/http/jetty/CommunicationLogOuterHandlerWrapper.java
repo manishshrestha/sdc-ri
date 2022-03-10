@@ -14,6 +14,8 @@ import org.somda.sdc.dpws.soap.TransportInfo;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -49,21 +51,33 @@ public class CommunicationLogOuterHandlerWrapper extends HandlerWrapper {
         super.handle(target, baseRequest, request, response);
 
         final Object messageBody = request.getAttribute(
-            CommunicationLogInnerHandlerWrapper.MESSAGE_BODY_FROM_COMM_LOG_HANDLER_WRAPPER_AS_ATTRIBUTE_KEY);
+            CommunicationLogInnerHandlerWrapper.MESSAGE_BODY_FROM_INNER_PART_AS_ATTRIBUTE_KEY);
+        final HashMap<String, Collection<String>> responseHeaders = (HashMap<String, Collection<String>>)
+            request.getAttribute(
+            CommunicationLogInnerHandlerWrapper.MESSAGE_HEADERS_FROM_INNER_PART_AS_ATTRIBUTE_KEY);
         if (messageBody != null) {
             ListMultimap<String, String> responseHeaderMap = ArrayListMultimap.create();
-            response.getHeaderNames().stream()
-                .map(String::toLowerCase)
-                // filter duplicates which occur because of capitalization
-                .distinct()
-                .forEach(
-                    headerName -> {
-                        var headers = response.getHeaders(headerName);
-                        headers.forEach(header ->
-                            responseHeaderMap.put(headerName, header)
-                        );
+            // NOTE: we log the headers extracted in the CommunicationLogOutputBufferInterceptor
+            //       because this is the only place where the Content-Length Header can be extracted
+            //       while it still contains the correct length of the decompressed body.
+            //       However, we need to add the Content-Encoding Header at this place because it is
+            //       set in the GzipHandler.
+            // TODO: As stated in the above note, the combination of these Headers and the uncompressed body
+            //       (also extracted in the CommunicationLogOutputBufferInterceptor) is inconsistent. Change
+            //       this by logging 2 versions of both Requests and Responses:
+            //       a network version and an uncompressed version.
+            if (responseHeaders != null) {
+                for (String headerName : responseHeaders.keySet()) {
+                    for (String value : responseHeaders.get(headerName)) {
+                        responseHeaderMap.put(headerName.toLowerCase(), value);
                     }
-                );
+                }
+            }
+            // add the Content-Encoding Header to the headers from the Inner Part as it is set in the GzipHandler
+            final String contentEncodingResponseHeader = response.getHeader("Content-Encoding");
+            if (contentEncodingResponseHeader != null) {
+                responseHeaderMap.put("Content-Encoding", contentEncodingResponseHeader);
+            }
 
             var responseHttpApplicationInfo = new HttpApplicationInfo(
                 responseHeaderMap,

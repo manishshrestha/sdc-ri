@@ -22,9 +22,8 @@ import java.util.concurrent.atomic.AtomicLong;
  * Inner Part that is called on the already decompressed Message.
  */
 public class CommunicationLogInnerHandlerWrapper extends HandlerWrapper {
-    private static final String TRANSACTION_ID_PREFIX_SERVER = "rrId:server:" + UUID.randomUUID() + ":";
-    private static final AtomicLong TRANSACTION_ID = new AtomicLong(-1L);
-    public static final String MESSAGE_BODY_FROM_COMM_LOG_HANDLER_WRAPPER_AS_ATTRIBUTE_KEY = "MessageBody-From-CommLogHandlerWrapper";
+    public static final String MESSAGE_BODY_FROM_INNER_PART_AS_ATTRIBUTE_KEY = "MessageBody-From-CommLogInnerHandlerWrapper";
+    public static final String MESSAGE_HEADERS_FROM_INNER_PART_AS_ATTRIBUTE_KEY = "MessageHeaders-From-CommLogInnerHandlerWrapper";
     private final CommunicationLog commLog;
     private final String frameworkIdentifier;
 
@@ -82,19 +81,23 @@ public class CommunicationLogInnerHandlerWrapper extends HandlerWrapper {
             // attach interceptor to log response
             var outInterceptor = new CommunicationLogOutputBufferInterceptor(
                 previousInterceptor,
-                frameworkIdentifier);
+                frameworkIdentifier,
+                response);
 
             out.setInterceptor(outInterceptor);
 
             // trigger request handling
             super.handle(target, baseRequest, request, response);
 
-            request.setAttribute(MESSAGE_BODY_FROM_COMM_LOG_HANDLER_WRAPPER_AS_ATTRIBUTE_KEY,
+            request.setAttribute(MESSAGE_BODY_FROM_INNER_PART_AS_ATTRIBUTE_KEY,
                 outInterceptor.getContents());
+            request.setAttribute(MESSAGE_HEADERS_FROM_INNER_PART_AS_ATTRIBUTE_KEY,
+                outInterceptor.getResponseHeaders());
         } finally {
             // reset interceptor if request not handled
             if (!baseRequest.isHandled() && !baseRequest.isAsyncStarted())
                 out.setInterceptor(previousInterceptor);
         }
     }
+
 }
