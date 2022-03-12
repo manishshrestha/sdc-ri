@@ -107,13 +107,12 @@ public class LocalizationServiceProxy implements LocalizationServiceAccess {
 
     @Override
     public void cachePrefetch(BigInteger version, List<String> lang) throws InvocationException {
-        var cacheReports = fetchLocalizedTextCache(version, lang);
+        var localizedTextTable = fetchLocalizedTextCache(version, lang);
         if (!localizationCache.containsKey(version)) {
-            localizationCache.put(version, cacheReports);
+            localizationCache.put(version, localizedTextTable);
         } else {
             // in case this version was already cached for some languages, but we want to cache additional ones
-            // TODO is it needed? It will duplicate records if method is called multiple times with same languages
-            localizationCache.get(version).putAll(cacheReports);
+            localizationCache.get(version).putAll(localizedTextTable);
         }
     }
 

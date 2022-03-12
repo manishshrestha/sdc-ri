@@ -50,6 +50,7 @@ public class LocalizationServiceFilterUtil {
                 .filter(referencesToTextMap::containsKey)
                 .map(referencesToTextMap::get)
                 .flatMap(Collection::stream)
+                .distinct()
                 .collect(Collectors.toList());
     }
 }

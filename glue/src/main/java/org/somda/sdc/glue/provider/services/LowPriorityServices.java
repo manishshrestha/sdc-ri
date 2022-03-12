@@ -19,8 +19,10 @@ import org.somda.sdc.dpws.soap.wsaddressing.WsAddressingUtil;
 import org.somda.sdc.glue.common.ActionConstants;
 import org.somda.sdc.glue.common.MdibVersionUtil;
 import org.somda.sdc.glue.provider.localization.LocalizationService;
+import org.somda.sdc.glue.provider.localization.LocalizationStorage;
 import org.somda.sdc.glue.provider.localization.factory.LocalizationServiceFactory;
 
+import javax.annotation.Nullable;
 import java.util.List;
 
 /**
@@ -39,10 +41,11 @@ public class LowPriorityServices extends WebService {
     private final ObjectFactory messageModelFactory;
     private final MdibVersionUtil mdibVersionUtil;
     private final WsAddressingUtil wsaUtil;
-    private final LocalizationService localizationService;
+    private LocalizationService localizationService;
 
     @AssistedInject
     LowPriorityServices(@Assisted LocalMdibAccess mdibAccess,
+                        @Assisted @Nullable LocalizationStorage localizationStorage,
                         SoapUtil soapUtil,
                         SoapFaultFactory faultFactory,
                         ObjectFactory messageModelFactory,
@@ -55,8 +58,10 @@ public class LowPriorityServices extends WebService {
         this.messageModelFactory = messageModelFactory;
         this.mdibVersionUtil = mdibVersionUtil;
         this.wsaUtil = wsaUtil;
-        localizationService = localizationServiceFactory.createLocalizationService();
-        localizationService.startAsync().awaitRunning();
+        if (localizationStorage != null) {
+            localizationService = localizationServiceFactory.createLocalizationService(localizationStorage);
+            localizationService.startAsync().awaitRunning();
+        }
     }
 
     @MessageInterceptor(ActionConstants.ACTION_GET_LOCALIZED_TEXT)

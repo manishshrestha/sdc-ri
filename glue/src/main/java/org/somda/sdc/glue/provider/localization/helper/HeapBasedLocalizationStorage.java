@@ -1,57 +1,43 @@
 package org.somda.sdc.glue.provider.localization.helper;
 
+import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Table;
-import com.google.common.util.concurrent.AbstractIdleService;
-import com.google.inject.assistedinject.Assisted;
-import com.google.inject.assistedinject.AssistedInject;
+import org.apache.commons.lang3.StringUtils;
 import org.somda.sdc.biceps.model.participant.LocalizedText;
 import org.somda.sdc.glue.common.LocalizationServiceFilterUtil;
-import org.somda.sdc.glue.provider.localization.LocalizationDataProvider;
 import org.somda.sdc.glue.provider.localization.LocalizationException;
 import org.somda.sdc.glue.provider.localization.LocalizationStorage;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.somda.sdc.glue.common.LocalizationServiceFilterUtil.filterByLanguage;
-
 /**
  * Default implementation of {@linkplain LocalizationStorage}.
+ * <p>
+ * Localized texts are stored in heap ({@link Map}) and can be added during the runtime.
  */
-public class LocalizationStorageHelper extends AbstractIdleService implements LocalizationStorage {
+public class HeapBasedLocalizationStorage implements LocalizationStorage {
 
-    private final LocalizationDataProvider localizationDataProvider;
+    private final List<String> supportedLanguages = new ArrayList<>();
 
     /**
      * Representation of Map<Version, Table<Row, Column, Value>>,
      * where row = ref, column = lang, value = LocalizedText
      */
-    private Map<BigInteger, Table<String, String, LocalizedText>> localizationStorage;
-
-    @AssistedInject
-    public LocalizationStorageHelper(@Assisted LocalizationDataProvider localizationDataProvider) {
-        this.localizationDataProvider = localizationDataProvider;
-    }
-
-    @Override
-    protected void startUp() throws Exception {
-        localizationStorage = localizationDataProvider.getLocalizationData();
-    }
-
-    @Override
-    protected void shutDown() throws Exception {
-    }
+    private final Map<BigInteger, Table<String, String, LocalizedText>> localizationStorage = new HashMap<>();
 
     @Override
     public List<String> getSupportedLanguages() {
-        return localizationDataProvider.getSupportedLanguages();
+        return supportedLanguages;
     }
 
     /* Filtering logic:
-         List<LocalizedTextRef> references: if not provided, return all, otherwise return TEXT for matching REF;
+         List<LocalizedTextRef> references: if not provided, returns all, otherwise returns TEXT for matching REF;
          ReferencedVersion version: if not provided, returns the LATEST VERSION of the TEXT;
          List<xsd:language> languages: if not provided, all TEXT translations returned;
     */
@@ -66,11 +52,40 @@ public class LocalizationStorageHelper extends AbstractIdleService implements Lo
         }
 
         Multimap<String, LocalizedText> refToValueMap =
-                filterByLanguage(localizationStorage.get(version), languages);
+                LocalizationServiceFilterUtil.filterByLanguage(localizationStorage.get(version), languages);
 
         // if references not provided, return all records, otherwise filter by reference
         return references.isEmpty() ? new ArrayList<>(refToValueMap.values()) :
                 LocalizationServiceFilterUtil.filterByReferences(refToValueMap, references);
+    }
+
+    public void addLocalizedText(LocalizedText text) {
+        // check if all mandatory data provided before processing
+        if (text.getVersion() == null || StringUtils.isAnyBlank(text.getLang(), text.getRef())) {
+            return;
+        }
+
+        addToSupportedLanguages(text);
+        addToStorage(text);
+    }
+
+    public void allLocalizedTexts(Collection<LocalizedText> texts) {
+        texts.forEach(this::addLocalizedText);
+    }
+
+    private void addToStorage(LocalizedText text) {
+        var table = localizationStorage.getOrDefault(
+                text.getVersion(),
+                HashBasedTable.create());
+        table.put(text.getRef(), text.getLang(), text);
+
+        localizationStorage.put(text.getVersion(), table);
+    }
+
+    private void addToSupportedLanguages(LocalizedText text) {
+        if (!supportedLanguages.contains(text.getLang())) {
+            supportedLanguages.add(text.getLang());
+        }
     }
 
     private BigInteger getLatestVersion() {

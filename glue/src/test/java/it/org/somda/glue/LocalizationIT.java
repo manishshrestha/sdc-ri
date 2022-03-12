@@ -13,13 +13,17 @@ import org.somda.sdc.biceps.model.message.GetLocalizedText;
 import org.somda.sdc.biceps.model.message.GetLocalizedTextResponse;
 import org.somda.sdc.biceps.model.message.GetSupportedLanguagesResponse;
 import org.somda.sdc.biceps.model.message.ObjectFactory;
+import org.somda.sdc.biceps.model.participant.LocalizedText;
+import org.somda.sdc.biceps.model.participant.LocalizedTextWidth;
 import org.somda.sdc.glue.consumer.ConnectConfiguration;
 import org.somda.sdc.glue.consumer.SdcRemoteDevice;
 import org.somda.sdc.glue.consumer.localization.LocalizationServiceAccess;
+import org.somda.sdc.glue.provider.localization.helper.HeapBasedLocalizationStorage;
 import test.org.somda.common.CIDetector;
 import test.org.somda.common.LoggingTestWatcher;
 
 import java.math.BigInteger;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -47,11 +51,14 @@ public class LocalizationIT {
     private TestSdcClient testClient;
     private ObjectFactory factory;
     private LocalizationServiceAccess localizationServiceAccess;
+    private HeapBasedLocalizationStorage localizationStorage;
 
     @BeforeEach
     void beforeEach(TestInfo testInfo) throws Exception {
         LOG.info("Running test case {}", testInfo.getDisplayName());
-        testDevice = new TestSdcDevice();
+        localizationStorage = new HeapBasedLocalizationStorage();
+        populateMockLocalizationData();
+        testDevice = new TestSdcDevice(localizationStorage);
         testClient = new TestSdcClient();
         factory = new ObjectFactory();
 
@@ -163,5 +170,49 @@ public class LocalizationIT {
         return localizationServiceAccess
                 .getLocalizedText(request)
                 .get(WAIT_IN_SECONDS, WAIT_TIME_UNIT);
+    }
+
+    /**
+     * Method will generate and add to the storage texts:
+     * <p>
+     * Version = 1  |  REF1  |  EN  |  LocalizedText(...)
+     * Version = 1  |  REF1  |  DE  |  LocalizedText(...)
+     * Version = 1  |  REF1  |  ES  |  LocalizedText(...)
+     * Version = 1  |  REF2  |  EN  |  LocalizedText(...)
+     * Version = 1  |  REF2  |  DE  |  LocalizedText(...)
+     * Version = 1  |  REF2  |  ES  |  LocalizedText(...)
+     * Version = 1  |  REF3  |  EN  |  LocalizedText(...)
+     * Version = 1  |  REF3  |  DE  |  LocalizedText(...)
+     * Version = 1  |  REF3  |  ES  |  LocalizedText(...)
+     * --------------------------------------------------
+     * Version = 2  |  REF1  |  EN  |  LocalizedText(...)
+     * Version = 2  |  REF1  |  DE  |  LocalizedText(...)
+     * Version = 2  |  REF1  |  ES  |  LocalizedText(...)
+     * Version = 2  |  REF2  |  EN  |  LocalizedText(...)
+     * Version = 2  |  REF2  |  DE  |  LocalizedText(...)
+     * Version = 2  |  REF2  |  ES  |  LocalizedText(...)
+     * Version = 2  |  REF3  |  EN  |  LocalizedText(...)
+     * Version = 2  |  REF3  |  DE  |  LocalizedText(...)
+     * Version = 2  |  REF3  |  ES  |  LocalizedText(...)
+     */
+    private void populateMockLocalizationData() {
+        List<LocalizedText> texts = new ArrayList<>();
+
+        List.of("EN", "DE", "ES").forEach(lang ->
+                List.of(BigInteger.ONE, BigInteger.TWO).forEach(version ->
+                        List.of("REF1", "REF2", "REF3").forEach(ref ->
+                                texts.add(createText(ref, lang, version)))));
+
+        localizationStorage.allLocalizedTexts(texts);
+    }
+
+    private LocalizedText createText(String ref, String lang, BigInteger version) {
+        var localizedText = new LocalizedText();
+        localizedText.setRef(ref);
+        localizedText.setLang(lang);
+        localizedText.setVersion(version);
+        localizedText.setTextWidth(LocalizedTextWidth.S);
+        localizedText.setValue(String.format("[version=%s, lang=%s] Translated text for REF: %s", version, lang, ref));
+        return localizedText;
     }
 }
