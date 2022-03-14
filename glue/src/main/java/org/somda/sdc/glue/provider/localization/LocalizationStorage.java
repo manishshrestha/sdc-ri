@@ -21,8 +21,11 @@ public interface LocalizationStorage {
      * Gets a localized text that is referenced in the MDIB.
      *
      * @param references a zero or more reference names of the texts that are requested.
+     *                   If empty list is provided localized texts are not filtered by reference.
      * @param version    of the referenced text that is requested.
+     *                   The latest version is used if parameter is not provided or set to {@link BigInteger#ZERO}.
      * @param languages  a zero or more language identifiers to get different translations of the requested text.
+     *                   If empty list is provided localized texts are not filtered by language.
      * @return a list of {@link LocalizedText} texts that matches search criteria.
      */
     List<LocalizedText> getLocalizedText(List<String> references,

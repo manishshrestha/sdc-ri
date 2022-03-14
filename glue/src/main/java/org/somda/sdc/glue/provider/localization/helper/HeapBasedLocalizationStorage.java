@@ -36,11 +36,6 @@ public class HeapBasedLocalizationStorage implements LocalizationStorage {
         return supportedLanguages;
     }
 
-    /* Filtering logic:
-         List<LocalizedTextRef> references: if not provided, returns all, otherwise returns TEXT for matching REF;
-         ReferencedVersion version: if not provided, returns the LATEST VERSION of the TEXT;
-         List<xsd:language> languages: if not provided, all TEXT translations returned;
-    */
     @Override
     public List<LocalizedText> getLocalizedText(List<String> references,
                                                 BigInteger version,
@@ -59,6 +54,10 @@ public class HeapBasedLocalizationStorage implements LocalizationStorage {
                 LocalizationServiceFilterUtil.filterByReferences(refToValueMap, references);
     }
 
+    /**
+     * Adds provided localized text to the {@linkplain LocalizationStorage}.
+     * @param text the {@link LocalizedText} to be added to the storage.
+     */
     public void addLocalizedText(LocalizedText text) {
         // check if all mandatory data provided before processing
         if (text.getVersion() == null || StringUtils.isAnyBlank(text.getLang(), text.getRef())) {
@@ -69,6 +68,10 @@ public class HeapBasedLocalizationStorage implements LocalizationStorage {
         addToStorage(text);
     }
 
+    /**
+     * Adds provided collection of localized texts to the {@linkplain LocalizationStorage}.
+     * @param texts a collection of {@link LocalizedText} to be added to the storage.
+     */
     public void allLocalizedTexts(Collection<LocalizedText> texts) {
         texts.forEach(this::addLocalizedText);
     }
