@@ -30,6 +30,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   and port. (#208)
 - `org.somda.sdc.dpws.http.helper.HttpServerClientSelfTest` to perform HTTP server & client connection self-test 
    and print certificate information during `DpwsFramework` startup. (#113) 
+- `org.somda.sdc.glue.provider.localization` and `org.somda.sdc.glue.consumer.localization` packages to support 
+  Localization service. (#141)
   
 ### Changed
 
