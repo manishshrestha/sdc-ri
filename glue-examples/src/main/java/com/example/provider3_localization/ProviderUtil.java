@@ -9,6 +9,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.config.Configurator;
 import org.somda.sdc.biceps.guice.DefaultBicepsConfigModule;
 import org.somda.sdc.biceps.guice.DefaultBicepsModule;
+import org.somda.sdc.biceps.model.participant.LocalizedText;
 import org.somda.sdc.common.guice.DefaultCommonConfigModule;
 import org.somda.sdc.common.guice.DefaultCommonModule;
 import org.somda.sdc.dpws.DpwsConfig;
@@ -19,8 +20,11 @@ import org.somda.sdc.glue.GlueConstants;
 import org.somda.sdc.glue.guice.DefaultGlueConfigModule;
 import org.somda.sdc.glue.guice.DefaultGlueModule;
 import org.somda.sdc.glue.guice.GlueDpwsConfigModule;
+import org.somda.sdc.glue.provider.localization.LocalizationStorage;
+import org.somda.sdc.glue.provider.localization.helper.HeapBasedLocalizationStorage;
 
 import javax.net.ssl.HostnameVerifier;
+import java.math.BigInteger;
 import java.net.URI;
 import java.security.cert.X509Certificate;
 import java.util.List;
@@ -94,5 +98,39 @@ class ProviderUtil extends BaseUtil {
 
     Injector getInjector() {
         return injector;
+    }
+
+    LocalizationStorage getLocalizationStorage() {
+        var storage = new HeapBasedLocalizationStorage();
+        storage.allLocalizedTexts(populateLocalizationData());
+        return storage;
+    }
+
+    private List<LocalizedText> populateLocalizationData() {
+        var codingSystemNameEn = new LocalizedText();
+        codingSystemNameEn.setRef("codingSystemName");
+        codingSystemNameEn.setLang("en");
+        codingSystemNameEn.setVersion(BigInteger.ONE);
+        codingSystemNameEn.setValue("Common Parameter Nomenclature");
+
+        var codingSystemNameDe = new LocalizedText();
+        codingSystemNameDe.setRef("codingSystemName");
+        codingSystemNameDe.setLang("de");
+        codingSystemNameDe.setVersion(BigInteger.ONE);
+        codingSystemNameDe.setValue("Allgemeine Parameternomenklatur");
+
+        var conceptDescriptionEn = new LocalizedText();
+        conceptDescriptionEn.setRef("conceptDescription");
+        conceptDescriptionEn.setLang("en");
+        conceptDescriptionEn.setVersion(BigInteger.ONE);
+        conceptDescriptionEn.setValue("Concept Description");
+
+        var conceptDescriptionDe = new LocalizedText();
+        conceptDescriptionDe.setRef("conceptDescription");
+        conceptDescriptionDe.setLang("de");
+        conceptDescriptionDe.setVersion(BigInteger.ONE);
+        conceptDescriptionDe.setValue("Konzeptbeschreibung");
+
+        return List.of(codingSystemNameEn, codingSystemNameDe, conceptDescriptionEn, conceptDescriptionDe);
     }
 }

@@ -4,10 +4,10 @@
     <msg:Mdib xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
               SequenceId="urn:uuid:1d1d548e-209b-44d3-b444-318a02518a02">
         <pm:MdDescription DescriptionVersion="0">
-            <pm:Mds Handle="mds0" DescriptorVersion="0" SafetyClassification="MedA" xsi:type="pm:MdsDescriptor">
+            <pm:Mds Handle="mds_0" DescriptorVersion="0" SafetyClassification="MedA" xsi:type="pm:MdsDescriptor">
                 <pm:Type Code="130535">
-					<pm:CodingSystemName Lang="en" Ref="REF1" Version="1"></pm:CodingSystemName>
-					<pm:ConceptDescription Lang="en" Ref="REF2" Version="1"></pm:ConceptDescription>
+					<pm:CodingSystemName Lang="en" Ref="codingSystemName" Version="1"></pm:CodingSystemName>
+					<pm:ConceptDescription Lang="de" Ref="conceptDescription" Version="1"></pm:ConceptDescription>
 				</pm:Type>
                 <pm:Vmd Handle="vmd0" SafetyClassification="MedA" xsi:type="pm:VmdDescriptor">
                     <pm:Channel Handle="ch0.vmd0" SafetyClassification="MedA" xsi:type="pm:ChannelDescriptor">

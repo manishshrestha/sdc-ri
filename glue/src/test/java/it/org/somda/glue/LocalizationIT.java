@@ -90,7 +90,7 @@ public class LocalizationIT {
 
         assertNotNull(response);
         assertEquals(response.getLang().size(), 3);
-        assertTrue(response.getLang().containsAll(List.of("EN", "DE", "ES")));
+        assertTrue(response.getLang().containsAll(List.of("en", "de", "es")));
     }
 
     @Test
@@ -106,56 +106,56 @@ public class LocalizationIT {
 
         { // filter by version and language
             final GetLocalizedTextResponse response = createRequestAndSend(BigInteger.ONE, Collections.emptyList(),
-                    List.of("EN"));
+                    List.of("en"));
             assertNotNull(response);
             assertEquals(response.getText().size(), 3);
-            assertEquals(response.getText().get(0).getLang(), "EN");
+            assertEquals(response.getText().get(0).getLang(), "en");
         }
 
         { // filter by version and reference
-            final GetLocalizedTextResponse response = createRequestAndSend(BigInteger.ONE, List.of("REF1"),
+            final GetLocalizedTextResponse response = createRequestAndSend(BigInteger.ONE, List.of("ref1"),
                     Collections.emptyList());
             assertNotNull(response);
             assertEquals(response.getText().size(), 3);
-            assertEquals(response.getText().get(0).getRef(), "REF1");
-            assertEquals(response.getText().get(1).getRef(), "REF1");
-            assertEquals(response.getText().get(2).getRef(), "REF1");
+            assertEquals(response.getText().get(0).getRef(), "ref1");
+            assertEquals(response.getText().get(1).getRef(), "ref1");
+            assertEquals(response.getText().get(2).getRef(), "ref1");
         }
 
         { // filter by version, language and reference
-            final GetLocalizedTextResponse response = createRequestAndSend(BigInteger.ONE, List.of("REF2"),
-                    List.of("DE"));
+            final GetLocalizedTextResponse response = createRequestAndSend(BigInteger.ONE, List.of("ref2"),
+                    List.of("de"));
             assertNotNull(response);
             assertEquals(response.getText().size(), 1);
-            assertEquals(response.getText().get(0).getRef(), "REF2");
-            assertEquals(response.getText().get(0).getLang(), "DE");
+            assertEquals(response.getText().get(0).getRef(), "ref2");
+            assertEquals(response.getText().get(0).getLang(), "de");
         }
     }
 
     @Test
     void testLocalizationCachePrefetch() throws Exception {
-        localizationServiceAccess.cachePrefetch(BigInteger.ONE, List.of("EN"));
+        localizationServiceAccess.cachePrefetch(BigInteger.ONE, List.of("en"));
 
         testDevice.stopAsync().awaitTerminated();
         { // localized texts are cached on consumer side, so request works even if provider is down
             final GetLocalizedTextResponse response = createRequestAndSend(
-                    BigInteger.ONE, List.of("REF1"), List.of("EN"));
+                    BigInteger.ONE, List.of("ref1"), List.of("en"));
             assertNotNull(response);
             assertEquals(response.getText().size(), 1);
-            assertEquals(response.getText().get(0).getRef(), "REF1");
-            assertEquals(response.getText().get(0).getLang(), "EN");
+            assertEquals(response.getText().get(0).getRef(), "ref1");
+            assertEquals(response.getText().get(0).getLang(), "en");
         }
 
         { // fails if languages doesn't exist in cache
             assertThrows(
                     ExecutionException.class,
-                    () -> createRequestAndSend(BigInteger.ONE, List.of("REF1"), List.of("DE")));
+                    () -> createRequestAndSend(BigInteger.ONE, List.of("ref1"), List.of("de")));
         }
 
         { // fails if version doesn't exist in cache
             assertThrows(
                     ExecutionException.class,
-                    () -> createRequestAndSend(BigInteger.TWO, List.of("REF1"), List.of("EN")));
+                    () -> createRequestAndSend(BigInteger.TWO, List.of("ref1"), List.of("en")));
         }
     }
 
@@ -175,32 +175,32 @@ public class LocalizationIT {
     /**
      * Method will generate and add to the storage texts:
      * <p>
-     * Version = 1  |  REF1  |  EN  |  LocalizedText(...)
-     * Version = 1  |  REF1  |  DE  |  LocalizedText(...)
-     * Version = 1  |  REF1  |  ES  |  LocalizedText(...)
-     * Version = 1  |  REF2  |  EN  |  LocalizedText(...)
-     * Version = 1  |  REF2  |  DE  |  LocalizedText(...)
-     * Version = 1  |  REF2  |  ES  |  LocalizedText(...)
-     * Version = 1  |  REF3  |  EN  |  LocalizedText(...)
-     * Version = 1  |  REF3  |  DE  |  LocalizedText(...)
-     * Version = 1  |  REF3  |  ES  |  LocalizedText(...)
+     * Version = 1  |  ref1  |  en  |  LocalizedText(...)
+     * Version = 1  |  ref1  |  de  |  LocalizedText(...)
+     * Version = 1  |  ref1  |  es  |  LocalizedText(...)
+     * Version = 1  |  ref2  |  en  |  LocalizedText(...)
+     * Version = 1  |  ref2  |  de  |  LocalizedText(...)
+     * Version = 1  |  ref2  |  es  |  LocalizedText(...)
+     * Version = 1  |  ref3  |  en  |  LocalizedText(...)
+     * Version = 1  |  ref3  |  de  |  LocalizedText(...)
+     * Version = 1  |  ref3  |  es  |  LocalizedText(...)
      * --------------------------------------------------
-     * Version = 2  |  REF1  |  EN  |  LocalizedText(...)
-     * Version = 2  |  REF1  |  DE  |  LocalizedText(...)
-     * Version = 2  |  REF1  |  ES  |  LocalizedText(...)
-     * Version = 2  |  REF2  |  EN  |  LocalizedText(...)
-     * Version = 2  |  REF2  |  DE  |  LocalizedText(...)
-     * Version = 2  |  REF2  |  ES  |  LocalizedText(...)
-     * Version = 2  |  REF3  |  EN  |  LocalizedText(...)
-     * Version = 2  |  REF3  |  DE  |  LocalizedText(...)
-     * Version = 2  |  REF3  |  ES  |  LocalizedText(...)
+     * Version = 2  |  ref1  |  en  |  LocalizedText(...)
+     * Version = 2  |  ref1  |  de  |  LocalizedText(...)
+     * Version = 2  |  ref1  |  es  |  LocalizedText(...)
+     * Version = 2  |  ref2  |  en  |  LocalizedText(...)
+     * Version = 2  |  ref2  |  de  |  LocalizedText(...)
+     * Version = 2  |  ref2  |  es  |  LocalizedText(...)
+     * Version = 2  |  ref3  |  en  |  LocalizedText(...)
+     * Version = 2  |  ref3  |  de  |  LocalizedText(...)
+     * Version = 2  |  ref3  |  es  |  LocalizedText(...)
      */
     private void populateMockLocalizationData() {
         List<LocalizedText> texts = new ArrayList<>();
 
-        List.of("EN", "DE", "ES").forEach(lang ->
+        List.of("en", "de", "es").forEach(lang ->
                 List.of(BigInteger.ONE, BigInteger.TWO).forEach(version ->
-                        List.of("REF1", "REF2", "REF3").forEach(ref ->
+                        List.of("ref1", "ref2", "ref3").forEach(ref ->
                                 texts.add(createText(ref, lang, version)))));
 
         localizationStorage.allLocalizedTexts(texts);

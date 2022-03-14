@@ -70,18 +70,23 @@ public class Provider extends AbstractIdleService {
 
         var finalEpr = epr;
         this.sdcDevice = injector.getInstance(SdcDeviceFactory.class)
-                .createSdcDevice(new DeviceSettings() {
-                                     @Override
-                                     public EndpointReferenceType getEndpointReference() {
-                                         return injector.getInstance(WsAddressingUtil.class)
-                                                 .createEprWithAddress(finalEpr);
-                                     }
+                .createSdcDevice(
+                        new DeviceSettings() {
+                            @Override
+                            public EndpointReferenceType getEndpointReference() {
+                                return injector.getInstance(WsAddressingUtil.class)
+                                        .createEprWithAddress(finalEpr);
+                            }
 
-                                     @Override
-                                     public NetworkInterface getNetworkInterface() {
-                                         return networkInterface;
-                                     }
-                                 }, this.mdibAccess, Collections.emptyList(), Collections.emptyList());
+                            @Override
+                            public NetworkInterface getNetworkInterface() {
+                                return networkInterface;
+                            }
+                        },
+                        this.mdibAccess,
+                        Collections.emptyList(),
+                        Collections.emptyList(),
+                        providerUtil.getLocalizationStorage());
 
         DpwsUtil dpwsUtil = injector.getInstance(DpwsUtil.class);
         var thisDeviceType = dpwsUtil.createDeviceBuilder()
