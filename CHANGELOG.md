@@ -60,7 +60,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `org.somda.sdc.dpws.soap.wsdiscovery.WsDiscoveryUtil.isScopesMatching()` extends scope matcher to be compatible with RFC3986 URIs 
   and follow WS-Discovery rules (#212)
 - `org.somda.sdc.dpws.http.apache.CommunicationLogHttpRequestInterceptor` adds local certificates to TransportInfo and `org.somda.sdc.dpws.http.apache.CommunicationLogHttpResponseInterceptor` adds peer certificates to TransportInfo. (#204)
-  
+- `org.somda.sdc.dpws.client.helper.HostingServiceResolver` detects mismatches between the EPR from WS-Discovery and 
+  the EPR from the WS-Transfer Get responses and subsequently throws an `EprAddressMismatchException`. (#230)
+
 ### Removed
 
 - `org.somda.sdc.dpws.CommunicationLogSink.getTargetStream()`; use `org.somda.sdc.dpws.CommunicationLogSink.createTargetStream()` instead. (#153)
