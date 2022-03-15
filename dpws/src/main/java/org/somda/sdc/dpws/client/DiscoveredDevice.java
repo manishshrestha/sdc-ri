@@ -84,7 +84,7 @@ public class DiscoveredDevice {
     }
 
     /**
-     * Returns the physical addresses at which the device can be accessed.
+     * Returns the metadata version as specified by WS-Discovery.
      * <p>
      * <em>Note that all information provided by instances of {@linkplain DiscoveredDevice} are potentially unsecure!
      * Potentially unsecure because there are cases in which a consumer may connect to a discovery proxy that uses
