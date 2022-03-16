@@ -29,7 +29,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `org.somda.sdc.dpws.soap.TransportInfo.getRemoteNodeInfo()`  to retrieve a remote node's requested scheme, address 
   and port. (#208)
 - `org.somda.sdc.dpws.http.helper.HttpServerClientSelfTest` to perform HTTP server & client connection self-test 
-   and print certificate information during `DpwsFramework` startup. (#113) 
+   and print certificate information during `DpwsFramework` startup. (#113)
+- `org.somda.sdc.glue.consumer.SdcRemoteDevicesConnector` method added to pass an `MdibAccessObserver` when connecting,
+   to enable observing/reacting to the initial MDIB being fetched from the device. (#227)
   
 ### Changed
 
