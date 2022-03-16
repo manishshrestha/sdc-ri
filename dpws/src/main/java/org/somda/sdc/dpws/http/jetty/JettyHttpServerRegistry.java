@@ -31,7 +31,6 @@ import org.somda.sdc.dpws.DpwsConfig;
 import org.somda.sdc.dpws.crypto.CryptoConfig;
 import org.somda.sdc.dpws.crypto.CryptoConfigurator;
 import org.somda.sdc.dpws.crypto.CryptoSettings;
-import org.somda.sdc.dpws.device.DeviceConfig;
 import org.somda.sdc.dpws.http.HttpHandler;
 import org.somda.sdc.dpws.http.HttpServerRegistry;
 import org.somda.sdc.dpws.http.HttpUriBuilder;
@@ -101,9 +100,6 @@ public class JettyHttpServerRegistry extends AbstractIdleService implements Http
                             @Named(DpwsConfig.HTTPS_SUPPORT) boolean enableHttps,
                             @Named(DpwsConfig.HTTP_SUPPORT) boolean enableHttp,
                             @Named(DpwsConfig.HTTP_SERVER_CONNECTION_TIMEOUT) Duration connectionTimeout,
-                            // TODO: Remove these for 2.0.0
-                            @Named(DeviceConfig.SECURED_ENDPOINT) boolean legacyEnableHttps,
-                            @Named(DeviceConfig.UNSECURED_ENDPOINT) boolean legacyEnableHttp,
                             CommunicationLog communicationLog,
                             @Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier) {
         this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);
@@ -116,8 +112,8 @@ public class JettyHttpServerRegistry extends AbstractIdleService implements Http
         this.enabledCiphers = enabledCiphers;
         this.hostnameVerifier = hostnameVerifier;
         this.communicationLog = communicationLog;
-        this.enableHttps = enableHttps || legacyEnableHttps;
-        this.enableHttp = enableHttp || legacyEnableHttp;
+        this.enableHttps = enableHttps;
+        this.enableHttp = enableHttp;
         this.connectionTimeout = connectionTimeout;
         serverRegistry = new HashMap<>();
         handlerRegistry = new HashMap<>();
