@@ -92,6 +92,13 @@ class RemoteMdibAccessImplTest {
         assertEquals(BigInteger.ZERO, actualPatientContextStates.get(0).getDescriptorVersion());
         assertEquals(BigInteger.ZERO, actualPatientContextStates.get(0).getStateVersion());
 
+        List<AbstractContextState> untypedContextStates = castMessage.getMdibAccess().getContextStates(Handles.CONTEXTDESCRIPTOR_0);
+        assertEquals(1, untypedContextStates.size());
+        assertEquals(Handles.CONTEXTDESCRIPTOR_0, untypedContextStates.get(0).getDescriptorHandle());
+        assertEquals(Handles.CONTEXT_0, untypedContextStates.get(0).getHandle());
+        assertEquals(BigInteger.ZERO, untypedContextStates.get(0).getDescriptorVersion());
+        assertEquals(BigInteger.ZERO, untypedContextStates.get(0).getStateVersion());
+
         Optional<MdsDescriptor> mdsDescr = castMessage.getMdibAccess().getDescriptor(Handles.MDS_0, MdsDescriptor.class);
         assertTrue(mdsDescr.isPresent());
         assertEquals(Handles.MDS_0, mdsDescr.get().getHandle());
