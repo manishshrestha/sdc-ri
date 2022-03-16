@@ -10,8 +10,6 @@ import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.entity.InputStreamEntity;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -24,7 +22,6 @@ import org.somda.sdc.dpws.TransportBinding;
 import org.somda.sdc.dpws.factory.TransportBindingFactory;
 import org.somda.sdc.dpws.guice.DefaultDpwsConfigModule;
 import org.somda.sdc.dpws.helper.JaxbMarshalling;
-import org.somda.sdc.dpws.http.HttpException;
 import org.somda.sdc.dpws.http.HttpHandler;
 import org.somda.sdc.dpws.http.apache.ClientTransportBinding;
 import org.somda.sdc.dpws.http.jetty.JettyHttpServerHandler;
@@ -47,7 +44,6 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
@@ -56,7 +52,6 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class CommunicationLogIT extends DpwsTest {
-    private static final Logger LOG = LogManager.getLogger(CommunicationLogIT.class);
 
     private TransportBindingFactory transportBindingFactory;
     private SoapMessageFactory soapMessageFactory;
@@ -96,7 +91,7 @@ class CommunicationLogIT extends DpwsTest {
     }
 
     @AfterEach
-    void tearDown() throws Exception {
+    void tearDown() {
         marshalling.stopAsync().awaitTerminated();
         logSink.clear();
     }
@@ -243,7 +238,7 @@ class CommunicationLogIT extends DpwsTest {
         var srvUri1 = httpServerRegistry.registerContext(
             baseUri, contextPath, new HttpHandler() {
                 @Override
-                public void handle(InputStream inStream, OutputStream outStream, CommunicationContext communicationContext) throws HttpException {
+                public void handle(InputStream inStream, OutputStream outStream, CommunicationContext communicationContext) {
                     try {
                         byte[] bytes = inStream.readAllBytes();
                         resultString.set(new String(bytes));
@@ -340,7 +335,7 @@ class CommunicationLogIT extends DpwsTest {
         var srvUri1 = httpServerRegistry.registerContext(
                 baseUri, contextPath, new HttpHandler() {
                     @Override
-                    public void handle(InputStream inStream, OutputStream outStream, CommunicationContext communicationContext) throws HttpException {
+                    public void handle(InputStream inStream, OutputStream outStream, CommunicationContext communicationContext) {
                         try {
                             byte[] bytes = inStream.readAllBytes();
                             resultString.set(new String(bytes));
@@ -436,7 +431,7 @@ class CommunicationLogIT extends DpwsTest {
         var srvUri1 = httpServerRegistry.registerContext(
                 baseUri, contextPath, new HttpHandler() {
                     @Override
-                    public void handle(InputStream inStream, OutputStream outStream, CommunicationContext communicationContext) throws HttpException {
+                    public void handle(InputStream inStream, OutputStream outStream, CommunicationContext communicationContext) {
                         try {
                             byte[] bytes = inStream.readAllBytes();
                             resultString.set(new String(bytes));
@@ -494,9 +489,6 @@ class CommunicationLogIT extends DpwsTest {
                     logSink.getInboundHeaders().get(0).get(customHeaderKey)
                             .contains(customHeaderValue2)
             );
-            // assert classic behavior does concat
-            assertEquals(customHeaderValue + "," + customHeaderValue2,
-                    logSink.inboundHeadersOld.get(0).get(customHeaderKey.toLowerCase()));
             logSink.clear();
         }
     }
@@ -521,10 +513,7 @@ class CommunicationLogIT extends DpwsTest {
                 }
         ));
 
-        final JettyHttpServerRegistry secondHttpServerRegistry = secondInjector.getInstance(JettyHttpServerRegistry.class);
         final TransportBindingFactory secondTransportBindingFactory = secondInjector.getInstance(TransportBindingFactory.class);
-        final SoapMessageFactory secondSoapMessageFactory = secondInjector.getInstance(SoapMessageFactory.class);
-        final EnvelopeFactory secondEnvelopeFactory = secondInjector.getInstance(EnvelopeFactory.class);
         secondInjector.getInstance(JaxbMarshalling.class).startAsync().awaitRunning();
         final TestCommLogSink secondLogSink = (TestCommLogSink) secondInjector.getInstance(CommunicationLogSink.class);
         final SoapMarshalling secondMarshalling = secondInjector.getInstance(SoapMarshalling.class);
@@ -689,8 +678,6 @@ class CommunicationLogIT extends DpwsTest {
         private final ArrayList<CloseableByteArrayOutputStream> outbound;
         private final ArrayList<ListMultimap<String, String>> inboundHeaders;
         private final ArrayList<ListMultimap<String, String>> outboundHeaders;
-        private final ArrayList<Map<String, String>> inboundHeadersOld;
-        private final ArrayList<Map<String, String>> outboundHeadersOld;
         private CommunicationLog.MessageType inboundMessageType;
         private CommunicationLog.MessageType outboundMessageType;
         private final ArrayList<String> inboundTransactionIds;
@@ -701,8 +688,6 @@ class CommunicationLogIT extends DpwsTest {
             this.outbound = new ArrayList<>();
             this.inboundHeaders = new ArrayList<>();
             this.outboundHeaders = new ArrayList<>();
-            this.inboundHeadersOld = new ArrayList<>();
-            this.outboundHeadersOld = new ArrayList<>();
             this.inboundTransactionIds = new ArrayList<>();
             this.outboundTransactionIds = new ArrayList<>();
         }
@@ -717,14 +702,12 @@ class CommunicationLogIT extends DpwsTest {
             if (CommunicationLog.Direction.INBOUND.equals(direction)) {
                 inbound.add(os);
                 inboundHeaders.add(appInfo.getHeaders());
-                inboundHeadersOld.add(appInfo.getHttpHeaders());
                 inboundMessageType = messageType;
                 inboundTransactionIds.add(
                         ((HttpApplicationInfo) communicationContext.getApplicationInfo()).getTransactionId());
             } else {
                 outbound.add(os);
                 outboundHeaders.add(appInfo.getHeaders());
-                outboundHeadersOld.add(appInfo.getHttpHeaders());
                 outboundMessageType = messageType;
                 outboundTransactionIds.add(
                         ((HttpApplicationInfo) communicationContext.getApplicationInfo()).getTransactionId());
@@ -748,21 +731,11 @@ class CommunicationLogIT extends DpwsTest {
             return outboundHeaders;
         }
 
-        public ArrayList<Map<String, String>> getInboundHeadersOld() {
-            return inboundHeadersOld;
-        }
-
-        public ArrayList<Map<String, String>> getOutboundHeadersOld() {
-            return outboundHeadersOld;
-        }
-
         public void clear() {
             outbound.clear();
             inbound.clear();
             inboundHeaders.clear();
             outboundHeaders.clear();
-            inboundHeadersOld.clear();
-            outboundHeadersOld.clear();
         }
 
         public CommunicationLog.MessageType getOutboundMessageType() {

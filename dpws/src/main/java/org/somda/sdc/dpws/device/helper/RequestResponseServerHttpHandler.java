@@ -21,11 +21,9 @@ import org.somda.sdc.dpws.soap.SoapMessage;
 import org.somda.sdc.dpws.soap.SoapUtil;
 import org.somda.sdc.dpws.soap.exception.MarshallingException;
 import org.somda.sdc.dpws.soap.exception.SoapFaultException;
-import org.somda.sdc.dpws.soap.exception.TransportException;
 import org.somda.sdc.dpws.soap.interception.Interceptor;
 import org.somda.sdc.dpws.soap.interception.InterceptorHandler;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
@@ -57,44 +55,6 @@ public class RequestResponseServerHttpHandler implements HttpHandler, Intercepto
         this.reqResServer = reqResServer;
         this.marshallingService = marshallingService;
         this.soapUtil = soapUtil;
-    }
-
-    @Override
-    public void process(InputStream inStream, OutputStream outStream, CommunicationContext communicationContext)
-            throws TransportException, MarshallingException {
-        SoapMessage requestMsg = marshallingService.unmarshal(inStream);
-        try {
-            inStream.close();
-        } catch (IOException e) {
-            throw new TransportException("IO error closing HTTP input stream", e);
-        }
-
-        instanceLogger.debug("Incoming SOAP/HTTP request: {}", () -> SoapDebug.get(requestMsg));
-
-        SoapMessage responseMsg = soapUtil.createMessage();
-        try {
-            reqResServer.receiveRequestResponse(requestMsg, responseMsg, communicationContext);
-        } catch (SoapFaultException e) {
-            responseMsg = e.getFaultMessage();
-        }
-
-        try {
-            marshallingService.marshal(responseMsg, outStream);
-            // CHECKSTYLE.OFF: IllegalCatch
-        } catch (Exception e) {
-            // CHECKSTYLE.ON: IllegalCatch
-            throw new RuntimeException(e);
-        }
-
-        if (instanceLogger.isDebugEnabled()) {
-            instanceLogger.debug("Outgoing SOAP/HTTP response: {}", SoapDebug.get(responseMsg));
-        }
-
-        try {
-            outStream.close();
-        } catch (IOException e) {
-            throw new TransportException("IO error closing HTTP output stream", e);
-        }
     }
 
     @Override
