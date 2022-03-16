@@ -154,12 +154,12 @@ public class SdcRemoteDeviceImpl extends AbstractIdleService implements SdcRemot
             instanceLogger.error("Could not stop the report processor", e);
         }
 
-        remoteMdibAccess.unregisterAllObservers();
-
         final var hostedServices = new ArrayList<>(hostingServiceProxy.getHostedServices().values());
         for (HostedServiceProxy hostedService : hostedServices) {
             hostedService.getEventSinkAccess().unsubscribeAll();
         }
+
+        remoteMdibAccess.unregisterAllObservers();
     }
 
     private void checkRunning() {
