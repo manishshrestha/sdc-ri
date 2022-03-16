@@ -165,7 +165,7 @@ public class SdcDevice extends AbstractIdleService implements Device, EventSourc
      * As the BICEPS services are managed by this class, there should not be any need to access the hosting services.
      * In case access is required though, consider creating a plugin that accesses the hosting services.
      *
-     * <em>Prefer implementing a plugin to and use {@link Device#getHostingServiceAccess()}
+     * <em>Prefer implementing a plugin and use {@link Device#getHostingServiceAccess()}
      * from {@link SdcDeviceContext#getDevice()}.</em>
      *
      * @return the hosting service access.
