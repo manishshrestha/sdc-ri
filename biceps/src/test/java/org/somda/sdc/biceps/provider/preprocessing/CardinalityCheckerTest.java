@@ -40,7 +40,7 @@ class CardinalityCheckerTest {
     }
 
     @Test
-    void noInserations() throws Exception {
+    void noInsertions() throws Exception {
         // When there are no insertions in a modification set
         final MdibDescriptionModifications modifications = MdibDescriptionModifications.create()
                 .update(MockModelFactory.createDescriptor(Handles.MDS_0, MdsDescriptor.class))

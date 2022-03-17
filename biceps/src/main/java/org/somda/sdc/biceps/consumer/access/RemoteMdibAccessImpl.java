@@ -205,7 +205,9 @@ public class RemoteMdibAccessImpl implements RemoteMdibAccess {
 
     @Override
     public List<AbstractContextState> getContextStates(String descriptorHandle) {
-        return null;
+        try (ReadTransaction transaction = startTransaction()) {
+            return transaction.getContextStates(descriptorHandle);
+        }
     }
 
     @Override

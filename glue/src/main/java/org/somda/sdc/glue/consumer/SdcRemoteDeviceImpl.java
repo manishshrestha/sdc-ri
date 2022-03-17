@@ -42,23 +42,6 @@ public class SdcRemoteDeviceImpl extends AbstractIdleService implements SdcRemot
     private final Duration maxWait;
     private final Logger instanceLogger;
 
-    @Deprecated(since = "1.1.0", forRemoval = true)
-    @AssistedInject
-    SdcRemoteDeviceImpl(@Assisted HostingServiceProxy hostingServiceProxy,
-                        @Assisted RemoteMdibAccess remoteMdibAccess,
-                        @Assisted ReportProcessor reportProcessor,
-                        @Assisted @Nullable ScoController scoController,
-                        @Named(DpwsConfig.MAX_WAIT_FOR_FUTURES) Duration maxWait,
-                        @Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier) {
-        this.instanceLogger = HostingServiceLogger.getLogger(LOG, hostingServiceProxy, frameworkIdentifier);
-        this.remoteMdibAccess = remoteMdibAccess;
-        this.reportProcessor = reportProcessor;
-        this.scoController = scoController;
-        this.hostingServiceProxy = hostingServiceProxy;
-        this.watchdog = null;
-        this.maxWait = maxWait;
-    }
-
     @AssistedInject
     SdcRemoteDeviceImpl(@Assisted HostingServiceProxy hostingServiceProxy,
                         @Assisted RemoteMdibAccess remoteMdibAccess,

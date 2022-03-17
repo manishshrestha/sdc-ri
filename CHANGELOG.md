@@ -31,6 +31,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `org.somda.sdc.dpws.http.helper.HttpServerClientSelfTest` to perform HTTP server & client connection self-test 
    and print certificate information during `DpwsFramework` startup. (#113) 
 - `org.somda.sdc.common.event.EventBus` as a replacement for `com.google.common.eventbus.EventBus` to support unregistering all observers at once. (#229)
+   and print certificate information during `DpwsFramework` startup. (#113)
+- `org.somda.sdc.glue.consumer.SdcRemoteDevicesConnector` method added to pass an `MdibAccessObserver` when connecting,
+   to enable observing/reacting to the initial MDIB being fetched from the device. (#227)
   
 ### Changed
 
@@ -49,7 +52,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `org.somda.sdc.dpws.soap.HttpApplicationInfo` additional transactionId added, to associate request response messages. (#188)
 - `org.somda.sdc.dpws.soap.HttpApplicationInfo` additional requestUri added, to determine the used POST address. (#190)
 - `org.somda.sdc.glue.GlueConstants` moved URI related regex constants to `org.somda.sdc.dpws.DpwsContants`. (#190)
-
 - `org.somda.sdc.glue.provider.sco.ScoController` to process lists independent of a specific list type as otherwise 
   activate operations do not integrate well. (#207) 
 - `org.somda.sdc.dpws.soap.interception.RequestResponseObject` return non-optional `CommunicationContext` instances. (#208)
@@ -61,7 +63,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `org.somda.sdc.dpws.soap.wsdiscovery.WsDiscoveryUtil.isScopesMatching()` extends scope matcher to be compatible with RFC3986 URIs 
   and follow WS-Discovery rules (#212)
 - `org.somda.sdc.dpws.http.apache.CommunicationLogHttpRequestInterceptor` adds local certificates to TransportInfo and `org.somda.sdc.dpws.http.apache.CommunicationLogHttpResponseInterceptor` adds peer certificates to TransportInfo. (#204)
-  
+- `org.somda.sdc.dpws.client.helper.HostingServiceResolver` detects mismatches between the EPR from WS-Discovery and 
+  the EPR from the WS-Transfer Get responses and subsequently throws an `EprAddressMismatchException`. (#230)
+
 ### Removed
 
 - `org.somda.sdc.dpws.CommunicationLogSink.getTargetStream()`; use `org.somda.sdc.dpws.CommunicationLogSink.createTargetStream()` instead. (#153)
@@ -69,9 +73,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `org.somda.sdc.dpws.service.HostedService.getWsdlLocations()` as data is exclusively accessible through `getWsdlDocument()`. (#161)
 - `org.somda.sdc.dpws.crypto.CryptoSettings.getKeyStoreFile()`; use `org.somda.sdc.dpws.crypto.CryptoSettings.getKeyStoreStream()` instead. (#206)
 - `org.somda.sdc.dpws.crypto.CryptoSettings.getTrustStoreFile()`; use `org.somda.sdc.dpws.crypto.CryptoSettings.getTrustStoreStream()` instead. (#206)
+- remove deprecated code (#137)
 
 ### Fixed
 
+- added `ActionConstants.ACTION_SYSTEM_ERROR_REPORT` to the list `ConnectConfiguration.EPISODIC_REPORTS` as SystemErrorReports are EpisodicReports. (#222)
 - `org.somda.sdc.dpws.soap.wseventing.EventSourceInterceptor` no longer tries to send SubscriptionEnd messages to stale subscriptions on shutdown. (#164)
 - `IEEE11073-20701-LowPriority-Services.wsdl` specified the wrong input and output messages for `GetStatesFromArchive` operation. (#167)
 - Namespace prefix mappings which were missing for SDC Glue-related XML fragments. (#169)

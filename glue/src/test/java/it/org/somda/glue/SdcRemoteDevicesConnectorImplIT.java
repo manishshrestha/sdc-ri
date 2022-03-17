@@ -1,5 +1,6 @@
 package it.org.somda.glue;
 
+import com.google.common.eventbus.Subscribe;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.inject.AbstractModule;
 import it.org.somda.glue.consumer.TestSdcClient;
@@ -12,6 +13,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.somda.sdc.biceps.common.access.MdibAccessObserver;
+import org.somda.sdc.biceps.common.event.DescriptionModificationMessage;
 import org.somda.sdc.biceps.common.storage.PreprocessingException;
 import org.somda.sdc.biceps.model.message.InvocationError;
 import org.somda.sdc.biceps.model.message.InvocationState;
@@ -50,7 +53,9 @@ import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicInteger;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -168,6 +173,38 @@ class SdcRemoteDevicesConnectorImplIT {
 
         assertTrue(hadGetMdib, "Never saw any outgoing GetMdib");
         assertTrue(hadSubscribe, "Never saw any incoming SubscribeResponse");
+    }
+
+    @Test
+    @DisplayName("Ensure MdibAccessObserver receives DescriptionModificationMessage after GetMdibResponse")
+    void testMdibAccessObserverReceivesDescriptionModificationMessage()
+            throws TimeoutException, InterceptorException, ExecutionException, InterruptedException,
+            PrerequisitesException {
+        // Given test device and test client...
+        testDevice.startAsync().awaitRunning(WAIT_IN_SECONDS, WAIT_TIME_UNIT);
+        testClient.startAsync().awaitRunning(WAIT_IN_SECONDS, WAIT_TIME_UNIT);
+        final ListenableFuture<HostingServiceProxy> hostingServiceFuture = testClient.getClient()
+                .connect(testDevice.getSdcDevice().getEprAddress());
+        final HostingServiceProxy hostingServiceProxy = hostingServiceFuture.get(WAIT_IN_SECONDS, WAIT_TIME_UNIT);
+
+        // ...and an MdibAccessObserver
+        final AtomicInteger callCounter = new AtomicInteger();
+        final MdibAccessObserver mdibAccessObserver = new MdibAccessObserver() {
+            @Subscribe
+            void onDescriptionModification(DescriptionModificationMessage message) {
+                LOG.info("DescriptionModificationMessage received");
+                callCounter.incrementAndGet();
+            }
+        };
+
+        // When the client connects to the device, passing the MdibAccessObserver
+        final ListenableFuture<SdcRemoteDevice> remoteDeviceFuture = testClient.getConnector().connect(hostingServiceProxy,
+                ConnectConfiguration.create(ConnectConfiguration.ALL_EPISODIC_AND_WAVEFORM_REPORTS), mdibAccessObserver);
+        final SdcRemoteDevice sdcRemoteDevice = remoteDeviceFuture.get(WAIT_IN_SECONDS, WAIT_TIME_UNIT);
+        sdcRemoteDevice.stopAsync().awaitTerminated(WAIT_IN_SECONDS, WAIT_TIME_UNIT);
+
+        // Then a DescriptionModificationMessage is received by the MdibAccessObserver
+        assertEquals(1, callCounter.get(), "MdibAccessObserver should receive exactly one DescriptionModificationMessage on device connect");
     }
 
     static class TestCommLogSink implements CommunicationLogSink {

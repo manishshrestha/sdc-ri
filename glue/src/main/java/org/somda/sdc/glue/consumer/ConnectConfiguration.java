@@ -48,7 +48,8 @@ public class ConnectConfiguration {
             ActionConstants.ACTION_EPISODIC_METRIC_REPORT,
             ActionConstants.ACTION_EPISODIC_OPERATIONAL_STATE_REPORT,
             ActionConstants.ACTION_DESCRIPTION_MODIFICATION_REPORT,
-            ActionConstants.ACTION_OPERATION_INVOKED_REPORT);
+            ActionConstants.ACTION_OPERATION_INVOKED_REPORT,
+            ActionConstants.ACTION_SYSTEM_ERROR_REPORT);
 
     /**
      * List of all periodic report actions.
