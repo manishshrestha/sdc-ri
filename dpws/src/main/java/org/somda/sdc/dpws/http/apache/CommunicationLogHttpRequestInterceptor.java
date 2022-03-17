@@ -51,12 +51,10 @@ public class CommunicationLogHttpRequestInterceptor implements HttpRequestInterc
 
         var currentTransactionId = TRANSACTION_ID_PREFIX_CLIENT + TRANSACTION_ID.incrementAndGet();
         context.setAttribute(CommunicationLog.MessageType.REQUEST.name(), currentTransactionId);
-
-        var requestUri = target.toString().concat(request.getRequestLine().getUri());
         var requestHttpApplicationInfo = new HttpApplicationInfo(
                 ApacheClientHelper.allHeadersToMultimap(request.getAllHeaders()),
                 currentTransactionId,
-                requestUri
+                request.getRequestLine().getUri()
         );
 
         // collect information for TransportInfo
@@ -91,6 +89,7 @@ public class CommunicationLogHttpRequestInterceptor implements HttpRequestInterc
         }
 
         var entityRequest = (HttpEntityEnclosingRequest) request;
+
         HttpEntity oldMessageEntity = entityRequest.getEntity();
 
         entityRequest.setEntity(new CommunicationLogEntity(oldMessageEntity, commlogStream));

@@ -11,6 +11,7 @@ import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.inject.Provider;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.somda.sdc.biceps.common.access.MdibAccessObserver;
 import org.somda.sdc.biceps.common.storage.PreprocessingException;
 import org.somda.sdc.biceps.consumer.access.RemoteMdibAccess;
 import org.somda.sdc.biceps.consumer.access.factory.RemoteMdibAccessFactory;
@@ -78,6 +79,10 @@ import java.util.concurrent.TimeoutException;
 public class SdcRemoteDevicesConnectorImpl extends AbstractIdleService
         implements SdcRemoteDevicesConnector, WatchdogObserver {
     private static final Logger LOG = LogManager.getLogger(SdcRemoteDevicesConnectorImpl.class);
+
+    private final ExecutorWrapperService<ListeningExecutorService> executorService;
+    private final Map<String, SdcRemoteDevice> sdcRemoteDevices;
+    private final EventBus eventBus;
     private final Logger instanceLogger;
     private final Provider<ReportProcessor> reportProcessorProvider;
     private final ScoControllerFactory scoControllerFactory;
@@ -92,9 +97,6 @@ public class SdcRemoteDevicesConnectorImpl extends AbstractIdleService
     private final SdcRemoteDeviceFactory sdcRemoteDeviceFactory;
     private final SdcRemoteDeviceWatchdogFactory watchdogFactory;
     private final String frameworkIdentifier;
-    private ExecutorWrapperService<ListeningExecutorService> executorService;
-    private Map<String, SdcRemoteDevice> sdcRemoteDevices;
-    private EventBus eventBus;
 
     @Inject
     SdcRemoteDevicesConnectorImpl(@Consumer ExecutorWrapperService<ListeningExecutorService> executorService,
@@ -139,6 +141,14 @@ public class SdcRemoteDevicesConnectorImpl extends AbstractIdleService
     public ListenableFuture<SdcRemoteDevice> connect(HostingServiceProxy hostingServiceProxy,
                                                      ConnectConfiguration connectConfiguration)
             throws PrerequisitesException {
+        return connect(hostingServiceProxy, connectConfiguration, null);
+    }
+
+    @Override
+    public ListenableFuture<SdcRemoteDevice> connect(HostingServiceProxy hostingServiceProxy,
+                                                     ConnectConfiguration connectConfiguration,
+                                                     @Nullable MdibAccessObserver mdibAccessObserver)
+            throws PrerequisitesException {
         // Early exit if there is a connection already
         checkExistingConnection(hostingServiceProxy);
 
@@ -157,8 +167,8 @@ public class SdcRemoteDevicesConnectorImpl extends AbstractIdleService
                 final Map<String, SubscribeResult> subscribeResults = subscribeServices(hostingServiceProxy,
                         connectConfiguration.getActions(), reportProcessor, scoController.orElse(null));
 
-                // retrieve mdib after subscribing
-                RemoteMdibAccess mdibAccess = createRemoteMdibAccess(hostingServiceProxy);
+                // retrieve MDIB after subscribing
+                RemoteMdibAccess mdibAccess = createRemoteMdibAccess(hostingServiceProxy, mdibAccessObserver);
 
                 GetContextStatesResponse getContextStatesResponse = null;
                 if (mdibAccess.getContextStates().isEmpty()) {
@@ -380,13 +390,16 @@ public class SdcRemoteDevicesConnectorImpl extends AbstractIdleService
         return subscriptions;
     }
 
-    private RemoteMdibAccess createRemoteMdibAccess(HostingServiceProxy hostingServiceProxy)
+    private RemoteMdibAccess createRemoteMdibAccess(HostingServiceProxy hostingServiceProxy, @Nullable MdibAccessObserver mdibAccessObserver)
             throws PrerequisitesException {
         // find get service
         final HostedServiceProxy getServiceProxy =
                 findHostedServiceProxy(hostingServiceProxy, WsdlConstants.PORT_TYPE_GET_QNAME);
 
         final RemoteMdibAccess mdibAccess = remoteMdibAccessFactory.createRemoteMdibAccess();
+        if (mdibAccessObserver != null) {
+            mdibAccess.registerObserver(mdibAccessObserver);
+        }
 
         try {
             final SoapMessage getMdibResponseMessage = getServiceProxy.getRequestResponseClient().sendRequestResponse(

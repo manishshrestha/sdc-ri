@@ -86,15 +86,20 @@
         <dependency>
             <groupId>org.eclipse.jetty</groupId>
             <artifactId>jetty-server</artifactId>
-            <version>11.0.7</version>
+            <version>11.0.8</version>
         </dependency>
         <!-- https://mvnrepository.com/artifact/org.eclipse.jetty/jetty-servlet -->
         <dependency>
             <groupId>org.eclipse.jetty</groupId>
             <artifactId>jetty-servlet</artifactId>
-            <version>11.0.7</version>
+            <version>11.0.8</version>
         </dependency>
-
+        <!-- https://mvnrepository.com/artifact/net.sourceforge.jregex/jregex -->
+        <dependency>
+            <groupId>net.sourceforge.jregex</groupId>
+            <artifactId>jregex</artifactId>
+            <version>1.2_01</version>
+        </dependency>
     </dependencies>
 
     <build>

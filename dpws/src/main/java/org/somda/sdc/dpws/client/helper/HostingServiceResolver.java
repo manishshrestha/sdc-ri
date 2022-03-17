@@ -14,8 +14,9 @@ import org.somda.sdc.dpws.DpwsConfig;
 import org.somda.sdc.dpws.DpwsConstants;
 import org.somda.sdc.dpws.TransportBinding;
 import org.somda.sdc.dpws.client.DiscoveredDevice;
+import org.somda.sdc.dpws.client.exception.EprAddressMismatchException;
 import org.somda.sdc.dpws.factory.TransportBindingFactory;
-import org.somda.sdc.dpws.guice.NetworkJobThreadPool;
+import org.somda.sdc.dpws.guice.ResolverThreadPool;
 import org.somda.sdc.dpws.http.HttpUriBuilder;
 import org.somda.sdc.dpws.model.HostServiceType;
 import org.somda.sdc.dpws.model.HostedServiceType;
@@ -62,7 +63,7 @@ import java.util.concurrent.TimeoutException;
 public class HostingServiceResolver {
     private static final Logger LOG = LogManager.getLogger(HostingServiceResolver.class);
 
-    private final ExecutorWrapperService<ListeningExecutorService> networkJobExecutor;
+    private final ExecutorWrapperService<ListeningExecutorService> resolveExecutor;
     private final LocalAddressResolver localAddressResolver;
     private final TransportBindingFactory transportBindingFactory;
     private final RequestResponseClientFactory requestResponseClientFactory;
@@ -80,7 +81,7 @@ public class HostingServiceResolver {
 
     @Inject
     HostingServiceResolver(@Named(DpwsConfig.MAX_WAIT_FOR_FUTURES) Duration maxWaitForFutures,
-                           @NetworkJobThreadPool ExecutorWrapperService<ListeningExecutorService> networkJobExecutor,
+                           @ResolverThreadPool ExecutorWrapperService<ListeningExecutorService> resolveExecutor,
                            LocalAddressResolver localAddressResolver,
                            TransportBindingFactory transportBindingFactory,
                            RequestResponseClientFactory requestResponseClientFactory,
@@ -96,7 +97,7 @@ public class HostingServiceResolver {
                            @Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier) {
         this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);
         this.maxWaitForFutures = maxWaitForFutures;
-        this.networkJobExecutor = networkJobExecutor;
+        this.resolveExecutor = resolveExecutor;
         this.localAddressResolver = localAddressResolver;
         this.transportBindingFactory = transportBindingFactory;
         this.requestResponseClientFactory = requestResponseClientFactory;
@@ -125,7 +126,7 @@ public class HostingServiceResolver {
      * @return Future with resolved hosting service and hosted service information.
      */
     public ListenableFuture<HostingServiceProxy> resolveHostingService(DiscoveredDevice discoveredDevice) {
-        return networkJobExecutor.get().submit(() -> {
+        return resolveExecutor.get().submit(() -> {
             if (discoveredDevice.getXAddrs().isEmpty()) {
                 throw new IllegalArgumentException("Given device proxy has no XAddrs. Connection aborted.");
             }
@@ -244,6 +245,12 @@ public class HostingServiceResolver {
         final String epr = rsDataFromOptional.getEprAddress().orElseThrow(() ->
                 new MalformedSoapMessageException(String.format("Malformed relationship data. Missing expected EPR: %s",
                         eprAddress)));
+
+        if (!epr.equals(eprAddress)) {
+            throw new EprAddressMismatchException(String.format("Expected EPR address '%s', but received '%s'",
+                    eprAddress, epr));
+        }
+
         return Optional.of(hostingServiceFactory.createHostingServiceProxy(
                 epr,
                 rsDataFromOptional.getTypes(),
@@ -270,7 +277,7 @@ public class HostingServiceResolver {
                                     .put(hsProxy.getType().getServiceId(), hsProxy)));
         }
 
-        if (result.getEprAddress() == null) {
+        if (result.getEprAddress().isEmpty()) {
             instanceLogger.info("Found no valid dpws:Host for {}", eprAddress);
             return Optional.empty();
         }

@@ -40,15 +40,11 @@ public class MdibStorageUtil {
      */
     public <T> Optional<T> exposeInstance(@Nullable Object instance,
                                           Class<T> clazz) {
-        if (instance == null) {
+        if (!clazz.isInstance(instance)) {
             return Optional.empty();
         }
 
-        if (clazz.isAssignableFrom(instance.getClass())) {
-            return Optional.of((T) instance);
-        } else {
-            return Optional.empty();
-        }
+        return Optional.of((T) instance);
     }
 
     /**
@@ -62,7 +58,7 @@ public class MdibStorageUtil {
      */
     public <T, V> List<T> exposeListOfType(Collection<V> collection, Class<T> clazz) {
         return collection.stream()
-                .filter(instance -> instance.getClass().equals(clazz))
+                .filter(clazz::isInstance)
                 .map(instance -> (T) instance)
                 .collect(Collectors.toList());
     }
