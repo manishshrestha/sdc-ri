@@ -5,12 +5,12 @@ import com.google.inject.Guice;
 import com.google.inject.Injector;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.core.config.Configurator;
-import org.apache.logging.log4j.core.config.DefaultConfiguration;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.somda.sdc.biceps.guice.DefaultBicepsConfigModule;
 import org.somda.sdc.biceps.guice.DefaultBicepsModule;
-import org.somda.sdc.common.guice.DefaultHelperModule;
+import org.somda.sdc.common.guice.DefaultCommonConfigModule;
+import org.somda.sdc.common.guice.DefaultCommonModule;
 import org.somda.sdc.dpws.DpwsConfig;
 import org.somda.sdc.dpws.crypto.CryptoConfig;
 import org.somda.sdc.dpws.crypto.CryptoSettings;
@@ -32,22 +32,21 @@ import java.util.List;
  * injection.
  */
 public class ConsumerUtil extends BaseUtil {
-    private static final Logger LOG = LoggerFactory.getLogger(ConsumerUtil.class);
+    private static final Logger LOG = LogManager.getLogger(ConsumerUtil.class);
 
     private final Injector injector;
 
     public ConsumerUtil(String[] args) {
         super(args);
-
-        Configurator.initialize(new DefaultConfiguration());
-        Configurator.setRootLevel(Level.INFO);
+        Configurator.reconfigure(localLoggerConfig(Level.INFO));
 
         injector = Guice.createInjector(
+                new DefaultCommonConfigModule(),
                 new DefaultGlueModule(),
                 new DefaultGlueConfigModule(),
                 new DefaultBicepsModule(),
                 new DefaultBicepsConfigModule(),
-                new DefaultHelperModule(),
+                new DefaultCommonModule(),
                 new DefaultDpwsModule(),
                 new GlueDpwsConfigModule() {
                     @Override
@@ -78,7 +77,8 @@ public class ConsumerUtil extends BaseUtil {
                                         for (String key : extendedKeyUsage) {
                                             try {
                                                 URI keyUri = URI.create(key);
-                                                if (keyUri.equals(URI.create(GlueConstants.OID_KEY_PURPOSE_SDC_SERVICE_PROVIDER))) {
+                                                if (keyUri.equals(URI.create(
+                                                        GlueConstants.OID_KEY_PURPOSE_SDC_SERVICE_PROVIDER))) {
                                                     LOG.debug("SDC Service Provider PKP found");
                                                     return true;
                                                 }

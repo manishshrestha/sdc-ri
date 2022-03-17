@@ -1,6 +1,7 @@
 package org.somda.sdc.biceps.consumer.access;
 
 import com.google.inject.Injector;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.somda.sdc.biceps.UnitTestUtil;
 import org.somda.sdc.biceps.common.*;
 import org.somda.sdc.biceps.common.access.WriteDescriptionResult;
@@ -13,6 +14,7 @@ import org.somda.sdc.biceps.model.participant.*;
 import org.somda.sdc.biceps.testutil.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import test.org.somda.common.LoggingTestWatcher;
 
 import javax.annotation.Nullable;
 import java.math.BigInteger;
@@ -21,6 +23,7 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@ExtendWith(LoggingTestWatcher.class)
 class RemoteMdibAccessImplTest {
     private static final UnitTestUtil UT = new UnitTestUtil(new DefaultBicepsConfigModule() {
         @Override
@@ -88,6 +91,13 @@ class RemoteMdibAccessImplTest {
         assertEquals(Handles.CONTEXT_0, actualPatientContextStates.get(0).getHandle());
         assertEquals(BigInteger.ZERO, actualPatientContextStates.get(0).getDescriptorVersion());
         assertEquals(BigInteger.ZERO, actualPatientContextStates.get(0).getStateVersion());
+
+        List<AbstractContextState> untypedContextStates = castMessage.getMdibAccess().getContextStates(Handles.CONTEXTDESCRIPTOR_0);
+        assertEquals(1, untypedContextStates.size());
+        assertEquals(Handles.CONTEXTDESCRIPTOR_0, untypedContextStates.get(0).getDescriptorHandle());
+        assertEquals(Handles.CONTEXT_0, untypedContextStates.get(0).getHandle());
+        assertEquals(BigInteger.ZERO, untypedContextStates.get(0).getDescriptorVersion());
+        assertEquals(BigInteger.ZERO, untypedContextStates.get(0).getStateVersion());
 
         Optional<MdsDescriptor> mdsDescr = castMessage.getMdibAccess().getDescriptor(Handles.MDS_0, MdsDescriptor.class);
         assertTrue(mdsDescr.isPresent());

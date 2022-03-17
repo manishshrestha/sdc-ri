@@ -7,15 +7,15 @@ import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.core.config.Configurator;
-import org.apache.logging.log4j.core.config.DefaultConfiguration;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.somda.sdc.biceps.guice.DefaultBicepsConfigModule;
 import org.somda.sdc.biceps.guice.DefaultBicepsModule;
 import org.somda.sdc.biceps.model.participant.AbstractMetricValue;
 import org.somda.sdc.biceps.model.participant.GenerationMode;
 import org.somda.sdc.biceps.model.participant.MeasurementValidity;
-import org.somda.sdc.common.guice.DefaultHelperModule;
+import org.somda.sdc.common.guice.DefaultCommonConfigModule;
+import org.somda.sdc.common.guice.DefaultCommonModule;
 import org.somda.sdc.dpws.DpwsConfig;
 import org.somda.sdc.dpws.crypto.CryptoConfig;
 import org.somda.sdc.dpws.crypto.CryptoSettings;
@@ -38,9 +38,10 @@ import java.util.List;
  * injection.
  */
 public class ProviderUtil extends BaseUtil {
-    private static final Logger LOG = LoggerFactory.getLogger(ProviderUtil.class);
     public static final String OPT_REPORT_INTERVAL = "report_interval";
     public static final String OPT_WAVEFORMS_INTERVAL = "waveform_interval";
+
+    private static final Logger LOG = LogManager.getLogger(ProviderUtil.class);
 
     private static final String DEFAULT_REPORT_INTERVAL = "5000"; // millis
     private static final String DEFAULT_WAVEFORM_INTERVAL = "100"; // millis
@@ -51,8 +52,7 @@ public class ProviderUtil extends BaseUtil {
 
     public ProviderUtil(String[] args) {
         super(args);
-        Configurator.initialize(new DefaultConfiguration());
-        Configurator.setRootLevel(Level.INFO);
+        Configurator.reconfigure(localLoggerConfig(Level.INFO));
 
         reportInterval = Duration.ofMillis(
                 Long.parseLong(getParsedArgs().getOptionValue(OPT_REPORT_INTERVAL, DEFAULT_REPORT_INTERVAL))
@@ -64,11 +64,12 @@ public class ProviderUtil extends BaseUtil {
 
 
         injector = Guice.createInjector(
+                new DefaultCommonConfigModule(),
                 new DefaultGlueModule(),
                 new DefaultGlueConfigModule(),
                 new DefaultBicepsModule(),
                 new DefaultBicepsConfigModule(),
-                new DefaultHelperModule(),
+                new DefaultCommonModule(),
                 new DefaultDpwsModule(),
                 new GlueDpwsConfigModule() {
                     @Override
@@ -99,7 +100,8 @@ public class ProviderUtil extends BaseUtil {
                                         for (String key : extendedKeyUsage) {
                                             try {
                                                 URI keyUri = URI.create(key);
-                                                if (keyUri.equals(URI.create(GlueConstants.OID_KEY_PURPOSE_SDC_SERVICE_CONSUMER))) {
+                                                if (keyUri.equals(URI.create(
+                                                        GlueConstants.OID_KEY_PURPOSE_SDC_SERVICE_CONSUMER))) {
                                                     LOG.debug("SDC Service Consumer PKP found");
                                                     return true;
                                                 }
@@ -136,24 +138,21 @@ public class ProviderUtil extends BaseUtil {
     protected Options configureOptions() {
         var options = super.configureOptions();
 
-        {
-            String message = "Interval in ms in which reports are being generated."
-                    + " Default: " + DEFAULT_REPORT_INTERVAL;
-            Option reportIntervalOpt = new Option(null, OPT_REPORT_INTERVAL,
-                    true, message);
-            reportIntervalOpt.setType(Long.class);
-            options.addOption(reportIntervalOpt);
-        }
+        var reportIntervalOpt = Option.builder(null)
+                .desc("Interval in ms in which reports are being generated. Default: " + DEFAULT_REPORT_INTERVAL)
+                .longOpt(OPT_REPORT_INTERVAL)
+                .hasArg()
+                .type(Long.class)
+                .build();
+        options.addOption(reportIntervalOpt);
 
-        {
-
-            String message = "Interval in ms in which waveforms are being generated."
-                    + " Default: " + DEFAULT_WAVEFORM_INTERVAL;
-            Option waveformIntervalOpt = new Option(null, OPT_WAVEFORMS_INTERVAL,
-                    true, message);
-            waveformIntervalOpt.setType(Long.class);
-            options.addOption(waveformIntervalOpt);
-        }
+        var waveformIntervalOpt = Option.builder(null)
+                .desc("Interval in ms in which waveforms are being generated. Default: " + DEFAULT_WAVEFORM_INTERVAL)
+                .longOpt(OPT_WAVEFORMS_INTERVAL)
+                .hasArg()
+                .type(Long.class)
+                .build();
+        options.addOption(waveformIntervalOpt);
 
         return options;
     }

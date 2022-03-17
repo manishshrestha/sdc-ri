@@ -3,8 +3,9 @@ package org.somda.sdc.glue.provider.plugin;
 import com.google.common.base.Joiner;
 import com.google.common.eventbus.Subscribe;
 import com.google.inject.Inject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.google.inject.name.Named;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.somda.sdc.biceps.common.MdibEntity;
 import org.somda.sdc.biceps.common.access.MdibAccess;
 import org.somda.sdc.biceps.common.access.MdibAccessObserver;
@@ -13,18 +14,22 @@ import org.somda.sdc.biceps.common.event.DescriptionModificationMessage;
 import org.somda.sdc.biceps.model.participant.ContextAssociation;
 import org.somda.sdc.biceps.model.participant.LocationContextState;
 import org.somda.sdc.biceps.model.participant.MdsDescriptor;
+import org.somda.sdc.common.CommonConfig;
+import org.somda.sdc.common.logging.InstanceLogger;
 import org.somda.sdc.dpws.device.Device;
 import org.somda.sdc.glue.GlueConstants;
 import org.somda.sdc.glue.common.uri.ComplexDeviceComponentMapper;
-import org.somda.sdc.glue.common.uri.ContextIdentificationMapper;
 import org.somda.sdc.glue.common.uri.LocationDetailQueryMapper;
 import org.somda.sdc.glue.common.uri.UriMapperGenerationArgumentException;
 import org.somda.sdc.glue.provider.SdcDeviceContext;
 import org.somda.sdc.glue.provider.SdcDevicePlugin;
 import org.somda.sdc.mdpws.common.CommonConstants;
 
-import java.net.URI;
-import java.util.*;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -33,7 +38,8 @@ import java.util.stream.Collectors;
  * In order to append custom scopes please consider using the {@link ScopesDecorator}.
  */
 public class SdcRequiredTypesAndScopes implements SdcDevicePlugin, MdibAccessObserver, ScopesDecorator {
-    private static final Logger LOG = LoggerFactory.getLogger(SdcRequiredTypesAndScopes.class);
+    private static final Logger LOG = LogManager.getLogger(SdcRequiredTypesAndScopes.class);
+    private final Logger instanceLogger;
 
     private Device device;
     private MdibAccess mdibAccess;
@@ -45,7 +51,8 @@ public class SdcRequiredTypesAndScopes implements SdcDevicePlugin, MdibAccessObs
     private boolean initializing;
 
     @Inject
-    SdcRequiredTypesAndScopes() {
+    SdcRequiredTypesAndScopes(@Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier) {
+        this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);
         this.allScopes = new HashSet<>();
         this.locationContexts = new HashSet<>();
         this.mdsTypes = new HashSet<>();
@@ -54,7 +61,7 @@ public class SdcRequiredTypesAndScopes implements SdcDevicePlugin, MdibAccessObs
 
     @Override
     public void beforeStartUp(SdcDeviceContext context) {
-        LOG.info("Startup of automatic required types and scopes updating for device with EPR address {}",
+        instanceLogger.info("Startup of automatic required types and scopes updating for device with EPR address {}",
                 context.getDevice().getEprAddress());
 
         init(context, Collections.emptySet());
@@ -63,7 +70,7 @@ public class SdcRequiredTypesAndScopes implements SdcDevicePlugin, MdibAccessObs
 
     @Override
     public void afterShutDown(SdcDeviceContext context) {
-        LOG.info("Automatic required types and scopes updating for device with EPR address {} stopped",
+        instanceLogger.info("Automatic required types and scopes updating for device with EPR address {} stopped",
                 context.getDevice().getEprAddress());
     }
 
@@ -92,9 +99,9 @@ public class SdcRequiredTypesAndScopes implements SdcDevicePlugin, MdibAccessObs
         newScopes.addAll(locationContexts);
         newScopes.addAll(mdsTypes);
 
-        LOG.debug("Append scopes [{}] to internal scope set [{}]",
-                Joiner.on(",").join(scopes),
-                Joiner.on(",").join(newScopes));
+        instanceLogger.debug("Append scopes [{}] to internal scope set [{}]",
+                             () -> Joiner.on(",").join(scopes),
+                             () -> Joiner.on(",").join(newScopes));
 
         newScopes.addAll(scopes);
 
@@ -107,7 +114,7 @@ public class SdcRequiredTypesAndScopes implements SdcDevicePlugin, MdibAccessObs
             // If there are no scopes left from the new scopes set, then there was no change at all
             // => return without sending Hello
             if (newScopesCopy.isEmpty()) {
-                LOG.debug("No scope changes detected");
+                instanceLogger.debug("No scope changes detected");
                 return;
             }
         }
@@ -124,13 +131,13 @@ public class SdcRequiredTypesAndScopes implements SdcDevicePlugin, MdibAccessObs
 
     @Subscribe
     private void onContextChange(ContextStateModificationMessage message) {
-        LOG.info("Context modification received");
+        instanceLogger.info("Context modification received");
         appendScopesAndSendHello(Collections.emptySet());
     }
 
     @Subscribe
     private void onDescriptionChange(DescriptionModificationMessage message) {
-        LOG.info("Description modification received");
+        instanceLogger.info("Description modification received");
         appendScopesAndSendHello(Collections.emptySet());
     }
 
@@ -139,15 +146,15 @@ public class SdcRequiredTypesAndScopes implements SdcDevicePlugin, MdibAccessObs
         locationContexts = extractAssociatedLocationContextStateIdentifiers(
                 mdibAccess.findContextStatesByType(LocationContextState.class));
 
-        LOG.info("Location context scopes updated from [{}] to [{}]",
-                Joiner.on(",").join(locationContextsBefore),
-                Joiner.on(",").join(locationContexts));
+        instanceLogger.info("Location context scopes updated from [{}] to [{}]",
+                            () -> Joiner.on(",").join(locationContextsBefore),
+                            () -> Joiner.on(",").join(locationContexts));
 
         var mdsTypesBefore = mdsTypes;
         mdsTypes = extractMdsTypes(mdibAccess.findEntitiesByType(MdsDescriptor.class));
-        LOG.info("MDS type scopes updated from [{}] to [{}]",
-                Joiner.on(",").join(mdsTypesBefore),
-                Joiner.on(",").join(mdsTypes));
+        instanceLogger.info("MDS type scopes updated from [{}] to [{}]",
+                            () -> Joiner.on(",").join(mdsTypesBefore),
+                            () -> Joiner.on(",").join(mdsTypes));
     }
 
     private Set<String> extractMdsTypes(Collection<MdibEntity> entities) {
@@ -161,8 +168,8 @@ public class SdcRequiredTypesAndScopes implements SdcDevicePlugin, MdibAccessObs
             try {
                 uris.add(ComplexDeviceComponentMapper.fromComplexDeviceComponent(mdsDescriptor));
             } catch (UriMapperGenerationArgumentException e) {
-                LOG.warn("The URI generation based on the given MdsDescriptor with the handle " +
-                        mdsDescriptor.getHandle() + " failed", e);
+                instanceLogger.warn("The URI generation based on the given MdsDescriptor with the handle {} failed",
+                        mdsDescriptor.getHandle(), e);
             }
         }
 
@@ -184,7 +191,7 @@ public class SdcRequiredTypesAndScopes implements SdcDevicePlugin, MdibAccessObs
                 uris.add(LocationDetailQueryMapper.createWithLocationDetailQuery(
                         instanceIdentifier, locationContextState.get().getLocationDetail()));
             } catch (UriMapperGenerationArgumentException e) {
-                LOG.warn("Unable to encode to an URI", e);
+                instanceLogger.warn("Unable to encode to an URI", e);
             }
         }
         return uris;

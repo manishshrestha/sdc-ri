@@ -3,6 +3,7 @@ package org.somda.sdc.dpws.soap;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.somda.sdc.dpws.DpwsTest;
+import org.somda.sdc.dpws.helper.JaxbMarshalling;
 import org.somda.sdc.dpws.soap.factory.NotificationSinkFactory;
 import org.somda.sdc.dpws.soap.factory.SoapMessageFactory;
 import org.somda.sdc.dpws.soap.interception.Direction;
@@ -20,19 +21,20 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class NotificationSinkImplTest extends DpwsTest {
+class NotificationSinkImplTest extends DpwsTest {
     private List<String> dispatchedSequence;
 
     @Override
     @BeforeEach
     public void setUp() throws Exception {
         super.setUp();
+        getInjector().getInstance(JaxbMarshalling.class).startAsync().awaitRunning();
         getInjector().getInstance(SoapMarshalling.class).startAsync().awaitRunning();
         dispatchedSequence = new ArrayList<>();
     }
 
     @Test
-    public void receiveNotification() throws Exception {
+    void receiveNotification() throws Exception {
         SoapMarshalling unmarshaller = getInjector().getInstance(SoapMarshalling.class);
 
         NotificationSink nSink = getInjector().getInstance(NotificationSinkFactory.class).createNotificationSink(

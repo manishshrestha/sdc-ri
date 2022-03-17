@@ -18,7 +18,8 @@ public class ParticipantKeyPurposeMapper {
             "(" +
                     "(" +
                     "(" + NO_LEADING_ZERO_EXCEPT_FOR_SINGLE_DIGIT + ".)*" +
-                    "(" + NO_LEADING_ZERO_EXCEPT_FOR_SINGLE_DIGIT + "." + NO_LEADING_ZERO_EXCEPT_FOR_SINGLE_DIGIT + ")" +
+                    "(" + NO_LEADING_ZERO_EXCEPT_FOR_SINGLE_DIGIT + "." +
+                    NO_LEADING_ZERO_EXCEPT_FOR_SINGLE_DIGIT + ")" +
                     "(." + NO_LEADING_ZERO_EXCEPT_FOR_SINGLE_DIGIT + ")*" +
                     ")|" +
                     NO_LEADING_ZERO_EXCEPT_FOR_SINGLE_DIGIT + ")";
@@ -32,13 +33,13 @@ public class ParticipantKeyPurposeMapper {
      * @throws UriMapperGenerationArgumentException in case no valid URI could be generated from the input.
      */
     public static String fromOid(Oid oid) throws UriMapperGenerationArgumentException {
-        final String uri = SCHEME + ":" + oid.toString();
+        final String uri = SCHEME + ":" + oid;
 
         try {
             fromUri(uri);
         } catch (UriMapperParsingException e) {
             throw new UriMapperGenerationArgumentException("No valid URI could be generated from the given OID: " +
-                    oid.toString());
+                                                                   oid);
         }
 
         return uri;
@@ -60,12 +61,12 @@ public class ParticipantKeyPurposeMapper {
                 return new Oid(matcher.group("oid"));
             } catch (GSSException e) {
                 throw new UriMapperParsingException(
-                        "Invalid URI for the mapper " + ParticipantKeyPurposeMapper.class.toString() +
-                                " due to GSSException " + e.toString());
+                        "Invalid URI for the mapper " + ParticipantKeyPurposeMapper.class +
+                                " due to GSSException " + e);
             }
         }
 
         throw new UriMapperParsingException(
-                "Invalid URI for the mapper " + ParticipantKeyPurposeMapper.class.toString());
+                "Invalid URI for the mapper " + ParticipantKeyPurposeMapper.class);
     }
 }

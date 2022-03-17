@@ -2,6 +2,7 @@ package org.somda.sdc.glue.provider;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.somda.sdc.biceps.provider.access.LocalMdibAccess;
 import org.somda.sdc.dpws.DpwsFramework;
 import org.somda.sdc.dpws.device.DeviceSettings;
@@ -11,6 +12,7 @@ import org.somda.sdc.dpws.soap.wsaddressing.model.EndpointReferenceType;
 import org.somda.sdc.glue.UnitTestUtil;
 import org.somda.sdc.glue.provider.factory.SdcDeviceFactory;
 import org.somda.sdc.glue.provider.sco.OperationInvocationReceiver;
+import test.org.somda.common.LoggingTestWatcher;
 
 import java.net.InetAddress;
 import java.net.NetworkInterface;
@@ -20,6 +22,7 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+@ExtendWith(LoggingTestWatcher.class)
 class SdcDeviceTest {
     private SdcDevice sdcDevice;
     private SdcDevicePlugin plugin;

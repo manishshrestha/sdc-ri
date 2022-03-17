@@ -29,7 +29,8 @@ public class WsDiscoveryFaultFactory {
      * Creates a MatchingRuleNotSupported fault.
      *
      * @return a {@link SoapMessage} the encloses the fault.
-     * @see <a href="http://docs.oasis-open.org/ws-dd/discovery/1.1/os/wsdd-discovery-1.1-spec-os.html#_Toc234231831">Probe</a>
+     * @see <a href="http://docs.oasis-open.org/ws-dd/discovery/1.1/os/wsdd-discovery-1.1-spec-os.html#_Toc234231831"
+     * >Probe</a>
      */
     public SoapMessage createMatchingRuleNotSupported() {
         final List<String> supportedMatchBys = new ArrayList<>();

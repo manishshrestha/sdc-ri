@@ -5,8 +5,8 @@ import com.google.common.eventbus.Subscribe;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.SettableFuture;
 import com.google.inject.Injector;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.somda.sdc.biceps.model.message.Activate;
 import org.somda.sdc.biceps.model.message.ActivateResponse;
 import org.somda.sdc.biceps.model.message.InvocationState;
@@ -26,6 +26,7 @@ import org.somda.sdc.dpws.client.event.ProbedDeviceFoundMessage;
 import org.somda.sdc.dpws.service.HostingServiceProxy;
 import org.somda.sdc.dpws.soap.exception.TransportException;
 import org.somda.sdc.dpws.soap.interception.InterceptorException;
+import org.somda.sdc.dpws.wsdl.WsdlRetriever;
 import org.somda.sdc.glue.consumer.ConnectConfiguration;
 import org.somda.sdc.glue.consumer.PrerequisitesException;
 import org.somda.sdc.glue.consumer.SdcDiscoveryFilterBuilder;
@@ -34,6 +35,7 @@ import org.somda.sdc.glue.consumer.SdcRemoteDevicesConnector;
 import org.somda.sdc.glue.consumer.SetServiceAccess;
 import org.somda.sdc.glue.consumer.sco.ScoTransaction;
 
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
@@ -67,7 +69,7 @@ import java.util.stream.Collectors;
  */
 public class Consumer {
 
-    private static final Logger LOG = LoggerFactory.getLogger(Consumer.class);
+    private static final Logger LOG = LogManager.getLogger(Consumer.class);
     private static final Duration MAX_WAIT = Duration.ofSeconds(11);
     private static final long MAX_WAIT_SEC = MAX_WAIT.getSeconds();
 
@@ -118,7 +120,7 @@ public class Consumer {
         return connector;
     }
 
-    protected void startUp() throws SocketException {
+    protected void startUp() {
         // provide the name of your network adapter
         this.dpwsFramework = injector.getInstance(DpwsFramework.class);
         this.dpwsFramework.setNetworkInterface(networkInterface);
@@ -142,7 +144,8 @@ public class Consumer {
      * @throws InterruptedException if retrieving the final OperationInvokedReport is interrupted
      * @throws TimeoutException     if retrieving the final OperationInvokedReport times out
      */
-    static InvocationState invokeActivate(SetServiceAccess setServiceAccess, String handle, List<String> args) throws ExecutionException, InterruptedException, TimeoutException {
+    static InvocationState invokeActivate(SetServiceAccess setServiceAccess, String handle, List<String> args)
+            throws ExecutionException, InterruptedException, TimeoutException {
         LOG.info("Invoking Activate for handle {} with arguments {}", handle, args);
 
         Activate activate = new Activate();
@@ -157,7 +160,8 @@ public class Consumer {
         final ListenableFuture<ScoTransaction<ActivateResponse>> activateFuture = setServiceAccess
                 .invoke(activate, ActivateResponse.class);
         ScoTransaction<ActivateResponse> activateResponse = activateFuture.get(MAX_WAIT_SEC, TimeUnit.SECONDS);
-        List<OperationInvokedReport.ReportPart> reportParts = activateResponse.waitForFinalReport(Duration.ofSeconds(5));
+        List<OperationInvokedReport.ReportPart> reportParts =
+                activateResponse.waitForFinalReport(Duration.ofSeconds(5));
 
         // return the final reports invocation state
         return reportParts.get(reportParts.size() - 1).getInvocationInfo().getInvocationState();
@@ -174,7 +178,8 @@ public class Consumer {
      * @throws InterruptedException if retrieving the final OperationInvokedReport is interrupted
      * @throws TimeoutException     if retrieving the final OperationInvokedReport times out
      */
-    static InvocationState invokeSetValue(SetServiceAccess setServiceAccess, String handle, BigDecimal value) throws ExecutionException, InterruptedException, TimeoutException {
+    static InvocationState invokeSetValue(SetServiceAccess setServiceAccess, String handle, BigDecimal value)
+            throws ExecutionException, InterruptedException, TimeoutException {
         LOG.info("Invoking SetValue for handle {} with value {}", handle, value);
         SetValue setValue = new SetValue();
         setValue.setOperationHandleRef(handle);
@@ -183,7 +188,8 @@ public class Consumer {
         final ListenableFuture<ScoTransaction<SetValueResponse>> setValueFuture = setServiceAccess
                 .invoke(setValue, SetValueResponse.class);
         ScoTransaction<SetValueResponse> setValueResponse = setValueFuture.get(MAX_WAIT_SEC, TimeUnit.SECONDS);
-        List<OperationInvokedReport.ReportPart> reportParts = setValueResponse.waitForFinalReport(Duration.ofSeconds(5));
+        List<OperationInvokedReport.ReportPart> reportParts =
+                setValueResponse.waitForFinalReport(Duration.ofSeconds(5));
 
         // return the final reports invocation state
         return reportParts.get(reportParts.size() - 1).getInvocationInfo().getInvocationState();
@@ -200,7 +206,8 @@ public class Consumer {
      * @throws InterruptedException if retrieving the final OperationInvokedReport is interrupted
      * @throws TimeoutException     if retrieving the final OperationInvokedReport times out
      */
-    static InvocationState invokeSetString(SetServiceAccess setServiceAccess, String handle, String value) throws ExecutionException, InterruptedException, TimeoutException {
+    static InvocationState invokeSetString(SetServiceAccess setServiceAccess, String handle, String value)
+            throws ExecutionException, InterruptedException, TimeoutException {
         LOG.info("Invoking SetString for handle {} with value {}", handle, value);
         SetString setString = new SetString();
         setString.setOperationHandleRef(handle);
@@ -209,7 +216,8 @@ public class Consumer {
         final ListenableFuture<ScoTransaction<SetStringResponse>> setStringFuture = setServiceAccess
                 .invoke(setString, SetStringResponse.class);
         ScoTransaction<SetStringResponse> setStringResponse = setStringFuture.get(MAX_WAIT_SEC, TimeUnit.SECONDS);
-        List<OperationInvokedReport.ReportPart> reportParts = setStringResponse.waitForFinalReport(Duration.ofSeconds(5));
+        List<OperationInvokedReport.ReportPart> reportParts =
+                setStringResponse.waitForFinalReport(Duration.ofSeconds(5));
 
         // return the final reports invocation state
         if (!reportParts.isEmpty()) {
@@ -223,7 +231,8 @@ public class Consumer {
         return injector;
     }
 
-    public static void main(String[] args) throws SocketException, UnknownHostException, InterceptorException, TransportException, InterruptedException {
+    public static void main(String[] args) throws SocketException, UnknownHostException,
+            InterceptorException, TransportException, InterruptedException {
 
         var settings = new ConsumerUtil(args);
         var targetEpr = settings.getEpr();
@@ -242,7 +251,8 @@ public class Consumer {
                         6, false,
                         7, false,
                         8, false,
-                        9, false
+                        9, false,
+                        10, false
                 )
         );
 
@@ -250,21 +260,19 @@ public class Consumer {
             var keys = new ArrayList<>(resultMap.keySet());
             Collections.sort(keys);
 
-            keys.forEach(key -> System.out.println(
-                    String.format("### Test %s ### %s", key, resultMap.get(key) ? "passed" : "failed")
-            ));
+            keys.forEach(key -> System.out.printf("### Test %s ### %s%n", key, resultMap.get(key) ? "passed" : "failed"));
         }));
 
         // see if device using the provided epr address is available
         LOG.info("Starting discovery for {}", targetEpr);
-        final SettableFuture<List<String>> xAddrs = SettableFuture.create();
+        final SettableFuture<DiscoveredDevice> xAddrs = SettableFuture.create();
         DiscoveryObserver obs = new DiscoveryObserver() {
             @Subscribe
             void deviceFound(ProbedDeviceFoundMessage message) {
                 DiscoveredDevice payload = message.getPayload();
                 if (payload.getEprAddress().equals(targetEpr)) {
                     LOG.info("Found device with epr {}", payload.getEprAddress());
-                    xAddrs.set(payload.getXAddrs());
+                    xAddrs.set(payload);
                 } else {
                     LOG.info("Found non-matching device with epr {}", payload.getEprAddress());
                 }
@@ -276,8 +284,10 @@ public class Consumer {
         SdcDiscoveryFilterBuilder discoveryFilterBuilder = SdcDiscoveryFilterBuilder.create();
         consumer.getClient().probe(discoveryFilterBuilder.get());
 
+        DiscoveredDevice d = null;
         try {
-            List<String> targetXAddrs = xAddrs.get(MAX_WAIT_SEC, TimeUnit.SECONDS);
+            List<String> targetXAddrs = xAddrs.get(MAX_WAIT_SEC, TimeUnit.SECONDS).getXAddrs();
+            d = xAddrs.get();
             resultMap.put(1, true);
         } catch (InterruptedException | TimeoutException | ExecutionException e) {
             LOG.error("Couldn't find target with EPR {}", targetEpr, e);
@@ -287,7 +297,7 @@ public class Consumer {
 
         var deviceUri = targetEpr;
         LOG.info("Connecting to {}", targetEpr);
-        var hostingServiceFuture = consumer.getClient().connect(deviceUri);
+        var hostingServiceFuture = consumer.getClient().connect(d);
 
         HostingServiceProxy hostingServiceProxy = null;
         try {
@@ -296,6 +306,19 @@ public class Consumer {
         } catch (InterruptedException | TimeoutException | ExecutionException e) {
             LOG.error("Couldn't connect to EPR {}", targetEpr, e);
             System.exit(1);
+        }
+
+        // optionally retrieve the wsdl
+        LOG.info("Retrieving device WSDL");
+        var wsdlRetriever = consumer.getInjector().getInstance(WsdlRetriever.class);
+        try {
+            var wsdls = wsdlRetriever.retrieveWsdls(hostingServiceProxy);
+            LOG.debug("Retrieved WSDLs");
+            if (LOG.isDebugEnabled()) {
+                wsdls.forEach((service, data) -> LOG.debug("WSDLs for service {}: {}", service, data));
+            }
+        } catch (IOException e) {
+            LOG.error("Could not retrieve WSDL", e);
         }
 
         LOG.info("Attaching to remote mdib and subscriptions for {}", targetEpr);
@@ -323,22 +346,24 @@ public class Consumer {
         List<AbstractContextState> contextStates = sdcRemoteDevice.getMdibAccess().getContextStates();
 
         // has patient
-        long numPatientContexts = contextStates.stream().filter(x -> PatientContextState.class.isAssignableFrom(x.getClass())).count();
+        long numPatientContexts = contextStates.stream()
+                .filter(x -> PatientContextState.class.isAssignableFrom(x.getClass())).count();
         resultMap.put(5, numPatientContexts >= 1);
         // has location context
-        long numLocationContexts = contextStates.stream().filter(x -> LocationContextState.class.isAssignableFrom(x.getClass())).count();
+        long numLocationContexts = contextStates.stream()
+                .filter(x -> LocationContextState.class.isAssignableFrom(x.getClass())).count();
         resultMap.put(6, numLocationContexts >= 1);
 
         // wait for incoming reports
         Thread.sleep(REPORT_TIMEOUT);
 
         // expected number of reports given 5 second interval
-        int minNumberReports = ((int) (REPORT_TIMEOUT / Duration.ofSeconds(5).toMillis()) - 1);
+        int minNumberReports = (int) (REPORT_TIMEOUT / Duration.ofSeconds(5).toMillis()) - 1;
 
         // verify the number of reports for the expected metrics is at least five during the timeout
-        var metricChangesOk = reportObs.numMetricChanges >= minNumberReports;
+        var metricChangesOk = reportObs.getNumMetricChanges() >= minNumberReports;
         resultMap.put(7, metricChangesOk);
-        var conditionChangesOk = reportObs.numConditionChanges >= minNumberReports;
+        var conditionChangesOk = reportObs.getNumConditionChanges() >= minNumberReports;
         resultMap.put(8, conditionChangesOk);
 
 
@@ -377,8 +402,12 @@ public class Consumer {
         sdcRemoteDevice.getMdibAccessObservable().unregisterObserver(reportObs);
         sdcRemoteDevice.stopAsync().awaitTerminated();
 
-        consumer.getConnector().disconnect(deviceUri);
-        consumer.shutDown();
+        try {
+            var disconnectDone = consumer.getConnector().disconnect(deviceUri).isDone();
+            consumer.shutDown();
+            resultMap.put(10, disconnectDone);
+        } catch (Exception e) {
+            LOG.warn("Disconnect failed", e);
+        }
     }
-
 }

@@ -12,8 +12,8 @@ import org.junit.platform.launcher.core.LauncherDiscoveryRequestBuilder;
 import org.junit.platform.launcher.core.LauncherFactory;
 import org.junit.platform.launcher.listeners.SummaryGeneratingListener;
 import org.junit.platform.launcher.listeners.TestExecutionSummary;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.somda.sdc.biceps.model.participant.AbstractContextState;
 import org.somda.sdc.biceps.model.participant.ContextAssociation;
 import org.somda.sdc.biceps.model.participant.LocationContextState;
@@ -53,9 +53,9 @@ import static org.junit.platform.engine.discovery.DiscoverySelectors.selectClass
  * This consumer is meant to be used for integration tests with other SDC libraries.
  */
 public class ConsumerIT {
-    private static final Logger LOG = LoggerFactory.getLogger(ConsumerIT.class);
+    private static final Logger LOG = LogManager.getLogger(ConsumerIT.class);
     private static final Duration MAX_WAIT = Duration.ofSeconds(11);
-    private static String[] ARGS;
+    private static String[] args;
 
     private static Duration reportTimeout;
     private static String targetFacility;
@@ -77,11 +77,12 @@ public class ConsumerIT {
 
     @Test
     void runIT() throws Exception {
-        var settings = new ConsumerUtil(ARGS);
+        var settings = new ConsumerUtil(args);
         var consumer = new Consumer(settings);
         consumer.startUp();
 
         var targetEpr = discoverDevice(consumer);
+        assert targetEpr != null;
         var hostingService = connectDevice(consumer, targetEpr);
         var remoteDevice = connectMdibAndSubscribe(consumer, hostingService);
         verifyContexts(remoteDevice);
@@ -206,23 +207,23 @@ public class ConsumerIT {
         Thread.sleep(reportTimeout.toMillis());
 
         // expected number of reports given 5 second interval
-        int minNumberReports = ((int) (reportTimeout.dividedBy(Duration.ofSeconds(5))) - 1);
+        int minNumberReports = (int) (reportTimeout.dividedBy(Duration.ofSeconds(5))) - 1;
 
         // verify the number of reports for the expected metrics is at least five during the timeout
         assertTrue(
-                reportObs.numMetricChanges >= minNumberReports,
+                reportObs.getNumMetricChanges() >= minNumberReports,
                 "Did not receive metric reports, expected at least "
                         + minNumberReports
                         + " but received "
-                        + reportObs.numMetricChanges
+                        + reportObs.getNumMetricChanges()
                         + " instead."
         );
         assertTrue(
-                reportObs.numConditionChanges >= minNumberReports,
+                reportObs.getNumConditionChanges() >= minNumberReports,
                 "Did not receive alert condition reports, expected at least "
                         + minNumberReports
                         + " but received "
-                        + reportObs.numConditionChanges
+                        + reportObs.getNumConditionChanges()
                         + " instead."
         );
     }
@@ -264,7 +265,7 @@ public class ConsumerIT {
 
     public static void main(String[] args) {
 
-        ARGS = args;
+        ConsumerIT.args = args;
 
         final LauncherDiscoveryRequest request =
                 LauncherDiscoveryRequestBuilder.request()
@@ -278,11 +279,10 @@ public class ConsumerIT {
         launcher.execute(request);
 
         TestExecutionSummary summary = listener.getSummary();
-        long testFoundCount = summary.getTestsFoundCount();
         List<TestExecutionSummary.Failure> failures = summary.getFailures();
         LOG.info("getTestsSucceededCount() - {}", summary.getTestsSucceededCount());
         failures.forEach(failure -> LOG.error("failure", failure.getException()));
 
-        System.exit(failures.size() > 0 ? 1 : 0);
+        System.exit(!failures.isEmpty() ? 1 : 0);
     }
 }

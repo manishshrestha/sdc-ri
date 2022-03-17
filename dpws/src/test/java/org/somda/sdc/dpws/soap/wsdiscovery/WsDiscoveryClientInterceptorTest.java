@@ -1,7 +1,11 @@
 package org.somda.sdc.dpws.soap.wsdiscovery;
 
 import com.google.common.eventbus.Subscribe;
-import com.google.common.util.concurrent.*;
+import com.google.common.util.concurrent.FutureCallback;
+import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.ListenableFuture;
+import com.google.common.util.concurrent.ListeningExecutorService;
+import com.google.common.util.concurrent.MoreExecutors;
 import com.google.inject.Key;
 import com.google.inject.TypeLiteral;
 import org.junit.jupiter.api.BeforeEach;
@@ -9,7 +13,12 @@ import org.junit.jupiter.api.Test;
 import org.somda.sdc.common.util.ExecutorWrapperService;
 import org.somda.sdc.dpws.DpwsTest;
 import org.somda.sdc.dpws.guice.WsDiscovery;
-import org.somda.sdc.dpws.soap.*;
+import org.somda.sdc.dpws.soap.CommunicationContext;
+import org.somda.sdc.dpws.soap.NotificationSink;
+import org.somda.sdc.dpws.soap.NotificationSource;
+import org.somda.sdc.dpws.soap.SoapMessage;
+import org.somda.sdc.dpws.soap.SoapUtil;
+import org.somda.sdc.dpws.soap.TransportInfo;
 import org.somda.sdc.dpws.soap.factory.EnvelopeFactory;
 import org.somda.sdc.dpws.soap.factory.NotificationSinkFactory;
 import org.somda.sdc.dpws.soap.factory.NotificationSourceFactory;
@@ -34,11 +43,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class WsDiscoveryClientInterceptorTest extends DpwsTest {
+class WsDiscoveryClientInterceptorTest extends DpwsTest {
     private List<SoapMessage> sentSoapMessages;
     private WsDiscoveryClient wsDiscoveryClient;
 
@@ -51,6 +63,7 @@ public class WsDiscoveryClientInterceptorTest extends DpwsTest {
     private EnvelopeFactory envelopeFactory;
     private NotificationSink notificationSink;
     private CommunicationContext communicationContextMock;
+    private WsAddressingUtil wsaUtil;
 
     @Override
     @BeforeEach
@@ -77,7 +90,7 @@ public class WsDiscoveryClientInterceptorTest extends DpwsTest {
         notificationSink = getInjector().getInstance(NotificationSinkFactory.class).createNotificationSink(
                 getInjector().getInstance(WsAddressingServerInterceptor.class));
 
-        WsAddressingUtil wsaUtil = getInjector().getInstance(WsAddressingUtil.class);
+        wsaUtil = getInjector().getInstance(WsAddressingUtil.class);
 
         WsDiscoveryClientFactory wsdClientFactory = getInjector().getInstance(WsDiscoveryClientFactory.class);
         wsDiscoveryClient = wsdClientFactory.createWsDiscoveryClient(notificationSource);
@@ -104,7 +117,7 @@ public class WsDiscoveryClientInterceptorTest extends DpwsTest {
     }
 
     @Test
-    public void processProbe() {
+    void processProbe() {
         processProbeOrResolveRequestWithCallback(() -> {
             try {
                 wsDiscoveryClient.sendProbe(UUID.randomUUID().toString(), expectedTypes, expectedScopes);
@@ -115,7 +128,7 @@ public class WsDiscoveryClientInterceptorTest extends DpwsTest {
     }
 
     @Test
-    public void processResolve() {
+    void processResolve() {
         processProbeOrResolveRequestWithCallback(() -> {
             try {
                 wsDiscoveryClient.sendResolve(expectedEpr);
@@ -138,7 +151,7 @@ public class WsDiscoveryClientInterceptorTest extends DpwsTest {
     }
 
     @Test
-    public void sendProbe() throws Exception {
+    void sendProbe() throws Exception {
         notificationSource.register(getInjector().getInstance(WsAddressingClientInterceptor.class));
         notificationSource.register(wsDiscoveryClient);
         notificationSink.register(wsDiscoveryClient);
@@ -163,7 +176,7 @@ public class WsDiscoveryClientInterceptorTest extends DpwsTest {
     }
 
     @Test
-    public void sendResolve() throws Exception {
+    void sendResolve() throws Exception {
         notificationSource.register(getInjector().getInstance(WsAddressingClientInterceptor.class));
         notificationSource.register(wsDiscoveryClient);
         notificationSink.register(wsDiscoveryClient);
@@ -194,7 +207,8 @@ public class WsDiscoveryClientInterceptorTest extends DpwsTest {
                 WsDiscoveryConstants.WSA_UDP_TO, wsdFactory.createResolveMatches(resolveMatchesType));
         SoapMessage rMatches = soapMessageFactory.createSoapMessage(env);
 
-        rMatches.getWsAddressingHeader().setRelatesTo(msg.getWsAddressingHeader().getMessageId().orElse(null));
+        rMatches.getWsAddressingHeader().setRelatesTo(wsaUtil.createRelatesToType(
+                msg.getWsAddressingHeader().getMessageId().orElse(null)));
         return rMatches;
     }
 
@@ -209,7 +223,8 @@ public class WsDiscoveryClientInterceptorTest extends DpwsTest {
                 WsDiscoveryConstants.WSA_UDP_TO, wsdFactory.createProbeMatches(probeMatchesType));
         SoapMessage pMatches = soapMessageFactory.createSoapMessage(env);
 
-        pMatches.getWsAddressingHeader().setRelatesTo(msg.getWsAddressingHeader().getMessageId().orElse(null));
+        pMatches.getWsAddressingHeader().setRelatesTo(wsaUtil.createRelatesToType(
+                msg.getWsAddressingHeader().getMessageId().orElse(null)));
         var msgId = getInjector().getInstance(SoapUtil.class).createRandomUuidUri();
         AttributedURIType uriType = getInjector().getInstance(WsAddressingUtil.class).createAttributedURIType(msgId);
         pMatches.getWsAddressingHeader().setMessageId(uriType);

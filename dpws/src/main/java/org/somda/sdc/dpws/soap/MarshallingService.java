@@ -2,12 +2,12 @@ package org.somda.sdc.dpws.soap;
 
 import com.google.inject.Inject;
 import org.somda.sdc.dpws.soap.exception.MarshallingException;
-import org.somda.sdc.dpws.soap.exception.SoapFaultException;
 import org.somda.sdc.dpws.soap.model.Envelope;
 
 import javax.xml.bind.JAXBException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.Reader;
 
 /**
  * Utility class to marshal/unmarshal SOAP messages.
@@ -49,34 +49,29 @@ public class MarshallingService {
         try {
             Envelope env = soapMarshalling.unmarshal(is);
             return soapUtil.createMessage(env);
+            // CHECKSTYLE.OFF: IllegalCatch
         } catch (Exception e) {
+            // CHECKSTYLE.ON: IllegalCatch
             throw new MarshallingException(e);
         }
     }
 
+    
     /**
-     * Uses the given {@link RequestResponseServer} object to accept unmarshalled request data and marshalled response data.
+     * Unmarshals a SOAP message from a reader.
      *
-     * @param srv                  the request-response server where to call
-     *                             {@link RequestResponseServer#receiveRequestResponse(SoapMessage, SoapMessage, CommunicationContext)}
-     * @param is                   input stream that provides SOAP request message.
-     * @param os                   output stream where to write SOAP response message to.
-     * @param communicationContext transport and application layer information.
-     * @throws MarshallingException if any exception occurs during marshalling or unmarshalling of SOAP messages.
-     * @deprecated only used by tests. Do not use this function as it is misplaced in the {@linkplain MarshallingService}.
+     * @param reader the input stream where to unmarshal from.
+     * @return the unmarshalled object.
+     * @throws MarshallingException if any exception occurs during unmarshalling.
      */
-    @Deprecated(since = "1.1.0", forRemoval = true)
-    public void handleRequestResponse(RequestResponseServer srv,
-                                      InputStream is,
-                                      OutputStream os,
-                                      CommunicationContext communicationContext) throws MarshallingException {
-        SoapMessage responseMessage = soapUtil.createMessage();
+    public SoapMessage unmarshal(Reader reader) throws MarshallingException {
         try {
-            srv.receiveRequestResponse(unmarshal(is), responseMessage, communicationContext);
-        } catch (SoapFaultException e) {
-            marshal(e.getFaultMessage(), os);
-            return;
+            Envelope env = soapMarshalling.unmarshal(reader);
+            return soapUtil.createMessage(env);
+            // CHECKSTYLE.OFF: IllegalCatch
+        } catch (Exception e) {
+            // CHECKSTYLE.ON: IllegalCatch
+            throw new MarshallingException(e);
         }
-        marshal(responseMessage, os);
     }
 }

@@ -5,15 +5,33 @@ import com.google.common.collect.Multimap;
 import com.google.common.eventbus.Subscribe;
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.google.inject.name.Named;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.somda.sdc.biceps.common.MdibEntity;
 import org.somda.sdc.biceps.common.access.MdibAccessObserver;
-import org.somda.sdc.biceps.common.event.*;
-import org.somda.sdc.biceps.model.message.*;
+import org.somda.sdc.biceps.common.event.AlertStateModificationMessage;
+import org.somda.sdc.biceps.common.event.ComponentStateModificationMessage;
+import org.somda.sdc.biceps.common.event.ContextStateModificationMessage;
+import org.somda.sdc.biceps.common.event.DescriptionModificationMessage;
+import org.somda.sdc.biceps.common.event.MetricStateModificationMessage;
+import org.somda.sdc.biceps.common.event.OperationStateModificationMessage;
+import org.somda.sdc.biceps.common.event.WaveformStateModificationMessage;
+import org.somda.sdc.biceps.model.message.AbstractReport;
+import org.somda.sdc.biceps.model.message.DescriptionModificationReport;
+import org.somda.sdc.biceps.model.message.DescriptionModificationType;
+import org.somda.sdc.biceps.model.message.EpisodicAlertReport;
+import org.somda.sdc.biceps.model.message.EpisodicComponentReport;
+import org.somda.sdc.biceps.model.message.EpisodicContextReport;
+import org.somda.sdc.biceps.model.message.EpisodicMetricReport;
+import org.somda.sdc.biceps.model.message.EpisodicOperationalStateReport;
+import org.somda.sdc.biceps.model.message.ObjectFactory;
+import org.somda.sdc.biceps.model.message.WaveformStream;
 import org.somda.sdc.biceps.model.participant.AbstractState;
 import org.somda.sdc.biceps.model.participant.MdibVersion;
 import org.somda.sdc.biceps.model.participant.RealTimeSampleArrayMetricState;
+import org.somda.sdc.common.CommonConfig;
+import org.somda.sdc.common.logging.InstanceLogger;
 import org.somda.sdc.dpws.device.EventSourceAccess;
 import org.somda.sdc.dpws.soap.exception.MarshallingException;
 import org.somda.sdc.dpws.soap.exception.TransportException;
@@ -33,19 +51,22 @@ import java.util.List;
  * with an MDS handle reference), no SourceMds attribute is set and hence all changes go into one report part.
  */
 public class ReportGenerator implements MdibAccessObserver {
-    private static final Logger LOG = LoggerFactory.getLogger(ReportGenerator.class);
+    private static final Logger LOG = LogManager.getLogger(ReportGenerator.class);
     private static final String REFLECTION_ERROR_STRING = "Reflection error caught. Sending of notification aborted.";
 
     private final EventSourceAccess eventSourceAccess;
     private final ObjectFactory bicepsMessageFactory;
     private final ReportMappings reportMappings;
     private final MdibVersionUtil mdibVersionUtil;
+    private final Logger instanceLogger;
 
     @AssistedInject
     ReportGenerator(@Assisted EventSourceAccess eventSourceAccess,
                     ObjectFactory bicepsMessageFactory,
                     ReportMappings reportMappings,
-                    MdibVersionUtil mdibVersionUtil) {
+                    MdibVersionUtil mdibVersionUtil,
+                    @Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier) {
+        this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);
         this.eventSourceAccess = eventSourceAccess;
         this.bicepsMessageFactory = bicepsMessageFactory;
         this.reportMappings = reportMappings;
@@ -122,15 +143,16 @@ public class ReportGenerator implements MdibAccessObserver {
             mdibVersionUtil.setMdibVersion(modificationMessage.getMdibAccess().getMdibVersion(), report);
             eventSourceAccess.sendNotification(ActionConstants.ACTION_DESCRIPTION_MODIFICATION_REPORT, report);
         } catch (MarshallingException e) {
-            LOG.warn("Could not marshal message for description modification report with version {}: {}",
+            instanceLogger.warn("Could not marshal message for description modification report with version {}: {}",
                     modificationMessage.getMdibAccess().getMdibVersion(), e.getMessage());
-            LOG.trace("Could not marshal message for description modification report", e);
+            instanceLogger.trace("Could not marshal message for description modification report", e);
         } catch (TransportException e) {
-            LOG.info("Failed to deliver notification for description modification report with version {}: {}",
+            instanceLogger.info(
+                    "Failed to deliver notification for description modification report with version {}: {}",
                     modificationMessage.getMdibAccess().getMdibVersion(), e.getMessage());
-            LOG.trace("Failed to deliver notification for description modification report", e);
+            instanceLogger.trace("Failed to deliver notification for description modification report", e);
         } catch (ReflectiveOperationException e) {
-            LOG.warn(REFLECTION_ERROR_STRING, e);
+            instanceLogger.warn(REFLECTION_ERROR_STRING, e);
         }
 
         dispatchStateEvents(modificationMessage.getMdibAccess().getMdibVersion(),
@@ -146,7 +168,8 @@ public class ReportGenerator implements MdibAccessObserver {
         );
     }
 
-    private void dispatchStateEvents(MdibVersion mdibVersion, List<MdibEntity> insertedEntities, List<MdibEntity> updatedEntities) {
+    private void dispatchStateEvents(MdibVersion mdibVersion, List<MdibEntity> insertedEntities,
+                                     List<MdibEntity> updatedEntities) {
         // expectedKeys (which pertains to the key size of the multimap below) = 6 because of the following event types
         // - alert changes
         // - component change
@@ -168,7 +191,8 @@ public class ReportGenerator implements MdibAccessObserver {
         }
     }
 
-    private void collectStates(Multimap<Class<? extends AbstractReport>, AbstractState> classifiedStates, List<MdibEntity> entities) {
+    private void collectStates(Multimap<Class<?
+            extends AbstractReport>, AbstractState> classifiedStates, List<MdibEntity> entities) {
         for (MdibEntity entity : entities) {
             classifiedStates.putAll(reportMappings.getEpisodicReportClass(entity.getStateClass()), entity.getStates());
         }
@@ -179,7 +203,8 @@ public class ReportGenerator implements MdibAccessObserver {
                               DescriptionModificationType modType,
                               List<MdibEntity> entities) {
         for (MdibEntity entity : entities) {
-            final DescriptionModificationReport.ReportPart reportPart = bicepsMessageFactory.createDescriptionModificationReportReportPart();
+            final DescriptionModificationReport.ReportPart reportPart =
+                    bicepsMessageFactory.createDescriptionModificationReportReportPart();
             reportPart.getDescriptor().add(entity.getDescriptor());
             reportPart.getState().addAll(entity.getStates());
             reportPart.setParentDescriptor(entity.getParent().orElse(null));
@@ -200,15 +225,17 @@ public class ReportGenerator implements MdibAccessObserver {
             waveformStream.setState(states);
             eventSourceAccess.sendNotification(ActionConstants.ACTION_WAVEFORM_STREAM, waveformStream);
         } catch (MarshallingException e) {
-            LOG.warn("Could not marshal message for state action {} with version: {}. {}",
+            instanceLogger.warn("Could not marshal message for state action {} with version: {}. {}",
                     ActionConstants.ACTION_WAVEFORM_STREAM, mdibVersion, e.getMessage());
-            LOG.trace("Could not marshal message for state action {}", ActionConstants.ACTION_WAVEFORM_STREAM, e);
+            instanceLogger.trace("Could not marshal message for state action {}",
+                    ActionConstants.ACTION_WAVEFORM_STREAM, e);
         } catch (TransportException e) {
-            LOG.info("Failed to deliver notification for state action {} with version: {}. {}",
+            instanceLogger.info("Failed to deliver notification for state action {} with version: {}. {}",
                     ActionConstants.ACTION_WAVEFORM_STREAM, mdibVersion, e.getMessage());
-            LOG.trace("Failed to deliver notification for state action {}", ActionConstants.ACTION_WAVEFORM_STREAM, e);
+            instanceLogger.trace("Failed to deliver notification for state action {}",
+                    ActionConstants.ACTION_WAVEFORM_STREAM, e);
         } catch (ReflectiveOperationException e) {
-            LOG.warn(REFLECTION_ERROR_STRING, e);
+            instanceLogger.warn(REFLECTION_ERROR_STRING, e);
         }
     }
 
@@ -241,7 +268,7 @@ public class ReportGenerator implements MdibAccessObserver {
             findSetStateMethod(reportPartClass).invoke(reportPart, states);
 
         } catch (ReflectiveOperationException e) {
-            LOG.warn(REFLECTION_ERROR_STRING, e);
+            instanceLogger.warn(REFLECTION_ERROR_STRING, e);
             return;
         }
 
@@ -249,14 +276,14 @@ public class ReportGenerator implements MdibAccessObserver {
         try {
             eventSourceAccess.sendNotification(action, report);
         } catch (MarshallingException e) {
-            LOG.warn("Could not marshal message for state action {} with version: {}. {}",
+            instanceLogger.warn("Could not marshal message for state action {} with version: {}. {}",
                     action, mdibVersion, e.getMessage());
-            LOG.trace("Could not marshal message for state action {}",
+            instanceLogger.trace("Could not marshal message for state action {}",
                     action, e);
         } catch (TransportException e) {
-            LOG.info("Failed to deliver notification for state action {} with version: {}. {}",
+            instanceLogger.info("Failed to deliver notification for state action {} with version: {}. {}",
                     action, mdibVersion, e.getMessage());
-            LOG.trace("Failed to deliver notification for state action {}", action, e);
+            instanceLogger.trace("Failed to deliver notification for state action {}", action, e);
         }
     }
 

@@ -4,7 +4,7 @@
 	    <!-- Make JAXB using Java 8 state of the art date-time objects -->
         <xjb:globalBindings>
             <xjc:javaType name="java.time.LocalDate" xmlType="xs:date" adapter="io.github.threetenjaxb.core.LocalDateXmlAdapter" />
-            <xjc:javaType name="java.time.LocalDateTime" xmlType="xs:dateTime" adapter="io.github.threetenjaxb.core.LocalDateTimeXmlAdapter" />
+            <xjc:javaType name="org.somda.sdc.common.util.AnyDateTime" xmlType="xs:dateTime" adapter="org.somda.sdc.common.util.AnyDateTimeAdapter" />
             <xjc:javaType name="java.time.Duration" xmlType="xs:duration" adapter="org.somda.sdc.common.util.DurationAdapter" />
 			<xjc:javaType name="java.time.Instant" xmlType="pm:Timestamp" adapter="org.somda.sdc.common.util.TimestampAdapter" />
         </xjb:globalBindings>

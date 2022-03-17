@@ -32,7 +32,8 @@ public class ScoUtil {
      * @return first final report part that could be found or {@link Optional#empty()} if no final report exists.
      * @see #isFinalReport(OperationInvokedReport.ReportPart)
      */
-    public Optional<OperationInvokedReport.ReportPart> getFinalReport(Collection<OperationInvokedReport.ReportPart> reportParts) {
+    public Optional<OperationInvokedReport.ReportPart> getFinalReport(
+            Collection<OperationInvokedReport.ReportPart> reportParts) {
         for (OperationInvokedReport.ReportPart reportPart : reportParts) {
             if (isFinalReport(reportPart)) {
                 return Optional.of(reportPart);

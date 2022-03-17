@@ -3,7 +3,7 @@
     <parent>
         <artifactId>sdc-ri</artifactId>
         <groupId>org.somda.sdc</groupId>
-        <version>1.1.0</version>
+        <version>2.0.0</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -40,14 +40,8 @@
         <connection>scm:git:git://gitlab.com/sdc-suite/sdc-ri.git</connection>
         <developerConnection>scm:git:git://gitlab.com/sdc-suite/sdc-ri.git</developerConnection>
         <url>https://gitlab.com/sdc-suite/sdc-ri/-/tree/develop</url>
-        <tag>sdc-ri-1.1.0</tag>
+        <tag>sdc-ri-2.0.0</tag>
     </scm>
-
-    <properties>
-        <junitVersion>5.6.1</junitVersion>
-        <junitPlatformVersion>1.6.1</junitPlatformVersion>
-        <log4jVersion>2.13.1</log4jVersion>
-    </properties>
 
     <build>
         <plugins>
@@ -67,36 +61,36 @@
         <dependency>
             <groupId>org.somda.sdc</groupId>
             <artifactId>glue</artifactId>
-            <version>1.1.0</version>
+            <version>2.0.0</version>
         </dependency>
         <dependency>
             <groupId>org.somda.sdc</groupId>
             <artifactId>mdpws</artifactId>
-            <version>1.1.0</version>
+            <version>2.0.0</version>
         </dependency>
         <dependency>
             <groupId>org.somda.sdc</groupId>
             <artifactId>dpws</artifactId>
-            <version>1.1.0</version>
+            <version>2.0.0</version>
         </dependency>
         <dependency>
             <groupId>org.somda.sdc</groupId>
             <artifactId>biceps</artifactId>
-            <version>1.1.0</version>
+            <version>2.0.0</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/org.apache.logging.log4j/log4j-core -->
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-core</artifactId>
-            <version>${log4jVersion}</version>
+            <version>${log4j2Version}</version>
         </dependency>
 
-        <!-- https://mvnrepository.com/artifact/org.apache.logging.log4j/log4j-slf4j18-impl -->
+        <!-- https://mvnrepository.com/artifact/org.apache.logging.log4j/log4j-slf4j-impl -->
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-slf4j18-impl</artifactId>
-            <version>${log4jVersion}</version>
+            <artifactId>log4j-slf4j-impl</artifactId>
+            <version>${log4j2Version}</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/commons-cli/commons-cli -->
@@ -132,6 +126,19 @@
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-engine</artifactId>
             <version>${junitVersion}</version>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/org.bouncycastle/bcprov-jdk15on -->
+        <dependency>
+            <groupId>org.bouncycastle</groupId>
+            <artifactId>bcprov-jdk15on</artifactId>
+            <version>${bouncyCastleVersion}</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/org.bouncycastle/bcpkix-jdk15on -->
+        <dependency>
+            <groupId>org.bouncycastle</groupId>
+            <artifactId>bcpkix-jdk15on</artifactId>
+            <version>${bouncyCastleVersion}</version>
         </dependency>
 
     </dependencies>

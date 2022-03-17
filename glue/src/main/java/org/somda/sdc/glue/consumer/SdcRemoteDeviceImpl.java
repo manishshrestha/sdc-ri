@@ -6,16 +6,18 @@ import com.google.common.util.concurrent.ListenableFuture;
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
 import com.google.inject.name.Named;
-import org.slf4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.somda.sdc.biceps.common.access.MdibAccessObservable;
 import org.somda.sdc.biceps.consumer.access.RemoteMdibAccess;
 import org.somda.sdc.biceps.model.message.AbstractSet;
 import org.somda.sdc.biceps.model.message.AbstractSetResponse;
 import org.somda.sdc.biceps.model.message.OperationInvokedReport;
+import org.somda.sdc.common.CommonConfig;
 import org.somda.sdc.dpws.DpwsConfig;
 import org.somda.sdc.dpws.service.HostedServiceProxy;
 import org.somda.sdc.dpws.service.HostingServiceProxy;
-import org.somda.sdc.glue.consumer.helper.LogPrepender;
+import org.somda.sdc.glue.consumer.helper.HostingServiceLogger;
 import org.somda.sdc.glue.consumer.report.ReportProcessor;
 import org.somda.sdc.glue.consumer.sco.ScoController;
 import org.somda.sdc.glue.consumer.sco.ScoTransaction;
@@ -31,29 +33,14 @@ import java.util.function.Consumer;
  * Default implementation of {@linkplain SdcRemoteDevice}.
  */
 public class SdcRemoteDeviceImpl extends AbstractIdleService implements SdcRemoteDevice {
-    private final Logger LOG;
+    private static final Logger LOG = LogManager.getLogger(SdcRemoteDeviceImpl.class);
     private final RemoteMdibAccess remoteMdibAccess;
     private final ReportProcessor reportProcessor;
     private final ScoController scoController;
     private final HostingServiceProxy hostingServiceProxy;
     private final SdcRemoteDeviceWatchdog watchdog;
     private final Duration maxWait;
-
-    @Deprecated(since = "1.1.0", forRemoval = true)
-    @AssistedInject
-    SdcRemoteDeviceImpl(@Assisted HostingServiceProxy hostingServiceProxy,
-                        @Assisted RemoteMdibAccess remoteMdibAccess,
-                        @Assisted ReportProcessor reportProcessor,
-                        @Assisted @Nullable ScoController scoController,
-                        @Named(DpwsConfig.MAX_WAIT_FOR_FUTURES) Duration maxWait) {
-        LOG = LogPrepender.getLogger(hostingServiceProxy, SdcRemoteDeviceImpl.class);
-        this.remoteMdibAccess = remoteMdibAccess;
-        this.reportProcessor = reportProcessor;
-        this.scoController = scoController;
-        this.hostingServiceProxy = hostingServiceProxy;
-        this.watchdog = null;
-        this.maxWait = maxWait;
-    }
+    private final Logger instanceLogger;
 
     @AssistedInject
     SdcRemoteDeviceImpl(@Assisted HostingServiceProxy hostingServiceProxy,
@@ -61,8 +48,9 @@ public class SdcRemoteDeviceImpl extends AbstractIdleService implements SdcRemot
                         @Assisted ReportProcessor reportProcessor,
                         @Assisted @Nullable ScoController scoController,
                         @Assisted SdcRemoteDeviceWatchdog watchdog,
-                        @Named(DpwsConfig.MAX_WAIT_FOR_FUTURES) Duration maxWait) {
-        LOG = LogPrepender.getLogger(hostingServiceProxy, SdcRemoteDeviceImpl.class);
+                        @Named(DpwsConfig.MAX_WAIT_FOR_FUTURES) Duration maxWait,
+                        @Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier) {
+        this.instanceLogger = HostingServiceLogger.getLogger(LOG, hostingServiceProxy, frameworkIdentifier);
         this.remoteMdibAccess = remoteMdibAccess;
         this.reportProcessor = reportProcessor;
         this.scoController = scoController;
@@ -95,14 +83,17 @@ public class SdcRemoteDeviceImpl extends AbstractIdleService implements SdcRemot
             final String message = "Remote device does not provide a set service. {} refused.";
             return new SetServiceAccess() {
                 @Override
-                public <T extends AbstractSet, V extends AbstractSetResponse> ListenableFuture<ScoTransaction<V>> invoke(T setRequest, Class<V> responseClass) {
-                    LOG.warn(message, setRequest.getClass().getSimpleName());
+                public <T extends AbstractSet, V extends AbstractSetResponse> ListenableFuture<ScoTransaction<V>>
+                invoke(T setRequest, Class<V> responseClass) {
+                    instanceLogger.warn(message, setRequest.getClass().getSimpleName());
                     return Futures.immediateCancelledFuture();
                 }
 
                 @Override
-                public <T extends AbstractSet, V extends AbstractSetResponse> ListenableFuture<ScoTransaction<V>> invoke(T setRequest, @Nullable Consumer<OperationInvokedReport.ReportPart> reportListener, Class<V> responseClass) {
-                    LOG.warn(message, setRequest.getClass().getSimpleName());
+                public <T extends AbstractSet, V extends AbstractSetResponse> ListenableFuture<ScoTransaction<V>>
+                invoke(T setRequest, @Nullable Consumer<OperationInvokedReport.ReportPart> reportListener,
+                       Class<V> responseClass) {
+                    instanceLogger.warn(message, setRequest.getClass().getSimpleName());
                     return Futures.immediateCancelledFuture();
                 }
             };
@@ -114,11 +105,13 @@ public class SdcRemoteDeviceImpl extends AbstractIdleService implements SdcRemot
     @Override
     public void registerWatchdogObserver(WatchdogObserver watchdogObserver) {
         checkRunning();
+        this.watchdog.registerObserver(watchdogObserver);
     }
 
     @Override
     public void unregisterWatchdogObserver(WatchdogObserver watchdogObserver) {
         checkRunning();
+        this.watchdog.unregisterObserver(watchdogObserver);
     }
 
     @Override
@@ -134,23 +127,28 @@ public class SdcRemoteDeviceImpl extends AbstractIdleService implements SdcRemot
             try {
                 watchdog.stopAsync().awaitTerminated(maxWait.getSeconds(), TimeUnit.SECONDS);
             } catch (TimeoutException e) {
-                LOG.error("Could not stop the remote device watchdog", e);
+                instanceLogger.error("Could not stop the remote device watchdog", e);
             }
         }
+
         try {
             reportProcessor.stopAsync().awaitTerminated(maxWait.getSeconds(), TimeUnit.SECONDS);
         } catch (TimeoutException e) {
-            LOG.error("Could not stop the report processor", e);
+            instanceLogger.error("Could not stop the report processor", e);
         }
-        final ArrayList<HostedServiceProxy> hostedServices = new ArrayList<>(hostingServiceProxy.getHostedServices().values());
+
+        final var hostedServices = new ArrayList<>(hostingServiceProxy.getHostedServices().values());
         for (HostedServiceProxy hostedService : hostedServices) {
             hostedService.getEventSinkAccess().unsubscribeAll();
         }
+
+        remoteMdibAccess.unregisterAllObservers();
     }
 
     private void checkRunning() {
         if (!isRunning()) {
-            throw new RuntimeException(String.format("Tried to access a disconnected SDC remote device instance with EPR address %s",
+            throw new RuntimeException(String.format("Tried to access a disconnected SDC remote device instance " +
+                            "with EPR address %s",
                     hostingServiceProxy.getEndpointReferenceAddress()));
         }
     }

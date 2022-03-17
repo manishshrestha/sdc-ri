@@ -4,7 +4,7 @@ import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.name.Names;
-import org.somda.sdc.common.guice.DefaultHelperModule;
+import org.somda.sdc.common.guice.DefaultCommonModule;
 import org.somda.sdc.dpws.DpwsFramework;
 import org.somda.sdc.dpws.DpwsUtil;
 import org.somda.sdc.dpws.device.factory.DeviceFactory;
@@ -29,7 +29,7 @@ public class DeviceImplTest implements Runnable {
 
     @Override
     public void run() {
-        Injector inj = Guice.createInjector(new DefaultDpwsModule(), new DefaultHelperModule(), new DpwsConfig());
+        Injector inj = Guice.createInjector(new DefaultDpwsModule(), new DefaultCommonModule(), new DpwsConfig());
 
         WsAddressingUtil wsaUtil = inj.getInstance(WsAddressingUtil.class);
         DeviceSettings devConf = new DeviceSettings() {
@@ -101,7 +101,7 @@ public class DeviceImplTest implements Runnable {
         System.out.println("Device stopped");
     }
 
-    private class DpwsConfig extends AbstractModule {
+    private static class DpwsConfig extends AbstractModule {
         @Override
         protected void configure() {
             bind(Boolean.class)

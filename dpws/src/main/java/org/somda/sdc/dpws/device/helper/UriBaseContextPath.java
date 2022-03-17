@@ -7,7 +7,7 @@ import java.util.Optional;
  * Helper to extract a base path from an URI.
  */
 public class UriBaseContextPath {
-    final String basePath;
+    private final String basePath;
 
     /**
      * Constructor that accepts an URI and tries to cut out the base path on construction.
@@ -40,7 +40,8 @@ public class UriBaseContextPath {
                 return parsedUri.getPath().substring(1); // skip preceding slash
             case URN_UUID:
             case URN_OID:
-                return parsedUri.getSchemeSpecificPart().substring(supportedUriScheme.get().getSpecificPart().length() + 1);
+                return parsedUri.getSchemeSpecificPart()
+                        .substring(supportedUriScheme.get().getSpecificPart().length() + 1);
             default:
                 return "";
         }

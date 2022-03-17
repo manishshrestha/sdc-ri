@@ -84,9 +84,9 @@ public class ObjectStringifier {
      * @return the stringified object in conformance with the SDCri coding conventions.
      */
     public static <T> String stringifyMap(T obj, SortedMap<String, Object> keyValues) {
-        StringBuffer stringBuffer = start(obj);
-        appendMapValues(stringBuffer, keyValues);
-        return finish(stringBuffer);
+        StringBuilder stringBuilder = start(obj);
+        appendMapValues(stringBuilder, keyValues);
+        return finish(stringBuilder);
     }
 
     /**
@@ -103,49 +103,51 @@ public class ObjectStringifier {
         return stringifyWithFilter(obj, null, field -> !field.getName().startsWith("this$"));
     }
 
-    private static <T> void appendMapValues(StringBuffer stringBuffer, SortedMap<String, Object> keyValues) {
+    private static void appendMapValues(StringBuilder stringBuilder, SortedMap<String, Object> keyValues) {
         final Iterator<Map.Entry<String, Object>> iterator = keyValues.entrySet().iterator();
         boolean firstRun = true;
         while (iterator.hasNext()) {
             if (!firstRun) {
-                stringBuffer.append(';');
+                stringBuilder.append(';');
             }
             firstRun = false;
             final Map.Entry<String, Object> next = iterator.next();
-            appendKeyValue(stringBuffer, next.getKey(), next.getValue());
+            appendKeyValue(stringBuilder, next.getKey(), next.getValue());
         }
     }
 
-    private static <T> String stringifyWithFilter(T obj, @Nullable SortedMap<String, Object> keyValues, Predicate<Field> filter) {
-        StringBuffer stringBuffer = start(obj);
+    private static <T> String stringifyWithFilter(T obj,
+                                                  @Nullable SortedMap<String, Object> keyValues,
+                                                  Predicate<Field> filter) {
+        StringBuilder stringBuilder = start(obj);
 
         try {
-            appendToStringProperties(stringBuffer, obj, filter);
+            appendToStringProperties(stringBuilder, obj, filter);
         } catch (IllegalAccessException e) {
             throw new RuntimeException(e);
         }
 
         if (keyValues != null && !keyValues.isEmpty()) {
-            stringBuffer.append(';');
-            appendMapValues(stringBuffer, keyValues);
+            stringBuilder.append(';');
+            appendMapValues(stringBuilder, keyValues);
         }
 
-        return finish(stringBuffer);
+        return finish(stringBuilder);
     }
 
-    private static <T> StringBuffer start(T obj) {
-        StringBuffer stringBuffer = new StringBuffer();
-        stringBuffer.append(obj.getClass().getSimpleName());
-        stringBuffer.append("(");
-        return stringBuffer;
+    private static <T> StringBuilder start(T obj) {
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append(obj.getClass().getSimpleName());
+        stringBuilder.append("(");
+        return stringBuilder;
     }
 
-    private static String finish(StringBuffer stringBuffer) {
-        stringBuffer.append(")");
-        return stringBuffer.toString();
+    private static String finish(StringBuilder stringBuilder) {
+        stringBuilder.append(")");
+        return stringBuilder.toString();
     }
 
-    private static void appendToStringProperties(StringBuffer stringBuffer,
+    private static void appendToStringProperties(StringBuilder stringBuilder,
                                                  Object obj,
                                                  Predicate<Field> predicate) throws IllegalAccessException {
         Field[] fields = obj.getClass().getDeclaredFields();
@@ -156,16 +158,16 @@ public class ObjectStringifier {
                 continue;
             }
             if (insertedFields++ > 0) {
-                stringBuffer.append(';');
+                stringBuilder.append(';');
             }
 
-            appendKeyValue(stringBuffer, field.getName(), field.get(obj));
+            appendKeyValue(stringBuilder, field.getName(), field.get(obj));
         }
     }
 
-    private static void appendKeyValue(StringBuffer stringBuffer, String key, @Nullable Object value) {
-        stringBuffer.append(key);
-        stringBuffer.append('=');
-        stringBuffer.append(value); // null value is ok; will be converted to string "null"
+    private static void appendKeyValue(StringBuilder stringBuilder, String key, @Nullable Object value) {
+        stringBuilder.append(key);
+        stringBuilder.append('=');
+        stringBuilder.append(value); // null value is ok; will be converted to string "null"
     }
 }

@@ -2,7 +2,6 @@ package org.somda.sdc.dpws.soap.interception;
 
 import java.lang.reflect.Method;
 import java.util.Objects;
-import java.util.Optional;
 
 /**
  * Package private information set to encapsulate information needed to invoke interceptor callbacks.

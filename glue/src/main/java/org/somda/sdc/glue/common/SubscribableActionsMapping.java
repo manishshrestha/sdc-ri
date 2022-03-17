@@ -12,7 +12,8 @@ public class SubscribableActionsMapping {
         var qnames = new HashMap<String, QName>();
         qnames.put(ActionConstants.ACTION_OPERATION_INVOKED_REPORT, WsdlConstants.PORT_TYPE_SET_QNAME);
 
-        qnames.put(ActionConstants.ACTION_DESCRIPTION_MODIFICATION_REPORT, WsdlConstants.PORT_TYPE_DESCRIPTION_EVENT_QNAME);
+        qnames.put(ActionConstants.ACTION_DESCRIPTION_MODIFICATION_REPORT,
+                WsdlConstants.PORT_TYPE_DESCRIPTION_EVENT_QNAME);
 
         qnames.put(ActionConstants.ACTION_EPISODIC_ALERT_REPORT, WsdlConstants.PORT_TYPE_STATE_EVENT_QNAME);
         qnames.put(ActionConstants.ACTION_PERIODIC_ALERT_REPORT, WsdlConstants.PORT_TYPE_STATE_EVENT_QNAME);

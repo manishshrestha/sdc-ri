@@ -1,32 +1,39 @@
 package org.somda.sdc.dpws.soap;
 
-import org.somda.sdc.dpws.DpwsTest;
-import org.somda.sdc.dpws.soap.factory.RequestResponseClientFactory;
-import org.somda.sdc.dpws.soap.model.Envelope;
-import org.somda.sdc.dpws.soap.interception.*;
-import org.somda.sdc.dpws.soap.wsaddressing.WsAddressingUtil;
-import org.somda.sdc.dpws.soap.wsaddressing.model.AttributedURIType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.somda.sdc.dpws.DpwsTest;
+import org.somda.sdc.dpws.helper.JaxbMarshalling;
+import org.somda.sdc.dpws.soap.factory.RequestResponseClientFactory;
+import org.somda.sdc.dpws.soap.interception.Direction;
+import org.somda.sdc.dpws.soap.interception.Interceptor;
+import org.somda.sdc.dpws.soap.interception.MessageInterceptor;
+import org.somda.sdc.dpws.soap.interception.RequestObject;
+import org.somda.sdc.dpws.soap.interception.RequestResponseObject;
+import org.somda.sdc.dpws.soap.model.Envelope;
+import org.somda.sdc.dpws.soap.wsaddressing.WsAddressingUtil;
+import org.somda.sdc.dpws.soap.wsaddressing.model.AttributedURIType;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
 
-public class RequestResponseClientImplTest extends DpwsTest {
+class RequestResponseClientImplTest extends DpwsTest {
     private List<String> dispatchedSequence;
-    
+
     @Override
     @BeforeEach
     public void setUp() throws Exception {
         super.setUp();
+        getInjector().getInstance(JaxbMarshalling.class).startAsync().awaitRunning();
         getInjector().getInstance(SoapMarshalling.class).startAsync().awaitRunning();
         dispatchedSequence = new ArrayList<>();
     }
 
     @Test
-    public void sendRequestResponse() throws Exception {
+    void sendRequestResponse() throws Exception {
         SoapMarshalling unmarshaller = getInjector().getInstance(SoapMarshalling.class);
         Envelope soapEnv = unmarshaller.unmarshal(getClass().getResourceAsStream("soap-envelope.xml"));
 

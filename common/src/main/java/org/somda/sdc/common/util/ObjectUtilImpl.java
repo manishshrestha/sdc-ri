@@ -2,8 +2,8 @@ package org.somda.sdc.common.util;
 
 import com.google.inject.Inject;
 import com.rits.cloning.Cloner;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 import javax.annotation.Nullable;
 
@@ -11,7 +11,7 @@ import javax.annotation.Nullable;
  * Default implementation of {@linkplain ObjectUtil}.
  */
 public class ObjectUtilImpl implements ObjectUtil {
-    private static final Logger LOG = LoggerFactory.getLogger(ObjectUtilImpl.class);
+    private static final Logger LOG = LogManager.getLogger(ObjectUtilImpl.class);
     private final Cloner cloner;
 
     @Inject
@@ -24,12 +24,7 @@ public class ObjectUtilImpl implements ObjectUtil {
         if (obj == null) {
             return null;
         }
-        try {
-            return cloner.deepClone(obj);
-        } catch (Exception e) {
-            LOG.warn("Unable to deep-copy object due to: {}", e.getMessage());
-            LOG.trace("Unable to deep-copy object", e);
-        }
-        throw new RuntimeException("Fatal error on object deepp-copy");
+
+        return cloner.deepClone(obj);
     }
 }

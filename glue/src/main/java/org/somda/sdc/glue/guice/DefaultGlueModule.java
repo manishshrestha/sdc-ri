@@ -4,8 +4,11 @@ import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.inject.AbstractModule;
+import com.google.inject.Provides;
 import com.google.inject.assistedinject.FactoryModuleBuilder;
-import org.somda.sdc.common.util.ExecutorWrapperUtil;
+import com.google.inject.name.Named;
+import org.somda.sdc.common.CommonConfig;
+import org.somda.sdc.common.util.ExecutorWrapperService;
 import org.somda.sdc.glue.common.MdibMapper;
 import org.somda.sdc.glue.common.ModificationsBuilder;
 import org.somda.sdc.glue.common.factory.MdibMapperFactory;
@@ -38,6 +41,15 @@ import java.util.concurrent.ScheduledExecutorService;
  * Default Glue module.
  */
 public class DefaultGlueModule extends AbstractModule {
+
+    private ExecutorWrapperService<ListeningExecutorService> consumerExecutor;
+    private ExecutorWrapperService<ScheduledExecutorService> watchdogScheduledExecutor;
+
+    public DefaultGlueModule() {
+        consumerExecutor = null;
+        watchdogScheduledExecutor = null;
+    }
+
     @Override
     protected void configure() {
         configureCommon();
@@ -55,29 +67,6 @@ public class DefaultGlueModule extends AbstractModule {
     }
 
     private void configureConsumer() {
-
-        {
-            Callable<ListeningExecutorService> executor = () -> MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(
-                    10,
-                    new ThreadFactoryBuilder()
-                            .setNameFormat("Consumer-thread-%d")
-                            .setDaemon(true)
-                            .build()
-            ));
-            ExecutorWrapperUtil.bindListeningExecutor(this, executor, Consumer.class);
-        }
-
-        {
-            Callable<ScheduledExecutorService> executor = () -> Executors.newScheduledThreadPool(
-                    10,
-                    new ThreadFactoryBuilder()
-                            .setNameFormat("WatchdogScheduledExecutor-thread-%d")
-                            .setDaemon(true)
-                            .build()
-            );
-            ExecutorWrapperUtil.bindScheduledExecutor(this, executor, WatchdogScheduledExecutor.class);
-        }
-
         bind(SdcRemoteDevicesConnector.class).to(SdcRemoteDevicesConnectorImpl.class);
 
         install(new FactoryModuleBuilder()
@@ -89,7 +78,8 @@ public class DefaultGlueModule extends AbstractModule {
                 .build(SdcRemoteDeviceFactory.class));
 
         install(new FactoryModuleBuilder()
-                .implement(org.somda.sdc.glue.consumer.sco.ScoController.class, org.somda.sdc.glue.consumer.sco.ScoController.class)
+                .implement(org.somda.sdc.glue.consumer.sco.ScoController.class,
+                        org.somda.sdc.glue.consumer.sco.ScoController.class)
                 .build(org.somda.sdc.glue.consumer.sco.factory.ScoControllerFactory.class));
 
         install(new FactoryModuleBuilder()
@@ -117,5 +107,43 @@ public class DefaultGlueModule extends AbstractModule {
         install(new FactoryModuleBuilder()
                 .implement(ReportGenerator.class, ReportGenerator.class)
                 .build(ReportGeneratorFactory.class));
+    }
+
+    @Provides
+    @Consumer
+    ExecutorWrapperService<ListeningExecutorService> getConsumerExecutor(
+            @Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier) {
+        if (consumerExecutor == null) {
+            Callable<ListeningExecutorService> executor =
+                    () -> MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(
+                            10,
+                            new ThreadFactoryBuilder()
+                                    .setNameFormat("Consumer-thread-%d")
+                                    .setDaemon(true)
+                                    .build()
+                    ));
+            consumerExecutor = new ExecutorWrapperService<>(executor, "Consumer", frameworkIdentifier);
+        }
+        return consumerExecutor;
+    }
+
+    @Provides
+    @WatchdogScheduledExecutor
+    ExecutorWrapperService<ScheduledExecutorService> getWatchdogScheduledExecutor(
+            @Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier) {
+        if (watchdogScheduledExecutor == null) {
+            Callable<ScheduledExecutorService> executor = () -> Executors.newScheduledThreadPool(
+                    10,
+                    new ThreadFactoryBuilder()
+                            .setNameFormat("WatchdogScheduledExecutor-thread-%d")
+                            .setDaemon(true)
+                            .build()
+            );
+
+            watchdogScheduledExecutor =
+                    new ExecutorWrapperService<>(executor, "WatchdogScheduledExecutor", frameworkIdentifier);
+        }
+
+        return watchdogScheduledExecutor;
     }
 }

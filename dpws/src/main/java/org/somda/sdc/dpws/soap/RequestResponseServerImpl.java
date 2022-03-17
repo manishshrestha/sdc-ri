@@ -1,12 +1,14 @@
 package org.somda.sdc.dpws.soap;
 
 import com.google.inject.Inject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.somda.sdc.dpws.guice.DeviceSpecific;
 import org.somda.sdc.dpws.soap.exception.SoapFaultException;
 import org.somda.sdc.dpws.soap.factory.SoapFaultFactory;
-import org.somda.sdc.dpws.soap.interception.*;
+import org.somda.sdc.dpws.soap.interception.Direction;
+import org.somda.sdc.dpws.soap.interception.Interceptor;
+import org.somda.sdc.dpws.soap.interception.InterceptorRegistry;
+import org.somda.sdc.dpws.soap.interception.RequestResponseObject;
+import org.somda.sdc.dpws.soap.interception.ServerDispatcher;
 import org.somda.sdc.dpws.soap.wsaddressing.WsAddressingConstants;
 import org.somda.sdc.dpws.soap.wsaddressing.WsAddressingServerInterceptor;
 import org.somda.sdc.dpws.soap.wsaddressing.WsAddressingUtil;
@@ -17,7 +19,6 @@ import org.somda.sdc.dpws.soap.wsaddressing.model.ObjectFactory;
  * Default implementation of {@linkplain RequestResponseServer}.
  */
 public class RequestResponseServerImpl implements RequestResponseServer {
-    private static final Logger LOG = LoggerFactory.getLogger(RequestResponseServerImpl.class);
 
     private final InterceptorRegistry interceptorRegistry;
     private final SoapFaultFactory soapFaultFactory;
@@ -62,7 +63,7 @@ public class RequestResponseServerImpl implements RequestResponseServer {
                     "A required header representing a Message Addressing Property is not present",
                     wsaObjectFactory.createProblemHeaderQName(wsAddressingUtil.createAttributedQNameType(
                             WsAddressingConstants.QNAME_ACTION
-                    ))));
+                    ))), request.getWsAddressingHeader().getMessageId().orElse(null));
         }
 
         var action = wsAddressingUtil.getAddressUriString(actionHeader.orElse(new AttributedURIType()));
@@ -77,7 +78,8 @@ public class RequestResponseServerImpl implements RequestResponseServer {
                     SoapConstants.SENDER,
                     WsAddressingConstants.ACTION_NOT_SUPPORTED,
                     "The [action] cannot be processed at the receiver",
-                    wsaObjectFactory.createProblemAction(problemActionType)));
+                    wsaObjectFactory.createProblemAction(problemActionType)),
+                    request.getWsAddressingHeader().getMessageId().orElse(null));
         }
 
         RequestResponseObject rrObj = new RequestResponseObject(request, response, communicationContext);

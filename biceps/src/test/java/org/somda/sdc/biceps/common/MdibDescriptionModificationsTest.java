@@ -1,9 +1,11 @@
 package org.somda.sdc.biceps.common;
 
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.somda.sdc.biceps.model.participant.*;
 import org.somda.sdc.biceps.testutil.MockModelFactory;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import test.org.somda.common.LoggingTestWatcher;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
@@ -14,9 +16,10 @@ import java.util.Map;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 
-public class MdibDescriptionModificationsTest {
+@ExtendWith(LoggingTestWatcher.class)
+class MdibDescriptionModificationsTest {
     @Test
-    public void singleState() throws InstantiationException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
+    void singleState() throws InstantiationException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
         final List<AbstractDescriptor> descriptors = Arrays.asList(
                 MockModelFactory.createDescriptor("h1", NumericMetricDescriptor.class),
                 MockModelFactory.createDescriptor("h2", StringMetricDescriptor.class),
@@ -64,7 +67,7 @@ public class MdibDescriptionModificationsTest {
     }
 
     @Test
-    public void multiState() throws InstantiationException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
+    void multiState() throws InstantiationException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
         final List<AbstractContextDescriptor> descriptors = Arrays.asList(
                 MockModelFactory.createDescriptor("c1", LocationContextDescriptor.class),
                 MockModelFactory.createDescriptor("c2", PatientContextDescriptor.class));
@@ -78,15 +81,15 @@ public class MdibDescriptionModificationsTest {
 
         MdibDescriptionModifications mdibDescriptionModifications = MdibDescriptionModifications.create();
 
-        for (int i = 0; i < descriptors.size(); ++i) {
-            mdibDescriptionModifications.insert(descriptors.get(i), states.get(descriptors.get(i).getHandle()));
+        for (AbstractContextDescriptor descriptor : descriptors) {
+            mdibDescriptionModifications.insert(descriptor, states.get(descriptor.getHandle()));
         }
-        for (int i = 0; i < descriptors.size(); ++i) {
-            mdibDescriptionModifications.update(descriptors.get(i), states.get(descriptors.get(i).getHandle()));
+        for (AbstractContextDescriptor descriptor : descriptors) {
+            mdibDescriptionModifications.update(descriptor, states.get(descriptor.getHandle()));
         }
-        for (int i = 0; i < descriptors.size(); ++i) {
-            mdibDescriptionModifications.add(MdibDescriptionModification.Type.DELETE, descriptors.get(i),
-                    states.get(descriptors.get(i).getHandle()));
+        for (AbstractContextDescriptor descriptor : descriptors) {
+            mdibDescriptionModifications.add(MdibDescriptionModification.Type.DELETE, descriptor,
+                                             states.get(descriptor.getHandle()));
         }
 
         checkResultsMultiState(mdibDescriptionModifications, descriptors, states,
@@ -116,7 +119,7 @@ public class MdibDescriptionModificationsTest {
     }
 
     @Test
-    public void handleDuplicate() throws InstantiationException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
+    void handleDuplicate() throws InstantiationException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
         final List<AbstractDescriptor> descriptors = Arrays.asList(
                 MockModelFactory.createDescriptor("h1", NumericMetricDescriptor.class),
                 MockModelFactory.createDescriptor("h2", AlertSignalDescriptor.class));

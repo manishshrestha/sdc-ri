@@ -19,6 +19,7 @@ import org.somda.sdc.dpws.soap.exception.TransportException;
 import org.somda.sdc.dpws.soap.interception.InterceptorException;
 import org.somda.sdc.dpws.soap.interception.MessageInterceptor;
 import org.somda.sdc.dpws.soap.interception.NotificationObject;
+import org.somda.sdc.dpws.soap.wsaddressing.WsAddressingConstants;
 import org.somda.sdc.dpws.soap.wsaddressing.WsAddressingUtil;
 import org.somda.sdc.dpws.soap.wsaddressing.model.AttributedURIType;
 import org.somda.sdc.dpws.soap.wsaddressing.model.EndpointReferenceType;
@@ -26,11 +27,25 @@ import org.somda.sdc.dpws.soap.wsdiscovery.event.ByeMessage;
 import org.somda.sdc.dpws.soap.wsdiscovery.event.HelloMessage;
 import org.somda.sdc.dpws.soap.wsdiscovery.event.ProbeMatchesMessage;
 import org.somda.sdc.dpws.soap.wsdiscovery.event.ProbeTimeoutMessage;
-import org.somda.sdc.dpws.soap.wsdiscovery.model.*;
+import org.somda.sdc.dpws.soap.wsdiscovery.model.AppSequenceType;
+import org.somda.sdc.dpws.soap.wsdiscovery.model.ByeType;
+import org.somda.sdc.dpws.soap.wsdiscovery.model.HelloType;
+import org.somda.sdc.dpws.soap.wsdiscovery.model.ObjectFactory;
+import org.somda.sdc.dpws.soap.wsdiscovery.model.ProbeMatchesType;
+import org.somda.sdc.dpws.soap.wsdiscovery.model.ProbeType;
+import org.somda.sdc.dpws.soap.wsdiscovery.model.ResolveMatchesType;
+import org.somda.sdc.dpws.soap.wsdiscovery.model.ResolveType;
+import org.somda.sdc.dpws.soap.wsdiscovery.model.ScopesType;
+
 
 import javax.xml.namespace.QName;
 import java.time.Duration;
-import java.util.*;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
@@ -70,7 +85,8 @@ public class WsDiscoveryClientInterceptor implements WsDiscoveryClient {
     @AssistedInject
     WsDiscoveryClientInterceptor(@Assisted NotificationSource notificationSource,
                                  @Named(WsDiscoveryConfig.MAX_WAIT_FOR_PROBE_MATCHES) Duration maxWaitForProbeMatches,
-                                 @Named(WsDiscoveryConfig.MAX_WAIT_FOR_RESOLVE_MATCHES) Duration maxWaitForResolveMatches,
+                                 @Named(WsDiscoveryConfig.MAX_WAIT_FOR_RESOLVE_MATCHES)
+                                         Duration maxWaitForResolveMatches,
                                  @Named(WsDiscoveryConfig.PROBE_MATCHES_BUFFER_SIZE) Integer probeMatchesBufferSize,
                                  @Named(WsDiscoveryConfig.RESOLVE_MATCHES_BUFFER_SIZE) Integer resolveMatchesBufferSize,
                                  WsDiscoveryUtil wsdUtil,
@@ -152,12 +168,13 @@ public class WsDiscoveryClientInterceptor implements WsDiscoveryClient {
         return executorService.get().submit(() -> {
             SoapMessage response = rrClient.sendRequestResponse(createProbeMessage(types, scopes));
             return soapUtil.getBody(response, ProbeMatchesType.class)
-                    .orElseThrow(() -> new RuntimeException("SOAP message body malformed"));
+                    .orElseThrow(SoapMessageBodyMalformedException::new);
         });
     }
 
     @Override
-    public ListenableFuture<Integer> sendProbe(String probeId, Collection<QName> types, Collection<String> scopes, Integer maxResults)
+    public ListenableFuture<Integer> sendProbe(String probeId, Collection<QName> types,
+                                               Collection<String> scopes, Integer maxResults)
             throws MarshallingException, TransportException, InterceptorException {
         SoapMessage probeMsg = createProbeMessage(types, scopes);
 
@@ -232,7 +249,8 @@ public class WsDiscoveryClientInterceptor implements WsDiscoveryClient {
 
     private Optional<SoapMessage> popMatches(EvictingQueue<SoapMessage> messageQueue, String messageId) {
         Optional<SoapMessage> item = messageQueue.stream().filter(message ->
-                messageId.equals(message.getWsAddressingHeader().getRelatesTo().orElse(new AttributedURIType())
+                messageId.equals(message.getWsAddressingHeader().getRelatesTo().orElse(wsaUtil.createRelatesToType(
+                        WsAddressingConstants.UNSPECIFIED_MESSAGE))
                         .getValue())).findFirst();
         item.ifPresent(messageQueue::remove);
         return item;
@@ -269,19 +287,19 @@ public class WsDiscoveryClientInterceptor implements WsDiscoveryClient {
                     long tStartInMillis = System.currentTimeMillis();
                     Optional<SoapMessage> msg = popMatches(messageQueue, wsaRelatesTo);
                     if (msg.isPresent()) {
-                        return soapUtil.getBody(msg.get(), ResolveMatchesType.class).orElseThrow(() ->
-                                new RuntimeException("SOAP message body malformed"));
+                        return soapUtil.getBody(msg.get(), ResolveMatchesType.class)
+                                .orElseThrow(SoapMessageBodyMalformedException::new);
                     }
 
                     if (!condition.await(wait, TimeUnit.MILLISECONDS)) {
                         break;
-                    };
+                    }
 
                     msg = popMatches(messageQueue, wsaRelatesTo);
                     wait -= System.currentTimeMillis() - tStartInMillis;
                     if (msg.isPresent()) {
-                        return soapUtil.getBody(msg.get(), ResolveMatchesType.class).orElseThrow(() ->
-                                new RuntimeException("SOAP message body malformed"));
+                        return soapUtil.getBody(msg.get(), ResolveMatchesType.class)
+                                .orElseThrow(SoapMessageBodyMalformedException::new);
                     }
                 }
             } finally {
@@ -290,9 +308,9 @@ public class WsDiscoveryClientInterceptor implements WsDiscoveryClient {
 
             throw new RuntimeException(String.format(
                     "No ResolveMatches message received in %s milliseconds, Resolve MessageID was %s",
-                    Long.valueOf(maxWaitInMillis).toString(),
+                    maxWaitInMillis,
                     wsaRelatesTo
-                    ));
+            ));
         }
     }
 
@@ -360,14 +378,15 @@ public class WsDiscoveryClientInterceptor implements WsDiscoveryClient {
         }
 
         private Integer fetchData(Integer probeMatchesCount) {
+            var copyProbeMatchesCount = probeMatchesCount;
             Optional<SoapMessage> msg = popMatches(messageQueue, wsaRelatesTo);
             if (msg.isPresent()) {
                 ProbeMatchesType pMatches = soapUtil.getBody(msg.get(), ProbeMatchesType.class)
-                        .orElseThrow(() -> new RuntimeException("SOAP message body malformed"));
+                        .orElseThrow(SoapMessageBodyMalformedException::new);
                 helloByeProbeEvents.post(new ProbeMatchesMessage(probeId, pMatches));
-                probeMatchesCount++;
+                copyProbeMatchesCount++;
             }
-            return probeMatchesCount;
+            return copyProbeMatchesCount;
         }
     }
 
@@ -379,5 +398,11 @@ public class WsDiscoveryClientInterceptor implements WsDiscoveryClient {
     @Override
     public void unregisterHelloByeAndProbeMatchesObserver(HelloByeAndProbeMatchesObserver observer) {
         helloByeProbeEvents.unregister(observer);
+    }
+
+    private static class SoapMessageBodyMalformedException extends RuntimeException {
+        public SoapMessageBodyMalformedException() {
+            super("SOAP message body malformed");
+        }
     }
 }

@@ -6,8 +6,10 @@ import com.google.common.util.concurrent.AbstractIdleService;
 import com.google.inject.Inject;
 import com.google.inject.Provider;
 import com.google.inject.name.Named;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.somda.sdc.common.CommonConfig;
+import org.somda.sdc.common.logging.InstanceLogger;
 import org.somda.sdc.common.util.JaxbUtil;
 import org.somda.sdc.dpws.DpwsConstants;
 import org.somda.sdc.dpws.device.helper.RequestResponseServerHttpHandler;
@@ -47,12 +49,12 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -63,7 +65,7 @@ import java.util.stream.Collectors;
  * Interceptor that handles an event source's incoming subscription requests and facilitates sending notifications.
  */
 public class EventSourceInterceptor extends AbstractIdleService implements EventSource {
-    private static final Logger LOG = LoggerFactory.getLogger(EventSourceInterceptor.class);
+    private static final Logger LOG = LogManager.getLogger(EventSourceInterceptor.class);
 
     private final Duration maxExpires;
     private final String subscriptionManagerPath;
@@ -84,6 +86,7 @@ public class EventSourceInterceptor extends AbstractIdleService implements Event
     private final ObjectFactory wseFactory;
     private final SoapMessageFactory soapMessageFactory;
     private final EnvelopeFactory envelopeFactory;
+    private final Logger instanceLogger;
 
     @Inject
     EventSourceInterceptor(@Named(WsEventingConfig.SOURCE_MAX_EXPIRES) Duration maxExpires,
@@ -99,7 +102,9 @@ public class EventSourceInterceptor extends AbstractIdleService implements Event
                            Provider<RequestResponseServerHttpHandler> rrServerHttpHandlerProvider,
                            SubscriptionRegistry subscriptionRegistry,
                            SubscriptionManagerFactory subscriptionManagerFactory,
-                           HttpUriBuilder httpUriBuilder) {
+                           HttpUriBuilder httpUriBuilder,
+                           @Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier) {
+        this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);
         this.maxExpires = maxExpires;
         this.subscriptionManagerPath = subscriptionManagerPath;
         this.soapUtil = soapUtil;
@@ -127,9 +132,9 @@ public class EventSourceInterceptor extends AbstractIdleService implements Event
 
         // Find subscription ids that are affected by the action
         subscribedActionsLock.lock();
-        Collection<String> affectedSubscriptionIds;
+        Set<String> affectedSubscriptionIds;
         try {
-            affectedSubscriptionIds = subscribedActionsToSubManIds.get(action);
+            affectedSubscriptionIds = new HashSet<>(subscribedActionsToSubManIds.get(action));
             if (affectedSubscriptionIds.isEmpty()) {
                 return;
             }
@@ -149,6 +154,8 @@ public class EventSourceInterceptor extends AbstractIdleService implements Event
 
     @Override
     public void subscriptionEndToAll(WsEventingStatus status) {
+        // don't send end to stale subscription
+        removeStaleSubscriptions();
         subscriptionRegistry.getSubscriptions().forEach((uri, subMan) -> {
             subMan.getEndTo().ifPresent(endTo -> {
                 SoapMessage endToMessage = createForEndTo(status, subMan, endTo);
@@ -158,22 +165,26 @@ public class EventSourceInterceptor extends AbstractIdleService implements Event
         });
     }
 
-    @MessageInterceptor(value = WsEventingConstants.WSE_ACTION_SUBSCRIBE, direction = Direction.REQUEST)
+    @MessageInterceptor(value = WsEventingConstants.WSA_ACTION_SUBSCRIBE, direction = Direction.REQUEST)
     void processSubscribe(RequestResponseObject rrObj) throws SoapFaultException {
+        removeStaleSubscriptions();
+        final var requestMsgId =
+                rrObj.getRequest().getWsAddressingHeader().getMessageId().orElse(null);
         final Supplier<SoapFaultException> soapFaultExceptionSupplier = () ->
-                new SoapFaultException(createInvalidMsg(rrObj));
-        Subscribe subscribe = soapUtil.getBody(rrObj.getRequest(), Subscribe.class).orElseThrow(soapFaultExceptionSupplier);
+                new SoapFaultException(createInvalidMsg(rrObj), requestMsgId);
+        Subscribe subscribe = soapUtil.getBody(rrObj.getRequest(), Subscribe.class)
+                .orElseThrow(soapFaultExceptionSupplier);
 
         // Validate delivery mode
         String deliveryMode = Optional.ofNullable(subscribe.getDelivery().getMode())
                 .orElse(WsEventingConstants.SUPPORTED_DELIVERY_MODE);
         if (!deliveryMode.equals(WsEventingConstants.SUPPORTED_DELIVERY_MODE)) {
-            throw new SoapFaultException(faultFactory.createDeliveryModeRequestedUnavailable());
+            throw new SoapFaultException(faultFactory.createDeliveryModeRequestedUnavailable(), requestMsgId);
         }
 
         // Validate delivery endpoint reference
         if (subscribe.getDelivery().getContent().size() != 1) {
-            throw new SoapFaultException(createInvalidMsg(rrObj));
+            throw new SoapFaultException(createInvalidMsg(rrObj), requestMsgId);
         }
 
         EndpointReferenceType notifyTo = jaxbUtil.extractElement(subscribe.getDelivery().getContent().get(0),
@@ -185,8 +196,7 @@ public class EventSourceInterceptor extends AbstractIdleService implements Event
         Duration grantedExpires = grantExpires(validateExpires(subscribe.getExpires()));
 
         // Create subscription
-        var transportInfo = rrObj.getCommunicationContext().orElseThrow(() ->
-                new RuntimeException("Fatal error. Missing transport information.")).getTransportInfo();
+        var transportInfo = rrObj.getCommunicationContext().getTransportInfo();
         EndpointReferenceType epr = createSubscriptionManagerEprAndRegisterHttpHandler(
                 transportInfo.getScheme(),
                 transportInfo.getLocalAddress().orElseThrow(() ->
@@ -197,12 +207,13 @@ public class EventSourceInterceptor extends AbstractIdleService implements Event
 
         // Validate filter type
         FilterType filterType = Optional.ofNullable(subscribe.getFilter()).orElseThrow(() ->
-                new SoapFaultException(faultFactory.createEventSourceUnableToProcess("No filter given, but required.")));
+                new SoapFaultException(faultFactory.createEventSourceUnableToProcess("No filter given, " +
+                        "but required."), requestMsgId));
 
         // Validate filter dialect
         String filterDialect = Optional.ofNullable(filterType.getDialect()).orElse("");
-        if (filterDialect.isEmpty() || !filterDialect.equals(DpwsConstants.WS_EVENTING_SUPPORTED_DIALECT)) {
-            throw new SoapFaultException(faultFactory.createFilteringRequestedUnavailable());
+        if (!filterDialect.equals(DpwsConstants.WS_EVENTING_SUPPORTED_DIALECT)) {
+            throw new SoapFaultException(faultFactory.createFilteringRequestedUnavailable(), requestMsgId);
         }
 
         List<String> uris = explodeUriList(filterType);
@@ -234,17 +245,17 @@ public class EventSourceInterceptor extends AbstractIdleService implements Event
 
         subscribeResponse.setSubscriptionManager(subMan.getSubscriptionManagerEpr());
         soapUtil.setBody(subscribeResponse, rrObj.getResponse());
-        soapUtil.setWsaAction(rrObj.getResponse(), WsEventingConstants.WSE_ACTION_SUBSCRIBE_RESPONSE);
+        soapUtil.setWsaAction(rrObj.getResponse(), WsEventingConstants.WSA_ACTION_SUBSCRIBE_RESPONSE);
 
-        LOG.info("Incoming subscribe request. Action(s): {}. Generated subscription id: {}. Notifications go to {}. " +
-                        "Expiration in {} seconds",
+        instanceLogger.info("Incoming subscribe request. Action(s): {}. Generated subscription id: {}. " +
+                        "Notifications go to {}. Expiration in {} seconds",
                 Arrays.toString(uris.toArray()),
                 subMan.getSubscriptionId(),
                 wsaUtil.getAddressUri(subMan.getNotifyTo()).orElse("<unknown>"),
                 grantedExpires.getSeconds());
     }
 
-    @MessageInterceptor(value = WsEventingConstants.WSE_ACTION_RENEW, direction = Direction.REQUEST)
+    @MessageInterceptor(value = WsEventingConstants.WSA_ACTION_RENEW, direction = Direction.REQUEST)
     void processRenew(RequestResponseObject rrObj) throws SoapFaultException {
         removeStaleSubscriptions();
 
@@ -259,14 +270,14 @@ public class EventSourceInterceptor extends AbstractIdleService implements Event
         RenewResponse renewResponse = wseFactory.createRenewResponse();
         renewResponse.setExpires(grantedExpires);
         soapUtil.setBody(renewResponse, rrObj.getResponse());
-        soapUtil.setWsaAction(rrObj.getResponse(), WsEventingConstants.WSE_ACTION_RENEW_RESPONSE);
+        soapUtil.setWsaAction(rrObj.getResponse(), WsEventingConstants.WSA_ACTION_RENEW_RESPONSE);
 
-        LOG.info("Subscription {} is renewed. New expiration in {} seconds",
+        instanceLogger.info("Subscription {} is renewed. New expiration in {} seconds",
                 subMan.getSubscriptionId(),
                 grantedExpires.getSeconds());
     }
 
-    @MessageInterceptor(value = WsEventingConstants.WSE_ACTION_GET_STATUS, direction = Direction.REQUEST)
+    @MessageInterceptor(value = WsEventingConstants.WSA_ACTION_GET_STATUS, direction = Direction.REQUEST)
     void processGetStatus(RequestResponseObject rrObj) throws SoapFaultException {
         removeStaleSubscriptions();
 
@@ -279,7 +290,8 @@ public class EventSourceInterceptor extends AbstractIdleService implements Event
             expires = Duration.between(LocalDateTime.now(), subMan.getExpiresTimeout());
             if (expires.isNegative() || expires.isZero()) {
                 throw new SoapFaultException(createInvalidMsg(rrObj,
-                        String.format("Given wse:Identifier '%s' is invalid.", subMan.getSubscriptionId())));
+                        String.format("Given wse:Identifier '%s' is invalid.", subMan.getSubscriptionId())),
+                        rrObj.getRequest().getWsAddressingHeader().getMessageId().orElse(null));
             }
         } finally {
             subscribedActionsLock.unlock();
@@ -288,10 +300,10 @@ public class EventSourceInterceptor extends AbstractIdleService implements Event
         GetStatusResponse getStatusResponse = wseFactory.createGetStatusResponse();
         getStatusResponse.setExpires(expires);
         soapUtil.setBody(getStatusResponse, rrObj.getResponse());
-        soapUtil.setWsaAction(rrObj.getResponse(), WsEventingConstants.WSE_ACTION_GET_STATUS_RESPONSE);
+        soapUtil.setWsaAction(rrObj.getResponse(), WsEventingConstants.WSA_ACTION_GET_STATUS_RESPONSE);
     }
 
-    @MessageInterceptor(value = WsEventingConstants.WSE_ACTION_UNSUBSCRIBE, direction = Direction.REQUEST)
+    @MessageInterceptor(value = WsEventingConstants.WSA_ACTION_UNSUBSCRIBE, direction = Direction.REQUEST)
     void processUnsubscribe(RequestResponseObject rrObj) throws SoapFaultException {
         removeStaleSubscriptions();
 
@@ -301,27 +313,25 @@ public class EventSourceInterceptor extends AbstractIdleService implements Event
         subMan.stopAsync().awaitTerminated();
 
         // No response body required
-        soapUtil.setWsaAction(rrObj.getResponse(), WsEventingConstants.WSE_ACTION_UNSUBSCRIBE_RESPONSE);
+        soapUtil.setWsaAction(rrObj.getResponse(), WsEventingConstants.WSA_ACTION_UNSUBSCRIBE_RESPONSE);
 
-        LOG.info("Unsubscribe {}. Invalidate subscription manager", subMan.getSubscriptionId());
+        instanceLogger.info("Unsubscribe {}. Invalidate subscription manager", subMan.getSubscriptionId());
     }
 
     private void removeStaleSubscriptions() {
-        subscriptionRegistry.getSubscriptions().entrySet().forEach(entry -> {
-            SourceSubscriptionManager subMan = entry.getValue();
+        subscriptionRegistry.getSubscriptions().forEach((key, subMan) -> {
             if (!subMan.isRunning() || isSubscriptionExpired(subMan)) {
-                subscriptionRegistry.removeSubscription(entry.getKey());
+                subscriptionRegistry.removeSubscription(key);
                 unregisterHttpHandler(subMan);
                 subscribedActionsLock.lock();
                 try {
                     HashSet<String> uris = new HashSet<>(subscribedActionsToSubManIds.keySet());
-                    uris.forEach(uri ->
-                            subscribedActionsToSubManIds.remove(uri, entry.getKey()));
+                    uris.forEach(uri -> subscribedActionsToSubManIds.remove(uri, key));
                 } finally {
                     subscribedActionsLock.unlock();
                 }
                 subMan.stopAsync();
-                LOG.info("Remove expired subscription: {}", entry.getKey());
+                instanceLogger.info("Remove expired subscription: {}", key);
             }
         });
     }
@@ -330,7 +340,7 @@ public class EventSourceInterceptor extends AbstractIdleService implements Event
                                                                                      String address,
                                                                                      Integer port) {
         var hostPart = httpUriBuilder.buildUri(scheme, address, port);
-        String contextPath = "/" + UUID.randomUUID().toString() + "/" + subscriptionManagerPath;
+        String contextPath = "/" + UUID.randomUUID() + "/" + subscriptionManagerPath;
         String eprAddress = hostPart + contextPath;
 
         RequestResponseServerHttpHandler handler = rrServerHttpHandlerProvider.get();
@@ -357,27 +367,32 @@ public class EventSourceInterceptor extends AbstractIdleService implements Event
                 return null;
             }
             if (requestedExpires.isZero() || requestedExpires.isNegative()) {
-                throw new Exception(String.format("Expires is lower equal 0", requestedExpires.toString()));
+                throw new Exception(String.format("Expires is less than or equal to 0: {}", requestedExpires));
             } else {
                 return requestedExpires;
             }
+            // CHECKSTYLE.OFF: IllegalCatch
         } catch (Exception e) {
+            // CHECKSTYLE.ON: IllegalCatch
             throw new SoapFaultException(faultFactory.createInvalidExpirationTime());
         }
     }
 
     private <T> T validateRequestBody(RequestResponseObject rrObj, Class<T> expectedType) throws SoapFaultException {
         return soapUtil.getBody(rrObj.getRequest(), expectedType).orElseThrow(() ->
-                new SoapFaultException(createInvalidMsg(rrObj)));
+                new SoapFaultException(createInvalidMsg(rrObj),
+                        rrObj.getRequest().getWsAddressingHeader().getMessageId().orElse(null)));
     }
 
     private SourceSubscriptionManager validateSubscriptionEpr(RequestResponseObject rrObj) throws SoapFaultException {
         AttributedURIType toUri = rrObj.getRequest().getWsAddressingHeader().getTo().orElseThrow(() ->
-                new SoapFaultException(createInvalidMsg(rrObj)));
+                new SoapFaultException(createInvalidMsg(rrObj),
+                        rrObj.getRequest().getWsAddressingHeader().getMessageId().orElse(null)));
 
         return subscriptionRegistry.getSubscription(toUri.getValue()).orElseThrow(() ->
                 new SoapFaultException(createInvalidMsg(rrObj,
-                        String.format("Subscription manager '%s' does not exist.", toUri.getValue()))));
+                        String.format("Subscription manager '%s' does not exist.", toUri.getValue())),
+                        rrObj.getRequest().getWsAddressingHeader().getMessageId().orElse(null)));
     }
 
     private List<String> explodeUriList(FilterType filterType) {
@@ -391,7 +406,7 @@ public class EventSourceInterceptor extends AbstractIdleService implements Event
         }
 
         String listOfAnyUri = (String) filterType.getContent().get(0);
-        Arrays.asList(listOfAnyUri.split("\\s+")).forEach(s -> result.add(s));
+        result.addAll(Arrays.asList(listOfAnyUri.split("\\s+")));
 
         return result;
     }
@@ -412,12 +427,13 @@ public class EventSourceInterceptor extends AbstractIdleService implements Event
         }
     }
 
-    private SoapMessage createForEndTo(WsEventingStatus status, SourceSubscriptionManager subMan, EndpointReferenceType endTo) {
+    private SoapMessage createForEndTo(WsEventingStatus status, SourceSubscriptionManager subMan,
+                                       EndpointReferenceType endTo) {
         SubscriptionEnd subscriptionEnd = wseFactory.createSubscriptionEnd();
         subscriptionEnd.setSubscriptionManager(subMan.getSubscriptionManagerEpr());
         subscriptionEnd.setStatus(status.getUri());
         String wsaTo = wsaUtil.getAddressUri(endTo).orElse(null);
-        return createNotification(WsEventingConstants.WSE_ACTION_SUBSCRIPTION_END, wsaTo, subscriptionEnd);
+        return createNotification(WsEventingConstants.WSA_ACTION_SUBSCRIPTION_END, wsaTo, subscriptionEnd);
     }
 
     private SoapMessage createForNotifyTo(String wsaAction, Object payload, SourceSubscriptionManager subMan) {
@@ -436,8 +452,9 @@ public class EventSourceInterceptor extends AbstractIdleService implements Event
     }
 
     public Map<String, SubscriptionManager> getActiveSubscriptions() {
+        removeStaleSubscriptions();
         return subscriptionRegistry.getSubscriptions().entrySet()
-                .stream().collect(Collectors.toMap(Map.Entry::getKey, e -> (SubscriptionManager) e.getValue()));
+                .stream().collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 
     @Override

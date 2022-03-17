@@ -31,7 +31,8 @@ public class DefaultStateValuesDispatcher {
         }
     }
 
-    public void dispatchDefaultStateValues(AbstractState state) throws InvocationTargetException, IllegalAccessException {
+    public void dispatchDefaultStateValues(AbstractState state)
+            throws InvocationTargetException, IllegalAccessException {
         Class<?> stateClass = state.getClass();
         do {
             Method method = methods.get(stateClass);

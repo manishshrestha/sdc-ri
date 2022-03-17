@@ -11,6 +11,7 @@ import org.somda.sdc.dpws.soap.SoapConfig;
 import org.somda.sdc.dpws.soap.wsaddressing.WsAddressingConfig;
 import org.somda.sdc.dpws.soap.wsdiscovery.WsDiscoveryConfig;
 import org.somda.sdc.dpws.soap.wseventing.WsEventingConfig;
+import org.somda.sdc.dpws.wsdl.WsdlProvisioningMode;
 
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLSession;
@@ -37,13 +38,9 @@ public class DefaultDpwsConfigModule extends AbstractConfigurationModule {
     }
 
     private void configureDeviceConfig() {
-        bind(DeviceConfig.UNSECURED_ENDPOINT,
-                Boolean.class,
-                false);
-
-        bind(DeviceConfig.SECURED_ENDPOINT,
-                Boolean.class,
-                false);
+        bind(DeviceConfig.WSDL_PROVISIONING_MODE,
+                WsdlProvisioningMode.class,
+                WsdlProvisioningMode.RESOURCE);
     }
 
     private void configureDpws() {
@@ -58,6 +55,18 @@ public class DefaultDpwsConfigModule extends AbstractConfigurationModule {
         bind(DpwsConfig.COMMUNICATION_LOG_SINK_DIRECTORY,
                 File.class,
                 new File("commlog"));
+
+        bind(DpwsConfig.COMMUNICATION_LOG_WITH_HTTP_HEADERS,
+                Boolean.class,
+                true);
+
+        bind(DpwsConfig.COMMUNICATION_LOG_WITH_HTTP_REQUEST_RESPONSE_ID,
+                Boolean.class,
+                true);
+
+        bind(DpwsConfig.COMMUNICATION_LOG_PRETTY_PRINT_XML,
+                Boolean.class,
+                false);
 
         bind(DpwsConfig.HTTP_GZIP_COMPRESSION,
                 Boolean.class,
@@ -74,6 +83,10 @@ public class DefaultDpwsConfigModule extends AbstractConfigurationModule {
         bind(DpwsConfig.HTTP_SUPPORT,
                 Boolean.class,
                 true);
+
+        bind(DpwsConfig.ENFORCE_HTTP_CHUNKED_TRANSFER,
+            Boolean.class,
+            false);
 
         bind(DpwsConfig.HTTP_SERVER_CONNECTION_TIMEOUT,
                 Duration.class,
@@ -101,7 +114,7 @@ public class DefaultDpwsConfigModule extends AbstractConfigurationModule {
                         "TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384",
                         "TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384",
                         "TLS_DHE_RSA_WITH_AES_128_GCM_SHA256",
-                        "TLS_DHE_RSA_WITH_AES_256_GCM_SHA384"
+                        "TLS_DHE_RSA_WITH_AES_256_GCM_SHA384",
                 });
 
         var defaultHostnameVerifier = new HostnameVerifier() {

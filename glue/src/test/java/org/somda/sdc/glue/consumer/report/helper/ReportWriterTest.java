@@ -3,6 +3,7 @@ package org.somda.sdc.glue.consumer.report.helper;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.somda.sdc.biceps.common.MdibDescriptionModification;
 import org.somda.sdc.biceps.common.MdibDescriptionModifications;
@@ -17,17 +18,22 @@ import org.somda.sdc.biceps.testutil.Handles;
 import org.somda.sdc.biceps.testutil.MockEntryFactory;
 import org.somda.sdc.glue.UnitTestUtil;
 import org.somda.sdc.glue.common.MdibVersionUtil;
+import org.somda.sdc.glue.consumer.report.ReportProcessingException;
+import test.org.somda.common.LoggingTestWatcher;
 
 import java.math.BigInteger;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
+@ExtendWith(LoggingTestWatcher.class)
 class ReportWriterTest {
     private static final UnitTestUtil UT = new UnitTestUtil();
     private ReportWriter reportWriter;
@@ -65,9 +71,9 @@ class ReportWriterTest {
         mdibVersionUtil.setMdibVersion(expectedMdibVersion, report);
 
         reportPartInsert.setModificationType(DescriptionModificationType.CRT);
-        addEntry(reportPartInsert, Handles.MDS_0, MdsDescriptor.class);
-        addEntry(reportPartInsert, Handles.MDS_1, MdsDescriptor.class);
-        addEntry(reportPartInsert, Handles.MDS_2, MdsDescriptor.class);
+        addEntry(reportPartInsert, Handles.MDS_0, MdsDescriptor.class, false);
+        addEntry(reportPartInsert, Handles.MDS_1, MdsDescriptor.class, false);
+        addEntry(reportPartInsert, Handles.MDS_2, MdsDescriptor.class, false);
 
         final String expectedUpdateParent = "update-parent";
         reportPartUpdate.setParentDescriptor(expectedUpdateParent);
@@ -78,10 +84,10 @@ class ReportWriterTest {
         final String expectedDeleteParent = "delete-parent";
         reportPartDelete.setModificationType(DescriptionModificationType.DEL);
         reportPartDelete.setParentDescriptor(expectedDeleteParent);
-        addEntry(reportPartDelete, Handles.METRIC_0, NumericMetricDescriptor.class);
-        addEntry(reportPartDelete, Handles.METRIC_1, StringMetricDescriptor.class);
-        addEntry(reportPartDelete, Handles.METRIC_2, EnumStringMetricDescriptor.class);
-        addEntry(reportPartDelete, Handles.METRIC_3, RealTimeSampleArrayMetricDescriptor.class);
+        addEntryDescriptor(reportPartDelete, Handles.METRIC_0, NumericMetricDescriptor.class);
+        addEntryDescriptor(reportPartDelete, Handles.METRIC_1, StringMetricDescriptor.class);
+        addEntryDescriptor(reportPartDelete, Handles.METRIC_2, EnumStringMetricDescriptor.class);
+        addEntryDescriptor(reportPartDelete, Handles.METRIC_3, RealTimeSampleArrayMetricDescriptor.class);
 
         report.getReportPart().addAll(Arrays.asList(reportPartInsert, reportPartUpdate, reportPartDelete));
 
@@ -113,12 +119,34 @@ class ReportWriterTest {
         testSingleState(modificationsList.get(9), Handles.METRIC_3, MdibDescriptionModification.Type.DELETE, Optional.of(expectedDeleteParent));
     }
 
+    @Test
+    void writeDescriptionStateWithoutDescriptor() throws Exception {
+        final DescriptionModificationReport report = messageFactory.createDescriptionModificationReport();
+        final DescriptionModificationReport.ReportPart reportPartInsert = messageFactory.createDescriptionModificationReportReportPart();
+
+        final MdibVersion expectedMdibVersion = MdibVersion.create();
+        mdibVersionUtil.setMdibVersion(expectedMdibVersion, report);
+
+        reportPartInsert.setModificationType(DescriptionModificationType.CRT);
+        addEntry(reportPartInsert, Handles.MDS_0, MdsDescriptor.class, false);
+        addEntry(reportPartInsert, Handles.MDS_1, MdsDescriptor.class, true);
+        addEntry(reportPartInsert, Handles.MDS_2, MdsDescriptor.class, false);
+
+        report.getReportPart().addAll(Collections.singletonList(reportPartInsert));
+
+        assertThrows(ReportProcessingException.class, () -> reportWriter.write(report, mdibAccess));
+    }
+
     private void testSingleState(MdibDescriptionModification modification, String handle, MdibDescriptionModification.Type type, Optional<String> parentHandle) {
         assertEquals(handle, modification.getDescriptor().getHandle());
-        assertEquals(1, modification.getStates().size());
-        assertEquals(handle, modification.getStates().get(0).getDescriptorHandle());
-        assertEquals(type, modification.getModificationType());
         assertEquals(parentHandle, modification.getParentHandle());
+        assertEquals(type, modification.getModificationType());
+        if (type != MdibDescriptionModification.Type.DELETE) {
+            assertEquals(1, modification.getStates().size());
+            assertEquals(handle, modification.getStates().get(0).getDescriptorHandle());
+        } else {
+            assertEquals(0, modification.getStates().size());
+        }
     }
 
     private void testMultiState(MdibDescriptionModification modification, String handle, List<String> stateHandles, MdibDescriptionModification.Type type, Optional<String> parentHandle) {
@@ -135,9 +163,16 @@ class ReportWriterTest {
         assertEquals(parentHandle, modification.getParentHandle());
     }
 
-    private void addEntry(DescriptionModificationReport.ReportPart reportPart, String handle, Class<? extends AbstractDescriptor> type) throws Exception {
+    private void addEntryDescriptor(DescriptionModificationReport.ReportPart reportPart, String handle, Class<? extends AbstractDescriptor> type) throws Exception {
         final MdibDescriptionModifications.Entry entry = mockEntryFactory.entry(handle, type);
         reportPart.getDescriptor().add(entry.getDescriptor());
+    }
+
+    private void addEntry(DescriptionModificationReport.ReportPart reportPart, String handle, Class<? extends AbstractDescriptor> type, boolean addStateWithoutDescriptor) throws Exception {
+        final MdibDescriptionModifications.Entry entry = mockEntryFactory.entry(handle, type);
+        if (!addStateWithoutDescriptor) {
+            reportPart.getDescriptor().add(entry.getDescriptor());
+        }
         reportPart.getState().add(entry.getState());
     }
 

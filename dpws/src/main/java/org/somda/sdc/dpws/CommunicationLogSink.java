@@ -8,28 +8,17 @@ import java.io.OutputStream;
  * Communication log sink interface.
  */
 public interface CommunicationLogSink {
-
     /**
      * Creates a branch based on the given key and path.
      *
      * @param path                 path to save the key to branch mapping in.
      * @param direction            direction of message to store.
-     * @param communicationContext context which can be used to derive storage information.
-     * @return an {@linkplain OutputStream}, that represents the branch to write to.
-     * @deprecated will be removed in 2.0 because of incorrect naming, use {@linkplain #createTargetStream(CommunicationLog.TransportType, CommunicationLog.Direction, CommunicationContext)} instead.
-     */
-    @Deprecated
-    OutputStream getTargetStream(CommunicationLog.TransportType path, CommunicationLog.Direction direction, CommunicationContext communicationContext);
-
-
-    /**
-     * Creates a branch based on the given key and path.
-     *
-     * @param path                 path to save the key to branch mapping in.
-     * @param direction            direction of message to store.
+     * @param messageType          the type of the message i.e. request, response.
      * @param communicationContext context which can be used to derive storage information.
      * @return an {@linkplain OutputStream}, that represents the branch to write to.
      */
-    OutputStream createTargetStream(CommunicationLog.TransportType path, CommunicationLog.Direction direction, CommunicationContext communicationContext);
-
+    OutputStream createTargetStream(CommunicationLog.TransportType path,
+                                    CommunicationLog.Direction direction,
+                                    CommunicationLog.MessageType messageType,
+                                    CommunicationContext communicationContext);
 }

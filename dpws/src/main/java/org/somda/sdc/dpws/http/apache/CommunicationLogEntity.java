@@ -30,19 +30,34 @@ public class CommunicationLogEntity extends HttpEntityWrapper {
 
     @Override
     public InputStream getContent() throws IOException {
+        // From the Apache docs:
+        // IMPORTANT: Please note all entity implementations must ensure that all allocated resources are properly
+        // deallocated after the InputStream.close() method is invoked.
+
         if (wrappedEntity.isStreaming()) {
+            // From the Apache docs:
+            // Entities that are not repeatable are expected to return the same InputStream instance and therefore may
+            // not be consumed more than once.
             if (content == null) {
                 content = getWrappedStream();
             }
             return content;
+        } else {
+            // From the Apache docs:
+            // Repeatable entities are expected to create a new instance of InputStream for each invocation of this
+            // method and therefore can be consumed multiple times.
+            return getWrappedStream();
         }
-        return getWrappedStream();
     }
 
     @Override
     public void writeTo(OutputStream outStream) throws IOException {
         var splitOutputStream = new TeeOutputStream(outStream, communicationLogStream);
+        // From the Apache docs:
+        // IMPORTANT: Please note all entity implementations must ensure that all allocated resources are properly
+        // deallocated when this method returns.
         super.writeTo(splitOutputStream);
+        communicationLogStream.close();
     }
 
     @Override
@@ -50,8 +65,8 @@ public class CommunicationLogEntity extends HttpEntityWrapper {
         return false;
     }
 
-    private TeeInputStream getWrappedStream() throws IOException {
-        final InputStream in = wrappedEntity.getContent();
-        return new TeeInputStream(in, communicationLogStream);
+    private InputStream getWrappedStream() throws IOException {
+        // Always close the log stream together with the input stream (third param)
+        return new TeeInputStream(wrappedEntity.getContent(), communicationLogStream, true);
     }
 }

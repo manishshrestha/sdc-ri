@@ -4,6 +4,7 @@ import com.google.common.primitives.UnsignedInteger;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.somda.sdc.dpws.DpwsTest;
+import org.somda.sdc.dpws.helper.JaxbMarshalling;
 import org.somda.sdc.dpws.soap.ApplicationInfo;
 import org.somda.sdc.dpws.soap.CommunicationContext;
 import org.somda.sdc.dpws.soap.NotificationSource;
@@ -31,7 +32,7 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
-public class WsDiscoveryDiscoveryAccessInterceptorTest extends DpwsTest {
+class WsDiscoveryDiscoveryAccessInterceptorTest extends DpwsTest {
     private List<SoapMessage> sentSoapMessages;
     private WsDiscoveryTargetService wsDiscoveryTargetService;
     private QName expectedType;
@@ -101,12 +102,13 @@ public class WsDiscoveryDiscoveryAccessInterceptorTest extends DpwsTest {
         reqResServer = getInjector().getInstance(RequestResponseServer.class);
         reqResServer.register(wsDiscoveryTargetService);
 
+        getInjector().getInstance(JaxbMarshalling.class).startAsync().awaitRunning();
         unmarshaller = getInjector().getInstance(SoapMarshalling.class);
         unmarshaller.startAsync().awaitRunning();
     }
 
     @Test
-    public void sendHello() throws Exception {
+    void sendHello() throws Exception {
         UnsignedInteger version1 = wsDiscoveryTargetService.getMetadataVersion();
 
         UnsignedInteger version2 = wsDiscoveryTargetService.sendHello();
@@ -133,7 +135,7 @@ public class WsDiscoveryDiscoveryAccessInterceptorTest extends DpwsTest {
     }
 
     @Test
-    public void sendBye() throws Exception {
+    void sendBye() throws Exception {
         wsDiscoveryTargetService.sendBye();
         assertEquals(1, sentSoapMessages.size());
         Optional<ByeType> body = soapUtil.getBody(sentSoapMessages.get(0), ByeType.class);
@@ -147,7 +149,7 @@ public class WsDiscoveryDiscoveryAccessInterceptorTest extends DpwsTest {
     }
 
     @Test
-    public void processProbe() throws Exception {
+    void processProbe() throws Exception {
         Envelope soapEnv = unmarshaller.unmarshal(getClass().getResourceAsStream("probe-message.xml"));
         SoapMessage probe = soapMessageFactory.createSoapMessage(soapEnv);
 
@@ -158,7 +160,7 @@ public class WsDiscoveryDiscoveryAccessInterceptorTest extends DpwsTest {
     }
 
     @Test
-    public void processResolve() throws Exception {
+    void processResolve() throws Exception {
         Envelope soapEnv = unmarshaller.unmarshal(getClass().getResourceAsStream("resolve-message.xml"));
         SoapMessage resolve = soapMessageFactory.createSoapMessage(soapEnv);
 

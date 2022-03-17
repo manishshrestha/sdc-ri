@@ -61,6 +61,9 @@
         </wsdl:operation>
     </wsdl:portType>
     <wsdl:binding name="TestBinding3" type="tns:TestPortType3">
+        <wsp:Policy>
+            <dpws:Profile wsp:Optional="true"/>
+        </wsp:Policy>
         <s12:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
         <wsdl:operation name="TestOperation">
             <s12:operation soapAction="http://dpws-test-service/2017/05/10/TestPortType3/TestOperation"/>
@@ -78,8 +81,4 @@
             </wsdl:output>
         </wsdl:operation>
     </wsdl:binding>
-
-    <wsp:Policy>
-        <dpws:Profile wsp:Optional="true"/>
-    </wsp:Policy>
 </wsdl:definitions>

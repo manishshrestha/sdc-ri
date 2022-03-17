@@ -14,8 +14,8 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.somda.sdc.common.util.ExecutorWrapperService;
 import org.somda.sdc.dpws.CommunicationLog;
 import org.somda.sdc.dpws.guice.AppDelayExecutor;
@@ -45,8 +45,8 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @ExtendWith(LoggingTestWatcher.class)
-public class ShutdownIT {
-    private static final Logger LOG = LoggerFactory.getLogger(ShutdownIT.class);
+class ShutdownIT {
+    private static final Logger LOG = LogManager.getLogger(ShutdownIT.class);
     private static Duration WAIT_TIME = Duration.ofSeconds(30);
 
     static {

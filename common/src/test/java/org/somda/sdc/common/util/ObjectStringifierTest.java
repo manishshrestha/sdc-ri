@@ -115,9 +115,9 @@ class ObjectStringifierTest {
         assertEquals(expectedString, ObjectStringifier.stringifyMap(testObject, map));
     }
 
-    class TestClassBase {
+    static class TestClassBase {
         @Stringified
-        private String aString;
+        private final String aString;
         protected Integer anInt;
 
         public TestClassBase(String aString, Integer anInt) {
@@ -134,10 +134,10 @@ class ObjectStringifierTest {
         }
     }
 
-    class TestClassDerived extends TestClassBase {
+    static class TestClassDerived extends TestClassBase {
         @Stringified
-        private String anotherString;
-        private Integer anotherInt;
+        private final String anotherString;
+        private final Integer anotherInt;
 
         public TestClassDerived(@Nullable String anotherString, Integer anotherInt, String aString, Integer anInt) {
             super(aString, anInt);

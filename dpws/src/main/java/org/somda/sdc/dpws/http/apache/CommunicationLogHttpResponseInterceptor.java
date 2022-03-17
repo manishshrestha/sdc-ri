@@ -1,48 +1,84 @@
 package org.somda.sdc.dpws.http.apache;
 
 import org.apache.http.HttpEntity;
-import org.apache.http.HttpException;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpResponseInterceptor;
+import org.apache.http.conn.ManagedHttpClientConnection;
 import org.apache.http.protocol.HttpContext;
 import org.apache.http.protocol.HttpCoreContext;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.somda.sdc.common.logging.InstanceLogger;
 import org.somda.sdc.dpws.CommunicationLog;
 import org.somda.sdc.dpws.http.apache.helper.ApacheClientHelper;
 import org.somda.sdc.dpws.soap.CommunicationContext;
 import org.somda.sdc.dpws.soap.HttpApplicationInfo;
 import org.somda.sdc.dpws.soap.TransportInfo;
 
-import java.io.IOException;
+import javax.net.ssl.SSLPeerUnverifiedException;
+import javax.net.ssl.SSLSession;
 import java.io.OutputStream;
-import java.util.Collections;
+import java.security.cert.X509Certificate;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * Response interceptor which writes the incoming response message and headers into the {@linkplain CommunicationLog}.
  */
 public class CommunicationLogHttpResponseInterceptor implements HttpResponseInterceptor {
-    private static final Logger LOG = LoggerFactory.getLogger(CommunicationLogHttpResponseInterceptor.class);
+    private static final Logger LOG = LogManager.getLogger(CommunicationLogHttpResponseInterceptor.class);
 
     private final CommunicationLog commlog;
+    private final Logger instanceLogger;
 
-    CommunicationLogHttpResponseInterceptor(CommunicationLog communicationLog) {
+    CommunicationLogHttpResponseInterceptor(CommunicationLog communicationLog, String frameworkIdentifier) {
+        this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);
         this.commlog = communicationLog;
     }
 
     @Override
-    public void process(HttpResponse response, HttpContext context) throws HttpException, IOException {
-        LOG.debug("Processing response");
+    public void process(HttpResponse response, HttpContext context) {
+        instanceLogger.debug("Processing response");
 
         HttpHost target = (HttpHost) context.getAttribute(
                 HttpCoreContext.HTTP_TARGET_HOST);
 
         HttpEntity oldMessageEntity = response.getEntity();
 
+        var currentTransactionOpt = Optional.of(context.getAttribute(CommunicationLog.MessageType.REQUEST.name()));
+        var currentTransactionId = (String) currentTransactionOpt.orElse("");
+
         var requestHttpApplicationInfo = new HttpApplicationInfo(
-                ApacheClientHelper.allHeadersToMultimap(response.getAllHeaders())
+                ApacheClientHelper.allHeadersToMultimap(response.getAllHeaders()),
+                currentTransactionId,
+                null
         );
+
+        final List<X509Certificate> x509certificates = new ArrayList<>();
+        ManagedHttpClientConnection routedConnection = null;
+        try {
+            routedConnection = (ManagedHttpClientConnection) context.getAttribute(
+                    HttpCoreContext.HTTP_CONNECTION);
+        } catch (ClassCastException e) {
+            LOG.error("Error retrieving managed http client connection: {}", e.getMessage(), e);
+        }
+        if (routedConnection != null && routedConnection.isOpen()) {
+            SSLSession sslSession = routedConnection.getSSLSession();
+            try {
+                if (sslSession != null
+                        && sslSession.getPeerCertificates() != null) {
+                    x509certificates.addAll(Arrays.stream(sslSession.getPeerCertificates())
+                            .filter(certificate -> certificate instanceof X509Certificate)
+                            .map(certificate -> (X509Certificate) certificate).collect(Collectors.toList()));
+                }
+            } catch (SSLPeerUnverifiedException e) {
+                LOG.error("Error retrieving peer certificates: {} ", e.getMessage(), e);
+            }
+        }
 
         // collect information for TransportInfo
         var requestTransportInfo = new TransportInfo(
@@ -51,16 +87,19 @@ public class CommunicationLogHttpResponseInterceptor implements HttpResponseInte
                 null,
                 target.getHostName(),
                 target.getPort(),
-                Collections.emptyList()
+                x509certificates
         );
 
         var requestCommContext = new CommunicationContext(requestHttpApplicationInfo, requestTransportInfo);
 
-        OutputStream commlogStream = commlog.logMessage(CommunicationLog.Direction.INBOUND, CommunicationLog.TransportType.HTTP,
+        OutputStream commlogStream = commlog.logMessage(
+                CommunicationLog.Direction.INBOUND,
+                CommunicationLog.TransportType.HTTP,
+                CommunicationLog.MessageType.RESPONSE,
                 requestCommContext);
 
         response.setEntity(new CommunicationLogEntity(oldMessageEntity, commlogStream));
 
-        LOG.debug("Processing response done");
+        instanceLogger.debug("Processing response done");
     }
 }

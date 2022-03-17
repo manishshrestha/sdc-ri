@@ -56,6 +56,7 @@
                     </pm:Operation>
                     <pm:Operation Handle="opSetPatCtx" DescriptorVersion="0" OperationTarget="PC.mds0" xsi:type="pm:SetContextStateOperationDescriptor">
                         <ext:Extension/>
+                        <pm:Type Code="194042"/>
                     </pm:Operation>
                 </pm:Sco>
                 <pm:MetaData/>
@@ -137,7 +138,7 @@
                         <pm:Type Code="130537">
                             <pm:ConceptDescription Lang="en-US">dynamic (periodic changed) not settable metrics</pm:ConceptDescription>
                         </pm:Type>
-                        <pm:Metric Handle="numeric.ch1.vmd0" DescriptorVersion="0" SafetyClassification="MedA" MetricCategory="Msrmt" MetricAvailability="Cont" Resolution="0.1" xsi:type="pm:NumericMetricDescriptor">
+                        <pm:Metric Handle="numeric.ch1.vmd0" DescriptorVersion="0" SafetyClassification="MedA" MetricCategory="Msrmt" MetricAvailability="Cont" Resolution="0.1" xsi:type="pm:NumericMetricDescriptor" DeterminationPeriod="PT5S">
                             <pm:Type Code="196074">
                                 <pm:ConceptDescription Lang="en-US">dummy dynamic numeric metric</pm:ConceptDescription>
                             </pm:Type>
@@ -146,7 +147,7 @@
                             </pm:Unit>
                             <pm:TechnicalRange Lower="1" Upper="100" StepWidth="1"/>
                         </pm:Metric>
-                        <pm:Metric Handle="enumstring2.ch0.vmd0" DescriptorVersion="0" SafetyClassification="MedA" MetricCategory="Clc" MetricAvailability="Cont" xsi:type="pm:EnumStringMetricDescriptor">
+                        <pm:Metric Handle="enumstring2.ch0.vmd0" DescriptorVersion="0" SafetyClassification="MedA" MetricCategory="Clc" MetricAvailability="Intr" xsi:type="pm:EnumStringMetricDescriptor">
                             <pm:Type Code="196075">
                                 <pm:ConceptDescription Lang="en-US">dummy dynamic enum string metric</pm:ConceptDescription>
                             </pm:Type>
@@ -166,7 +167,7 @@
                                 </pm:Type>
                             </pm:AllowedValue>
                         </pm:Metric>
-                        <pm:Metric Handle="string2.ch0.vmd1" DescriptorVersion="0" SafetyClassification="MedA" MetricCategory="Clc" MetricAvailability="Cont" xsi:type="pm:StringMetricDescriptor">
+                        <pm:Metric Handle="string2.ch0.vmd1" DescriptorVersion="0" SafetyClassification="MedA" MetricCategory="Clc" MetricAvailability="Intr" xsi:type="pm:StringMetricDescriptor">
                             <pm:Type Code="196076">
                                 <pm:ConceptDescription Lang="en-US">dummy static string metric</pm:ConceptDescription>
                             </pm:Type>
@@ -306,7 +307,7 @@
             <pm:State xsi:type="pm:ScoState" DescriptorVersion="0" StateVersion="0" InvocationRequested="" InvocationRequired="" DescriptorHandle="sco.mds0"/>
             <pm:State xsi:type="pm:ChannelState" DescriptorVersion="0" StateVersion="0" DescriptorHandle="ch1.vmd0"/>
             <pm:State xsi:type="pm:AlertSystemState" DescriptorVersion="0" StateVersion="37" ActivationState="On" LastSelfCheck="1579170441478" SelfCheckCount="37" PresentPhysiologicalAlarmConditions="" PresentTechnicalAlarmConditions="" DescriptorHandle="asy.vmd0">
-                <pm:SystemSignalActivation Manifestation="Aud" State="Psd"/>
+                <pm:SystemSignalActivation Manifestation="Aud" State="On"/>
             </pm:State>
             <pm:State xsi:type="pm:SetStringOperationState" DescriptorVersion="0" StateVersion="0" OperatingMode="En" DescriptorHandle="DN_SET"/>
             <pm:State xsi:type="pm:ChannelState" DescriptorVersion="0" StateVersion="0" DescriptorHandle="ch0.vmd1"/>
@@ -342,6 +343,7 @@
             </pm:State>
             <pm:State xsi:type="pm:SetContextStateOperationState" DescriptorVersion="0" StateVersion="0" OperatingMode="En" DescriptorHandle="opSetPatCtx"/>
             <pm:State xsi:type="pm:PatientContextState" DescriptorVersion="0" StateVersion="0" Handle="d78ef3460038401ab90957ec204dba0c" ContextAssociation="Assoc" BindingMdibVersion="1" BindingStartTime="1579170261207" DescriptorHandle="PC.mds0">
+                <pm:Identification Root="http://www.somda.org/ids" Extension="SamplePatientId123"/>
                 <pm:CoreData>
                     <pm:Givenname>Given</pm:Givenname>
                     <pm:Middlename>Middle</pm:Middlename>
@@ -352,7 +354,7 @@
             </pm:State>
             <pm:State xsi:type="pm:RealTimeSampleArrayMetricState" DescriptorHandle="rtsa.ch0.vmd0">
                 <pm:MetricValue DeterminationTime="234" Samples="1 2 3" xsi:type="pm:SampleArrayValue">
-                    <pm:MetricQuality Validity="NA"/>
+                    <pm:MetricQuality Validity="Vld"/>
                 </pm:MetricValue>
             </pm:State>
         </pm:MdState>

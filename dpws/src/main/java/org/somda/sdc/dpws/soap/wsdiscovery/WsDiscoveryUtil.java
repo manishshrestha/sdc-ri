@@ -2,6 +2,7 @@ package org.somda.sdc.dpws.soap.wsdiscovery;
 
 import com.google.common.primitives.UnsignedInteger;
 import com.google.inject.Inject;
+import org.apache.commons.lang3.StringUtils;
 import org.somda.sdc.dpws.soap.wsdiscovery.model.AppSequenceType;
 import org.somda.sdc.dpws.soap.wsdiscovery.model.ObjectFactory;
 
@@ -10,6 +11,7 @@ import java.net.URI;
 import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.regex.Pattern;
 
 /**
  * Utility class for the WS-Discovery plugin.
@@ -48,12 +50,11 @@ public class WsDiscoveryUtil {
     public boolean isScopesMatching(List<String> superset, List<String> subset, MatchBy matchBy) {
         switch (matchBy) {
             case RFC3986:
-                // \todo this is probably wrong/incomplete RFC3986 matching - room for improvement here!
                 return isMatching(superset, subset, (o1, o2) ->
-                        URI.create((String) o1).equals(URI.create((String) o2)) ? 0 : 1
+                        uriCompare(o1, o2) ? 0 : 1
                 );
             case STRCMP0:
-                isMatching(superset, subset, (o1, o2) -> o1.equals(o2) ? 0 : 1);
+                return isMatching(superset, subset, (o1, o2) -> o1.equals(o2) ? 0 : 1);
             default:
                 return false;
         }
@@ -74,9 +75,53 @@ public class WsDiscoveryUtil {
         return appSequence;
     }
 
-    private boolean isMatching(List<?> superset, List<?> subset, Comparator<Object> comp) {
+    private <T> boolean isMatching(List<T> superset, List<T> subset, Comparator<T> comp) {
         return superset.size() >= subset.size() && superset.stream()
-                .filter(qName1 -> subset.stream()
-                        .anyMatch(qName2 -> comp.compare(qName1, qName2) == 0)).count() == subset.size();
+            .filter(qName1 -> subset.stream()
+                .anyMatch(qName2 -> comp.compare(qName1, qName2) == 0)).count() == subset.size();
+    }
+
+    private boolean uriCompare(String o1, String o2) {
+        var supersetUri = URI.create(o1);
+        var subsetUri = URI.create(o2);
+
+        // paths must not have /./ or /../ segments
+        var pattern = Pattern.compile("/\\.*/");
+        var supersetPath = supersetUri.getPath();
+        var subsetPath = subsetUri.getPath();
+        if ((StringUtils.isNotBlank(supersetPath) && pattern.matcher(supersetPath).find()) ||
+                (StringUtils.isNotBlank(subsetPath) && pattern.matcher(subsetPath).find())) {
+            return false;
+        }
+        if (supersetUri.toString().equals(subsetUri.toString())) {
+            return true;
+        }
+        if (!StringUtils.equalsIgnoreCase(supersetUri.getScheme(), subsetUri.getScheme())) {
+            return false;
+        }
+        if (!StringUtils.equalsIgnoreCase(supersetUri.getAuthority(), subsetUri.getAuthority())) {
+            return false;
+        }
+        var supersetSegments = supersetPath != null ? supersetPath.split("/") : new String[]{};
+        var subsetSegments = subsetPath != null ? subsetPath.split("/") : new String[]{};
+
+        if (subsetSegments.length > supersetSegments.length) {
+            // subset is bigger than superset, its not equal even if all superset paths matches.
+            return false;
+        }
+
+        for (var i = 0; i < supersetSegments.length; i++) {
+            if (subsetSegments.length > i && !supersetSegments[i].equals(subsetSegments[i])) {
+                return false;
+            }
+        }
+
+        // we compare schemeSpecificPart only if authority is null
+        if (supersetUri.getAuthority() == null && subsetUri.getAuthority() == null &&
+                !StringUtils.equals(supersetUri.getSchemeSpecificPart(), subsetUri.getSchemeSpecificPart())) {
+            return false;
+        }
+
+        return true;
     }
 }

@@ -1,7 +1,7 @@
 package org.somda.sdc.glue.consumer;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.somda.sdc.biceps.model.participant.AbstractComplexDeviceComponentDescriptor;
 import org.somda.sdc.biceps.model.participant.AbstractContextState;
 import org.somda.sdc.biceps.model.participant.ContextAssociation;
@@ -13,11 +13,7 @@ import org.somda.sdc.glue.common.uri.ContextIdentificationMapper;
 import org.somda.sdc.glue.common.uri.UriMapperGenerationArgumentException;
 import org.somda.sdc.mdpws.common.CommonConstants;
 
-import javax.annotation.Nullable;
 import javax.xml.namespace.QName;
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 
 /**
@@ -29,13 +25,9 @@ import java.util.Optional;
  * @see GlueConstants#OID_KEY_PURPOSE_SDC_SERVICE_PROVIDER
  */
 public class SdcDiscoveryFilterBuilder {
-    private static final Logger LOG = LoggerFactory.getLogger(SdcDiscoveryFilterBuilder.class);
+    private static final Logger LOG = LogManager.getLogger(SdcDiscoveryFilterBuilder.class);
 
     private final DiscoveryFilterBuilder discoveryFilterBuilder;
-
-    public static SdcDiscoveryFilterBuilder create() {
-        return new SdcDiscoveryFilterBuilder();
-    }
 
     /**
      * Constructs a new object with empty types and scopes.
@@ -43,7 +35,11 @@ public class SdcDiscoveryFilterBuilder {
     private SdcDiscoveryFilterBuilder() {
         this.discoveryFilterBuilder = new DiscoveryFilterBuilder();
         this.discoveryFilterBuilder.addType(CommonConstants.MEDICAL_DEVICE_TYPE);
-        this.discoveryFilterBuilder.addScope(GlueConstants.SCOPE_SDC_PROVIDER.toString());
+        this.discoveryFilterBuilder.addScope(GlueConstants.SCOPE_SDC_PROVIDER);
+    }
+
+    public static SdcDiscoveryFilterBuilder create() {
+        return new SdcDiscoveryFilterBuilder();
     }
 
     /**
@@ -77,7 +73,7 @@ public class SdcDiscoveryFilterBuilder {
      */
     public <T extends AbstractContextState> SdcDiscoveryFilterBuilder addContext(T state) {
         try {
-            createScopeFromContext(state).ifPresent(scope -> addScope(scope));
+            createScopeFromContext(state).ifPresent(this::addScope);
         } catch (UriMapperGenerationArgumentException e) {
             LOG.warn("Context state could not be encoded as an URI", e);
         }
@@ -91,7 +87,8 @@ public class SdcDiscoveryFilterBuilder {
      * @param <T>       a complex device component descriptor type.
      * @return this object.
      */
-    public <T extends AbstractComplexDeviceComponentDescriptor> SdcDiscoveryFilterBuilder addDeviceComponent(T component) {
+    public <T extends AbstractComplexDeviceComponentDescriptor> SdcDiscoveryFilterBuilder addDeviceComponent(
+            T component) {
 
         try {
             addScope(ComplexDeviceComponentMapper.fromComplexDeviceComponent(component));
@@ -124,7 +121,8 @@ public class SdcDiscoveryFilterBuilder {
         }
 
         ContextIdentificationMapper.ContextSource contextSource = mapToContextSource(contextState);
-        return Optional.of(ContextIdentificationMapper.fromInstanceIdentifier(contextState.getIdentification().get(0), contextSource).toString());
+        return Optional.of(ContextIdentificationMapper.fromInstanceIdentifier(contextState.getIdentification().get(0),
+                                                                              contextSource));
     }
 
     private static ContextIdentificationMapper.ContextSource mapToContextSource(AbstractContextState contextState) {
@@ -136,7 +134,4 @@ public class SdcDiscoveryFilterBuilder {
         throw new RuntimeException(String.format("Reached unknown context: %s", contextState.getClass().toString()));
     }
 
-    private static String encode(@Nullable String text) throws UnsupportedEncodingException {
-        return text == null ? "" : URLEncoder.encode(text, StandardCharsets.UTF_8);
-    }
 }

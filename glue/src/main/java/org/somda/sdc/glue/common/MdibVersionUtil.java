@@ -9,7 +9,6 @@ import javax.annotation.Nullable;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.math.BigInteger;
-import java.net.URI;
 
 /**
  * Utility functions for the {@link MdibVersion} container.
@@ -24,17 +23,22 @@ public class MdibVersionUtil {
      *
      * @param mdibVersion the {@link MdibVersion} to store.
      * @param target      the target where to store sequence id, instance id and version from given {@link MdibVersion}.
-     * @param <T>         any type that supports setSequenceId, setInstanceId and setMdibVersion (e.g., {@link org.somda.sdc.biceps.model.participant.Mdib}.
-     * @throws NoSuchMethodException     in case one of the methods setSequenceId, setInstanceId and setMdibVersion does not exist.
-     * @throws InvocationTargetException in case one of the methods setSequenceId, setInstanceId and setMdibVersion cannot be applied on target.
-     * @throws IllegalAccessException    in case one of the methods setSequenceId, setInstanceId and setMdibVersion cannot be applied on target.
+     * @param <T>         any type that supports setSequenceId, setInstanceId and setMdibVersion
+     *                    (e.g., {@link org.somda.sdc.biceps.model.participant.Mdib}.
+     * @throws NoSuchMethodException     in case one of the methods setSequenceId, setInstanceId and setMdibVersion
+     *                                   does not exist.
+     * @throws InvocationTargetException in case one of the methods setSequenceId, setInstanceId and setMdibVersion
+     *                                   cannot be applied on target.
+     * @throws IllegalAccessException    in case one of the methods setSequenceId, setInstanceId and setMdibVersion
+     *                                   cannot be applied on target.
      */
-    public <T> void setMdibVersion(MdibVersion mdibVersion, T target) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+    public <T> void setMdibVersion(MdibVersion mdibVersion, T target)
+            throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
         final Method setSequenceId = target.getClass().getMethod("setSequenceId", String.class);
         final Method setInstanceId = target.getClass().getMethod("setInstanceId", BigInteger.class);
         final Method setMdibVersion = target.getClass().getMethod("setMdibVersion", BigInteger.class);
 
-        setSequenceId.invoke(target, mdibVersion.getSequenceId().toString());
+        setSequenceId.invoke(target, mdibVersion.getSequenceId());
         setInstanceId.invoke(target, mdibVersion.getInstanceId());
         setMdibVersion.invoke(target, mdibVersion.getVersion());
     }
@@ -46,7 +50,8 @@ public class MdibVersionUtil {
      * @return the converted MDIB version. Default values are transformed according to BICEPS's prose information.
      */
     public MdibVersion getMdibVersion(AbstractReport msg) {
-        return new MdibVersion(msg.getSequenceId(), defaultZero(msg.getMdibVersion()), defaultZero(msg.getInstanceId()));
+        return new MdibVersion(msg.getSequenceId(),
+                defaultZero(msg.getMdibVersion()), defaultZero(msg.getInstanceId()));
     }
 
     /**
@@ -56,7 +61,8 @@ public class MdibVersionUtil {
      * @return the converted MDIB version. Default values are transformed according to BICEPS's prose information.
      */
     public MdibVersion getMdibVersion(AbstractGetResponse msg) {
-        return new MdibVersion(msg.getSequenceId(), defaultZero(msg.getMdibVersion()), defaultZero(msg.getInstanceId()));
+        return new MdibVersion(msg.getSequenceId(), defaultZero(msg.getMdibVersion()),
+                defaultZero(msg.getInstanceId()));
     }
 
     private BigInteger defaultZero(@Nullable BigInteger instanceId) {

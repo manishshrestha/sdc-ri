@@ -16,6 +16,7 @@ import org.somda.sdc.biceps.model.participant.VmdDescriptor;
  * Removes children from descriptors in order to avoid redundant information in the MDIB storage.
  */
 public class DescriptorChildRemover implements DescriptionPreprocessingSegment {
+
     @Override
     public void process(MdibDescriptionModifications allModifications,
                         MdibDescriptionModification currentModification,
@@ -68,10 +69,8 @@ public class DescriptorChildRemover implements DescriptionPreprocessingSegment {
      * <p>
      * Removes the battery, clock, system context, vmd, alert system and sco
      * @param mds without the children
-     * @deprecated will be made private in 2.0.0
      */
-    @Deprecated(since = "1.1.0", forRemoval = false)
-    public void removeChildren(MdsDescriptor mds) {
+    private void removeChildren(MdsDescriptor mds) {
         mds.setBattery(null);
         mds.setClock(null);
         mds.setSystemContext(null);

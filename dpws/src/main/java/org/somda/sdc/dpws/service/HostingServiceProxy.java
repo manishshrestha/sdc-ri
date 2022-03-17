@@ -1,5 +1,6 @@
 package org.somda.sdc.dpws.service;
 
+import org.somda.sdc.dpws.client.DiscoveredDevice;
 import org.somda.sdc.dpws.model.ThisDeviceType;
 import org.somda.sdc.dpws.model.ThisModelType;
 import org.somda.sdc.dpws.soap.RequestResponseClient;
@@ -14,9 +15,12 @@ import java.util.Optional;
  */
 public interface HostingServiceProxy extends RequestResponseClient {
     /**
-     * Gets address where to access the hosting service.
+     * Gets the unique WS-Discovery target service EPR.
+     * <p>
+     * If TLS is enforced, the value of the endpoint reference address as returned by this function is trustworthy
+     * (opposed to {@link DiscoveredDevice#getEprAddress()}, which is potentially retrieved via unsecured UDP).
      *
-     * @return a resolvable URI (i.e., URL).
+     * @return WS-Discovery target service EPR.
      */
     String getEndpointReferenceAddress();
 
@@ -52,7 +56,8 @@ public interface HostingServiceProxy extends RequestResponseClient {
      * Gets the physical address that is actively being used to send requests.
      * <p>
      * A hosting service can have different physical addresses in order to be accessible.
-     * The one that is returned with this function is the one that was used to initially resolve metadata (GetTransfer requests).
+     * The one that is returned with this function is the one that was used to initially resolve metadata
+     * (GetTransfer requests).
      *
      * @return the currently active EPR address.
      */

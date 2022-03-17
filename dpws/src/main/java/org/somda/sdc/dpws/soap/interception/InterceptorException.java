@@ -4,7 +4,7 @@ package org.somda.sdc.dpws.soap.interception;
  * Exception that comes up during SOAP message interceptor processing.
  */
 public class InterceptorException extends Exception {
-    final Interceptor interceptor;
+    private final Interceptor interceptor;
 
     public InterceptorException(String message, Interceptor interceptor) {
         super(message);

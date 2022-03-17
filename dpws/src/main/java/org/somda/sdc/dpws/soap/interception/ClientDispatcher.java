@@ -3,16 +3,12 @@ package org.somda.sdc.dpws.soap.interception;
 import com.google.inject.Inject;
 import org.somda.sdc.dpws.soap.SoapMessage;
 import org.somda.sdc.dpws.soap.wsaddressing.model.AttributedURIType;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.Optional;
 
 /**
  * Interceptor dispatcher designed for outgoing calls on clients.
  */
 public class ClientDispatcher {
-    private static final Logger LOG = LoggerFactory.getLogger(ClientDispatcher.class);
     private final InterceptorProcessor interceptorProcessor;
 
     @Inject

@@ -7,6 +7,7 @@ import javax.net.ssl.HttpsURLConnection;
 import java.io.*;
 import java.security.*;
 import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
 import java.util.Optional;
 
 /**
@@ -28,6 +29,14 @@ public class Ssl {
         return setup(SSL_METADATA.getClientKeySet());
     }
 
+    public static X509Certificate getServerCertificate() {
+        return SSL_METADATA.getServerKeySet().getCertificate();
+    }
+
+    public static X509Certificate getClientCertificate() {
+        return SSL_METADATA.getClientKeySet().getCertificate();
+    }
+
     private static CryptoSettings setup(SslMetadata.KeySet keySet) {
         byte[] keyStoreBytes = null;
         byte[] trustStoreBytes = null;
@@ -43,11 +52,6 @@ public class Ssl {
 
         return new CryptoSettings() {
             @Override
-            public Optional<File> getKeyStoreFile() {
-                return Optional.empty();
-            }
-
-            @Override
             public Optional<InputStream> getKeyStoreStream() {
                 if(finalKeyStoreBytes == null) {
                     return Optional.empty();
@@ -58,11 +62,6 @@ public class Ssl {
             @Override
             public String getKeyStorePassword() {
                 return keySet.getKeyStorePassword();
-            }
-
-            @Override
-            public Optional<File> getTrustStoreFile() {
-                return Optional.empty();
             }
 
             @Override

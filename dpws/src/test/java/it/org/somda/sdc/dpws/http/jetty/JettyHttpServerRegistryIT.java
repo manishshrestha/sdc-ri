@@ -9,13 +9,13 @@ import org.apache.http.impl.client.HttpClients;
 import org.eclipse.jetty.server.Server;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.somda.sdc.dpws.DpwsConfig;
 import org.somda.sdc.dpws.DpwsTest;
 import org.somda.sdc.dpws.TransportBinding;
 import org.somda.sdc.dpws.TransportBindingException;
 import org.somda.sdc.dpws.factory.TransportBindingFactory;
 import org.somda.sdc.dpws.guice.DefaultDpwsConfigModule;
+import org.somda.sdc.dpws.helper.JaxbMarshalling;
 import org.somda.sdc.dpws.http.HttpException;
 import org.somda.sdc.dpws.http.HttpHandler;
 import org.somda.sdc.dpws.http.jetty.JettyHttpServerRegistry;
@@ -27,9 +27,12 @@ import org.somda.sdc.dpws.soap.exception.SoapFaultException;
 import org.somda.sdc.dpws.soap.exception.TransportException;
 import org.somda.sdc.dpws.soap.factory.EnvelopeFactory;
 import org.somda.sdc.dpws.soap.factory.SoapMessageFactory;
-import test.org.somda.common.LoggingTestWatcher;
 
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
@@ -41,10 +44,13 @@ import java.util.zip.GZIPOutputStream;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
-@ExtendWith(LoggingTestWatcher.class)
-public class JettyHttpServerRegistryIT extends DpwsTest {
+class JettyHttpServerRegistryIT extends DpwsTest {
     private static final int COMPRESSION_MIN_SIZE = 32;
 
     private JettyHttpServerRegistry httpServerRegistry;
@@ -68,6 +74,7 @@ public class JettyHttpServerRegistryIT extends DpwsTest {
         transportBindingFactory = getInjector().getInstance(TransportBindingFactory.class);
         soapMessageFactory = getInjector().getInstance(SoapMessageFactory.class);
         envelopeFactory = getInjector().getInstance(EnvelopeFactory.class);
+        getInjector().getInstance(JaxbMarshalling.class).startAsync().awaitRunning();
         getInjector().getInstance(SoapMarshalling.class).startAsync().awaitRunning();
     }
 
@@ -274,7 +281,6 @@ public class JettyHttpServerRegistryIT extends DpwsTest {
         // request was properly processed and decompressed in server
         assertEquals(expectedString, resultString.get());
     }
-
 
     private SoapMessage createASoapMessage() {
         return soapMessageFactory.createSoapMessage(envelopeFactory.createEnvelope());

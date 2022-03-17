@@ -4,16 +4,19 @@ import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.somda.sdc.common.CommonConfig;
+import org.somda.sdc.common.logging.InstanceLogger;
+import org.somda.sdc.common.util.ExecutorWrapperService;
 import org.somda.sdc.common.util.JaxbUtil;
 import org.somda.sdc.dpws.DpwsConfig;
 import org.somda.sdc.dpws.DpwsConstants;
 import org.somda.sdc.dpws.TransportBinding;
 import org.somda.sdc.dpws.client.DiscoveredDevice;
+import org.somda.sdc.dpws.client.exception.EprAddressMismatchException;
 import org.somda.sdc.dpws.factory.TransportBindingFactory;
-import org.somda.sdc.dpws.guice.NetworkJobThreadPool;
-import org.somda.sdc.common.util.ExecutorWrapperService;
+import org.somda.sdc.dpws.guice.ResolverThreadPool;
 import org.somda.sdc.dpws.http.HttpUriBuilder;
 import org.somda.sdc.dpws.model.HostServiceType;
 import org.somda.sdc.dpws.model.HostedServiceType;
@@ -49,15 +52,18 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.CancellationException;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 /**
  * Helper class to resolve hosting service and hosted service information from {@link DiscoveredDevice} objects.
  */
 public class HostingServiceResolver {
-    private static final Logger LOG = LoggerFactory.getLogger(HostingServiceResolver.class);
+    private static final Logger LOG = LogManager.getLogger(HostingServiceResolver.class);
 
-    private final ExecutorWrapperService<ListeningExecutorService> networkJobExecutor;
+    private final ExecutorWrapperService<ListeningExecutorService> resolveExecutor;
     private final LocalAddressResolver localAddressResolver;
     private final TransportBindingFactory transportBindingFactory;
     private final RequestResponseClientFactory requestResponseClientFactory;
@@ -71,10 +77,11 @@ public class HostingServiceResolver {
     private final HttpUriBuilder uriBuilder;
     private final GetMetadataClient getMetadataClient;
     private final Duration maxWaitForFutures;
+    private final Logger instanceLogger;
 
     @Inject
     HostingServiceResolver(@Named(DpwsConfig.MAX_WAIT_FOR_FUTURES) Duration maxWaitForFutures,
-                           @NetworkJobThreadPool ExecutorWrapperService<ListeningExecutorService> networkJobExecutor,
+                           @ResolverThreadPool ExecutorWrapperService<ListeningExecutorService> resolveExecutor,
                            LocalAddressResolver localAddressResolver,
                            TransportBindingFactory transportBindingFactory,
                            RequestResponseClientFactory requestResponseClientFactory,
@@ -86,9 +93,11 @@ public class HostingServiceResolver {
                            HostingServiceFactory hostingServiceFactory,
                            HostedServiceFactory hostedServiceFactory,
                            WsEventingEventSinkFactory eventSinkFactory,
-                           HttpUriBuilder uriBuilder) {
+                           HttpUriBuilder uriBuilder,
+                           @Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier) {
+        this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);
         this.maxWaitForFutures = maxWaitForFutures;
-        this.networkJobExecutor = networkJobExecutor;
+        this.resolveExecutor = resolveExecutor;
         this.localAddressResolver = localAddressResolver;
         this.transportBindingFactory = transportBindingFactory;
         this.requestResponseClientFactory = requestResponseClientFactory;
@@ -117,7 +126,7 @@ public class HostingServiceResolver {
      * @return Future with resolved hosting service and hosted service information.
      */
     public ListenableFuture<HostingServiceProxy> resolveHostingService(DiscoveredDevice discoveredDevice) {
-        return networkJobExecutor.get().submit(() -> {
+        return resolveExecutor.get().submit(() -> {
             if (discoveredDevice.getXAddrs().isEmpty()) {
                 throw new IllegalArgumentException("Given device proxy has no XAddrs. Connection aborted.");
             }
@@ -132,13 +141,14 @@ public class HostingServiceResolver {
                     transferGetResponse = transferGetClient.sendTransferGet(rrClient, xAddr)
                             .get(maxWaitForFutures.toMillis(), TimeUnit.MILLISECONDS);
                     break;
-                } catch (Exception e) {
-                    LOG.debug("TransferGet to {} failed", xAddr, e);
+                } catch (InterruptedException | ExecutionException | TimeoutException | CancellationException e) {
+                    instanceLogger.debug("TransferGet to {} failed", xAddr, e);
                 }
             }
 
             if (transferGetResponse == null) {
-                throw new TransportException(String.format("None of the %s XAddr URL(s) responded with a valid TransferGet response",
+                throw new TransportException(String.format("None of the %s XAddr URL(s) responded with a " +
+                                "valid TransferGet response",
                         discoveredDevice.getXAddrs().size()));
             }
 
@@ -180,8 +190,10 @@ public class HostingServiceResolver {
                 try {
                     thisDevice = jaxbUtil.extractElement(metadataSection.getAny(), ThisDeviceType.class);
                     continue;
+                    // CHECKSTYLE.OFF: IllegalCatch
                 } catch (Exception e) {
-                    LOG.info("Resolve dpws:ThisDevice from {} failed", eprAddress);
+                    // CHECKSTYLE.ON: IllegalCatch
+                    instanceLogger.info("Resolve dpws:ThisDevice from {} failed", eprAddress);
                     continue;
                 }
             }
@@ -190,8 +202,10 @@ public class HostingServiceResolver {
                 try {
                     thisModel = jaxbUtil.extractElement(metadataSection.getAny(), ThisModelType.class);
                     continue;
+                    // CHECKSTYLE.OFF: IllegalCatch
                 } catch (Exception e) {
-                    LOG.info("Resolve dpws:ThisModel from {} failed", eprAddress);
+                    // CHECKSTYLE.ON: IllegalCatch
+                    instanceLogger.info("Resolve dpws:ThisModel from {} failed", eprAddress);
                     continue;
                 }
             }
@@ -202,23 +216,26 @@ public class HostingServiceResolver {
                             .orElseThrow(Exception::new);
 
                     if (!rs.getType().equals(DpwsConstants.RELATIONSHIP_TYPE_HOST)) {
-                        LOG.debug("Incompatible dpws:Relationship type found for {}: {}", eprAddress, rs.getType());
+                        instanceLogger.debug("Incompatible dpws:Relationship type found for {}: {}",
+                                eprAddress, rs.getType());
                         continue;
                     }
 
                     relationshipData = extractRelationshipData(rs, eprAddress);
+                    // CHECKSTYLE.OFF: IllegalCatch
                 } catch (Exception e) {
-                    LOG.info("Resolve dpws:Relationship from {} failed", eprAddress);
+                    // CHECKSTYLE.ON: IllegalCatch
+                    instanceLogger.info("Resolve dpws:Relationship from {} failed", eprAddress);
                 }
             }
         }
 
         if (thisDevice.isEmpty()) {
-            LOG.info("No dpws:ThisDevice found for {}", eprAddress);
+            instanceLogger.info("No dpws:ThisDevice found for {}", eprAddress);
         }
 
         if (thisModel.isEmpty()) {
-            LOG.info("No dpws:ThisModel found for {}", eprAddress);
+            instanceLogger.info("No dpws:ThisModel found for {}", eprAddress);
         }
 
         RelationshipData rsDataFromOptional = relationshipData.orElseThrow(() ->
@@ -228,6 +245,12 @@ public class HostingServiceResolver {
         final String epr = rsDataFromOptional.getEprAddress().orElseThrow(() ->
                 new MalformedSoapMessageException(String.format("Malformed relationship data. Missing expected EPR: %s",
                         eprAddress)));
+
+        if (!epr.equals(eprAddress)) {
+            throw new EprAddressMismatchException(String.format("Expected EPR address '%s', but received '%s'",
+                    eprAddress, epr));
+        }
+
         return Optional.of(hostingServiceFactory.createHostingServiceProxy(
                 epr,
                 rsDataFromOptional.getTypes(),
@@ -254,13 +277,13 @@ public class HostingServiceResolver {
                                     .put(hsProxy.getType().getServiceId(), hsProxy)));
         }
 
-        if (result.getEprAddress() == null) {
-            LOG.info("Found no valid dpws:Host for {}", eprAddress);
+        if (result.getEprAddress().isEmpty()) {
+            instanceLogger.info("Found no valid dpws:Host for {}", eprAddress);
             return Optional.empty();
         }
 
         if (result.getHostedServices().isEmpty()) {
-            LOG.info("Found no dpws:Hosted for {}", eprAddress);
+            instanceLogger.info("Found no dpws:Hosted for {}", eprAddress);
         }
 
         return Optional.of(result);
@@ -277,13 +300,14 @@ public class HostingServiceResolver {
                 getMetadataResponse = getMetadataClient.sendGetMetadata(rrClient)
                         .get(maxWaitForFutures.toMillis(), TimeUnit.MILLISECONDS);
                 break;
-            } catch (Exception e) {
-                LOG.debug("GetMetadata to {} failed", eprType.getAddress().getValue(), e);
+            } catch (InterruptedException | ExecutionException | TimeoutException | CancellationException e) {
+                instanceLogger.debug("GetMetadata to {} failed", eprType.getAddress().getValue(), e);
             }
         }
 
         if (getMetadataResponse == null) {
-            LOG.info("None of the {} hosted service EPR addresses responded with a valid GetMetadata response",
+            instanceLogger.info("None of the {} hosted service EPR addresses responded with a " +
+                            "valid GetMetadata response",
                     host.getEndpointReference().size());
             return Optional.empty();
         }
@@ -293,7 +317,8 @@ public class HostingServiceResolver {
             return Optional.empty();
         }
 
-        String httpBinding = uriBuilder.buildUri(URI.create(activeHostedServiceEprAddress).getScheme(), localAddress.get(), 0);
+        String httpBinding = uriBuilder.buildUri(URI.create(activeHostedServiceEprAddress).getScheme(),
+                localAddress.get(), 0);
 
         final EventSink eventSink = eventSinkFactory.createWsEventingEventSink(rrClient, httpBinding);
         return Optional.of(hostedServiceFactory.createHostedServiceProxy(host, rrClient,

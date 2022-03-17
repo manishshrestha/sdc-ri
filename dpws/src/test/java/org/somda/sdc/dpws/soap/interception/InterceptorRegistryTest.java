@@ -1,14 +1,14 @@
 package org.somda.sdc.dpws.soap.interception;
 
-import org.somda.sdc.dpws.DpwsTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.somda.sdc.dpws.DpwsTest;
 
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class InterceptorRegistryTest extends DpwsTest{
+class InterceptorRegistryTest extends DpwsTest {
 
     @Override
     @BeforeEach
@@ -17,7 +17,7 @@ public class InterceptorRegistryTest extends DpwsTest{
     }
 
     @Test
-    public void testAddInterceptor() {
+    void testAddInterceptor() {
         final String action = "http://action";
         InterceptorRegistry registry = getInjector().getInstance(InterceptorRegistry.class);
         registry.addInterceptor(new Interceptor() {

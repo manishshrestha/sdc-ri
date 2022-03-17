@@ -4,11 +4,14 @@ import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
-import org.slf4j.Logger;
+import com.google.inject.name.Named;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.somda.sdc.biceps.model.message.AbstractSet;
 import org.somda.sdc.biceps.model.message.AbstractSetResponse;
 import org.somda.sdc.biceps.model.message.OperationInvokedReport;
 import org.somda.sdc.biceps.model.message.SetContextState;
+import org.somda.sdc.common.CommonConfig;
 import org.somda.sdc.common.util.ExecutorWrapperService;
 import org.somda.sdc.dpws.service.HostedServiceProxy;
 import org.somda.sdc.dpws.service.HostingServiceProxy;
@@ -21,7 +24,7 @@ import org.somda.sdc.dpws.soap.interception.InterceptorException;
 import org.somda.sdc.glue.common.ActionConstants;
 import org.somda.sdc.glue.common.WsdlConstants;
 import org.somda.sdc.glue.consumer.SetServiceAccess;
-import org.somda.sdc.glue.consumer.helper.LogPrepender;
+import org.somda.sdc.glue.consumer.helper.HostingServiceLogger;
 import org.somda.sdc.glue.consumer.sco.factory.OperationInvocationDispatcherFactory;
 import org.somda.sdc.glue.consumer.sco.factory.ScoTransactionFactory;
 import org.somda.sdc.glue.consumer.sco.helper.OperationInvocationDispatcher;
@@ -33,13 +36,14 @@ import javax.annotation.Nullable;
  * Controller class that is responsible for invoking set requests and processing incoming operation invoked reports.
  */
 public class ScoController implements SetServiceAccess {
-    private final Logger LOG;
+    private static final Logger LOG = LogManager.getLogger(ScoController.class);
     private final HostedServiceProxy setServiceProxy;
     private final HostedServiceProxy contextServiceProxy;
     private final OperationInvocationDispatcher operationInvocationDispatcher;
     private final ExecutorWrapperService<ListeningExecutorService> executorService;
     private final SoapUtil soapUtil;
     private final ScoTransactionFactory scoTransactionFactory;
+    private final Logger instanceLogger;
 
     @AssistedInject
     ScoController(@Assisted HostingServiceProxy hostingServiceProxy,
@@ -48,11 +52,13 @@ public class ScoController implements SetServiceAccess {
                   OperationInvocationDispatcherFactory operationInvocationDispatcherFactory,
                   @Consumer ExecutorWrapperService<ListeningExecutorService> executorService,
                   SoapUtil soapUtil,
-                  ScoTransactionFactory scoTransactionFactory) {
-        this.LOG = LogPrepender.getLogger(hostingServiceProxy, ScoController.class);
+                  ScoTransactionFactory scoTransactionFactory,
+                  @Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier) {
+        this.instanceLogger = HostingServiceLogger.getLogger(LOG, hostingServiceProxy, frameworkIdentifier);
         this.setServiceProxy = setServiceProxy;
         this.contextServiceProxy = contextServiceProxy;
-        this.operationInvocationDispatcher = operationInvocationDispatcherFactory.createOperationInvocationDispatcher(hostingServiceProxy);
+        this.operationInvocationDispatcher =
+                operationInvocationDispatcherFactory.createOperationInvocationDispatcher(hostingServiceProxy);
         this.executorService = executorService;
         this.soapUtil = soapUtil;
         this.scoTransactionFactory = scoTransactionFactory;
@@ -72,11 +78,14 @@ public class ScoController implements SetServiceAccess {
             @Nullable java.util.function.Consumer<OperationInvokedReport.ReportPart> reportListener,
             Class<V> responseClass) {
         return executorService.get().submit(() -> {
-            LOG.debug("Invoke {} operation with payload: {}", setRequest.getClass().getSimpleName(), setRequest.toString());
+            instanceLogger.debug("Invoke {} operation with payload: {}",
+                    setRequest.getClass().getSimpleName(), setRequest);
             final V response = responseClass.cast(sendMessage(setRequest, responseClass));
-            LOG.debug("Received {} message with payload: {}", response.getClass().getSimpleName(), response.toString());
+            instanceLogger.debug("Received {} message with payload: {}",
+                    response.getClass().getSimpleName(), response);
 
-            final ScoTransactionImpl<V> transaction = scoTransactionFactory.createScoTransaction(response, reportListener);
+            final ScoTransactionImpl<V> transaction =
+                    scoTransactionFactory.createScoTransaction(response, reportListener);
 
             operationInvocationDispatcher.registerTransaction(transaction);
 
@@ -101,7 +110,8 @@ public class ScoController implements SetServiceAccess {
         HostedServiceProxy hostedServiceProxy;
         if (setRequest.getClass().equals(SetContextState.class)) {
             if (contextServiceProxy == null) {
-                throw new InvocationException("SetContextState request could not be sent: no context service available");
+                throw new InvocationException("SetContextState request could not be sent: " +
+                        "no context service available");
             }
             action = ActionConstants.ACTION_SET_CONTEXT_STATE;
             hostedServiceProxy = contextServiceProxy;

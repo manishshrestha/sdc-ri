@@ -3,10 +3,10 @@ package org.somda.sdc.common.util;
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import test.org.somda.common.TestLogging;
+import org.junit.jupiter.api.extension.ExtendWith;
+import test.org.somda.common.LoggingTestWatcher;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -15,14 +15,14 @@ import java.util.List;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 
-public class ObjectUtilImplTest {
+@ExtendWith(LoggingTestWatcher.class)
+class ObjectUtilImplTest {
 
     private Injector inj;
     private ObjectUtil objectUtil;
 
     @BeforeEach
     public void setUp() {
-        TestLogging.configure();
         inj = Guice.createInjector(
                 new AbstractModule() {
                     @Override
@@ -34,7 +34,7 @@ public class ObjectUtilImplTest {
     }
 
     @Test
-    public void deepCopy() {
+    void deepCopy() {
         StandalonePojoClass obj = new StandalonePojoClass("test", 13, Arrays.asList("entry1", "entry2"));
         StandalonePojoClass objCopy = objectUtil.deepCopy(obj);
 

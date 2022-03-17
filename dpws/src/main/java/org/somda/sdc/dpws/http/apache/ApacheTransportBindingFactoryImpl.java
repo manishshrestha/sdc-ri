@@ -9,13 +9,13 @@ import org.apache.http.config.SocketConfig;
 import org.apache.http.conn.socket.ConnectionSocketFactory;
 import org.apache.http.conn.socket.PlainConnectionSocketFactory;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
-import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.DefaultHttpRequestRetryHandler;
-import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.somda.sdc.common.CommonConfig;
+import org.somda.sdc.common.logging.InstanceLogger;
 import org.somda.sdc.dpws.CommunicationLog;
 import org.somda.sdc.dpws.DpwsConfig;
 import org.somda.sdc.dpws.DpwsConstants;
@@ -24,6 +24,7 @@ import org.somda.sdc.dpws.crypto.CryptoConfig;
 import org.somda.sdc.dpws.crypto.CryptoConfigurator;
 import org.somda.sdc.dpws.crypto.CryptoSettings;
 import org.somda.sdc.dpws.factory.TransportBindingFactory;
+import org.somda.sdc.dpws.http.factory.HttpClientFactory;
 import org.somda.sdc.dpws.soap.SoapMarshalling;
 import org.somda.sdc.dpws.soap.SoapUtil;
 
@@ -34,9 +35,12 @@ import java.net.URI;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 
-public class ApacheTransportBindingFactoryImpl implements TransportBindingFactory {
+/**
+ * Factory for creating apache http client backed transport bindings and clients.
+ */
+public class ApacheTransportBindingFactoryImpl implements TransportBindingFactory, HttpClientFactory {
 
-    private static final Logger LOG = LoggerFactory.getLogger(TransportBinding.class);
+    private static final Logger LOG = LogManager.getLogger(ApacheTransportBindingFactoryImpl.class);
 
     private static final String SCHEME_SOAP_OVER_UDP = DpwsConstants.URI_SCHEME_SOAP_OVER_UDP;
     private static final String SCHEME_HTTP = "http";
@@ -53,6 +57,8 @@ public class ApacheTransportBindingFactoryImpl implements TransportBindingFactor
     private final String[] enabledCiphers;
     private final boolean enableHttps;
     private final boolean enableHttp;
+    private final Logger instanceLogger;
+    private final String frameworkIdentifier;
 
     private ClientTransportBindingFactory clientTransportBindingFactory;
     private final CommunicationLog communicationLog;
@@ -67,10 +73,14 @@ public class ApacheTransportBindingFactoryImpl implements TransportBindingFactor
                                       ClientTransportBindingFactory clientTransportBindingFactory,
                                       @Named(CryptoConfig.CRYPTO_TLS_ENABLED_VERSIONS) String[] tlsProtocols,
                                       @Named(CryptoConfig.CRYPTO_TLS_ENABLED_CIPHERS) String[] enabledCiphers,
-                                      @Named(CryptoConfig.CRYPTO_CLIENT_HOSTNAME_VERIFIER) HostnameVerifier hostnameVerifier,
+                                      @Named(CryptoConfig.CRYPTO_CLIENT_HOSTNAME_VERIFIER)
+                                              HostnameVerifier hostnameVerifier,
                                       @Named(DpwsConfig.HTTPS_SUPPORT) boolean enableHttps,
                                       @Named(DpwsConfig.HTTP_SUPPORT) boolean enableHttp,
-                                      CommunicationLog communicationLog) {
+                                      CommunicationLog communicationLog,
+                                      @Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier) {
+        this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);
+        this.frameworkIdentifier = frameworkIdentifier;
         this.marshalling = marshalling;
         this.soapUtil = soapUtil;
         this.clientConnectTimeout = clientConnectTimeout;
@@ -102,8 +112,9 @@ public class ApacheTransportBindingFactoryImpl implements TransportBindingFactor
 
         var clientBuilder = HttpClients.custom().setDefaultSocketConfig(socketConfig)
                 // attach interceptors to enable communication log capabilities including message headers
-                .addInterceptorLast(new CommunicationLogHttpRequestInterceptor(communicationLog))
-                .addInterceptorLast(new CommunicationLogHttpResponseInterceptor(communicationLog))
+                .addInterceptorLast(new CommunicationLogHttpRequestInterceptor(communicationLog, frameworkIdentifier,
+                        cryptoConfigurator.getCertificates(cryptoSettings)))
+                .addInterceptorLast(new CommunicationLogHttpResponseInterceptor(communicationLog, frameworkIdentifier))
                 .setDefaultRequestConfig(requestConfig)
                 // allow reusing ssl connections in the pool
                 .disableConnectionState()
@@ -121,8 +132,10 @@ public class ApacheTransportBindingFactoryImpl implements TransportBindingFactor
             SSLContext sslContext;
             try {
                 sslContext = cryptoConfigurator.createSslContextFromCryptoConfig(cryptoSettings);
+                // CHECKSTYLE.OFF: IllegalCatch
             } catch (Exception e) {
-                LOG.error("Could not read client crypto config, fallback to system properties", e);
+                // CHECKSTYLE.ON: IllegalCatch
+                instanceLogger.error("Could not read client crypto config, fallback to system properties", e);
                 sslContext = cryptoConfigurator.createSslContextFromSystemProperties();
             }
 
@@ -189,4 +202,21 @@ public class ApacheTransportBindingFactoryImpl implements TransportBindingFactor
                 String.format("Binding with scheme %s is currently not supported", scheme));
     }
 
+    @Override
+    public org.somda.sdc.dpws.http.HttpClient createHttpClient() {
+        return this.clientTransportBindingFactory.createHttpClient(client);
+    }
+
+    /**
+     * Access the configured apache http client.
+     * <p>
+     * Note: <em>Do not</em> use this client for productive purposes, always use the {@linkplain TransportBinding}
+     * instead. This is only useful if you want to send intentionally bad messages to a server, which you most likely
+     * do not want.
+     *
+     * @return the configured apache http client
+     */
+    public HttpClient getClient() {
+        return client;
+    }
 }

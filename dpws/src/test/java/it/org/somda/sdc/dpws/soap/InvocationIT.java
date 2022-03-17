@@ -11,6 +11,10 @@ import dpws_test_service.messages._2017._05._10.TestOperationResponse;
 import it.org.somda.sdc.dpws.IntegrationTestUtil;
 import it.org.somda.sdc.dpws.MockedUdpBindingModule;
 import it.org.somda.sdc.dpws.TestServiceMetadata;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.somda.sdc.dpws.guice.DefaultDpwsConfigModule;
 import org.somda.sdc.dpws.service.HostedServiceProxy;
 import org.somda.sdc.dpws.service.HostingServiceProxy;
@@ -21,22 +25,23 @@ import org.somda.sdc.dpws.soap.interception.Interceptor;
 import org.somda.sdc.dpws.soap.interception.MessageInterceptor;
 import org.somda.sdc.dpws.soap.interception.NotificationObject;
 import org.somda.sdc.dpws.soap.wseventing.SubscribeResult;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import test.org.somda.common.LoggingTestWatcher;
-import test.org.somda.common.TestLogging;
 
 import java.time.Duration;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @ExtendWith(LoggingTestWatcher.class)
-public class InvocationIT {
+class InvocationIT {
     private static final Duration MAX_WAIT_TIME = IntegrationTestUtil.MAX_WAIT_TIME;
 
     private final IntegrationTestUtil IT = new IntegrationTestUtil();
@@ -54,8 +59,6 @@ public class InvocationIT {
 
     @BeforeEach
     public void setUp() throws Exception {
-        TestLogging.configure();
-
         factory = new ObjectFactory();
 
         devicePeer = new BasicPopulatedDevice(new MockedUdpBindingModule());
@@ -82,7 +85,7 @@ public class InvocationIT {
     }
 
     @Test
-    public void requestResponse() throws Exception {
+    void requestResponse() throws Exception {
         final int COUNT = 100;
 
         final HostedServiceProxy srv1 = hostingServiceProxy.getHostedServices().get(TestServiceMetadata.SERVICE_ID_1);
@@ -132,7 +135,7 @@ public class InvocationIT {
     }
 
     @Test
-    public void notification() throws Exception {
+    void notification() throws Exception {
         final int COUNT = 100;
         final SettableFuture<List<TestNotification>> notificationFuture = SettableFuture.create();
         final HostedServiceProxy srv1 = hostingServiceProxy.getHostedServices().get(TestServiceMetadata.SERVICE_ID_1);
@@ -171,7 +174,7 @@ public class InvocationIT {
     }
 
     @Test
-    public void notificationWithMultipleSubscriptions() throws Exception {
+    void notificationWithMultipleSubscriptions() throws Exception {
         final int COUNT = 100;
         final SettableFuture<List<TestNotification>> notificationFuture1 = SettableFuture.create();
         final SettableFuture<List<TestNotification>> notificationFuture2 = SettableFuture.create();
@@ -256,7 +259,7 @@ public class InvocationIT {
     }
 
     @Test
-    public void notificationSubscribeMultipleActions() throws Exception {
+    void notificationSubscribeMultipleActions() throws Exception {
         final int COUNT = 100;
         final SettableFuture<List<TestNotification>> notificationFuture = SettableFuture.create();
         final HostedServiceProxy srv1 = hostingServiceProxy.getHostedServices().get(TestServiceMetadata.SERVICE_ID_1);

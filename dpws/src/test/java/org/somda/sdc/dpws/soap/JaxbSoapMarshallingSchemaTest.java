@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import org.somda.sdc.common.guice.AbstractConfigurationModule;
 import org.somda.sdc.dpws.DpwsTest;
 import org.somda.sdc.dpws.NetworkSinkMock;
+import org.somda.sdc.dpws.helper.JaxbMarshalling;
 import org.somda.sdc.dpws.soap.factory.EnvelopeFactory;
 import org.somda.sdc.dpws.soap.model.Envelope;
 import org.somda.sdc.dpws.soap.wsdiscovery.WsDiscoveryConstants;
@@ -24,7 +25,7 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-public class JaxbSoapMarshallingSchemaTest extends DpwsTest {
+class JaxbSoapMarshallingSchemaTest extends DpwsTest {
     @Override
     @BeforeEach
     public void setUp() throws Exception {
@@ -37,11 +38,12 @@ public class JaxbSoapMarshallingSchemaTest extends DpwsTest {
             }
         });
         super.setUp();
+        getInjector().getInstance(JaxbMarshalling.class).startAsync().awaitRunning();
         getInjector().getInstance(SoapMarshalling.class).startAsync().awaitRunning();
     }
 
     @Test
-    public void marshallValidMessage() throws Exception {
+    void marshallValidMessage() throws Exception {
         ObjectFactory wsdFactory = getInjector().getInstance(ObjectFactory.class);
         // create a hello message with EndpointReference present
         HelloType helloType = wsdFactory.createHelloType();
@@ -72,7 +74,7 @@ public class JaxbSoapMarshallingSchemaTest extends DpwsTest {
     }
 
     @Test
-    public void marshallInvalidMessage() throws Exception {
+    void marshallInvalidMessage() throws Exception {
         ObjectFactory wsdFactory = getInjector().getInstance(ObjectFactory.class);
 
         // create a hello message with missing EndpointReference, which should trigger a marshalling error
@@ -98,7 +100,7 @@ public class JaxbSoapMarshallingSchemaTest extends DpwsTest {
     }
 
     @Test
-    public void testUnmarshallingValidMessage() throws Exception {
+    void testUnmarshallingValidMessage() throws Exception {
         ObjectFactory wsdFactory = getInjector().getInstance(ObjectFactory.class);
         // create a hello message with EndpointReference present
         HelloType helloType = wsdFactory.createHelloType();
@@ -137,7 +139,7 @@ public class JaxbSoapMarshallingSchemaTest extends DpwsTest {
     }
 
     @Test
-    public void unmarshallInvalidMessage() throws Exception {
+    void unmarshallInvalidMessage() throws Exception {
 
         // missing EndpointReference but otherwise valid message
         final String wrongMessage = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n" +

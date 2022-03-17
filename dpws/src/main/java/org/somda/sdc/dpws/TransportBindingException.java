@@ -19,7 +19,8 @@ public class TransportBindingException extends RuntimeException {
         super(cause);
     }
 
-    public TransportBindingException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
+    public TransportBindingException(String message, Throwable cause,
+                                     boolean enableSuppression, boolean writableStackTrace) {
         super(message, cause, enableSuppression, writableStackTrace);
     }
 }

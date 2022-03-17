@@ -6,6 +6,8 @@ import java.util.concurrent.locks.Lock;
 
 /**
  * Converts locks to auto-closables.
+ *
+ * @param <T> the lock type to auto-close.
  */
 public class AutoLock<T extends Lock> implements Lock, AutoCloseable {
     private final T lock;
@@ -21,9 +23,9 @@ public class AutoLock<T extends Lock> implements Lock, AutoCloseable {
      * @param <T> type of the lock (write/read/common).
      * @return an auto-closable instance to be used with <code>try (...) { ... }</code>.
      */
-     public static <T extends Lock> AutoLock lock(T lock) {
+     public static <T extends Lock> AutoLock<T> lock(T lock) {
         lock.lock();
-        return new AutoLock(lock);
+        return new AutoLock<>(lock);
     }
 
     /**

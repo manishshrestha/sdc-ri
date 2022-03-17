@@ -2,26 +2,33 @@ package org.somda.sdc.glue.provider.sco;
 
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
+import com.google.inject.name.Named;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.somda.sdc.biceps.model.message.InvocationError;
 import org.somda.sdc.biceps.model.message.InvocationState;
 import org.somda.sdc.biceps.model.participant.InstanceIdentifier;
 import org.somda.sdc.biceps.model.participant.LocalizedText;
 import org.somda.sdc.biceps.model.participant.ObjectFactory;
 import org.somda.sdc.biceps.provider.access.LocalMdibAccess;
+import org.somda.sdc.common.CommonConfig;
+import org.somda.sdc.common.logging.InstanceLogger;
 import org.somda.sdc.dpws.device.EventSourceAccess;
 import org.somda.sdc.glue.provider.sco.factory.ContextFactory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Manages callbacks for incoming set service requests.
  */
 public class ScoController {
-    private static final Logger LOG = LoggerFactory.getLogger(ScoController.class);
+    private static final Logger LOG = LogManager.getLogger(ScoController.class);
 
     private final Map<String, ReflectionInfo> invocationReceivers;
     private final List<ReflectionInfo> defaultInvocationReceivers;
@@ -29,6 +36,7 @@ public class ScoController {
     private final LocalMdibAccess mdibAccess;
     private final ContextFactory contextFactory;
     private final ObjectFactory participantModelFactory;
+    private final Logger instanceLogger;
 
     private long transactionCounter;
 
@@ -36,7 +44,9 @@ public class ScoController {
     ScoController(@Assisted EventSourceAccess eventSourceAccess,
                   @Assisted LocalMdibAccess mdibAccess,
                   ContextFactory contextFactory,
-                  ObjectFactory participantModelFactory) {
+                  ObjectFactory participantModelFactory,
+                  @Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier) {
+        this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);
         this.eventSourceAccess = eventSourceAccess;
         this.mdibAccess = mdibAccess;
         this.contextFactory = contextFactory;
@@ -59,71 +69,65 @@ public class ScoController {
      * returned.
      */
     public <T> InvocationResponse processIncomingSetOperation(String handle, InstanceIdentifier source, T payload) {
-        final Context context = contextFactory.createContext(transactionCounter++, handle, source, eventSourceAccess, mdibAccess);
-
-        final LocalizedText localizedText = participantModelFactory.createLocalizedText();
-        localizedText.setLang("en");
-        localizedText.setValue(String.format("There is no ultimate invocation processor available for operation %s", handle));
+        final var context =
+                contextFactory.createContext(transactionCounter++, handle, source, eventSourceAccess, mdibAccess);
 
         try {
-            final ReflectionInfo reflectionInfo = invocationReceivers.get(handle);
-            if (reflectionInfo != null) {
-                if (reflectionInfo.getCallbackMethod().getParameters()[1].getType().isAssignableFrom(payload.getClass())) {
-                    return (InvocationResponse) reflectionInfo.getCallbackMethod().invoke(reflectionInfo.getReceiver(),
-                            context, payload);
+            // in order to also seek a specific handle-based invocation receiver
+            // prepend default receivers with handle-based receiver
+            final var thisCallReceivers = new ArrayList<ReflectionInfo>(defaultInvocationReceivers.size() + 1);
+            thisCallReceivers.add(invocationReceivers.get(handle));
+            thisCallReceivers.addAll(defaultInvocationReceivers);
+
+            // iterate receivers until a suitable one is found
+            for (var receiver : thisCallReceivers) {
+                if (receiver == null) {
+                    continue;
                 }
-            }
-
-            for (ReflectionInfo receiver : defaultInvocationReceivers) {
-                if (payload instanceof List) {
-                    final List<?> payloadList = (List<?>) payload;
-                    if (payloadList.isEmpty()) {
-                        throw new Exception();
-                    }
-
-                    if (receiver.getAnnotation().listType().equals(IncomingSetServiceRequest.NoList.class)) {
-                        LOG.warn("For default invocation receivers each method annotation requires a listType attribute." +
-                                        " Callback for method {} on object {} ignored.",
-                                receiver.getCallbackMethod().getName(), receiver.getReceiver());
-                        continue;
-                    }
-
-                    if (!receiver.getAnnotation().listType().isAssignableFrom(payloadList.get(0).getClass())) {
-                        continue;
-                    }
-                }
-
                 if (receiver.getCallbackMethod().getParameters()[1].getType().isAssignableFrom(payload.getClass())) {
-                    var response = (InvocationResponse) receiver.getCallbackMethod().invoke(receiver.getReceiver(),
-                            context, payload);
-                    if (!response.getInvocationState().equals(context.getCurrentReportInvocationState())) {
-                        LOG.debug(
-                                "No matching OperationInvokedReport was sent before sending response." +
-                                        " TransactionId: {} - InvocationState: {}",
-                                response.getTransactionId(), response.getInvocationState()
-                        );
-                        context.sendUnsuccessfulReport(
-                                response.getMdibVersion(),
-                                response.getInvocationState(),
-                                response.getInvocationError(),
-                                response.getInvocationErrorMessage()
-                        );
-                    }
-                    return response;
+                    return (InvocationResponse) receiver.getCallbackMethod()
+                            .invoke(receiver.getReceiver(), context, payload);
                 }
             }
         } catch (Exception e) {
-            LOG.error("The invocation request could not be forwarded to or processed by the ultimate invocation processor.");
-            LOG.trace("The invocation request could not be forwarded to or processed by the ultimate invocation processor.", e);
-            localizedText.setValue("The invocation request could not be forwarded to or processed by the ultimate invocation processor");
+            final var errorMessage =
+                    String.format("Invocation of operation with handle '%s' failed: %s", handle, e.getMessage());
+            instanceLogger.warn(errorMessage);
+            instanceLogger.trace(errorMessage, e);
+
+            return additionallySendResponseAsReport(context, context.createUnsuccessfulResponse(
+                    mdibAccess.getMdibVersion(),
+                    InvocationState.FAIL,
+                    InvocationError.UNSPEC,
+                    Collections.singletonList(createLocalizedText(errorMessage))));
         }
 
-        // send error report
-        return context.createUnsuccessfulResponse(
+        // if no suitable receiver was found, send error report
+        return additionallySendResponseAsReport(context, context.createUnsuccessfulResponse(
                 mdibAccess.getMdibVersion(),
                 InvocationState.FAIL,
                 InvocationError.UNSPEC,
-                Arrays.asList(localizedText));
+                Collections.singletonList(createLocalizedText(
+                        String.format("A handler for the operation with handle '%s' could not be found",
+                                handle)))));
+    }
+
+    private LocalizedText createLocalizedText(String text) {
+        var localizedText = participantModelFactory.createLocalizedText();
+        localizedText.setLang("en");
+        localizedText.setValue(text);
+        return localizedText;
+    }
+
+    private InvocationResponse additionallySendResponseAsReport(Context context, InvocationResponse response) {
+        context.sendReport(
+                response.getMdibVersion(),
+                response.getInvocationState(),
+                response.getInvocationError(),
+                response.getInvocationErrorMessage(),
+                null
+        );
+        return response;
     }
 
     /**
@@ -157,7 +161,7 @@ public class ScoController {
 
             String key = annotation.operationHandle();
             if (!key.isEmpty() && invocationReceivers.containsKey(key)) {
-                LOG.warn("Ignore callback registration for key {} as there is a receiver already", key);
+                instanceLogger.warn("Ignore callback registration for key {} as there is a receiver already", key);
                 continue;
             }
 
@@ -173,7 +177,8 @@ public class ScoController {
         }
 
         if (!annotationFound) {
-            LOG.warn("No callback function found in object {} of type {}", receiver.toString(), receiver.getClass().getName());
+            instanceLogger.warn("No callback function found in object {} of type {}",
+                    receiver, receiver.getClass().getName());
         }
     }
 
@@ -182,7 +187,8 @@ public class ScoController {
         private final Method callbackMethod;
         private final IncomingSetServiceRequest annotation;
 
-        public ReflectionInfo(OperationInvocationReceiver receiver, Method callbackMethod, IncomingSetServiceRequest annotation) {
+        public ReflectionInfo(OperationInvocationReceiver receiver, Method callbackMethod,
+                              IncomingSetServiceRequest annotation) {
             this.receiver = receiver;
             this.callbackMethod = callbackMethod;
             this.annotation = annotation;

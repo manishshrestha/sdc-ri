@@ -22,7 +22,6 @@ import org.somda.sdc.dpws.service.HostingServiceProxy;
 import org.somda.sdc.dpws.soap.SoapConfig;
 import org.somda.sdc.dpws.soap.wsdiscovery.WsDiscoveryConfig;
 import test.org.somda.common.LoggingTestWatcher;
-import test.org.somda.common.TestLogging;
 
 import java.time.Duration;
 import java.util.List;
@@ -32,7 +31,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 
 @ExtendWith(LoggingTestWatcher.class)
-public class DiscoveryIT {
+class DiscoveryIT {
     private static final Duration MAX_WAIT_TIME = IntegrationTestUtil.MAX_WAIT_TIME;
 
     private DevicePeer devicePeer;
@@ -44,7 +43,6 @@ public class DiscoveryIT {
 
     @BeforeEach
     public void setUp() {
-        TestLogging.configure();
         this.devicePeer = new BasicPopulatedDevice(new MockedUdpBindingModule());
         this.clientPeer = new ClientPeer(new DefaultDpwsConfigModule() {
             @Override
@@ -64,7 +62,7 @@ public class DiscoveryIT {
     }
 
     @Test
-    public void explicitDeviceDiscovery() throws Exception {
+    void explicitDeviceDiscovery() throws Exception {
         // Given a device under test (DUT) and a client up and running
         devicePeer.startAsync().awaitRunning();
         clientPeer.startAsync().awaitRunning();
@@ -76,7 +74,7 @@ public class DiscoveryIT {
             @Subscribe
             void deviceFound(ProbedDeviceFoundMessage message) {
                 if (devicePeer.getEprAddress().equals(message.getPayload().getEprAddress())) {
-                    actualEpr.set(message.getPayload().getEprAddress().toString());
+                    actualEpr.set(message.getPayload().getEprAddress());
                 }
             }
 
@@ -101,7 +99,7 @@ public class DiscoveryIT {
     }
 
     @Test
-    public void implicitDeviceDiscovery() throws Exception {
+    void implicitDeviceDiscovery() throws Exception {
         // Given a running client that listens to discovered devices
         clientPeer.startAsync().awaitRunning();
         final SettableFuture<String> actualEpr = SettableFuture.create();
@@ -109,7 +107,7 @@ public class DiscoveryIT {
             @Subscribe
             void deviceFound(DeviceEnteredMessage message) {
                 if (devicePeer.getEprAddress().equals(message.getPayload().getEprAddress())) {
-                    actualEpr.set(message.getPayload().getEprAddress().toString());
+                    actualEpr.set(message.getPayload().getEprAddress());
                 }
             }
         };
@@ -119,17 +117,17 @@ public class DiscoveryIT {
         devicePeer.startAsync().awaitRunning();
 
         // Then expect the found EPR address to be the DUT's EPR address
-        final String expectedEprAddress = devicePeer.getEprAddress().toString();
+        final String expectedEprAddress = devicePeer.getEprAddress();
         assertEquals(expectedEprAddress, actualEpr.get(MAX_WAIT_TIME.getSeconds(), TimeUnit.SECONDS));
 
         // Resolve and verify EPR address against the DUT's EPR address
         assertEquals(expectedEprAddress,
-                clientPeer.getClient().resolve(devicePeer.getEprAddress()).get(MAX_WAIT_TIME.getSeconds(), TimeUnit.SECONDS)
-                        .getEprAddress().toString());
+                     clientPeer.getClient().resolve(devicePeer.getEprAddress()).get(MAX_WAIT_TIME.getSeconds(), TimeUnit.SECONDS)
+                             .getEprAddress());
     }
 
     @Test
-    public void directedProbe() throws Exception {
+    void directedProbe() throws Exception {
 
         // Given a device under test (DUT) and a client up and running
         devicePeer.startAsync().awaitRunning();
@@ -143,7 +141,7 @@ public class DiscoveryIT {
         var uri = xAddrs.get(0);
 
         // Then expect the EPR address returned by a directed probe to be the DUT's EPR address
-        final String expectedEprAddress = devicePeer.getEprAddress().toString();
+        final String expectedEprAddress = devicePeer.getEprAddress();
 
         assertEquals(expectedEprAddress, clientPeer.getClient().directedProbe(uri)
                 .get(MAX_WAIT_TIME.getSeconds(), TimeUnit.SECONDS)
@@ -151,7 +149,7 @@ public class DiscoveryIT {
     }
 
     @Test
-    public void connectWithDiscoveredDevice() throws Exception {
+    void connectWithDiscoveredDevice() throws Exception {
         // Given a device under test (DUT) and a client up and running
         devicePeer.startAsync().awaitRunning();
         clientPeer.startAsync().awaitRunning();
@@ -162,14 +160,14 @@ public class DiscoveryIT {
         final ListenableFuture<HostingServiceProxy> hostingServiceProxyFuture = clientPeer.getClient().connect(discoveredDevice);
 
         // Then expect a hosting service to be resolved that matches the DUT EPR address
-        final String expectedEprAddress = devicePeer.getEprAddress().toString();
+        final String expectedEprAddress = devicePeer.getEprAddress();
         final HostingServiceProxy hostingServiceProxy = hostingServiceProxyFuture.get(MAX_WAIT_TIME.getSeconds(), TimeUnit.SECONDS);
-        final String actualEprAddress = hostingServiceProxy.getEndpointReferenceAddress().toString();
+        final String actualEprAddress = hostingServiceProxy.getEndpointReferenceAddress();
         assertEquals(expectedEprAddress, actualEprAddress);
     }
 
     @Test
-    public void connectWithEprAddress() throws Exception {
+    void connectWithEprAddress() throws Exception {
         // Given a device under test (DUT) and a client up and running
         devicePeer.startAsync().awaitRunning();
         clientPeer.startAsync().awaitRunning();
@@ -179,10 +177,10 @@ public class DiscoveryIT {
                 .connect(devicePeer.getEprAddress());
 
         // Then expect a hosting service to be resolved that matches the DUT EPR address
-        final String expectedEprAddress = devicePeer.getEprAddress().toString();
+        final String expectedEprAddress = devicePeer.getEprAddress();
         final HostingServiceProxy hostingServiceProxy = hostingServiceProxyFuture.get(MAX_WAIT_TIME.getSeconds(),
                 TimeUnit.SECONDS);
-        final String actualEprAddress = hostingServiceProxy.getEndpointReferenceAddress().toString();
+        final String actualEprAddress = hostingServiceProxy.getEndpointReferenceAddress();
         assertEquals(expectedEprAddress, actualEprAddress);
     }
 

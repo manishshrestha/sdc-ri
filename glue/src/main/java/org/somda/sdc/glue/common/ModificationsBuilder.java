@@ -3,11 +3,23 @@ package org.somda.sdc.glue.common;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.google.inject.name.Named;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.somda.sdc.biceps.common.MdibDescriptionModifications;
 import org.somda.sdc.biceps.common.MdibTypeValidator;
-import org.somda.sdc.biceps.model.participant.*;
+import org.somda.sdc.biceps.common.access.MdibAccess;
+import org.somda.sdc.biceps.model.participant.AbstractDescriptor;
+import org.somda.sdc.biceps.model.participant.AbstractMultiState;
+import org.somda.sdc.biceps.model.participant.AbstractState;
+import org.somda.sdc.biceps.model.participant.AlertSystemDescriptor;
+import org.somda.sdc.biceps.model.participant.ChannelDescriptor;
+import org.somda.sdc.biceps.model.participant.Mdib;
+import org.somda.sdc.biceps.model.participant.MdsDescriptor;
+import org.somda.sdc.biceps.model.participant.ScoDescriptor;
+import org.somda.sdc.biceps.model.participant.SystemContextDescriptor;
+import org.somda.sdc.biceps.model.participant.VmdDescriptor;
+import org.somda.sdc.common.logging.InstanceLogger;
 import org.somda.sdc.glue.common.helper.DefaultStateValuesDispatcher;
 
 import javax.annotation.Nullable;
@@ -19,9 +31,11 @@ import java.util.List;
  * <p>
  * <em>Important note: the MDIB passed to the {@linkplain ModificationsBuilder} will be modified. Make sure to pass a
  * copy if necessary.</em>
+ * <p>
+ * Use {@link MdibMapper} to map from {@linkplain MdibAccess} to an {@linkplain Mdib} object.
  */
 public class ModificationsBuilder {
-    private final Logger LOG = LoggerFactory.getLogger(ModificationsBuilder.class);
+    private static final Logger LOG = LogManager.getLogger(ModificationsBuilder.class);
 
     private final ArrayListMultimap<String, AbstractState> states;
     private final MdibDescriptionModifications modifications;
@@ -29,31 +43,37 @@ public class ModificationsBuilder {
     private final Boolean createSingleStateIfMissing;
     private final MdibTypeValidator typeValidator;
     private final DefaultStateValuesDispatcher defaultStateValuesDispatcher;
+    private final Logger instanceLogger;
 
     @AssistedInject
     ModificationsBuilder(@Assisted Mdib mdib,
-                         MdibTypeValidator typeValidator) {
-        this(mdib, false, null, typeValidator);
+                         MdibTypeValidator typeValidator,
+                         @Named(org.somda.sdc.common.CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier) {
+        this(mdib, false, null, typeValidator, frameworkIdentifier);
     }
 
     @AssistedInject
     ModificationsBuilder(@Assisted Mdib mdib,
                          @Assisted Boolean createSingleStateIfMissing,
-                         MdibTypeValidator typeValidator) {
-        this(mdib, createSingleStateIfMissing, null, typeValidator);
+                         MdibTypeValidator typeValidator,
+                         @Named(org.somda.sdc.common.CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier) {
+        this(mdib, createSingleStateIfMissing, null, typeValidator, frameworkIdentifier);
     }
 
     @AssistedInject
     ModificationsBuilder(@Assisted Mdib mdib,
                          @Assisted Boolean createSingleStateIfMissing,
                          @Assisted @Nullable DefaultStateValues defaultStateValues,
-                         MdibTypeValidator typeValidator) {
+                         MdibTypeValidator typeValidator,
+                         @Named(org.somda.sdc.common.CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier) {
+        this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);
         this.createSingleStateIfMissing = createSingleStateIfMissing;
         this.typeValidator = typeValidator;
-        if (defaultStateValues == null) {
-            defaultStateValues = new RequiredDefaultStateValues();
+        var copyDefaultStateValues = defaultStateValues;
+        if (copyDefaultStateValues == null) {
+            copyDefaultStateValues = new RequiredDefaultStateValues();
         }
-        this.defaultStateValuesDispatcher = new DefaultStateValuesDispatcher(defaultStateValues);
+        this.defaultStateValuesDispatcher = new DefaultStateValuesDispatcher(copyDefaultStateValues);
 
         if (!createSingleStateIfMissing && mdib.getMdState() == null) {
             throw new RuntimeException("No states found but required. " +
@@ -82,17 +102,19 @@ public class ModificationsBuilder {
     private void build(MdsDescriptor mds) {
         insert(mds, null);
 
-        mds.getBattery().forEach(descr -> buildLeaf(descr, mds));
-        mds.setBattery(null);
-        buildLeaf(mds.getClock(), mds);
-        build(mds.getSystemContext(), mds);
-        mds.setSystemContext(null);
+        // Order of insertion shall be the same as the order from the MDIB XML Schema
         build(mds.getAlertSystem(), mds);
         mds.setAlertSystem(null);
-        mds.getVmd().forEach(descr -> build(descr, mds));
-        mds.setVmd(null);
         build(mds.getSco(), mds);
         mds.setSco(null);
+        build(mds.getSystemContext(), mds);
+        mds.setSystemContext(null);
+        buildLeaf(mds.getClock(), mds);
+        mds.setClock(null);
+        mds.getBattery().forEach(descr -> buildLeaf(descr, mds));
+        mds.setBattery(null);
+        mds.getVmd().forEach(descr -> build(descr, mds));
+        mds.setVmd(null);
     }
 
     private void build(@Nullable ScoDescriptor sco, AbstractDescriptor parent) {
@@ -181,13 +203,15 @@ public class ModificationsBuilder {
                     defaultStateValuesDispatcher.dispatchDefaultStateValues(state);
                     return state;
                 } catch (Exception e) {
-                    final String message = String.format("Could not create state for %s with handle %s",
-                            descriptor.getClass().getSimpleName(), descriptor.getHandle());
-                    LOG.warn(message, e);
+                    instanceLogger.warn(
+                            "Could not create state for {} with handle {}",
+                            descriptor.getClass().getSimpleName(), descriptor.getHandle(), e
+                    );
                     throw new RuntimeException(e);
                 }
             } else {
-                throw new RuntimeException(String.format("No state found for descriptor handle %s", descriptor.getHandle()));
+                throw new RuntimeException(String.format("No state found for descriptor handle %s",
+                        descriptor.getHandle()));
             }
         }
 

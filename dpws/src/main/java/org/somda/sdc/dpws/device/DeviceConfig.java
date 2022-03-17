@@ -7,26 +7,12 @@ package org.somda.sdc.dpws.device;
  */
 public class DeviceConfig {
     /**
-     * Configure to provide an unsecured endpoint.
+     * Defines the mode that describes how to provide WSDL data.
      * <p>
-     * The configuration can be used together with {@link #SECURED_ENDPOINT}.
      * <ul>
-     * <li>Data type: {@linkplain Boolean}
+     * <li>Data type: {@linkplain org.somda.sdc.dpws.wsdl.WsdlProvisioningMode}
      * <li>Use: optional
      * </ul>
      */
-    @Deprecated(since = "1.1.0", forRemoval = true)
-    public static final String UNSECURED_ENDPOINT = "Dpws.Device.UnsecuredEndpoint";
-
-    /**
-     * Configure to provide a secured endpoint.
-     * <p>
-     * The configuration can be used together with {@link #UNSECURED_ENDPOINT}.
-     * <ul>
-     * <li>Data type: {@linkplain Boolean}
-     * <li>Use: optional
-     * </ul>
-     */
-    @Deprecated(since = "1.1.0", forRemoval = true)
-    public static final String SECURED_ENDPOINT = "Dpws.Device.SecuredEndpoint";
+    public static final String WSDL_PROVISIONING_MODE = "Dpws.WsdlProvisioningMode";
 }

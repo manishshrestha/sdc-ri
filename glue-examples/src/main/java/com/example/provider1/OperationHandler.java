@@ -1,8 +1,8 @@
 package com.example.provider1;
 
 import com.example.Constants;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.somda.sdc.biceps.common.MdibStateModifications;
 import org.somda.sdc.biceps.common.storage.PreprocessingException;
 import org.somda.sdc.biceps.model.message.InvocationError;
@@ -35,7 +35,7 @@ import java.util.Optional;
  */
 public class OperationHandler implements OperationInvocationReceiver {
 
-    private static final Logger LOG = LoggerFactory.getLogger(OperationHandler.class);
+    private static final Logger LOG = LogManager.getLogger(OperationHandler.class);
 
     private final LocalMdibAccess mdibAccess;
 
@@ -62,40 +62,47 @@ public class OperationHandler implements OperationInvocationReceiver {
         LOG.debug("Received SetValue request for {}: {}", operationHandle, data);
 
         // find operation target
-        var setNumeric = mdibAccess.getDescriptor(operationHandle, SetValueOperationDescriptor.class).orElseThrow(() -> {
+        var setNumeric =
+                mdibAccess.getDescriptor(operationHandle, SetValueOperationDescriptor.class).orElseThrow(() -> {
+                            var errorMessage = createLocalizedText("Operation target cannot be found");
+                            context.sendUnsuccessfulReport(
+                                    InvocationState.FAIL, InvocationError.OTH, List.of(errorMessage));
+                            throw new RuntimeException(
+                                    String.format("Operation descriptor %s missing", operationHandle)
+                            );
+                        }
+                );
+        String operationTargetHandle = setNumeric.getOperationTarget();
+
+        var targetDesc =
+                mdibAccess.getDescriptor(operationTargetHandle, NumericMetricDescriptor.class).orElseThrow(() -> {
                     var errorMessage = createLocalizedText("Operation target cannot be found");
                     context.sendUnsuccessfulReport(InvocationState.FAIL, InvocationError.OTH, List.of(errorMessage));
                     throw new RuntimeException(
-                            String.format("Operation descriptor %s missing", operationHandle)
+                            String.format("Operation target descriptor %s missing", operationTargetHandle)
                     );
-                }
-        );
-        String operationTargetHandle = setNumeric.getOperationTarget();
-
-        var targetDesc = mdibAccess.getDescriptor(operationTargetHandle, NumericMetricDescriptor.class).orElseThrow(() -> {
-            var errorMessage = createLocalizedText("Operation target cannot be found");
-            context.sendUnsuccessfulReport(InvocationState.FAIL, InvocationError.OTH, List.of(errorMessage));
-            throw new RuntimeException(
-                    String.format("Operation target descriptor %s missing", operationTargetHandle)
-            );
-        });
+                });
 
         // find allowed range for descriptor and verify it's within
         targetDesc.getTechnicalRange().forEach(range -> {
                     if (range.getLower() != null && range.getLower().compareTo(data) > 0) {
                         // value too small
                         var errorMessage = createLocalizedText("Value too small");
-                        context.sendUnsuccessfulReport(InvocationState.FAIL, InvocationError.OTH, List.of(errorMessage));
+                        context.sendUnsuccessfulReport(
+                                InvocationState.FAIL, InvocationError.OTH, List.of(errorMessage));
                         throw new RuntimeException(
-                                String.format("Operation set value below lower limit of %s, was %s", range.getLower(), data)
+                                String.format("Operation set value below lower limit of %s, was %s",
+                                        range.getLower(), data)
                         );
                     }
                     if (range.getUpper() != null && range.getUpper().compareTo(data) < 0) {
                         // value too big
                         var errorMessage = createLocalizedText("Value too big");
-                        context.sendUnsuccessfulReport(InvocationState.FAIL, InvocationError.OTH, List.of(errorMessage));
+                        context.sendUnsuccessfulReport(
+                                InvocationState.FAIL, InvocationError.OTH, List.of(errorMessage));
                         throw new RuntimeException(
-                                String.format("Operation set value below lower limit of %s, was %s", range.getLower(), data)
+                                String.format("Operation set value below lower limit of %s, was %s",
+                                        range.getLower(), data)
                         );
                     }
                 }
@@ -128,7 +135,8 @@ public class OperationHandler implements OperationInvocationReceiver {
             LOG.error("Error while writing states", e);
             var errorMessage = createLocalizedText("Error while writing states");
             context.sendUnsuccessfulReport(InvocationState.FAIL, InvocationError.UNSPEC, List.of(errorMessage));
-            return context.createUnsuccessfulResponse(InvocationState.FAIL, InvocationError.UNSPEC, List.of(errorMessage));
+            return context.createUnsuccessfulResponse(
+                    InvocationState.FAIL, InvocationError.UNSPEC, List.of(errorMessage));
         }
     }
 
@@ -139,19 +147,22 @@ public class OperationHandler implements OperationInvocationReceiver {
         LOG.debug("Received SetString for {}: {}", operationHandle, data);
 
         // find operation target
-        var setString = mdibAccess.getDescriptor(operationHandle, SetStringOperationDescriptor.class).orElseThrow(() -> {
-                    var errorMessage = createLocalizedText("Operation target cannot be found");
-                    context.sendUnsuccessfulReport(InvocationState.FAIL, InvocationError.OTH, List.of(errorMessage));
-                    throw new RuntimeException(
-                            String.format("Operation descriptor %s missing", operationHandle)
-                    );
-                }
-        );
+        var setString =
+                mdibAccess.getDescriptor(operationHandle, SetStringOperationDescriptor.class).orElseThrow(() -> {
+                            var errorMessage = createLocalizedText("Operation target cannot be found");
+                            context.sendUnsuccessfulReport(
+                                    InvocationState.FAIL, InvocationError.OTH, List.of(errorMessage));
+                            throw new RuntimeException(
+                                    String.format("Operation descriptor %s missing", operationHandle)
+                            );
+                        }
+                );
         String operationTargetHandle = setString.getOperationTarget();
 
         // verify if new data is allowed for enum strings
         if (isEnumString) {
-            var targetDesc = mdibAccess.getDescriptor(operationTargetHandle, EnumStringMetricDescriptor.class).orElseThrow(() -> {
+            var targetDesc = mdibAccess.getDescriptor(
+                    operationTargetHandle, EnumStringMetricDescriptor.class).orElseThrow(() -> {
                 var errorMessage = createLocalizedText("Operation target descriptor cannot be found");
                 context.sendUnsuccessfulReport(InvocationState.FAIL, InvocationError.OTH, List.of(errorMessage));
                 throw new RuntimeException(
@@ -160,11 +171,13 @@ public class OperationHandler implements OperationInvocationReceiver {
             });
 
             // validate data is allowed
-            Optional<EnumStringMetricDescriptor.AllowedValue> first = targetDesc.getAllowedValue().stream().filter(x -> x.getValue().equals(data)).findFirst();
+            Optional<EnumStringMetricDescriptor.AllowedValue> first =
+                    targetDesc.getAllowedValue().stream().filter(x -> x.getValue().equals(data)).findFirst();
             if (first.isEmpty()) {
                 // not allowed value, bye bye
                 var errormessage = createLocalizedText("Value is not allowed here");
-                return context.createUnsuccessfulResponse(mdibAccess.getMdibVersion(), InvocationState.FAIL, InvocationError.UNSPEC, List.of(errormessage));
+                return context.createUnsuccessfulResponse(mdibAccess.getMdibVersion(),
+                        InvocationState.FAIL, InvocationError.UNSPEC, List.of(errormessage));
             }
         }
 
@@ -194,7 +207,8 @@ public class OperationHandler implements OperationInvocationReceiver {
             LOG.error("Error while writing states", e);
             var errorMessage = createLocalizedText("Error while writing states");
             context.sendUnsuccessfulReport(InvocationState.FAIL, InvocationError.UNSPEC, List.of(errorMessage));
-            return context.createUnsuccessfulResponse(InvocationState.FAIL, InvocationError.UNSPEC, List.of(errorMessage));
+            return context.createUnsuccessfulResponse(InvocationState.FAIL,
+                    InvocationError.UNSPEC, List.of(errorMessage));
         }
     }
 

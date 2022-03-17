@@ -2,14 +2,17 @@ package org.somda.sdc.glue.consumer;
 
 import com.google.common.collect.Iterables;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.somda.sdc.biceps.model.participant.*;
 import org.somda.sdc.dpws.client.DiscoveryFilter;
+import test.org.somda.common.LoggingTestWatcher;
 
 import javax.annotation.Nullable;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+@ExtendWith(LoggingTestWatcher.class)
 class SdcDiscoveryFilterBuilderTest {
     private static final String EXPECTED_PKP_SCOPE = "sdc.mds.pkp:1.2.840.10004.20701.1.1";
 

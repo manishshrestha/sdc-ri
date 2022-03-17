@@ -4,23 +4,28 @@ import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.util.Modules;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.somda.sdc.common.guice.DefaultCommonConfigModule;
+import org.somda.sdc.common.guice.DefaultCommonModule;
 import org.somda.sdc.dpws.guice.DefaultDpwsConfigModule;
 import org.somda.sdc.dpws.guice.DefaultDpwsModule;
-import org.somda.sdc.common.guice.DefaultHelperModule;
 import org.somda.sdc.dpws.soap.wsdiscovery.WsDiscoveryConfig;
 import test.org.somda.common.CIDetector;
-import test.org.somda.common.TestLogging;
+import test.org.somda.common.LoggingTestWatcher;
 
 import java.time.Duration;
+import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Test base class to provide common test functionality.
  */
-public class DpwsTest {
-    private static final Logger LOG = LoggerFactory.getLogger(DpwsTest.class);
+@ExtendWith(LoggingTestWatcher.class)
+public abstract class DpwsTest {
+    private static final Logger LOG = LogManager.getLogger(DpwsTest.class);
 
     private Injector injector;
     private List<AbstractModule> overridingModules;
@@ -34,8 +39,10 @@ public class DpwsTest {
     }
 
     protected void setUp() throws Exception {
-        TestLogging.configure();
+        injector = configureInjector(Optional.ofNullable(overridingModules).orElse(Collections.emptyList()));
+    }
 
+    protected static Injector configureInjector(List<AbstractModule> overridingModules) {
         var dpwsConfigOverride = new DefaultDpwsConfigModule() {
             @Override
             protected void customConfigure() {
@@ -68,13 +75,25 @@ public class DpwsTest {
                 }
             }
         };
-
-        if (overridingModules != null) {
-            injector = Guice.createInjector(Modules.override(new DefaultDpwsModule(), new DefaultHelperModule(),
-                    dpwsConfigOverride).with(overridingModules));
+        final Injector injector;
+        if (!overridingModules.isEmpty()) {
+            injector = Guice.createInjector(
+                    Modules.override(
+                            new DefaultCommonConfigModule(),
+                            new DefaultDpwsModule(),
+                            new DefaultCommonModule(),
+                            dpwsConfigOverride
+                    ).with(
+                            overridingModules
+                    )
+            );
         } else {
-            injector = Guice.createInjector(new DefaultDpwsModule(), new DefaultHelperModule(), dpwsConfigOverride);
+            injector = Guice.createInjector(
+                    new DefaultCommonConfigModule(), new DefaultDpwsModule(),
+                    new DefaultCommonModule(), dpwsConfigOverride
+            );
         }
+        return injector;
     }
 
     protected Injector getInjector() {

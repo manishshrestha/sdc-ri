@@ -9,9 +9,14 @@ import com.google.inject.TypeLiteral;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.somda.sdc.common.util.ExecutorWrapperService;
-import org.somda.sdc.dpws.*;
+import org.somda.sdc.dpws.DpwsConstants;
+import org.somda.sdc.dpws.DpwsTest;
+import org.somda.sdc.dpws.LocalAddressResolverMock;
+import org.somda.sdc.dpws.ThisDeviceBuilder;
+import org.somda.sdc.dpws.ThisModelBuilder;
 import org.somda.sdc.dpws.client.DiscoveredDevice;
-import org.somda.sdc.dpws.guice.NetworkJobThreadPool;
+import org.somda.sdc.dpws.client.exception.EprAddressMismatchException;
+import org.somda.sdc.dpws.guice.ResolverThreadPool;
 import org.somda.sdc.dpws.model.HostedServiceType;
 import org.somda.sdc.dpws.model.ThisDeviceType;
 import org.somda.sdc.dpws.model.ThisModelType;
@@ -27,19 +32,30 @@ import org.somda.sdc.dpws.soap.SoapUtil;
 import org.somda.sdc.dpws.soap.factory.RequestResponseClientFactory;
 import org.somda.sdc.dpws.soap.wsaddressing.WsAddressingUtil;
 import org.somda.sdc.dpws.soap.wsaddressing.model.EndpointReferenceType;
+import org.somda.sdc.dpws.soap.wsaddressing.model.ReferenceParametersType;
 import org.somda.sdc.dpws.soap.wsmetadataexchange.GetMetadataClient;
 import org.somda.sdc.dpws.soap.wsmetadataexchange.model.Metadata;
 import org.somda.sdc.dpws.soap.wsmetadataexchange.model.MetadataSection;
 import org.somda.sdc.dpws.soap.wstransfer.TransferGetClient;
 
 import javax.xml.namespace.QName;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.EmptyStackException;
+import java.util.List;
+import java.util.Map;
+import java.util.Stack;
+import java.util.concurrent.ExecutionException;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class HostingServiceResolverTest extends DpwsTest {
+class HostingServiceResolverTest extends DpwsTest {
     private MockTransferGetClient mockTransferGetClient;
     private MockGetMetadataClient mockGetMetadataClient;
 
@@ -79,8 +95,9 @@ public class HostingServiceResolverTest extends DpwsTest {
 
         // start required thread pool(s)
         getInjector().getInstance(Key.get(
-                new TypeLiteral<ExecutorWrapperService<ListeningExecutorService>>(){},
-                NetworkJobThreadPool.class
+                new TypeLiteral<ExecutorWrapperService<ListeningExecutorService>>() {
+                },
+                ResolverThreadPool.class
         )).startAsync().awaitRunning();
 
         wsaUtil = getInjector().getInstance(WsAddressingUtil.class);
@@ -114,15 +131,15 @@ public class HostingServiceResolverTest extends DpwsTest {
     }
 
     @Test
-    public void resolveHostingService() {
+    void resolveHostingService() {
         // When no existing service is found in registry on resolving
         // Then expect the resolver to resolve the service according to the following message
-        mockTransferGetClient.setTransferGetMessages(Collections.singletonList(createTransferGetMessage(
+        mockTransferGetClient.setTransferGetMessages(List.of(createTransferGetMessage(
                 expectedDeviceEprAddress,
                 expectedHostingServiceQNameTypes,
                 expectedModelType,
                 expectedDeviceType,
-                Collections.singletonList(createHostedService(expectedServiceId,
+                List.of(createHostedService(expectedServiceId,
                         expectedHostedServiceQNameTypes,
                         expectedHostedServiceEprs))
         )));
@@ -132,7 +149,7 @@ public class HostingServiceResolverTest extends DpwsTest {
 
         HostingServiceResolver hostingServiceResolver = getInjector().getInstance(HostingServiceResolver.class);
         long expectedMetadataVersion = 100;
-        DiscoveredDevice expectedDiscoveredDevice = createDiscoveredDevice(expectedDeviceEprAddress, Collections.singletonList("http://xAddr"),
+        DiscoveredDevice expectedDiscoveredDevice = createDiscoveredDevice(expectedDeviceEprAddress, List.of("http://xAddr"),
                 expectedMetadataVersion);
         ListenableFuture<HostingServiceProxy> hsF = hostingServiceResolver.resolveHostingService(expectedDiscoveredDevice);
         try {
@@ -151,6 +168,38 @@ public class HostingServiceResolverTest extends DpwsTest {
         } catch (Exception e) {
             fail(e.getMessage());
         }
+    }
+
+    @Test
+    public void resolveHostingServiceWithMismatchedEprAddress() {
+        // Enforce the resolution of a hosting service proxy with unexpected EPR address
+        var unexpectedDeviceEprAddress = "00001cb1-af6a-4dfb-ba11-283d88410000";
+        mockTransferGetClient.setTransferGetMessages(List.of(createTransferGetMessage(
+                unexpectedDeviceEprAddress,
+                expectedHostingServiceQNameTypes,
+                expectedModelType,
+                expectedDeviceType,
+                List.of(createHostedService(expectedServiceId,
+                        expectedHostedServiceQNameTypes,
+                        expectedHostedServiceEprs))
+        )));
+
+        mockGetMetadataClient.setGetMetadataMessages(
+                Arrays.asList(createGetMetadataMessage(), createGetMetadataMessage()));
+
+        var hostingServiceResolver = getInjector().getInstance(HostingServiceResolver.class);
+        var expectedMetadataVersion = 100L;
+        var expectedDiscoveredDevice = createDiscoveredDevice(
+                expectedDeviceEprAddress,
+                List.of("http://xAddr"),
+                expectedMetadataVersion);
+        assertThrows(EprAddressMismatchException.class, () -> {
+            try {
+                hostingServiceResolver.resolveHostingService(expectedDiscoveredDevice).get();
+            } catch (ExecutionException e) {
+                throw e.getCause();
+            }
+        });
     }
 
     private HostedService createHostedService(String serviceId, List<QName> types, List<EndpointReferenceType> eprs) {
@@ -237,6 +286,15 @@ public class HostingServiceResolverTest extends DpwsTest {
 
         @Override
         public ListenableFuture<SoapMessage> sendTransferGet(RequestResponseClient requestResponseClient, String wsaTo) {
+            try {
+                return Futures.immediateFuture(transferGetMessages.pop());
+            } catch (EmptyStackException e) {
+                throw new RuntimeException("TransferGet message stack empty");
+            }
+        }
+
+        @Override
+        public ListenableFuture<SoapMessage> sendTransferGet(RequestResponseClient requestResponseClient, String wsaTo, ReferenceParametersType referenceParameters) {
             try {
                 return Futures.immediateFuture(transferGetMessages.pop());
             } catch (EmptyStackException e) {

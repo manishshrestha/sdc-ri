@@ -1,8 +1,28 @@
 package org.somda.sdc.glue.common;
 
 import com.google.inject.Inject;
-import org.somda.sdc.biceps.model.message.*;
-import org.somda.sdc.biceps.model.participant.*;
+import org.somda.sdc.biceps.model.message.AbstractAlertReport;
+import org.somda.sdc.biceps.model.message.AbstractComponentReport;
+import org.somda.sdc.biceps.model.message.AbstractContextReport;
+import org.somda.sdc.biceps.model.message.AbstractMetricReport;
+import org.somda.sdc.biceps.model.message.AbstractOperationalStateReport;
+import org.somda.sdc.biceps.model.message.AbstractReport;
+import org.somda.sdc.biceps.model.message.EpisodicAlertReport;
+import org.somda.sdc.biceps.model.message.EpisodicComponentReport;
+import org.somda.sdc.biceps.model.message.EpisodicContextReport;
+import org.somda.sdc.biceps.model.message.EpisodicMetricReport;
+import org.somda.sdc.biceps.model.message.EpisodicOperationalStateReport;
+import org.somda.sdc.biceps.model.message.PeriodicAlertReport;
+import org.somda.sdc.biceps.model.message.PeriodicComponentReport;
+import org.somda.sdc.biceps.model.message.PeriodicContextReport;
+import org.somda.sdc.biceps.model.message.PeriodicMetricReport;
+import org.somda.sdc.biceps.model.message.PeriodicOperationalStateReport;
+import org.somda.sdc.biceps.model.participant.AbstractAlertState;
+import org.somda.sdc.biceps.model.participant.AbstractContextState;
+import org.somda.sdc.biceps.model.participant.AbstractDeviceComponentState;
+import org.somda.sdc.biceps.model.participant.AbstractMetricState;
+import org.somda.sdc.biceps.model.participant.AbstractOperationState;
+import org.somda.sdc.biceps.model.participant.AbstractState;
 
 import java.util.Collections;
 import java.util.Map;
@@ -77,7 +97,8 @@ public class ReportMappings {
     }
 
     private static Class<? extends AbstractReport> getReportClass(Class<? extends AbstractState> stateClass,
-                                                                  Map<Class<? extends AbstractState>, Class<? extends AbstractReport>> mapping) {
+                                                                  Map<Class<? extends AbstractState>,
+                                                                          Class<? extends AbstractReport>> mapping) {
         Class<?> superClass = stateClass;
         while (superClass != null) {
             final Class<? extends AbstractReport> reportClass = mapping.get(superClass);
@@ -91,22 +112,28 @@ public class ReportMappings {
 
     public String getEpisodicAction(Class<? extends AbstractReport> reportClass) {
         return getAction(reportClass, episodicReportActionMapping).orElseThrow(() ->
-                new RuntimeException(String.format("Unknown report class found: %s", reportClass)));
+                new UnknownReportClassFoundException(reportClass));
     }
 
     public String getPeriodicAction(Class<? extends AbstractReport> reportClass) {
         return getAction(reportClass, periodicReportActionMapping).orElseThrow(() ->
-                new RuntimeException(String.format("Unknown report class found: %s", reportClass)));
+               new UnknownReportClassFoundException(reportClass));
     }
 
     public String getAction(Class<? extends AbstractReport> reportClass) {
         return getAction(reportClass, episodicReportActionMapping).orElseGet(() ->
                 getAction(reportClass, periodicReportActionMapping).orElseThrow(() ->
-                        new RuntimeException(String.format("Unknown report class found: %s", reportClass))));
+                            new UnknownReportClassFoundException(reportClass)));
     }
 
     private Optional<String> getAction(Class<? extends AbstractReport> reportClass,
                                        Map<Class<? extends AbstractReport>, String> mapping) {
         return Optional.ofNullable(mapping.get(reportClass));
+    }
+
+    public static class UnknownReportClassFoundException extends RuntimeException {
+        public UnknownReportClassFoundException(Class<? extends AbstractReport> reportClass) {
+            super(String.format("Unknown report class found: %s", reportClass));
+        }
     }
 }

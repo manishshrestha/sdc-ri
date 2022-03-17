@@ -3,7 +3,12 @@ package org.somda.sdc.dpws.soap.interception;
 import com.google.inject.Inject;
 
 import java.lang.reflect.Method;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.EnumMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
@@ -15,7 +20,7 @@ public class InterceptorRegistry {
 
     @Inject
     InterceptorRegistry() {
-        interceptorChains = new HashMap<>();
+        interceptorChains = new EnumMap<>(Direction.class);
         Arrays.stream(Direction.values()).forEach(direction ->
                 // concurrent hash map as computeIfAbsent is a mutating function that could potentially be called by
                 // getInterceptorInfoList in parallel

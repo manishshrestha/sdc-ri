@@ -2,8 +2,6 @@ package org.somda.sdc.dpws.soap;
 
 import javax.annotation.Nullable;
 import java.security.cert.X509Certificate;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -24,24 +22,8 @@ public class TransportInfo {
     private final Integer localPort;
     private final String remoteAddress;
     private final Integer remotePort;
-    private List<X509Certificate> x509Certificates;
 
-    @Deprecated(since = "1.1.0", forRemoval = true)
-    public TransportInfo(String scheme,
-                         @Nullable String localAddress,
-                         @Nullable Integer localPort,
-                         @Nullable String remoteAddress,
-                         @Nullable Integer remotePort,
-                         Collection<X509Certificate> x509Certificates) {
-        this.scheme = scheme;
-        this.localAddress = localAddress;
-        this.localPort = localPort;
-        this.remoteAddress = remoteAddress;
-        this.remotePort = remotePort;
-        // convert provided collection into a list
-        this.x509Certificates = new ArrayList<>();
-        this.x509Certificates.addAll(x509Certificates);
-    }
+    private final List<X509Certificate> x509Certificates;
 
     public TransportInfo(String scheme,
                          @Nullable String localAddress,
@@ -109,5 +91,17 @@ public class TransportInfo {
      */
     public List<X509Certificate> getX509Certificates() {
         return x509Certificates;
+    }
+
+    /**
+     * Returns information of the remote node intended to be used for logging purposes.
+     *
+     * @return string representation comprising scheme, address and port.
+     */
+    public String getRemoteNodeInfo() {
+        return String.format("%s://%s:%s",
+                scheme,
+                remoteAddress != null ? remoteAddress : "<unknown-addr>",
+                remotePort != null ? remotePort : "<unknown-port>");
     }
 }

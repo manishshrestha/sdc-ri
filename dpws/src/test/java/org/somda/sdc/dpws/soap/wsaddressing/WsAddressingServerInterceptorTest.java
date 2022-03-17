@@ -3,6 +3,7 @@ package org.somda.sdc.dpws.soap.wsaddressing;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.somda.sdc.dpws.DpwsTest;
+import org.somda.sdc.dpws.helper.JaxbMarshalling;
 import org.somda.sdc.dpws.soap.ApplicationInfo;
 import org.somda.sdc.dpws.soap.CommunicationContext;
 import org.somda.sdc.dpws.soap.RequestResponseServer;
@@ -22,9 +23,10 @@ import java.io.InputStream;
 import java.util.Collections;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-public class WsAddressingServerInterceptorTest extends DpwsTest {
+class WsAddressingServerInterceptorTest extends DpwsTest {
 
     private SoapMessage request;
     private SoapMessage response;
@@ -48,6 +50,8 @@ public class WsAddressingServerInterceptorTest extends DpwsTest {
         );
 
         InputStream soapStrm = getClass().getResourceAsStream("soap-envelope.xml");
+        assertNotNull(soapStrm);
+        getInjector().getInstance(JaxbMarshalling.class).startAsync().awaitRunning();
         getInjector().getInstance(SoapMarshalling.class).startAsync().awaitRunning();
         Envelope soapEnv = getInjector().getInstance(SoapMarshalling.class).unmarshal(soapStrm);
 
@@ -68,7 +72,7 @@ public class WsAddressingServerInterceptorTest extends DpwsTest {
     }
 
     @Test
-    public void testMessageIdDuplicationDetection() throws SoapFaultException {
+    void testMessageIdDuplicationDetection() {
         assertDoesNotThrow(() -> server.receiveRequestResponse(request, response, mockCommunicationContext));
         assertThrows(SoapFaultException.class, () ->
                 server.receiveRequestResponse(request, response, mockCommunicationContext));

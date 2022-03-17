@@ -61,7 +61,7 @@ public class LocationDetailQueryMapper {
 
         final String queryParamsString = queryParams.toString();
         final String resultingUri = uri +
-                (queryParamsString.equals("?") ? "" : queryParamsString);
+                ("?".equals(queryParamsString) ? "" : queryParamsString);
 
         try {
             readLocationDetailQuery(resultingUri);

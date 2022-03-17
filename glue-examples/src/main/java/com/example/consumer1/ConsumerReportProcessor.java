@@ -2,8 +2,8 @@ package com.example.consumer1;
 
 import com.example.Constants;
 import com.google.common.eventbus.Subscribe;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.somda.sdc.biceps.common.access.MdibAccessObserver;
 import org.somda.sdc.biceps.common.event.AbstractMdibAccessMessage;
 import org.somda.sdc.biceps.common.event.AlertStateModificationMessage;
@@ -19,14 +19,14 @@ import org.somda.sdc.biceps.common.event.WaveformStateModificationMessage;
  * specialized handler is found.
  */
 public class ConsumerReportProcessor implements MdibAccessObserver {
-    private static final Logger LOG = LoggerFactory.getLogger(ConsumerReportProcessor.class);
+    private static final Logger LOG = LogManager.getLogger(ConsumerReportProcessor.class);
 
-    public int numMetricChanges = 0;
-    public int numConditionChanges = 0;
+    private long numMetricChanges = 0;
+    private long numConditionChanges = 0;
 
     @Subscribe
     void onUpdate(AbstractMdibAccessMessage updates) {
-        LOG.debug("onUpdate: {}", updates.toString());
+        LOG.debug("onUpdate: {}", updates);
     }
 
     @Subscribe
@@ -69,4 +69,11 @@ public class ConsumerReportProcessor implements MdibAccessObserver {
         LOG.info("onOperationChange");
     }
 
+    public long getNumMetricChanges() {
+        return numMetricChanges;
+    }
+
+    public long getNumConditionChanges() {
+        return numConditionChanges;
+    }
 }

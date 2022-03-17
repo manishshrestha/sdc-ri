@@ -9,7 +9,6 @@ import org.somda.sdc.dpws.soap.RequestResponseClient;
 import org.somda.sdc.dpws.soap.wseventing.EventSink;
 
 import javax.xml.namespace.QName;
-import java.io.InputStream;
 import java.util.List;
 
 /**
@@ -19,34 +18,36 @@ public interface HostedServiceFactory {
     /**
      * Creates a hosted service instance.
      *
-     * @param serviceId    the service id. It is good practice to use a relative URL part (e.g., "SampleService").
-     * @param types        list of QNames that matches the QNames of the port types of the WSDL that comes with the hosted service.
+     * @param serviceId the service id. It is good practice to use a relative URL part (e.g., "SampleService").
+     * @param types  list of QNames that matches the QNames of the port types of the WSDL
+     *                that comes with the hosted service.
      * @param eprAddresses list of URLs where the hosted service can be requested from.
      * @param webService   interceptor to process incoming network requests.
-     * @param wsdlDocument input stream to expose the hosted service's WSDL document.
+     * @param wsdlDocument byte array to expose the hosted service's WSDL document.
      * @return hosted service instance used on the device side.
      */
     HostedService createHostedService(@Assisted String serviceId,
                                       @Assisted List<QName> types,
                                       @Assisted List<String> eprAddresses,
                                       @Assisted WebService webService,
-                                      @Assisted InputStream wsdlDocument);
+                                      @Assisted byte[] wsdlDocument);
 
     /**
      * Creates a hosted service metadata instance without available EPR addresses.
      * <p>
      * This factory method can be used if EPR addresses shall be assigned automatically from a hosting service.
      *
-     * @param serviceId    the service id. It is good practice to use a relative URL part (e.g., "SampleService").
-     * @param types        list of QNames that matches the QNames of the port types of the WSDL that comes with the hosted service.
-     * @param webService   interceptor to process incoming network requests.
-     * @param wsdlDocument input stream to expose the hosted service's WSDL document.
+     * @param serviceId the service id. It is good practice to use a relative URL part (e.g., "SampleService").
+     * @param types  list of QNames that matches the QNames of the port types of the WSDL
+     *                that comes with the hosted service.
+     * @param webService interceptor to process incoming network requests.
+     * @param wsdlDocument byte array to expose the hosted service's WSDL document.
      * @return hosted service instance used on the device side.
      */
     HostedService createHostedService(@Assisted String serviceId,
                                       @Assisted List<QName> types,
                                       @Assisted WebService webService,
-                                      @Assisted InputStream wsdlDocument);
+                                      @Assisted byte[] wsdlDocument);
 
     /**
      * Creates a hosted service proxy instance.

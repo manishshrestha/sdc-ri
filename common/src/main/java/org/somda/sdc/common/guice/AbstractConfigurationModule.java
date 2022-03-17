@@ -1,10 +1,11 @@
 package org.somda.sdc.common.guice;
 
 import com.google.inject.AbstractModule;
+import com.google.inject.TypeLiteral;
 import com.google.inject.name.Names;
 import com.google.inject.util.Providers;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 import javax.annotation.Nullable;
 import java.util.Map;
@@ -17,7 +18,7 @@ import java.util.TreeMap;
  * Use {@link #bind(String, Class, Object)} to set values.
  */
 public abstract class AbstractConfigurationModule extends AbstractModule {
-    private static final Logger LOG = LoggerFactory.getLogger(AbstractConfigurationModule.class);
+    private static final Logger LOG = LogManager.getLogger(AbstractConfigurationModule.class);
     private final Map<String, ConfigurationValue> boundValues = new TreeMap<>();
     private boolean configureStarted = false;
 
@@ -57,19 +58,54 @@ public abstract class AbstractConfigurationModule extends AbstractModule {
     }
 
     /**
+     * Binds a configuration key to a value from outside.
+     * <p>
+     * This operation can only be performed once per key.
+     * All unpopulated keys are supposed to be filled with a default value once {@link #configure()} is called by Guice.
+     *
+     * @param name        the configuration key.
+     * @param typeLiteral the data type bound by the key (should be defined in configuration class).
+     * @param value       the configuration value to set.
+     * @param <T>         type that is required by the given key.
+     */
+    public <T> void bind(String name, TypeLiteral<T> typeLiteral, @Nullable T value) {
+        if (!boundValues.containsKey(name)) {
+            // Wrap binding into closure and call later as Guice's bind() is only available during configure()
+            Runnable runBind = () -> {
+                if (value == null) {
+                    bind(typeLiteral)
+                            .annotatedWith(Names.named(name))
+                            .toProvider(Providers.of(null));
+                } else {
+                    bind(typeLiteral)
+                            .annotatedWith(Names.named(name))
+                            .toInstance(value);
+                }
+            };
+            ValueOrigin valueOrigin = configureStarted ? ValueOrigin.DEFAULTED : ValueOrigin.CUSTOMIZED;
+            boundValues.put(name, new ConfigurationValue(valueOrigin, runBind, value));
+
+        } else {
+            if (!configureStarted) {
+                LOG.warn("Try to populate configuration key '{}' twice. Attempt skipped.", name);
+            }
+        }
+    }
+
+    /**
      * Processes the default configuration.
      * <p>
      * <em>This method is called by Guice to apply the configuration values.</em>
      */
     @Override
     @SuppressWarnings("Unchecked")
-    final protected void configure() {
+    protected final void configure() {
         customConfigure();
         configureStarted = true;
         defaultConfigure();
         logConfiguredValues();
 
-        boundValues.entrySet().forEach(configValue -> configValue.getValue().getBinder().run());
+        boundValues.forEach((key, value) -> value.getBinder().run());
     }
 
     /**
@@ -92,16 +128,17 @@ public abstract class AbstractConfigurationModule extends AbstractModule {
     }
 
     private void logConfiguredValues() {
-        boundValues.entrySet().forEach(value ->
-                LOG.info("{} {} := {}",
-                        value.getValue().getValueOrigin(),
-                        value.getKey(),
-                        value.getValue().getValue()));
+        boundValues.forEach((key, value) -> LOG.info("{} {} := {}",
+                                                      value.getValueOrigin(),
+                                                      key,
+                                                      value.getValue()));
     }
 
     private enum ValueOrigin {
         DEFAULTED("[defaulted ]"),
         CUSTOMIZED("[customized]");
+
+        private final String caption;
 
         ValueOrigin(String value) {
             caption = value;
@@ -111,8 +148,6 @@ public abstract class AbstractConfigurationModule extends AbstractModule {
         public String toString() {
             return caption;
         }
-
-        private final String caption;
     }
 
     private static class ConfigurationValue {

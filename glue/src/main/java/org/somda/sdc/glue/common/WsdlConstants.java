@@ -10,6 +10,7 @@ import javax.xml.namespace.QName;
  * @see ActionConstants
  */
 public class WsdlConstants {
+    // CHECKSTYLE.OFF: DeclarationOrder
     private static final String SLASH = "/";
 
     public static final String TARGET_NAMESPACE = CommonConstants.NAMESPACE_SDC;
@@ -25,7 +26,6 @@ public class WsdlConstants {
     public static final String SERVICE_CONTAINMENT_TREE = "ContainmentTreeService";
     public static final String SERVICE_ARCHIVE = "ArchiveService";
     public static final String SERVICE_LOCALIZATION = "LocalizationService";
-
 
     public static final String ACTION_GET_PREFIX = ACTION_PREFIX + SERVICE_GET + SLASH;
     public static final String ACTION_SET_PREFIX = ACTION_PREFIX + SERVICE_SET + SLASH;
@@ -82,11 +82,14 @@ public class WsdlConstants {
 
     public static final QName PORT_TYPE_GET_QNAME = new QName(TARGET_NAMESPACE, SERVICE_GET);
     public static final QName PORT_TYPE_SET_QNAME = new QName(TARGET_NAMESPACE, SERVICE_SET);
-    public static final QName PORT_TYPE_DESCRIPTION_EVENT_QNAME = new QName(TARGET_NAMESPACE, SERVICE_DESCRIPTION_EVENT);
+    public static final QName PORT_TYPE_DESCRIPTION_EVENT_QNAME =
+            new QName(TARGET_NAMESPACE, SERVICE_DESCRIPTION_EVENT);
     public static final QName PORT_TYPE_STATE_EVENT_QNAME = new QName(TARGET_NAMESPACE, SERVICE_STATE_EVENT);
     public static final QName PORT_TYPE_CONTEXT_QNAME = new QName(TARGET_NAMESPACE, SERVICE_CONTEXT);
     public static final QName PORT_TYPE_WAVEFORM_QNAME = new QName(TARGET_NAMESPACE, SERVICE_WAVEFORM);
     public static final QName PORT_TYPE_CONTAINMENT_TREE_QNAME = new QName(TARGET_NAMESPACE, SERVICE_CONTAINMENT_TREE);
     public static final QName PORT_TYPE_ARCHIVE_QNAME = new QName(TARGET_NAMESPACE, SERVICE_ARCHIVE);
     public static final QName PORT_TYPE_LOCALIZATION_QNAME = new QName(TARGET_NAMESPACE, SERVICE_LOCALIZATION);
+    // CHECKSTYLE.ON: DeclarationOrder
+
 }

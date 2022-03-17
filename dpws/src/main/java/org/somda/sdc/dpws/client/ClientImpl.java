@@ -1,10 +1,18 @@
 package org.somda.sdc.dpws.client;
 
-import com.google.common.util.concurrent.*;
+import com.google.common.util.concurrent.AbstractIdleService;
+import com.google.common.util.concurrent.FutureCallback;
+import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.ListenableFuture;
+import com.google.common.util.concurrent.ListeningExecutorService;
+import com.google.common.util.concurrent.Service;
+import com.google.common.util.concurrent.SettableFuture;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.somda.sdc.common.CommonConfig;
+import org.somda.sdc.common.logging.InstanceLogger;
 import org.somda.sdc.common.util.ExecutorWrapperService;
 import org.somda.sdc.dpws.DpwsConfig;
 import org.somda.sdc.dpws.TransportBinding;
@@ -43,13 +51,16 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.CancellationException;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 /**
  * Default implementation of {@linkplain Client}.
  */
 public class ClientImpl extends AbstractIdleService implements Client, Service, HelloByeAndProbeMatchesObserver {
-    private static final Logger LOG = LoggerFactory.getLogger(ClientImpl.class);
+    private static final Logger LOG = LogManager.getLogger(ClientImpl.class);
 
     private final UdpMessageQueueService discoveryMessageQueue;
     private final HostingServiceResolver hostingServiceResolver;
@@ -61,6 +72,7 @@ public class ClientImpl extends AbstractIdleService implements Client, Service, 
     private final TransportBindingFactory transportBindingFactory;
     private final RequestResponseClientFactory requestResponseClientFactory;
     private final Duration maxWaitForFutures;
+    private final Logger instanceLogger;
 
     @Inject
     ClientImpl(@Named(DpwsConfig.MAX_WAIT_FOR_FUTURES) Duration maxWaitForFutures,
@@ -75,7 +87,9 @@ public class ClientImpl extends AbstractIdleService implements Client, Service, 
                TransportBindingFactory transportBindingFactory,
                RequestResponseClientFactory requestResponseClientFactory,
                HostingServiceResolver hostingServiceResolver,
-               @ClientSpecific WsAddressingServerInterceptor wsAddressingServerInterceptor) {
+               @ClientSpecific WsAddressingServerInterceptor wsAddressingServerInterceptor,
+               @Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier) {
+        this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);
         this.maxWaitForFutures = maxWaitForFutures;
         this.discoveryMessageQueue = discoveryMessageQueue;
         this.hostingServiceResolver = hostingServiceResolver;
@@ -103,7 +117,8 @@ public class ClientImpl extends AbstractIdleService implements Client, Service, 
         notificationSink.register(wsDiscoveryClient);
 
         // Create device resolver proxy util object
-        DiscoveredDeviceResolver discoveredDeviceResolver = clientHelperFactory.createDiscoveredDeviceResolver(wsDiscoveryClient);
+        DiscoveredDeviceResolver discoveredDeviceResolver = clientHelperFactory
+                .createDiscoveredDeviceResolver(wsDiscoveryClient);
 
         // Create observer for WS-Discovery messages
         helloByeAndProbeMatchesObserverImpl = clientHelperFactory.createDiscoveryObserver(discoveredDeviceResolver);
@@ -117,7 +132,7 @@ public class ClientImpl extends AbstractIdleService implements Client, Service, 
             wsDiscoveryClient.sendProbe(discoveryFilter.getDiscoveryId(), discoveryFilter.getTypes(),
                     discoveryFilter.getScopes());
         } catch (MarshallingException e) {
-            LOG.error("Marshalling failed while probing for devices", e.getCause());
+            instanceLogger.error("Marshalling failed while probing for devices", e.getCause());
         }
     }
 
@@ -142,7 +157,7 @@ public class ClientImpl extends AbstractIdleService implements Client, Service, 
                 @Override
                 public void onSuccess(@Nullable ResolveMatchesType resolveMatchesType) {
                     if (resolveMatchesType == null) {
-                        LOG.warn("Received ResolveMatches with empty payload");
+                        instanceLogger.warn("Received ResolveMatches with empty payload");
                     } else {
                         final ResolveMatchType rm = resolveMatchesType.getResolveMatch();
                         List<String> scopes = Collections.emptyList();
@@ -160,19 +175,19 @@ public class ClientImpl extends AbstractIdleService implements Client, Service, 
 
                 @Override
                 public void onFailure(Throwable throwable) {
-                    LOG.trace("Resolve failed.", throwable);
+                    instanceLogger.trace("Resolve failed.", throwable);
                     deviceSettableFuture.setException(throwable);
                 }
             }, executorService.get());
 
             return deviceSettableFuture;
         } catch (MarshallingException e) {
-            LOG.warn("Marshalling failed while probing for devices", e.getCause());
+            instanceLogger.warn("Marshalling failed while probing for devices", e.getCause());
             final SettableFuture<DiscoveredDevice> errorFuture = SettableFuture.create();
             errorFuture.setException(e);
             return errorFuture;
         } catch (TransportException e) {
-            LOG.warn("Sending failed on transport layer", e.getCause());
+            instanceLogger.warn("Sending failed on transport layer", e.getCause());
             final SettableFuture<DiscoveredDevice> errorFuture = SettableFuture.create();
             errorFuture.setException(e);
             return errorFuture;
@@ -201,15 +216,15 @@ public class ClientImpl extends AbstractIdleService implements Client, Service, 
 
                 try {
                     hspFuture.set(connect(discoveredDevice).get(maxWaitForFutures.toMillis(), TimeUnit.MILLISECONDS));
-                } catch (Exception e) {
-                    LOG.debug("Connecting to {} failed", eprAddress, e);
+                } catch (InterruptedException | ExecutionException | TimeoutException | CancellationException e) {
+                    instanceLogger.debug("Connecting to {} failed", eprAddress, e);
                     throw new RuntimeException(String.format("Connect of %s failed", eprAddress));
                 }
             }
 
             @Override
             public void onFailure(Throwable throwable) {
-                LOG.trace("Connecting to endpoint {} failed", eprAddress, throwable);
+                instanceLogger.trace("Connecting to endpoint {} failed", eprAddress, throwable);
                 hspFuture.setException(throwable);
             }
         }, executorService.get());
@@ -243,7 +258,7 @@ public class ClientImpl extends AbstractIdleService implements Client, Service, 
     private void checkRunning() {
         if (!isRunning()) {
             String msg = "Try to invoke method on non-running client";
-            LOG.warn(msg);
+            instanceLogger.warn(msg);
             throw new RuntimeException(msg);
         }
     }

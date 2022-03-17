@@ -1,17 +1,17 @@
 package org.somda.sdc.dpws.device;
 
-import com.google.common.io.ByteStreams;
 import com.google.common.util.concurrent.AbstractIdleService;
 import com.google.common.util.concurrent.Service;
 import com.google.inject.Provider;
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
 import com.google.inject.name.Named;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.somda.sdc.common.CommonConfig;
+import org.somda.sdc.common.logging.InstanceLogger;
 import org.somda.sdc.dpws.DpwsConfig;
 import org.somda.sdc.dpws.DpwsConstants;
-import org.somda.sdc.dpws.device.helper.ByteResourceHandler;
 import org.somda.sdc.dpws.device.helper.DiscoveryDeviceUdpMessageProcessor;
 import org.somda.sdc.dpws.device.helper.RequestResponseServerHttpHandler;
 import org.somda.sdc.dpws.device.helper.UriBaseContextPath;
@@ -31,7 +31,6 @@ import org.somda.sdc.dpws.service.factory.HostedServiceInterceptorFactory;
 import org.somda.sdc.dpws.service.factory.HostingServiceFactory;
 import org.somda.sdc.dpws.soap.NotificationSource;
 import org.somda.sdc.dpws.soap.RequestResponseServer;
-import org.somda.sdc.dpws.soap.SoapConstants;
 import org.somda.sdc.dpws.soap.exception.MarshallingException;
 import org.somda.sdc.dpws.soap.exception.TransportException;
 import org.somda.sdc.dpws.soap.factory.NotificationSourceFactory;
@@ -46,11 +45,15 @@ import org.somda.sdc.dpws.udp.UdpMessageQueueService;
 
 import javax.annotation.Nullable;
 import javax.xml.namespace.QName;
-import java.io.IOException;
 import java.net.InetAddress;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -59,7 +62,7 @@ import java.util.stream.Collectors;
  * todo DGr no support for hosting and hosted services being updated during runtime.
  */
 public class DeviceImpl extends AbstractIdleService implements Device, Service, DiscoveryAccess, HostingServiceAccess {
-    private static final Logger LOG = LoggerFactory.getLogger(DeviceImpl.class);
+    private static final Logger LOG = LogManager.getLogger(DeviceImpl.class);
 
     private final DeviceSettings deviceSettings;
     private final WsDiscoveryTargetServiceFactory targetServiceFactory;
@@ -77,21 +80,22 @@ public class DeviceImpl extends AbstractIdleService implements Device, Service, 
     private final HostedServiceFactory hostedServiceFactory;
     private final HostedServiceInterceptorFactory hostedServiceInterceptorFactory;
     private final String eprAddress;
+    private final Logger instanceLogger;
+    private final NetworkInterfaceUtil networkInterfaceUtil;
+    private final HttpUriBuilder httpUriBuilder;
     private final boolean enableHttps;
     private final boolean enableHttp;
-    private NetworkInterfaceUtil networkInterfaceUtil;
-    private HttpUriBuilder httpUriBuilder;
 
+    private final List<HostedService> hostedServicesOnStartup;
+    private final List<EventSource> eventSources;
 
     private WsDiscoveryTargetService wsdTargetService;
     private HostingService hostingService;
-    private final List<HostedService> hostedServicesOnStartup;
     private Collection<String> scopesOnStartup;
     private List<QName> typesOnStartup;
     private ThisDeviceType thisDeviceOnStartup;
     private ThisModelType thisModelOnStartup;
     private DiscoveryDeviceUdpMessageProcessor udpMsgProcessor;
-    private List<EventSource> eventSources;
 
     @AssistedInject
     DeviceImpl(@Assisted DeviceSettings deviceSettings,
@@ -112,7 +116,9 @@ public class DeviceImpl extends AbstractIdleService implements Device, Service, 
                NetworkInterfaceUtil networkInterfaceUtil,
                HttpUriBuilder httpUriBuilder,
                @Named(DpwsConfig.HTTPS_SUPPORT) boolean enableHttps,
-               @Named(DpwsConfig.HTTP_SUPPORT) boolean enableHttp) {
+               @Named(DpwsConfig.HTTP_SUPPORT) boolean enableHttp,
+               @Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier) {
+        this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);
         this.deviceSettings = deviceSettings;
         this.targetServiceFactory = targetServiceFactory;
         this.defaultConfigProvider = defaultConfigProvider;
@@ -130,10 +136,10 @@ public class DeviceImpl extends AbstractIdleService implements Device, Service, 
         this.hostedServiceInterceptorFactory = hostedServiceInterceptorFactory;
         this.networkInterfaceUtil = networkInterfaceUtil;
         this.httpUriBuilder = httpUriBuilder;
-        this.hostedServicesOnStartup = new ArrayList<>();
-        this.eventSources = new ArrayList<>();
         this.enableHttps = enableHttps;
         this.enableHttp = enableHttp;
+        this.hostedServicesOnStartup = new ArrayList<>();
+        this.eventSources = new ArrayList<>();
 
         this.eprAddress = wsaUtil.getAddressUri(deviceSettings.getEndpointReference()).orElseThrow(() ->
                 new RuntimeException("No valid endpoint reference found in device deviceSettings"));
@@ -142,7 +148,7 @@ public class DeviceImpl extends AbstractIdleService implements Device, Service, 
     @Override
     protected void startUp() throws Exception {
         EndpointReferenceType deviceEpr = deviceSettings.getEndpointReference();
-        LOG.info("Start device with EPR address '{}'", deviceEpr.getAddress().getValue());
+        instanceLogger.info("Start device with EPR address '{}'", deviceEpr.getAddress().getValue());
 
         String hostingServerCtxtPath = buildContextPathBase(eprAddress);
 
@@ -157,14 +163,14 @@ public class DeviceImpl extends AbstractIdleService implements Device, Service, 
                         try {
                             resultUris.add(replaceScheme(baseUri, "https"));
                         } catch (URISyntaxException e) {
-                            LOG.error("Error while creating https URI", e);
+                            instanceLogger.error("Error while creating https URI", e);
                         }
                     }
                     if (enableHttp) {
                         try {
                             resultUris.add(replaceScheme(baseUri, "http"));
                         } catch (URISyntaxException e) {
-                            LOG.error("Error while creating http URI", e);
+                            instanceLogger.error("Error while creating http URI", e);
                         }
                     }
                     return resultUris.stream();
@@ -182,7 +188,7 @@ public class DeviceImpl extends AbstractIdleService implements Device, Service, 
         // Create WS-Discovery target service
         wsdTargetService = targetServiceFactory.createWsDiscoveryTargetService(deviceEpr, wsdNotificationSource);
         wsdTargetService.setXAddrs(actualHostingServiceBindings.stream()
-                .map(uri -> uri.toString() + hostingServerCtxtPath)
+                .map(uriString -> uriString + hostingServerCtxtPath)
                 .collect(Collectors.toList()));
 
         // Register target service to a request response server interceptor chain
@@ -223,13 +229,14 @@ public class DeviceImpl extends AbstractIdleService implements Device, Service, 
         wsdTargetService.setTypes(appendDpwsType(typesOnStartup));
         wsdTargetService.setScopes(scopesAsStrs(scopesOnStartup));
 
-        LOG.info("Device {} is running", hostingService);
+        instanceLogger.info("Device {} is running", hostingService);
 
         wsdTargetService.sendHello();
     }
 
     private List<String> resolveHostingServiceBindings() {
-        InetAddress address = networkInterfaceUtil.getFirstIpV4Address(deviceSettings.getNetworkInterface()).orElseThrow(() ->
+        InetAddress address = networkInterfaceUtil.getFirstIpV4Address(deviceSettings.getNetworkInterface())
+                .orElseThrow(() ->
                 new RuntimeException(String.format("No required IPv4 address found in configured network interface %s",
                         deviceSettings.getNetworkInterface())));
 
@@ -247,14 +254,14 @@ public class DeviceImpl extends AbstractIdleService implements Device, Service, 
 
     @Override
     protected void shutDown() throws Exception {
-        LOG.info("Shut down device {}", hostingService);
+        instanceLogger.info("Shut down device {}", hostingService);
         wsdTargetService.sendBye();
         eventSources.forEach(source -> source.stopAsync().awaitTerminated());
         hostingService.getHostedServices().forEach(hostedService ->
                 hostedService.getWebService().stopAsync().awaitTerminated());
         httpServerRegistry.stopAsync().awaitTerminated();
         discoveryMessageQueue.unregisterUdpMessageQueueObserver(udpMsgProcessor);
-        LOG.info("Device {} shut down", hostingService);
+        instanceLogger.info("Device {} shut down", hostingService);
     }
 
     @Override
@@ -280,12 +287,6 @@ public class DeviceImpl extends AbstractIdleService implements Device, Service, 
         return eprAddress;
     }
 
-    private void checkRunning() {
-        if (!isRunning()) {
-            throw new IllegalStateException("Device is not running");
-        }
-    }
-
     @Override
     public void setTypes(Collection<QName> types) {
         var typesWithDpwsQName = appendDpwsType(types);
@@ -297,14 +298,15 @@ public class DeviceImpl extends AbstractIdleService implements Device, Service, 
     }
 
     private List<QName> appendDpwsType(@Nullable Collection<QName> types) {
-        if (types == null) {
-            types = Collections.emptyList();
+        var copyTypes = types;
+        if (copyTypes == null) {
+            copyTypes = Collections.emptyList();
         }
-        var tmpTypes = new ArrayList<QName>(types.size() + 1);
-        if (types.stream().filter(qName -> qName.equals(DpwsConstants.DEVICE_TYPE)).findAny().isEmpty()) {
+        var tmpTypes = new ArrayList<QName>(copyTypes.size() + 1);
+        if (copyTypes.stream().filter(qName -> qName.equals(DpwsConstants.DEVICE_TYPE)).findAny().isEmpty()) {
             tmpTypes.add(DpwsConstants.DEVICE_TYPE);
         }
-        tmpTypes.addAll(types);
+        tmpTypes.addAll(copyTypes);
         return tmpTypes;
     }
 
@@ -323,16 +325,17 @@ public class DeviceImpl extends AbstractIdleService implements Device, Service, 
             try {
                 wsdTargetService.sendHello(false);
             } catch (MarshallingException | TransportException | InterceptorException e) {
-                LOG.warn("Send Hello failed.", e);
+                instanceLogger.warn("Send Hello failed.", e);
             }
         }
     }
 
     private List<String> scopesAsStrs(@Nullable Collection<String> scopes) {
-        if (scopes == null) {
-            scopes = Collections.emptyList();
+        var copyScopes = scopes;
+        if (copyScopes == null) {
+            copyScopes = Collections.emptyList();
         }
-        return new ArrayList<>(scopes);
+        return new ArrayList<>(copyScopes);
     }
 
     @Override
@@ -364,69 +367,49 @@ public class DeviceImpl extends AbstractIdleService implements Device, Service, 
     }
 
     private void addHostedServiceToHostingService(HostedService hostedService) {
+        var copyHostedService = hostedService;
         // Create event source
         EventSource eventSource = eventSourceProvider.get();
         eventSources.add(eventSource);
         // Inject event source to Web Service
-        hostedService.getWebService().setEventSource(eventSource);
+        copyHostedService.getWebService().setEventSource(eventSource);
         // Create request response handler interceptor specific to the added hosted service
         RequestResponseServerHttpHandler hsReqResHandler = reqResHandlerProvider.get();
         // Add event source to HTTP req-res-server for event source management
         hsReqResHandler.register(eventSource);
 
         // Create Web Service access path
-        String contextPathPart = buildContextPathPart(hostedService.getType().getServiceId());
+        String contextPathPart = buildContextPathPart(copyHostedService.getType().getServiceId());
 
         // If no EPR addresses are given already, create one/some from hosting service
-        if (hostedService.getType().getEndpointReference().isEmpty()) {
+        if (copyHostedService.getType().getEndpointReference().isEmpty()) {
             List<String> uris = hostingService.getXAddrs().stream()
                     .map(uri -> uri + contextPathPart)
                     .collect(Collectors.toList());
 
-            hostedService = hostedServiceFactory.createHostedService(hostedService.getType().getServiceId(),
-                    hostedService.getType().getTypes(), uris, hostedService.getWebService(),
-                    hostedService.getWsdlDocument());
+            copyHostedService = hostedServiceFactory.createHostedService(copyHostedService.getType().getServiceId(),
+                    copyHostedService.getType().getTypes(), uris, copyHostedService.getWebService(),
+                    copyHostedService.getWsdlDocument());
         }
 
-        // Make given WSDL document accessible through HTTP
         String contextPath = buildContextPathBase(hostingService.getEndpointReferenceAddress()) + contextPathPart;
-        String wsdlContextPath = contextPath + "/wsdl";
-
-        // Retrieve WSDL document bytes
-        byte[] tmpWsdlDocBytes;
-        try {
-            tmpWsdlDocBytes = ByteStreams.toByteArray(hostedService.getWsdlDocument());
-        } catch (IOException e) {
-            LOG.warn("Could not add hosted service properly. IO exception while requesting WSDL document stream.", e);
-            return;
-        }
-
-        // Make WSDL document bytes available as HTTP resource
-        final byte[] wsdlDocBytes = tmpWsdlDocBytes;
-        for (EndpointReferenceType epr : hostedService.getType().getEndpointReference()) {
-            if (wsdlDocBytes.length == 0) {
-                throw new RuntimeException("Empty WSDL document detected");
-            }
+        for (EndpointReferenceType epr : copyHostedService.getType().getEndpointReference()) {
             var uri = wsaUtil.getAddressUri(epr).orElseThrow(() ->
                     new RuntimeException("Invalid EPR detected when trying to add hosted service"));
-
             httpServerRegistry.registerContext(uri, contextPath, hsReqResHandler);
-            var wsdlLocation = httpServerRegistry.registerContext(uri, wsdlContextPath,
-                    SoapConstants.MEDIA_TYPE_WSDL, new ByteResourceHandler(wsdlDocBytes));
-            hostedService.getWsdlLocations().add(wsdlLocation);
         }
 
         // Create hosted service interceptor to access GetMetadata requests
         HostedServiceInterceptor hsInterceptor = hostedServiceInterceptorFactory.createHostedServiceInterceptor(
-                hostedService, wsdTargetService);
+                copyHostedService, wsdTargetService);
         // Register interceptor at HTTP req-res-handler
         hsReqResHandler.register(hsInterceptor);
 
         // Register Web Service interceptor at HTTP req-res-handler
-        hsReqResHandler.register(hostedService.getWebService());
+        hsReqResHandler.register(copyHostedService.getWebService());
 
         // Add hosted service to hosting service to get metadata descriptions updated
-        hostingService.addHostedService(hostedService);
+        hostingService.addHostedService(copyHostedService);
 
         // @todo Send out Hello with metadata version increment
     }

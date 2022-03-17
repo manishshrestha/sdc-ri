@@ -42,6 +42,7 @@ public class TimedWait<T> {
     }
 
     public boolean waitForData(Predicate<T> dataCondition, Duration waitTime) {
+        var copyWaitTime = waitTime;
         try {
             reentrantLock.lock();
             do {
@@ -50,18 +51,16 @@ public class TimedWait<T> {
                     if (dataCondition.test(data)) {
                         return true;
                     }
-                    if (condition.await(waitTime.toMillis(), TimeUnit.MILLISECONDS)) {
-                        if (dataCondition.test(data)) {
-                            return true;
-                        }
+                    if (condition.await(copyWaitTime.toMillis(), TimeUnit.MILLISECONDS) && dataCondition.test(data)) {
+                        return true;
                     }
                 } catch (InterruptedException e) {
                     return dataCondition.test(data);
                 }
 
                 Instant finish = Instant.now();
-                waitTime = waitTime.minus(Duration.between(start, finish));
-            } while (waitTime.toMillis() > 0);
+                copyWaitTime = copyWaitTime.minus(Duration.between(start, finish));
+            } while (copyWaitTime.toMillis() > 0);
             return dataCondition.test(data);
         } finally {
             reentrantLock.unlock();

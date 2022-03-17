@@ -2227,8 +2227,8 @@
 			<wsdl:output message="tns:GetDescriptorsFromArchiveResponse"/>
 		</wsdl:operation>
 		<wsdl:operation name="GetStatesFromArchive">
-			<wsdl:input message="tns:GetDescriptorsFromArchive"/>
-			<wsdl:output message="tns:GetDescriptorsFromArchiveResponse"/>
+			<wsdl:input message="tns:GetStatesFromArchive"/>
+			<wsdl:output message="tns:GetStatesFromArchiveResponse"/>
 		</wsdl:operation>
 	</wsdl:portType>
 	<wsdl:portType name="LocalizationService" dpws:DiscoveryType="dt:ServiceProvider">

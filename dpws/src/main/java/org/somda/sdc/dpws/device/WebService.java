@@ -2,8 +2,8 @@ package org.somda.sdc.dpws.device;
 
 import com.google.common.util.concurrent.AbstractIdleService;
 import com.google.common.util.concurrent.Service;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.somda.sdc.dpws.service.HostedService;
 import org.somda.sdc.dpws.soap.interception.Interceptor;
 import org.somda.sdc.dpws.soap.wseventing.EventSource;
@@ -29,7 +29,7 @@ import java.util.concurrent.TimeUnit;
  * Use this class as a server interceptor when calling {@link HostingServiceAccess#addHostedService(HostedService)}.
  */
 public abstract class WebService extends AbstractIdleService implements EventSourceAccess, Interceptor {
-    private static final Logger LOG = LoggerFactory.getLogger(WebService.class);
+    private static final Logger LOG = LogManager.getLogger(WebService.class);
     private EventSource eventSource;
 
     /**

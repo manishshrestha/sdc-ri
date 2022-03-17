@@ -8,14 +8,16 @@ import org.somda.sdc.dpws.soap.model.Fault;
  * <p>
  * The conversion is based on the mapping table SOAP Version 1.2 Part 2: Adjuncts specification.
  *
- * @see <a href="https://www.w3.org/TR/soap12-part2/#tabresstatereccodes">SOAP Version 1.2 Part 2: Adjuncts specification, Table 20: SOAP Fault to HTTP Status Mapping</a>
+ * @see <a href="https://www.w3.org/TR/soap12-part2/#tabresstatereccodes"
+ * >SOAP Version 1.2 Part 2: Adjuncts specification, Table 20: SOAP Fault to HTTP Status Mapping</a>
  */
 public class SoapFaultHttpStatusCodeMapping {
 
     /**
      * Converts {@linkplain Fault} to an HTTP status code.
      * <p>
-     * Sender fault causes the mapper to return 400 (bad request), all other fault QNames return 500 (internal server error).
+     * Sender fault causes the mapper to return 400 (bad request), all other fault QNames return 500
+     * (internal server error).
      *
      * @param fault the fault to convert.
      * @return an HTTP status code number.
@@ -28,7 +30,7 @@ public class SoapFaultHttpStatusCodeMapping {
         if (fault.getCode().getValue().equals(SoapConstants.SENDER)) {
             return HttpStatus.BAD_REQUEST_400;
         }
-
-        return HttpStatus.INTERNAL_SERVER_ERROR_500; // Return 500 by default (Receiver, MusUnderstand, VersionMismatch, DataEncodingUnknown and others)
+        // Return 500 by default (Receiver, MustUnderstand, VersionMismatch, DataEncodingUnknown and others)
+        return HttpStatus.INTERNAL_SERVER_ERROR_500;
     }
 }

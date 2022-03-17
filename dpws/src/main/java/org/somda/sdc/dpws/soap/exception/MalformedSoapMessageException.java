@@ -19,7 +19,8 @@ public class MalformedSoapMessageException extends RuntimeException {
         super(cause);
     }
 
-    public MalformedSoapMessageException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
+    public MalformedSoapMessageException(String message, Throwable cause, boolean enableSuppression,
+                                         boolean writableStackTrace) {
         super(message, cause, enableSuppression, writableStackTrace);
     }
 }

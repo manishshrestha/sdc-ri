@@ -3,6 +3,7 @@ package org.somda.sdc.dpws.soap;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.somda.sdc.dpws.DpwsTest;
+import org.somda.sdc.dpws.helper.JaxbMarshalling;
 import org.somda.sdc.dpws.soap.factory.SoapMessageFactory;
 import org.somda.sdc.dpws.soap.interception.Direction;
 import org.somda.sdc.dpws.soap.interception.Interceptor;
@@ -18,7 +19,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class RequestResponseServerImplTest extends DpwsTest {
+class RequestResponseServerImplTest extends DpwsTest {
     private List<String> dispatchedSequence;
     private CommunicationContext mockCommunicationContext;
 
@@ -38,12 +39,13 @@ public class RequestResponseServerImplTest extends DpwsTest {
                 )
         );
 
+        getInjector().getInstance(JaxbMarshalling.class).startAsync().awaitRunning();
         getInjector().getInstance(SoapMarshalling.class).startAsync().awaitRunning();
         dispatchedSequence = new ArrayList<>();
     }
 
     @Test
-    public void receiveRequestResponse() throws Exception {
+    void receiveRequestResponse() throws Exception {
         SoapMarshalling unmarshaller = getInjector().getInstance(SoapMarshalling.class);
         RequestResponseServer rrServer = getInjector().getInstance(RequestResponseServer.class);
         Envelope soapEnv = unmarshaller.unmarshal(getClass().getResourceAsStream("soap-envelope.xml"));

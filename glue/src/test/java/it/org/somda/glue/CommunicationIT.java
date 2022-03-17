@@ -5,22 +5,46 @@ import it.org.somda.glue.consumer.ReportListenerSpy;
 import it.org.somda.glue.consumer.TestSdcClient;
 import it.org.somda.glue.provider.TestSdcDevice;
 import it.org.somda.glue.provider.VentilatorMdibRunner;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.somda.sdc.biceps.common.CommonConstants;
 import org.somda.sdc.biceps.common.MdibStateModifications;
 import org.somda.sdc.biceps.common.event.AbstractMdibAccessMessage;
 import org.somda.sdc.biceps.common.event.AlertStateModificationMessage;
 import org.somda.sdc.biceps.common.event.MetricStateModificationMessage;
 import org.somda.sdc.biceps.common.storage.PreprocessingException;
-import org.somda.sdc.biceps.model.message.*;
-import org.somda.sdc.biceps.model.participant.*;
+import org.somda.sdc.biceps.model.message.GetContainmentTree;
+import org.somda.sdc.biceps.model.message.GetContainmentTreeResponse;
+import org.somda.sdc.biceps.model.message.GetDescriptor;
+import org.somda.sdc.biceps.model.message.GetDescriptorResponse;
+import org.somda.sdc.biceps.model.message.InvocationError;
+import org.somda.sdc.biceps.model.message.InvocationState;
+import org.somda.sdc.biceps.model.message.OperationInvokedReport;
+import org.somda.sdc.biceps.model.message.SetString;
+import org.somda.sdc.biceps.model.message.SetStringResponse;
+import org.somda.sdc.biceps.model.participant.AbstractAlertState;
+import org.somda.sdc.biceps.model.participant.AbstractMetricState;
+import org.somda.sdc.biceps.model.participant.AlertConditionState;
+import org.somda.sdc.biceps.model.participant.AlertSignalPresence;
+import org.somda.sdc.biceps.model.participant.AlertSignalState;
+import org.somda.sdc.biceps.model.participant.ContainmentTree;
+import org.somda.sdc.biceps.model.participant.EnumStringMetricState;
+import org.somda.sdc.biceps.model.participant.NumericMetricState;
+import org.somda.sdc.biceps.model.participant.factory.CodedValueFactory;
 import org.somda.sdc.biceps.testutil.MdibAccessObserverSpy;
 import org.somda.sdc.dpws.service.HostingServiceProxy;
+import org.somda.sdc.dpws.soap.RequestResponseClient;
+import org.somda.sdc.dpws.soap.SoapUtil;
+import org.somda.sdc.dpws.soap.exception.MarshallingException;
+import org.somda.sdc.dpws.soap.exception.SoapFaultException;
+import org.somda.sdc.dpws.soap.exception.TransportException;
+import org.somda.sdc.dpws.soap.interception.InterceptorException;
+import org.somda.sdc.glue.common.ActionConstants;
 import org.somda.sdc.glue.common.MdibXmlIo;
 import org.somda.sdc.glue.common.factory.ModificationsBuilderFactory;
 import org.somda.sdc.glue.consumer.ConnectConfiguration;
@@ -34,16 +58,26 @@ import org.somda.sdc.glue.provider.sco.OperationInvocationReceiver;
 import test.org.somda.common.CIDetector;
 import test.org.somda.common.LoggingTestWatcher;
 
+import javax.xml.namespace.QName;
 import java.math.BigDecimal;
 import java.time.Duration;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @ExtendWith(LoggingTestWatcher.class)
 class CommunicationIT {
-    private static final Logger LOG = LoggerFactory.getLogger(CommunicationIT.class);
+    private static final Logger LOG = LogManager.getLogger(CommunicationIT.class);
     private static final IntegrationTestUtil IT = new IntegrationTestUtil();
 
     private TestSdcDevice testDevice;
@@ -403,5 +437,151 @@ class CommunicationIT {
             var numericMetricState = (NumericMetricState) abstractMetricState;
             assertEquals(BigDecimal.valueOf(i), numericMetricState.getMetricValue().getValue());
         }
+    }
+
+    @Test
+    void containmentTreeService() throws Exception {
+        testDevice.startAsync().awaitRunning(WAIT_IN_SECONDS, WAIT_TIME_UNIT);
+        testClient.startAsync().awaitRunning(WAIT_IN_SECONDS, WAIT_TIME_UNIT);
+
+        var hostingServiceFuture = testClient.getClient()
+                .connect(testDevice.getSdcDevice().getEprAddress());
+        var hostingServiceProxy = hostingServiceFuture.get(WAIT_IN_SECONDS, WAIT_TIME_UNIT);
+
+        var remoteDeviceFuture = testClient.getConnector().connect(hostingServiceProxy,
+                ConnectConfiguration.create(ConnectConfiguration.ALL_PERIODIC_AND_WAVEFORM_REPORTS));
+
+        var sdcRemoteDevice = remoteDeviceFuture.get(WAIT_IN_SECONDS, WAIT_TIME_UNIT);
+
+
+        var hostedServiceProxy = sdcRemoteDevice.getHostingServiceProxy().getHostedServices().get("HighPriorityServices");
+        assertNotNull(hostedServiceProxy);
+        var client = hostedServiceProxy.getRequestResponseClient();
+        Function<String, QName> qName = name -> new QName(CommonConstants.NAMESPACE_PARTICIPANT, name);
+
+        // Navigate down to metrics and check if containment tree responses are in accordance with Ventilator MDIB
+        {
+            var tree = getContainmentTree(client, Collections.emptyList());
+            assertEquals(1, tree.getEntry().size());
+            {
+                var entry = tree.getEntry().get(0);
+                assertEquals(VentilatorMdibRunner.HANDLE_MDC_DEV_SYS_PT_VENT_MDS, entry.getHandleRef());
+                assertEquals(5, entry.getChildrenCount());
+                assertEquals(CodedValueFactory.createIeeeCodedValue("70001", "MDC_DEV_SYS_PT_VENT_MDS"),
+                        entry.getType());
+                assertEquals(qName.apply("MdsDescriptor"), entry.getEntryType());
+            }
+        }
+
+        {
+            var tree = getContainmentTree(client, List.of(VentilatorMdibRunner.HANDLE_MDC_DEV_SYS_PT_VENT_MDS));
+            assertEquals(5, tree.getEntry().size());
+            {
+                var entry = tree.getEntry().get(0);
+                assertEquals(VentilatorMdibRunner.HANDLE_ALERT_SYSTEM, entry.getHandleRef());
+                assertEquals(2, entry.getChildrenCount());
+                assertNull(entry.getType());
+                assertEquals(qName.apply("AlertSystemDescriptor"), entry.getEntryType());
+            }
+            {
+                var entry = tree.getEntry().get(1);
+                assertEquals(VentilatorMdibRunner.HANDLE_SCO, entry.getHandleRef());
+                assertEquals(1, entry.getChildrenCount());
+                assertNull(entry.getType());
+                assertEquals(qName.apply("ScoDescriptor"), entry.getEntryType());
+            }
+            {
+                var entry = tree.getEntry().get(2);
+                assertEquals(VentilatorMdibRunner.HANDLE_SYSTEMCONTEXT, entry.getHandleRef());
+                assertEquals(1, entry.getChildrenCount());
+                assertNull(entry.getType());
+                assertEquals(qName.apply("SystemContextDescriptor"), entry.getEntryType());
+            }
+            {
+                var entry = tree.getEntry().get(3);
+                assertEquals(VentilatorMdibRunner.HANDLE_CLOCK, entry.getHandleRef());
+                assertEquals(0, entry.getChildrenCount());
+                assertNull(entry.getType());
+                assertEquals(qName.apply("ClockDescriptor"), entry.getEntryType());
+            }
+            {
+                var entry = tree.getEntry().get(4);
+                assertEquals(VentilatorMdibRunner.HANDLE_MDC_DEV_SYS_PT_VENT_VMD, entry.getHandleRef());
+                assertEquals(1, entry.getChildrenCount());
+                assertEquals(CodedValueFactory.createIeeeCodedValue("70002", "MDC_DEV_SYS_PT_VENT_VMD"),
+                        entry.getType());
+                assertEquals(qName.apply("VmdDescriptor"), entry.getEntryType());
+            }
+        }
+
+        {
+            var tree = getContainmentTree(client, List.of(
+                    VentilatorMdibRunner.HANDLE_MDC_DEV_SYS_PT_VENT_VMD, "non-result-handle"));
+            assertEquals(VentilatorMdibRunner.HANDLE_MDC_DEV_SYS_PT_VENT_VMD, tree.getHandleRef());
+            assertEquals(VentilatorMdibRunner.HANDLE_MDC_DEV_SYS_PT_VENT_MDS, tree.getParentHandleRef());
+            assertEquals(1, tree.getChildrenCount());
+            assertEquals(qName.apply("VmdDescriptor"), tree.getEntryType());
+            assertEquals(1, tree.getEntry().size());
+            {
+                var entry = tree.getEntry().get(0);
+                assertEquals(VentilatorMdibRunner.HANDLE_MDC_DEV_SYS_PT_VENT_CHAN, entry.getHandleRef());
+                assertEquals(VentilatorMdibRunner.HANDLE_MDC_DEV_SYS_PT_VENT_VMD, entry.getParentHandleRef());
+                assertEquals(2, entry.getChildrenCount());
+                assertEquals(CodedValueFactory.createIeeeCodedValue("70003", "MDC_DEV_SYS_PT_VENT_CHAN"),
+                        entry.getType());
+                assertEquals(qName.apply("ChannelDescriptor"), entry.getEntryType());
+            }
+        }
+
+        {
+            var tree = getContainmentTree(client, List.of(VentilatorMdibRunner.HANDLE_MDC_DEV_SYS_PT_VENT_CHAN));
+            assertEquals(VentilatorMdibRunner.HANDLE_MDC_DEV_SYS_PT_VENT_CHAN, tree.getHandleRef());
+            assertEquals(VentilatorMdibRunner.HANDLE_MDC_DEV_SYS_PT_VENT_VMD, tree.getParentHandleRef());
+            assertEquals(2, tree.getChildrenCount());
+            assertEquals(qName.apply("ChannelDescriptor"), tree.getEntryType());
+            assertEquals(2, tree.getEntry().size());
+            {
+                var entry = tree.getEntry().get(0);
+                assertEquals(VentilatorMdibRunner.HANDLE_MDC_VENT_MODE, entry.getHandleRef());
+                assertEquals(VentilatorMdibRunner.HANDLE_MDC_DEV_SYS_PT_VENT_CHAN, entry.getParentHandleRef());
+                assertEquals(VentilatorMdibRunner.HANDLE_MDC_DEV_SYS_PT_VENT_CHAN, entry.getParentHandleRef());
+                assertEquals(0, entry.getChildrenCount());
+                assertEquals(CodedValueFactory.createIeeeCodedValue("184352", "MDC_VENT_MODE"),
+                        entry.getType());
+                assertEquals(qName.apply("EnumStringMetricDescriptor"), entry.getEntryType());
+            }
+            {
+                var entry = tree.getEntry().get(1);
+                assertEquals(VentilatorMdibRunner.HANDLE_MDC_PRESS_AWAY_END_EXP_POS, entry.getHandleRef());
+                assertEquals(VentilatorMdibRunner.HANDLE_MDC_DEV_SYS_PT_VENT_CHAN, entry.getParentHandleRef());
+                assertEquals(0, entry.getChildrenCount());
+                assertEquals(CodedValueFactory.createIeeeCodedValue("151804", "MDC_PRESS_AWAY_END_EXP_POS"),
+                        entry.getType());
+                assertEquals(qName.apply("NumericMetricDescriptor"), entry.getEntryType());
+            }
+        }
+
+        var soapUtil = IT.getInjector().getInstance(SoapUtil.class);
+        var getDescriptor = new GetDescriptor();
+        var request = soapUtil.createMessage(ActionConstants.ACTION_GET_DESCRIPTOR, getDescriptor);
+        getDescriptor.getHandleRef().addAll(List.of(
+                VentilatorMdibRunner.HANDLE_MDC_DEV_SYS_PT_VENT_MDS,
+                VentilatorMdibRunner.HANDLE_MDC_VENT_MODE,
+                VentilatorMdibRunner.HANDLE_MDC_PRESS_AWAY_END_EXP_POS));
+
+        var response = client.sendRequestResponse(request);
+        soapUtil.getBody(response, GetDescriptorResponse.class).orElseThrow(() ->
+                new RuntimeException("Containment tree response was empty")).getDescriptor();
+    }
+
+    private ContainmentTree getContainmentTree(RequestResponseClient client, List<String> handles)
+            throws InterceptorException, SoapFaultException, MarshallingException, TransportException {
+        var soapUtil = IT.getInjector().getInstance(SoapUtil.class);
+        var getContainmentTree = new GetContainmentTree();
+        var request = soapUtil.createMessage(ActionConstants.ACTION_GET_CONTAINMENT_TREE, getContainmentTree);
+        getContainmentTree.getHandleRef().addAll(handles);
+        var response = client.sendRequestResponse(request);
+        return soapUtil.getBody(response, GetContainmentTreeResponse.class).orElseThrow(() ->
+                new RuntimeException("Containment tree response was empty")).getContainmentTree();
     }
 }

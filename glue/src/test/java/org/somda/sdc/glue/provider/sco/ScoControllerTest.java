@@ -1,36 +1,41 @@
 package org.somda.sdc.glue.provider.sco;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
-import org.somda.sdc.biceps.model.message.InvocationError;
 import org.somda.sdc.biceps.model.message.InvocationState;
 import org.somda.sdc.biceps.model.message.OperationInvokedReport;
-import org.somda.sdc.biceps.model.participant.*;
+import org.somda.sdc.biceps.model.participant.AbstractContextState;
+import org.somda.sdc.biceps.model.participant.InstanceIdentifier;
+import org.somda.sdc.biceps.model.participant.LocationContextState;
+import org.somda.sdc.biceps.model.participant.MdibVersion;
+import org.somda.sdc.biceps.model.participant.PatientContextState;
 import org.somda.sdc.biceps.provider.access.LocalMdibAccess;
 import org.somda.sdc.biceps.testutil.Handles;
 import org.somda.sdc.dpws.device.EventSourceAccess;
-import org.somda.sdc.dpws.soap.exception.MarshallingException;
-import org.somda.sdc.dpws.soap.exception.TransportException;
 import org.somda.sdc.glue.UnitTestUtil;
 import org.somda.sdc.glue.common.ActionConstants;
 import org.somda.sdc.glue.provider.sco.factory.ScoControllerFactory;
+import test.org.somda.common.LoggingTestWatcher;
 
-import java.net.URI;
+import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
+@ExtendWith(LoggingTestWatcher.class)
 class ScoControllerTest {
     private static final UnitTestUtil IT = new UnitTestUtil();
 
     private ScoController scoController;
     private EventSourceAccess eventSourceAccessMock;
-    private LocalMdibAccess mdibAccessMock;
     private Receiver receiver;
     private ArgumentCaptor<String> actionCaptor;
     private ArgumentCaptor<OperationInvokedReport> reportCaptor;
@@ -41,7 +46,7 @@ class ScoControllerTest {
         actionCaptor = ArgumentCaptor.forClass(String.class);
         reportCaptor = ArgumentCaptor.forClass(OperationInvokedReport.class);
 
-        mdibAccessMock = mock(LocalMdibAccess.class);
+        LocalMdibAccess mdibAccessMock = mock(LocalMdibAccess.class);
         when(mdibAccessMock.getMdibVersion()).thenReturn(new MdibVersion("ABC"));
         receiver = new Receiver();
         scoController = IT.getInjector().getInstance(ScoControllerFactory.class).createScoController(eventSourceAccessMock, mdibAccessMock);
@@ -49,150 +54,247 @@ class ScoControllerTest {
     }
 
     @Test
+    @DisplayName("Test that handle-based invocation receivers are processed correctly")
     void testHandleSpecificReceiver() {
-        final InstanceIdentifier expectedInstanceIdentifier = new InstanceIdentifier();
-        scoController.processIncomingSetOperation(Handles.OPERATION_0, expectedInstanceIdentifier, "Test");
+        final var instanceIdentifier = new InstanceIdentifier();
 
-        assertEquals(1, receiver.getItems().size());
-        assertEquals(0, receiver.getItems().get(0).getContext().getTransactionId());
-        assertEquals(expectedInstanceIdentifier, receiver.getItems().get(0).getContext().getInvocationSource());
-        assertEquals(Handles.OPERATION_0, receiver.getItems().get(0).getContext().getOperationHandle());
+        var operation = Handles.OPERATION_0;
+        var callbackId = Receiver.ID_SET_STRING_SPECIFIC;
+        var itemSize = 1;
+        var itemIndex = 0;
+        var transactionId = 0;
+        {
+            final var expectedPayload = "Test";
+            scoController.processIncomingSetOperation(operation, instanceIdentifier, expectedPayload);
+            assertEquals(itemSize, receiver.getItems().size());
+            assertEquals(callbackId, receiver.getItems().get(itemIndex).getCallbackId());
+            assertEquals(instanceIdentifier, receiver.getItems().get(itemIndex).getContext().getInvocationSource());
+            assertEquals(operation, receiver.getItems().get(itemIndex).getContext().getOperationHandle());
+            assertEquals(transactionId, receiver.getItems().get(itemIndex).getContext().getTransactionId());
+            assertTrue(receiver.getItems().get(itemIndex).getData() instanceof String);
+            assertEquals(expectedPayload, receiver.getItems().get(itemIndex).getData());
+        }
 
-        scoController.processIncomingSetOperation(Handles.OPERATION_0, expectedInstanceIdentifier, new UnknownPayload());
-        assertEquals(1, receiver.getItems().size());
+        operation = Handles.OPERATION_1;
+        callbackId = Receiver.ID_ACTIVATE_SPECIFIC;
+        itemSize++;
+        itemIndex++;
+        transactionId++;
+        {
+            final var arg1 = "Test";
+            final var arg2 = Integer.valueOf(100);
+            final var expectedPayload = List.of(arg1, arg2);
+            scoController.processIncomingSetOperation(operation, instanceIdentifier, expectedPayload);
 
-        // second invocation
-        scoController.processIncomingSetOperation(Handles.OPERATION_0, expectedInstanceIdentifier, "Test");
-        assertEquals(2, receiver.getItems().size());
-        assertEquals(2, receiver.getItems().get(1).getContext().getTransactionId());
+            assertEquals(itemSize, receiver.getItems().size());
+            assertEquals(callbackId, receiver.getItems().get(itemIndex).getCallbackId());
+            assertEquals(instanceIdentifier, receiver.getItems().get(itemIndex).getContext().getInvocationSource());
+            assertEquals(operation, receiver.getItems().get(itemIndex).getContext().getOperationHandle());
+            assertEquals(transactionId, receiver.getItems().get(itemIndex).getContext().getTransactionId());
+            assertTrue(receiver.getItems().get(itemIndex).getData() instanceof List);
+            assertEquals(expectedPayload, receiver.getItems().get(itemIndex).getData());
+        }
+
+        operation = Handles.OPERATION_2;
+        callbackId = Receiver.ID_SET_CONTEXT_SPECIFIC;
+        itemSize++;
+        itemIndex++;
+        transactionId++;
+        {
+            final var contextState1 = new PatientContextState();
+            contextState1.setHandle("TestHandle1");
+            final var contextState2 = new LocationContextState();
+            contextState2.setHandle("TestHandle2");
+            final var expectedPayload = List.of(contextState1, contextState2);
+            scoController.processIncomingSetOperation(operation, instanceIdentifier, expectedPayload);
+
+            assertEquals(itemSize, receiver.getItems().size());
+            assertEquals(callbackId, receiver.getItems().get(itemIndex).getCallbackId());
+            assertEquals(instanceIdentifier, receiver.getItems().get(itemIndex).getContext().getInvocationSource());
+            assertEquals(operation, receiver.getItems().get(itemIndex).getContext().getOperationHandle());
+            assertEquals(transactionId, receiver.getItems().get(itemIndex).getContext().getTransactionId());
+            assertTrue(receiver.getItems().get(itemIndex).getData() instanceof List);
+            assertEquals(expectedPayload, receiver.getItems().get(itemIndex).getData());
+        }
     }
 
     @Test
-    void testDefaultReceiver() {
-        final InstanceIdentifier expectedInstanceIdentifier = new InstanceIdentifier();
-        scoController.processIncomingSetOperation("any-handle", expectedInstanceIdentifier, "Test");
+    @DisplayName("Test that catch-all invocation receivers are processed correctly")
+    void testHandleDefaultReceiver() {
+        final var instanceIdentifier = new InstanceIdentifier();
 
-        assertEquals(1, receiver.getItems().size());
-        assertEquals(0, receiver.getItems().get(0).getContext().getTransactionId());
-        assertEquals(expectedInstanceIdentifier, receiver.getItems().get(0).getContext().getInvocationSource());
+        final var operation = "<any handle>";
+        var callbackId = Receiver.ID_SET_STRING_ALL;
+        var itemSize = 1;
+        var itemIndex = 0;
+        var transactionId = 0;
+        {
+            final var expectedPayload = "Test";
+            scoController.processIncomingSetOperation(operation, instanceIdentifier, expectedPayload);
+            assertEquals(itemSize, receiver.getItems().size());
+            assertEquals(callbackId, receiver.getItems().get(itemIndex).getCallbackId());
+            assertEquals(instanceIdentifier, receiver.getItems().get(itemIndex).getContext().getInvocationSource());
+            assertEquals(operation, receiver.getItems().get(itemIndex).getContext().getOperationHandle());
+            assertEquals(transactionId, receiver.getItems().get(itemIndex).getContext().getTransactionId());
+            assertTrue(receiver.getItems().get(itemIndex).getData() instanceof String);
+            assertEquals(expectedPayload, receiver.getItems().get(itemIndex).getData());
+        }
 
-        scoController.processIncomingSetOperation("any-handle", expectedInstanceIdentifier, new UnknownPayload());
-        assertEquals(1, receiver.getItems().size());
+        callbackId = Receiver.ID_LIST_ALL;
+        itemSize++;
+        itemIndex++;
+        transactionId++;
+        {
+            final var contextState1 = new PatientContextState();
+            contextState1.setHandle("TestHandle1");
+            final var contextState2 = new LocationContextState();
+            contextState2.setHandle("TestHandle2");
+            final var expectedPayload = List.of(contextState1, contextState2);
+            scoController.processIncomingSetOperation(operation, instanceIdentifier, expectedPayload);
+
+            assertEquals(itemSize, receiver.getItems().size());
+            assertEquals(callbackId, receiver.getItems().get(itemIndex).getCallbackId());
+            assertEquals(instanceIdentifier, receiver.getItems().get(itemIndex).getContext().getInvocationSource());
+            assertEquals(operation, receiver.getItems().get(itemIndex).getContext().getOperationHandle());
+            assertEquals(transactionId, receiver.getItems().get(itemIndex).getContext().getTransactionId());
+            assertTrue(receiver.getItems().get(itemIndex).getData() instanceof List);
+            assertEquals(expectedPayload, receiver.getItems().get(itemIndex).getData());
+        }
+
+        callbackId = Receiver.ID_LIST_ALL;
+        itemSize++;
+        itemIndex++;
+        transactionId++;
+        {
+            final var arg1 = "Test";
+            final var arg2 = Integer.valueOf(100);
+            final var expectedPayload = List.of(arg1, arg2);
+            scoController.processIncomingSetOperation(operation, instanceIdentifier, expectedPayload);
+
+            assertEquals(itemSize, receiver.getItems().size());
+            assertEquals(callbackId, receiver.getItems().get(itemIndex).getCallbackId());
+            assertEquals(instanceIdentifier, receiver.getItems().get(itemIndex).getContext().getInvocationSource());
+            assertEquals(operation, receiver.getItems().get(itemIndex).getContext().getOperationHandle());
+            assertEquals(transactionId, receiver.getItems().get(itemIndex).getContext().getTransactionId());
+            assertTrue(receiver.getItems().get(itemIndex).getData() instanceof List);
+            assertEquals(expectedPayload, receiver.getItems().get(itemIndex).getData());
+        }
     }
 
     @Test
-    void testSuccessfulInvocation() {
-        final InstanceIdentifier expectedInstanceIdentifier = new InstanceIdentifier();
-        assertEquals(InvocationState.FIN,
-                scoController.processIncomingSetOperation(Handles.OPERATION_0, expectedInstanceIdentifier,
-                        "Test").getInvocationState());
-    }
-
-    @Test
-    void testUnsuccessfulInvocation() {
-        final InstanceIdentifier expectedInstanceIdentifier = new InstanceIdentifier();
-        assertEquals(InvocationState.FAIL,
-                scoController.processIncomingSetOperation(Handles.OPERATION_1, expectedInstanceIdentifier,
-                        Arrays.asList(new LocationContextState())).getInvocationState());
-    }
-
-    @Test
-    void testMultipleReceivers() {
+    @DisplayName("Test precedence of handle-based invocation receivers over catch-all invocation receivers")
+    void testInvocationReceiverPrecedence() {
         SecondReceiver secondReceiver = new SecondReceiver();
 
         scoController.addOperationInvocationReceiver(secondReceiver);
 
-        final InstanceIdentifier expectedInstanceIdentifier = new InstanceIdentifier();
-        scoController.processIncomingSetOperation("any-handle", expectedInstanceIdentifier, "Test");
-        scoController.processIncomingSetOperation("any-handle", expectedInstanceIdentifier, Arrays.asList(new NumericMetricState()));
-        scoController.processIncomingSetOperation("any-handle", expectedInstanceIdentifier, Arrays.asList(new ClockState()));
+        final var instanceIdentifier = new InstanceIdentifier();
 
-        assertEquals(2, receiver.getItems().size());
-        assertEquals(0, receiver.getItems().get(0).getContext().getTransactionId());
-        assertEquals(String.class, receiver.getItems().get(0).getData().getClass());
+        var operation = Handles.OPERATION_0;
+        var callbackId = Receiver.ID_SET_STRING_SPECIFIC;
+        var itemSize = 1;
+        var itemIndex = 0;
+        var transactionId = 0;
+        {
+            final var expectedPayload = "Test";
+            scoController.processIncomingSetOperation(operation, instanceIdentifier, expectedPayload);
+            assertEquals(itemSize, receiver.getItems().size());
+            assertEquals(callbackId, receiver.getItems().get(itemIndex).getCallbackId());
+            assertEquals(instanceIdentifier, receiver.getItems().get(itemIndex).getContext().getInvocationSource());
+            assertEquals(operation, receiver.getItems().get(itemIndex).getContext().getOperationHandle());
+            assertEquals(transactionId, receiver.getItems().get(itemIndex).getContext().getTransactionId());
+            assertTrue(receiver.getItems().get(itemIndex).getData() instanceof String);
+            assertEquals(expectedPayload, receiver.getItems().get(itemIndex).getData());
+        }
 
-        assertEquals(1, receiver.getItems().get(1).getContext().getTransactionId());
-        assertTrue(receiver.getItems().get(1).getData() instanceof List);
-        assertEquals(1, ((List) receiver.getItems().get(1).getData()).size());
-        assertEquals(NumericMetricState.class, ((List) receiver.getItems().get(1).getData()).get(0).getClass());
+        operation = Handles.OPERATION_3;
+        callbackId = SecondReceiver.ID_SET_STRING_SPECIFIC;
+        itemSize = 1;
+        itemIndex = 0;
+        transactionId++;
+        {
+            final var expectedPayload = "Test";
+            scoController.processIncomingSetOperation(operation, instanceIdentifier, expectedPayload);
+            assertEquals(itemSize, secondReceiver.getItems().size());
+            assertEquals(callbackId, secondReceiver.getItems().get(itemIndex).getCallbackId());
+            assertEquals(instanceIdentifier, secondReceiver.getItems().get(itemIndex).getContext().getInvocationSource());
+            assertEquals(operation, secondReceiver.getItems().get(itemIndex).getContext().getOperationHandle());
+            assertEquals(transactionId, secondReceiver.getItems().get(itemIndex).getContext().getTransactionId());
+            assertTrue(secondReceiver.getItems().get(itemIndex).getData() instanceof String);
+            assertEquals(expectedPayload, secondReceiver.getItems().get(itemIndex).getData());
 
-        assertEquals(1, secondReceiver.getItems().size());
-
-        assertEquals(2, secondReceiver.getItems().get(0).getContext().getTransactionId());
-        assertTrue(secondReceiver.getItems().get(0).getData() instanceof List);
-        assertEquals(1, ((List) secondReceiver.getItems().get(0).getData()).size());
-        assertEquals(ClockState.class, ((List) secondReceiver.getItems().get(0).getData()).get(0).getClass());
+        }
     }
 
     @Test
-    void testImplicitOperationInvokeReport() throws MarshallingException, TransportException {
-        final InstanceIdentifier expectedInstanceIdentifier = new InstanceIdentifier();
-        var expectedInvocationState = InvocationState.FIN;
-        var operationHandle = Handles.OPERATION_0;
-        assertEquals(expectedInvocationState,
-                scoController.processIncomingSetOperation(operationHandle, expectedInstanceIdentifier,
-                        "Test").getInvocationState());
+    @DisplayName("Test that unknown receivers result in a failed invocation result")
+    void testInvocationForUnknownReceiver() {
+        final var instanceIdentifier = new InstanceIdentifier();
+        final var operation = "<any handle>";
+        final var expectedPayload = Integer.valueOf(100);
+        final var response = scoController.processIncomingSetOperation(operation, instanceIdentifier, expectedPayload);
+        assertEquals(InvocationState.FAIL, response.getInvocationState());
+    }
 
+    @Test
+    @DisplayName("Test that an invocation result generated by the SCO controller also triggers an invocation invoked report")
+    void testImplicitOperationInvokedReportOnErrorGeneratedInScoController() throws Exception {
+        final var expectedInstanceIdentifier = new InstanceIdentifier();
+        final var expectedInvocationState = InvocationState.FAIL;
+        final var operationHandle = "<unknown operation handle>";
+
+        // pass a big decimal to make sure no receiver will be found
+        final var response = scoController.processIncomingSetOperation(
+                operationHandle,
+                expectedInstanceIdentifier,
+                BigDecimal.ZERO);
+        assertEquals(expectedInvocationState, response.getInvocationState());
+
+        // make sure the error result is also sent as report
         verify(eventSourceAccessMock).sendNotification(actionCaptor.capture(), reportCaptor.capture());
 
         assertEquals(ActionConstants.ACTION_OPERATION_INVOKED_REPORT, actionCaptor.getValue());
         assertEquals(expectedInvocationState, reportCaptor.getValue().getReportPart().get(0).getInvocationInfo().getInvocationState());
         assertEquals(operationHandle, reportCaptor.getValue().getReportPart().get(0).getOperationHandleRef());
+        assertEquals(response.getTransactionId(), reportCaptor.getValue().getReportPart().get(0).getInvocationInfo().getTransactionId());
     }
 
-
-    @Test
-    void testNoImplicitOperationInvokeReport() throws MarshallingException, TransportException {
-        final InstanceIdentifier expectedInstanceIdentifier = new InstanceIdentifier();
-        var expectedInvocationState = InvocationState.FIN;
-        var operationHandle = Handles.OPERATION_2;
-        var invokeOp = scoController.processIncomingSetOperation(operationHandle, expectedInstanceIdentifier,
-                "Test");
-        assertEquals(expectedInvocationState,
-                invokeOp.getInvocationState());
-
-        verify(eventSourceAccessMock).sendNotification(actionCaptor.capture(), reportCaptor.capture());
-        assertEquals(1, reportCaptor.getAllValues().size());
-
-        assertEquals(ActionConstants.ACTION_OPERATION_INVOKED_REPORT, actionCaptor.getValue());
-        assertEquals(expectedInvocationState, reportCaptor.getValue().getReportPart().get(0).getInvocationInfo().getInvocationState());
-        assertEquals(operationHandle, reportCaptor.getValue().getReportPart().get(0).getOperationHandleRef());
-
-        // these are different between report and response!
-        assertNotEquals(invokeOp.getInvocationError(), reportCaptor.getValue().getReportPart().get(0).getInvocationInfo());
-    }
-
-    private class Receiver implements OperationInvocationReceiver {
+    private static class Receiver implements OperationInvocationReceiver {
         private final List<Item> items = new ArrayList<>();
 
+        public final static String ID_SET_STRING_SPECIFIC = "setStringForSpecificHandle";
+        public final static String ID_ACTIVATE_SPECIFIC = "activateForSpecificHandle";
+        public final static String ID_SET_CONTEXT_SPECIFIC = "setContextForSpecificHandle";
+        public final static String ID_SET_STRING_ALL = "setStringCatchAll";
+        public final static String ID_LIST_ALL = "listCatchAll";
+
         @IncomingSetServiceRequest(operationHandle = Handles.OPERATION_0)
-        InvocationResponse setString(Context context, String data) {
-            items.add(new Item(context, data));
+        InvocationResponse setStringForSpecificHandle(Context context, String data) {
+            items.add(new Item(ID_SET_STRING_SPECIFIC, context, data));
             return context.createSuccessfulResponse(MdibVersion.create(), InvocationState.FIN);
         }
 
-        @IncomingSetServiceRequest(operationHandle = Handles.OPERATION_1, listType = AbstractContextState.class)
-        InvocationResponse setContext(Context context, List<AbstractContextState> data) {
-            items.add(new Item(context, data));
-            return context.createUnsuccessfulResponse(MdibVersion.create(), InvocationState.FAIL, InvocationError.UNSPEC, Collections.EMPTY_LIST);
+        @IncomingSetServiceRequest(operationHandle = Handles.OPERATION_1)
+        InvocationResponse activateForSpecificHandle(Context context, List<Object> data) {
+            items.add(new Item(ID_ACTIVATE_SPECIFIC, context, data));
+            return context.createSuccessfulResponse(MdibVersion.create(), InvocationState.FIN);
         }
 
         @IncomingSetServiceRequest(operationHandle = Handles.OPERATION_2)
-        InvocationResponse setStringWithReport(Context context, List<AbstractContextState> data) {
-            items.add(new Item(context, data));
-            context.sendUnsuccessfulReport(MdibVersion.create(), InvocationState.FAIL, InvocationError.INV, Collections.EMPTY_LIST);
-            return context.createUnsuccessfulResponse(MdibVersion.create(), InvocationState.FAIL, InvocationError.UNSPEC, Collections.EMPTY_LIST);
-        }
-
-        @IncomingSetServiceRequest(listType = AbstractMetricState.class)
-        InvocationResponse setMetricAll(Context context, List<AbstractMetricState> data) {
-            items.add(new Item(context, data));
+        InvocationResponse setContextForSpecificHandle(Context context, List<AbstractContextState> data) {
+            items.add(new Item(ID_SET_CONTEXT_SPECIFIC, context, data));
             return context.createSuccessfulResponse(MdibVersion.create(), InvocationState.FIN);
         }
 
         @IncomingSetServiceRequest
-        InvocationResponse setStringAll(Context context, String data) {
-            items.add(new Item(context, data));
+        InvocationResponse setStringCatchAll(Context context, String data) {
+            items.add(new Item(ID_SET_STRING_ALL, context, data));
+            return context.createSuccessfulResponse(MdibVersion.create(), InvocationState.FIN);
+        }
+
+        @IncomingSetServiceRequest
+        InvocationResponse listCatchAll(Context context, List<Object> data) {
+            items.add(new Item(ID_LIST_ALL, context, data));
             return context.createSuccessfulResponse(MdibVersion.create(), InvocationState.FIN);
         }
 
@@ -201,12 +303,13 @@ class ScoControllerTest {
         }
     }
 
-    private class SecondReceiver implements OperationInvocationReceiver {
+    private static class SecondReceiver implements OperationInvocationReceiver {
         private final List<Item> items = new ArrayList<>();
+        public final static String ID_SET_STRING_SPECIFIC = "secondSetStringForSpecificHandle";
 
-        @IncomingSetServiceRequest(listType = AbstractDeviceComponentState.class)
-        InvocationResponse setComponentAll(Context context, List<AbstractDeviceComponentState> data) {
-            items.add(new Item(context, data));
+        @IncomingSetServiceRequest(operationHandle = Handles.OPERATION_3)
+        InvocationResponse setStringForSpecificHandle(Context context, String data) {
+            items.add(new Item(ID_SET_STRING_SPECIFIC, context, data));
             return context.createSuccessfulResponse(MdibVersion.create(), InvocationState.FIN);
         }
 
@@ -215,13 +318,19 @@ class ScoControllerTest {
         }
     }
 
-    private class Item {
+    private static class Item {
+        private final String callbackId;
         private final Context context;
         private final Object data;
 
-        public Item(Context context, Object data) {
+        public Item(String callbackId, Context context, Object data) {
+            this.callbackId = callbackId;
             this.context = context;
             this.data = data;
+        }
+
+        public String getCallbackId() {
+            return callbackId;
         }
 
         public Context getContext() {
@@ -231,8 +340,5 @@ class ScoControllerTest {
         public Object getData() {
             return data;
         }
-    }
-
-    private class UnknownPayload {
     }
 }

@@ -4,16 +4,25 @@ import org.junit.jupiter.api.Test;
 import org.somda.sdc.dpws.soap.CommunicationContext;
 import org.somda.sdc.dpws.soap.TransportInfo;
 
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.Collections;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
-
-public class CommunicationLogImplTest extends DpwsTest {
+class CommunicationLogImplTest extends DpwsTest {
 
     @Test
     void content() throws IOException {
@@ -24,12 +33,12 @@ public class CommunicationLogImplTest extends DpwsTest {
 
         try (ByteArrayOutputStream mockOutputStream = spy(new ByteArrayOutputStream());
              ByteArrayInputStream inputTestInputStream = new ByteArrayInputStream(content);
-             ByteArrayOutputStream outputTestOutputStream = new ByteArrayOutputStream();) {
+             ByteArrayOutputStream outputTestOutputStream = new ByteArrayOutputStream()) {
 
-            when(communicationLogSinkImplMock.createTargetStream(eq(CommunicationLog.TransportType.HTTP), any(), any()))
+            when(communicationLogSinkImplMock.createTargetStream(eq(CommunicationLog.TransportType.HTTP), any(), any(), any()))
                     .thenReturn(mockOutputStream);
 
-            CommunicationLogImpl communicationLogImpl = new CommunicationLogImpl(communicationLogSinkImplMock);
+            CommunicationLogImpl communicationLogImpl = new CommunicationLogImpl(communicationLogSinkImplMock, "abcd");
 
             var requestCommContext = new CommunicationContext(
                     null,
@@ -43,6 +52,7 @@ public class CommunicationLogImplTest extends DpwsTest {
 
             InputStream resultingInputStream = communicationLogImpl
                     .logMessage(CommunicationLog.Direction.OUTBOUND, CommunicationLog.TransportType.HTTP,
+                            CommunicationLog.MessageType.UNKNOWN,
                             requestCommContext, inputTestInputStream);
 
             assertArrayEquals(resultingInputStream.readAllBytes(), content);
@@ -53,6 +63,7 @@ public class CommunicationLogImplTest extends DpwsTest {
 
             try (OutputStream resultingOutputStream = communicationLogImpl.logMessage(
                     CommunicationLog.Direction.OUTBOUND, CommunicationLog.TransportType.HTTP,
+                    CommunicationLog.MessageType.UNKNOWN,
                     requestCommContext, outputTestOutputStream);) {
 
                 resultingOutputStream.write(content);
@@ -71,7 +82,7 @@ public class CommunicationLogImplTest extends DpwsTest {
 
         CommunicationLogSinkImpl communicationLogSinkImplMock = mock(CommunicationLogSinkImpl.class);
 
-        CommunicationLogImpl communicationLogImpl = new CommunicationLogImpl(communicationLogSinkImplMock);
+        CommunicationLogImpl communicationLogImpl = new CommunicationLogImpl(communicationLogSinkImplMock, "abcd");
 
         var requestCommContext = new CommunicationContext(
                 null,
@@ -87,15 +98,17 @@ public class CommunicationLogImplTest extends DpwsTest {
             for (CommunicationLog.Direction dir : CommunicationLog.Direction.values()) {
                 reset(communicationLogSinkImplMock);
 
-                when(communicationLogSinkImplMock.createTargetStream(any(CommunicationLog.TransportType.class), any(), any()))
+                when(communicationLogSinkImplMock.createTargetStream(any(CommunicationLog.TransportType.class), any(), any(), any()))
                         .thenReturn(OutputStream.nullOutputStream());
 
-                communicationLogImpl.logMessage(dir, CommunicationLog.TransportType.HTTP, requestCommContext,
+                communicationLogImpl.logMessage(dir, CommunicationLog.TransportType.HTTP, CommunicationLog.MessageType.UNKNOWN,
+                        requestCommContext,
                         inputStream);
-                communicationLogImpl.logMessage(dir, CommunicationLog.TransportType.HTTP, requestCommContext,
+                communicationLogImpl.logMessage(dir, CommunicationLog.TransportType.HTTP, CommunicationLog.MessageType.UNKNOWN,
+                        requestCommContext,
                         OutputStream.nullOutputStream());
                 verify(communicationLogSinkImplMock, times(2)).
-                        createTargetStream(eq(CommunicationLog.TransportType.HTTP), any(), any());
+                        createTargetStream(eq(CommunicationLog.TransportType.HTTP), any(), any(), any());
             }
         }
     }

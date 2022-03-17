@@ -29,6 +29,9 @@ public class DpwsConfig {
 
     /**
      * Defines the sink for communication log messages in case a communication logger is enabled.
+     * <p>
+     * Implementations of {@link CommunicationLogSink} may ignore this configuration item as not every sink
+     * writes to files.
      *
      * <ul>
      * <li>Data type: {@linkplain java.io.File}
@@ -36,6 +39,44 @@ public class DpwsConfig {
      * </ul>
      */
     public static final String COMMUNICATION_LOG_SINK_DIRECTORY = "Dpws.CommunicationLogSinkDirectory";
+
+    /**
+     * Defines if the communication log shall include HTTP header information.
+     * <p>
+     * Implementations of {@link CommunicationLogSink} may ignore this configuration item.
+     *
+     * <ul>
+     * <li>Data type: {@linkplain Boolean}
+     * <li>Use: optional
+     * </ul>
+     */
+    public static final String COMMUNICATION_LOG_WITH_HTTP_HEADERS = "Dpws.CommunicationLogWithHttpHeaders";
+
+    /**
+     * Defines if the communication log shall include an additional file to relate HTTP request response information.
+     * <p>
+     * Implementations of {@link CommunicationLogSink} may ignore this configuration item.
+     *
+     * <ul>
+     * <li>Data type: {@linkplain Boolean}
+     * <li>Use: optional
+     * </ul>
+     */
+    public static final String COMMUNICATION_LOG_WITH_HTTP_REQUEST_RESPONSE_ID =
+            "Dpws.CommunicationLogWithRequestResponseId";
+
+    /**
+     * Defines if the communication log shall pretty print XML documents.
+     * <p>
+     * Implementations of {@link CommunicationLogSink} may ignore this configuration item.
+     *
+     * <ul>
+     * <li>Data type: {@linkplain Boolean}
+     * <li>Use: optional
+     * </ul>
+     */
+    public static final String COMMUNICATION_LOG_PRETTY_PRINT_XML = "Dpws.CommunicationLogPrettyPrintXml";
+
 
     /**
      * Defines the timeout the http client uses when connecting to an endpoint.
@@ -88,7 +129,7 @@ public class DpwsConfig {
     public static final String HTTP_SERVER_CONNECTION_TIMEOUT = "Dpws.HttpServerConnectionTimeout";
 
     /**
-     * Enables Https communication for Client and Server.
+     * Enables HTTPS communication for Client and Server.
      *
      * <ul>
      * <li>Data type: {@linkplain Boolean}
@@ -98,7 +139,7 @@ public class DpwsConfig {
     public static final String HTTPS_SUPPORT = "Dpws.EnableHttps";
 
     /**
-     * Enables plain Http communication for Client and Server.
+     * Enables unsecured HTTP communication for Client and Server.
      *
      * <ul>
      * <li>Data type: {@linkplain Boolean}
@@ -107,4 +148,15 @@ public class DpwsConfig {
      */
     public static final String HTTP_SUPPORT = "Dpws.EnableHttp";
 
+    /**
+     * Enforces chunked requests and responses.
+     * <p>
+     * Note, that chunked responses and requests can still occur when this is turned off.
+     *
+     * <ul>
+     * <li>Data type: {@linkplain Boolean}
+     * <li>Use: optional
+     * </ul>
+     */
+    public static final String ENFORCE_HTTP_CHUNKED_TRANSFER = "Dpws.EnforceHttpChunked";
 }
