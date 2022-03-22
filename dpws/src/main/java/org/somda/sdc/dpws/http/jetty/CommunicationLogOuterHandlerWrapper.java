@@ -20,13 +20,15 @@ import java.util.UUID;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
- * {@linkplain HandlerWrapper} which enables extracting Headers and passing them to {@linkplain CommunicationLogInnerHandlerWrapper}.
+ * {@linkplain HandlerWrapper} which enables extracting Headers and passing them to
+ * {@linkplain CommunicationLogInnerHandlerWrapper}.
  * Outer Part that is called on the compressed Message.
  */
 public class CommunicationLogOuterHandlerWrapper extends HandlerWrapper {
+    public static final String CONTENT_ENCODING_HEADER_PASSED_IN_ATTRIBUTE_KEY =
+        "Content-Encoding-Header-From-Extractor";
     private static final String TRANSACTION_ID_PREFIX_SERVER = "rrId:server:" + UUID.randomUUID() + ":";
     private static final AtomicLong TRANSACTION_ID = new AtomicLong(-1L);
-    public static final String CONTENT_ENCODING_HEADER_PASSED_IN_ATTRIBUTE_KEY = "Content-Encoding-Header-From-Extractor";
     private final String frameworkIdentifier;
     private final CommunicationLog communicationLog;
 
@@ -104,7 +106,7 @@ public class CommunicationLogOuterHandlerWrapper extends HandlerWrapper {
                 CommunicationLog.MessageType.RESPONSE,
                 responseCommContext
             );
-            outputStream.write((byte[])messageBody);
+            outputStream.write((byte[]) messageBody);
             outputStream.close();
         }
     }

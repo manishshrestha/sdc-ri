@@ -55,7 +55,8 @@ public class CommunicationLogInnerHttpResponseInterceptor implements HttpRespons
         var currentTransactionOpt = Optional.of(context.getAttribute(CommunicationLog.MessageType.REQUEST.name()));
         var currentTransactionId = (String) currentTransactionOpt.orElse("");
 
-        Header header = (Header)context.getAttribute(CommunicationLogOuterHttpResponseInterceptor.CONTENT_ENCODING_HEADER_FROM_OUTER_PART_KEY);
+        Header header = (Header) context.getAttribute(
+            CommunicationLogOuterHttpResponseInterceptor.CONTENT_ENCODING_HEADER_FROM_OUTER_PART_KEY);
 
         final ListMultimap<String, String> responseHttpHeaders =
             ApacheClientHelper.allHeadersToMultimap(response.getAllHeaders());

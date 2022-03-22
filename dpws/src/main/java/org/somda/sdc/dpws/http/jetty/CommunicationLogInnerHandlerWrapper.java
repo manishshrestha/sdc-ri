@@ -14,16 +14,16 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.UUID;
-import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * {@linkplain HandlerWrapper} which enables {@linkplain CommunicationLog} capabilities for requests and responses.
  * Inner Part that is called on the already decompressed Message.
  */
 public class CommunicationLogInnerHandlerWrapper extends HandlerWrapper {
-    public static final String MESSAGE_BODY_FROM_INNER_PART_AS_ATTRIBUTE_KEY = "MessageBody-From-CommLogInnerHandlerWrapper";
-    public static final String MESSAGE_HEADERS_FROM_INNER_PART_AS_ATTRIBUTE_KEY = "MessageHeaders-From-CommLogInnerHandlerWrapper";
+    public static final String MESSAGE_BODY_FROM_INNER_PART_AS_ATTRIBUTE_KEY =
+        "MessageBody-From-CommLogInnerHandlerWrapper";
+    public static final String MESSAGE_HEADERS_FROM_INNER_PART_AS_ATTRIBUTE_KEY =
+        "MessageHeaders-From-CommLogInnerHandlerWrapper";
     private final CommunicationLog commLog;
     private final String frameworkIdentifier;
 
@@ -36,14 +36,14 @@ public class CommunicationLogInnerHandlerWrapper extends HandlerWrapper {
     public void handle(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response)
             throws IOException, ServletException {
 
-        String currentTransactionId = (String)baseRequest.getAttribute(CommunicationLog.MessageType.REQUEST.name());
+        String currentTransactionId = (String) baseRequest.getAttribute(CommunicationLog.MessageType.REQUEST.name());
 
         final ListMultimap<String, String> requestHeaders = JettyUtil.getRequestHeaders(request);
         final Object contentEncodingHeaderFromAttribute = baseRequest.getAttribute(
             CommunicationLogOuterHandlerWrapper.CONTENT_ENCODING_HEADER_PASSED_IN_ATTRIBUTE_KEY);
         if (requestHeaders.get("Content-Encoding").isEmpty()
             && contentEncodingHeaderFromAttribute != null) {
-            requestHeaders.put("Content-Encoding", (String)contentEncodingHeaderFromAttribute);
+            requestHeaders.put("Content-Encoding", (String) contentEncodingHeaderFromAttribute);
         }
 
         var requestHttpApplicationInfo = new HttpApplicationInfo(

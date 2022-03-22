@@ -74,6 +74,10 @@ public class ClientTransportBinding implements TransportBinding {
         this.gzippedTransfer = false;
     }
 
+    /**
+     * Sets the gzippedTransfer property.
+     * @param toValue - the value to set.
+     */
     public void setGzippedTransfer(boolean toValue) {
         this.gzippedTransfer = toValue;
     }
