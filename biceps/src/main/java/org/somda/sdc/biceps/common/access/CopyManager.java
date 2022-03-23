@@ -4,6 +4,7 @@ package org.somda.sdc.biceps.common.access;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import org.somda.sdc.biceps.common.CommonConfig;
+import org.somda.sdc.biceps.guice.JaxbBiceps;
 import org.somda.sdc.common.util.ObjectUtil;
 
 /**
@@ -27,7 +28,7 @@ public class CopyManager {
     private final Boolean copyOutput;
 
     @Inject
-    CopyManager(ObjectUtil objectUtil,
+    CopyManager(@JaxbBiceps ObjectUtil objectUtil,
                 @Named(CommonConfig.COPY_MDIB_INPUT) Boolean copyInput,
                 @Named(CommonConfig.COPY_MDIB_OUTPUT) Boolean copyOutput) {
         this.objectUtil = objectUtil;
@@ -65,7 +66,7 @@ public class CopyManager {
 
     private <T> T doDeepCopyIfConfigured(boolean doCopy, T data) {
         if (doCopy) {
-            return objectUtil.deepCopy(data);
+            return objectUtil.deepCopyJAXB(data);
         } else {
             return data;
         }

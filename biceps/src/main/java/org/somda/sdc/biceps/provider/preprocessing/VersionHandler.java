@@ -9,6 +9,7 @@ import org.somda.sdc.biceps.common.MdibTypeValidator;
 import org.somda.sdc.biceps.common.storage.DescriptionPreprocessingSegment;
 import org.somda.sdc.biceps.common.storage.MdibStorage;
 import org.somda.sdc.biceps.common.storage.StatePreprocessingSegment;
+import org.somda.sdc.biceps.guice.JaxbBiceps;
 import org.somda.sdc.biceps.model.participant.AbstractDescriptor;
 import org.somda.sdc.biceps.model.participant.AbstractMultiState;
 import org.somda.sdc.biceps.model.participant.AbstractState;
@@ -38,17 +39,14 @@ import java.util.stream.Collectors;
  */
 public class VersionHandler implements DescriptionPreprocessingSegment, StatePreprocessingSegment {
     private final MdibTypeValidator mdibTypeValidator;
-    private final ObjectUtil objectUtil;
 
     private Map<String, VersionPair> versionsWorkingCopy;
     private Map<String, VersionPair> versions;
     private final Set<String> updatedParents;
 
     @Inject
-    VersionHandler(MdibTypeValidator mdibTypeValidator,
-                   ObjectUtil objectUtil) {
+    VersionHandler(MdibTypeValidator mdibTypeValidator) {
         this.mdibTypeValidator = mdibTypeValidator;
-        this.objectUtil = objectUtil;
         this.versionsWorkingCopy = new HashMap<>();
         this.versions = new HashMap<>();
         this.updatedParents = new HashSet<>();
@@ -57,7 +55,7 @@ public class VersionHandler implements DescriptionPreprocessingSegment, StatePre
     @Override
     public void beforeFirstModification(MdibDescriptionModifications modifications, MdibStorage storage) {
         updatedParents.clear();
-        versionsWorkingCopy = objectUtil.deepCopy(versions);
+        versionsWorkingCopy = cloneVersions();
     }
 
     @Override
@@ -67,7 +65,7 @@ public class VersionHandler implements DescriptionPreprocessingSegment, StatePre
 
     @Override
     public void beforeFirstModification(MdibStateModifications modifications, MdibStorage storage) {
-        versionsWorkingCopy = objectUtil.deepCopy(versions);
+        versionsWorkingCopy = cloneVersions();
     }
 
     @Override
@@ -314,6 +312,13 @@ public class VersionHandler implements DescriptionPreprocessingSegment, StatePre
 
     private Optional<VersionPair> getVersionPair(AbstractMultiState state) {
         return Optional.ofNullable(versionsWorkingCopy.get(state.getHandle()));
+    }
+
+    private Map<String, VersionPair> cloneVersions() {
+        Map<String, VersionPair> copy = new HashMap<>();
+        versions.forEach((key, versionPair) ->
+                copy.put(key, new VersionPair(versionPair.getDescriptorVersion(), versionPair.getStateVersion())));
+        return copy;
     }
 
     @Override

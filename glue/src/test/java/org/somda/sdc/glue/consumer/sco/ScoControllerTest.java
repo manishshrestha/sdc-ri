@@ -11,8 +11,11 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
+import org.somda.sdc.biceps.guice.JaxbBiceps;
 import org.somda.sdc.biceps.model.message.*;
 import org.somda.sdc.common.util.ExecutorWrapperService;
+import org.somda.sdc.common.util.ObjectUtil;
+import org.somda.sdc.common.util.ObjectUtilImpl;
 import org.somda.sdc.dpws.model.ThisDeviceType;
 import org.somda.sdc.dpws.model.ThisModelType;
 import org.somda.sdc.dpws.service.HostedServiceProxy;
@@ -82,7 +85,7 @@ class ScoControllerTest {
         hostingServiceProxy = injector.getInstance(HostingServiceFactory.class).createHostingServiceProxy(
                 "urn:uuid:441dfbea-40e5-406e-b2c4-154d3b8430bf",
                 Collections.emptyList(),
-                mock(ThisDeviceType.class),
+                mock(ThisDeviceType.class), // TODO: use real models (empty) without mock
                 mock(ThisModelType.class),
                 Collections.emptyMap(), // no services needed as inject in SCO controller separately
                 0,

@@ -16,9 +16,10 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 
 @ExtendWith(LoggingTestWatcher.class)
+// TODO: Vytas
 class ObjectUtilImplTest {
 
-    private Injector inj;
+    /*private Injector inj;
     private ObjectUtil objectUtil;
 
     @BeforeEach
@@ -57,5 +58,5 @@ class ObjectUtilImplTest {
         list.get(1).setStr("test3");
 
         assertThat(listCpy.get(1).getStr(), is("test2"));
-    }
+    }*/
 }

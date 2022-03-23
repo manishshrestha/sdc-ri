@@ -8,6 +8,7 @@ import org.apache.logging.log4j.Logger;
 import org.somda.sdc.biceps.common.MdibDescriptionModifications;
 import org.somda.sdc.biceps.common.MdibEntity;
 import org.somda.sdc.biceps.common.access.MdibAccess;
+import org.somda.sdc.biceps.guice.JaxbBiceps;
 import org.somda.sdc.biceps.model.participant.AbstractComplexDeviceComponentDescriptor;
 import org.somda.sdc.biceps.model.participant.AbstractDescriptor;
 import org.somda.sdc.biceps.model.participant.AbstractMetricDescriptor;
@@ -64,7 +65,7 @@ public class MdibMapper {
     @AssistedInject
     MdibMapper(@Assisted MdibAccess mdibAccess,
                ObjectFactory participantModelFactory,
-               ObjectUtil objectUtil,
+               @JaxbBiceps ObjectUtil objectUtil,
                @Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier) {
         this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);
         this.mdibAccess = mdibAccess;
@@ -230,7 +231,7 @@ public class MdibMapper {
             return;
         }
 
-        MdsDescriptor descriptorCopy = objectUtil.deepCopy(descriptor.get());
+        MdsDescriptor descriptorCopy = objectUtil.deepCopyJAXB(descriptor.get());
 
         mapZeroOrMoreDescriptors(
                 descriptorCopy,
@@ -255,7 +256,7 @@ public class MdibMapper {
     private void mapVmds(MdsDescriptor parent, List<MdibEntity> vmds) {
         for (MdibEntity vmd : vmds) {
             vmd.getDescriptor(VmdDescriptor.class).ifPresent(vmdDescriptor -> {
-                VmdDescriptor vmdDescriptorCopy = objectUtil.deepCopy(vmdDescriptor);
+                VmdDescriptor vmdDescriptorCopy = objectUtil.deepCopyJAXB(vmdDescriptor);
                 parent.getVmd().add(vmdDescriptorCopy);
                 mapAlertSystem(vmdDescriptorCopy, mdibAccess.getChildrenByType(vmdDescriptorCopy.getHandle(),
                         AlertSystemDescriptor.class));
@@ -270,7 +271,7 @@ public class MdibMapper {
     private void mapChannels(VmdDescriptor parent, List<MdibEntity> channels) {
         for (MdibEntity channel : channels) {
             channel.getDescriptor(ChannelDescriptor.class).ifPresent(channelDescriptor -> {
-                ChannelDescriptor channelDescriptorCopy = objectUtil.deepCopy(channelDescriptor);
+                ChannelDescriptor channelDescriptorCopy = objectUtil.deepCopyJAXB(channelDescriptor);
                 parent.getChannel().add(channelDescriptorCopy);
                 mapZeroOrMoreDescriptors(
                         channelDescriptorCopy,
@@ -283,7 +284,7 @@ public class MdibMapper {
     private void mapSco(AbstractComplexDeviceComponentDescriptor parent, List<MdibEntity> scos) {
         for (MdibEntity sco : scos) {
             sco.getDescriptor(ScoDescriptor.class).ifPresent(scoDescriptor -> {
-                ScoDescriptor scoDescriptorCopy = objectUtil.deepCopy(scoDescriptor);
+                ScoDescriptor scoDescriptorCopy = objectUtil.deepCopyJAXB(scoDescriptor);
                 parent.setSco(scoDescriptorCopy);
                 mapZeroOrMoreDescriptors(
                         scoDescriptorCopy,
@@ -297,7 +298,7 @@ public class MdibMapper {
     private void mapSystemContext(MdsDescriptor parent, List<MdibEntity> systemContexts) {
         for (MdibEntity systemContext : systemContexts) {
             systemContext.getDescriptor(SystemContextDescriptor.class).ifPresent(systemContextDescriptor -> {
-                SystemContextDescriptor systemContextDescriptorCopy = objectUtil.deepCopy(systemContextDescriptor);
+                SystemContextDescriptor systemContextDescriptorCopy = objectUtil.deepCopyJAXB(systemContextDescriptor);
                 parent.setSystemContext(systemContextDescriptorCopy);
                 String parentHandle = systemContextDescriptorCopy.getHandle();
                 mapZeroOrOneDescriptor(
@@ -340,7 +341,7 @@ public class MdibMapper {
             return;
         }
 
-        AlertSystemDescriptor descriptorCopy = objectUtil.deepCopy(descriptor.get());
+        AlertSystemDescriptor descriptorCopy = objectUtil.deepCopyJAXB(descriptor.get());
 
         parent.setAlertSystem(descriptorCopy);
         mapZeroOrMoreDescriptors(
@@ -359,7 +360,7 @@ public class MdibMapper {
 
         for (MdibEntity entity : entities) {
             try {
-                AbstractDescriptor childDescriptor = objectUtil.deepCopy(entity.getDescriptor());
+                AbstractDescriptor childDescriptor = objectUtil.deepCopyJAXB(entity.getDescriptor());
                 Method getList = parentDescriptor.getClass().getMethod(getterFunctionName);
                 final List listObject = List.class.cast(getList.invoke(parentDescriptor));
                 listObject.add(childDescriptor);
@@ -388,7 +389,7 @@ public class MdibMapper {
                                         String setterFunctionName) {
         for (MdibEntity entity : entities) {
             try {
-                AbstractDescriptor childDescriptor = objectUtil.deepCopy(entity.getDescriptor());
+                AbstractDescriptor childDescriptor = objectUtil.deepCopyJAXB(entity.getDescriptor());
                 Method setObject =
                         parentDescriptor.getClass().getMethod(setterFunctionName, childDescriptor.getClass());
                 setObject.invoke(parentDescriptor, childDescriptor);

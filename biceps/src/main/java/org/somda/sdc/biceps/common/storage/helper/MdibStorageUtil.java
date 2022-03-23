@@ -1,9 +1,6 @@
 package org.somda.sdc.biceps.common.storage.helper;
 
-import com.google.inject.Inject;
 import org.somda.sdc.biceps.common.MdibEntity;
-import org.somda.sdc.biceps.common.factory.MdibEntityFactory;
-import org.somda.sdc.common.util.ObjectUtil;
 
 import javax.annotation.Nullable;
 import java.util.Collection;
@@ -18,17 +15,6 @@ import java.util.stream.Collectors;
  * {@linkplain MdibStorageUtil} is used for but not limited to type-dependent data exposition.
  */
 public class MdibStorageUtil {
-    private final ObjectUtil objectUtil;
-    private final MdibEntityFactory entityFactory;
-
-    @Inject
-    MdibStorageUtil(ObjectUtil objectUtil,
-                    MdibEntityFactory entityFactory) {
-
-        this.objectUtil = objectUtil;
-        this.entityFactory = entityFactory;
-    }
-
     /**
      * Accepts an object of a certain instance and cast it to a given type.
      *

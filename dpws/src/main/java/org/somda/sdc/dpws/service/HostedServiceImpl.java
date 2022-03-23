@@ -4,6 +4,7 @@ import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
 import org.somda.sdc.common.util.ObjectUtil;
 import org.somda.sdc.dpws.device.WebService;
+import org.somda.sdc.dpws.guice.JaxbDpws;
 import org.somda.sdc.dpws.model.HostedServiceType;
 import org.somda.sdc.dpws.model.ObjectFactory;
 import org.somda.sdc.dpws.soap.wsaddressing.WsAddressingUtil;
@@ -33,7 +34,7 @@ public class HostedServiceImpl implements HostedService {
                       @Assisted WebService webService,
                       @Assisted byte[] wsdlDocument,
                       ObjectFactory dpwsFactory,
-                      ObjectUtil objectUtil,
+                      @JaxbDpws ObjectUtil objectUtil,
                       WsAddressingUtil wsaUtil) {
         this.serviceId = serviceId;
         this.types = types;
@@ -52,7 +53,7 @@ public class HostedServiceImpl implements HostedService {
                       @Assisted WebService webService,
                       @Assisted byte[] wsdlDocument,
                       ObjectFactory dpwsFactory,
-                      ObjectUtil objectUtil,
+                      @JaxbDpws ObjectUtil objectUtil,
                       WsAddressingUtil wsaUtil) {
         this(serviceId, types, new ArrayList<>(), webService, wsdlDocument, dpwsFactory, objectUtil, wsaUtil);
     }
@@ -61,7 +62,7 @@ public class HostedServiceImpl implements HostedService {
     public HostedServiceType getType() {
         HostedServiceType hst = dpwsFactory.createHostedServiceType();
         hst.setServiceId(serviceId);
-        hst.setEndpointReference(objectUtil.deepCopy(eprs));
+        hst.setEndpointReference(objectUtil.deepCopyJAXB(eprs));
         hst.setTypes(new ArrayList<>(types));
         return hst;
     }

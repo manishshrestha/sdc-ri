@@ -1,20 +1,16 @@
 package org.somda.sdc.common.util;
 
-import javax.annotation.Nullable;
-
 /**
- * Creates deep copies of arbitrary objects.
+ * Creates deep copies of BICEPS and DPWS model objects.
  */
 public interface ObjectUtil {
     /**
-     * Creates deep copy of given object.
-     * <p>
-     * <em>Attention: Do not clone nested classes, implementations might attempt to clone the surrounding object as
-     * well!</em>
+     * Creates a deep copy of given JAXB object.
+     * There are separate {@linkplain ObjectUtil} instances based on BICEPS and DPWS models.
      *
-     * @param obj the object to copy.
+     * @param object the object to copy.
      * @param <T> any copyable object.
-     * @return deep copy of given object or null if obj was null.
+     * @return deep copy of given object.
      */
-    <T> T deepCopy(@Nullable T obj);
+    <T> T deepCopyJAXB(T object);
 }

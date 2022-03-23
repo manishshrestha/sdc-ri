@@ -9,6 +9,7 @@ import org.somda.sdc.common.CommonConfig;
 import org.somda.sdc.common.logging.InstanceLogger;
 import org.somda.sdc.common.util.ObjectUtil;
 import org.somda.sdc.dpws.DpwsConstants;
+import org.somda.sdc.dpws.guice.JaxbDpws;
 import org.somda.sdc.dpws.model.LocalizedStringType;
 import org.somda.sdc.dpws.model.ThisDeviceType;
 import org.somda.sdc.dpws.model.ThisModelType;
@@ -60,7 +61,7 @@ public class HostingServiceInterceptor implements HostingService {
                               SoapFaultFactory soapFaultFactory,
                               ObjectFactory mexFactory,
                               org.somda.sdc.dpws.model.ObjectFactory dpwsFactory,
-                              ObjectUtil objectUtil,
+                              @JaxbDpws ObjectUtil objectUtil,
                               WsAddressingUtil wsaUtil,
                               MetadataSectionUtil metadataSectionUtil,
                               @Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier) {
@@ -140,12 +141,12 @@ public class HostingServiceInterceptor implements HostingService {
 
     @Override
     public ThisModelType getThisModel() {
-        return objectUtil.deepCopy(thisModel);
+        return objectUtil.deepCopyJAXB(thisModel);
     }
 
     @Override
     public void setThisModel(ThisModelType thisModel) {
-        this.thisModel = objectUtil.deepCopy(thisModel);
+        this.thisModel = objectUtil.deepCopyJAXB(thisModel);
         this.thisModel.setManufacturer(cutMaxFieldSize(thisModel.getManufacturer()));
         this.thisModel.setModelName(cutMaxFieldSize(thisModel.getModelName()));
         this.thisModel.setModelNumber(cutMaxFieldSize(thisModel.getModelNumber()));
@@ -157,12 +158,12 @@ public class HostingServiceInterceptor implements HostingService {
 
     @Override
     public ThisDeviceType getThisDevice() {
-        return objectUtil.deepCopy(thisDevice);
+        return objectUtil.deepCopyJAXB(thisDevice);
     }
 
     @Override
     public void setThisDevice(ThisDeviceType thisDevice) {
-        this.thisDevice = objectUtil.deepCopy(thisDevice);
+        this.thisDevice = objectUtil.deepCopyJAXB(thisDevice);
         this.thisDevice.setFriendlyName(cutMaxFieldSize(thisDevice.getFriendlyName()));
         this.thisDevice.setFirmwareVersion(cutMaxFieldSize(thisDevice.getFirmwareVersion()));
         this.thisDevice.setSerialNumber(cutMaxFieldSize(thisDevice.getSerialNumber()));
@@ -192,7 +193,7 @@ public class HostingServiceInterceptor implements HostingService {
     private List<LocalizedStringType> cutMaxFieldSize(List<LocalizedStringType> texts) {
         var newList = new ArrayList<LocalizedStringType>(texts.size());
         for (var text : texts) {
-            var localizedText = objectUtil.deepCopy(text);
+            var localizedText = objectUtil.deepCopyJAXB(text);
             localizedText.setValue(cutMaxFieldSize(text.getValue()));
             newList.add(localizedText);
         }

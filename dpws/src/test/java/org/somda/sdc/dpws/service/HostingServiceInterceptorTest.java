@@ -1,11 +1,15 @@
 package org.somda.sdc.dpws.service;
 
+import com.google.inject.Key;
+import com.google.inject.TypeLiteral;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.somda.sdc.common.util.ObjectUtil;
 import org.somda.sdc.dpws.DpwsConstants;
 import org.somda.sdc.dpws.DpwsTest;
 import org.somda.sdc.dpws.ThisDeviceBuilder;
 import org.somda.sdc.dpws.ThisModelBuilder;
+import org.somda.sdc.dpws.guice.JaxbDpws;
 import org.somda.sdc.dpws.model.LocalizedStringType;
 import org.somda.sdc.dpws.service.factory.HostingServiceFactory;
 import org.somda.sdc.dpws.soap.wsdiscovery.WsDiscoveryTargetService;
@@ -66,6 +70,20 @@ class HostingServiceInterceptorTest extends DpwsTest {
         checkText(actualThisModel.getPresentationUrl(), DpwsConstants.MAX_URI_SIZE, "g");
         checkText(actualThisModel.getManufacturerUrl(), DpwsConstants.MAX_URI_SIZE, "h");
         checkText(actualThisModel.getModelUrl(), DpwsConstants.MAX_URI_SIZE, "i");
+    }
+
+    @Test
+    void thisModelDeepCopy() {
+        var objectUtil = getInjector().getInstance(
+                Key.get(new TypeLiteral<ObjectUtil>() {}, JaxbDpws.class));
+
+        var thisModelType = new ThisModelBuilder()
+                .setManufacturer(createTexts(3, DpwsConstants.MAX_FIELD_SIZE, "d"))
+                .get();
+
+        var thisModelTypeCopy = objectUtil.deepCopyJAXB(thisModelType);
+
+        assertEquals(thisModelType, thisModelTypeCopy);
     }
 
     void checkTexts(List<LocalizedStringType> texts, int size, String repeatedSequence) {

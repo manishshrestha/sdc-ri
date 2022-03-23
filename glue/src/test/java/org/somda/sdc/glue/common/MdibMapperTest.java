@@ -1,5 +1,7 @@
 package org.somda.sdc.glue.common;
 
+import com.google.inject.Key;
+import com.google.inject.TypeLiteral;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -7,12 +9,14 @@ import org.somda.sdc.biceps.common.MdibDescriptionModifications;
 import org.somda.sdc.biceps.common.MdibEntity;
 import org.somda.sdc.biceps.common.MdibTypeValidator;
 import org.somda.sdc.biceps.common.storage.PreprocessingException;
+import org.somda.sdc.biceps.guice.JaxbBiceps;
 import org.somda.sdc.biceps.model.participant.*;
 import org.somda.sdc.biceps.provider.access.LocalMdibAccess;
 import org.somda.sdc.biceps.provider.access.factory.LocalMdibAccessFactory;
 import org.somda.sdc.biceps.testutil.BaseTreeModificationsSet;
 import org.somda.sdc.biceps.testutil.Handles;
 import org.somda.sdc.biceps.testutil.MockEntryFactory;
+import org.somda.sdc.common.util.ObjectUtil;
 import org.somda.sdc.glue.UnitTestUtil;
 import org.somda.sdc.glue.common.factory.MdibMapperFactory;
 import test.org.somda.common.LoggingTestWatcher;
@@ -168,5 +172,25 @@ class MdibMapperTest {
             assertEquals(1, mdDescription.getMds().size());
             assertEquals(Handles.MDS_0, mdDescription.getMds().get(0).getHandle());
         }
+    }
+
+    @Test
+    void mdsDescriptionDeepCopy() {
+        var mdsDescription = new MdsDescriptor();
+        var metadata = new MdsDescriptor.MetaData();
+        metadata.setModelNumber("initial_model");
+        mdsDescription.setMetaData(metadata);
+
+        var objectUtil = UT.getInjector().getInstance(
+                Key.get(new TypeLiteral<ObjectUtil>() {}, JaxbBiceps.class));
+
+        var mdsDescriptionCopy = objectUtil.deepCopyJAXB(mdsDescription);
+
+        assertEquals(mdsDescriptionCopy, mdsDescription);
+        // update one object and check if copy isn't changed
+        mdsDescription.getMetaData().setModelNumber("updated_model");
+        assertEquals(mdsDescription.getMetaData().getModelNumber(), "updated_model");
+        assertEquals(mdsDescriptionCopy.getMetaData().getModelNumber(), "initial_model");
+        assertNotEquals(mdsDescription.getMetaData(), mdsDescriptionCopy.getMetaData());
     }
 }

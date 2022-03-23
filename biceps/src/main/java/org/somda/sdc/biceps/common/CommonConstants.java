@@ -36,4 +36,11 @@ public class CommonConstants {
      */
     public static final String NAMESPACE_MESSAGE_PREFIX = "msg";
 
+    /**
+     * JAXB context paths used to let JAXB recognize the BICEPS model.
+     */
+    public static final String JAXB_CONTEXT_PATH = "org.somda.sdc.biceps.model.extension:" +
+            "org.somda.sdc.biceps.model.participant:" +
+            "org.somda.sdc.biceps.model.message";
+
 }

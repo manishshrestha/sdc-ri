@@ -1,5 +1,6 @@
 package org.somda.sdc.glue.consumer.sco;
 
+import org.somda.sdc.biceps.guice.JaxbBiceps;
 import org.somda.sdc.biceps.model.message.AbstractSetResponse;
 import org.somda.sdc.biceps.model.message.OperationInvokedReport;
 import org.somda.sdc.common.util.AutoLock;
@@ -35,7 +36,7 @@ public class ScoTransactionImpl<T extends AbstractSetResponse> implements ScoTra
 
     public ScoTransactionImpl(T response,
                               @Nullable Consumer<OperationInvokedReport.ReportPart> reportListener,
-                              ObjectUtil objectUtil,
+                              @JaxbBiceps ObjectUtil objectUtil,
                               ScoUtil scoUtil) {
         this.response = response;
         this.reportListener = reportListener;
@@ -54,13 +55,13 @@ public class ScoTransactionImpl<T extends AbstractSetResponse> implements ScoTra
     @Override
     public List<OperationInvokedReport.ReportPart> getReports() {
         try (var ignored = AutoLock.lock(reportsLock)) {
-            return objectUtil.deepCopy(collectedReports);
+            return objectUtil.deepCopyJAXB(collectedReports);
         }
     }
 
     @Override
     public T getResponse() {
-        return objectUtil.deepCopy(response);
+        return objectUtil.deepCopyJAXB(response);
     }
 
     @Override
@@ -68,7 +69,7 @@ public class ScoTransactionImpl<T extends AbstractSetResponse> implements ScoTra
         var copyWaitTime = waitTime;
         try (var ignored = AutoLock.lock(reportsLock)) {
             if (scoUtil.hasFinalReport(collectedReports)) {
-                return objectUtil.deepCopy(collectedReports);
+                return objectUtil.deepCopyJAXB(collectedReports);
             }
 
             do {
@@ -76,14 +77,14 @@ public class ScoTransactionImpl<T extends AbstractSetResponse> implements ScoTra
                 try {
                     if (reportsCondition.await(waitTime.toMillis(), TimeUnit.MILLISECONDS)) {
                         if (scoUtil.hasFinalReport(collectedReports)) {
-                            return objectUtil.deepCopy(collectedReports);
+                            return objectUtil.deepCopyJAXB(collectedReports);
                         }
                     } else {
                         return Collections.emptyList();
                     }
                 } catch (InterruptedException e) {
                     if (scoUtil.hasFinalReport(collectedReports)) {
-                        return objectUtil.deepCopy(collectedReports);
+                        return objectUtil.deepCopyJAXB(collectedReports);
                     } else {
                         return Collections.emptyList();
                     }
