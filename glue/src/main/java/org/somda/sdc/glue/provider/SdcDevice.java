@@ -181,15 +181,14 @@ public class SdcDevice extends AbstractIdleService implements Device, EventSourc
         setupHostedServices();
 
         pluginProcessor.beforeStartUp();
-
         dpwsDevice.startAsync().awaitRunning();
-
         pluginProcessor.afterStartUp();
     }
 
     @Override
     protected void shutDown() {
         pluginProcessor.beforeShutDown();
+        mdibAccess.unregisterAllObservers();
         dpwsDevice.stopAsync().awaitTerminated();
         pluginProcessor.afterShutDown();
     }
