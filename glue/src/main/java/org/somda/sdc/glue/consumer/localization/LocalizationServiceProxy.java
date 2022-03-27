@@ -8,6 +8,7 @@ import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
 import com.google.inject.name.Named;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.somda.sdc.biceps.model.message.AbstractGetResponse;
@@ -47,7 +48,7 @@ import java.util.Set;
  */
 public class LocalizationServiceProxy implements LocalizationServiceAccess {
     private static final Logger LOG = LogManager.getLogger(LocalizationServiceProxy.class);
-    private final HostedServiceProxy localizationServiceProxy;
+    private final HostedServiceProxy hostedServiceProxy;
     private final ExecutorWrapperService<ListeningExecutorService> executorService;
     private final SoapUtil soapUtil;
     private final Logger instanceLogger;
@@ -56,17 +57,17 @@ public class LocalizationServiceProxy implements LocalizationServiceAccess {
      * where row = ref, column = lang, value = LocalizedText
      */
     private final Map<BigInteger, Table<String, String, LocalizedText>> localizationCache = new HashMap<>();
-    private final Set<String> cachedLanguages = new HashSet<>();
-
+    private final Set<BigInteger> fullyCachedVersions = new HashSet<>();
+    private final Map<BigInteger, Set<String>> cachedVersionsToLanguageMap = new HashMap<>();
 
     @AssistedInject
     LocalizationServiceProxy(@Assisted HostingServiceProxy hostingServiceProxy,
-                             @Assisted("localizationServiceProxy") @Nullable HostedServiceProxy localizationServiceProxy,
+                             @Assisted("localizationServiceProxy") @Nullable HostedServiceProxy hostedServiceProxy,
                              @Consumer ExecutorWrapperService<ListeningExecutorService> executorService,
                              SoapUtil soapUtil,
                              @Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier) {
         this.instanceLogger = HostingServiceLogger.getLogger(LOG, hostingServiceProxy, frameworkIdentifier);
-        this.localizationServiceProxy = localizationServiceProxy;
+        this.hostedServiceProxy = hostedServiceProxy;
         this.executorService = executorService;
         this.soapUtil = soapUtil;
     }
@@ -77,14 +78,16 @@ public class LocalizationServiceProxy implements LocalizationServiceAccess {
             instanceLogger.debug("Invoke GetLocalizedText with payload: {}",
                     getLocalizedText.toString());
 
-            //check if texts cache available for requested version && languages
-            if (localizationCache.containsKey(getLocalizedText.getVersion()) &&
-                    cachedLanguages.containsAll(getLocalizedText.getLang())) {
-                return getLocalizedTextFromCache(getLocalizedText);
+            var texts = getLocalizedTextFromCache(getLocalizedText);
+            if (texts != null && !texts.isEmpty()) {
+                GetLocalizedTextResponse response = new GetLocalizedTextResponse();
+                response.setText(texts);
+                return response;
             }
-            // no cache available, request texts from SOAP
-            final SoapMessage request = soapUtil.createMessage(ActionConstants.ACTION_GET_LOCALIZED_TEXT,
-                    getLocalizedText);
+
+            // no texts were found, try to fetch texts directly from Localization service via SOAP
+            var request = soapUtil.createMessage(
+                    ActionConstants.ACTION_GET_LOCALIZED_TEXT, getLocalizedText);
             return sendMessage(request, GetLocalizedTextResponse.class);
         });
     }
@@ -94,26 +97,40 @@ public class LocalizationServiceProxy implements LocalizationServiceAccess {
             GetSupportedLanguages getSupportedLanguages) {
         return executorService.get().submit(() -> {
             instanceLogger.debug("Invoke GetSupportedLanguages");
-            final SoapMessage request = soapUtil.createMessage(ActionConstants.ACTION_GET_SUPPORTED_LANGUAGES,
-                    getSupportedLanguages);
+            var request = soapUtil.createMessage(
+                    ActionConstants.ACTION_GET_SUPPORTED_LANGUAGES, getSupportedLanguages);
             return sendMessage(request, GetSupportedLanguagesResponse.class);
         });
     }
 
     @Override
     public void cachePrefetch(BigInteger version) throws InvocationException {
+        fullyCachedVersions.add(version);
         cachePrefetch(version, Collections.emptyList());
     }
 
     @Override
     public void cachePrefetch(BigInteger version, List<String> lang) throws InvocationException {
         var localizedTextTable = fetchLocalizedTextCache(version, lang);
+        updateCache(version, localizedTextTable);
+    }
+
+    private void updateCache(BigInteger version, Table<String, String, LocalizedText> localizedTextTable) {
         if (!localizationCache.containsKey(version)) {
             localizationCache.put(version, localizedTextTable);
         } else {
             // in case this version was already cached for some languages, but we want to cache additional ones
             localizationCache.get(version).putAll(localizedTextTable);
         }
+        updateCachedVersionMap(version, localizedTextTable);
+    }
+
+    private void updateCachedVersionMap(BigInteger version, Table<String, String, LocalizedText> localizedTextTable) {
+        if (!cachedVersionsToLanguageMap.containsKey(version)) {
+            cachedVersionsToLanguageMap.put(version, new HashSet<>());
+        }
+
+        cachedVersionsToLanguageMap.get(version).addAll(localizedTextTable.columnKeySet());
     }
 
     private Table<String, String, LocalizedText> fetchLocalizedTextCache(BigInteger version,
@@ -129,43 +146,81 @@ public class LocalizationServiceProxy implements LocalizationServiceAccess {
                 localizedTextTable.put(localizedText.getRef(), localizedText.getLang(), localizedText);
             });
         }
-        // add languages to cache too for easier check later if cache was hit by specific language or not
-        // if no languages was provided to the cache method used all available languages from the response result
-        cachedLanguages.addAll(!lang.isEmpty() ? lang : localizedTextTable.columnKeySet());
 
         return localizedTextTable;
     }
 
-    private GetLocalizedTextResponse getLocalizedTextFromCache(GetLocalizedText getLocalizedText) {
-        GetLocalizedTextResponse response = new GetLocalizedTextResponse();
+    /**
+     * Gets localized text from cache if it exists.
+     * <p>
+     * First tries to fetch localized text from cache. In case it doesn't exist and version with only one language
+     * provided in the request then method pre-fetch cache based on version and language and tries to find localized
+     * texts again. In case multiple languages provided in the request, cache prefetch is not executed.
+     *
+     * @param getLocalizedText request with localized text filter parameters
+     * @return a list of localized text which matches filter criteria
+     * @throws InvocationException if localization service is not available or something goes wrong during data fetch.
+     */
+    private List<LocalizedText> getLocalizedTextFromCache(GetLocalizedText getLocalizedText) throws InvocationException {
+        List<LocalizedText> texts = queryLocalizedTextFromCache(getLocalizedText);
+        // text was not found in cache
+        if (texts == null || texts.isEmpty()) {
+            // try to prefetch cache in case only one language provided
+            List<String> requestedLanguages = getLocalizedText.getLang() != null ?
+                    getLocalizedText.getLang() : Collections.emptyList();
+
+            if (requestedLanguages.size() == 1) {
+                cachePrefetch(getLocalizedText.getVersion(), requestedLanguages);
+                return queryLocalizedTextFromCache(getLocalizedText);
+            }
+        }
+
+        return texts;
+    }
+
+    private List<LocalizedText> queryLocalizedTextFromCache(GetLocalizedText getLocalizedText) {
+        if (!cacheExist(getLocalizedText.getVersion(), getLocalizedText.getLang())) {
+            return Collections.emptyList();
+        }
 
         Multimap<String, LocalizedText> refToValueMap = LocalizationServiceFilterUtil.filterByLanguage(
                 localizationCache.get(getLocalizedText.getVersion()), getLocalizedText.getLang());
 
         // if references not provided, return all records, otherwise filter by reference
         var references = getLocalizedText.getRef();
-        var texts = references.isEmpty() ? new ArrayList<>(refToValueMap.values()) :
+        return references.isEmpty() ? new ArrayList<>(refToValueMap.values()) :
                 LocalizationServiceFilterUtil.filterByReferences(refToValueMap, references);
+    }
 
-        response.setText(texts);
+    private boolean cacheExist(BigInteger version, List<String> languages) {
+        // version is mandatory for cached records
+        if (version == null) {
+            return false;
+        }
 
-        return response;
+        // we cannot trust cache records if languages not provided and version is not fully cached
+        if (CollectionUtils.isEmpty(languages) && !fullyCachedVersions.contains(version)) {
+            return false;
+        }
+        // finally, check version and languages was already cached.
+        return localizationCache.containsKey(version) &&
+                cachedVersionsToLanguageMap.containsKey(version) &&
+                cachedVersionsToLanguageMap.get(version).containsAll(languages);
     }
 
     private <T extends AbstractGetResponse> T sendMessage(SoapMessage request,
                                                           Class<T> expectedResponseClass) throws InvocationException {
         try {
-            if (localizationServiceProxy == null) {
+            if (hostedServiceProxy == null) {
                 throw new InvocationException("Request could not be sent: no localization service available");
             }
 
-            final SoapMessage response =
-                    localizationServiceProxy.getRequestResponseClient().sendRequestResponse(request);
+            var response = hostedServiceProxy.getRequestResponseClient().sendRequestResponse(request);
             return soapUtil.getBody(response, expectedResponseClass).orElseThrow(() ->
                     new InvocationException("Received unexpected response"));
         } catch (InterceptorException | SoapFaultException | MarshallingException | TransportException e) {
             throw new InvocationException(String.format("Request to %s failed: %s",
-                    localizationServiceProxy.getActiveEprAddress(), e.getMessage()), e);
+                    hostedServiceProxy.getActiveEprAddress(), e.getMessage()), e);
         }
     }
 }

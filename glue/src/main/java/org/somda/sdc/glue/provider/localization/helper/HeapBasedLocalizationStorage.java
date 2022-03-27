@@ -9,6 +9,7 @@ import org.somda.sdc.glue.common.LocalizationServiceFilterUtil;
 import org.somda.sdc.glue.provider.localization.LocalizationException;
 import org.somda.sdc.glue.provider.localization.LocalizationStorage;
 
+import javax.annotation.Nullable;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -38,11 +39,11 @@ public class HeapBasedLocalizationStorage implements LocalizationStorage {
 
     @Override
     public List<LocalizedText> getLocalizedText(List<String> references,
-                                                BigInteger version,
+                                                @Nullable BigInteger version,
                                                 List<String> languages) {
 
         // if version not provided, get latest version from storage
-        if (BigInteger.ZERO.equals(version)) {
+        if (version == null) {
             version = getLatestVersion();
         }
 
@@ -56,12 +57,15 @@ public class HeapBasedLocalizationStorage implements LocalizationStorage {
 
     /**
      * Adds provided localized text to the {@linkplain LocalizationStorage}.
+     *
      * @param text the {@link LocalizedText} to be added to the storage.
      */
     public void addLocalizedText(LocalizedText text) {
         // check if all mandatory data provided before processing
         if (text.getVersion() == null || StringUtils.isAnyBlank(text.getLang(), text.getRef())) {
-            return;
+            throw new LocalizationException(
+                    "Failed to add localized text, mandatory fields 'version', 'lang' or 'ref' are missing. " +
+                            "Localized text: " + text);
         }
 
         addToSupportedLanguages(text);
@@ -70,9 +74,10 @@ public class HeapBasedLocalizationStorage implements LocalizationStorage {
 
     /**
      * Adds provided collection of localized texts to the {@linkplain LocalizationStorage}.
+     *
      * @param texts a collection of {@link LocalizedText} to be added to the storage.
      */
-    public void allLocalizedTexts(Collection<LocalizedText> texts) {
+    public void addAllLocalizedTexts(Collection<LocalizedText> texts) {
         texts.forEach(this::addLocalizedText);
     }
 

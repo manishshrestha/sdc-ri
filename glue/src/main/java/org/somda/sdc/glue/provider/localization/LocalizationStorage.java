@@ -2,6 +2,7 @@ package org.somda.sdc.glue.provider.localization;
 
 import org.somda.sdc.biceps.model.participant.LocalizedText;
 
+import javax.annotation.Nullable;
 import java.math.BigInteger;
 import java.util.List;
 
@@ -22,14 +23,13 @@ public interface LocalizationStorage {
      *
      * @param references a zero or more reference names of the texts that are requested.
      *                   If empty list is provided localized texts are not filtered by reference.
-     * @param version    of the referenced text that is requested.
-     *                   The latest version is used if parameter is not provided or set to {@link BigInteger#ZERO}.
+     * @param version    of the referenced text that is requested. The latest version is used if parameter is null.
      * @param languages  a zero or more language identifiers to get different translations of the requested text.
      *                   If empty list is provided localized texts are not filtered by language.
      * @return a list of {@link LocalizedText} texts that matches search criteria.
      */
     List<LocalizedText> getLocalizedText(List<String> references,
-                                         BigInteger version,
+                                         @Nullable BigInteger version,
                                          List<String> languages);
 
 }

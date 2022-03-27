@@ -102,7 +102,7 @@ class ProviderUtil extends BaseUtil {
 
     LocalizationStorage getLocalizationStorage() {
         var storage = new HeapBasedLocalizationStorage();
-        storage.allLocalizedTexts(populateLocalizationData());
+        storage.addAllLocalizedTexts(populateLocalizationData());
         return storage;
     }
 

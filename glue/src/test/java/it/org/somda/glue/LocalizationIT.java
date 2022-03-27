@@ -22,6 +22,7 @@ import org.somda.sdc.glue.provider.localization.helper.HeapBasedLocalizationStor
 import test.org.somda.common.CIDetector;
 import test.org.somda.common.LoggingTestWatcher;
 
+import javax.annotation.Nullable;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -95,9 +96,9 @@ public class LocalizationIT {
 
     @Test
     void testGetLocalizedTextAction() throws Exception {
-        {  // version = 0 should return the latest version
+        {  // version = null should return the latest version
             final GetLocalizedTextResponse response = createRequestAndSend(
-                    BigInteger.ZERO, Collections.emptyList(), Collections.emptyList());
+                    null, Collections.emptyList(), Collections.emptyList());
 
             assertNotNull(response);
             assertEquals(response.getText().size(), 9);
@@ -110,6 +111,13 @@ public class LocalizationIT {
             assertNotNull(response);
             assertEquals(response.getText().size(), 3);
             assertEquals(response.getText().get(0).getLang(), "en");
+        }
+
+        { // filter by version and language with one language cached already ("en") and one new language ("de")
+            final GetLocalizedTextResponse response = createRequestAndSend(BigInteger.ONE, Collections.emptyList(),
+                    List.of("en", "de"));
+            assertNotNull(response);
+            assertEquals(response.getText().size(), 6);
         }
 
         { // filter by version and reference
@@ -159,7 +167,7 @@ public class LocalizationIT {
         }
     }
 
-    private GetLocalizedTextResponse createRequestAndSend(BigInteger version,
+    private GetLocalizedTextResponse createRequestAndSend(@Nullable BigInteger version,
                                                           List<String> ref,
                                                           List<String> lang) throws Exception {
         final GetLocalizedText request = factory.createGetLocalizedText();
@@ -203,7 +211,7 @@ public class LocalizationIT {
                         List.of("ref1", "ref2", "ref3").forEach(ref ->
                                 texts.add(createText(ref, lang, version)))));
 
-        localizationStorage.allLocalizedTexts(texts);
+        localizationStorage.addAllLocalizedTexts(texts);
     }
 
     private LocalizedText createText(String ref, String lang, BigInteger version) {

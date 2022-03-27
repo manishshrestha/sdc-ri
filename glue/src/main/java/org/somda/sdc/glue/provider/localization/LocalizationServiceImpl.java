@@ -6,6 +6,7 @@ import com.google.inject.assistedinject.Assisted;
 import org.somda.sdc.biceps.model.participant.LocalizedText;
 import org.somda.sdc.biceps.model.participant.LocalizedTextWidth;
 
+import javax.annotation.Nullable;
 import java.math.BigInteger;
 import java.util.List;
 
@@ -30,7 +31,7 @@ public class LocalizationServiceImpl extends AbstractIdleService implements Loca
 
     @Override
     public List<LocalizedText> getLocalizedText(List<String> ref,
-                                                BigInteger version,
+                                                @Nullable BigInteger version,
                                                 List<String> lang,
                                                 List<LocalizedTextWidth> textWidth,
                                                 List<BigInteger> numberOfLines) {
