@@ -11,13 +11,27 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
-import org.somda.sdc.biceps.guice.JaxbBiceps;
-import org.somda.sdc.biceps.model.message.*;
+import org.somda.sdc.biceps.model.message.AbstractSet;
+import org.somda.sdc.biceps.model.message.AbstractSetResponse;
+import org.somda.sdc.biceps.model.message.Activate;
+import org.somda.sdc.biceps.model.message.ActivateResponse;
+import org.somda.sdc.biceps.model.message.InvocationState;
+import org.somda.sdc.biceps.model.message.OperationInvokedReport;
+import org.somda.sdc.biceps.model.message.SetAlertState;
+import org.somda.sdc.biceps.model.message.SetAlertStateResponse;
+import org.somda.sdc.biceps.model.message.SetComponentState;
+import org.somda.sdc.biceps.model.message.SetComponentStateResponse;
+import org.somda.sdc.biceps.model.message.SetContextState;
+import org.somda.sdc.biceps.model.message.SetContextStateResponse;
+import org.somda.sdc.biceps.model.message.SetMetricState;
+import org.somda.sdc.biceps.model.message.SetMetricStateResponse;
+import org.somda.sdc.biceps.model.message.SetString;
+import org.somda.sdc.biceps.model.message.SetStringResponse;
+import org.somda.sdc.biceps.model.message.SetValue;
+import org.somda.sdc.biceps.model.message.SetValueResponse;
 import org.somda.sdc.common.util.ExecutorWrapperService;
-import org.somda.sdc.common.util.ObjectUtil;
-import org.somda.sdc.common.util.ObjectUtilImpl;
-import org.somda.sdc.dpws.model.ThisDeviceType;
-import org.somda.sdc.dpws.model.ThisModelType;
+import org.somda.sdc.dpws.ThisDeviceBuilder;
+import org.somda.sdc.dpws.ThisModelBuilder;
 import org.somda.sdc.dpws.service.HostedServiceProxy;
 import org.somda.sdc.dpws.service.HostingServiceProxy;
 import org.somda.sdc.dpws.service.factory.HostingServiceFactory;
@@ -37,7 +51,6 @@ import org.somda.sdc.glue.consumer.sco.helper.OperationInvocationDispatcher;
 import test.org.somda.common.LoggingTestWatcher;
 
 import javax.annotation.Nullable;
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -47,7 +60,9 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.function.Consumer;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -85,8 +100,8 @@ class ScoControllerTest {
         hostingServiceProxy = injector.getInstance(HostingServiceFactory.class).createHostingServiceProxy(
                 "urn:uuid:441dfbea-40e5-406e-b2c4-154d3b8430bf",
                 Collections.emptyList(),
-                mock(ThisDeviceType.class), // TODO: use real models (empty) without mock
-                mock(ThisModelType.class),
+                injector.getInstance(ThisDeviceBuilder.class).get(),
+                injector.getInstance(ThisModelBuilder.class).get(),
                 Collections.emptyMap(), // no services needed as inject in SCO controller separately
                 0,
                 mock(RequestResponseClient.class),

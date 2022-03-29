@@ -102,7 +102,6 @@ public class LocalMdibAccessImpl implements LocalMdibAccess {
     @Override
     public WriteDescriptionResult writeDescription(MdibDescriptionModifications mdibDescriptionModifications)
             throws PreprocessingException {
-        //TODO Vytas: deepCopy not JAXB objecT?
         var modificationsCopy = copyManager.processInput(mdibDescriptionModifications);
         return writeUtil.writeDescription(descriptionModifications -> {
             mdibVersion = MdibVersion.increment(mdibVersion);
@@ -114,7 +113,6 @@ public class LocalMdibAccessImpl implements LocalMdibAccess {
 
     @Override
     public WriteStateResult writeStates(MdibStateModifications mdibStateModifications) throws PreprocessingException {
-        //TODO Vytas: deepCopy not JAXB object?
         var modificationsCopy = copyManager.processInput(mdibStateModifications);
         return writeUtil.writeStates(stateModifications -> {
             mdibVersion = MdibVersion.increment(mdibVersion);

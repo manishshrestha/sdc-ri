@@ -493,6 +493,21 @@ public class MdibDescriptionModifications {
         }
     }
 
+    /**
+     * Method used in for deep copy of the {@linkplain  MdibStateModifications} object.
+     *
+     * @param modificationsCopy the deep copy of {@link MdibDescriptionModification} object list.
+     * @return a copy of {@link MdibDescriptionModifications} object.
+     */
+    public MdibDescriptionModifications deepCopy(List<MdibDescriptionModification> modificationsCopy) {
+        var copy = new MdibDescriptionModifications();
+        copy.insertedHandles = new HashSet<>(insertedHandles);
+        copy.updatedHandles = new HashSet<>(updatedHandles);
+        copy.deletedHandles = new HashSet<>(deletedHandles);
+        copy.modifications = new ArrayList<>(modificationsCopy);
+        return copy;
+    }
+
     private MdibDescriptionModifications addMdibModification(MdibDescriptionModification.Type modType,
                                                              AbstractDescriptor descriptor,
                                                              List<? extends AbstractState> states) {

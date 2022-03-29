@@ -62,7 +62,7 @@ public class HostedServiceImpl implements HostedService {
     public HostedServiceType getType() {
         HostedServiceType hst = dpwsFactory.createHostedServiceType();
         hst.setServiceId(serviceId);
-        hst.setEndpointReference(objectUtil.deepCopyJAXB(eprs));
+        hst.setEndpointReference(eprs.stream().map(objectUtil::deepCopyJAXB).collect(Collectors.toList()));
         hst.setTypes(new ArrayList<>(types));
         return hst;
     }
