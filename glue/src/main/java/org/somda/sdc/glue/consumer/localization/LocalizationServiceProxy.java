@@ -192,7 +192,7 @@ public class LocalizationServiceProxy implements LocalizationServiceAccess {
                 LocalizationServiceFilterUtil.filterByReferences(refToValueMap, references);
     }
 
-    private boolean cacheExist(BigInteger version, List<String> languages) {
+    private boolean cacheExist(@Nullable BigInteger version, List<String> languages) {
         // version is mandatory for cached records
         if (version == null) {
             return false;

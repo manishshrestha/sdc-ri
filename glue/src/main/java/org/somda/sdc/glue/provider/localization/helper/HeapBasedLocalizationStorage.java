@@ -20,7 +20,7 @@ import java.util.Map;
 /**
  * Default implementation of {@linkplain LocalizationStorage}.
  * <p>
- * Localized texts are stored in heap ({@link Map}) and can be added during the runtime.
+ * Localized texts are stored in heap ({@link Map}) and can be added during runtime.
  */
 public class HeapBasedLocalizationStorage implements LocalizationStorage {
 
@@ -33,12 +33,12 @@ public class HeapBasedLocalizationStorage implements LocalizationStorage {
     private final Map<BigInteger, Table<String, String, LocalizedText>> localizationStorage = new HashMap<>();
 
     @Override
-    public List<String> getSupportedLanguages() {
+    public synchronized List<String> getSupportedLanguages() {
         return supportedLanguages;
     }
 
     @Override
-    public List<LocalizedText> getLocalizedText(List<String> references,
+    public synchronized List<LocalizedText> getLocalizedText(List<String> references,
                                                 @Nullable BigInteger version,
                                                 List<String> languages) {
 
@@ -60,13 +60,9 @@ public class HeapBasedLocalizationStorage implements LocalizationStorage {
      *
      * @param text the {@link LocalizedText} to be added to the storage.
      */
-    public void addLocalizedText(LocalizedText text) {
+    public synchronized void addLocalizedText(LocalizedText text) {
         // check if all mandatory data provided before processing
-        if (text.getVersion() == null || StringUtils.isAnyBlank(text.getLang(), text.getRef())) {
-            throw new LocalizationException(
-                    "Failed to add localized text, mandatory fields 'version', 'lang' or 'ref' are missing. " +
-                            "Localized text: " + text);
-        }
+        checkRequiredAttributesNonEmpty(text);
 
         addToSupportedLanguages(text);
         addToStorage(text);
@@ -77,8 +73,18 @@ public class HeapBasedLocalizationStorage implements LocalizationStorage {
      *
      * @param texts a collection of {@link LocalizedText} to be added to the storage.
      */
-    public void addAllLocalizedTexts(Collection<LocalizedText> texts) {
+    public synchronized void addAllLocalizedTexts(Collection<LocalizedText> texts) {
+        texts.forEach(this::checkRequiredAttributesNonEmpty);
         texts.forEach(this::addLocalizedText);
+
+    }
+
+    private void checkRequiredAttributesNonEmpty(LocalizedText text) {
+        if (text.getVersion() == null || StringUtils.isAnyBlank(text.getLang(), text.getRef())) {
+            throw new LocalizationException(
+                    "Localized text invalid, mandatory fields 'version', 'lang' or 'ref' are missing. " +
+                            "Localized text: " + text);
+        }
     }
 
     private void addToStorage(LocalizedText text) {
