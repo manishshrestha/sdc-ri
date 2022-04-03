@@ -2,9 +2,8 @@ package org.somda.sdc.dpws.service;
 
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
-import org.somda.sdc.common.util.ObjectUtil;
+import org.somda.sdc.common.util.DpwsModelCloning;
 import org.somda.sdc.dpws.device.WebService;
-import org.somda.sdc.dpws.guice.JaxbDpws;
 import org.somda.sdc.dpws.model.HostedServiceType;
 import org.somda.sdc.dpws.model.ObjectFactory;
 import org.somda.sdc.dpws.soap.wsaddressing.WsAddressingUtil;
@@ -25,7 +24,7 @@ public class HostedServiceImpl implements HostedService {
     private final WebService webService;
     private final byte[] wsdlDocument;
     private final ObjectFactory dpwsFactory;
-    private final ObjectUtil objectUtil;
+    private final DpwsModelCloning dpwsModelCloning;
 
     @AssistedInject
     HostedServiceImpl(@Assisted String serviceId,
@@ -34,7 +33,7 @@ public class HostedServiceImpl implements HostedService {
                       @Assisted WebService webService,
                       @Assisted byte[] wsdlDocument,
                       ObjectFactory dpwsFactory,
-                      @JaxbDpws ObjectUtil objectUtil,
+                      DpwsModelCloning dpwsModelCloning,
                       WsAddressingUtil wsaUtil) {
         this.serviceId = serviceId;
         this.types = types;
@@ -44,7 +43,7 @@ public class HostedServiceImpl implements HostedService {
         this.webService = webService;
         this.wsdlDocument = wsdlDocument;
         this.dpwsFactory = dpwsFactory;
-        this.objectUtil = objectUtil;
+        this.dpwsModelCloning = dpwsModelCloning;
     }
 
     @AssistedInject
@@ -53,16 +52,16 @@ public class HostedServiceImpl implements HostedService {
                       @Assisted WebService webService,
                       @Assisted byte[] wsdlDocument,
                       ObjectFactory dpwsFactory,
-                      @JaxbDpws ObjectUtil objectUtil,
+                      DpwsModelCloning dpwsModelCloning,
                       WsAddressingUtil wsaUtil) {
-        this(serviceId, types, new ArrayList<>(), webService, wsdlDocument, dpwsFactory, objectUtil, wsaUtil);
+        this(serviceId, types, new ArrayList<>(), webService, wsdlDocument, dpwsFactory, dpwsModelCloning, wsaUtil);
     }
 
     @Override
     public HostedServiceType getType() {
         HostedServiceType hst = dpwsFactory.createHostedServiceType();
         hst.setServiceId(serviceId);
-        hst.setEndpointReference(eprs.stream().map(objectUtil::deepCopyJAXB).collect(Collectors.toList()));
+        hst.setEndpointReference(eprs.stream().map(dpwsModelCloning::deepCopy).collect(Collectors.toList()));
         hst.setTypes(new ArrayList<>(types));
         return hst;
     }

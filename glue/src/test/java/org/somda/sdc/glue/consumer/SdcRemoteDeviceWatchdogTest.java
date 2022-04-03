@@ -12,9 +12,9 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.somda.sdc.common.util.ExecutorWrapperService;
+import org.somda.sdc.dpws.ThisDeviceBuilder;
+import org.somda.sdc.dpws.ThisModelBuilder;
 import org.somda.sdc.dpws.client.Client;
-import org.somda.sdc.dpws.model.ThisDeviceType;
-import org.somda.sdc.dpws.model.ThisModelType;
 import org.somda.sdc.dpws.service.EventSinkAccess;
 import org.somda.sdc.dpws.service.HostedServiceProxy;
 import org.somda.sdc.dpws.service.HostingServiceProxy;
@@ -38,13 +38,7 @@ import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(LoggingTestWatcher.class)
 class SdcRemoteDeviceWatchdogTest {
@@ -106,8 +100,8 @@ class SdcRemoteDeviceWatchdogTest {
         hostingServiceProxy = injector.getInstance(HostingServiceFactory.class).createHostingServiceProxy(
                 eprAddress,
                 Collections.emptyList(),
-                mock(ThisDeviceType.class),
-                mock(ThisModelType.class),
+                injector.getInstance(ThisDeviceBuilder.class).get(),
+                injector.getInstance(ThisModelBuilder.class).get(),
                 hostedServices,
                 0,
                 mock(RequestResponseClient.class),

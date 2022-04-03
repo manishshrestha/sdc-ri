@@ -9,14 +9,13 @@ import com.google.inject.Singleton;
 import com.google.inject.assistedinject.FactoryModuleBuilder;
 import com.google.inject.name.Named;
 import org.somda.sdc.common.CommonConfig;
+import org.somda.sdc.common.util.DpwsModelCloning;
+import org.somda.sdc.common.util.DpwsModelCloningImpl;
 import org.somda.sdc.common.util.ExecutorWrapperService;
-import org.somda.sdc.common.util.ObjectUtil;
-import org.somda.sdc.common.util.ObjectUtilImpl;
 import org.somda.sdc.dpws.CommunicationLog;
 import org.somda.sdc.dpws.CommunicationLogDummyImpl;
 import org.somda.sdc.dpws.CommunicationLogSink;
 import org.somda.sdc.dpws.CommunicationLogSinkImpl;
-import org.somda.sdc.dpws.DpwsConstants;
 import org.somda.sdc.dpws.DpwsFramework;
 import org.somda.sdc.dpws.DpwsFrameworkImpl;
 import org.somda.sdc.dpws.client.Client;
@@ -65,7 +64,6 @@ import org.somda.sdc.dpws.soap.RequestResponseClient;
 import org.somda.sdc.dpws.soap.RequestResponseClientImpl;
 import org.somda.sdc.dpws.soap.RequestResponseServer;
 import org.somda.sdc.dpws.soap.RequestResponseServerImpl;
-import org.somda.sdc.dpws.soap.SoapConstants;
 import org.somda.sdc.dpws.soap.SoapMarshalling;
 import org.somda.sdc.dpws.soap.SoapMessage;
 import org.somda.sdc.dpws.soap.factory.NotificationSinkFactory;
@@ -73,11 +71,9 @@ import org.somda.sdc.dpws.soap.factory.NotificationSourceFactory;
 import org.somda.sdc.dpws.soap.factory.RequestResponseClientFactory;
 import org.somda.sdc.dpws.soap.factory.SoapMessageFactory;
 import org.somda.sdc.dpws.soap.wsaddressing.WsAddressingClientInterceptor;
-import org.somda.sdc.dpws.soap.wsaddressing.WsAddressingConstants;
 import org.somda.sdc.dpws.soap.wsaddressing.WsAddressingServerInterceptor;
 import org.somda.sdc.dpws.soap.wsdiscovery.WsDiscoveryClient;
 import org.somda.sdc.dpws.soap.wsdiscovery.WsDiscoveryClientInterceptor;
-import org.somda.sdc.dpws.soap.wsdiscovery.WsDiscoveryConstants;
 import org.somda.sdc.dpws.soap.wsdiscovery.WsDiscoveryTargetService;
 import org.somda.sdc.dpws.soap.wsdiscovery.WsDiscoveryTargetServiceInterceptor;
 import org.somda.sdc.dpws.soap.wsdiscovery.factory.WsDiscoveryClientFactory;
@@ -90,26 +86,20 @@ import org.somda.sdc.dpws.soap.wseventing.SinkSubscriptionManager;
 import org.somda.sdc.dpws.soap.wseventing.SinkSubscriptionManagerImpl;
 import org.somda.sdc.dpws.soap.wseventing.SourceSubscriptionManager;
 import org.somda.sdc.dpws.soap.wseventing.SourceSubscriptionManagerImpl;
-import org.somda.sdc.dpws.soap.wseventing.WsEventingConstants;
 import org.somda.sdc.dpws.soap.wseventing.factory.SubscriptionManagerFactory;
 import org.somda.sdc.dpws.soap.wseventing.factory.WsEventingEventSinkFactory;
 import org.somda.sdc.dpws.soap.wsmetadataexchange.GetMetadataClient;
 import org.somda.sdc.dpws.soap.wsmetadataexchange.GetMetadataClientImpl;
-import org.somda.sdc.dpws.soap.wsmetadataexchange.WsMetadataExchangeConstants;
 import org.somda.sdc.dpws.soap.wstransfer.TransferGetClient;
 import org.somda.sdc.dpws.soap.wstransfer.TransferGetClientImpl;
-import org.somda.sdc.dpws.soap.wstransfer.WsTransferConstants;
 import org.somda.sdc.dpws.udp.UdpBindingService;
 import org.somda.sdc.dpws.udp.UdpBindingServiceImpl;
 import org.somda.sdc.dpws.udp.UdpMessageQueueService;
 import org.somda.sdc.dpws.udp.UdpMessageQueueServiceImpl;
 import org.somda.sdc.dpws.udp.factory.UdpBindingServiceFactory;
 import org.somda.sdc.dpws.wsdl.JaxbWsdlMarshalling;
-import org.somda.sdc.dpws.wsdl.WsdlConstants;
 import org.somda.sdc.dpws.wsdl.WsdlMarshalling;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -180,23 +170,6 @@ public class DefaultDpwsModule extends AbstractModule {
 
     }
 
-    @Provides
-    @JaxbDpws
-    ObjectUtil provideObjectUtil() throws JAXBException {
-        var pkg_delim = ":";
-        var contextPackages = SoapConstants.JAXB_CONTEXT_PACKAGE + pkg_delim +
-                DpwsConstants.JAXB_CONTEXT_PACKAGE + pkg_delim +
-                WsAddressingConstants.JAXB_CONTEXT_PACKAGE + pkg_delim +
-                WsDiscoveryConstants.JAXB_CONTEXT_PACKAGE + pkg_delim +
-                WsEventingConstants.JAXB_CONTEXT_PACKAGE + pkg_delim +
-                WsTransferConstants.JAXB_CONTEXT_PACKAGE + pkg_delim +
-                WsMetadataExchangeConstants.JAXB_CONTEXT_PACKAGE + pkg_delim +
-                WsdlConstants.JAXB_CONTEXT_PACKAGE;
-
-        var context = JAXBContext.newInstance(contextPackages);
-        return new ObjectUtilImpl(context);
-    }
-
     private void configureService() {
         install(new FactoryModuleBuilder()
                 .implement(HostingService.class, HostingServiceInterceptor.class)
@@ -251,6 +224,7 @@ public class DefaultDpwsModule extends AbstractModule {
         bind(JaxbMarshalling.class).asEagerSingleton();
         bind(SoapMarshalling.class).to(JaxbSoapMarshalling.class).asEagerSingleton();
         bind(WsdlMarshalling.class).to(JaxbWsdlMarshalling.class).asEagerSingleton();
+        bind(DpwsModelCloning.class).to(DpwsModelCloningImpl.class).asEagerSingleton();
     }
 
     private void configureUdp() {

@@ -1,10 +1,9 @@
 package org.somda.sdc.glue.consumer.sco;
 
-import org.somda.sdc.biceps.guice.JaxbBiceps;
 import org.somda.sdc.biceps.model.message.AbstractSetResponse;
 import org.somda.sdc.biceps.model.message.OperationInvokedReport;
 import org.somda.sdc.common.util.AutoLock;
-import org.somda.sdc.common.util.ObjectUtil;
+import org.somda.sdc.common.util.BicepsModelCloning;
 
 import javax.annotation.Nullable;
 import java.time.Duration;
@@ -16,6 +15,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 /**
  * Default implementation of {@linkplain ScoTransaction}
@@ -31,18 +31,18 @@ public class ScoTransactionImpl<T extends AbstractSetResponse> implements ScoTra
     private final ArrayList<OperationInvokedReport.ReportPart> collectedReports;
     private final ReentrantLock reportsLock;
     private final Condition reportsCondition;
-    private final ObjectUtil objectUtil;
+    private final BicepsModelCloning bicepsModelCloning;
     private final ScoUtil scoUtil;
 
     public ScoTransactionImpl(T response,
                               @Nullable Consumer<OperationInvokedReport.ReportPart> reportListener,
-                              @JaxbBiceps ObjectUtil objectUtil,
+                              BicepsModelCloning bicepsModelCloning,
                               ScoUtil scoUtil) {
         this.response = response;
         this.reportListener = reportListener;
         this.reportsLock = new ReentrantLock();
         this.reportsCondition = reportsLock.newCondition();
-        this.objectUtil = objectUtil;
+        this.bicepsModelCloning = bicepsModelCloning;
         this.scoUtil = scoUtil;
         this.collectedReports = new ArrayList<>(3);
     }
@@ -55,13 +55,13 @@ public class ScoTransactionImpl<T extends AbstractSetResponse> implements ScoTra
     @Override
     public List<OperationInvokedReport.ReportPart> getReports() {
         try (var ignored = AutoLock.lock(reportsLock)) {
-            return objectUtil.deepCopyJAXB(collectedReports);
+            return deepCopyCollectedReports();
         }
     }
 
     @Override
     public T getResponse() {
-        return objectUtil.deepCopyJAXB(response);
+        return bicepsModelCloning.deepCopy(response);
     }
 
     @Override
@@ -69,7 +69,7 @@ public class ScoTransactionImpl<T extends AbstractSetResponse> implements ScoTra
         var copyWaitTime = waitTime;
         try (var ignored = AutoLock.lock(reportsLock)) {
             if (scoUtil.hasFinalReport(collectedReports)) {
-                return objectUtil.deepCopyJAXB(collectedReports);
+                return deepCopyCollectedReports();
             }
 
             do {
@@ -77,14 +77,14 @@ public class ScoTransactionImpl<T extends AbstractSetResponse> implements ScoTra
                 try {
                     if (reportsCondition.await(waitTime.toMillis(), TimeUnit.MILLISECONDS)) {
                         if (scoUtil.hasFinalReport(collectedReports)) {
-                            return objectUtil.deepCopyJAXB(collectedReports);
+                            return deepCopyCollectedReports();
                         }
                     } else {
                         return Collections.emptyList();
                     }
                 } catch (InterruptedException e) {
                     if (scoUtil.hasFinalReport(collectedReports)) {
-                        return objectUtil.deepCopyJAXB(collectedReports);
+                        return deepCopyCollectedReports();
                     } else {
                         return Collections.emptyList();
                     }
@@ -113,5 +113,11 @@ public class ScoTransactionImpl<T extends AbstractSetResponse> implements ScoTra
         if (reportListener != null) {
             reportListener.accept(report);
         }
+    }
+
+    private List<OperationInvokedReport.ReportPart> deepCopyCollectedReports() {
+        return collectedReports.stream()
+                .map(bicepsModelCloning::deepCopy)
+                .collect(Collectors.toList());
     }
 }

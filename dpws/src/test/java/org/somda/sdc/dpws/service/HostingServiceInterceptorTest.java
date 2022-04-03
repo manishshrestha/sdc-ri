@@ -1,15 +1,12 @@
 package org.somda.sdc.dpws.service;
 
-import com.google.inject.Key;
-import com.google.inject.TypeLiteral;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.somda.sdc.common.util.ObjectUtil;
+import org.somda.sdc.common.util.DpwsModelCloning;
 import org.somda.sdc.dpws.DpwsConstants;
 import org.somda.sdc.dpws.DpwsTest;
 import org.somda.sdc.dpws.ThisDeviceBuilder;
 import org.somda.sdc.dpws.ThisModelBuilder;
-import org.somda.sdc.dpws.guice.JaxbDpws;
 import org.somda.sdc.dpws.model.LocalizedStringType;
 import org.somda.sdc.dpws.service.factory.HostingServiceFactory;
 import org.somda.sdc.dpws.soap.wsdiscovery.WsDiscoveryTargetService;
@@ -74,14 +71,13 @@ class HostingServiceInterceptorTest extends DpwsTest {
 
     @Test
     void thisModelDeepCopy() {
-        var objectUtil = getInjector().getInstance(
-                Key.get(new TypeLiteral<ObjectUtil>() {}, JaxbDpws.class));
+        var dpwsModelCloning = getInjector().getInstance(DpwsModelCloning.class);
 
         var thisModelType = new ThisModelBuilder()
                 .setManufacturer(createTexts(3, DpwsConstants.MAX_FIELD_SIZE, "d"))
                 .get();
 
-        var thisModelTypeCopy = objectUtil.deepCopyJAXB(thisModelType);
+        var thisModelTypeCopy = dpwsModelCloning.deepCopy(thisModelType);
 
         assertEquals(thisModelType, thisModelTypeCopy);
     }

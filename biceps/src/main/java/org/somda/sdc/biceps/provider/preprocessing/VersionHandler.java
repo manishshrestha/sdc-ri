@@ -9,13 +9,11 @@ import org.somda.sdc.biceps.common.MdibTypeValidator;
 import org.somda.sdc.biceps.common.storage.DescriptionPreprocessingSegment;
 import org.somda.sdc.biceps.common.storage.MdibStorage;
 import org.somda.sdc.biceps.common.storage.StatePreprocessingSegment;
-import org.somda.sdc.biceps.guice.JaxbBiceps;
 import org.somda.sdc.biceps.model.participant.AbstractDescriptor;
 import org.somda.sdc.biceps.model.participant.AbstractMultiState;
 import org.somda.sdc.biceps.model.participant.AbstractState;
 import org.somda.sdc.biceps.model.participant.MdsDescriptor;
 import org.somda.sdc.biceps.provider.preprocessing.helper.VersionPair;
-import org.somda.sdc.common.util.ObjectUtil;
 
 import java.math.BigInteger;
 import java.util.HashMap;

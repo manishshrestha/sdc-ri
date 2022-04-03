@@ -7,9 +7,8 @@ import org.somda.sdc.biceps.common.CommonConfig;
 import org.somda.sdc.biceps.common.MdibDescriptionModification;
 import org.somda.sdc.biceps.common.MdibDescriptionModifications;
 import org.somda.sdc.biceps.common.MdibStateModifications;
-import org.somda.sdc.biceps.guice.JaxbBiceps;
 import org.somda.sdc.biceps.model.participant.AbstractState;
-import org.somda.sdc.common.util.ObjectUtil;
+import org.somda.sdc.common.util.BicepsModelCloning;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,15 +30,15 @@ import java.util.stream.Collectors;
  * Default configuration is <em>yes, copy input and output data</em>.
  */
 public class CopyManager {
-    private final ObjectUtil objectUtil;
+    private final BicepsModelCloning bicepsModelCloning;
     private final Boolean copyInput;
     private final Boolean copyOutput;
 
     @Inject
-    CopyManager(@JaxbBiceps ObjectUtil objectUtil,
+    CopyManager(BicepsModelCloning bicepsModelCloning,
                 @Named(CommonConfig.COPY_MDIB_INPUT) Boolean copyInput,
                 @Named(CommonConfig.COPY_MDIB_OUTPUT) Boolean copyOutput) {
-        this.objectUtil = objectUtil;
+        this.bicepsModelCloning = bicepsModelCloning;
         this.copyInput = copyInput;
         this.copyOutput = copyOutput;
     }
@@ -119,7 +118,7 @@ public class CopyManager {
 
     private <T> T doDeepCopyIfConfigured(boolean doCopy, T data) {
         if (doCopy) {
-            return objectUtil.deepCopyJAXB(data);
+            return bicepsModelCloning.deepCopy(data);
         } else {
             return data;
         }

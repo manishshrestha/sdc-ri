@@ -183,14 +183,7 @@ public class JaxbMarshalling extends AbstractIdleService {
         if (!contextPackages.isEmpty()) {
             contextPackages += PKG_DELIM;
         }
-        contextPackages += SoapConstants.JAXB_CONTEXT_PACKAGE + PKG_DELIM +
-                DpwsConstants.JAXB_CONTEXT_PACKAGE + PKG_DELIM +
-                WsAddressingConstants.JAXB_CONTEXT_PACKAGE + PKG_DELIM +
-                WsDiscoveryConstants.JAXB_CONTEXT_PACKAGE + PKG_DELIM +
-                WsEventingConstants.JAXB_CONTEXT_PACKAGE + PKG_DELIM +
-                WsTransferConstants.JAXB_CONTEXT_PACKAGE + PKG_DELIM +
-                WsMetadataExchangeConstants.JAXB_CONTEXT_PACKAGE + PKG_DELIM +
-                WsdlConstants.JAXB_CONTEXT_PACKAGE;
+        contextPackages += CommonConfig.DPWS_JAXB_CONTEXT_PATH;
 
         instanceLogger.info("Configure JAXB with contexts: {}", contextPackages);
 

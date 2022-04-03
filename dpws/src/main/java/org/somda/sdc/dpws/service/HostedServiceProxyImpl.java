@@ -3,9 +3,8 @@ package org.somda.sdc.dpws.service;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
-import org.somda.sdc.common.util.ObjectUtil;
+import org.somda.sdc.common.util.DpwsModelCloning;
 import org.somda.sdc.dpws.guice.ClientSpecific;
-import org.somda.sdc.dpws.guice.JaxbDpws;
 import org.somda.sdc.dpws.model.HostedServiceType;
 import org.somda.sdc.dpws.soap.NotificationSink;
 import org.somda.sdc.dpws.soap.RequestResponseClient;
@@ -30,7 +29,7 @@ import java.util.List;
 public class HostedServiceProxyImpl implements HostedServiceProxy, EventSinkAccess {
 
     private final EventSink eventSink;
-    private final ObjectUtil objectUtil;
+    private final DpwsModelCloning dpwsModelCloning;
     private final NotificationSinkFactory notificationSinkFactory;
     private final WsAddressingServerInterceptor wsAddressingServerInterceptor;
 
@@ -43,21 +42,21 @@ public class HostedServiceProxyImpl implements HostedServiceProxy, EventSinkAcce
                            @Assisted RequestResponseClient requestResponseClient,
                            @Assisted String activeEprAddress,
                            @Assisted EventSink eventSink,
-                           @JaxbDpws ObjectUtil objectUtil,
+                           DpwsModelCloning dpwsModelCloning,
                            NotificationSinkFactory notificationSinkFactory,
                            @ClientSpecific WsAddressingServerInterceptor wsAddressingServerInterceptor) {
         this.eventSink = eventSink;
-        this.objectUtil = objectUtil;
+        this.dpwsModelCloning = dpwsModelCloning;
         this.notificationSinkFactory = notificationSinkFactory;
         this.wsAddressingServerInterceptor = wsAddressingServerInterceptor;
-        this.hostedServiceType = objectUtil.deepCopyJAXB(hostedServiceType);
+        this.hostedServiceType = dpwsModelCloning.deepCopy(hostedServiceType);
         this.requestResponseClient = requestResponseClient;
         this.activeEprAddress = activeEprAddress;
     }
 
     @Override
     public HostedServiceType getType() {
-        return objectUtil.deepCopyJAXB(hostedServiceType);
+        return dpwsModelCloning.deepCopy(hostedServiceType);
     }
 
     @Override
