@@ -10,15 +10,15 @@ import javax.xml.namespace.QName;
 /**
  * Abstract JAXB objects model cloning class with common methods.
  * <p>
- * Object cloning is done by JAXB marshalling & unmarshalling.
+ * Object cloning is done by JAXB marshalling and unmarshalling.
  */
 public class JaxbModelCloning {
 
-    protected final JAXBContext jaxbContext;
-    protected final Unmarshaller unmarshaller;
+    private final JAXBContext jaxbContext;
+    private final Unmarshaller unmarshaller;
 
 
-    public JaxbModelCloning(String jaxbContextPackages) {
+    protected JaxbModelCloning(String jaxbContextPackages) {
         try {
             jaxbContext = JAXBContext.newInstance(jaxbContextPackages);
             unmarshaller = jaxbContext.createUnmarshaller();
@@ -27,6 +27,13 @@ public class JaxbModelCloning {
         }
     }
 
+    /**
+     * Creates a deep copy of given BICEPS or DPWS model object.
+     *
+     * @param object the object to copy.
+     * @param <T> BICEPS or DPWS model class.
+     * @return deep copy of given object.
+     */
     public <T> T deepCopy(T object) {
         return deepCopy(object, (Class<T>) object.getClass());
     }
