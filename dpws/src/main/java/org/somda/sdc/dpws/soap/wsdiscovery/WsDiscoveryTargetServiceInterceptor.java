@@ -425,7 +425,7 @@ public class WsDiscoveryTargetServiceInterceptor implements WsDiscoveryTargetSer
 
     private List<QName> cloneQNames(List<QName> qNames) {
         return qNames.stream()
-                .map(qName -> new QName(qName.getLocalPart(), qName.getNamespaceURI(), qName.getPrefix()))
+                .map(qName -> new QName(qName.getNamespaceURI(), qName.getLocalPart(), qName.getPrefix()))
                 .collect(Collectors.toList());
     }
 }
