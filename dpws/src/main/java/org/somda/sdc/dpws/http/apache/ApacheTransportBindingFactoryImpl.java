@@ -33,6 +33,7 @@ import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
 import java.net.URI;
 import java.time.Duration;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -139,6 +140,7 @@ public class ApacheTransportBindingFactoryImpl implements TransportBindingFactor
                 sslContext = cryptoConfigurator.createSslContextFromSystemProperties();
             }
 
+            instanceLogger.debug("Enabled protocols: {}", () -> List.of(tlsProtocols));
             SSLConnectionSocketFactory socketFactory = new SSLConnectionSocketFactory(
                     sslContext,
                     tlsProtocols,
