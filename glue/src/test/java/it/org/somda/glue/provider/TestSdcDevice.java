@@ -9,8 +9,8 @@ import com.google.inject.Provides;
 import com.google.inject.name.Named;
 import it.org.somda.glue.common.IntegrationTestPeer;
 import it.org.somda.sdc.dpws.MockedUdpBindingModule;
-import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.somda.sdc.biceps.provider.access.factory.LocalMdibAccessFactory;
 import org.somda.sdc.common.CommonConfig;
 import org.somda.sdc.common.util.ExecutorWrapperService;
@@ -26,6 +26,7 @@ import org.somda.sdc.glue.guice.GlueDpwsConfigModule;
 import org.somda.sdc.glue.provider.SdcDevice;
 import org.somda.sdc.glue.provider.SdcDevicePlugin;
 import org.somda.sdc.glue.provider.factory.SdcDeviceFactory;
+import org.somda.sdc.glue.provider.localization.LocalizationStorage;
 import org.somda.sdc.glue.provider.plugin.SdcRequiredTypesAndScopes;
 import org.somda.sdc.glue.provider.sco.OperationInvocationReceiver;
 import test.org.somda.common.CIDetector;
@@ -63,6 +64,12 @@ public class TestSdcDevice extends IntegrationTestPeer {
         setupInjector();
         setupSdcDevice(Collections.emptyList(),
                 Collections.singleton(getInjector().getInstance(SdcRequiredTypesAndScopes.class)));
+    }
+
+    public TestSdcDevice(LocalizationStorage localizationStorage) {
+        setupInjector();
+        setupSdcDevice(Collections.emptyList(),
+                Collections.singleton(getInjector().getInstance(SdcRequiredTypesAndScopes.class)), localizationStorage);
     }
 
     @Override
@@ -105,7 +112,8 @@ public class TestSdcDevice extends IntegrationTestPeer {
                                     Duration.class,
                                     httpTimeouts);
 
-                            LOG.info("CI detected, setting {} to {}s", DpwsConfig.MAX_WAIT_FOR_FUTURES, futureTimeouts.toSeconds());
+                            LOG.info("CI detected, setting {} to {}s", DpwsConfig.MAX_WAIT_FOR_FUTURES,
+                                    futureTimeouts.toSeconds());
                             bind(DpwsConfig.MAX_WAIT_FOR_FUTURES,
                                     Duration.class,
                                     futureTimeouts);
@@ -123,14 +131,16 @@ public class TestSdcDevice extends IntegrationTestPeer {
                     @NetworkJobThreadPool
                     ExecutorWrapperService<ListeningExecutorService> getNetworkJobThreadPool(@Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier) {
                         if (networkJobThreadPoolExecutor == null) {
-                            Callable<ListeningExecutorService> executor = () -> MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(
+                            Callable<ListeningExecutorService> executor =
+                                    () -> MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(
                                     30,
                                     new ThreadFactoryBuilder()
                                             .setNameFormat("NetworkJobThreadPool-thread-%d")
                                             .setDaemon(true)
                                             .build()
                             ));
-                            networkJobThreadPoolExecutor = new ExecutorWrapperService<>(executor, "NetworkJobThreadPool", frameworkIdentifier);
+                            networkJobThreadPoolExecutor = new ExecutorWrapperService<>(executor,
+                                    "NetworkJobThreadPool", frameworkIdentifier);
                         }
 
                         return networkJobThreadPoolExecutor;
@@ -140,7 +150,8 @@ public class TestSdcDevice extends IntegrationTestPeer {
                     @WsDiscovery
                     ExecutorWrapperService<ListeningExecutorService> getWsDiscoveryExecutor(@Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier) {
                         if (wsDiscoveryExecutor == null) {
-                            Callable<ListeningExecutorService> executor = () -> MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(
+                            Callable<ListeningExecutorService> executor =
+                                    () -> MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(
                                     30,
                                     new ThreadFactoryBuilder()
                                             .setNameFormat("WsDiscovery-thread-%d")
@@ -148,7 +159,8 @@ public class TestSdcDevice extends IntegrationTestPeer {
                                             .build()
                             ));
 
-                            wsDiscoveryExecutor = new ExecutorWrapperService<>(executor, "WsDiscovery", frameworkIdentifier);
+                            wsDiscoveryExecutor = new ExecutorWrapperService<>(executor, "WsDiscovery",
+                                    frameworkIdentifier);
                         }
 
                         return wsDiscoveryExecutor;
@@ -159,6 +171,12 @@ public class TestSdcDevice extends IntegrationTestPeer {
 
     private void setupSdcDevice(Collection<OperationInvocationReceiver> operationInvocationReceivers,
                                 Collection<SdcDevicePlugin> sdcDevicePlugins) {
+        setupSdcDevice(operationInvocationReceivers, sdcDevicePlugins, null);
+    }
+
+    private void setupSdcDevice(Collection<OperationInvocationReceiver> operationInvocationReceivers,
+                                Collection<SdcDevicePlugin> sdcDevicePlugins,
+                                LocalizationStorage localizationStorage) {
         final Injector injector = getInjector();
         final String eprAddress = injector.getInstance(SoapUtil.class).createUriFromUuid(UUID.randomUUID());
         final WsAddressingUtil wsaUtil = injector.getInstance(WsAddressingUtil.class);
@@ -183,6 +201,7 @@ public class TestSdcDevice extends IntegrationTestPeer {
                 deviceSettings,
                 injector.getInstance(LocalMdibAccessFactory.class).createLocalMdibAccess(),
                 operationInvocationReceivers,
-                sdcDevicePlugins);
+                sdcDevicePlugins,
+                localizationStorage);
     }
 }
