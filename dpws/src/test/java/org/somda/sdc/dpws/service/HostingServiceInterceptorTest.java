@@ -2,7 +2,6 @@ package org.somda.sdc.dpws.service;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.somda.sdc.common.util.DpwsModelCloning;
 import org.somda.sdc.dpws.DpwsConstants;
 import org.somda.sdc.dpws.DpwsTest;
 import org.somda.sdc.dpws.ThisDeviceBuilder;
@@ -67,19 +66,6 @@ class HostingServiceInterceptorTest extends DpwsTest {
         checkText(actualThisModel.getPresentationUrl(), DpwsConstants.MAX_URI_SIZE, "g");
         checkText(actualThisModel.getManufacturerUrl(), DpwsConstants.MAX_URI_SIZE, "h");
         checkText(actualThisModel.getModelUrl(), DpwsConstants.MAX_URI_SIZE, "i");
-    }
-
-    @Test
-    void thisModelDeepCopy() {
-        var dpwsModelCloning = getInjector().getInstance(DpwsModelCloning.class);
-
-        var thisModelType = new ThisModelBuilder()
-                .setManufacturer(createTexts(3, DpwsConstants.MAX_FIELD_SIZE, "d"))
-                .get();
-
-        var thisModelTypeCopy = dpwsModelCloning.deepCopy(thisModelType);
-
-        assertEquals(thisModelType, thisModelTypeCopy);
     }
 
     void checkTexts(List<LocalizedStringType> texts, int size, String repeatedSequence) {

@@ -13,7 +13,6 @@ import org.somda.sdc.biceps.provider.access.factory.LocalMdibAccessFactory;
 import org.somda.sdc.biceps.testutil.BaseTreeModificationsSet;
 import org.somda.sdc.biceps.testutil.Handles;
 import org.somda.sdc.biceps.testutil.MockEntryFactory;
-import org.somda.sdc.common.util.BicepsModelCloning;
 import org.somda.sdc.glue.UnitTestUtil;
 import org.somda.sdc.glue.common.factory.MdibMapperFactory;
 import test.org.somda.common.LoggingTestWatcher;
@@ -169,24 +168,5 @@ class MdibMapperTest {
             assertEquals(1, mdDescription.getMds().size());
             assertEquals(Handles.MDS_0, mdDescription.getMds().get(0).getHandle());
         }
-    }
-
-    @Test
-    void mdsDescriptionDeepCopy() {
-        var mdsDescription = new MdsDescriptor();
-        var metadata = new MdsDescriptor.MetaData();
-        metadata.setModelNumber("initial_model");
-        mdsDescription.setMetaData(metadata);
-
-        var bicepsModelCloning = UT.getInjector().getInstance(BicepsModelCloning.class);
-
-        var mdsDescriptionCopy = bicepsModelCloning.deepCopy(mdsDescription);
-
-        assertEquals(mdsDescriptionCopy, mdsDescription);
-        // update one object and check if copy isn't changed
-        mdsDescription.getMetaData().setModelNumber("updated_model");
-        assertEquals(mdsDescription.getMetaData().getModelNumber(), "updated_model");
-        assertEquals(mdsDescriptionCopy.getMetaData().getModelNumber(), "initial_model");
-        assertNotEquals(mdsDescription.getMetaData(), mdsDescriptionCopy.getMetaData());
     }
 }

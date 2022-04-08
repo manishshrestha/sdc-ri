@@ -1,4 +1,4 @@
-package org.somda.sdc.common.util;
+package org.somda.sdc.biceps.common;
 
 /**
  * Creates deep copies of BICEPS model objects.

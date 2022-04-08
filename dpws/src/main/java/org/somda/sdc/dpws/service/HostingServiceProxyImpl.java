@@ -2,7 +2,7 @@ package org.somda.sdc.dpws.service;
 
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
-import org.somda.sdc.common.util.DpwsModelCloning;
+import org.somda.sdc.dpws.DpwsModelCloning;
 import org.somda.sdc.common.util.ObjectStringifier;
 import org.somda.sdc.common.util.Stringified;
 import org.somda.sdc.dpws.model.ThisDeviceType;

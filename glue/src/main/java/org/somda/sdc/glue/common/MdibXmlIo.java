@@ -13,7 +13,6 @@ import org.somda.sdc.common.logging.InstanceLogger;
 import org.somda.sdc.common.util.NamespacePrefixMapperConverter;
 import org.somda.sdc.common.util.PrefixNamespaceMappingParser;
 import org.somda.sdc.dpws.soap.SoapConstants;
-import org.somda.sdc.glue.GlueConstants;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
@@ -25,7 +24,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-import static org.somda.sdc.common.CommonConfig.*;
+import static org.somda.sdc.biceps.common.CommonConstants.BICEPS_JAXB_CONTEXT_PATH;
+import static org.somda.sdc.common.CommonConfig.INSTANCE_IDENTIFIER;
+
 
 /**
  * Utility class to read an {@linkplain Mdib} from an input stream (or file).

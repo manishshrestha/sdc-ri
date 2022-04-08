@@ -3,7 +3,7 @@ package org.somda.sdc.glue.consumer.sco;
 import org.somda.sdc.biceps.model.message.AbstractSetResponse;
 import org.somda.sdc.biceps.model.message.OperationInvokedReport;
 import org.somda.sdc.common.util.AutoLock;
-import org.somda.sdc.common.util.BicepsModelCloning;
+import org.somda.sdc.biceps.common.BicepsModelCloning;
 
 import javax.annotation.Nullable;
 import java.time.Duration;

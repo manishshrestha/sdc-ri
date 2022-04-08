@@ -183,7 +183,7 @@ public class JaxbMarshalling extends AbstractIdleService {
         if (!contextPackages.isEmpty()) {
             contextPackages += PKG_DELIM;
         }
-        contextPackages += CommonConfig.DPWS_JAXB_CONTEXT_PATH;
+        contextPackages += DpwsConstants.DPWS_JAXB_CONTEXT_PATH;
 
         instanceLogger.info("Configure JAXB with contexts: {}", contextPackages);
 

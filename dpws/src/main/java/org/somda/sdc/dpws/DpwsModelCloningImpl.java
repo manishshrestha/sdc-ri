@@ -1,6 +1,6 @@
-package org.somda.sdc.common.util;
+package org.somda.sdc.dpws;
 
-import org.somda.sdc.common.CommonConfig;
+import org.somda.sdc.common.util.JaxbModelCloning;
 
 /**
  * Implementation of {@linkplain DpwsModelCloning}.
@@ -8,6 +8,6 @@ import org.somda.sdc.common.CommonConfig;
 public class DpwsModelCloningImpl extends JaxbModelCloning implements DpwsModelCloning {
 
     public DpwsModelCloningImpl() {
-        super(CommonConfig.DPWS_JAXB_CONTEXT_PATH);
+        super(DpwsConstants.DPWS_JAXB_CONTEXT_PATH);
     }
 }

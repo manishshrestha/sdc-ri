@@ -5,7 +5,7 @@ import com.google.inject.Injector;
 import com.google.inject.assistedinject.Assisted;
 import org.somda.sdc.biceps.model.message.AbstractSetResponse;
 import org.somda.sdc.biceps.model.message.OperationInvokedReport;
-import org.somda.sdc.common.util.BicepsModelCloning;
+import org.somda.sdc.biceps.common.BicepsModelCloning;
 import org.somda.sdc.glue.consumer.sco.ScoTransactionImpl;
 import org.somda.sdc.glue.consumer.sco.ScoUtil;
 

@@ -8,7 +8,7 @@ import org.somda.sdc.biceps.common.MdibDescriptionModification;
 import org.somda.sdc.biceps.common.MdibDescriptionModifications;
 import org.somda.sdc.biceps.common.MdibStateModifications;
 import org.somda.sdc.biceps.model.participant.AbstractState;
-import org.somda.sdc.common.util.BicepsModelCloning;
+import org.somda.sdc.biceps.common.BicepsModelCloning;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -60,14 +60,14 @@ public class CopyManager {
 
         if (input instanceof MdibDescriptionModifications) {
             var data = (MdibDescriptionModifications) input;
-            var modificationsCopy = data.getModifications().stream()
+            var modifications = data.getModifications().stream()
                     .map(modification -> new MdibDescriptionModification(
                             modification.getModificationType(),
                             doDeepCopy(modification.getDescriptor()),
                             deepCopyStates(modification.getStates()),
                             modification.getParentHandle().orElse(null)))
                     .collect(Collectors.toList());
-            var copy = data.deepCopy(modificationsCopy);
+            var copy = data.deepCopy(modifications);
 
             return (T) copy;
         }

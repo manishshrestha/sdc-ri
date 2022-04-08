@@ -11,7 +11,7 @@ import org.somda.sdc.biceps.common.access.MdibAccess;
 import org.somda.sdc.biceps.model.participant.*;
 import org.somda.sdc.common.CommonConfig;
 import org.somda.sdc.common.logging.InstanceLogger;
-import org.somda.sdc.common.util.BicepsModelCloning;
+import org.somda.sdc.biceps.common.BicepsModelCloning;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;

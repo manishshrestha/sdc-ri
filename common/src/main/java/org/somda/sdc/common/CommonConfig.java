@@ -14,24 +14,4 @@ public class CommonConfig {
      * </ul>
      */
     public static final String INSTANCE_IDENTIFIER = "Common.InstanceIdentifier";
-
-    /**
-     * JAXB context paths used to let JAXB recognize the BICEPS model.
-     */
-    public static final String BICEPS_JAXB_CONTEXT_PATH = "org.somda.sdc.biceps.model.extension:" +
-            "org.somda.sdc.biceps.model.participant:" +
-            "org.somda.sdc.biceps.model.message";
-
-    /**
-     * JAXB context paths used to let JAXB recognize the DPWS model.
-     */
-    public static final String DPWS_JAXB_CONTEXT_PATH = "org.somda.sdc.dpws.soap.model:" +
-            "org.somda.sdc.dpws.model:" +
-            "org.somda.sdc.dpws.soap.wsaddressing.model:" +
-            "org.somda.sdc.dpws.soap.wsdiscovery.model:" +
-            "org.somda.sdc.dpws.soap.wseventing.model:" +
-            "org.somda.sdc.dpws.soap.wstransfer.model:" +
-            "org.somda.sdc.dpws.soap.wsmetadataexchange.model:" +
-            "org.somda.sdc.dpws.wsdl.model";
-
 }

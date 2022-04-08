@@ -1,12 +1,14 @@
 package org.somda.sdc.biceps.provider.preprocessing.helper;
 
+import org.somda.sdc.biceps.common.BicepsModelCloning;
+
 import java.math.BigInteger;
 
 /**
  * Version information used by {@link org.somda.sdc.biceps.provider.preprocessing.VersionHandler}.
  * <p>
  * This class had to be moved from a nested class in {@link org.somda.sdc.biceps.provider.preprocessing.VersionHandler}
- * into a separate class, because {@link org.somda.sdc.common.util.BicepsModelCloning} always cloned the
+ * into a separate class, because {@link BicepsModelCloning} always cloned the
  * {@link org.somda.sdc.biceps.provider.preprocessing.VersionHandler} as well, which caused a massive memory leak
  * and eventually lead to a stack overflow as well.
  */

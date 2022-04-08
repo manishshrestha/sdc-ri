@@ -1,4 +1,4 @@
-package org.somda.sdc.common.util;
+package org.somda.sdc.dpws;
 
 /**
  * Creates deep copies of DPWS model objects.

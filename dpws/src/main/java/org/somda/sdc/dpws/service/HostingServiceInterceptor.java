@@ -7,7 +7,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.somda.sdc.common.CommonConfig;
 import org.somda.sdc.common.logging.InstanceLogger;
-import org.somda.sdc.common.util.DpwsModelCloning;
+import org.somda.sdc.dpws.DpwsModelCloning;
 import org.somda.sdc.dpws.DpwsConstants;
 import org.somda.sdc.dpws.model.LocalizedStringType;
 import org.somda.sdc.dpws.model.ThisDeviceType;
