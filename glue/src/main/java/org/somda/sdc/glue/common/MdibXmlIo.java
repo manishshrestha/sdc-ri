@@ -13,7 +13,6 @@ import org.somda.sdc.common.logging.InstanceLogger;
 import org.somda.sdc.common.util.NamespacePrefixMapperConverter;
 import org.somda.sdc.common.util.PrefixNamespaceMappingParser;
 import org.somda.sdc.dpws.soap.SoapConstants;
-import org.somda.sdc.glue.GlueConstants;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
@@ -24,6 +23,10 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+
+import static org.somda.sdc.biceps.common.CommonConstants.BICEPS_JAXB_CONTEXT_PATH;
+import static org.somda.sdc.common.CommonConfig.INSTANCE_IDENTIFIER;
+
 
 /**
  * Utility class to read an {@linkplain Mdib} from an input stream (or file).
@@ -43,7 +46,7 @@ public class MdibXmlIo {
               PrefixNamespaceMappingParser prefixNamespaceMappingParser,
               NamespacePrefixMapperConverter namespacePrefixMapperConverter,
               @Named(CommonConfig.NAMESPACE_MAPPINGS) String namespaceMappings,
-              @Named(org.somda.sdc.common.CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier) {
+              @Named(INSTANCE_IDENTIFIER) String frameworkIdentifier) {
         this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);
         this.messageModelFactory = messageModelFactory;
         this.mdibVersionUtil = mdibVersionUtil;
@@ -127,13 +130,13 @@ public class MdibXmlIo {
     }
 
     private void initJaxb() {
-        instanceLogger.info("Setup an MDIB XML reader with JAXB contexts: {}", GlueConstants.JAXB_CONTEXT_PATH);
+        instanceLogger.info("Setup an MDIB XML reader with JAXB contexts: {}", BICEPS_JAXB_CONTEXT_PATH);
 
         try {
-            jaxbContext = JAXBContext.newInstance(GlueConstants.JAXB_CONTEXT_PATH);
+            jaxbContext = JAXBContext.newInstance(BICEPS_JAXB_CONTEXT_PATH);
         } catch (JAXBException e) {
             throw new RuntimeException(String.format("JAXB context for '%s' could not be set up",
-                    GlueConstants.JAXB_CONTEXT_PATH), e);
+                    BICEPS_JAXB_CONTEXT_PATH), e);
         }
     }
 }

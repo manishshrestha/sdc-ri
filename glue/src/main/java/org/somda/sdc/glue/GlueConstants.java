@@ -10,13 +10,6 @@ import java.util.Collections;
  */
 public class GlueConstants {
     /**
-     * JAXB context paths used to let JAXB recognize the BICEPS model.
-     */
-    public static final String JAXB_CONTEXT_PATH = "org.somda.sdc.biceps.model.extension:" +
-            "org.somda.sdc.biceps.model.participant:" +
-            "org.somda.sdc.biceps.model.message";
-
-    /**
      * Resource path to BICEPS XML Schemas.
      */
     public static final String SCHEMA_PATH = "ExtensionPoint.xsd:BICEPS_ParticipantModel.xsd:BICEPS_MessageModel.xsd";

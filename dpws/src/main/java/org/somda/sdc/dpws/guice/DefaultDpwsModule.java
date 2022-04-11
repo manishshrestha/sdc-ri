@@ -9,6 +9,8 @@ import com.google.inject.Singleton;
 import com.google.inject.assistedinject.FactoryModuleBuilder;
 import com.google.inject.name.Named;
 import org.somda.sdc.common.CommonConfig;
+import org.somda.sdc.dpws.DpwsModelCloning;
+import org.somda.sdc.dpws.DpwsModelCloningImpl;
 import org.somda.sdc.common.util.ExecutorWrapperService;
 import org.somda.sdc.dpws.CommunicationLog;
 import org.somda.sdc.dpws.CommunicationLogDummyImpl;
@@ -222,6 +224,7 @@ public class DefaultDpwsModule extends AbstractModule {
         bind(JaxbMarshalling.class).asEagerSingleton();
         bind(SoapMarshalling.class).to(JaxbSoapMarshalling.class).asEagerSingleton();
         bind(WsdlMarshalling.class).to(JaxbWsdlMarshalling.class).asEagerSingleton();
+        bind(DpwsModelCloning.class).to(DpwsModelCloningImpl.class);
     }
 
     private void configureUdp() {
