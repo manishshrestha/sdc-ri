@@ -61,6 +61,16 @@
         <bouncyCastleVersion>1.66</bouncyCastleVersion>
         <junitVersion>5.8.2</junitVersion>
         <junitPlatformVersion>1.8.2</junitPlatformVersion>
+        <jaxbImplVersion>2.3.6</jaxbImplVersion>
+        <jaxbRuntimeVersion>2.3.6</jaxbRuntimeVersion>
+        <jaxbCoreVersion>2.3.0.1</jaxbCoreVersion>
+        <jaxbApiVersion>2.3.1</jaxbApiVersion>
+        <jaxb2MavenPluginVersion>0.14.0</jaxb2MavenPluginVersion>
+        <jaxbThreetenCoreVersion>1.2</jaxbThreetenCoreVersion>
+        <jaxbBuildHelperMavenPluginVersion>3.0.0</jaxbBuildHelperMavenPluginVersion>
+        <mavenJarPluginVersion>3.2.0</mavenJarPluginVersion>
+        <mavenCompilerPluginVersion>3.8.1</mavenCompilerPluginVersion>
+        <guiceVersion>5.1.0</guiceVersion>
     </properties>
 
     <build>
@@ -69,7 +79,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.8.1</version>
+                <version>${mavenCompilerPluginVersion}</version>
                 <configuration>
                     <release>11</release>
                 </configuration>
@@ -138,7 +148,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
-                <version>3.2.0</version>
+                <version>${mavenJarPluginVersion}</version>
                 <configuration>
                     <archive>
                         <manifest>
@@ -290,19 +300,19 @@
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
-            <version>31.0.1-jre</version>
+            <version>31.1-jre</version>
         </dependency>
         <!-- https://mvnrepository.com/artifact/com.google.inject/guice -->
         <dependency>
             <groupId>com.google.inject</groupId>
             <artifactId>guice</artifactId>
-            <version>5.0.1</version>
+            <version>${guiceVersion}</version>
         </dependency>
         <!-- https://mvnrepository.com/artifact/com.google.inject.extensions/guice-assistedinject -->
         <dependency>
             <groupId>com.google.inject.extensions</groupId>
             <artifactId>guice-assistedinject</artifactId>
-            <version>5.0.1</version>
+            <version>${guiceVersion}</version>
         </dependency>
         <!-- https://mvnrepository.com/artifact/com.google.code.findbugs/jsr305 -->
         <dependency>
@@ -335,7 +345,7 @@
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
-            <version>4.1.0</version>
+            <version>4.4.0</version>
             <scope>test</scope>
         </dependency>
         <!-- https://mvnrepository.com/artifact/org.hamcrest/hamcrest -->
