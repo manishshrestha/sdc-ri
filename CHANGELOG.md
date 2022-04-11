@@ -12,6 +12,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Replace `org.somda.sdc.common.util.ObjectUtil` object cloning with a new `org.somda.sdc.dpws. DpwsModelCloning`
+  and `org. somda.sdc.biceps.common.BicepsModelCloning` classes. New object cloning is performed using JAXB marshalling
+  & unmarshalling. (#224)
+
 ### Removed
 
 ### Fixed
