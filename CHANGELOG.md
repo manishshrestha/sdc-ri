@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - `org.somda.sdc.glue.provider.localization` and `org.somda.sdc.glue.consumer.localization` packages to support Localization service. (#141)
+- Java 17 support. (233)
 
 ### Changed
 
