@@ -3,7 +3,6 @@ package org.somda.sdc.common.util;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
-import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.util.JAXBSource;
 import javax.xml.namespace.QName;
 
@@ -15,13 +14,11 @@ import javax.xml.namespace.QName;
 public class JaxbModelCloning {
 
     private final JAXBContext jaxbContext;
-    private final Unmarshaller unmarshaller;
 
 
     protected JaxbModelCloning(String jaxbContextPackages) {
         try {
             jaxbContext = JAXBContext.newInstance(jaxbContextPackages);
-            unmarshaller = jaxbContext.createUnmarshaller();
         } catch (JAXBException e) {
             throw new RuntimeException(e);
         }
@@ -42,6 +39,7 @@ public class JaxbModelCloning {
         try {
             JAXBElement<T> contentObject = new JAXBElement<>(new QName(clazz.getSimpleName()), clazz, object);
             JAXBSource source = new JAXBSource(jaxbContext, contentObject);
+            var unmarshaller = jaxbContext.createUnmarshaller();
             return unmarshaller.unmarshal(source, clazz).getValue();
         } catch (JAXBException e) {
             throw new RuntimeException(e);
