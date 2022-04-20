@@ -41,6 +41,7 @@ import org.somda.sdc.glue.common.ReportMappings;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
@@ -151,8 +152,6 @@ public class ReportGenerator implements MdibAccessObserver {
                     "Failed to deliver notification for description modification report with version {}: {}",
                     modificationMessage.getMdibAccess().getMdibVersion(), e.getMessage());
             instanceLogger.trace("Failed to deliver notification for description modification report", e);
-        } catch (ReflectiveOperationException e) {
-            instanceLogger.warn(REFLECTION_ERROR_STRING, e);
         }
 
         dispatchStateEvents(modificationMessage.getMdibAccess().getMdibVersion(),
@@ -234,8 +233,6 @@ public class ReportGenerator implements MdibAccessObserver {
                     ActionConstants.ACTION_WAVEFORM_STREAM, mdibVersion, e.getMessage());
             instanceLogger.trace("Failed to deliver notification for state action {}",
                     ActionConstants.ACTION_WAVEFORM_STREAM, e);
-        } catch (ReflectiveOperationException e) {
-            instanceLogger.warn(REFLECTION_ERROR_STRING, e);
         }
     }
 
@@ -248,7 +245,7 @@ public class ReportGenerator implements MdibAccessObserver {
             return;
         }
 
-        V report = null;
+        V report;
         try {
             final Constructor<V> reportCtor = reportClass.getConstructor();
             report = reportCtor.newInstance();
@@ -289,11 +286,10 @@ public class ReportGenerator implements MdibAccessObserver {
 
     private Class<?> findReportPartClass(Class<?> reportClass) throws NoSuchFieldException {
         final Class<?>[] classes = reportClass.getClasses();
-        if (classes.length == 0) {
-            throw new NoSuchFieldException(String.format("ReportPart inner class not found in %s",
-                    reportClass.getName()));
-        }
-        return classes[0];
+        return Arrays.stream(classes).filter(it -> it.getName().endsWith("$ReportPart")).findFirst()
+            .orElseThrow(() -> new NoSuchFieldException(
+                String.format("ReportPart inner class not found in %s", reportClass.getName())
+            ));
     }
 
     private Method findGetReportPartMethod(Class<?> reportPartClass) throws NoSuchMethodException {

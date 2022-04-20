@@ -1,14 +1,11 @@
 package org.somda.sdc.biceps.common;
 
 import org.junit.jupiter.api.Test;
-import org.somda.sdc.biceps.UnitTestUtil;
 import org.somda.sdc.biceps.model.participant.MdsDescriptor;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 class BicepsModelCloningTest {
-
-    private static final UnitTestUtil UT = new UnitTestUtil();
 
     @Test
     void deepCopy() {
@@ -17,9 +14,7 @@ class BicepsModelCloningTest {
         metadata.setModelNumber("initial_model");
         mdsDescription.setMetaData(metadata);
 
-        var bicepsModelCloning = UT.getInjector().getInstance(BicepsModelCloning.class);
-
-        var mdsDescriptionCopy = bicepsModelCloning.deepCopy(mdsDescription);
+        var mdsDescriptionCopy = mdsDescription.createCopy();
 
         assertEquals(mdsDescriptionCopy, mdsDescription);
         // update one object and check if copy isn't changed

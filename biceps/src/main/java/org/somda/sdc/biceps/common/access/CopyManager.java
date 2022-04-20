@@ -3,14 +3,11 @@ package org.somda.sdc.biceps.common.access;
 
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
+import com.kscs.util.jaxb.Copyable;
 import org.somda.sdc.biceps.common.CommonConfig;
-import org.somda.sdc.biceps.common.MdibDescriptionModification;
 import org.somda.sdc.biceps.common.MdibDescriptionModifications;
 import org.somda.sdc.biceps.common.MdibStateModifications;
-import org.somda.sdc.biceps.model.participant.AbstractState;
-import org.somda.sdc.biceps.common.BicepsModelCloning;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -30,15 +27,12 @@ import java.util.stream.Collectors;
  * Default configuration is <em>yes, copy input and output data</em>.
  */
 public class CopyManager {
-    private final BicepsModelCloning bicepsModelCloning;
     private final Boolean copyInput;
     private final Boolean copyOutput;
 
     @Inject
-    CopyManager(BicepsModelCloning bicepsModelCloning,
-                @Named(CommonConfig.COPY_MDIB_INPUT) Boolean copyInput,
+    CopyManager(@Named(CommonConfig.COPY_MDIB_INPUT) Boolean copyInput,
                 @Named(CommonConfig.COPY_MDIB_OUTPUT) Boolean copyOutput) {
-        this.bicepsModelCloning = bicepsModelCloning;
         this.copyInput = copyInput;
         this.copyOutput = copyOutput;
     }
@@ -53,31 +47,17 @@ public class CopyManager {
      * @param <T>   any type that is supposed to be deep-copied.
      * @return a copy of {@code input} if configured, otherwise a forwarded reference.
      */
-    public <T> T processInput(T input) {
+    public <T extends Copyable<T>> T processInput(T input) {
         if (!copyInput) {
             return input;
         }
 
         if (input instanceof MdibDescriptionModifications) {
-            var data = (MdibDescriptionModifications) input;
-            var modifications = data.getModifications().stream()
-                    .map(modification -> new MdibDescriptionModification(
-                            modification.getModificationType(),
-                            doDeepCopy(modification.getDescriptor()),
-                            deepCopyStates(modification.getStates()),
-                            modification.getParentHandle().orElse(null)))
-                    .collect(Collectors.toList());
-            var copy = data.deepCopy(modifications);
-
-            return (T) copy;
+            return input.createCopy();
         }
 
         if (input instanceof MdibStateModifications) {
-            var data = (MdibStateModifications) input;
-            var copy = MdibStateModifications.create(data.getChangeType());
-            copy.addAll(deepCopyStates(data.getStates()));
-
-            return (T) copy;
+            return input.createCopy();
         }
 
         return doDeepCopyIfConfigured(true, input);
@@ -93,32 +73,35 @@ public class CopyManager {
      * @param <T>    any type that is supposed to be deep-copied.
      * @return a copy of {@code output} if configured, otherwise a forwarded reference.
      */
-    public <T> T processOutput(T output) {
-        if (output instanceof List<?>) {
-            var list = (List<?>) output;
-            return (T) list.stream()
-                    .map(o -> doDeepCopyIfConfigured(copyOutput, o))
-                    .collect(Collectors.toList());
-        }
+    public <T extends Copyable<T>> T processOutput(T output) {
         return doDeepCopyIfConfigured(copyOutput, output);
     }
 
-    private List<AbstractState> deepCopyStates(List<AbstractState> states) {
-        if (states == null) {
-            return new ArrayList<>();
-        }
-        return states.stream()
-                .map(this::doDeepCopy)
-                .collect(Collectors.toList());
+    /**
+     * Copies output data if configured.
+     * <p>
+     * Data is copied if {@link CommonConfig#COPY_MDIB_OUTPUT} is configured true.
+     * Data is forwarded otherwise.
+     *
+     * @param output data to be copied.
+     * @param <T>    any type that is supposed to be deep-copied.
+     * @return a copy of {@code output} if configured, otherwise a forwarded reference.
+     */
+    public <T extends Copyable<T>> List<T> processOutput(List<T> output) {
+        return doDeepCopyIfConfigured(copyOutput, output);
     }
 
-    private <T> T doDeepCopy(T data) {
-        return doDeepCopyIfConfigured(true, data);
-    }
-
-    private <T> T doDeepCopyIfConfigured(boolean doCopy, T data) {
+    private <T extends Copyable<T>> T doDeepCopyIfConfigured(boolean doCopy, T data) {
         if (doCopy) {
-            return bicepsModelCloning.deepCopy(data);
+            return data.createCopy();
+        } else {
+            return data;
+        }
+    }
+
+    private <T extends Copyable<T>> List<T> doDeepCopyIfConfigured(boolean doCopy, List<T> data) {
+        if (doCopy) {
+            return data.stream().map(Copyable::createCopy).collect(Collectors.toList());
         } else {
             return data;
         }

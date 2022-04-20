@@ -18,15 +18,13 @@ class DpwsModelCloningTest extends DpwsTest {
 
     @Test
     void deepCopy() {
-        var dpwsModelCloning = getInjector().getInstance(DpwsModelCloning.class);
-
         var manufacturer = new LocalizedStringType();
         manufacturer.setValue("mock manufacturer");
         var thisModelType = new ThisModelBuilder()
                 .setManufacturer(List.of(manufacturer))
                 .get();
 
-        var thisModelTypeCopy = dpwsModelCloning.deepCopy(thisModelType);
+        var thisModelTypeCopy = thisModelType.createCopy();
 
         assertEquals(thisModelType, thisModelTypeCopy);
 

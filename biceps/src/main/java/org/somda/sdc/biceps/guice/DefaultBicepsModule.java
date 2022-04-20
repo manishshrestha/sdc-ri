@@ -19,8 +19,6 @@ import org.somda.sdc.biceps.consumer.access.factory.RemoteMdibAccessFactory;
 import org.somda.sdc.biceps.provider.access.LocalMdibAccess;
 import org.somda.sdc.biceps.provider.access.LocalMdibAccessImpl;
 import org.somda.sdc.biceps.provider.access.factory.LocalMdibAccessFactory;
-import org.somda.sdc.biceps.common.BicepsModelCloning;
-import org.somda.sdc.biceps.common.BicepsModelCloningImpl;
 
 /**
  * Default BICEPS module.
@@ -51,7 +49,5 @@ public class DefaultBicepsModule extends AbstractModule {
         install(new FactoryModuleBuilder()
                 .implement(RemoteMdibAccess.class, RemoteMdibAccessImpl.class)
                 .build(RemoteMdibAccessFactory.class));
-
-        bind(BicepsModelCloning.class).to(BicepsModelCloningImpl.class);
     }
 }
