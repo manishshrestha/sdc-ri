@@ -5,6 +5,7 @@ import com.google.common.collect.ListMultimap;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.eclipse.jetty.server.HttpOutput;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.handler.HandlerWrapper;
 import org.somda.sdc.dpws.CommunicationLog;
@@ -18,6 +19,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicLong;
+import java.lang.String;
 
 /**
  * {@linkplain HandlerWrapper} which enables extracting Headers and passing them to
@@ -48,6 +50,16 @@ public class CommunicationLogOuterHandlerWrapper extends HandlerWrapper {
         final String contentEncodingHeader = baseRequest.getHeader("Content-Encoding");
 
         baseRequest.setAttribute(CONTENT_ENCODING_HEADER_PASSED_IN_ATTRIBUTE_KEY, contentEncodingHeader);
+
+        final HttpOutput out = baseRequest.getResponse().getHttpOutput();
+        final HttpOutput.Interceptor previousInterceptor = out.getInterceptor();
+
+        final var outInterceptor = new CommunicationLogOutputBufferInterceptor(
+            previousInterceptor,
+            frameworkIdentifier,
+            response);
+
+        out.setInterceptor(outInterceptor);
 
         // trigger request handling
         super.handle(target, baseRequest, request, response);
@@ -99,6 +111,9 @@ public class CommunicationLogOuterHandlerWrapper extends HandlerWrapper {
             );
 
             var responseCommContext = new CommunicationContext(responseHttpApplicationInfo, transportInfo);
+
+            // NOTE: the gzipped content of the low-level response can at this point be extracted from the outInterceptor.
+            // outInterceptor.getContents();
 
             final OutputStream outputStream = communicationLog.logMessage(
                 CommunicationLog.Direction.OUTBOUND,

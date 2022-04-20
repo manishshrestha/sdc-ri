@@ -107,6 +107,7 @@ class CommunicationLogIT extends DpwsTest {
             public void customConfigure() {
                 // ensure commlog works with compression enabled and doesn't store compressed messages
                 bind(DpwsConfig.HTTP_GZIP_COMPRESSION, Boolean.class, true);
+                bind(DpwsConfig.ENFORCE_HTTP_CHUNKED_TRANSFER, Boolean.class, false);
             }
         };
         var override = new AbstractModule() {
@@ -807,7 +808,7 @@ class CommunicationLogIT extends DpwsTest {
 
     @Test
     void testServerCommlogGzipped() throws Exception {
-        setUpNonChunked();
+        setUpNonChunked(); // Note that Gzip-compressed Entities are always chunked.
         var baseUri = "http://127.0.0.1:0";
         var contextPath = "/ctxt/path1";
 
