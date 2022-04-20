@@ -224,7 +224,7 @@ public class DefaultDpwsModule extends AbstractModule {
         bind(JaxbMarshalling.class).asEagerSingleton();
         bind(SoapMarshalling.class).to(JaxbSoapMarshalling.class).asEagerSingleton();
         bind(WsdlMarshalling.class).to(JaxbWsdlMarshalling.class).asEagerSingleton();
-        bind(DpwsModelCloning.class).to(DpwsModelCloningImpl.class);
+        bind(DpwsModelCloning.class).to(DpwsModelCloningImpl.class).asEagerSingleton();
     }
 
     private void configureUdp() {

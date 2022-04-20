@@ -52,6 +52,6 @@ public class DefaultBicepsModule extends AbstractModule {
                 .implement(RemoteMdibAccess.class, RemoteMdibAccessImpl.class)
                 .build(RemoteMdibAccessFactory.class));
 
-        bind(BicepsModelCloning.class).to(BicepsModelCloningImpl.class);
+        bind(BicepsModelCloning.class).to(BicepsModelCloningImpl.class).asEagerSingleton();
     }
 }
