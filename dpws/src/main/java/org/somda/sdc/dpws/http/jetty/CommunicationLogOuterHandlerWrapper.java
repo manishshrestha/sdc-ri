@@ -112,15 +112,17 @@ public class CommunicationLogOuterHandlerWrapper extends HandlerWrapper {
 
             var responseCommContext = new CommunicationContext(responseHttpApplicationInfo, transportInfo);
 
-            // NOTE: the gzipped content of the low-level response can at this point be extracted from the outInterceptor.
-            // outInterceptor.getContents();
-
             final OutputStream outputStream = communicationLog.logMessage(
                 CommunicationLog.Direction.OUTBOUND,
                 CommunicationLog.TransportType.HTTP,
                 CommunicationLog.MessageType.RESPONSE,
-                responseCommContext
+                responseCommContext,
+                CommunicationLog.Level.APPLICATION
             );
+            // TODO: add a network-level logMessage.
+            // NOTE: the gzipped content of the low-level response can at this point be extracted from the outInterceptor.
+            // outInterceptor.getContents();
+
             outputStream.write((byte[]) messageBody);
             outputStream.close();
         }

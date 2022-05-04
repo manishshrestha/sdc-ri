@@ -117,7 +117,7 @@ public class ApacheTransportBindingFactoryImpl implements TransportBindingFactor
                 .addInterceptorLast(
                     new CommunicationLogInnerHttpResponseInterceptor(communicationLog, frameworkIdentifier))
                 .addInterceptorFirst(
-                    new CommunicationLogOuterHttpResponseInterceptor(communicationLog, frameworkIdentifier))
+                    new CommunicationLogOuterHttpResponseInterceptor(frameworkIdentifier))
                 .setDefaultRequestConfig(requestConfig)
                 // allow reusing ssl connections in the pool
                 .disableConnectionState()

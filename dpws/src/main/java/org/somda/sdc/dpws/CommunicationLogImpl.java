@@ -36,12 +36,14 @@ public class CommunicationLogImpl implements CommunicationLog {
                                       TransportType transportType,
                                       MessageType messageType,
                                       CommunicationContext communicationContext,
+                                      Level level,
                                       OutputStream message) {
         OutputStream logFile = this.logSink.createTargetStream(
                 transportType,
                 direction,
                 messageType,
-                communicationContext);
+                communicationContext,
+                level);
         return new TeeOutputStream(message, logFile);
     }
 
@@ -49,8 +51,9 @@ public class CommunicationLogImpl implements CommunicationLog {
     public OutputStream logMessage(Direction direction,
                                    TransportType transportType,
                                    MessageType messageType,
-                                   CommunicationContext communicationContext) {
-        return this.logSink.createTargetStream(transportType, direction, messageType, communicationContext);
+                                   CommunicationContext communicationContext,
+                                   Level level) {
+        return this.logSink.createTargetStream(transportType, direction, messageType, communicationContext, level);
     }
 
     @Override
@@ -58,20 +61,22 @@ public class CommunicationLogImpl implements CommunicationLog {
                                   TransportType transportType,
                                   MessageType messageType,
                                   CommunicationContext communicationContext,
+                                  Level level,
                                   InputStream message) {
-        return writeLogFile(transportType, direction, messageType, communicationContext, message);
+        return writeLogFile(transportType, direction, messageType, communicationContext, level, message);
     }
 
     private InputStream writeLogFile(TransportType transportType,
                                      Direction direction,
                                      MessageType messageType,
                                      CommunicationContext communicationContext,
+                                     Level level,
                                      InputStream inputStream) {
         try {
             final byte[] bytes = ByteStreams.toByteArray(inputStream);
 
             try (OutputStream targetStream = this.logSink.createTargetStream(transportType, direction, messageType,
-                    communicationContext)) {
+                    communicationContext, level)) {
                 new ByteArrayInputStream(bytes).transferTo(targetStream);
             }
             return new ByteArrayInputStream(bytes);

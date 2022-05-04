@@ -69,7 +69,9 @@ public class CommunicationLogInnerHandlerWrapper extends HandlerWrapper {
                 CommunicationLog.Direction.INBOUND,
                 CommunicationLog.TransportType.HTTP,
                 CommunicationLog.MessageType.REQUEST,
-                requestCommContext);
+                requestCommContext,
+                CommunicationLog.Level.APPLICATION);
+        // TODO: add a network-level logMessage.
         var out = baseRequest.getResponse().getHttpOutput();
 
         // attach interceptor to log request

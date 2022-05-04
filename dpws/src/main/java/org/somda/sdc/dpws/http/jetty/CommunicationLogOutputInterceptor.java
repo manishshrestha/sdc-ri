@@ -117,7 +117,9 @@ public class CommunicationLogOutputInterceptor implements HttpOutput.Interceptor
                 CommunicationLog.Direction.OUTBOUND,
                 CommunicationLog.TransportType.HTTP,
                 CommunicationLog.MessageType.RESPONSE,
-                responseCommContext);
+                responseCommContext,
+                CommunicationLog.Level.APPLICATION);
+        // TODO: add a network-level logMessage.
     }
 
     @Override

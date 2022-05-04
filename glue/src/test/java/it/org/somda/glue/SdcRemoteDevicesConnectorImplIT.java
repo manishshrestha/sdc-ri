@@ -182,9 +182,12 @@ class SdcRemoteDevicesConnectorImplIT {
         public OutputStream createTargetStream(CommunicationLog.TransportType path,
                                                CommunicationLog.Direction direction,
                                                CommunicationLog.MessageType messageType,
-                                               CommunicationContext communicationContext) {
+                                               CommunicationContext communicationContext,
+                                               CommunicationLog.Level level) {
             var os = new ByteArrayOutputStream();
-            traffic.add(os);
+            if (CommunicationLog.Level.APPLICATION.equals(level)) {
+                traffic.add(os);
+            }
             return os;
         }
 

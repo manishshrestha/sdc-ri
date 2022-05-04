@@ -24,7 +24,7 @@ public interface CommunicationLog {
      * similarly to the tee Unix command. The other stream can be a log file stream.
      */
     OutputStream logMessage(Direction direction, TransportType transportType, MessageType messageType,
-                            CommunicationContext communicationContext, OutputStream message);
+                            CommunicationContext communicationContext, Level level, OutputStream message);
 
     /**
      * Creates an {@linkplain OutputStream} to write the log message into.
@@ -36,7 +36,7 @@ public interface CommunicationLog {
      * @return an output stream to write the log message into.
      */
     OutputStream logMessage(Direction direction, TransportType transportType, MessageType messageType,
-                            CommunicationContext communicationContext);
+                            CommunicationContext communicationContext, Level level);
 
 
     /**
@@ -55,7 +55,7 @@ public interface CommunicationLog {
      * @return a new input stream that mirrors the data from the message input data.
      */
     InputStream logMessage(Direction direction, TransportType transportType, MessageType messageType,
-                           CommunicationContext communicationContext, InputStream message);
+                           CommunicationContext communicationContext, Level level, InputStream message);
 
 
     /**
@@ -107,5 +107,9 @@ public interface CommunicationLog {
 
         @Override
         public  String toString() { return stringRepresentation; }
+    }
+
+    enum Level {
+        APPLICATION, NETWORK
     }
 }

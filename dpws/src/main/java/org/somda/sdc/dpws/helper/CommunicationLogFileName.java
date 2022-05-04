@@ -1,5 +1,6 @@
 package org.somda.sdc.dpws.helper;
 
+import org.somda.sdc.dpws.CommunicationLog;
 import org.somda.sdc.dpws.soap.CommunicationContext;
 
 import java.time.LocalTime;
@@ -19,12 +20,12 @@ public class CommunicationLogFileName {
      * @param communicationContext the communication context to be used to find address and port info.
      * @return a string of the format {@code <NANO-TIME>_<HH-mm-ss-SSS>_<DIRECTION>_<ADDR>_<PORT>}.
      */
-    public static String create(String direction, CommunicationContext communicationContext) {
+    public static String create(String direction, CommunicationContext communicationContext, CommunicationLog.Level level) {
         var destAddr = communicationContext.getTransportInfo().getRemoteAddress().orElse("[unk-addr]");
         var destPort = communicationContext.getTransportInfo().getRemotePort().orElse(-1);
         var date = LocalTime.now();
         return System.nanoTime() + SEPARATOR + date.format(DATE_TIME_FORMATTER) + SEPARATOR + direction +
-                SEPARATOR + destAddr + SEPARATOR + destPort;
+                SEPARATOR + destAddr + SEPARATOR + destPort + SEPARATOR + level;
     }
 
     /**

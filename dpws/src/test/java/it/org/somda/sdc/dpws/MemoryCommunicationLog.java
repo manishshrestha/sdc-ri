@@ -27,29 +27,35 @@ public class MemoryCommunicationLog implements CommunicationLog {
 
     @Override
     public OutputStream logMessage(Direction direction, TransportType transportType, MessageType messagePatternType,
-                                   CommunicationContext communicationContext, OutputStream message) {
+                                   CommunicationContext communicationContext, CommunicationLog.Level level, OutputStream message) {
         var messageType = new Message(direction, transportType, messagePatternType, communicationContext);
-        messages.add(messageType);
+        if (Level.APPLICATION.equals(level)) {
+            messages.add(messageType);
+        }
         return new TeeOutputStream(message, messageType);
     }
 
     @Override
     public OutputStream logMessage(Direction direction, TransportType transportType, MessageType messagePatternType,
-                                   CommunicationContext communicationContext) {
+                                   CommunicationContext communicationContext, CommunicationLog.Level level) {
         var messageType = new Message(direction, transportType, messagePatternType, communicationContext);
-        messages.add(messageType);
+        if (Level.APPLICATION.equals(level)) {
+            messages.add(messageType);
+        }
         return messageType;
     }
 
     @Override
     public InputStream logMessage(Direction direction, TransportType transportType, MessageType messageType,
-                                  CommunicationContext communicationContext, InputStream message) {
+                                  CommunicationContext communicationContext, CommunicationLog.Level level, InputStream message) {
         try {
             final byte[] bytes = ByteStreams.toByteArray(message);
 
-            try (Message targetStream = new Message(direction, transportType, messageType, communicationContext)) {
-                messages.add(targetStream);
-                new ByteArrayInputStream(bytes).transferTo(targetStream);
+            if (Level.APPLICATION.equals(level)) {
+                try (Message targetStream = new Message(direction, transportType, messageType, communicationContext)) {
+                    messages.add(targetStream);
+                    new ByteArrayInputStream(bytes).transferTo(targetStream);
+                }
             }
             return new ByteArrayInputStream(bytes);
         } catch (IOException e) {
@@ -89,7 +95,7 @@ public class MemoryCommunicationLog implements CommunicationLog {
         }
 
         public String getMessage() {
-            return new String(this.outputStream.toByteArray(), StandardCharsets.UTF_8);
+            return this.outputStream.toString(StandardCharsets.UTF_8);
         }
 
         public CommunicationLog.Direction getDirection() {

@@ -216,7 +216,7 @@ public class UdpBindingServiceImpl extends AbstractIdleService implements UdpBin
                 throw new TransportException(
                         String.format("No transport data in UDP message, which is required as no multicast group " +
                                         "is available. Message: %s",
-                                message.toString()));
+                                message));
             }
             packet.setAddress(multicastGroup);
             packet.setPort(socketPort);
@@ -297,8 +297,12 @@ public class UdpBindingServiceImpl extends AbstractIdleService implements UdpBin
                     CommunicationLog.TransportType.UDP,
                     CommunicationLog.MessageType.UNKNOWN,
                     requestCommContext,
+                    CommunicationLog.Level.APPLICATION,
                     messageData
             );
+            // TODO: add a network-level logMessage.
+            // TODO: UDP messages do not use gzip compression. Are the network-level and the application-level
+            //       logMessage the same in this case?
         } catch (IOException e) {
             instanceLogger.warn("Could not log udp message though the communication log", e);
         }

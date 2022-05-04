@@ -63,7 +63,8 @@ public class CommunicationLogSinkImpl implements CommunicationLogSink {
     public OutputStream createTargetStream(CommunicationLog.TransportType transportType,
                                            CommunicationLog.Direction direction,
                                            CommunicationLog.MessageType messageType,
-                                           CommunicationContext communicationContext) {
+                                           CommunicationContext communicationContext,
+                                           CommunicationLog.Level level) {
         var outputStream = OutputStream.nullOutputStream();
 
         var dir = dirMapping.get(transportType);
@@ -72,7 +73,7 @@ public class CommunicationLogSinkImpl implements CommunicationLogSink {
             return outputStream;
         }
 
-        var fileNamePrefix = CommunicationLogFileName.create(direction.toString(), communicationContext);
+        var fileNamePrefix = CommunicationLogFileName.create(direction.toString(), communicationContext, level);
 
         // if message is http, we can store header info and request response relation info too
         if (communicationContext.getApplicationInfo() instanceof HttpApplicationInfo) {

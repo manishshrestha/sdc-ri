@@ -13,6 +13,7 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.eclipse.jetty.http.GZIPContentDecoder;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.somda.sdc.dpws.CommunicationLog;
@@ -44,6 +45,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.net.URI;
+import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -198,15 +200,15 @@ class CommunicationLogIT extends DpwsTest {
             assertArrayEquals(expectedResponseStream.toByteArray(), actualResponseStream.toByteArray());
 
             // requests must contain our message
-            var req = logSink.getOutbound().get(0);
-            var resp = logSink.getInbound().get(0);
+            var req = logSink.getOutboundAppLevel().get(0);
+            var resp = logSink.getInboundAppLevel().get(0);
 
             assertArrayEquals(actualRequestStream.toByteArray(), req.toByteArray());
             assertArrayEquals(expectedResponseStream.toByteArray(), resp.toByteArray());
 
             // check "Transfer-Encoding: chunked" Header
-            assertTrue(logSink.getOutboundHeaders().get(0).get(TRANSFER_ENCODING_HEADER).contains(TRANSFER_ENCODING_VALUE_CHUNKED));
-            assertTrue(logSink.getInboundHeaders().get(0).get(TRANSFER_ENCODING_HEADER).contains(TRANSFER_ENCODING_VALUE_CHUNKED));
+            assertTrue(logSink.getOutboundAppLevelHeaders().get(0).get(TRANSFER_ENCODING_HEADER).contains(TRANSFER_ENCODING_VALUE_CHUNKED));
+            assertTrue(logSink.getInboundAppLevelHeaders().get(0).get(TRANSFER_ENCODING_HEADER).contains(TRANSFER_ENCODING_VALUE_CHUNKED));
 
             // ensure streams were closed
             assertTrue(req.isClosed());
@@ -214,25 +216,25 @@ class CommunicationLogIT extends DpwsTest {
 
             // ensure request headers are logged
             assertTrue(
-                    logSink.getOutboundHeaders().get(0)
+                    logSink.getOutboundAppLevelHeaders().get(0)
                             .get(ClientTransportBinding.USER_AGENT_KEY.toLowerCase())
                             .contains(ClientTransportBinding.USER_AGENT_VALUE)
             );
             // ensure response headers are logged
             assertTrue(
-                    logSink.getInboundHeaders().get(0)
+                    logSink.getInboundAppLevelHeaders().get(0)
                             .get(HttpServerUtil.GzipResponseHandler.TEST_HEADER_KEY.toLowerCase())
                             .contains(HttpServerUtil.GzipResponseHandler.TEST_HEADER_VALUE)
             );
 
             // all headers must've been converted to lower case, these must be false
             assertFalse(
-                    logSink.getOutboundHeaders().get(0)
+                    logSink.getOutboundAppLevelHeaders().get(0)
                             .get(ClientTransportBinding.USER_AGENT_KEY)
                             .contains(ClientTransportBinding.USER_AGENT_VALUE)
             );
             assertFalse(
-                    logSink.getInboundHeaders().get(0)
+                    logSink.getInboundAppLevelHeaders().get(0)
                             .get(HttpServerUtil.GzipResponseHandler.TEST_HEADER_KEY)
                             .contains(HttpServerUtil.GzipResponseHandler.TEST_HEADER_VALUE)
             );
@@ -300,15 +302,15 @@ class CommunicationLogIT extends DpwsTest {
             assertArrayEquals(expectedResponseStream.toByteArray(), actualResponseStream.toByteArray());
 
             // requests must contain our message
-            var req = logSink.getOutbound().get(0);
-            var resp = logSink.getInbound().get(0);
+            var req = logSink.getOutboundAppLevel().get(0);
+            var resp = logSink.getInboundAppLevel().get(0);
 
             assertArrayEquals(actualRequestStream.toByteArray(), req.toByteArray());
             assertArrayEquals(expectedResponseStream.toByteArray(), resp.toByteArray());
 
             // check Content-Length header
-            assertTrue(logSink.getOutboundHeaders().get(0).get(CONTENT_LENGTH_HEADER).contains(Integer.toString(logSink.getOutbound().get(0).toString(StandardCharsets.UTF_8).length())));
-            assertTrue(logSink.getInboundHeaders().get(0).get(CONTENT_LENGTH_HEADER).contains(Integer.toString(logSink.getInbound().get(0).toString(StandardCharsets.UTF_8).length())));
+            assertTrue(logSink.getOutboundAppLevelHeaders().get(0).get(CONTENT_LENGTH_HEADER).contains(Integer.toString(logSink.getOutboundAppLevel().get(0).toString(StandardCharsets.UTF_8).length())));
+            assertTrue(logSink.getInboundAppLevelHeaders().get(0).get(CONTENT_LENGTH_HEADER).contains(Integer.toString(logSink.getInboundAppLevel().get(0).toString(StandardCharsets.UTF_8).length())));
 
             // ensure streams were closed
             assertTrue(req.isClosed());
@@ -316,25 +318,25 @@ class CommunicationLogIT extends DpwsTest {
 
             // ensure request headers are logged
             assertTrue(
-                logSink.getOutboundHeaders().get(0)
+                logSink.getOutboundAppLevelHeaders().get(0)
                     .get(ClientTransportBinding.USER_AGENT_KEY.toLowerCase())
                     .contains(ClientTransportBinding.USER_AGENT_VALUE)
             );
             // ensure response headers are logged
             assertTrue(
-                logSink.getInboundHeaders().get(0)
+                logSink.getInboundAppLevelHeaders().get(0)
                     .get(HttpServerUtil.GzipResponseHandler.TEST_HEADER_KEY.toLowerCase())
                     .contains(HttpServerUtil.GzipResponseHandler.TEST_HEADER_VALUE)
             );
 
             // all headers must've been converted to lower case, these must be false
             assertFalse(
-                logSink.getOutboundHeaders().get(0)
+                logSink.getOutboundAppLevelHeaders().get(0)
                     .get(ClientTransportBinding.USER_AGENT_KEY)
                     .contains(ClientTransportBinding.USER_AGENT_VALUE)
             );
             assertFalse(
-                logSink.getInboundHeaders().get(0)
+                logSink.getInboundAppLevelHeaders().get(0)
                     .get(HttpServerUtil.GzipResponseHandler.TEST_HEADER_KEY)
                     .contains(HttpServerUtil.GzipResponseHandler.TEST_HEADER_VALUE)
             );
@@ -403,23 +405,27 @@ class CommunicationLogIT extends DpwsTest {
             assertArrayEquals(expectedResponseStream.toByteArray(), actualResponseStream.toByteArray());
 
             // requests must contain our message
-            var req = logSink.getOutbound().get(0);
-            var resp = logSink.getInbound().get(0);
+            var req = logSink.getOutboundAppLevel().get(0);
+            var resp = logSink.getInboundAppLevel().get(0);
+            final byte[] netLevelResp = logSink.getInboundNetLevel().get(0).toByteArray();
+            assertArrayEquals(expectedResponseStream.toByteArray(), decodeGZip(netLevelResp));
 
-            //assertArrayEquals(actualRequestStream.toByteArray(), req.toByteArray());
-            //assertArrayEquals(expectedResponseStream.toByteArray(), resp.toByteArray());
+            // TODO: why does this fail? The minimal changes I did in CommunicationLogRequestInterceptor should not cause something like this...
+            assertArrayEquals(actualRequestStream.toByteArray(), req.toByteArray());
+            assertArrayEquals(expectedResponseStream.toByteArray(), resp.toByteArray());
 
             // check Content-Length header
             // Note: when content is gzipped, content-length is not equal to length of content,
-            //       hence we can only when if the header is present.
-            assertNotNull(logSink.getOutboundHeaders().get(0).get(CONTENT_LENGTH_HEADER));
-            assertNotNull(logSink.getInboundHeaders().get(0).get(CONTENT_LENGTH_HEADER));
+            //       hence we can only check if the header is present.
+            // TODO: Correct this once network-level and application-level are separated.
+            assertNotNull(logSink.getOutboundAppLevelHeaders().get(0).get(CONTENT_LENGTH_HEADER));
+            assertNotNull(logSink.getInboundAppLevelHeaders().get(0).get(CONTENT_LENGTH_HEADER));
 
             // expect both request and response to be gzipped
-            assertTrue(logSink.getOutboundHeaders().get(0).get(CONTENT_ENCODING_HEADER).contains("gzip"));
+            assertTrue(logSink.getOutboundAppLevelHeaders().get(0).get(CONTENT_ENCODING_HEADER).contains("gzip"));
             // Problem: When the Client received a gzipped Response from the Server, then the "Content-Encoding: gzip"-Header is stripped in the GzipHandler beneath the
             //          CommLogHandler and hence does not read our Log.
-            assertTrue(logSink.getInboundHeaders().get(0).get(CONTENT_ENCODING_HEADER).contains("gzip"));
+            assertTrue(logSink.getInboundAppLevelHeaders().get(0).get(CONTENT_ENCODING_HEADER).contains("gzip"));
 
             // ensure streams were closed
             assertTrue(req.isClosed());
@@ -427,25 +433,25 @@ class CommunicationLogIT extends DpwsTest {
 
             // ensure request headers are logged
             assertTrue(
-                logSink.getOutboundHeaders().get(0)
+                logSink.getOutboundAppLevelHeaders().get(0)
                     .get(ClientTransportBinding.USER_AGENT_KEY.toLowerCase())
                     .contains(ClientTransportBinding.USER_AGENT_VALUE)
             );
             // ensure response headers are logged
             assertTrue(
-                logSink.getInboundHeaders().get(0)
+                logSink.getInboundAppLevelHeaders().get(0)
                     .get(HttpServerUtil.GzipResponseHandler.TEST_HEADER_KEY.toLowerCase())
                     .contains(HttpServerUtil.GzipResponseHandler.TEST_HEADER_VALUE)
             );
 
             // all headers must've been converted to lower case, these must be false
             assertFalse(
-                logSink.getOutboundHeaders().get(0)
+                logSink.getOutboundAppLevelHeaders().get(0)
                     .get(ClientTransportBinding.USER_AGENT_KEY)
                     .contains(ClientTransportBinding.USER_AGENT_VALUE)
             );
             assertFalse(
-                logSink.getInboundHeaders().get(0)
+                logSink.getInboundAppLevelHeaders().get(0)
                     .get(HttpServerUtil.GzipResponseHandler.TEST_HEADER_KEY)
                     .contains(HttpServerUtil.GzipResponseHandler.TEST_HEADER_VALUE)
             );
@@ -457,6 +463,13 @@ class CommunicationLogIT extends DpwsTest {
 
             logSink.clear();
         }
+    }
+
+    private byte[] decodeGZip(byte[] netLevelResp) {
+        final ByteBuffer decoded = new GZIPContentDecoder().decode(ByteBuffer.wrap(netLevelResp));
+        byte[] result = new byte[decoded.limit()];
+        decoded.get(result, 0, decoded.limit());
+        return result;
     }
 
     static class SlowInputStream extends InputStream {
@@ -548,8 +561,8 @@ class CommunicationLogIT extends DpwsTest {
             assertEquals(expectedRequest, resultString.get());
             assertArrayEquals(expectedResponse.getBytes(), responseBytes);
 
-            var req = logSink.getInbound().get(0);
-            var resp = logSink.getOutbound().get(0);
+            var req = logSink.getInboundAppLevel().get(0);
+            var resp = logSink.getOutboundAppLevel().get(0);
 
             assertArrayEquals(expectedRequest.getBytes(), req.toByteArray());
             assertArrayEquals(expectedResponse.getBytes(), resp.toByteArray());
@@ -560,23 +573,23 @@ class CommunicationLogIT extends DpwsTest {
 
             // ensure request headers are logged
             assertTrue(
-                logSink.getInboundHeaders().get(0).get(customHeaderKey)
+                logSink.getInboundAppLevelHeaders().get(0).get(customHeaderKey)
                     .contains(customHeaderValue)
             );
             // ensure response headers are logged
             assertTrue(
-                logSink.getOutboundHeaders().get(0)
+                logSink.getOutboundAppLevelHeaders().get(0)
                     .get(JettyHttpServerHandler.SERVER_HEADER_KEY.toLowerCase())
                     .contains(JettyHttpServerHandler.SERVER_HEADER_VALUE)
             );
 
             // all headers must've been converted to lower case, these must be false
             assertFalse(
-                logSink.getInboundHeaders().get(0).get(customHeaderKey.toUpperCase())
+                logSink.getInboundAppLevelHeaders().get(0).get(customHeaderKey.toUpperCase())
                     .contains(customHeaderValue)
             );
             assertFalse(
-                logSink.getOutboundHeaders().get(0)
+                logSink.getOutboundAppLevelHeaders().get(0)
                     .get(JettyHttpServerHandler.SERVER_HEADER_KEY)
                     .contains(JettyHttpServerHandler.SERVER_HEADER_VALUE)
             );
@@ -652,8 +665,8 @@ class CommunicationLogIT extends DpwsTest {
             assertEquals(expectedRequest, resultString.get());
             assertArrayEquals(expectedResponse.getBytes(), responseBytes);
 
-            var req = logSink.getInbound().get(0);
-            var resp = logSink.getOutbound().get(0);
+            var req = logSink.getInboundAppLevel().get(0);
+            var resp = logSink.getOutboundAppLevel().get(0);
 
             assertArrayEquals(expectedRequest.getBytes(), req.toByteArray());
             assertArrayEquals(expectedResponse.getBytes(), resp.toByteArray());
@@ -664,30 +677,30 @@ class CommunicationLogIT extends DpwsTest {
 
             // ensure request headers are logged
             assertTrue(
-                    logSink.getInboundHeaders().get(0).get(customHeaderKey)
+                    logSink.getInboundAppLevelHeaders().get(0).get(customHeaderKey)
                             .contains(customHeaderValue)
             );
             // the request is chunked, so we expect the transfer-encoding header can be found in the inbound commLog.
-            assertTrue(logSink.getInboundHeaders().get(0).get("transfer-encoding").contains("chunked"),
+            assertTrue(logSink.getInboundAppLevelHeaders().get(0).get("transfer-encoding").contains("chunked"),
                 "Expected \"Transfer-Encoding:chunked\"-Header could not be found in Commlog.");
 
             // the response is chunked, so we expect the transfer-encoding header can be found in the outbound commLog.
-            assertTrue(logSink.getOutboundHeaders().get(0).get("transfer-encoding").contains("chunked"));
+            assertTrue(logSink.getOutboundAppLevelHeaders().get(0).get("transfer-encoding").contains("chunked"));
 
             // ensure response headers are logged
             assertTrue(
-                    logSink.getOutboundHeaders().get(0)
+                    logSink.getOutboundAppLevelHeaders().get(0)
                             .get(JettyHttpServerHandler.SERVER_HEADER_KEY.toLowerCase())
                             .contains(JettyHttpServerHandler.SERVER_HEADER_VALUE)
             );
 
             // all headers must've been converted to lower case, these must be false
             assertFalse(
-                    logSink.getInboundHeaders().get(0).get(customHeaderKey.toUpperCase())
+                    logSink.getInboundAppLevelHeaders().get(0).get(customHeaderKey.toUpperCase())
                             .contains(customHeaderValue)
             );
             assertFalse(
-                    logSink.getOutboundHeaders().get(0)
+                    logSink.getOutboundAppLevelHeaders().get(0)
                             .get(JettyHttpServerHandler.SERVER_HEADER_KEY)
                             .contains(JettyHttpServerHandler.SERVER_HEADER_VALUE)
             );
@@ -756,8 +769,8 @@ class CommunicationLogIT extends DpwsTest {
             assertEquals(expectedRequest, resultString.get());
             assertArrayEquals(expectedResponse.getBytes(), responseBytes);
 
-            var req = logSink.getInbound().get(0);
-            var resp = logSink.getOutbound().get(0);
+            var req = logSink.getInboundAppLevel().get(0);
+            var resp = logSink.getOutboundAppLevel().get(0);
 
             assertArrayEquals(expectedRequest.getBytes(), req.toByteArray());
             assertArrayEquals(expectedResponse.getBytes(), resp.toByteArray());
@@ -768,31 +781,31 @@ class CommunicationLogIT extends DpwsTest {
 
             // ensure request headers are logged
             assertTrue(
-                logSink.getInboundHeaders().get(0).get(customHeaderKey)
+                logSink.getInboundAppLevelHeaders().get(0).get(customHeaderKey)
                     .contains(customHeaderValue)
             );
             // the request is non-chunked, so we expect the content-length header to be present and correct in the inbound commLog.
-            final int actualContentLength = logSink.getInbound().get(0).toString(StandardCharsets.UTF_8).length();
-            assertEquals(logSink.getInboundHeaders().get(0).get(CONTENT_LENGTH_HEADER).get(0), Integer.toString(actualContentLength));
+            final int actualContentLength = logSink.getInboundAppLevel().get(0).toString(StandardCharsets.UTF_8).length();
+            assertEquals(logSink.getInboundAppLevelHeaders().get(0).get(CONTENT_LENGTH_HEADER).get(0), Integer.toString(actualContentLength));
 
             // the response is non-chunked, so we expect the content-length header to be present and correct in the outbound commLog.
-            final int actualContentLength2 = logSink.getOutbound().get(0).toString(StandardCharsets.UTF_8).length();
-            assertEquals(logSink.getOutboundHeaders().get(0).get(CONTENT_LENGTH_HEADER).get(0), Integer.toString(actualContentLength2));
+            final int actualContentLength2 = logSink.getOutboundAppLevel().get(0).toString(StandardCharsets.UTF_8).length();
+            assertEquals(logSink.getOutboundAppLevelHeaders().get(0).get(CONTENT_LENGTH_HEADER).get(0), Integer.toString(actualContentLength2));
 
             // ensure response headers are logged
             assertTrue(
-                logSink.getOutboundHeaders().get(0)
+                logSink.getOutboundAppLevelHeaders().get(0)
                     .get(JettyHttpServerHandler.SERVER_HEADER_KEY.toLowerCase())
                     .contains(JettyHttpServerHandler.SERVER_HEADER_VALUE)
             );
 
             // all headers must've been converted to lower case, these must be false
             assertFalse(
-                logSink.getInboundHeaders().get(0).get(customHeaderKey.toUpperCase())
+                logSink.getInboundAppLevelHeaders().get(0).get(customHeaderKey.toUpperCase())
                     .contains(customHeaderValue)
             );
             assertFalse(
-                logSink.getOutboundHeaders().get(0)
+                logSink.getOutboundAppLevelHeaders().get(0)
                     .get(JettyHttpServerHandler.SERVER_HEADER_KEY)
                     .contains(JettyHttpServerHandler.SERVER_HEADER_VALUE)
             );
@@ -863,8 +876,8 @@ class CommunicationLogIT extends DpwsTest {
             assertEquals(expectedRequest, resultString.get());
             assertArrayEquals(expectedResponse.getBytes(), responseBytes);
 
-            var req = logSink.getInbound().get(0);
-            var resp = logSink.getOutbound().get(0);
+            var req = logSink.getInboundAppLevel().get(0);
+            var resp = logSink.getOutboundAppLevel().get(0);
 
             assertArrayEquals(expectedRequest.getBytes(), req.toByteArray());
             assertArrayEquals(expectedResponse.getBytes(), resp.toByteArray());
@@ -872,11 +885,11 @@ class CommunicationLogIT extends DpwsTest {
             // expect request and response to be gzipped
             // TODO: store both the headers before GzipHandler and the headers after GzipHandler
             // TODO: assertTrue(logSink.getInboundNetworkHeaders().get(0).get(CONTENT_ENCODING_HEADER).contains("gzip"));
-            assertTrue(logSink.getInboundHeaders().get(0).get(X_CONTENT_ENCODING_HEADER).contains("gzip"));
+            assertTrue(logSink.getInboundAppLevelHeaders().get(0).get(X_CONTENT_ENCODING_HEADER).contains("gzip"));
 
             // TODO: assertTrue(logSink.getOutboundNetworkHeaders().get(0).get(CONTENT_ENCODING_HEADER).contains("gzip"));
             // TODO: does the Content-Encoding Header appear before the GzipHandler?
-            assertTrue(logSink.getOutboundHeaders().get(0).get(CONTENT_ENCODING_HEADER).contains("gzip"));
+            assertTrue(logSink.getOutboundAppLevelHeaders().get(0).get(CONTENT_ENCODING_HEADER).contains("gzip"));
 
             // ensure streams were closed by interceptors
             assertTrue(req.isClosed());
@@ -884,23 +897,23 @@ class CommunicationLogIT extends DpwsTest {
 
             // ensure request headers are logged
             assertTrue(
-                logSink.getInboundHeaders().get(0).get(customHeaderKey)
+                logSink.getInboundAppLevelHeaders().get(0).get(customHeaderKey)
                     .contains(customHeaderValue)
             );
             // ensure response headers are logged
             assertTrue(
-                logSink.getOutboundHeaders().get(0)
+                logSink.getOutboundAppLevelHeaders().get(0)
                     .get(JettyHttpServerHandler.SERVER_HEADER_KEY.toLowerCase())
                     .contains(JettyHttpServerHandler.SERVER_HEADER_VALUE)
             );
 
             // all headers must've been converted to lower case, these must be false
             assertFalse(
-                logSink.getInboundHeaders().get(0).get(customHeaderKey.toUpperCase())
+                logSink.getInboundAppLevelHeaders().get(0).get(customHeaderKey.toUpperCase())
                     .contains(customHeaderValue)
             );
             assertFalse(
-                logSink.getOutboundHeaders().get(0)
+                logSink.getOutboundAppLevelHeaders().get(0)
                     .get(JettyHttpServerHandler.SERVER_HEADER_KEY)
                     .contains(JettyHttpServerHandler.SERVER_HEADER_VALUE)
             );
@@ -970,8 +983,8 @@ class CommunicationLogIT extends DpwsTest {
             assertEquals(expectedRequest, resultString.get());
             assertArrayEquals(expectedResponse.getBytes(), responseBytes);
 
-            var req = logSink.getInbound().get(0);
-            var resp = logSink.getOutbound().get(0);
+            var req = logSink.getInboundAppLevel().get(0);
+            var resp = logSink.getOutboundAppLevel().get(0);
 
             assertArrayEquals(expectedRequest.getBytes(), req.toByteArray());
             assertArrayEquals(expectedResponse.getBytes(), resp.toByteArray());
@@ -979,19 +992,19 @@ class CommunicationLogIT extends DpwsTest {
             // ensure request headers are logged
             assertEquals(
                     2,
-                    logSink.getInboundHeaders().get(0).get(customHeaderKey).size()
+                    logSink.getInboundAppLevelHeaders().get(0).get(customHeaderKey).size()
             );
             assertTrue(
-                    logSink.getInboundHeaders().get(0).get(customHeaderKey)
+                    logSink.getInboundAppLevelHeaders().get(0).get(customHeaderKey)
                             .contains(customHeaderValue)
             );
             assertTrue(
-                    logSink.getInboundHeaders().get(0).get(customHeaderKey)
+                    logSink.getInboundAppLevelHeaders().get(0).get(customHeaderKey)
                             .contains(customHeaderValue2)
             );
             // assert classic behavior does concat
             assertEquals(customHeaderValue + "," + customHeaderValue2,
-                    logSink.inboundHeadersOld.get(0).get(customHeaderKey.toLowerCase()));
+                    logSink.inboundAppLevelHeadersOld.get(0).get(customHeaderKey.toLowerCase()));
             logSink.clear();
         }
     }
@@ -1092,33 +1105,33 @@ class CommunicationLogIT extends DpwsTest {
         assertArrayEquals(expectedResponseStream.toByteArray(), actualResponseStream2.toByteArray());
 
         // requests must contain our message
-        var req2 = logSink.getOutbound().get(0);
-        var resp2 = logSink.getInbound().get(0);
+        var req2 = logSink.getOutboundAppLevel().get(0);
+        var resp2 = logSink.getInboundAppLevel().get(0);
 
         assertArrayEquals(actualRequestStream2.toByteArray(), req2.toByteArray());
         assertArrayEquals(expectedResponseStream.toByteArray(), resp2.toByteArray());
 
         // ensure request headers are logged
         assertTrue(
-                logSink.getOutboundHeaders().get(0)
+                logSink.getOutboundAppLevelHeaders().get(0)
                         .get(ClientTransportBinding.USER_AGENT_KEY.toLowerCase())
                         .contains(ClientTransportBinding.USER_AGENT_VALUE)
         );
         // ensure response headers are logged
         assertTrue(
-                logSink.getInboundHeaders().get(0)
+                logSink.getInboundAppLevelHeaders().get(0)
                         .get(HttpServerUtil.GzipResponseHandler.TEST_HEADER_KEY.toLowerCase())
                         .contains(HttpServerUtil.GzipResponseHandler.TEST_HEADER_VALUE)
         );
 
         // all headers must've been converted to lower case, these must be false
         assertFalse(
-                logSink.getOutboundHeaders().get(0)
+                logSink.getOutboundAppLevelHeaders().get(0)
                         .get(ClientTransportBinding.USER_AGENT_KEY)
                         .contains(ClientTransportBinding.USER_AGENT_VALUE)
         );
         assertFalse(
-                logSink.getInboundHeaders().get(0)
+                logSink.getInboundAppLevelHeaders().get(0)
                         .get(HttpServerUtil.GzipResponseHandler.TEST_HEADER_KEY)
                         .contains(HttpServerUtil.GzipResponseHandler.TEST_HEADER_VALUE)
         );
@@ -1180,24 +1193,42 @@ class CommunicationLogIT extends DpwsTest {
 
     static class TestCommLogSink implements CommunicationLogSink {
 
-        private final ArrayList<CloseableByteArrayOutputStream> inbound;
-        private final ArrayList<CloseableByteArrayOutputStream> outbound;
-        private final ArrayList<ListMultimap<String, String>> inboundHeaders;
-        private final ArrayList<ListMultimap<String, String>> outboundHeaders;
-        private final ArrayList<Map<String, String>> inboundHeadersOld;
-        private final ArrayList<Map<String, String>> outboundHeadersOld;
+        private final ArrayList<CloseableByteArrayOutputStream> inboundAppLevel;
+        private final ArrayList<CloseableByteArrayOutputStream> outboundAppLevel;
+        private final ArrayList<ListMultimap<String, String>> inboundAppLevelHeaders;
+        private final ArrayList<ListMultimap<String, String>> outboundAppLevelHeaders;
+        private final ArrayList<Map<String, String>> inboundAppLevelHeadersOld;
+        private final ArrayList<Map<String, String>> outboundAppLevelHeadersOld;
         private CommunicationLog.MessageType inboundMessageType;
         private CommunicationLog.MessageType outboundMessageType;
         private final ArrayList<String> inboundTransactionIds;
         private final ArrayList<String> outboundTransactionIds;
 
+        private final ArrayList<CloseableByteArrayOutputStream> inboundNetLevel;
+        private final ArrayList<CloseableByteArrayOutputStream> outboundNetLevel;
+        private final ArrayList<ListMultimap<String, String>> inboundNetLevelHeaders;
+        private final ArrayList<ListMultimap<String, String>> outboundNetLevelHeaders;
+        private final ArrayList<Map<String, String>> inboundNetLevelHeadersOld;
+        private final ArrayList<Map<String, String>> outboundNetLevelHeadersOld;
+
         TestCommLogSink() {
-            this.inbound = new ArrayList<>();
-            this.outbound = new ArrayList<>();
-            this.inboundHeaders = new ArrayList<>();
-            this.outboundHeaders = new ArrayList<>();
-            this.inboundHeadersOld = new ArrayList<>();
-            this.outboundHeadersOld = new ArrayList<>();
+            // App Level
+            this.inboundAppLevel = new ArrayList<>();
+            this.outboundAppLevel = new ArrayList<>();
+            this.inboundAppLevelHeaders = new ArrayList<>();
+            this.outboundAppLevelHeaders = new ArrayList<>();
+            this.inboundAppLevelHeadersOld = new ArrayList<>();
+            this.outboundAppLevelHeadersOld = new ArrayList<>();
+
+            // Net Level
+            this.inboundNetLevel = new ArrayList<>();
+            this.outboundNetLevel = new ArrayList<>();
+            this.inboundNetLevelHeaders = new ArrayList<>();
+            this.outboundNetLevelHeaders = new ArrayList<>();
+            this.inboundNetLevelHeadersOld = new ArrayList<>();
+            this.outboundNetLevelHeadersOld = new ArrayList<>();
+
+            // general
             this.inboundTransactionIds = new ArrayList<>();
             this.outboundTransactionIds = new ArrayList<>();
         }
@@ -1206,58 +1237,102 @@ class CommunicationLogIT extends DpwsTest {
         public OutputStream createTargetStream(CommunicationLog.TransportType path,
                                                CommunicationLog.Direction direction,
                                                CommunicationLog.MessageType messageType,
-                                               CommunicationContext communicationContext) {
+                                               CommunicationContext communicationContext,
+                                               CommunicationLog.Level level) {
             var os = new CloseableByteArrayOutputStream();
             var appInfo = (HttpApplicationInfo) communicationContext.getApplicationInfo();
             if (CommunicationLog.Direction.INBOUND.equals(direction)) {
-                inbound.add(os);
-                inboundHeaders.add(appInfo.getHeaders());
-                inboundHeadersOld.add(appInfo.getHttpHeaders());
-                inboundMessageType = messageType;
-                inboundTransactionIds.add(
+                if (CommunicationLog.Level.APPLICATION.equals(level)) {
+                    inboundAppLevel.add(os);
+                    inboundAppLevelHeaders.add(appInfo.getHeaders());
+                    inboundAppLevelHeadersOld.add(appInfo.getHttpHeaders());
+                    inboundMessageType = messageType;
+                    inboundTransactionIds.add(
                         ((HttpApplicationInfo) communicationContext.getApplicationInfo()).getTransactionId());
+                } else {
+                    inboundNetLevel.add(os);
+                    inboundNetLevelHeaders.add(appInfo.getHeaders());
+                    inboundNetLevelHeadersOld.add(appInfo.getHttpHeaders());
+                    inboundMessageType = messageType;
+                }
             } else {
-                outbound.add(os);
-                outboundHeaders.add(appInfo.getHeaders());
-                outboundHeadersOld.add(appInfo.getHttpHeaders());
-                outboundMessageType = messageType;
-                outboundTransactionIds.add(
+                if (CommunicationLog.Level.APPLICATION.equals(level)) {
+                    outboundAppLevel.add(os);
+                    outboundAppLevelHeaders.add(appInfo.getHeaders());
+                    outboundAppLevelHeadersOld.add(appInfo.getHttpHeaders());
+                    outboundMessageType = messageType;
+                    outboundTransactionIds.add(
                         ((HttpApplicationInfo) communicationContext.getApplicationInfo()).getTransactionId());
+                } else {
+                    outboundNetLevel.add(os);
+                    outboundNetLevelHeaders.add(appInfo.getHeaders());
+                    outboundNetLevelHeadersOld.add(appInfo.getHttpHeaders());
+                    outboundMessageType = messageType;
+                }
             }
             return os;
         }
 
-        public ArrayList<CloseableByteArrayOutputStream> getInbound() {
-            return inbound;
+        public ArrayList<CloseableByteArrayOutputStream> getInboundAppLevel() { return inboundAppLevel; }
+
+        public ArrayList<CloseableByteArrayOutputStream> getOutboundAppLevel() {
+            return outboundAppLevel;
         }
 
-        public ArrayList<CloseableByteArrayOutputStream> getOutbound() {
-            return outbound;
+        public ArrayList<CloseableByteArrayOutputStream> getInboundNetLevel() { return inboundNetLevel; }
+
+        public ArrayList<CloseableByteArrayOutputStream> getOutboundNetLevel() {
+            return outboundNetLevel;
         }
 
-        public ArrayList<ListMultimap<String, String>> getInboundHeaders() {
-            return inboundHeaders;
+        public ArrayList<ListMultimap<String, String>> getInboundAppLevelHeaders() {
+            return inboundAppLevelHeaders;
         }
 
-        public ArrayList<ListMultimap<String, String>> getOutboundHeaders() {
-            return outboundHeaders;
+        public ArrayList<ListMultimap<String, String>> getOutboundAppLevelHeaders() {
+            return outboundAppLevelHeaders;
         }
 
-        public ArrayList<Map<String, String>> getInboundHeadersOld() {
-            return inboundHeadersOld;
+        public ArrayList<ListMultimap<String, String>> getInboundNetLevelHeaders() {
+            return inboundNetLevelHeaders;
         }
 
-        public ArrayList<Map<String, String>> getOutboundHeadersOld() {
-            return outboundHeadersOld;
+        public ArrayList<ListMultimap<String, String>> getOutboundNetLevelHeaders() {
+            return outboundNetLevelHeaders;
+        }
+
+        public ArrayList<Map<String, String>> getInboundAppLevelHeadersOld() {
+            return inboundAppLevelHeadersOld;
+        }
+
+        public ArrayList<Map<String, String>> getOutboundAppLevelHeadersOld() {
+            return outboundAppLevelHeadersOld;
+        }
+
+        public ArrayList<Map<String, String>> getInboundNetLevelHeadersOld() {
+            return inboundNetLevelHeadersOld;
+        }
+
+        public ArrayList<Map<String, String>> getOutboundNetLevelHeadersOld() {
+            return outboundNetLevelHeadersOld;
         }
 
         public void clear() {
-            outbound.clear();
-            inbound.clear();
-            inboundHeaders.clear();
-            outboundHeaders.clear();
-            inboundHeadersOld.clear();
-            outboundHeadersOld.clear();
+            outboundAppLevel.clear();
+            inboundAppLevel.clear();
+            inboundAppLevelHeaders.clear();
+            outboundAppLevelHeaders.clear();
+            inboundAppLevelHeadersOld.clear();
+            outboundAppLevelHeadersOld.clear();
+
+            outboundNetLevel.clear();
+            inboundNetLevel.clear();
+            inboundNetLevelHeaders.clear();
+            outboundNetLevelHeaders.clear();
+            inboundNetLevelHeadersOld.clear();
+            outboundNetLevelHeadersOld.clear();
+
+            // TODO: why are the TransactionIDs not cleared?
         }
 
         public CommunicationLog.MessageType getOutboundMessageType() {

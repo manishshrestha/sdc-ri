@@ -413,10 +413,12 @@ class SubscriptionIT {
         public OutputStream createTargetStream(CommunicationLog.TransportType path,
                                                CommunicationLog.Direction direction,
                                                CommunicationLog.MessageType messageType,
-                                               CommunicationContext communicationContext) {
+                                               CommunicationContext communicationContext,
+                                               CommunicationLog.Level level) {
             var os = new ByteArrayOutputStream();
             var appInfo = (HttpApplicationInfo) communicationContext.getApplicationInfo();
-            if (CommunicationLog.Direction.OUTBOUND.equals(direction)) {
+            if (CommunicationLog.Direction.OUTBOUND.equals(direction)
+            && CommunicationLog.Level.APPLICATION.equals(level)) {
                 schemes.put(appInfo.getTransactionId(), communicationContext.getTransportInfo().getScheme());
                 outbound.put(appInfo.getTransactionId(), os);
                 outboundMessageType = messageType;

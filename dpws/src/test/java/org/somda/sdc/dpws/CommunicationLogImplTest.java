@@ -31,12 +31,15 @@ class CommunicationLogImplTest extends DpwsTest {
 
         byte[] content = UUID.randomUUID().toString().getBytes();
 
-        try (ByteArrayOutputStream mockOutputStream = spy(new ByteArrayOutputStream());
+        try (ByteArrayOutputStream mockAppLevelOutputStream = spy(new ByteArrayOutputStream());
+             ByteArrayOutputStream mockNetLevelOutputStream = spy(new ByteArrayOutputStream());
              ByteArrayInputStream inputTestInputStream = new ByteArrayInputStream(content);
              ByteArrayOutputStream outputTestOutputStream = new ByteArrayOutputStream()) {
 
-            when(communicationLogSinkImplMock.createTargetStream(eq(CommunicationLog.TransportType.HTTP), any(), any(), any()))
-                    .thenReturn(mockOutputStream);
+            when(communicationLogSinkImplMock.createTargetStream(eq(CommunicationLog.TransportType.HTTP), any(), any(), any(), eq(CommunicationLog.Level.APPLICATION)))
+                    .thenReturn(mockAppLevelOutputStream);
+            when(communicationLogSinkImplMock.createTargetStream(eq(CommunicationLog.TransportType.HTTP), any(), any(), any(), eq(CommunicationLog.Level.NETWORK)))
+                .thenReturn(mockNetLevelOutputStream);
 
             CommunicationLogImpl communicationLogImpl = new CommunicationLogImpl(communicationLogSinkImplMock, "abcd");
 
@@ -53,25 +56,25 @@ class CommunicationLogImplTest extends DpwsTest {
             InputStream resultingInputStream = communicationLogImpl
                     .logMessage(CommunicationLog.Direction.OUTBOUND, CommunicationLog.TransportType.HTTP,
                             CommunicationLog.MessageType.UNKNOWN,
-                            requestCommContext, inputTestInputStream);
+                            requestCommContext, CommunicationLog.Level.APPLICATION, inputTestInputStream);
 
             assertArrayEquals(resultingInputStream.readAllBytes(), content);
-            assertArrayEquals(mockOutputStream.toByteArray(), content);
-            verify(mockOutputStream, times(1)).close();
+            assertArrayEquals(mockAppLevelOutputStream.toByteArray(), content);
+            verify(mockAppLevelOutputStream, times(1)).close();
 
-            mockOutputStream.reset();
+            mockAppLevelOutputStream.reset();
 
             try (OutputStream resultingOutputStream = communicationLogImpl.logMessage(
                     CommunicationLog.Direction.OUTBOUND, CommunicationLog.TransportType.HTTP,
                     CommunicationLog.MessageType.UNKNOWN,
-                    requestCommContext, outputTestOutputStream);) {
+                    requestCommContext, CommunicationLog.Level.APPLICATION, outputTestOutputStream)) {
 
                 resultingOutputStream.write(content);
                 resultingOutputStream.flush();
             }
 
             assertArrayEquals(outputTestOutputStream.toByteArray(), content);
-            assertArrayEquals(mockOutputStream.toByteArray(), content);
+            assertArrayEquals(mockAppLevelOutputStream.toByteArray(), content);
         }
     }
 
@@ -94,22 +97,24 @@ class CommunicationLogImplTest extends DpwsTest {
                 )
         );
 
-        try (ByteArrayInputStream inputStream = new ByteArrayInputStream(content);) {
+        try (ByteArrayInputStream inputStream = new ByteArrayInputStream(content)) {
             for (CommunicationLog.Direction dir : CommunicationLog.Direction.values()) {
                 reset(communicationLogSinkImplMock);
 
-                when(communicationLogSinkImplMock.createTargetStream(any(CommunicationLog.TransportType.class), any(), any(), any()))
+                when(communicationLogSinkImplMock.createTargetStream(any(CommunicationLog.TransportType.class), any(), any(), any(), any()))
                         .thenReturn(OutputStream.nullOutputStream());
 
                 communicationLogImpl.logMessage(dir, CommunicationLog.TransportType.HTTP, CommunicationLog.MessageType.UNKNOWN,
-                        requestCommContext,
+                        requestCommContext, CommunicationLog.Level.APPLICATION,
                         inputStream);
                 communicationLogImpl.logMessage(dir, CommunicationLog.TransportType.HTTP, CommunicationLog.MessageType.UNKNOWN,
-                        requestCommContext,
+                        requestCommContext, CommunicationLog.Level.APPLICATION,
                         OutputStream.nullOutputStream());
                 verify(communicationLogSinkImplMock, times(2)).
-                        createTargetStream(eq(CommunicationLog.TransportType.HTTP), any(), any(), any());
+                        createTargetStream(eq(CommunicationLog.TransportType.HTTP), any(), any(), any(), eq(CommunicationLog.Level.APPLICATION));
             }
         }
     }
+
+    // TODO: test Network Level Messages as well.
 }

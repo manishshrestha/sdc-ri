@@ -214,12 +214,12 @@ class CryptoIT {
 
         var reqMsg = clientPeer.getInjector().getInstance(SoapUtil.class)
                 .createMessage(TestServiceMetadata.ACTION_OPERATION_REQUEST_1, request);
-        final var numberBeforeRR = logSink.getInboundTransportInfos().stream().filter(info -> info.getX509Certificates().size() > 0).count();
+        final var numberBeforeRR = logSink.getInboundAppLevelTransportInfos().stream().filter(info -> info.getX509Certificates().size() > 0).count();
         hostedServiceProxy.getRequestResponseClient().sendRequestResponse(reqMsg);
-        final var numberAfterRR = logSink.getInboundTransportInfos().stream().filter(info -> info.getX509Certificates().size() > 0).count();
+        final var numberAfterRR = logSink.getInboundAppLevelTransportInfos().stream().filter(info -> info.getX509Certificates().size() > 0).count();
 
         assertEquals(1, numberAfterRR - numberBeforeRR);
-        for (var certificate : logSink.getInboundTransportInfos().stream().map(TransportInfo::getX509Certificates).flatMap(List::stream).collect(Collectors.toList())) {
+        for (var certificate : logSink.getInboundAppLevelTransportInfos().stream().map(TransportInfo::getX509Certificates).flatMap(List::stream).collect(Collectors.toList())) {
             assertEquals(serverCertificate, certificate);
         }
     }
@@ -240,12 +240,12 @@ class CryptoIT {
 
         var reqMsg = clientPeer.getInjector().getInstance(SoapUtil.class)
                 .createMessage(TestServiceMetadata.ACTION_OPERATION_REQUEST_1, request);
-        final var numberBeforeRR = logSink.getOutboundTransportInfos().stream().filter(info -> info.getX509Certificates().size() > 0).count();
+        final var numberBeforeRR = logSink.getOutboundAppLevelTransportInfos().stream().filter(info -> info.getX509Certificates().size() > 0).count();
         hostedServiceProxy.getRequestResponseClient().sendRequestResponse(reqMsg);
-        final var numberAfterRR = logSink.getOutboundTransportInfos().stream().filter(info -> info.getX509Certificates().size() > 0).count();
+        final var numberAfterRR = logSink.getOutboundAppLevelTransportInfos().stream().filter(info -> info.getX509Certificates().size() > 0).count();
 
         assertEquals(1, numberAfterRR - numberBeforeRR);
-        for (var certificate : logSink.getOutboundTransportInfos().stream().map(TransportInfo::getX509Certificates).flatMap(List::stream).collect(Collectors.toList())) {
+        for (var certificate : logSink.getOutboundAppLevelTransportInfos().stream().map(TransportInfo::getX509Certificates).flatMap(List::stream).collect(Collectors.toList())) {
             assertEquals(clientCertificate, certificate);
         }
     }
@@ -487,39 +487,64 @@ class CryptoIT {
 
     static class TestCommLogSink implements CommunicationLogSink {
 
-        private final ArrayList<TransportInfo> inboundTransportInfos;
-        private final ArrayList<TransportInfo> outboundTransportInfos;
+        private final ArrayList<TransportInfo> inboundAppLevelTransportInfos;
+        private final ArrayList<TransportInfo> outboundAppLevelTransportInfos;
+
+        private final ArrayList<TransportInfo> inboundNetLevelTransportInfos;
+        private final ArrayList<TransportInfo> outboundNetLevelTransportInfos;
 
         TestCommLogSink() {
-            this.inboundTransportInfos = new ArrayList<>();
-            this.outboundTransportInfos = new ArrayList<>();
+            this.inboundAppLevelTransportInfos = new ArrayList<>();
+            this.outboundAppLevelTransportInfos = new ArrayList<>();
+
+            this.inboundNetLevelTransportInfos = new ArrayList<>();
+            this.outboundNetLevelTransportInfos = new ArrayList<>();
         }
 
         @Override
         public OutputStream createTargetStream(CommunicationLog.TransportType path,
                                                CommunicationLog.Direction direction,
                                                CommunicationLog.MessageType messageType,
-                                               CommunicationContext communicationContext) {
+                                               CommunicationContext communicationContext,
+                                               CommunicationLog.Level level) {
             var os = new ByteArrayOutputStream();
             if (CommunicationLog.Direction.INBOUND.equals(direction)) {
-                inboundTransportInfos.add(communicationContext.getTransportInfo());
+                if (CommunicationLog.Level.APPLICATION.equals(level)) {
+                    inboundAppLevelTransportInfos.add(communicationContext.getTransportInfo());
+                } else {
+                    inboundNetLevelTransportInfos.add(communicationContext.getTransportInfo());
+                }
             } else {
-                outboundTransportInfos.add(communicationContext.getTransportInfo());
+                if (CommunicationLog.Level.APPLICATION.equals(level)) {
+                    outboundAppLevelTransportInfos.add(communicationContext.getTransportInfo());
+                } else {
+                    outboundNetLevelTransportInfos.add(communicationContext.getTransportInfo());
+                }
             }
             return os;
         }
 
         public void clear() {
-            inboundTransportInfos.clear();
-            outboundTransportInfos.clear();
+            inboundAppLevelTransportInfos.clear();
+            outboundAppLevelTransportInfos.clear();
+            inboundNetLevelTransportInfos.clear();
+            outboundNetLevelTransportInfos.clear();
         }
 
-        public ArrayList<TransportInfo> getInboundTransportInfos() {
-            return inboundTransportInfos;
+        public ArrayList<TransportInfo> getInboundAppLevelTransportInfos() {
+            return inboundAppLevelTransportInfos;
         }
 
-        public ArrayList<TransportInfo> getOutboundTransportInfos() {
-            return outboundTransportInfos;
+        public ArrayList<TransportInfo> getOutboundAppLevelTransportInfos() {
+            return outboundAppLevelTransportInfos;
+        }
+
+        public ArrayList<TransportInfo> getInboundNetLevelTransportInfos() {
+            return inboundNetLevelTransportInfos;
+        }
+
+        public ArrayList<TransportInfo> getOutboundNetLevelTransportInfos() {
+            return outboundNetLevelTransportInfos;
         }
     }
 }

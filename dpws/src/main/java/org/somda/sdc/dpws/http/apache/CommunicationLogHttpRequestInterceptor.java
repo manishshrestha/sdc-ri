@@ -73,7 +73,11 @@ public class CommunicationLogHttpRequestInterceptor implements HttpRequestInterc
                 CommunicationLog.Direction.OUTBOUND,
                 CommunicationLog.TransportType.HTTP,
                 CommunicationLog.MessageType.REQUEST,
-                requestCommContext);
+                requestCommContext,
+                CommunicationLog.Level.APPLICATION);
+        // TODO: add a network-level logMessage
+        // TODO: HTTP Clients are not allowed to gzip their Requests. Are the Network-level Message
+        //       and the Application-level Message the same in this case?
 
         if (!(request instanceof HttpEntityEnclosingRequest)) {
             // GET doesn't have any entity, but still has headers to save
