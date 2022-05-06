@@ -59,6 +59,8 @@ public class ApacheTransportBindingFactoryImpl implements TransportBindingFactor
     private final boolean enableHttp;
     private final Logger instanceLogger;
     private final String frameworkIdentifier;
+    private CommunicationLogOuterHttpRequestInterceptor commLogRequestinterceptor;
+
 
     private ClientTransportBindingFactory clientTransportBindingFactory;
     private final CommunicationLog communicationLog;
@@ -110,10 +112,12 @@ public class ApacheTransportBindingFactoryImpl implements TransportBindingFactor
                 .setConnectTimeout((int) clientConnectTimeout.toMillis())
                 .setSocketTimeout((int) clientConnectTimeout.toMillis()).build();
 
+        this.commLogRequestinterceptor = new CommunicationLogOuterHttpRequestInterceptor(communicationLog, frameworkIdentifier,
+                cryptoConfigurator.getCertificates(cryptoSettings));
         var clientBuilder = HttpClients.custom().setDefaultSocketConfig(socketConfig)
                 // attach interceptors to enable communication log capabilities including message headers
-                .addInterceptorLast(new CommunicationLogHttpRequestInterceptor(communicationLog, frameworkIdentifier,
-                        cryptoConfigurator.getCertificates(cryptoSettings)))
+                .addInterceptorFirst(new CommunicationLogInnerHttpRequestInterceptor(frameworkIdentifier))
+                .addInterceptorLast(this.commLogRequestinterceptor)
                 .addInterceptorLast(
                     new CommunicationLogInnerHttpResponseInterceptor(communicationLog, frameworkIdentifier))
                 .addInterceptorFirst(
@@ -198,7 +202,10 @@ public class ApacheTransportBindingFactoryImpl implements TransportBindingFactor
     public TransportBinding createHttpBinding(String endpointUri) throws UnsupportedOperationException {
         var scheme = URI.create(endpointUri).getScheme();
         if (client != null && scheme.toLowerCase().startsWith("http")) {
-            return this.clientTransportBindingFactory.create(client, endpointUri, marshalling, soapUtil);
+            final ClientTransportBinding clientTransportBinding =
+                this.clientTransportBindingFactory.create(client, endpointUri, marshalling, soapUtil);
+            clientTransportBinding.setCommLogInterceptor(this.commLogRequestinterceptor);
+            return clientTransportBinding;
         }
 
         throw new UnsupportedOperationException(

@@ -205,8 +205,10 @@ class CommunicationLogIT extends DpwsTest {
 
             assertArrayEquals(actualRequestStream.toByteArray(), req.toByteArray());
             assertArrayEquals(expectedResponseStream.toByteArray(), resp.toByteArray());
+            // TODO: check Network-Level content as well
 
             // check "Transfer-Encoding: chunked" Header
+            // TODO: check Network-Level Headers as well
             assertTrue(logSink.getOutboundAppLevelHeaders().get(0).get(TRANSFER_ENCODING_HEADER).contains(TRANSFER_ENCODING_VALUE_CHUNKED));
             assertTrue(logSink.getInboundAppLevelHeaders().get(0).get(TRANSFER_ENCODING_HEADER).contains(TRANSFER_ENCODING_VALUE_CHUNKED));
 
@@ -350,6 +352,7 @@ class CommunicationLogIT extends DpwsTest {
         }
     }
 
+    // TODO: ensure that the App-level Request is never gzip-compressed.
     @Test
     void testClientCommlogGzipped() throws Exception {
         setUpNonChunked();
@@ -406,17 +409,18 @@ class CommunicationLogIT extends DpwsTest {
 
             // requests must contain our message
             var req = logSink.getOutboundAppLevel().get(0);
+            final byte[] netLevelReq = logSink.getOutboundNetLevel().get(0).toByteArray();
             var resp = logSink.getInboundAppLevel().get(0);
             final byte[] netLevelResp = logSink.getInboundNetLevel().get(0).toByteArray();
             assertArrayEquals(expectedResponseStream.toByteArray(), decodeGZip(netLevelResp));
-
-            // TODO: why does this fail? The minimal changes I did in CommunicationLogRequestInterceptor should not cause something like this...
-            assertArrayEquals(actualRequestStream.toByteArray(), req.toByteArray());
             assertArrayEquals(expectedResponseStream.toByteArray(), resp.toByteArray());
+            assertArrayEquals(actualRequestStream.toByteArray(), req.toByteArray());
+            assertArrayEquals(actualRequestStream.toByteArray(), decodeGZip(netLevelReq));
 
             // check Content-Length header
             // Note: when content is gzipped, content-length is not equal to length of content,
             //       hence we can only check if the header is present.
+            // TODO: also supply the Header for network- and application-level.
             // TODO: Correct this once network-level and application-level are separated.
             assertNotNull(logSink.getOutboundAppLevelHeaders().get(0).get(CONTENT_LENGTH_HEADER));
             assertNotNull(logSink.getInboundAppLevelHeaders().get(0).get(CONTENT_LENGTH_HEADER));

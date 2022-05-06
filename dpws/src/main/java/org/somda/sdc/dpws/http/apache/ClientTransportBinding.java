@@ -9,6 +9,7 @@ import org.apache.http.HttpHeaders;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.entity.EntityBuilder;
+import org.apache.http.client.entity.GzipCompressingEntity;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.util.EntityUtils;
 import org.apache.logging.log4j.LogManager;
@@ -56,6 +57,7 @@ public class ClientTransportBinding implements TransportBinding {
     private final String clientUri;
     private final boolean chunkedTransfer;
     private boolean gzippedTransfer;
+    private CommunicationLogOuterHttpRequestInterceptor commLogInterceptor;
 
     @Inject
     ClientTransportBinding(@Assisted HttpClient client,
@@ -116,13 +118,19 @@ public class ClientTransportBinding implements TransportBinding {
 
         // attach payload
         EntityBuilder builder = EntityBuilder.create().setBinary(byteArrayOutputStream.toByteArray());
-        if (gzippedTransfer) {
-            builder = builder.gzipCompress();
-        }
         if (chunkedTransfer) {
             builder = builder.chunked();
         }
-        post.setEntity(builder.build());
+        if (gzippedTransfer) {
+            final HttpEntity entity = builder.build();
+            final ExtractingEntity extractingEntity = new ExtractingEntity(entity);
+            post.setEntity(new GzipCompressingEntity(extractingEntity));
+            if (this.commLogInterceptor != null) {
+                this.commLogInterceptor.setExtractingEntity(extractingEntity);
+            }
+        } else {
+            post.setEntity(builder.build());
+        }
 
         instanceLogger.debug("Sending POST request to {}", this.clientUri);
         HttpResponse response;
@@ -206,5 +214,9 @@ public class ClientTransportBinding implements TransportBinding {
     @Override
     public void close() {
         // no action on HTTP
+    }
+    
+    public void setCommLogInterceptor(CommunicationLogOuterHttpRequestInterceptor interceptor) {
+        this.commLogInterceptor = interceptor;        
     }
 }
