@@ -2,9 +2,7 @@ package org.somda.sdc.glue.provider.services;
 
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
-import org.somda.sdc.biceps.common.access.ReadTransaction;
 import org.somda.sdc.biceps.model.message.GetLocalizedText;
-import org.somda.sdc.biceps.model.message.GetSupportedLanguages;
 import org.somda.sdc.biceps.model.message.ObjectFactory;
 import org.somda.sdc.biceps.model.participant.LocalizedText;
 import org.somda.sdc.biceps.model.participant.MdibVersion;
@@ -84,6 +82,11 @@ public class LowPriorityServices extends WebService {
         setResponse(requestResponseObject, getSupportedLanguagesResponse, mdibAccess.getMdibVersion(),
                 ActionConstants.getResponseAction(ActionConstants.ACTION_GET_SUPPORTED_LANGUAGES));
 
+    }
+
+    @MessageInterceptor(ActionConstants.ACTION_HISTORY_MDIB_REPORT)
+    void historyMdibReport(RequestResponseObject requestResponseObject) throws SoapFaultException {
+        //TODO #142
     }
 
     private <T> T getRequest(RequestResponseObject requestResponseObject, Class<T> bodyType) throws SoapFaultException {

@@ -77,6 +77,9 @@ public class ActionConstants {
     public static final String ACTION_GET_SUPPORTED_LANGUAGES =
             WsdlConstants.ACTION_LOCALIZATION_PREFIX + WsdlConstants.OPERATION_GET_SUPPORTED_LANGUAGES;
 
+    public static final String ACTION_HISTORY_MDIB_REPORT =
+            WsdlConstants.ACTION_HISTORY_PREFIX + WsdlConstants.OPERATION_HISTORY_MDIB_REPORT;
+
     /**
      * Generates a response action URI from an input action URI by appending 'Response'.
      *

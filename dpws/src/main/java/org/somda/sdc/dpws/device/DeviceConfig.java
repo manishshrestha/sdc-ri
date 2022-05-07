@@ -15,4 +15,14 @@ public class DeviceConfig {
      * </ul>
      */
     public static final String WSDL_PROVISIONING_MODE = "Dpws.WsdlProvisioningMode";
+
+    /**
+     * Enables History service.
+     *
+     * <ul>
+     * <li>Data type: {@linkplain Boolean}
+     * <li>Use: optional
+     * </ul>
+     */
+    public static final String HISTORY_SERVICE_SUPPORT = "Dpws.EnableHistoryService";
 }

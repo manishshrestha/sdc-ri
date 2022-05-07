@@ -10,6 +10,7 @@ import org.somda.sdc.biceps.model.participant.MdibVersion;
 import org.somda.sdc.biceps.provider.access.LocalMdibAccess;
 import org.somda.sdc.dpws.DpwsConstants;
 import org.somda.sdc.dpws.device.Device;
+import org.somda.sdc.dpws.device.DeviceConfig;
 import org.somda.sdc.dpws.device.DeviceSettings;
 import org.somda.sdc.dpws.device.DiscoveryAccess;
 import org.somda.sdc.dpws.device.EventSourceAccess;
@@ -32,6 +33,7 @@ import org.somda.sdc.glue.provider.services.factory.ServicesFactory;
 import org.somda.sdc.mdpws.common.CommonConstants;
 
 import javax.annotation.Nullable;
+import javax.inject.Named;
 import javax.xml.namespace.QName;
 import java.io.IOException;
 import java.io.InputStream;
@@ -56,6 +58,7 @@ public class SdcDevice extends AbstractIdleService implements Device, EventSourc
     private final SdcDevicePluginProcessor pluginProcessor;
     private final LowPriorityServices lowPriorityServices;
     private final LocalizationStorage localizationStorage;
+    private final boolean enableHistoryService;
 
     @AssistedInject
     SdcDevice(@Assisted DeviceSettings deviceSettings,
@@ -66,10 +69,12 @@ public class SdcDevice extends AbstractIdleService implements Device, EventSourc
               Provider<SdcRequiredTypesAndScopes> sdcRequiredTypesAndScopesProvider,
               DeviceFactory deviceFactory,
               ServicesFactory servicesFactory,
-              HostedServiceFactory hostedServiceFactory) {
+              HostedServiceFactory hostedServiceFactory,
+              @Named(DeviceConfig.HISTORY_SERVICE_SUPPORT) Boolean enableHistoryService) {
 
         this(deviceSettings, mdibAccess, operationInvocationReceivers, plugins, null,
-                sdcRequiredTypesAndScopesProvider, deviceFactory, servicesFactory, hostedServiceFactory);
+                sdcRequiredTypesAndScopesProvider, deviceFactory, servicesFactory, hostedServiceFactory,
+                enableHistoryService);
     }
 
     @AssistedInject
@@ -82,7 +87,8 @@ public class SdcDevice extends AbstractIdleService implements Device, EventSourc
               Provider<SdcRequiredTypesAndScopes> sdcRequiredTypesAndScopesProvider,
               DeviceFactory deviceFactory,
               ServicesFactory servicesFactory,
-              HostedServiceFactory hostedServiceFactory) {
+              HostedServiceFactory hostedServiceFactory,
+              @Named(DeviceConfig.HISTORY_SERVICE_SUPPORT) Boolean enableHistoryService) {
 
         // Always support the minimally required types and scopes
         var copyPlugins = plugins;
@@ -99,6 +105,7 @@ public class SdcDevice extends AbstractIdleService implements Device, EventSourc
 
         this.pluginProcessor = new SdcDevicePluginProcessor(copyPlugins, this);
         this.localizationStorage = localizationStorage;
+        this.enableHistoryService = enableHistoryService;
     }
 
     public LocalMdibAccess getMdibAccess() {
@@ -222,7 +229,7 @@ public class SdcDevice extends AbstractIdleService implements Device, EventSourc
                 classLoader.getResourceAsStream("wsdl/IEEE11073-20701-HighPriority-Services.wsdl");
         assert highPrioWsdlStream != null;
         dpwsDevice.getHostingServiceAccess().addHostedService(hostedServiceFactory.createHostedService(
-                "HighPriorityServices",
+                WsdlConstants.SERVICES_HIGH_PRIORITY,
                 Arrays.asList(
                         new QName(WsdlConstants.TARGET_NAMESPACE, WsdlConstants.SERVICE_GET),
                         new QName(WsdlConstants.TARGET_NAMESPACE, WsdlConstants.SERVICE_SET),
@@ -238,7 +245,7 @@ public class SdcDevice extends AbstractIdleService implements Device, EventSourc
                 classLoader.getResourceAsStream("wsdl/IEEE11073-20701-LowPriority-Services.wsdl");
         if (lowPrioWsdlStream != null) {
             dpwsDevice.getHostingServiceAccess().addHostedService(hostedServiceFactory.createHostedService(
-                    "LowPriorityServices",
+                    WsdlConstants.SERVICES_LOW_PRIORITY,
                     getQNames(),
                     lowPriorityServices,
                     ByteStreams.toByteArray(lowPrioWsdlStream)));
@@ -259,6 +266,10 @@ public class SdcDevice extends AbstractIdleService implements Device, EventSourc
 
         if (localizationStorage != null) {
             qNames.add(new QName(WsdlConstants.TARGET_NAMESPACE, WsdlConstants.SERVICE_LOCALIZATION));
+        }
+
+        if (enableHistoryService) {
+            qNames.add(new QName(WsdlConstants.TARGET_NAMESPACE, WsdlConstants.SERVICE_HISTORY));
         }
 
         return qNames;

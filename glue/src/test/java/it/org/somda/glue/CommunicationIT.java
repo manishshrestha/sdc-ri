@@ -46,6 +46,7 @@ import org.somda.sdc.dpws.soap.exception.TransportException;
 import org.somda.sdc.dpws.soap.interception.InterceptorException;
 import org.somda.sdc.glue.common.ActionConstants;
 import org.somda.sdc.glue.common.MdibXmlIo;
+import org.somda.sdc.glue.common.WsdlConstants;
 import org.somda.sdc.glue.common.factory.ModificationsBuilderFactory;
 import org.somda.sdc.glue.consumer.ConnectConfiguration;
 import org.somda.sdc.glue.consumer.SdcRemoteDevice;
@@ -454,7 +455,8 @@ class CommunicationIT {
         var sdcRemoteDevice = remoteDeviceFuture.get(WAIT_IN_SECONDS, WAIT_TIME_UNIT);
 
 
-        var hostedServiceProxy = sdcRemoteDevice.getHostingServiceProxy().getHostedServices().get("HighPriorityServices");
+        var hostedServiceProxy = sdcRemoteDevice.getHostingServiceProxy().getHostedServices()
+                .get(WsdlConstants.SERVICES_HIGH_PRIORITY);
         assertNotNull(hostedServiceProxy);
         var client = hostedServiceProxy.getRequestResponseClient();
         Function<String, QName> qName = name -> new QName(CommonConstants.NAMESPACE_PARTICIPANT, name);

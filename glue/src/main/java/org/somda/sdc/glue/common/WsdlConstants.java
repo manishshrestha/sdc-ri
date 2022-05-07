@@ -13,10 +13,13 @@ public class WsdlConstants {
     // CHECKSTYLE.OFF: DeclarationOrder
     private static final String SLASH = "/";
 
+    //TODO #142: do we use this namespace or "tns="http://www.draeger.com/sdc/2021-06"
     public static final String TARGET_NAMESPACE = CommonConstants.NAMESPACE_SDC;
 
     public static final String ACTION_PREFIX = TARGET_NAMESPACE + SLASH;
 
+    public static final String SERVICES_HIGH_PRIORITY = "HighPriorityServices";
+    public static final String SERVICES_LOW_PRIORITY = "LowPriorityServices";
     public static final String SERVICE_GET = "GetService";
     public static final String SERVICE_SET = "SetService";
     public static final String SERVICE_DESCRIPTION_EVENT = "DescriptionEventService";
@@ -26,6 +29,7 @@ public class WsdlConstants {
     public static final String SERVICE_CONTAINMENT_TREE = "ContainmentTreeService";
     public static final String SERVICE_ARCHIVE = "ArchiveService";
     public static final String SERVICE_LOCALIZATION = "LocalizationService";
+    public static final String SERVICE_HISTORY = "HistoryService";
 
     public static final String ACTION_GET_PREFIX = ACTION_PREFIX + SERVICE_GET + SLASH;
     public static final String ACTION_SET_PREFIX = ACTION_PREFIX + SERVICE_SET + SLASH;
@@ -36,6 +40,7 @@ public class WsdlConstants {
     public static final String ACTION_CONTAINMENT_TREE_PREFIX = ACTION_PREFIX + SERVICE_CONTAINMENT_TREE + SLASH;
     public static final String ACTION_ARCHIVE_PREFIX = ACTION_PREFIX + SERVICE_ARCHIVE + SLASH;
     public static final String ACTION_LOCALIZATION_PREFIX = ACTION_PREFIX + SERVICE_LOCALIZATION + SLASH;
+    public static final String ACTION_HISTORY_PREFIX = ACTION_PREFIX + SERVICE_HISTORY + SLASH;
 
     public static final String OPERATION_GET_MDIB = "GetMdib";
     public static final String OPERATION_GET_MD_DESCRIPTION = "GetMdDescription";
@@ -80,6 +85,8 @@ public class WsdlConstants {
     public static final String OPERATION_GET_LOCALIZED_TEXT = "GetLocalizedText";
     public static final String OPERATION_GET_SUPPORTED_LANGUAGES = "GetSupportedLanguages";
 
+    public static final String OPERATION_HISTORY_MDIB_REPORT = "HistoricMdibReport";
+
     public static final QName PORT_TYPE_GET_QNAME = new QName(TARGET_NAMESPACE, SERVICE_GET);
     public static final QName PORT_TYPE_SET_QNAME = new QName(TARGET_NAMESPACE, SERVICE_SET);
     public static final QName PORT_TYPE_DESCRIPTION_EVENT_QNAME =
@@ -90,6 +97,7 @@ public class WsdlConstants {
     public static final QName PORT_TYPE_CONTAINMENT_TREE_QNAME = new QName(TARGET_NAMESPACE, SERVICE_CONTAINMENT_TREE);
     public static final QName PORT_TYPE_ARCHIVE_QNAME = new QName(TARGET_NAMESPACE, SERVICE_ARCHIVE);
     public static final QName PORT_TYPE_LOCALIZATION_QNAME = new QName(TARGET_NAMESPACE, SERVICE_LOCALIZATION);
+    public static final QName PORT_TYPE_HISTORY_QNAME = new QName(TARGET_NAMESPACE, SERVICE_HISTORY);
     // CHECKSTYLE.ON: DeclarationOrder
 
 }

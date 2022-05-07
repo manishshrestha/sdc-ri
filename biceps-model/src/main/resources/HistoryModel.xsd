@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:hs="urn:oid:1.3.6.1.4.1.3592.2.6933.2.1" xmlns:msg="http://standards.ieee.org/downloads/11073/11073-10207-2017/message" xmlns:pm="http://standards.ieee.org/downloads/11073/11073-10207-2017/participant" targetNamespace="urn:oid:1.3.6.1.4.1.3592.2.6933.2.1" elementFormDefault="qualified" attributeFormDefault="unqualified">
+	<!-- 1.3.6.1.4.1.3592.2.6933.2.1: Dräger-specific message model extension namespace -->
+	<xsd:import namespace="http://standards.ieee.org/downloads/11073/11073-10207-2017/participant" schemaLocation="BICEPS_ParticipantModel.xsd"/>
+	<xsd:import namespace="http://standards.ieee.org/downloads/11073/11073-10207-2017/message" schemaLocation="BICEPS_MessageModel.xsd"/>
+	<!-- Notification payload -->
+	<xsd:element name="ChangeSequenceReport" type="hs:ChangeSequenceReportType">
+		<xsd:annotation>
+			<xsd:documentation>A report element that allows to communicate MDIBs along with sequences of changes.</xsd:documentation>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType name="ChangeSequenceReportType">
+		<xsd:annotation>
+			<xsd:documentation>Type definition of a report to communicate MDIBs along with sequences of changes.</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element ref="hs:ChangeSequence" minOccurs="0" maxOccurs="unbounded">
+				<xsd:annotation>
+					<xsd:documentation>Zero or more ChangeSequence elements to describe changes of different MDIB sequences and/or instance numbers.</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:element name="ChangeSequence" type="hs:ChangeSequenceType">
+		<xsd:annotation>
+			<xsd:documentation>An element that contains an MDIB snapshot and subsequent MDIB changes.</xsd:documentation>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType name="ChangeSequenceType">
+		<xsd:annotation>
+			<xsd:documentation>Type definition of a change sequence.</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="HistoricLocalizedText" type="pm:LocalizedText" minOccurs="0" maxOccurs="unbounded">
+				<xsd:annotation>
+					<xsd:documentation>Contains *Historic Localized Text* data.</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="HistoricMdib" type="hs:HistoricMdibType" minOccurs="0" maxOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>The initial *MDIB Configuration* at the beginning of a change sequence.</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+			<xsd:element name="HistoricReport" type="hs:HistoricReportType" minOccurs="0" maxOccurs="unbounded">
+				<xsd:annotation>
+					<xsd:documentation>Subsequent reports to be applied on the initial *MDIB Configuration* to recreate the change history.</xsd:documentation>
+				</xsd:annotation>
+			</xsd:element>
+		</xsd:sequence>
+		<xsd:attribute name="SequenceId" type="xsd:anyURI" use="required">
+			<xsd:annotation>
+				<xsd:documentation>The MDIB sequence identifier that is valid for this change sequence.</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="InstanceId" type="xsd:unsignedLong" default="0">
+			<xsd:annotation>
+				<xsd:documentation>MDIB instance number that is valid for this change sequence. The default value is 0 which contradicts with BICEPS as there can be a non-existing instance number. This is supposed to be fixed: https://sourceforge.net/p/opensdc/ieee11073-10207/223/</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:complexType>
+	<xsd:complexType name="HistoricMdibType">
+		<xsd:annotation>
+			<xsd:documentation>Definition of an *MDIB Configuration* at a specific time.</xsd:documentation>
+		</xsd:annotation>
+		<xsd:complexContent>
+			<xsd:extension base="pm:Mdib">
+				<xsd:attribute name="Time" type="pm:Timestamp" use="required">
+					<xsd:annotation>
+						<xsd:documentation>Time at which the *MDIB Configuration* was first effective for the *SDC Service Provider*.</xsd:documentation>
+					</xsd:annotation>
+				</xsd:attribute>
+			</xsd:extension>
+		</xsd:complexContent>
+	</xsd:complexType>
+	<xsd:complexType name="HistoricReportType">
+		<xsd:annotation>
+			<xsd:documentation>Definition of a report at a specific time.</xsd:documentation>
+		</xsd:annotation>
+		<xsd:complexContent>
+			<xsd:extension base="msg:AbstractReport">
+				<xsd:attribute name="Time" type="pm:Timestamp" use="required">
+					<xsd:annotation>
+						<xsd:documentation>Time at which the report was persisted.</xsd:documentation>
+					</xsd:annotation>
+				</xsd:attribute>
+			</xsd:extension>
+		</xsd:complexContent>
+	</xsd:complexType>
+	<!-- Subscription payload -->
+	<xsd:element name="HistoryQuery" type="hs:HistoryQueryType">
+		<xsd:annotation>
+			<xsd:documentation>Element to be used as request data to the history service.</xsd:documentation>
+		</xsd:annotation>
+	</xsd:element>
+	<xsd:complexType name="HistoryQueryType">
+		<xsd:annotation>
+			<xsd:documentation>Type definition to be used as request data to the history service.</xsd:documentation>
+		</xsd:annotation>
+		<xsd:sequence>
+			<xsd:element name="LanguageFilter" minOccurs="0" maxOccurs="1">
+				<xsd:annotation>
+					<xsd:documentation>A language filter to opt-in for requesting localized texts.
+
+- If the LanguageFilter element does not exist, no pm:LocalizedText elements are to be selected
+- If the LanguageFilter element exists and the list is empty, all pm:LocalizedText elements are to be selected
+- If the LanguageFilter element exists and the list is not empty, all pm:LocalizedText elements are to be selected where pm:LocalizedText@Lang is element of LanguageFilter</xsd:documentation>
+				</xsd:annotation>
+				<xsd:simpleType>
+					<xsd:list itemType="xsd:language"/>
+				</xsd:simpleType>
+			</xsd:element>
+			<xsd:choice>
+				<xsd:element name="TimeRange" type="hs:TimeRangeType">
+					<xsd:annotation>
+						<xsd:documentation>Time range that is requested from a history service. Timestamps refer to the clock of the requested SDC SERVICE PROVIDER and do not necessarily correspond to a specific determination time in the MDIB. Results from time range-based querying are typically imprecise and depend on a synchronized clock between SDC SERVICE PROVIDER and SDC SERVICE CONSUMER. Hence, version range-based querying is always preferred over time range-based querying.</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+				<xsd:element name="VersionRange" type="hs:VersionRangeType">
+					<xsd:annotation>
+						<xsd:documentation>Version range that is requested from a history service.</xsd:documentation>
+					</xsd:annotation>
+				</xsd:element>
+			</xsd:choice>
+		</xsd:sequence>
+	</xsd:complexType>
+	<xsd:complexType name="TimeRangeType">
+		<xsd:annotation>
+			<xsd:documentation>A start and end time to designate a time span.</xsd:documentation>
+		</xsd:annotation>
+		<xsd:attribute name="StartTime" type="pm:Timestamp">
+			<xsd:annotation>
+				<xsd:documentation>Start time from which the history is to be requested.</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="EndTime" type="pm:Timestamp">
+			<xsd:annotation>
+				<xsd:documentation>End time up to which the history is to be requested.</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:complexType>
+	<xsd:complexType name="VersionRangeType">
+		<xsd:annotation>
+			<xsd:documentation>A start and end version to designate a range of versions.</xsd:documentation>
+		</xsd:annotation>
+		<xsd:attribute name="SequenceId" type="xsd:anyURI" use="required">
+			<xsd:annotation>
+				<xsd:documentation>The MDIB sequence from which to request historical data.</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="InstanceId" type="xsd:unsignedLong" default="0">
+			<xsd:annotation>
+				<xsd:documentation>An MDIB instance number from which to request historical data. The default value is 0 which contradicts with BICEPS as there can be a non-existing instance number. This is supposed to be fixed: https://sourceforge.net/p/opensdc/ieee11073-10207/223/</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="StartVersion" type="pm:ReferencedVersion" use="required">
+			<xsd:annotation>
+				<xsd:documentation>MDIB version from which the history is to be requested including StartVersion.</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+		<xsd:attribute name="EndVersion" type="pm:ReferencedVersion" use="required">
+			<xsd:annotation>
+				<xsd:documentation>MDIB version up to which the history is to be requested including EndVersion.</xsd:documentation>
+			</xsd:annotation>
+		</xsd:attribute>
+	</xsd:complexType>
+</xsd:schema>

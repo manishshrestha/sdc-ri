@@ -36,7 +36,8 @@ public class ConnectConfiguration {
             WsdlConstants.PORT_TYPE_WAVEFORM_QNAME,
             WsdlConstants.PORT_TYPE_CONTAINMENT_TREE_QNAME,
             WsdlConstants.PORT_TYPE_ARCHIVE_QNAME,
-            WsdlConstants.PORT_TYPE_LOCALIZATION_QNAME);
+            WsdlConstants.PORT_TYPE_LOCALIZATION_QNAME,
+            WsdlConstants.PORT_TYPE_HISTORY_QNAME);
 
     /**
      * List of all episodic report actions.
