@@ -1,6 +1,6 @@
 package org.somda.sdc.biceps.common.storage;
 
-import org.somda.sdc.biceps.common.MdibDescriptionModifications;
+import org.somda.sdc.biceps.common.MdibDescriptionModification;
 import org.somda.sdc.biceps.common.MdibEntity;
 import org.somda.sdc.biceps.common.MdibStateModifications;
 import org.somda.sdc.biceps.common.access.MdibAccess;
@@ -40,7 +40,7 @@ public interface MdibStorage {
     WriteDescriptionResult apply(MdibVersion mdibVersion,
                                  @Nullable BigInteger mdDescriptionVersion,
                                  @Nullable BigInteger mdStateVersion,
-                                 MdibDescriptionModifications descriptionModifications);
+                                 List<MdibDescriptionModification> descriptionModifications);
 
     /**
      * Applies state modifications on this object regardless of any consistency checks.
@@ -202,6 +202,14 @@ public interface MdibStorage {
      * @return a list of all context states.
      */
     List<AbstractContextState> getContextStates();
+
+    /**
+     * Returns a context state for the given handle, if available.
+     *
+     * @param stateHandle to retrieve
+     * @return the state if available, empty otherwise
+     */
+    Optional<AbstractContextState> getContextState(String stateHandle);
 
     /**
      * Gets all context states of a specific type.

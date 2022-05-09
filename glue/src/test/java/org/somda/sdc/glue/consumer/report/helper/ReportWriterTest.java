@@ -62,36 +62,36 @@ class ReportWriterTest {
 
     @Test
     void writeDescription() throws Exception {
-        final DescriptionModificationReport report = messageFactory.createDescriptionModificationReport();
-        final DescriptionModificationReport.ReportPart reportPartInsert = messageFactory.createDescriptionModificationReportReportPart();
-        final DescriptionModificationReport.ReportPart reportPartUpdate = messageFactory.createDescriptionModificationReportReportPart();
-        final DescriptionModificationReport.ReportPart reportPartDelete = messageFactory.createDescriptionModificationReportReportPart();
+        final var reportBuilder = DescriptionModificationReport.builder();
+        final var reportPartInsert = DescriptionModificationReport.ReportPart.builder();
+        final var reportPartUpdate = DescriptionModificationReport.ReportPart.builder();
+        final var reportPartDelete = DescriptionModificationReport.ReportPart.builder();
 
         final MdibVersion expectedMdibVersion = MdibVersion.create();
-        mdibVersionUtil.setMdibVersion(expectedMdibVersion, report);
+        mdibVersionUtil.setReportMdibVersion(expectedMdibVersion, reportBuilder);
 
-        reportPartInsert.setModificationType(DescriptionModificationType.CRT);
-        addEntry(reportPartInsert, Handles.MDS_0, MdsDescriptor.class, false);
-        addEntry(reportPartInsert, Handles.MDS_1, MdsDescriptor.class, false);
-        addEntry(reportPartInsert, Handles.MDS_2, MdsDescriptor.class, false);
+        reportPartInsert.withModificationType(DescriptionModificationType.CRT);
+        addEntry(reportPartInsert, Handles.MDS_0, MdsDescriptor.builder(), MdsState.builder(), false);
+        addEntry(reportPartInsert, Handles.MDS_1, MdsDescriptor.builder(), MdsState.builder(), false);
+        addEntry(reportPartInsert, Handles.MDS_2, MdsDescriptor.builder(), MdsState.builder(), false);
 
         final String expectedUpdateParent = "update-parent";
-        reportPartUpdate.setParentDescriptor(expectedUpdateParent);
-        addContextEntry(reportPartUpdate, Handles.CONTEXTDESCRIPTOR_0, Arrays.asList(Handles.CONTEXT_0, Handles.CONTEXT_1), LocationContextDescriptor.class);
-        addContextEntry(reportPartUpdate, Handles.CONTEXTDESCRIPTOR_1, Arrays.asList(Handles.CONTEXT_2, Handles.CONTEXT_3), PatientContextDescriptor.class);
-        addContextEntry(reportPartUpdate, Handles.CONTEXTDESCRIPTOR_2, Arrays.asList(Handles.CONTEXT_4, Handles.CONTEXT_5), EnsembleContextDescriptor.class);
+        reportPartUpdate.withParentDescriptor(expectedUpdateParent);
+        addContextEntry(reportPartUpdate, Handles.CONTEXTDESCRIPTOR_0, Arrays.asList(Handles.CONTEXT_0, Handles.CONTEXT_1), LocationContextDescriptor.builder(), LocationContextState.builder());
+        addContextEntry(reportPartUpdate, Handles.CONTEXTDESCRIPTOR_1, Arrays.asList(Handles.CONTEXT_2, Handles.CONTEXT_3), PatientContextDescriptor.builder(), PatientContextState.builder());
+        addContextEntry(reportPartUpdate, Handles.CONTEXTDESCRIPTOR_2, Arrays.asList(Handles.CONTEXT_4, Handles.CONTEXT_5), EnsembleContextDescriptor.builder(), EnsembleContextState.builder());
 
         final String expectedDeleteParent = "delete-parent";
-        reportPartDelete.setModificationType(DescriptionModificationType.DEL);
-        reportPartDelete.setParentDescriptor(expectedDeleteParent);
-        addEntryDescriptor(reportPartDelete, Handles.METRIC_0, NumericMetricDescriptor.class);
-        addEntryDescriptor(reportPartDelete, Handles.METRIC_1, StringMetricDescriptor.class);
-        addEntryDescriptor(reportPartDelete, Handles.METRIC_2, EnumStringMetricDescriptor.class);
-        addEntryDescriptor(reportPartDelete, Handles.METRIC_3, RealTimeSampleArrayMetricDescriptor.class);
+        reportPartDelete.withModificationType(DescriptionModificationType.DEL);
+        reportPartDelete.withParentDescriptor(expectedDeleteParent);
+        addEntryDescriptor(reportPartDelete, Handles.METRIC_0, NumericMetricDescriptor.builder(), NumericMetricState.builder());
+        addEntryDescriptor(reportPartDelete, Handles.METRIC_1, StringMetricDescriptor.builder(), StringMetricState.builder());
+        addEntryDescriptor(reportPartDelete, Handles.METRIC_2, EnumStringMetricDescriptor.builder(), EnumStringMetricState.builder());
+        addEntryDescriptor(reportPartDelete, Handles.METRIC_3, RealTimeSampleArrayMetricDescriptor.builder(), RealTimeSampleArrayMetricState.builder());
 
-        report.getReportPart().addAll(Arrays.asList(reportPartInsert, reportPartUpdate, reportPartDelete));
+        reportBuilder.withReportPart(Arrays.asList(reportPartInsert.build(), reportPartUpdate.build(), reportPartDelete.build()));
 
-        reportWriter.write(report, mdibAccess);
+        reportWriter.write(reportBuilder.build(), mdibAccess);
 
         verify(mdibAccess).writeDescription(mdibVersionCaptor.capture(), nullCaptor.capture(), nullCaptor.capture(), descriptionCaptor.capture());
 
@@ -121,20 +121,20 @@ class ReportWriterTest {
 
     @Test
     void writeDescriptionStateWithoutDescriptor() throws Exception {
-        final DescriptionModificationReport report = messageFactory.createDescriptionModificationReport();
-        final DescriptionModificationReport.ReportPart reportPartInsert = messageFactory.createDescriptionModificationReportReportPart();
+        final var report = DescriptionModificationReport.builder();
+        final var reportPartInsert = DescriptionModificationReport.ReportPart.builder();
 
         final MdibVersion expectedMdibVersion = MdibVersion.create();
-        mdibVersionUtil.setMdibVersion(expectedMdibVersion, report);
+        mdibVersionUtil.setReportMdibVersion(expectedMdibVersion, report);
 
-        reportPartInsert.setModificationType(DescriptionModificationType.CRT);
-        addEntry(reportPartInsert, Handles.MDS_0, MdsDescriptor.class, false);
-        addEntry(reportPartInsert, Handles.MDS_1, MdsDescriptor.class, true);
-        addEntry(reportPartInsert, Handles.MDS_2, MdsDescriptor.class, false);
+        reportPartInsert.withModificationType(DescriptionModificationType.CRT);
+        addEntry(reportPartInsert, Handles.MDS_0, MdsDescriptor.builder(), MdsState.builder(), false);
+        addEntry(reportPartInsert, Handles.MDS_1, MdsDescriptor.builder(), MdsState.builder(), true);
+        addEntry(reportPartInsert, Handles.MDS_2, MdsDescriptor.builder(), MdsState.builder(), false);
 
-        report.getReportPart().addAll(Collections.singletonList(reportPartInsert));
+        report.addReportPart(Collections.singletonList(reportPartInsert.build()));
 
-        assertThrows(ReportProcessingException.class, () -> reportWriter.write(report, mdibAccess));
+        assertThrows(ReportProcessingException.class, () -> reportWriter.write(report.build(), mdibAccess));
     }
 
     private void testSingleState(MdibDescriptionModification modification, String handle, MdibDescriptionModification.Type type, Optional<String> parentHandle) {
@@ -163,134 +163,162 @@ class ReportWriterTest {
         assertEquals(parentHandle, modification.getParentHandle());
     }
 
-    private void addEntryDescriptor(DescriptionModificationReport.ReportPart reportPart, String handle, Class<? extends AbstractDescriptor> type) throws Exception {
-        final MdibDescriptionModifications.Entry entry = mockEntryFactory.entry(handle, type);
-        reportPart.getDescriptor().add(entry.getDescriptor());
+    private void addEntryDescriptor(
+        DescriptionModificationReport.ReportPart.Builder<?> reportPart,
+        String handle,
+        AbstractDescriptor.Builder<?> descriptorBuilder,
+        AbstractState.Builder<?> stateBuilder
+    ) throws Exception {
+        final MdibDescriptionModifications.Entry entry = mockEntryFactory.entry(handle, descriptorBuilder, stateBuilder);
+        reportPart.addDescriptor(entry.getDescriptor());
     }
 
-    private void addEntry(DescriptionModificationReport.ReportPart reportPart, String handle, Class<? extends AbstractDescriptor> type, boolean addStateWithoutDescriptor) throws Exception {
-        final MdibDescriptionModifications.Entry entry = mockEntryFactory.entry(handle, type);
+    private void addEntry(
+        DescriptionModificationReport.ReportPart.Builder<?> reportPart,
+        String handle,
+        AbstractDescriptor.Builder<?> descriptorBuilder,
+        AbstractState.Builder<?> stateBuilder,
+        boolean addStateWithoutDescriptor
+    ) throws Exception {
+        final MdibDescriptionModifications.Entry entry = mockEntryFactory.entry(handle, descriptorBuilder, stateBuilder);
         if (!addStateWithoutDescriptor) {
-            reportPart.getDescriptor().add(entry.getDescriptor());
+            reportPart.addDescriptor(entry.getDescriptor());
         }
-        reportPart.getState().add(entry.getState());
+        reportPart.addState(entry.getState());
     }
 
-    private void addContextEntry(DescriptionModificationReport.ReportPart reportPart, String handle, List<String> stateHandles, Class<? extends AbstractContextDescriptor> type) throws Exception {
-        final MdibDescriptionModifications.MultiStateEntry entry = mockEntryFactory.contextEntry(handle, stateHandles, type, "parent");
-        reportPart.getDescriptor().add(entry.getDescriptor());
-        reportPart.getState().addAll(entry.getStates());
+    private void addContextEntry(
+        DescriptionModificationReport.ReportPart.Builder<?> reportPart,
+        String handle,
+        List<String> stateHandles,
+        AbstractContextDescriptor.Builder<?> descriptorBuilder,
+        AbstractContextState.Builder<?> stateBuilder
+    ) throws Exception {
+        final MdibDescriptionModifications.MultiStateEntry entry = mockEntryFactory.contextEntry(handle, stateHandles, descriptorBuilder, stateBuilder, "parent");
+        reportPart.addDescriptor(entry.getDescriptor());
+        reportPart.addState(entry.getStates());
     }
 
     @Test
     void writeComponent() throws Exception {
-        final EpisodicComponentReport report = messageFactory.createEpisodicComponentReport();
-        final EpisodicComponentReport.ReportPart reportPart = messageFactory.createAbstractComponentReportReportPart();
         final MdibVersion expectedMdibVersion = MdibVersion.create();
-        mdibVersionUtil.setMdibVersion(expectedMdibVersion, report);
-        report.getReportPart().add(reportPart);
 
         final List<AbstractDeviceComponentState> expectedStates = Arrays.asList(
-                mockEntryFactory.state("1", MdsState.class),
-                mockEntryFactory.state("2", VmdState.class),
-                mockEntryFactory.state("3", ChannelState.class));
+                mockEntryFactory.state("1", MdsState.builder()).build(),
+                mockEntryFactory.state("2", VmdState.builder()).build(),
+                mockEntryFactory.state("3", ChannelState.builder()).build());
 
-        reportPart.getComponentState().addAll(expectedStates);
+        final EpisodicComponentReport.ReportPart reportPart = EpisodicComponentReport.ReportPart.builder()
+                .addComponentState(expectedStates)
+                .build();
 
-        reportWriter.write(report, mdibAccess);
+        final var reportBuilder = EpisodicComponentReport.builder()
+                .withReportPart(reportPart);
+        mdibVersionUtil.setReportMdibVersion(expectedMdibVersion, reportBuilder);
+
+        reportWriter.write(reportBuilder.build(), mdibAccess);
         testStateModifications(expectedMdibVersion, expectedStates, MdibStateModifications.Type.COMPONENT);
     }
 
     @Test
     void writeAlert() throws Exception {
-        final EpisodicAlertReport report = messageFactory.createEpisodicAlertReport();
-        final EpisodicAlertReport.ReportPart reportPart = messageFactory.createAbstractAlertReportReportPart();
         final MdibVersion expectedMdibVersion = MdibVersion.create();
-        mdibVersionUtil.setMdibVersion(expectedMdibVersion, report);
-        report.getReportPart().add(reportPart);
 
         final List<AbstractAlertState> expectedStates = Arrays.asList(
-                mockEntryFactory.state("1", AlertSystemState.class),
-                mockEntryFactory.state("2", AlertConditionState.class),
-                mockEntryFactory.state("3", LimitAlertConditionState.class));
+                mockEntryFactory.state("1", AlertSystemState.builder()).build(),
+                mockEntryFactory.state("2", AlertConditionState.builder()).build(),
+                mockEntryFactory.state("3", LimitAlertConditionState.builder()).build());
 
-        reportPart.getAlertState().addAll(expectedStates);
+        final var reportPart = EpisodicAlertReport.ReportPart.builder()
+            .addAlertState(expectedStates)
+            .build();
 
-        reportWriter.write(report, mdibAccess);
+        final var reportBuilder = EpisodicAlertReport.builder()
+            .withReportPart(reportPart);
+        mdibVersionUtil.setReportMdibVersion(expectedMdibVersion, reportBuilder);
+
+
+        reportWriter.write(reportBuilder.build(), mdibAccess);
         testStateModifications(expectedMdibVersion, expectedStates, MdibStateModifications.Type.ALERT);
     }
 
     @Test
     void writeMetric() throws Exception {
-        final EpisodicMetricReport report = messageFactory.createEpisodicMetricReport();
-        final EpisodicMetricReport.ReportPart reportPart = messageFactory.createAbstractMetricReportReportPart();
         final MdibVersion expectedMdibVersion = MdibVersion.create();
-        mdibVersionUtil.setMdibVersion(expectedMdibVersion, report);
-        report.getReportPart().add(reportPart);
 
         final List<AbstractMetricState> expectedStates = Arrays.asList(
-                mockEntryFactory.state("1", NumericMetricState.class),
-                mockEntryFactory.state("2", EnumStringMetricState.class),
-                mockEntryFactory.state("3", RealTimeSampleArrayMetricState.class));
+                mockEntryFactory.state("1", NumericMetricState.builder()).build(),
+                mockEntryFactory.state("2", EnumStringMetricState.builder()).build(),
+                mockEntryFactory.state("3", RealTimeSampleArrayMetricState.builder()).build());
 
-        reportPart.getMetricState().addAll(expectedStates);
+        final var reportPart = EpisodicMetricReport.ReportPart.builder()
+            .addMetricState(expectedStates)
+            .build();
 
-        reportWriter.write(report, mdibAccess);
+        final var reportBuilder = EpisodicMetricReport.builder()
+            .withReportPart(reportPart);
+        mdibVersionUtil.setReportMdibVersion(expectedMdibVersion, reportBuilder);
+
+        reportWriter.write(reportBuilder.build(), mdibAccess);
         testStateModifications(expectedMdibVersion, expectedStates, MdibStateModifications.Type.METRIC);
     }
 
     @Test
     void writeOperation() throws Exception {
-        final EpisodicOperationalStateReport report = messageFactory.createEpisodicOperationalStateReport();
-        final EpisodicOperationalStateReport.ReportPart reportPart = messageFactory.createAbstractOperationalStateReportReportPart();
         final MdibVersion expectedMdibVersion = MdibVersion.create();
-        mdibVersionUtil.setMdibVersion(expectedMdibVersion, report);
-        report.getReportPart().add(reportPart);
 
         final List<AbstractOperationState> expectedStates = Arrays.asList(
-                mockEntryFactory.state("1", ActivateOperationState.class),
-                mockEntryFactory.state("2", SetStringOperationState.class),
-                mockEntryFactory.state("3", SetContextStateOperationState.class));
+                mockEntryFactory.state("1", ActivateOperationState.builder()).build(),
+                mockEntryFactory.state("2", SetStringOperationState.builder()).build(),
+                mockEntryFactory.state("3", SetContextStateOperationState.builder()).build());
 
-        reportPart.getOperationState().addAll(expectedStates);
+        final var reportPart = EpisodicOperationalStateReport.ReportPart.builder()
+            .addOperationState(expectedStates)
+            .build();
 
-        reportWriter.write(report, mdibAccess);
+        final var reportBuilder = EpisodicOperationalStateReport.builder()
+            .withReportPart(reportPart);
+        mdibVersionUtil.setReportMdibVersion(expectedMdibVersion, reportBuilder);
+
+        reportWriter.write(reportBuilder.build(), mdibAccess);
         testStateModifications(expectedMdibVersion, expectedStates, MdibStateModifications.Type.OPERATION);
     }
 
     @Test
     void writeContext() throws Exception {
-        final EpisodicContextReport report = messageFactory.createEpisodicContextReport();
-        final EpisodicContextReport.ReportPart reportPart = messageFactory.createAbstractContextReportReportPart();
         final MdibVersion expectedMdibVersion = MdibVersion.create();
-        mdibVersionUtil.setMdibVersion(expectedMdibVersion, report);
-        report.getReportPart().add(reportPart);
 
         final List<AbstractContextState> expectedStates = Arrays.asList(
-                mockEntryFactory.state("1", LocationContextState.class),
-                mockEntryFactory.state("2", PatientContextState.class),
-                mockEntryFactory.state("3", EnsembleContextState.class));
+                mockEntryFactory.state("1", LocationContextState.builder()).build(),
+                mockEntryFactory.state("2", PatientContextState.builder()).build(),
+                mockEntryFactory.state("3", EnsembleContextState.builder()).build());
 
-        reportPart.getContextState().addAll(expectedStates);
+        final var reportPart = AbstractContextReport.ReportPart.builder()
+            .addContextState(expectedStates)
+            .build();
 
-        reportWriter.write(report, mdibAccess);
+        final var reportBuilder = EpisodicContextReport.builder()
+            .withReportPart(reportPart);
+        mdibVersionUtil.setReportMdibVersion(expectedMdibVersion, reportBuilder);
+
+        reportWriter.write(reportBuilder.build(), mdibAccess);
         testStateModifications(expectedMdibVersion, expectedStates, MdibStateModifications.Type.CONTEXT);
     }
 
     @Test
     void writeWaveform() throws Exception {
-        final WaveformStream report = messageFactory.createWaveformStream();
         final MdibVersion expectedMdibVersion = MdibVersion.create();
-        mdibVersionUtil.setMdibVersion(expectedMdibVersion, report);
 
         final List<RealTimeSampleArrayMetricState> expectedStates = Arrays.asList(
-                mockEntryFactory.state("1", RealTimeSampleArrayMetricState.class),
-                mockEntryFactory.state("2", RealTimeSampleArrayMetricState.class),
-                mockEntryFactory.state("3", RealTimeSampleArrayMetricState.class));
+                mockEntryFactory.state("1", RealTimeSampleArrayMetricState.builder()).build(),
+                mockEntryFactory.state("2", RealTimeSampleArrayMetricState.builder()).build(),
+                mockEntryFactory.state("3", RealTimeSampleArrayMetricState.builder()).build());
 
-        report.getState().addAll(expectedStates);
+        final var reportBuilder = WaveformStream.builder()
+            .addState(expectedStates);
+        mdibVersionUtil.setReportMdibVersion(expectedMdibVersion, reportBuilder);
 
-        reportWriter.write(report, mdibAccess);
+        reportWriter.write(reportBuilder.build(), mdibAccess);
         testStateModifications(expectedMdibVersion, expectedStates, MdibStateModifications.Type.WAVEFORM);
     }
 

@@ -158,17 +158,17 @@ class ComplexDeviceComponentMapperTest {
     }
 
     private MdsDescriptor createComponent(@Nullable String codingSystem, @Nullable String codingSystemVersion, @Nullable String code) {
-        MdsDescriptor mdsDescriptor = new MdsDescriptor();
-        mdsDescriptor.setType(createCodedValue(codingSystem, codingSystemVersion, code));
-        return mdsDescriptor;
+        return MdsDescriptor.builder()
+            .withType(createCodedValue(codingSystem, codingSystemVersion, code))
+            .build();
     }
 
     private CodedValue createCodedValue(@Nullable String codingSystem, @Nullable String codingSystemVersion, @Nullable String code) {
-        CodedValue codedValue = new CodedValue();
-        codedValue.setCodingSystem(codingSystem);
-        codedValue.setCodingSystemVersion(codingSystemVersion);
-        codedValue.setCode(code);
-        return codedValue;
+        return CodedValue.builder()
+            .withCodingSystem(codingSystem)
+            .withCodingSystemVersion(codingSystemVersion)
+            .withCode(code)
+            .build();
     }
 
     private void compare(CodedValue expectedCodedValue,

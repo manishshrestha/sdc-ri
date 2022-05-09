@@ -107,29 +107,33 @@ class ProviderUtil extends BaseUtil {
     }
 
     private List<LocalizedText> populateLocalizationData() {
-        var codingSystemNameEn = new LocalizedText();
-        codingSystemNameEn.setRef("codingSystemName");
-        codingSystemNameEn.setLang("en");
-        codingSystemNameEn.setVersion(BigInteger.ONE);
-        codingSystemNameEn.setValue("Common Parameter Nomenclature");
+        var codingSystemNameEn = LocalizedText.builder()
+            .withRef("codingSystemName")
+            .withLang("en")
+            .withVersion(BigInteger.ONE)
+            .withValue("Common Parameter Nomenclature")
+            .build();
 
-        var codingSystemNameDe = new LocalizedText();
-        codingSystemNameDe.setRef("codingSystemName");
-        codingSystemNameDe.setLang("de");
-        codingSystemNameDe.setVersion(BigInteger.ONE);
-        codingSystemNameDe.setValue("Allgemeine Parameternomenklatur");
+        var codingSystemNameDe = LocalizedText.builder()
+            .withRef("codingSystemName")
+            .withLang("de")
+            .withVersion(BigInteger.ONE)
+            .withValue("Allgemeine Parameternomenklatur")
+            .build();
 
-        var conceptDescriptionEn = new LocalizedText();
-        conceptDescriptionEn.setRef("conceptDescription");
-        conceptDescriptionEn.setLang("en");
-        conceptDescriptionEn.setVersion(BigInteger.ONE);
-        conceptDescriptionEn.setValue("Concept Description");
+        var conceptDescriptionEn = LocalizedText.builder()
+            .withRef("conceptDescription")
+            .withLang("en")
+            .withVersion(BigInteger.ONE)
+            .withValue("Concept Description")
+            .build();
 
-        var conceptDescriptionDe = new LocalizedText();
-        conceptDescriptionDe.setRef("conceptDescription");
-        conceptDescriptionDe.setLang("de");
-        conceptDescriptionDe.setVersion(BigInteger.ONE);
-        conceptDescriptionDe.setValue("Konzeptbeschreibung");
+        var conceptDescriptionDe = LocalizedText.builder()
+            .withRef("conceptDescription")
+            .withLang("de")
+            .withVersion(BigInteger.ONE)
+            .withValue("Konzeptbeschreibung")
+            .build();
 
         return List.of(codingSystemNameEn, codingSystemNameDe, conceptDescriptionEn, conceptDescriptionDe);
     }

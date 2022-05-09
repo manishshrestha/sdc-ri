@@ -108,7 +108,7 @@ class CommunicationLogIT extends DpwsTest {
         );
 
         var responseEnvelope = createASoapMessage();
-        responseEnvelope.getOriginalEnvelope().getBody().getAny().add(jaxbElement);
+        responseEnvelope.setBody(jaxbElement);
 
         // make bytes out of the expected response
         var expectedResponseStream = new CloseableByteArrayOutputStream();
@@ -530,7 +530,7 @@ class CommunicationLogIT extends DpwsTest {
         );
 
         var responseEnvelope = createASoapMessage();
-        responseEnvelope.getOriginalEnvelope().getBody().getAny().add(jaxbElement);
+        responseEnvelope.setBody(jaxbElement);
 
         // make bytes out of the expected response
         var expectedResponseStream = new CloseableByteArrayOutputStream();

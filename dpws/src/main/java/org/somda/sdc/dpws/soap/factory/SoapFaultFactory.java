@@ -50,35 +50,40 @@ public class SoapFaultFactory {
      */
     public SoapMessage createFault(String actionUri, QName code, QName subcode, String reasonText,
                                    @Nullable Object detail) {
-        Subcode scObj = new Subcode();
-        scObj.setValue(subcode);
+        Subcode scObj = Subcode.builder()
+            .withValue(subcode)
+            .build();
 
-        Faultcode fcObj = new Faultcode();
-        fcObj.setValue(code);
-        fcObj.setSubcode(scObj);
+        Faultcode fcObj = Faultcode.builder()
+            .withValue(code)
+            .withSubcode(scObj)
+            .build();
 
-        Reasontext rtObj = new Reasontext();
-        rtObj.setValue(reasonText);
-        rtObj.setLang("en");
+        Reasontext rtObj = Reasontext.builder()
+            .withValue(reasonText)
+            .withLang("en")
+            .build();
         List<Reasontext> rtListObj = new ArrayList<>();
         rtListObj.add(rtObj);
 
-        Faultreason frObj = new Faultreason();
-        frObj.setText(rtListObj);
+        Faultreason frObj = Faultreason.builder()
+            .withText(rtListObj)
+            .build();
 
-        Fault f = new Fault();
-        f.setCode(fcObj);
-        f.setReason(frObj);
+        var f = Fault.builder()
+            .withCode(fcObj)
+            .withReason(frObj);
 
         if (detail != null) {
             List<Object> anyObjList = new ArrayList<>();
             anyObjList.add(detail);
-            Detail dObj = new Detail();
-            dObj.setAny(anyObjList);
-            f.setDetail(dObj);
+            Detail dObj = Detail.builder()
+                .withAny(anyObjList)
+                .build();
+            f.withDetail(dObj);
         }
 
-        return soapUtil.createMessage(actionUri, soapFactory.createFault(f));
+        return soapUtil.createMessage(actionUri, soapFactory.createFault(f.build()));
     }
 
     /**

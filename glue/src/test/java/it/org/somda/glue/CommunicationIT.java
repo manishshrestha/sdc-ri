@@ -194,9 +194,10 @@ class CommunicationIT {
 
             ReportListenerSpy reportListenerSpy = new ReportListenerSpy();
 
-            SetString setString = new SetString();
-            setString.setOperationHandleRef(VentilatorMdibRunner.HANDLE_SET_MDC_DEV_SYS_PT_VENT_VMD);
-            setString.setRequestedStringValue(VentilatorMdibRunner.VentilatorMode.VENT_MODE_SIMV.getModeValue());
+            var setString = SetString.builder()
+                .withOperationHandleRef(VentilatorMdibRunner.HANDLE_SET_MDC_DEV_SYS_PT_VENT_VMD)
+                .withRequestedStringValue(VentilatorMdibRunner.VentilatorMode.VENT_MODE_SIMV.getModeValue())
+                .build();
             final ListenableFuture<ScoTransaction<SetStringResponse>> scoFuture = sdcRemoteDevice.getSetServiceAccess()
                     .invoke(setString, reportListenerSpy, SetStringResponse.class);
             final ScoTransaction<SetStringResponse> scoTransaction = scoFuture.get(WAIT_IN_SECONDS, WAIT_TIME_UNIT);
@@ -562,12 +563,14 @@ class CommunicationIT {
         }
 
         var soapUtil = IT.getInjector().getInstance(SoapUtil.class);
-        var getDescriptor = new GetDescriptor();
+        var getDescriptor = GetDescriptor.builder()
+                .addHandleRef(List.of(
+                    VentilatorMdibRunner.HANDLE_MDC_DEV_SYS_PT_VENT_MDS,
+                    VentilatorMdibRunner.HANDLE_MDC_VENT_MODE,
+                    VentilatorMdibRunner.HANDLE_MDC_PRESS_AWAY_END_EXP_POS)
+                ).build();
+
         var request = soapUtil.createMessage(ActionConstants.ACTION_GET_DESCRIPTOR, getDescriptor);
-        getDescriptor.getHandleRef().addAll(List.of(
-                VentilatorMdibRunner.HANDLE_MDC_DEV_SYS_PT_VENT_MDS,
-                VentilatorMdibRunner.HANDLE_MDC_VENT_MODE,
-                VentilatorMdibRunner.HANDLE_MDC_PRESS_AWAY_END_EXP_POS));
 
         var response = client.sendRequestResponse(request);
         soapUtil.getBody(response, GetDescriptorResponse.class).orElseThrow(() ->
@@ -577,9 +580,10 @@ class CommunicationIT {
     private ContainmentTree getContainmentTree(RequestResponseClient client, List<String> handles)
             throws InterceptorException, SoapFaultException, MarshallingException, TransportException {
         var soapUtil = IT.getInjector().getInstance(SoapUtil.class);
-        var getContainmentTree = new GetContainmentTree();
+        var getContainmentTree = GetContainmentTree.builder()
+            .addHandleRef(handles)
+            .build();
         var request = soapUtil.createMessage(ActionConstants.ACTION_GET_CONTAINMENT_TREE, getContainmentTree);
-        getContainmentTree.getHandleRef().addAll(handles);
         var response = client.sendRequestResponse(request);
         return soapUtil.getBody(response, GetContainmentTreeResponse.class).orElseThrow(() ->
                 new RuntimeException("Containment tree response was empty")).getContainmentTree();

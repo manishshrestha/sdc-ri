@@ -61,7 +61,7 @@ class ApacheHttpClientTransportBindingFactoryImplIT extends DpwsTest {
         );
 
         var responseEnvelope = createASoapMessage();
-        responseEnvelope.getOriginalEnvelope().getBody().getAny().add(jaxbElement);
+        responseEnvelope.setBody(jaxbElement);
 
         // make bytes out of the expected response
         ByteArrayOutputStream expectedResponseStream = new ByteArrayOutputStream();

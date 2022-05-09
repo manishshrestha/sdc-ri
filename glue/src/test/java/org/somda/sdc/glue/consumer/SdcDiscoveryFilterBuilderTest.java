@@ -18,25 +18,26 @@ class SdcDiscoveryFilterBuilderTest {
 
     @Test
     void addContext() {
-        final InstanceIdentifier identification = new InstanceIdentifier();
-        identification.setExtensionName("an-extension");
-        identification.setRootName("http://a-root");
+        final var identification = InstanceIdentifier.builder()
+            .withExtensionName("an-extension")
+            .withRootName("http://a-root")
+            .build();
 
         {
-            final LocationContextState locationContextState = new LocationContextState();
-            locationContextState.getIdentification().add(identification);
-            locationContextState.setContextAssociation(ContextAssociation.ASSOC);
-            final DiscoveryFilter discoveryFilter = SdcDiscoveryFilterBuilder.create().addContext(locationContextState).get();
+            final var locationContextState = LocationContextState.builder();
+            locationContextState.addIdentification(identification);
+            locationContextState.withContextAssociation(ContextAssociation.ASSOC);
+            final DiscoveryFilter discoveryFilter = SdcDiscoveryFilterBuilder.create().addContext(locationContextState.build()).get();
             assertEquals(2, discoveryFilter.getScopes().size());
             assertEquals(EXPECTED_PKP_SCOPE, Iterables.get(discoveryFilter.getScopes(), 0));
             assertEquals("sdc.ctxt.loc:/http%3A%2F%2Fa-root/an-extension", Iterables.get(discoveryFilter.getScopes(), 1));
         }
 
         {
-            final LocationContextState locationContextState = new LocationContextState();
-            locationContextState.getIdentification().add(identification);
-            locationContextState.setContextAssociation(ContextAssociation.NO);
-            final DiscoveryFilter discoveryFilter = SdcDiscoveryFilterBuilder.create().addContext(locationContextState).get();
+            final var locationContextState = LocationContextState.builder();
+            locationContextState.addIdentification(identification);
+            locationContextState.withContextAssociation(ContextAssociation.NO);
+            final DiscoveryFilter discoveryFilter = SdcDiscoveryFilterBuilder.create().addContext(locationContextState.build()).get();
             assertEquals(1, discoveryFilter.getScopes().size());
             assertEquals(EXPECTED_PKP_SCOPE, Iterables.get(discoveryFilter.getScopes(), 0));
         }
@@ -70,18 +71,16 @@ class SdcDiscoveryFilterBuilderTest {
     private VmdDescriptor createVmd(@Nullable String codingSystem,
                                     @Nullable String codingSystemVersion,
                                     @Nullable String code) {
-        final VmdDescriptor vmdDescriptor = new VmdDescriptor();
-        vmdDescriptor.setType(createCodedValue(codingSystem, codingSystemVersion, code));
-        return vmdDescriptor;
+        return VmdDescriptor.builder()
+            .withType(createCodedValue(codingSystem, codingSystemVersion, code)).build();
     }
 
     private CodedValue createCodedValue(@Nullable String codingSystem,
                                         @Nullable String codingSystemVersion,
                                         @Nullable String code) {
-        final CodedValue codedValue = new CodedValue();
-        codedValue.setCodingSystem(codingSystem);
-        codedValue.setCodingSystemVersion(codingSystemVersion);
-        codedValue.setCode(code);
-        return codedValue;
+        return CodedValue.builder()
+            .withCodingSystem(codingSystem)
+            .withCodingSystemVersion(codingSystemVersion)
+            .withCode(code).build();
     }
 }

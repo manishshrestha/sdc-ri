@@ -2,7 +2,6 @@ package org.somda.sdc.biceps.common.preprocessing;
 
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.somda.sdc.biceps.UnitTestUtil;
-import org.somda.sdc.biceps.common.MdibDescriptionModification;
 import org.somda.sdc.biceps.common.MdibDescriptionModifications;
 import org.somda.sdc.biceps.common.storage.MdibStorage;
 import org.somda.sdc.biceps.common.storage.factory.MdibStorageFactory;
@@ -42,51 +41,49 @@ class TypeConsistencyCheckerTest {
         channel = "channel";
 
         MdibDescriptionModifications modifications = MdibDescriptionModifications.create();
-        modifications.insert(MockModelFactory.createDescriptor(mds, MdsDescriptor.class));
-        modifications.insert(MockModelFactory.createDescriptor(vmd1, VmdDescriptor.class));
-        modifications.insert(MockModelFactory.createDescriptor(channel, ChannelDescriptor.class));
-        mdibStorage.apply(mock(MdibVersion.class), mock(BigInteger.class), mock(BigInteger.class), modifications);
+        modifications.insert(MockModelFactory.createDescriptor(mds, MdsDescriptor.builder()).build());
+        modifications.insert(MockModelFactory.createDescriptor(vmd1, VmdDescriptor.builder()).build());
+        modifications.insert(MockModelFactory.createDescriptor(channel, ChannelDescriptor.builder()).build());
+        mdibStorage.apply(mock(MdibVersion.class), mock(BigInteger.class), mock(BigInteger.class), modifications.getModifications());
     }
 
     @Test
     void missingParent() throws Exception {
         MdibDescriptionModifications modifications = MdibDescriptionModifications.create();
-        modifications.insert(MockModelFactory.createDescriptor("vmd3", VmdDescriptor.class));
+        modifications.insert(MockModelFactory.createDescriptor("vmd3", VmdDescriptor.builder()).build());
         assertThrows(Exception.class, () -> apply(modifications));
     }
 
     @Test
     void mdsWithParent() throws Exception {
         MdibDescriptionModifications modifications = MdibDescriptionModifications.create();
-        modifications.insert(MockModelFactory.createDescriptor("mds", MdsDescriptor.class), "invalid");
+        modifications.insert(MockModelFactory.createDescriptor("mds", MdsDescriptor.builder()).build(), "invalid");
         assertThrows(Exception.class, () -> apply(modifications));
     }
 
     @Test
     void invalidParent() throws Exception {
         MdibDescriptionModifications modifications = MdibDescriptionModifications.create();
-        modifications.insert(MockModelFactory.createDescriptor("vmd", VmdDescriptor.class), "invalid");
+        modifications.insert(MockModelFactory.createDescriptor("vmd", VmdDescriptor.builder()).build(), "invalid");
         assertThrows(Exception.class, () -> apply(modifications));
     }
 
     @Test
     void validParentInMdibStorage() throws Exception {
         MdibDescriptionModifications modifications = MdibDescriptionModifications.create();
-        modifications.insert(MockModelFactory.createDescriptor("metric", NumericMetricDescriptor.class), channel);
+        modifications.insert(MockModelFactory.createDescriptor("metric", NumericMetricDescriptor.builder()).build(), channel);
         assertDoesNotThrow(() -> apply(modifications));
     }
 
     @Test
     void validParentInModifications() throws Exception {
         MdibDescriptionModifications modifications = MdibDescriptionModifications.create();
-        modifications.insert(MockModelFactory.createDescriptor(vmd2, VmdDescriptor.class), mds);
-        modifications.insert(MockModelFactory.createDescriptor("channel", ChannelDescriptor.class), vmd2);
+        modifications.insert(MockModelFactory.createDescriptor(vmd2, VmdDescriptor.builder()).build(), mds);
+        modifications.insert(MockModelFactory.createDescriptor("channel", ChannelDescriptor.builder()).build(), vmd2);
         assertDoesNotThrow(() -> apply(modifications));
     }
 
     private void apply(MdibDescriptionModifications modifications) throws Exception {
-        for (MdibDescriptionModification modification : modifications.getModifications()) {
-            consistencyHandler.process(modifications, modification, mdibStorage);
-        }
+        consistencyHandler.process(modifications.getModifications(), mdibStorage);
     }
 }

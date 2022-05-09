@@ -80,9 +80,9 @@ public class LocalizationServiceProxy implements LocalizationServiceAccess {
 
             var texts = getLocalizedTextFromCache(getLocalizedText);
             if (texts != null && !texts.isEmpty()) {
-                GetLocalizedTextResponse response = new GetLocalizedTextResponse();
-                response.setText(texts);
-                return response;
+                return GetLocalizedTextResponse.builder()
+                    .withText(texts)
+                    .build();
             }
 
             // no texts were found, try to fetch texts directly from Localization service via SOAP
@@ -135,10 +135,10 @@ public class LocalizationServiceProxy implements LocalizationServiceAccess {
 
     private Table<String, String, LocalizedText> fetchLocalizedTextCache(BigInteger version,
                                                                          List<String> lang) throws InvocationException {
-        var request = new GetLocalizedText();
-        request.setVersion(version);
-        request.setLang(lang);
-        var requestMsg = soapUtil.createMessage(ActionConstants.ACTION_GET_LOCALIZED_TEXT, request);
+        var request = GetLocalizedText.builder()
+            .withVersion(version)
+            .withLang(lang);
+        var requestMsg = soapUtil.createMessage(ActionConstants.ACTION_GET_LOCALIZED_TEXT, request.build());
         var response = sendMessage(requestMsg, GetLocalizedTextResponse.class);
         Table<String, String, LocalizedText> localizedTextTable = HashBasedTable.create();
         if (response != null && response.getText() != null && !response.getText().isEmpty()) {
@@ -161,7 +161,9 @@ public class LocalizationServiceProxy implements LocalizationServiceAccess {
      * @return a list of localized text which matches filter criteria
      * @throws InvocationException if localization service is not available or something goes wrong during data fetch.
      */
-    private List<LocalizedText> getLocalizedTextFromCache(GetLocalizedText getLocalizedText) throws InvocationException {
+    private List<LocalizedText> getLocalizedTextFromCache(
+        GetLocalizedText getLocalizedText
+    ) throws InvocationException {
         List<LocalizedText> texts = queryLocalizedTextFromCache(getLocalizedText);
         // text was not found in cache
         if (texts == null || texts.isEmpty()) {

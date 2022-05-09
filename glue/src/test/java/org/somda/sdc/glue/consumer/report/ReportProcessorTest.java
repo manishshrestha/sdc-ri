@@ -191,24 +191,24 @@ class ReportProcessorTest {
     }
 
     private GetContextStatesResponse createContextStatesResponse(MdibVersion mdibVersion) {
-        GetContextStatesResponse response = new GetContextStatesResponse();
+        var responseBuilder = GetContextStatesResponse.builder();
         try {
-            UT.getInjector().getInstance(MdibVersionUtil.class).setMdibVersion(mdibVersion, response);
+            UT.getInjector().getInstance(MdibVersionUtil.class).setResponseMdibVersion(mdibVersion, responseBuilder);
         } catch (Exception e) {
             throw new RuntimeException();
         }
 
-        return response;
+        return responseBuilder.build();
     }
 
     private EpisodicMetricReport createReport(MdibVersion mdibVersion) {
-        EpisodicMetricReport report = new EpisodicMetricReport();
+        var reportBuilder = EpisodicMetricReport.builder();
         try {
-            mdibVersionUtil.setMdibVersion(mdibVersion, report);
+            mdibVersionUtil.setReportMdibVersion(mdibVersion, reportBuilder);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
 
-        return report;
+        return reportBuilder.build();
     }
 }

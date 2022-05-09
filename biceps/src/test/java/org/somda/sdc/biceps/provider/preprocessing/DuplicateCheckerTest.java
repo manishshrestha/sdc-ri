@@ -5,8 +5,6 @@ import org.somda.sdc.biceps.common.MdibDescriptionModifications;
 import org.somda.sdc.biceps.common.MdibEntity;
 import org.somda.sdc.biceps.common.storage.MdibStorage;
 import org.somda.sdc.biceps.model.participant.MdsDescriptor;
-import org.somda.sdc.biceps.provider.preprocessing.DuplicateChecker;
-import org.somda.sdc.biceps.provider.preprocessing.HandleDuplicatedException;
 import org.somda.sdc.biceps.testutil.MockModelFactory;
 import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.Test;
@@ -24,28 +22,33 @@ class DuplicateCheckerTest {
 
         final String expectedNonExistingHandle = "nonExistingHandle";
         final String expectedExistingHandle = "existingHandle";
-        final MdibDescriptionModifications modifications = MdibDescriptionModifications.create()
-                .insert(MockModelFactory.createDescriptor(expectedNonExistingHandle, MdsDescriptor.class))
-                .insert(MockModelFactory.createDescriptor(expectedExistingHandle, MdsDescriptor.class))
-                .update(MockModelFactory.createDescriptor(expectedExistingHandle, MdsDescriptor.class));
-
         final MdibStorage mdibStorage = Mockito.mock(MdibStorage.class);
         Mockito.when(mdibStorage.getEntity(expectedNonExistingHandle)).thenReturn(Optional.empty());
         Mockito.when(mdibStorage.getEntity(expectedExistingHandle)).thenReturn(Optional.of(Mockito.mock(MdibEntity.class)));
 
         // When there is no duplication detected
         // Then expect the detector to continue
-        assertDoesNotThrow(() ->
-                duplicateChecker.process(modifications, modifications.getModifications().get(0), mdibStorage));
-
+        {
+            final MdibDescriptionModifications modifications = MdibDescriptionModifications.create()
+                .insert(MockModelFactory.createDescriptor(expectedNonExistingHandle, MdsDescriptor.builder()).build());
+            assertDoesNotThrow(() ->
+                duplicateChecker.process(modifications.getModifications(), mdibStorage));
+        }
         // When there is a duplication detected
         // Then expect the detector to throw an exception
-        assertThrows(HandleDuplicatedException.class, () ->
-                duplicateChecker.process(modifications, modifications.getModifications().get(1), mdibStorage));
-
+        {
+            final MdibDescriptionModifications modifications = MdibDescriptionModifications.create()
+                .insert(MockModelFactory.createDescriptor(expectedExistingHandle, MdsDescriptor.builder()).build());
+            assertThrows(HandleDuplicatedException.class, () ->
+                duplicateChecker.process(modifications.getModifications(), mdibStorage));
+        }
         // When there is a potential duplicate that is not going to be inserted (updated, deleted)
         // Then expect the detector to continue
-        assertDoesNotThrow(() ->
-                duplicateChecker.process(modifications, modifications.getModifications().get(2), mdibStorage));
+        {
+            final MdibDescriptionModifications modifications = MdibDescriptionModifications.create()
+                .update(MockModelFactory.createDescriptor(expectedExistingHandle, MdsDescriptor.builder()).build());
+            assertDoesNotThrow(() ->
+                duplicateChecker.process(modifications.getModifications(), mdibStorage));
+        }
     }
 }

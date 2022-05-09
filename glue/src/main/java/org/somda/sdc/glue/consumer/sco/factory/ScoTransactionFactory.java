@@ -5,7 +5,6 @@ import com.google.inject.Injector;
 import com.google.inject.assistedinject.Assisted;
 import org.somda.sdc.biceps.model.message.AbstractSetResponse;
 import org.somda.sdc.biceps.model.message.OperationInvokedReport;
-import org.somda.sdc.biceps.common.BicepsModelCloning;
 import org.somda.sdc.glue.consumer.sco.ScoTransactionImpl;
 import org.somda.sdc.glue.consumer.sco.ScoUtil;
 
@@ -20,7 +19,6 @@ public class ScoTransactionFactory {
             @Assisted T response,
             @Assisted @Nullable Consumer<OperationInvokedReport.ReportPart> reportListener) {
         return new ScoTransactionImpl<>(response, reportListener,
-                injector.getInstance(BicepsModelCloning.class),
                 injector.getInstance(ScoUtil.class));
     }
 }

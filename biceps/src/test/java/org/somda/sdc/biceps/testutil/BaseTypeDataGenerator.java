@@ -23,31 +23,28 @@ public class BaseTypeDataGenerator {
     }
 
     public ApprovedJurisdictions approvedJurisdictions() {
-        final ApprovedJurisdictions approvedJurisdictions = participantFactory.createApprovedJurisdictions();
-        approvedJurisdictions.getApprovedJurisdiction().addAll(
+        return ApprovedJurisdictions.builder()
+            .addApprovedJurisdiction(
                 Arrays.asList(instanceIdentifier("approved-jurisdiction1"),
-                        instanceIdentifier("approved-jurisdiction2")));
-        return approvedJurisdictions;
+                    instanceIdentifier("approved-jurisdiction2"))
+            )
+            .build();
     }
 
     public InstanceIdentifier instanceIdentifier(String extension) {
         final String root = "http://test-root";
-        InstanceIdentifier instanceIdentifier = participantFactory.createInstanceIdentifier();
-        instanceIdentifier.setRootName(root);
-        instanceIdentifier.setExtensionName(extension);
-        return instanceIdentifier;
+        var instanceIdentifier = InstanceIdentifier.builder()
+            .withRootName(root)
+            .withExtensionName(extension);
+        return instanceIdentifier.build();
     }
 
-    public <T extends InstanceIdentifier> T instanceIdentifier(String extension, Class<T> type) {
-        try {
-            final String root = "http://test-root";
-            T instanceIdentifier = type.getConstructor().newInstance();
-            instanceIdentifier.setRootName(root);
-            instanceIdentifier.setExtensionName(extension);
-            return instanceIdentifier;
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+    public OperatingJurisdiction operatingJurisdiction(String extension) {
+        final String root = "http://test-root";
+        var instanceIdentifier = OperatingJurisdiction.builder()
+            .withRootName(root)
+            .withExtensionName(extension);
+        return instanceIdentifier.build();
     }
 
     public LocalDateTime localDateTime() {
@@ -56,52 +53,57 @@ public class BaseTypeDataGenerator {
     }
 
     public List<LocalizedText> localizedTexts() {
-        final LocalizedText localizedTextEn = participantFactory.createLocalizedText();
-        final LocalizedText localizedTextDe = participantFactory.createLocalizedText();
+        final var localizedTextEn = LocalizedText.builder()
+            .withLang("en")
+            .withTextWidth(LocalizedTextWidth.M)
+            .withValue("This is a sample LocalizedText with text width M")
+            .build();
 
-        localizedTextEn.setLang("en");
-        localizedTextEn.setTextWidth(LocalizedTextWidth.M);
-        localizedTextEn.setValue("This is a sample LocalizedText with text width M");
-        localizedTextDe.setLang("de");
-        localizedTextDe.setTextWidth(LocalizedTextWidth.L);
-        localizedTextDe.setValue("Dies ist ein Beispiel-LocalizedText mit Textbreite L");
+        final LocalizedText localizedTextDe = LocalizedText.builder()
+            .withLang("de")
+            .withTextWidth(LocalizedTextWidth.L)
+            .withValue("Dies ist ein Beispiel-LocalizedText mit Textbreite L")
+            .build();
 
         return Arrays.asList(localizedTextEn, localizedTextDe);
     }
 
     public List<AbstractDeviceComponentDescriptor.ProductionSpecification> productionSpecifications() {
-        final AbstractDeviceComponentDescriptor.ProductionSpecification ps1 = participantFactory.createAbstractDeviceComponentDescriptorProductionSpecification();
-        final AbstractDeviceComponentDescriptor.ProductionSpecification ps2 = participantFactory.createAbstractDeviceComponentDescriptorProductionSpecification();
+        final var ps1 = AbstractDeviceComponentDescriptor.ProductionSpecification.builder()
+            .withComponentId(instanceIdentifier("component-id1"))
+            .withProductionSpec("production-specification1")
+            .withSpecType(codedValue("production-specification1"))
+            .build();
 
-        ps1.setComponentId(instanceIdentifier("component-id1"));
-        ps1.setProductionSpec("production-specification1");
-        ps1.setSpecType(codedValue("production-specification1"));
-
-        ps2.setComponentId(instanceIdentifier("component-id2"));
-        ps2.setProductionSpec("production-specification2");
-        ps2.setSpecType(codedValue("production-specification2"));
+        final var ps2 = AbstractDeviceComponentDescriptor.ProductionSpecification.builder()
+            .withComponentId(instanceIdentifier("component-id2"))
+            .withProductionSpec("production-specification2")
+            .withSpecType(codedValue("production-specification2"))
+            .build();
 
         return Arrays.asList(ps1, ps2);
     }
 
     public CodedValue codedValue(String codeId) {
-        final CodedValue codedValue = participantFactory.createCodedValue();
-        codedValue.setCode(codeId);
-        codedValue.setCodingSystem("http://test-coding-system");
-        codedValue.setCodingSystemVersion("2019");
-        codedValue.setCodingSystemName(localizedTexts());
-        codedValue.setSymbolicCodeName("SYMBOLIC_NAME_" + codeId.toUpperCase());
-        codedValue.setConceptDescription(localizedTexts());
-        final CodedValue.Translation translation1 = participantFactory.createCodedValueTranslation();
-        translation1.setCode(codeId + "-translation1");
-        translation1.setCodingSystem("http://test-coding-system-translation1");
-        translation1.setCodingSystemVersion("2018");
-        final CodedValue.Translation translation2 = participantFactory.createCodedValueTranslation();
-        translation2.setCode(codeId + "-translation2");
-        translation2.setCodingSystem("http://test-coding-system-translation2");
-        translation2.setCodingSystemVersion("2017");
-        codedValue.setTranslation(Arrays.asList(translation1, translation2));
-        return codedValue;
+        final var translation1 = CodedValue.Translation.builder()
+            .withCode(codeId + "-translation1")
+            .withCodingSystem("http://test-coding-system-translation1")
+            .withCodingSystemVersion("2018");
+        final var translation2 = CodedValue.Translation.builder()
+            .withCode(codeId + "-translation2")
+            .withCodingSystem("http://test-coding-system-translation2")
+            .withCodingSystemVersion("2017");
+
+        final var codedValue = CodedValue.builder()
+            .withCode(codeId)
+            .withCodingSystem("http://test-coding-system")
+            .withCodingSystemVersion("2019")
+            .withCodingSystemName(localizedTexts())
+            .withSymbolicCodeName("SYMBOLIC_NAME_" + codeId.toUpperCase())
+            .withConceptDescription(localizedTexts())
+            .withTranslation(Arrays.asList(translation1.build(), translation2.build()));
+
+        return codedValue.build();
     }
 
     public List<CodedValue> codedValues(String codeId) {
@@ -109,82 +111,82 @@ public class BaseTypeDataGenerator {
     }
 
     public CalibrationInfo calibrationInfo() {
-        final CalibrationInfo calibrationInfo = participantFactory.createCalibrationInfo();
+        final var calibrationInfo = CalibrationInfo.builder();
 
-        final CalibrationInfo.CalibrationDocumentation calibrationDocumentation = participantFactory.createCalibrationInfoCalibrationDocumentation();
-        calibrationDocumentation.setDocumentation(localizedTexts());
+        final var calibrationDocumentation = CalibrationInfo.CalibrationDocumentation.builder()
+            .withDocumentation(localizedTexts());
 
-        final CalibrationInfo.CalibrationDocumentation.CalibrationResult calibrationResult1 = participantFactory.createCalibrationInfoCalibrationDocumentationCalibrationResult();
-        calibrationResult1.setCode(codedValue("calibration-result1"));
-        calibrationResult1.setValue(measurement(BigDecimal.ONE));
-        final CalibrationInfo.CalibrationDocumentation.CalibrationResult calibrationResult2 = participantFactory.createCalibrationInfoCalibrationDocumentationCalibrationResult();
-        calibrationResult2.setCode(codedValue("calibration-result2"));
-        calibrationResult2.setValue(measurement(BigDecimal.TEN));
+        final var calibrationResult1 = CalibrationInfo.CalibrationDocumentation.CalibrationResult.builder()
+            .withCode(codedValue("calibration-result1"))
+            .withValue(measurement(BigDecimal.ONE));
+        final var calibrationResult2 = CalibrationInfo.CalibrationDocumentation.CalibrationResult.builder()
+            .withCode(codedValue("calibration-result2"))
+            .withValue(measurement(BigDecimal.TEN));
 
-        calibrationDocumentation.setCalibrationResult(Arrays.asList(calibrationResult1, calibrationResult2));
-        calibrationInfo.setCalibrationDocumentation(Arrays.asList(calibrationDocumentation));
-        return calibrationInfo;
+        calibrationDocumentation.withCalibrationResult(Arrays.asList(calibrationResult1.build(), calibrationResult2.build()));
+        calibrationInfo.withCalibrationDocumentation(List.of(calibrationDocumentation.build()));
+        return calibrationInfo.build();
     }
 
     public Measurement measurement(BigDecimal value) {
-        final Measurement measurement = participantFactory.createMeasurement();
-        measurement.setMeasuredValue(value);
-        measurement.setMeasurementUnit(codedValue("measurement"));
-        return measurement;
+        final var measurement = Measurement.builder()
+            .withMeasuredValue(value)
+            .withMeasurementUnit(codedValue("measurement"));
+        return measurement.build();
     }
 
     public PhysicalConnectorInfo physicalConnectorInfo() {
-        final PhysicalConnectorInfo physicalConnectorInfo = participantFactory.createPhysicalConnectorInfo();
-        physicalConnectorInfo.setLabel(localizedTexts());
-        physicalConnectorInfo.setNumber(Integer.valueOf(7));
-        return physicalConnectorInfo;
+        final var physicalConnectorInfo = PhysicalConnectorInfo.builder()
+            .withLabel(localizedTexts())
+            .withNumber(7);
+        return physicalConnectorInfo.build();
     }
 
     public PatientDemographicsCoreData patientDemographicsCoreData() {
-        final PatientDemographicsCoreData patientDemographicsCoreData = participantFactory.createPatientDemographicsCoreData();
-        patientDemographicsCoreData.setDateOfBirth("1984-12-23");
-        patientDemographicsCoreData.setHeight(measurement(BigDecimal.valueOf(180)));
-        patientDemographicsCoreData.setPatientType(PatientType.AD);
-        patientDemographicsCoreData.setRace(codedValue("race"));
-        patientDemographicsCoreData.setBirthname("Birthname");
-        patientDemographicsCoreData.setFamilyname("Familyname");
-        patientDemographicsCoreData.setGivenname("Givenname");
-        patientDemographicsCoreData.setMiddlename(Arrays.asList("Middlename"));
-        patientDemographicsCoreData.setSex(Sex.M);
-        patientDemographicsCoreData.setWeight(measurement(BigDecimal.valueOf(80)));
-        patientDemographicsCoreData.setTitle("PhD");
-        return patientDemographicsCoreData;
+        final var patientDemographicsCoreData = PatientDemographicsCoreData.builder()
+            .withDateOfBirth("1984-12-23")
+            .withHeight(measurement(BigDecimal.valueOf(180)))
+            .withPatientType(PatientType.AD)
+            .withRace(codedValue("race"))
+            .withBirthname("Birthname")
+            .withFamilyname("Familyname")
+            .withGivenname("Givenname")
+            .withMiddlename(List.of("Middlename"))
+            .withSex(Sex.M)
+            .withWeight(measurement(BigDecimal.valueOf(80)))
+            .withTitle("PhD");
+        return patientDemographicsCoreData.build();
     }
 
     public LocationDetail locationDetail() {
-        final LocationDetail locationDetail = participantFactory.createLocationDetail();
-        locationDetail.setBed("bed1");
-        locationDetail.setBuilding("building1");
-        locationDetail.setFacility("facility1");
-        locationDetail.setFloor("floor1");
-        locationDetail.setPoC("poc1");
-        locationDetail.setRoom("room1");
-        return locationDetail;
+        final var locationDetail = LocationDetail.builder()
+            .withBed("bed1")
+            .withBuilding("building1")
+            .withFacility("facility1")
+            .withFloor("floor1")
+            .withPoC("poc1")
+            .withRoom("room1");
+        return locationDetail.build();
     }
 
     public SystemSignalActivation systemSignalActivation(AlertSignalManifestation manifestation) {
-        SystemSignalActivation systemSignalActivation = participantFactory.createSystemSignalActivation();
-        systemSignalActivation.setManifestation(manifestation);
-        systemSignalActivation.setState(AlertActivation.ON);
-        return systemSignalActivation;
+        var systemSignalActivation = SystemSignalActivation.builder()
+            .withManifestation(manifestation)
+            .withState(AlertActivation.ON);
+        return systemSignalActivation.build();
     }
 
     public CauseInfo causeInfo() {
-        final CauseInfo causeInfo = participantFactory.createCauseInfo();
-        causeInfo.setDescription(localizedTexts());
-        causeInfo.setRemedyInfo(remedyInfo());
-        return causeInfo;
+        final var causeInfo = CauseInfo.builder()
+            .withDescription(localizedTexts())
+            .withRemedyInfo(remedyInfo());
+        return causeInfo.build();
     }
 
     public RemedyInfo remedyInfo() {
-        final RemedyInfo remedyInfo = participantFactory.createRemedyInfo();
-        remedyInfo.setDescription(localizedTexts());
-        return remedyInfo;
+        final var remedyInfo = RemedyInfo.builder()
+            .withDescription(localizedTexts());
+        return remedyInfo.build();
     }
 
     public Range range() {
@@ -192,22 +194,22 @@ public class BaseTypeDataGenerator {
     }
 
     public Range range(BigDecimal lower, BigDecimal upper) {
-        final Range range = participantFactory.createRange();
-        range.setAbsoluteAccuracy(BigDecimal.ONE);
-        range.setRelativeAccuracy(BigDecimal.ONE);
-        range.setLower(lower);
-        range.setUpper(upper);
-        range.setStepWidth(BigDecimal.ONE);
-        return range;
+        final var range = Range.builder()
+            .withAbsoluteAccuracy(BigDecimal.ONE)
+            .withRelativeAccuracy(BigDecimal.ONE)
+            .withLower(lower)
+            .withUpper(upper)
+            .withStepWidth(BigDecimal.ONE);
+        return range.build();
     }
 
     public AbstractMetricDescriptor.Relation relation(String handle) {
-        AbstractMetricDescriptor.Relation relation = participantFactory.createAbstractMetricDescriptorRelation();
-        relation.setCode(codedValue(handle));
-        relation.setIdentification(instanceIdentifier(handle));
-        relation.setKind(AbstractMetricDescriptor.Relation.Kind.OTH);
-        relation.setEntries(Arrays.asList(handle));
-        return relation;
+        var relation = AbstractMetricDescriptor.Relation.builder()
+            .withCode(codedValue(handle))
+            .withIdentification(instanceIdentifier(handle))
+            .withKind(AbstractMetricDescriptor.Relation.Kind.OTH)
+            .withEntries(List.of(handle));
+        return relation.build();
     }
 
     public List<Range> ranges() {
@@ -215,9 +217,9 @@ public class BaseTypeDataGenerator {
     }
 
     public AbstractMetricValue.Annotation annotation(String codeId) {
-        final AbstractMetricValue.Annotation annotation = participantFactory.createAbstractMetricValueAnnotation();
-        annotation.setType(codedValue(codeId));
-        return annotation;
+        final var annotation = AbstractMetricValue.Annotation.builder()
+            .withType(codedValue(codeId));
+        return annotation.build();
     }
 
     public List<AbstractMetricValue.Annotation> annotations(String codeId) {
@@ -225,53 +227,53 @@ public class BaseTypeDataGenerator {
     }
 
     public AbstractMetricValue.MetricQuality metricQuality() {
-        final AbstractMetricValue.MetricQuality metricQuality = participantFactory.createAbstractMetricValueMetricQuality();
-        metricQuality.setMode(GenerationMode.DEMO);
-        metricQuality.setQi(BigDecimal.ONE);
-        metricQuality.setValidity(MeasurementValidity.VLD);
-        return metricQuality;
+        final var metricQuality = AbstractMetricValue.MetricQuality.builder()
+            .withMode(GenerationMode.DEMO)
+            .withQi(BigDecimal.ONE)
+            .withValidity(MeasurementValidity.VLD);
+        return metricQuality.build();
     }
 
     public EnumStringMetricDescriptor.AllowedValue allowedValue(String value) {
-        final EnumStringMetricDescriptor.AllowedValue allowedValue = participantFactory.createEnumStringMetricDescriptorAllowedValue();
-        allowedValue.setCharacteristic(measurement(BigDecimal.ONE));
-        allowedValue.setIdentification(instanceIdentifier(value + "-identifier"));
-        allowedValue.setType(codedValue(value + "-code"));
-        allowedValue.setValue(value);
-        return allowedValue;
+        final var allowedValue = EnumStringMetricDescriptor.AllowedValue.builder()
+            .withCharacteristic(measurement(BigDecimal.ONE))
+            .withIdentification(instanceIdentifier(value + "-identifier"))
+            .withType(codedValue(value + "-code"))
+            .withValue(value);
+        return allowedValue.build();
     }
 
     public List<SampleArrayValue.ApplyAnnotation> applyAnnotations() {
-        final SampleArrayValue.ApplyAnnotation applyAnnotation = participantFactory.createSampleArrayValueApplyAnnotation();
-        applyAnnotation.setAnnotationIndex(1);
-        applyAnnotation.setSampleIndex(1);
-        return Arrays.asList(applyAnnotation);
+        final var applyAnnotation = SampleArrayValue.ApplyAnnotation.builder()
+            .withAnnotationIndex(1)
+            .withSampleIndex(1);
+        return List.of(applyAnnotation.build());
     }
 
     public ScoState.OperationGroup operationGroup(String code) {
-        ScoState.OperationGroup operationGroup = participantFactory.createScoStateOperationGroup();
-        operationGroup.setOperatingMode(OperatingMode.EN);
-        operationGroup.setOperations(Arrays.asList(Handles.OPERATION_0, Handles.OPERATION_1));
-        operationGroup.setType(codedValue(code));
-        return operationGroup;
+        var operationGroup = ScoState.OperationGroup.builder()
+            .withOperatingMode(OperatingMode.EN)
+            .withOperations(Arrays.asList(Handles.OPERATION_0, Handles.OPERATION_1))
+            .withType(codedValue(code));
+        return operationGroup.build();
     }
 
     public ActivateOperationDescriptor.Argument argument(String code) {
-        ActivateOperationDescriptor.Argument argument = participantFactory.createActivateOperationDescriptorArgument();
-        argument.setArg(new QName("http://argument-uri", "a-type", "a"));
-        argument.setArgName(codedValue(code));
-        return argument;
+        var argument = ActivateOperationDescriptor.Argument.builder()
+            .withArg(new QName("http://argument-uri", "a-type", "a"))
+            .withArgName(codedValue(code));
+        return argument.build();
     }
 
     public Retrievability retrievability(RetrievabilityMethod method) {
-        Retrievability retrievability = messageFactory.createRetrievability();
+        var retrievability = Retrievability.builder();
 
-        RetrievabilityInfo getMethod = messageFactory.createRetrievabilityInfo();
-        getMethod.setMethod(RetrievabilityMethod.GET);
-        RetrievabilityInfo additionalMethod = messageFactory.createRetrievabilityInfo();
-        additionalMethod.setMethod(method);
+        var getMethod = RetrievabilityInfo.builder();
+        getMethod.withMethod(RetrievabilityMethod.GET);
+        var additionalMethod = RetrievabilityInfo.builder();
+        additionalMethod.withMethod(method);
 
-        retrievability.setBy(Arrays.asList(getMethod, additionalMethod));
-        return retrievability;
+        retrievability.addBy(Arrays.asList(getMethod.build(), additionalMethod.build()));
+        return retrievability.build() ;
     }
 }

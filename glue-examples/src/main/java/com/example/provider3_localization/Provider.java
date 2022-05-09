@@ -8,6 +8,7 @@ import org.somda.sdc.biceps.provider.access.factory.LocalMdibAccessFactory;
 import org.somda.sdc.dpws.DpwsFramework;
 import org.somda.sdc.dpws.DpwsUtil;
 import org.somda.sdc.dpws.device.DeviceSettings;
+import org.somda.sdc.dpws.model.ThisDeviceType;
 import org.somda.sdc.dpws.soap.SoapUtil;
 import org.somda.sdc.dpws.soap.wsaddressing.WsAddressingUtil;
 import org.somda.sdc.dpws.soap.wsaddressing.model.EndpointReferenceType;
@@ -89,10 +90,10 @@ public class Provider extends AbstractIdleService {
                         providerUtil.getLocalizationStorage());
 
         DpwsUtil dpwsUtil = injector.getInstance(DpwsUtil.class);
-        var thisDeviceType = dpwsUtil.createDeviceBuilder()
-                .setFriendlyName(dpwsUtil.createLocalizedStrings(
+        var thisDeviceType = ThisDeviceType.builder()
+                .withFriendlyName(dpwsUtil.createLocalizedStrings(
                         "en", "Provider with localization service example").get())
-                .get();
+                .build();
         sdcDevice.getDevice().getHostingServiceAccess().setThisDevice(thisDeviceType);
     }
 

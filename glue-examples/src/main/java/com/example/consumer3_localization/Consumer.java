@@ -282,12 +282,12 @@ public class Consumer extends AbstractIdleService {
         }
 
         private LocalizedText requestTranslation(LocalizedText localizedText) {
-            var request = new GetLocalizedText();
-            request.setVersion(localizedText.getVersion());
-            request.setLang(List.of(localizedText.getLang()));
-            request.setRef(List.of(localizedText.getRef()));
+            var request = GetLocalizedText.builder()
+                .withVersion(localizedText.getVersion())
+                .withLang(List.of(localizedText.getLang()))
+                .withRef(List.of(localizedText.getRef()));
             try {
-                var response = localizationService.getLocalizedText(request).get();
+                var response = localizationService.getLocalizedText(request.build()).get();
                 return response.getText().get(0);
             } catch (InterruptedException | ExecutionException | IndexOutOfBoundsException e) {
                 LOG.warn("Failed to fetch translation for localized text: {}", localizedText.toString(), e);

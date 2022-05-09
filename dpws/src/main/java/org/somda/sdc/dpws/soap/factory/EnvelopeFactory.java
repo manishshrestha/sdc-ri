@@ -36,7 +36,12 @@ public class EnvelopeFactory {
      */
     public Envelope createEnvelope(String wsaAction, @Nullable Object firstBodyChild) {
         Envelope envelope = createEnvelope(firstBodyChild);
-        envelope.getHeader().getAny().add(wsaFactory.createAction(createUri(wsaAction)));
+        envelope = envelope
+            .newCopyBuilder()
+            .withHeader(
+                envelope.getHeader().newCopyBuilder().addAny(wsaFactory.createAction(createUri(wsaAction))).build()
+            )
+            .build();
         return envelope;
     }
 
@@ -50,9 +55,15 @@ public class EnvelopeFactory {
      */
     public Envelope createEnvelope(String wsaAction, String wsaTo, @Nullable Object firstBodyChild) {
         Envelope envelope = createEnvelope(firstBodyChild);
-        envelope.getHeader().getAny().add(wsaFactory.createAction(createUri(wsaAction)));
-        envelope.getHeader().getAny().add(wsaFactory.createTo(createUri(wsaTo)));
-        return envelope;
+
+        return envelope.newCopyBuilder()
+                .withHeader(envelope.getHeader().newCopyBuilder()
+                    .addAny(wsaFactory.createAction(createUri(wsaAction)))
+                    .addAny(wsaFactory.createTo(createUri(wsaTo)))
+                    .build()
+                )
+                .withBody(envelope.getBody())
+            .build();
     }
 
     /**
@@ -64,10 +75,25 @@ public class EnvelopeFactory {
      * @return an {@link Envelope} instance.
      */
     public Envelope createEnvelope(@Nullable Object firstBodyChild) {
-        Envelope envelope = soapFactory.createEnvelope();
-        envelope.setHeader(soapFactory.createHeader());
-        envelope.setBody(soapFactory.createBody());
-        Optional.ofNullable(firstBodyChild).ifPresent(jaxbElement -> envelope.getBody().getAny().add(jaxbElement));
+        return createEnvelopeBuilder(firstBodyChild).build();
+    }
+
+    /**
+     * Creates an envelope with given JAXB body element.
+     * <p>
+     * Any header fields will be left empty.
+     *
+     * @param firstBodyChild the message body.
+     * @return an {@link Envelope} instance.
+     */
+    public Envelope.Builder<?> createEnvelopeBuilder(@Nullable Object firstBodyChild) {
+        var body = soapFactory.createBody();
+        var envelope = Envelope.builder()
+            .withHeader(soapFactory.createHeader())
+            .withBody(body);
+        Optional.ofNullable(firstBodyChild).ifPresent(jaxbElement ->
+            envelope.withBody(body.newCopyBuilder().addAny(jaxbElement).build())
+        );
         return envelope;
     }
 
@@ -85,9 +111,9 @@ public class EnvelopeFactory {
      * @return an {@link Envelope} instance.
      */
     public Envelope createEnvelopeFromBody(Body body) {
-        Envelope envelope = createEnvelope(null);
-        envelope.setBody(body);
-        return envelope;
+        return createEnvelope(null).newCopyBuilder()
+            .withBody(body)
+            .build();
     }
 
     private AttributedURIType createUri(String uri) {

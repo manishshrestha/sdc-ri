@@ -101,10 +101,12 @@ class ScoControllerTest {
         itemIndex++;
         transactionId++;
         {
-            final var contextState1 = new PatientContextState();
-            contextState1.setHandle("TestHandle1");
-            final var contextState2 = new LocationContextState();
-            contextState2.setHandle("TestHandle2");
+            final var contextState1 = PatientContextState.builder()
+                .withHandle("TestHandle1")
+                .build();
+            final var contextState2 = LocationContextState.builder()
+                .withHandle("TestHandle2")
+                .build();
             final var expectedPayload = List.of(contextState1, contextState2);
             scoController.processIncomingSetOperation(operation, instanceIdentifier, expectedPayload);
 
@@ -145,10 +147,12 @@ class ScoControllerTest {
         itemIndex++;
         transactionId++;
         {
-            final var contextState1 = new PatientContextState();
-            contextState1.setHandle("TestHandle1");
-            final var contextState2 = new LocationContextState();
-            contextState2.setHandle("TestHandle2");
+            final var contextState1 = PatientContextState.builder()
+                .withHandle("TestHandle1")
+                .build();
+            final var contextState2 = LocationContextState.builder()
+                .withHandle("TestHandle2")
+                .build();
             final var expectedPayload = List.of(contextState1, contextState2);
             scoController.processIncomingSetOperation(operation, instanceIdentifier, expectedPayload);
 

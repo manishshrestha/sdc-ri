@@ -38,26 +38,28 @@ public class VersionDuplicateHandler implements StatePreprocessingSegment {
     }
 
     @Override
-    public void process(MdibStateModifications modifications, AbstractState modification, MdibStorage storage) {
-        String handle = modification.getDescriptorHandle();
-        final Optional<AbstractMultiState> multiState = typeValidator.toMultiState(modification);
-        if (multiState.isPresent()) {
-            handle = multiState.get().getHandle();
-        }
-
-        final Optional<AbstractState> state = storage.getState(handle);
-        if (state.isEmpty()) {
-            return;
-        }
-
-        // If state version from storage is greater or equal than the one to be updated,
-        // then assume the modification to be outdated => add to skipped states
-        if (impliedValueMapper(state.get().getStateVersion())
-                .compareTo(impliedValueMapper(modification.getStateVersion())) >= 0) {
-            if (omittedStates == null) {
-                omittedStates = new ArrayList<>(modifications.getStates().size());
+    public void process(MdibStateModifications modifications, MdibStorage storage) {
+        for (final AbstractState modification : modifications.getStates()) {
+            String handle = modification.getDescriptorHandle();
+            final Optional<AbstractMultiState> multiState = typeValidator.toMultiState(modification);
+            if (multiState.isPresent()) {
+                handle = multiState.get().getHandle();
             }
-            omittedStates.add(modification);
+
+            final Optional<AbstractState> state = storage.getState(handle);
+            if (state.isEmpty()) {
+                return;
+            }
+
+            // If state version from storage is greater or equal than the one to be updated,
+            // then assume the modification to be outdated => add to skipped states
+            if (impliedValueMapper(state.get().getStateVersion())
+                .compareTo(impliedValueMapper(modification.getStateVersion())) >= 0) {
+                if (omittedStates == null) {
+                    omittedStates = new ArrayList<>(modifications.getStates().size());
+                }
+                omittedStates.add(modification);
+            }
         }
     }
 

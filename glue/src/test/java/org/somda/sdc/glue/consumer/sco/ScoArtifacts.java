@@ -28,30 +28,30 @@ public class ScoArtifacts {
     }
 
     public static OperationInvokedReport createReport(long transactionId, InvocationState invocationState) {
-        OperationInvokedReport report = new OperationInvokedReport();
-        report.getReportPart().add(createReportPart(transactionId, invocationState));
-        return report;
+        return OperationInvokedReport.builder()
+            .addReportPart(createReportPart(transactionId, invocationState))
+            .build();
     }
 
     public static OperationInvokedReport.ReportPart createReportPart(long transactionId, InvocationState invocationState) {
-        OperationInvokedReport.ReportPart reportPart = new OperationInvokedReport.ReportPart();
-        InvocationInfo invocationInfo = new InvocationInfo();
-        invocationInfo.setInvocationState(invocationState);
-        invocationInfo.setTransactionId(transactionId);
-        reportPart.setInvocationInfo(invocationInfo);
-        return reportPart;
+        var invocationInfo = InvocationInfo.builder()
+            .withInvocationState(invocationState)
+            .withTransactionId(transactionId);
+
+        var reportPart = OperationInvokedReport.ReportPart.builder();
+        reportPart.withInvocationInfo(invocationInfo.build());
+        return reportPart.build();
     }
 
-    public static <T extends AbstractSetResponse> T createResponse(long transactionId,
+    public static <T extends AbstractSetResponse.Builder<?>> T createResponse(long transactionId,
                                                                    InvocationState invocationState,
-                                                                   Class<T> responseClass) {
+                                                                   T responseClassBuilder) {
         try {
-            final T response = responseClass.getConstructor().newInstance();
-            InvocationInfo invocationInfo = new InvocationInfo();
-            invocationInfo.setInvocationState(invocationState);
-            invocationInfo.setTransactionId(transactionId);
-            response.setInvocationInfo(invocationInfo);
-            return response;
+            var invocationInfo = InvocationInfo.builder()
+                .withInvocationState(invocationState)
+                .withTransactionId(transactionId);
+
+            return (T) responseClassBuilder.withInvocationInfo(invocationInfo.build());
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

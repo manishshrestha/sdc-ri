@@ -174,45 +174,43 @@ class LocalizationServiceProxyTest {
     }
 
     private GetLocalizedText createRequest(List<String> lang, @Nullable List<String> ref) {
-        var getLocalizedText = new GetLocalizedText();
-        getLocalizedText.setVersion(BigInteger.ONE);
-        getLocalizedText.setLang(lang);
-        getLocalizedText.setRef(ref);
-        return getLocalizedText;
+        return GetLocalizedText.builder()
+            .withVersion(BigInteger.ONE)
+            .withLang(lang)
+            .withRef(ref).build();
     }
 
     private GetLocalizedTextResponse createGetLocalizedTextResponse(List<String> languages, List<String> refs) {
 
-        var text1 = new LocalizedText();
-        text1.setVersion(BigInteger.ONE);
-        text1.setLang("en");
-        text1.setRef("ref1");
+        var text1 = LocalizedText.builder()
+            .withVersion(BigInteger.ONE)
+            .withLang("en")
+            .withRef("ref1").build();
 
-        var text2 = new LocalizedText();
-        text2.setVersion(BigInteger.ONE);
-        text2.setLang("en");
-        text2.setRef("ref2");
+        var text2 = LocalizedText.builder()
+            .withVersion(BigInteger.ONE)
+            .withLang("en")
+            .withRef("ref2").build();
 
-        var text3 = new LocalizedText();
-        text3.setVersion(BigInteger.ONE);
-        text3.setLang("de");
-        text3.setRef("ref1");
+        var text3 = LocalizedText.builder()
+            .withVersion(BigInteger.ONE)
+            .withLang("de")
+            .withRef("ref1").build();
 
-        var response = new GetLocalizedTextResponse();
+        var response = GetLocalizedTextResponse.builder();
         // filter mock texts based on provided languages and ref list
         var texts = Stream.of(text1, text2, text3)
                 .filter(text -> languages.isEmpty() || languages.contains(text.getLang()))
                 .filter(text -> refs.isEmpty() || refs.contains(text.getRef()))
                 .collect(Collectors.toList());
 
-        response.setText(texts);
+        response.withText(texts);
 
-        return response;
+        return response.build();
     }
 
     private GetSupportedLanguagesResponse createSupportedLanguagesResponse() {
-        var response = new GetSupportedLanguagesResponse();
-        response.setLang(List.of("en", "de"));
-        return response;
+        return GetSupportedLanguagesResponse.builder()
+            .withLang(List.of("en", "de")).build();
     }
 }

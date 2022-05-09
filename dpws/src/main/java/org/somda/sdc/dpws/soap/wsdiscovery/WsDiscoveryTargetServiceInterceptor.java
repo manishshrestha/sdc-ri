@@ -129,25 +129,30 @@ public class WsDiscoveryTargetServiceInterceptor implements WsDiscoveryTargetSer
             throw new RuntimeException("Scopes and Types do not match in incoming Probe.");
         }
 
-        ProbeMatchType probeMatchType = wsdFactory.createProbeMatchType();
-        probeMatchType.setEndpointReference(endpointReference);
-        ScopesType scopesType = wsdFactory.createScopesType();
-        scopesType.setValue(copyScopes);
-        probeMatchType.setScopes(scopesType);
-        probeMatchType.setTypes(copyTypes);
-        probeMatchType.setXAddrs(copyXAddrs);
-        probeMatchType.setMetadataVersion(copyMetadataVersion.longValue());
+        ScopesType scopesType = ScopesType.builder()
+            .withValue(copyScopes)
+            .build();
 
-        ProbeMatchesType probeMatchesType = wsdFactory.createProbeMatchesType();
+        ProbeMatchType probeMatchType = ProbeMatchType.builder()
+            .withEndpointReference(endpointReference)
+            .withScopes(scopesType)
+            .withTypes(copyTypes)
+            .withXAddrs(copyXAddrs)
+            .withMetadataVersion(copyMetadataVersion.longValue())
+            .build();
+
         List<ProbeMatchType> probeMatchTypeList = new ArrayList<>();
         probeMatchTypeList.add(probeMatchType);
-        probeMatchesType.setProbeMatch(probeMatchTypeList);
+
+        var probeMatchesType = ProbeMatchesType.builder();
+
+        probeMatchesType.withProbeMatch(probeMatchTypeList);
         SoapMessage probeMatchesMsg = rrObj.getResponse();
         WsAddressingHeader wsaHeader = probeMatchesMsg.getWsAddressingHeader();
         wsaHeader.setAction(wsaUtil.createAttributedURIType(WsDiscoveryConstants.WSA_ACTION_PROBE_MATCHES));
         wsaHeader.setTo(wsaUtil.createAttributedURIType(WsDiscoveryConstants.WSA_UDP_TO));
         probeMatchesMsg.getWsDiscoveryHeader().setAppSequence(wsdUtil.createAppSequence(instanceId));
-        soapUtil.setBody(wsdFactory.createProbeMatches(probeMatchesType), probeMatchesMsg);
+        soapUtil.setBody(wsdFactory.createProbeMatches(probeMatchesType.build()), probeMatchesMsg);
     }
 
     @MessageInterceptor(value = WsDiscoveryConstants.WSA_ACTION_RESOLVE, direction = Direction.REQUEST)
@@ -179,17 +184,21 @@ public class WsDiscoveryTargetServiceInterceptor implements WsDiscoveryTargetSer
             return;
         }
 
-        ResolveMatchType resolveMatchType = wsdFactory.createResolveMatchType();
-        resolveMatchType.setEndpointReference(endpointReference);
-        ScopesType scopesType = wsdFactory.createScopesType();
-        scopesType.setValue(copyScopes);
-        resolveMatchType.setScopes(scopesType);
-        resolveMatchType.setTypes(copyTypes);
-        resolveMatchType.setXAddrs(copyXAddrs);
-        resolveMatchType.setMetadataVersion(copyMetadataVersion.longValue());
+        ScopesType scopesType = ScopesType.builder()
+            .withValue(copyScopes)
+            .build();
 
-        ResolveMatchesType resolveMatchesType = wsdFactory.createResolveMatchesType();
-        resolveMatchesType.setResolveMatch(resolveMatchType);
+        ResolveMatchType resolveMatchType = ResolveMatchType.builder()
+            .withEndpointReference(endpointReference)
+            .withScopes(scopesType)
+            .withTypes(copyTypes)
+            .withXAddrs(copyXAddrs)
+            .withMetadataVersion(copyMetadataVersion.longValue())
+            .build();
+
+        ResolveMatchesType resolveMatchesType = ResolveMatchesType.builder()
+            .withResolveMatch(resolveMatchType)
+            .build();
 
         SoapMessage resolveMatchesMsg = rrObj.getResponse();
         WsAddressingHeader wsaHeader = resolveMatchesMsg.getWsAddressingHeader();
@@ -317,15 +326,19 @@ public class WsDiscoveryTargetServiceInterceptor implements WsDiscoveryTargetSer
             currentMetadataVersion = incMetadataVersionIfModifiedAndGet();
         }
 
-        HelloType helloType = wsdFactory.createHelloType();
-        helloType.setXAddrs(getXAddrs());
-        ScopesType scopesType = wsdFactory.createScopesType();
-        scopesType.setMatchBy(getMatchBy().getUri());
-        scopesType.setValue(getScopes());
-        helloType.setScopes(scopesType);
-        helloType.setTypes(getTypes());
-        helloType.setMetadataVersion(currentMetadataVersion.longValue());
-        helloType.setEndpointReference(getEndpointReference());
+
+        ScopesType scopesType = ScopesType.builder()
+            .withMatchBy(getMatchBy().getUri())
+            .withValue(getScopes())
+            .build();
+
+        HelloType helloType = HelloType.builder()
+            .withXAddrs(getXAddrs())
+            .withScopes(scopesType)
+            .withTypes(getTypes())
+            .withMetadataVersion(currentMetadataVersion.longValue())
+            .withEndpointReference(getEndpointReference())
+            .build();
 
         sendMulticast(WsDiscoveryConstants.WSA_ACTION_HELLO, wsdFactory.createHello(helloType));
         metadataModified.set(false);
@@ -335,14 +348,17 @@ public class WsDiscoveryTargetServiceInterceptor implements WsDiscoveryTargetSer
 
     @Override
     public void sendBye() throws MarshallingException, TransportException, InterceptorException {
-        ByeType byeType = wsdFactory.createByeType();
-        byeType.setXAddrs(getXAddrs());
-        ScopesType scopesType = wsdFactory.createScopesType();
-        scopesType.setMatchBy(getMatchBy().getUri());
-        scopesType.setValue(getScopes());
-        byeType.setScopes(scopesType);
-        byeType.setTypes(getTypes());
-        byeType.setEndpointReference(getEndpointReference());
+        ScopesType scopesType = ScopesType.builder()
+            .withMatchBy(getMatchBy().getUri())
+            .withValue(getScopes())
+            .build();
+
+        ByeType byeType = ByeType.builder()
+            .withXAddrs(getXAddrs())
+            .withScopes(scopesType)
+            .withTypes(getTypes())
+            .withEndpointReference(getEndpointReference())
+            .build();
 
         sendMulticast(WsDiscoveryConstants.WSA_ACTION_BYE, wsdFactory.createBye(byeType));
     }

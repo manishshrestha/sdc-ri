@@ -100,10 +100,11 @@ public class ConsumerIT {
 
         var wsdUtil = consumer.getInjector().getInstance(WsDiscoveryUtil.class);
 
-        var location = new LocationDetail();
-        location.setFacility(targetFacility);
-        location.setBed(targetBed);
-        location.setPoC(targetPoC);
+        var location = LocationDetail.builder()
+            .withFacility(targetFacility)
+            .withBed(targetBed)
+            .withPoC(targetPoC)
+            .build();
 
         var instanceIdentifierOpt = FallbackInstanceIdentifier.create(location);
         assertTrue(instanceIdentifierOpt.isPresent());

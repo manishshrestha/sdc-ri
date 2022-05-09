@@ -125,13 +125,12 @@ public class ProviderUtil extends BaseUtil {
         return injector;
     }
 
-    public static void addMetricQualityDemo(AbstractMetricValue val) {
-        if (val.getMetricQuality() == null) {
-            var qual = new AbstractMetricValue.MetricQuality();
-            qual.setMode(GenerationMode.DEMO);
-            qual.setValidity(MeasurementValidity.VLD);
-            val.setMetricQuality(qual);
-        }
+    public static void addMetricQualityDemo(AbstractMetricValue.Builder<?> val) {
+        var qual = AbstractMetricValue.MetricQuality.builder()
+            .withMode(GenerationMode.DEMO)
+            .withValidity(MeasurementValidity.VLD)
+            .build();
+        val.withMetricQuality(qual);
     }
 
     @Override

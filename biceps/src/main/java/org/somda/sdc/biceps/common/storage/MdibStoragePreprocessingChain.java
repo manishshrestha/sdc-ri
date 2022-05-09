@@ -6,11 +6,8 @@ import org.somda.sdc.biceps.common.MdibDescriptionModification;
 import org.somda.sdc.biceps.common.MdibDescriptionModifications;
 import org.somda.sdc.biceps.common.MdibStateModifications;
 import org.somda.sdc.biceps.common.MdibTypeValidator;
-import org.somda.sdc.biceps.model.participant.AbstractMultiState;
-import org.somda.sdc.biceps.model.participant.AbstractState;
 
 import java.util.List;
-import java.util.Optional;
 
 /**
  * Provides a processing chain that is supposed to be run before any interaction with
@@ -40,33 +37,33 @@ public class MdibStoragePreprocessingChain {
      *
      * @param modifications the modification to pass to the chain segments.
      * @throws PreprocessingException in case a chain segment fails.
+     * @return processed description modifications
      */
-    public void processDescriptionModifications(MdibDescriptionModifications modifications)
+    public List<MdibDescriptionModification> processDescriptionModifications(MdibDescriptionModifications modifications)
             throws PreprocessingException {
-        final List<MdibDescriptionModification> modificationList = modifications.getModifications();
-        int sizeToIterate = modificationList.size();
 
-        descriptionChainSegments.forEach(chainSegment ->
-                chainSegment.beforeFirstModification(modifications, mdibStorage)
-        );
+        // why is there no fold :(
+        List<MdibDescriptionModification> modificationList = modifications.getModifications();
 
-        for (int i = 0; i < sizeToIterate; ++i) {
-            for (DescriptionPreprocessingSegment chainSegment : descriptionChainSegments) {
-                try {
-                    chainSegment.process(modifications, modificationList.get(i), mdibStorage);
-                // CHECKSTYLE.OFF: IllegalCatch
-                } catch (Exception e) {
-                // CHECKSTYLE.ON: IllegalCatch
-                    throw new PreprocessingException(e.getMessage(), e.getCause(),
-                            modificationList.get(i).getHandle(), chainSegment.toString());
-                }
-            }
-            sizeToIterate = modificationList.size();
+        for (final DescriptionPreprocessingSegment descriptionChainSegment : descriptionChainSegments) {
+            modificationList = descriptionChainSegment.beforeFirstModification(modificationList, mdibStorage);
         }
 
-        descriptionChainSegments.forEach(chainSegment ->
-                chainSegment.afterLastModification(modifications, mdibStorage)
-        );
+        for (final DescriptionPreprocessingSegment descriptionChainSegment : descriptionChainSegments) {
+            try {
+                modificationList = descriptionChainSegment.process(modificationList, mdibStorage);
+            // CHECKSTYLE.OFF: IllegalCatch
+            } catch (Exception e) {
+            // CHECKSTYLE.ON: IllegalCatch
+                throw new PreprocessingException(e.getMessage(), e.getCause(), descriptionChainSegment.toString());
+            }
+        }
+
+        for (final DescriptionPreprocessingSegment descriptionChainSegment : descriptionChainSegments) {
+            modificationList = descriptionChainSegment.afterLastModification(modificationList, mdibStorage);
+        }
+
+        return modificationList;
     }
 
     /**
@@ -78,21 +75,13 @@ public class MdibStoragePreprocessingChain {
     public void processStateModifications(MdibStateModifications modifications) throws PreprocessingException {
         stateChainSegments.forEach(chainSegment -> chainSegment.beforeFirstModification(modifications, mdibStorage));
 
-        for (AbstractState modification : modifications.getStates()) {
-            for (StatePreprocessingSegment chainSegment : stateChainSegments) {
-                try {
-                    chainSegment.process(modifications, modification, mdibStorage);
-                // CHECKSTYLE.OFF: IllegalCatch
-                } catch (Exception e) {
-                // CHECKSTYLE.ON: IllegalCatch
-                    final Optional<AbstractMultiState> multiState = typeValidator.toMultiState(modification);
-                    String handle = modification.getDescriptorHandle();
-                    if (multiState.isPresent()) {
-                        handle = multiState.get().getHandle();
-                    }
-
-                    throw new PreprocessingException(e.getMessage(), e.getCause(), handle, chainSegment.toString());
-                }
+        for (StatePreprocessingSegment chainSegment : stateChainSegments) {
+            try {
+                chainSegment.process(modifications, mdibStorage);
+            // CHECKSTYLE.OFF: IllegalCatch
+            } catch (Exception e) {
+            // CHECKSTYLE.ON: IllegalCatch
+                throw new PreprocessingException(e.getMessage(), e.getCause(), chainSegment.toString());
             }
         }
 

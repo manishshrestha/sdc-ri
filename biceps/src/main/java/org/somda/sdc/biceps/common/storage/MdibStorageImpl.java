@@ -232,6 +232,13 @@ public class MdibStorageImpl implements MdibStorage {
     }
 
     @Override
+    public Optional<AbstractContextState> getContextState(final String stateHandle) {
+        return Optional.ofNullable(
+            contextStates.get(stateHandle)
+        );
+    }
+
+    @Override
     public <T extends AbstractContextState> List<T> findContextStatesByType(Class<T> stateClass) {
         var result = new ArrayList<T>();
         contextStates.forEach((handle, state) -> {
@@ -246,7 +253,7 @@ public class MdibStorageImpl implements MdibStorage {
     public WriteDescriptionResult apply(MdibVersion mdibVersion,
                                         @Nullable BigInteger mdDescriptionVersion,
                                         @Nullable BigInteger mdStateVersion,
-                                        MdibDescriptionModifications descriptionModifications) {
+                                        List<MdibDescriptionModification> descriptionModifications) {
         this.mdibVersion = mdibVersion;
         Optional.ofNullable(mdDescriptionVersion).ifPresent(version -> this.mdDescriptionVersion = version);
         Optional.ofNullable(mdDescriptionVersion).ifPresent(version -> this.mdStateVersion = version);
@@ -256,7 +263,7 @@ public class MdibStorageImpl implements MdibStorage {
         final List<MdibEntity> deletedEntities = new ArrayList<>();
 
         var updatedParentEntitiesDueToInsert = new ArrayList<String>();
-        for (var modification : descriptionModifications.getModifications()) {
+        for (var modification : descriptionModifications) {
             var sanitizedStates = removeNotAssociatedContextStates(modification.getStates());
             switch (modification.getModificationType()) {
                 case INSERT:
@@ -461,7 +468,7 @@ public class MdibStorageImpl implements MdibStorage {
                 }
 
                 // this will insert states even if no descriptor/MDIB entity exists
-                // to be used in remote MDIBS in case
+                // to be used in remote MDIBs in case
                 if (descriptionModifications == null) {
                     if (allowStatesWithoutDescriptors) {
                         descriptionModifications = MdibDescriptionModifications.create();
@@ -491,9 +498,13 @@ public class MdibStorageImpl implements MdibStorage {
                     instanceLogger.trace("Ignore modification", e);
                     continue;
                 }
-                descr.setHandle(modification.getDescriptorHandle());
-                descr.setDescriptorVersion(BigInteger.valueOf(-1));
-                descriptionModifications.insert(descr, modification);
+                descriptionModifications.insert(
+                    descr.newCopyBuilder()
+                        .withHandle(modification.getDescriptorHandle())
+                        .withDescriptorVersion(BigInteger.valueOf(-1))
+                        .build(),
+                    modification
+                );
             } else {
                 mdibEntity
                         .doIfSingleState(state -> {
@@ -554,7 +565,7 @@ public class MdibStorageImpl implements MdibStorage {
         // Only relevant to remote MDIBs where entities need to be present even if only states are subscribed
         // (an unlikely use-case, but should be supported nevertheless)
         if (descriptionModifications != null) {
-            apply(mdibVersion, null, null, descriptionModifications);
+            apply(mdibVersion, null, null, descriptionModifications.getModifications());
         }
 
         return new WriteStateResult(mdibVersion, modifiedStates);

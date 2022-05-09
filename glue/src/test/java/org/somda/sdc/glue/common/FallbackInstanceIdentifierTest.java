@@ -73,13 +73,14 @@ class FallbackInstanceIdentifierTest {
                                                 @Nullable String poc,
                                                 @Nullable String room,
                                                 @Nullable String bed) {
-        LocationDetail locationDetail = new LocationDetail();
-        locationDetail.setFacility(facility);
-        locationDetail.setBuilding(building);
-        locationDetail.setFloor(floor);
-        locationDetail.setPoC(poc);
-        locationDetail.setRoom(room);
-        locationDetail.setBed(bed);
+        LocationDetail locationDetail = LocationDetail.builder()
+            .withFacility(facility)
+            .withBuilding(building)
+            .withFloor(floor)
+            .withPoC(poc)
+            .withRoom(room)
+            .withBed(bed)
+            .build();
         return FallbackInstanceIdentifier.create(locationDetail);
     }
 }

@@ -100,86 +100,106 @@ public class ModificationsBuilder {
     }
 
     private void build(MdsDescriptor mds) {
-        insert(mds, null);
+        insert(
+            mds.newCopyBuilder()
+                .withAlertSystem(null)
+                .withSco(null)
+                .withSystemContext(null)
+                .withClock(null)
+                .withBattery()
+                .withVmd()
+                .build(),
+            null
+        );
 
         // Order of insertion shall be the same as the order from the MDIB XML Schema
         build(mds.getAlertSystem(), mds);
-        mds.setAlertSystem(null);
         build(mds.getSco(), mds);
-        mds.setSco(null);
         build(mds.getSystemContext(), mds);
-        mds.setSystemContext(null);
         buildLeaf(mds.getClock(), mds);
-        mds.setClock(null);
         mds.getBattery().forEach(descr -> buildLeaf(descr, mds));
-        mds.setBattery(null);
         mds.getVmd().forEach(descr -> build(descr, mds));
-        mds.setVmd(null);
     }
 
     private void build(@Nullable ScoDescriptor sco, AbstractDescriptor parent) {
         if (sco == null) {
             return;
         }
-        insert(sco, parent);
+        insert(sco.newCopyBuilder().withOperation().build(), parent);
 
         sco.getOperation().forEach(descriptor -> buildLeaf(descriptor, sco));
-        sco.setOperation(null);
     }
 
     private void build(@Nullable SystemContextDescriptor systemContext, AbstractDescriptor parent) {
         if (systemContext == null) {
             return;
         }
-        insert(systemContext, parent);
+        insert(
+            systemContext
+                .newCopyBuilder()
+                .withLocationContext(null)
+                .withPatientContext(null)
+                .withEnsembleContext()
+                .withWorkflowContext()
+                .withOperatorContext()
+                .withMeansContext()
+                .build(),
+            parent
+        );
 
         buildMultiStateLeaf(systemContext.getLocationContext(), systemContext);
-        systemContext.setLocationContext(null);
         buildMultiStateLeaf(systemContext.getPatientContext(), systemContext);
-        systemContext.setPatientContext(null);
         systemContext.getEnsembleContext().forEach(descr -> buildMultiStateLeaf(descr, systemContext));
-        systemContext.setEnsembleContext(null);
         systemContext.getWorkflowContext().forEach(descr -> buildMultiStateLeaf(descr, systemContext));
-        systemContext.setWorkflowContext(null);
         systemContext.getOperatorContext().forEach(descr -> buildMultiStateLeaf(descr, systemContext));
-        systemContext.setOperatorContext(null);
         systemContext.getMeansContext().forEach(descr -> buildMultiStateLeaf(descr, systemContext));
-        systemContext.setMeansContext(null);
     }
 
     private void build(@Nullable AlertSystemDescriptor alertSystem, AbstractDescriptor parent) {
         if (alertSystem == null) {
             return;
         }
-        insert(alertSystem, parent);
+        insert(
+            alertSystem.newCopyBuilder()
+                .withAlertCondition()
+                .withAlertSignal()
+                .build(),
+            parent
+        );
 
         alertSystem.getAlertCondition().forEach(descr -> buildLeaf(descr, alertSystem));
-        alertSystem.setAlertCondition(null);
         alertSystem.getAlertSignal().forEach(descr -> buildLeaf(descr, alertSystem));
-        alertSystem.setAlertSignal(null);
     }
 
     private void build(@Nullable VmdDescriptor vmd, AbstractDescriptor parent) {
         if (vmd == null) {
             return;
         }
-        insert(vmd, parent);
+        insert(
+            vmd.newCopyBuilder()
+                .withSco(null)
+                .withAlertSystem(null)
+                .withChannel()
+                .build(),
+            parent
+        );
 
         build(vmd.getSco(), vmd);
-        vmd.setSco(null);
         build(vmd.getAlertSystem(), vmd);
-        vmd.setAlertSystem(null);
         vmd.getChannel().forEach(descr -> build(descr, vmd));
-        vmd.setChannel(null);
     }
 
     private void build(@Nullable ChannelDescriptor channel, AbstractDescriptor parent) {
         if (channel == null) {
             return;
         }
-        insert(channel, parent);
+        insert(
+            channel.newCopyBuilder()
+                .withMetric()
+                .build(),
+            parent
+        );
         channel.getMetric().forEach(descr -> buildLeaf(descr, channel));
-        channel.setMetric(null);
     }
 
     private <T extends AbstractDescriptor> void buildLeaf(@Nullable T descriptor, AbstractDescriptor parent) {
@@ -200,8 +220,7 @@ public class ModificationsBuilder {
             if (createSingleStateIfMissing) {
                 try {
                     var state = typeValidator.resolveStateType(descriptor.getClass()).getConstructor().newInstance();
-                    defaultStateValuesDispatcher.dispatchDefaultStateValues(state);
-                    return state;
+                    return defaultStateValuesDispatcher.dispatchDefaultStateValues(state);
                 } catch (Exception e) {
                     instanceLogger.warn(
                             "Could not create state for {} with handle {}",

@@ -53,8 +53,7 @@ public class SoapUtil {
      * @param dest    SOAP message to store {@code element} in.
      */
     public <T> void setBody(T element, SoapMessage dest) {
-        dest.getOriginalEnvelope().getBody().getAny().clear();
-        dest.getOriginalEnvelope().getBody().getAny().add(element);
+        dest.setBody(element);
     }
 
     /**

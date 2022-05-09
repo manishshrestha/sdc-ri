@@ -76,10 +76,13 @@ class WsDiscoveryDiscoveryAccessInterceptorTest extends DpwsTest {
         soapUtil = getInjector().getInstance(SoapUtil.class);
 
         ObjectFactory wsaFactory = getInjector().getInstance(ObjectFactory.class);
-        EndpointReferenceType expectedEpr = wsaFactory.createEndpointReferenceType();
-        AttributedURIType eprUri = wsaFactory.createAttributedURIType();
-        eprUri.setValue("http://expectedEpr-uri");
-        expectedEpr.setAddress(eprUri);
+        AttributedURIType eprUri = AttributedURIType.builder()
+            .withValue("http://expectedEpr-uri")
+            .build();
+
+        EndpointReferenceType expectedEpr = EndpointReferenceType.builder()
+            .withAddress(eprUri)
+            .build();
 
         wsDiscoveryTargetService = wsdTargetServiceFactory.createWsDiscoveryTargetService(expectedEpr,
                 notificationSource);

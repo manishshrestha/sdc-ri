@@ -106,11 +106,13 @@ class WsDiscoveryClientInterceptorTest extends DpwsTest {
         expectedScopes = new ArrayList<>();
         expectedScopes.add(expectedScope);
 
-        ObjectFactory wsaFactory = getInjector().getInstance(ObjectFactory.class);
-        expectedEpr = wsaFactory.createEndpointReferenceType();
-        AttributedURIType eprUri = wsaFactory.createAttributedURIType();
-        eprUri.setValue("http://expectedEpr-uri");
-        expectedEpr.setAddress(eprUri);
+        AttributedURIType eprUri = AttributedURIType.builder()
+            .withValue("http://expectedEpr-uri")
+            .build();
+
+        expectedEpr = EndpointReferenceType.builder()
+            .withAddress(eprUri)
+            .build();
 
         wsdFactory = getInjector().getInstance(org.somda.sdc.dpws.soap.wsdiscovery.model.ObjectFactory.class);
         envelopeFactory = getInjector().getInstance(EnvelopeFactory.class);
@@ -200,8 +202,8 @@ class WsDiscoveryClientInterceptorTest extends DpwsTest {
 
     private SoapMessage createResolveMatches(SoapMessage msg) {
         ResolveMatchType resolveMatchType = wsdFactory.createResolveMatchType();
-        ResolveMatchesType resolveMatchesType = wsdFactory.createResolveMatchesType();
-        resolveMatchesType.setResolveMatch(resolveMatchType);
+        ResolveMatchesType resolveMatchesType = ResolveMatchesType.builder()
+            .withResolveMatch(resolveMatchType).build();
 
         Envelope env = envelopeFactory.createEnvelope(WsDiscoveryConstants.WSA_ACTION_RESOLVE_MATCHES,
                 WsDiscoveryConstants.WSA_UDP_TO, wsdFactory.createResolveMatches(resolveMatchesType));
@@ -214,10 +216,11 @@ class WsDiscoveryClientInterceptorTest extends DpwsTest {
 
     private SoapMessage createProbeMatches(SoapMessage msg) {
         ProbeMatchType probeMatchType = wsdFactory.createProbeMatchType();
-        ProbeMatchesType probeMatchesType = wsdFactory.createProbeMatchesType();
         List<ProbeMatchType> probeMatchTypes = new ArrayList<>();
         probeMatchTypes.add(probeMatchType);
-        probeMatchesType.setProbeMatch(probeMatchTypes);
+
+        ProbeMatchesType probeMatchesType = ProbeMatchesType.builder()
+            .withProbeMatch(probeMatchTypes).build();
 
         Envelope env = envelopeFactory.createEnvelope(WsDiscoveryConstants.WSA_ACTION_PROBE_MATCHES,
                 WsDiscoveryConstants.WSA_UDP_TO, wsdFactory.createProbeMatches(probeMatchesType));

@@ -55,11 +55,14 @@ class JaxbSoapMarshallingTest extends DpwsTest {
     @Test
     void marshallCompositeSoapMessage() throws JAXBException, IOException {
         ObjectFactory wsdFactory = getInjector().getInstance(ObjectFactory.class);
-        HelloType helloType = wsdFactory.createHelloType();
+
         List<String> xAddrs = new ArrayList<>();
         xAddrs.add("http://test-xAddr1");
         xAddrs.add("http://test-xAddr2");
-        helloType.setXAddrs(xAddrs);
+
+        HelloType helloType = HelloType.builder()
+            .withXAddrs(xAddrs)
+            .build();
         JAXBElement<HelloType> expectedHello = wsdFactory.createHello(helloType);
 
         EnvelopeFactory envelopeFactory = getInjector().getInstance(EnvelopeFactory.class);

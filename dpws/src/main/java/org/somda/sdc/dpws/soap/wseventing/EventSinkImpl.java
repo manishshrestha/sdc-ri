@@ -151,35 +151,28 @@ public class EventSinkImpl implements EventSink {
 
             // Create subscribe body, include formerly created end-to and notify-to endpoint addresses
             // Populate rest of the request
-            Subscribe subscribeBody = wseFactory.createSubscribe();
+            var subscribeBody = Subscribe.builder();
 
-            DeliveryType deliveryType = wseFactory.createDeliveryType();
-            deliveryType.setMode(WsEventingConstants.SUPPORTED_DELIVERY_MODE);
+            var deliveryType = DeliveryType.builder()
+                .withMode(WsEventingConstants.SUPPORTED_DELIVERY_MODE);
 
             EndpointReferenceType notifyToEpr = wsaUtil.createEprWithAddress(notifyToUri);
-            deliveryType.setContent(Collections.singletonList(wseFactory.createNotifyTo(notifyToEpr)));
-            subscribeBody.setDelivery(deliveryType);
+            deliveryType.withContent(Collections.singletonList(wseFactory.createNotifyTo(notifyToEpr)));
+
+            subscribeBody.withDelivery(deliveryType.build());
 
             EndpointReferenceType endToEpr = wsaUtil.createEprWithAddress(endToUri);
-            subscribeBody.setEndTo(endToEpr);
+            subscribeBody.withEndTo(endToEpr);
 
-            FilterType filterType = wseFactory.createFilterType();
-            filterType.setDialect(DpwsConstants.WS_EVENTING_SUPPORTED_DIALECT);
-            filterType.setContent(Collections.singletonList(implodeUriList(actions)));
+            var filterType = FilterType.builder()
+                .withDialect(DpwsConstants.WS_EVENTING_SUPPORTED_DIALECT)
+                .withContent(Collections.singletonList(implodeUriList(actions)));
 
-            subscribeBody.setExpires(expires);
-
-            subscribeBody.setFilter(filterType);
+            subscribeBody.withExpires(expires)
+                .withFilter(filterType.build());
 
             SoapMessage subscribeRequest = soapUtil.createMessage(WsEventingConstants.WSA_ACTION_SUBSCRIBE,
-                    subscribeBody);
-
-            // Create client to send request
-            // // TODO: 19.01.2017
-            //HostedServiceTransportBinding hsTb = hostedServiceTransportBindingFactory
-            // .createHostedServiceTransportBinding(hostedServiceProxy);
-            //hostedServiceProxy.registerMetadataChangeObserver(hsTb);
-            //RequestResponseClient hostedServiceClient = resReqClientFactory.createRequestResponseClient(hsTb);
+                    subscribeBody.build());
 
             SoapMessage soapResponse = requestResponseClient.sendRequestResponse(subscribeRequest);
             SubscribeResponse responseBody = soapUtil.getBody(soapResponse, SubscribeResponse.class).orElseThrow(() ->
@@ -223,8 +216,8 @@ public class EventSinkImpl implements EventSink {
                     getSubscriptionRequestResponseClient(subscriptionId);
 
             // Create new request body
-            Renew renew = wseFactory.createRenew();
-            renew.setExpires(expires);
+            Renew renew = Renew.builder()
+                .withExpires(expires).build();
             String subManAddress = wsaUtil.getAddressUri(subMan.getSubscriptionManagerEpr()).orElseThrow(() ->
                     new RuntimeException("No subscription manager EPR found"));
 

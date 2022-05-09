@@ -52,17 +52,17 @@ class DuplicateContextStateHandleHandlerTest {
         locationContextDescriptorHandle = "locationContextDescriptor";
 
         initialPatientContextState = MockModelFactory.createContextState(contextStateHandle,
-                patientContextDescriptorHandle, PatientContextState.class);
+                patientContextDescriptorHandle, PatientContextState.builder()).build();
         patientContextStateGoodModification = MockModelFactory.createContextState(contextStateHandle,
-                patientContextDescriptorHandle, PatientContextState.class);
+                patientContextDescriptorHandle, PatientContextState.builder()).build();
         patientContextStateBadModification = MockModelFactory.createContextState(contextStateHandle,
-                patientContextDescriptor2Handle, PatientContextState.class);
+                patientContextDescriptor2Handle, PatientContextState.builder()).build();
 
         // not really bad, but with the same state handle as the patientContextState
         locationContextStateBadInitial = MockModelFactory.createContextState(contextStateHandle,
-                locationContextDescriptorHandle, LocationContextState.class);
+                locationContextDescriptorHandle, LocationContextState.builder()).build();
         locationContextStateBadModification = MockModelFactory.createContextState(contextStateHandle,
-                locationContextDescriptorHandle, LocationContextState.class);
+                locationContextDescriptorHandle, LocationContextState.builder()).build();
     }
 
     @Test
@@ -114,9 +114,7 @@ class DuplicateContextStateHandleHandlerTest {
 
     private void apply(MdibStateModifications modifications) throws DuplicateContextStateHandleException {
         duplicateContextStateHandleHandler.beforeFirstModification(modifications, mdibStorage);
-        for (var state : modifications.getStates()) {
-            duplicateContextStateHandleHandler.process(modifications, state, mdibStorage);
-        }
+        duplicateContextStateHandleHandler.process(modifications, mdibStorage);
         duplicateContextStateHandleHandler.afterLastModification(modifications, mdibStorage);
     }
 }

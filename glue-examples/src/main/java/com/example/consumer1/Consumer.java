@@ -148,17 +148,16 @@ public class Consumer {
             throws ExecutionException, InterruptedException, TimeoutException {
         LOG.info("Invoking Activate for handle {} with arguments {}", handle, args);
 
-        Activate activate = new Activate();
-        List<Activate.Argument> argumentList = args.stream().map(x -> {
-            var arg = new Activate.Argument();
-            arg.setArgValue(x);
-            return arg;
-        }).collect(Collectors.toList());
-        activate.setArgument(argumentList);
-        activate.setOperationHandleRef(handle);
+        List<Activate.Argument> argumentList = args.stream().map(x ->
+            Activate.Argument.builder()
+            .withArgValue(x)
+            .build()).collect(Collectors.toList());
+        var activateBuilder = Activate.builder()
+            .withArgument(argumentList)
+            .withOperationHandleRef(handle);
 
         final ListenableFuture<ScoTransaction<ActivateResponse>> activateFuture = setServiceAccess
-                .invoke(activate, ActivateResponse.class);
+                .invoke(activateBuilder.build(), ActivateResponse.class);
         ScoTransaction<ActivateResponse> activateResponse = activateFuture.get(MAX_WAIT_SEC, TimeUnit.SECONDS);
         List<OperationInvokedReport.ReportPart> reportParts =
                 activateResponse.waitForFinalReport(Duration.ofSeconds(5));
@@ -181,9 +180,10 @@ public class Consumer {
     static InvocationState invokeSetValue(SetServiceAccess setServiceAccess, String handle, BigDecimal value)
             throws ExecutionException, InterruptedException, TimeoutException {
         LOG.info("Invoking SetValue for handle {} with value {}", handle, value);
-        SetValue setValue = new SetValue();
-        setValue.setOperationHandleRef(handle);
-        setValue.setRequestedNumericValue(value);
+        SetValue setValue = SetValue.builder()
+            .withOperationHandleRef(handle)
+            .withRequestedNumericValue(value)
+            .build();
 
         final ListenableFuture<ScoTransaction<SetValueResponse>> setValueFuture = setServiceAccess
                 .invoke(setValue, SetValueResponse.class);
@@ -209,9 +209,10 @@ public class Consumer {
     static InvocationState invokeSetString(SetServiceAccess setServiceAccess, String handle, String value)
             throws ExecutionException, InterruptedException, TimeoutException {
         LOG.info("Invoking SetString for handle {} with value {}", handle, value);
-        SetString setString = new SetString();
-        setString.setOperationHandleRef(handle);
-        setString.setRequestedStringValue(value);
+        SetString setString = SetString.builder()
+            .withOperationHandleRef(handle)
+            .withRequestedStringValue(value)
+            .build();
 
         final ListenableFuture<ScoTransaction<SetStringResponse>> setStringFuture = setServiceAccess
                 .invoke(setString, SetStringResponse.class);

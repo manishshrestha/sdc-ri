@@ -7,8 +7,8 @@ import org.somda.sdc.biceps.model.message.AbstractSetResponse;
 import org.somda.sdc.biceps.model.message.InvocationState;
 import org.somda.sdc.biceps.model.message.OperationInvokedReport;
 import org.somda.sdc.biceps.model.message.SetValueResponse;
-import org.somda.sdc.dpws.ThisDeviceBuilder;
-import org.somda.sdc.dpws.ThisModelBuilder;
+import org.somda.sdc.dpws.model.ThisDeviceType;
+import org.somda.sdc.dpws.model.ThisModelType;
 import org.somda.sdc.dpws.service.HostingServiceProxy;
 import org.somda.sdc.dpws.service.factory.HostingServiceFactory;
 import org.somda.sdc.dpws.soap.RequestResponseClient;
@@ -35,8 +35,8 @@ class OperationInvocationDispatcherTest {
         hostingServiceProxy = UT.getInjector().getInstance(HostingServiceFactory.class).createHostingServiceProxy(
                 "urn:uuid:441dfbea-40e5-406e-b2c4-154d3b8430bf",
                 Collections.emptyList(),
-                UT.getInjector().getInstance(ThisDeviceBuilder.class).get(),
-                UT.getInjector().getInstance(ThisModelBuilder.class).get(),
+                ThisDeviceType.builder().build(),
+                ThisModelType.builder().build(),
                 Collections.emptyMap(),
                 0,
                 mock(RequestResponseClient.class),
@@ -81,14 +81,16 @@ class OperationInvocationDispatcherTest {
     void dispatchReportWithMultipleReportParts() {
         final List<ScoTransactionImpl<? extends AbstractSetResponse>> transactions = new ArrayList<>();
         long maxReports = 5;
-        OperationInvokedReport report = new OperationInvokedReport();
+        var reportBuilder = OperationInvokedReport.builder();
         for (long i = 0; i < maxReports; ++i) {
             ScoTransactionImpl<SetValueResponse> transaction = (ScoTransactionImpl<SetValueResponse>) mock(ScoTransactionImpl.class);
             when(transaction.getTransactionId()).thenReturn(i);
             transactions.add(transaction);
-            report.getReportPart().add(ScoArtifacts.createReportPart(i, InvocationState.FIN));
+            reportBuilder.addReportPart(ScoArtifacts.createReportPart(i, InvocationState.FIN));
             dispatcher.registerTransaction(transaction);
         }
+
+        var report = reportBuilder.build();
 
         dispatcher.dispatchReport(report);
 

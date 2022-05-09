@@ -69,10 +69,10 @@ public class WsDiscoveryUtil {
      */
     public AppSequenceType createAppSequence(UnsignedInteger instanceId) {
         UnsignedInteger messageId = UnsignedInteger.valueOf(messageIdCounter.addAndGet(1));
-        AppSequenceType appSequence = wsdFactory.createAppSequenceType();
-        appSequence.setInstanceId(instanceId.longValue());
-        appSequence.setMessageNumber(messageId.longValue());
-        return appSequence;
+        return AppSequenceType.builder()
+            .withInstanceId(instanceId.longValue())
+            .withMessageNumber(messageId.longValue())
+            .build();
     }
 
     private <T> boolean isMatching(List<T> superset, List<T> subset, Comparator<T> comp) {

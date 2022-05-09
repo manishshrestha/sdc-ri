@@ -14,13 +14,9 @@ class RequiredDefaultStateValuesTest {
     void requiredValuesPopulated() throws Exception {
         var dispatcher = new DefaultStateValuesDispatcher(new RequiredDefaultStateValues());
 
-        var limitAlertConditionState = new LimitAlertConditionState();
-        var activateOperationState = new ActivateOperationState();
-        var clockState = new ClockState();
-
-        dispatcher.dispatchDefaultStateValues(limitAlertConditionState);
-        dispatcher.dispatchDefaultStateValues(activateOperationState);
-        dispatcher.dispatchDefaultStateValues(clockState);
+        var limitAlertConditionState = dispatcher.dispatchDefaultStateValues(new LimitAlertConditionState());
+        var activateOperationState = dispatcher.dispatchDefaultStateValues(new ActivateOperationState());
+        var clockState = dispatcher.dispatchDefaultStateValues(new ClockState());
 
         assertEquals(AlertActivation.ON, limitAlertConditionState.getActivationState());
         assertEquals(AlertConditionMonitoredLimits.ALL, limitAlertConditionState.getMonitoredAlertLimits());

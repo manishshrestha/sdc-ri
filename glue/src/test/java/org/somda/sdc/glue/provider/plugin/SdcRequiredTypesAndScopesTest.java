@@ -115,8 +115,8 @@ class SdcRequiredTypesAndScopesTest {
 
         // Verify that a context state change is reflected in the scopes
         var expectedInstanceIdentifier = InstanceIdentifierFactory.createInstanceIdentifier("urn:dummy:test");
-        var locationDetail = new LocationDetail();
-        locationDetail.setBed("KingSizeBed");
+        var locationDetail = LocationDetail.builder()
+            .withBed("KingSizeBed").build();
         var expectedScopeUri = LocationDetailQueryMapper.createWithLocationDetailQuery(expectedInstanceIdentifier, locationDetail);
         var expectedContextState = createLocationContextState(expectedInstanceIdentifier, locationDetail);
 
@@ -147,8 +147,8 @@ class SdcRequiredTypesAndScopesTest {
 
         // Verify that a context state change is reflected in the scopes
         var expectedInstanceIdentifier = InstanceIdentifierFactory.createInstanceIdentifier("urn:dummy:test");
-        var locationDetail = new LocationDetail();
-        locationDetail.setBed("KingSizeBed");
+        var locationDetail = LocationDetail.builder()
+            .withBed("KingSizeBed").build();
         var expectedScopeUri = LocationDetailQueryMapper.createWithLocationDetailQuery(expectedInstanceIdentifier, locationDetail);
         var expectedContextState = createLocationContextState(expectedInstanceIdentifier, locationDetail);
 
@@ -183,8 +183,8 @@ class SdcRequiredTypesAndScopesTest {
 
         // Verify that a description change is reflected in the scopes
         var expectedInstanceIdentifier = InstanceIdentifierFactory.createInstanceIdentifier("urn:dummy:test");
-        var locationDetail = new LocationDetail();
-        locationDetail.setBed("KingSizeBed");
+        var locationDetail = LocationDetail.builder()
+            .withBed("KingSizeBed").build();
         var expectedContextScopeUri = LocationDetailQueryMapper.createWithLocationDetailQuery(expectedInstanceIdentifier, locationDetail);
         var expectedContextState = createLocationContextState(expectedInstanceIdentifier, locationDetail);
 
@@ -220,8 +220,8 @@ class SdcRequiredTypesAndScopesTest {
 
         // Verify that a description change is reflected in the scopes
         var expectedInstanceIdentifier = InstanceIdentifierFactory.createInstanceIdentifier("urn:dummy:test");
-        var locationDetail = new LocationDetail();
-        locationDetail.setBed("QueenSizeBed");
+        var locationDetail = LocationDetail.builder()
+            .withBed("KingSizeBed").build();
         var expectedContextScopeUri = LocationDetailQueryMapper.createWithLocationDetailQuery(expectedInstanceIdentifier, locationDetail);
         var expectedContextState = createLocationContextState(expectedInstanceIdentifier, locationDetail);
 
@@ -264,18 +264,18 @@ class SdcRequiredTypesAndScopesTest {
     }
 
     private LocationContextState createLocationContextState(InstanceIdentifier instanceIdentifier, LocationDetail locationDetail) {
-        var locationContextState = new LocationContextState();
-        locationContextState.setHandle("handle");
-        locationContextState.setContextAssociation(ContextAssociation.ASSOC);
-        locationContextState.getIdentification().add(instanceIdentifier);
-        locationContextState.setLocationDetail(locationDetail);
-        return locationContextState;
+        var locationContextState = LocationContextState.builder()
+            .withHandle("handle")
+            .withContextAssociation(ContextAssociation.ASSOC)
+            .addIdentification(instanceIdentifier)
+            .withLocationDetail(locationDetail);
+        return locationContextState.build();
     }
 
     private MdsDescriptor createMdsDescriptor(CodedValue type) {
-        var mdsDescriptor = new MdsDescriptor();
-        mdsDescriptor.setHandle("handle");
-        mdsDescriptor.setType(type);
-        return mdsDescriptor;
+        var mdsDescriptor = MdsDescriptor.builder()
+            .withHandle("handle")
+            .withType(type);
+        return mdsDescriptor.build();
     }
 }

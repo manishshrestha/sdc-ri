@@ -43,6 +43,7 @@ import org.somda.sdc.dpws.soap.wseventing.SubscribeResult;
 import org.somda.sdc.dpws.soap.wseventing.SubscriptionManager;
 import org.somda.sdc.dpws.soap.wseventing.WsEventingConstants;
 import org.somda.sdc.dpws.soap.wseventing.model.GetStatusResponse;
+import org.somda.sdc.dpws.soap.wseventing.model.Renew;
 import org.somda.sdc.dpws.soap.wseventing.model.RenewResponse;
 import test.org.somda.common.LoggingTestWatcher;
 
@@ -257,8 +258,8 @@ class SubscriptionIT {
         var response = requestResponseClient.sendRequestResponse(getStatus);
         soapUtil.getBody(response, GetStatusResponse.class);
 
-        var renewMessageBody = wseFactory.createRenew();
-        renewMessageBody.setExpires(Duration.ofSeconds(120));
+        var renewMessageBody = Renew.builder()
+            .withExpires(Duration.ofSeconds(120)).build();
         var renewMessage = soapUtil.createMessage(WsEventingConstants.WSA_ACTION_RENEW, renewMessageBody);
         renewMessage.getWsAddressingHeader().setTo(subscription.getSubscriptionManagerEpr().getAddress());
         var renewResponse = requestResponseClient.sendRequestResponse(renewMessage);

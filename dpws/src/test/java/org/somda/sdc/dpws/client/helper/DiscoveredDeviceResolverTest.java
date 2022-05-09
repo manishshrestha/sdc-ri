@@ -42,19 +42,23 @@ class DiscoveredDeviceResolverTest extends DpwsTest {
         var expectedUri = "http://expectedUri";
         List<String> xAddrsInHello = Arrays.asList("http://inHello1", "http://inHello2");
         EndpointReferenceType epr = wsaUtil.createEprWithAddress(expectedUri);
-        HelloType hType = objFactory.createHelloType();
+        HelloType hType = HelloType.builder()
+            .withEndpointReference(epr)
+            .withXAddrs(xAddrsInHello)
+            .withScopes(objFactory.createScopesType())
+            .build();
         HelloMessage hMsg = new HelloMessage(hType);
-        hType.setEndpointReference(epr);
-        hType.setXAddrs(xAddrsInHello);
-        hType.setScopes(objFactory.createScopesType());
 
-        ResolveMatchType resolveMatchType = objFactory.createResolveMatchType();
-        resolveMatchType.setScopes(objFactory.createScopesType());
+
         List<String> xAddrsInResolveMatches = Arrays.asList("http://inResolveMatches1", "http://inResolveMatches2");
-        resolveMatchType.setEndpointReference(epr);
-        resolveMatchType.setXAddrs(xAddrsInResolveMatches);
-        ResolveMatchesType rmType = objFactory.createResolveMatchesType();
-        rmType.setResolveMatch(resolveMatchType);
+
+        ResolveMatchType resolveMatchType = ResolveMatchType.builder()
+            .withScopes(objFactory.createScopesType())
+            .withEndpointReference(epr)
+            .withXAddrs(xAddrsInResolveMatches)
+            .build();
+        ResolveMatchesType rmType = ResolveMatchesType.builder()
+            .withResolveMatch(resolveMatchType).build();
 
         WsDiscoveryClient wsdClient = mock(WsDiscoveryClient.class);
         when(wsdClient.sendResolve(epr)).thenReturn(Futures.immediateFuture(rmType));
@@ -66,7 +70,9 @@ class DiscoveredDeviceResolverTest extends DpwsTest {
         assertEquals(expectedUri, actualWithResolveMatches.get().getEprAddress());
         assertEquals(xAddrsInHello, actualWithResolveMatches.get().getXAddrs());
 
-        hType.setXAddrs(new ArrayList<>());
+        hType = hType.newCopyBuilder().withXAddrs(new ArrayList<>()).build();
+        hMsg = new HelloMessage(hType);
+
         Optional<DiscoveredDevice> actualWithoutResolveMatches = dpr.resolve(hMsg);
         assertTrue(actualWithoutResolveMatches.isPresent());
         assertEquals(expectedUri, actualWithoutResolveMatches.get().getEprAddress());

@@ -23,21 +23,27 @@ import org.somda.sdc.biceps.model.participant.Range;
  * </ul>
  */
 public class RequiredDefaultStateValues implements DefaultStateValues {
-    void onAbstractAlertState(AbstractAlertState state) {
-        state.setActivationState(AlertActivation.ON);
+
+    AbstractAlertState onAbstractAlertState(AbstractAlertState state) {
+        return state.newCopyBuilder()
+            .withActivationState(AlertActivation.ON)
+            .build();
     }
 
-    void onLimitAlertConditionState(LimitAlertConditionState state) {
-        onAbstractAlertState(state);
-        state.setLimits(new Range());
-        state.setMonitoredAlertLimits(AlertConditionMonitoredLimits.ALL);
+    LimitAlertConditionState onLimitAlertConditionState(LimitAlertConditionState state) {
+        var aState = (LimitAlertConditionState) onAbstractAlertState(state);
+        return aState.newCopyBuilder()
+            .withLimits(new Range())
+            .withMonitoredAlertLimits(AlertConditionMonitoredLimits.ALL)
+            .build();
     }
 
-    void onAbstractOperationState(AbstractOperationState state) {
-        state.setOperatingMode(OperatingMode.EN);
+    AbstractOperationState onAbstractOperationState(AbstractOperationState state) {
+        return state.newCopyBuilder().withOperatingMode(OperatingMode.EN).build();
     }
 
-    void onClockState(ClockState state) {
-        state.setRemoteSync(false);
+    ClockState onClockState(ClockState state) {
+        return state.newCopyBuilder().withRemoteSync(false).build();
     }
+
 }

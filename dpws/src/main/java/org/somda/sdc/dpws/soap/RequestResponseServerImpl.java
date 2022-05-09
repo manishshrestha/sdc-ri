@@ -14,6 +14,7 @@ import org.somda.sdc.dpws.soap.wsaddressing.WsAddressingServerInterceptor;
 import org.somda.sdc.dpws.soap.wsaddressing.WsAddressingUtil;
 import org.somda.sdc.dpws.soap.wsaddressing.model.AttributedURIType;
 import org.somda.sdc.dpws.soap.wsaddressing.model.ObjectFactory;
+import org.somda.sdc.dpws.soap.wsaddressing.model.ProblemActionType;
 
 /**
  * Default implementation of {@linkplain RequestResponseServer}.
@@ -71,14 +72,14 @@ public class RequestResponseServerImpl implements RequestResponseServer {
                 interceptorRegistry.getInterceptors(Direction.ANY, action).isEmpty()) {
             // Action not supported as no matching interceptor handler could be found, hence throw SOAP fault
             // according to https://www.w3.org/TR/ws-addr-soap/#actionfault
-            var problemActionType = wsaObjectFactory.createProblemActionType();
-            problemActionType.setAction(wsAddressingUtil.createAttributedURIType(action));
+            var problemActionType = ProblemActionType.builder()
+                .withAction(wsAddressingUtil.createAttributedURIType(action));
             throw new SoapFaultException(soapFaultFactory.createFault(
                     WsAddressingConstants.FAULT_ACTION,
                     SoapConstants.SENDER,
                     WsAddressingConstants.ACTION_NOT_SUPPORTED,
                     "The [action] cannot be processed at the receiver",
-                    wsaObjectFactory.createProblemAction(problemActionType)),
+                    wsaObjectFactory.createProblemAction(problemActionType.build())),
                     request.getWsAddressingHeader().getMessageId().orElse(null));
         }
 

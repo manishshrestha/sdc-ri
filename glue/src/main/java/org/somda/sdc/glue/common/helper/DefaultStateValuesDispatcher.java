@@ -31,17 +31,19 @@ public class DefaultStateValuesDispatcher {
         }
     }
 
-    public void dispatchDefaultStateValues(AbstractState state)
+    public <T extends AbstractState> T dispatchDefaultStateValues(T state)
             throws InvocationTargetException, IllegalAccessException {
         Class<?> stateClass = state.getClass();
         do {
             Method method = methods.get(stateClass);
             if (method != null) {
-                method.invoke(defaultStateValues, state);
-                return;
+                return (T) method.invoke(defaultStateValues, state);
             }
 
             stateClass = stateClass.getSuperclass();
         } while (!stateClass.equals(Object.class));
+
+        // no dispatcher, no work
+        return state;
     }
 }

@@ -36,24 +36,25 @@ public class DuplicateContextStateHandleHandler implements StatePreprocessingSeg
     }
 
     @Override
-    public void process(MdibStateModifications modifications, AbstractState modification, MdibStorage storage)
+    public void process(MdibStateModifications modifications, MdibStorage storage)
             throws DuplicateContextStateHandleException {
+        for (final AbstractState modification : modifications.getStates()) {
+            final Optional<AbstractMultiState> multiState = typeValidator.toMultiState(modification);
+            if (multiState.isPresent()) {
+                String handle = multiState.get().getHandle();
 
-        final Optional<AbstractMultiState> multiState = typeValidator.toMultiState(modification);
-        if (multiState.isPresent()) {
-            String handle = multiState.get().getHandle();
-
-            if (allContextStates.containsKey(handle)) {
-                var existingContextState = allContextStates.get(handle);
-                if (!existingContextState.getDescriptorHandle().equals(multiState.get().getDescriptorHandle())) {
-                    throw new DuplicateContextStateHandleException(String.format("Two different descriptors:"
-                                    + " %s and %s can not have the same context state: %s",
+                if (allContextStates.containsKey(handle)) {
+                    var existingContextState = allContextStates.get(handle);
+                    if (!existingContextState.getDescriptorHandle().equals(multiState.get().getDescriptorHandle())) {
+                        throw new DuplicateContextStateHandleException(String.format("Two different descriptors:"
+                                + " %s and %s can not have the same context state: %s",
                             existingContextState.getDescriptorHandle(),
                             multiState.get().getDescriptorHandle(),
                             multiState.get().getHandle()));
+                    }
                 }
+                allContextStates.put(handle, multiState.get());
             }
-            allContextStates.put(handle, multiState.get());
         }
     }
 

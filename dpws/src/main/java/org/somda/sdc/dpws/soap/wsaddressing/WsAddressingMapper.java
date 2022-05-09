@@ -52,8 +52,9 @@ public class WsAddressingMapper {
         src.getTo().ifPresent(attributedURIType ->
                 addWithDuplicateCheck(wsaFactory.createTo(attributedURIType), dest));
         src.getRelatesTo().ifPresent(attributedURIType -> {
-            RelatesToType relatesToType = wsaFactory.createRelatesToType();
-            relatesToType.setValue(attributedURIType.getValue());
+            RelatesToType relatesToType = RelatesToType.builder()
+                .withValue(attributedURIType.getValue())
+                .build();
             addWithDuplicateCheck(wsaFactory.createRelatesTo(relatesToType), dest);
         });
         src.getMappedReferenceParameters().ifPresent(referenceParameters -> {
@@ -130,8 +131,8 @@ public class WsAddressingMapper {
 
             Optional<RelatesToType> rt = jaxbUtil.extractElement(jaxbObject, WsAddressingConstants.RELATES_TO);
             if (rt.isPresent() && dest.getRelatesTo().isEmpty()) {
-                RelatesToType rtt = wsaUtil.createRelatesToType(rt.get().getValue());
-                rtt.setRelationshipType(rt.get().getRelationshipType());
+                RelatesToType rtt = wsaUtil.createRelatesToType(rt.get().getValue()).newCopyBuilder()
+                    .withRelationshipType(rt.get().getRelationshipType()).build();
                 dest.setRelatesTo(rtt);
             }
 

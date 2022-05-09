@@ -1,6 +1,7 @@
 package org.somda.sdc.biceps.common.storage;
 
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.somda.sdc.biceps.UnitTestUtil;
 import org.somda.sdc.biceps.common.MdibDescriptionModification;
 import org.somda.sdc.biceps.common.MdibDescriptionModifications;
@@ -15,9 +16,12 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import test.org.somda.common.LoggingTestWatcher;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(LoggingTestWatcher.class)
@@ -38,6 +42,18 @@ class MdibStoragePreprocessingChainTest {
         final DescriptionPreprocessingSegment segment1 = mock(DescriptionPreprocessingSegment.class);
         final DescriptionPreprocessingSegment segment2 = mock(DescriptionPreprocessingSegment.class);
         final DescriptionPreprocessingSegment segment3 = mock(DescriptionPreprocessingSegment.class);
+        when(segment1.beforeFirstModification(any(), any(MdibStorage.class))).thenAnswer(invocation -> invocation.getArgument(0, List.class));
+        when(segment2.beforeFirstModification(any(), any(MdibStorage.class))).thenAnswer(invocation -> invocation.getArgument(0, List.class));
+        when(segment3.beforeFirstModification(any(), any(MdibStorage.class))).thenAnswer(invocation -> invocation.getArgument(0, List.class));
+
+        when(segment1.process(any(), any(MdibStorage.class))).thenAnswer(invocation -> invocation.getArgument(0, List.class));
+        when(segment2.process(any(), any(MdibStorage.class))).thenAnswer(invocation -> invocation.getArgument(0, List.class));
+        when(segment3.process(any(), any(MdibStorage.class))).thenAnswer(invocation -> invocation.getArgument(0, List.class));
+
+        when(segment1.afterLastModification(any(), any(MdibStorage.class))).thenAnswer(invocation -> invocation.getArgument(0, List.class));
+        when(segment2.afterLastModification(any(), any(MdibStorage.class))).thenAnswer(invocation -> invocation.getArgument(0, List.class));
+        when(segment3.afterLastModification(any(), any(MdibStorage.class))).thenAnswer(invocation -> invocation.getArgument(0, List.class));
+
         final List<DescriptionPreprocessingSegment> segments = Arrays.asList(segment1, segment2, segment3);
         final MdibStoragePreprocessingChain chain = chainFactory.createMdibStoragePreprocessingChain(
                 mockStorage,
@@ -46,7 +62,7 @@ class MdibStoragePreprocessingChainTest {
 
         final String expectedHandle = "foobarHandle";
         final MdibDescriptionModifications modifications = MdibDescriptionModifications.create()
-                .insert(MockModelFactory.createDescriptor(expectedHandle, MdsDescriptor.class));
+                .insert(MockModelFactory.createDescriptor(expectedHandle, MdsDescriptor.builder()).build());
 
         {
             // When there is a regular call to process description modifications
@@ -54,8 +70,7 @@ class MdibStoragePreprocessingChainTest {
 
             // Then expect every segment to be processed once
             for (DescriptionPreprocessingSegment segment : segments) {
-                verify(segment, times(1))
-                        .process(modifications, modifications.getModifications().get(0), mockStorage);
+                verify(segment, times(1)).process(modifications.getModifications(), mockStorage);
             }
         }
 
@@ -63,7 +78,7 @@ class MdibStoragePreprocessingChainTest {
             // When there is a call that causes an exception during processing of segment2
             final String expectedErrorMessage = "foobarMessage";
             doThrow(new Exception(expectedErrorMessage)).when(segment2)
-                    .process(modifications, modifications.getModifications().get(0), mockStorage);
+                    .process(modifications.getModifications(), mockStorage);
 
             // Then expect a PreprocessingException to be thrown
             try {
@@ -71,13 +86,12 @@ class MdibStoragePreprocessingChainTest {
                 Assertions.fail("segment2 did not throw an exception");
             } catch (PreprocessingException e) {
                 Assertions.assertEquals(expectedErrorMessage, e.getMessage());
-                Assertions.assertEquals(expectedHandle, e.getHandle());
                 Assertions.assertEquals(segment2.toString(), e.getSegment());
             }
 
             // Then expect segment3 not to be processed
             verify(segment3, times(1)) // still one interaction only
-                    .process(modifications, modifications.getModifications().get(0), mockStorage);
+                    .process(modifications.getModifications(), mockStorage);
         }
     }
 
@@ -89,18 +103,33 @@ class MdibStoragePreprocessingChainTest {
             private boolean isFirstCall = true;
 
             @Override
-            public void process(MdibDescriptionModifications allModifications,
-                                MdibDescriptionModification currentModification,
-                                MdibStorage storage) throws Exception {
+            public List<MdibDescriptionModification> process(List<MdibDescriptionModification> allModifications,
+                                                        MdibStorage storage) throws Exception {
                 if (isFirstCall) {
                     isFirstCall = false;
-                    allModifications.insert(MockModelFactory.createDescriptor("handle", VmdDescriptor.class));
+                    allModifications = new ArrayList<>(allModifications);
+                    allModifications.add(new MdibDescriptionModification(
+                        MdibDescriptionModification.Type.INSERT,
+                        MockModelFactory.createDescriptor("handle", VmdDescriptor.builder()).build(),
+                        null
+                    ));
                 }
+                return allModifications;
             }
         };
         final DescriptionPreprocessingSegment segment1 = mock(DescriptionPreprocessingSegment.class);
         final DescriptionPreprocessingSegment segment2 = spy(realSegment);
         final DescriptionPreprocessingSegment segment3 = mock(DescriptionPreprocessingSegment.class);
+
+        when(segment1.beforeFirstModification(any(), any(MdibStorage.class))).thenAnswer(invocation -> invocation.getArgument(0, List.class));
+        when(segment3.beforeFirstModification(any(), any(MdibStorage.class))).thenAnswer(invocation -> invocation.getArgument(0, List.class));
+
+        when(segment1.process(any(), any(MdibStorage.class))).thenAnswer(invocation -> invocation.getArgument(0, List.class));
+        when(segment3.process(any(), any(MdibStorage.class))).thenAnswer(invocation -> invocation.getArgument(0, List.class));
+
+        when(segment1.afterLastModification(any(), any(MdibStorage.class))).thenAnswer(invocation -> invocation.getArgument(0, List.class));
+        when(segment3.afterLastModification(any(), any(MdibStorage.class))).thenAnswer(invocation -> invocation.getArgument(0, List.class));
+
         final List<DescriptionPreprocessingSegment> segments = Arrays.asList(segment1, segment2, segment3);
         final MdibStoragePreprocessingChain chain = chainFactory.createMdibStoragePreprocessingChain(
                 mockStorage,
@@ -109,19 +138,24 @@ class MdibStoragePreprocessingChainTest {
 
         final String expectedHandle = "foobarHandle";
         final MdibDescriptionModifications modifications = MdibDescriptionModifications.create()
-                .insert(MockModelFactory.createDescriptor(expectedHandle, MdsDescriptor.class));
+                .insert(MockModelFactory.createDescriptor(expectedHandle, MdsDescriptor.builder()).build());
 
         // When there is a regular call to process description modifications
         chain.processDescriptionModifications(modifications);
 
-        // Then expect every segment to be processed twice; 1x on 1st, 1x on 2nd modification
+        // Then expect every segment to be processed once;
         for (DescriptionPreprocessingSegment segment : segments) {
+            ArgumentCaptor<List<MdibDescriptionModification>> captor = ArgumentCaptor.forClass(List.class);
             verify(segment, times(1))
-                    .process(modifications, modifications.getModifications().get(0), mockStorage);
-        }
-        for (DescriptionPreprocessingSegment segment : segments) {
-            verify(segment, times(1))
-                    .process(modifications, modifications.getModifications().get(1), mockStorage);
+                    .process(captor.capture(), any());
+            if (segment == segment1) {
+                assertEquals(1, captor.getValue().size());
+            } else if (segment == segment2) {
+                assertEquals(1, captor.getValue().size());
+            } else if (segment == segment3) {
+                // last segment has received the added modification
+                assertEquals(2, captor.getValue().size());
+            }
         }
     }
 
@@ -140,7 +174,7 @@ class MdibStoragePreprocessingChainTest {
 
         final String expectedHandle = "foobarHandle";
         final MdibStateModifications modifications = MdibStateModifications.create(MdibStateModifications.Type.METRIC)
-                .add(MockModelFactory.createState(expectedHandle, NumericMetricState.class));
+                .add(MockModelFactory.createState(expectedHandle, NumericMetricState.builder()).build());
 
         {
             // When there is a regular call to process state modifications
@@ -149,7 +183,7 @@ class MdibStoragePreprocessingChainTest {
             // Then expect every segment to be processed once
             for (StatePreprocessingSegment segment : segments) {
                 verify(segment, times(1))
-                        .process(modifications, modifications.getStates().get(0), mockStorage);
+                        .process(modifications, mockStorage);
             }
         }
 
@@ -157,7 +191,7 @@ class MdibStoragePreprocessingChainTest {
             // When there is a call that causes an exception during processing of segment2
             final String expectedErrorMessage = "foobarMessage";
             doThrow(new Exception(expectedErrorMessage)).when(segment2)
-                    .process(modifications, modifications.getStates().get(0), mockStorage);
+                    .process(modifications, mockStorage);
 
             // Then expect a PreprocessingException to be thrown
             try {
@@ -165,13 +199,12 @@ class MdibStoragePreprocessingChainTest {
                 Assertions.fail("segment2 did not throw an exception");
             } catch (PreprocessingException e) {
                 Assertions.assertEquals(expectedErrorMessage, e.getMessage());
-                Assertions.assertEquals(expectedHandle, e.getHandle());
                 Assertions.assertEquals(segment2.toString(), e.getSegment());
             }
 
             // Then expect segment3 not to be processed
             verify(segment3, times(1)) // still one interaction only
-                    .process(modifications, modifications.getStates().get(0), mockStorage);
+                    .process(modifications, mockStorage);
         }
     }
 
@@ -194,8 +227,8 @@ class MdibStoragePreprocessingChainTest {
 
         // Then expect before first and after last modification callbacks to be triggered for each segment
         segments.forEach(segment -> {
-            verify(segment, times(1)).beforeFirstModification(expectedModifications, mockStorage);
-            verify(segment, times(1)).afterLastModification(expectedModifications, mockStorage);
+            verify(segment, times(1)).beforeFirstModification(expectedModifications.getModifications(), mockStorage);
+            verify(segment, times(1)).afterLastModification(expectedModifications.getModifications(), mockStorage);
         });
     }
 

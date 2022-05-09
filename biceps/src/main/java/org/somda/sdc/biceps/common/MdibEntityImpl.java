@@ -2,7 +2,6 @@ package org.somda.sdc.biceps.common;
 
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
-import org.somda.sdc.biceps.common.access.CopyManager;
 import org.somda.sdc.biceps.model.participant.AbstractDescriptor;
 import org.somda.sdc.biceps.model.participant.AbstractMultiState;
 import org.somda.sdc.biceps.model.participant.AbstractState;
@@ -24,7 +23,6 @@ public class MdibEntityImpl implements MdibEntity {
     private final AbstractDescriptor descriptor;
     private final List<AbstractState> states;
     private final MdibVersion mdibVersion;
-    private final CopyManager copyManager;
     private final Class<? extends AbstractState> stateClass;
 
     @AssistedInject
@@ -33,14 +31,12 @@ public class MdibEntityImpl implements MdibEntity {
                    @Assisted AbstractDescriptor descriptor,
                    @Assisted("states") List<AbstractState> states,
                    @Assisted MdibVersion mdibVersion,
-                   CopyManager copyManager,
                    MdibTypeValidator typeValidator) {
         this.parent = parent;
         this.children = children;
         this.descriptor = descriptor;
         this.states = states;
         this.mdibVersion = mdibVersion;
-        this.copyManager = copyManager;
 
         try {
             this.stateClass = typeValidator.resolveStateType(descriptor.getClass());
@@ -64,7 +60,7 @@ public class MdibEntityImpl implements MdibEntity {
 
     @Override
     public AbstractDescriptor getDescriptor() {
-        return copyManager.processOutput(descriptor);
+        return descriptor;
     }
 
     @Override
@@ -85,13 +81,13 @@ public class MdibEntityImpl implements MdibEntity {
 
     @Override
     public List<AbstractState> getStates() {
-        return copyManager.processOutput(states);
+        return states;
     }
 
     @Override
     public <T extends AbstractState> List<T> getStates(Class<T> theClass) {
         if (!states.isEmpty() && theClass.isAssignableFrom(states.get(0).getClass())) {
-            return (List<T>) copyManager.processOutput(states);
+            return (List<T>) states;
         }
 
         return new ArrayList<>();
@@ -100,7 +96,7 @@ public class MdibEntityImpl implements MdibEntity {
     @Override
     public <T extends AbstractState> Optional<T> getFirstState(Class<T> theClass) {
         if (!states.isEmpty() && theClass.isAssignableFrom(states.get(0).getClass())) {
-            return Optional.of(theClass.cast(copyManager.processOutput(states.get(0))));
+            return Optional.of(theClass.cast(states.get(0)));
         }
         return Optional.empty();
     }

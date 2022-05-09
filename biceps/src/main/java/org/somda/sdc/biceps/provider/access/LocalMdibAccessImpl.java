@@ -7,7 +7,6 @@ import org.apache.logging.log4j.Logger;
 import org.somda.sdc.biceps.common.MdibDescriptionModifications;
 import org.somda.sdc.biceps.common.MdibEntity;
 import org.somda.sdc.biceps.common.MdibStateModifications;
-import org.somda.sdc.biceps.common.access.CopyManager;
 import org.somda.sdc.biceps.common.access.MdibAccessObserver;
 import org.somda.sdc.biceps.common.access.ReadTransaction;
 import org.somda.sdc.biceps.common.access.WriteDescriptionResult;
@@ -47,7 +46,6 @@ public class LocalMdibAccessImpl implements LocalMdibAccess {
     private final MdibStorage mdibStorage;
     private final ReentrantReadWriteLock readWriteLock;
     private final ReadTransactionFactory readTransactionFactory;
-    private final CopyManager copyManager;
 
     private final WriteUtil writeUtil;
     private final Logger instanceLogger;
@@ -62,7 +60,6 @@ public class LocalMdibAccessImpl implements LocalMdibAccess {
                         MdibStorageFactory mdibStorageFactory,
                         ReentrantReadWriteLock readWriteLock,
                         ReadTransactionFactory readTransactionFactory,
-                        CopyManager copyManager,
                         @Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier,
                         @Named(org.somda.sdc.biceps.common.CommonConfig.PROVIDER_STATE_PREPROCESSING_SEGMENTS)
                                 List<Class<? extends StatePreprocessingSegment>> stateSegmentClasses,
@@ -78,7 +75,6 @@ public class LocalMdibAccessImpl implements LocalMdibAccess {
         this.mdibStorage = mdibStorageFactory.createMdibStorage(mdibVersion, BigInteger.ZERO, BigInteger.ZERO);
         this.readWriteLock = readWriteLock;
         this.readTransactionFactory = readTransactionFactory;
-        this.copyManager = copyManager;
 
         var descriptionPreprocessingSegments =
                 PreprocessingUtil.getDescriptionPreprocessingSegments(descriptionSegmentClasses,
@@ -102,7 +98,7 @@ public class LocalMdibAccessImpl implements LocalMdibAccess {
     @Override
     public WriteDescriptionResult writeDescription(MdibDescriptionModifications mdibDescriptionModifications)
             throws PreprocessingException {
-        var modificationsCopy = copyManager.processInput(mdibDescriptionModifications);
+        var modificationsCopy = mdibDescriptionModifications;
         return writeUtil.writeDescription(descriptionModifications -> {
             mdibVersion = MdibVersion.increment(mdibVersion);
             mdDescriptionVersion = mdDescriptionVersion.add(BigInteger.ONE);
@@ -113,7 +109,7 @@ public class LocalMdibAccessImpl implements LocalMdibAccess {
 
     @Override
     public WriteStateResult writeStates(MdibStateModifications mdibStateModifications) throws PreprocessingException {
-        var modificationsCopy = copyManager.processInput(mdibStateModifications);
+        var modificationsCopy = mdibStateModifications;
         return writeUtil.writeStates(stateModifications -> {
             mdibVersion = MdibVersion.increment(mdibVersion);
             mdStateVersion = mdStateVersion.add(BigInteger.ONE);

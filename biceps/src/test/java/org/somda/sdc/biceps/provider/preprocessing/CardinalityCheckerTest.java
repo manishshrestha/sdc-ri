@@ -2,7 +2,6 @@ package org.somda.sdc.biceps.provider.preprocessing;
 
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.somda.sdc.biceps.UnitTestUtil;
-import org.somda.sdc.biceps.common.MdibDescriptionModification;
 import org.somda.sdc.biceps.common.MdibDescriptionModifications;
 import org.somda.sdc.biceps.common.MdibEntity;
 import org.somda.sdc.biceps.common.storage.MdibStorage;
@@ -43,9 +42,9 @@ class CardinalityCheckerTest {
     void noInsertions() throws Exception {
         // When there are no insertions in a modification set
         final MdibDescriptionModifications modifications = MdibDescriptionModifications.create()
-                .update(MockModelFactory.createDescriptor(Handles.MDS_0, MdsDescriptor.class))
-                .update(MockModelFactory.createDescriptor(Handles.VMD_0, VmdDescriptor.class))
-                .delete(MockModelFactory.createDescriptor(Handles.METRIC_0, NumericMetricDescriptor.class));
+                .update(MockModelFactory.createDescriptor(Handles.MDS_0, MdsDescriptor.builder()).build())
+                .update(MockModelFactory.createDescriptor(Handles.VMD_0, VmdDescriptor.builder()).build())
+                .delete(MockModelFactory.createDescriptor(Handles.METRIC_0, NumericMetricDescriptor.builder()).build());
 
         // Then expect the cardinality checker to pass
         assertDoesNotThrow(() -> apply(modifications));
@@ -55,7 +54,7 @@ class CardinalityCheckerTest {
     void mdsInsertion() throws Exception {
         // When there is an MDS being inserted
         final MdibDescriptionModifications modifications = MdibDescriptionModifications.create()
-                .insert(MockModelFactory.createDescriptor(Handles.MDS_0, MdsDescriptor.class));
+                .insert(MockModelFactory.createDescriptor(Handles.MDS_0, MdsDescriptor.builder()).build());
 
         // Then expect the cardinality checker to pass
         assertDoesNotThrow(() -> apply(modifications));
@@ -68,8 +67,8 @@ class CardinalityCheckerTest {
         {
             // When there are two VMDs to be inserted below an MDS
             final MdibDescriptionModifications modifications = MdibDescriptionModifications.create()
-                    .insert(MockModelFactory.createDescriptor(Handles.VMD_0, VmdDescriptor.class), Handles.MDS_0)
-                    .insert(MockModelFactory.createDescriptor(Handles.VMD_1, VmdDescriptor.class), Handles.MDS_0);
+                    .insert(MockModelFactory.createDescriptor(Handles.VMD_0, VmdDescriptor.builder()).build(), Handles.MDS_0)
+                    .insert(MockModelFactory.createDescriptor(Handles.VMD_1, VmdDescriptor.builder()).build(), Handles.MDS_0);
 
             // Then expect the cardinality checker to pass
             assertDoesNotThrow(() -> apply(modifications));
@@ -78,8 +77,8 @@ class CardinalityCheckerTest {
         {
             // When there are two SCOs to be inserted below two MDSs
             final MdibDescriptionModifications modifications = MdibDescriptionModifications.create()
-                    .insert(MockModelFactory.createDescriptor(Handles.VMD_0, VmdDescriptor.class), Handles.MDS_0)
-                    .insert(MockModelFactory.createDescriptor(Handles.VMD_1, VmdDescriptor.class), Handles.MDS_1);
+                    .insert(MockModelFactory.createDescriptor(Handles.VMD_0, VmdDescriptor.builder()).build(), Handles.MDS_0)
+                    .insert(MockModelFactory.createDescriptor(Handles.VMD_1, VmdDescriptor.builder()).build(), Handles.MDS_1);
 
             // Then expect the cardinality checker to pass
             assertDoesNotThrow(() -> apply(modifications));
@@ -90,13 +89,13 @@ class CardinalityCheckerTest {
     void sameTypeInModificationsIsBad() throws Exception {
         when(mdibStorage.getEntity(Handles.MDS_0)).thenReturn(Optional.empty());
 
-        ScoDescriptor descriptor = MockModelFactory.createDescriptor(Handles.SCO_0, ScoDescriptor.class);
+        ScoDescriptor descriptor = MockModelFactory.createDescriptor(Handles.SCO_0, ScoDescriptor.builder()).build();
 
         // When there are two SCOs to be inserted below an MDS
         final MdibDescriptionModifications modifications = MdibDescriptionModifications.create()
-                .insert(MockModelFactory.createDescriptor(Handles.SCO_0, ScoDescriptor.class), Handles.MDS_0)
-                .insert(MockModelFactory.createDescriptor(Handles.SCO_1, ScoDescriptor.class), Handles.MDS_0)
-                .insert(MockModelFactory.createDescriptor(Handles.SCO_2, ScoDescriptor.class), Handles.MDS_0);
+                .insert(MockModelFactory.createDescriptor(Handles.SCO_0, ScoDescriptor.builder()).build(), Handles.MDS_0)
+                .insert(MockModelFactory.createDescriptor(Handles.SCO_1, ScoDescriptor.builder()).build(), Handles.MDS_0)
+                .insert(MockModelFactory.createDescriptor(Handles.SCO_2, ScoDescriptor.builder()).build(), Handles.MDS_0);
 
         // Then expect the cardinality checker to throw an exception
         assertThrows(CardinalityException.class, () -> apply(modifications));
@@ -113,8 +112,8 @@ class CardinalityCheckerTest {
             // When there are two VMDs to be inserted below an MDS that exists in the MdibStorage
             // and possesses on VMD already
             final MdibDescriptionModifications modifications = MdibDescriptionModifications.create()
-                    .insert(MockModelFactory.createDescriptor(Handles.VMD_0, VmdDescriptor.class), Handles.MDS_0)
-                    .insert(MockModelFactory.createDescriptor(Handles.VMD_1, VmdDescriptor.class), Handles.MDS_0);
+                    .insert(MockModelFactory.createDescriptor(Handles.VMD_0, VmdDescriptor.builder()).build(), Handles.MDS_0)
+                    .insert(MockModelFactory.createDescriptor(Handles.VMD_1, VmdDescriptor.builder()).build(), Handles.MDS_0);
 
             // Then expect the cardinality checker to pass
             assertDoesNotThrow(() -> apply(modifications));
@@ -127,7 +126,7 @@ class CardinalityCheckerTest {
             // When there is one SCO to be inserted below an MDS that exists in the MdibStorage
             // and does not possess an SCO already
             final MdibDescriptionModifications modifications = MdibDescriptionModifications.create()
-                    .insert(MockModelFactory.createDescriptor(Handles.SCO_0, ScoDescriptor.class), Handles.MDS_0);
+                    .insert(MockModelFactory.createDescriptor(Handles.SCO_0, ScoDescriptor.builder()).build(), Handles.MDS_0);
 
             // Then expect the cardinality checker to pass
             assertDoesNotThrow(() -> apply(modifications));
@@ -144,15 +143,13 @@ class CardinalityCheckerTest {
         // When there is one SCO to be inserted below an MDS that exists in the MdibStorage
         // and possesses an SCO already
         final MdibDescriptionModifications modifications = MdibDescriptionModifications.create()
-                .insert(MockModelFactory.createDescriptor(Handles.SCO_0, ScoDescriptor.class), Handles.MDS_0);
+                .insert(MockModelFactory.createDescriptor(Handles.SCO_0, ScoDescriptor.builder()).build(), Handles.MDS_0);
 
         // Then expect the cardinality checker to throw an exception
         assertThrows(CardinalityException.class, () -> apply(modifications));
     }
 
     private void apply(MdibDescriptionModifications modifications) throws CardinalityException {
-        for (MdibDescriptionModification modification : modifications.getModifications()) {
-            cardinalityChecker.process(modifications, modification, mdibStorage);
-        }
+        cardinalityChecker.process(modifications.getModifications(), mdibStorage);
     }
 }

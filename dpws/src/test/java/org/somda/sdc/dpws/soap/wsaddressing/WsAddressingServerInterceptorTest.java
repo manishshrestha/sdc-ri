@@ -74,8 +74,7 @@ class WsAddressingServerInterceptorTest extends DpwsTest {
     @Test
     void testMessageIdDuplicationDetection() {
         assertDoesNotThrow(() -> server.receiveRequestResponse(request, response, mockCommunicationContext));
-        assertThrows(SoapFaultException.class, () ->
-                server.receiveRequestResponse(request, response, mockCommunicationContext));
+        assertThrows(SoapFaultException.class, () -> server.receiveRequestResponse(request, response, mockCommunicationContext));
     }
 
 }

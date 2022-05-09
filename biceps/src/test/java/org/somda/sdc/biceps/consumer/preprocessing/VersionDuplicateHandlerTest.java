@@ -50,18 +50,18 @@ class VersionDuplicateHandlerTest {
         patientContextHandle = "patientContextState";
         locationContextHandle = "locationContextState";
 
-        mdsStates = initVersions(version -> MockModelFactory.createState(mdsHandle, version, MdsState.class),
+        mdsStates = initVersions(version -> MockModelFactory.createState(mdsHandle, version, MdsState.builder()).build(),
                 MdsState.class, STATE_VERSION_COUNT);
-        vmdStates = initVersions(version -> MockModelFactory.createState(vmdHandle, version, VmdState.class),
+        vmdStates = initVersions(version -> MockModelFactory.createState(vmdHandle, version, VmdState.builder()).build(),
                 VmdState.class, STATE_VERSION_COUNT);
 
         // explicitly set one state version to null, to trigger implied value handling
-        mdsStates[0].setStateVersion(null);
+        mdsStates[0] = mdsStates[0].newCopyBuilder().withStateVersion(null).build();
 
         patientContextStates = initVersions(version -> MockModelFactory.createContextState(patientContextHandle,
-                "parent", version, PatientContextState.class), PatientContextState.class, STATE_VERSION_COUNT);
+                "parent", version, PatientContextState.builder()).build(), PatientContextState.class, STATE_VERSION_COUNT);
         locationContextStates = initVersions(version -> MockModelFactory.createContextState(locationContextHandle,
-                "parent", LocationContextState.class), LocationContextState.class, STATE_VERSION_COUNT);
+                "parent", LocationContextState.builder()).build(), LocationContextState.class, STATE_VERSION_COUNT);
     }
 
     @Test
@@ -207,9 +207,7 @@ class VersionDuplicateHandlerTest {
 
     private void apply(MdibStateModifications modifications) {
         versionHandler.beforeFirstModification(modifications, mdibStorage);
-        for (AbstractState state : modifications.getStates()) {
-            versionHandler.process(modifications, state, mdibStorage);
-        }
+        versionHandler.process(modifications, mdibStorage);
         versionHandler.afterLastModification(modifications, mdibStorage);
     }
 

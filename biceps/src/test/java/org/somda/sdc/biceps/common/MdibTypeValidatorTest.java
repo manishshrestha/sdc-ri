@@ -17,40 +17,40 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class MdibTypeValidatorTest {
     private MdibTypeValidator matcher;
 
-    private static final Map<Class<? extends AbstractDescriptor>, Class<? extends AbstractState>> singleStateMap
+    private static final Map<? extends AbstractDescriptor.Builder<?>, ? extends AbstractState.Builder<?>> singleStateMap
             // Map.of is only defined up to 10 elements, so we need to use the builder
-            = ImmutableMap.<Class<? extends AbstractDescriptor>, Class<? extends AbstractState>>builder()
-            .put(ActivateOperationDescriptor.class, ActivateOperationState.class)
-            .put(AlertConditionDescriptor.class, AlertConditionState.class)
-            .put(AlertSignalDescriptor.class, AlertSignalState.class)
-            .put(AlertSystemDescriptor.class, AlertSystemState.class)
-            .put(BatteryDescriptor.class, BatteryState.class)
-            .put(ClockDescriptor.class, ClockState.class)
-            .put(DistributionSampleArrayMetricDescriptor.class, DistributionSampleArrayMetricState.class)
-            .put(EnumStringMetricDescriptor.class, EnumStringMetricState.class)
-            .put(LimitAlertConditionDescriptor.class, LimitAlertConditionState.class)
-            .put(MdsDescriptor.class, MdsState.class)
-            .put(NumericMetricDescriptor.class, NumericMetricState.class)
-            .put(RealTimeSampleArrayMetricDescriptor.class, RealTimeSampleArrayMetricState.class)
-            .put(ScoDescriptor.class, ScoState.class)
-            .put(SetAlertStateOperationDescriptor.class, SetAlertStateOperationState.class)
-            .put(SetComponentStateOperationDescriptor.class, SetComponentStateOperationState.class)
-            .put(SetContextStateOperationDescriptor.class, SetContextStateOperationState.class)
-            .put(SetMetricStateOperationDescriptor.class, SetMetricStateOperationState.class)
-            .put(SetStringOperationDescriptor.class, SetStringOperationState.class)
-            .put(SetValueOperationDescriptor.class, SetValueOperationState.class)
-            .put(StringMetricDescriptor.class, StringMetricState.class)
-            .put(SystemContextDescriptor.class, SystemContextState.class)
-            .put(VmdDescriptor.class, VmdState.class)
+        = ImmutableMap.<AbstractDescriptor.Builder<?>, AbstractState.Builder<?>>builder()
+            .put(ActivateOperationDescriptor.builder(), ActivateOperationState.builder())
+            .put(AlertConditionDescriptor.builder(), AlertConditionState.builder())
+            .put(AlertSignalDescriptor.builder(), AlertSignalState.builder())
+            .put(AlertSystemDescriptor.builder(), AlertSystemState.builder())
+            .put(BatteryDescriptor.builder(), BatteryState.builder())
+            .put(ClockDescriptor.builder(), ClockState.builder())
+            .put(DistributionSampleArrayMetricDescriptor.builder(), DistributionSampleArrayMetricState.builder())
+            .put(EnumStringMetricDescriptor.builder(), EnumStringMetricState.builder())
+            .put(LimitAlertConditionDescriptor.builder(), LimitAlertConditionState.builder())
+            .put(MdsDescriptor.builder(), MdsState.builder())
+            .put(NumericMetricDescriptor.builder(), NumericMetricState.builder())
+            .put(RealTimeSampleArrayMetricDescriptor.builder(), RealTimeSampleArrayMetricState.builder())
+            .put(ScoDescriptor.builder(), ScoState.builder())
+            .put(SetAlertStateOperationDescriptor.builder(), SetAlertStateOperationState.builder())
+            .put(SetComponentStateOperationDescriptor.builder(), SetComponentStateOperationState.builder())
+            .put(SetContextStateOperationDescriptor.builder(), SetContextStateOperationState.builder())
+            .put(SetMetricStateOperationDescriptor.builder(), SetMetricStateOperationState.builder())
+            .put(SetStringOperationDescriptor.builder(), SetStringOperationState.builder())
+            .put(SetValueOperationDescriptor.builder(), SetValueOperationState.builder())
+            .put(StringMetricDescriptor.builder(), StringMetricState.builder())
+            .put(SystemContextDescriptor.builder(), SystemContextState.builder())
+            .put(VmdDescriptor.builder(), VmdState.builder())
             .build();
 
-    private static final Map<Class<? extends AbstractDescriptor>, Class<? extends AbstractMultiState>> multiStateMap = Map.of(
-            EnsembleContextDescriptor.class, EnsembleContextState.class,
-            LocationContextDescriptor.class, LocationContextState.class,
-            MeansContextDescriptor.class, MeansContextState.class,
-            OperatorContextDescriptor.class, OperatorContextState.class,
-            PatientContextDescriptor.class, PatientContextState.class,
-            WorkflowContextDescriptor.class, WorkflowContextState.class
+    private static final Map<? extends AbstractDescriptor.Builder<?>, ? extends AbstractContextState.Builder<?>> multiStateMap = Map.of(
+            EnsembleContextDescriptor.builder(), EnsembleContextState.builder(),
+            LocationContextDescriptor.builder(), LocationContextState.builder(),
+            MeansContextDescriptor.builder(), MeansContextState.builder(),
+            OperatorContextDescriptor.builder(), OperatorContextState.builder(),
+            PatientContextDescriptor.builder(), PatientContextState.builder(),
+            WorkflowContextDescriptor.builder(), WorkflowContextState.builder()
     );
 
     @BeforeEach
@@ -63,18 +63,23 @@ class MdibTypeValidatorTest {
 
         singleStateMap.forEach(
                 (descOuter, stateOuter) -> {
+                    var descOuterClass = MockModelFactory.createDescriptor("handle", descOuter).build().getClass();
+
                     singleStateMap.forEach(
                             (descInner, stateInner) -> {
+                                var stateInnerClass = MockModelFactory.createState("handle", stateInner).build().getClass();
+
                                 if (descInner == descOuter) {
-                                    assertTrue(matcher.match(descOuter, stateInner));
+                                    assertTrue(matcher.match(descOuterClass, stateInnerClass));
                                 } else {
-                                    assertFalse(matcher.match(descOuter, stateInner));
+                                    assertFalse(matcher.match(descOuterClass, stateInnerClass));
                                 }
                             }
                     );
                     multiStateMap.forEach(
                             (descInner, stateInner) -> {
-                                assertFalse(matcher.match(descOuter, stateInner));
+                                var stateInnerClass = MockModelFactory.createState("handle", stateInner).build().getClass();
+                                assertFalse(matcher.match(descOuterClass, stateInnerClass));
                             }
                     );
                 }
@@ -82,18 +87,23 @@ class MdibTypeValidatorTest {
 
         multiStateMap.forEach(
                 (descOuter, stateOuter) -> {
+                    var descOuterClass = MockModelFactory.createDescriptor("handle", descOuter).build().getClass();
                     multiStateMap.forEach(
                             (descInner, stateInner) -> {
+                                var stateInnerClass = MockModelFactory.createState("handle", stateInner).build().getClass();
+
                                 if (descInner == descOuter) {
-                                    assertTrue(matcher.match(descOuter, stateInner));
+                                    assertTrue(matcher.match(descOuterClass, stateInnerClass));
                                 } else {
-                                    assertFalse(matcher.match(descOuter, stateInner));
+                                    assertFalse(matcher.match(descOuterClass, stateInnerClass));
                                 }
                             }
                     );
                     singleStateMap.forEach(
                             (descInner, stateInner) -> {
-                                assertFalse(matcher.match(descOuter, stateInner));
+                                var stateInnerClass = MockModelFactory.createState("handle", stateInner).build().getClass();
+
+                                assertFalse(matcher.match(descOuterClass, stateInnerClass));
                             }
                     );
                 }
@@ -102,17 +112,13 @@ class MdibTypeValidatorTest {
     }
 
     @Test
-    <T extends AbstractDescriptor, U extends AbstractState> void matchSingleStateInstance() {
-
+    void matchSingleStateInstance() {
         singleStateMap.forEach(
                 (descOuter, stateOuter) -> {
-                    Class<T> descOuterCast = (Class<T>) descOuter; // to force one warning up here
-                    Class<U> stateOuterCast = (Class<U>) stateOuter;
-                    T descriptor = MockModelFactory.createDescriptor("handle", descOuterCast);
-                    U state = MockModelFactory.createState("handle", stateOuterCast);
-                    U illegalSecondState = MockModelFactory.createState("handle", stateOuterCast);
-
-                    U mismatchingHandleState = MockModelFactory.createState("invalid-handle", stateOuterCast);
+                    var descriptor = MockModelFactory.createDescriptor("handle", descOuter).build();
+                    var state = MockModelFactory.createState("handle", stateOuter).build();
+                    var illegalSecondState = MockModelFactory.createState("handle", stateOuter).build();
+                    var mismatchingHandleState = MockModelFactory.createState("invalid-handle", stateOuter).build();
 
                     assertTrue(matcher.match(descriptor, state));
                     assertTrue(matcher.match(descriptor, Collections.singletonList(state)));
@@ -125,8 +131,7 @@ class MdibTypeValidatorTest {
                     singleStateMap.forEach(
                             (descInner, stateInner) -> {
                                 if (descOuter == descInner) return; // don't compare with the same class
-                                Class<U> stateInnerCast = (Class<U>) stateInner;
-                                U illegalStateType = MockModelFactory.createState("handle", stateInnerCast);
+                                var illegalStateType = MockModelFactory.createState("handle", stateInner).build();
 
                                 assertFalse(matcher.match(descriptor, illegalStateType));
                                 assertFalse(matcher.match(descriptor, Collections.singletonList(illegalStateType)));
@@ -135,25 +140,21 @@ class MdibTypeValidatorTest {
 
                 }
         );
-
     }
 
     @Test
-    <T extends AbstractDescriptor, U extends AbstractState, V extends AbstractContextState> void matchingMultiStateInstance() {
+    void matchingMultiStateInstance() {
         multiStateMap.forEach(
                 (descOuter, stateOuter) -> {
-                    Class<T> descOuterCast = (Class<T>) descOuter; // to force one warning up here
-                    Class<V> stateOuterCast = (Class<V>) stateOuter;
-
-                    T descriptor = MockModelFactory.createDescriptor("handle", descOuterCast);
-                    List<V> states = Arrays.asList(
-                            MockModelFactory.createContextState("c1", "handle", stateOuterCast),
-                            MockModelFactory.createContextState("c2", "handle", stateOuterCast),
-                            MockModelFactory.createContextState("c3", "handle", stateOuterCast)
+                    var descriptor = MockModelFactory.createDescriptor("handle", descOuter).build();
+                    var states = Arrays.asList(
+                            MockModelFactory.createContextState("c1", "handle", stateOuter).build(),
+                            MockModelFactory.createContextState("c2", "handle", stateOuter).build(),
+                            MockModelFactory.createContextState("c3", "handle", stateOuter).build()
                     );
 
-                    V mismatchingHandleState = MockModelFactory.createContextState("c4", "invalid-handle", stateOuterCast);
-                    final List<V> mismatchingHandleStates = new ArrayList<>(states);
+                    var mismatchingHandleState = MockModelFactory.createContextState("c4", "invalid-handle", stateOuter).build();
+                    final var mismatchingHandleStates = new ArrayList<>(states);
                     mismatchingHandleStates.add(mismatchingHandleState);
 
                     assertTrue(matcher.match(descriptor, states.get(0)));
@@ -165,9 +166,7 @@ class MdibTypeValidatorTest {
                     multiStateMap.forEach(
                             (descInner, stateInner) -> {
                                 if (descOuter == descInner) return; // don't compare with the same class
-                                Class<V> stateInnerCast = (Class<V>) stateInner;
-
-                                V mismatchingTypeState = MockModelFactory.createContextState("e1", "handle", stateInnerCast);
+                                var mismatchingTypeState = MockModelFactory.createContextState("e1", "handle", stateInner).build();
 
                                 final List<AbstractState> mismatchingTypeStates = Arrays.asList(
                                         states.get(0),
@@ -180,8 +179,7 @@ class MdibTypeValidatorTest {
                     singleStateMap.forEach(
                             (descInner, stateInner) -> {
                                 if (descOuter == descInner) return; // don't compare with the same class
-                                Class<U> stateInnerCast = (Class<U>) stateInner;
-                                U illegalStateType = MockModelFactory.createState("handle", stateInnerCast);
+                                var illegalStateType = MockModelFactory.createState("handle", stateInner).build();
 
                                 assertFalse(matcher.match(descriptor, illegalStateType));
                                 final List<AbstractState> mismatchingTypeStates = Arrays.asList(
@@ -197,14 +195,11 @@ class MdibTypeValidatorTest {
     }
 
     @Test
-    <T extends AbstractDescriptor, U extends AbstractState, V extends AbstractContextState> void singleAndMultiStateMatchers() {
+    void singleAndMultiStateMatchers() {
         singleStateMap.forEach(
                 (descOuter, stateOuter) -> {
-                    Class<T> descOuterCast = (Class<T>) descOuter; // to force one warning up here
-                    Class<U> stateOuterCast = (Class<U>) stateOuter;
-
-                    T descriptor = MockModelFactory.createDescriptor("handle", descOuterCast);
-                    U state = MockModelFactory.createState("handle", stateOuterCast);
+                    var descriptor = MockModelFactory.createDescriptor("handle", descOuter).build();
+                    var state = MockModelFactory.createState("handle", stateOuter).build();
 
                     assertTrue(matcher.isSingleStateDescriptor(descriptor));
                     assertTrue(matcher.isSingleState(state));
@@ -213,11 +208,8 @@ class MdibTypeValidatorTest {
 
         multiStateMap.forEach(
                 (descOuter, stateOuter) -> {
-                    Class<T> descOuterCast = (Class<T>) descOuter; // to force one warning up here
-                    Class<V> stateOuterCast = (Class<V>) stateOuter;
-
-                    T descriptor = MockModelFactory.createDescriptor("handle", descOuterCast);
-                    V state = MockModelFactory.createContextState("c", "handle", stateOuterCast);
+                    var descriptor = MockModelFactory.createDescriptor("handle", descOuter).build();
+                    var state = MockModelFactory.createContextState("c", "handle", stateOuter).build();
 
                     assertTrue(matcher.isMultiStateDescriptor(descriptor));
                     assertTrue(matcher.isMultiState(state));

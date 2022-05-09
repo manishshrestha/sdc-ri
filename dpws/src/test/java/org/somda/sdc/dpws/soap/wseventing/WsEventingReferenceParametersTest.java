@@ -66,6 +66,7 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.both;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -117,9 +118,6 @@ class WsEventingReferenceParametersTest extends DpwsTest {
                 MarshallingHelper.handleRequestResponse(getInjector(), reqResSrv, inStream, outStream, communicationContext);
             }
         });
-
-        HostedServiceType hst = dpwsFactory.createHostedServiceType();
-        hst.getEndpointReference().add(wsaUtil.createEprWithAddress(hostedServiceUri));
 
         RequestResponseClientFactory rrcFactory = getInjector().getInstance(RequestResponseClientFactory.class);
         TransportBindingFactory tbFactory = getInjector().getInstance(TransportBindingFactory.class);
@@ -237,7 +235,6 @@ class WsEventingReferenceParametersTest extends DpwsTest {
         void processSubscribe(RequestResponseObject rrObj) throws SoapFaultException {
             super.processSubscribe(rrObj);
 
-            ReferenceParametersType referenceParameters = new ReferenceParametersType();
             // create some random child element
             var fac = DocumentBuilderFactory.newInstance();
             DocumentBuilder builder;
@@ -251,12 +248,18 @@ class WsEventingReferenceParametersTest extends DpwsTest {
             var root = doc.createElementNS("ftp://namespace.example.com", "MyFunkyRoot");
             root.setTextContent(REFERENCE);
 
-            referenceParameters.setAny(List.of(root));
+            ReferenceParametersType referenceParameters = ReferenceParametersType.builder()
+                .withAny(List.of(root))
+                .build();
 
             SubscribeResponse body = soapUtil.getBody(rrObj.getResponse(), SubscribeResponse.class)
                     .orElseThrow(() -> new RuntimeException("err"));
-
-            body.getSubscriptionManager().setReferenceParameters(referenceParameters);
+            body = body.newCopyBuilder()
+                .withSubscriptionManager(
+                    body.getSubscriptionManager().newCopyBuilder()
+                        .withReferenceParameters(referenceParameters)
+                        .build()
+                ).build();
 
             soapUtil.setBody(body, rrObj.getResponse());
         }

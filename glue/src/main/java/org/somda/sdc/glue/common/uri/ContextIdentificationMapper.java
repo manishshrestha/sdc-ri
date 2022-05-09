@@ -56,7 +56,7 @@ public class ContextIdentificationMapper {
         } catch (UriMapperParsingException e) {
             throw new UriMapperGenerationArgumentException(
                     "No valid URI could be generated from the given instance identifier: " +
-                            instanceIdentifier.toString() + " and context source: " + contextSource.toString());
+                            instanceIdentifier + " and context source: " + contextSource);
         }
 
         return resultingUri;
@@ -91,7 +91,7 @@ public class ContextIdentificationMapper {
                 throw new UriMapperParsingException(
                         "The expected context source: '" + expectedContextSource.getSourceString() +
                                 "' does not match with the actual context source: '" + contextSource + "'" +
-                                ContextIdentificationMapper.class.toString());
+                                ContextIdentificationMapper.class);
             }
 
             Matcher instanceIdentifierMatcher = INSTANCE_IDENTIFIER_PATTERN.matcher(uriMatcher.group("path"));
@@ -100,21 +100,20 @@ public class ContextIdentificationMapper {
                 final String root = instanceIdentifierMatcher.group("root");
                 final String extension = instanceIdentifierMatcher.group("extension");
 
-                final InstanceIdentifier instanceIdentifier = new InstanceIdentifier();
                 final String decodedRoot = UrlUtf8.decode(root);
-                instanceIdentifier.setRootName(decodedRoot.equals(NULL_FLAVOR_ROOT) ? null : decodedRoot);
                 final String decodedExtension = UrlUtf8.decode(extension);
-                instanceIdentifier.setExtensionName(decodedExtension.isEmpty() ? null : decodedExtension);
 
-                return instanceIdentifier;
+                return InstanceIdentifier.builder()
+                    .withRootName(decodedRoot.equals(NULL_FLAVOR_ROOT) ? null : decodedRoot)
+                    .withExtensionName(decodedExtension.isEmpty() ? null : decodedExtension).build();
             } else {
                 throw new UriMapperParsingException(
                         "Invalid encoding of InstanceIdentifier in the URI for the mapper " +
-                                ContextIdentificationMapper.class.toString());
+                                ContextIdentificationMapper.class);
             }
         } else {
             throw new UriMapperParsingException("Invalid URI for the mapper " +
-                    ContextIdentificationMapper.class.toString());
+                    ContextIdentificationMapper.class);
         }
     }
 

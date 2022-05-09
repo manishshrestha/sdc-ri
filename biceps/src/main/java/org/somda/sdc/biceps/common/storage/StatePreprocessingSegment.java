@@ -1,7 +1,6 @@
 package org.somda.sdc.biceps.common.storage;
 
 import org.somda.sdc.biceps.common.MdibStateModifications;
-import org.somda.sdc.biceps.model.participant.AbstractState;
 
 /**
  * A segment that is applied during state modifications.
@@ -22,11 +21,10 @@ public interface StatePreprocessingSegment {
      * In a sequence of modifications this function processes one modification.
      *
      * @param modifications all modifications that are being processed.
-     * @param modification  the current modification to be processed.
      * @param storage       the MDIB storage for access.
      * @throws Exception an arbitrary exception if something goes wrong.
      */
-    void process(MdibStateModifications modifications, AbstractState modification, MdibStorage storage)
+    void process(MdibStateModifications modifications, MdibStorage storage)
             throws Exception;
 
     /**

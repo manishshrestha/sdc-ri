@@ -72,29 +72,29 @@ class ReportGeneratorTest {
         actualReport = ArgumentCaptor.forClass(Object.class);
 
         expectedAlertStates = List.of(
-                MockModelFactory.createState(Handles.ALERTCONDITION_0, AlertConditionState.class),
-                MockModelFactory.createState(Handles.ALERTCONDITION_1, AlertConditionState.class),
-                MockModelFactory.createState(Handles.ALERTSYSTEM_0, AlertSystemState.class)
+                MockModelFactory.createState(Handles.ALERTCONDITION_0, AlertConditionState.builder()).build(),
+                MockModelFactory.createState(Handles.ALERTCONDITION_1, AlertConditionState.builder()).build(),
+                MockModelFactory.createState(Handles.ALERTSYSTEM_0, AlertSystemState.builder()).build()
         );
         expectedComponentStates = List.of(
-                MockModelFactory.createState(Handles.MDS_0, MdsState.class),
-                MockModelFactory.createState(Handles.VMD_0, VmdState.class),
-                MockModelFactory.createState(Handles.BATTERY_0, BatteryState.class)
+                MockModelFactory.createState(Handles.MDS_0, MdsState.builder()).build(),
+                MockModelFactory.createState(Handles.VMD_0, VmdState.builder()).build(),
+                MockModelFactory.createState(Handles.BATTERY_0, BatteryState.builder()).build()
         );
         expectedContextStates = List.of(
-                MockModelFactory.createState(Handles.CONTEXT_0, PatientContextState.class),
-                MockModelFactory.createState(Handles.CONTEXT_1, LocationContextState.class),
-                MockModelFactory.createState(Handles.CONTEXT_2, EnsembleContextState.class)
+                MockModelFactory.createState(Handles.CONTEXT_0, PatientContextState.builder()).build(),
+                MockModelFactory.createState(Handles.CONTEXT_1, LocationContextState.builder()).build(),
+                MockModelFactory.createState(Handles.CONTEXT_2, EnsembleContextState.builder()).build()
         );
         expectedMetricStates = List.of(
-                MockModelFactory.createState(Handles.METRIC_0, NumericMetricState.class),
-                MockModelFactory.createState(Handles.METRIC_1, StringMetricState.class),
-                MockModelFactory.createState(Handles.METRIC_2, EnumStringMetricState.class)
+                MockModelFactory.createState(Handles.METRIC_0, NumericMetricState.builder()).build(),
+                MockModelFactory.createState(Handles.METRIC_1, StringMetricState.builder()).build(),
+                MockModelFactory.createState(Handles.METRIC_2, EnumStringMetricState.builder()).build()
         );
         expectedOperationStates = List.of(
-                MockModelFactory.createState(Handles.OPERATION_0, ActivateOperationState.class),
-                MockModelFactory.createState(Handles.OPERATION_1, SetStringOperationState.class),
-                MockModelFactory.createState(Handles.OPERATION_2, SetComponentStateOperationState.class)
+                MockModelFactory.createState(Handles.OPERATION_0, ActivateOperationState.builder()).build(),
+                MockModelFactory.createState(Handles.OPERATION_1, SetStringOperationState.builder()).build(),
+                MockModelFactory.createState(Handles.OPERATION_2, SetComponentStateOperationState.builder()).build()
         );
     }
 
@@ -345,8 +345,8 @@ class ReportGeneratorTest {
     @Test
     void onWaveformChange() throws Exception {
         final List<RealTimeSampleArrayMetricState> expectedStates = Arrays.asList(
-                MockModelFactory.createState(Handles.METRIC_0, RealTimeSampleArrayMetricState.class),
-                MockModelFactory.createState(Handles.METRIC_1, RealTimeSampleArrayMetricState.class)
+                MockModelFactory.createState(Handles.METRIC_0, RealTimeSampleArrayMetricState.builder()).build(),
+                MockModelFactory.createState(Handles.METRIC_1, RealTimeSampleArrayMetricState.builder()).build()
         );
         eventBus.post(new WaveformStateModificationMessage(mdibAccess, expectedStates));
         AbstractReport abstractReport = testStateReportHeader(ActionConstants.ACTION_WAVEFORM_STREAM, WaveformStream.class);

@@ -12,9 +12,9 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.somda.sdc.common.util.ExecutorWrapperService;
-import org.somda.sdc.dpws.ThisDeviceBuilder;
-import org.somda.sdc.dpws.ThisModelBuilder;
 import org.somda.sdc.dpws.client.Client;
+import org.somda.sdc.dpws.model.ThisDeviceType;
+import org.somda.sdc.dpws.model.ThisModelType;
 import org.somda.sdc.dpws.service.EventSinkAccess;
 import org.somda.sdc.dpws.service.HostedServiceProxy;
 import org.somda.sdc.dpws.service.HostingServiceProxy;
@@ -100,8 +100,8 @@ class SdcRemoteDeviceWatchdogTest {
         hostingServiceProxy = injector.getInstance(HostingServiceFactory.class).createHostingServiceProxy(
                 eprAddress,
                 Collections.emptyList(),
-                injector.getInstance(ThisDeviceBuilder.class).get(),
-                injector.getInstance(ThisModelBuilder.class).get(),
+                ThisDeviceType.builder().build(),
+                ThisModelType.builder().build(),
                 hostedServices,
                 0,
                 mock(RequestResponseClient.class),

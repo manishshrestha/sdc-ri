@@ -1,10 +1,8 @@
 package org.somda.sdc.biceps.common.preprocessing;
 
 import org.somda.sdc.biceps.common.MdibDescriptionModification;
-import org.somda.sdc.biceps.common.MdibDescriptionModifications;
 import org.somda.sdc.biceps.common.storage.DescriptionPreprocessingSegment;
 import org.somda.sdc.biceps.common.storage.MdibStorage;
-import org.somda.sdc.biceps.model.participant.AbstractDescriptor;
 import org.somda.sdc.biceps.model.participant.AlertSystemDescriptor;
 import org.somda.sdc.biceps.model.participant.ChannelDescriptor;
 import org.somda.sdc.biceps.model.participant.MdsDescriptor;
@@ -12,56 +10,64 @@ import org.somda.sdc.biceps.model.participant.ScoDescriptor;
 import org.somda.sdc.biceps.model.participant.SystemContextDescriptor;
 import org.somda.sdc.biceps.model.participant.VmdDescriptor;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 /**
  * Removes children from descriptors in order to avoid redundant information in the MDIB storage.
  */
 public class DescriptorChildRemover implements DescriptionPreprocessingSegment {
 
     @Override
-    public void process(MdibDescriptionModifications allModifications,
-                        MdibDescriptionModification currentModification,
-                        MdibStorage storage) throws Exception {
-        final AbstractDescriptor descriptor = currentModification.getDescriptor();
-        if (descriptor instanceof MdsDescriptor) {
-            removeChildren((MdsDescriptor) descriptor);
-        } else if (descriptor instanceof VmdDescriptor) {
-            removeChildren((VmdDescriptor) descriptor);
-        } else if (descriptor instanceof ChannelDescriptor) {
-            removeChildren((ChannelDescriptor) descriptor);
-        } else if (descriptor instanceof ScoDescriptor) {
-            removeChildren((ScoDescriptor) descriptor);
-        } else if (descriptor instanceof SystemContextDescriptor) {
-            removeChildren((SystemContextDescriptor) descriptor);
-        } else if (descriptor instanceof AlertSystemDescriptor) {
-            removeChildren((AlertSystemDescriptor) descriptor);
-        }
+    public List<MdibDescriptionModification> process(List<MdibDescriptionModification> allModifications,
+                                                     MdibStorage storage) throws Exception {
+        return allModifications.stream().map(mod -> {
+            final var descriptorBuilder = mod.getDescriptor().newCopyBuilder();
+            if (descriptorBuilder instanceof MdsDescriptor.Builder) {
+                removeChildren((MdsDescriptor.Builder) descriptorBuilder);
+            } else if (descriptorBuilder instanceof VmdDescriptor.Builder) {
+                removeChildren((VmdDescriptor.Builder) descriptorBuilder);
+            } else if (descriptorBuilder instanceof ChannelDescriptor.Builder) {
+                removeChildren((ChannelDescriptor.Builder) descriptorBuilder);
+            } else if (descriptorBuilder instanceof ScoDescriptor.Builder) {
+                removeChildren((ScoDescriptor.Builder) descriptorBuilder);
+            } else if (descriptorBuilder instanceof SystemContextDescriptor.Builder) {
+                removeChildren((SystemContextDescriptor.Builder) descriptorBuilder);
+            } else if (descriptorBuilder instanceof AlertSystemDescriptor.Builder) {
+                removeChildren((AlertSystemDescriptor.Builder) descriptorBuilder);
+            }
+            final var descriptor = descriptorBuilder.build();
+
+            mod.setDescriptor(descriptor);
+            return mod;
+        }).collect(Collectors.toList());
     }
 
-    private void removeChildren(AlertSystemDescriptor descriptor) {
-        descriptor.setAlertSignal(null);
-        descriptor.setAlertCondition(null);
+    private void removeChildren(AlertSystemDescriptor.Builder descriptor) {
+        descriptor.withAlertSignal()
+                .withAlertCondition();
     }
 
-    private void removeChildren(SystemContextDescriptor descriptor) {
-        descriptor.setLocationContext(null);
-        descriptor.setPatientContext(null);
-        descriptor.setMeansContext(null);
-        descriptor.setOperatorContext(null);
-        descriptor.setWorkflowContext(null);
-        descriptor.setEnsembleContext(null);
+    private void removeChildren(SystemContextDescriptor.Builder descriptor) {
+        descriptor.withLocationContext(null)
+            .withPatientContext(null)
+            .withMeansContext()
+            .withOperatorContext()
+            .withWorkflowContext()
+            .withEnsembleContext();
     }
 
-    private void removeChildren(ScoDescriptor descriptor) {
-        descriptor.setOperation(null);
+    private void removeChildren(ScoDescriptor.Builder descriptor) {
+        descriptor.withOperation();
     }
 
-    private void removeChildren(ChannelDescriptor descriptor) {
-        descriptor.setMetric(null);
+    private void removeChildren(ChannelDescriptor.Builder descriptor) {
+        descriptor.withMetric();
     }
 
-    private void removeChildren(VmdDescriptor descriptor) {
-        descriptor.setChannel(null);
-        descriptor.setAlertSystem(null);
+    private void removeChildren(VmdDescriptor.Builder descriptor) {
+        descriptor.withChannel()
+            .withAlertSystem(null);
     }
 
     /**
@@ -70,12 +76,12 @@ public class DescriptorChildRemover implements DescriptionPreprocessingSegment {
      * Removes the battery, clock, system context, vmd, alert system and sco
      * @param mds without the children
      */
-    private void removeChildren(MdsDescriptor mds) {
-        mds.setBattery(null);
-        mds.setClock(null);
-        mds.setSystemContext(null);
-        mds.setVmd(null);
-        mds.setAlertSystem(null);
-        mds.setSco(null);
+    private void removeChildren(MdsDescriptor.Builder mds) {
+        mds.withBattery()
+            .withClock(null)
+            .withSystemContext(null)
+            .withVmd()
+            .withAlertSystem(null)
+            .withSco(null);
     }
 }

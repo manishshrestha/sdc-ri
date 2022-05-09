@@ -352,9 +352,7 @@ public class MdibDescriptionModifications {
      * @return this object for fluent access.
      */
     public MdibDescriptionModifications delete(String handle) {
-        final AbstractDescriptor descr = new AbstractDescriptor();
-        descr.setHandle(handle);
-        return add(MdibDescriptionModification.Type.DELETE, descr);
+        return add(MdibDescriptionModification.Type.DELETE, AbstractDescriptor.builder().withHandle(handle).build());
     }
 
     /**

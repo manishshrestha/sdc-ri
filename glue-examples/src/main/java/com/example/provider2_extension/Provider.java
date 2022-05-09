@@ -16,6 +16,7 @@ import org.somda.sdc.biceps.provider.access.factory.LocalMdibAccessFactory;
 import org.somda.sdc.dpws.DpwsFramework;
 import org.somda.sdc.dpws.DpwsUtil;
 import org.somda.sdc.dpws.device.DeviceSettings;
+import org.somda.sdc.dpws.model.ThisDeviceType;
 import org.somda.sdc.dpws.soap.SoapUtil;
 import org.somda.sdc.dpws.soap.wsaddressing.WsAddressingUtil;
 import org.somda.sdc.dpws.soap.wsaddressing.model.EndpointReferenceType;
@@ -103,10 +104,11 @@ public class Provider extends AbstractIdleService {
                         Collections.singleton(injector.getInstance(SdcRequiredTypesAndScopes.class)));
 
         DpwsUtil dpwsUtil = injector.getInstance(DpwsUtil.class);
-        sdcDevice.getHostingServiceAccess().setThisDevice(dpwsUtil.createDeviceBuilder()
-                .setFriendlyName(dpwsUtil.createLocalizedStrings()
-                        .add("en", "Provider with extensions example")
-                        .get()).get());
+        sdcDevice.getHostingServiceAccess().setThisDevice(ThisDeviceType.builder()
+            .withFriendlyName(dpwsUtil.createLocalizedStrings()
+                .add("en", "Provider with extensions example")
+                .get()
+            ).build());
     }
 
     public static void main(String[] args) throws SocketException, UnknownHostException {
@@ -149,21 +151,26 @@ public class Provider extends AbstractIdleService {
 
         // Change standardized values
         var state = stateOpt.get();
-        var val = state.getMetricValue();
-        if (val != null && val.getValue() != null) {
-            val.setValue(val.getValue().add(BigDecimal.ONE));
+        var oldVal = state.getMetricValue();
+        NumericMetricValue.Builder<?> newValBuilder;
+        if (oldVal != null && oldVal.getValue() != null) {
+            newValBuilder = oldVal.newCopyBuilder();
+            newValBuilder.withValue(oldVal.getValue().add(BigDecimal.ONE));
         } else {
-            val = new NumericMetricValue();
-            val.setValue(BigDecimal.ONE);
+            newValBuilder = NumericMetricValue.builder();
+            newValBuilder.withValue(BigDecimal.ONE);
         }
-        val.setDeterminationTime(Instant.now());
-        if (val.getMetricQuality() == null) {
-            var qual = new AbstractMetricValue.MetricQuality();
-            qual.setMode(GenerationMode.DEMO);
-            qual.setValidity(MeasurementValidity.VLD);
-            val.setMetricQuality(qual);
+        newValBuilder.withDeterminationTime(Instant.now());
+        if (oldVal.getMetricQuality() == null) {
+            var qual = AbstractMetricValue.MetricQuality.builder()
+                .withMode(GenerationMode.DEMO)
+                .withValidity(MeasurementValidity.VLD);
+            newValBuilder.withMetricQuality(qual.build());
         }
-        state.setMetricValue(val);
+
+        var stateBuilder = state.newCopyBuilder();
+
+        stateBuilder.withMetricValue(newValBuilder.build());
 
         var extValue = new JAXBElement<>(new QName(EXTENSION_NAMESPACE, EXTENSION_STATE_NAME), String.class, "");
 
@@ -172,15 +179,17 @@ public class Provider extends AbstractIdleService {
             if (!state.getExtension().getAny().isEmpty()) {
                 extValue = (JAXBElement<String>) state.getExtension().getAny().get(0);
             }
-        } else {
-            state.setExtension(new ExtensionType());
         }
-        extValue.setValue("Extension value " + val.getValue().toString());
+        extValue.setValue("Extension value " + oldVal.getValue().toString());
         state.getExtension().getAny().clear();
-        state.getExtension().getAny().add(extValue);
+        stateBuilder.withExtension(
+            ExtensionType.builder()
+                .withAny(extValue)
+                .build()
+        );
 
-        mdibAccess.writeStates(MdibStateModifications.create(MdibStateModifications.Type.METRIC).add(state));
-        LOG.info("Changed numeric metric value to {}", val.getValue());
+        mdibAccess.writeStates(MdibStateModifications.create(MdibStateModifications.Type.METRIC).add(stateBuilder.build()));
+        LOG.info("Changed numeric metric value to {}", oldVal.getValue());
     }
 
     @Override

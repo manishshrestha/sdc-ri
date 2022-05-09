@@ -149,10 +149,9 @@ class MdibTransferIT {
     }
 
     private LocationContextState createLocationContextState(String handle, ContextAssociation contextAssociation) {
-        var state = new LocationContextState();
-        state.setHandle(handle);
-        state.setDescriptorHandle(Handles.CONTEXTDESCRIPTOR_1);
-        state.setContextAssociation(contextAssociation);
-        return state;
+        return LocationContextState.builder()
+            .withHandle(handle)
+            .withDescriptorHandle(Handles.CONTEXTDESCRIPTOR_1)
+            .withContextAssociation(contextAssociation).build();
     }
 }

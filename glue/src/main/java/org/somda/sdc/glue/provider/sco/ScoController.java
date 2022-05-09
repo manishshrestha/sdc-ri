@@ -113,10 +113,7 @@ public class ScoController {
     }
 
     private LocalizedText createLocalizedText(String text) {
-        var localizedText = participantModelFactory.createLocalizedText();
-        localizedText.setLang("en");
-        localizedText.setValue(text);
-        return localizedText;
+        return LocalizedText.builder().withLang("en").withValue(text).build();
     }
 
     private InvocationResponse additionallySendResponseAsReport(Context context, InvocationResponse response) {

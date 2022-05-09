@@ -95,11 +95,11 @@ public class ComplexDeviceComponentMapper {
             final String codingSystemVersion = UrlUtf8.decode(matcher.group("codingSystemVersion"));
             final String code = UrlUtf8.decode(matcher.group("code"));
 
-            CodedValue codedValue = new CodedValue();
-            codedValue.setCodingSystem(codingSystem.isEmpty() ? null : codingSystem);
-            codedValue.setCodingSystemVersion(codingSystemVersion.isEmpty() ? null : codingSystemVersion);
-            codedValue.setCode(code.isEmpty() ? null : code);
-            return codedValue;
+            return CodedValue.builder()
+                .withCodingSystem(codingSystem.isEmpty() ? null : codingSystem)
+                .withCodingSystemVersion(codingSystemVersion.isEmpty() ? null : codingSystemVersion)
+                .withCode(code.isEmpty() ? null : code)
+                .build();
         }
 
         throw new UriMapperParsingException(

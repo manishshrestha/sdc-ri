@@ -74,8 +74,9 @@ class DiscoveredDeviceObserverTest extends DpwsTest {
 
     @Test
     void onHello() {
-        HelloType hType = objFactory.createHelloType();
-        hType.setEndpointReference(expectedEpr);
+        HelloType hType = HelloType.builder()
+            .withEndpointReference(expectedEpr)
+            .build();
         HelloMessage hMsg = new HelloMessage(hType);
 
         when(discoveredDeviceResolver.resolve(hMsg))
@@ -100,8 +101,9 @@ class DiscoveredDeviceObserverTest extends DpwsTest {
 
     @Test
     void onBye() {
-        ByeType bType = objFactory.createByeType();
-        bType.setEndpointReference(expectedEpr);
+        ByeType bType = ByeType.builder()
+            .withEndpointReference(expectedEpr)
+            .build();
         ByeMessage bMsg = new ByeMessage(bType);
 
         helloByeAndProbeMatchesObserverImpl.registerDiscoveryObserver(new org.somda.sdc.dpws.client.DiscoveryObserver() {
@@ -118,10 +120,10 @@ class DiscoveredDeviceObserverTest extends DpwsTest {
 
     @Test
     void onProbeMatches() {
-        ProbeMatchType pmType = objFactory.createProbeMatchType();
-        pmType.setEndpointReference(expectedEpr);
-        ProbeMatchesType pmsType = objFactory.createProbeMatchesType();
-        pmsType.setProbeMatch(Collections.singletonList(pmType));
+        ProbeMatchType pmType = ProbeMatchType.builder()
+            .withEndpointReference(expectedEpr).build();
+        ProbeMatchesType pmsType = ProbeMatchesType.builder()
+            .withProbeMatch(Collections.singletonList(pmType)).build();
 
         String expectedId = "expectedId";
         ProbeMatchesMessage pmMsg = new ProbeMatchesMessage(expectedId, pmsType);

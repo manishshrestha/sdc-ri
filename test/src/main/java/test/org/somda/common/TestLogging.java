@@ -132,10 +132,10 @@ public class TestLogging {
      */
     public static void configure() {
         if (CIDetector.isRunningInCi()) {
-            Configurator.initialize(ciConfiguration());
+            Configurator.reconfigure(ciConfiguration());
         } else {
             // no file appender when not running in ci
-            Configurator.initialize(localConfig(Level.DEBUG));
+            Configurator.reconfigure(localConfig(Level.INFO));
         }
     }
 }

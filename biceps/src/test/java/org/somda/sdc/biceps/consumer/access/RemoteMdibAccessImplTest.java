@@ -146,7 +146,7 @@ class RemoteMdibAccessImplTest {
 
         {
             // Given state updates with no corresponding descriptor to be inserted into a remote mdib access
-            VmdState vmdState = MockModelFactory.createState(Handles.VMD_0, expectedStateVersion, expectedDescriptorVersion, VmdState.class);
+            VmdState vmdState = MockModelFactory.createState(Handles.VMD_0, expectedStateVersion, expectedDescriptorVersion, VmdState.builder()).build();
             MdibStateModifications componentStateModifications = MdibStateModifications.create(MdibStateModifications.Type.COMPONENT)
                     .add(vmdState);
 
@@ -173,7 +173,7 @@ class RemoteMdibAccessImplTest {
         {
             // Given multi-state updates with no corresponding descriptor to be inserted into a remote mdib access
             LocationContextState contextState = MockModelFactory.createContextState(Handles.CONTEXT_0,
-                    Handles.CONTEXTDESCRIPTOR_0, expectedStateVersion, expectedDescriptorVersion, LocationContextState.class);
+                    Handles.CONTEXTDESCRIPTOR_0, expectedStateVersion, expectedDescriptorVersion, LocationContextState.builder()).build();
             MdibStateModifications contextStateModifications = MdibStateModifications.create(MdibStateModifications.Type.CONTEXT)
                     .add(contextState);
 

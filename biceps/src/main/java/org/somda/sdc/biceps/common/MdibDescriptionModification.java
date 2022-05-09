@@ -14,7 +14,7 @@ import java.util.Optional;
 public class MdibDescriptionModification {
 
     private final Type modificationType;
-    private final AbstractDescriptor descriptor;
+    private AbstractDescriptor descriptor;
     private final List<AbstractState> states;
     private final String parentHandle;
 
@@ -41,6 +41,8 @@ public class MdibDescriptionModification {
     public AbstractDescriptor getDescriptor() {
         return descriptor;
     }
+
+    public void setDescriptor(AbstractDescriptor descriptor) { this.descriptor = descriptor; }
 
     public String getHandle() {
         return descriptor.getHandle();

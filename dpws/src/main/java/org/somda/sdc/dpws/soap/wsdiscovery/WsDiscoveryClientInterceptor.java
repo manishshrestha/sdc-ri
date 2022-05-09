@@ -200,8 +200,9 @@ public class WsDiscoveryClientInterceptor implements WsDiscoveryClient {
     @Override
     public ListenableFuture<ResolveMatchesType> sendResolve(EndpointReferenceType epr)
             throws MarshallingException, TransportException, InterceptorException {
-        ResolveType resolveType = wsdFactory.createResolveType();
-        resolveType.setEndpointReference(epr);
+        ResolveType resolveType = ResolveType.builder()
+            .withEndpointReference(epr)
+            .build();
 
         SoapMessage resolveMsg = soapUtil.createMessage(WsDiscoveryConstants.WSA_ACTION_RESOLVE,
                 WsDiscoveryConstants.WSA_UDP_TO, wsdFactory.createResolve(resolveType));
@@ -220,14 +221,15 @@ public class WsDiscoveryClientInterceptor implements WsDiscoveryClient {
     }
 
     private SoapMessage createProbeMessage(Collection<QName> types, Collection<String> scopes) {
-        ProbeType probeType = wsdFactory.createProbeType();
-        probeType.setTypes(new ArrayList<>(types));
-        ScopesType scopesType = wsdFactory.createScopesType();
-        // Always create RFC3986 by default
-        // See http://docs.oasis-open.org/ws-dd/discovery/1.1/os/wsdd-discovery-1.1-spec-os.html#_Toc234231831
-        scopesType.setMatchBy(MatchBy.RFC3986.getUri());
-        scopesType.setValue(new ArrayList<>(scopes));
-        probeType.setScopes(scopesType);
+        ScopesType scopesType = ScopesType.builder()
+            // Always create RFC3986 by default
+            // See http://docs.oasis-open.org/ws-dd/discovery/1.1/os/wsdd-discovery-1.1-spec-os.html#_Toc234231831
+            .withMatchBy(MatchBy.RFC3986.getUri())
+            .withValue(new ArrayList<>(scopes)).build();
+
+        ProbeType probeType = ProbeType.builder()
+            .addTypes(new ArrayList<>(types))
+            .withScopes(scopesType).build();
 
         return soapUtil.createMessage(WsDiscoveryConstants.WSA_ACTION_PROBE,
                 WsDiscoveryConstants.WSA_UDP_TO, wsdFactory.createProbe(probeType));

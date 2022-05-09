@@ -7,7 +7,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.somda.sdc.common.CommonConfig;
 import org.somda.sdc.common.logging.InstanceLogger;
-import org.somda.sdc.dpws.DpwsModelCloning;
 import org.somda.sdc.dpws.DpwsConstants;
 import org.somda.sdc.dpws.model.LocalizedStringType;
 import org.somda.sdc.dpws.model.ThisDeviceType;
@@ -41,7 +40,6 @@ public class HostingServiceInterceptor implements HostingService {
     private static final Logger LOG = LogManager.getLogger(HostingServiceInterceptor.class);
 
     private final WsDiscoveryTargetService targetService;
-    private final DpwsModelCloning dpwsModelCloning;
     private final WsAddressingUtil wsaUtil;
     private final MetadataSectionUtil metadataSectionUtil;
     private final List<HostedService> hostedServices;
@@ -60,13 +58,11 @@ public class HostingServiceInterceptor implements HostingService {
                               SoapFaultFactory soapFaultFactory,
                               ObjectFactory mexFactory,
                               org.somda.sdc.dpws.model.ObjectFactory dpwsFactory,
-                              DpwsModelCloning dpwsModelCloning,
                               WsAddressingUtil wsaUtil,
                               MetadataSectionUtil metadataSectionUtil,
                               @Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier) {
         this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);
         this.targetService = targetService;
-        this.dpwsModelCloning = dpwsModelCloning;
         this.wsaUtil = wsaUtil;
         this.metadataSectionUtil = metadataSectionUtil;
         this.hostedServices = new ArrayList<>();
@@ -75,18 +71,15 @@ public class HostingServiceInterceptor implements HostingService {
         this.mexFactory = mexFactory;
         this.dpwsFactory = dpwsFactory;
 
-        this.thisModel = dpwsFactory.createThisModelType();
-        LocalizedStringType manufacturer = dpwsFactory.createLocalizedStringType();
-        manufacturer.setValue("Unknown Manufacturer");
-        this.thisModel.getManufacturer().add(manufacturer);
-        LocalizedStringType modelName = dpwsFactory.createLocalizedStringType();
-        modelName.setValue("Unknown ModelName");
-        this.thisModel.getModelName().add(modelName);
+        LocalizedStringType manufacturer = LocalizedStringType.builder().withValue("Unknown Manufacturer").build();
+        LocalizedStringType modelName = LocalizedStringType.builder().withValue("Unknown ModelName").build();
+        this.thisModel = ThisModelType.builder()
+            .withManufacturer(manufacturer)
+            .withModelName(modelName)
+            .build();
 
-        this.thisDevice = dpwsFactory.createThisDeviceType();
-        LocalizedStringType friendlyName = dpwsFactory.createLocalizedStringType();
-        friendlyName.setValue("Unknown FriendlyName");
-        this.thisDevice.getFriendlyName().add(friendlyName);
+        LocalizedStringType friendlyName = LocalizedStringType.builder().withValue("Unknown FriendlyName").build();
+        this.thisDevice = ThisDeviceType.builder().withFriendlyName(friendlyName).build();
     }
 
     @Override
@@ -103,15 +96,12 @@ public class HostingServiceInterceptor implements HostingService {
                     rrObj.getRequest().getWsAddressingHeader().getMessageId().orElse(null));
         }
 
-        Metadata metadata = mexFactory.createMetadata();
-        List<MetadataSection> metadataSection = metadata.getMetadataSection();
-
-        metadataSection.add(createThisModel());
-        metadataSection.add(createThisDevice());
-        metadataSection.add(metadataSectionUtil.createRelationship(targetService.getEndpointReference(),
-                targetService.getTypes(), hostedServices));
-
-        metadata.setMetadataSection(metadataSection);
+        var metadata = Metadata.builder()
+            .addMetadataSection(createThisModel())
+            .addMetadataSection(createThisDevice())
+            .addMetadataSection(metadataSectionUtil.createRelationship(targetService.getEndpointReference(),
+                targetService.getTypes(), hostedServices))
+            .build();
 
         rrObj.getResponse().getWsAddressingHeader().setAction(
                 wsaUtil.createAttributedURIType(WsTransferConstants.WSA_ACTION_GET_RESPONSE));
@@ -120,17 +110,15 @@ public class HostingServiceInterceptor implements HostingService {
     }
 
     private MetadataSection createThisModel() {
-        MetadataSection metadataSection = mexFactory.createMetadataSection();
-        metadataSection.setDialect(DpwsConstants.MEX_DIALECT_THIS_MODEL);
-        metadataSection.setAny(dpwsFactory.createThisModel(getThisModel()));
-        return metadataSection;
+        return MetadataSection.builder()
+            .withDialect(DpwsConstants.MEX_DIALECT_THIS_MODEL)
+            .withAny(dpwsFactory.createThisModel(getThisModel())).build();
     }
 
     private MetadataSection createThisDevice() {
-        MetadataSection metadataSection = mexFactory.createMetadataSection();
-        metadataSection.setDialect(DpwsConstants.MEX_DIALECT_THIS_DEVICE);
-        metadataSection.setAny(dpwsFactory.createThisDevice(getThisDevice()));
-        return metadataSection;
+        return MetadataSection.builder()
+            .withDialect(DpwsConstants.MEX_DIALECT_THIS_DEVICE)
+            .withAny(dpwsFactory.createThisDevice(getThisDevice())).build();
     }
 
     @Override
@@ -140,32 +128,34 @@ public class HostingServiceInterceptor implements HostingService {
 
     @Override
     public ThisModelType getThisModel() {
-        return dpwsModelCloning.deepCopy(thisModel);
+        return thisModel;
     }
 
     @Override
     public void setThisModel(ThisModelType thisModel) {
-        this.thisModel = dpwsModelCloning.deepCopy(thisModel);
-        this.thisModel.setManufacturer(cutMaxFieldSize(thisModel.getManufacturer()));
-        this.thisModel.setModelName(cutMaxFieldSize(thisModel.getModelName()));
-        this.thisModel.setModelNumber(cutMaxFieldSize(thisModel.getModelNumber()));
-        this.thisModel.setManufacturerUrl(cutMaxUriSize(thisModel.getManufacturerUrl()));
-        this.thisModel.setPresentationUrl(cutMaxUriSize(thisModel.getPresentationUrl()));
-        this.thisModel.setModelUrl(cutMaxUriSize(thisModel.getModelUrl()));
+        this.thisModel = thisModel.newCopyBuilder()
+            .withManufacturer(cutMaxFieldSize(thisModel.getManufacturer()))
+            .withModelName(cutMaxFieldSize(thisModel.getModelName()))
+            .withModelNumber(cutMaxFieldSize(thisModel.getModelNumber()))
+            .withManufacturerUrl(cutMaxUriSize(thisModel.getManufacturerUrl()))
+            .withPresentationUrl(cutMaxUriSize(thisModel.getPresentationUrl()))
+            .withModelUrl(cutMaxUriSize(thisModel.getModelUrl()))
+            .build();
         targetService.setMetadataModified();
     }
 
     @Override
     public ThisDeviceType getThisDevice() {
-        return dpwsModelCloning.deepCopy(thisDevice);
+        return thisDevice;
     }
 
     @Override
     public void setThisDevice(ThisDeviceType thisDevice) {
-        this.thisDevice = dpwsModelCloning.deepCopy(thisDevice);
-        this.thisDevice.setFriendlyName(cutMaxFieldSize(thisDevice.getFriendlyName()));
-        this.thisDevice.setFirmwareVersion(cutMaxFieldSize(thisDevice.getFirmwareVersion()));
-        this.thisDevice.setSerialNumber(cutMaxFieldSize(thisDevice.getSerialNumber()));
+        this.thisDevice = thisDevice.newCopyBuilder()
+            .withFriendlyName(cutMaxFieldSize(thisDevice.getFriendlyName()))
+            .withFirmwareVersion(cutMaxFieldSize(thisDevice.getFirmwareVersion()))
+            .withSerialNumber(cutMaxFieldSize(thisDevice.getSerialNumber()))
+            .build();
         targetService.setMetadataModified();
     }
 
@@ -192,8 +182,9 @@ public class HostingServiceInterceptor implements HostingService {
     private List<LocalizedStringType> cutMaxFieldSize(List<LocalizedStringType> texts) {
         var newList = new ArrayList<LocalizedStringType>(texts.size());
         for (var text : texts) {
-            var localizedText = dpwsModelCloning.deepCopy(text);
-            localizedText.setValue(cutMaxFieldSize(text.getValue()));
+            var localizedText = text.newCopyBuilder()
+                .withValue(cutMaxFieldSize(text.getValue()))
+                .build();
             newList.add(localizedText);
         }
 

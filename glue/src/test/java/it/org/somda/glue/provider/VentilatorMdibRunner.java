@@ -68,30 +68,30 @@ public class VentilatorMdibRunner implements SdcDevicePlugin {
         final MdibStateModifications modifications = MdibStateModifications.create(MdibStateModifications.Type.CONTEXT);
         for (AbstractContextState contextState : mdibAccess.getContextStates(HANDLE_LOCATIONCONTEXT)) {
             if (contextState.getContextAssociation().equals(ContextAssociation.ASSOC)) {
-                contextState.setContextAssociation(ContextAssociation.DIS);
-                modifications.add(contextState);
+                modifications.add(contextState.newCopyBuilder().withContextAssociation(ContextAssociation.DIS).build());
             }
         }
         mdibAccess.writeStates(modifications);
 
         modifications.clear();
         for (AbstractContextState contextState : mdibAccess.getContextStates(HANDLE_LOCATIONCONTEXT)) {
+            var contextStateBuilder = contextState.newCopyBuilder();
             if (contextState.getContextAssociation().equals(ContextAssociation.DIS)) {
-                contextState.setContextAssociation(ContextAssociation.NO);
+                contextStateBuilder.withContextAssociation(ContextAssociation.NO);
             }
-            modifications.add(contextState);
+            modifications.add(contextStateBuilder.build());
         }
 
-        LocationContextState locationContextState = new LocationContextState();
-        locationContextState.setContextAssociation(ContextAssociation.ASSOC);
-        locationContextState.setLocationDetail(newLocation);
-        locationContextState.getIdentification().add(identifier);
-        locationContextState.setDescriptorHandle(HANDLE_LOCATIONCONTEXT);
-        locationContextState.setHandle(HANDLE_LOCATIONCONTEXT + "_state" + locationContextHandleSuffixCounter++);
-        InstanceIdentifier validator = new InstanceIdentifier();
-        validator.setRootName("urn:validator:demo");
-        locationContextState.getValidator().add(validator);
-        modifications.add(locationContextState);
+        var locationContextState = LocationContextState.builder()
+            .withContextAssociation(ContextAssociation.ASSOC)
+            .withLocationDetail(newLocation)
+            .addIdentification(identifier)
+            .withDescriptorHandle(HANDLE_LOCATIONCONTEXT)
+            .withHandle(HANDLE_LOCATIONCONTEXT + "_state" + locationContextHandleSuffixCounter++);
+        var validator = InstanceIdentifier.builder()
+            .withRootName("urn:validator:demo");
+        locationContextState.addValidator(validator.build());
+        modifications.add(locationContextState.build());
         mdibAccess.writeStates(modifications);
     }
 
@@ -106,22 +106,24 @@ public class VentilatorMdibRunner implements SdcDevicePlugin {
     }
 
     private void changeVentilatorModeAlarm(ReadTransaction readTransaction, MdibStateModifications modifications, Boolean ventilatorModeAlarm) {
-        final AlertConditionState conditionState = readTransaction.getState(HANDLE_BAD_MDC_DEV_SYS_PT_VENT_VMD, AlertConditionState.class)
+        final var conditionState = readTransaction.getState(HANDLE_BAD_MDC_DEV_SYS_PT_VENT_VMD, AlertConditionState.class)
                 .orElseThrow(() ->
-                        new RuntimeException(String.format("Could not find state for handle %s", HANDLE_BAD_MDC_DEV_SYS_PT_VENT_VMD)));
-        final AlertSignalState signalState = readTransaction.getState(HANDLE_VIS_BAD_MDC_DEV_SYS_PT_VENT_VMD, AlertSignalState.class)
+                        new RuntimeException(String.format("Could not find state for handle %s", HANDLE_BAD_MDC_DEV_SYS_PT_VENT_VMD)))
+            .newCopyBuilder();
+        final var signalState = readTransaction.getState(HANDLE_VIS_BAD_MDC_DEV_SYS_PT_VENT_VMD, AlertSignalState.class)
                 .orElseThrow(() ->
-                        new RuntimeException(String.format("Could not find state for handle %s", HANDLE_VIS_BAD_MDC_DEV_SYS_PT_VENT_VMD)));
+                        new RuntimeException(String.format("Could not find state for handle %s", HANDLE_VIS_BAD_MDC_DEV_SYS_PT_VENT_VMD)))
+            .newCopyBuilder();
 
-        conditionState.setPresence(ventilatorModeAlarm);
-        conditionState.setDeterminationTime(Instant.now());
+        conditionState.withPresence(ventilatorModeAlarm)
+            .withDeterminationTime(Instant.now());
         if (ventilatorModeAlarm) {
-            signalState.setPresence(AlertSignalPresence.ON);
+            signalState.withPresence(AlertSignalPresence.ON);
         } else {
-            signalState.setPresence(AlertSignalPresence.OFF);
+            signalState.withPresence(AlertSignalPresence.OFF);
         }
 
-        modifications.addAll(Arrays.asList(conditionState, signalState));
+        modifications.addAll(Arrays.asList(conditionState.build(), signalState.build()));
     }
 
     public void changeMetrics(@Nullable VentilatorMode ventilatorMode,
@@ -153,18 +155,23 @@ public class VentilatorMdibRunner implements SdcDevicePlugin {
                 .orElseThrow(() ->
                         new RuntimeException(String.format("Could not find state for handle %s", HANDLE_MDC_VENT_MODE)));
 
-        final AbstractMetricValue.MetricQuality metricQuality = new AbstractMetricValue.MetricQuality();
-        metricQuality.setMode(GenerationMode.DEMO);
-        metricQuality.setValidity(MeasurementValidity.INV);
-        StringMetricValue metricValue = state.getMetricValue();
-        if (metricValue == null) {
-            metricValue = new StringMetricValue();
+        final var stateBuilder = state.newCopyBuilder();
+
+        final var metricQuality = AbstractMetricValue.MetricQuality.builder()
+            .withMode(GenerationMode.DEMO)
+            .withValidity(MeasurementValidity.INV);
+        StringMetricValue oldMetricValue = state.getMetricValue();
+        StringMetricValue.Builder<?> metricValueBuilder;
+        if (oldMetricValue == null) {
+            metricValueBuilder = StringMetricValue.builder();
+        } else {
+            metricValueBuilder = oldMetricValue.newCopyBuilder();
         }
-        metricValue.setValue(ventilatorMode.getModeValue());
-        metricValue.setDeterminationTime(Instant.now());
-        metricValue.setMetricQuality(metricQuality);
-        state.setMetricValue(metricValue);
-        modifications.add(state);
+        metricValueBuilder.withValue(ventilatorMode.getModeValue())
+            .withDeterminationTime(Instant.now())
+            .withMetricQuality(metricQuality.build());
+        stateBuilder.withMetricValue(metricValueBuilder.build());
+        modifications.add(stateBuilder.build());
     }
 
     public static void changePeepValue(ReadTransaction readTransaction, MdibStateModifications modifications, BigDecimal peep) {
@@ -172,18 +179,23 @@ public class VentilatorMdibRunner implements SdcDevicePlugin {
                 .orElseThrow(() ->
                         new RuntimeException(String.format("Could not find state for handle %s", HANDLE_MDC_VENT_MODE)));
 
-        final AbstractMetricValue.MetricQuality metricQuality = new AbstractMetricValue.MetricQuality();
-        metricQuality.setMode(GenerationMode.DEMO);
-        metricQuality.setValidity(MeasurementValidity.INV);
-        NumericMetricValue metricValue = state.getMetricValue();
-        if (metricValue == null) {
-            metricValue = new NumericMetricValue();
+        final var stateBuilder = state.newCopyBuilder();
+
+        final var metricQuality = AbstractMetricValue.MetricQuality.builder()
+            .withMode(GenerationMode.DEMO)
+            .withValidity(MeasurementValidity.INV);
+        var oldMetricValue = state.getMetricValue();
+        NumericMetricValue.Builder<?> metricValueBuilder;
+        if (oldMetricValue == null) {
+            metricValueBuilder = NumericMetricValue.builder();
+        } else {
+            metricValueBuilder = oldMetricValue.newCopyBuilder();
         }
-        metricValue.setValue(peep);
-        metricValue.setDeterminationTime(Instant.now());
-        metricValue.setMetricQuality(metricQuality);
-        state.setMetricValue(metricValue);
-        modifications.add(state);
+        metricValueBuilder.withValue(peep)
+            .withDeterminationTime(Instant.now())
+            .withMetricQuality(metricQuality.build());
+        stateBuilder.withMetricValue(metricValueBuilder.build());
+        modifications.add(stateBuilder.build());
     }
 
     public enum VentilatorMode {

@@ -3,8 +3,11 @@ package org.somda.sdc.glue.provider.services;
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
 import org.somda.sdc.biceps.common.access.ReadTransaction;
+import org.somda.sdc.biceps.model.message.AbstractGetResponse;
 import org.somda.sdc.biceps.model.message.GetLocalizedText;
+import org.somda.sdc.biceps.model.message.GetLocalizedTextResponse;
 import org.somda.sdc.biceps.model.message.GetSupportedLanguages;
+import org.somda.sdc.biceps.model.message.GetSupportedLanguagesResponse;
 import org.somda.sdc.biceps.model.message.ObjectFactory;
 import org.somda.sdc.biceps.model.participant.LocalizedText;
 import org.somda.sdc.biceps.model.participant.MdibVersion;
@@ -67,8 +70,8 @@ public class LowPriorityServices extends WebService {
     @MessageInterceptor(ActionConstants.ACTION_GET_LOCALIZED_TEXT)
     void getLocalizedText(RequestResponseObject requestResponseObject) throws SoapFaultException {
         var getLocalizedText = getRequest(requestResponseObject, GetLocalizedText.class);
-        var getLocalizedTextResponse = messageModelFactory.createGetLocalizedTextResponse();
-        getLocalizedTextResponse.setText(fetchTexts(getLocalizedText));
+        var getLocalizedTextResponse = GetLocalizedTextResponse.builder();
+        getLocalizedTextResponse.withText(fetchTexts(getLocalizedText));
 
         setResponse(requestResponseObject, getLocalizedTextResponse, mdibAccess.getMdibVersion(),
                 ActionConstants.getResponseAction(ActionConstants.ACTION_GET_LOCALIZED_TEXT));
@@ -77,9 +80,8 @@ public class LowPriorityServices extends WebService {
 
     @MessageInterceptor(ActionConstants.ACTION_GET_SUPPORTED_LANGUAGES)
     void getSupportedLanguages(RequestResponseObject requestResponseObject) throws SoapFaultException {
-        var getSupportedLanguagesResponse =
-                messageModelFactory.createGetSupportedLanguagesResponse();
-        getSupportedLanguagesResponse.setLang(localizationService.getSupportedLanguages());
+        var getSupportedLanguagesResponse = GetSupportedLanguagesResponse.builder();
+        getSupportedLanguagesResponse.withLang(localizationService.getSupportedLanguages());
 
         setResponse(requestResponseObject, getSupportedLanguagesResponse, mdibAccess.getMdibVersion(),
                 ActionConstants.getResponseAction(ActionConstants.ACTION_GET_SUPPORTED_LANGUAGES));
@@ -93,19 +95,19 @@ public class LowPriorityServices extends WebService {
                         requestResponseObject.getRequest().getWsAddressingHeader().getMessageId().orElse(null)));
     }
 
-    private <T> void setResponse(RequestResponseObject requestResponseObject,
-                                 T response,
-                                 MdibVersion mdibVersion,
-                                 String responseAction) throws SoapFaultException {
+    private <T extends AbstractGetResponse.Builder<?>> void setResponse(RequestResponseObject requestResponseObject,
+                                                             T response,
+                                                             MdibVersion mdibVersion,
+                                                             String responseAction) throws SoapFaultException {
         try {
-            mdibVersionUtil.setMdibVersion(mdibVersion, response);
+            mdibVersionUtil.setResponseMdibVersion(mdibVersion, response);
         } catch (Exception e) {
             throw new SoapFaultException(faultFactory.createReceiverFault("Could not create MDIB version."),
                     requestResponseObject.getRequest().getWsAddressingHeader().getMessageId().orElse(null));
         }
         requestResponseObject.getResponse().getWsAddressingHeader().setAction(wsaUtil.createAttributedURIType(
                 responseAction));
-        soapUtil.setBody(response, requestResponseObject.getResponse());
+        soapUtil.setBody(response.build(), requestResponseObject.getResponse());
     }
 
     private List<LocalizedText> fetchTexts(GetLocalizedText getLocalizedText) {

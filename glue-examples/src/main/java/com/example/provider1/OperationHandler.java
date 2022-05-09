@@ -48,10 +48,10 @@ public class OperationHandler implements OperationInvocationReceiver {
     }
 
     LocalizedText createLocalizedText(String text, String lang) {
-        var localizedText = new LocalizedText();
-        localizedText.setValue(text);
-        localizedText.setLang(lang);
-        return localizedText;
+        return LocalizedText.builder()
+            .withValue(text)
+            .withLang(lang)
+            .build();
     }
 
 
@@ -116,16 +116,26 @@ public class OperationHandler implements OperationInvocationReceiver {
             );
         });
 
+        var targetStateBuilder = targetState.newCopyBuilder();
+
+        NumericMetricValue.Builder<?> metricValue;
         if (targetState.getMetricValue() == null) {
-            targetState.setMetricValue(new NumericMetricValue());
+            metricValue = NumericMetricValue.builder();
+        } else {
+            metricValue = targetState.getMetricValue().newCopyBuilder();
         }
-        targetState.getMetricValue().setValue(data);
-        targetState.getMetricValue().setDeterminationTime(Instant.now());
-        ProviderUtil.addMetricQualityDemo(targetState.getMetricValue());
+
+        metricValue.withValue(data)
+            .withDeterminationTime(Instant.now());
+        ProviderUtil.addMetricQualityDemo(metricValue);
 
         final MdibStateModifications mod = MdibStateModifications.create(MdibStateModifications.Type.METRIC);
 
-        mod.add(targetState);
+        mod.add(
+            targetStateBuilder
+                .withMetricValue(metricValue.build())
+                .build()
+        );
 
         try {
             mdibAccess.writeStates(mod);
@@ -189,15 +199,21 @@ public class OperationHandler implements OperationInvocationReceiver {
             );
         });
 
+        var targetStateBuilder = targetState.newCopyBuilder();
+
+        StringMetricValue.Builder<?> metricValue;
         if (targetState.getMetricValue() == null) {
-            targetState.setMetricValue(new StringMetricValue());
+            metricValue = StringMetricValue.builder();
+        } else {
+            metricValue = targetState.getMetricValue().newCopyBuilder();
         }
-        targetState.getMetricValue().setValue(data);
-        targetState.getMetricValue().setDeterminationTime(Instant.now());
-        ProviderUtil.addMetricQualityDemo(targetState.getMetricValue());
+        metricValue
+            .withValue(data)
+            .withDeterminationTime(Instant.now());
+        ProviderUtil.addMetricQualityDemo(metricValue);
 
         final MdibStateModifications mod = MdibStateModifications.create(MdibStateModifications.Type.METRIC);
-        mod.add(targetState);
+        mod.add(targetStateBuilder.withMetricValue(metricValue.build()).build());
 
         try {
             mdibAccess.writeStates(mod);

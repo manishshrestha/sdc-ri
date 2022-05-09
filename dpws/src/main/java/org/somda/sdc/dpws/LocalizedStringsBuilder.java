@@ -65,12 +65,23 @@ public class LocalizedStringsBuilder {
      * @return the object where the text was added to chain multiple calls.
      */
     public LocalizedStringsBuilder add(@Nullable String lang, String text) {
-        LocalizedStringType localizedStringType = objectFactory.createLocalizedStringType();
-        Optional.ofNullable(lang).ifPresent(s ->
-                localizedStringType.getOtherAttributes().put(new QName(XML_NAMESPACE, XML_LANG), s));
-        localizedStringType.setValue(text);
+        var localizedStringType = LocalizedStringType.builder()
+            .withValue(text).build();
+        Optional.ofNullable(lang).ifPresent(s -> setLang(localizedStringType, s));
         localizedStringTypes.add(localizedStringType);
         return this;
+    }
+
+    /**
+     * Sets the language in a LocalizedStringType.
+     *
+     * @param localizedStringType to set language in
+     * @param otherValue language
+     * @return updated string type
+     */
+    public static LocalizedStringType setLang(LocalizedStringType localizedStringType, String otherValue) {
+        localizedStringType.getOtherAttributes().put(new QName(XML_NAMESPACE, XML_LANG), otherValue);
+        return localizedStringType;
     }
 
     /**

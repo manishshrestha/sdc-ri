@@ -15,52 +15,52 @@ class LocationDetailQueryMapperTest {
     @Test
     void createWithLocationDetailQuery() throws UriMapperGenerationArgumentException {
 
-        InstanceIdentifier instanceIdentifier = new InstanceIdentifier();
-        instanceIdentifier.setRootName("http://root");
+        var instanceIdentifier = InstanceIdentifier.builder()
+            .withRootName("http://root");
 
         {
             var locationDetail = createLocationDetail("facility&", null,
                     null, null, null, null);
             assertThrows(UriMapperGenerationArgumentException.class,
-                    () -> LocationDetailQueryMapper.createWithLocationDetailQuery(instanceIdentifier, locationDetail));
+                    () -> LocationDetailQueryMapper.createWithLocationDetailQuery(instanceIdentifier.build(), locationDetail));
         }
         {
             var locationDetail = createLocationDetail("facility1", "building1", "floor1", "poc1", "room1", "bed1");
-            final String actualUri = LocationDetailQueryMapper.createWithLocationDetailQuery(instanceIdentifier, locationDetail);
+            final String actualUri = LocationDetailQueryMapper.createWithLocationDetailQuery(instanceIdentifier.build(), locationDetail);
 
             var expectedUri = "sdc.ctxt.loc:/http%3A%2F%2Froot/?fac=facility1&bldng=building1&poc=poc1&flr=floor1&rm=room1&bed=bed1";
             assertEquals(expectedUri, actualUri);
         }
         {
             var locationDetail = createLocationDetail("facility1", null, "floor1", "poc1", "room1", null);
-            final String actualUri = LocationDetailQueryMapper.createWithLocationDetailQuery(instanceIdentifier, locationDetail);
+            final String actualUri = LocationDetailQueryMapper.createWithLocationDetailQuery(instanceIdentifier.build(), locationDetail);
 
             var expectedUri = "sdc.ctxt.loc:/http%3A%2F%2Froot/?fac=facility1&poc=poc1&flr=floor1&rm=room1";
             assertEquals(expectedUri, actualUri);
         }
         {
             var locationDetail = createLocationDetail(null, null, null, null, null, null);
-            final String actualUri = LocationDetailQueryMapper.createWithLocationDetailQuery(instanceIdentifier, locationDetail);
+            final String actualUri = LocationDetailQueryMapper.createWithLocationDetailQuery(instanceIdentifier.build(), locationDetail);
 
             var expectedUri = "sdc.ctxt.loc:/http%3A%2F%2Froot/";
             assertEquals(expectedUri, actualUri);
         }
         {
-            instanceIdentifier.setRootName("sdc.ctxt.loc.detail");
-            instanceIdentifier.setExtensionName("//lol");
+            instanceIdentifier.withRootName("sdc.ctxt.loc.detail");
+            instanceIdentifier.withExtensionName("//lol");
 
             var locationDetail = createLocationDetail(null, null, null, null, null, null);
-            final String actualUri = LocationDetailQueryMapper.createWithLocationDetailQuery(instanceIdentifier, locationDetail);
+            final String actualUri = LocationDetailQueryMapper.createWithLocationDetailQuery(instanceIdentifier.build(), locationDetail);
 
             var expectedUri = "sdc.ctxt.loc:/sdc.ctxt.loc.detail/%2F%2Flol";
             assertEquals(expectedUri, actualUri);
         }
         {
-            instanceIdentifier.setRootName("sdc.ctxt.loc.detail");
-            instanceIdentifier.setExtensionName("%2F%2Flol");
+            instanceIdentifier.withRootName("sdc.ctxt.loc.detail");
+            instanceIdentifier.withExtensionName("%2F%2Flol");
 
             var locationDetail = createLocationDetail(null, null, null, null, null, null);
-            final String actualUri = LocationDetailQueryMapper.createWithLocationDetailQuery(instanceIdentifier, locationDetail);
+            final String actualUri = LocationDetailQueryMapper.createWithLocationDetailQuery(instanceIdentifier.build(), locationDetail);
 
             var expectedUri = "sdc.ctxt.loc:/sdc.ctxt.loc.detail/%252F%252Flol";
             assertEquals(expectedUri, actualUri);
@@ -137,13 +137,12 @@ class LocationDetailQueryMapperTest {
                                                 @Nullable String poc,
                                                 @Nullable String room,
                                                 @Nullable String bed) {
-        var locationDetail = new LocationDetail();
-        locationDetail.setFacility(facility);
-        locationDetail.setBuilding(building);
-        locationDetail.setFloor(floor);
-        locationDetail.setPoC(poc);
-        locationDetail.setRoom(room);
-        locationDetail.setBed(bed);
-        return locationDetail;
+        return LocationDetail.builder()
+            .withFacility(facility)
+            .withBuilding(building)
+            .withFloor(floor)
+            .withPoC(poc)
+            .withRoom(room)
+            .withBed(bed).build();
     }
 }

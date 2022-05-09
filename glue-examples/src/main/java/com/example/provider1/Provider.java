@@ -35,6 +35,8 @@ import org.somda.sdc.biceps.provider.access.factory.LocalMdibAccessFactory;
 import org.somda.sdc.dpws.DpwsFramework;
 import org.somda.sdc.dpws.DpwsUtil;
 import org.somda.sdc.dpws.device.DeviceSettings;
+import org.somda.sdc.dpws.model.ThisDeviceType;
+import org.somda.sdc.dpws.model.ThisModelType;
 import org.somda.sdc.dpws.soap.wsaddressing.WsAddressingUtil;
 import org.somda.sdc.dpws.soap.wsaddressing.model.EndpointReferenceType;
 import org.somda.sdc.glue.common.FallbackInstanceIdentifier;
@@ -138,8 +140,9 @@ public class Provider extends AbstractIdleService {
                                  }, this.mdibAccess, List.of(handler),
                         Collections.singleton(injector.getInstance(SdcRequiredTypesAndScopes.class)));
 
-        this.instanceIdentifier = new InstanceIdentifier();
-        this.instanceIdentifier.setRootName("AwesomeExampleInstance");
+        this.instanceIdentifier = InstanceIdentifier.builder()
+            .withRootName("AwesomeExampleInstance")
+            .build();
 
         this.currentLocation = null;
     }
@@ -148,26 +151,29 @@ public class Provider extends AbstractIdleService {
     protected void startUp() throws Exception {
         DpwsUtil dpwsUtil = injector.getInstance(DpwsUtil.class);
 
-        sdcDevice.getHostingServiceAccess().setThisDevice(dpwsUtil.createDeviceBuilder()
-                .setFriendlyName(dpwsUtil.createLocalizedStrings()
-                        .add("en", "Provider Example Unit")
-                        .get())
-                .setFirmwareVersion("v1.2.3")
-                .setSerialNumber("1234-5678-9101-1121").get());
+        sdcDevice.getHostingServiceAccess().setThisDevice(ThisDeviceType.builder()
+            .withFriendlyName(dpwsUtil.createLocalizedStrings()
+                .add("en", "Provider Example Unit")
+                .get())
+            .withFirmwareVersion("v1.2.3")
+            .withSerialNumber("1234-5678-9101-1121")
+            .build());
 
-        sdcDevice.getHostingServiceAccess().setThisModel(dpwsUtil.createModelBuilder()
-                .setManufacturer(dpwsUtil.createLocalizedStrings()
+        sdcDevice.getHostingServiceAccess().setThisModel(
+            ThisModelType.builder()
+                .withManufacturer(dpwsUtil.createLocalizedStrings()
                         .add("en", "Provider Example Inc.")
                         .add("de", "Beispiel Provider AG")
                         .add("cn", "范例公司")
                         .get())
-                .setManufacturerUrl("http://www.example.com")
-                .setModelName(dpwsUtil.createLocalizedStrings()
+            .withManufacturerUrl("http://www.example.com")
+            .withModelName(dpwsUtil.createLocalizedStrings()
                         .add("PEU")
                         .get())
-                .setModelNumber("54-32-1")
-                .setPresentationUrl("http://www.example.com")
-                .get());
+            .withModelNumber("54-32-1")
+            .withPresentationUrl("http://www.example.com")
+            .build()
+        );
 
         final ModificationsBuilderFactory modificationsBuilderFactory =
                 injector.getInstance(ModificationsBuilderFactory.class);
@@ -217,22 +223,22 @@ public class Provider extends AbstractIdleService {
                         new RuntimeException(String.format("Could not find state for handle %s",
                                 Constants.HANDLE_LOCATIONCONTEXT)));
 
-                var locState = new LocationContextState();
-                locState.setLocationDetail(location);
-                locState.setDescriptorVersion(locDesc.getDescriptorVersion());
-                locState.setDescriptorHandle(locDesc.getHandle());
-                locState.setStateVersion(BigInteger.ONE);
-                locState.setHandle(locDesc.getHandle() + "State");
-                locState.setBindingMdibVersion(mdibAccess.getMdibVersion().getVersion());
-                locState.setContextAssociation(ContextAssociation.ASSOC);
-                locState.getValidator().add(this.instanceIdentifier);
-                locState.getIdentification().add(this.instanceIdentifier);
+                var locState = LocationContextState.builder()
+                    .withLocationDetail(location)
+                    .withDescriptorVersion(locDesc.getDescriptorVersion())
+                    .withDescriptorHandle(locDesc.getHandle())
+                    .withStateVersion(BigInteger.ONE)
+                    .withHandle(locDesc.getHandle() + "State")
+                    .withBindingMdibVersion(mdibAccess.getMdibVersion().getVersion())
+                    .withContextAssociation(ContextAssociation.ASSOC)
+                    .addValidator(this.instanceIdentifier)
+                    .addIdentification(this.instanceIdentifier);
 
-                locMod.add(locState);
+                locMod.add(locState.build());
             }
             mdibAccess.writeStates(locMod);
         }
-        this.currentLocation = (LocationDetail) location.clone();
+        this.currentLocation = location.clone();
     }
 
 
@@ -250,12 +256,12 @@ public class Provider extends AbstractIdleService {
             final var state = readTransaction.getState(handle, RealTimeSampleArrayMetricState.class).orElseThrow(() ->
                     new RuntimeException(String.format("Could not find state for handle %s", handle)));
 
-            final var metricQuality = new SampleArrayValue.MetricQuality();
-            metricQuality.setMode(GenerationMode.REAL);
-            metricQuality.setValidity(MeasurementValidity.VLD);
+            final var metricQuality = SampleArrayValue.MetricQuality.builder()
+                .withMode(GenerationMode.REAL)
+                .withValidity(MeasurementValidity.VLD);
 
-            SampleArrayValue sampleArrayValue = new SampleArrayValue();
-            sampleArrayValue.setMetricQuality(metricQuality);
+            var sampleArrayValue = SampleArrayValue.builder()
+                .withMetricQuality(metricQuality.build());
 
             int minValue = 0;
             int maxValue = 50;
@@ -269,12 +275,10 @@ public class Provider extends AbstractIdleService {
                         BigDecimal.valueOf((Math.sin(n * delta) + 1) / 2.0 * (maxValue - minValue) + minValue)
                                 .setScale(15, RoundingMode.DOWN));
             });
-            sampleArrayValue.setSamples(values);
-            sampleArrayValue.setDeterminationTime(Instant.now());
+            sampleArrayValue.withSamples(values)
+                .withDeterminationTime(Instant.now());
 
-            state.setMetricValue(sampleArrayValue);
-
-            modifications.add(state);
+            modifications.add(state.newCopyBuilder().withMetricValue(sampleArrayValue.build()).build());
         }
 
         mdibAccess.writeStates(modifications);
@@ -289,19 +293,22 @@ public class Provider extends AbstractIdleService {
     public void changeNumericMetric(String handle) throws PreprocessingException {
         Optional<NumericMetricState> stateOpt = mdibAccess.getState(handle, NumericMetricState.class);
         NumericMetricState state = stateOpt.get();
-        var val = state.getMetricValue();
-        if (val != null && val.getValue() != null) {
-            val.setValue(val.getValue().add(BigDecimal.ONE));
+        var oldVal = state.getMetricValue();
+        NumericMetricValue.Builder<?> newValBuilder;
+
+        if (oldVal != null && oldVal.getValue() != null) {
+            newValBuilder = oldVal.newCopyBuilder();
+            newValBuilder.withValue(oldVal.getValue().add(BigDecimal.ONE));
         } else {
-            val = new NumericMetricValue();
-            val.setValue(BigDecimal.ONE);
+            newValBuilder = NumericMetricValue.builder();
+            newValBuilder.withValue(BigDecimal.ONE);
         }
-        val.setDeterminationTime(Instant.now());
+        newValBuilder.withDeterminationTime(Instant.now());
+        ProviderUtil.addMetricQualityDemo(newValBuilder);
 
-        ProviderUtil.addMetricQualityDemo(val);
-
-        state.setMetricValue(val);
-        mdibAccess.writeStates(MdibStateModifications.create(MdibStateModifications.Type.METRIC).add(state));
+        mdibAccess.writeStates(MdibStateModifications.create(MdibStateModifications.Type.METRIC).add(
+            state.newCopyBuilder().withMetricValue(newValBuilder.build()).build()
+        ));
     }
 
     /**
@@ -313,24 +320,26 @@ public class Provider extends AbstractIdleService {
     public void changeStringMetric(String handle) throws PreprocessingException {
         Optional<StringMetricState> stateOpt = mdibAccess.getState(handle, StringMetricState.class);
         StringMetricState state = stateOpt.get();
-        var val = state.getMetricValue();
-        if (val != null && val.getValue() != null) {
-            var actVal = val.getValue();
+        var oldVal = state.getMetricValue();
+        StringMetricValue.Builder<?> newVal;
+        if (oldVal != null && oldVal.getValue() != null) {
+            newVal = oldVal.newCopyBuilder();
+            var actVal = oldVal.getValue();
             if (actVal.equals("UPPERCASE")) {
-                val.setValue("lowercase");
+                newVal.withValue("lowercase");
             } else {
-                val.setValue("UPPERCASE");
+                newVal.withValue("UPPERCASE");
             }
         } else {
-            val = new StringMetricValue();
-            val.setValue("initial VALUE");
+            newVal = StringMetricValue.builder();
+            newVal.withValue("initial VALUE");
         }
-        val.setDeterminationTime(Instant.now());
+        newVal.withDeterminationTime(Instant.now());
+        ProviderUtil.addMetricQualityDemo(newVal);
 
-        ProviderUtil.addMetricQualityDemo(val);
-
-        state.setMetricValue(val);
-        mdibAccess.writeStates(MdibStateModifications.create(MdibStateModifications.Type.METRIC).add(state));
+        mdibAccess.writeStates(MdibStateModifications.create(MdibStateModifications.Type.METRIC).add(
+            state.newCopyBuilder().withMetricValue(newVal.build()).build()
+        ));
     }
 
     /**
@@ -348,10 +357,11 @@ public class Provider extends AbstractIdleService {
                 descriptor.getAllowedValue().stream().map(x -> x.getValue()).collect(Collectors.toList());
 
         EnumStringMetricState state = (EnumStringMetricState) mdibEntity.getStates().get(0);
+        var oldVal = state.getMetricValue();
+        var newVal = StringMetricValue.builder();
 
-        var val = state.getMetricValue();
-        if (val != null && val.getValue() != null) {
-            var actVal = val.getValue();
+        if (oldVal != null && oldVal.getValue() != null) {
+            var actVal = oldVal.getValue();
 
             Iterator<String> iter = Iterables.cycle(allowedValue).iterator();
             String next = iter.next();
@@ -370,15 +380,16 @@ public class Provider extends AbstractIdleService {
                 i++;
             }
 
-            val.setValue(next);
+            newVal.withValue(next);
         } else {
-            val = new StringMetricValue();
-            val.setValue(allowedValue.get(0));
+            newVal.withValue(allowedValue.get(0));
         }
-        val.setDeterminationTime(Instant.now());
-        ProviderUtil.addMetricQualityDemo(val);
-        state.setMetricValue(val);
-        mdibAccess.writeStates(MdibStateModifications.create(MdibStateModifications.Type.METRIC).add(state));
+        newVal.withDeterminationTime(Instant.now());
+        ProviderUtil.addMetricQualityDemo(newVal);
+
+        mdibAccess.writeStates(MdibStateModifications.create(MdibStateModifications.Type.METRIC).add(
+            state.newCopyBuilder().withMetricValue(newVal.build()).build()
+        ));
     }
 
     /**
@@ -392,20 +403,27 @@ public class Provider extends AbstractIdleService {
         var signalEntity = mdibAccess.getEntity(signalHandle).get();
         var conditionEntity = mdibAccess.getEntity(conditionHandle).get();
 
-        AlertSignalState signalState = (AlertSignalState) signalEntity.getStates().get(0);
-        AlertConditionState conditionState = (AlertConditionState) conditionEntity.getStates().get(0);
+        AlertSignalState oldSignalState = (AlertSignalState) signalEntity.getStates().get(0);
+        AlertConditionState oldConditionState = (AlertConditionState) conditionEntity.getStates().get(0);
 
-        if (signalState.getPresence() == null || signalState.getPresence() == AlertSignalPresence.ON) {
-            signalState.setPresence(AlertSignalPresence.OFF);
-            conditionState.setPresence(false);
+        var newSignalState = oldSignalState.newCopyBuilder();
+        var newConditionState = oldConditionState.newCopyBuilder();
+
+        if (oldSignalState.getPresence() == null || oldSignalState.getPresence() == AlertSignalPresence.ON) {
+            newSignalState.withPresence(AlertSignalPresence.OFF);
+            newConditionState.withPresence(false);
         } else {
-            signalState.setPresence(AlertSignalPresence.ON);
-            conditionState.setPresence(true);
+            newSignalState.withPresence(AlertSignalPresence.ON);
+            newConditionState.withPresence(true);
         }
 
         try {
-            mdibAccess.writeStates(MdibStateModifications
-                    .create(MdibStateModifications.Type.ALERT).add(conditionState).add(signalState));
+            mdibAccess.writeStates(
+                MdibStateModifications
+                    .create(MdibStateModifications.Type.ALERT)
+                    .add(newConditionState.build())
+                    .add(newSignalState.build())
+            );
         } catch (PreprocessingException e) {
             LOG.error("", e);
         }
@@ -423,11 +441,11 @@ public class Provider extends AbstractIdleService {
         Provider provider = new Provider(util);
 
         // set a location for scopes
-        var loc = new LocationDetail();
-        loc.setBed(targetBed);
-        loc.setPoC(targetPoC);
-        loc.setFacility(targetFacility);
-        provider.setLocation(loc);
+        var loc = LocationDetail.builder()
+            .withBed(targetBed)
+            .withPoC(targetPoC)
+            .withFacility(targetFacility);
+        provider.setLocation(loc.build());
 
         provider.startAsync().awaitRunning();
 

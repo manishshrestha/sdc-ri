@@ -5,7 +5,6 @@ import com.google.inject.name.Named;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.somda.sdc.biceps.common.MdibDescriptionModification;
-import org.somda.sdc.biceps.common.MdibDescriptionModifications;
 import org.somda.sdc.biceps.common.MdibEntity;
 import org.somda.sdc.biceps.common.MdibTreeValidator;
 import org.somda.sdc.biceps.common.storage.DescriptionPreprocessingSegment;
@@ -14,6 +13,7 @@ import org.somda.sdc.biceps.model.participant.AbstractDescriptor;
 import org.somda.sdc.common.CommonConfig;
 import org.somda.sdc.common.logging.InstanceLogger;
 
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -36,47 +36,50 @@ public class CardinalityChecker implements DescriptionPreprocessingSegment {
     }
 
     @Override
-    public void process(MdibDescriptionModifications allModifications,
-                        MdibDescriptionModification currentModification,
-                        MdibStorage storage) throws CardinalityException {
-        if (currentModification.getModificationType() != MdibDescriptionModification.Type.INSERT) {
-            // Only insert is affected
-            return;
-        }
+    public List<MdibDescriptionModification> process(List<MdibDescriptionModification> modifications,
+                                                     MdibStorage storage) throws CardinalityException {
+        for (final MdibDescriptionModification currentModification : modifications) {
+            if (currentModification.getModificationType() != MdibDescriptionModification.Type.INSERT) {
+                // Only insert is affected
+                continue;
+            }
 
-        final Optional<String> parentHandle = currentModification.getParentHandle();
-        if (parentHandle.isEmpty()) {
-            // No parent means: MDS, which may occur many times
-            return;
-        }
+            final Optional<String> parentHandle = currentModification.getParentHandle();
+            if (parentHandle.isEmpty()) {
+                // No parent means: MDS, which may occur many times
+                continue;
+            }
 
-        final AbstractDescriptor descriptor = currentModification.getDescriptor();
-        if (isSameTypeInModifications(allModifications, descriptor, parentHandle.get()) &&
-                !treeValidator.isManyAllowed(descriptor)) {
-            // There is no other child of the same type to be inserted below the parent
-            throwException(descriptor);
-        }
+            final AbstractDescriptor descriptor = currentModification.getDescriptor();
+            if (isSameTypeInModifications(modifications, descriptor, parentHandle.get()) &&
+                    !treeValidator.isManyAllowed(descriptor)) {
+                // There is no other child of the same type to be inserted below the parent
+                throwException(descriptor);
+            }
 
-        final Optional<MdibEntity> parentEntityFromStorage = storage.getEntity(parentHandle.get());
-        if (parentEntityFromStorage.isEmpty()) {
-            // No parent in the storage yet - early exit
-            instanceLogger.warn("Expected a parent in the MDIB storage, but none found: {}", parentHandle.get());
-            return;
-        }
+            final Optional<MdibEntity> parentEntityFromStorage = storage.getEntity(parentHandle.get());
+            if (parentEntityFromStorage.isEmpty()) {
+                // No parent in the storage yet - early exit
+                instanceLogger.warn("Expected a parent in the MDIB storage, but none found: {}", parentHandle.get());
+                continue;
+            }
 
-        if (!storage.getChildrenByType(parentHandle.get(), descriptor.getClass()).isEmpty() &&
-                !treeValidator.isManyAllowed(descriptor)) {
-            // There is at least one child of given type, but multiple children of that type are not allowed
-            throwException(descriptor);
+            if (!storage.getChildrenByType(parentHandle.get(), descriptor.getClass()).isEmpty() &&
+                    !treeValidator.isManyAllowed(descriptor)) {
+                // There is at least one child of given type, but multiple children of that type are not allowed
+                throwException(descriptor);
+            }
+
         }
 
         // Every condition passed, insertion granted
+        return modifications;
     }
 
-    private boolean isSameTypeInModifications(MdibDescriptionModifications modifications,
+    private boolean isSameTypeInModifications(List<MdibDescriptionModification> modifications,
                                               AbstractDescriptor descriptor,
                                               String parentHandle) {
-        return modifications.getModifications().stream()
+        return modifications.stream()
                 .filter(mod -> mod.getModificationType() == MdibDescriptionModification.Type.INSERT)
                 .filter(mod -> !mod.getDescriptor().getHandle().equals(descriptor.getHandle()))
                 .filter(mod -> mod.getParentHandle().isPresent() && mod.getParentHandle().get().equals(parentHandle))

@@ -8,6 +8,8 @@ import org.somda.sdc.dpws.NetworkSinkMock;
 import org.somda.sdc.dpws.helper.JaxbMarshalling;
 import org.somda.sdc.dpws.soap.factory.EnvelopeFactory;
 import org.somda.sdc.dpws.soap.model.Envelope;
+import org.somda.sdc.dpws.soap.wsaddressing.model.AttributedURIType;
+import org.somda.sdc.dpws.soap.wsaddressing.model.EndpointReferenceType;
 import org.somda.sdc.dpws.soap.wsdiscovery.WsDiscoveryConstants;
 import org.somda.sdc.dpws.soap.wsdiscovery.model.HelloType;
 import org.somda.sdc.dpws.soap.wsdiscovery.model.ObjectFactory;
@@ -46,19 +48,23 @@ class JaxbSoapMarshallingSchemaTest extends DpwsTest {
     void marshallValidMessage() throws Exception {
         ObjectFactory wsdFactory = getInjector().getInstance(ObjectFactory.class);
         // create a hello message with EndpointReference present
-        HelloType helloType = wsdFactory.createHelloType();
 
-        var wsaFactory = getInjector().getInstance(org.somda.sdc.dpws.soap.wsaddressing.model.ObjectFactory.class);
-        var expectedEpr = wsaFactory.createEndpointReferenceType();
-        var eprAddress = wsaFactory.createAttributedURIType();
-        eprAddress.setValue("http://test-xAddr1");
-        expectedEpr.setAddress(eprAddress);
-        helloType.setEndpointReference(expectedEpr);
+        var eprAddress = AttributedURIType.builder()
+            .withValue("http://test-xAddr1").build();
+
+        var expectedEpr = EndpointReferenceType.builder()
+            .withAddress(eprAddress)
+            .build();
 
         List<String> xAddrs = new ArrayList<>();
         xAddrs.add("http://test-xAddr1");
         xAddrs.add("http://test-xAddr2");
-        helloType.setXAddrs(xAddrs);
+
+        HelloType helloType = HelloType.builder()
+            .withEndpointReference(expectedEpr)
+            .withXAddrs(xAddrs)
+            .build();
+
         JAXBElement<HelloType> expectedHello = wsdFactory.createHello(helloType);
 
         EnvelopeFactory envelopeFactory = getInjector().getInstance(EnvelopeFactory.class);
@@ -76,13 +82,15 @@ class JaxbSoapMarshallingSchemaTest extends DpwsTest {
     @Test
     void marshallInvalidMessage() throws Exception {
         ObjectFactory wsdFactory = getInjector().getInstance(ObjectFactory.class);
-
         // create a hello message with missing EndpointReference, which should trigger a marshalling error
-        HelloType helloType = wsdFactory.createHelloType();
+
         List<String> xAddrs = new ArrayList<>();
         xAddrs.add("http://test-xAddr1");
         xAddrs.add("http://test-xAddr2");
-        helloType.setXAddrs(xAddrs);
+
+        HelloType helloType = HelloType.builder()
+            .withXAddrs(xAddrs)
+            .build();
         JAXBElement<HelloType> expectedHello = wsdFactory.createHello(helloType);
 
         EnvelopeFactory envelopeFactory = getInjector().getInstance(EnvelopeFactory.class);
@@ -103,19 +111,23 @@ class JaxbSoapMarshallingSchemaTest extends DpwsTest {
     void testUnmarshallingValidMessage() throws Exception {
         ObjectFactory wsdFactory = getInjector().getInstance(ObjectFactory.class);
         // create a hello message with EndpointReference present
-        HelloType helloType = wsdFactory.createHelloType();
 
         var wsaFactory = getInjector().getInstance(org.somda.sdc.dpws.soap.wsaddressing.model.ObjectFactory.class);
-        var expectedEpr = wsaFactory.createEndpointReferenceType();
-        var eprAddress = wsaFactory.createAttributedURIType();
-        eprAddress.setValue("http://test-xAddr1");
-        expectedEpr.setAddress(eprAddress);
-        helloType.setEndpointReference(expectedEpr);
+        var eprAddress = AttributedURIType.builder()
+            .withValue("http://test-xAddr1").build();
+
+
+        var expectedEpr = EndpointReferenceType.builder()
+            .withAddress(eprAddress).build();
 
         List<String> xAddrs = new ArrayList<>();
         xAddrs.add("http://test-xAddr1");
         xAddrs.add("http://test-xAddr2");
-        helloType.setXAddrs(xAddrs);
+
+        HelloType helloType = HelloType.builder()
+            .withEndpointReference(expectedEpr)
+            .withXAddrs(xAddrs)
+            .build();
         JAXBElement<HelloType> expectedHello = wsdFactory.createHello(helloType);
 
         EnvelopeFactory envelopeFactory = getInjector().getInstance(EnvelopeFactory.class);

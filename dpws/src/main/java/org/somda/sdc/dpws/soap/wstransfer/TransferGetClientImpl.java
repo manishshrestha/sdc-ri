@@ -38,7 +38,7 @@ public class TransferGetClientImpl implements TransferGetClient {
     ) {
         return executorService.get().submit(() -> {
             var request = soapUtil.createMessage(WsTransferConstants.WSA_ACTION_GET, wsaTo);
-            request.getOriginalEnvelope().getHeader().getAny().add(referenceParametersType);
+            request.addHeader(referenceParametersType);
             return requestResponseClient.sendRequestResponse(request);
         });
     }

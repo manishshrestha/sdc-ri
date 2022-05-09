@@ -96,13 +96,13 @@ public class LocationDetailQueryMapper {
 
             if (queryMatcher.matches()) {
 
-                final var locationDetail = new LocationDetail();
+                final var locationDetail = LocationDetail.builder();
                 final var queryItems = splitQuery(queryString);
                 for (LocationDetailFields field : LocationDetailFields.values()) {
                     final var values = queryItems.get(field.getQueryKey());
                     if (values != null && !values.isEmpty()) {
                         try {
-                            final Method setter = field.getSetter();
+                            final Method setter = field.getWither();
                             setter.invoke(locationDetail, UrlUtf8.decode(values.get(0)));
                         } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
 
@@ -114,7 +114,7 @@ public class LocationDetailQueryMapper {
                         }
                     }
                 }
-                return locationDetail;
+                return locationDetail.build();
 
             } else {
                 throw new UriMapperParsingException(
@@ -168,8 +168,8 @@ public class LocationDetailQueryMapper {
             return queryKey;
         }
 
-        Method getSetter() throws NoSuchMethodException {
-            return LocationDetail.class.getDeclaredMethod("set" + name, String.class);
+        Method getWither() throws NoSuchMethodException {
+            return LocationDetail.Builder.class.getDeclaredMethod("with" + name, String.class);
         }
 
         Method getGetter() throws NoSuchMethodException {

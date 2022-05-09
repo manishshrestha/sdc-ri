@@ -90,8 +90,8 @@ class SdcRequiredTypesAndScopesIT {
 
         var discoveryObserverSpy = new DiscoveryObserverSpy();
         testClient.getClient().registerDiscoveryObserver(discoveryObserverSpy);
-        LocationDetail locationDetail = new LocationDetail();
-        locationDetail.setFacility("facility");
+        var locationDetail = LocationDetail.builder()
+            .withFacility("facility").build();
         var instanceIdentifier = FallbackInstanceIdentifier.create(locationDetail);
         assertTrue(instanceIdentifier.isPresent());
         var expectedLocationScope = LocationDetailQueryMapper.createWithLocationDetailQuery(instanceIdentifier.get(),
@@ -132,13 +132,14 @@ class SdcRequiredTypesAndScopesIT {
 
             var modifications = MdibDescriptionModifications.create();
 
-            mds.get().setType(CodedValueFactory.createIeeeCodedValue("70002"));
-            modifications.update(mds.get());
+            modifications.update(mds.get().newCopyBuilder().withType(CodedValueFactory.createIeeeCodedValue("70002")).build());
             mdibAccess.writeDescription(modifications);
 
             assertTrue(discoveryObserverSpy.waitForEnteredDevices(2));
 
-            expectedMdsScope = ComplexDeviceComponentMapper.fromComplexDeviceComponent(mds.get());
+            expectedMdsScope = ComplexDeviceComponentMapper.fromComplexDeviceComponent(
+                mdibAccess.getDescriptor(VentilatorMdibRunner.HANDLE_MDC_DEV_SYS_PT_VENT_MDS, MdsDescriptor.class).get()
+            );
             var expectedScopes = Arrays.asList(GlueConstants.SCOPE_SDC_PROVIDER.toString(),
                     expectedLocationScope.toString(), expectedMdsScope.toString());
             var actualScopes = discoveryObserverSpy.getEnteredDevices().get(1).getScopes();
@@ -160,8 +161,8 @@ class SdcRequiredTypesAndScopesIT {
 
         var discoveryObserverSpy = new DiscoveryObserverSpy();
         testClient.getClient().registerDiscoveryObserver(discoveryObserverSpy);
-        LocationDetail locationDetail = new LocationDetail();
-        locationDetail.setFacility("facility");
+        var locationDetail = LocationDetail.builder()
+            .withFacility("facility").build();
         var instanceIdentifier = FallbackInstanceIdentifier.create(locationDetail);
         assertTrue(instanceIdentifier.isPresent());
         var expectedLocationScope = LocationDetailQueryMapper.createWithLocationDetailQuery(instanceIdentifier.get(),
@@ -189,16 +190,17 @@ class SdcRequiredTypesAndScopesIT {
 
             var modifications = MdibDescriptionModifications.create();
 
-            mds.get().setType(CodedValueFactory.createIeeeCodedValue("70002"));
-            modifications.update(mds.get());
+            modifications.update(mds.get().newCopyBuilder().withType(CodedValueFactory.createIeeeCodedValue("70002")).build());
             mdibAccess.writeDescription(modifications);
 
             assertTrue(discoveryObserverSpy.waitForEnteredDevices(2));
 
-            expectedMdsScope = ComplexDeviceComponentMapper.fromComplexDeviceComponent(mds.get());
-            var expectedScopes = Arrays.asList(GlueConstants.SCOPE_SDC_PROVIDER.toString(),
-                    expectedLocationScope.toString(), expectedMdsScope.toString(),
-                    MyScopesUpdater.SCOPE_ON_DESCRIPTION_UPDATE.toString());
+            expectedMdsScope = ComplexDeviceComponentMapper.fromComplexDeviceComponent(
+                mdibAccess.getDescriptor(VentilatorMdibRunner.HANDLE_MDC_DEV_SYS_PT_VENT_MDS, MdsDescriptor.class).get()
+            );
+            var expectedScopes = Arrays.asList(GlueConstants.SCOPE_SDC_PROVIDER,
+                expectedLocationScope, expectedMdsScope,
+                MyScopesUpdater.SCOPE_ON_DESCRIPTION_UPDATE);
             var actualScopes = discoveryObserverSpy.getEnteredDevices().get(1).getScopes();
             verifyCollection(expectedScopes, actualScopes);
         }

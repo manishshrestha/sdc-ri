@@ -7,6 +7,7 @@ import org.somda.sdc.biceps.common.MdibTypeValidator;
 import org.somda.sdc.biceps.common.storage.PreprocessingException;
 import org.somda.sdc.biceps.model.participant.Mdib;
 import org.somda.sdc.biceps.model.participant.NumericMetricState;
+import org.somda.sdc.biceps.model.participant.NumericMetricValue;
 import org.somda.sdc.biceps.provider.access.LocalMdibAccess;
 import org.somda.sdc.biceps.provider.access.factory.LocalMdibAccessFactory;
 import org.somda.sdc.biceps.testutil.BaseTreeModificationsSet;
@@ -77,9 +78,11 @@ public class RunTestSdcDevice {
             while (true) {
                 try {
                     Thread.sleep(1000);
-                    Optional<NumericMetricState> state = localMdibAccess.getState(Handles.METRIC_0, NumericMetricState.class);
-                    NumericMetricState clone = (NumericMetricState)state.get().clone();
-                    clone.getMetricValue().setValue(clone.getMetricValue().getValue().add(BigDecimal.ONE));
+                    NumericMetricState state = localMdibAccess.getState(Handles.METRIC_0, NumericMetricState.class).get();
+                    NumericMetricValue value = state.getMetricValue();
+                    NumericMetricState clone = state.newCopyBuilder()
+                        .withMetricValue(value.newCopyBuilder().withValue(value.getValue().add(BigDecimal.ONE)).build())
+                        .build();
                     localMdibAccess.writeStates(MdibStateModifications.create(MdibStateModifications.Type.METRIC)
                     .add(clone));
                 } catch (InterruptedException | PreprocessingException e) {

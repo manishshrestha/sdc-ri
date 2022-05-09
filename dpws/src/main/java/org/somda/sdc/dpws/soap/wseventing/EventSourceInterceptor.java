@@ -240,10 +240,10 @@ public class EventSourceInterceptor extends AbstractIdleService implements Event
         subscriptionRegistry.addSubscription(subMan);
 
         // Build response body and populate response envelope
-        SubscribeResponse subscribeResponse = wseFactory.createSubscribeResponse();
-        subscribeResponse.setExpires(grantedExpires);
-
-        subscribeResponse.setSubscriptionManager(subMan.getSubscriptionManagerEpr());
+        SubscribeResponse subscribeResponse = SubscribeResponse.builder()
+            .withExpires(grantedExpires)
+            .withSubscriptionManager(subMan.getSubscriptionManagerEpr())
+            .build();
         soapUtil.setBody(subscribeResponse, rrObj.getResponse());
         soapUtil.setWsaAction(rrObj.getResponse(), WsEventingConstants.WSA_ACTION_SUBSCRIBE_RESPONSE);
 
@@ -267,8 +267,9 @@ public class EventSourceInterceptor extends AbstractIdleService implements Event
         subMan.renew(grantedExpires);
 
 
-        RenewResponse renewResponse = wseFactory.createRenewResponse();
-        renewResponse.setExpires(grantedExpires);
+        RenewResponse renewResponse = RenewResponse.builder()
+            .withExpires(grantedExpires)
+            .build();
         soapUtil.setBody(renewResponse, rrObj.getResponse());
         soapUtil.setWsaAction(rrObj.getResponse(), WsEventingConstants.WSA_ACTION_RENEW_RESPONSE);
 
@@ -297,8 +298,9 @@ public class EventSourceInterceptor extends AbstractIdleService implements Event
             subscribedActionsLock.unlock();
         }
 
-        GetStatusResponse getStatusResponse = wseFactory.createGetStatusResponse();
-        getStatusResponse.setExpires(expires);
+        GetStatusResponse getStatusResponse = GetStatusResponse.builder()
+            .withExpires(expires)
+            .build();
         soapUtil.setBody(getStatusResponse, rrObj.getResponse());
         soapUtil.setWsaAction(rrObj.getResponse(), WsEventingConstants.WSA_ACTION_GET_STATUS_RESPONSE);
     }
@@ -429,9 +431,10 @@ public class EventSourceInterceptor extends AbstractIdleService implements Event
 
     private SoapMessage createForEndTo(WsEventingStatus status, SourceSubscriptionManager subMan,
                                        EndpointReferenceType endTo) {
-        SubscriptionEnd subscriptionEnd = wseFactory.createSubscriptionEnd();
-        subscriptionEnd.setSubscriptionManager(subMan.getSubscriptionManagerEpr());
-        subscriptionEnd.setStatus(status.getUri());
+        SubscriptionEnd subscriptionEnd = SubscriptionEnd.builder()
+            .withSubscriptionManager(subMan.getSubscriptionManagerEpr())
+            .withStatus(status.getUri())
+            .build();
         String wsaTo = wsaUtil.getAddressUri(endTo).orElse(null);
         return createNotification(WsEventingConstants.WSA_ACTION_SUBSCRIPTION_END, wsaTo, subscriptionEnd);
     }

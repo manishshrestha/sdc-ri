@@ -21,15 +21,15 @@ class MdibDescriptionModificationsTest {
     @Test
     void singleState() throws InstantiationException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
         final List<AbstractDescriptor> descriptors = Arrays.asList(
-                MockModelFactory.createDescriptor("h1", NumericMetricDescriptor.class),
-                MockModelFactory.createDescriptor("h2", StringMetricDescriptor.class),
-                MockModelFactory.createDescriptor("h3", SystemContextDescriptor.class),
-                MockModelFactory.createDescriptor("h4", BatteryDescriptor.class));
+                MockModelFactory.createDescriptor("h1", NumericMetricDescriptor.builder()).build(),
+                MockModelFactory.createDescriptor("h2", StringMetricDescriptor.builder()).build(),
+                MockModelFactory.createDescriptor("h3", SystemContextDescriptor.builder()).build(),
+                MockModelFactory.createDescriptor("h4", BatteryDescriptor.builder()).build());
         final List<AbstractState> states = Arrays.asList(
-                MockModelFactory.createState("h1", NumericMetricState.class),
-                MockModelFactory.createState("h2", StringMetricState.class),
-                MockModelFactory.createState("h3", SystemContextState.class),
-                MockModelFactory.createState("h4", BatteryState.class));
+                MockModelFactory.createState("h1", NumericMetricState.builder()).build(),
+                MockModelFactory.createState("h2", StringMetricState.builder()).build(),
+                MockModelFactory.createState("h3", SystemContextState.builder()).build(),
+                MockModelFactory.createState("h4", BatteryState.builder()).build());
         MdibDescriptionModifications mdibDescriptionModifications = MdibDescriptionModifications.create();
 
         for (int i = 0; i < descriptors.size(); ++i) {
@@ -69,15 +69,15 @@ class MdibDescriptionModificationsTest {
     @Test
     void multiState() throws InstantiationException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
         final List<AbstractContextDescriptor> descriptors = Arrays.asList(
-                MockModelFactory.createDescriptor("c1", LocationContextDescriptor.class),
-                MockModelFactory.createDescriptor("c2", PatientContextDescriptor.class));
+                MockModelFactory.createDescriptor("c1", LocationContextDescriptor.builder()).build(),
+                MockModelFactory.createDescriptor("c2", PatientContextDescriptor.builder()).build());
         final Map<String, List<AbstractMultiState>> states = new HashMap<>();
         states.put("c1", Arrays.asList(
-                MockModelFactory.createContextState("cs1", "c1", LocationContextState.class),
-                MockModelFactory.createContextState("cs2", "c1", LocationContextState.class)));
+                MockModelFactory.createContextState("cs1", "c1", LocationContextState.builder()).build(),
+                MockModelFactory.createContextState("cs2", "c1", LocationContextState.builder()).build()));
         states.put("c2", Arrays.asList(
-                MockModelFactory.createContextState("cs3", "c2", PatientContextState.class),
-                MockModelFactory.createContextState("cs4", "c2", PatientContextState.class)));
+                MockModelFactory.createContextState("cs3", "c2", PatientContextState.builder()).build(),
+                MockModelFactory.createContextState("cs4", "c2", PatientContextState.builder()).build()));
 
         MdibDescriptionModifications mdibDescriptionModifications = MdibDescriptionModifications.create();
 
@@ -121,8 +121,8 @@ class MdibDescriptionModificationsTest {
     @Test
     void handleDuplicate() throws InstantiationException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
         final List<AbstractDescriptor> descriptors = Arrays.asList(
-                MockModelFactory.createDescriptor("h1", NumericMetricDescriptor.class),
-                MockModelFactory.createDescriptor("h2", AlertSignalDescriptor.class));
+                MockModelFactory.createDescriptor("h1", NumericMetricDescriptor.builder()).build(),
+                MockModelFactory.createDescriptor("h2", AlertSignalDescriptor.builder()).build());
 
         MdibDescriptionModifications mdibDescriptionModifications = MdibDescriptionModifications.create();
         try {
@@ -152,11 +152,11 @@ class MdibDescriptionModificationsTest {
         }
 
         final List<EnsembleContextState> contextStates = Arrays.asList(
-                MockModelFactory.createContextState("cs1", "h3", EnsembleContextState.class),
-                MockModelFactory.createContextState("h1", "h3", EnsembleContextState.class));
+                MockModelFactory.createContextState("cs1", "h3", EnsembleContextState.builder()).build(),
+                MockModelFactory.createContextState("h1", "h3", EnsembleContextState.builder()).build());
 
         try {
-            mdibDescriptionModifications.insert(MockModelFactory.createDescriptor("h3", EnsembleContextDescriptor.class), contextStates);
+            mdibDescriptionModifications.insert(MockModelFactory.createDescriptor("h3", EnsembleContextDescriptor.builder()).build(), contextStates);
             Assertions.fail("Expected duplicate runtime exception not thrown");
         } catch (RuntimeException e) {
         }

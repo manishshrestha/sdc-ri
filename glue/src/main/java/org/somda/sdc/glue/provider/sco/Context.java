@@ -234,27 +234,29 @@ public class Context {
         LOG.debug("Sending report for context {} at MDIB version {} with invocation state: {}",
                 this, mdibVersion, invocationState);
 
-        final InvocationInfo invocationInfo = messageModelFactory.createInvocationInfo();
-        invocationInfo.setInvocationState(invocationState);
-        invocationInfo.setTransactionId(transactionId);
-        invocationInfo.setInvocationError(invocationError);
-        invocationInfo.setInvocationErrorMessage(invocationErrorMessage);
+        final var invocationInfo = InvocationInfo.builder()
+            .withInvocationState(invocationState)
+            .withTransactionId(transactionId)
+            .withInvocationError(invocationError)
+            .withInvocationErrorMessage(invocationErrorMessage);
 
-        final OperationInvokedReport.ReportPart reportPart =
-                messageModelFactory.createOperationInvokedReportReportPart();
-        reportPart.setOperationHandleRef(operationHandle);
-        reportPart.setOperationTarget(operationTarget);
-        reportPart.setInvocationSource(invocationSource);
-        reportPart.setInvocationInfo(invocationInfo);
+        final var reportPart = OperationInvokedReport.ReportPart.builder()
+            .withOperationHandleRef(operationHandle)
+            .withOperationTarget(operationTarget)
+            .withInvocationSource(invocationSource)
+            .withInvocationInfo(invocationInfo.build());
 
-        final OperationInvokedReport operationInvokedReport = messageModelFactory.createOperationInvokedReport();
-        operationInvokedReport.setSequenceId(mdibVersion.getSequenceId());
-        operationInvokedReport.setInstanceId(mdibVersion.getInstanceId());
-        operationInvokedReport.setMdibVersion(mdibVersion.getVersion());
-        operationInvokedReport.getReportPart().add(reportPart);
+        final var operationInvokedReport = OperationInvokedReport.builder()
+            .withSequenceId(mdibVersion.getSequenceId())
+            .withInstanceId(mdibVersion.getInstanceId())
+            .withMdibVersion(mdibVersion.getVersion())
+            .addReportPart(reportPart.build());
 
         try {
-            eventSource.sendNotification(ActionConstants.ACTION_OPERATION_INVOKED_REPORT, operationInvokedReport);
+            eventSource.sendNotification(
+                ActionConstants.ACTION_OPERATION_INVOKED_REPORT,
+                operationInvokedReport.build()
+            );
         } catch (MarshallingException e) {
             instanceLogger.warn("Could not marshal operation invoked report notification of transaction {} " +
                             "with invocation state {}",

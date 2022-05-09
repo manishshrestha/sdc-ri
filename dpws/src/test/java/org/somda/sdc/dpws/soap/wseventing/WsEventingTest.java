@@ -100,9 +100,6 @@ class WsEventingTest extends DpwsTest {
             }
         });
 
-        HostedServiceType hst = dpwsFactory.createHostedServiceType();
-        hst.getEndpointReference().add(wsaUtil.createEprWithAddress(hostedServiceUri));
-
         RequestResponseClientFactory rrcFactory = getInjector().getInstance(RequestResponseClientFactory.class);
         TransportBindingFactory tbFactory = getInjector().getInstance(TransportBindingFactory.class);
         RequestResponseClient rrc = rrcFactory.createRequestResponseClient(

@@ -12,8 +12,6 @@ import org.somda.sdc.common.util.ExecutorWrapperService;
 import org.somda.sdc.dpws.DpwsConstants;
 import org.somda.sdc.dpws.DpwsTest;
 import org.somda.sdc.dpws.LocalAddressResolverMock;
-import org.somda.sdc.dpws.ThisDeviceBuilder;
-import org.somda.sdc.dpws.ThisModelBuilder;
 import org.somda.sdc.dpws.client.DiscoveredDevice;
 import org.somda.sdc.dpws.client.exception.EprAddressMismatchException;
 import org.somda.sdc.dpws.guice.ResolverThreadPool;
@@ -113,21 +111,20 @@ class HostingServiceResolverTest extends DpwsTest {
                 new QName("http://device", "Type2"));
 
         expectedSerialNumber = "1234-5678-9101-2131";
-        ThisDeviceBuilder tdBuilder = getInjector().getInstance(ThisDeviceBuilder.class);
-        expectedDeviceType = tdBuilder.setSerialNumber(expectedSerialNumber).get();
+        expectedDeviceType = ThisDeviceType.builder().withSerialNumber(expectedSerialNumber).build();
         expectedModelNumber = "0815";
-        ThisModelBuilder tmBuilder = getInjector().getInstance(ThisModelBuilder.class);
-        expectedModelType = tmBuilder.setModelNumber(expectedModelNumber).get();
+        expectedModelType = ThisModelType.builder().withModelNumber(expectedModelNumber).build();
 
         expectedServiceId = "Service1";
         expectedHostedServiceEprs = Arrays.asList(wsaUtil.createEprWithAddress("http://hosted-service-epr1"),
                 wsaUtil.createEprWithAddress("http://hosted-service-epr2"));
         expectedHostedServiceQNameTypes = Arrays.asList(new QName("http://service", "Type1"),
                 new QName("http://service", "Type2"));
-        HostedServiceType expectedHostedServiceType = dpwsFactory.createHostedServiceType();
-        expectedHostedServiceType.setEndpointReference(expectedHostedServiceEprs);
-        expectedHostedServiceType.setServiceId(expectedServiceId);
-        expectedHostedServiceType.setTypes(expectedHostedServiceQNameTypes);
+        HostedServiceType expectedHostedServiceType = HostedServiceType.builder()
+            .withEndpointReference(expectedHostedServiceEprs)
+            .withServiceId(expectedServiceId)
+            .withTypes(expectedHostedServiceQNameTypes)
+            .build();
     }
 
     @Test
@@ -203,10 +200,11 @@ class HostingServiceResolverTest extends DpwsTest {
     }
 
     private HostedService createHostedService(String serviceId, List<QName> types, List<EndpointReferenceType> eprs) {
-        HostedServiceType hst = dpwsFactory.createHostedServiceType();
-        hst.setTypes(types);
-        hst.setServiceId(serviceId);
-        hst.setEndpointReference(eprs);
+        HostedServiceType hst = HostedServiceType.builder()
+            .withTypes(types)
+            .withServiceId(serviceId)
+            .withEndpointReference(eprs)
+            .build();
         HostedService hs = mock(HostedService.class);
         when(hs.getType()).thenReturn(hst);
         return hs;
@@ -217,18 +215,16 @@ class HostingServiceResolverTest extends DpwsTest {
                                                  ThisModelType thisModel,
                                                  ThisDeviceType thisDevice,
                                                  List<HostedService> hostedServices) {
-        Metadata metadata = mexFactory.createMetadata();
-        List<MetadataSection> metadataSection = metadata.getMetadataSection();
-
-        metadataSection.add(createThisModel(thisModel));
-        metadataSection.add(createThisDevice(thisDevice));
-
-        metadataSection.add(metadataSectionUtil.createRelationship(
-                wsaUtil.createEprWithAddress(eprAddress),
-                types,
-                hostedServices));
-
-        metadata.setMetadataSection(metadataSection);
+        var metadata = Metadata.builder()
+            .addMetadataSection(createThisModel(thisModel))
+            .addMetadataSection(createThisDevice(thisDevice))
+            .addMetadataSection(
+                metadataSectionUtil.createRelationship(
+                    wsaUtil.createEprWithAddress(eprAddress),
+                    types,
+                    hostedServices
+                )
+            ).build();
 
         SoapMessage msg = soapUtil.createMessage();
         soapUtil.setBody(metadata, msg);
@@ -243,17 +239,16 @@ class HostingServiceResolverTest extends DpwsTest {
     }
 
     private MetadataSection createThisModel(ThisModelType modelType) {
-        MetadataSection metadataSection = mexFactory.createMetadataSection();
-        metadataSection.setDialect(DpwsConstants.MEX_DIALECT_THIS_MODEL);
-        metadataSection.setAny(modelType);
-        return metadataSection;
+        return MetadataSection.builder()
+            .withDialect(DpwsConstants.MEX_DIALECT_THIS_MODEL)
+            .withAny(modelType)
+            .build();
     }
 
     private MetadataSection createThisDevice(ThisDeviceType deviceType) {
-        MetadataSection metadataSection = mexFactory.createMetadataSection();
-        metadataSection.setDialect(DpwsConstants.MEX_DIALECT_THIS_DEVICE);
-        metadataSection.setAny(deviceType);
-        return metadataSection;
+        return MetadataSection.builder()
+            .withDialect(DpwsConstants.MEX_DIALECT_THIS_DEVICE)
+            .withAny(deviceType).build();
     }
 
     private DiscoveredDevice createDiscoveredDevice(String deviceUuid, List<String> xAddrs, long version) {

@@ -148,8 +148,9 @@ class FaultIT {
         {
             // Test relatesTo is present, with messageId
             final SoapMessage reqMsg = soapUtil.createMessage();
-            final var msgId = new AttributedURIType();
-            msgId.setValue(soapUtil.createRandomUuidUri());
+            final var msgId = AttributedURIType.builder()
+                .withValue(soapUtil.createRandomUuidUri())
+                .build();
             reqMsg.getWsAddressingHeader().setMessageId(msgId);
             try {
                 srv1.sendRequestResponse(reqMsg);

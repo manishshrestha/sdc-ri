@@ -37,7 +37,7 @@ class ScoTransactionTest {
                 ScoArtifacts.createResponse(
                         expectedTransactionId,
                         InvocationState.FAIL,
-                        SetValueResponse.class), null);
+                        SetValueResponse.builder()).build(), null);
         assertEquals(expectedTransactionId, scoTransaction.getTransactionId());
     }
 
@@ -47,7 +47,7 @@ class ScoTransactionTest {
                 ScoArtifacts.createResponse(
                         expectedTransactionId,
                         InvocationState.WAIT,
-                        SetValueResponse.class), null);
+                        SetValueResponse.builder()).build(), null);
 
         final List<OperationInvokedReport.ReportPart> expectedReports = Arrays.asList(
                 ScoArtifacts.createReportPart(InvocationState.START),
@@ -70,14 +70,12 @@ class ScoTransactionTest {
 
     @Test
     void getResponse() {
+        // TODO LDe: Questionable test
         final SetValueResponse expectedResponse = ScoArtifacts.createResponse(expectedTransactionId,
-                InvocationState.WAIT, SetValueResponse.class);
+                InvocationState.WAIT, SetValueResponse.builder()).build();
 
         final ScoTransaction<SetValueResponse> scoTransaction = scoTransactionFactory.createScoTransaction(
                 expectedResponse, null);
-
-        // response is copied, it shall not be equal
-        assertNotSame(expectedResponse, scoTransaction.getResponse());
 
         assertEquals(expectedResponse.getInvocationInfo().getTransactionId(),
                 scoTransaction.getResponse().getInvocationInfo().getTransactionId());
@@ -96,7 +94,7 @@ class ScoTransactionTest {
                 ScoArtifacts.createResponse(
                         expectedTransactionId,
                         InvocationState.WAIT,
-                        SetValueResponse.class), listener);
+                        SetValueResponse.builder()).build(), listener);
 
         new Thread(() -> scoTransaction.receiveIncomingReport(expectedReportParts.get(0))).start();
         List<OperationInvokedReport.ReportPart> actualReportParts = scoTransaction.waitForFinalReport(Duration.ofSeconds(1));

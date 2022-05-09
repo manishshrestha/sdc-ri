@@ -30,8 +30,8 @@ import org.somda.sdc.biceps.model.message.SetStringResponse;
 import org.somda.sdc.biceps.model.message.SetValue;
 import org.somda.sdc.biceps.model.message.SetValueResponse;
 import org.somda.sdc.common.util.ExecutorWrapperService;
-import org.somda.sdc.dpws.ThisDeviceBuilder;
-import org.somda.sdc.dpws.ThisModelBuilder;
+import org.somda.sdc.dpws.model.ThisDeviceType;
+import org.somda.sdc.dpws.model.ThisModelType;
 import org.somda.sdc.dpws.service.HostedServiceProxy;
 import org.somda.sdc.dpws.service.HostingServiceProxy;
 import org.somda.sdc.dpws.service.factory.HostingServiceFactory;
@@ -100,8 +100,8 @@ class ScoControllerTest {
         hostingServiceProxy = injector.getInstance(HostingServiceFactory.class).createHostingServiceProxy(
                 "urn:uuid:441dfbea-40e5-406e-b2c4-154d3b8430bf",
                 Collections.emptyList(),
-                injector.getInstance(ThisDeviceBuilder.class).get(),
-                injector.getInstance(ThisModelBuilder.class).get(),
+                ThisDeviceType.builder().build(),
+                ThisModelType.builder().build(),
                 Collections.emptyMap(), // no services needed as inject in SCO controller separately
                 0,
                 mock(RequestResponseClient.class),
@@ -125,43 +125,43 @@ class ScoControllerTest {
                 new SetOperationTestSet(
                         ActionConstants.ACTION_SET_CONTEXT_STATE,
                         new SetContextState(),
-                        ScoArtifacts.createResponse(10, InvocationState.WAIT, SetContextStateResponse.class),
+                        ScoArtifacts.createResponse(10, InvocationState.WAIT, SetContextStateResponse.builder()).build(),
                         SetContextStateResponse.class
                 ),
                 new SetOperationTestSet(
                         ActionConstants.ACTION_ACTIVATE,
                         new Activate(),
-                        ScoArtifacts.createResponse(10, InvocationState.WAIT, ActivateResponse.class),
+                        ScoArtifacts.createResponse(10, InvocationState.WAIT, ActivateResponse.builder()).build(),
                         ActivateResponse.class
                 ),
                 new SetOperationTestSet(
                         ActionConstants.ACTION_SET_ALERT_STATE,
                         new SetAlertState(),
-                        ScoArtifacts.createResponse(10, InvocationState.WAIT, SetAlertStateResponse.class),
+                        ScoArtifacts.createResponse(10, InvocationState.WAIT, SetAlertStateResponse.builder()).build(),
                         SetAlertStateResponse.class
                 ),
                 new SetOperationTestSet(
                         ActionConstants.ACTION_SET_COMPONENT_STATE,
                         new SetComponentState(),
-                        ScoArtifacts.createResponse(10, InvocationState.WAIT, SetComponentStateResponse.class),
+                        ScoArtifacts.createResponse(10, InvocationState.WAIT, SetComponentStateResponse.builder()).build(),
                         SetComponentStateResponse.class
                 ),
                 new SetOperationTestSet(
                         ActionConstants.ACTION_SET_METRIC_STATE,
                         new SetMetricState(),
-                        ScoArtifacts.createResponse(10, InvocationState.WAIT, SetMetricStateResponse.class),
+                        ScoArtifacts.createResponse(10, InvocationState.WAIT, SetMetricStateResponse.builder()).build(),
                         SetMetricStateResponse.class
                 ),
                 new SetOperationTestSet(
                         ActionConstants.ACTION_SET_STRING,
                         new SetString(),
-                        ScoArtifacts.createResponse(10, InvocationState.WAIT, SetStringResponse.class),
+                        ScoArtifacts.createResponse(10, InvocationState.WAIT, SetStringResponse.builder()).build(),
                         SetStringResponse.class
                 ),
                 new SetOperationTestSet(
                         ActionConstants.ACTION_SET_VALUE,
                         new SetValue(),
-                        ScoArtifacts.createResponse(10, InvocationState.WAIT, SetValueResponse.class),
+                        ScoArtifacts.createResponse(10, InvocationState.WAIT, SetValueResponse.builder()).build(),
                         SetValueResponse.class
                 ));
 
@@ -176,8 +176,7 @@ class ScoControllerTest {
             final ListenableFuture<? extends ScoTransaction<? extends AbstractSetResponse>> future =
                     scoController.invoke(testSet.expectedRequest, reportConsumer, testSet.expectedResponseClass);
             final ScoTransaction<? extends AbstractSetResponse> transaction = future.get(2, TimeUnit.SECONDS);
-            // response must be a copy
-            assertNotSame(testSet.expectedResponse, transaction.getResponse());
+
             assertEquals(testSet.expectedResponse.getInvocationInfo().getTransactionId(),
                     transaction.getResponse().getInvocationInfo().getTransactionId());
 

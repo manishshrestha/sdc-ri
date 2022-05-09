@@ -38,9 +38,9 @@ class MdibEntityImplTest {
         mdibEntity = mdibEntityFactory.createMdibEntity(
                 null,
                 Collections.emptyList(),
-                MockModelFactory.createDescriptor(expectedDescriptorHandle, PatientContextDescriptor.class),
+                MockModelFactory.createDescriptor(expectedDescriptorHandle, PatientContextDescriptor.builder()).build(),
                 expectedStateHandles.stream()
-                        .map(handle -> MockModelFactory.createContextState(handle, expectedDescriptorHandle, PatientContextState.class))
+                        .map(handle -> MockModelFactory.createContextState(handle, expectedDescriptorHandle, PatientContextState.builder()).build())
                         .collect(Collectors.toList()),
                 MdibVersion.create());
     }

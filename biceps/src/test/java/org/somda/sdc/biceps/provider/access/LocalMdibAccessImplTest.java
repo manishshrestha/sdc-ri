@@ -20,6 +20,7 @@ import org.somda.sdc.biceps.model.participant.AbstractDescriptor;
 import org.somda.sdc.biceps.model.participant.AbstractMetricDescriptor;
 import org.somda.sdc.biceps.model.participant.AbstractState;
 import org.somda.sdc.biceps.model.participant.BatteryDescriptor;
+import org.somda.sdc.biceps.model.participant.BatteryState;
 import org.somda.sdc.biceps.model.participant.ChannelDescriptor;
 import org.somda.sdc.biceps.model.participant.ChannelState;
 import org.somda.sdc.biceps.model.participant.MdibVersion;
@@ -38,6 +39,7 @@ import test.org.somda.common.LoggingTestWatcher;
 
 import javax.annotation.Nullable;
 import java.math.BigInteger;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -166,7 +168,7 @@ class LocalMdibAccessImplTest {
         {
             // When an entity is inserted
             modifications = MdibDescriptionModifications.create()
-                    .insert(entry(Handles.BATTERY_1, BatteryDescriptor.class, Handles.MDS_0));
+                    .insert(entry(Handles.BATTERY_1, BatteryDescriptor.builder(), BatteryState.builder(), Handles.MDS_0));
 
             writeResult = mdibAccess.writeDescription(modifications);
 
@@ -183,7 +185,7 @@ class LocalMdibAccessImplTest {
         {
             // When an entity is updated
             modifications = MdibDescriptionModifications.create()
-                    .update(entry(Handles.BATTERY_1, BatteryDescriptor.class));
+                    .update(entry(Handles.BATTERY_1, BatteryDescriptor.builder(), BatteryState.builder()));
 
             writeResult = mdibAccess.writeDescription(modifications);
 
@@ -200,7 +202,7 @@ class LocalMdibAccessImplTest {
         {
             // When an entity is deleted
             modifications = MdibDescriptionModifications.create()
-                    .delete(entry(Handles.BATTERY_1, BatteryDescriptor.class));
+                    .delete(entry(Handles.BATTERY_1, BatteryDescriptor.builder(), BatteryState.builder()));
 
             writeResult = mdibAccess.writeDescription(modifications);
 
@@ -217,7 +219,7 @@ class LocalMdibAccessImplTest {
         {
             // When an only a state is updated
             MdibStateModifications stateModifications = MdibStateModifications.create(MdibStateModifications.Type.COMPONENT)
-                    .add(state(Handles.MDS_0, MdsState.class));
+                    .add(state(Handles.MDS_0, MdsState.builder()).build());
 
             WriteStateResult writeStateResult = mdibAccess.writeStates(stateModifications);
 
@@ -241,7 +243,7 @@ class LocalMdibAccessImplTest {
         {
             // When a description is inserted
             modifications = MdibDescriptionModifications.create()
-                    .insert(entry(Handles.CHANNEL_2, ChannelDescriptor.class, Handles.VMD_1));
+                    .insert(entry(Handles.CHANNEL_2, ChannelDescriptor.builder(), ChannelState.builder(), Handles.VMD_1));
 
             WriteDescriptionResult writeDescriptionResult = mdibAccess.writeDescription(modifications);
 
@@ -261,7 +263,7 @@ class LocalMdibAccessImplTest {
         {
             // When the description is updated
             modifications = MdibDescriptionModifications.create()
-                    .update(entry(Handles.CHANNEL_2, ChannelDescriptor.class));
+                    .update(entry(Handles.CHANNEL_2, ChannelDescriptor.builder(), ChannelState.builder()));
 
             WriteDescriptionResult writeDescriptionResult = mdibAccess.writeDescription(modifications);
 
@@ -281,7 +283,7 @@ class LocalMdibAccessImplTest {
         {
             // When the description is deleted
             modifications = MdibDescriptionModifications.create()
-                    .delete(entry(Handles.CHANNEL_2, ChannelDescriptor.class));
+                    .delete(entry(Handles.CHANNEL_2, ChannelDescriptor.builder(), ChannelState.builder()));
 
             WriteDescriptionResult writeDescriptionResult = mdibAccess.writeDescription(modifications);
 
@@ -297,7 +299,7 @@ class LocalMdibAccessImplTest {
         {
             // When the description is re-inserted
             modifications = MdibDescriptionModifications.create()
-                    .insert(entry(Handles.CHANNEL_2, ChannelDescriptor.class, Handles.VMD_1));
+                    .insert(entry(Handles.CHANNEL_2, ChannelDescriptor.builder(), ChannelState.builder(), Handles.VMD_1));
 
             WriteDescriptionResult writeDescriptionResult = mdibAccess.writeDescription(modifications);
 
@@ -317,7 +319,7 @@ class LocalMdibAccessImplTest {
         {
             // When only the state is updated
             MdibStateModifications stateModifications = MdibStateModifications.create(MdibStateModifications.Type.COMPONENT)
-                    .add(state(Handles.CHANNEL_2, ChannelState.class));
+                    .add(state(Handles.CHANNEL_2, ChannelState.builder()).build());
 
             WriteStateResult writeStateResult = mdibAccess.writeStates(stateModifications);
 
@@ -340,23 +342,27 @@ class LocalMdibAccessImplTest {
         return new BaseTreeModificationsSet(mockEntryFactory).createBaseTree();
     }
 
-    private <T extends AbstractDescriptor, V extends AbstractState> MdibDescriptionModifications.Entry entry(String handle, Class<T> descrClass) throws Exception {
-        return entry(handle, descrClass, null);
+    private <T extends AbstractDescriptor.Builder<?>, V extends AbstractState.Builder<?>> MdibDescriptionModifications.Entry entry(String handle, T descrClass, V stateClass) throws Exception {
+        return entry(handle, descrClass, stateClass, null);
     }
 
-    private <T extends AbstractDescriptor, V extends AbstractState> MdibDescriptionModifications.Entry entry(String handle, Class<T> descrClass, @Nullable String parentHandle) throws Exception {
-        return mockEntryFactory.entry(handle, descrClass, parentHandle);
+    private <T extends AbstractDescriptor.Builder<?>, V extends AbstractState.Builder<?>> MdibDescriptionModifications.Entry entry(
+        String handle, T descrClass, V stateClass, @Nullable String parentHandle
+    ) throws Exception {
+        return mockEntryFactory.entry(handle, descrClass, stateClass, parentHandle);
     }
 
-    private <T extends AbstractDescriptor, V extends AbstractContextState> MdibDescriptionModifications.MultiStateEntry contextEntry(String handle, String stateHandle, Class<T> descrClass, String parentHandle) throws Exception {
-        return mockEntryFactory.contextEntry(handle, stateHandle, descrClass, parentHandle);
+    private <T extends AbstractDescriptor.Builder<?>, V extends AbstractContextState.Builder<?>> MdibDescriptionModifications.MultiStateEntry contextEntry(
+        String handle, String stateHandle, T descrClass, V stateClass, String parentHandle
+    ) throws Exception {
+        return mockEntryFactory.contextEntry(handle, Collections.singletonList(stateHandle), descrClass, stateClass, parentHandle);
     }
 
-    private <T extends AbstractDescriptor> T descriptor(String handle, Class<T> theClass) {
+    private <T extends AbstractDescriptor.Builder<?>> T descriptor(String handle, T theClass) {
         return MockModelFactory.createDescriptor(handle, theClass);
     }
 
-    private <T extends AbstractState> T state(String handle, Class<T> theClass) {
+    private <T extends AbstractState.Builder<?>> T state(String handle, T theClass) {
         return MockModelFactory.createState(handle, theClass);
     }
 }

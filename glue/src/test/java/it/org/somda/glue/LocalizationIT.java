@@ -170,10 +170,11 @@ public class LocalizationIT {
     private GetLocalizedTextResponse createRequestAndSend(@Nullable BigInteger version,
                                                           List<String> ref,
                                                           List<String> lang) throws Exception {
-        final GetLocalizedText request = factory.createGetLocalizedText();
-        request.setVersion(version);
-        request.setRef(ref);
-        request.setLang(lang);
+        final GetLocalizedText request = GetLocalizedText.builder()
+            .withVersion(version)
+            .withRef(ref)
+            .withLang(lang)
+            .build();
 
         return localizationServiceAccess
                 .getLocalizedText(request)
@@ -215,12 +216,12 @@ public class LocalizationIT {
     }
 
     private LocalizedText createText(String ref, String lang, BigInteger version) {
-        var localizedText = new LocalizedText();
-        localizedText.setRef(ref);
-        localizedText.setLang(lang);
-        localizedText.setVersion(version);
-        localizedText.setTextWidth(LocalizedTextWidth.S);
-        localizedText.setValue(String.format("[version=%s, lang=%s] Translated text for REF: %s", version, lang, ref));
-        return localizedText;
+        return LocalizedText.builder()
+            .withRef(ref)
+            .withLang(lang)
+            .withVersion(version)
+            .withTextWidth(LocalizedTextWidth.S)
+            .withValue(String.format("[version=%s, lang=%s] Translated text for REF: %s", version, lang, ref))
+            .build();
     }
 }

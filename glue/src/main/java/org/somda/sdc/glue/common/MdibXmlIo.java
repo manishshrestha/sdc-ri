@@ -97,22 +97,22 @@ public class MdibXmlIo {
      * @throws JAXBException in case the marshaller throws an exception.
      */
     public void writeMdib(Mdib mdib, OutputStream outputStream) throws JAXBException {
-        final GetMdibResponse getMdibResponse = messageModelFactory.createGetMdibResponse();
+        final var getMdibResponse = GetMdibResponse.builder();
 
         try {
             // Set a random UUID; no real purpose, but required for validity
-            mdibVersionUtil.setMdibVersion(MdibVersion.create(), getMdibResponse);
+            mdibVersionUtil.setResponseMdibVersion(MdibVersion.create(), getMdibResponse);
         } catch (Exception e) {
             instanceLogger.warn("Unexpected error during setMdibVersion on a GetMdibResponseObject. " +
                     "Nothing was written to the output stream", e);
             return;
         }
 
-        getMdibResponse.setMdib(mdib);
+        getMdibResponse.withMdib(mdib);
 
         final Marshaller marshaller = jaxbContext.createMarshaller();
         marshaller.setProperty(NamespacePrefixMapperConverter.JAXB_MARSHALLER_PROPERTY_KEY, namespacePrefixMapper);
-        marshaller.marshal(getMdibResponse, outputStream);
+        marshaller.marshal(getMdibResponse.build(), outputStream);
     }
 
     /**

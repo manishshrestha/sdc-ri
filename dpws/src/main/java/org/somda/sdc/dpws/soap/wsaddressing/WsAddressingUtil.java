@@ -30,9 +30,8 @@ public class WsAddressingUtil {
      * @return an {@link AttributedURIType} instance.
      */
     public AttributedURIType createAttributedURIType(String uri) {
-        AttributedURIType attributedURIType = wsaFactory.createAttributedURIType();
-        attributedURIType.setValue(uri);
-        return attributedURIType;
+        return AttributedURIType.builder()
+            .withValue(uri).build();
     }
 
     /**
@@ -42,9 +41,8 @@ public class WsAddressingUtil {
      * @return an {@link AttributedQNameType} instance.
      */
     public AttributedQNameType createAttributedQNameType(QName qName) {
-        var attributedQNameType = wsaFactory.createAttributedQNameType();
-        attributedQNameType.setValue(qName);
-        return attributedQNameType;
+        return AttributedQNameType.builder()
+            .withValue(qName).build();
     }
 
     /**
@@ -64,9 +62,8 @@ public class WsAddressingUtil {
      * @return an {@link RelatesToType} instance.
      */
     public RelatesToType createRelatesToType(String uri) {
-        RelatesToType relatesToType = wsaFactory.createRelatesToType();
-        relatesToType.setValue(uri);
-        return relatesToType;
+        return RelatesToType.builder()
+            .withValue(uri).build();
     }
 
     /**
@@ -108,9 +105,9 @@ public class WsAddressingUtil {
      * @return a new endpoint reference object.
      */
     public EndpointReferenceType createEprWithAddress(String addressUri) {
-        EndpointReferenceType eprType = wsaFactory.createEndpointReferenceType();
-        eprType.setAddress(createAttributedURIType(addressUri));
-        return eprType;
+        return EndpointReferenceType.builder()
+            .withAddress(createAttributedURIType(addressUri))
+            .build();
     }
 
     /**

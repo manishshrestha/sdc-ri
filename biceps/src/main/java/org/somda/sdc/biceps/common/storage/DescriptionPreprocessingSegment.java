@@ -1,7 +1,8 @@
 package org.somda.sdc.biceps.common.storage;
 
 import org.somda.sdc.biceps.common.MdibDescriptionModification;
-import org.somda.sdc.biceps.common.MdibDescriptionModifications;
+
+import java.util.List;
 
 /**
  * A segment that is applied during description modifications.
@@ -14,8 +15,13 @@ public interface DescriptionPreprocessingSegment {
      *
      * @param modifications all modifications for preprocessing.
      * @param mdibStorage   the MDIB storage to be used by the callback.
+     * @return updated set of modifications
      */
-    default void beforeFirstModification(MdibDescriptionModifications modifications, MdibStorage mdibStorage) {
+    default List<MdibDescriptionModification> beforeFirstModification(
+        List<MdibDescriptionModification> modifications,
+        MdibStorage mdibStorage
+    ) {
+        return modifications;
     }
 
     /**
@@ -25,19 +31,23 @@ public interface DescriptionPreprocessingSegment {
      *
      * @param modifications all modifications for preprocessing.
      * @param mdibStorage   the MDIB storage to be used by the callback.
+     * @return updated set of modifications
      */
-    default void afterLastModification(MdibDescriptionModifications modifications, MdibStorage mdibStorage) {
+    default List<MdibDescriptionModification> afterLastModification(
+        List<MdibDescriptionModification> modifications,
+        MdibStorage mdibStorage
+    ) {
+        return modifications;
     }
 
     /**
      * In a sequence of modifications this function processes one modification.
      *
-     * @param allModifications    all modifications.
-     * @param currentModification the current modification to be processed.
-     * @param storage             the MDIB storage for access.
+     * @param modifications all modifications.
+     * @param storage       the MDIB storage for access.
+     * @return updated set of modifications
      * @throws Exception an arbitrary exception if something goes wrong.
      */
-    void process(MdibDescriptionModifications allModifications,
-                 MdibDescriptionModification currentModification,
-                 MdibStorage storage) throws Exception;
+    List<MdibDescriptionModification> process(List<MdibDescriptionModification> modifications,
+                                         MdibStorage storage) throws Exception;
 }

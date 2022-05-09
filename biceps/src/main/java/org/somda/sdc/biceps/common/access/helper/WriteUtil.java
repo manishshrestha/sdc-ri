@@ -1,6 +1,7 @@
 package org.somda.sdc.biceps.common.access.helper;
 
 import org.apache.logging.log4j.Logger;
+import org.somda.sdc.biceps.common.MdibDescriptionModification;
 import org.somda.sdc.biceps.common.MdibDescriptionModifications;
 import org.somda.sdc.biceps.common.MdibStateModifications;
 import org.somda.sdc.biceps.common.access.MdibAccess;
@@ -11,6 +12,7 @@ import org.somda.sdc.biceps.common.storage.MdibStoragePreprocessingChain;
 import org.somda.sdc.biceps.common.storage.PreprocessingException;
 
 import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.Function;
 
@@ -60,7 +62,7 @@ public class WriteUtil {
      * @throws PreprocessingException in case a consistency check or modifier fails.
      */
     public WriteDescriptionResult writeDescription(
-            Function<MdibDescriptionModifications, WriteDescriptionResult> lockedWriteDescription,
+            Function<List<MdibDescriptionModification>, WriteDescriptionResult> lockedWriteDescription,
             MdibDescriptionModifications descriptionModifications
     ) throws PreprocessingException {
         acquireWriteLock();
@@ -73,8 +75,8 @@ public class WriteUtil {
 
         WriteDescriptionResult modificationResult;
         try {
-            mdibAccessPreprocessing.processDescriptionModifications(descriptionModifications);
-            modificationResult = lockedWriteDescription.apply(descriptionModifications);
+            var modifications = mdibAccessPreprocessing.processDescriptionModifications(descriptionModifications);
+            modificationResult = lockedWriteDescription.apply(modifications);
 
             // Return just here in order to apply MDIB version on remote MDIB writes
             if (descriptionModifications.getModifications().isEmpty()) {
@@ -84,8 +86,8 @@ public class WriteUtil {
 
             readWriteLock.readLock().lock();
         } catch (PreprocessingException e) {
-            log.warn("Error while processing description modifications in chain segment {} on handle {}: {}",
-                    e.getSegment(), e.getHandle(), e.getMessage());
+            log.warn("Error while processing description modifications in chain segment {}: {}",
+                    e.getSegment(), e.getMessage());
             throw e;
         } finally {
             readWriteLock.writeLock().unlock();
@@ -151,8 +153,8 @@ public class WriteUtil {
 
             readWriteLock.readLock().lock();
         } catch (PreprocessingException e) {
-            log.warn("Error while processing state modifications in chain segment {} on handle {}: {}",
-                    e.getSegment(), e.getHandle(), e.getMessage());
+            log.warn("Error while processing state modifications in chain segment {}: {}",
+                    e.getSegment(), e.getMessage());
             throw e;
         } finally {
             readWriteLock.writeLock().unlock();

@@ -60,11 +60,11 @@ public class CodedValueFactory {
                                               @Nullable String codingSystemVersion,
                                               @Nullable String code,
                                               @Nullable String symbolicCodeName) {
-        final CodedValue codedValue = new CodedValue();
-        codedValue.setCodingSystem(codingSystem);
-        codedValue.setCodingSystemVersion(codingSystemVersion);
-        codedValue.setCode(code);
-        codedValue.setSymbolicCodeName(symbolicCodeName);
-        return codedValue;
+        return CodedValue.builder()
+            .withCodingSystem(codingSystem)
+            .withCodingSystemVersion(codingSystemVersion)
+            .withCode(code)
+            .withSymbolicCodeName(symbolicCodeName)
+            .build();
     }
 }

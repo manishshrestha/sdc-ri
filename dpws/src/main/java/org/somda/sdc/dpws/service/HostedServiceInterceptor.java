@@ -33,7 +33,6 @@ import java.io.ByteArrayInputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Collections;
-import java.util.List;
 
 /**
  * Server interceptor to serve GetMetadata requests on hosted services.
@@ -89,21 +88,20 @@ public class HostedServiceInterceptor implements Interceptor {
     void processGetMetadata(RequestResponseObject rrObj) {
         GetMetadata body = soapUtil.getBody(rrObj.getRequest(), GetMetadata.class).orElse(null);
 
-        Metadata metadata = mexFactory.createMetadata();
-        List<MetadataSection> metadataSection = metadata.getMetadataSection();
+        var metadata = Metadata.builder();
 
         // \todo DGr is host relationship required here?
-        metadataSection.add(metadataSectionUtil.createRelationship(targetService.getEndpointReference(),
+        metadata.addMetadataSection(metadataSectionUtil.createRelationship(targetService.getEndpointReference(),
                 targetService.getTypes(), Collections.singletonList(hostedService)));
 
         if (body == null || body.getDialect() == null || body.getDialect().isEmpty() ||
                 body.getDialect().equals(WsMetadataExchangeConstants.DIALECT_WSDL)) {
             switch (provisioningMode) {
                 case INLINE:
-                    metadataSection.add(createWsdlMetadataSection());
+                    metadata.addMetadataSection(createWsdlMetadataSection());
                     break;
                 case RESOURCE:
-                    metadataSection.add(createWsdlMetadataSectionAsResource());
+                    metadata.addMetadataSection(createWsdlMetadataSectionAsResource());
                     break;
                 default:
                     LOG.warn("Unsupported WSDL provisioning mode detected: {}", provisioningMode);
@@ -113,26 +111,24 @@ public class HostedServiceInterceptor implements Interceptor {
         rrObj.getResponse().getWsAddressingHeader().setAction(
                 wsaUtil.createAttributedURIType(WsMetadataExchangeConstants.WSA_ACTION_GET_METADATA_RESPONSE));
 
-        metadata.setMetadataSection(metadataSection);
-        soapUtil.setBody(metadata, rrObj.getResponse());
+        soapUtil.setBody(metadata.build(), rrObj.getResponse());
     }
 
     private MetadataSection createWsdlMetadataSection() {
-        MetadataSection metadataSection = mexFactory.createMetadataSection();
-        metadataSection.setDialect(WsMetadataExchangeConstants.DIALECT_WSDL);
-        metadataSection.setAny(wsdlDefinition);
-        return metadataSection;
+        return MetadataSection.builder()
+            .withDialect(WsMetadataExchangeConstants.DIALECT_WSDL)
+            .withAny(wsdlDefinition).build();
     }
 
     private MetadataSection createWsdlMetadataSectionAsResource() {
-        MetadataSection metadataSection = mexFactory.createMetadataSection();
-        metadataSection.setDialect(WsMetadataExchangeConstants.DIALECT_WSDL);
+        var metadataSection = MetadataSection.builder()
+            .withDialect(WsMetadataExchangeConstants.DIALECT_WSDL);
         if (wsdlUri == null) {
             LOG.warn("No resource link for WSDL provisioning found. Metadata section will be left empty.");
         } else {
-            metadataSection.setAny(mexFactory.createLocation(wsdlUri));
+            metadataSection.withAny(mexFactory.createLocation(wsdlUri));
         }
-        return metadataSection;
+        return metadataSection.build();
     }
 
     private void setupInlineDefinition() {

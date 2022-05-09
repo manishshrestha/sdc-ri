@@ -48,6 +48,8 @@
         <directories.sourceFiles>${project.basedir}/src/main/java</directories.sourceFiles>
         <directories.generatedSources>${project.build.directory}/generated-sources</directories.generatedSources>
         <directories.generatedResources>${project.build.directory}/generated-resources</directories.generatedResources>
+        <!-- module contains only generated code with questionable javadoc, skip -->
+        <maven.javadoc.skip>true</maven.javadoc.skip>
     </properties>
 
     <dependencies>
@@ -108,18 +110,24 @@
                             <args>
                                 <arg>-npa</arg>
                                 <arg>-no-header</arg>
-                                <arg>-Xsetters</arg>
-                                <arg>-Xsetters-mode=accessor</arg>
-                                <arg>-Xcopyable</arg>
                                 <arg>-XsimpleEquals</arg>
                                 <arg>-XsimpleHashCode</arg>
                                 <arg>-XtoString</arg>
+                                <arg>-Xclone</arg>
+                                <arg>-Xcopy</arg>
+                                <arg>-Xfluent-builder</arg>
+                                <arg>-Ximmutable</arg>
                             </args>
                             <plugins>
                                 <plugin>
                                     <groupId>org.jvnet.jaxb2_commons</groupId>
                                     <artifactId>jaxb2-basics</artifactId>
                                     <version>${jaxbBasicsVersion}</version>
+                                </plugin>
+                                <plugin>
+                                    <groupId>net.codesup.util</groupId>
+                                    <artifactId>jaxb2-rich-contract-plugin</artifactId>
+                                    <version>${jaxbRichContractPluginVersion}</version>
                                 </plugin>
                             </plugins>
                         </configuration>

@@ -30,9 +30,10 @@ public class FallbackInstanceIdentifier {
                 + DELIMITER + UrlUtf8.encode(locationDetail.getRoom())
                 + DELIMITER + UrlUtf8.encode(locationDetail.getBed());
         if (!"/////".equals(extension)) {
-            InstanceIdentifier instanceIdentifier = new InstanceIdentifier();
-            instanceIdentifier.setRootName(LOCATION_ROOT_SEGMENT);
-            instanceIdentifier.setExtensionName(extension);
+            var instanceIdentifier = InstanceIdentifier.builder()
+                .withRootName(LOCATION_ROOT_SEGMENT)
+                .withExtensionName(extension)
+                .build();
             return Optional.of(instanceIdentifier);
         }
 

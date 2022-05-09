@@ -9,7 +9,9 @@ import org.somda.sdc.dpws.DpwsFramework;
 import org.somda.sdc.dpws.DpwsUtil;
 import org.somda.sdc.dpws.device.factory.DeviceFactory;
 import org.somda.sdc.dpws.guice.DefaultDpwsModule;
-import org.somda.sdc.dpws.service.factory.HostedServiceFactory;
+import org.somda.sdc.dpws.model.LocalizedStringType;
+import org.somda.sdc.dpws.model.ThisDeviceType;
+import org.somda.sdc.dpws.model.ThisModelType;
 import org.somda.sdc.dpws.soap.wsaddressing.WsAddressingConfig;
 import org.somda.sdc.dpws.soap.wsaddressing.WsAddressingUtil;
 import org.somda.sdc.dpws.soap.wsaddressing.model.EndpointReferenceType;
@@ -53,32 +55,47 @@ public class DeviceImplTest implements Runnable {
 
         Device device = inj.getInstance(DeviceFactory.class).createDevice(devConf);
 
-        HostedServiceFactory hsFactory = inj.getInstance(HostedServiceFactory.class);
-//        HostedService testService = hsFactory.createHostedService("TestService", new WebService() {
-//        }, URI.create("http://localhost/wsdl"), null);
-//        device.getHostingServiceAccess().addHostedService(testService);
-
         device.getDiscoveryAccess().setTypes(Collections.singletonList(new QName("http://test-type", "Device")));
         device.getDiscoveryAccess().setScopes(Collections.singletonList("http://test-scope/Scope"));
 
         DpwsUtil dpwsUtil = inj.getInstance(DpwsUtil.class);
-        device.getHostingServiceAccess().setThisDevice(dpwsUtil.createDeviceBuilder()
-                .setFriendlyName(dpwsUtil.createLocalizedStrings()
-                        .add("en", "Draeger IACS Monitoring Unit")
-                        .get())
-                .setFirmwareVersion("v1.2.3")
-                .setSerialNumber("1234-5678-9101-1121").get());
 
-        device.getHostingServiceAccess().setThisModel(dpwsUtil.createModelBuilder()
-                .setManufacturer(dpwsUtil.createLocalizedStrings()
-                        .add("en", "Draegerwerk AG")
-                        .add("de", "Drägerwerk AG")
-                        .get())
-                .setModelName(dpwsUtil.createLocalizedStrings()
-                        .add("IACS")
-                        .get())
-                .setPresentationUrl("http://www.google.com")
-                .get());
+        device.getHostingServiceAccess().setThisDevice(
+            ThisDeviceType.builder()
+                .addFriendlyName(
+                    dpwsUtil.setLang(
+                        LocalizedStringType.builder()
+                            .withValue("Draeger IACS Monitoring Unit")
+                            .build(),
+                        "en"
+                    )
+                )
+                .withFirmwareVersion("v1.2.3")
+                .withSerialNumber("1234-5678-9101-1121")
+                .build()
+        );
+
+        device.getHostingServiceAccess().setThisModel(
+            ThisModelType.builder()
+                    .addManufacturer(
+                        dpwsUtil.setLang(LocalizedStringType.builder()
+                            .withValue("Draegerwerk AG")
+                            .build(),
+                            "en"
+                        )
+                    )
+                .addManufacturer(
+                    dpwsUtil.setLang(LocalizedStringType.builder()
+                            .withValue("Drägerwerk AG")
+                            .build(),
+                        "de"
+                    )
+                )
+                .withModelName(LocalizedStringType.builder().withValue("IACS").build())
+                .withPresentationUrl("http://www.google.com")
+                .build()
+        );
+
 
         device.startAsync().awaitRunning();
 

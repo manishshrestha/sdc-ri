@@ -20,22 +20,26 @@ class ModificationsBuilderTest {
     void createSingleStateIfNotExists() {
         var builderFactory = UT.getInjector().getInstance(ModificationsBuilderFactory.class);
 
-        var mdib = new Mdib();
-        var mdDescription = new MdDescription();
-        mdib.setMdDescription(mdDescription);
+        var vmd = MockModelFactory.createDescriptor(Handles.VMD_0, VmdDescriptor.builder()).build();
 
-        var mds = MockModelFactory.createDescriptor(Handles.MDS_0, MdsDescriptor.class);
-        mdDescription.getMds().add(mds);
+        var mds = MockModelFactory.createDescriptor(Handles.MDS_0, MdsDescriptor.builder())
+            .addVmd(vmd)
+            .build();
 
-        var vmd = MockModelFactory.createDescriptor(Handles.VMD_0, VmdDescriptor.class);
-        mds.getVmd().add(vmd);
+        var mdDescription = MdDescription.builder()
+            .addMds(mds)
+            .build();
+
+        var mdib = Mdib.builder()
+            .withMdDescription(mdDescription)
+            .build();
 
         assertThrows(RuntimeException.class, () ->
-                builderFactory.createModificationsBuilder((Mdib) mdib.clone(), false));
+                builderFactory.createModificationsBuilder(mdib, false));
 
-        assertDoesNotThrow(() -> builderFactory.createModificationsBuilder((Mdib) mdib.clone(), true));
+        assertDoesNotThrow(() -> builderFactory.createModificationsBuilder(mdib, true));
 
-        var modifications = builderFactory.createModificationsBuilder((Mdib) mdib.clone(), true).get();
+        var modifications = builderFactory.createModificationsBuilder(mdib, true).get();
         assertEquals(2, modifications.getModifications().size());
         assertEquals(1, modifications.getModifications().get(0).getStates().size());
         assertEquals(1, modifications.getModifications().get(1).getStates().size());
@@ -45,13 +49,14 @@ class ModificationsBuilderTest {
     void applyDefaultStates() {
         var builderFactory = UT.getInjector().getInstance(ModificationsBuilderFactory.class);
 
-        var mdib = new Mdib();
-        var mdDescription = new MdDescription();
-        mdib.setMdDescription(mdDescription);
-        var mds = MockModelFactory.createDescriptor(Handles.MDS_0, MdsDescriptor.class);
-        mdDescription.getMds().add(mds);
-        var clock = MockModelFactory.createDescriptor(Handles.CLOCK_0, ClockDescriptor.class);
-        mds.setClock(clock);
+        var mdDescription = MdDescription.builder();
+        var mds = MockModelFactory.createDescriptor(Handles.MDS_0, MdsDescriptor.builder());
+        var clock = MockModelFactory.createDescriptor(Handles.CLOCK_0, ClockDescriptor.builder());
+        mds.withClock(clock.build());
+        mdDescription.addMds(mds.build());
+        var mdib = Mdib.builder()
+            .withMdDescription(mdDescription.build())
+            .build();
 
         ModificationsBuilder modificationsBuilder = builderFactory.createModificationsBuilder(mdib, true);
         MdibDescriptionModifications modifications = modificationsBuilder.get();

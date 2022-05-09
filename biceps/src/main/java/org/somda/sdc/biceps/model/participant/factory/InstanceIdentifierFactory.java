@@ -26,10 +26,9 @@ public class InstanceIdentifierFactory {
      * @return a new instance.
      */
     public static InstanceIdentifier createInstanceIdentifier(@Nullable String root, @Nullable String extension) {
-        var instanceIdentifier = new InstanceIdentifier();
-        instanceIdentifier.setRootName(root);
-        instanceIdentifier.setExtensionName(extension);
-        return instanceIdentifier;
+        return InstanceIdentifier.builder()
+            .withRootName(root)
+            .withExtensionName(extension).build();
     }
 
     /**

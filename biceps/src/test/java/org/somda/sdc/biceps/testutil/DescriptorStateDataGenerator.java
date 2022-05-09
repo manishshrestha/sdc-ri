@@ -1,5 +1,6 @@
 package org.somda.sdc.biceps.testutil;
 
+import org.somda.sdc.biceps.model.extension.ExtensionType;
 import org.somda.sdc.biceps.model.message.RetrievabilityMethod;
 import org.somda.sdc.biceps.model.participant.*;
 import org.somda.sdc.common.util.AnyDateTime;
@@ -9,566 +10,568 @@ import java.math.BigInteger;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Arrays;
+import java.util.List;
 
 public class DescriptorStateDataGenerator {
-    private final ObjectFactory participantFactory;
-    private final org.somda.sdc.biceps.model.extension.ObjectFactory extensionFactory;
     private final BaseTypeDataGenerator baseTypes;
 
     public DescriptorStateDataGenerator() {
-        this.participantFactory = new ObjectFactory();
-        this.extensionFactory = new org.somda.sdc.biceps.model.extension.ObjectFactory();
         this.baseTypes = new BaseTypeDataGenerator();
     }
 
     public MdsDescriptor mdsDescriptor(String handle) {
-        final MdsDescriptor mdsDescriptor = participantFactory.createMdsDescriptor();
-        descriptor(mdsDescriptor, handle);
-        deviceComponentDescriptor(mdsDescriptor);
+        final var mdsDescriptorBuilder = MdsDescriptor.builder();
+        descriptor(mdsDescriptorBuilder, handle);
+        deviceComponentDescriptor(mdsDescriptorBuilder);
 
-        mdsDescriptor.setApprovedJurisdictions(baseTypes.approvedJurisdictions());
-        final MdsDescriptor.MetaData mdsDescriptorMetaData = participantFactory.createMdsDescriptorMetaData();
-        mdsDescriptorMetaData.setExpirationDate(AnyDateTime.create(baseTypes.localDateTime()));
-        mdsDescriptorMetaData.setLotNumber("lot-number");
-        mdsDescriptorMetaData.setManufactureDate(AnyDateTime.create(baseTypes.localDateTime()));
-        mdsDescriptorMetaData.setManufacturer(baseTypes.localizedTexts());
-        mdsDescriptorMetaData.setModelName(baseTypes.localizedTexts());
-        mdsDescriptorMetaData.setModelNumber("model-number");
-        mdsDescriptorMetaData.setSerialNumber(Arrays.asList("serial-number1", "serial-number2"));
-        final MdsDescriptor.MetaData.Udi udi = new MdsDescriptor.MetaData.Udi();
-        udi.setDeviceIdentifier("udi-device-identifier");
-        udi.setHumanReadableForm("udi-human-readable-form");
-        udi.setJurisdiction(baseTypes.instanceIdentifier("udi-jurisdiction"));
-        udi.setIssuer(baseTypes.instanceIdentifier("udi-issuer"));
-        mdsDescriptorMetaData.setUdi(Arrays.asList(udi));
+        mdsDescriptorBuilder.withApprovedJurisdictions(baseTypes.approvedJurisdictions());
+        final var mdsDescriptorMetaDataBuilder = MdsDescriptor.MetaData.builder()
+            .withExpirationDate(AnyDateTime.create(baseTypes.localDateTime()))
+            .withLotNumber("lot-number")
+            .withManufactureDate(AnyDateTime.create(baseTypes.localDateTime()))
+            .withManufacturer(baseTypes.localizedTexts())
+            .withModelName(baseTypes.localizedTexts())
+            .withModelNumber("model-number")
+            .withSerialNumber(Arrays.asList("serial-number1", "serial-number2"));
+        final var udiBuilder = MdsDescriptor.MetaData.Udi.builder()
+            .withDeviceIdentifier("udi-device-identifier")
+            .withHumanReadableForm("udi-human-readable-form")
+            .withJurisdiction(baseTypes.instanceIdentifier("udi-jurisdiction"))
+            .withIssuer(baseTypes.instanceIdentifier("udi-issuer"));
+        mdsDescriptorMetaDataBuilder.withUdi(List.of(udiBuilder.build()));
 
-        return mdsDescriptor;
+        return mdsDescriptorBuilder.build();
     }
 
     public MdsState mdsState() {
-        final MdsState mdsState = participantFactory.createMdsState();
-        mdsState.setLang("en");
-        mdsState.setOperatingJurisdiction(baseTypes.instanceIdentifier("operating-jurisdiction", OperatingJurisdiction.class));
-        mdsState.setOperatingMode(MdsOperatingMode.DMO);
+        final var mdsState = MdsState.builder()
+            .withLang("en")
+            .withOperatingJurisdiction(baseTypes.operatingJurisdiction("operating-jurisdiction"))
+            .withOperatingMode(MdsOperatingMode.DMO);
         deviceComponentState(mdsState);
 
-        return mdsState;
+        return mdsState.build();
     }
 
     public ClockDescriptor clockDescriptor(String handle) {
-        final ClockDescriptor clockDescriptor = participantFactory.createClockDescriptor();
-        descriptor(clockDescriptor, handle);
-        deviceComponentDescriptor(clockDescriptor);
-        clockDescriptor.setResolution(Duration.ofMillis(1));
-        clockDescriptor.setTimeProtocol(Arrays.asList(baseTypes.codedValue("time-protocol1"), baseTypes.codedValue("time-protocol2")));
-        return clockDescriptor;
+        final var clockDescriptorBuilder = ClockDescriptor.builder();
+        descriptor(clockDescriptorBuilder, handle);
+        deviceComponentDescriptor(clockDescriptorBuilder);
+        clockDescriptorBuilder
+            .withResolution(Duration.ofMillis(1))
+            .withTimeProtocol(Arrays.asList(baseTypes.codedValue("time-protocol1"), baseTypes.codedValue("time-protocol2")));
+        return clockDescriptorBuilder.build();
     }
 
     public ClockState clockState() {
-        final ClockState clockState = participantFactory.createClockState();
-        deviceComponentState(clockState);
-        clockState.setCriticalUse(false);
-        clockState.setActiveSyncProtocol(baseTypes.codedValue("time-protocol1"));
-        clockState.setAccuracy(BigDecimal.ONE);
-        clockState.setDateAndTime(Instant.ofEpochMilli(1580152377910L));
-        clockState.setLastSet(Instant.ofEpochMilli(1580152377910L).minus(Duration.ofHours(5)));
-        clockState.setReferenceSource(Arrays.asList("0.de.pool.ntp.org"));
-        clockState.setRemoteSync(true);
-        clockState.setTimeZone("CST6CDT,M3.2.0/2:00:00,M11.1.0/2:00:00");
-        return clockState;
+        final var clockStateBuilder = ClockState.builder();
+        deviceComponentState(clockStateBuilder);
+        clockStateBuilder.withCriticalUse(false)
+            .withActiveSyncProtocol(baseTypes.codedValue("time-protocol1"))
+            .withAccuracy(BigDecimal.ONE)
+            .withDateAndTime(Instant.ofEpochMilli(1580152377910L))
+            .withLastSet(Instant.ofEpochMilli(1580152377910L).minus(Duration.ofHours(5)))
+            .withReferenceSource(List.of("0.de.pool.ntp.org"))
+            .withRemoteSync(true)
+            .withTimeZone("CST6CDT,M3.2.0/2:00:00,M11.1.0/2:00:00");
+        return clockStateBuilder.build();
     }
 
     public BatteryDescriptor batteryDescriptor(String handle) {
-        final BatteryDescriptor batteryDescriptor = participantFactory.createBatteryDescriptor();
-        descriptor(batteryDescriptor, handle);
-        deviceComponentDescriptor(batteryDescriptor);
-        batteryDescriptor.setCapacityFullCharge(baseTypes.measurement(BigDecimal.valueOf(100)));
-        batteryDescriptor.setCapacitySpecified(baseTypes.measurement(BigDecimal.valueOf(120)));
-        batteryDescriptor.setVoltageSpecified(baseTypes.measurement(BigDecimal.TEN));
-        return batteryDescriptor;
+        final var batteryDescriptorBuilder = BatteryDescriptor.builder();
+        descriptor(batteryDescriptorBuilder, handle);
+        deviceComponentDescriptor(batteryDescriptorBuilder);
+        batteryDescriptorBuilder.withCapacityFullCharge(baseTypes.measurement(BigDecimal.valueOf(100)))
+            .withCapacitySpecified(baseTypes.measurement(BigDecimal.valueOf(120)))
+            .withVoltageSpecified(baseTypes.measurement(BigDecimal.TEN));
+        return batteryDescriptorBuilder.build();
     }
 
     public BatteryState batteryState() {
-        final BatteryState batteryState = participantFactory.createBatteryState();
-        deviceComponentState(batteryState);
-        batteryState.setCapacityRemaining(baseTypes.measurement(BigDecimal.valueOf(80)));
-        batteryState.setChargeCycles(Long.valueOf(100));
-        batteryState.setChargeStatus(BatteryState.ChargeStatus.CH_B);
-        batteryState.setCurrent(baseTypes.measurement(BigDecimal.TEN));
-        batteryState.setTemperature(baseTypes.measurement(BigDecimal.valueOf(45)));
-        batteryState.setVoltage(baseTypes.measurement(BigDecimal.valueOf(8)));
-        batteryState.setRemainingBatteryTime(baseTypes.measurement(BigDecimal.ONE));
-        return batteryState;
+        final var batteryStateBuilder = BatteryState.builder();
+        deviceComponentState(batteryStateBuilder);
+        batteryStateBuilder.withCapacityRemaining(baseTypes.measurement(BigDecimal.valueOf(80)))
+            .withChargeCycles(100L)
+            .withChargeStatus(BatteryState.ChargeStatus.CH_B)
+            .withCurrent(baseTypes.measurement(BigDecimal.TEN))
+            .withTemperature(baseTypes.measurement(BigDecimal.valueOf(45)))
+            .withVoltage(baseTypes.measurement(BigDecimal.valueOf(8)))
+            .withRemainingBatteryTime(baseTypes.measurement(BigDecimal.ONE));
+        return batteryStateBuilder.build();
     }
 
     public SystemContextDescriptor systemContextDescriptor(String handle) {
-        final SystemContextDescriptor systemContextDescriptor = participantFactory.createSystemContextDescriptor();
+        final var systemContextDescriptor = SystemContextDescriptor.builder();
         descriptor(systemContextDescriptor, handle);
         deviceComponentDescriptor(systemContextDescriptor);
-        return systemContextDescriptor;
+        return systemContextDescriptor.build();
     }
 
     public SystemContextState systemContextState() {
-        final SystemContextState systemContextState = participantFactory.createSystemContextState();
+        final var systemContextState = SystemContextState.builder();
         deviceComponentState(systemContextState);
-        return systemContextState;
+        return systemContextState.build();
     }
 
     public PatientContextDescriptor patientContextDescriptor(String handle) {
-        final PatientContextDescriptor patientContextDescriptor = participantFactory.createPatientContextDescriptor();
+        final var patientContextDescriptor = PatientContextDescriptor.builder();
         descriptor(patientContextDescriptor, handle);
-        return patientContextDescriptor;
+        return patientContextDescriptor.build();
     }
 
     public PatientContextState patientContextState(String handle) {
-        final PatientContextState patientContextState = participantFactory.createPatientContextState();
+        final var patientContextState = PatientContextState.builder();
         contextState(patientContextState, handle);
-        patientContextState.setCoreData(baseTypes.patientDemographicsCoreData());
-        return patientContextState;
+        return patientContextState.withCoreData(baseTypes.patientDemographicsCoreData())
+            .build();
     }
 
     public LocationContextDescriptor locationContextDescriptor(String handle) {
-        final LocationContextDescriptor locationContextDescriptor = participantFactory.createLocationContextDescriptor();
+        final var locationContextDescriptor = LocationContextDescriptor.builder();
         descriptor(locationContextDescriptor, handle);
-        return locationContextDescriptor;
+        return locationContextDescriptor.build();
     }
 
     public LocationContextState locationContextState(String handle) {
-        final LocationContextState locationContextState = participantFactory.createLocationContextState();
+        final var locationContextState = LocationContextState.builder();
         contextState(locationContextState, handle);
-        locationContextState.setLocationDetail(baseTypes.locationDetail());
-        return locationContextState;
+        return locationContextState.withLocationDetail(baseTypes.locationDetail()).build();
     }
 
     public EnsembleContextDescriptor ensembleContextDescriptor(String handle) {
-        final EnsembleContextDescriptor ensembleContextDescriptor = participantFactory.createEnsembleContextDescriptor();
+        final var ensembleContextDescriptor = EnsembleContextDescriptor.builder();
         descriptor(ensembleContextDescriptor, handle);
-        return ensembleContextDescriptor;
+        return ensembleContextDescriptor.build();
     }
 
     public EnsembleContextState ensembleContextState(String handle) {
-        final EnsembleContextState ensembleContextState = participantFactory.createEnsembleContextState();
+        final var ensembleContextState = EnsembleContextState.builder();
         contextState(ensembleContextState, handle);
-        return ensembleContextState;
+        return ensembleContextState.build();
     }
 
     public AlertSystemDescriptor alertSystemDescriptor(String handle) {
-        final AlertSystemDescriptor alertSystemDescriptor = participantFactory.createAlertSystemDescriptor();
+        final var alertSystemDescriptor = AlertSystemDescriptor.builder();
         descriptor(alertSystemDescriptor, handle);
-        alertSystemDescriptor.setMaxPhysiologicalParallelAlarms(Long.valueOf(10));
-        alertSystemDescriptor.setMaxTechnicalParallelAlarms(Long.valueOf(5));
-        alertSystemDescriptor.setSelfCheckPeriod(Duration.ofMillis(5000));
-        return alertSystemDescriptor;
+        alertSystemDescriptor.withMaxPhysiologicalParallelAlarms(10L)
+            .withMaxTechnicalParallelAlarms(5L)
+            .withSelfCheckPeriod(Duration.ofMillis(5000));
+        return alertSystemDescriptor.build();
     }
 
     public AlertSystemState alertSystemState() {
-        AlertSystemState alertSystemState = participantFactory.createAlertSystemState();
+        final var alertSystemState = AlertSystemState.builder();
         alertState(alertSystemState);
-        alertSystemState.setLastSelfCheck(Instant.ofEpochMilli(1580152377910L).minus(Duration.ofHours(2)));
-        alertSystemState.setSelfCheckCount(Long.valueOf(1234));
-        alertSystemState.setSystemSignalActivation(Arrays.asList(baseTypes.systemSignalActivation(AlertSignalManifestation.AUD),
-                baseTypes.systemSignalActivation(AlertSignalManifestation.VIS)));
-        return alertSystemState;
+        alertSystemState.withLastSelfCheck(Instant.ofEpochMilli(1580152377910L).minus(Duration.ofHours(2)))
+            .withSelfCheckCount(1234L)
+            .withSystemSignalActivation(
+                Arrays.asList(baseTypes.systemSignalActivation(AlertSignalManifestation.AUD),
+                baseTypes.systemSignalActivation(AlertSignalManifestation.VIS))
+            );
+        return alertSystemState.build();
     }
 
     public AlertConditionDescriptor alertConditionDescriptor(String handle, String sourceHandle) {
-        final AlertConditionDescriptor alertConditionDescriptor = participantFactory.createAlertConditionDescriptor();
+        final var alertConditionDescriptor = AlertConditionDescriptor.builder();
         descriptor(alertConditionDescriptor, handle);
-        alertConditionDescriptor.setCanDeescalate(AlertConditionPriority.NONE);
-        alertConditionDescriptor.setCanEscalate(AlertConditionPriority.HI);
-        alertConditionDescriptor.setCauseInfo(Arrays.asList(baseTypes.causeInfo()));
-        alertConditionDescriptor.setDefaultConditionGenerationDelay(Duration.ofMillis(100));
-        alertConditionDescriptor.setKind(AlertConditionKind.TEC);
-        alertConditionDescriptor.setPriority(AlertConditionPriority.ME);
-        alertConditionDescriptor.setSource(Arrays.asList(sourceHandle));
-        return alertConditionDescriptor;
+        alertConditionDescriptor.withCanDeescalate(AlertConditionPriority.NONE)
+            .withCanEscalate(AlertConditionPriority.HI)
+            .withCauseInfo(List.of(baseTypes.causeInfo()))
+            .withDefaultConditionGenerationDelay(Duration.ofMillis(100))
+            .withKind(AlertConditionKind.TEC)
+            .withPriority(AlertConditionPriority.ME)
+            .withSource(List.of(sourceHandle));
+        return alertConditionDescriptor.build();
     }
 
     public AlertConditionState alertConditionState() {
-        final AlertConditionState alertConditionState = participantFactory.createAlertConditionState();
+        final var alertConditionState = AlertConditionState.builder();
         alertState(alertConditionState);
-        alertConditionState.setActualConditionGenerationDelay(Duration.ofMillis(50));
-        alertConditionState.setActualPriority(AlertConditionPriority.ME);
-        alertConditionState.setDeterminationTime(Instant.ofEpochMilli(1580152377910L));
-        alertConditionState.setPresence(false);
-        alertConditionState.setRank(5);
-        return alertConditionState;
+        alertConditionState.withActualConditionGenerationDelay(Duration.ofMillis(50))
+            .withActualPriority(AlertConditionPriority.ME)
+            .withDeterminationTime(Instant.ofEpochMilli(1580152377910L))
+            .withPresence(false)
+            .withRank(5);
+        return alertConditionState.build();
     }
 
     public LimitAlertConditionDescriptor limitAlertConditionDescriptor(String handle, String sourceHandle) {
-        LimitAlertConditionDescriptor limitAlertConditionDescriptor = participantFactory.createLimitAlertConditionDescriptor();
+        final var limitAlertConditionDescriptor = LimitAlertConditionDescriptor.builder();
         descriptor(limitAlertConditionDescriptor, handle);
-        limitAlertConditionDescriptor.setCanDeescalate(AlertConditionPriority.ME);
-        limitAlertConditionDescriptor.setCanEscalate(AlertConditionPriority.HI);
-        limitAlertConditionDescriptor.setCauseInfo(Arrays.asList(baseTypes.causeInfo()));
-        limitAlertConditionDescriptor.setDefaultConditionGenerationDelay(Duration.ofMillis(10));
-        limitAlertConditionDescriptor.setKind(AlertConditionKind.PHY);
-        limitAlertConditionDescriptor.setPriority(AlertConditionPriority.HI);
-        limitAlertConditionDescriptor.setSource(Arrays.asList(sourceHandle));
-        limitAlertConditionDescriptor.setAutoLimitSupported(false);
-        limitAlertConditionDescriptor.setMaxLimits(baseTypes.range());
-        return limitAlertConditionDescriptor;
+        limitAlertConditionDescriptor.withCanDeescalate(AlertConditionPriority.ME)
+            .withCanEscalate(AlertConditionPriority.HI)
+            .withCauseInfo(List.of(baseTypes.causeInfo()))
+            .withDefaultConditionGenerationDelay(Duration.ofMillis(10))
+            .withKind(AlertConditionKind.PHY)
+            .withPriority(AlertConditionPriority.HI)
+            .withSource(List.of(sourceHandle))
+            .withAutoLimitSupported(false)
+            .withMaxLimits(baseTypes.range());
+        return limitAlertConditionDescriptor.build();
     }
 
     public LimitAlertConditionState limitAlertConditionState() {
-        final LimitAlertConditionState limitAlertConditionState = participantFactory.createLimitAlertConditionState();
+        final var limitAlertConditionState = LimitAlertConditionState.builder();
         alertState(limitAlertConditionState);
-        limitAlertConditionState.setActualConditionGenerationDelay(Duration.ofMillis(10));
-        limitAlertConditionState.setActualPriority(AlertConditionPriority.NONE);
-        limitAlertConditionState.setDeterminationTime(Instant.ofEpochMilli(1580152377910L));
-        limitAlertConditionState.setPresence(false);
-        limitAlertConditionState.setRank(3);
-        limitAlertConditionState.setAutoLimitActivationState(AlertActivation.PSD);
-        limitAlertConditionState.setLimits(baseTypes.range());
-        limitAlertConditionState.setMonitoredAlertLimits(AlertConditionMonitoredLimits.ALL);
-        return limitAlertConditionState;
+        limitAlertConditionState.withActualConditionGenerationDelay(Duration.ofMillis(10))
+            .withActualPriority(AlertConditionPriority.NONE)
+            .withDeterminationTime(Instant.ofEpochMilli(1580152377910L))
+            .withPresence(false)
+            .withRank(3)
+            .withAutoLimitActivationState(AlertActivation.PSD)
+            .withLimits(baseTypes.range())
+            .withMonitoredAlertLimits(AlertConditionMonitoredLimits.ALL);
+        return limitAlertConditionState.build();
     }
 
     public AlertSignalDescriptor alertSignalDescriptor(String handle, String conditionSignaledHandle, AlertSignalManifestation manifestation) {
-        final AlertSignalDescriptor alertSignalDescriptor = participantFactory.createAlertSignalDescriptor();
+        final var alertSignalDescriptor = AlertSignalDescriptor.builder();
         descriptor(alertSignalDescriptor, handle);
-        alertSignalDescriptor.setAcknowledgementSupported(false);
-        alertSignalDescriptor.setAcknowledgeTimeout(Duration.ofMillis(1000));
-        alertSignalDescriptor.setConditionSignaled(conditionSignaledHandle);
-        alertSignalDescriptor.setDefaultSignalGenerationDelay(Duration.ofMillis(500));
-        alertSignalDescriptor.setLatching(true);
-        alertSignalDescriptor.setManifestation(manifestation);
-        alertSignalDescriptor.setMaxSignalGenerationDelay(Duration.ofMillis(100));
-        alertSignalDescriptor.setMinSignalGenerationDelay(Duration.ofMillis(10));
-        alertSignalDescriptor.setSignalDelegationSupported(false);
-        return alertSignalDescriptor;
+        alertSignalDescriptor.withAcknowledgementSupported(false)
+            .withAcknowledgeTimeout(Duration.ofMillis(1000))
+            .withConditionSignaled(conditionSignaledHandle)
+            .withDefaultSignalGenerationDelay(Duration.ofMillis(500))
+            .withLatching(true)
+            .withManifestation(manifestation)
+            .withMaxSignalGenerationDelay(Duration.ofMillis(100))
+            .withMinSignalGenerationDelay(Duration.ofMillis(10))
+            .withSignalDelegationSupported(false);
+        return alertSignalDescriptor.build();
     }
 
     public AlertSignalState alertSignalState() {
-        final AlertSignalState alertSignalState = participantFactory.createAlertSignalState();
-        alertSignalState.setActualSignalGenerationDelay(Duration.ofMillis(30));
-        alertSignalState.setLocation(AlertSignalPrimaryLocation.LOC);
-        alertSignalState.setPresence(AlertSignalPresence.OFF);
-        alertSignalState.setSlot(2L);
-        alertSignalState.setActivationState(AlertActivation.OFF);
-        return alertSignalState;
+        final var alertSignalState = AlertSignalState.builder()
+            .withActualSignalGenerationDelay(Duration.ofMillis(30))
+            .withLocation(AlertSignalPrimaryLocation.LOC)
+            .withPresence(AlertSignalPresence.OFF)
+            .withSlot(2L)
+            .withActivationState(AlertActivation.OFF);
+        return alertSignalState.build();
     }
 
     public VmdDescriptor vmdDescriptor(String handle) {
-        final VmdDescriptor vmdDescriptor = participantFactory.createVmdDescriptor();
+        final var vmdDescriptor = VmdDescriptor.builder();
         descriptor(vmdDescriptor, handle);
         deviceComponentDescriptor(vmdDescriptor);
-        vmdDescriptor.setApprovedJurisdictions(baseTypes.approvedJurisdictions());
-        return vmdDescriptor;
+        vmdDescriptor.withApprovedJurisdictions(baseTypes.approvedJurisdictions());
+        return vmdDescriptor.build();
     }
 
     public VmdState vmdState() {
-        final VmdState vmdState = participantFactory.createVmdState();
+        final var vmdState = VmdState.builder();
         deviceComponentState(vmdState);
-        vmdState.setOperatingJurisdiction(baseTypes.instanceIdentifier("operating-jurisdiction", OperatingJurisdiction.class));
-        return vmdState;
+        vmdState.withOperatingJurisdiction(baseTypes.operatingJurisdiction("operating-jurisdiction"));
+        return vmdState.build();
     }
 
     public ChannelDescriptor channelDescriptor(String handle) {
-        final ChannelDescriptor channelDescriptor = participantFactory.createChannelDescriptor();
+        final var channelDescriptor = ChannelDescriptor.builder();
         descriptor(channelDescriptor, handle);
         deviceComponentDescriptor(channelDescriptor);
-        return channelDescriptor;
+        return channelDescriptor.build();
     }
 
     public ChannelState channelState() {
-        final ChannelState channelState = participantFactory.createChannelState();
+        final var channelState = ChannelState.builder();
         deviceComponentState(channelState);
-        return channelState;
+        return channelState.build();
     }
 
     public NumericMetricDescriptor numericMetricDescriptor(String handle) {
-        final NumericMetricDescriptor numericMetricDescriptor = participantFactory.createNumericMetricDescriptor();
+        final var numericMetricDescriptor = NumericMetricDescriptor.builder();
         descriptor(numericMetricDescriptor, handle);
-        metricDescriptor(numericMetricDescriptor);
-        numericMetricDescriptor.setAveragingPeriod(Duration.ofMillis(10000));
-        numericMetricDescriptor.setResolution(BigDecimal.ONE);
-        numericMetricDescriptor.setTechnicalRange(baseTypes.ranges());
-        return numericMetricDescriptor;
+        metricDescriptor(numericMetricDescriptor, handle);
+        numericMetricDescriptor.withAveragingPeriod(Duration.ofMillis(10000))
+            .withResolution(BigDecimal.ONE)
+            .withTechnicalRange(baseTypes.ranges());
+        return numericMetricDescriptor.build();
     }
 
     public NumericMetricState numericMetricState() {
-        final NumericMetricState numericMetricState = participantFactory.createNumericMetricState();
+        final var numericMetricState = NumericMetricState.builder();
         metricState(numericMetricState);
-        numericMetricState.setActiveAveragingPeriod(Duration.ofMillis(15000));
-        numericMetricState.setPhysiologicalRange(baseTypes.ranges());
-        NumericMetricValue numericMetricValue = participantFactory.createNumericMetricValue();
+        numericMetricState.withActiveAveragingPeriod(Duration.ofMillis(15000))
+            .withPhysiologicalRange(baseTypes.ranges());
+        var numericMetricValue = NumericMetricValue.builder();
         metricValue(numericMetricValue);
-        numericMetricValue.setValue(BigDecimal.TEN);
-        numericMetricState.setMetricValue(numericMetricValue);
-        return numericMetricState;
+        numericMetricValue.withValue(BigDecimal.TEN);
+        numericMetricState.withMetricValue(numericMetricValue.build());
+        return numericMetricState.build();
     }
 
     public StringMetricDescriptor stringMetricDescriptor(String handle) {
-        final StringMetricDescriptor stringMetricDescriptor = participantFactory.createStringMetricDescriptor();
+        final var stringMetricDescriptor = StringMetricDescriptor.builder();
         descriptor(stringMetricDescriptor, handle);
-        metricDescriptor(stringMetricDescriptor);
-        return stringMetricDescriptor;
+        metricDescriptor(stringMetricDescriptor, handle);
+        return stringMetricDescriptor.build();
     }
 
     public StringMetricState stringMetricState() {
-        final StringMetricState stringMetricState = participantFactory.createStringMetricState();
+        final var stringMetricState = StringMetricState.builder();
         metricState(stringMetricState);
-        StringMetricValue stringMetricValue = participantFactory.createStringMetricValue();
+        var stringMetricValue = StringMetricValue.builder();
         metricValue(stringMetricValue);
-        stringMetricValue.setValue("string-metric-value");
-        stringMetricState.setMetricValue(stringMetricValue);
-        return stringMetricState;
+        stringMetricValue.withValue("string-metric-value");
+        stringMetricState.withMetricValue(stringMetricValue.build());
+        return stringMetricState.build();
     }
 
     public EnumStringMetricDescriptor enumStringMetricDescriptor(String handle) {
-        final EnumStringMetricDescriptor enumStringMetricDescriptor = participantFactory.createEnumStringMetricDescriptor();
+        final var enumStringMetricDescriptor = EnumStringMetricDescriptor.builder();
         descriptor(enumStringMetricDescriptor, handle);
-        metricDescriptor(enumStringMetricDescriptor);
-        enumStringMetricDescriptor.setAllowedValue(Arrays.asList(baseTypes.allowedValue("enum-value1"), baseTypes.allowedValue("enum-value2")));
-        return enumStringMetricDescriptor;
+        metricDescriptor(enumStringMetricDescriptor, handle);
+        enumStringMetricDescriptor.withAllowedValue(Arrays.asList(baseTypes.allowedValue("enum-value1"), baseTypes.allowedValue("enum-value2")));
+        return enumStringMetricDescriptor.build();
     }
 
     public EnumStringMetricState enumStringMetricState() {
-        final EnumStringMetricState enumStringMetricState = participantFactory.createEnumStringMetricState();
+        final var enumStringMetricState = EnumStringMetricState.builder();
         metricState(enumStringMetricState);
-        StringMetricValue stringMetricValue = participantFactory.createStringMetricValue();
+        var stringMetricValue = StringMetricValue.builder();
         metricValue(stringMetricValue);
-        stringMetricValue.setValue("enum-value1");
-        enumStringMetricState.setMetricValue(stringMetricValue);
-        return enumStringMetricState;
+        stringMetricValue.withValue("enum-value1");
+        enumStringMetricState.withMetricValue(stringMetricValue.build());
+        return enumStringMetricState.build();
     }
 
     public RealTimeSampleArrayMetricDescriptor realTimeSampleArrayMetricDescriptor(String handle) {
-        final RealTimeSampleArrayMetricDescriptor realTimeSampleArrayMetricDescriptor = participantFactory.createRealTimeSampleArrayMetricDescriptor();
+        final var realTimeSampleArrayMetricDescriptor = RealTimeSampleArrayMetricDescriptor.builder();
         descriptor(realTimeSampleArrayMetricDescriptor, handle);
-        metricDescriptor(realTimeSampleArrayMetricDescriptor);
-        realTimeSampleArrayMetricDescriptor.setResolution(BigDecimal.ONE);
-        realTimeSampleArrayMetricDescriptor.setSamplePeriod(Duration.ofMillis(10));
-        realTimeSampleArrayMetricDescriptor.setTechnicalRange(baseTypes.ranges());
-        return realTimeSampleArrayMetricDescriptor;
+        metricDescriptor(realTimeSampleArrayMetricDescriptor, handle);
+        realTimeSampleArrayMetricDescriptor.withResolution(BigDecimal.ONE)
+            .withSamplePeriod(Duration.ofMillis(10))
+            .withTechnicalRange(baseTypes.ranges());
+        return realTimeSampleArrayMetricDescriptor.build();
     }
 
     public RealTimeSampleArrayMetricState realTimeSampleArrayMetricState() {
-        final RealTimeSampleArrayMetricState realTimeSampleArrayMetricState = participantFactory.createRealTimeSampleArrayMetricState();
+        final var realTimeSampleArrayMetricState = RealTimeSampleArrayMetricState.builder();
         metricState(realTimeSampleArrayMetricState);
-        SampleArrayValue sampleArrayValue = participantFactory.createSampleArrayValue();
+        var sampleArrayValue = SampleArrayValue.builder();
         metricValue(sampleArrayValue);
-        sampleArrayValue.setSamples(Arrays.asList(BigDecimal.valueOf(1), BigDecimal.valueOf(2), BigDecimal.valueOf(3)));
-        sampleArrayValue.setApplyAnnotation(baseTypes.applyAnnotations());
-        realTimeSampleArrayMetricState.setMetricValue(sampleArrayValue);
-        return realTimeSampleArrayMetricState;
+        sampleArrayValue.withSamples(Arrays.asList(BigDecimal.valueOf(1), BigDecimal.valueOf(2), BigDecimal.valueOf(3)))
+            .withApplyAnnotation(baseTypes.applyAnnotations());
+        realTimeSampleArrayMetricState.withMetricValue(sampleArrayValue.build());
+        return realTimeSampleArrayMetricState.build();
     }
 
     public DistributionSampleArrayMetricDescriptor distributionSampleArrayMetricDescriptor(String handle) {
-        final DistributionSampleArrayMetricDescriptor distributionSampleArrayMetricDescriptor = participantFactory.createDistributionSampleArrayMetricDescriptor();
+        final var distributionSampleArrayMetricDescriptor = DistributionSampleArrayMetricDescriptor.builder();
         descriptor(distributionSampleArrayMetricDescriptor, handle);
-        metricDescriptor(distributionSampleArrayMetricDescriptor);
-        distributionSampleArrayMetricDescriptor.setDistributionRange(baseTypes.range());
-        distributionSampleArrayMetricDescriptor.setDomainUnit(baseTypes.codedValue("domain-unit"));
-        distributionSampleArrayMetricDescriptor.setResolution(BigDecimal.ONE);
-        distributionSampleArrayMetricDescriptor.setTechnicalRange(baseTypes.ranges());
-        return distributionSampleArrayMetricDescriptor;
+        metricDescriptor(distributionSampleArrayMetricDescriptor, handle);
+        distributionSampleArrayMetricDescriptor.withDistributionRange(baseTypes.range())
+            .withDomainUnit(baseTypes.codedValue("domain-unit"))
+            .withResolution(BigDecimal.ONE)
+            .withTechnicalRange(baseTypes.ranges());
+        return distributionSampleArrayMetricDescriptor.build();
     }
 
     public DistributionSampleArrayMetricState distributionSampleArrayMetricState() {
-        final DistributionSampleArrayMetricState distributionSampleArrayMetricState = participantFactory.createDistributionSampleArrayMetricState();
+        final var distributionSampleArrayMetricState = DistributionSampleArrayMetricState.builder();
         metricState(distributionSampleArrayMetricState);
-        SampleArrayValue sampleArrayValue = participantFactory.createSampleArrayValue();
+        var sampleArrayValue = SampleArrayValue.builder();
         metricValue(sampleArrayValue);
-        sampleArrayValue.setSamples(Arrays.asList(BigDecimal.valueOf(1), BigDecimal.valueOf(2), BigDecimal.valueOf(3)));
-        sampleArrayValue.setApplyAnnotation(baseTypes.applyAnnotations());
-        distributionSampleArrayMetricState.setMetricValue(sampleArrayValue);
-        return distributionSampleArrayMetricState;
+        sampleArrayValue.withSamples(Arrays.asList(BigDecimal.valueOf(1), BigDecimal.valueOf(2), BigDecimal.valueOf(3)));
+        sampleArrayValue.withApplyAnnotation(baseTypes.applyAnnotations());
+        distributionSampleArrayMetricState.withMetricValue(sampleArrayValue.build());
+        return distributionSampleArrayMetricState.build();
     }
 
     public ScoDescriptor scoDescriptor(String handle) {
-        final ScoDescriptor scoDescriptor = participantFactory.createScoDescriptor();
+        final var scoDescriptor = ScoDescriptor.builder();
         descriptor(scoDescriptor, handle);
         deviceComponentDescriptor(scoDescriptor);
-        return scoDescriptor;
+        return scoDescriptor.build();
     }
 
     public ScoState scoState() {
-        final ScoState scoState = participantFactory.createScoState();
+        final var scoState = ScoState.builder();
         deviceComponentState(scoState);
-        scoState.setInvocationRequested(Arrays.asList(Handles.OPERATION_0));
-        scoState.setInvocationRequired(Arrays.asList(Handles.OPERATION_1));
-        scoState.setOperationGroup(Arrays.asList(baseTypes.operationGroup("operation-group")));
-        return scoState;
+        scoState.withInvocationRequested(List.of(Handles.OPERATION_0))
+            .withInvocationRequired(List.of(Handles.OPERATION_1))
+            .withOperationGroup(List.of(baseTypes.operationGroup("operation-group")));
+        return scoState.build();
     }
 
     public ActivateOperationDescriptor activateOperationDescriptor(String handle, String targetHandle) {
-        final ActivateOperationDescriptor activateOperationDescriptor = participantFactory.createActivateOperationDescriptor();
+        final var activateOperationDescriptor = ActivateOperationDescriptor.builder();
         descriptor(activateOperationDescriptor, handle);
         operationDescriptor(activateOperationDescriptor, targetHandle);
-        activateOperationDescriptor.setArgument(Arrays.asList(baseTypes.argument("argument1"), baseTypes.argument("argument2")));
-        return activateOperationDescriptor;
+        activateOperationDescriptor.withArgument(Arrays.asList(baseTypes.argument("argument1"), baseTypes.argument("argument2")));
+        return activateOperationDescriptor.build();
     }
 
     public ActivateOperationState activateOperationState() {
-        final ActivateOperationState activateOperationState = participantFactory.createActivateOperationState();
+        final var activateOperationState = ActivateOperationState.builder();
         operationState(activateOperationState);
-        return activateOperationState;
+        return activateOperationState.build();
     }
 
     public SetStringOperationDescriptor setStringOperationDescriptor(String handle, String targetHandle) {
-        final SetStringOperationDescriptor setStringOperationDescriptor = participantFactory.createSetStringOperationDescriptor();
+        final var setStringOperationDescriptor = SetStringOperationDescriptor.builder();
         descriptor(setStringOperationDescriptor, handle);
         operationDescriptor(setStringOperationDescriptor, targetHandle);
-        setStringOperationDescriptor.setMaxLength(BigInteger.valueOf(255));
-        return setStringOperationDescriptor;
+        setStringOperationDescriptor.withMaxLength(BigInteger.valueOf(255));
+        return setStringOperationDescriptor.build();
     }
 
     public SetStringOperationState setStringOperationState() {
-        final SetStringOperationState setStringOperationState = participantFactory.createSetStringOperationState();
+        final var setStringOperationState = SetStringOperationState.builder();
         operationState(setStringOperationState);
-        SetStringOperationState.AllowedValues allowedValues = participantFactory.createSetStringOperationStateAllowedValues();
-        allowedValues.setValue(Arrays.asList("allowed-value1", "allowed-value2"));
-        setStringOperationState.setAllowedValues(allowedValues);
-        return setStringOperationState;
+        var allowedValues = SetStringOperationState.AllowedValues.builder();
+        allowedValues.withValue(Arrays.asList("allowed-value1", "allowed-value2"));
+        setStringOperationState.withAllowedValues(allowedValues.build());
+        return setStringOperationState.build();
     }
 
     public SetValueOperationDescriptor setValueOperationDescriptor(String handle, String targetHandle) {
-        final SetValueOperationDescriptor setValueOperationDescriptor = participantFactory.createSetValueOperationDescriptor();
+        final var setValueOperationDescriptor = SetValueOperationDescriptor.builder();
         descriptor(setValueOperationDescriptor, handle);
         operationDescriptor(setValueOperationDescriptor, targetHandle);
-        return setValueOperationDescriptor;
+        return setValueOperationDescriptor.build();
     }
 
     public SetValueOperationState setValueOperationState() {
-        final SetValueOperationState setValueOperationState = participantFactory.createSetValueOperationState();
+        final var setValueOperationState = SetValueOperationState.builder();
         operationState(setValueOperationState);
-        setValueOperationState.setAllowedRange(baseTypes.ranges());
-        return setValueOperationState;
+        setValueOperationState.withAllowedRange(baseTypes.ranges());
+        return setValueOperationState.build();
     }
 
     public SetComponentStateOperationDescriptor setComponentStateOperationDescriptor(String handle, String targetHandle) {
-        final SetComponentStateOperationDescriptor setComponentStateOperationDescriptor = participantFactory.createSetComponentStateOperationDescriptor();
+        final var setComponentStateOperationDescriptor = SetComponentStateOperationDescriptor.builder();
         descriptor(setComponentStateOperationDescriptor, handle);
         operationDescriptor(setComponentStateOperationDescriptor, targetHandle);
-        return setComponentStateOperationDescriptor;
+        return setComponentStateOperationDescriptor.build();
     }
 
     public SetComponentStateOperationState setComponentStateOperationState() {
-        final SetComponentStateOperationState setComponentStateOperationState = participantFactory.createSetComponentStateOperationState();
+        final var setComponentStateOperationState = SetComponentStateOperationState.builder();
         operationState(setComponentStateOperationState);
-        return setComponentStateOperationState;
+        return setComponentStateOperationState.build();
     }
 
     public SetMetricStateOperationDescriptor setMetricStateOperationDescriptor(String handle, String targetHandle) {
-        final SetMetricStateOperationDescriptor setMetricStateOperationDescriptor = participantFactory.createSetMetricStateOperationDescriptor();
+        final var setMetricStateOperationDescriptor = SetMetricStateOperationDescriptor.builder();
         descriptor(setMetricStateOperationDescriptor, handle);
         operationDescriptor(setMetricStateOperationDescriptor, targetHandle);
-        return setMetricStateOperationDescriptor;
+        return setMetricStateOperationDescriptor.build();
     }
 
     public SetMetricStateOperationState setMetricStateOperationState() {
-        final SetMetricStateOperationState setMetricStateOperationState = participantFactory.createSetMetricStateOperationState();
+        final var setMetricStateOperationState = SetMetricStateOperationState.builder();
         operationState(setMetricStateOperationState);
-        return setMetricStateOperationState;
+        return setMetricStateOperationState.build();
     }
 
     public SetAlertStateOperationDescriptor setAlertStateOperationDescriptor(String handle, String targetHandle) {
-        final SetAlertStateOperationDescriptor setAlertStateOperationDescriptor = participantFactory.createSetAlertStateOperationDescriptor();
+        final var setAlertStateOperationDescriptor = SetAlertStateOperationDescriptor.builder();
         descriptor(setAlertStateOperationDescriptor, handle);
         operationDescriptor(setAlertStateOperationDescriptor, targetHandle);
-        return setAlertStateOperationDescriptor;
+        return setAlertStateOperationDescriptor.build();
     }
 
     public SetAlertStateOperationState setAlertStateOperationState() {
-        final SetAlertStateOperationState setAlertStateOperationState = participantFactory.createSetAlertStateOperationState();
+        final var setAlertStateOperationState = SetAlertStateOperationState.builder();
         operationState(setAlertStateOperationState);
-        return setAlertStateOperationState;
+        return setAlertStateOperationState.build();
     }
 
     public SetContextStateOperationDescriptor setContextStateOperationDescriptor(String handle, String targetHandle) {
-        final SetContextStateOperationDescriptor setContextStateOperationDescriptor = participantFactory.createSetContextStateOperationDescriptor();
+        final var setContextStateOperationDescriptor = SetContextStateOperationDescriptor.builder();
         descriptor(setContextStateOperationDescriptor, handle);
         operationDescriptor(setContextStateOperationDescriptor, targetHandle);
-        return setContextStateOperationDescriptor;
+        return setContextStateOperationDescriptor.build();
     }
 
     public SetContextStateOperationState setContextStateOperationState() {
-        final SetContextStateOperationState setContextStateOperationState = participantFactory.createSetContextStateOperationState();
+        final var setContextStateOperationState = SetContextStateOperationState.builder();
         operationState(setContextStateOperationState);
-        return setContextStateOperationState;
+        return setContextStateOperationState.build();
     }
 
-    private void descriptor(AbstractDescriptor descriptor, String handle) {
+    private void descriptor(AbstractDescriptor.Builder<?> descriptor, String handle) {
         descriptor(descriptor, handle, RetrievabilityMethod.EP);
     }
 
-    private void descriptor(AbstractDescriptor descriptor, String handle, RetrievabilityMethod retrievabilityMethod) {
-        descriptor.setSafetyClassification(SafetyClassification.MED_A);
-        descriptor.setHandle(handle);
-        descriptor.setType(baseTypes.codedValue(handle + "-code"));
-        descriptor.setExtension(extensionFactory.createExtensionType());
-        descriptor.getExtension().getAny().add(baseTypes.retrievability(retrievabilityMethod));
+    private void descriptor(AbstractDescriptor.Builder<?> descriptor, String handle, RetrievabilityMethod retrievabilityMethod) {
+        descriptor
+            .withSafetyClassification(SafetyClassification.MED_A)
+            .withHandle(handle)
+            .withType(baseTypes.codedValue(handle + "-code"))
+            .withExtension(
+                ExtensionType.builder()
+                    .withAny(baseTypes.retrievability(retrievabilityMethod))
+                    .build()
+            );
     }
 
-    private void deviceComponentDescriptor(AbstractDeviceComponentDescriptor descriptor) {
-        descriptor.setProductionSpecification(baseTypes.productionSpecifications());
+    private void deviceComponentDescriptor(AbstractDeviceComponentDescriptor.Builder<?> descriptor) {
+        descriptor.withProductionSpecification(baseTypes.productionSpecifications());
     }
 
-    private void deviceComponentState(AbstractDeviceComponentState state) {
-        state.setActivationState(ComponentActivation.ON);
-        state.setCalibrationInfo(baseTypes.calibrationInfo());
-        state.setNextCalibration(baseTypes.calibrationInfo());
-        state.setOperatingCycles(Integer.valueOf(100));
-        state.setOperatingHours(Long.valueOf(1000));
-        state.setPhysicalConnector(baseTypes.physicalConnectorInfo());
+    private void deviceComponentState(AbstractDeviceComponentState.Builder<?> state) {
+        state.withActivationState(ComponentActivation.ON)
+            .withCalibrationInfo(baseTypes.calibrationInfo())
+            .withNextCalibration(baseTypes.calibrationInfo())
+            .withOperatingCycles(100)
+            .withOperatingHours(1000L)
+            .withPhysicalConnector(baseTypes.physicalConnectorInfo());
     }
 
-    private void contextState(AbstractContextState state, String handle) {
-        state.setHandle(handle);
-        state.setBindingStartTime(Instant.ofEpochMilli(1580152377910L));
-        state.setBindingMdibVersion(BigInteger.ZERO);
-        state.setContextAssociation(ContextAssociation.ASSOC);
-        state.setIdentification(Arrays.asList(baseTypes.instanceIdentifier(handle + "id0"),
-                baseTypes.instanceIdentifier(handle + "id1")));
-        state.setValidator(Arrays.asList(baseTypes.instanceIdentifier(handle + "validator0"),
+    private void contextState(AbstractContextState.Builder<?> state, String handle) {
+        state.withHandle(handle)
+            .withBindingStartTime(Instant.ofEpochMilli(1580152377910L))
+            .withBindingMdibVersion(BigInteger.ZERO)
+            .withContextAssociation(ContextAssociation.ASSOC)
+            .withIdentification(Arrays.asList(baseTypes.instanceIdentifier(handle + "id0"),
+                baseTypes.instanceIdentifier(handle + "id1")))
+            .withValidator(Arrays.asList(baseTypes.instanceIdentifier(handle + "validator0"),
                 baseTypes.instanceIdentifier(handle + "validator1")));
     }
 
-    private void alertState(AbstractAlertState state) {
-        state.setActivationState(AlertActivation.ON);
+    private void alertState(AbstractAlertState.Builder<?> state) {
+        state.withActivationState(AlertActivation.ON);
     }
 
-    private void metricDescriptor(AbstractMetricDescriptor descriptor) {
-        descriptor.setActivationDuration(Duration.ofMillis(2000));
-        descriptor.setBodySite(baseTypes.codedValues("body-site"));
-        descriptor.setDerivationMethod(DerivationMethod.AUTO);
-        descriptor.setDeterminationPeriod(Duration.ofMillis(1000));
-        descriptor.setMaxDelayTime(Duration.ofMillis(100));
-        descriptor.setLifeTimePeriod(Duration.ofMillis(2000));
-        descriptor.setMaxMeasurementTime(Duration.ofMillis(200));
-        descriptor.setMetricCategory(MetricCategory.MSRMT);
-        descriptor.setMetricAvailability(MetricAvailability.CONT);
-        descriptor.setUnit(baseTypes.codedValue("unit"));
-        descriptor.setRelation(Arrays.asList(baseTypes.relation(descriptor.getHandle())));
+    private void metricDescriptor(AbstractMetricDescriptor.Builder<?> descriptor, String handle) {
+        descriptor.withActivationDuration(Duration.ofMillis(2000))
+            .withBodySite(baseTypes.codedValues("body-site"))
+            .withDerivationMethod(DerivationMethod.AUTO)
+            .withDeterminationPeriod(Duration.ofMillis(1000))
+            .withMaxDelayTime(Duration.ofMillis(100))
+            .withLifeTimePeriod(Duration.ofMillis(2000))
+            .withMaxMeasurementTime(Duration.ofMillis(200))
+            .withMetricCategory(MetricCategory.MSRMT)
+            .withMetricAvailability(MetricAvailability.CONT)
+            .withUnit(baseTypes.codedValue("unit"))
+            .withRelation(List.of(baseTypes.relation(handle)));
     }
 
-    private void metricState(AbstractMetricState state) {
-        state.setActivationState(ComponentActivation.ON);
-        state.setActiveDeterminationPeriod(Duration.ofMillis(2000));
-        state.setBodySite(baseTypes.codedValues("state-body-site"));
-        state.setPhysicalConnector(baseTypes.physicalConnectorInfo());
-        state.setLifeTimePeriod(Duration.ofMillis(3000));
+    private void metricState(AbstractMetricState.Builder<?> state) {
+        state.withActivationState(ComponentActivation.ON)
+            .withActiveDeterminationPeriod(Duration.ofMillis(2000))
+            .withBodySite(baseTypes.codedValues("state-body-site"))
+            .withLifeTimePeriod(Duration.ofMillis(3000));
     }
 
-    private void metricValue(AbstractMetricValue value) {
-        value.setAnnotation(baseTypes.annotations("metric-value-annotation"));
-        value.setDeterminationTime(Instant.ofEpochMilli(1580152377910L));
-        value.setMetricQuality(baseTypes.metricQuality());
-        value.setStartTime(Instant.ofEpochMilli(1580152377910L).minus(Duration.ofSeconds(10)));
-        value.setStopTime(Instant.ofEpochMilli(1580152377910L));
+    private void metricValue(AbstractMetricValue.Builder<?> value) {
+        value.withAnnotation(baseTypes.annotations("metric-value-annotation"))
+            .withDeterminationTime(Instant.ofEpochMilli(1580152377910L))
+            .withMetricQuality(baseTypes.metricQuality())
+            .withStartTime(Instant.ofEpochMilli(1580152377910L).minus(Duration.ofSeconds(10)))
+            .withStopTime(Instant.ofEpochMilli(1580152377910L));
     }
 
-    private void operationDescriptor(AbstractOperationDescriptor descriptor, String targetHandle) {
-        descriptor.setAccessLevel(AbstractOperationDescriptor.AccessLevel.OTH);
-        descriptor.setInvocationEffectiveTimeout(Duration.ofMillis(10000));
-        descriptor.setMaxTimeToFinish(Duration.ofMillis(500));
-        descriptor.setOperationTarget(targetHandle);
-        descriptor.setRetriggerable(false);
+    private void operationDescriptor(AbstractOperationDescriptor.Builder<?> descriptor, String targetHandle) {
+        descriptor.withAccessLevel(AbstractOperationDescriptor.AccessLevel.OTH)
+            .withInvocationEffectiveTimeout(Duration.ofMillis(10000))
+            .withMaxTimeToFinish(Duration.ofMillis(500))
+            .withOperationTarget(targetHandle)
+            .withRetriggerable(false);
     }
 
-    private void operationState(AbstractOperationState state) {
-        state.setOperatingMode(OperatingMode.EN);
+    private void operationState(AbstractOperationState.Builder<?> state) {
+        state.withOperatingMode(OperatingMode.EN);
     }
 }

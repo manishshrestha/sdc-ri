@@ -3,6 +3,7 @@ package org.somda.sdc.glue.common;
 import com.google.inject.Inject;
 import org.somda.sdc.biceps.model.message.AbstractGetResponse;
 import org.somda.sdc.biceps.model.message.AbstractReport;
+import org.somda.sdc.biceps.model.message.AbstractSetResponse;
 import org.somda.sdc.biceps.model.participant.MdibVersion;
 
 import javax.annotation.Nullable;
@@ -41,6 +42,45 @@ public class MdibVersionUtil {
         setSequenceId.invoke(target, mdibVersion.getSequenceId());
         setInstanceId.invoke(target, mdibVersion.getInstanceId());
         setMdibVersion.invoke(target, mdibVersion.getVersion());
+    }
+
+    /**
+     * Stores {@linkplain MdibVersion} attributes in any {@link AbstractGetResponse} builder.
+     *
+     * @param version the {@link MdibVersion} to store.
+     * @param target      the target where to store sequence id, instance id and version from given {@link MdibVersion}.
+     * @param <T>         any {@link AbstractGetResponse} builder
+     */
+    public <T extends AbstractGetResponse.Builder<?>> void setResponseMdibVersion(MdibVersion version, T target) {
+        target.withMdibVersion(version.getVersion());
+        target.withInstanceId(version.getInstanceId());
+        target.withSequenceId(version.getSequenceId());
+    }
+
+    /**
+     * Stores {@linkplain MdibVersion} attributes in any {@link AbstractGetResponse} builder.
+     *
+     * @param version the {@link MdibVersion} to store.
+     * @param target      the target where to store sequence id, instance id and version from given {@link MdibVersion}.
+     * @param <T>         any {@link AbstractGetResponse} builder
+     */
+    public <T extends AbstractSetResponse.Builder<?>> void setResponseMdibVersion(MdibVersion version, T target) {
+        target.withMdibVersion(version.getVersion());
+        target.withInstanceId(version.getInstanceId());
+        target.withSequenceId(version.getSequenceId());
+    }
+
+    /**
+     * Stores {@linkplain MdibVersion} attributes in any {@link AbstractReport} builder.
+     *
+     * @param version the {@link MdibVersion} to store.
+     * @param target      the target where to store sequence id, instance id and version from given {@link MdibVersion}.
+     * @param <T>         any {@link AbstractReport} builder
+     */
+    public <T extends AbstractReport.Builder<?>> void setReportMdibVersion(MdibVersion version, T target) {
+        target.withMdibVersion(version.getVersion());
+        target.withInstanceId(version.getInstanceId());
+        target.withSequenceId(version.getSequenceId());
     }
 
     /**

@@ -128,10 +128,10 @@ class ContextIdentificationMapperTest {
     }
 
     private InstanceIdentifier createInstanceIdentifier(@Nullable String root, @Nullable String extension) {
-        InstanceIdentifier instanceIdentifier = new InstanceIdentifier();
-        instanceIdentifier.setRootName(root);
-        instanceIdentifier.setExtensionName(extension);
-        return instanceIdentifier;
+        return InstanceIdentifier.builder()
+            .withRootName(root)
+            .withExtensionName(extension)
+            .build();
     }
 
     private void compare(InstanceIdentifier expectedInstanceIdentifier,

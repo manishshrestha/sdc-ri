@@ -29,7 +29,7 @@ import java.util.List;
 public class SoapMessage {
     private final WsDiscoveryHeader wsdHeader;
     private final WsAddressingHeader wsaHeader;
-    private final Envelope envelope;
+    private Envelope envelope;
     private final WsAddressingMapper wsaMapper;
     private final WsDiscoveryMapper wsdMapper;
     private final EnvelopeFactory envelopeFactory;
@@ -77,6 +77,33 @@ public class SoapMessage {
     }
 
     /**
+     * Sets a body element for the envelope.
+     * @param element to set
+     * @param <T> type of the element to set
+     */
+    public <T> void setBody(T element) {
+        this.envelope = envelope.newCopyBuilder()
+            .withBody(
+                envelope.getBody().newCopyBuilder()
+                    .withAny(List.of(element))
+                    .build()
+            ).build();
+    }
+
+    /**
+     * Adds a header element to the envelope.
+     * @param element to add
+     * @param <T> type of the element to set
+     */
+    public <T> void addHeader(T element) {
+        this.envelope = envelope.newCopyBuilder()
+            .withHeader(envelope.getHeader().newCopyBuilder()
+                .addAny(element)
+                .build())
+            .build();
+    }
+
+    /**
      * Gets the envelope that includes mapped headers.
      *
      * @return new envelope with mapped convenience headers as well as headers
@@ -84,13 +111,17 @@ public class SoapMessage {
      */
     public Envelope getEnvelopeWithMappedHeaders() {
         Envelope mappedEnv = envelopeFactory.createEnvelopeFromBody(envelope.getBody());
-        List<Object> tmpHeaderList = mappedEnv.getHeader().getAny();
-
-        // add all previous headers
-        mappedEnv.getHeader().getAny().addAll(envelope.getHeader().getAny());
+        List<Object> tmpHeaderList = new ArrayList<>(mappedEnv.getHeader().getAny());
 
         wsaMapper.mapToJaxbSoapHeader(wsaHeader, tmpHeaderList);
         wsdMapper.mapToJaxbSoapHeader(wsdHeader, tmpHeaderList);
+
+        mappedEnv = mappedEnv.newCopyBuilder()
+            .withHeader(mappedEnv.getHeader().newCopyBuilder()
+                // add all previous headers
+                .addAny(envelope.getHeader().getAny())
+                .addAny(tmpHeaderList).build()
+            ).withBody(mappedEnv.getBody()).build();
 
         return mappedEnv;
     }

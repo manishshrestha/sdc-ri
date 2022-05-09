@@ -80,47 +80,47 @@ class MdibStorageImplTest {
                                              BigInteger version) {
         final MdibDescriptionModifications modifications = MdibDescriptionModifications.create();
         modifications.add(type,
-                MockModelFactory.createDescriptor(Handles.MDS_0, version, MdsDescriptor.class),
-                MockModelFactory.createState(Handles.MDS_0, version, MdsState.class));
+                MockModelFactory.createDescriptor(Handles.MDS_0, version, MdsDescriptor.builder()).build(),
+                MockModelFactory.createState(Handles.MDS_0, version, MdsState.builder()).build());
         modifications.add(type,
-                MockModelFactory.createDescriptor(Handles.SYSTEMCONTEXT_0, version, MdsDescriptor.class),
-                MockModelFactory.createState(Handles.SYSTEMCONTEXT_0, version, SystemContextState.class),
+                MockModelFactory.createDescriptor(Handles.SYSTEMCONTEXT_0, version, MdsDescriptor.builder()).build(),
+                MockModelFactory.createState(Handles.SYSTEMCONTEXT_0, version, SystemContextState.builder()).build(),
                 Handles.MDS_0);
         modifications.add(type,
-                MockModelFactory.createDescriptor(Handles.VMD_0, version, VmdDescriptor.class),
-                MockModelFactory.createState(Handles.VMD_0, version, VmdState.class),
+                MockModelFactory.createDescriptor(Handles.VMD_0, version, VmdDescriptor.builder()).build(),
+                MockModelFactory.createState(Handles.VMD_0, version, VmdState.builder()).build(),
                 Handles.MDS_0);
         modifications.add(type,
-                MockModelFactory.createDescriptor(Handles.CHANNEL_0, version, ChannelDescriptor.class),
-                MockModelFactory.createState(Handles.CHANNEL_0, version, ChannelState.class),
+                MockModelFactory.createDescriptor(Handles.CHANNEL_0, version, ChannelDescriptor.builder()).build(),
+                MockModelFactory.createState(Handles.CHANNEL_0, version, ChannelState.builder()).build(),
                 Handles.VMD_0);
         modifications.add(type,
-                MockModelFactory.createDescriptor(Handles.CHANNEL_1, version, ChannelDescriptor.class),
-                MockModelFactory.createState(Handles.CHANNEL_1, version, ChannelState.class),
+                MockModelFactory.createDescriptor(Handles.CHANNEL_1, version, ChannelDescriptor.builder()).build(),
+                MockModelFactory.createState(Handles.CHANNEL_1, version, ChannelState.builder()).build(),
                 Handles.VMD_0);
         modifications.add(type,
                 MockModelFactory.createDescriptor(Handles.CONTEXTDESCRIPTOR_0,
                         version,
-                        PatientContextDescriptor.class),
+                        PatientContextDescriptor.builder()).build(),
                 Arrays.asList(
                         MockModelFactory.createContextState(Handles.CONTEXT_0, Handles.CONTEXTDESCRIPTOR_0,
-                                version, version, PatientContextState.class),
+                                version, version, PatientContextState.builder()).build(),
                         MockModelFactory.createContextState(Handles.CONTEXT_1, Handles.CONTEXTDESCRIPTOR_0,
-                                version, version, PatientContextState.class)
+                                version, version, PatientContextState.builder()).build()
                 ),
                 Handles.SYSTEMCONTEXT_0);
 
         modifications.add(type,
                 MockModelFactory.createDescriptor(Handles.CONTEXTDESCRIPTOR_1,
                         version,
-                        LocationContextDescriptor.class),
+                        LocationContextDescriptor.builder()).build(),
                 Arrays.asList(
                         MockModelFactory.createContextState(Handles.CONTEXT_2, Handles.CONTEXTDESCRIPTOR_1,
-                                version, version, LocationContextState.class)
+                                version, version, LocationContextState.builder()).build()
                 ),
                 Handles.SYSTEMCONTEXT_0);
 
-        storage.apply(mock(MdibVersion.class), mock(BigInteger.class), mock(BigInteger.class), modifications);
+        storage.apply(mock(MdibVersion.class), mock(BigInteger.class), mock(BigInteger.class), modifications.getModifications());
     }
 
     private void testWithVersion(List<String> testedHandles, BigInteger version) {
@@ -185,10 +185,10 @@ class MdibStorageImplTest {
         // delete the child
         final MdibDescriptionModifications modifications = MdibDescriptionModifications.create();
         modifications.add(MdibDescriptionModification.Type.DELETE,
-                MockModelFactory.createDescriptor(Handles.CHANNEL_0, BigInteger.ZERO, ChannelDescriptor.class),
-                MockModelFactory.createState(Handles.CHANNEL_0, BigInteger.ZERO, ChannelState.class),
+                MockModelFactory.createDescriptor(Handles.CHANNEL_0, BigInteger.ZERO, ChannelDescriptor.builder()).build(),
+                MockModelFactory.createState(Handles.CHANNEL_0, BigInteger.ZERO, ChannelState.builder()).build(),
                 Handles.VMD_0);
-        var result = mdibStorage.apply(mock(MdibVersion.class), mock(BigInteger.class), mock(BigInteger.class), modifications);
+        var result = mdibStorage.apply(mock(MdibVersion.class), mock(BigInteger.class), mock(BigInteger.class), modifications.getModifications());
 
         assertFalse(mdibStorage.getEntity(parentHandle).get().getChildren().contains(childHandle));
         assertTrue(mdibStorage.getEntity(parentHandle).get().getChildren().contains(untouchedChildHandle));
@@ -224,42 +224,42 @@ class MdibStorageImplTest {
 
         final MdibDescriptionModifications descriptionModifications = MdibDescriptionModifications.create();
         descriptionModifications.insert(
-                MockModelFactory.createDescriptor(Handles.MDS_0, MdsDescriptor.class),
-                MockModelFactory.createState(Handles.MDS_0, MdsState.class));
+                MockModelFactory.createDescriptor(Handles.MDS_0, MdsDescriptor.builder()).build(),
+                MockModelFactory.createState(Handles.MDS_0, MdsState.builder()).build());
         descriptionModifications.insert(
-                MockModelFactory.createDescriptor(Handles.ALERTSYSTEM_0, AlertSystemDescriptor.class),
-                MockModelFactory.createState(Handles.ALERTSYSTEM_0, AlertSystemState.class),
+                MockModelFactory.createDescriptor(Handles.ALERTSYSTEM_0, AlertSystemDescriptor.builder()).build(),
+                MockModelFactory.createState(Handles.ALERTSYSTEM_0, AlertSystemState.builder()).build(),
                 Handles.MDS_0);
         descriptionModifications.insert(
-                MockModelFactory.createDescriptor(Handles.ALERTCONDITION_0, AlertConditionDescriptor.class),
-                MockModelFactory.createState(Handles.ALERTCONDITION_0, AlertConditionState.class),
+                MockModelFactory.createDescriptor(Handles.ALERTCONDITION_0, AlertConditionDescriptor.builder()).build(),
+                MockModelFactory.createState(Handles.ALERTCONDITION_0, AlertConditionState.builder()).build(),
                 Handles.ALERTSYSTEM_0);
         descriptionModifications.insert(
-                MockModelFactory.createDescriptor(Handles.ALERTCONDITION_1, AlertConditionDescriptor.class),
-                MockModelFactory.createState(Handles.ALERTCONDITION_1, AlertConditionState.class),
+                MockModelFactory.createDescriptor(Handles.ALERTCONDITION_1, AlertConditionDescriptor.builder()).build(),
+                MockModelFactory.createState(Handles.ALERTCONDITION_1, AlertConditionState.builder()).build(),
                 Handles.ALERTSYSTEM_0);
         descriptionModifications.insert(
-                MockModelFactory.createDescriptor(Handles.SYSTEMCONTEXT_0, SystemContextDescriptor.class),
-                MockModelFactory.createState(Handles.SYSTEMCONTEXT_0, SystemContextState.class));
+                MockModelFactory.createDescriptor(Handles.SYSTEMCONTEXT_0, SystemContextDescriptor.builder()).build(),
+                MockModelFactory.createState(Handles.SYSTEMCONTEXT_0, SystemContextState.builder()).build());
         descriptionModifications.insert(
-                MockModelFactory.createDescriptor(Handles.CONTEXTDESCRIPTOR_0, PatientContextDescriptor.class),
+                MockModelFactory.createDescriptor(Handles.CONTEXTDESCRIPTOR_0, PatientContextDescriptor.builder()).build(),
                 Arrays.asList(
-                        MockModelFactory.createContextState(Handles.CONTEXT_0, Handles.CONTEXTDESCRIPTOR_0, PatientContextState.class),
-                        MockModelFactory.createContextState(Handles.CONTEXT_1, Handles.CONTEXTDESCRIPTOR_0, PatientContextState.class)));
+                        MockModelFactory.createContextState(Handles.CONTEXT_0, Handles.CONTEXTDESCRIPTOR_0, PatientContextState.builder()).build(),
+                        MockModelFactory.createContextState(Handles.CONTEXT_1, Handles.CONTEXTDESCRIPTOR_0, PatientContextState.builder()).build()));
         descriptionModifications.insert(
-                MockModelFactory.createDescriptor(Handles.CONTEXTDESCRIPTOR_1, LocationContextDescriptor.class)
+                MockModelFactory.createDescriptor(Handles.CONTEXTDESCRIPTOR_1, LocationContextDescriptor.builder()).build()
         );
 
-        mdibStorage.apply(mock(MdibVersion.class), mock(BigInteger.class), mock(BigInteger.class), descriptionModifications);
+        mdibStorage.apply(mock(MdibVersion.class), mock(BigInteger.class), mock(BigInteger.class), descriptionModifications.getModifications());
 
         testWithVersion(testedHandles, BigInteger.ZERO);
 
         MdibStateModifications stateModifications = MdibStateModifications.create(MdibStateModifications.Type.ALERT);
-        stateModifications.add(MockModelFactory.createState(Handles.ALERTSYSTEM_0, BigInteger.ONE, AlertSystemState.class));
-        stateModifications.add(MockModelFactory.createState(Handles.ALERTCONDITION_0, BigInteger.ONE, AlertConditionState.class));
-        stateModifications.add(MockModelFactory.createState(Handles.ALERTCONDITION_1, BigInteger.ONE, AlertConditionState.class));
+        stateModifications.add(MockModelFactory.createState(Handles.ALERTSYSTEM_0, BigInteger.ONE, AlertSystemState.builder()).build());
+        stateModifications.add(MockModelFactory.createState(Handles.ALERTCONDITION_0, BigInteger.ONE, AlertConditionState.builder()).build());
+        stateModifications.add(MockModelFactory.createState(Handles.ALERTCONDITION_1, BigInteger.ONE, AlertConditionState.builder()).build());
         try {
-            stateModifications.add(MockModelFactory.createState(Handles.MDS_0, BigInteger.ONE, MdsState.class));
+            stateModifications.add(MockModelFactory.createState(Handles.MDS_0, BigInteger.ONE, MdsState.builder()).build());
             Assertions.fail("Could add MDS to alert state change set");
         } catch (Exception ignored) {
         }
@@ -271,21 +271,21 @@ class MdibStorageImplTest {
 
         stateModifications = MdibStateModifications.create(MdibStateModifications.Type.CONTEXT);
 
-        stateModifications.add(MockModelFactory.createContextState(Handles.CONTEXT_0, Handles.CONTEXTDESCRIPTOR_0, BigInteger.ONE, PatientContextState.class));
-        stateModifications.add(MockModelFactory.createContextState(Handles.CONTEXT_1, Handles.CONTEXTDESCRIPTOR_0, BigInteger.ONE, PatientContextState.class));
+        stateModifications.add(MockModelFactory.createContextState(Handles.CONTEXT_0, Handles.CONTEXTDESCRIPTOR_0, BigInteger.ONE, PatientContextState.builder()).build());
+        stateModifications.add(MockModelFactory.createContextState(Handles.CONTEXT_1, Handles.CONTEXTDESCRIPTOR_0, BigInteger.ONE, PatientContextState.builder()).build());
         mdibStorage.apply(mock(MdibVersion.class), mock(BigInteger.class), stateModifications);
 
         testWithVersion(testedHandles, BigInteger.ZERO, BigInteger.ONE);
 
         // add a MultiState to a descriptor without any previous states
         stateModifications = MdibStateModifications.create(MdibStateModifications.Type.CONTEXT);
-        stateModifications.add(MockModelFactory.createContextState(Handles.CONTEXT_2, Handles.CONTEXTDESCRIPTOR_1, BigInteger.ONE, LocationContextState.class));
+        stateModifications.add(MockModelFactory.createContextState(Handles.CONTEXT_2, Handles.CONTEXTDESCRIPTOR_1, BigInteger.ONE, LocationContextState.builder()).build());
         mdibStorage.apply(mock(MdibVersion.class), mock(BigInteger.class), stateModifications);
         assertThat(mdibStorage.getContextStates(Handles.CONTEXTDESCRIPTOR_1, LocationContextState.class).size(), is(1));
 
         // add a second MultiState
         stateModifications = MdibStateModifications.create(MdibStateModifications.Type.CONTEXT);
-        stateModifications.add(MockModelFactory.createContextState(Handles.CONTEXT_3, Handles.CONTEXTDESCRIPTOR_1, BigInteger.ONE, LocationContextState.class));
+        stateModifications.add(MockModelFactory.createContextState(Handles.CONTEXT_3, Handles.CONTEXTDESCRIPTOR_1, BigInteger.ONE, LocationContextState.builder()).build());
         mdibStorage.apply(mock(MdibVersion.class), mock(BigInteger.class), stateModifications);
         assertThat(mdibStorage.getContextStates(Handles.CONTEXTDESCRIPTOR_1, LocationContextState.class).size(), is(2));
     }
@@ -303,10 +303,10 @@ class MdibStorageImplTest {
         assertTrue(entity.isPresent());
         states = entity.get().getStates(PatientContextState.class);
         assertEquals(2, states.size());
-        states.get(0).setContextAssociation(ContextAssociation.NO);
+        states.add(0, states.remove(0).newCopyBuilder().withContextAssociation(ContextAssociation.NO).build());
         var modifications = MdibDescriptionModifications.create()
                 .update(entity.get().getDescriptor(), states);
-        var result = mdibStorage.apply(mock(MdibVersion.class), mock(BigInteger.class), mock(BigInteger.class), modifications);
+        var result = mdibStorage.apply(mock(MdibVersion.class), mock(BigInteger.class), mock(BigInteger.class), modifications.getModifications());
 
         // After write check that there was one updated entity with two updated states where one state is not associated
         assertEquals(1, result.getUpdatedEntities().size());
@@ -337,16 +337,16 @@ class MdibStorageImplTest {
         assertEquals(0, states.size());
 
         // Get states and add another one as not associated
-        var newDescriptor = new EnsembleContextDescriptor();
-        newDescriptor.setHandle(Handles.CONTEXTDESCRIPTOR_2);
-        var newState = new EnsembleContextState();
-        newState.setDescriptorHandle(Handles.CONTEXTDESCRIPTOR_2);
-        newState.setHandle(Handles.CONTEXT_3);
-        newState.setContextAssociation(ContextAssociation.NO);
-        states.add(newState);
+        var newDescriptor = EnsembleContextDescriptor.builder()
+            .withHandle(Handles.CONTEXTDESCRIPTOR_2).build();
+        var newState = EnsembleContextState.builder()
+            .withDescriptorHandle(Handles.CONTEXTDESCRIPTOR_2)
+            .withHandle(Handles.CONTEXT_3)
+            .withContextAssociation(ContextAssociation.NO);
+        states.add(newState.build());
         var modifications = MdibDescriptionModifications.create()
                 .insert(newDescriptor, states);
-        var result = mdibStorage.apply(mock(MdibVersion.class), mock(BigInteger.class), mock(BigInteger.class), modifications);
+        var result = mdibStorage.apply(mock(MdibVersion.class), mock(BigInteger.class), mock(BigInteger.class), modifications.getModifications());
 
         // After write check that there was one inserted entity with one inserted state where that one state is not associated
         assertEquals(1, result.getInsertedEntities().size());
@@ -375,10 +375,10 @@ class MdibStorageImplTest {
             var state = mdibStorage.getState(Handles.CONTEXT_0, AbstractContextState.class);
             assertTrue(state.isPresent());
             assertEquals(ContextAssociation.DIS, state.get().getContextAssociation());
-            state.get().setContextAssociation(ContextAssociation.ASSOC);
+            var stateAssoc = state.get().newCopyBuilder().withContextAssociation(ContextAssociation.ASSOC).build();
             mdibStorage.apply(mock(MdibVersion.class), mock(BigInteger.class),
                     MdibStateModifications.create(MdibStateModifications.Type.CONTEXT)
-                            .add(state.get()));
+                            .add(stateAssoc));
             state = mdibStorage.getState(Handles.CONTEXT_0, AbstractContextState.class);
             assertTrue(state.isPresent());
             assertEquals(ContextAssociation.ASSOC, state.get().getContextAssociation());
@@ -387,10 +387,10 @@ class MdibStorageImplTest {
             // Read associated context, write to not-associated (i.e., remove)
             var state = mdibStorage.getState(Handles.CONTEXT_0, AbstractContextState.class);
             assertTrue(state.isPresent());
-            state.get().setContextAssociation(ContextAssociation.NO);
+            var stateNo = state.get().newCopyBuilder().withContextAssociation(ContextAssociation.NO).build();
             var applyResult = mdibStorage.apply(mock(MdibVersion.class), mock(BigInteger.class),
                     MdibStateModifications.create(MdibStateModifications.Type.CONTEXT)
-                            .add(state.get()));
+                            .add(stateNo));
             // Expect the state to be part of the report
             assertEquals(1, applyResult.getStates().size());
             var writtenState = applyResult.getStates().get(0);
@@ -402,9 +402,10 @@ class MdibStorageImplTest {
         }
         {
             // Write a new context state as not-associated
-            var contextState = new PatientContextState();
-            contextState.setHandle(Handles.CONTEXT_3);
-            contextState.setDescriptorHandle(Handles.CONTEXTDESCRIPTOR_0);
+            var contextState = PatientContextState.builder()
+                .withHandle(Handles.CONTEXT_3)
+                .withDescriptorHandle(Handles.CONTEXTDESCRIPTOR_0)
+                .build();
 
             var applyResult = mdibStorage.apply(mock(MdibVersion.class), mock(BigInteger.class),
                     MdibStateModifications.create(MdibStateModifications.Type.CONTEXT)
@@ -427,10 +428,10 @@ class MdibStorageImplTest {
         {
             // Check that parent MDS appears in updated list
             var modifications = MdibDescriptionModifications.create()
-                    .insert(MockModelFactory.createDescriptor(Handles.VMD_1, BigInteger.ZERO, VmdDescriptor.class),
-                            MockModelFactory.createState(Handles.VMD_1, BigInteger.ZERO, VmdState.class),
+                    .insert(MockModelFactory.createDescriptor(Handles.VMD_1, BigInteger.ZERO, VmdDescriptor.builder()).build(),
+                            MockModelFactory.createState(Handles.VMD_1, BigInteger.ZERO, VmdState.builder()).build(),
                             Handles.MDS_0);
-            var result = mdibStorage.apply(mock(MdibVersion.class), mock(BigInteger.class), mock(BigInteger.class), modifications);
+            var result = mdibStorage.apply(mock(MdibVersion.class), mock(BigInteger.class), mock(BigInteger.class), modifications.getModifications());
 
             assertEquals(1, result.getInsertedEntities().size());
             assertEquals(Handles.VMD_1, result.getInsertedEntities().get(0).getHandle());
@@ -441,12 +442,12 @@ class MdibStorageImplTest {
         {
             // Check that parent VMD does not appear twice in updated list
             var modifications = MdibDescriptionModifications.create()
-                    .insert(MockModelFactory.createDescriptor(Handles.CHANNEL_2, BigInteger.ZERO, ChannelDescriptor.class),
-                            MockModelFactory.createState(Handles.CHANNEL_2, BigInteger.ZERO, ChannelState.class),
+                    .insert(MockModelFactory.createDescriptor(Handles.CHANNEL_2, BigInteger.ZERO, ChannelDescriptor.builder()).build(),
+                            MockModelFactory.createState(Handles.CHANNEL_2, BigInteger.ZERO, ChannelState.builder()).build(),
                             Handles.VMD_0)
-                    .update(MockModelFactory.createDescriptor(Handles.VMD_0, BigInteger.ZERO, MdsDescriptor.class),
-                            MockModelFactory.createState(Handles.VMD_0, BigInteger.ZERO, MdsState.class));
-            var result = mdibStorage.apply(mock(MdibVersion.class), mock(BigInteger.class), mock(BigInteger.class), modifications);
+                    .update(MockModelFactory.createDescriptor(Handles.VMD_0, BigInteger.ZERO, MdsDescriptor.builder()).build(),
+                            MockModelFactory.createState(Handles.VMD_0, BigInteger.ZERO, MdsState.builder()).build());
+            var result = mdibStorage.apply(mock(MdibVersion.class), mock(BigInteger.class), mock(BigInteger.class), modifications.getModifications());
 
             assertEquals(1, result.getInsertedEntities().size());
             assertEquals(Handles.CHANNEL_2, result.getInsertedEntities().get(0).getHandle());
@@ -457,12 +458,12 @@ class MdibStorageImplTest {
         {
             // Check that existing parent VMD does not appear twice in updated list
             var modifications = MdibDescriptionModifications.create()
-                    .insert(MockModelFactory.createDescriptor(Handles.CHANNEL_2, BigInteger.ZERO, ChannelDescriptor.class),
-                            MockModelFactory.createState(Handles.CHANNEL_2, BigInteger.ZERO, ChannelState.class),
+                    .insert(MockModelFactory.createDescriptor(Handles.CHANNEL_2, BigInteger.ZERO, ChannelDescriptor.builder()).build(),
+                            MockModelFactory.createState(Handles.CHANNEL_2, BigInteger.ZERO, ChannelState.builder()).build(),
                             Handles.VMD_0)
-                    .update(MockModelFactory.createDescriptor(Handles.VMD_0, BigInteger.ZERO, MdsDescriptor.class),
-                            MockModelFactory.createState(Handles.VMD_0, BigInteger.ZERO, MdsState.class));
-            var result = mdibStorage.apply(mock(MdibVersion.class), mock(BigInteger.class), mock(BigInteger.class), modifications);
+                    .update(MockModelFactory.createDescriptor(Handles.VMD_0, BigInteger.ZERO, MdsDescriptor.builder()).build(),
+                            MockModelFactory.createState(Handles.VMD_0, BigInteger.ZERO, MdsState.builder()).build());
+            var result = mdibStorage.apply(mock(MdibVersion.class), mock(BigInteger.class), mock(BigInteger.class), modifications.getModifications());
 
             assertEquals(1, result.getInsertedEntities().size());
             assertEquals(Handles.CHANNEL_2, result.getInsertedEntities().get(0).getHandle());
@@ -474,13 +475,13 @@ class MdibStorageImplTest {
             // Check that inserted parent VMD does not appear in updated list (it is sufficient to add it to the
             // insertedEntities list
             var modifications = MdibDescriptionModifications.create()
-                    .insert(MockModelFactory.createDescriptor(Handles.VMD_2, BigInteger.ZERO, VmdDescriptor.class),
-                            MockModelFactory.createState(Handles.VMD_2, BigInteger.ZERO, VmdState.class),
+                    .insert(MockModelFactory.createDescriptor(Handles.VMD_2, BigInteger.ZERO, VmdDescriptor.builder()).build(),
+                            MockModelFactory.createState(Handles.VMD_2, BigInteger.ZERO, VmdState.builder()).build(),
                             Handles.MDS_0)
-                    .insert(MockModelFactory.createDescriptor(Handles.CHANNEL_3, BigInteger.ZERO, ChannelDescriptor.class),
-                            MockModelFactory.createState(Handles.CHANNEL_3, BigInteger.ZERO, ChannelState.class),
+                    .insert(MockModelFactory.createDescriptor(Handles.CHANNEL_3, BigInteger.ZERO, ChannelDescriptor.builder()).build(),
+                            MockModelFactory.createState(Handles.CHANNEL_3, BigInteger.ZERO, ChannelState.builder()).build(),
                             Handles.VMD_2);
-            var result = mdibStorage.apply(mock(MdibVersion.class), mock(BigInteger.class), mock(BigInteger.class), modifications);
+            var result = mdibStorage.apply(mock(MdibVersion.class), mock(BigInteger.class), mock(BigInteger.class), modifications.getModifications());
 
             assertEquals(2, result.getInsertedEntities().size());
             assertEquals(Handles.VMD_2, result.getInsertedEntities().get(0).getHandle());
@@ -540,10 +541,10 @@ class MdibStorageImplTest {
         assertTrue(entity.isPresent());
         states = entity.get().getStates(PatientContextState.class);
         assertEquals(2, states.size());
-        states.get(0).setContextAssociation(ContextAssociation.NO);
+        states.add(0, states.remove(0).newCopyBuilder().withContextAssociation(ContextAssociation.NO).build());
         var modifications = MdibDescriptionModifications.create()
                 .update(entity.get().getDescriptor(), states);
-        var result = localMdibStorage.apply(mock(MdibVersion.class), mock(BigInteger.class), mock(BigInteger.class), modifications);
+        var result = localMdibStorage.apply(mock(MdibVersion.class), mock(BigInteger.class), mock(BigInteger.class), modifications.getModifications());
 
         // After write check that there was one updated entity with two updated states where one state is not associated
         assertEquals(1, result.getUpdatedEntities().size());
@@ -576,16 +577,17 @@ class MdibStorageImplTest {
         assertEquals(0, states.size());
 
         // Get states and add another one as not associated
-        var newDescriptor = new EnsembleContextDescriptor();
-        newDescriptor.setHandle(Handles.CONTEXTDESCRIPTOR_2);
-        var newState = new EnsembleContextState();
-        newState.setDescriptorHandle(Handles.CONTEXTDESCRIPTOR_2);
-        newState.setHandle(Handles.CONTEXT_3);
-        newState.setContextAssociation(ContextAssociation.NO);
+        var newDescriptor = EnsembleContextDescriptor.builder()
+            .withHandle(Handles.CONTEXTDESCRIPTOR_2).build();
+        var newState = EnsembleContextState.builder()
+            .withDescriptorHandle(Handles.CONTEXTDESCRIPTOR_2)
+            .withHandle(Handles.CONTEXT_3)
+            .withContextAssociation(ContextAssociation.NO)
+            .build();
         states.add(newState);
         var modifications = MdibDescriptionModifications.create()
                 .insert(newDescriptor, states);
-        var result = localMdibStorage.apply(mock(MdibVersion.class), mock(BigInteger.class), mock(BigInteger.class), modifications);
+        var result = localMdibStorage.apply(mock(MdibVersion.class), mock(BigInteger.class), mock(BigInteger.class), modifications.getModifications());
 
         // After write check that there was one inserted entity with one inserted state where that one state is not associated
         assertEquals(1, result.getInsertedEntities().size());
@@ -615,10 +617,10 @@ class MdibStorageImplTest {
             var state = localMdibStorage.getState(Handles.CONTEXT_0, AbstractContextState.class);
             assertTrue(state.isPresent());
             assertEquals(ContextAssociation.DIS, state.get().getContextAssociation());
-            state.get().setContextAssociation(ContextAssociation.ASSOC);
+            var stateAssoc = state.get().newCopyBuilder().withContextAssociation(ContextAssociation.ASSOC).build();
             localMdibStorage.apply(mock(MdibVersion.class), mock(BigInteger.class),
                     MdibStateModifications.create(MdibStateModifications.Type.CONTEXT)
-                            .add(state.get()));
+                            .add(stateAssoc));
             state = localMdibStorage.getState(Handles.CONTEXT_0, AbstractContextState.class);
             assertTrue(state.isPresent());
             assertEquals(ContextAssociation.ASSOC, state.get().getContextAssociation());
@@ -627,10 +629,10 @@ class MdibStorageImplTest {
             // Read associated context, write to not-associated (i.e., remove)
             var state = localMdibStorage.getState(Handles.CONTEXT_0, AbstractContextState.class);
             assertTrue(state.isPresent());
-            state.get().setContextAssociation(ContextAssociation.NO);
+            var stateNo = state.get().newCopyBuilder().withContextAssociation(ContextAssociation.NO).build();
             var applyResult = localMdibStorage.apply(mock(MdibVersion.class), mock(BigInteger.class),
                     MdibStateModifications.create(MdibStateModifications.Type.CONTEXT)
-                            .add(state.get()));
+                            .add(stateNo));
             // Expect the state to be part of the report
             assertEquals(1, applyResult.getStates().size());
             var writtenState = applyResult.getStates().get(0);
@@ -642,9 +644,10 @@ class MdibStorageImplTest {
         }
         {
             // Write a new context state as not-associated
-            var contextState = new PatientContextState();
-            contextState.setHandle(Handles.CONTEXT_3);
-            contextState.setDescriptorHandle(Handles.CONTEXTDESCRIPTOR_0);
+            var contextState = PatientContextState.builder()
+                .withHandle(Handles.CONTEXT_3)
+                .withDescriptorHandle(Handles.CONTEXTDESCRIPTOR_0)
+                .build();
 
             var applyResult = localMdibStorage.apply(mock(MdibVersion.class), mock(BigInteger.class),
                     MdibStateModifications.create(MdibStateModifications.Type.CONTEXT)
@@ -695,9 +698,10 @@ class MdibStorageImplTest {
 
         {
             // Write a new context state as not-associated
-            var contextState = new PatientContextState();
-            contextState.setHandle(Handles.CONTEXT_3);
-            contextState.setDescriptorHandle(Handles.CONTEXTDESCRIPTOR_0);
+            var contextState = PatientContextState.builder()
+                .withHandle(Handles.CONTEXT_3)
+                .withDescriptorHandle(Handles.CONTEXTDESCRIPTOR_0)
+                .build();
 
             assertThrows(
                     RuntimeException.class,
@@ -713,16 +717,17 @@ class MdibStorageImplTest {
             assertEquals(0, states.size());
 
             // Get states and add another one as not associated
-            var newDescriptor = new EnsembleContextDescriptor();
-            newDescriptor.setHandle(Handles.CONTEXTDESCRIPTOR_2);
-            var newState = new EnsembleContextState();
-            newState.setDescriptorHandle(Handles.CONTEXTDESCRIPTOR_2);
-            newState.setHandle(Handles.CONTEXT_3);
-            newState.setContextAssociation(ContextAssociation.NO);
+            var newDescriptor = EnsembleContextDescriptor.builder()
+                .withHandle(Handles.CONTEXTDESCRIPTOR_2).build();
+            var newState = EnsembleContextState.builder()
+                .withDescriptorHandle(Handles.CONTEXTDESCRIPTOR_2)
+                .withHandle(Handles.CONTEXT_3)
+                .withContextAssociation(ContextAssociation.NO)
+                .build();
             states.add(newState);
             var modifications = MdibDescriptionModifications.create()
                     .insert(newDescriptor, states);
-            var result = localMdibStorage.apply(mock(MdibVersion.class), mock(BigInteger.class), mock(BigInteger.class), modifications);
+            var result = localMdibStorage.apply(mock(MdibVersion.class), mock(BigInteger.class), mock(BigInteger.class), modifications.getModifications());
 
             // After write check that there was one inserted entity with one inserted state where that one state is not associated
             assertEquals(1, result.getInsertedEntities().size());

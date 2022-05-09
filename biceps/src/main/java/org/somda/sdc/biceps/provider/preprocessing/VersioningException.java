@@ -23,3 +23,9 @@ public class VersioningException extends Exception {
         super(message, cause, enableSuppression, writableStackTrace);
     }
 }
+
+class VersioningExceptionInner extends RuntimeException {
+    public VersioningExceptionInner(VersioningException cause) {
+        super(cause);
+    }
+}

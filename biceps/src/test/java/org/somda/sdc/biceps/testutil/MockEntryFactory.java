@@ -4,16 +4,12 @@ import org.somda.sdc.biceps.common.MdibDescriptionModifications;
 import org.somda.sdc.biceps.common.MdibTypeValidator;
 import org.somda.sdc.biceps.model.participant.AbstractContextState;
 import org.somda.sdc.biceps.model.participant.AbstractDescriptor;
-import org.somda.sdc.biceps.model.participant.AbstractMultiState;
 import org.somda.sdc.biceps.model.participant.AbstractState;
 
 import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.Callable;
 import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 public class MockEntryFactory {
@@ -23,79 +19,82 @@ public class MockEntryFactory {
         this.typeValidator = typeValidator;
     }
 
-    public <T extends AbstractDescriptor, V extends AbstractState> MdibDescriptionModifications.Entry entry(String handle,
-                                                                                                            Class<T> descrClass) throws Exception {
-        return entry(handle, descrClass, null);
+    public <T extends AbstractDescriptor.Builder<?>, V extends AbstractState.Builder<?>> MdibDescriptionModifications.Entry entry(String handle,
+                                                                                                            T descriptorBuilderClass,
+                                                                                                            V stateBuilderClass) throws Exception {
+        return entry(handle, descriptorBuilderClass, stateBuilderClass, null);
     }
 
-    public <T extends AbstractDescriptor, V extends AbstractState> MdibDescriptionModifications.Entry entry(String handle,
-                                                                                                            Class<T> descrClass,
+    public <T extends AbstractDescriptor.Builder<?>, V extends AbstractState.Builder<?>> MdibDescriptionModifications.Entry entry(String handle,
+                                                                                                            T descriptorBuilderClass,
+                                                                                                            V stateBuilderClass,
                                                                                                             @Nullable String parentHandle) throws Exception {
-        Class<V> stateClass = typeValidator.resolveStateType(descrClass);
         return new MdibDescriptionModifications.Entry(
-                descriptor(handle, descrClass),
-                state(handle, stateClass),
+                descriptor(handle, descriptorBuilderClass).build(),
+                state(handle, stateBuilderClass).build(),
                 parentHandle);
     }
 
-    public <T extends AbstractDescriptor, V extends AbstractState> MdibDescriptionModifications.Entry entry(String handle,
-                                                                                                            Class<T> descrClass,
-                                                                                                            Consumer<T> descrCustomizer,
-                                                                                                            Consumer<V> stateCustomizer,
-                                                                                                            @Nullable String parentHandle) throws Exception {
-        Class<V> stateClass = typeValidator.resolveStateType(descrClass);
+    public <T extends AbstractDescriptor.Builder<?>, V extends AbstractState.Builder<?>> MdibDescriptionModifications.Entry entry(
+        String handle,
+        T descriptorBuilderClass,
+        V stateBuilderClass,
+        Consumer<T> descrCustomizer,
+        Consumer<V> stateCustomizer,
+        @Nullable String parentHandle
+    ) throws Exception {
         return new MdibDescriptionModifications.Entry(
-                descriptor(handle, descrClass, descrCustomizer),
-                state(handle, stateClass, stateCustomizer),
+                descriptor(handle, descriptorBuilderClass, descrCustomizer).build(),
+                state(handle, stateBuilderClass, stateCustomizer).build(),
                 parentHandle);
     }
 
-    public <T extends AbstractDescriptor, V extends AbstractContextState> MdibDescriptionModifications.MultiStateEntry contextEntry(String handle,
+    public <T extends AbstractDescriptor.Builder<T>, V extends AbstractContextState.Builder<T>> MdibDescriptionModifications.MultiStateEntry contextEntry(String handle,
                                                                                                                                     String stateHandle,
-                                                                                                                                    Class<T> descrClass,
+                                                                                                                                    T descrBuilderClass,
+                                                                                                                                    V stateBuilderClass,
                                                                                                                                     String parentHandle) throws Exception {
-        Class<V> stateClass = typeValidator.resolveStateType(descrClass);
         return new MdibDescriptionModifications.MultiStateEntry(
-                descriptor(handle, descrClass),
-                Collections.singletonList(MockModelFactory.createContextState(stateHandle, handle, stateClass)),
+                descriptor(handle, descrBuilderClass).build(),
+                Collections.singletonList(MockModelFactory.createContextState(stateHandle, handle, stateBuilderClass).build()),
                 parentHandle);
     }
 
-    public <T extends AbstractDescriptor, V extends AbstractContextState> MdibDescriptionModifications.MultiStateEntry contextEntry(String handle,
+    public <T extends AbstractDescriptor.Builder<?>, V extends AbstractContextState.Builder<?>> MdibDescriptionModifications.MultiStateEntry contextEntry(String handle,
                                                                                                                                     List<String> stateHandles,
-                                                                                                                                    Class<T> descrClass,
+                                                                                                                                    T descrBuilderClass,
+                                                                                                                                    V stateBuilderClass,
                                                                                                                                     String parentHandle) throws Exception {
-        Class<V> stateClass = typeValidator.resolveStateType(descrClass);
-        final List<V> states = stateHandles.stream()
-                .map(s -> MockModelFactory.createContextState(s, handle, stateClass))
+        final List<AbstractContextState> states = stateHandles.stream()
+                .map(s -> MockModelFactory.createContextState(s, handle, stateBuilderClass).build())
                 .collect(Collectors.toList());
         return new MdibDescriptionModifications.MultiStateEntry(
-                descriptor(handle, descrClass),
+                descriptor(handle, descrBuilderClass).build(),
                 states,
                 parentHandle);
     }
 
-    public <T extends AbstractDescriptor> T descriptor(String handle, Class<T> theClass) {
-        return descriptor(handle, theClass, t -> {});
+    public <T extends AbstractDescriptor.Builder<?>> T descriptor(String handle, T builder) {
+        return descriptor(handle, builder, t -> {});
     }
 
-    public <T extends AbstractDescriptor> T descriptor(String handle, Class<T> theClass, Consumer<T> customizer) {
-        var descr = MockModelFactory.createDescriptor(handle, theClass);
+    public <T extends AbstractDescriptor.Builder<?>> T descriptor(String handle, T builder, Consumer<T> customizer) {
+        var descr = MockModelFactory.createDescriptor(handle, builder);
         customizer.accept(descr);
         return descr;
     }
 
-    public <T extends AbstractState> T state(String handle, Class<T> theClass) {
-        return state(handle, theClass, t -> {});
+    public <T extends AbstractState.Builder<?>> T state(String handle, T builderClass) {
+        return state(handle, builderClass, t -> {});
     }
 
-    public <T extends AbstractState> T state(String handle, Class<T> theClass, Consumer<T> customizer) {
-        var state = MockModelFactory.createState(handle, theClass);
+    public <T extends AbstractState.Builder<?>> T state(String handle, T builderClass, Consumer<T> customizer) {
+        var state = MockModelFactory.createState(handle, builderClass);
         customizer.accept(state);
         return state;
     }
 
-    public <T extends AbstractContextState> T state(String handle, String descrHandle, Class<T> theClass) {
-        return MockModelFactory.createContextState(handle, descrHandle, theClass);
+    public <T extends AbstractContextState.Builder<?>> T state(String handle, String descrHandle, T builderClass) {
+        return MockModelFactory.createContextState(handle, descrHandle, builderClass);
     }
 }

@@ -75,13 +75,13 @@ public class SoapFaultException extends Exception {
 
     private void setRelatesTo(@Nullable AttributedURIType messageId) {
         if (faultMessage.getWsAddressingHeader().getRelatesTo().isEmpty()) {
-            final RelatesToType unspecifiedMessageUri = new RelatesToType();
+            final var unspecifiedMessageUri = RelatesToType.builder();
             if (messageId != null) {
-                unspecifiedMessageUri.setValue(messageId.getValue());
+                unspecifiedMessageUri.withValue(messageId.getValue());
             } else {
-                unspecifiedMessageUri.setValue(UNSPECIFIED_MESSAGE);
+                unspecifiedMessageUri.withValue(UNSPECIFIED_MESSAGE);
             }
-            faultMessage.getWsAddressingHeader().setRelatesTo(unspecifiedMessageUri);
+            faultMessage.getWsAddressingHeader().setRelatesTo(unspecifiedMessageUri.build());
         }
     }
 
