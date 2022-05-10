@@ -202,10 +202,13 @@ class CommunicationLogIT extends DpwsTest {
             // requests must contain our message
             var req = logSink.getOutboundAppLevel().get(0);
             var resp = logSink.getInboundAppLevel().get(0);
+            var netLevelReq = logSink.getOutboundNetLevel().get(0);
+            var netLevelResp = logSink.getInboundNetLevel().get(0);
 
             assertArrayEquals(actualRequestStream.toByteArray(), req.toByteArray());
             assertArrayEquals(expectedResponseStream.toByteArray(), resp.toByteArray());
-            // TODO: check Network-Level content as well
+            assertArrayEquals(actualRequestStream.toByteArray(), netLevelReq.toByteArray());
+            assertArrayEquals(expectedResponseStream.toByteArray(), netLevelResp.toByteArray());
 
             // check "Transfer-Encoding: chunked" Header
             // TODO: check Network-Level Headers as well
@@ -306,9 +309,13 @@ class CommunicationLogIT extends DpwsTest {
             // requests must contain our message
             var req = logSink.getOutboundAppLevel().get(0);
             var resp = logSink.getInboundAppLevel().get(0);
+            var netLevelReq = logSink.getOutboundNetLevel().get(0);
+            var netLevelResp = logSink.getInboundNetLevel().get(0);
 
             assertArrayEquals(actualRequestStream.toByteArray(), req.toByteArray());
             assertArrayEquals(expectedResponseStream.toByteArray(), resp.toByteArray());
+            assertArrayEquals(actualRequestStream.toByteArray(), netLevelReq.toByteArray());
+            assertArrayEquals(expectedResponseStream.toByteArray(), netLevelResp.toByteArray());
 
             // check Content-Length header
             assertTrue(logSink.getOutboundAppLevelHeaders().get(0).get(CONTENT_LENGTH_HEADER).contains(Integer.toString(logSink.getOutboundAppLevel().get(0).toString(StandardCharsets.UTF_8).length())));
@@ -469,13 +476,6 @@ class CommunicationLogIT extends DpwsTest {
         }
     }
 
-    private byte[] decodeGZip(byte[] netLevelResp) {
-        final ByteBuffer decoded = new GZIPContentDecoder().decode(ByteBuffer.wrap(netLevelResp));
-        byte[] result = new byte[decoded.limit()];
-        decoded.get(result, 0, decoded.limit());
-        return result;
-    }
-
     static class SlowInputStream extends InputStream {
 
         private final byte[] payload;
@@ -556,7 +556,7 @@ class CommunicationLogIT extends DpwsTest {
             HttpResponse response = client.execute(post);
             var responseBytes = response.getEntity().getContent().readAllBytes();
 
-            // TODO: Because of the Commlog in the server closing after the request is done, we need a little sleep here
+            // NOTE: Because of the Commlog in the server closing after the request is done, we need a little sleep here
             Thread.sleep(10);
 
             // slurp up any leftover data
@@ -567,9 +567,13 @@ class CommunicationLogIT extends DpwsTest {
 
             var req = logSink.getInboundAppLevel().get(0);
             var resp = logSink.getOutboundAppLevel().get(0);
+            var netLevelReq = logSink.getInboundNetLevel().get(0);
+            var netLevelResp = logSink.getOutboundNetLevel().get(0);
 
             assertArrayEquals(expectedRequest.getBytes(), req.toByteArray());
             assertArrayEquals(expectedResponse.getBytes(), resp.toByteArray());
+            assertArrayEquals(expectedRequest.getBytes(), netLevelReq.toByteArray());
+            assertArrayEquals(expectedResponse.getBytes(), decodeGZip(netLevelResp.toByteArray()));
 
             // ensure streams were closed by interceptors
             assertTrue(req.isClosed());
@@ -660,7 +664,7 @@ class CommunicationLogIT extends DpwsTest {
             HttpResponse response = client.execute(post);
             var responseBytes = response.getEntity().getContent().readAllBytes();
 
-            // TODO: Because of the Commlog in the server closing after the request is done, we need a little sleep here
+            // NOTE: Because of the Commlog in the server closing after the request is done, we need a little sleep here
             Thread.sleep(10);
 
             // slurp up any leftover data
@@ -671,9 +675,13 @@ class CommunicationLogIT extends DpwsTest {
 
             var req = logSink.getInboundAppLevel().get(0);
             var resp = logSink.getOutboundAppLevel().get(0);
+            var netLevelReq = logSink.getInboundNetLevel().get(0);
+            var netLevelResp= logSink.getOutboundNetLevel().get(0);
 
             assertArrayEquals(expectedRequest.getBytes(), req.toByteArray());
             assertArrayEquals(expectedResponse.getBytes(), resp.toByteArray());
+            assertArrayEquals(expectedRequest.getBytes(), netLevelReq.toByteArray());
+            assertArrayEquals(expectedResponse.getBytes(), decodeGZip(netLevelResp.toByteArray()));
 
             // ensure streams were closed by interceptors
             assertTrue(req.isClosed());
@@ -775,9 +783,13 @@ class CommunicationLogIT extends DpwsTest {
 
             var req = logSink.getInboundAppLevel().get(0);
             var resp = logSink.getOutboundAppLevel().get(0);
+            var netLevelReq = logSink.getInboundNetLevel().get(0);
+            var netLevelResp = logSink.getOutboundNetLevel().get(0);
 
             assertArrayEquals(expectedRequest.getBytes(), req.toByteArray());
             assertArrayEquals(expectedResponse.getBytes(), resp.toByteArray());
+            assertArrayEquals(expectedRequest.getBytes(), netLevelReq.toByteArray());
+            assertArrayEquals(expectedResponse.getBytes(), decodeGZip(netLevelResp.toByteArray()));
 
             // ensure streams were closed by interceptors
             assertTrue(req.isClosed());
@@ -871,7 +883,7 @@ class CommunicationLogIT extends DpwsTest {
             HttpResponse response = client.execute(post);
             var responseBytes = response.getEntity().getContent().readAllBytes();
 
-            // TODO: Because of the Commlog in the server closing after the request is done, we need a little sleep here
+            // NOTE: Because of the Commlog in the server closing after the request is done, we need a little sleep here
             Thread.sleep(10);
 
             // slurp up any leftover data
@@ -882,9 +894,13 @@ class CommunicationLogIT extends DpwsTest {
 
             var req = logSink.getInboundAppLevel().get(0);
             var resp = logSink.getOutboundAppLevel().get(0);
+            var netLevelReq = logSink.getInboundNetLevel().get(0);
+            var netLevelResp = logSink.getOutboundNetLevel().get(0);
 
             assertArrayEquals(expectedRequest.getBytes(), req.toByteArray());
             assertArrayEquals(expectedResponse.getBytes(), resp.toByteArray());
+            assertArrayEquals(expectedRequest.getBytes(), decodeGZip(netLevelReq.toByteArray()));
+            assertArrayEquals(expectedResponse.getBytes(), decodeGZip(netLevelResp.toByteArray()));
 
             // expect request and response to be gzipped
             // TODO: store both the headers before GzipHandler and the headers after GzipHandler
@@ -978,7 +994,7 @@ class CommunicationLogIT extends DpwsTest {
             HttpResponse response = client.execute(post);
             var responseBytes = response.getEntity().getContent().readAllBytes();
 
-            // TODO: Because of the Commlog in the server closing after the request is done, we need a little sleep here
+            // NOTE: Because of the Commlog in the server closing after the request is done, we need a little sleep here
             Thread.sleep(10);
 
             // slurp up any leftover data
@@ -989,9 +1005,13 @@ class CommunicationLogIT extends DpwsTest {
 
             var req = logSink.getInboundAppLevel().get(0);
             var resp = logSink.getOutboundAppLevel().get(0);
+            var netLevelReq = logSink.getInboundNetLevel().get(0);
+            var netLevelResp = logSink.getOutboundNetLevel().get(0);
 
             assertArrayEquals(expectedRequest.getBytes(), req.toByteArray());
             assertArrayEquals(expectedResponse.getBytes(), resp.toByteArray());
+            assertArrayEquals(expectedRequest.getBytes(), netLevelReq.toByteArray());
+            assertArrayEquals(expectedResponse.getBytes(), decodeGZip(netLevelResp.toByteArray()));
 
             // ensure request headers are logged
             assertEquals(
@@ -1094,6 +1114,13 @@ class CommunicationLogIT extends DpwsTest {
         }
     }
 
+    private byte[] decodeGZip(byte[] netLevelResp) {
+        final ByteBuffer decoded = new GZIPContentDecoder().decode(ByteBuffer.wrap(netLevelResp));
+        byte[] result = new byte[decoded.limit()];
+        decoded.get(result, 0, decoded.limit());
+        return result;
+    }
+
     private void testSharedLogSink(SoapMarshalling soapMarshalling, TransportBinding httpBinding, TestCommLogSink logSink, ByteArrayOutputStream expectedResponseStream) throws Exception {
         var requestMessage2 = createASoapMessage();
 
@@ -1111,9 +1138,13 @@ class CommunicationLogIT extends DpwsTest {
         // requests must contain our message
         var req2 = logSink.getOutboundAppLevel().get(0);
         var resp2 = logSink.getInboundAppLevel().get(0);
+        var netLevelReq2 = logSink.getOutboundNetLevel().get(0);
+        var netLevelResp2 = logSink.getInboundNetLevel().get(0);
 
         assertArrayEquals(actualRequestStream2.toByteArray(), req2.toByteArray());
         assertArrayEquals(expectedResponseStream.toByteArray(), resp2.toByteArray());
+        assertArrayEquals(actualRequestStream2.toByteArray(), netLevelReq2.toByteArray());
+        assertArrayEquals(expectedResponseStream.toByteArray(), decodeGZip(netLevelResp2.toByteArray()));
 
         // ensure request headers are logged
         assertTrue(

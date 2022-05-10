@@ -12,6 +12,8 @@ import org.somda.sdc.dpws.soap.TransportInfo;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+
+import javax.annotation.Nullable;
 import java.io.IOException;
 import java.io.OutputStream;
 
@@ -65,17 +67,29 @@ public class CommunicationLogInnerHandlerWrapper extends HandlerWrapper {
 
         var requestCommContext = new CommunicationContext(requestHttpApplicationInfo, transportInfo);
 
-        OutputStream input = commLog.logMessage(
+        OutputStream appLevelCommLogStream = commLog.logMessage(
                 CommunicationLog.Direction.INBOUND,
                 CommunicationLog.TransportType.HTTP,
                 CommunicationLog.MessageType.REQUEST,
                 requestCommContext,
                 CommunicationLog.Level.APPLICATION);
-        // TODO: add a network-level logMessage.
+        OutputStream netLevelCommLogStream = commLog.logMessage(
+            CommunicationLog.Direction.INBOUND,
+            CommunicationLog.TransportType.HTTP,
+            CommunicationLog.MessageType.REQUEST,
+            requestCommContext,
+            CommunicationLog.Level.NETWORK);
         var out = baseRequest.getResponse().getHttpOutput();
 
-        // attach interceptor to log request
-        baseRequest.getHttpInput().addInterceptor(new CommunicationLogInputInterceptor(input, frameworkIdentifier));
+        if (isGZipped(request)) {
+            CommunicationLogInputInterceptor interceptor = (CommunicationLogInputInterceptor)baseRequest.getAttribute(CommunicationLogOuterHandlerWrapper.REQUEST_CONTENT_INTERCEPTOR_IN_ATTRIBUTE_KEY);
+            interceptor.setCommlogStreams(netLevelCommLogStream);
+            // attach interceptor to log request
+            baseRequest.getHttpInput().addInterceptor(new CommunicationLogInputInterceptor(frameworkIdentifier, appLevelCommLogStream));
+        } else {
+            // attach interceptor to log request
+            baseRequest.getHttpInput().addInterceptor(new CommunicationLogInputInterceptor(frameworkIdentifier, appLevelCommLogStream, netLevelCommLogStream));
+        }
 
         HttpOutput.Interceptor previousInterceptor = out.getInterceptor();
 
@@ -99,6 +113,21 @@ public class CommunicationLogInnerHandlerWrapper extends HandlerWrapper {
             // reset interceptor if request not handled
             if (!baseRequest.isHandled() && !baseRequest.isAsyncStarted())
                 out.setInterceptor(previousInterceptor);
+        }
+    }
+
+    private boolean isGZipped(@Nullable HttpServletRequest request) {
+        if (request != null) {
+            String header = request.getHeader("Content-Encoding");
+            if (header == null) {
+                header = request.getHeader("X-Content-Encoding");
+            }
+            if (header == null) {
+                return false;
+            }
+            return header.contains("gzip");
+        } else {
+            return false;
         }
     }
 

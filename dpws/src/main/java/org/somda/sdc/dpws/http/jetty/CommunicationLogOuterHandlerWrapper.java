@@ -29,6 +29,8 @@ import java.lang.String;
 public class CommunicationLogOuterHandlerWrapper extends HandlerWrapper {
     public static final String CONTENT_ENCODING_HEADER_PASSED_IN_ATTRIBUTE_KEY =
         "Content-Encoding-Header-From-Extractor";
+    public static final String REQUEST_CONTENT_INTERCEPTOR_IN_ATTRIBUTE_KEY =
+        "Request-Content-Interceptor-From-Outer-Wrapper";
     private static final String TRANSACTION_ID_PREFIX_SERVER = "rrId:server:" + UUID.randomUUID() + ":";
     private static final AtomicLong TRANSACTION_ID = new AtomicLong(-1L);
     private final String frameworkIdentifier;
@@ -42,7 +44,7 @@ public class CommunicationLogOuterHandlerWrapper extends HandlerWrapper {
 
     @Override
     public void handle(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response)
-            throws IOException, ServletException {
+        throws IOException, ServletException {
 
         var currentTransactionId = TRANSACTION_ID_PREFIX_SERVER + TRANSACTION_ID.incrementAndGet();
         baseRequest.setAttribute(CommunicationLog.MessageType.REQUEST.name(), currentTransactionId);
@@ -50,6 +52,10 @@ public class CommunicationLogOuterHandlerWrapper extends HandlerWrapper {
         final String contentEncodingHeader = baseRequest.getHeader("Content-Encoding");
 
         baseRequest.setAttribute(CONTENT_ENCODING_HEADER_PASSED_IN_ATTRIBUTE_KEY, contentEncodingHeader);
+
+        final CommunicationLogInputInterceptor inputInterceptor = new CommunicationLogInputInterceptor(frameworkIdentifier);
+        baseRequest.getHttpInput().addInterceptor(inputInterceptor);
+        baseRequest.setAttribute(REQUEST_CONTENT_INTERCEPTOR_IN_ATTRIBUTE_KEY, inputInterceptor);
 
         final HttpOutput out = baseRequest.getResponse().getHttpOutput();
         final HttpOutput.Interceptor previousInterceptor = out.getInterceptor();
@@ -64,12 +70,12 @@ public class CommunicationLogOuterHandlerWrapper extends HandlerWrapper {
         // trigger request handling
         super.handle(target, baseRequest, request, response);
 
-        final Object messageBody = request.getAttribute(
+        final Object responseBody = request.getAttribute(
             CommunicationLogInnerHandlerWrapper.MESSAGE_BODY_FROM_INNER_PART_AS_ATTRIBUTE_KEY);
         final HashMap<String, Collection<String>> responseHeaders = (HashMap<String, Collection<String>>)
             request.getAttribute(
-            CommunicationLogInnerHandlerWrapper.MESSAGE_HEADERS_FROM_INNER_PART_AS_ATTRIBUTE_KEY);
-        if (messageBody != null) {
+                CommunicationLogInnerHandlerWrapper.MESSAGE_HEADERS_FROM_INNER_PART_AS_ATTRIBUTE_KEY);
+        if (responseBody != null) {
             ListMultimap<String, String> responseHeaderMap = ArrayListMultimap.create();
             // NOTE: we log the headers extracted in the CommunicationLogOutputBufferInterceptor
             //       because this is the only place where the Content-Length Header can be extracted
@@ -112,19 +118,29 @@ public class CommunicationLogOuterHandlerWrapper extends HandlerWrapper {
 
             var responseCommContext = new CommunicationContext(responseHttpApplicationInfo, transportInfo);
 
-            final OutputStream outputStream = communicationLog.logMessage(
+            final OutputStream appLevelCommLogStream = communicationLog.logMessage(
                 CommunicationLog.Direction.OUTBOUND,
                 CommunicationLog.TransportType.HTTP,
                 CommunicationLog.MessageType.RESPONSE,
                 responseCommContext,
                 CommunicationLog.Level.APPLICATION
             );
-            // TODO: add a network-level logMessage.
-            // NOTE: the gzipped content of the low-level response can at this point be extracted from the outInterceptor.
-            // outInterceptor.getContents();
+            final OutputStream netLevelCommLogStream = communicationLog.logMessage(
+                CommunicationLog.Direction.OUTBOUND,
+                CommunicationLog.TransportType.HTTP,
+                CommunicationLog.MessageType.RESPONSE,
+                responseCommContext,
+                CommunicationLog.Level.NETWORK
+            );
 
-            outputStream.write((byte[]) messageBody);
-            outputStream.close();
+            appLevelCommLogStream.write((byte[]) responseBody);
+            appLevelCommLogStream.close();
+            if (response.getHeader("Content-Encoding").contains("gzip")) {
+                netLevelCommLogStream.write(outInterceptor.getContents());
+            } else {
+                netLevelCommLogStream.write((byte[]) responseBody);
+            }
+            netLevelCommLogStream.close();
         }
     }
 }

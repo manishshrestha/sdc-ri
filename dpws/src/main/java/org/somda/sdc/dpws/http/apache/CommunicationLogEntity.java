@@ -14,7 +14,7 @@ import java.io.OutputStream;
  * Entity wrapper to enable {@linkplain CommunicationLog} capabilities in the http client.
  */
 public class CommunicationLogEntity extends HttpEntityWrapper {
-    private final OutputStream communicationLogStream;
+    private final OutputStream[] communicationLogStreams;
     private InputStream content;
 
     /**
@@ -23,9 +23,9 @@ public class CommunicationLogEntity extends HttpEntityWrapper {
      * @param wrappedEntity          the entity to wrap.
      * @param communicationLogStream the stream to also write the content to.
      */
-    public CommunicationLogEntity(HttpEntity wrappedEntity, OutputStream communicationLogStream) {
+    public CommunicationLogEntity(HttpEntity wrappedEntity, OutputStream... communicationLogStream) {
         super(wrappedEntity);
-        this.communicationLogStream = communicationLogStream;
+        this.communicationLogStreams = communicationLogStream;
     }
 
     @Override
@@ -52,12 +52,14 @@ public class CommunicationLogEntity extends HttpEntityWrapper {
 
     @Override
     public void writeTo(OutputStream outStream) throws IOException {
-        var splitOutputStream = new TeeOutputStream(outStream, communicationLogStream);
+        var splitOutputStream = createSplitOutputStream(outStream);
         // From the Apache docs:
         // IMPORTANT: Please note all entity implementations must ensure that all allocated resources are properly
         // deallocated when this method returns.
         super.writeTo(splitOutputStream);
-        communicationLogStream.close();
+        for (OutputStream communicationLogStream : communicationLogStreams) {
+            communicationLogStream.close();
+        }
     }
 
     @Override
@@ -67,6 +69,23 @@ public class CommunicationLogEntity extends HttpEntityWrapper {
 
     private InputStream getWrappedStream() throws IOException {
         // Always close the log stream together with the input stream (third param)
-        return new TeeInputStream(wrappedEntity.getContent(), communicationLogStream, true);
+        return createTeeInputStream();
     }
+
+    private InputStream createTeeInputStream() throws IOException {
+        InputStream result = wrappedEntity.getContent();
+        for (OutputStream communicationLogStream : communicationLogStreams) {
+            result = new TeeInputStream(result, communicationLogStream, true);
+        }
+        return result;
+    }
+
+    private OutputStream createSplitOutputStream(OutputStream outStream) {
+        OutputStream result = outStream;
+        for (OutputStream communicationLogStream : communicationLogStreams) {
+            result = new TeeOutputStream(result, communicationLogStream);
+        }
+        return result;
+    }
+
 }

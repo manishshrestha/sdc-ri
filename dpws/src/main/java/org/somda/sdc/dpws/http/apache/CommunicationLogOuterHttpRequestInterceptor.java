@@ -49,57 +49,52 @@ public class CommunicationLogOuterHttpRequestInterceptor implements HttpRequestI
         instanceLogger.debug("Processing request: {}", request.getRequestLine());
 
         HttpHost target = (HttpHost) context.getAttribute(
-                HttpCoreContext.HTTP_TARGET_HOST);
+            HttpCoreContext.HTTP_TARGET_HOST);
 
         var currentTransactionId = TRANSACTION_ID_PREFIX_CLIENT + TRANSACTION_ID.incrementAndGet();
         context.setAttribute(CommunicationLog.MessageType.REQUEST.name(), currentTransactionId);
         var requestHttpApplicationInfo = new HttpApplicationInfo(
-                ApacheClientHelper.allHeadersToMultimap(request.getAllHeaders()),
-                currentTransactionId,
-                request.getRequestLine().getUri()
+            ApacheClientHelper.allHeadersToMultimap(request.getAllHeaders()),
+            currentTransactionId,
+            request.getRequestLine().getUri()
         );
 
         // collect information for TransportInfo
         var requestTransportInfo = new TransportInfo(
-                target.getSchemeName(),
-                null,
-                null,
-                target.getHostName(),
-                target.getPort(),
-                certificates
+            target.getSchemeName(),
+            null,
+            null,
+            target.getHostName(),
+            target.getPort(),
+            certificates
         );
 
         var requestCommContext = new CommunicationContext(requestHttpApplicationInfo, requestTransportInfo);
 
         OutputStream appLevelCommlogStream = commlog.logMessage(
-                CommunicationLog.Direction.OUTBOUND,
-                CommunicationLog.TransportType.HTTP,
-                CommunicationLog.MessageType.REQUEST,
-                requestCommContext,
-                CommunicationLog.Level.APPLICATION);
+            CommunicationLog.Direction.OUTBOUND,
+            CommunicationLog.TransportType.HTTP,
+            CommunicationLog.MessageType.REQUEST,
+            requestCommContext,
+            CommunicationLog.Level.APPLICATION);
 
-        OutputStream netLevelCommlogStream = null;
-        if (isGzipped(request)) {
-            netLevelCommlogStream = commlog.logMessage(
-                CommunicationLog.Direction.OUTBOUND,
-                CommunicationLog.TransportType.HTTP,
-                CommunicationLog.MessageType.REQUEST,
-                requestCommContext,
-                CommunicationLog.Level.NETWORK);
-        }
+        OutputStream netLevelCommlogStream = commlog.logMessage(
+            CommunicationLog.Direction.OUTBOUND,
+            CommunicationLog.TransportType.HTTP,
+            CommunicationLog.MessageType.REQUEST,
+            requestCommContext,
+            CommunicationLog.Level.NETWORK);
 
         if (request instanceof HttpEntityEnclosingRequest) {
             var entityRequest = (HttpEntityEnclosingRequest) request;
             HttpEntity oldMessageEntity = entityRequest.getEntity();
-            if (netLevelCommlogStream != null) {
-                // GZipped Request
+            if (isGzipped(request)) {
                 entityRequest.setEntity(new CommunicationLogEntity(oldMessageEntity, netLevelCommlogStream));
                 if (this.extractingEntity != null) {
                     this.extractingEntity.setExtractInto(appLevelCommlogStream);
                 }
             } else {
-                // Plain Request
-                entityRequest.setEntity(new CommunicationLogEntity(oldMessageEntity, appLevelCommlogStream));
+                entityRequest.setEntity(new CommunicationLogEntity(oldMessageEntity, appLevelCommlogStream, netLevelCommlogStream));
             }
         } else {
             // GET doesn't have any entity, but still has headers to save

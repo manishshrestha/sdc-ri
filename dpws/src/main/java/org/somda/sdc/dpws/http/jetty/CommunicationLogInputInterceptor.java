@@ -6,6 +6,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 import org.somda.sdc.common.logging.InstanceLogger;
 
+import javax.annotation.Nullable;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.channels.Channels;
@@ -17,16 +18,20 @@ import java.nio.channels.WritableByteChannel;
 public class CommunicationLogInputInterceptor implements HttpInput.Interceptor, Destroyable {
     private static final Logger LOG = LogManager.getLogger(CommunicationLogInputInterceptor.class);
 
-    private final OutputStream commlogStream;
+    private OutputStream[] commlogStreams;
     private final Logger instanceLogger;
 
-    CommunicationLogInputInterceptor(OutputStream commlogStream, String frameworkIdentifier) {
+    CommunicationLogInputInterceptor(String frameworkIdentifier, OutputStream... commlogStreams) {
         this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);
-        this.commlogStream = commlogStream;
+        this.commlogStreams = commlogStreams;
+    }
+
+    public void setCommlogStreams(OutputStream... commlogStreams) {
+        this.commlogStreams = commlogStreams;
     }
 
     @Override
-    public HttpInput.Content readFrom(HttpInput.Content content) {
+    public HttpInput.Content readFrom(@Nullable HttpInput.Content content) {
         if (content == null) {
             // why is this a thing?
             return null;
@@ -35,21 +40,26 @@ public class CommunicationLogInputInterceptor implements HttpInput.Interceptor, 
         try {
             if (content.isSpecial()) {
                 if (content.isEof()) {
-                    commlogStream.close();
+                    for (OutputStream commLogStream : commlogStreams) {
+                        commLogStream.close();
+                    }
                     instanceLogger.trace("EOF received, commlog stream closed");
                 } else if (content.getError() != null) {
-                    commlogStream.close();
+                    for (OutputStream commLogStream : commlogStreams) {
+                        commLogStream.close();
+                    }
                     instanceLogger.debug("Commlog stream closed, jetty reported error ", content.getError());
                 }
                 // don't do anything about other special types
             } else {
                 int oldPosition = content.getByteBuffer().position();
 
-                WritableByteChannel writableByteChannel = Channels.newChannel(commlogStream);
-                writableByteChannel.write(content.getByteBuffer());
-
-                // rewind the bytebuffer we just went through
-                content.getByteBuffer().position(oldPosition);
+                for (OutputStream commLogStream : commlogStreams) {
+                    WritableByteChannel writableByteChannel = Channels.newChannel(commLogStream);
+                    writableByteChannel.write(content.getByteBuffer());
+                    // rewind the bytebuffer we just went through
+                    content.getByteBuffer().position(oldPosition);
+                }
             }
         } catch (IOException e) {
             instanceLogger.error("Error while writing to communication log stream", e);
@@ -61,7 +71,9 @@ public class CommunicationLogInputInterceptor implements HttpInput.Interceptor, 
     @Override
     public void destroy() {
         try {
-            commlogStream.close();
+            for (OutputStream commLogStream : commlogStreams) {
+                commLogStream.close();
+            }
         } catch (IOException e) {
             instanceLogger.error("Error while closing communication log stream", e);
         }
