@@ -84,11 +84,6 @@ public class LowPriorityServices extends WebService {
 
     }
 
-    @MessageInterceptor(ActionConstants.ACTION_HISTORY_MDIB_REPORT)
-    void historyMdibReport(RequestResponseObject requestResponseObject) throws SoapFaultException {
-        //TODO #142
-    }
-
     private <T> T getRequest(RequestResponseObject requestResponseObject, Class<T> bodyType) throws SoapFaultException {
         return soapUtil.getBody(requestResponseObject.getRequest(), bodyType).orElseThrow(() ->
                 new SoapFaultException(faultFactory.createSenderFault(String.format("%s SOAP request body is malformed",

@@ -35,7 +35,9 @@ import org.somda.sdc.glue.provider.sco.factory.ContextFactory;
 import org.somda.sdc.glue.provider.sco.factory.ScoControllerFactory;
 import org.somda.sdc.glue.provider.services.HighPriorityServices;
 import org.somda.sdc.glue.provider.services.factory.ServicesFactory;
+import org.somda.sdc.glue.provider.services.helper.MdibRevisionObserver;
 import org.somda.sdc.glue.provider.services.helper.ReportGenerator;
+import org.somda.sdc.glue.provider.services.helper.factory.MdibRevisionObserverFactory;
 import org.somda.sdc.glue.provider.services.helper.factory.ReportGeneratorFactory;
 
 import java.util.concurrent.Callable;
@@ -121,6 +123,9 @@ public class DefaultGlueModule extends AbstractModule {
                 .implement(LocalizationService.class, LocalizationServiceImpl.class)
                 .build(LocalizationServiceFactory.class));
 
+        install(new FactoryModuleBuilder()
+                .implement(MdibRevisionObserver.class, MdibRevisionObserver.class)
+                .build(MdibRevisionObserverFactory.class));
     }
 
     @Provides

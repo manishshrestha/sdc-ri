@@ -39,7 +39,7 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.somda.sdc.glue.common.ActionConstants.ACTION_HISTORY_MDIB_REPORT;
-import static org.somda.sdc.glue.common.WsdlConstants.SERVICES_LOW_PRIORITY;
+import static org.somda.sdc.glue.common.WsdlConstants.SERVICE_HISTORY;
 
 @ExtendWith(LoggingTestWatcher.class)
 public class HistoryIT {
@@ -98,9 +98,9 @@ public class HistoryIT {
     void testHistoryServiceSubscribe() throws Exception {
         int COUNT = 2;
         SettableFuture<List<ChangeSequenceReportType>> notificationFuture = SettableFuture.create();
-        var lowPriorityService = hostingServiceProxy.getHostedServices().get(SERVICES_LOW_PRIORITY);
-        assertNotNull(lowPriorityService);
-        ListenableFuture<SubscribeResult> subscribe = lowPriorityService.getEventSinkAccess().subscribe(
+        var historyService = hostingServiceProxy.getHostedServices().get(SERVICE_HISTORY);
+        assertNotNull(historyService);
+        ListenableFuture<SubscribeResult> subscribe = historyService.getEventSinkAccess().subscribe(
                 List.of(ACTION_HISTORY_MDIB_REPORT), null,
                 new Interceptor() {
                     private final List<ChangeSequenceReportType> receivedNotifications = new ArrayList<>();

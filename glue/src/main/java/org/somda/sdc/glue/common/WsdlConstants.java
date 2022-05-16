@@ -13,10 +13,11 @@ public class WsdlConstants {
     // CHECKSTYLE.OFF: DeclarationOrder
     private static final String SLASH = "/";
 
-    //TODO #142: do we use this namespace or "tns="http://www.draeger.com/sdc/2021-06"
     public static final String TARGET_NAMESPACE = CommonConstants.NAMESPACE_SDC;
+    public static final String TARGET_NAMESPACE_HISTORY = "http://www.draeger.com/sdc/2021-06";
 
     public static final String ACTION_PREFIX = TARGET_NAMESPACE + SLASH;
+    public static final String ACTION_PREFIX_HISTORY = TARGET_NAMESPACE_HISTORY + SLASH;
 
     public static final String SERVICES_HIGH_PRIORITY = "HighPriorityServices";
     public static final String SERVICES_LOW_PRIORITY = "LowPriorityServices";
@@ -40,7 +41,7 @@ public class WsdlConstants {
     public static final String ACTION_CONTAINMENT_TREE_PREFIX = ACTION_PREFIX + SERVICE_CONTAINMENT_TREE + SLASH;
     public static final String ACTION_ARCHIVE_PREFIX = ACTION_PREFIX + SERVICE_ARCHIVE + SLASH;
     public static final String ACTION_LOCALIZATION_PREFIX = ACTION_PREFIX + SERVICE_LOCALIZATION + SLASH;
-    public static final String ACTION_HISTORY_PREFIX = ACTION_PREFIX + SERVICE_HISTORY + SLASH;
+    public static final String ACTION_HISTORY_PREFIX = ACTION_PREFIX_HISTORY + SERVICE_HISTORY + SLASH;
 
     public static final String OPERATION_GET_MDIB = "GetMdib";
     public static final String OPERATION_GET_MD_DESCRIPTION = "GetMdDescription";
@@ -97,7 +98,7 @@ public class WsdlConstants {
     public static final QName PORT_TYPE_CONTAINMENT_TREE_QNAME = new QName(TARGET_NAMESPACE, SERVICE_CONTAINMENT_TREE);
     public static final QName PORT_TYPE_ARCHIVE_QNAME = new QName(TARGET_NAMESPACE, SERVICE_ARCHIVE);
     public static final QName PORT_TYPE_LOCALIZATION_QNAME = new QName(TARGET_NAMESPACE, SERVICE_LOCALIZATION);
-    public static final QName PORT_TYPE_HISTORY_QNAME = new QName(TARGET_NAMESPACE, SERVICE_HISTORY);
+    public static final QName PORT_TYPE_HISTORY_QNAME = new QName(TARGET_NAMESPACE_HISTORY, SERVICE_HISTORY);
     // CHECKSTYLE.ON: DeclarationOrder
 
 }

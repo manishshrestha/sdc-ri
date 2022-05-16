@@ -28,6 +28,7 @@ import org.somda.sdc.glue.provider.localization.LocalizationStorage;
 import org.somda.sdc.glue.provider.plugin.SdcRequiredTypesAndScopes;
 import org.somda.sdc.glue.provider.sco.OperationInvocationReceiver;
 import org.somda.sdc.glue.provider.services.HighPriorityServices;
+import org.somda.sdc.glue.provider.services.HistoryService;
 import org.somda.sdc.glue.provider.services.LowPriorityServices;
 import org.somda.sdc.glue.provider.services.factory.ServicesFactory;
 import org.somda.sdc.mdpws.common.CommonConstants;
@@ -59,6 +60,7 @@ public class SdcDevice extends AbstractIdleService implements Device, EventSourc
     private final LowPriorityServices lowPriorityServices;
     private final LocalizationStorage localizationStorage;
     private final boolean enableHistoryService;
+    private HistoryService historyService;
 
     @AssistedInject
     SdcDevice(@Assisted DeviceSettings deviceSettings,
@@ -106,6 +108,9 @@ public class SdcDevice extends AbstractIdleService implements Device, EventSourc
         this.pluginProcessor = new SdcDevicePluginProcessor(copyPlugins, this);
         this.localizationStorage = localizationStorage;
         this.enableHistoryService = enableHistoryService;
+        if (enableHistoryService) {
+            this.historyService = servicesFactory.createHistoryService(mdibAccess);
+        }
     }
 
     public LocalMdibAccess getMdibAccess() {
@@ -251,6 +256,16 @@ public class SdcDevice extends AbstractIdleService implements Device, EventSourc
                     ByteStreams.toByteArray(lowPrioWsdlStream)));
         }
 
+        InputStream historyWsdlStream = classLoader.getResourceAsStream("wsdl/HistoryService.wsdl");
+        if (enableHistoryService && historyWsdlStream != null) {
+            dpwsDevice.getHostingServiceAccess().addHostedService(hostedServiceFactory.createHostedService(
+                    WsdlConstants.SERVICE_HISTORY,
+                    Collections.singletonList(new QName(WsdlConstants.TARGET_NAMESPACE_HISTORY,
+                            WsdlConstants.SERVICE_HISTORY)),
+                    historyService,
+                    ByteStreams.toByteArray(historyWsdlStream)));
+        }
+
     }
 
     private void addOperationInvocationReceiver(OperationInvocationReceiver receiver) {
@@ -266,10 +281,6 @@ public class SdcDevice extends AbstractIdleService implements Device, EventSourc
 
         if (localizationStorage != null) {
             qNames.add(new QName(WsdlConstants.TARGET_NAMESPACE, WsdlConstants.SERVICE_LOCALIZATION));
-        }
-
-        if (enableHistoryService) {
-            qNames.add(new QName(WsdlConstants.TARGET_NAMESPACE, WsdlConstants.SERVICE_HISTORY));
         }
 
         return qNames;

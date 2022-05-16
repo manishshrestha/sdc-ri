@@ -5,6 +5,7 @@ import org.somda.sdc.biceps.provider.access.LocalMdibAccess;
 import org.somda.sdc.glue.provider.localization.LocalizationService;
 import org.somda.sdc.glue.provider.localization.LocalizationStorage;
 import org.somda.sdc.glue.provider.services.HighPriorityServices;
+import org.somda.sdc.glue.provider.services.HistoryService;
 import org.somda.sdc.glue.provider.services.LowPriorityServices;
 
 import javax.annotation.Nullable;
@@ -31,4 +32,12 @@ public interface ServicesFactory {
      */
     LowPriorityServices createLowPriorityServices(@Assisted LocalMdibAccess mdibAccess,
                                                   @Assisted @Nullable LocalizationStorage localizationStorage);
+
+    /**
+     * Creates a new {@linkplain HistoryService} instance.
+     *
+     * @param mdibAccess the {@link LocalMdibAccess} instance that is used for response MDIB data.
+     * @return a new instance.
+     */
+    HistoryService createHistoryService(@Assisted LocalMdibAccess mdibAccess);
 }
