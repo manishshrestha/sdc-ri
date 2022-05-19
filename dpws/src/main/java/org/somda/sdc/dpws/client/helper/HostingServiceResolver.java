@@ -10,11 +10,14 @@ import org.somda.sdc.common.CommonConfig;
 import org.somda.sdc.common.logging.InstanceLogger;
 import org.somda.sdc.common.util.ExecutorWrapperService;
 import org.somda.sdc.common.util.JaxbUtil;
+import org.somda.sdc.dpws.CommunicationLog;
+import org.somda.sdc.dpws.CommunicationLogContext;
 import org.somda.sdc.dpws.DpwsConfig;
 import org.somda.sdc.dpws.DpwsConstants;
 import org.somda.sdc.dpws.TransportBinding;
 import org.somda.sdc.dpws.client.DiscoveredDevice;
 import org.somda.sdc.dpws.client.exception.EprAddressMismatchException;
+import org.somda.sdc.dpws.factory.CommunicationLogFactory;
 import org.somda.sdc.dpws.factory.TransportBindingFactory;
 import org.somda.sdc.dpws.guice.ResolverThreadPool;
 import org.somda.sdc.dpws.http.HttpUriBuilder;
@@ -77,6 +80,7 @@ public class HostingServiceResolver {
     private final HttpUriBuilder uriBuilder;
     private final GetMetadataClient getMetadataClient;
     private final Duration maxWaitForFutures;
+    private final CommunicationLogFactory communicationLogFactory;
     private final Logger instanceLogger;
 
     @Inject
@@ -94,7 +98,9 @@ public class HostingServiceResolver {
                            HostedServiceFactory hostedServiceFactory,
                            WsEventingEventSinkFactory eventSinkFactory,
                            HttpUriBuilder uriBuilder,
+                           CommunicationLogFactory communicationLogFactory,
                            @Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier) {
+        this.communicationLogFactory = communicationLogFactory;
         this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);
         this.maxWaitForFutures = maxWaitForFutures;
         this.resolveExecutor = resolveExecutor;
@@ -137,7 +143,9 @@ public class HostingServiceResolver {
             for (String xAddr : discoveredDevice.getXAddrs()) {
                 try {
                     activeXAddr = xAddr;
-                    rrClient = createRequestResponseClient(activeXAddr);
+                    var commLog = communicationLogFactory.createCommunicationLog(
+                            new CommunicationLogContext(discoveredDevice.getEprAddress()));
+                    rrClient = createRequestResponseClient(activeXAddr, commLog);
                     transferGetResponse = transferGetClient.sendTransferGet(rrClient, xAddr)
                             .get(maxWaitForFutures.toMillis(), TimeUnit.MILLISECONDS);
                     break;
@@ -272,7 +280,7 @@ public class HostingServiceResolver {
             });
 
             jaxbUtil.extractElement(potentialRelationship, HostedServiceType.class).ifPresent(hsType ->
-                    extractHostedServiceProxy(hsType)
+                    extractHostedServiceProxy(hsType, eprAddress)
                             .ifPresent(hsProxy -> result.getHostedServices()
                                     .put(hsProxy.getType().getServiceId(), hsProxy)));
         }
@@ -289,14 +297,18 @@ public class HostingServiceResolver {
         return Optional.of(result);
     }
 
-    private Optional<HostedServiceProxy> extractHostedServiceProxy(HostedServiceType host) {
+    private Optional<HostedServiceProxy> extractHostedServiceProxy(HostedServiceType host, String endpointAddress) {
         String activeHostedServiceEprAddress = null;
         RequestResponseClient rrClient = null;
         SoapMessage getMetadataResponse = null;
+
+        var commLog = communicationLogFactory.createCommunicationLog(
+                new CommunicationLogContext(endpointAddress));
+
         for (EndpointReferenceType eprType : host.getEndpointReference()) {
             try {
                 activeHostedServiceEprAddress = eprType.getAddress().getValue();
-                rrClient = createRequestResponseClient(activeHostedServiceEprAddress);
+                rrClient = createRequestResponseClient(activeHostedServiceEprAddress, commLog);
                 getMetadataResponse = getMetadataClient.sendGetMetadata(rrClient)
                         .get(maxWaitForFutures.toMillis(), TimeUnit.MILLISECONDS);
                 break;
@@ -320,13 +332,13 @@ public class HostingServiceResolver {
         String httpBinding = uriBuilder.buildUri(URI.create(activeHostedServiceEprAddress).getScheme(),
                 localAddress.get(), 0);
 
-        final EventSink eventSink = eventSinkFactory.createWsEventingEventSink(rrClient, httpBinding);
+        final EventSink eventSink = eventSinkFactory.createWsEventingEventSink(rrClient, httpBinding, commLog);
         return Optional.of(hostedServiceFactory.createHostedServiceProxy(host, rrClient,
                 activeHostedServiceEprAddress, eventSink));
     }
 
-    private RequestResponseClient createRequestResponseClient(String endpointAddress) {
-        TransportBinding tBinding = transportBindingFactory.createTransportBinding(endpointAddress);
+    private RequestResponseClient createRequestResponseClient(String xAddr, CommunicationLog communicationLog) {
+        TransportBinding tBinding = transportBindingFactory.createTransportBinding(xAddr, communicationLog);
         return requestResponseClientFactory.createRequestResponseClient(tBinding);
     }
 

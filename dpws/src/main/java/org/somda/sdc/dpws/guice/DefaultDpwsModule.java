@@ -29,6 +29,7 @@ import org.somda.sdc.dpws.device.DeviceImpl;
 import org.somda.sdc.dpws.device.factory.DeviceFactory;
 import org.somda.sdc.dpws.device.helper.DiscoveryDeviceUdpMessageProcessor;
 import org.somda.sdc.dpws.device.helper.factory.DeviceHelperFactory;
+import org.somda.sdc.dpws.factory.CommunicationLogFactory;
 import org.somda.sdc.dpws.factory.TransportBindingFactory;
 import org.somda.sdc.dpws.helper.JaxbMarshalling;
 import org.somda.sdc.dpws.helper.NotificationSourceUdpCallback;
@@ -166,8 +167,9 @@ public class DefaultDpwsModule extends AbstractModule {
 
         bind(CommunicationLogSink.class).to(CommunicationLogSinkImpl.class).asEagerSingleton();
 
-        bind(CommunicationLog.class).to(CommunicationLogDummyImpl.class).asEagerSingleton();
-
+        install(new FactoryModuleBuilder()
+                .implement(CommunicationLog.class, CommunicationLogDummyImpl.class)
+                .build(CommunicationLogFactory.class));
     }
 
     private void configureService() {

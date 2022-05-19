@@ -85,7 +85,7 @@ class ApacheHttpClientTransportBindingFactoryImplIT extends DpwsTest {
                 baseUri.getFragment());
 
         // make request to our server
-        TransportBinding httpBinding1 = transportBindingFactory.createHttpBinding(baseUri.toString());
+        TransportBinding httpBinding1 = transportBindingFactory.createHttpBinding(baseUri.toString(), null);
         SoapMessage response = httpBinding1.onRequestResponse(createASoapMessage());
 
         ByteArrayOutputStream actualResponseStream = new ByteArrayOutputStream();
