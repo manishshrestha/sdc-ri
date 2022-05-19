@@ -487,7 +487,6 @@ public class JettyHttpServerRegistry extends AbstractIdleService implements Http
                     SSLEngine sslEngine = sslConnection.getSSLEngine();
 
                     var session = sslEngine.getSession();
-                    endp.getLocalAddress().getHostName();
 
                     if (!hostnameVerifier.verify(sslEndp.getLocalAddress().getHostName(), session)) {
                         instanceLogger.debug("HostnameVerifier has filtered request, marking request as " +
