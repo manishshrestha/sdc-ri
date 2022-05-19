@@ -11,6 +11,7 @@ import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.inject.Provider;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.somda.sdc.biceps.common.access.MdibAccessObserver;
 import org.somda.sdc.biceps.common.storage.PreprocessingException;
 import org.somda.sdc.biceps.consumer.access.RemoteMdibAccess;
 import org.somda.sdc.biceps.consumer.access.factory.RemoteMdibAccessFactory;
@@ -49,6 +50,8 @@ import org.somda.sdc.glue.consumer.event.WatchdogMessage;
 import org.somda.sdc.glue.consumer.factory.SdcRemoteDeviceFactory;
 import org.somda.sdc.glue.consumer.factory.SdcRemoteDeviceWatchdogFactory;
 import org.somda.sdc.glue.consumer.helper.HostingServiceLogger;
+import org.somda.sdc.glue.consumer.localization.LocalizationServiceProxy;
+import org.somda.sdc.glue.consumer.localization.factory.LocalizationServiceProxyFactory;
 import org.somda.sdc.glue.consumer.report.ReportProcessingException;
 import org.somda.sdc.glue.consumer.report.ReportProcessor;
 import org.somda.sdc.glue.consumer.sco.ScoController;
@@ -77,12 +80,13 @@ public class SdcRemoteDevicesConnectorImpl extends AbstractIdleService
         implements SdcRemoteDevicesConnector, WatchdogObserver {
     private static final Logger LOG = LogManager.getLogger(SdcRemoteDevicesConnectorImpl.class);
 
-    private ExecutorWrapperService<ListeningExecutorService> executorService;
-    private Map<String, SdcRemoteDevice> sdcRemoteDevices;
-    private EventBus eventBus;
+    private final ExecutorWrapperService<ListeningExecutorService> executorService;
+    private final Map<String, SdcRemoteDevice> sdcRemoteDevices;
+    private final EventBus eventBus;
     private final Logger instanceLogger;
     private final Provider<ReportProcessor> reportProcessorProvider;
     private final ScoControllerFactory scoControllerFactory;
+    private final LocalizationServiceProxyFactory localizationServiceProxyFactory;
     private final Duration requestedExpires;
     private final Duration responseWaitingTime;
     private final SoapUtil soapUtil;
@@ -100,6 +104,7 @@ public class SdcRemoteDevicesConnectorImpl extends AbstractIdleService
                                   EventBus eventBus,
                                   Provider<ReportProcessor> reportProcessorProvider,
                                   ScoControllerFactory scoControllerFactory,
+                                  LocalizationServiceProxyFactory localizationServiceProxyFactory,
                                   @Named(ConsumerConfig.REQUESTED_EXPIRES) Duration requestedExpires,
                                   @Named(DpwsConfig.MAX_WAIT_FOR_FUTURES) Duration responseWaitingTime,
                                   SoapUtil soapUtil,
@@ -117,6 +122,7 @@ public class SdcRemoteDevicesConnectorImpl extends AbstractIdleService
         this.eventBus = eventBus;
         this.reportProcessorProvider = reportProcessorProvider;
         this.scoControllerFactory = scoControllerFactory;
+        this.localizationServiceProxyFactory = localizationServiceProxyFactory;
         this.requestedExpires = requestedExpires;
         this.responseWaitingTime = responseWaitingTime;
         this.soapUtil = soapUtil;
@@ -135,6 +141,14 @@ public class SdcRemoteDevicesConnectorImpl extends AbstractIdleService
     public ListenableFuture<SdcRemoteDevice> connect(HostingServiceProxy hostingServiceProxy,
                                                      ConnectConfiguration connectConfiguration)
             throws PrerequisitesException {
+        return connect(hostingServiceProxy, connectConfiguration, null);
+    }
+
+    @Override
+    public ListenableFuture<SdcRemoteDevice> connect(HostingServiceProxy hostingServiceProxy,
+                                                     ConnectConfiguration connectConfiguration,
+                                                     @Nullable MdibAccessObserver mdibAccessObserver)
+            throws PrerequisitesException {
         // Early exit if there is a connection already
         checkExistingConnection(hostingServiceProxy);
 
@@ -147,14 +161,14 @@ public class SdcRemoteDevicesConnectorImpl extends AbstractIdleService
                 tempLog.info("Start connecting");
                 ReportProcessor reportProcessor = createReportProcessor();
                 Optional<ScoController> scoController = createScoController(hostingServiceProxy);
-
+                LocalizationServiceProxy localizationServiceProxy = createLocalizationServiceProxy(hostingServiceProxy);
                 // Map<ServiceId, SubscribeResult>
                 // use these later for watchdog, which is in charge of automatic renew
                 final Map<String, SubscribeResult> subscribeResults = subscribeServices(hostingServiceProxy,
                         connectConfiguration.getActions(), reportProcessor, scoController.orElse(null));
 
-                // retrieve mdib after subscribing
-                RemoteMdibAccess mdibAccess = createRemoteMdibAccess(hostingServiceProxy);
+                // retrieve MDIB after subscribing
+                RemoteMdibAccess mdibAccess = createRemoteMdibAccess(hostingServiceProxy, mdibAccessObserver);
 
                 GetContextStatesResponse getContextStatesResponse = null;
                 if (mdibAccess.getContextStates().isEmpty()) {
@@ -179,7 +193,8 @@ public class SdcRemoteDevicesConnectorImpl extends AbstractIdleService
                         mdibAccess,
                         reportProcessor,
                         scoController.orElse(null),
-                        watchdog);
+                        watchdog,
+                        localizationServiceProxy);
                 sdcRemoteDevice.startAsync().awaitRunning();
                 tempLog.info("Remote device is running");
 
@@ -232,6 +247,20 @@ public class SdcRemoteDevicesConnectorImpl extends AbstractIdleService
 
         return Optional.of(scoControllerFactory.createScoController(
                 hostingServiceProxy, setServiceProxy, contextServiceProxy));
+    }
+
+    private LocalizationServiceProxy createLocalizationServiceProxy(HostingServiceProxy hostingServiceProxy) {
+
+        HostedServiceProxy localizationServiceProxy = null;
+        try {
+            localizationServiceProxy = findHostedServiceProxy(hostingServiceProxy,
+                    WsdlConstants.PORT_TYPE_LOCALIZATION_QNAME);
+
+        } catch (PrerequisitesException e) {
+            // ignore in case localization service is not provided
+        }
+        return localizationServiceProxyFactory.createLocalizationServiceProxy(hostingServiceProxy,
+                localizationServiceProxy);
     }
 
     @Override
@@ -361,13 +390,16 @@ public class SdcRemoteDevicesConnectorImpl extends AbstractIdleService
         return subscriptions;
     }
 
-    private RemoteMdibAccess createRemoteMdibAccess(HostingServiceProxy hostingServiceProxy)
+    private RemoteMdibAccess createRemoteMdibAccess(HostingServiceProxy hostingServiceProxy, @Nullable MdibAccessObserver mdibAccessObserver)
             throws PrerequisitesException {
         // find get service
         final HostedServiceProxy getServiceProxy =
                 findHostedServiceProxy(hostingServiceProxy, WsdlConstants.PORT_TYPE_GET_QNAME);
 
         final RemoteMdibAccess mdibAccess = remoteMdibAccessFactory.createRemoteMdibAccess();
+        if (mdibAccessObserver != null) {
+            mdibAccess.registerObserver(mdibAccessObserver);
+        }
 
         try {
             final SoapMessage getMdibResponseMessage = getServiceProxy.getRequestResponseClient().sendRequestResponse(

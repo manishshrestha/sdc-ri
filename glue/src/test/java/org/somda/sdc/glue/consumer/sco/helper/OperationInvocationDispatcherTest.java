@@ -7,8 +7,8 @@ import org.somda.sdc.biceps.model.message.AbstractSetResponse;
 import org.somda.sdc.biceps.model.message.InvocationState;
 import org.somda.sdc.biceps.model.message.OperationInvokedReport;
 import org.somda.sdc.biceps.model.message.SetValueResponse;
-import org.somda.sdc.dpws.model.ThisDeviceType;
-import org.somda.sdc.dpws.model.ThisModelType;
+import org.somda.sdc.dpws.ThisDeviceBuilder;
+import org.somda.sdc.dpws.ThisModelBuilder;
 import org.somda.sdc.dpws.service.HostingServiceProxy;
 import org.somda.sdc.dpws.service.factory.HostingServiceFactory;
 import org.somda.sdc.dpws.soap.RequestResponseClient;
@@ -18,7 +18,6 @@ import org.somda.sdc.glue.consumer.sco.ScoTransactionImpl;
 import org.somda.sdc.glue.consumer.sco.factory.OperationInvocationDispatcherFactory;
 import test.org.somda.common.LoggingTestWatcher;
 
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -36,8 +35,8 @@ class OperationInvocationDispatcherTest {
         hostingServiceProxy = UT.getInjector().getInstance(HostingServiceFactory.class).createHostingServiceProxy(
                 "urn:uuid:441dfbea-40e5-406e-b2c4-154d3b8430bf",
                 Collections.emptyList(),
-                mock(ThisDeviceType.class),
-                mock(ThisModelType.class),
+                UT.getInjector().getInstance(ThisDeviceBuilder.class).get(),
+                UT.getInjector().getInstance(ThisModelBuilder.class).get(),
                 Collections.emptyMap(),
                 0,
                 mock(RequestResponseClient.class),

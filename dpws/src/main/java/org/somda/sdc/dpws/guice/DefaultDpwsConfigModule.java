@@ -38,14 +38,6 @@ public class DefaultDpwsConfigModule extends AbstractConfigurationModule {
     }
 
     private void configureDeviceConfig() {
-        bind(DeviceConfig.UNSECURED_ENDPOINT,
-                Boolean.class,
-                false);
-
-        bind(DeviceConfig.SECURED_ENDPOINT,
-                Boolean.class,
-                false);
-
         bind(DeviceConfig.WSDL_PROVISIONING_MODE,
                 WsdlProvisioningMode.class,
                 WsdlProvisioningMode.RESOURCE);

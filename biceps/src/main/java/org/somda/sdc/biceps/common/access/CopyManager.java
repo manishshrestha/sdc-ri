@@ -4,7 +4,15 @@ package org.somda.sdc.biceps.common.access;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import org.somda.sdc.biceps.common.CommonConfig;
-import org.somda.sdc.common.util.ObjectUtil;
+import org.somda.sdc.biceps.common.MdibDescriptionModification;
+import org.somda.sdc.biceps.common.MdibDescriptionModifications;
+import org.somda.sdc.biceps.common.MdibStateModifications;
+import org.somda.sdc.biceps.model.participant.AbstractState;
+import org.somda.sdc.biceps.common.BicepsModelCloning;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * A utility class to deep copy any input and output if configured.
@@ -22,15 +30,15 @@ import org.somda.sdc.common.util.ObjectUtil;
  * Default configuration is <em>yes, copy input and output data</em>.
  */
 public class CopyManager {
-    private final ObjectUtil objectUtil;
+    private final BicepsModelCloning bicepsModelCloning;
     private final Boolean copyInput;
     private final Boolean copyOutput;
 
     @Inject
-    CopyManager(ObjectUtil objectUtil,
+    CopyManager(BicepsModelCloning bicepsModelCloning,
                 @Named(CommonConfig.COPY_MDIB_INPUT) Boolean copyInput,
                 @Named(CommonConfig.COPY_MDIB_OUTPUT) Boolean copyOutput) {
-        this.objectUtil = objectUtil;
+        this.bicepsModelCloning = bicepsModelCloning;
         this.copyInput = copyInput;
         this.copyOutput = copyOutput;
     }
@@ -46,7 +54,33 @@ public class CopyManager {
      * @return a copy of {@code input} if configured, otherwise a forwarded reference.
      */
     public <T> T processInput(T input) {
-        return doDeepCopyIfConfigured(copyInput, input);
+        if (!copyInput) {
+            return input;
+        }
+
+        if (input instanceof MdibDescriptionModifications) {
+            var data = (MdibDescriptionModifications) input;
+            var modifications = data.getModifications().stream()
+                    .map(modification -> new MdibDescriptionModification(
+                            modification.getModificationType(),
+                            doDeepCopy(modification.getDescriptor()),
+                            deepCopyStates(modification.getStates()),
+                            modification.getParentHandle().orElse(null)))
+                    .collect(Collectors.toList());
+            var copy = data.deepCopy(modifications);
+
+            return (T) copy;
+        }
+
+        if (input instanceof MdibStateModifications) {
+            var data = (MdibStateModifications) input;
+            var copy = MdibStateModifications.create(data.getChangeType());
+            copy.addAll(deepCopyStates(data.getStates()));
+
+            return (T) copy;
+        }
+
+        return doDeepCopyIfConfigured(true, input);
     }
 
     /**
@@ -60,12 +94,31 @@ public class CopyManager {
      * @return a copy of {@code output} if configured, otherwise a forwarded reference.
      */
     public <T> T processOutput(T output) {
+        if (output instanceof List<?>) {
+            var list = (List<?>) output;
+            return (T) list.stream()
+                    .map(o -> doDeepCopyIfConfigured(copyOutput, o))
+                    .collect(Collectors.toList());
+        }
         return doDeepCopyIfConfigured(copyOutput, output);
+    }
+
+    private List<AbstractState> deepCopyStates(List<AbstractState> states) {
+        if (states == null) {
+            return new ArrayList<>();
+        }
+        return states.stream()
+                .map(this::doDeepCopy)
+                .collect(Collectors.toList());
+    }
+
+    private <T> T doDeepCopy(T data) {
+        return doDeepCopyIfConfigured(true, data);
     }
 
     private <T> T doDeepCopyIfConfigured(boolean doCopy, T data) {
         if (doCopy) {
-            return objectUtil.deepCopy(data);
+            return bicepsModelCloning.deepCopy(data);
         } else {
             return data;
         }

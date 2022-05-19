@@ -122,6 +122,11 @@ public class RemoteMdibAccessImpl implements RemoteMdibAccess {
     }
 
     @Override
+    public void unregisterAllObservers() {
+        eventDistributor.unregisterAllObservers();
+    }
+
+    @Override
     public MdibVersion getMdibVersion() {
         try (ReadTransaction transaction = startTransaction()) {
             return transaction.getMdibVersion();
@@ -200,7 +205,9 @@ public class RemoteMdibAccessImpl implements RemoteMdibAccess {
 
     @Override
     public List<AbstractContextState> getContextStates(String descriptorHandle) {
-        return null;
+        try (ReadTransaction transaction = startTransaction()) {
+            return transaction.getContextStates(descriptorHandle);
+        }
     }
 
     @Override

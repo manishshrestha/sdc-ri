@@ -1,6 +1,5 @@
 package org.somda.sdc.biceps.common.event;
 
-import com.google.common.eventbus.EventBus;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import org.apache.logging.log4j.LogManager;
@@ -9,6 +8,7 @@ import org.somda.sdc.biceps.common.MdibEntity;
 import org.somda.sdc.biceps.common.MdibStateModifications;
 import org.somda.sdc.biceps.common.access.MdibAccess;
 import org.somda.sdc.common.CommonConfig;
+import org.somda.sdc.common.event.EventBus;
 import org.somda.sdc.common.logging.InstanceLogger;
 
 import java.lang.reflect.Constructor;
@@ -47,6 +47,13 @@ public class Distributor {
      */
     public void unregisterObserver(Object observer) {
         eventBus.unregister(observer);
+    }
+
+    /**
+     * Unregisters all observers at once.
+     */
+    public void unregisterAllObservers() {
+        eventBus.unregisterAll();
     }
 
     /**

@@ -1,9 +1,6 @@
 package org.somda.sdc.biceps.common.storage.helper;
 
-import com.google.inject.Inject;
 import org.somda.sdc.biceps.common.MdibEntity;
-import org.somda.sdc.biceps.common.factory.MdibEntityFactory;
-import org.somda.sdc.common.util.ObjectUtil;
 
 import javax.annotation.Nullable;
 import java.util.Collection;
@@ -18,17 +15,6 @@ import java.util.stream.Collectors;
  * {@linkplain MdibStorageUtil} is used for but not limited to type-dependent data exposition.
  */
 public class MdibStorageUtil {
-    private final ObjectUtil objectUtil;
-    private final MdibEntityFactory entityFactory;
-
-    @Inject
-    MdibStorageUtil(ObjectUtil objectUtil,
-                    MdibEntityFactory entityFactory) {
-
-        this.objectUtil = objectUtil;
-        this.entityFactory = entityFactory;
-    }
-
     /**
      * Accepts an object of a certain instance and cast it to a given type.
      *
@@ -40,15 +26,11 @@ public class MdibStorageUtil {
      */
     public <T> Optional<T> exposeInstance(@Nullable Object instance,
                                           Class<T> clazz) {
-        if (instance == null) {
+        if (!clazz.isInstance(instance)) {
             return Optional.empty();
         }
 
-        if (clazz.isAssignableFrom(instance.getClass())) {
-            return Optional.of((T) instance);
-        } else {
-            return Optional.empty();
-        }
+        return Optional.of((T) instance);
     }
 
     /**
@@ -62,7 +44,7 @@ public class MdibStorageUtil {
      */
     public <T, V> List<T> exposeListOfType(Collection<V> collection, Class<T> clazz) {
         return collection.stream()
-                .filter(instance -> instance.getClass().equals(clazz))
+                .filter(clazz::isInstance)
                 .map(instance -> (T) instance)
                 .collect(Collectors.toList());
     }

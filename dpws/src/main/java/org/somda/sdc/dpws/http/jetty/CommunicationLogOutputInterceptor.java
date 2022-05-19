@@ -77,6 +77,9 @@ public class CommunicationLogOutputInterceptor implements HttpOutput.Interceptor
         try {
             WritableByteChannel writableByteChannel = Channels.newChannel(commlogStream);
             writableByteChannel.write(content);
+            if (last) {
+                close();
+            }
         } catch (IOException e) {
             instanceLogger.error("Error while writing to commlog", e);
         }

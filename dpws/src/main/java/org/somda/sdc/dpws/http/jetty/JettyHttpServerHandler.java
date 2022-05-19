@@ -45,15 +45,6 @@ public class JettyHttpServerHandler extends AbstractHandler {
     private final boolean chunkedTransfer;
 
     @AssistedInject
-    JettyHttpServerHandler(@Assisted Boolean expectTLS,
-                           @Assisted String mediaType,
-                           @Assisted HttpHandler handler,
-                           @Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier,
-                           @Named(DpwsConfig.ENFORCE_HTTP_CHUNKED_TRANSFER) boolean chunkedTransfer) {
-        this(mediaType, handler, frameworkIdentifier, chunkedTransfer);
-    }
-
-    @AssistedInject
     JettyHttpServerHandler(@Assisted String mediaType,
                            @Assisted HttpHandler handler,
                            @Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier,
@@ -154,11 +145,8 @@ public class JettyHttpServerHandler extends AbstractHandler {
      * @return a list of {@link X509Certificate} containers.
      * @throws IOException in case the certificate information does not match the expected type, which is an array of
      *                     {@link X509Certificate}.
-     * @deprecated this function is deprecated as it was supposed to be used internally only. The visibility of this
-     * function will be degraded to package private with SDCri 2.0.
      */
-    @Deprecated(since = "1.1.0", forRemoval = false)
-    public static List<X509Certificate> getX509Certificates(HttpServletRequest request, boolean expectTLS)
+    static List<X509Certificate> getX509Certificates(HttpServletRequest request, boolean expectTLS)
             throws IOException {
         if (!expectTLS) {
             return Collections.emptyList();

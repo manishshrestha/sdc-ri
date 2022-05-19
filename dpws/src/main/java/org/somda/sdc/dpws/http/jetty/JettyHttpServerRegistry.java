@@ -104,9 +104,6 @@ public class JettyHttpServerRegistry extends AbstractIdleService implements Http
                             @Named(DpwsConfig.HTTPS_SUPPORT) boolean enableHttps,
                             @Named(DpwsConfig.HTTP_SUPPORT) boolean enableHttp,
                             @Named(DpwsConfig.HTTP_SERVER_CONNECTION_TIMEOUT) Duration connectionTimeout,
-                            // TODO: Remove these for 2.0.0
-                            @Named(DeviceConfig.SECURED_ENDPOINT) boolean legacyEnableHttps,
-                            @Named(DeviceConfig.UNSECURED_ENDPOINT) boolean legacyEnableHttp,
                             CommunicationLogFactory communicationLogFactory,
                             @Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier) {
         this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);
@@ -119,8 +116,8 @@ public class JettyHttpServerRegistry extends AbstractIdleService implements Http
         this.enabledCiphers = enabledCiphers;
         this.hostnameVerifier = hostnameVerifier;
         this.defaultCommunicationLog = communicationLogFactory.createCommunicationLog();
-        this.enableHttps = enableHttps || legacyEnableHttps;
-        this.enableHttp = enableHttp || legacyEnableHttp;
+        this.enableHttps = enableHttps;
+        this.enableHttp = enableHttp;
         this.connectionTimeout = connectionTimeout;
         serverRegistry = new HashMap<>();
         handlerRegistry = new HashMap<>();

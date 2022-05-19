@@ -13,6 +13,7 @@ import java.util.Collections;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
@@ -24,6 +25,41 @@ import static org.mockito.Mockito.when;
 
 class CommunicationLogImplTest extends DpwsTest {
 
+    static class DummyOutputStream extends OutputStream {
+
+        private ByteArrayOutputStream baos;
+
+        int closed;
+
+        DummyOutputStream() {
+            reset();
+        }
+
+        @Override
+        public void write(int b) throws IOException {
+            baos.write(b);
+        }
+
+        @Override
+        public void close() {
+            closed++;
+        }
+
+        public byte[] toByteArray() {
+            return baos.toByteArray();
+        }
+
+        public int getClosed() {
+            return closed;
+        }
+
+        void reset() {
+            closed = 0;
+            baos = new ByteArrayOutputStream();
+        }
+    }
+
+
     @Test
     void content() throws IOException {
 
@@ -31,7 +67,7 @@ class CommunicationLogImplTest extends DpwsTest {
 
         byte[] content = UUID.randomUUID().toString().getBytes();
 
-        try (ByteArrayOutputStream mockOutputStream = spy(new ByteArrayOutputStream());
+        try (DummyOutputStream mockOutputStream = new DummyOutputStream();
              ByteArrayInputStream inputTestInputStream = new ByteArrayInputStream(content);
              ByteArrayOutputStream outputTestOutputStream = new ByteArrayOutputStream()) {
 
@@ -57,7 +93,7 @@ class CommunicationLogImplTest extends DpwsTest {
 
             assertArrayEquals(resultingInputStream.readAllBytes(), content);
             assertArrayEquals(mockOutputStream.toByteArray(), content);
-            verify(mockOutputStream, times(1)).close();
+            assertEquals(1, mockOutputStream.getClosed());
 
             mockOutputStream.reset();
 

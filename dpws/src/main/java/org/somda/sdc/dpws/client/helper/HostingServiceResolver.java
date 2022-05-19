@@ -16,6 +16,7 @@ import org.somda.sdc.dpws.DpwsConfig;
 import org.somda.sdc.dpws.DpwsConstants;
 import org.somda.sdc.dpws.TransportBinding;
 import org.somda.sdc.dpws.client.DiscoveredDevice;
+import org.somda.sdc.dpws.client.exception.EprAddressMismatchException;
 import org.somda.sdc.dpws.factory.CommunicationLogFactory;
 import org.somda.sdc.dpws.factory.TransportBindingFactory;
 import org.somda.sdc.dpws.guice.ResolverThreadPool;
@@ -252,6 +253,12 @@ public class HostingServiceResolver {
         final String epr = rsDataFromOptional.getEprAddress().orElseThrow(() ->
                 new MalformedSoapMessageException(String.format("Malformed relationship data. Missing expected EPR: %s",
                         eprAddress)));
+
+        if (!epr.equals(eprAddress)) {
+            throw new EprAddressMismatchException(String.format("Expected EPR address '%s', but received '%s'",
+                    eprAddress, epr));
+        }
+
         return Optional.of(hostingServiceFactory.createHostingServiceProxy(
                 epr,
                 rsDataFromOptional.getTypes(),
@@ -278,7 +285,7 @@ public class HostingServiceResolver {
                                     .put(hsProxy.getType().getServiceId(), hsProxy)));
         }
 
-        if (result.getEprAddress() == null) {
+        if (result.getEprAddress().isEmpty()) {
             instanceLogger.info("Found no valid dpws:Host for {}", eprAddress);
             return Optional.empty();
         }

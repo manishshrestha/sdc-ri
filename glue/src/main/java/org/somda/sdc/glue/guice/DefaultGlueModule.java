@@ -20,10 +20,15 @@ import org.somda.sdc.glue.consumer.SdcRemoteDevicesConnector;
 import org.somda.sdc.glue.consumer.SdcRemoteDevicesConnectorImpl;
 import org.somda.sdc.glue.consumer.factory.SdcRemoteDeviceFactory;
 import org.somda.sdc.glue.consumer.factory.SdcRemoteDeviceWatchdogFactory;
+import org.somda.sdc.glue.consumer.localization.LocalizationServiceProxy;
+import org.somda.sdc.glue.consumer.localization.factory.LocalizationServiceProxyFactory;
 import org.somda.sdc.glue.consumer.sco.factory.OperationInvocationDispatcherFactory;
 import org.somda.sdc.glue.consumer.sco.helper.OperationInvocationDispatcher;
 import org.somda.sdc.glue.provider.SdcDevice;
 import org.somda.sdc.glue.provider.factory.SdcDeviceFactory;
+import org.somda.sdc.glue.provider.localization.LocalizationService;
+import org.somda.sdc.glue.provider.localization.LocalizationServiceImpl;
+import org.somda.sdc.glue.provider.localization.factory.LocalizationServiceFactory;
 import org.somda.sdc.glue.provider.sco.Context;
 import org.somda.sdc.glue.provider.sco.ScoController;
 import org.somda.sdc.glue.provider.sco.factory.ContextFactory;
@@ -85,6 +90,10 @@ public class DefaultGlueModule extends AbstractModule {
         install(new FactoryModuleBuilder()
                 .implement(SdcRemoteDeviceWatchdog.class, SdcRemoteDeviceWatchdog.class)
                 .build(SdcRemoteDeviceWatchdogFactory.class));
+
+        install(new FactoryModuleBuilder()
+                .implement(LocalizationServiceProxy.class, LocalizationServiceProxy.class)
+                .build(LocalizationServiceProxyFactory.class));
     }
 
     private void configureProvider() {
@@ -107,6 +116,11 @@ public class DefaultGlueModule extends AbstractModule {
         install(new FactoryModuleBuilder()
                 .implement(ReportGenerator.class, ReportGenerator.class)
                 .build(ReportGeneratorFactory.class));
+
+        install(new FactoryModuleBuilder()
+                .implement(LocalizationService.class, LocalizationServiceImpl.class)
+                .build(LocalizationServiceFactory.class));
+
     }
 
     @Provides

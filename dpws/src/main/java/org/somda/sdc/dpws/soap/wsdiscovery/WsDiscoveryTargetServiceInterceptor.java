@@ -8,7 +8,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.somda.sdc.common.CommonConfig;
 import org.somda.sdc.common.logging.InstanceLogger;
-import org.somda.sdc.common.util.ObjectUtilImpl;
 import org.somda.sdc.dpws.soap.NotificationSource;
 import org.somda.sdc.dpws.soap.SoapMessage;
 import org.somda.sdc.dpws.soap.SoapUtil;
@@ -47,6 +46,7 @@ import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.stream.Collectors;
 
 /**
  * Default implementation of the {@linkplain WsDiscoveryTargetService}.
@@ -62,7 +62,6 @@ public class WsDiscoveryTargetServiceInterceptor implements WsDiscoveryTargetSer
     private final WsDiscoveryUtil wsdUtil;
     private final EndpointReferenceType targetServiceEpr;
     private final NotificationSource notificationSource;
-    private final ObjectUtilImpl objectUtil;
     private final UnsignedInteger instanceId;
     private final Logger instanceLogger;
     private List<QName> types;
@@ -83,12 +82,10 @@ public class WsDiscoveryTargetServiceInterceptor implements WsDiscoveryTargetSer
                                         WsDiscoveryFaultFactory wsdFaultFactory,
                                         WsAddressingUtil wsaUtil,
                                         WsDiscoveryUtil wsdUtil,
-                                        ObjectUtilImpl objectUtil,
                                         @Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier) {
         this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);
         this.targetServiceEpr = targetServiceEpr;
         this.notificationSource = notificationSource;
-        this.objectUtil = objectUtil;
         this.instanceId = UnsignedInteger.valueOf(System.currentTimeMillis() / 1000L);
         this.wsdFactory = wsdFactory;
         this.soapFaultFactory = soapFaultFactory;
@@ -211,7 +208,7 @@ public class WsDiscoveryTargetServiceInterceptor implements WsDiscoveryTargetSer
     public void setTypes(List<QName> qNames) {
         try {
             lock.lock();
-            types = objectUtil.deepCopy(qNames);
+            types = cloneQNames(qNames);
             metadataModified.set(true);
         } finally {
             lock.unlock();
@@ -222,7 +219,7 @@ public class WsDiscoveryTargetServiceInterceptor implements WsDiscoveryTargetSer
     public List<QName> getTypes() {
         try {
             lock.lock();
-            return objectUtil.deepCopy(types);
+            return cloneQNames(types);
         } finally {
             lock.unlock();
         }
@@ -232,7 +229,7 @@ public class WsDiscoveryTargetServiceInterceptor implements WsDiscoveryTargetSer
     public void setScopes(List<String> uris) {
         try {
             lock.lock();
-            scopes = objectUtil.deepCopy(uris);
+            scopes = new ArrayList<>(uris);
             metadataModified.set(true);
         } finally {
             lock.unlock();
@@ -243,7 +240,7 @@ public class WsDiscoveryTargetServiceInterceptor implements WsDiscoveryTargetSer
     public List<String> getScopes() {
         try {
             lock.lock();
-            return objectUtil.deepCopy(scopes);
+            return new ArrayList<>(scopes);
         } finally {
             lock.unlock();
         }
@@ -253,7 +250,7 @@ public class WsDiscoveryTargetServiceInterceptor implements WsDiscoveryTargetSer
     public void setXAddrs(List<String> xAddrs) {
         try {
             lock.lock();
-            this.xAddrs = objectUtil.deepCopy(xAddrs);
+            this.xAddrs = new ArrayList<>(xAddrs);
             metadataModified.set(true);
         } finally {
             lock.unlock();
@@ -264,7 +261,7 @@ public class WsDiscoveryTargetServiceInterceptor implements WsDiscoveryTargetSer
     public List<String> getXAddrs() {
         try {
             lock.lock();
-            return objectUtil.deepCopy(xAddrs);
+            return new ArrayList<>(xAddrs);
         } finally {
             lock.unlock();
         }
@@ -424,5 +421,11 @@ public class WsDiscoveryTargetServiceInterceptor implements WsDiscoveryTargetSer
         return soapUtil.getBody(request, bodyType).orElseThrow(() ->
                 new SoapFaultException(soapFaultFactory.createSenderFault("Body type is invalid"),
                         request.getWsAddressingHeader().getMessageId().orElse(null)));
+    }
+
+    private List<QName> cloneQNames(List<QName> qNames) {
+        return qNames.stream()
+                .map(qName -> new QName(qName.getNamespaceURI(), qName.getLocalPart(), qName.getPrefix()))
+                .collect(Collectors.toList());
     }
 }
