@@ -17,6 +17,7 @@ import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -26,6 +27,12 @@ import java.util.List;
  */
 public class CryptoConfigurator {
     private static final Logger LOG = LogManager.getLogger(CryptoConfigurator.class);
+
+    private CryptoSettings knownSettingsForSslContext = null;
+    private SSLContextBuilder builderforKnownSettings = null;
+
+    private CryptoSettings knownSettingsForCertificates = null;
+    private List<X509Certificate> certificatesForKnownSettings = null;
 
     @Inject
     CryptoConfigurator() {
@@ -42,6 +49,10 @@ public class CryptoConfigurator {
     public SSLContext createSslContextFromCryptoConfig(CryptoSettings cryptoSettings)
             throws KeyStoreException, UnrecoverableKeyException, CertificateException, NoSuchAlgorithmException,
             IOException, KeyManagementException {
+        if (cryptoSettings == knownSettingsForSslContext) {
+            return builderforKnownSettings.build();
+        }
+
         final SSLContextBuilder sslContextBuilder = SSLContexts.custom();
 
         // key store
@@ -62,6 +73,8 @@ public class CryptoConfigurator {
             throw new IOException("Expected trust store, but none found");
         }
 
+        knownSettingsForSslContext = cryptoSettings;
+        builderforKnownSettings = sslContextBuilder;
         return sslContextBuilder.build();
     }
 
@@ -74,6 +87,10 @@ public class CryptoConfigurator {
      * @return a list of all X509 certificates from the keystore or an empty list.
      */
     public List<X509Certificate> getCertificates(@Nullable CryptoSettings cryptoSettings) {
+        if (cryptoSettings == knownSettingsForCertificates) {
+            return certificatesForKnownSettings;
+        }
+
         List<X509Certificate> certificates = new ArrayList<>();
         if (cryptoSettings == null) return certificates;
         try {
@@ -93,6 +110,10 @@ public class CryptoConfigurator {
         } catch (CertificateException | KeyStoreException | IOException | NoSuchAlgorithmException e) {
             LOG.error(String.format("Error retrieving certificates from keystore %s", e));
         }
+
+        knownSettingsForCertificates = cryptoSettings;
+        certificatesForKnownSettings = Collections.unmodifiableList(certificates);
+
         return certificates;
     }
 
