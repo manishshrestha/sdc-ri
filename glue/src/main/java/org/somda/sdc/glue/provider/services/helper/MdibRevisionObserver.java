@@ -6,84 +6,262 @@ import com.google.inject.assistedinject.AssistedInject;
 import com.google.inject.name.Named;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.somda.sdc.biceps.common.MdibEntity;
 import org.somda.sdc.biceps.common.access.MdibAccessObserver;
+import org.somda.sdc.biceps.common.event.AlertStateModificationMessage;
+import org.somda.sdc.biceps.common.event.ComponentStateModificationMessage;
+import org.somda.sdc.biceps.common.event.ContextStateModificationMessage;
 import org.somda.sdc.biceps.common.event.DescriptionModificationMessage;
-import org.somda.sdc.biceps.common.event.StateModificationMessage;
+import org.somda.sdc.biceps.common.event.MetricStateModificationMessage;
 import org.somda.sdc.biceps.model.history.ChangeSequenceReportType;
-import org.somda.sdc.biceps.model.history.ChangeSequenceType;
 import org.somda.sdc.biceps.model.history.HistoricMdibType;
 import org.somda.sdc.biceps.model.history.HistoricReportType;
-import org.somda.sdc.biceps.model.message.ObjectFactory;
-import org.somda.sdc.biceps.model.participant.Mdib;
+import org.somda.sdc.biceps.model.history.ObjectFactory;
+import org.somda.sdc.biceps.model.message.AbstractReport;
+import org.somda.sdc.biceps.model.message.DescriptionModificationReport;
+import org.somda.sdc.biceps.model.message.DescriptionModificationType;
+import org.somda.sdc.biceps.model.message.EpisodicAlertReport;
+import org.somda.sdc.biceps.model.message.EpisodicComponentReport;
+import org.somda.sdc.biceps.model.message.EpisodicContextReport;
+import org.somda.sdc.biceps.model.message.EpisodicMetricReport;
 import org.somda.sdc.biceps.model.participant.MdibVersion;
+import org.somda.sdc.biceps.provider.access.LocalMdibAccess;
 import org.somda.sdc.common.CommonConfig;
 import org.somda.sdc.common.logging.InstanceLogger;
 import org.somda.sdc.dpws.device.EventSourceAccess;
+import org.somda.sdc.glue.common.MdibMapper;
 import org.somda.sdc.glue.common.MdibVersionUtil;
+import org.somda.sdc.glue.common.factory.MdibMapperFactory;
 
+import java.lang.reflect.Method;
+import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
+import static org.somda.sdc.biceps.model.message.DescriptionModificationType.CRT;
+import static org.somda.sdc.biceps.model.message.DescriptionModificationType.DEL;
+import static org.somda.sdc.biceps.model.message.DescriptionModificationType.UPT;
+
 /**
- TODO #142 docs
+ * TODO #142 docs
  */
 public class MdibRevisionObserver implements MdibAccessObserver {
     private static final Logger LOG = LogManager.getLogger(MdibRevisionObserver.class);
+    private static final String REFLECTION_ERROR = "Reflection error caught. Report not persisted.";
 
     private final EventSourceAccess eventSourceAccess;
-    private final ObjectFactory bicepsMessageFactory;
+    private final MdibMapper mdibMapper;
+    private final ObjectFactory objectFactory;
+    private final org.somda.sdc.biceps.model.message.ObjectFactory messageObjectFactory;
     private final MdibVersionUtil mdibVersionUtil;
     private final Logger instanceLogger;
-
-    private ChangeSequenceReportType fullReport = new ChangeSequenceReportType();
+    private final ChangeSequenceReportType fullReport;
 
     @AssistedInject
     MdibRevisionObserver(@Assisted EventSourceAccess eventSourceAccess,
-                         ObjectFactory bicepsMessageFactory,
+                         @Assisted LocalMdibAccess mdibAccess,
+                         ObjectFactory objectFactory,
+                         org.somda.sdc.biceps.model.message.ObjectFactory messageObjectFactory,
+                         MdibMapperFactory mdibMapperFactory,
                          MdibVersionUtil mdibVersionUtil,
                          @Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier) {
         this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);
         this.eventSourceAccess = eventSourceAccess;
-        this.bicepsMessageFactory = bicepsMessageFactory;
+        this.mdibMapper = mdibMapperFactory.createMdibMapper(mdibAccess);
+        this.objectFactory = objectFactory;
+        this.messageObjectFactory = messageObjectFactory;
         this.mdibVersionUtil = mdibVersionUtil;
+        fullReport = objectFactory.createChangeSequenceReportType();
     }
 
     public void createInitialReport(MdibVersion mdibVersion) {
-        var seqId = mdibVersion.getSequenceId();
-        var insId = mdibVersion.getInstanceId();
 
-        // First initial historic MDIB
-        var historicMdib = new HistoricMdibType();
-        historicMdib.setMdibVersion(mdibVersion.getVersion());
-        historicMdib.setSequenceId(seqId);
-        historicMdib.setInstanceId(insId);
-        //TODO #142
-        //historicMdib.setTime();
-        //historicMdib.setMdDescription();  //TODO #142 use MdibMapper to get copy
-        //historicMdib.setMdState();
-
-
-        ChangeSequenceType changeSequence = new ChangeSequenceType();
-        changeSequence.setSequenceId(seqId);
-        changeSequence.setInstanceId(insId);
-        changeSequence.setHistoricMdib(historicMdib);
+        var changeSequence = objectFactory.createChangeSequenceType();
+        changeSequence.setSequenceId(mdibVersion.getSequenceId());
+        changeSequence.setInstanceId(mdibVersion.getInstanceId());
+        changeSequence.setHistoricMdib(createHistoricMdib());
         changeSequence.setHistoricReport(new ArrayList<>()); // TODO #142 no initial reports most likely?
-        //changeSequence.setHistoricLocalizedText(); //TODO #142
+        changeSequence.setHistoricLocalizedText(new ArrayList<>()); //TODO #142
 
         fullReport.setChangeSequence(new ArrayList<>(List.of(changeSequence)));
     }
 
     @Subscribe
-    void onStateChange(StateModificationMessage modificationMessage) {
-        var mdibVersion = modificationMessage.getMdibAccess().getMdibVersion();
-        var historicReport = new HistoricReportType();
+    void onDescriptionChange(DescriptionModificationMessage modificationMessage) {
+        var report = messageObjectFactory.createDescriptionModificationReport();
+        appendReport(report, DEL, modificationMessage.getDeletedEntities());
+        appendReport(report, CRT, modificationMessage.getInsertedEntities());
+        appendReport(report, UPT, modificationMessage.getUpdatedEntities());
 
-        //TODO #142
+        appendHistoricReport(modificationMessage.getMdibAccess().getMdibVersion(), report);
     }
 
     @Subscribe
-    void onDescriptionChange(DescriptionModificationMessage modificationMessage) {
-        instanceLogger.debug(modificationMessage);
-        //TODO #142
+    void onAlertChange(AlertStateModificationMessage modificationMessage) {
+        persistStateChange(
+                modificationMessage.getMdibAccess().getMdibVersion(),
+                modificationMessage.getStates(),
+                EpisodicAlertReport.class);
+    }
+
+    @Subscribe
+    void onComponentChange(ComponentStateModificationMessage modificationMessage) {
+        persistStateChange(
+                modificationMessage.getMdibAccess().getMdibVersion(),
+                modificationMessage.getStates(),
+                EpisodicComponentReport.class);
+    }
+
+    @Subscribe
+    void onContextChange(ContextStateModificationMessage modificationMessage) {
+        persistStateChange(
+                modificationMessage.getMdibAccess().getMdibVersion(),
+                modificationMessage.getStates(),
+                EpisodicContextReport.class);
+    }
+
+    @Subscribe
+    void onMetricChange(MetricStateModificationMessage modificationMessage) {
+        persistStateChange(
+                modificationMessage.getMdibAccess().getMdibVersion(),
+                modificationMessage.getStates(),
+                EpisodicMetricReport.class);
+    }
+
+    private HistoricMdibType createHistoricMdib() {
+
+        /*
+        //TODO #142 do we need to lock mdib / open new transaction while mapping??
+        try (ReadTransaction transaction = mdibAccess.startTransaction()) {
+            final MdibMapper mdibMapper = mdibMapperFactory.createMdibMapper(transaction);
+            var mdib = mdibMapper.mapMdib();
+        }
+        */
+
+        var historicMdib = objectFactory.createHistoricMdibType();
+        historicMdib.setTime(Instant.now()); //TODO #142 really instant now?
+        mdibMapper.mapMdib().copyTo(historicMdib);
+
+        /*historicMdib.setTime(Instant.now());
+        historicMdib.setSequenceId(mdib.getSequenceId());
+        historicMdib.setInstanceId(mdib.getInstanceId());
+        historicMdib.setMdibVersion(mdib.getMdibVersion());
+        historicMdib.setExtension(mdib.getExtension());
+        historicMdib.setMdDescription(mdib.getMdDescription());
+        historicMdib.setMdState(mdib.getMdState());*/
+        return historicMdib;
+    }
+
+    private void appendReport(DescriptionModificationReport report,
+                              DescriptionModificationType modType,
+                              List<MdibEntity> entities) {
+        for (MdibEntity entity : entities) {
+            var reportPart =
+                    messageObjectFactory.createDescriptionModificationReportReportPart();
+            reportPart.getDescriptor().add(entity.getDescriptor());
+            reportPart.getState().addAll(entity.getStates());
+            reportPart.setParentDescriptor(entity.getParent().orElse(null));
+            reportPart.setModificationType(modType);
+            report.getReportPart().add(reportPart);
+        }
+    }
+
+    private <T, V extends AbstractReport> void persistStateChange(MdibVersion mdibVersion,
+                                                                  Collection<T> states,
+                                                                  Class<V> reportClass) {
+        if (states.isEmpty()) {
+            return;
+        }
+
+        try {
+            var report = createNewReportWithStates(reportClass, states);
+            appendHistoricReport(mdibVersion, report);
+        } catch (ReflectiveOperationException e) {
+            instanceLogger.warn(REFLECTION_ERROR, e);
+        }
+    }
+
+    private <T extends AbstractReport> void appendHistoricReport(MdibVersion mdibVersion, T report) {
+        try {
+            mdibVersionUtil.setMdibVersion(mdibVersion, report);
+
+            var historicReport = objectFactory.createHistoricReportType();
+            findSetReportMethod(report.getClass()).invoke(historicReport, report);
+            historicReport.setTime(Instant.now()); //TODO #142 which time to set?
+            appendReportToChangeSequence(mdibVersion, historicReport);
+
+        } catch (ReflectiveOperationException e) {
+            instanceLogger.warn(REFLECTION_ERROR, e);
+        }
+    }
+
+    private void appendReportToChangeSequence(MdibVersion mdibVersion, HistoricReportType historicReport) {
+        var seqId = mdibVersion.getSequenceId();
+        var instanceId = mdibVersion.getInstanceId();
+
+        var changeSequence =  fullReport.getChangeSequence().stream()
+                .filter(cs -> cs.getSequenceId().equals(mdibVersion.getSequenceId()) &&
+                        cs.getInstanceId().equals(mdibVersion.getInstanceId()))
+                .findFirst()
+                .orElseThrow(() -> new RuntimeException(
+                        String.format("Cannot find change sequence for seqId: %s instanceId: %s", seqId,
+                                instanceId)));
+
+        changeSequence.getHistoricReport().add(historicReport);
+
+    }
+
+    private <T, V extends AbstractReport> V createNewReportWithStates(Class<V> reportClass,
+                                                                      Collection<T> states) throws ReflectiveOperationException {
+        var report = reportClass.getConstructor().newInstance();
+        var reportPartClass = findReportPartClass(reportClass);
+        var reportPart = reportPartClass.getConstructor().newInstance();
+        var reportParts = findGetReportPartMethod(reportClass).invoke(report);
+
+        if (!List.class.isAssignableFrom(reportParts.getClass())) {
+            throw new NoSuchMethodException(String.format("Returned report parts was not a list, it was of type %s",
+                    reportParts.getClass()));
+        }
+        ((List) reportParts).add(reportPart);
+
+        findSetStateMethod(reportPartClass).invoke(reportPart, states);
+
+        return report;
+
+    }
+
+    private Class<?> findReportPartClass(Class<?> reportClass) throws NoSuchFieldException {
+        final Class<?>[] classes = reportClass.getClasses();
+        if (classes.length == 0) {
+            throw new NoSuchFieldException(String.format("ReportPart inner class not found in %s",
+                    reportClass.getName()));
+        }
+        return classes[0];
+    }
+
+    private Method findGetReportPartMethod(Class<?> reportPartClass) throws NoSuchMethodException {
+        return reportPartClass.getMethod("getReportPart");
+    }
+
+    private Method findSetStateMethod(Class<?> reportPartClass) throws NoSuchMethodException {
+        for (Method method : reportPartClass.getMethods()) {
+            final Class<?>[] parameters = method.getParameterTypes();
+            if (parameters.length == 1 && List.class.isAssignableFrom(parameters[0])) {
+                return method;
+            }
+        }
+        throw new NoSuchMethodException(String.format("No get-states function found on report part class %s",
+                reportPartClass.getName()));
+    }
+
+    private Method findSetReportMethod(Class<?> reportClass) throws NoSuchMethodException {
+        for (Method method : HistoricReportType.class.getMethods()) {
+            var params = method.getParameterTypes();
+            if (params.length == 1 && reportClass.isAssignableFrom(params[0])) {
+                return method;
+            }
+        }
+        throw new NoSuchMethodException("No set-report method found for report class " + reportClass.getName());
     }
 }

@@ -38,8 +38,8 @@ public class HistoryService extends WebService {
         this.messageModelFactory = messageModelFactory;
         this.mdibVersionUtil = mdibVersionUtil;
         this.wsaUtil = wsaUtil;
-        mdibRevisionObserver = mdibRevisionObserverFactory.createMdibRevisionObserver(this);
-        mdibRevisionObserver.createInitialReport();
+        mdibRevisionObserver = mdibRevisionObserverFactory.createMdibRevisionObserver(this, mdibAccess);
+        mdibRevisionObserver.createInitialReport(mdibAccess.getMdibVersion());
         mdibAccess.registerObserver(mdibRevisionObserver);
     }
 
