@@ -2289,6 +2289,7 @@
 					<xsd:element ref="msg:EpisodicComponentReport"/>
 					<xsd:element ref="msg:EpisodicContextReport"/>
 					<xsd:element ref="msg:EpisodicMetricReport"/>
+					<xsd:element ref="msg:EpisodicOperationalStateReport"/>
 				</xsd:choice>
 			</xsd:complexType>
 			<!-- Subscription payload -->

@@ -15,7 +15,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.somda.sdc.biceps.common.MdibStateModifications;
 import org.somda.sdc.biceps.common.MdibTypeValidator;
 import org.somda.sdc.biceps.model.history.ChangeSequenceReportType;
-import org.somda.sdc.biceps.model.history.HistoryQueryType;
 import org.somda.sdc.biceps.model.history.ObjectFactory;
 import org.somda.sdc.biceps.model.participant.NumericMetricState;
 import org.somda.sdc.biceps.testutil.BaseTreeModificationsSet;
@@ -168,7 +167,7 @@ public class HistoryIT {
     }
 
     private List<Object> createHistoryQuery() {
-        var query = objectFactory.createHistoryQueryType();
+        var query = objectFactory.createHistoryQuery(objectFactory.createHistoryQueryType());
         return Collections.singletonList(query);
     }
 }

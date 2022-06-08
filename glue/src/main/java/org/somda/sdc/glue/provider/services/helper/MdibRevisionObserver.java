@@ -13,6 +13,7 @@ import org.somda.sdc.biceps.common.event.ComponentStateModificationMessage;
 import org.somda.sdc.biceps.common.event.ContextStateModificationMessage;
 import org.somda.sdc.biceps.common.event.DescriptionModificationMessage;
 import org.somda.sdc.biceps.common.event.MetricStateModificationMessage;
+import org.somda.sdc.biceps.common.event.OperationStateModificationMessage;
 import org.somda.sdc.biceps.model.history.ChangeSequenceReportType;
 import org.somda.sdc.biceps.model.history.HistoricMdibType;
 import org.somda.sdc.biceps.model.history.HistoricReportType;
@@ -25,6 +26,7 @@ import org.somda.sdc.biceps.model.message.EpisodicAlertReport;
 import org.somda.sdc.biceps.model.message.EpisodicComponentReport;
 import org.somda.sdc.biceps.model.message.EpisodicContextReport;
 import org.somda.sdc.biceps.model.message.EpisodicMetricReport;
+import org.somda.sdc.biceps.model.message.EpisodicOperationalStateReport;
 import org.somda.sdc.biceps.model.participant.MdibVersion;
 import org.somda.sdc.biceps.provider.access.LocalMdibAccess;
 import org.somda.sdc.common.CommonConfig;
@@ -133,6 +135,14 @@ public class MdibRevisionObserver implements MdibAccessObserver {
                 modificationMessage.getMdibAccess().getMdibVersion(),
                 modificationMessage.getStates(),
                 EpisodicMetricReport.class);
+    }
+
+    @Subscribe
+    void onMetricChange(OperationStateModificationMessage modificationMessage) {
+        persistStateChange(
+                modificationMessage.getMdibAccess().getMdibVersion(),
+                modificationMessage.getStates(),
+                EpisodicOperationalStateReport.class);
     }
 
     private HistoricMdibType createHistoricMdib() {
