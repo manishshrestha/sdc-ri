@@ -397,7 +397,7 @@ public class EventSourceInterceptor extends AbstractIdleService implements Event
 
     private List<String> explodeUriList(FilterType filterType) {
         List<String> result = new ArrayList<>();
-        if (filterType.getContent().size() != 1) {
+        if (filterType.getContent().isEmpty()) {
             return result;
         }
 

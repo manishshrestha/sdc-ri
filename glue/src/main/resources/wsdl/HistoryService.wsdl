@@ -2283,15 +2283,13 @@
 				<xsd:annotation>
 					<xsd:documentation>Definition of a report at a specific time.</xsd:documentation>
 				</xsd:annotation>
-				<xsd:complexContent>
-					<xsd:extension base="msg:AbstractReport">
-						<xsd:attribute name="Time" type="pm:Timestamp" use="required">
-							<xsd:annotation>
-								<xsd:documentation>Time at which the report was persisted.</xsd:documentation>
-							</xsd:annotation>
-						</xsd:attribute>
-					</xsd:extension>
-				</xsd:complexContent>
+				<xsd:choice>
+					<xsd:element ref="msg:DescriptionModificationReport"/>
+					<xsd:element ref="msg:EpisodicAlertReport"/>
+					<xsd:element ref="msg:EpisodicComponentReport"/>
+					<xsd:element ref="msg:EpisodicContextReport"/>
+					<xsd:element ref="msg:EpisodicMetricReport"/>
+				</xsd:choice>
 			</xsd:complexType>
 			<!-- Subscription payload -->
 			<xsd:element name="HistoryQuery" type="hs:HistoryQueryType">

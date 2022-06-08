@@ -16,6 +16,7 @@ import org.somda.sdc.biceps.common.event.MetricStateModificationMessage;
 import org.somda.sdc.biceps.model.history.ChangeSequenceReportType;
 import org.somda.sdc.biceps.model.history.HistoricMdibType;
 import org.somda.sdc.biceps.model.history.HistoricReportType;
+import org.somda.sdc.biceps.model.history.HistoryQueryType;
 import org.somda.sdc.biceps.model.history.ObjectFactory;
 import org.somda.sdc.biceps.model.message.AbstractReport;
 import org.somda.sdc.biceps.model.message.DescriptionModificationReport;
@@ -85,6 +86,11 @@ public class MdibRevisionObserver implements MdibAccessObserver {
         changeSequence.setHistoricLocalizedText(new ArrayList<>()); //TODO #142
 
         fullReport.setChangeSequence(new ArrayList<>(List.of(changeSequence)));
+    }
+
+    public ChangeSequenceReportType getChangeSequenceReport(HistoryQueryType query) {
+        //TODO #142: implement filtering
+        return fullReport;
     }
 
     @Subscribe

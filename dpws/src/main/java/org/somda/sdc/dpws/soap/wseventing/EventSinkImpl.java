@@ -122,6 +122,14 @@ public class EventSinkImpl implements EventSink {
     public ListenableFuture<SubscribeResult> subscribe(List<String> actions,
                                                        @Nullable Duration expires,
                                                        NotificationSink notificationSink) {
+        return subscribe(actions, expires, notificationSink, Collections.emptyList());
+    }
+
+    @Override
+    public ListenableFuture<SubscribeResult> subscribe(List<String> actions,
+                                                       @Nullable Duration expires,
+                                                       NotificationSink notificationSink,
+                                                       List<Object> subscriptionFilters) {
         return executorService.get().submit(() -> {
             //final URI httpServerBase = URI.create()
             // Create unique context path suffix
@@ -163,9 +171,13 @@ public class EventSinkImpl implements EventSink {
             EndpointReferenceType endToEpr = wsaUtil.createEprWithAddress(endToUri);
             subscribeBody.setEndTo(endToEpr);
 
+            var filterContent = new ArrayList<>();
+            filterContent.add(implodeUriList(actions));
+            filterContent.addAll(subscriptionFilters);
+
             FilterType filterType = wseFactory.createFilterType();
             filterType.setDialect(DpwsConstants.WS_EVENTING_SUPPORTED_DIALECT);
-            filterType.setContent(Collections.singletonList(implodeUriList(actions)));
+            filterType.setContent(filterContent);
 
             subscribeBody.setExpires(expires);
 

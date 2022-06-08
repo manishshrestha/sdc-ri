@@ -36,6 +36,27 @@ public interface EventSinkAccess {
                                                 Interceptor notificationSink);
 
     /**
+     * Conducts a subscribe.
+     *
+     * @param actions          a list of operation actions to subscribe for.
+     * @param expires          the desired expiration time (the hosted service may decide to grant lesser than this).
+     *                         If none is given, the hosting service will take decision.
+     * @param notificationSink the sink where to deliver notifications.
+     * @param subscriptionFilters list of additional subscription filters
+     * @return a future object that either includes subscription information or throws
+     * <ul>
+     * <li>{@link SoapFaultException}
+     * <li>{@link MarshallingException}
+     * <li>{@link TransportException}
+     * <li>{@link org.somda.sdc.dpws.soap.interception.InterceptorException}
+     * </ul>
+     */
+    ListenableFuture<SubscribeResult> subscribe(List<String> actions,
+                                                @Nullable Duration expires,
+                                                Interceptor notificationSink,
+                                                List<Object> subscriptionFilters);
+
+    /**
      * Renews a subscription.
      *
      * @param subscriptionId the subscription id obtained in the {@link SubscribeResult} of

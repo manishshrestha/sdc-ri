@@ -41,5 +41,6 @@ public class CommonConstants {
      */
     public static final String BICEPS_JAXB_CONTEXT_PATH = "org.somda.sdc.biceps.model.extension:" +
             "org.somda.sdc.biceps.model.participant:" +
-            "org.somda.sdc.biceps.model.message";
+            "org.somda.sdc.biceps.model.message:" +
+            "org.somda.sdc.biceps.model.history";
 }

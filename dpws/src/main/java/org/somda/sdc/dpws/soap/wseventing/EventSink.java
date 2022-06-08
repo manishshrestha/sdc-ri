@@ -36,6 +36,28 @@ public interface EventSink {
                                                 NotificationSink notificationSink);
 
     /**
+     * Sends a Subscribe request.
+     *
+     * @param actions             the list of operation actions.
+     *                            Operation actions typically have the following format:
+     *                            #WSDL-TARGET-NAMESPACE/#WSDL-PORT-TYPE-NAME/#OPERATION-NAME
+     * @param expires             desired expiration time (the hosted service may decide to grant lesser than this).
+     *                            If none is given, the hosting service will take decision.
+     * @param notificationSink    sink where to deliver notifications.
+     * @param subscriptionFilters list of additional subscription filters
+     * @return a future object that in case of a success includes subscription information or throws
+     * <ul>
+     * <li>{@link SoapFaultException}
+     * <li>{@link MarshallingException}
+     * <li>{@link TransportException}
+     * <li>{@link org.somda.sdc.dpws.soap.interception.InterceptorException}
+     * </ul>
+     */
+    ListenableFuture<SubscribeResult> subscribe(List<String> actions,
+                                                @Nullable Duration expires,
+                                                NotificationSink notificationSink,
+                                                List<Object> subscriptionFilters);
+    /**
      * Renews a subscription.
      *
      * @param subscriptionId the subscription id obtained in the {@link SubscribeResult} of

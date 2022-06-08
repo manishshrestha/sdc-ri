@@ -95,6 +95,17 @@ public class HostedServiceProxyImpl implements HostedServiceProxy, EventSinkAcce
     }
 
     @Override
+    public ListenableFuture<SubscribeResult> subscribe(List<String> actions,
+                                                       @Nullable Duration expires,
+                                                       Interceptor notificationSink,
+                                                       List<Object> subscriptionFilters) {
+        final NotificationSink notifications = notificationSinkFactory
+                .createNotificationSink(wsAddressingServerInterceptor);
+        notifications.register(notificationSink);
+        return eventSink.subscribe(actions, expires, notifications, subscriptionFilters);
+    }
+
+    @Override
     public ListenableFuture<Duration> renew(String subscriptionId, Duration expires) {
         return eventSink.renew(subscriptionId, expires);
     }
