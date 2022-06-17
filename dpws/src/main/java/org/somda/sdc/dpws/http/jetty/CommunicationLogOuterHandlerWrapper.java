@@ -135,7 +135,8 @@ public class CommunicationLogOuterHandlerWrapper extends HandlerWrapper {
 
             appLevelCommLogStream.write((byte[]) responseBody);
             appLevelCommLogStream.close();
-            if (response.getHeader("Content-Encoding").contains("gzip")) {
+            final String contentEncodingResponseHeader2 = response.getHeader("Content-Encoding");
+            if (contentEncodingResponseHeader2 != null && contentEncodingResponseHeader2.contains("gzip")) {
                 netLevelCommLogStream.write(outInterceptor.getContents());
             } else {
                 netLevelCommLogStream.write((byte[]) responseBody);
