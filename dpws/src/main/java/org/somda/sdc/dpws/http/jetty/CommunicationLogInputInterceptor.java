@@ -26,6 +26,10 @@ public class CommunicationLogInputInterceptor implements HttpInput.Interceptor, 
         this.commlogStreams = commlogStreams;
     }
 
+    /**
+     * Set the list of OutputStreams.
+     * @param commlogStreams list of OutputStreams to log the Messages into
+     */
     public void setCommlogStreams(OutputStream... commlogStreams) {
         this.commlogStreams = commlogStreams;
     }

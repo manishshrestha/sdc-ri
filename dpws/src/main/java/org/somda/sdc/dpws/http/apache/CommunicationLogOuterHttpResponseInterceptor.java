@@ -12,7 +12,6 @@ import org.apache.logging.log4j.Logger;
 import org.somda.sdc.common.logging.InstanceLogger;
 import org.somda.sdc.dpws.CommunicationLog;
 
-import java.io.IOException;
 import java.util.Optional;
 
 /**

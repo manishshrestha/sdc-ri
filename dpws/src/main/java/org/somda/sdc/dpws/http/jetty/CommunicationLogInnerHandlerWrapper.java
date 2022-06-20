@@ -82,13 +82,19 @@ public class CommunicationLogInnerHandlerWrapper extends HandlerWrapper {
         var out = baseRequest.getResponse().getHttpOutput();
 
         if (isGZipped(request)) {
-            CommunicationLogInputInterceptor interceptor = (CommunicationLogInputInterceptor)baseRequest.getAttribute(CommunicationLogOuterHandlerWrapper.REQUEST_CONTENT_INTERCEPTOR_IN_ATTRIBUTE_KEY);
+            CommunicationLogInputInterceptor interceptor =
+                (CommunicationLogInputInterceptor) baseRequest.
+                    getAttribute(CommunicationLogOuterHandlerWrapper.REQUEST_CONTENT_INTERCEPTOR_IN_ATTRIBUTE_KEY);
             interceptor.setCommlogStreams(netLevelCommLogStream);
             // attach interceptor to log request
-            baseRequest.getHttpInput().addInterceptor(new CommunicationLogInputInterceptor(frameworkIdentifier, appLevelCommLogStream));
+            baseRequest.getHttpInput()
+                .addInterceptor(new CommunicationLogInputInterceptor(frameworkIdentifier, appLevelCommLogStream));
         } else {
             // attach interceptor to log request
-            baseRequest.getHttpInput().addInterceptor(new CommunicationLogInputInterceptor(frameworkIdentifier, appLevelCommLogStream, netLevelCommLogStream));
+            baseRequest.getHttpInput()
+                .addInterceptor(
+                    new CommunicationLogInputInterceptor(frameworkIdentifier,
+                        appLevelCommLogStream, netLevelCommLogStream));
         }
 
         HttpOutput.Interceptor previousInterceptor = out.getInterceptor();

@@ -94,7 +94,12 @@ public class CommunicationLogOuterHttpRequestInterceptor implements HttpRequestI
                     this.extractingEntity.setExtractInto(appLevelCommlogStream);
                 }
             } else {
-                entityRequest.setEntity(new CommunicationLogEntity(oldMessageEntity, appLevelCommlogStream, netLevelCommlogStream));
+                entityRequest
+                    .setEntity(
+                        new CommunicationLogEntity(
+                            oldMessageEntity,
+                            appLevelCommlogStream,
+                            netLevelCommlogStream));
             }
         } else {
             // GET doesn't have any entity, but still has headers to save
@@ -115,6 +120,11 @@ public class CommunicationLogOuterHttpRequestInterceptor implements HttpRequestI
         instanceLogger.debug("Processing request done: {}", request.getRequestLine());
     }
 
+    /**
+     * Determines whether or not a request is Gzipped by inspecting its headers.
+     * @param request the request in question.
+     * @return true, when the given Request contains the Header "Content-Encoding: gzip"
+     */
     private boolean isGzipped(HttpRequest request) {
         final Header[] contentEncodingHeaders = request.getHeaders("Content-Encoding");
         for (Header contentEncodingHeader : contentEncodingHeaders) {
@@ -125,6 +135,10 @@ public class CommunicationLogOuterHttpRequestInterceptor implements HttpRequestI
         return false;
     }
 
+    /**
+     * Set the ExtractingEntity.
+     * @param entity ExtractingEntity to pass the Application-Level CommlogStream into.
+     */
     public void setExtractingEntity(ExtractingEntity entity) {
         this.extractingEntity = entity;
     }

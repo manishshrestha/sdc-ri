@@ -19,7 +19,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicLong;
-import java.lang.String;
 
 /**
  * {@linkplain HandlerWrapper} which enables extracting Headers and passing them to
@@ -53,7 +52,8 @@ public class CommunicationLogOuterHandlerWrapper extends HandlerWrapper {
 
         baseRequest.setAttribute(CONTENT_ENCODING_HEADER_PASSED_IN_ATTRIBUTE_KEY, contentEncodingHeader);
 
-        final CommunicationLogInputInterceptor inputInterceptor = new CommunicationLogInputInterceptor(frameworkIdentifier);
+        final CommunicationLogInputInterceptor inputInterceptor =
+            new CommunicationLogInputInterceptor(frameworkIdentifier);
         baseRequest.getHttpInput().addInterceptor(inputInterceptor);
         baseRequest.setAttribute(REQUEST_CONTENT_INTERCEPTOR_IN_ATTRIBUTE_KEY, inputInterceptor);
 

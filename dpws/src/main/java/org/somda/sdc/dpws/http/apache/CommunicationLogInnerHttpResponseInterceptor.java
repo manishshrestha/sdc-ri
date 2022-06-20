@@ -113,7 +113,8 @@ public class CommunicationLogInnerHttpResponseInterceptor implements HttpRespons
         response.setEntity(new CommunicationLogEntity(oldMessageEntity, commlogAppLevelStream));
 
         final ExtractingEntity extractingEntity =
-            (ExtractingEntity) context.getAttribute(CommunicationLogOuterHttpResponseInterceptor.EXTRACTING_ENTITY_FROM_OUTER_PART_KEY);
+            (ExtractingEntity) context
+                .getAttribute(CommunicationLogOuterHttpResponseInterceptor.EXTRACTING_ENTITY_FROM_OUTER_PART_KEY);
         if (extractingEntity != null) {
             OutputStream commlogNetLevelStream = commlog.logMessage(
                 CommunicationLog.Direction.INBOUND,

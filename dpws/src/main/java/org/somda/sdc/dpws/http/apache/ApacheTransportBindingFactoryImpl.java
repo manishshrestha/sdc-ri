@@ -62,7 +62,7 @@ public class ApacheTransportBindingFactoryImpl implements TransportBindingFactor
     private CommunicationLogOuterHttpRequestInterceptor commLogRequestinterceptor;
 
 
-    private ClientTransportBindingFactory clientTransportBindingFactory;
+    private final ClientTransportBindingFactory clientTransportBindingFactory;
     private final CommunicationLog communicationLog;
 
     @Inject
@@ -108,12 +108,13 @@ public class ApacheTransportBindingFactoryImpl implements TransportBindingFactor
         var socketConfig = SocketConfig.custom().setTcpNoDelay(true).build();
 
         // set the timeout for all requests
-        var requestConfig = RequestConfig.custom().setConnectionRequestTimeout((int) clientReadTimeout.toMillis())
+        var requestConfig = RequestConfig.custom()
+                .setConnectionRequestTimeout((int) clientReadTimeout.toMillis())
                 .setConnectTimeout((int) clientConnectTimeout.toMillis())
                 .setSocketTimeout((int) clientConnectTimeout.toMillis()).build();
 
-        this.commLogRequestinterceptor = new CommunicationLogOuterHttpRequestInterceptor(communicationLog, frameworkIdentifier,
-                cryptoConfigurator.getCertificates(cryptoSettings));
+        this.commLogRequestinterceptor = new CommunicationLogOuterHttpRequestInterceptor(communicationLog,
+            frameworkIdentifier, cryptoConfigurator.getCertificates(cryptoSettings));
         var clientBuilder = HttpClients.custom().setDefaultSocketConfig(socketConfig)
                 // attach interceptors to enable communication log capabilities including message headers
                 .addInterceptorFirst(new CommunicationLogInnerHttpRequestInterceptor(frameworkIdentifier))
@@ -138,6 +139,7 @@ public class ApacheTransportBindingFactoryImpl implements TransportBindingFactor
         if (enableHttps) {
             SSLContext sslContext;
             try {
+                //noinspection ConstantConditions
                 sslContext = cryptoConfigurator.createSslContextFromCryptoConfig(cryptoSettings);
                 // CHECKSTYLE.OFF: IllegalCatch
             } catch (Exception e) {

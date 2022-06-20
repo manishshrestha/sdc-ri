@@ -14,8 +14,8 @@ import java.util.concurrent.atomic.AtomicLong;
 // TODO: this Interceptor seems to do nothing of value. Remove it.
 /**
  * Request interceptor which captures the request message before it is compressed and passes this information on
- * to the {@linkplain CommunicationLogOuterHttpRequestInterceptor}, which writes the outgoing request message and headers into
- * the {@linkplain CommunicationLog}.
+ * to the {@linkplain CommunicationLogOuterHttpRequestInterceptor}, which writes the outgoing request message and
+ * headers into the {@linkplain CommunicationLog}.
  */
 public class CommunicationLogInnerHttpRequestInterceptor implements HttpRequestInterceptor {
     private static final Logger LOG = LogManager.getLogger(CommunicationLogInnerHttpRequestInterceptor.class);

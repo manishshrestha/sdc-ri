@@ -27,6 +27,10 @@ public class ExtractingEntity extends HttpEntityWrapper {
         this.extractInto = null;
     }
 
+    /**
+     * Set the OutputStream to extract the content into.
+     * @param extractInto the OutputStream to extract into.
+     */
     public void setExtractInto(OutputStream extractInto) {
         this.extractInto = extractInto;
     }
@@ -56,7 +60,8 @@ public class ExtractingEntity extends HttpEntityWrapper {
     @Override
     public void writeTo(OutputStream outStream) throws IOException {
         if (extractInto == null) {
-            throw new IllegalStateException("writeTo() should not be called before an outputStream was set using setExtractInto()");
+            throw new IllegalStateException(
+                "writeTo() should not be called before an outputStream was set using setExtractInto()");
         }
         var splitOutputStream = new TeeOutputStream(outStream, extractInto);
         // From the Apache docs:
@@ -73,7 +78,8 @@ public class ExtractingEntity extends HttpEntityWrapper {
 
     private InputStream getWrappedStream() throws IOException {
         if (extractInto == null) {
-            throw new IllegalStateException("getWrappedStream() should not be called before an outputStream was set using setExtractInto()");
+            throw new IllegalStateException(
+                "getWrappedStream() should not be called before an outputStream was set using setExtractInto()");
         }
         // Always close the log stream together with the input stream (third param)
         return new TeeInputStream(wrappedEntity.getContent(), this.extractInto, true);

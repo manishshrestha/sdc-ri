@@ -215,7 +215,11 @@ public class ClientTransportBinding implements TransportBinding {
     public void close() {
         // no action on HTTP
     }
-    
+
+    /**
+     * Sets the CommLogInterceptor.
+     * @param interceptor - CommLogInterceptor to pass the ExtractingEntity to.
+     */
     public void setCommLogInterceptor(CommunicationLogOuterHttpRequestInterceptor interceptor) {
         this.commLogInterceptor = interceptor;        
     }

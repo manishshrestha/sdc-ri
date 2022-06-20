@@ -18,9 +18,12 @@ public class CommunicationLogFileName {
      *
      * @param direction            the communication direction.
      * @param communicationContext the communication context to be used to find address and port info.
+     * @param level                the level of the message, i.e. network or application.
      * @return a string of the format {@code <NANO-TIME>_<HH-mm-ss-SSS>_<DIRECTION>_<ADDR>_<PORT>}.
      */
-    public static String create(String direction, CommunicationContext communicationContext, CommunicationLog.Level level) {
+    public static String create(String direction,
+                                CommunicationContext communicationContext,
+                                CommunicationLog.Level level) {
         var destAddr = communicationContext.getTransportInfo().getRemoteAddress().orElse("[unk-addr]");
         var destPort = communicationContext.getTransportInfo().getRemotePort().orElse(-1);
         var date = LocalTime.now();

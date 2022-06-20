@@ -211,9 +211,11 @@ class CommunicationLogIT extends DpwsTest {
             assertArrayEquals(expectedResponseStream.toByteArray(), netLevelResp.toByteArray());
 
             // check "Transfer-Encoding: chunked" Header
-            // TODO: check Network-Level Headers as well
+            // TODO: Transfer-Encoding Header should only be logged on Net Level
             assertTrue(logSink.getOutboundAppLevelHeaders().get(0).get(TRANSFER_ENCODING_HEADER).contains(TRANSFER_ENCODING_VALUE_CHUNKED));
             assertTrue(logSink.getInboundAppLevelHeaders().get(0).get(TRANSFER_ENCODING_HEADER).contains(TRANSFER_ENCODING_VALUE_CHUNKED));
+            assertTrue(logSink.getOutboundNetLevelHeaders().get(0).get(TRANSFER_ENCODING_HEADER).contains(TRANSFER_ENCODING_VALUE_CHUNKED));
+            assertTrue(logSink.getInboundNetLevelHeaders().get(0).get(TRANSFER_ENCODING_HEADER).contains(TRANSFER_ENCODING_VALUE_CHUNKED));
 
             // ensure streams were closed
             assertTrue(req.isClosed());
@@ -318,8 +320,11 @@ class CommunicationLogIT extends DpwsTest {
             assertArrayEquals(expectedResponseStream.toByteArray(), netLevelResp.toByteArray());
 
             // check Content-Length header
+            // TODO: Content-Length Header should only be logged on Net Level
             assertTrue(logSink.getOutboundAppLevelHeaders().get(0).get(CONTENT_LENGTH_HEADER).contains(Integer.toString(logSink.getOutboundAppLevel().get(0).toString(StandardCharsets.UTF_8).length())));
             assertTrue(logSink.getInboundAppLevelHeaders().get(0).get(CONTENT_LENGTH_HEADER).contains(Integer.toString(logSink.getInboundAppLevel().get(0).toString(StandardCharsets.UTF_8).length())));
+            assertTrue(logSink.getOutboundNetLevelHeaders().get(0).get(CONTENT_LENGTH_HEADER).contains(Integer.toString(logSink.getOutboundAppLevel().get(0).toString(StandardCharsets.UTF_8).length())));
+            assertTrue(logSink.getInboundNetLevelHeaders().get(0).get(CONTENT_LENGTH_HEADER).contains(Integer.toString(logSink.getInboundAppLevel().get(0).toString(StandardCharsets.UTF_8).length())));
 
             // ensure streams were closed
             assertTrue(req.isClosed());
