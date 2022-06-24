@@ -19,7 +19,7 @@ import java.util.Optional;
  * Outer Part - called before the Response has been decompressed.
  */
 public class CommunicationLogOuterHttpResponseInterceptor implements HttpResponseInterceptor {
-    public static final String CONTENT_ENCODING_HEADER_FROM_OUTER_PART_KEY = "Content-Encoding-Header-From-Outer-Part";
+    public static final String NET_LEVEL_HEADERS_FROM_OUTER_PART_KEY = "Content-Encoding-Header-From-Outer-Part";
     public static final String EXTRACTING_ENTITY_FROM_OUTER_PART_KEY = "ExtractingEntity-from-Outer-Part";
     private static final Logger LOG = LogManager.getLogger(CommunicationLogOuterHttpResponseInterceptor.class);
 
@@ -45,7 +45,7 @@ public class CommunicationLogOuterHttpResponseInterceptor implements HttpRespons
         var currentTransactionOpt = Optional.of(context.getAttribute(CommunicationLog.MessageType.REQUEST.name()));
         var currentTransactionId = (String) currentTransactionOpt.orElse("");
 
-        final Header contentEncodingHeader = response.getLastHeader("Content-Encoding");
-        context.setAttribute(CONTENT_ENCODING_HEADER_FROM_OUTER_PART_KEY, contentEncodingHeader);
+        final Header[] netLevelHeaders = response.getAllHeaders();
+        context.setAttribute(NET_LEVEL_HEADERS_FROM_OUTER_PART_KEY, netLevelHeaders);
     }
 }

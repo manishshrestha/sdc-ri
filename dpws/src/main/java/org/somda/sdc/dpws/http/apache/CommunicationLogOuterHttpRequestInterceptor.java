@@ -53,8 +53,15 @@ public class CommunicationLogOuterHttpRequestInterceptor implements HttpRequestI
 
         var currentTransactionId = TRANSACTION_ID_PREFIX_CLIENT + TRANSACTION_ID.incrementAndGet();
         context.setAttribute(CommunicationLog.MessageType.REQUEST.name(), currentTransactionId);
-        var requestHttpApplicationInfo = new HttpApplicationInfo(
+        var requestNetLevelHttpApplicationInfo = new HttpApplicationInfo(
             ApacheClientHelper.allHeadersToMultimap(request.getAllHeaders()),
+            currentTransactionId,
+            request.getRequestLine().getUri()
+        );
+        final Header[] appLevelHeaders =
+            (Header[]) context.getAttribute(CommunicationLogInnerHttpRequestInterceptor.APP_LEVEL_HEADERS_ATTRIBUTE);
+        var requestAppLevelHttpApplicationInfo = new HttpApplicationInfo(
+            ApacheClientHelper.allHeadersToMultimap(appLevelHeaders),
             currentTransactionId,
             request.getRequestLine().getUri()
         );
@@ -69,20 +76,23 @@ public class CommunicationLogOuterHttpRequestInterceptor implements HttpRequestI
             certificates
         );
 
-        var requestCommContext = new CommunicationContext(requestHttpApplicationInfo, requestTransportInfo);
+        var requestNetLevelCommContext =
+            new CommunicationContext(requestNetLevelHttpApplicationInfo, requestTransportInfo);
+        var requestAppLevelCommContext =
+            new CommunicationContext(requestAppLevelHttpApplicationInfo, requestTransportInfo);
 
         OutputStream appLevelCommlogStream = commlog.logMessage(
             CommunicationLog.Direction.OUTBOUND,
             CommunicationLog.TransportType.HTTP,
             CommunicationLog.MessageType.REQUEST,
-            requestCommContext,
+            requestAppLevelCommContext,
             CommunicationLog.Level.APPLICATION);
 
         OutputStream netLevelCommlogStream = commlog.logMessage(
             CommunicationLog.Direction.OUTBOUND,
             CommunicationLog.TransportType.HTTP,
             CommunicationLog.MessageType.REQUEST,
-            requestCommContext,
+            requestNetLevelCommContext,
             CommunicationLog.Level.NETWORK);
 
         if (request instanceof HttpEntityEnclosingRequest) {

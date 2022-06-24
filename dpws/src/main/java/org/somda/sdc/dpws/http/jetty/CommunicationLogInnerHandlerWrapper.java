@@ -1,6 +1,8 @@
 package org.somda.sdc.dpws.http.jetty;
 
+import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ListMultimap;
+import org.eclipse.jetty.http.HttpFields;
 import org.eclipse.jetty.server.HttpOutput;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.handler.HandlerWrapper;
@@ -40,18 +42,19 @@ public class CommunicationLogInnerHandlerWrapper extends HandlerWrapper {
 
         String currentTransactionId = (String) baseRequest.getAttribute(CommunicationLog.MessageType.REQUEST.name());
 
-        final ListMultimap<String, String> requestHeaders = JettyUtil.getRequestHeaders(request);
-        final Object contentEncodingHeaderFromAttribute = baseRequest.getAttribute(
-            CommunicationLogOuterHandlerWrapper.CONTENT_ENCODING_HEADER_PASSED_IN_ATTRIBUTE_KEY);
-        if (requestHeaders.get("Content-Encoding").isEmpty()
-            && contentEncodingHeaderFromAttribute != null) {
-            requestHeaders.put("Content-Encoding", (String) contentEncodingHeaderFromAttribute);
-        }
+        final ListMultimap<String, String> requestAppLevelHeaders = JettyUtil.getRequestHeaders(request);
+        HttpFields requestNetLevelHeaders =
+            (HttpFields) request.getAttribute(CommunicationLogOuterHandlerWrapper.NET_LEVEL_HEADERS_ATTRIBUTE);
 
-        var requestHttpApplicationInfo = new HttpApplicationInfo(
-                requestHeaders,
+        var requestAppLevelHttpApplicationInfo = new HttpApplicationInfo(
+                requestAppLevelHeaders,
                 currentTransactionId,
                 baseRequest.getRequestURI()
+        );
+        var requestNetLevelHttpApplicationInfo = new HttpApplicationInfo(
+            convertHeaders(requestNetLevelHeaders),
+            currentTransactionId,
+            baseRequest.getRequestURI()
         );
 
         // collect information for TransportInfo
@@ -65,19 +68,20 @@ public class CommunicationLogInnerHandlerWrapper extends HandlerWrapper {
                 requestCertificates
         );
 
-        var requestCommContext = new CommunicationContext(requestHttpApplicationInfo, transportInfo);
+        var requestAppLevelCommContext = new CommunicationContext(requestAppLevelHttpApplicationInfo, transportInfo);
+        var requestNetLevelCommContext = new CommunicationContext(requestNetLevelHttpApplicationInfo, transportInfo);
 
         OutputStream appLevelCommLogStream = commLog.logMessage(
                 CommunicationLog.Direction.INBOUND,
                 CommunicationLog.TransportType.HTTP,
                 CommunicationLog.MessageType.REQUEST,
-                requestCommContext,
+                requestAppLevelCommContext,
                 CommunicationLog.Level.APPLICATION);
         OutputStream netLevelCommLogStream = commLog.logMessage(
             CommunicationLog.Direction.INBOUND,
             CommunicationLog.TransportType.HTTP,
             CommunicationLog.MessageType.REQUEST,
-            requestCommContext,
+            requestNetLevelCommContext,
             CommunicationLog.Level.NETWORK);
         var out = baseRequest.getResponse().getHttpOutput();
 
@@ -120,6 +124,12 @@ public class CommunicationLogInnerHandlerWrapper extends HandlerWrapper {
             if (!baseRequest.isHandled() && !baseRequest.isAsyncStarted())
                 out.setInterceptor(previousInterceptor);
         }
+    }
+
+    private ListMultimap<String, String> convertHeaders(HttpFields netLevelHeaders) {
+        var result = ArrayListMultimap.<String, String>create();
+        netLevelHeaders.forEach(field -> result.put(field.getName(), field.getValue()));
+        return result;
     }
 
     private boolean isGZipped(@Nullable HttpServletRequest request) {

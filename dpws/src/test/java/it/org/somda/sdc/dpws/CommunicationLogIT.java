@@ -56,7 +56,6 @@ import java.util.concurrent.atomic.AtomicReference;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class CommunicationLogIT extends DpwsTest {
@@ -211,8 +210,8 @@ class CommunicationLogIT extends DpwsTest {
             assertArrayEquals(expectedResponseStream.toByteArray(), netLevelResp.toByteArray());
 
             // check "Transfer-Encoding: chunked" Header
-            // TODO: Transfer-Encoding Header should only be logged on Net Level
-            assertTrue(logSink.getOutboundAppLevelHeaders().get(0).get(TRANSFER_ENCODING_HEADER).contains(TRANSFER_ENCODING_VALUE_CHUNKED));
+            // NOTE: Transfer-Encoding Header should only exist on Net Level, but for some reason is also present in the App-Level Response.
+            assertTrue(logSink.getOutboundAppLevelHeaders().get(0).get(TRANSFER_ENCODING_HEADER).isEmpty());
             assertTrue(logSink.getInboundAppLevelHeaders().get(0).get(TRANSFER_ENCODING_HEADER).contains(TRANSFER_ENCODING_VALUE_CHUNKED));
             assertTrue(logSink.getOutboundNetLevelHeaders().get(0).get(TRANSFER_ENCODING_HEADER).contains(TRANSFER_ENCODING_VALUE_CHUNKED));
             assertTrue(logSink.getInboundNetLevelHeaders().get(0).get(TRANSFER_ENCODING_HEADER).contains(TRANSFER_ENCODING_VALUE_CHUNKED));
@@ -320,9 +319,10 @@ class CommunicationLogIT extends DpwsTest {
             assertArrayEquals(expectedResponseStream.toByteArray(), netLevelResp.toByteArray());
 
             // check Content-Length header
-            // TODO: Content-Length Header should only be logged on Net Level
-            assertTrue(logSink.getOutboundAppLevelHeaders().get(0).get(CONTENT_LENGTH_HEADER).contains(Integer.toString(logSink.getOutboundAppLevel().get(0).toString(StandardCharsets.UTF_8).length())));
-            assertTrue(logSink.getInboundAppLevelHeaders().get(0).get(CONTENT_LENGTH_HEADER).contains(Integer.toString(logSink.getInboundAppLevel().get(0).toString(StandardCharsets.UTF_8).length())));
+            // NOTE: should only exist on Network Level, but for some reason is also present
+            // in the Application-Level Response.
+            assertTrue(logSink.getOutboundAppLevelHeaders().get(0).get(CONTENT_LENGTH_HEADER).isEmpty());
+
             assertTrue(logSink.getOutboundNetLevelHeaders().get(0).get(CONTENT_LENGTH_HEADER).contains(Integer.toString(logSink.getOutboundAppLevel().get(0).toString(StandardCharsets.UTF_8).length())));
             assertTrue(logSink.getInboundNetLevelHeaders().get(0).get(CONTENT_LENGTH_HEADER).contains(Integer.toString(logSink.getInboundAppLevel().get(0).toString(StandardCharsets.UTF_8).length())));
 
@@ -364,7 +364,6 @@ class CommunicationLogIT extends DpwsTest {
         }
     }
 
-    // TODO: ensure that the App-level Request is never gzip-compressed.
     @Test
     void testClientCommlogGzipped() throws Exception {
         setUpNonChunked();
@@ -429,19 +428,17 @@ class CommunicationLogIT extends DpwsTest {
             assertArrayEquals(actualRequestStream.toByteArray(), req.toByteArray());
             assertArrayEquals(actualRequestStream.toByteArray(), decodeGZip(netLevelReq));
 
-            // check Content-Length header
-            // Note: when content is gzipped, content-length is not equal to length of content,
-            //       hence we can only check if the header is present.
-            // TODO: also supply the Header for network- and application-level.
-            // TODO: Correct this once network-level and application-level are separated.
-            assertNotNull(logSink.getOutboundAppLevelHeaders().get(0).get(CONTENT_LENGTH_HEADER));
-            assertNotNull(logSink.getInboundAppLevelHeaders().get(0).get(CONTENT_LENGTH_HEADER));
+            assertTrue(logSink.getOutboundAppLevelHeaders().get(0).get(TRANSFER_ENCODING_HEADER).isEmpty());
+            assertEquals(TRANSFER_ENCODING_VALUE_CHUNKED, logSink.getOutboundNetLevelHeaders().get(0).get(TRANSFER_ENCODING_HEADER).get(0));
+
 
             // expect both request and response to be gzipped
-            assertTrue(logSink.getOutboundAppLevelHeaders().get(0).get(CONTENT_ENCODING_HEADER).contains("gzip"));
+            assertTrue(logSink.getOutboundAppLevelHeaders().get(0).get(CONTENT_ENCODING_HEADER).isEmpty());
+            assertTrue(logSink.getOutboundNetLevelHeaders().get(0).get(CONTENT_ENCODING_HEADER).contains("gzip"));
             // Problem: When the Client received a gzipped Response from the Server, then the "Content-Encoding: gzip"-Header is stripped in the GzipHandler beneath the
             //          CommLogHandler and hence does not read our Log.
-            assertTrue(logSink.getInboundAppLevelHeaders().get(0).get(CONTENT_ENCODING_HEADER).contains("gzip"));
+            assertTrue(logSink.getInboundAppLevelHeaders().get(0).get(CONTENT_ENCODING_HEADER).isEmpty());
+            assertTrue(logSink.getInboundNetLevelHeaders().get(0).get(CONTENT_ENCODING_HEADER).contains("gzip"));
 
             // ensure streams were closed
             assertTrue(req.isClosed());
@@ -697,12 +694,21 @@ class CommunicationLogIT extends DpwsTest {
                     logSink.getInboundAppLevelHeaders().get(0).get(customHeaderKey)
                             .contains(customHeaderValue)
             );
-            // the request is chunked, so we expect the transfer-encoding header can be found in the inbound commLog.
-            assertTrue(logSink.getInboundAppLevelHeaders().get(0).get("transfer-encoding").contains("chunked"),
+            // the request is chunked, so we expect the transfer-encoding header can be found in the inbound net-level commLog.
+            // However, for some reason it is also present in the app-Level commLog.
+            assertTrue(logSink.getInboundAppLevelHeaders().get(0).get(TRANSFER_ENCODING_HEADER)
+                    .contains(TRANSFER_ENCODING_VALUE_CHUNKED),
+                "Expected \"Transfer-Encoding:chunked\"-Header should be present in app-Level Commlog.");
+            assertTrue(logSink.getInboundNetLevelHeaders().get(0).get(TRANSFER_ENCODING_HEADER)
+                    .contains(TRANSFER_ENCODING_VALUE_CHUNKED),
                 "Expected \"Transfer-Encoding:chunked\"-Header could not be found in Commlog.");
 
-            // the response is chunked, so we expect the transfer-encoding header can be found in the outbound commLog.
-            assertTrue(logSink.getOutboundAppLevelHeaders().get(0).get("transfer-encoding").contains("chunked"));
+            // the response is chunked, so we expect the transfer-encoding header can be found in the outbound net-level commLog.
+            // However, for some reason it is also present on app-level.
+            assertTrue(logSink.getOutboundAppLevelHeaders().get(0).get(TRANSFER_ENCODING_HEADER)
+                .contains(TRANSFER_ENCODING_VALUE_CHUNKED));
+            assertTrue(logSink.getOutboundNetLevelHeaders().get(0).get(TRANSFER_ENCODING_HEADER)
+                .contains(TRANSFER_ENCODING_VALUE_CHUNKED));
 
             // ensure response headers are logged
             assertTrue(
@@ -732,7 +738,7 @@ class CommunicationLogIT extends DpwsTest {
     }
 
     @Test
-    void testServerCommlogNonChunked() throws Exception {
+    void testServerCommLogNonChunked() throws Exception {
         setUpNonChunked();
         var baseUri = "http://127.0.0.1:0";
         var contextPath = "/ctxt/path1";
@@ -777,7 +783,7 @@ class CommunicationLogIT extends DpwsTest {
             HttpResponse response = client.execute(post);
             var responseBytes = response.getEntity().getContent().readAllBytes();
 
-            // TODO: Because of the Commlog in the server closing after the request is done, we need a little sleep here
+            // NOTE: Because of the CommLog in the server closing after the request is done, we need a little sleep here
             Thread.sleep(10);
 
             // slurp up any leftover data
@@ -805,13 +811,22 @@ class CommunicationLogIT extends DpwsTest {
                 logSink.getInboundAppLevelHeaders().get(0).get(customHeaderKey)
                     .contains(customHeaderValue)
             );
-            // the request is non-chunked, so we expect the content-length header to be present and correct in the inbound commLog.
+            // the request is non-chunked, so we expect the content-length header to be present and correct in the
+            // inbound commLog.
+            // NOTE: in theory, the Content-Length header is only expected on Network-Level, but for some reason
+            //       it is also present on the App-Level.
             final int actualContentLength = logSink.getInboundAppLevel().get(0).toString(StandardCharsets.UTF_8).length();
-            assertEquals(logSink.getInboundAppLevelHeaders().get(0).get(CONTENT_LENGTH_HEADER).get(0), Integer.toString(actualContentLength));
+            assertEquals(Integer.toString(actualContentLength),
+                logSink.getInboundAppLevelHeaders().get(0).get(CONTENT_LENGTH_HEADER).get(0));
+            assertEquals(Integer.toString(actualContentLength),
+                logSink.getInboundNetLevelHeaders().get(0).get(CONTENT_LENGTH_HEADER).get(0));
 
-            // the response is non-chunked, so we expect the content-length header to be present and correct in the outbound commLog.
-            final int actualContentLength2 = logSink.getOutboundAppLevel().get(0).toString(StandardCharsets.UTF_8).length();
-            assertEquals(logSink.getOutboundAppLevelHeaders().get(0).get(CONTENT_LENGTH_HEADER).get(0), Integer.toString(actualContentLength2));
+            // the response is gzipped, so we expect the content-length header to be present on both application-
+            // and network-level, but to refer to the uncompressed and compressed body respectively.
+            assertEquals(Integer.toString(expectedResponse.length()),
+                logSink.getOutboundAppLevelHeaders().get(0).get(CONTENT_LENGTH_HEADER).get(0));
+            assertEquals(Integer.toString(netLevelResp.size()),
+                logSink.getOutboundNetLevelHeaders().get(0).get(CONTENT_LENGTH_HEADER).get(0));
 
             // ensure response headers are logged
             assertTrue(
@@ -908,13 +923,25 @@ class CommunicationLogIT extends DpwsTest {
             assertArrayEquals(expectedResponse.getBytes(), decodeGZip(netLevelResp.toByteArray()));
 
             // expect request and response to be gzipped
-            // TODO: store both the headers before GzipHandler and the headers after GzipHandler
-            // TODO: assertTrue(logSink.getInboundNetworkHeaders().get(0).get(CONTENT_ENCODING_HEADER).contains("gzip"));
+            // NOTE: for the Request, the GzipHandler renames the Content-Encoding Header to X-Content-Encoding.
             assertTrue(logSink.getInboundAppLevelHeaders().get(0).get(X_CONTENT_ENCODING_HEADER).contains("gzip"));
+            assertTrue(logSink.getInboundNetLevelHeaders().get(0).get(CONTENT_ENCODING_HEADER).contains("gzip"));
 
-            // TODO: assertTrue(logSink.getOutboundNetworkHeaders().get(0).get(CONTENT_ENCODING_HEADER).contains("gzip"));
-            // TODO: does the Content-Encoding Header appear before the GzipHandler?
-            assertTrue(logSink.getOutboundAppLevelHeaders().get(0).get(CONTENT_ENCODING_HEADER).contains("gzip"));
+            // NOTE: for the Response, the GzipHandler removes the Content-Encoding Header.
+            //       It is hence only present on Network-Level.
+            assertTrue(logSink.getOutboundAppLevelHeaders().get(0).get(CONTENT_ENCODING_HEADER).isEmpty());
+            assertTrue(logSink.getOutboundNetLevelHeaders().get(0).get(CONTENT_ENCODING_HEADER).contains("gzip"));
+
+            // Request is chunked: check Transfer Encoding Header
+            assertTrue(logSink.getInboundAppLevelHeaders().get(0).get(TRANSFER_ENCODING_HEADER).contains(TRANSFER_ENCODING_VALUE_CHUNKED));
+            assertTrue(logSink.getInboundNetLevelHeaders().get(0).get(TRANSFER_ENCODING_HEADER).contains(TRANSFER_ENCODING_VALUE_CHUNKED));
+
+            // Response is Non-Chunked: check Content-Length Header
+            // NOTE: The Response is gzipped.
+            //       Hence, the app-level and net-Level Content-Length Headers should contain the length of
+            //       the uncompressed- and compressed content, respectively.
+            assertTrue(logSink.getOutboundAppLevelHeaders().get(0).get(CONTENT_LENGTH_HEADER).contains(Integer.toString(expectedResponse.length())));
+            assertTrue(logSink.getOutboundNetLevelHeaders().get(0).get(CONTENT_LENGTH_HEADER).contains(Integer.toString(netLevelResp.size())));
 
             // ensure streams were closed by interceptors
             assertTrue(req.isClosed());
@@ -1341,22 +1368,6 @@ class CommunicationLogIT extends DpwsTest {
             return outboundNetLevelHeaders;
         }
 
-        public ArrayList<Map<String, String>> getInboundAppLevelHeadersOld() {
-            return inboundAppLevelHeadersOld;
-        }
-
-        public ArrayList<Map<String, String>> getOutboundAppLevelHeadersOld() {
-            return outboundAppLevelHeadersOld;
-        }
-
-        public ArrayList<Map<String, String>> getInboundNetLevelHeadersOld() {
-            return inboundNetLevelHeadersOld;
-        }
-
-        public ArrayList<Map<String, String>> getOutboundNetLevelHeadersOld() {
-            return outboundNetLevelHeadersOld;
-        }
-
         public void clear() {
             outboundAppLevel.clear();
             inboundAppLevel.clear();
@@ -1372,7 +1383,7 @@ class CommunicationLogIT extends DpwsTest {
             inboundNetLevelHeadersOld.clear();
             outboundNetLevelHeadersOld.clear();
 
-            // TODO: why are the TransactionIDs not cleared?
+            // TODO #213: why are the TransactionIDs not cleared?
         }
 
         public CommunicationLog.MessageType getOutboundMessageType() {

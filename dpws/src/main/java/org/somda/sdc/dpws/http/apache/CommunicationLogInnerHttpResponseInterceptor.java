@@ -55,18 +55,22 @@ public class CommunicationLogInnerHttpResponseInterceptor implements HttpRespons
         var currentTransactionOpt = Optional.of(context.getAttribute(CommunicationLog.MessageType.REQUEST.name()));
         var currentTransactionId = (String) currentTransactionOpt.orElse("");
 
-        Header header = (Header) context.getAttribute(
-            CommunicationLogOuterHttpResponseInterceptor.CONTENT_ENCODING_HEADER_FROM_OUTER_PART_KEY);
+        Header[] responseNetLevelHeaders = (Header[]) context.getAttribute(
+            CommunicationLogOuterHttpResponseInterceptor.NET_LEVEL_HEADERS_FROM_OUTER_PART_KEY);
 
-        final ListMultimap<String, String> responseHttpHeaders =
+        final ListMultimap<String, String> responseAppLevelHttpHeaders =
             ApacheClientHelper.allHeadersToMultimap(response.getAllHeaders());
-        if (header != null) {
-            responseHttpHeaders.put("Content-Encoding", header.getValue());
-        }
-        var requestHttpApplicationInfo = new HttpApplicationInfo(
-            responseHttpHeaders,
-                currentTransactionId,
-                null
+        final ListMultimap<String, String> responseNetLevelHttpHeaders =
+            ApacheClientHelper.allHeadersToMultimap(responseNetLevelHeaders);
+        var requestAppLevelHttpApplicationInfo = new HttpApplicationInfo(
+            responseAppLevelHttpHeaders,
+            currentTransactionId,
+            null
+        );
+        var requestNetLevelHttpApplicationInfo = new HttpApplicationInfo(
+            responseNetLevelHttpHeaders,
+            currentTransactionId,
+            null
         );
 
         final List<X509Certificate> x509certificates = new ArrayList<>();
@@ -101,13 +105,16 @@ public class CommunicationLogInnerHttpResponseInterceptor implements HttpRespons
                 x509certificates
         );
 
-        var requestCommContext = new CommunicationContext(requestHttpApplicationInfo, requestTransportInfo);
+        var requestAppLevelCommContext =
+            new CommunicationContext(requestAppLevelHttpApplicationInfo, requestTransportInfo);
+        var requestNetLevelCommContext =
+            new CommunicationContext(requestNetLevelHttpApplicationInfo, requestTransportInfo);
 
         OutputStream commlogAppLevelStream = commlog.logMessage(
                 CommunicationLog.Direction.INBOUND,
                 CommunicationLog.TransportType.HTTP,
                 CommunicationLog.MessageType.RESPONSE,
-                requestCommContext,
+                requestAppLevelCommContext,
                 CommunicationLog.Level.APPLICATION);
 
         response.setEntity(new CommunicationLogEntity(oldMessageEntity, commlogAppLevelStream));
@@ -120,7 +127,7 @@ public class CommunicationLogInnerHttpResponseInterceptor implements HttpRespons
                 CommunicationLog.Direction.INBOUND,
                 CommunicationLog.TransportType.HTTP,
                 CommunicationLog.MessageType.RESPONSE,
-                requestCommContext,
+                requestNetLevelCommContext,
                 CommunicationLog.Level.NETWORK);
             extractingEntity.setExtractInto(commlogNetLevelStream);
         }

@@ -293,6 +293,14 @@ public class UdpBindingServiceImpl extends AbstractIdleService implements UdpBin
         try (ByteArrayInputStream messageData =
                      new ByteArrayInputStream(packet.getData(), packet.getOffset(), packet.getLength())) {
             communicationLog.logMessage(
+                direction,
+                CommunicationLog.TransportType.UDP,
+                CommunicationLog.MessageType.UNKNOWN,
+                requestCommContext,
+                CommunicationLog.Level.NETWORK,
+                messageData
+            );
+            communicationLog.logMessage(
                     direction,
                     CommunicationLog.TransportType.UDP,
                     CommunicationLog.MessageType.UNKNOWN,
@@ -300,9 +308,6 @@ public class UdpBindingServiceImpl extends AbstractIdleService implements UdpBin
                     CommunicationLog.Level.APPLICATION,
                     messageData
             );
-            // TODO: add a network-level logMessage.
-            // TODO: UDP messages do not use gzip compression. Are the network-level and the application-level
-            //       logMessage the same in this case?
         } catch (IOException e) {
             instanceLogger.warn("Could not log udp message though the communication log", e);
         }
