@@ -205,7 +205,7 @@ class SubscriptionIT {
 
         subscribe.get(MAX_WAIT_TIME.getSeconds(), TimeUnit.SECONDS);
 
-        var transportBinding = transportBindingFactory.createHttpBinding(devicePeer.getDevice().getActiveSubscriptions().values().stream().findFirst().get().getSubscriptionManagerEpr().getAddress().getValue());
+        var transportBinding = transportBindingFactory.createHttpBinding(devicePeer.getDevice().getActiveSubscriptions().values().stream().findFirst().orElseThrow().getSubscriptionManagerEpr().getAddress().getValue());
         var requestResponseClient = requestResponseClientFactory.createRequestResponseClient(transportBinding);
 
         var subscriptionManagerOpt = devicePeer.getDevice().getActiveSubscriptions().values().stream().findFirst();
@@ -384,10 +384,7 @@ class SubscriptionIT {
         }
         Matcher authMatcher = AUTHORITY_PATTERN.matcher(requestUri);
         if (authMatcher.matches()) {
-            var authority = authMatcher.group(0);
-            if (authority != null) {
-                return authority;
-            }
+            return authMatcher.group(0);
         }
         return null;
     }
@@ -410,15 +407,15 @@ class SubscriptionIT {
         }
 
         @Override
-        public OutputStream createTargetStream(CommunicationLog.TransportType path,
-                                               CommunicationLog.Direction direction,
-                                               CommunicationLog.MessageType messageType,
-                                               CommunicationContext communicationContext,
-                                               CommunicationLog.Level level) {
+        public OutputStream createTargetStream(final CommunicationLog.TransportType path,
+                                               final CommunicationLog.Direction direction,
+                                               final CommunicationLog.MessageType messageType,
+                                               final CommunicationContext communicationContext,
+                                               final CommunicationLog.Level level) {
             var os = new ByteArrayOutputStream();
             var appInfo = (HttpApplicationInfo) communicationContext.getApplicationInfo();
             if (CommunicationLog.Direction.OUTBOUND.equals(direction)
-            && CommunicationLog.Level.APPLICATION.equals(level)) {
+            && CommunicationLog.Level.NETWORK.equals(level)) {
                 schemes.put(appInfo.getTransactionId(), communicationContext.getTransportInfo().getScheme());
                 outbound.put(appInfo.getTransactionId(), os);
                 outboundMessageType = messageType;
