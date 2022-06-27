@@ -15,7 +15,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.somda.sdc.biceps.common.MdibStateModifications;
 import org.somda.sdc.biceps.common.MdibTypeValidator;
 import org.somda.sdc.biceps.model.history.ChangeSequenceReportType;
+import org.somda.sdc.biceps.model.history.HistoryQueryType;
 import org.somda.sdc.biceps.model.history.ObjectFactory;
+import org.somda.sdc.biceps.model.history.VersionRangeType;
 import org.somda.sdc.biceps.model.participant.NumericMetricState;
 import org.somda.sdc.biceps.testutil.BaseTreeModificationsSet;
 import org.somda.sdc.biceps.testutil.Handles;
@@ -28,11 +30,13 @@ import org.somda.sdc.dpws.soap.interception.Interceptor;
 import org.somda.sdc.dpws.soap.interception.MessageInterceptor;
 import org.somda.sdc.dpws.soap.interception.NotificationObject;
 import org.somda.sdc.dpws.soap.wseventing.SubscribeResult;
+import org.somda.sdc.dpws.soap.wseventing.model.FilterType;
 import test.org.somda.common.CIDetector;
 import test.org.somda.common.LoggingTestWatcher;
 
+import javax.xml.bind.JAXBElement;
 import java.math.BigDecimal;
-import java.util.Collections;
+import java.math.BigInteger;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -40,6 +44,7 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.somda.sdc.dpws.DpwsConstants.WS_DIALECT_HISTORY_SERVICE;
 import static org.somda.sdc.glue.common.ActionConstants.ACTION_HISTORY_MDIB_REPORT;
 import static org.somda.sdc.glue.common.WsdlConstants.SERVICE_HISTORY;
 
@@ -63,6 +68,7 @@ public class HistoryIT {
     private HostingServiceProxy hostingServiceProxy;
 
     private ObjectFactory objectFactory;
+    private org.somda.sdc.dpws.soap.wseventing.model.ObjectFactory wseFactory;
 
     @BeforeEach
     void beforeEach(TestInfo testInfo) throws Exception {
@@ -91,6 +97,7 @@ public class HistoryIT {
                 .get(WAIT_IN_SECONDS, WAIT_TIME_UNIT);
 
         objectFactory = new ObjectFactory();
+        wseFactory = new org.somda.sdc.dpws.soap.wseventing.model.ObjectFactory();
     }
 
     @AfterEach
@@ -111,7 +118,8 @@ public class HistoryIT {
         var historyService = hostingServiceProxy.getHostedServices().get(SERVICE_HISTORY);
         assertNotNull(historyService);
         ListenableFuture<SubscribeResult> subscribe = historyService.getEventSinkAccess().subscribe(
-                List.of(ACTION_HISTORY_MDIB_REPORT), null,
+                createFilterType(),
+                null,
                 new Interceptor() {
                     //private final List<ChangeSequenceReportType> receivedNotifications = new ArrayList<>();
 
@@ -124,7 +132,7 @@ public class HistoryIT {
                             notificationFuture.set(receivedNotifications);
                         }*/
                     }
-                }, createHistoryQuery());
+                });
 
         subscribe.get(WAIT_IN_SECONDS, WAIT_TIME_UNIT);
 
@@ -166,8 +174,24 @@ public class HistoryIT {
         }
     }
 
-    private List<Object> createHistoryQuery() {
-        var query = objectFactory.createHistoryQuery(objectFactory.createHistoryQueryType());
-        return Collections.singletonList(query);
+    private FilterType createFilterType() {
+        var filterType = wseFactory.createFilterType();
+        filterType.setDialect(WS_DIALECT_HISTORY_SERVICE);
+        filterType.setContent(List.of(ACTION_HISTORY_MDIB_REPORT, createHistoryQuery()));
+        return filterType;
+    }
+
+    private JAXBElement<HistoryQueryType> createHistoryQuery() {
+        var queryType = objectFactory.createHistoryQueryType();
+        queryType.setVersionRange(createVersionRangeQuery());
+        return objectFactory.createHistoryQuery(queryType);
+    }
+
+    private VersionRangeType createVersionRangeQuery() {
+        var versionRange = objectFactory.createVersionRangeType();
+        versionRange.setSequenceId("mock");
+        versionRange.setStartVersion(BigInteger.ZERO);
+        versionRange.setEndVersion(BigInteger.TEN);
+        return versionRange;
     }
 }

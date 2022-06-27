@@ -212,7 +212,7 @@ public class EventSourceInterceptor extends AbstractIdleService implements Event
 
         // Validate filter dialect
         String filterDialect = Optional.ofNullable(filterType.getDialect()).orElse("");
-        if (!filterDialect.equals(DpwsConstants.WS_EVENTING_SUPPORTED_DIALECT)) {
+        if (!List.of(DpwsConstants.WS_EVENTING_SUPPORTED_ACTION_DIALECT, DpwsConstants.WS_DIALECT_HISTORY_SERVICE).contains(filterDialect)) {
             throw new SoapFaultException(faultFactory.createFilteringRequestedUnavailable(), requestMsgId);
         }
 
@@ -253,6 +253,9 @@ public class EventSourceInterceptor extends AbstractIdleService implements Event
                 subMan.getSubscriptionId(),
                 wsaUtil.getAddressUri(subMan.getNotifyTo()).orElse("<unknown>"),
                 grantedExpires.getSeconds());
+        if (DpwsConstants.WS_DIALECT_HISTORY_SERVICE.equals(filterDialect)) {
+            //TODO #142 inform history service about new subscription
+        }
     }
 
     @MessageInterceptor(value = WsEventingConstants.WSA_ACTION_RENEW, direction = Direction.REQUEST)

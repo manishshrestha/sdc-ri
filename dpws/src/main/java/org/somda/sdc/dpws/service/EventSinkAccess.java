@@ -7,6 +7,7 @@ import org.somda.sdc.dpws.soap.exception.TransportException;
 import org.somda.sdc.dpws.soap.interception.Interceptor;
 import org.somda.sdc.dpws.soap.wseventing.EventSink;
 import org.somda.sdc.dpws.soap.wseventing.SubscribeResult;
+import org.somda.sdc.dpws.soap.wseventing.model.FilterType;
 
 import javax.annotation.Nullable;
 import java.time.Duration;
@@ -36,13 +37,12 @@ public interface EventSinkAccess {
                                                 Interceptor notificationSink);
 
     /**
-     * Conducts a subscribe.
+     * Conducts subscribe.
      *
-     * @param actions          a list of operation actions to subscribe for.
+     * @param filterType       the filter type used in event subscription.
      * @param expires          the desired expiration time (the hosted service may decide to grant lesser than this).
      *                         If none is given, the hosting service will take decision.
      * @param notificationSink the sink where to deliver notifications.
-     * @param subscriptionFilters list of additional subscription filters
      * @return a future object that either includes subscription information or throws
      * <ul>
      * <li>{@link SoapFaultException}
@@ -51,10 +51,9 @@ public interface EventSinkAccess {
      * <li>{@link org.somda.sdc.dpws.soap.interception.InterceptorException}
      * </ul>
      */
-    ListenableFuture<SubscribeResult> subscribe(List<String> actions,
+    ListenableFuture<SubscribeResult> subscribe(FilterType filterType,
                                                 @Nullable Duration expires,
-                                                Interceptor notificationSink,
-                                                List<Object> subscriptionFilters);
+                                                Interceptor notificationSink);
 
     /**
      * Renews a subscription.

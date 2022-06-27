@@ -12,7 +12,7 @@ public class GlueConstants {
     /**
      * Resource path to BICEPS XML Schemas.
      */
-    public static final String SCHEMA_PATH = "ExtensionPoint.xsd:BICEPS_ParticipantModel.xsd:BICEPS_MessageModel.xsd";
+    public static final String SCHEMA_PATH = "ExtensionPoint.xsd:BICEPS_ParticipantModel.xsd:BICEPS_MessageModel.xsd:HistoryModel.xsd";
 
     /**
      * Key purpose dot-notated OID that expresses compliance

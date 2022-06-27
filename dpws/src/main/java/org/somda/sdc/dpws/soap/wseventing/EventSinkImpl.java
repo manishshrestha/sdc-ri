@@ -29,8 +29,8 @@ import org.somda.sdc.dpws.soap.exception.MalformedSoapMessageException;
 import org.somda.sdc.dpws.soap.factory.RequestResponseClientFactory;
 import org.somda.sdc.dpws.soap.wsaddressing.WsAddressingUtil;
 import org.somda.sdc.dpws.soap.wsaddressing.model.EndpointReferenceType;
-import org.somda.sdc.dpws.soap.wseventing.exception.SubscriptionRequestResponseClientNotFoundException;
 import org.somda.sdc.dpws.soap.wseventing.exception.SubscriptionNotFoundException;
+import org.somda.sdc.dpws.soap.wseventing.exception.SubscriptionRequestResponseClientNotFoundException;
 import org.somda.sdc.dpws.soap.wseventing.factory.SubscriptionManagerFactory;
 import org.somda.sdc.dpws.soap.wseventing.model.DeliveryType;
 import org.somda.sdc.dpws.soap.wseventing.model.FilterType;
@@ -46,8 +46,10 @@ import org.somda.sdc.dpws.soap.wseventing.model.Unsubscribe;
 import javax.annotation.Nullable;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.URI;
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -122,14 +124,18 @@ public class EventSinkImpl implements EventSink {
     public ListenableFuture<SubscribeResult> subscribe(List<String> actions,
                                                        @Nullable Duration expires,
                                                        NotificationSink notificationSink) {
-        return subscribe(actions, expires, notificationSink, Collections.emptyList());
+        var actionBasedDialect = URI.create(DpwsConstants.WS_EVENTING_SUPPORTED_ACTION_DIALECT);
+        var filterType = wseFactory.createFilterType();
+        filterType.setDialect(actionBasedDialect.toString());
+        filterType.setContent(Collections.singletonList(String.join(" ", actions)));
+
+        return subscribe(filterType, expires, notificationSink);
     }
 
     @Override
-    public ListenableFuture<SubscribeResult> subscribe(List<String> actions,
+    public ListenableFuture<SubscribeResult> subscribe(FilterType filterType,
                                                        @Nullable Duration expires,
-                                                       NotificationSink notificationSink,
-                                                       List<Object> subscriptionFilters) {
+                                                       NotificationSink notificationSink) {
         return executorService.get().submit(() -> {
             //final URI httpServerBase = URI.create()
             // Create unique context path suffix
@@ -171,27 +177,12 @@ public class EventSinkImpl implements EventSink {
             EndpointReferenceType endToEpr = wsaUtil.createEprWithAddress(endToUri);
             subscribeBody.setEndTo(endToEpr);
 
-            var filterContent = new ArrayList<>();
-            filterContent.add(implodeUriList(actions));
-            filterContent.addAll(subscriptionFilters);
-
-            FilterType filterType = wseFactory.createFilterType();
-            filterType.setDialect(DpwsConstants.WS_EVENTING_SUPPORTED_DIALECT);
-            filterType.setContent(filterContent);
-
             subscribeBody.setExpires(expires);
 
             subscribeBody.setFilter(filterType);
 
             SoapMessage subscribeRequest = soapUtil.createMessage(WsEventingConstants.WSA_ACTION_SUBSCRIBE,
                     subscribeBody);
-
-            // Create client to send request
-            // // TODO: 19.01.2017
-            //HostedServiceTransportBinding hsTb = hostedServiceTransportBindingFactory
-            // .createHostedServiceTransportBinding(hostedServiceProxy);
-            //hostedServiceProxy.registerMetadataChangeObserver(hsTb);
-            //RequestResponseClient hostedServiceClient = resReqClientFactory.createRequestResponseClient(hsTb);
 
             SoapMessage soapResponse = requestResponseClient.sendRequestResponse(subscribeRequest);
             SubscribeResponse responseBody = soapUtil.getBody(soapResponse, SubscribeResponse.class).orElseThrow(() ->
@@ -203,7 +194,7 @@ public class EventSinkImpl implements EventSink {
                     responseBody.getExpires(),
                     notifyToEpr,
                     endToEpr,
-                    Collections.unmodifiableList(actions));
+                    getActionsAsList(filterType));
 
             TransportBinding tBinding = transportBindingFactory.createTransportBinding(
                     responseBody.getSubscriptionManager().getAddress().getValue());
@@ -223,6 +214,14 @@ public class EventSinkImpl implements EventSink {
             // Return id for addressing purposes
             return new SubscribeResult(sinkSubMan.getSubscriptionId(), sinkSubMan.getExpires());
         });
+    }
+
+    private Collection<String> getActionsAsList(FilterType filterType) {
+        if (filterType.getContent() != null && !filterType.getContent().isEmpty()) {
+            var actionsString = String.valueOf(filterType.getContent().get(0));
+            return List.of(actionsString.split(" "));
+        }
+        return Collections.emptyList();
     }
 
     @Override
@@ -337,13 +336,7 @@ public class EventSinkImpl implements EventSink {
     }
 
     private String implodeUriList(List<String> actionUris) {
-        StringBuilder sb = new StringBuilder();
-        actionUris.forEach(s -> {
-            sb.append(s);
-            sb.append(" ");
-        });
-        sb.deleteCharAt(sb.length() - 1);
-        return sb.toString();
+        return String.join(" ", actionUris);
     }
 
     private void processIncomingNotification(NotificationSink notificationSink,

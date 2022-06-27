@@ -119,7 +119,12 @@ public class DpwsConstants {
     /**
      * Defines the minimum supported WS-Eventing dialect URI.
      */
-    public static final String WS_EVENTING_SUPPORTED_DIALECT = NAMESPACE + "/Action";
+    public static final String WS_EVENTING_SUPPORTED_ACTION_DIALECT = NAMESPACE + "/Action";
+
+    /**
+     * Defines the supported WS-Eventing dialect for History service.
+     */
+    public static final String WS_DIALECT_HISTORY_SERVICE = "http://www.draeger.com/sdc/2021-06/HistoryService";
 
     /**
      * Defines the DPWS relationship type for hosts (devices).

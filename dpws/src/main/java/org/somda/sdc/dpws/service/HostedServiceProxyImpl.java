@@ -6,7 +6,6 @@ import com.google.inject.assistedinject.AssistedInject;
 import org.somda.sdc.dpws.DpwsModelCloning;
 import org.somda.sdc.dpws.guice.ClientSpecific;
 import org.somda.sdc.dpws.model.HostedServiceType;
-import org.somda.sdc.dpws.soap.NotificationSink;
 import org.somda.sdc.dpws.soap.RequestResponseClient;
 import org.somda.sdc.dpws.soap.SoapMessage;
 import org.somda.sdc.dpws.soap.exception.MarshallingException;
@@ -18,6 +17,7 @@ import org.somda.sdc.dpws.soap.interception.InterceptorException;
 import org.somda.sdc.dpws.soap.wsaddressing.WsAddressingServerInterceptor;
 import org.somda.sdc.dpws.soap.wseventing.EventSink;
 import org.somda.sdc.dpws.soap.wseventing.SubscribeResult;
+import org.somda.sdc.dpws.soap.wseventing.model.FilterType;
 
 import javax.annotation.Nullable;
 import java.time.Duration;
@@ -86,23 +86,24 @@ public class HostedServiceProxyImpl implements HostedServiceProxy, EventSinkAcce
     }
 
     @Override
-    public ListenableFuture<SubscribeResult> subscribe(List<String> actions, @Nullable Duration expires,
+    public ListenableFuture<SubscribeResult> subscribe(List<String> actions,
+                                                       @Nullable Duration expires,
                                                        Interceptor notificationSink) {
-        final NotificationSink notifications = notificationSinkFactory
-                .createNotificationSink(wsAddressingServerInterceptor);
+        var notifications = notificationSinkFactory.createNotificationSink(
+                wsAddressingServerInterceptor);
         notifications.register(notificationSink);
         return eventSink.subscribe(actions, expires, notifications);
     }
 
     @Override
-    public ListenableFuture<SubscribeResult> subscribe(List<String> actions,
+    public ListenableFuture<SubscribeResult> subscribe(FilterType filterType,
                                                        @Nullable Duration expires,
-                                                       Interceptor notificationSink,
-                                                       List<Object> subscriptionFilters) {
-        final NotificationSink notifications = notificationSinkFactory
-                .createNotificationSink(wsAddressingServerInterceptor);
+                                                       Interceptor notificationSink) {
+        var notifications = notificationSinkFactory.createNotificationSink(
+                wsAddressingServerInterceptor);
         notifications.register(notificationSink);
-        return eventSink.subscribe(actions, expires, notifications, subscriptionFilters);
+        return eventSink.subscribe(filterType, expires, notifications);
+
     }
 
     @Override
