@@ -19,6 +19,7 @@ import org.somda.sdc.dpws.soap.exception.TransportException;
 import javax.annotation.Nullable;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
@@ -290,9 +291,9 @@ public class UdpBindingServiceImpl extends AbstractIdleService implements UdpBin
         // no UDP specialization, create ApplicationInfo
         var requestCommContext = new CommunicationContext(new ApplicationInfo(), requestTransportInfo);
 
-        try (ByteArrayInputStream messageData =
+        try (InputStream messageData =
                      new ByteArrayInputStream(packet.getData(), packet.getOffset(), packet.getLength())) {
-            communicationLog.logMessage(
+            var newMessageData = communicationLog.logMessage(
                 direction,
                 CommunicationLog.TransportType.UDP,
                 CommunicationLog.MessageType.UNKNOWN,
@@ -306,7 +307,7 @@ public class UdpBindingServiceImpl extends AbstractIdleService implements UdpBin
                     CommunicationLog.MessageType.UNKNOWN,
                     requestCommContext,
                     CommunicationLog.Level.APPLICATION,
-                    messageData
+                    newMessageData
             );
         } catch (IOException e) {
             instanceLogger.warn("Could not log udp message though the communication log", e);
