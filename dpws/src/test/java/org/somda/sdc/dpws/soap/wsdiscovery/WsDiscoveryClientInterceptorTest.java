@@ -98,7 +98,6 @@ class WsDiscoveryClientInterceptorTest extends DpwsTest {
 
         QName expectedType = new QName("http://namespace", "type");
         String expectedScope = "http://namespace/scope";
-        String expectedXAddr = "http://1.2.3.4";
 
         expectedTypes = new ArrayList<>();
         expectedTypes.add(expectedType);
@@ -106,11 +105,7 @@ class WsDiscoveryClientInterceptorTest extends DpwsTest {
         expectedScopes = new ArrayList<>();
         expectedScopes.add(expectedScope);
 
-        ObjectFactory wsaFactory = getInjector().getInstance(ObjectFactory.class);
-        expectedEpr = wsaFactory.createEndpointReferenceType();
-        AttributedURIType eprUri = wsaFactory.createAttributedURIType();
-        eprUri.setValue("http://expectedEpr-uri");
-        expectedEpr.setAddress(eprUri);
+        expectedEpr = createEpr("http://expectedEpr-uri");
 
         wsdFactory = getInjector().getInstance(org.somda.sdc.dpws.soap.wsdiscovery.model.ObjectFactory.class);
         envelopeFactory = getInjector().getInstance(EnvelopeFactory.class);
@@ -175,6 +170,46 @@ class WsDiscoveryClientInterceptorTest extends DpwsTest {
         assertEquals(Integer.valueOf(1), future.get());
     }
 
+    /**
+     * Regression test for #243
+     */
+    @Test
+    void sendMultipleProbesConcurrently() throws Exception {
+        notificationSource.register(getInjector().getInstance(WsAddressingClientInterceptor.class));
+        notificationSource.register(wsDiscoveryClient);
+        notificationSink.register(wsDiscoveryClient);
+
+        final List<String> searchIds = List.of(UUID.randomUUID().toString(), UUID.randomUUID().toString(), UUID.randomUUID().toString());
+
+        final List<String> requestIdsOfReceivedProbeMatches = new ArrayList<>();
+        wsDiscoveryClient.registerHelloByeAndProbeMatchesObserver(new HelloByeAndProbeMatchesObserver() {
+            @Subscribe
+            void onProbe(ProbeMatchesMessage probeMatchesMessage) {
+                requestIdsOfReceivedProbeMatches.add(probeMatchesMessage.getProbeRequestId());
+            }
+        });
+
+        ListenableFuture<Integer> future1 = wsDiscoveryClient.sendProbe(searchIds.get(0), expectedTypes,
+                                                                       expectedScopes, 1);
+        ListenableFuture<Integer> future2 = wsDiscoveryClient.sendProbe(searchIds.get(1), expectedTypes,
+                                                                        expectedScopes, 1);
+        ListenableFuture<Integer> future3 = wsDiscoveryClient.sendProbe(searchIds.get(2), expectedTypes,
+                                                                        expectedScopes, 1);
+        assertEquals(3, sentSoapMessages.size());
+
+        // mock receiving probe matches in arbitrary order that doesn't match the order of sending the probes
+        notificationSink.receiveNotification(createProbeMatches(sentSoapMessages.get(1)), communicationContextMock);
+        notificationSink.receiveNotification(createProbeMatches(sentSoapMessages.get(0)), communicationContextMock);
+        notificationSink.receiveNotification(createProbeMatches(sentSoapMessages.get(2)), communicationContextMock);
+
+        assertEquals(Integer.valueOf(1), future1.get());
+        assertEquals(Integer.valueOf(1), future2.get());
+        assertEquals(Integer.valueOf(1), future3.get());
+
+        assertEquals(searchIds.size(), requestIdsOfReceivedProbeMatches.size());
+        assertTrue(requestIdsOfReceivedProbeMatches.containsAll(searchIds));
+    }
+
     @Test
     void sendResolve() throws Exception {
         notificationSource.register(getInjector().getInstance(WsAddressingClientInterceptor.class));
@@ -183,7 +218,7 @@ class WsDiscoveryClientInterceptorTest extends DpwsTest {
 
         ListenableFuture<ResolveMatchesType> result = wsDiscoveryClient.sendResolve(expectedEpr);
         assertEquals(1, sentSoapMessages.size());
-        notificationSink.receiveNotification(createResolveMatches(sentSoapMessages.get(0)), communicationContextMock);
+        notificationSink.receiveNotification(createResolveMatches(sentSoapMessages.get(0), expectedEpr), communicationContextMock);
 
         Futures.addCallback(result, new FutureCallback<>() {
             @Override
@@ -198,8 +233,53 @@ class WsDiscoveryClientInterceptorTest extends DpwsTest {
         }, MoreExecutors.directExecutor());
     }
 
-    private SoapMessage createResolveMatches(SoapMessage msg) {
+    /**
+     * Regression test for #243
+     */
+    @Test
+    void sendMultipleResolvesConcurrently() throws Exception {
+        notificationSource.register(getInjector().getInstance(WsAddressingClientInterceptor.class));
+        notificationSource.register(wsDiscoveryClient);
+        notificationSink.register(wsDiscoveryClient);
+
+        var epr1 = createEpr("http://expectedEpr-uri-1");
+        var epr2 = createEpr("http://expectedEpr-uri-2");
+        var epr3 = createEpr("http://expectedEpr-uri-3");
+
+        ListenableFuture<ResolveMatchesType> result1 = wsDiscoveryClient.sendResolve(epr1);
+        ListenableFuture<ResolveMatchesType> result2 = wsDiscoveryClient.sendResolve(epr2);
+        ListenableFuture<ResolveMatchesType> result3 = wsDiscoveryClient.sendResolve(epr3);
+
+        assertEquals(3, sentSoapMessages.size());
+
+        // mock receiving resolve matches in arbitrary order that doesn't match the order of sending the resolves
+        notificationSink.receiveNotification(createResolveMatches(sentSoapMessages.get(1), epr2), communicationContextMock);
+        notificationSink.receiveNotification(createResolveMatches(sentSoapMessages.get(0), epr1), communicationContextMock);
+        notificationSink.receiveNotification(createResolveMatches(sentSoapMessages.get(2), epr3), communicationContextMock);
+
+        var resolveMatches1 = result1.get();
+        var resolveMatches2 = result2.get();
+        var resolveMatches3 = result3.get();
+
+        // fine, all resolves have found a match; asserts below just to be *really* sure...
+
+        assertEquals(epr1, resolveMatches1.getResolveMatch().getEndpointReference());
+        assertEquals(epr2, resolveMatches2.getResolveMatch().getEndpointReference());
+        assertEquals(epr3, resolveMatches3.getResolveMatch().getEndpointReference());
+    }
+
+    private EndpointReferenceType createEpr(String uri) {
+        ObjectFactory wsaFactory = getInjector().getInstance(ObjectFactory.class);
+        var epr = wsaFactory.createEndpointReferenceType();
+        AttributedURIType eprUri = wsaFactory.createAttributedURIType();
+        eprUri.setValue(uri);
+        epr.setAddress(eprUri);
+        return epr;
+    }
+
+    private SoapMessage createResolveMatches(SoapMessage msg, EndpointReferenceType epr) {
         ResolveMatchType resolveMatchType = wsdFactory.createResolveMatchType();
+        resolveMatchType.setEndpointReference(epr);
         ResolveMatchesType resolveMatchesType = wsdFactory.createResolveMatchesType();
         resolveMatchesType.setResolveMatch(resolveMatchType);
 

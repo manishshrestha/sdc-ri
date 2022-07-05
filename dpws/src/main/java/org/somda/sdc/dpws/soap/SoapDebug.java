@@ -44,6 +44,9 @@ public class SoapDebug {
             sb.append("<unknown>");
         }
 
+        var relatesToOptional = msg.getWsAddressingHeader().getRelatesTo();
+        relatesToOptional.ifPresent(relatesTo -> sb.append(" --> ").append(relatesTo.getValue()));
+
         sb.append(")");
         return sb.toString();
     }
