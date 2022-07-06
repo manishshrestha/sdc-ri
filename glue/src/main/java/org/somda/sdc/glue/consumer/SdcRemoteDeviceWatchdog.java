@@ -150,7 +150,7 @@ public class SdcRemoteDeviceWatchdog extends AbstractIdleService {
                         return;
                     }
                 } catch (Exception e) {
-                    instanceLogger.warn("Trying to renew subscription running on service {} failed", serviceId);
+                    instanceLogger.warn("Trying to renew subscription running on service {} failed", serviceId, e);
                     postWatchdogMessage(new Exception(String.format(
                             "Trying to renew subscription running on service %s failed", serviceId), e));
                     return;

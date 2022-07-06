@@ -230,7 +230,16 @@ public class OperationHandler implements OperationInvocationReceiver {
     @IncomingSetServiceRequest(operationHandle = Constants.HANDLE_ACTIVATE, listType = String.class)
     InvocationResponse activateExample(Context context, List<String> args) {
         context.sendSuccessfulReport(InvocationState.START);
-        LOG.debug("Received Activate for {}", Constants.HANDLE_ACTIVATE);
+        LOG.info("Received Activate for {}", Constants.HANDLE_ACTIVATE);
+
+        context.sendSuccessfulReport(InvocationState.FIN);
+        return context.createSuccessfulResponse(mdibAccess.getMdibVersion(), InvocationState.FIN);
+    }
+
+    @IncomingSetServiceRequest(operationHandle = "actop.mds0_sco_0", listType = String.class)
+    InvocationResponse activateExample2(Context context, List<String> args) {
+        context.sendSuccessfulReport(InvocationState.START);
+        LOG.info("Received Activate for {}", context.getOperationHandle());
 
         context.sendSuccessfulReport(InvocationState.FIN);
         return context.createSuccessfulResponse(mdibAccess.getMdibVersion(), InvocationState.FIN);
