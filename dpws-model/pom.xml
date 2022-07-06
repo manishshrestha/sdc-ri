@@ -47,6 +47,8 @@
         <directories.sourceFiles>${project.basedir}/src/main/java</directories.sourceFiles>
         <directories.generatedSources>${project.build.directory}/generated-sources</directories.generatedSources>
         <directories.generatedResources>${project.build.directory}/generated-resources</directories.generatedResources>
+        <!-- module contains only generated code with questionable javadoc, skip -->
+        <maven.javadoc.skip>true</maven.javadoc.skip>
     </properties>
 
     <dependencies>
@@ -62,6 +64,7 @@
             <artifactId>threeten-jaxb-core</artifactId>
             <version>${jaxbThreetenCoreVersion}</version>
         </dependency>
+
 
         <dependency>
             <groupId>org.jvnet.jaxb2_commons</groupId>
@@ -88,6 +91,7 @@
         </dependency>
     </dependencies>
     <build>
+
         <plugins>
             <plugin>
                 <groupId>org.jvnet.jaxb2.maven2</groupId>
@@ -121,12 +125,19 @@
                                 <arg>-XsimpleEquals</arg>
                                 <arg>-XsimpleHashCode</arg>
                                 <arg>-XtoString</arg>
+                                <arg>-Xclone</arg>
+                                <arg>-Xcopy</arg>
                             </args>
                             <plugins>
                                 <plugin>
                                     <groupId>org.jvnet.jaxb2_commons</groupId>
                                     <artifactId>jaxb2-basics</artifactId>
                                     <version>${jaxbBasicsVersion}</version>
+                                </plugin>
+                                <plugin>
+                                    <groupId>net.codesup.util</groupId>
+                                    <artifactId>jaxb2-rich-contract-plugin</artifactId>
+                                    <version>2.1.0</version>
                                 </plugin>
                             </plugins>
                         </configuration>

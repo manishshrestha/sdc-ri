@@ -44,6 +44,18 @@ public class MdibVersionUtil {
     }
 
     /**
+     * Sets MdibVersion for any abstract report.
+     *
+     * @param mdibVersion version to store
+     * @param target report
+     */
+    public void setMdibVersion(MdibVersion mdibVersion, AbstractReport target) {
+        target.setSequenceId(mdibVersion.getSequenceId());
+        target.setInstanceId(mdibVersion.getInstanceId());
+        target.setMdibVersion(mdibVersion.getVersion());
+    }
+
+    /**
      * Extracts the MDIB version from a report.
      *
      * @param msg the report to extract data from.

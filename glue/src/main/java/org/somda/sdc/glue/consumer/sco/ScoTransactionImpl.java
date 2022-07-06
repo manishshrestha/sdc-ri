@@ -3,7 +3,6 @@ package org.somda.sdc.glue.consumer.sco;
 import org.somda.sdc.biceps.model.message.AbstractSetResponse;
 import org.somda.sdc.biceps.model.message.OperationInvokedReport;
 import org.somda.sdc.common.util.AutoLock;
-import org.somda.sdc.biceps.common.BicepsModelCloning;
 
 import javax.annotation.Nullable;
 import java.time.Duration;
@@ -31,18 +30,15 @@ public class ScoTransactionImpl<T extends AbstractSetResponse> implements ScoTra
     private final ArrayList<OperationInvokedReport.ReportPart> collectedReports;
     private final ReentrantLock reportsLock;
     private final Condition reportsCondition;
-    private final BicepsModelCloning bicepsModelCloning;
     private final ScoUtil scoUtil;
 
     public ScoTransactionImpl(T response,
                               @Nullable Consumer<OperationInvokedReport.ReportPart> reportListener,
-                              BicepsModelCloning bicepsModelCloning,
                               ScoUtil scoUtil) {
         this.response = response;
         this.reportListener = reportListener;
         this.reportsLock = new ReentrantLock();
         this.reportsCondition = reportsLock.newCondition();
-        this.bicepsModelCloning = bicepsModelCloning;
         this.scoUtil = scoUtil;
         this.collectedReports = new ArrayList<>(3);
     }
@@ -61,7 +57,7 @@ public class ScoTransactionImpl<T extends AbstractSetResponse> implements ScoTra
 
     @Override
     public T getResponse() {
-        return bicepsModelCloning.deepCopy(response);
+        return (T) response.createCopy();
     }
 
     @Override
@@ -117,7 +113,7 @@ public class ScoTransactionImpl<T extends AbstractSetResponse> implements ScoTra
 
     private List<OperationInvokedReport.ReportPart> deepCopyCollectedReports() {
         return collectedReports.stream()
-                .map(bicepsModelCloning::deepCopy)
+                .map(OperationInvokedReport.ReportPart::createCopy)
                 .collect(Collectors.toList());
     }
 }

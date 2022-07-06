@@ -8,10 +8,34 @@ import org.apache.logging.log4j.Logger;
 import org.somda.sdc.biceps.common.MdibDescriptionModifications;
 import org.somda.sdc.biceps.common.MdibEntity;
 import org.somda.sdc.biceps.common.access.MdibAccess;
-import org.somda.sdc.biceps.model.participant.*;
+import org.somda.sdc.biceps.model.participant.AbstractComplexDeviceComponentDescriptor;
+import org.somda.sdc.biceps.model.participant.AbstractDescriptor;
+import org.somda.sdc.biceps.model.participant.AbstractMetricDescriptor;
+import org.somda.sdc.biceps.model.participant.AbstractOperationDescriptor;
+import org.somda.sdc.biceps.model.participant.AbstractState;
+import org.somda.sdc.biceps.model.participant.AlertConditionDescriptor;
+import org.somda.sdc.biceps.model.participant.AlertSignalDescriptor;
+import org.somda.sdc.biceps.model.participant.AlertSystemDescriptor;
+import org.somda.sdc.biceps.model.participant.BatteryDescriptor;
+import org.somda.sdc.biceps.model.participant.ChannelDescriptor;
+import org.somda.sdc.biceps.model.participant.ClockDescriptor;
+import org.somda.sdc.biceps.model.participant.EnsembleContextDescriptor;
+import org.somda.sdc.biceps.model.participant.LocationContextDescriptor;
+import org.somda.sdc.biceps.model.participant.MdDescription;
+import org.somda.sdc.biceps.model.participant.MdState;
+import org.somda.sdc.biceps.model.participant.Mdib;
+import org.somda.sdc.biceps.model.participant.MdibVersion;
+import org.somda.sdc.biceps.model.participant.MdsDescriptor;
+import org.somda.sdc.biceps.model.participant.MeansContextDescriptor;
+import org.somda.sdc.biceps.model.participant.ObjectFactory;
+import org.somda.sdc.biceps.model.participant.OperatorContextDescriptor;
+import org.somda.sdc.biceps.model.participant.PatientContextDescriptor;
+import org.somda.sdc.biceps.model.participant.ScoDescriptor;
+import org.somda.sdc.biceps.model.participant.SystemContextDescriptor;
+import org.somda.sdc.biceps.model.participant.VmdDescriptor;
+import org.somda.sdc.biceps.model.participant.WorkflowContextDescriptor;
 import org.somda.sdc.common.CommonConfig;
 import org.somda.sdc.common.logging.InstanceLogger;
-import org.somda.sdc.biceps.common.BicepsModelCloning;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -33,18 +57,15 @@ public class MdibMapper {
     private static final Logger LOG = LogManager.getLogger(MdibMapper.class);
     private final MdibAccess mdibAccess;
     private final ObjectFactory participantModelFactory;
-    private final BicepsModelCloning bicepsModelCloning;
     private final Logger instanceLogger;
 
     @AssistedInject
     MdibMapper(@Assisted MdibAccess mdibAccess,
                ObjectFactory participantModelFactory,
-               BicepsModelCloning bicepsModelCloning,
                @Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier) {
         this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);
         this.mdibAccess = mdibAccess;
         this.participantModelFactory = participantModelFactory;
-        this.bicepsModelCloning = bicepsModelCloning;
     }
 
     /**
@@ -205,7 +226,7 @@ public class MdibMapper {
             return;
         }
 
-        MdsDescriptor descriptorCopy = bicepsModelCloning.deepCopy(descriptor.get());
+        MdsDescriptor descriptorCopy = descriptor.get().createCopy();
 
         mapZeroOrMoreDescriptors(
                 descriptorCopy,
@@ -230,7 +251,7 @@ public class MdibMapper {
     private void mapVmds(MdsDescriptor parent, List<MdibEntity> vmds) {
         for (MdibEntity vmd : vmds) {
             vmd.getDescriptor(VmdDescriptor.class).ifPresent(vmdDescriptor -> {
-                VmdDescriptor vmdDescriptorCopy = bicepsModelCloning.deepCopy(vmdDescriptor);
+                VmdDescriptor vmdDescriptorCopy = vmdDescriptor.createCopy();
                 parent.getVmd().add(vmdDescriptorCopy);
                 mapAlertSystem(vmdDescriptorCopy, mdibAccess.getChildrenByType(vmdDescriptorCopy.getHandle(),
                         AlertSystemDescriptor.class));
@@ -245,7 +266,7 @@ public class MdibMapper {
     private void mapChannels(VmdDescriptor parent, List<MdibEntity> channels) {
         for (MdibEntity channel : channels) {
             channel.getDescriptor(ChannelDescriptor.class).ifPresent(channelDescriptor -> {
-                ChannelDescriptor channelDescriptorCopy = bicepsModelCloning.deepCopy(channelDescriptor);
+                ChannelDescriptor channelDescriptorCopy = channelDescriptor.createCopy();
                 parent.getChannel().add(channelDescriptorCopy);
                 mapZeroOrMoreDescriptors(
                         channelDescriptorCopy,
@@ -258,7 +279,7 @@ public class MdibMapper {
     private void mapSco(AbstractComplexDeviceComponentDescriptor parent, List<MdibEntity> scos) {
         for (MdibEntity sco : scos) {
             sco.getDescriptor(ScoDescriptor.class).ifPresent(scoDescriptor -> {
-                ScoDescriptor scoDescriptorCopy = bicepsModelCloning.deepCopy(scoDescriptor);
+                ScoDescriptor scoDescriptorCopy = scoDescriptor.createCopy();
                 parent.setSco(scoDescriptorCopy);
                 mapZeroOrMoreDescriptors(
                         scoDescriptorCopy,
@@ -272,7 +293,7 @@ public class MdibMapper {
     private void mapSystemContext(MdsDescriptor parent, List<MdibEntity> systemContexts) {
         for (MdibEntity systemContext : systemContexts) {
             systemContext.getDescriptor(SystemContextDescriptor.class).ifPresent(systemContextDescriptor -> {
-                SystemContextDescriptor systemContextDescriptorCopy = bicepsModelCloning.deepCopy(systemContextDescriptor);
+                SystemContextDescriptor systemContextDescriptorCopy = systemContextDescriptor.createCopy();
                 parent.setSystemContext(systemContextDescriptorCopy);
                 String parentHandle = systemContextDescriptorCopy.getHandle();
                 mapZeroOrOneDescriptor(
@@ -315,7 +336,7 @@ public class MdibMapper {
             return;
         }
 
-        AlertSystemDescriptor descriptorCopy = bicepsModelCloning.deepCopy(descriptor.get());
+        AlertSystemDescriptor descriptorCopy = descriptor.get().createCopy();
 
         parent.setAlertSystem(descriptorCopy);
         mapZeroOrMoreDescriptors(
@@ -334,7 +355,7 @@ public class MdibMapper {
 
         for (MdibEntity entity : entities) {
             try {
-                AbstractDescriptor childDescriptor = bicepsModelCloning.deepCopy(entity.getDescriptor());
+                AbstractDescriptor childDescriptor = entity.getDescriptor().createCopy();
                 Method getList = parentDescriptor.getClass().getMethod(getterFunctionName);
                 final List listObject = List.class.cast(getList.invoke(parentDescriptor));
                 listObject.add(childDescriptor);
@@ -363,7 +384,7 @@ public class MdibMapper {
                                         String setterFunctionName) {
         for (MdibEntity entity : entities) {
             try {
-                AbstractDescriptor childDescriptor = bicepsModelCloning.deepCopy(entity.getDescriptor());
+                AbstractDescriptor childDescriptor = entity.getDescriptor().createCopy();
                 Method setObject =
                         parentDescriptor.getClass().getMethod(setterFunctionName, childDescriptor.getClass());
                 setObject.invoke(parentDescriptor, childDescriptor);

@@ -1,5 +1,6 @@
 package org.somda.sdc.biceps.common;
 
+import com.kscs.util.jaxb.Copyable;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 import org.somda.sdc.biceps.provider.preprocessing.HandleDuplicatedException;
@@ -13,13 +14,14 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Container to collect changes supposed to be applied on an MDIB.
  * <p>
  * The {@linkplain MdibDescriptionModifications} is a fluent interface.
  */
-public class MdibDescriptionModifications {
+public class MdibDescriptionModifications implements Copyable<MdibDescriptionModifications> {
     private static final Logger LOG = LogManager.getLogger(MdibDescriptionModifications.class);
 
     private List<MdibDescriptionModification> modifications;
@@ -404,6 +406,17 @@ public class MdibDescriptionModifications {
         insertedHandles.clear();
         updatedHandles.clear();
         deletedHandles.clear();
+    }
+
+    @Override
+    public MdibDescriptionModifications createCopy() {
+        var mod =  new MdibDescriptionModifications();
+        mod.modifications.addAll(this.modifications.stream().map(MdibDescriptionModification::createCopy)
+            .collect(Collectors.toList()));
+        mod.insertedHandles.addAll(this.insertedHandles);
+        mod.updatedHandles.addAll(this.updatedHandles);
+        mod.deletedHandles.addAll(this.deletedHandles);
+        return mod;
     }
 
     /**

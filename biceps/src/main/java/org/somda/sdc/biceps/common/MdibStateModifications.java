@@ -1,5 +1,6 @@
 package org.somda.sdc.biceps.common;
 
+import com.kscs.util.jaxb.Copyable;
 import org.somda.sdc.biceps.common.event.AlertStateModificationMessage;
 import org.somda.sdc.biceps.common.event.ComponentStateModificationMessage;
 import org.somda.sdc.biceps.common.event.ContextStateModificationMessage;
@@ -18,13 +19,14 @@ import org.somda.sdc.biceps.model.participant.RealTimeSampleArrayMetricState;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Container to collect state updates supposed to be applied on an MDIB.
  * <p>
  * The {@linkplain MdibStateModifications} is a fluent interface.
  */
-public class MdibStateModifications {
+public class MdibStateModifications implements Copyable<MdibStateModifications> {
     private final MdibStateModifications.Type changeType;
     private final List<AbstractState> states;
 
@@ -105,6 +107,13 @@ public class MdibStateModifications {
      */
     public void clear() {
         this.states.clear();
+    }
+
+    @Override
+    public MdibStateModifications createCopy() {
+        var copy = new MdibStateModifications(this.changeType);
+        copy.states.addAll(this.states.stream().map(AbstractState::createCopy).collect(Collectors.toList()));
+        return copy;
     }
 
     /**
