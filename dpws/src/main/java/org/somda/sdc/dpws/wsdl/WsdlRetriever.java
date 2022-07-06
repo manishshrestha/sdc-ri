@@ -251,7 +251,7 @@ public class WsdlRetriever {
         var address = reference.getAddress().getValue();
         var referenceParameters = reference.getReferenceParameters();
 
-        var transportBinding = transportBindingFactory.createTransportBinding(address);
+        var transportBinding = transportBindingFactory.createTransportBinding(address, null);
         var rrClient = requestResponseClientFactory.createRequestResponseClient(transportBinding);
         SoapMessage getResponse;
         try {

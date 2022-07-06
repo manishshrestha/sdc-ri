@@ -3,6 +3,7 @@ package it.org.somda.glue;
 import com.google.common.eventbus.Subscribe;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.inject.AbstractModule;
+import com.google.inject.assistedinject.FactoryModuleBuilder;
 import it.org.somda.glue.consumer.TestSdcClient;
 import it.org.somda.glue.provider.TestSdcDevice;
 import it.org.somda.glue.provider.VentilatorMdibRunner;
@@ -21,6 +22,7 @@ import org.somda.sdc.biceps.model.message.InvocationState;
 import org.somda.sdc.dpws.CommunicationLog;
 import org.somda.sdc.dpws.CommunicationLogImpl;
 import org.somda.sdc.dpws.CommunicationLogSink;
+import org.somda.sdc.dpws.factory.CommunicationLogFactory;
 import org.somda.sdc.dpws.service.HostingServiceProxy;
 import org.somda.sdc.dpws.soap.CommunicationContext;
 import org.somda.sdc.dpws.soap.MarshallingService;
@@ -117,7 +119,9 @@ class SdcRemoteDevicesConnectorImplIT {
             @Override
             protected void configure() {
                 bind(CommunicationLogSink.class).to(TestCommLogSink.class).asEagerSingleton();
-                bind(CommunicationLog.class).to(CommunicationLogImpl.class).asEagerSingleton();
+                install(new FactoryModuleBuilder()
+                        .implement(CommunicationLog.class, CommunicationLogImpl.class)
+                        .build(CommunicationLogFactory.class));
             }
         };
         testClient = new TestSdcClient(override);
