@@ -8,6 +8,8 @@ import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
 import com.google.inject.name.Named;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.somda.sdc.common.util.ExecutorWrapperService;
 import org.somda.sdc.dpws.guice.WsDiscovery;
 import org.somda.sdc.dpws.soap.NotificationSource;
@@ -58,6 +60,8 @@ import static java.lang.System.currentTimeMillis;
  * Default implementation of {@linkplain WsDiscoveryClient}.
  */
 public class WsDiscoveryClientInterceptor implements WsDiscoveryClient {
+
+    private static final Logger LOG = LogManager.getLogger(WsDiscoveryClientInterceptor.class);
 
     private final Duration maxWaitForProbeMatches;
     private final Duration maxWaitForResolveMatches;
@@ -129,10 +133,11 @@ public class WsDiscoveryClientInterceptor implements WsDiscoveryClient {
 
     @MessageInterceptor(WsDiscoveryConstants.WSA_ACTION_PROBE_MATCHES)
     void processProbeMatches(NotificationObject nObj) {
+        LOG.trace("processProbeMatches with message {}", nObj.getNotification());
         try {
             probeLock.lock();
             getProbeMatchesBuffer().add(nObj.getNotification());
-            probeCondition.signal();
+            probeCondition.signalAll();
         } finally {
             probeLock.unlock();
         }
@@ -140,10 +145,11 @@ public class WsDiscoveryClientInterceptor implements WsDiscoveryClient {
 
     @MessageInterceptor(WsDiscoveryConstants.WSA_ACTION_RESOLVE_MATCHES)
     void processResolveMatches(NotificationObject nObj) {
+        LOG.trace("processResolveMatches with message {}", nObj.getNotification());
         try {
             resolveLock.lock();
             getResolveMatchesBuffer().add(nObj.getNotification());
-            resolveCondition.signal();
+            resolveCondition.signalAll();
         } finally {
             resolveLock.unlock();
         }
@@ -353,19 +359,23 @@ public class WsDiscoveryClientInterceptor implements WsDiscoveryClient {
             try {
                 lock.lock();
                 while (wait > 0) {
+                    LOG.trace("ProbeRunnable.call() for wsaRelatesTo {}, wait: {}", wsaRelatesTo, wait);
                     long tStartInMillis = System.currentTimeMillis();
                     probeMatchesCount = fetchData(probeMatchesCount);
                     if (probeMatchesCount.equals(maxResults)) {
+                        LOG.trace("break ProbeRunnable.call() due to maxResults");
                         break;
                     }
 
                     if (!condition.await(wait, TimeUnit.MILLISECONDS)) {
+                        LOG.warn("break ProbeRunnable.call() due to await");
                         break;
                     }
 
                     wait -= System.currentTimeMillis() - tStartInMillis;
                     probeMatchesCount = fetchData(probeMatchesCount);
                     if (probeMatchesCount.equals(maxResults)) {
+                        LOG.trace("break ProbeRunnable.call() due to maxResults");
                         break;
                     }
                 }
@@ -373,6 +383,7 @@ public class WsDiscoveryClientInterceptor implements WsDiscoveryClient {
                 lock.unlock();
             }
 
+            LOG.trace("announcing ProbeTimeoutMessage");
             helloByeProbeEvents.post(new ProbeTimeoutMessage(probeMatchesCount, probeId));
             return probeMatchesCount;
         }
@@ -383,6 +394,7 @@ public class WsDiscoveryClientInterceptor implements WsDiscoveryClient {
             if (msg.isPresent()) {
                 ProbeMatchesType pMatches = soapUtil.getBody(msg.get(), ProbeMatchesType.class)
                         .orElseThrow(SoapMessageBodyMalformedException::new);
+                LOG.trace("announcing ProbeMatchesMessage");
                 helloByeProbeEvents.post(new ProbeMatchesMessage(probeId, pMatches));
                 copyProbeMatchesCount++;
             }
