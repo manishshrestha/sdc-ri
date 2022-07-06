@@ -92,7 +92,7 @@ class JettyHttpServerRegistryIT extends DpwsTest {
             }
         });
 
-        TransportBinding httpBinding = transportBindingFactory.createHttpBinding(srvUri);
+        TransportBinding httpBinding = transportBindingFactory.createHttpBinding(srvUri, null);
         httpBinding.onRequestResponse(createASoapMessage());
         assertThat(isRequested.get(), is(true));
         httpServerRegistry.stopAsync().awaitTerminated();
@@ -112,7 +112,7 @@ class JettyHttpServerRegistryIT extends DpwsTest {
             }
         });
 
-        TransportBinding httpBinding = transportBindingFactory.createHttpBinding(srvUri);
+        TransportBinding httpBinding = transportBindingFactory.createHttpBinding(srvUri, null);
         httpBinding.onNotification(createASoapMessage());
         assertThat(isRequested.get(), is(true));
 
@@ -155,8 +155,8 @@ class JettyHttpServerRegistryIT extends DpwsTest {
             }
         });
 
-        TransportBinding httpBinding1 = transportBindingFactory.createHttpBinding(srvUri1.toString());
-        TransportBinding httpBinding2 = transportBindingFactory.createHttpBinding(srvUri2);
+        TransportBinding httpBinding1 = transportBindingFactory.createHttpBinding(srvUri1.toString(), null);
+        TransportBinding httpBinding2 = transportBindingFactory.createHttpBinding(srvUri2, null);
         httpBinding1.onNotification(createASoapMessage());
         httpBinding2.onNotification(createASoapMessage());
         assertThat(isPath1Requested.get(), is(true));

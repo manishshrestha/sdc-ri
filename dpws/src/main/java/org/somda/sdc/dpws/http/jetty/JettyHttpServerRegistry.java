@@ -31,6 +31,7 @@ import org.somda.sdc.dpws.DpwsConfig;
 import org.somda.sdc.dpws.crypto.CryptoConfig;
 import org.somda.sdc.dpws.crypto.CryptoConfigurator;
 import org.somda.sdc.dpws.crypto.CryptoSettings;
+import org.somda.sdc.dpws.factory.CommunicationLogFactory;
 import org.somda.sdc.dpws.http.HttpHandler;
 import org.somda.sdc.dpws.http.HttpServerRegistry;
 import org.somda.sdc.dpws.http.HttpUriBuilder;
@@ -66,11 +67,13 @@ import java.util.concurrent.locks.ReentrantLock;
 public class JettyHttpServerRegistry extends AbstractIdleService implements HttpServerRegistry {
     private static final Logger LOG = LogManager.getLogger(JettyHttpServerRegistry.class);
 
+    private static final String URI_CONVERSION_ERROR_MSG = "Unexpected URI conversion error";
+
     private JettyHttpServerHandlerFactory jettyHttpServerHandlerFactory;
 
     private final String frameworkIdentifier;
     private final Logger instanceLogger;
-    private final CommunicationLog communicationLog;
+    private final CommunicationLog defaultCommunicationLog;
     private final Map<String, Server> serverRegistry;
     private final Map<String, JettyHttpServerHandler> handlerRegistry;
     private final Map<String, ContextHandler> contextWrapperRegistry;
@@ -100,7 +103,7 @@ public class JettyHttpServerRegistry extends AbstractIdleService implements Http
                             @Named(DpwsConfig.HTTPS_SUPPORT) boolean enableHttps,
                             @Named(DpwsConfig.HTTP_SUPPORT) boolean enableHttp,
                             @Named(DpwsConfig.HTTP_SERVER_CONNECTION_TIMEOUT) Duration connectionTimeout,
-                            CommunicationLog communicationLog,
+                            CommunicationLogFactory communicationLogFactory,
                             @Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier) {
         this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);
         this.frameworkIdentifier = frameworkIdentifier;
@@ -111,7 +114,7 @@ public class JettyHttpServerRegistry extends AbstractIdleService implements Http
         this.tlsProtocols = tlsProtocols;
         this.enabledCiphers = enabledCiphers;
         this.hostnameVerifier = hostnameVerifier;
-        this.communicationLog = communicationLog;
+        this.defaultCommunicationLog = communicationLogFactory.createCommunicationLog();
         this.enableHttps = enableHttps;
         this.enableHttp = enableHttp;
         this.connectionTimeout = connectionTimeout;
@@ -195,7 +198,7 @@ public class JettyHttpServerRegistry extends AbstractIdleService implements Http
     public String initHttpServer(String schemeAndAuthority) {
         registryLock.lock();
         try {
-            var server = makeHttpServer(schemeAndAuthority);
+            var server = makeHttpServer(schemeAndAuthority, defaultCommunicationLog);
             var uriString = server.getURI().toString();
             if (uriString.endsWith("/")) {
                 uriString = uriString.substring(0, uriString.length() - 1);
@@ -232,8 +235,30 @@ public class JettyHttpServerRegistry extends AbstractIdleService implements Http
 
     // TODO: 2.0.0 - return all created URIs, i.e. http and https
     @Override
+    public String registerContext(String schemeAndAuthority,
+                                  String contextPath,
+                                  @Nullable CommunicationLog communicationLog,
+                                  HttpHandler handler) {
+        return registerContext(schemeAndAuthority, contextPath, SoapConstants.MEDIA_TYPE_SOAP, communicationLog,
+                handler);
+    }
+
+    // TODO: 2.0.0 - return all created URIs, i.e. http and https
+    @Override
     public String registerContext(String schemeAndAuthority, String contextPath, String mediaType,
                                   HttpHandler handler) {
+        return registerContext(schemeAndAuthority, contextPath, mediaType, null, handler);
+    }
+
+    // TODO: 2.0.0 - return all created URIs, i.e. http and https
+    @Override
+    public String registerContext(String schemeAndAuthority,
+                                  String contextPath,
+                                  String mediaType,
+                                  @Nullable CommunicationLog communicationLog,
+                                  HttpHandler handler) {
+        final var commLogToUse = communicationLog == null ? defaultCommunicationLog : communicationLog;
+
         if (!contextPath.startsWith("/")) {
             throw new RuntimeException(String.format("Context path needs to start with a slash, but is %s",
                     contextPath));
@@ -241,13 +266,13 @@ public class JettyHttpServerRegistry extends AbstractIdleService implements Http
 
         registryLock.lock();
         try {
-            Server server = makeHttpServer(schemeAndAuthority);
+            Server server = makeHttpServer(schemeAndAuthority, commLogToUse);
             String mapKey;
             try {
                 mapKey = makeMapKey(server.getURI().toString(), contextPath);
             } catch (UnknownHostException e) {
-                instanceLogger.error("Unexpected URI conversion error", e);
-                throw new RuntimeException("Unexpected URI conversion error");
+                instanceLogger.error(URI_CONVERSION_ERROR_MSG, e);
+                throw new RuntimeException(URI_CONVERSION_ERROR_MSG, e);
             }
             URI mapKeyUri = URI.create(mapKey);
 
@@ -289,8 +314,8 @@ public class JettyHttpServerRegistry extends AbstractIdleService implements Http
                 serverRegistryKey = makeMapKey(schemeAndAuthority);
                 httpHandlerRegistryKey = makeMapKey(schemeAndAuthority, contextPath);
             } catch (UnknownHostException e) {
-                instanceLogger.error("Unexpected URI conversion error", e);
-                throw new RuntimeException("Unexpected URI conversion error");
+                instanceLogger.error(URI_CONVERSION_ERROR_MSG, e);
+                throw new RuntimeException(URI_CONVERSION_ERROR_MSG, e);
             }
 
             Optional.ofNullable(serverRegistry.get(serverRegistryKey)).ifPresent(httpServer ->
@@ -344,13 +369,13 @@ public class JettyHttpServerRegistry extends AbstractIdleService implements Http
         }
     }
 
-    private Server makeHttpServer(String uri) {
+    private Server makeHttpServer(String uri, CommunicationLog communicationLog) {
         String mapKey;
         try {
             mapKey = makeMapKey(uri);
         } catch (UnknownHostException e) {
-            instanceLogger.error("Unexpected URI conversion error", e);
-            throw new RuntimeException("Unexpected URI conversion error");
+            instanceLogger.error(URI_CONVERSION_ERROR_MSG, e);
+            throw new RuntimeException(URI_CONVERSION_ERROR_MSG, e);
         }
 
         Optional<Server> oldServer = Optional.ofNullable(serverRegistry.get(mapKey));
@@ -360,7 +385,7 @@ public class JettyHttpServerRegistry extends AbstractIdleService implements Http
         }
 
         instanceLogger.debug("Init new HTTP server from URI: {}", uri);
-        Server httpServer = createHttpServer(URI.create(uri));
+        Server httpServer = createHttpServer(URI.create(uri), communicationLog);
         try {
             httpServer.start();
             // CHECKSTYLE.OFF: IllegalCatch
@@ -373,14 +398,14 @@ public class JettyHttpServerRegistry extends AbstractIdleService implements Http
         try {
             serverRegistry.put(makeMapKey(serverUri), httpServer);
         } catch (UnknownHostException e) {
-            instanceLogger.error("Unexpected URI conversion error", e);
-            throw new RuntimeException("Unexpected URI conversion error");
+            instanceLogger.error(URI_CONVERSION_ERROR_MSG, e);
+            throw new RuntimeException(URI_CONVERSION_ERROR_MSG, e);
         }
         instanceLogger.debug("New HTTP server initialized: {}", uri);
         return httpServer;
     }
 
-    private Server createHttpServer(URI uri) {
+    private Server createHttpServer(URI uri, CommunicationLog communicationLog) {
         instanceLogger.info("Setup HTTP server for address '{}'", uri);
         if (!isSupportedScheme(uri)) {
             throw new RuntimeException(String.format("HTTP server setup failed. Unsupported scheme: %s",
@@ -443,29 +468,27 @@ public class JettyHttpServerRegistry extends AbstractIdleService implements Http
             src.setSniHostCheck(false);
 
             HttpConfiguration httpsConfig = new HttpConfiguration(httpConfig);
-            var clientVerifier = new HttpConfiguration.Customizer() {
-                @Override
-                public void customize(Connector connector, HttpConfiguration channelConfig, Request request) {
-                    var numRequest = request.getHttpChannel().getRequests();
-                    if (numRequest != 1) {
-                        instanceLogger.debug("Connection already verified");
-                        return;
-                    }
-                    EndPoint endp = request.getHttpChannel().getEndPoint();
-                    if (endp instanceof SslConnection.DecryptedEndPoint) {
-                        SslConnection.DecryptedEndPoint sslEndp = (SslConnection.DecryptedEndPoint) endp;
-                        SslConnection sslConnection = sslEndp.getSslConnection();
-                        SSLEngine sslEngine = sslConnection.getSSLEngine();
+            HttpConfiguration.Customizer clientVerifier = (Connector connector,
+                                                           HttpConfiguration channelConfig,
+                                                           Request request) -> {
+                var numRequest = request.getHttpChannel().getRequests();
+                if (numRequest != 1) {
+                    instanceLogger.debug("Connection already verified");
+                    return;
+                }
+                EndPoint endp = request.getHttpChannel().getEndPoint();
+                if (endp instanceof SslConnection.DecryptedEndPoint) {
+                    SslConnection.DecryptedEndPoint sslEndp = (SslConnection.DecryptedEndPoint) endp;
+                    SslConnection sslConnection = sslEndp.getSslConnection();
+                    SSLEngine sslEngine = sslConnection.getSSLEngine();
 
-                        var session = sslEngine.getSession();
-                        endp.getLocalAddress().getHostName();
+                    var session = sslEngine.getSession();
 
-                        if (!hostnameVerifier.verify(sslEndp.getLocalAddress().getHostName(), session)) {
-                            instanceLogger.debug("HostnameVerifier has filtered request, marking request as " +
-                                    "handled and aborting request");
-                            request.setHandled(true);
-                            request.getHttpChannel().abort(new Exception("HostnameVerifier has rejected request"));
-                        }
+                    if (!hostnameVerifier.verify(sslEndp.getLocalAddress().getHostName(), session)) {
+                        instanceLogger.debug("HostnameVerifier has filtered request, marking request as " +
+                                "handled and aborting request");
+                        request.setHandled(true);
+                        request.getHttpChannel().abort(new Exception("HostnameVerifier has rejected request"));
                     }
                 }
             };
@@ -481,11 +504,11 @@ public class JettyHttpServerRegistry extends AbstractIdleService implements Http
                 httpsConnector = new ServerConnector(server,
                         new OptionalSslConnectionFactory(connectionFactory, HttpVersion.HTTP_1_1.asString()),
                         connectionFactory,
-                    httpConnectionFactory);
+                        httpConnectionFactory);
             } else {
                 httpsConnector = new ServerConnector(server,
                         connectionFactory,
-                    httpConnectionFactory);
+                        httpConnectionFactory);
             }
             httpsConnector.setIdleTimeout(connectionTimeout.toMillis());
             httpsConnector.setHost(uri.getHost());

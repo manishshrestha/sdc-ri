@@ -18,7 +18,6 @@ public class ScoTransactionFactory {
     public <T extends AbstractSetResponse> ScoTransactionImpl<T> createScoTransaction(
             @Assisted T response,
             @Assisted @Nullable Consumer<OperationInvokedReport.ReportPart> reportListener) {
-        return new ScoTransactionImpl<>(response, reportListener,
-                injector.getInstance(ScoUtil.class));
+        return new ScoTransactionImpl<>(response, reportListener, injector.getInstance(ScoUtil.class));
     }
 }

@@ -46,6 +46,7 @@ import org.somda.sdc.glue.common.MdibVersionUtil;
 import org.somda.sdc.glue.common.ReportMappings;
 
 import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -317,11 +318,10 @@ public class ReportGenerator implements MdibAccessObserver {
 
     private Class<?> findReportPartClass(Class<?> reportClass) throws NoSuchFieldException {
         final Class<?>[] classes = reportClass.getClasses();
-        if (classes.length == 0) {
-            throw new NoSuchFieldException(String.format("ReportPart inner class not found in %s",
-                    reportClass.getName()));
-        }
-        return classes[0];
+        return Arrays.stream(classes).filter(it -> it.getName().endsWith("$ReportPart")).findFirst()
+            .orElseThrow(() -> new NoSuchFieldException(
+                String.format("ReportPart inner class not found in %s", reportClass.getName())
+            ));
     }
 
     private Method findGetReportPartMethod(Class<?> reportPartClass) throws NoSuchMethodException {

@@ -7,6 +7,9 @@ import com.google.common.util.concurrent.SettableFuture;
 import com.google.inject.Injector;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
+import org.somda.sdc.biceps.common.CodedValueUtil;
+import org.somda.sdc.biceps.common.MdibEntity;
+import org.somda.sdc.biceps.common.access.MdibAccess;
 import org.somda.sdc.biceps.model.message.Activate;
 import org.somda.sdc.biceps.model.message.ActivateResponse;
 import org.somda.sdc.biceps.model.message.InvocationState;
@@ -16,8 +19,14 @@ import org.somda.sdc.biceps.model.message.SetStringResponse;
 import org.somda.sdc.biceps.model.message.SetValue;
 import org.somda.sdc.biceps.model.message.SetValueResponse;
 import org.somda.sdc.biceps.model.participant.AbstractContextState;
+import org.somda.sdc.biceps.model.participant.AbstractDescriptor;
+import org.somda.sdc.biceps.model.participant.ActivateOperationDescriptor;
+import org.somda.sdc.biceps.model.participant.CodedValue;
+import org.somda.sdc.biceps.model.participant.EnumStringMetricDescriptor;
 import org.somda.sdc.biceps.model.participant.LocationContextState;
 import org.somda.sdc.biceps.model.participant.PatientContextState;
+import org.somda.sdc.biceps.model.participant.SetStringOperationDescriptor;
+import org.somda.sdc.biceps.model.participant.SetValueOperationDescriptor;
 import org.somda.sdc.dpws.DpwsFramework;
 import org.somda.sdc.dpws.client.Client;
 import org.somda.sdc.dpws.client.DiscoveredDevice;
@@ -35,6 +44,7 @@ import org.somda.sdc.glue.consumer.SdcRemoteDevicesConnector;
 import org.somda.sdc.glue.consumer.SetServiceAccess;
 import org.somda.sdc.glue.consumer.sco.ScoTransaction;
 
+import javax.annotation.Nullable;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.net.InetAddress;
@@ -47,6 +57,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -159,11 +170,21 @@ public class Consumer {
         final ListenableFuture<ScoTransaction<ActivateResponse>> activateFuture = setServiceAccess
                 .invoke(activateBuilder.build(), ActivateResponse.class);
         ScoTransaction<ActivateResponse> activateResponse = activateFuture.get(MAX_WAIT_SEC, TimeUnit.SECONDS);
+
+        if (InvocationState.FAIL.equals(activateResponse.getResponse().getInvocationInfo().getInvocationState())) {
+            var err = "Activate operation execution invocation state failed";
+            throw new ExecutionException(err, new InterruptedException(err));
+        }
+
         List<OperationInvokedReport.ReportPart> reportParts =
                 activateResponse.waitForFinalReport(Duration.ofSeconds(5));
 
         // return the final reports invocation state
-        return reportParts.get(reportParts.size() - 1).getInvocationInfo().getInvocationState();
+        if (!reportParts.isEmpty()) {
+            return reportParts.get(reportParts.size() - 1).getInvocationInfo().getInvocationState();
+        } else {
+            throw new InterruptedException("No report parts received, help.");
+        }
     }
 
     /**
@@ -188,11 +209,21 @@ public class Consumer {
         final ListenableFuture<ScoTransaction<SetValueResponse>> setValueFuture = setServiceAccess
                 .invoke(setValue, SetValueResponse.class);
         ScoTransaction<SetValueResponse> setValueResponse = setValueFuture.get(MAX_WAIT_SEC, TimeUnit.SECONDS);
+
+        if (InvocationState.FAIL.equals(setValueResponse.getResponse().getInvocationInfo().getInvocationState())) {
+            var err = "SetValue operation execution invocation state failed";
+            throw new ExecutionException(err, new InterruptedException(err));
+        }
+
         List<OperationInvokedReport.ReportPart> reportParts =
                 setValueResponse.waitForFinalReport(Duration.ofSeconds(5));
 
         // return the final reports invocation state
-        return reportParts.get(reportParts.size() - 1).getInvocationInfo().getInvocationState();
+        if (!reportParts.isEmpty()) {
+            return reportParts.get(reportParts.size() - 1).getInvocationInfo().getInvocationState();
+        } else {
+            throw new InterruptedException("No report parts received, help.");
+        }
     }
 
     /**
@@ -217,6 +248,12 @@ public class Consumer {
         final ListenableFuture<ScoTransaction<SetStringResponse>> setStringFuture = setServiceAccess
                 .invoke(setString, SetStringResponse.class);
         ScoTransaction<SetStringResponse> setStringResponse = setStringFuture.get(MAX_WAIT_SEC, TimeUnit.SECONDS);
+
+        if (InvocationState.FAIL.equals(setStringResponse.getResponse().getInvocationInfo().getInvocationState())) {
+            var err = "SetString operation execution invocation state failed";
+            throw new ExecutionException(err, new InterruptedException(err));
+        }
+
         List<OperationInvokedReport.ReportPart> reportParts =
                 setStringResponse.waitForFinalReport(Duration.ofSeconds(5));
 
@@ -226,6 +263,45 @@ public class Consumer {
         } else {
             throw new InterruptedException("No report parts received, help.");
         }
+    }
+
+    static List<String> getHandleForCodedValue(MdibAccess mdib, CodedValue value, Class<? extends AbstractDescriptor> type) {
+        // find all applicable entities
+        var entities = mdib.findEntitiesByType(type);
+
+        // filter by coded value
+        return entities.stream().filter(
+                x -> CodedValueUtil.isEqual(x.getDescriptor().getType(), value)
+        ).map(MdibEntity::getHandle).collect(Collectors.toList());
+    }
+
+    static List<List<String>> getPathToCodedValue(MdibAccess mdib, CodedValue value, Class<? extends AbstractDescriptor> type) {
+
+        // find all applicable entities
+        var entities = mdib.findEntitiesByType(type);
+
+        // filter by coded value
+        var applicableEntities = entities.stream().filter(
+                x -> CodedValueUtil.isEqual(x.getDescriptor().getType(), value)
+        ).collect(Collectors.toList());
+
+        return applicableEntities.stream().map(entity -> {
+
+            MdibEntity currentEntity = entity;
+            var handles = new ArrayList<String>();
+            while (currentEntity != null) {
+                var handle = currentEntity.getHandle();
+                handles.add(0, handle);
+                // get parent entity
+                if (currentEntity.getParent().isPresent()) {
+                    currentEntity = mdib.getEntity(currentEntity.getParent().get()).orElse(null);
+                } else {
+                    // exit
+                    currentEntity = null;
+                }
+            }
+            return handles;
+        }).collect(Collectors.toList());
     }
 
     public Injector getInjector() {
@@ -296,7 +372,6 @@ public class Consumer {
         }
         consumer.getClient().unregisterDiscoveryObserver(obs);
 
-        var deviceUri = targetEpr;
         LOG.info("Connecting to {}", targetEpr);
         var hostingServiceFuture = consumer.getClient().connect(d);
 
@@ -359,42 +434,115 @@ public class Consumer {
         Thread.sleep(REPORT_TIMEOUT);
 
         // expected number of reports given 5 second interval
-        int minNumberReports = (int) (REPORT_TIMEOUT / Duration.ofSeconds(5).toMillis()) - 1;
+        long minNumberReports = (long) (REPORT_TIMEOUT / Duration.ofSeconds(5).toMillis()) - 1;
 
         // verify the number of reports for the expected metrics is at least five during the timeout
-        var metricChangesOk = reportObs.getNumMetricChanges() >= minNumberReports;
+        var metricChangesOk = reportObs.getMetricChanges().values().stream().anyMatch(changes -> changes >= minNumberReports);
         resultMap.put(7, metricChangesOk);
-        var conditionChangesOk = reportObs.getNumConditionChanges() >= minNumberReports;
+        if (!metricChangesOk) {
+            LOG.info("Did not see enough metric changes, map: {}", reportObs.getMetricChanges());
+        }
+        var conditionChangesOk = reportObs.getConditionChanges().values().stream().anyMatch(changes -> changes >= minNumberReports);
         resultMap.put(8, conditionChangesOk);
-
+        if (!conditionChangesOk) {
+            LOG.info("Did not see enough alert changes, map: {}", reportObs.getConditionChanges());
+        }
 
         // invoke all target operations
         var setServiceAccess = sdcRemoteDevice.getSetServiceAccess();
 
         boolean operationFailed = false;
-        try {
-            invokeSetString(setServiceAccess, Constants.HANDLE_SET_STRING, "SDCri was here");
-        } catch (ExecutionException | TimeoutException e) {
-            operationFailed = true;
-            LOG.error("Could not invoke {}", Constants.HANDLE_SET_STRING, e);
+        // find set string operation handle
+        var setStringHandles = getHandleForCodedValue(
+                sdcRemoteDevice.getMdibAccess(),
+                Constants.HANDLE_SET_STRING_CODE,
+                SetStringOperationDescriptor.class
+        );
+        LOG.info("Found {} handles matching code {}", setStringHandles.size(), Constants.HANDLE_SET_STRING_CODE);
+
+        var setStringAnyPass = false;
+        for (final String handle : setStringHandles) {
+            try {
+                LOG.info("Found handle {} and hardcoded handle was {}", handle, Constants.HANDLE_SET_STRING);
+                invokeSetString(setServiceAccess, handle, "SDCri was here");
+                setStringAnyPass = true;
+            } catch (ExecutionException | TimeoutException | InterruptedException | IndexOutOfBoundsException e) {
+                LOG.error("Could not invoke {}", Constants.HANDLE_SET_STRING, e);
+            }
         }
-        try {
-            invokeSetString(setServiceAccess, Constants.HANDLE_SET_STRING_ENUM, "OFF");
-        } catch (ExecutionException | TimeoutException e) {
+        if (!setStringAnyPass) {
             operationFailed = true;
-            LOG.error("Could not invoke {}", Constants.HANDLE_SET_STRING_ENUM, e);
         }
-        try {
-            invokeSetValue(setServiceAccess, Constants.HANDLE_SET_VALUE, BigDecimal.valueOf(20));
-        } catch (ExecutionException | TimeoutException e) {
-            operationFailed = true;
-            LOG.error("Could not invoke {}", Constants.HANDLE_SET_VALUE, e);
+        // find set string operation handle for enum
+        var paths = getPathToCodedValue(
+                sdcRemoteDevice.getMdibAccess(),
+                Constants.HANDLE_SET_STRING_ENUM_CODE,
+                SetStringOperationDescriptor.class
+        );
+        LOG.info("Found {} paths matching code {}", paths.size(), Constants.HANDLE_SET_STRING_ENUM_CODE);
+
+        var setEnumStringAnyPass = false;
+        for (final List<String> path : paths) {
+            try {
+                var handle = path.get(path.size() - 1);
+                LOG.info("Found handle {} and hardcoded handle was {}", handle, Constants.HANDLE_SET_STRING_ENUM);
+                // get an allowed value
+                var opDesc = (SetStringOperationDescriptor) sdcRemoteDevice.getMdibAccess().getDescriptor(handle).get();
+                var desc = (EnumStringMetricDescriptor) sdcRemoteDevice.getMdibAccess().getDescriptor(opDesc.getOperationTarget()).get();
+                var value = desc.getAllowedValue().get(0).getValue();
+
+                invokeSetString(setServiceAccess, handle, value);
+                setEnumStringAnyPass = true;
+            } catch (ExecutionException | TimeoutException | InterruptedException | IndexOutOfBoundsException e) {
+                operationFailed = true;
+                LOG.error("Could not invoke {}", Constants.HANDLE_SET_STRING_ENUM, e);
+            }
         }
-        try {
-            invokeActivate(setServiceAccess, Constants.HANDLE_ACTIVATE, Collections.emptyList());
-        } catch (ExecutionException | TimeoutException e) {
+        if (!setEnumStringAnyPass) {
             operationFailed = true;
-            LOG.error("Could not invoke {}", Constants.HANDLE_ACTIVATE, e);
+        }
+        // find set value operation handle
+        var setValueHandles = getHandleForCodedValue(
+                sdcRemoteDevice.getMdibAccess(),
+                Constants.HANDLE_SET_VALUE_CODE,
+                SetValueOperationDescriptor.class
+        );
+        LOG.info("Found {} setValueHandles matching code {}", setValueHandles.size(), Constants.HANDLE_SET_VALUE_CODE);
+
+        var setValueAnyPass = false;
+        for (final String handle : setValueHandles) {
+            try {
+                LOG.info("Found handle {} and hardcoded handle was {}", handle, Constants.HANDLE_SET_VALUE);
+                invokeSetValue(setServiceAccess, handle, BigDecimal.valueOf(20));
+                setValueAnyPass = true;
+            } catch (ExecutionException | TimeoutException | InterruptedException | IndexOutOfBoundsException e) {
+                LOG.error("Could not invoke {}", Constants.HANDLE_SET_VALUE, e);
+            }
+        }
+        if (!setValueAnyPass) {
+            operationFailed = true;
+        }
+        // find activate operation handle
+        var activatePaths = getPathToCodedValue(
+                sdcRemoteDevice.getMdibAccess(),
+                Constants.HANDLE_ACTIVATE_CODE,
+                ActivateOperationDescriptor.class
+        );
+        LOG.info("Found {} handles matching code {}", activatePaths.size(), Constants.HANDLE_ACTIVATE_CODE);
+
+        var activateAnyPass = false;
+        for (final List<String> path : activatePaths) {
+            try {
+                var handle = path.get(path.size() - 1);
+                LOG.info("Found handle {} and hardcoded handle was {}", handle, Constants.HANDLE_ACTIVATE);
+                invokeActivate(setServiceAccess, handle, Collections.emptyList());
+                activateAnyPass = true;
+            } catch (ExecutionException | TimeoutException | InterruptedException | IndexOutOfBoundsException e) {
+                LOG.error("Could not invoke {}", Constants.HANDLE_ACTIVATE, e);
+            }
+        }
+        if (!activateAnyPass) {
+            operationFailed = true;
         }
         resultMap.put(9, !operationFailed);
 
@@ -404,7 +552,7 @@ public class Consumer {
         sdcRemoteDevice.stopAsync().awaitTerminated();
 
         try {
-            var disconnectDone = consumer.getConnector().disconnect(deviceUri).isDone();
+            var disconnectDone = consumer.getConnector().disconnect(targetEpr).isDone();
             consumer.shutDown();
             resultMap.put(10, disconnectDone);
         } catch (Exception e) {

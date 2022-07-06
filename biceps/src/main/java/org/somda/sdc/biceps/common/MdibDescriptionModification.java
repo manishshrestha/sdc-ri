@@ -1,5 +1,6 @@
 package org.somda.sdc.biceps.common;
 
+import com.kscs.util.jaxb.Copyable;
 import org.somda.sdc.biceps.model.participant.AbstractDescriptor;
 import org.somda.sdc.biceps.model.participant.AbstractState;
 
@@ -7,11 +8,12 @@ import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * Single change item.
  */
-public class MdibDescriptionModification {
+public class MdibDescriptionModification implements Copyable<MdibDescriptionModification>  {
 
     private final Type modificationType;
     private AbstractDescriptor descriptor;
@@ -54,6 +56,16 @@ public class MdibDescriptionModification {
 
     public Optional<String> getParentHandle() {
         return Optional.ofNullable(parentHandle);
+    }
+
+    @Override
+    public MdibDescriptionModification createCopy() {
+        return new MdibDescriptionModification(
+            this.modificationType,
+            this.descriptor.createCopy(),
+            this.states.stream().map(AbstractState::createCopy).collect(Collectors.toList()),
+            parentHandle
+        );
     }
 
     /**

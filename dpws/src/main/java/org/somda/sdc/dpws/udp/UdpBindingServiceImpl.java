@@ -10,6 +10,7 @@ import org.somda.sdc.common.CommonConfig;
 import org.somda.sdc.common.logging.InstanceLogger;
 import org.somda.sdc.dpws.CommunicationLog;
 import org.somda.sdc.dpws.DpwsConstants;
+import org.somda.sdc.dpws.factory.CommunicationLogFactory;
 import org.somda.sdc.dpws.network.NetworkInterfaceUtil;
 import org.somda.sdc.dpws.soap.ApplicationInfo;
 import org.somda.sdc.dpws.soap.CommunicationContext;
@@ -60,7 +61,7 @@ public class UdpBindingServiceImpl extends AbstractIdleService implements UdpBin
                           @Assisted("multicastPort") Integer multicastPort,
                           @Assisted("maxMessageSize") Integer maxMessageSize,
                           NetworkInterfaceUtil networkInterfaceUtil,
-                          CommunicationLog communicationLog,
+                          CommunicationLogFactory communicationLogFactory,
                           @Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier) {
         this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);
         this.networkInterface = networkInterface;
@@ -68,7 +69,7 @@ public class UdpBindingServiceImpl extends AbstractIdleService implements UdpBin
         this.socketPort = multicastPort;
         this.maxMessageSize = maxMessageSize;
         this.networkInterfaceUtil = networkInterfaceUtil;
-        this.communicationLog = communicationLog;
+        this.communicationLog = communicationLogFactory.createCommunicationLog();
         this.multicastAddress = new InetSocketAddress(multicastGroup, socketPort);
         this.multicastSocket = null;
         this.networkInterfaceAddress = null;

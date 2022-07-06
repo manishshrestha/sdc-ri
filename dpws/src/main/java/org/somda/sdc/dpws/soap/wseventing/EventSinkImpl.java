@@ -11,6 +11,7 @@ import org.eclipse.jetty.http.HttpStatus;
 import org.somda.sdc.common.CommonConfig;
 import org.somda.sdc.common.logging.InstanceLogger;
 import org.somda.sdc.common.util.ExecutorWrapperService;
+import org.somda.sdc.dpws.CommunicationLog;
 import org.somda.sdc.dpws.DpwsConfig;
 import org.somda.sdc.dpws.DpwsConstants;
 import org.somda.sdc.dpws.TransportBinding;
@@ -29,8 +30,8 @@ import org.somda.sdc.dpws.soap.exception.MalformedSoapMessageException;
 import org.somda.sdc.dpws.soap.factory.RequestResponseClientFactory;
 import org.somda.sdc.dpws.soap.wsaddressing.WsAddressingUtil;
 import org.somda.sdc.dpws.soap.wsaddressing.model.EndpointReferenceType;
-import org.somda.sdc.dpws.soap.wseventing.exception.SubscriptionRequestResponseClientNotFoundException;
 import org.somda.sdc.dpws.soap.wseventing.exception.SubscriptionNotFoundException;
+import org.somda.sdc.dpws.soap.wseventing.exception.SubscriptionRequestResponseClientNotFoundException;
 import org.somda.sdc.dpws.soap.wseventing.factory.SubscriptionManagerFactory;
 import org.somda.sdc.dpws.soap.wseventing.model.DeliveryType;
 import org.somda.sdc.dpws.soap.wseventing.model.FilterType;
@@ -84,11 +85,14 @@ public class EventSinkImpl implements EventSink {
     private final Map<String, RequestResponseClient> subscriptionClients;
     private final Lock subscriptionsLock;
     private final Duration maxWaitForFutures;
+    @Nullable
+    private final CommunicationLog communicationLog;
     private final Logger instanceLogger;
 
     @AssistedInject
     EventSinkImpl(@Assisted RequestResponseClient requestResponseClient,
                   @Assisted String hostAddress,
+                  @Assisted @Nullable CommunicationLog communicationLog,
                   @Named(DpwsConfig.MAX_WAIT_FOR_FUTURES) Duration maxWaitForFutures,
                   HttpServerRegistry httpServerRegistry,
                   ObjectFactory wseFactory,
@@ -105,6 +109,7 @@ public class EventSinkImpl implements EventSink {
         this.transportBindingFactory = transportBindingFactory;
         this.requestResponseClientFactory = requestResponseClientFactory;
         this.hostAddress = hostAddress;
+        this.communicationLog = communicationLog;
         this.maxWaitForFutures = maxWaitForFutures;
         this.httpServerRegistry = httpServerRegistry;
         this.wseFactory = wseFactory;
@@ -129,25 +134,27 @@ public class EventSinkImpl implements EventSink {
 
             // Create unique end-to context path and create proper handler
             String endToContext = EVENT_SINK_END_TO_CONTEXT_PREFIX + contextSuffix;
-            var endToUri = httpServerRegistry.registerContext(hostAddress, endToContext, new HttpHandler() {
-                @Override
-                public void handle(InputStream inStream, OutputStream outStream,
-                                   CommunicationContext communicationContext)
-                        throws HttpException {
-                    processIncomingNotification(notificationSink, inStream, outStream, communicationContext);
-                }
-            });
+            var endToUri = httpServerRegistry.registerContext(hostAddress, endToContext, communicationLog,
+                    new HttpHandler() {
+                        @Override
+                        public void handle(InputStream inStream, OutputStream outStream,
+                                           CommunicationContext communicationContext)
+                                throws HttpException {
+                            processIncomingNotification(notificationSink, inStream, outStream, communicationContext);
+                        }
+                    });
 
             // Create unique notify-to context path and create proper handler
             String notifyToContext = EVENT_SINK_NOTIFY_TO_CONTEXT_PREFIX + contextSuffix;
-            var notifyToUri = httpServerRegistry.registerContext(hostAddress, notifyToContext, new HttpHandler() {
-                @Override
-                public void handle(InputStream inStream, OutputStream outStream,
-                                   CommunicationContext communicationContext)
-                        throws HttpException {
-                    processIncomingNotification(notificationSink, inStream, outStream, communicationContext);
-                }
-            });
+            var notifyToUri = httpServerRegistry.registerContext(hostAddress, notifyToContext, communicationLog,
+                    new HttpHandler() {
+                        @Override
+                        public void handle(InputStream inStream, OutputStream outStream,
+                                           CommunicationContext communicationContext)
+                                throws HttpException {
+                            processIncomingNotification(notificationSink, inStream, outStream, communicationContext);
+                        }
+                    });
 
             // Create subscribe body, include formerly created end-to and notify-to endpoint addresses
             // Populate rest of the request
@@ -187,7 +194,8 @@ public class EventSinkImpl implements EventSink {
                     Collections.unmodifiableList(actions));
 
             TransportBinding tBinding = transportBindingFactory.createTransportBinding(
-                    responseBody.getSubscriptionManager().getAddress().getValue());
+                    responseBody.getSubscriptionManager().getAddress().getValue(),
+                    null);
             RequestResponseClient rrClient = requestResponseClientFactory.createRequestResponseClient(tBinding);
 
             // Add sink subscription manager and httpclient for handling getStatus/renew/unsubscribe messages

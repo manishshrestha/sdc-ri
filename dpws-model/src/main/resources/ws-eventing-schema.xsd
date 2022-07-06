@@ -29,7 +29,8 @@ No other rights are granted by implication, estoppel or otherwise.
 	schemaLocation="xml.xsd" />
 
   <xs:import namespace="http://www.w3.org/2005/08/addressing" />
-	<!-- schemaLocation="http://schemas.xmlsoap.org/ws/2004/08/addressing" /> -->
+  <!-- SDCri: Schema was adjusted to match ws-addressing referenced in MDPWS -->
+  <!-- schemaLocation="http://schemas.xmlsoap.org/ws/2004/08/addressing" /> -->
 
   <!-- Types and global elements -->
   <xs:complexType name="DeliveryType" mixed="true">
@@ -96,7 +97,10 @@ No other rights are granted by implication, estoppel or otherwise.
       <xs:sequence>
 	  <xs:element name="SubscriptionManager" 
                     type="wsa:EndpointReferenceType" />
-        <xs:element name="Expires" type="xs:duration" /> <!-- originally tns:ExpirationType -->
+        <!-- SDCri: tns:ExpirationType was explicitly removed as subscriptions with a short duration are subject to clock
+         drifts and can cause unexpected behavior when these are exchanged using dateTime's. Only allow durations. -->
+        <!-- SDCri: originally tns:ExpirationType -->
+        <xs:element name="Expires" type="xs:duration" />
         <xs:any namespace="##other" processContents="lax" 
           minOccurs="0" maxOccurs="unbounded" />
       </xs:sequence>
@@ -114,7 +118,9 @@ No other rights are granted by implication, estoppel or otherwise.
   <xs:element name="Renew">
     <xs:complexType>
       <xs:sequence>
-        <!-- originally tns:ExpirationType -->
+        <!-- SDCri: tns:ExpirationType was explicitly removed as subscriptions with a short duration are subject to clock
+         drifts and can cause unexpected behavior when these are exchanged using dateTime's. Only allow durations. -->
+        <!-- SDCri: originally tns:ExpirationType -->
         <xs:element name="Expires" type="xs:duration"
           minOccurs="0" />
         <xs:any namespace="##other" processContents="lax" 
@@ -128,7 +134,9 @@ No other rights are granted by implication, estoppel or otherwise.
   <xs:element name="RenewResponse">
     <xs:complexType>
       <xs:sequence>
-        <!-- originally tns:ExpirationType -->
+        <!-- SDCri: tns:ExpirationType was explicitly removed as subscriptions with a short duration are subject to clock
+         drifts and can cause unexpected behavior when these are exchanged using dateTime's. Only allow durations. -->
+        <!-- SDCri: originally tns:ExpirationType -->
         <xs:element name="Expires" type="xs:duration"
           minOccurs="0" />
         <xs:any namespace="##other" processContents="lax" 
@@ -153,7 +161,9 @@ No other rights are granted by implication, estoppel or otherwise.
   <xs:element name="GetStatusResponse">
     <xs:complexType>
       <xs:sequence>
-        <!-- originall tns:ExpirationType -->
+        <!-- SDCri: tns:ExpirationType was explicitly removed as subscriptions with a short duration are subject to clock
+         drifts and can cause unexpected behavior when these are exchanged using dateTime's. Only allow durations. -->
+        <!-- SDCri: originally tns:ExpirationType -->
         <xs:element name="Expires" type="xs:duration"
           minOccurs="0" />
         <xs:any namespace="##other" processContents="lax" 

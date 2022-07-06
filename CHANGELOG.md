@@ -8,18 +8,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+
 - `org.somda.sdc.glue.provider.localization` and `org.somda.sdc.glue.consumer.localization` packages to support Localization service. (#141)
 - Java 17 support. (#233)
+- Added `org.somda.sdc.biceps.common.CodedValueUtil` which enables comparisons of CodedValues according to BICEPS.
+- Support for `org.somda.sdc.dpws.CommunicationLogContext` to provide additional context information for communication logs on consumer side. (#221)
 
 ### Changed
 
-- Replace `org.somda.sdc.common.util.ObjectUtil` object cloning with a new `org.somda.sdc.dpws. DpwsModelCloning`
-  and `org. somda.sdc.biceps.common.BicepsModelCloning` classes. New object cloning is performed using JAXB marshalling
-  & unmarshalling. (#224)
-
+- Replace `org.somda.sdc.common.util.ObjectUtil` using clone and copy provided by the `jaxb2-rich-contract-plugin`. (#224)
+  
 ### Removed
 
 ### Fixed
+
+- `org.somda.sdc.dpws.soap.wsdiscovery.WsDiscoveryClientInterceptor` correctly handles multiple concurrent Probe or Resolve operations. (#243)
 
 ## [2.0.0] - 2022-03-17
 

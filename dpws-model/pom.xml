@@ -65,6 +65,7 @@
             <version>${jaxbThreetenCoreVersion}</version>
         </dependency>
 
+
         <dependency>
             <groupId>org.jvnet.jaxb2_commons</groupId>
             <artifactId>jaxb2-basics</artifactId>
@@ -90,6 +91,7 @@
         </dependency>
     </dependencies>
     <build>
+
         <plugins>
             <plugin>
                 <groupId>org.jvnet.jaxb2.maven2</groupId>
