@@ -266,7 +266,7 @@ public class HighPriorityServices extends WebService {
 
     @MessageInterceptor(ActionConstants.ACTION_SET_VALUE)
     void setValue(RequestResponseObject requestResponseObject) throws SoapFaultException {
-        processSetServiceRequest(requestResponseObject, SetValue.class, AbstractSetResponse.builder(),
+        processSetServiceRequest(requestResponseObject, SetValue.class, SetValueResponse.builder(),
                 ActionConstants.getResponseAction(ActionConstants.ACTION_SET_VALUE),
                 SetValue::getRequestedNumericValue);
     }
