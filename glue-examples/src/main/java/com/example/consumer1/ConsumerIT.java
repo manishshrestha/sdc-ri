@@ -211,19 +211,19 @@ public class ConsumerIT {
 
         // verify the number of reports for the expected metrics is at least five during the timeout
         assertTrue(
-                reportObs.getNumMetricChanges() >= minNumberReports,
+                reportObs.getMetricChanges().values().stream().anyMatch(changes -> changes >= minNumberReports),
                 "Did not receive metric reports, expected at least "
                         + minNumberReports
                         + " but received "
-                        + reportObs.getNumMetricChanges()
+                        + reportObs.getMetricChanges()
                         + " instead."
         );
         assertTrue(
-                reportObs.getNumConditionChanges() >= minNumberReports,
+                reportObs.getConditionChanges().values().stream().anyMatch(changes -> changes >= minNumberReports),
                 "Did not receive alert condition reports, expected at least "
                         + minNumberReports
                         + " but received "
-                        + reportObs.getNumConditionChanges()
+                        + reportObs.getConditionChanges()
                         + " instead."
         );
     }

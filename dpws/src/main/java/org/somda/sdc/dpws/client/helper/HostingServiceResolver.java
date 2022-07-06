@@ -313,7 +313,7 @@ public class HostingServiceResolver {
                         .get(maxWaitForFutures.toMillis(), TimeUnit.MILLISECONDS);
                 break;
             } catch (InterruptedException | ExecutionException | TimeoutException | CancellationException e) {
-                instanceLogger.debug("GetMetadata to {} failed", eprType.getAddress().getValue(), e);
+                instanceLogger.info("GetMetadata to {} failed", eprType.getAddress().getValue(), e);
             }
         }
 

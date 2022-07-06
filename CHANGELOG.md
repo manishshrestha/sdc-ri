@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - `org.somda.sdc.glue.provider.localization` and `org.somda.sdc.glue.consumer.localization` packages to support Localization service. (#141)
 - Java 17 support. (#233)
+- Added `org.somda.sdc.biceps.common.CodedValueUtil` which enables comparisons of CodedValues according to BICEPS.
 - Support for `org.somda.sdc.dpws.CommunicationLogContext` to provide additional context information for communication logs on consumer side. (#221)
 
 ### Changed
