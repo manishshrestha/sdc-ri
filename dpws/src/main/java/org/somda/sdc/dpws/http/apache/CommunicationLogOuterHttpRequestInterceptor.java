@@ -88,7 +88,8 @@ public class CommunicationLogOuterHttpRequestInterceptor implements HttpRequestI
             requestAppLevelCommContext,
             CommunicationLog.Level.APPLICATION);
 
-        OutputStream netLevelCommlogStream = commlog.logMessage(
+        OutputStream netLevelCommlogStream = commlog.logRelatedMessage(
+            appLevelCommlogStream,
             CommunicationLog.Direction.OUTBOUND,
             CommunicationLog.TransportType.HTTP,
             CommunicationLog.MessageType.REQUEST,

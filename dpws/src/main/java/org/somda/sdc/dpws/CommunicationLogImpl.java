@@ -57,6 +57,17 @@ public class CommunicationLogImpl implements CommunicationLog {
     }
 
     @Override
+    public OutputStream logRelatedMessage(OutputStream relatedTo,
+                                   Direction direction,
+                                   TransportType transportType,
+                                   MessageType messageType,
+                                   CommunicationContext communicationContext,
+                                   Level level) {
+        return this.logSink.createRelatedTargetStream(relatedTo, transportType, direction, messageType,
+            communicationContext, level);
+    }
+
+    @Override
     public InputStream logMessage(Direction direction,
                                   TransportType transportType,
                                   MessageType messageType,

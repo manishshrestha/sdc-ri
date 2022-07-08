@@ -77,7 +77,8 @@ public class CommunicationLogInnerHandlerWrapper extends HandlerWrapper {
                 CommunicationLog.MessageType.REQUEST,
                 requestAppLevelCommContext,
                 CommunicationLog.Level.APPLICATION);
-        OutputStream netLevelCommLogStream = commLog.logMessage(
+        OutputStream netLevelCommLogStream = commLog.logRelatedMessage(
+            appLevelCommLogStream,
             CommunicationLog.Direction.INBOUND,
             CommunicationLog.TransportType.HTTP,
             CommunicationLog.MessageType.REQUEST,

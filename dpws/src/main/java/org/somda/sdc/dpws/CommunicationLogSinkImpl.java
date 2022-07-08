@@ -118,6 +118,15 @@ public class CommunicationLogSinkImpl implements CommunicationLogSink {
         return new CommunicationLogFileOutputStream(dir, fileNamePrefix, prettyPrintXml);
     }
 
+    @Override
+    public OutputStream createRelatedTargetStream(OutputStream relatesTo, CommunicationLog.TransportType path,
+                                                  CommunicationLog.Direction direction,
+                                                  CommunicationLog.MessageType messageType,
+                                                  CommunicationContext communicationContext,
+                                                  CommunicationLog.Level level) {
+        return createTargetStream(path, direction, messageType, communicationContext, level);
+    }
+
     private String validFilenameOfTransactionId(String transactionId) {
         return transactionId.replace(':', '_');
     }

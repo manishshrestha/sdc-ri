@@ -110,26 +110,27 @@ public class CommunicationLogInnerHttpResponseInterceptor implements HttpRespons
         var requestNetLevelCommContext =
             new CommunicationContext(requestNetLevelHttpApplicationInfo, requestTransportInfo);
 
-        OutputStream commlogAppLevelStream = commlog.logMessage(
+        OutputStream commLogAppLevelStream = commlog.logMessage(
                 CommunicationLog.Direction.INBOUND,
                 CommunicationLog.TransportType.HTTP,
                 CommunicationLog.MessageType.RESPONSE,
                 requestAppLevelCommContext,
                 CommunicationLog.Level.APPLICATION);
 
-        response.setEntity(new CommunicationLogEntity(oldMessageEntity, commlogAppLevelStream));
+        response.setEntity(new CommunicationLogEntity(oldMessageEntity, commLogAppLevelStream));
 
         final ExtractingEntity extractingEntity =
             (ExtractingEntity) context
                 .getAttribute(CommunicationLogOuterHttpResponseInterceptor.EXTRACTING_ENTITY_FROM_OUTER_PART_KEY);
         if (extractingEntity != null) {
-            OutputStream commlogNetLevelStream = commlog.logMessage(
+            OutputStream commLogNetLevelStream = commlog.logRelatedMessage(
+                commLogAppLevelStream,
                 CommunicationLog.Direction.INBOUND,
                 CommunicationLog.TransportType.HTTP,
                 CommunicationLog.MessageType.RESPONSE,
                 requestNetLevelCommContext,
                 CommunicationLog.Level.NETWORK);
-            extractingEntity.setExtractInto(commlogNetLevelStream);
+            extractingEntity.setExtractInto(commLogNetLevelStream);
         }
 
         instanceLogger.debug("Processing response done");

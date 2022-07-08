@@ -1340,6 +1340,15 @@ class CommunicationLogIT extends DpwsTest {
             return os;
         }
 
+        @Override
+        public OutputStream createRelatedTargetStream(OutputStream relatesTo, CommunicationLog.TransportType path,
+                                                      CommunicationLog.Direction direction,
+                                                      CommunicationLog.MessageType messageType,
+                                                      CommunicationContext communicationContext,
+                                                      CommunicationLog.Level level) {
+            return createTargetStream(path, direction, messageType, communicationContext, level);
+        }
+
         public ArrayList<CloseableByteArrayOutputStream> getInboundAppLevel() { return inboundAppLevel; }
 
         public ArrayList<CloseableByteArrayOutputStream> getOutboundAppLevel() {

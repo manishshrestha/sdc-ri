@@ -116,7 +116,8 @@ public class CommunicationLogOuterHandlerWrapper extends HandlerWrapper {
             responseAppLevelCommContext,
             CommunicationLog.Level.APPLICATION
         );
-        final OutputStream netLevelCommLogStream = communicationLog.logMessage(
+        final OutputStream netLevelCommLogStream = communicationLog.logRelatedMessage(
+            appLevelCommLogStream,
             CommunicationLog.Direction.OUTBOUND,
             CommunicationLog.TransportType.HTTP,
             CommunicationLog.MessageType.RESPONSE,

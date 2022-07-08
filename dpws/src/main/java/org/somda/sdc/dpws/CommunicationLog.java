@@ -42,6 +42,25 @@ public interface CommunicationLog {
 
 
     /**
+     * Creates an {@linkplain OutputStream} to write the related log message into.
+     *
+     * @param relatedTo            OutputStream created by a call to logMessage() containing
+     *                             the Message that this one is related to.
+     * @param direction            direction used for filename.
+     * @param transportType        the transport protocol used i.e. udp, http, etc.
+     * @param messageType          the type of the message i.e. request, response.
+     * @param communicationContext communication information such as target address and port.
+     * @param level                level of the message, i.e. network or application.
+     * @return an output stream to write the log message into.
+     */
+    OutputStream logRelatedMessage(OutputStream relatedTo,
+                                   Direction direction,
+                                   TransportType transportType,
+                                   MessageType messageType,
+                                   CommunicationContext communicationContext,
+                                   Level level);
+
+    /**
      * Logs an HTTP message based on an {@linkplain InputStream}.
      * <p>
      * It blocks until everything has been read.

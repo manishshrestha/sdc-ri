@@ -426,6 +426,15 @@ class SubscriptionIT {
             return os;
         }
 
+        @Override
+        public OutputStream createRelatedTargetStream(OutputStream relatesTo, CommunicationLog.TransportType path,
+                                                      CommunicationLog.Direction direction,
+                                                      CommunicationLog.MessageType messageType,
+                                                      CommunicationContext communicationContext,
+                                                      CommunicationLog.Level level) {
+            return createTargetStream(path, direction, messageType, communicationContext, level);
+        }
+
         public Map<String, ByteArrayOutputStream> getOutbound() {
             return outbound;
         }
