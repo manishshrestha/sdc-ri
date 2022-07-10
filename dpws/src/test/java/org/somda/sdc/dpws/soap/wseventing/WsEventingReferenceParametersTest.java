@@ -113,8 +113,10 @@ class WsEventingReferenceParametersTest extends DpwsTest {
         var uri = "http://" + HOST + ":" + PORT;
         var hostedServiceUri = httpSrvRegisty.registerContext(uri, HOSTED_SERVICE_PATH, new HttpHandler() {
             @Override
-            public void handle(InputStream inStream, OutputStream outStream, CommunicationContext communicationContext) throws HttpException {
-                MarshallingHelper.handleRequestResponse(getInjector(), reqResSrv, inStream, outStream, communicationContext);
+            public void handle(InputStream inStream, OutputStream outStream,
+                               CommunicationContext communicationContext) throws HttpException {
+                MarshallingHelper.handleRequestResponse(getInjector(), reqResSrv, inStream, outStream,
+                        communicationContext);
             }
         });
 
@@ -143,8 +145,8 @@ class WsEventingReferenceParametersTest extends DpwsTest {
         assertEquals(1, element.getChildNodes().getLength());
         assertEquals(REFERENCE, element.getTextContent());
         assertTrue(element.hasAttributeNS(
-                WsAddressingConstants.IS_REFERENCE_PARAMETER.getNamespaceURI(),
-                WsAddressingConstants.IS_REFERENCE_PARAMETER.getLocalPart()
+                        WsAddressingConstants.IS_REFERENCE_PARAMETER.getNamespaceURI(),
+                        WsAddressingConstants.IS_REFERENCE_PARAMETER.getLocalPart()
                 )
         );
     }
@@ -223,7 +225,10 @@ class WsEventingReferenceParametersTest extends DpwsTest {
                 SubscriptionManagerFactory subscriptionManagerFactory,
                 HttpUriBuilder httpUriBuilder
         ) {
-            super(maxExpires, subscriptionManagerPath, soapUtil, faultFactory, jaxbUtil, wsaUtil, wseFactory, soapMessageFactory, envelopeFactory, httpServerRegistry, rrServerHttpHandlerProvider, subscriptionRegistry, subscriptionManagerFactory, httpUriBuilder, "abcd");
+            super(Collections.emptyMap(), maxExpires, subscriptionManagerPath, soapUtil, faultFactory, jaxbUtil,
+                    wsaUtil, wseFactory, soapMessageFactory, envelopeFactory, httpServerRegistry,
+                    rrServerHttpHandlerProvider, subscriptionRegistry, subscriptionManagerFactory, httpUriBuilder,
+                    "abcd");
             this.soapUtil = soapUtil;
 
             // reset the futures on every instantiation to avoid side effects

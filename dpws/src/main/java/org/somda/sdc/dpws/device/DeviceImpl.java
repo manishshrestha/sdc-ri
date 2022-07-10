@@ -40,7 +40,9 @@ import org.somda.sdc.dpws.soap.wsaddressing.model.EndpointReferenceType;
 import org.somda.sdc.dpws.soap.wsdiscovery.WsDiscoveryTargetService;
 import org.somda.sdc.dpws.soap.wsdiscovery.factory.WsDiscoveryTargetServiceFactory;
 import org.somda.sdc.dpws.soap.wseventing.EventSource;
+import org.somda.sdc.dpws.soap.wseventing.EventSourceFilterPlugin;
 import org.somda.sdc.dpws.soap.wseventing.SubscriptionManager;
+import org.somda.sdc.dpws.soap.wseventing.factory.EventSourceInterceptorFactory;
 import org.somda.sdc.dpws.udp.UdpMessageQueueService;
 
 import javax.annotation.Nullable;
@@ -66,7 +68,6 @@ public class DeviceImpl extends AbstractIdleService implements Device, Service, 
 
     private final DeviceSettings deviceSettings;
     private final WsDiscoveryTargetServiceFactory targetServiceFactory;
-    private final Provider<DefaultDeviceSettings> defaultConfigProvider;
     private final WsAddressingUtil wsaUtil;
     private final NotificationSourceFactory notificationSourceFactory;
     private final DeviceHelperFactory deviceHelperFactory;
@@ -76,7 +77,6 @@ public class DeviceImpl extends AbstractIdleService implements Device, Service, 
     private final RequestResponseServer wsdRequestResponseInterceptorChain;
     private final UdpMessageQueueService discoveryMessageQueue;
     private final Provider<RequestResponseServerHttpHandler> reqResHandlerProvider;
-    private final Provider<EventSource> eventSourceProvider;
     private final HostedServiceFactory hostedServiceFactory;
     private final HostedServiceInterceptorFactory hostedServiceInterceptorFactory;
     private final String eprAddress;
@@ -88,6 +88,8 @@ public class DeviceImpl extends AbstractIdleService implements Device, Service, 
 
     private final List<HostedService> hostedServicesOnStartup;
     private final List<EventSource> eventSources;
+    private final Map<String, EventSourceFilterPlugin> eventSourceFilterPlugins;
+    private final EventSourceInterceptorFactory eventSourceInterceptorFactory;
 
     private WsDiscoveryTargetService wsdTargetService;
     private HostingService hostingService;
@@ -99,8 +101,8 @@ public class DeviceImpl extends AbstractIdleService implements Device, Service, 
 
     @AssistedInject
     DeviceImpl(@Assisted DeviceSettings deviceSettings,
+               @Assisted Map<String, EventSourceFilterPlugin> eventSourceFilterPlugins,
                WsDiscoveryTargetServiceFactory targetServiceFactory,
-               Provider<DefaultDeviceSettings> defaultConfigProvider,
                WsAddressingUtil wsaUtil,
                NotificationSourceFactory notificationSourceFactory,
                DeviceHelperFactory deviceHelperFactory,
@@ -110,18 +112,18 @@ public class DeviceImpl extends AbstractIdleService implements Device, Service, 
                HttpServerRegistry httpServerRegistry,
                Provider<RequestResponseServerHttpHandler> reqResHandlerProvider,
                @DiscoveryUdpQueue UdpMessageQueueService discoveryMessageQueue,
-               Provider<EventSource> eventSourceProvider,
                HostedServiceFactory hostedServiceFactory,
                HostedServiceInterceptorFactory hostedServiceInterceptorFactory,
                NetworkInterfaceUtil networkInterfaceUtil,
                HttpUriBuilder httpUriBuilder,
                @Named(DpwsConfig.HTTPS_SUPPORT) boolean enableHttps,
                @Named(DpwsConfig.HTTP_SUPPORT) boolean enableHttp,
-               @Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier) {
+               @Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier,
+               EventSourceInterceptorFactory eventSourceInterceptorFactory) {
         this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);
+        this.eventSourceFilterPlugins = eventSourceFilterPlugins;
         this.deviceSettings = deviceSettings;
         this.targetServiceFactory = targetServiceFactory;
-        this.defaultConfigProvider = defaultConfigProvider;
         this.wsaUtil = wsaUtil;
         this.notificationSourceFactory = notificationSourceFactory;
         this.deviceHelperFactory = deviceHelperFactory;
@@ -131,7 +133,6 @@ public class DeviceImpl extends AbstractIdleService implements Device, Service, 
         this.wsdRequestResponseInterceptorChain = wsdRequestResponseInterceptorChain;
         this.discoveryMessageQueue = discoveryMessageQueue;
         this.reqResHandlerProvider = reqResHandlerProvider;
-        this.eventSourceProvider = eventSourceProvider;
         this.hostedServiceFactory = hostedServiceFactory;
         this.hostedServiceInterceptorFactory = hostedServiceInterceptorFactory;
         this.networkInterfaceUtil = networkInterfaceUtil;
@@ -140,6 +141,7 @@ public class DeviceImpl extends AbstractIdleService implements Device, Service, 
         this.enableHttp = enableHttp;
         this.hostedServicesOnStartup = new ArrayList<>();
         this.eventSources = new ArrayList<>();
+        this.eventSourceInterceptorFactory = eventSourceInterceptorFactory;
 
         this.eprAddress = wsaUtil.getAddressUri(deviceSettings.getEndpointReference()).orElseThrow(() ->
                 new RuntimeException("No valid endpoint reference found in device deviceSettings"));
@@ -369,7 +371,7 @@ public class DeviceImpl extends AbstractIdleService implements Device, Service, 
     private void addHostedServiceToHostingService(HostedService hostedService) {
         var copyHostedService = hostedService;
         // Create event source
-        EventSource eventSource = eventSourceProvider.get();
+        EventSource eventSource = eventSourceInterceptorFactory.createWsEventingEventSink(eventSourceFilterPlugins);
         eventSources.add(eventSource);
         // Inject event source to Web Service
         copyHostedService.getWebService().setEventSource(eventSource);

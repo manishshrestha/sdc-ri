@@ -10,7 +10,7 @@ import org.somda.sdc.dpws.soap.wseventing.WsEventingConstants;
 public enum WsEventingStatus {
     STATUS_SOURCE_DELIVERY_FAILURE(WsEventingConstants.STATUS_SOURCE_DELIVERY_FAILURE),
     STATUS_SOURCE_SHUTTING_DOWN(WsEventingConstants.STATUS_SOURCE_SHUTTING_DOWN),
-    STATUS_SOURCE_CANCELLING(WsEventingConstants.STATUS_SOURCE_CANCELLING),;
+    STATUS_SOURCE_CANCELLING(WsEventingConstants.STATUS_SOURCE_CANCELLING);
 
     private final String status;
 

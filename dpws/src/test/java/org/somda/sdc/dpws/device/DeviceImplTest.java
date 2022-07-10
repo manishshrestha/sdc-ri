@@ -51,7 +51,7 @@ public class DeviceImplTest implements Runnable {
         DpwsFramework dpwsFramework = inj.getInstance(DpwsFramework.class);
         dpwsFramework.startAsync().awaitRunning();
 
-        Device device = inj.getInstance(DeviceFactory.class).createDevice(devConf);
+        Device device = inj.getInstance(DeviceFactory.class).createDevice(devConf, Collections.emptyMap());
 
         HostedServiceFactory hsFactory = inj.getInstance(HostedServiceFactory.class);
 //        HostedService testService = hsFactory.createHostedService("TestService", new WebService() {

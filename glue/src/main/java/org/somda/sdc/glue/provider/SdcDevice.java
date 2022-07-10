@@ -66,7 +66,7 @@ public class SdcDevice extends AbstractIdleService implements Device, EventSourc
     SdcDevice(@Assisted DeviceSettings deviceSettings,
               @Assisted LocalMdibAccess mdibAccess,
               @Assisted("operationInvocationReceivers")
-                      Collection<OperationInvocationReceiver> operationInvocationReceivers,
+              Collection<OperationInvocationReceiver> operationInvocationReceivers,
               @Assisted("plugins") Collection<SdcDevicePlugin> plugins,
               Provider<SdcRequiredTypesAndScopes> sdcRequiredTypesAndScopesProvider,
               DeviceFactory deviceFactory,
@@ -83,7 +83,7 @@ public class SdcDevice extends AbstractIdleService implements Device, EventSourc
     SdcDevice(@Assisted DeviceSettings deviceSettings,
               @Assisted LocalMdibAccess mdibAccess,
               @Assisted("operationInvocationReceivers")
-                      Collection<OperationInvocationReceiver> operationInvocationReceivers,
+              Collection<OperationInvocationReceiver> operationInvocationReceivers,
               @Assisted("plugins") Collection<SdcDevicePlugin> plugins,
               @Assisted @Nullable LocalizationStorage localizationStorage,
               Provider<SdcRequiredTypesAndScopes> sdcRequiredTypesAndScopesProvider,
@@ -99,7 +99,15 @@ public class SdcDevice extends AbstractIdleService implements Device, EventSourc
         }
 
         this.mdibAccess = mdibAccess;
-        this.dpwsDevice = deviceFactory.createDevice(deviceSettings);
+        this.enableHistoryService = enableHistoryService;
+        if (enableHistoryService) {
+            this.historyService = servicesFactory.createHistoryService(mdibAccess);
+            this.dpwsDevice = deviceFactory.createDevice(deviceSettings,
+                    Map.of(DpwsConstants.WS_DIALECT_HISTORY_SERVICE, historyService));
+        } else {
+            this.dpwsDevice = deviceFactory.createDevice(deviceSettings, Collections.emptyMap());
+        }
+
         this.highPriorityServices = servicesFactory.createHighPriorityServices(mdibAccess);
         this.lowPriorityServices = servicesFactory.createLowPriorityServices(mdibAccess, localizationStorage);
         this.hostedServiceFactory = hostedServiceFactory;
@@ -107,10 +115,7 @@ public class SdcDevice extends AbstractIdleService implements Device, EventSourc
 
         this.pluginProcessor = new SdcDevicePluginProcessor(copyPlugins, this);
         this.localizationStorage = localizationStorage;
-        this.enableHistoryService = enableHistoryService;
-        if (enableHistoryService) {
-            this.historyService = servicesFactory.createHistoryService(mdibAccess);
-        }
+
     }
 
     public LocalMdibAccess getMdibAccess() {

@@ -86,6 +86,7 @@ import org.somda.sdc.dpws.soap.wseventing.SinkSubscriptionManager;
 import org.somda.sdc.dpws.soap.wseventing.SinkSubscriptionManagerImpl;
 import org.somda.sdc.dpws.soap.wseventing.SourceSubscriptionManager;
 import org.somda.sdc.dpws.soap.wseventing.SourceSubscriptionManagerImpl;
+import org.somda.sdc.dpws.soap.wseventing.factory.EventSourceInterceptorFactory;
 import org.somda.sdc.dpws.soap.wseventing.factory.SubscriptionManagerFactory;
 import org.somda.sdc.dpws.soap.wseventing.factory.WsEventingEventSinkFactory;
 import org.somda.sdc.dpws.soap.wsmetadataexchange.GetMetadataClient;
@@ -279,10 +280,12 @@ public class DefaultDpwsModule extends AbstractModule {
     }
 
     private void configureWsEventing() {
-        bind(EventSource.class)
-                .to(EventSourceInterceptor.class);
         bind(LocalAddressResolver.class)
                 .to(LocalAddressResolverImpl.class);
+
+        install(new FactoryModuleBuilder()
+                .implement(EventSource.class, EventSourceInterceptor.class)
+                .build(EventSourceInterceptorFactory.class));
 
         install(new FactoryModuleBuilder()
                 .implement(EventSink.class, EventSinkImpl.class)

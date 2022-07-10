@@ -37,6 +37,7 @@ import test.org.somda.common.LoggingTestWatcher;
 import javax.xml.bind.JAXBElement;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -177,7 +178,7 @@ public class HistoryIT {
     private FilterType createFilterType() {
         var filterType = wseFactory.createFilterType();
         filterType.setDialect(WS_DIALECT_HISTORY_SERVICE);
-        filterType.setContent(List.of(ACTION_HISTORY_MDIB_REPORT, createHistoryQuery()));
+        filterType.setContent(Collections.singletonList(createHistoryQuery()));
         return filterType;
     }
 

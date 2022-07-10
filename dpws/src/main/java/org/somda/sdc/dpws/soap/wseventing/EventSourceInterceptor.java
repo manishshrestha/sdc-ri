@@ -5,6 +5,7 @@ import com.google.common.collect.Multimap;
 import com.google.common.util.concurrent.AbstractIdleService;
 import com.google.inject.Inject;
 import com.google.inject.Provider;
+import com.google.inject.assistedinject.Assisted;
 import com.google.inject.name.Named;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -79,7 +80,6 @@ public class EventSourceInterceptor extends AbstractIdleService implements Event
     private final Multimap<String, String> subscribedActionsToSubManIds;
     private final Lock subscribedActionsLock;
 
-
     private final JaxbUtil jaxbUtil;
     private final WsAddressingUtil wsaUtil;
 
@@ -87,9 +87,11 @@ public class EventSourceInterceptor extends AbstractIdleService implements Event
     private final SoapMessageFactory soapMessageFactory;
     private final EnvelopeFactory envelopeFactory;
     private final Logger instanceLogger;
+    private final Map<String, EventSourceFilterPlugin> eventSourceFilterPlugins;
 
     @Inject
-    EventSourceInterceptor(@Named(WsEventingConfig.SOURCE_MAX_EXPIRES) Duration maxExpires,
+    EventSourceInterceptor(@Assisted Map<String, EventSourceFilterPlugin> eventSourceFilterPlugins,
+                           @Named(WsEventingConfig.SOURCE_MAX_EXPIRES) Duration maxExpires,
                            @Named(WsEventingConfig.SOURCE_SUBSCRIPTION_MANAGER_PATH) String subscriptionManagerPath,
                            SoapUtil soapUtil,
                            WsEventingFaultFactory faultFactory,
@@ -105,6 +107,7 @@ public class EventSourceInterceptor extends AbstractIdleService implements Event
                            HttpUriBuilder httpUriBuilder,
                            @Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier) {
         this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);
+        this.eventSourceFilterPlugins = eventSourceFilterPlugins;
         this.maxExpires = maxExpires;
         this.subscriptionManagerPath = subscriptionManagerPath;
         this.soapUtil = soapUtil;
@@ -195,7 +198,21 @@ public class EventSourceInterceptor extends AbstractIdleService implements Event
         // Validate expires
         Duration grantedExpires = grantExpires(validateExpires(subscribe.getExpires()));
 
-        // Create subscription
+        // Validate filter type
+        FilterType filterType = Optional.ofNullable(subscribe.getFilter()).orElseThrow(() ->
+                new SoapFaultException(faultFactory.createEventSourceUnableToProcess("No filter given, " +
+                        "but required."), requestMsgId));
+
+        // Validate filter dialect, dialect must be one of eventSourceFilterPlugins map or action based
+        String filterDialect = Optional.ofNullable(filterType.getDialect()).orElse("");
+        if (eventSourceFilterPlugins.containsKey(filterDialect)) {
+            eventSourceFilterPlugins.get(filterDialect).subscribe(rrObj);
+            return;
+        }
+        if (!DpwsConstants.WS_EVENTING_SUPPORTED_ACTION_DIALECT.equals(filterDialect)) {
+            throw new SoapFaultException(faultFactory.createFilteringRequestedUnavailable(), requestMsgId);
+        }
+
         var transportInfo = rrObj.getCommunicationContext().getTransportInfo();
         EndpointReferenceType epr = createSubscriptionManagerEprAndRegisterHttpHandler(
                 transportInfo.getScheme(),
@@ -204,17 +221,6 @@ public class EventSourceInterceptor extends AbstractIdleService implements Event
                 transportInfo.getLocalPort().orElseThrow(() ->
                         new RuntimeException("Fatal error. Missing local port in transport information."))
         );
-
-        // Validate filter type
-        FilterType filterType = Optional.ofNullable(subscribe.getFilter()).orElseThrow(() ->
-                new SoapFaultException(faultFactory.createEventSourceUnableToProcess("No filter given, " +
-                        "but required."), requestMsgId));
-
-        // Validate filter dialect
-        String filterDialect = Optional.ofNullable(filterType.getDialect()).orElse("");
-        if (!List.of(DpwsConstants.WS_EVENTING_SUPPORTED_ACTION_DIALECT, DpwsConstants.WS_DIALECT_HISTORY_SERVICE).contains(filterDialect)) {
-            throw new SoapFaultException(faultFactory.createFilteringRequestedUnavailable(), requestMsgId);
-        }
 
         List<String> uris = explodeUriList(filterType);
 
@@ -253,9 +259,6 @@ public class EventSourceInterceptor extends AbstractIdleService implements Event
                 subMan.getSubscriptionId(),
                 wsaUtil.getAddressUri(subMan.getNotifyTo()).orElse("<unknown>"),
                 grantedExpires.getSeconds());
-        if (DpwsConstants.WS_DIALECT_HISTORY_SERVICE.equals(filterDialect)) {
-            //TODO #142 inform history service about new subscription
-        }
     }
 
     @MessageInterceptor(value = WsEventingConstants.WSA_ACTION_RENEW, direction = Direction.REQUEST)

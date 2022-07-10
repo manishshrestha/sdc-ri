@@ -95,7 +95,8 @@ public class DeviceAndClientPeer extends IntegrationTestPeer {
 
         this.dpwsFramework = getInjector().getInstance(DpwsFramework.class);
         this.client = getInjector().getInstance(Client.class);
-        this.device = getInjector().getInstance(DeviceFactory.class).createDevice(deviceSettings);
+        this.device = getInjector().getInstance(DeviceFactory.class).createDevice(deviceSettings,
+                Collections.emptyMap());
 
     }
 
@@ -214,7 +215,8 @@ public class DeviceAndClientPeer extends IntegrationTestPeer {
 
                 assert interceptor.waitForMessages(3, defaultMaxWait);
 
-                var unsubscribe = hostedServiceProxy.getEventSinkAccess().unsubscribe(subscribeResult.getSubscriptionId());
+                var unsubscribe =
+                        hostedServiceProxy.getEventSinkAccess().unsubscribe(subscribeResult.getSubscriptionId());
                 unsubscribe.get(defaultMaxWait.toSeconds(), TimeUnit.SECONDS);
             } catch (Exception e) {
                 throw new RuntimeException(e);
