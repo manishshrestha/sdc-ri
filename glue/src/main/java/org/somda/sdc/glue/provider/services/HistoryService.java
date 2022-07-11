@@ -32,7 +32,6 @@ import org.somda.sdc.dpws.soap.wseventing.model.Subscribe;
 import org.somda.sdc.dpws.soap.wseventing.model.SubscribeResponse;
 import org.somda.sdc.dpws.soap.wseventing.model.SubscriptionEnd;
 import org.somda.sdc.dpws.soap.wseventing.model.WsEventingStatus;
-import org.somda.sdc.glue.common.MdibVersionUtil;
 import org.somda.sdc.glue.provider.services.helper.MdibRevisionObserver;
 import org.somda.sdc.glue.provider.services.helper.factory.MdibRevisionObserverFactory;
 
@@ -48,14 +47,12 @@ import static org.somda.sdc.glue.common.ActionConstants.ACTION_HISTORY_MDIB_REPO
  * Implementation of the History service which is used to query historical MDIB data.
  */
 public class HistoryService extends WebService implements EventSourceFilterPlugin {
-    private final LocalMdibAccess mdibAccess;
     private final String subscriptionManagerPath;
     private final Duration maxExpires;
     private final HttpUriBuilder httpUriBuilder;
     private final SoapUtil soapUtil;
     private final ObjectFactory wseFactory;
     private final org.somda.sdc.biceps.model.history.ObjectFactory historyObjectFactory;
-    private final MdibVersionUtil mdibVersionUtil;
     private final WsAddressingUtil wsaUtil;
     private final SoapFaultFactory soapFaultFactory;
     private final SubscriptionManagerFactory subscriptionManagerFactory;
@@ -71,21 +68,18 @@ public class HistoryService extends WebService implements EventSourceFilterPlugi
                    SoapUtil soapUtil,
                    ObjectFactory wseFactory,
                    org.somda.sdc.biceps.model.history.ObjectFactory historyObjectFactory,
-                   MdibVersionUtil mdibVersionUtil,
                    WsAddressingUtil wsaUtil,
                    SoapFaultFactory soapFaultFactory,
                    SubscriptionManagerFactory subscriptionManagerFactory,
                    MdibRevisionObserverFactory mdibRevisionObserverFactory,
                    JaxbUtil jaxbUtil,
                    @NetworkJobThreadPool ExecutorWrapperService<ListeningExecutorService> networkJobExecutor) {
-        this.mdibAccess = mdibAccess;
         this.subscriptionManagerPath = subscriptionManagerPath;
         this.maxExpires = maxExpires;
         this.httpUriBuilder = httpUriBuilder;
         this.soapUtil = soapUtil;
         this.wseFactory = wseFactory;
         this.historyObjectFactory = historyObjectFactory;
-        this.mdibVersionUtil = mdibVersionUtil;
         this.wsaUtil = wsaUtil;
         this.subscriptionManagerFactory = subscriptionManagerFactory;
         this.soapFaultFactory = soapFaultFactory;

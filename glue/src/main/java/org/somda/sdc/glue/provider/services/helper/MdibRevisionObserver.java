@@ -79,7 +79,6 @@ public class MdibRevisionObserver implements MdibAccessObserver {
     }
 
     public void createInitialReport(MdibVersion mdibVersion) {
-
         var changeSequence = objectFactory.createChangeSequenceType();
         changeSequence.setSequenceId(mdibVersion.getSequenceId());
         changeSequence.setInstanceId(mdibVersion.getInstanceId());

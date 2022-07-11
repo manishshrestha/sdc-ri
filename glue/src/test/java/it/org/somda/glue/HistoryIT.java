@@ -122,31 +122,25 @@ public class HistoryIT {
                 createFilterType(),
                 null,
                 new Interceptor() {
-                    //private final List<ChangeSequenceReportType> receivedNotifications = new ArrayList<>();
 
                     @MessageInterceptor(value = ACTION_HISTORY_MDIB_REPORT)
                     void onNotification(NotificationObject message) {
                         notificationFuture.set(List.of(convertBodyToReport(message)));
-                        /*receivedNotifications.add(convertBodyToReport(message));
-
-                        if (receivedNotifications.size() == COUNT) {
-                            notificationFuture.set(receivedNotifications);
-                        }*/
                     }
                 });
 
         subscribe.get(WAIT_IN_SECONDS, WAIT_TIME_UNIT);
 
-        var notifications = //notificationFuture.get();
-                notificationFuture.get(WAIT_IN_SECONDS, WAIT_TIME_UNIT); //TODO #142 add get with units later after
-        // debugging
+        var notifications =
+                notificationFuture.get(WAIT_IN_SECONDS, WAIT_TIME_UNIT);
+
         // should receive one notification with one change sequence.
         // Reports number is based on modification done during device initiation and modifications during runtime
         assertEquals(1, notifications.size());
         assertEquals(1, notifications.get(0).getChangeSequence().size());
         assertEquals(1 + COUNT, notifications.get(0).getChangeSequence().get(0).getHistoricReport().size());
 
-        // TODO #142: check if subscription ended after all reports was sent
+        // check if subscription ended after all reports was sent
         assertTrue(subscribe.isDone());
 
     }
