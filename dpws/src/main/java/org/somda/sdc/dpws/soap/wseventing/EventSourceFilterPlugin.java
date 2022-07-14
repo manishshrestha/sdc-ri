@@ -8,9 +8,7 @@ import org.somda.sdc.dpws.soap.interception.RequestResponseObject;
  */
 public interface EventSourceFilterPlugin {
     /**
-     * A subscribe method for custom WS-Eventing subscriptions with specific filter dialects.
-     * Currently, used to subscribe to the History service to get historical data. In future can implement more custom
-     * filter dialects.
+     * A subscribe method for WS-Eventing subscriptions with custom filter dialect.
      *
      * @param requestResponseObject the request response object that contains the subscribe request data
      * @throws SoapFaultException if something went wrong during processing.

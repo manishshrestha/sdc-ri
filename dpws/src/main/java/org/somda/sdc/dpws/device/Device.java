@@ -11,7 +11,7 @@ import java.util.Map;
  * In order to get a device up and running, perform the following steps
  * <ol>
  * <li>Configure the device appropriately by using
- * {@link org.somda.sdc.dpws.device.factory.DeviceFactory#createDevice(DeviceSettings)},
+ * {@link org.somda.sdc.dpws.device.factory.DeviceFactory#createDevice(DeviceSettings, Map)} )},
  * {@link #getDiscoveryAccess()} and {@link #getHostingServiceAccess()}.
  * <li>Use {@link #startAsync()} to start the device and send a WS-Discovery Hello.
  * <li>To stop the device, invoke {@link #stopAsync()}. This will send a WS-Discovery Bye.

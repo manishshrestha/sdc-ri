@@ -31,7 +31,7 @@ import org.somda.sdc.dpws.soap.factory.NotificationSinkFactory;
 import org.somda.sdc.dpws.soap.factory.RequestResponseClientFactory;
 import org.somda.sdc.dpws.soap.wsaddressing.WsAddressingServerInterceptor;
 import org.somda.sdc.dpws.soap.wsaddressing.WsAddressingUtil;
-import org.somda.sdc.dpws.soap.wseventing.factory.EventSourceInterceptorFactory;
+import org.somda.sdc.dpws.soap.wseventing.factory.EventSourceFactory;
 import org.somda.sdc.dpws.soap.wseventing.factory.WsEventingEventSinkFactory;
 import org.somda.sdc.dpws.soap.wseventing.model.WsEventingStatus;
 
@@ -85,8 +85,8 @@ class WsEventingTest extends DpwsTest {
 
         WsAddressingUtil wsaUtil = getInjector().getInstance(WsAddressingUtil.class);
         ObjectFactory dpwsFactory = getInjector().getInstance(ObjectFactory.class);
-        var eventSourceFactory = getInjector().getInstance(EventSourceInterceptorFactory.class);
-        wseSource = eventSourceFactory.createWsEventingEventSink(Collections.emptyMap());
+        var eventSourceFactory = getInjector().getInstance(EventSourceFactory.class);
+        wseSource = eventSourceFactory.createEventSource(Collections.emptyMap());
         RequestResponseServer reqResSrv = getInjector().getInstance(RequestResponseServer.class);
         reqResSrv.register(wseSource);
         notificationSink = getInjector().getInstance(NotificationSinkFactory.class).createNotificationSink(

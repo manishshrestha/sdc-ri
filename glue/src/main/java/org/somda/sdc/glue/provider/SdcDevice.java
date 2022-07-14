@@ -72,7 +72,7 @@ public class SdcDevice extends AbstractIdleService implements Device, EventSourc
               DeviceFactory deviceFactory,
               ServicesFactory servicesFactory,
               HostedServiceFactory hostedServiceFactory,
-              @Named(DeviceConfig.HISTORY_SERVICE_SUPPORT) Boolean enableHistoryService) {
+              @Named(ProviderConfig.ENABLE_HISTORY_SERVICE) Boolean enableHistoryService) {
 
         this(deviceSettings, mdibAccess, operationInvocationReceivers, plugins, null,
                 sdcRequiredTypesAndScopesProvider, deviceFactory, servicesFactory, hostedServiceFactory,
@@ -90,7 +90,7 @@ public class SdcDevice extends AbstractIdleService implements Device, EventSourc
               DeviceFactory deviceFactory,
               ServicesFactory servicesFactory,
               HostedServiceFactory hostedServiceFactory,
-              @Named(DeviceConfig.HISTORY_SERVICE_SUPPORT) Boolean enableHistoryService) {
+              @Named(ProviderConfig.ENABLE_HISTORY_SERVICE) Boolean enableHistoryService) {
 
         // Always support the minimally required types and scopes
         var copyPlugins = plugins;
@@ -103,7 +103,7 @@ public class SdcDevice extends AbstractIdleService implements Device, EventSourc
         if (enableHistoryService) {
             this.historyService = servicesFactory.createHistoryService(mdibAccess);
             this.dpwsDevice = deviceFactory.createDevice(deviceSettings,
-                    Map.of(DpwsConstants.WS_DIALECT_HISTORY_SERVICE, historyService));
+                    Map.of(GlueConstants.WS_EVENTING_HISTORY_DIALECT, historyService));
         } else {
             this.dpwsDevice = deviceFactory.createDevice(deviceSettings, Collections.emptyMap());
         }

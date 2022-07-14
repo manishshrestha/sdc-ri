@@ -4,6 +4,7 @@ import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
 import org.somda.sdc.dpws.soap.wsaddressing.model.EndpointReferenceType;
 import org.somda.sdc.dpws.soap.wseventing.helper.SubscriptionManagerBase;
+import org.somda.sdc.dpws.soap.wseventing.model.FilterType;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -22,10 +23,10 @@ public class SinkSubscriptionManagerImpl implements SinkSubscriptionManager {
                                 @Assisted Duration expires,
                                 @Assisted("NotifyTo") EndpointReferenceType notifyTo,
                                 @Assisted("EndTo") EndpointReferenceType endTo,
-                                @Assisted("Actions") Collection<String> actions) {
+                                @Assisted("Filter") FilterType filter) {
         final var subscriptionId = UUID.randomUUID().toString();
         this.delegate = new SubscriptionManagerBase(
-                notifyTo, endTo, subscriptionId, expires, subscriptionManagerEpr, actions);
+                notifyTo, endTo, subscriptionId, expires, subscriptionManagerEpr, filter);
     }
 
     @Override

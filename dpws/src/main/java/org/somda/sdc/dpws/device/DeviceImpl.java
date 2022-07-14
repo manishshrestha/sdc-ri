@@ -42,7 +42,7 @@ import org.somda.sdc.dpws.soap.wsdiscovery.factory.WsDiscoveryTargetServiceFacto
 import org.somda.sdc.dpws.soap.wseventing.EventSource;
 import org.somda.sdc.dpws.soap.wseventing.EventSourceFilterPlugin;
 import org.somda.sdc.dpws.soap.wseventing.SubscriptionManager;
-import org.somda.sdc.dpws.soap.wseventing.factory.EventSourceInterceptorFactory;
+import org.somda.sdc.dpws.soap.wseventing.factory.EventSourceFactory;
 import org.somda.sdc.dpws.udp.UdpMessageQueueService;
 
 import javax.annotation.Nullable;
@@ -89,7 +89,7 @@ public class DeviceImpl extends AbstractIdleService implements Device, Service, 
     private final List<HostedService> hostedServicesOnStartup;
     private final List<EventSource> eventSources;
     private final Map<String, EventSourceFilterPlugin> eventSourceFilterPlugins;
-    private final EventSourceInterceptorFactory eventSourceInterceptorFactory;
+    private final EventSourceFactory eventSourceFactory;
 
     private WsDiscoveryTargetService wsdTargetService;
     private HostingService hostingService;
@@ -119,7 +119,7 @@ public class DeviceImpl extends AbstractIdleService implements Device, Service, 
                @Named(DpwsConfig.HTTPS_SUPPORT) boolean enableHttps,
                @Named(DpwsConfig.HTTP_SUPPORT) boolean enableHttp,
                @Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier,
-               EventSourceInterceptorFactory eventSourceInterceptorFactory) {
+               EventSourceFactory eventSourceFactory) {
         this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);
         this.eventSourceFilterPlugins = eventSourceFilterPlugins;
         this.deviceSettings = deviceSettings;
@@ -141,7 +141,7 @@ public class DeviceImpl extends AbstractIdleService implements Device, Service, 
         this.enableHttp = enableHttp;
         this.hostedServicesOnStartup = new ArrayList<>();
         this.eventSources = new ArrayList<>();
-        this.eventSourceInterceptorFactory = eventSourceInterceptorFactory;
+        this.eventSourceFactory = eventSourceFactory;
 
         this.eprAddress = wsaUtil.getAddressUri(deviceSettings.getEndpointReference()).orElseThrow(() ->
                 new RuntimeException("No valid endpoint reference found in device deviceSettings"));
@@ -371,7 +371,7 @@ public class DeviceImpl extends AbstractIdleService implements Device, Service, 
     private void addHostedServiceToHostingService(HostedService hostedService) {
         var copyHostedService = hostedService;
         // Create event source
-        EventSource eventSource = eventSourceInterceptorFactory.createWsEventingEventSink(eventSourceFilterPlugins);
+        EventSource eventSource = eventSourceFactory.createEventSource(eventSourceFilterPlugins);
         eventSources.add(eventSource);
         // Inject event source to Web Service
         copyHostedService.getWebService().setEventSource(eventSource);

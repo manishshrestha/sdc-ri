@@ -124,7 +124,7 @@ public class HighPriorityServices extends WebService {
         anonymousSource.setExtensionName("TBD");
         anonymousSource.setRootName("TBD");
 
-        mdibAccess.registerObserver(reportGenerator); // TODO #142: local MDIB changes subscribe
+        mdibAccess.registerObserver(reportGenerator);
     }
 
     /**

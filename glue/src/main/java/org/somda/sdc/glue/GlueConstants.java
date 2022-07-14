@@ -122,4 +122,9 @@ public class GlueConstants {
             "(rm=" + QUERY_ITEM_SEGMENT + ")|" +
             "(bed=" + QUERY_ITEM_SEGMENT + "))";
     public static final String LOC_CTXT_QUERY = "^(" + QUERY_ITEM + "(&" + QUERY_ITEM + ")*)?$";
+
+    /**
+     * Defines the supported WS-Eventing dialect URI for History service.
+     */
+    public static final String WS_EVENTING_HISTORY_DIALECT = "http://www.draeger.com/sdc/2021-06/HistoryService";
 }

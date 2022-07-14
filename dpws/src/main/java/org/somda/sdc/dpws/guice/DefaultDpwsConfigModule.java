@@ -41,10 +41,6 @@ public class DefaultDpwsConfigModule extends AbstractConfigurationModule {
         bind(DeviceConfig.WSDL_PROVISIONING_MODE,
                 WsdlProvisioningMode.class,
                 WsdlProvisioningMode.RESOURCE);
-
-        bind(DeviceConfig.HISTORY_SERVICE_SUPPORT,
-                Boolean.class,
-                true); //TODO #142: make it false by default and adapt tests
     }
 
     private void configureDpws() {

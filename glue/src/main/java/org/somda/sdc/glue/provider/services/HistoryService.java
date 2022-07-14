@@ -1,5 +1,6 @@
 package org.somda.sdc.glue.provider.services;
 
+import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.inject.Inject;
 import com.google.inject.assistedinject.Assisted;
@@ -9,7 +10,6 @@ import org.somda.sdc.biceps.model.history.HistoryQueryType;
 import org.somda.sdc.biceps.provider.access.LocalMdibAccess;
 import org.somda.sdc.common.util.ExecutorWrapperService;
 import org.somda.sdc.common.util.JaxbUtil;
-import org.somda.sdc.dpws.DpwsConstants;
 import org.somda.sdc.dpws.device.WebService;
 import org.somda.sdc.dpws.guice.NetworkJobThreadPool;
 import org.somda.sdc.dpws.http.HttpUriBuilder;
@@ -32,11 +32,12 @@ import org.somda.sdc.dpws.soap.wseventing.model.Subscribe;
 import org.somda.sdc.dpws.soap.wseventing.model.SubscribeResponse;
 import org.somda.sdc.dpws.soap.wseventing.model.SubscriptionEnd;
 import org.somda.sdc.dpws.soap.wseventing.model.WsEventingStatus;
+import org.somda.sdc.glue.GlueConstants;
+import org.somda.sdc.glue.provider.ProviderConfig;
 import org.somda.sdc.glue.provider.services.helper.MdibRevisionObserver;
 import org.somda.sdc.glue.provider.services.helper.factory.MdibRevisionObserverFactory;
 
 import java.time.Duration;
-import java.util.Collections;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Supplier;
@@ -49,6 +50,7 @@ import static org.somda.sdc.glue.common.ActionConstants.ACTION_HISTORY_MDIB_REPO
 public class HistoryService extends WebService implements EventSourceFilterPlugin {
     private final String subscriptionManagerPath;
     private final Duration maxExpires;
+    private final Integer historicalReportsLimit;
     private final HttpUriBuilder httpUriBuilder;
     private final SoapUtil soapUtil;
     private final ObjectFactory wseFactory;
@@ -64,6 +66,7 @@ public class HistoryService extends WebService implements EventSourceFilterPlugi
     HistoryService(@Assisted LocalMdibAccess mdibAccess,
                    @Named(WsEventingConfig.SOURCE_SUBSCRIPTION_MANAGER_PATH) String subscriptionManagerPath,
                    @Named(WsEventingConfig.SOURCE_MAX_EXPIRES) Duration maxExpires,
+                   @Named(ProviderConfig.MAX_HISTORICAL_REPORTS_PER_NOTIFICATION) Integer historicalReportsLimit,
                    HttpUriBuilder httpUriBuilder,
                    SoapUtil soapUtil,
                    ObjectFactory wseFactory,
@@ -76,6 +79,7 @@ public class HistoryService extends WebService implements EventSourceFilterPlugi
                    @NetworkJobThreadPool ExecutorWrapperService<ListeningExecutorService> networkJobExecutor) {
         this.subscriptionManagerPath = subscriptionManagerPath;
         this.maxExpires = maxExpires;
+        this.historicalReportsLimit = historicalReportsLimit;
         this.httpUriBuilder = httpUriBuilder;
         this.soapUtil = soapUtil;
         this.wseFactory = wseFactory;
@@ -101,7 +105,7 @@ public class HistoryService extends WebService implements EventSourceFilterPlugi
                 .orElseThrow(getSoapFaultExceptionSupplier("No filter content given, but required."));
         var query = jaxbUtil.extractElement(filterContent.get(0), HistoryQueryType.class)
                 .orElseThrow(getSoapFaultExceptionSupplier("Failed to parse historical data subscription filter."));
-        if (!DpwsConstants.WS_DIALECT_HISTORY_SERVICE.equals(filter.getDialect())) {
+        if (!GlueConstants.WS_EVENTING_HISTORY_DIALECT.equals(filter.getDialect())) {
             throw getSoapFaultExceptionSupplier("Dialect not supported by History service.").get();
         }
 
@@ -141,7 +145,7 @@ public class HistoryService extends WebService implements EventSourceFilterPlugi
                 notifyTo,
                 subscribe.getEndTo(),
                 epr.getAddress().getValue(),
-                Collections.emptyList());
+                subscribe.getFilter());
 
         subMan.startAsync().awaitRunning();
 
@@ -160,9 +164,10 @@ public class HistoryService extends WebService implements EventSourceFilterPlugi
     private void queryHistoricalData(HistoryQueryType query, SourceSubscriptionManager subscriptionManager) {
         networkJobExecutor.get().submit(() -> {
             // get historical data report
-            var changeSequenceReportType = mdibRevisionObserver.getChangeSequenceReport(query);
-            // send report
-            sendNotification(subscriptionManager, changeSequenceReportType);
+            var reports = mdibRevisionObserver.getChangeSequenceReport(query);
+
+            // send notifications
+            reports.forEach(report -> sendNotification(subscriptionManager, report));
 
             // end subscription and shutdown subscription manager
             endSubscription(subscriptionManager);

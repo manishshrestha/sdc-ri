@@ -3,6 +3,7 @@ package org.somda.sdc.glue.guice;
 import org.somda.sdc.common.guice.AbstractConfigurationModule;
 import org.somda.sdc.glue.common.CommonConfig;
 import org.somda.sdc.glue.consumer.ConsumerConfig;
+import org.somda.sdc.glue.provider.ProviderConfig;
 
 import java.time.Duration;
 
@@ -14,6 +15,7 @@ public class DefaultGlueConfigModule extends AbstractConfigurationModule {
     public void defaultConfigure() {
         configureCommon();
         configureConsumer();
+        configureProvider();
     }
 
     private void configureCommon() {
@@ -35,5 +37,14 @@ public class DefaultGlueConfigModule extends AbstractConfigurationModule {
         bind(ConsumerConfig.APPLY_REPORTS_SAME_MDIB_VERSION,
                 Boolean.class,
                 false);
+    }
+
+    private void configureProvider() {
+        bind(ProviderConfig.ENABLE_HISTORY_SERVICE,
+                Boolean.class,
+                true);
+        bind(ProviderConfig.MAX_HISTORICAL_REPORTS_PER_NOTIFICATION,
+                Integer.class,
+                100);
     }
 }

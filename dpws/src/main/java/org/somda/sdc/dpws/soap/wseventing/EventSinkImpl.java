@@ -124,7 +124,7 @@ public class EventSinkImpl implements EventSink {
     public ListenableFuture<SubscribeResult> subscribe(List<String> actions,
                                                        @Nullable Duration expires,
                                                        NotificationSink notificationSink) {
-        var actionBasedDialect = URI.create(DpwsConstants.WS_EVENTING_SUPPORTED_ACTION_DIALECT);
+        var actionBasedDialect = URI.create(DpwsConstants.WS_EVENTING_ACTION_DIALECT);
         var filterType = wseFactory.createFilterType();
         filterType.setDialect(actionBasedDialect.toString());
         filterType.setContent(Collections.singletonList(String.join(" ", actions)));
@@ -194,7 +194,7 @@ public class EventSinkImpl implements EventSink {
                     responseBody.getExpires(),
                     notifyToEpr,
                     endToEpr,
-                    getActionsAsList(filterType));
+                    filterType);
 
             TransportBinding tBinding = transportBindingFactory.createTransportBinding(
                     responseBody.getSubscriptionManager().getAddress().getValue());

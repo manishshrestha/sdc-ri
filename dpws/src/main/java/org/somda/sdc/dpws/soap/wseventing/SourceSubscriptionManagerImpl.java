@@ -18,6 +18,7 @@ import org.somda.sdc.dpws.soap.factory.NotificationSourceFactory;
 import org.somda.sdc.dpws.soap.wsaddressing.WsAddressingUtil;
 import org.somda.sdc.dpws.soap.wsaddressing.model.EndpointReferenceType;
 import org.somda.sdc.dpws.soap.wseventing.helper.SubscriptionManagerBase;
+import org.somda.sdc.dpws.soap.wseventing.model.FilterType;
 import org.somda.sdc.dpws.soap.wseventing.model.Notification;
 
 import javax.annotation.Nullable;
@@ -56,7 +57,7 @@ public class SourceSubscriptionManagerImpl extends AbstractExecutionThreadServic
                                   @Assisted("NotifyTo") EndpointReferenceType notifyTo,
                                   @Assisted("EndTo") @Nullable EndpointReferenceType endTo,
                                   @Assisted("SubscriptionId") String subscriptionId,
-                                  @Assisted("Actions") Collection<String> actions,
+                                  @Assisted("Filter") FilterType filter,
                                   @Named(WsEventingConfig.NOTIFICATION_QUEUE_CAPACITY)
                                           Integer notificationQueueCapacity,
                                   NotificationSourceFactory notificationSourceFactory,
@@ -72,7 +73,7 @@ public class SourceSubscriptionManagerImpl extends AbstractExecutionThreadServic
         this.networkJobExecutor = networkJobExecutor;
         this.subscriptionId = UUID.randomUUID().toString();
         this.delegate = new SubscriptionManagerBase(
-                notifyTo, endTo, subscriptionId, expires, subscriptionManagerEpr, actions);
+                notifyTo, endTo, subscriptionId, expires, subscriptionManagerEpr, filter);
         this.notificationQueue = new ArrayBlockingQueue<>(notificationQueueCapacity);
 
         this.notifyToSender = null;

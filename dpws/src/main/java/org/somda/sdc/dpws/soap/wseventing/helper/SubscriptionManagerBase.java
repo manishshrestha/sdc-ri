@@ -1,14 +1,17 @@
 package org.somda.sdc.dpws.soap.wseventing.helper;
 
 import org.somda.sdc.common.util.AutoLock;
+import org.somda.sdc.dpws.DpwsConstants;
 import org.somda.sdc.dpws.soap.wsaddressing.model.EndpointReferenceType;
 import org.somda.sdc.dpws.soap.wseventing.SubscriptionManager;
+import org.somda.sdc.dpws.soap.wseventing.model.FilterType;
 
 import javax.annotation.Nullable;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -32,7 +35,7 @@ public class SubscriptionManagerBase implements SubscriptionManager {
                                    String subscriptionId,
                                    Duration expires,
                                    EndpointReferenceType subscriptionManagerEpr,
-                                   Collection<String> actions) {
+                                   FilterType filterType) {
         this.notifyTo = notifyTo;
         this.endTo = endTo;
         this.expiresTimeout = calculateTimeout(expires);
@@ -40,7 +43,7 @@ public class SubscriptionManagerBase implements SubscriptionManager {
         this.expires = expires;
         this.subscriptionManagerEpr = subscriptionManagerEpr;
         this.expiresLock = new ReentrantLock();
-        this.actions = actions;
+        this.actions = getActionsAsList(filterType);
     }
 
     @Override
@@ -97,5 +100,15 @@ public class SubscriptionManagerBase implements SubscriptionManager {
     private LocalDateTime calculateTimeout(Duration expires) {
         LocalDateTime t = LocalDateTime.now();
         return t.plus(expires);
+    }
+
+    private Collection<String> getActionsAsList(FilterType filterType) {
+        if (DpwsConstants.WS_EVENTING_ACTION_DIALECT.equals(filterType.getDialect()) &&
+                filterType.getContent() != null &&
+                !filterType.getContent().isEmpty()) {
+            var actionsString = String.valueOf(filterType.getContent().get(0));
+            return List.of(actionsString.split(" "));
+        }
+        return Collections.emptyList();
     }
 }

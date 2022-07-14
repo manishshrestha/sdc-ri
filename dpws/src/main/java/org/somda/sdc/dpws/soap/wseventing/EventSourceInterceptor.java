@@ -19,8 +19,6 @@ import org.somda.sdc.dpws.http.HttpUriBuilder;
 import org.somda.sdc.dpws.soap.SoapMessage;
 import org.somda.sdc.dpws.soap.SoapUtil;
 import org.somda.sdc.dpws.soap.exception.SoapFaultException;
-import org.somda.sdc.dpws.soap.factory.EnvelopeFactory;
-import org.somda.sdc.dpws.soap.factory.SoapMessageFactory;
 import org.somda.sdc.dpws.soap.interception.Direction;
 import org.somda.sdc.dpws.soap.interception.MessageInterceptor;
 import org.somda.sdc.dpws.soap.interception.RequestResponseObject;
@@ -48,11 +46,8 @@ import javax.annotation.Nullable;
 import java.net.URI;
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -79,13 +74,9 @@ public class EventSourceInterceptor extends AbstractIdleService implements Event
     private final HttpUriBuilder httpUriBuilder;
     private final Multimap<String, String> subscribedActionsToSubManIds;
     private final Lock subscribedActionsLock;
-
     private final JaxbUtil jaxbUtil;
     private final WsAddressingUtil wsaUtil;
-
     private final ObjectFactory wseFactory;
-    private final SoapMessageFactory soapMessageFactory;
-    private final EnvelopeFactory envelopeFactory;
     private final Logger instanceLogger;
     private final Map<String, EventSourceFilterPlugin> eventSourceFilterPlugins;
 
@@ -98,8 +89,6 @@ public class EventSourceInterceptor extends AbstractIdleService implements Event
                            JaxbUtil jaxbUtil,
                            WsAddressingUtil wsaUtil,
                            ObjectFactory wseFactory,
-                           SoapMessageFactory soapMessageFactory,
-                           EnvelopeFactory envelopeFactory,
                            HttpServerRegistry httpServerRegistry,
                            Provider<RequestResponseServerHttpHandler> rrServerHttpHandlerProvider,
                            SubscriptionRegistry subscriptionRegistry,
@@ -124,8 +113,6 @@ public class EventSourceInterceptor extends AbstractIdleService implements Event
         this.subscribedActionsLock = new ReentrantLock();
         this.wseFactory = wseFactory;
 
-        this.soapMessageFactory = soapMessageFactory;
-        this.envelopeFactory = envelopeFactory;
     }
 
     @Override
@@ -209,7 +196,7 @@ public class EventSourceInterceptor extends AbstractIdleService implements Event
             eventSourceFilterPlugins.get(filterDialect).subscribe(rrObj);
             return;
         }
-        if (!DpwsConstants.WS_EVENTING_SUPPORTED_ACTION_DIALECT.equals(filterDialect)) {
+        if (!DpwsConstants.WS_EVENTING_ACTION_DIALECT.equals(filterDialect)) {
             throw new SoapFaultException(faultFactory.createFilteringRequestedUnavailable(), requestMsgId);
         }
 
@@ -222,15 +209,13 @@ public class EventSourceInterceptor extends AbstractIdleService implements Event
                         new RuntimeException("Fatal error. Missing local port in transport information."))
         );
 
-        List<String> uris = explodeUriList(filterType);
-
         SourceSubscriptionManager subMan = subscriptionManagerFactory.createSourceSubscriptionManager(
                 epr,
                 grantedExpires,
                 notifyTo,
                 subscribe.getEndTo(),
                 epr.getAddress().getValue(),
-                Collections.unmodifiableList(uris)
+                filterType
         );
 
         subMan.startAsync().awaitRunning();
@@ -238,7 +223,7 @@ public class EventSourceInterceptor extends AbstractIdleService implements Event
         // Store subscription manager
         subscribedActionsLock.lock();
         try {
-            uris.forEach(uri -> subscribedActionsToSubManIds.put(uri, subMan.getSubscriptionId()));
+            subMan.getActions().forEach(uri -> subscribedActionsToSubManIds.put(uri, subMan.getSubscriptionId()));
         } finally {
             subscribedActionsLock.unlock();
         }
@@ -255,7 +240,7 @@ public class EventSourceInterceptor extends AbstractIdleService implements Event
 
         instanceLogger.info("Incoming subscribe request. Action(s): {}. Generated subscription id: {}. " +
                         "Notifications go to {}. Expiration in {} seconds",
-                Arrays.toString(uris.toArray()),
+                Arrays.toString(subMan.getActions().toArray()),
                 subMan.getSubscriptionId(),
                 wsaUtil.getAddressUri(subMan.getNotifyTo()).orElse("<unknown>"),
                 grantedExpires.getSeconds());
@@ -373,7 +358,7 @@ public class EventSourceInterceptor extends AbstractIdleService implements Event
                 return null;
             }
             if (requestedExpires.isZero() || requestedExpires.isNegative()) {
-                throw new Exception(String.format("Expires is less than or equal to 0: {}", requestedExpires));
+                throw new Exception(String.format("Expires is less than or equal to 0: %s", requestedExpires));
             } else {
                 return requestedExpires;
             }
@@ -399,22 +384,6 @@ public class EventSourceInterceptor extends AbstractIdleService implements Event
                 new SoapFaultException(createInvalidMsg(rrObj,
                         String.format("Subscription manager '%s' does not exist.", toUri.getValue())),
                         rrObj.getRequest().getWsAddressingHeader().getMessageId().orElse(null)));
-    }
-
-    private List<String> explodeUriList(FilterType filterType) {
-        List<String> result = new ArrayList<>();
-        if (filterType.getContent().isEmpty()) {
-            return result;
-        }
-
-        if (!String.class.isAssignableFrom(filterType.getContent().get(0).getClass())) {
-            return result;
-        }
-
-        String listOfAnyUri = (String) filterType.getContent().get(0);
-        result.addAll(Arrays.asList(listOfAnyUri.split("\\s+")));
-
-        return result;
     }
 
     private SoapMessage createInvalidMsg(RequestResponseObject rrObj, String reason) {

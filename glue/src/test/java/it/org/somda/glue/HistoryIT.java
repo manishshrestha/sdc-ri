@@ -22,8 +22,6 @@ import org.somda.sdc.biceps.model.participant.NumericMetricState;
 import org.somda.sdc.biceps.testutil.BaseTreeModificationsSet;
 import org.somda.sdc.biceps.testutil.Handles;
 import org.somda.sdc.biceps.testutil.MockEntryFactory;
-import org.somda.sdc.dpws.device.DeviceConfig;
-import org.somda.sdc.dpws.guice.DefaultDpwsConfigModule;
 import org.somda.sdc.dpws.service.HostingServiceProxy;
 import org.somda.sdc.dpws.soap.SoapUtil;
 import org.somda.sdc.dpws.soap.interception.Interceptor;
@@ -37,6 +35,7 @@ import test.org.somda.common.LoggingTestWatcher;
 import javax.xml.bind.JAXBElement;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -45,7 +44,7 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.somda.sdc.dpws.DpwsConstants.WS_DIALECT_HISTORY_SERVICE;
+import static org.somda.sdc.glue.GlueConstants.WS_EVENTING_HISTORY_DIALECT;
 import static org.somda.sdc.glue.common.ActionConstants.ACTION_HISTORY_MDIB_REPORT;
 import static org.somda.sdc.glue.common.WsdlConstants.SERVICE_HISTORY;
 
@@ -75,13 +74,6 @@ public class HistoryIT {
     void beforeEach(TestInfo testInfo) throws Exception {
         LOG.info("Running test case {}", testInfo.getDisplayName());
 
-        IT.getInjector().injectMembers(new DefaultDpwsConfigModule() {
-            @Override
-            public void customConfigure() {
-                bind(DeviceConfig.HISTORY_SERVICE_SUPPORT, Boolean.class, true);
-            }
-        });
-
         testDevice = new TestSdcDevice();
         testClient = new TestSdcClient();
 
@@ -110,7 +102,7 @@ public class HistoryIT {
 
     @Test
     void testHistoryServiceSubscribe() throws Exception {
-        int COUNT = 5;
+        int COUNT = 202;
         // apply modifications so changeSequence with reports is generated
         applyModifications(COUNT);
 
@@ -122,10 +114,16 @@ public class HistoryIT {
                 createFilterType(),
                 null,
                 new Interceptor() {
+                    List<ChangeSequenceReportType> receivedNotifications = new ArrayList<>();
 
                     @MessageInterceptor(value = ACTION_HISTORY_MDIB_REPORT)
                     void onNotification(NotificationObject message) {
-                        notificationFuture.set(List.of(convertBodyToReport(message)));
+                        //notificationFuture.set(List.of(convertBodyToReport(message)));
+                        receivedNotifications.add(convertBodyToReport(message));
+
+                        if (receivedNotifications.size() == 3) {
+                            notificationFuture.set(receivedNotifications);
+                        }
                     }
                 });
 
@@ -134,11 +132,12 @@ public class HistoryIT {
         var notifications =
                 notificationFuture.get(WAIT_IN_SECONDS, WAIT_TIME_UNIT);
 
-        // should receive one notification with one change sequence.
-        // Reports number is based on modification done during device initiation and modifications during runtime
-        assertEquals(1, notifications.size());
+        // should receive 3 notification since limit it 100 reports per notification and there are 202 in total
+        assertEquals(3, notifications.size());
         assertEquals(1, notifications.get(0).getChangeSequence().size());
-        assertEquals(1 + COUNT, notifications.get(0).getChangeSequence().get(0).getHistoricReport().size());
+        assertEquals(100, notifications.get(0).getChangeSequence().get(0).getHistoricReport().size());
+        assertEquals(100, notifications.get(1).getChangeSequence().get(0).getHistoricReport().size());
+        assertEquals(2, notifications.get(2).getChangeSequence().get(0).getHistoricReport().size());
 
         // check if subscription ended after all reports was sent
         assertTrue(subscribe.isDone());
@@ -164,14 +163,14 @@ public class HistoryIT {
                         MdibStateModifications.Type.METRIC).add(clone);
                 mdibAccess.writeStates(modifications);
 
-                Thread.sleep(100);
+                Thread.sleep(10);
             });
         }
     }
 
     private FilterType createFilterType() {
         var filterType = wseFactory.createFilterType();
-        filterType.setDialect(WS_DIALECT_HISTORY_SERVICE);
+        filterType.setDialect(WS_EVENTING_HISTORY_DIALECT);
         filterType.setContent(Collections.singletonList(createHistoryQuery()));
         return filterType;
     }
@@ -184,9 +183,10 @@ public class HistoryIT {
 
     private VersionRangeType createVersionRangeQuery() {
         var versionRange = objectFactory.createVersionRangeType();
-        versionRange.setSequenceId("mock");
+        versionRange.setSequenceId(testDevice.getSdcDevice().getLocalMdibAccess().getMdibVersion().getSequenceId());
+        versionRange.setInstanceId(BigInteger.ZERO);
         versionRange.setStartVersion(BigInteger.ZERO);
-        versionRange.setEndVersion(BigInteger.TEN);
+        versionRange.setEndVersion(BigInteger.valueOf(202));
         return versionRange;
     }
 }

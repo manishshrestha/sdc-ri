@@ -217,8 +217,6 @@ class WsEventingReferenceParametersTest extends DpwsTest {
                 JaxbUtil jaxbUtil,
                 WsAddressingUtil wsaUtil,
                 org.somda.sdc.dpws.soap.wseventing.model.ObjectFactory wseFactory,
-                SoapMessageFactory soapMessageFactory,
-                EnvelopeFactory envelopeFactory,
                 HttpServerRegistry httpServerRegistry,
                 Provider<RequestResponseServerHttpHandler> rrServerHttpHandlerProvider,
                 SubscriptionRegistry subscriptionRegistry,
@@ -226,7 +224,7 @@ class WsEventingReferenceParametersTest extends DpwsTest {
                 HttpUriBuilder httpUriBuilder
         ) {
             super(Collections.emptyMap(), maxExpires, subscriptionManagerPath, soapUtil, faultFactory, jaxbUtil,
-                    wsaUtil, wseFactory, soapMessageFactory, envelopeFactory, httpServerRegistry,
+                    wsaUtil, wseFactory, httpServerRegistry,
                     rrServerHttpHandlerProvider, subscriptionRegistry, subscriptionManagerFactory, httpUriBuilder,
                     "abcd");
             this.soapUtil = soapUtil;

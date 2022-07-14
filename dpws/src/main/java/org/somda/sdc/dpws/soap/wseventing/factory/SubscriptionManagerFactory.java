@@ -5,6 +5,7 @@ import org.somda.sdc.dpws.soap.wsaddressing.model.EndpointReferenceType;
 import org.somda.sdc.dpws.soap.wseventing.SinkSubscriptionManager;
 import org.somda.sdc.dpws.soap.wseventing.SourceSubscriptionManager;
 import org.somda.sdc.dpws.soap.wseventing.SubscriptionManager;
+import org.somda.sdc.dpws.soap.wseventing.model.FilterType;
 
 import javax.annotation.Nullable;
 import java.time.Duration;
@@ -23,7 +24,7 @@ public interface SubscriptionManagerFactory {
      * @param notifyTo               endpoint reference where to send notifications to.
      * @param endTo                  endpoint reference where to send end-to request to or null if none is available.
      * @param subscriptionId         the subscription id for the subscription manager.
-     * @param actions                actions handled by the subscription manager
+     * @param filter                 the filter type used in event subscription.
      * @return a new {@link SourceSubscriptionManager} instance.
      */
     SourceSubscriptionManager createSourceSubscriptionManager(@Assisted("SubscriptionManager")
@@ -32,7 +33,7 @@ public interface SubscriptionManagerFactory {
                                                               @Assisted("NotifyTo") EndpointReferenceType notifyTo,
                                                               @Assisted("EndTo") @Nullable EndpointReferenceType endTo,
                                                               @Assisted("SubscriptionId") String subscriptionId,
-                                                              @Assisted("Actions") Collection<String> actions);
+                                                              @Assisted("Filter") FilterType filter);
 
     /**
      * Creates a {@link SinkSubscriptionManager} instance.
@@ -44,7 +45,7 @@ public interface SubscriptionManagerFactory {
      * @param expires                expiration duration.
      * @param notifyTo               endpoint reference where to receive notifications at.
      * @param endTo                  endpoint reference where to receive end-to request at.
-     * @param actions                actions handled by the subscription manager
+     * @param filter                 the filter type used in event subscription.
      * @return a new {@link SinkSubscriptionManager} instance.
      */
     SinkSubscriptionManager createSinkSubscriptionManager(@Assisted("SubscriptionManager")
@@ -52,5 +53,5 @@ public interface SubscriptionManagerFactory {
                                                           @Assisted Duration expires,
                                                           @Assisted("NotifyTo") EndpointReferenceType notifyTo,
                                                           @Assisted("EndTo") EndpointReferenceType endTo,
-                                                          @Assisted("Actions") Collection<String> actions);
+                                                          @Assisted("Filter") FilterType filter);
 }

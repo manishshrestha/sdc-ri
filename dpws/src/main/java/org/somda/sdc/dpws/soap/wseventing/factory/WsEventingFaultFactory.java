@@ -102,7 +102,7 @@ public class WsEventingFaultFactory {
                 SoapConstants.SENDER,
                 WsEventingConstants.FILTERING_REQUESTED_UNAVAILABLE,
                 "The requested filter dialect is not supported",
-                wseFactory.createSupportedDialect(DpwsConstants.WS_EVENTING_SUPPORTED_ACTION_DIALECT) // TODO #142
+                wseFactory.createSupportedDialect(DpwsConstants.WS_EVENTING_ACTION_DIALECT)
         );
     }
 

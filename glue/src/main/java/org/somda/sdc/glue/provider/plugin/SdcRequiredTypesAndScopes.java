@@ -65,7 +65,7 @@ public class SdcRequiredTypesAndScopes implements SdcDevicePlugin, MdibAccessObs
                 context.getDevice().getEprAddress());
 
         init(context, Collections.emptySet());
-        context.getLocalMdibAccess().registerObserver(this); //TODO #142: this subscribe to local mdib changes
+        context.getLocalMdibAccess().registerObserver(this);
     }
 
     @Override
