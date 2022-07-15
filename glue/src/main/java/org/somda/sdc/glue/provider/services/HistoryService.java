@@ -1,6 +1,5 @@
 package org.somda.sdc.glue.provider.services;
 
-import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.inject.Inject;
 import com.google.inject.assistedinject.Assisted;
@@ -33,7 +32,6 @@ import org.somda.sdc.dpws.soap.wseventing.model.SubscribeResponse;
 import org.somda.sdc.dpws.soap.wseventing.model.SubscriptionEnd;
 import org.somda.sdc.dpws.soap.wseventing.model.WsEventingStatus;
 import org.somda.sdc.glue.GlueConstants;
-import org.somda.sdc.glue.provider.ProviderConfig;
 import org.somda.sdc.glue.provider.services.helper.MdibRevisionObserver;
 import org.somda.sdc.glue.provider.services.helper.factory.MdibRevisionObserverFactory;
 
@@ -50,7 +48,6 @@ import static org.somda.sdc.glue.common.ActionConstants.ACTION_HISTORY_MDIB_REPO
 public class HistoryService extends WebService implements EventSourceFilterPlugin {
     private final String subscriptionManagerPath;
     private final Duration maxExpires;
-    private final Integer historicalReportsLimit;
     private final HttpUriBuilder httpUriBuilder;
     private final SoapUtil soapUtil;
     private final ObjectFactory wseFactory;
@@ -66,7 +63,6 @@ public class HistoryService extends WebService implements EventSourceFilterPlugi
     HistoryService(@Assisted LocalMdibAccess mdibAccess,
                    @Named(WsEventingConfig.SOURCE_SUBSCRIPTION_MANAGER_PATH) String subscriptionManagerPath,
                    @Named(WsEventingConfig.SOURCE_MAX_EXPIRES) Duration maxExpires,
-                   @Named(ProviderConfig.MAX_HISTORICAL_REPORTS_PER_NOTIFICATION) Integer historicalReportsLimit,
                    HttpUriBuilder httpUriBuilder,
                    SoapUtil soapUtil,
                    ObjectFactory wseFactory,
@@ -79,7 +75,6 @@ public class HistoryService extends WebService implements EventSourceFilterPlugi
                    @NetworkJobThreadPool ExecutorWrapperService<ListeningExecutorService> networkJobExecutor) {
         this.subscriptionManagerPath = subscriptionManagerPath;
         this.maxExpires = maxExpires;
-        this.historicalReportsLimit = historicalReportsLimit;
         this.httpUriBuilder = httpUriBuilder;
         this.soapUtil = soapUtil;
         this.wseFactory = wseFactory;
@@ -163,14 +158,19 @@ public class HistoryService extends WebService implements EventSourceFilterPlugi
 
     private void queryHistoricalData(HistoryQueryType query, SourceSubscriptionManager subscriptionManager) {
         networkJobExecutor.get().submit(() -> {
-            // get historical data report
-            var reports = mdibRevisionObserver.getChangeSequenceReport(query);
+            try {
+                // get historical data report
+                var reports = mdibRevisionObserver.getChangeSequenceReport(query);
 
-            // send notifications
-            reports.forEach(report -> sendNotification(subscriptionManager, report));
-
-            // end subscription and shutdown subscription manager
-            endSubscription(subscriptionManager);
+                // send notifications
+                reports.forEach(report -> sendNotification(subscriptionManager, report));
+                //TODO #142 bad practice, but should we use sleep before ending a subscription?
+                Thread.sleep(1000);
+                // end subscription and shutdown subscription manager
+                endSubscription(subscriptionManager);
+            } catch (InterruptedException e) {
+                throw new RuntimeException("Historical data report notifications interrupted", e);
+            }
         });
     }
 

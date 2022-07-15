@@ -40,10 +40,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.somda.sdc.glue.GlueConstants.WS_EVENTING_HISTORY_DIALECT;
 import static org.somda.sdc.glue.common.ActionConstants.ACTION_HISTORY_MDIB_REPORT;
 import static org.somda.sdc.glue.common.WsdlConstants.SERVICE_HISTORY;
@@ -101,8 +98,9 @@ public class HistoryIT {
     }
 
     @Test
-    void testHistoryServiceSubscribe() throws Exception {
+    void testHistoricalDataSubscribeVersionBased() throws Exception {
         int COUNT = 202;
+        int END_VERSION = 203;
         // apply modifications so changeSequence with reports is generated
         applyModifications(COUNT);
 
@@ -111,7 +109,7 @@ public class HistoryIT {
         var historyService = hostingServiceProxy.getHostedServices().get(SERVICE_HISTORY);
         assertNotNull(historyService);
         ListenableFuture<SubscribeResult> subscribe = historyService.getEventSinkAccess().subscribe(
-                createFilterType(),
+                createFilterType(BigInteger.valueOf(END_VERSION)),
                 null,
                 new Interceptor() {
                     List<ChangeSequenceReportType> receivedNotifications = new ArrayList<>();
@@ -121,7 +119,7 @@ public class HistoryIT {
                         //notificationFuture.set(List.of(convertBodyToReport(message)));
                         receivedNotifications.add(convertBodyToReport(message));
 
-                        if (receivedNotifications.size() == 3) {
+                        if (receivedNotifications.size() == END_VERSION / 100 + 1) {
                             notificationFuture.set(receivedNotifications);
                         }
                     }
@@ -132,16 +130,20 @@ public class HistoryIT {
         var notifications =
                 notificationFuture.get(WAIT_IN_SECONDS, WAIT_TIME_UNIT);
 
-        // should receive 3 notification since limit it 100 reports per notification and there are 202 in total
+        // should receive 3 notification since limit it 100 reports per notification and there are 203 in total
         assertEquals(3, notifications.size());
         assertEquals(1, notifications.get(0).getChangeSequence().size());
-        assertEquals(100, notifications.get(0).getChangeSequence().get(0).getHistoricReport().size());
-        assertEquals(100, notifications.get(1).getChangeSequence().get(0).getHistoricReport().size());
-        assertEquals(2, notifications.get(2).getChangeSequence().get(0).getHistoricReport().size());
+        // only first notification contains historic MDIB
+        assertNotNull(notifications.get(0).getChangeSequence().get(0).getHistoricMdib());
+        assertNull(notifications.get(1).getChangeSequence().get(0).getHistoricMdib());
+        assertNull(notifications.get(2).getChangeSequence().get(0).getHistoricMdib());
+
+        var allReports = new ArrayList<>();
+        notifications.forEach(msg -> allReports.addAll(msg.getChangeSequence().get(0).getHistoricReport()));
+        assertEquals(END_VERSION, allReports.size());
 
         // check if subscription ended after all reports was sent
         assertTrue(subscribe.isDone());
-
     }
 
     private ChangeSequenceReportType convertBodyToReport(NotificationObject message) {
@@ -168,25 +170,25 @@ public class HistoryIT {
         }
     }
 
-    private FilterType createFilterType() {
+    private FilterType createFilterType(BigInteger endVersion) {
         var filterType = wseFactory.createFilterType();
         filterType.setDialect(WS_EVENTING_HISTORY_DIALECT);
-        filterType.setContent(Collections.singletonList(createHistoryQuery()));
+        filterType.setContent(Collections.singletonList(createHistoryQuery(endVersion)));
         return filterType;
     }
 
-    private JAXBElement<HistoryQueryType> createHistoryQuery() {
+    private JAXBElement<HistoryQueryType> createHistoryQuery(BigInteger endVersion) {
         var queryType = objectFactory.createHistoryQueryType();
-        queryType.setVersionRange(createVersionRangeQuery());
+        queryType.setVersionRange(createVersionRangeQuery(endVersion));
         return objectFactory.createHistoryQuery(queryType);
     }
 
-    private VersionRangeType createVersionRangeQuery() {
+    private VersionRangeType createVersionRangeQuery(BigInteger endVersion) {
         var versionRange = objectFactory.createVersionRangeType();
         versionRange.setSequenceId(testDevice.getSdcDevice().getLocalMdibAccess().getMdibVersion().getSequenceId());
         versionRange.setInstanceId(BigInteger.ZERO);
         versionRange.setStartVersion(BigInteger.ZERO);
-        versionRange.setEndVersion(BigInteger.valueOf(202));
+        versionRange.setEndVersion(endVersion);
         return versionRange;
     }
 }

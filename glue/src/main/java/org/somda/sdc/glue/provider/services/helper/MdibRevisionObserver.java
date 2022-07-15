@@ -21,6 +21,7 @@ import org.somda.sdc.biceps.model.history.HistoricMdibType;
 import org.somda.sdc.biceps.model.history.HistoricReportType;
 import org.somda.sdc.biceps.model.history.HistoryQueryType;
 import org.somda.sdc.biceps.model.history.ObjectFactory;
+import org.somda.sdc.biceps.model.history.VersionRangeType;
 import org.somda.sdc.biceps.model.message.AbstractReport;
 import org.somda.sdc.biceps.model.message.DescriptionModificationReport;
 import org.somda.sdc.biceps.model.message.DescriptionModificationType;
@@ -39,6 +40,7 @@ import org.somda.sdc.glue.common.MdibVersionUtil;
 import org.somda.sdc.glue.common.factory.MdibMapperFactory;
 import org.somda.sdc.glue.provider.ProviderConfig;
 
+import javax.annotation.Nullable;
 import java.lang.reflect.Method;
 import java.math.BigInteger;
 import java.time.Instant;
@@ -46,13 +48,14 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static org.somda.sdc.biceps.model.message.DescriptionModificationType.CRT;
 import static org.somda.sdc.biceps.model.message.DescriptionModificationType.DEL;
 import static org.somda.sdc.biceps.model.message.DescriptionModificationType.UPT;
 
 /**
- * TODO #142 docs
+ * Observer tracks all MDIB description and state modifications and provides interface to query historical data.
  */
 public class MdibRevisionObserver implements MdibAccessObserver {
     private static final Logger LOG = LogManager.getLogger(MdibRevisionObserver.class);
@@ -65,7 +68,7 @@ public class MdibRevisionObserver implements MdibAccessObserver {
     private final MdibVersionUtil mdibVersionUtil;
     private final Logger instanceLogger;
     private final Integer historicalReportsLimit;
-    private final ChangeSequenceReportType fullReport;
+    private final ChangeSequenceReportType historicalMdibStorage;
 
     @AssistedInject
     MdibRevisionObserver(@Assisted EventSourceAccess eventSourceAccess,
@@ -83,44 +86,102 @@ public class MdibRevisionObserver implements MdibAccessObserver {
         this.messageObjectFactory = messageObjectFactory;
         this.mdibVersionUtil = mdibVersionUtil;
         this.historicalReportsLimit = historicalReportsLimit;
-        fullReport = objectFactory.createChangeSequenceReportType();
+        historicalMdibStorage = objectFactory.createChangeSequenceReportType();
     }
 
+    /**
+     * Creates initial historical MDIB.
+     *
+     * @param mdibVersion the initial version of MDIB used to get sequence and instance identifiers.
+     */
     public void createInitialReport(MdibVersion mdibVersion) {
         var changeSequence = objectFactory.createChangeSequenceType();
         changeSequence.setSequenceId(mdibVersion.getSequenceId());
         changeSequence.setInstanceId(mdibVersion.getInstanceId());
         changeSequence.setHistoricMdib(createHistoricMdib()); // TODO #142 Option to opt-in initial MDIB to the reports.
-        changeSequence.setHistoricReport(new ArrayList<>()); // TODO #142 no initial reports most likely?
-        changeSequence.setHistoricLocalizedText(new ArrayList<>()); //TODO #142
+        changeSequence.setHistoricReport(new ArrayList<>());
+        changeSequence.setHistoricLocalizedText(new ArrayList<>()); //TODO #142 implement historical LocalizedTexts
 
-        fullReport.setChangeSequence(new ArrayList<>(List.of(changeSequence)));
+        historicalMdibStorage.setChangeSequence(new ArrayList<>(List.of(changeSequence)));
     }
 
+    /**
+     * Gets historical MDIB data and reports based on provided {@linkplain HistoryQueryType} filter.
+     *
+     * @param query a filter used to get historical MDIB and reports.
+     * @return a list of @{@linkplain ChangeSequenceReportType} with historical data.
+     */
     public List<ChangeSequenceReportType> getChangeSequenceReport(HistoryQueryType query) {
-        List<ChangeSequenceReportType> changeSequenceReports = new ArrayList<>();
         if (query.getVersionRange() != null) {
-            var seqId = query.getVersionRange().getSequenceId();
-            var instanceId = query.getVersionRange().getInstanceId();
-            var changeSequence = findChangeSequence(seqId, instanceId);
-            //TODO #142: implement filtering by version before partitioning
-            var reportPartitions = Lists.partition(changeSequence.getHistoricReport(), historicalReportsLimit);
-            for (int i = 0; i < reportPartitions.size(); i++) {
-                var changeSequenceCopy = objectFactory.createChangeSequenceType();
-                changeSequenceCopy.setSequenceId(changeSequence.getSequenceId());
-                changeSequenceCopy.setInstanceId(changeSequence.getInstanceId());
-                changeSequenceCopy.setHistoricReport(reportPartitions.get(i));
-                if (i == 0) { // only first report needs historic MDIB
-                    changeSequenceCopy.setHistoricMdib(changeSequence.getHistoricMdib());
-                }
-                var report = objectFactory.createChangeSequenceReportType();
-                report.setChangeSequence(Collections.singletonList(changeSequenceCopy));
-                changeSequenceReports.add(report);
-            }
+            return filterByVersion(query);
         }
 
         if (query.getTimeRange() != null) {
             //TODO #142: implement filtering by time
+        }
+
+        throw new RuntimeException("No 'VersionRange' nor 'TimeRange' filter given, but required.");
+    }
+
+    private List<ChangeSequenceReportType> filterByVersion(HistoryQueryType query) {
+        var seqId = query.getVersionRange().getSequenceId();
+        var instanceId = query.getVersionRange().getInstanceId();
+        var changeSequence = findChangeSequence(seqId, instanceId);
+        var filteredReports = changeSequence.getHistoricReport().stream()
+                .filter(historicReportType -> isInVersionRange(query.getVersionRange(), historicReportType))
+                .collect(Collectors.toList());
+        return generateReportPartitions(filteredReports, changeSequence.getSequenceId(),
+                changeSequence.getInstanceId(), changeSequence.getHistoricMdib());
+    }
+
+    private boolean isInVersionRange(VersionRangeType versionRange, HistoricReportType report) {
+        var reportVersion = getReportVersion(report);
+        return versionRange.getEndVersion().compareTo(reportVersion) >= 0
+                && versionRange.getStartVersion().compareTo(reportVersion) <= 0;
+    }
+
+    private BigInteger getReportVersion(HistoricReportType historicReportType) {
+        // not a nice approach but faster than reflection
+        if (historicReportType.getDescriptionModificationReport() != null) {
+            return historicReportType.getDescriptionModificationReport().getMdibVersion();
+        }
+        if (historicReportType.getEpisodicAlertReport() != null) {
+            return historicReportType.getEpisodicAlertReport().getMdibVersion();
+        }
+        if (historicReportType.getEpisodicComponentReport() != null) {
+            return historicReportType.getEpisodicComponentReport().getMdibVersion();
+        }
+        if (historicReportType.getEpisodicContextReport() != null) {
+            return historicReportType.getEpisodicContextReport().getMdibVersion();
+        }
+        if (historicReportType.getEpisodicMetricReport() != null) {
+            return historicReportType.getEpisodicMetricReport().getMdibVersion();
+        }
+        if (historicReportType.getEpisodicOperationalStateReport() != null) {
+            return historicReportType.getEpisodicOperationalStateReport().getMdibVersion();
+        }
+
+        return null;
+    }
+
+    private List<ChangeSequenceReportType> generateReportPartitions(List<HistoricReportType> reports,
+                                                                    String sequenceId,
+                                                                    BigInteger instanceId,
+                                                                    @Nullable HistoricMdibType historicMdib) {
+        List<ChangeSequenceReportType> changeSequenceReports = new ArrayList<>();
+
+        var reportPartitions = Lists.partition(reports, historicalReportsLimit);
+        for (int i = 0; i < reportPartitions.size(); i++) {
+            var changeSequenceCopy = objectFactory.createChangeSequenceType();
+            changeSequenceCopy.setSequenceId(sequenceId);
+            changeSequenceCopy.setInstanceId(instanceId);
+            changeSequenceCopy.setHistoricReport(reportPartitions.get(i));
+            if (i == 0 && historicMdib != null) { // only first report needs historic MDIB
+                changeSequenceCopy.setHistoricMdib(historicMdib);
+            }
+            var report = objectFactory.createChangeSequenceReportType();
+            report.setChangeSequence(Collections.singletonList(changeSequenceCopy));
+            changeSequenceReports.add(report);
         }
 
         return changeSequenceReports;
@@ -177,7 +238,6 @@ public class MdibRevisionObserver implements MdibAccessObserver {
     }
 
     private HistoricMdibType createHistoricMdib() {
-
         /*
         //TODO #142 do we need to lock mdib / open new transaction while mapping??
         try (ReadTransaction transaction = mdibAccess.startTransaction()) {
@@ -190,13 +250,6 @@ public class MdibRevisionObserver implements MdibAccessObserver {
         historicMdib.setTime(Instant.now()); //TODO #142 really instant now?
         mdibMapper.mapMdib().copyTo(historicMdib);
 
-        /*historicMdib.setTime(Instant.now());
-        historicMdib.setSequenceId(mdib.getSequenceId());
-        historicMdib.setInstanceId(mdib.getInstanceId());
-        historicMdib.setMdibVersion(mdib.getMdibVersion());
-        historicMdib.setExtension(mdib.getExtension());
-        historicMdib.setMdDescription(mdib.getMdDescription());
-        historicMdib.setMdState(mdib.getMdState());*/
         return historicMdib;
     }
 
@@ -251,7 +304,7 @@ public class MdibRevisionObserver implements MdibAccessObserver {
     }
 
     private ChangeSequenceType findChangeSequence(String sequenceId, BigInteger instanceId) {
-        return fullReport.getChangeSequence().stream()
+        return historicalMdibStorage.getChangeSequence().stream()
                 .filter(cs -> cs.getSequenceId().equals(sequenceId) &&
                         cs.getInstanceId().equals(instanceId))
                 .findFirst()
