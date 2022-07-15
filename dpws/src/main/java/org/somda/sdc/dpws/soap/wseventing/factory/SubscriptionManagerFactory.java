@@ -9,7 +9,6 @@ import org.somda.sdc.dpws.soap.wseventing.model.FilterType;
 
 import javax.annotation.Nullable;
 import java.time.Duration;
-import java.util.Collection;
 
 /**
  * Creates {@link SubscriptionManager} instances for event source and sink side.
