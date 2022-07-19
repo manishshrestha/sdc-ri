@@ -39,7 +39,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class LocalizationIT {
     private static final Logger LOG = LogManager.getLogger(LocalizationIT.class);
     private static final TimeUnit WAIT_TIME_UNIT = TimeUnit.SECONDS;
-    private static int WAIT_IN_SECONDS = 30;
+    private static int WAIT_IN_SECONDS = 120;
 
     static {
         if (CIDetector.isRunningInCi()) {

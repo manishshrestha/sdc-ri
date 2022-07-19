@@ -67,7 +67,7 @@ class SdcRemoteDevicesConnectorImplIT {
     private static final Logger LOG = LogManager.getLogger(CommunicationIT.class);
     private static final IntegrationTestUtil IT = new IntegrationTestUtil();
 
-    private static int WAIT_IN_SECONDS = 30;
+    private static int WAIT_IN_SECONDS = 120;
 
     static {
         if (CIDetector.isRunningInCi()) {

@@ -83,7 +83,7 @@ class CommunicationIT {
     private TestSdcDevice testDevice;
     private TestSdcClient testClient;
 
-    private static int WAIT_IN_SECONDS = 30;
+    private static int WAIT_IN_SECONDS = 120;
 
     static {
         if (CIDetector.isRunningInCi()) {
