@@ -368,7 +368,7 @@ public class WsDiscoveryClientInterceptor implements WsDiscoveryClient {
                     }
 
                     if (!condition.await(wait, TimeUnit.MILLISECONDS)) {
-                        LOG.warn("break ProbeRunnable.call() due to await");
+                        LOG.trace("break ProbeRunnable.call() due to await");
                         break;
                     }
 
