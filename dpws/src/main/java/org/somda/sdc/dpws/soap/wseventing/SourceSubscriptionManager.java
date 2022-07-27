@@ -41,4 +41,9 @@ public interface SourceSubscriptionManager extends SubscriptionManager, Service 
      * @param expires the duration to reset.
      */
     void renew(Duration expires);
+
+    /**
+     * Sends subscription end event and triggers subscription manager shutdown process.
+     */
+    void triggerShutdown();
 }

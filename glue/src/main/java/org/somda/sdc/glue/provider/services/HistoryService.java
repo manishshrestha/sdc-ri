@@ -12,7 +12,6 @@ import org.somda.sdc.common.util.JaxbUtil;
 import org.somda.sdc.dpws.device.WebService;
 import org.somda.sdc.dpws.guice.NetworkJobThreadPool;
 import org.somda.sdc.dpws.http.HttpUriBuilder;
-import org.somda.sdc.dpws.soap.SoapMessage;
 import org.somda.sdc.dpws.soap.SoapUtil;
 import org.somda.sdc.dpws.soap.TransportInfo;
 import org.somda.sdc.dpws.soap.exception.SoapFaultException;
@@ -29,8 +28,6 @@ import org.somda.sdc.dpws.soap.wseventing.model.Notification;
 import org.somda.sdc.dpws.soap.wseventing.model.ObjectFactory;
 import org.somda.sdc.dpws.soap.wseventing.model.Subscribe;
 import org.somda.sdc.dpws.soap.wseventing.model.SubscribeResponse;
-import org.somda.sdc.dpws.soap.wseventing.model.SubscriptionEnd;
-import org.somda.sdc.dpws.soap.wseventing.model.WsEventingStatus;
 import org.somda.sdc.glue.GlueConstants;
 import org.somda.sdc.glue.provider.services.helper.MdibRevisionObserver;
 import org.somda.sdc.glue.provider.services.helper.factory.MdibRevisionObserverFactory;
@@ -161,15 +158,12 @@ public class HistoryService extends WebService implements EventSourceFilterPlugi
             try {
                 // get historical data report
                 var reports = mdibRevisionObserver.getChangeSequenceReport(query);
-
                 // send notifications
                 reports.forEach(report -> sendNotification(subscriptionManager, report));
-                //TODO #142 bad practice, but should we use sleep before ending a subscription?
-                Thread.sleep(1000);
                 // end subscription and shutdown subscription manager
-                endSubscription(subscriptionManager);
-            } catch (InterruptedException e) {
-                throw new RuntimeException("Historical data report notifications interrupted", e);
+                subscriptionManager.triggerShutdown();
+            } catch (Exception e) {
+                throw new RuntimeException("Historical data report notifications interrupted.", e);
             }
         });
     }
@@ -182,27 +176,6 @@ public class HistoryService extends WebService implements EventSourceFilterPlugi
         var message = soapUtil.createMessage(ACTION_HISTORY_MDIB_REPORT, wsaTo,
                 historyObjectFactory.createChangeSequenceReport(changeSequenceReportType));
         subscriptionManager.offerNotification(new Notification(message));
-    }
-
-    private void endSubscription(SourceSubscriptionManager subscriptionManager) {
-        if (subscriptionManager.getEndTo().isPresent()) {
-            var endToMessage = createForEndTo(subscriptionManager, subscriptionManager.getEndTo().get());
-            subscriptionManager.sendToEndTo(endToMessage);
-        }
-        subscriptionManager.stopAsync().awaitTerminated();
-    }
-
-    private SoapMessage createForEndTo(SourceSubscriptionManager subMan, EndpointReferenceType endTo) {
-        SubscriptionEnd subscriptionEnd = wseFactory.createSubscriptionEnd();
-        subscriptionEnd.setSubscriptionManager(subMan.getSubscriptionManagerEpr());
-        subscriptionEnd.setStatus(WsEventingStatus.STATUS_SOURCE_CANCELLING.getUri());
-        String wsaTo = wsaUtil.getAddressUri(endTo).orElse(null);
-
-        SoapMessage msg = soapUtil.createMessage(WsEventingConstants.WSA_ACTION_SUBSCRIPTION_END, subscriptionEnd);
-        Optional.ofNullable(wsaTo).ifPresent(to ->
-                msg.getWsAddressingHeader().setTo(wsaUtil.createAttributedURIType(to)));
-
-        return msg;
     }
 
     private Supplier<SoapFaultException> getSoapFaultExceptionSupplier(String msg) {

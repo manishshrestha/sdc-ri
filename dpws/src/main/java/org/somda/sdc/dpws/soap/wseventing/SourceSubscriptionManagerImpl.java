@@ -14,12 +14,16 @@ import org.somda.sdc.dpws.factory.TransportBindingFactory;
 import org.somda.sdc.dpws.guice.NetworkJobThreadPool;
 import org.somda.sdc.dpws.soap.NotificationSource;
 import org.somda.sdc.dpws.soap.SoapMessage;
+import org.somda.sdc.dpws.soap.SoapUtil;
 import org.somda.sdc.dpws.soap.factory.NotificationSourceFactory;
 import org.somda.sdc.dpws.soap.wsaddressing.WsAddressingUtil;
 import org.somda.sdc.dpws.soap.wsaddressing.model.EndpointReferenceType;
 import org.somda.sdc.dpws.soap.wseventing.helper.SubscriptionManagerBase;
 import org.somda.sdc.dpws.soap.wseventing.model.FilterType;
 import org.somda.sdc.dpws.soap.wseventing.model.Notification;
+import org.somda.sdc.dpws.soap.wseventing.model.ObjectFactory;
+import org.somda.sdc.dpws.soap.wseventing.model.SubscriptionEnd;
+import org.somda.sdc.dpws.soap.wseventing.model.WsEventingStatus;
 
 import javax.annotation.Nullable;
 import java.time.Duration;
@@ -44,6 +48,10 @@ public class SourceSubscriptionManagerImpl extends AbstractExecutionThreadServic
     private final WsAddressingUtil wsaUtil;
     private final ExecutorWrapperService<ListeningExecutorService> networkJobExecutor;
     private final Logger instanceLogger;
+    private final ObjectFactory wseFactory;
+    private final SoapUtil soapUtil;
+
+    private boolean endToTriggered;
 
     private NotificationSource notifyToSender;
     private NotificationSource endToSender;
@@ -65,7 +73,9 @@ public class SourceSubscriptionManagerImpl extends AbstractExecutionThreadServic
                                   WsAddressingUtil wsaUtil,
                                   @NetworkJobThreadPool ExecutorWrapperService<ListeningExecutorService>
                                           networkJobExecutor,
-                                  @Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier) {
+                                  @Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier,
+                                  ObjectFactory wseFactory,
+                                  SoapUtil soapUtil) {
         this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);
         this.notificationSourceFactory = notificationSourceFactory;
         this.transportBindingFactory = transportBindingFactory;
@@ -79,6 +89,9 @@ public class SourceSubscriptionManagerImpl extends AbstractExecutionThreadServic
         this.notifyToSender = null;
         this.endToSender = null;
         this.notifyToUri = "";
+
+        this.wseFactory = wseFactory;
+        this.soapUtil = soapUtil;
     }
 
     @Override
@@ -124,7 +137,7 @@ public class SourceSubscriptionManagerImpl extends AbstractExecutionThreadServic
 
     @Override
     public void offerNotification(Notification notification) {
-        if (!isRunning()) {
+        if (!isRunning() || endToTriggered) {
             return;
         }
         if (!notificationQueue.offer(new QueueItem(notification))) {
@@ -134,9 +147,11 @@ public class SourceSubscriptionManagerImpl extends AbstractExecutionThreadServic
 
     @Override
     public void sendToEndTo(SoapMessage endToMessage) {
-        if (endToSender == null) {
+        if (endToSender == null || !isRunning() || endToTriggered) {
             return;
         }
+
+        endToTriggered = true;
 
         networkJobExecutor.get().submit(() -> {
             try {
@@ -157,11 +172,8 @@ public class SourceSubscriptionManagerImpl extends AbstractExecutionThreadServic
                 transportBindingFactory.createTransportBinding(notifyToUri));
 
         if (getEndTo().isPresent()) {
-            final Optional<String> addressUriAsString = wsaUtil.getAddressUri(getEndTo().get());
-            if (addressUriAsString.isPresent()) {
-                this.endToSender = notificationSourceFactory.createNotificationSource(
-                        transportBindingFactory.createTransportBinding(notifyToUri));
-            }
+            var addressUriAsString = wsaUtil.getAddressUri(getEndTo().get());
+            addressUriAsString.ifPresent(this::createEndToNotificationSource);
         }
 
         subscriptionId = wsaUtil.getAddressUri(delegate.getSubscriptionManagerEpr()).orElseThrow(() ->
@@ -169,6 +181,11 @@ public class SourceSubscriptionManagerImpl extends AbstractExecutionThreadServic
 
         instanceLogger.info("Source subscription manager '{}' started. Start delivering notifications to '{}'",
                 subscriptionId, notifyToUri);
+    }
+
+    private void createEndToNotificationSource(String endToUri) {
+        endToSender = notificationSourceFactory.createNotificationSource(
+                transportBindingFactory.createTransportBinding(endToUri));
     }
 
     @Override
@@ -179,6 +196,10 @@ public class SourceSubscriptionManagerImpl extends AbstractExecutionThreadServic
                 if (queueItem instanceof QueueShutDownItem) {
                     instanceLogger.info("Source subscription manager '{}' received stop signal and is about " +
                             "to shut down", subscriptionId);
+                    if (!endToTriggered) {
+                        sendToEndTo(createForEndTo(WsEventingStatus.STATUS_SOURCE_SHUTTING_DOWN.getUri()));
+                    }
+
                     break;
                 }
                 instanceLogger.debug("Sending notification to {} - {}", notifyToUri,
@@ -201,9 +222,21 @@ public class SourceSubscriptionManagerImpl extends AbstractExecutionThreadServic
     }
 
     @Override
-    protected void triggerShutdown() {
-        notificationQueue.clear();
+    public void triggerShutdown() {
         notificationQueue.offer(new QueueShutDownItem());
+    }
+
+    private SoapMessage createForEndTo(String status) {
+        SubscriptionEnd subscriptionEnd = wseFactory.createSubscriptionEnd();
+        subscriptionEnd.setSubscriptionManager(getSubscriptionManagerEpr());
+        subscriptionEnd.setStatus(status);
+        String wsaTo = wsaUtil.getAddressUri(getNotifyTo()).orElse(null);
+
+        SoapMessage msg = soapUtil.createMessage(WsEventingConstants.WSA_ACTION_SUBSCRIPTION_END, subscriptionEnd);
+        Optional.ofNullable(wsaTo).ifPresent(to ->
+                msg.getWsAddressingHeader().setTo(wsaUtil.createAttributedURIType(to)));
+
+        return msg;
     }
 
     private static class QueueItem {

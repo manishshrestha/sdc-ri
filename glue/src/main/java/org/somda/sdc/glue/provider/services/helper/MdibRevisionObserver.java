@@ -238,16 +238,8 @@ public class MdibRevisionObserver implements MdibAccessObserver {
     }
 
     private HistoricMdibType createHistoricMdib() {
-        /*
-        //TODO #142 do we need to lock mdib / open new transaction while mapping??
-        try (ReadTransaction transaction = mdibAccess.startTransaction()) {
-            final MdibMapper mdibMapper = mdibMapperFactory.createMdibMapper(transaction);
-            var mdib = mdibMapper.mapMdib();
-        }
-        */
-
         var historicMdib = objectFactory.createHistoricMdibType();
-        historicMdib.setTime(Instant.now()); //TODO #142 really instant now?
+        historicMdib.setTime(Instant.now()); //TODO #142 use timestamp of modification not Instant.now()
         mdibMapper.mapMdib().copyTo(historicMdib);
 
         return historicMdib;
@@ -288,7 +280,7 @@ public class MdibRevisionObserver implements MdibAccessObserver {
 
             var historicReport = objectFactory.createHistoricReportType();
             findSetReportMethod(report.getClass()).invoke(historicReport, report);
-            historicReport.setTime(Instant.now()); //TODO #142 which time to set?
+            historicReport.setTime(Instant.now()); //TODO #142 use timestamp of modification not Instant.now()
             appendReportToChangeSequence(mdibVersion, historicReport);
 
         } catch (ReflectiveOperationException e) {
