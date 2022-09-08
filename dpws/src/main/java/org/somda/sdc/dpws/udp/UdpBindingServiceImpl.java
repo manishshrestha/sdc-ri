@@ -267,7 +267,7 @@ public class UdpBindingServiceImpl extends AbstractIdleService implements UdpBin
     private String makeStringRepresentation() {
         String multicast = "w/o multicast";
         if (multicastSocket != null) {
-            multicast = String.format("w/ multicast joined at %s:%s", multicastGroup.getHostName(), socketPort);
+            multicast = String.format("w/ multicast joined at %s:%s", multicastGroup.getHostAddress(), socketPort);
         }
 
         return String.format("[%s:[%s|%s] %s]",
