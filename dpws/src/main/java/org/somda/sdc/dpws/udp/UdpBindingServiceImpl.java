@@ -49,11 +49,11 @@ public class UdpBindingServiceImpl extends AbstractIdleService implements UdpBin
 
     private final int maxMessageSize;
     private final int multicastTtl;
-    private NetworkInterfaceUtil networkInterfaceUtil;
+    private final NetworkInterfaceUtil networkInterfaceUtil;
     private final CommunicationLog communicationLog;
     private UdpMessageReceiverCallback receiver;
     private InetAddress networkInterfaceAddress;
-    private InetSocketAddress multicastAddress;
+    private final InetSocketAddress multicastAddress;
 
     @AssistedInject
     UdpBindingServiceImpl(@Assisted NetworkInterface networkInterface,
@@ -112,65 +112,10 @@ public class UdpBindingServiceImpl extends AbstractIdleService implements UdpBin
             instanceLogger.info("Data receiver configured; process incoming UDP messages");
 
             // Socket to receive any incoming multicast traffic
-            this.receiveSocketRunner = new Thread(() -> {
-                while (!receiveSocketRunner.isInterrupted()) {
-                    DatagramPacket packet = new DatagramPacket(new byte[maxMessageSize], maxMessageSize);
-                    try {
-                        receiveSocket.receive(packet);
-                    } catch (IOException e) {
-                        instanceLogger.trace("Could not process UDP packet. Discard.");
-                        continue;
-                    }
-
-                    var ctxt = new CommunicationContext(
-                            new ApplicationInfo(),
-                            new TransportInfo(
-                                    DpwsConstants.URI_SCHEME_SOAP_OVER_UDP,
-                                    receiveSocket.getLocalAddress().getHostAddress(),
-                                    receiveSocket.getLocalPort(),
-                                    packet.getAddress().getHostAddress(),
-                                    packet.getPort(),
-                                    Collections.emptyList()
-                            )
-                    );
-
-                    UdpMessage message = new UdpMessage(packet.getData(), packet.getLength(), ctxt);
-                    this.logUdpPacket(CommunicationLog.Direction.INBOUND, packet);
-                    receiver.receive(message);
-                }
-            });
+            receiveSocketRunner = startThreadToReceiveFromSocket(receiveSocket);
 
             // Socket to receive unicast-replied messages like ProbeMatches and ResolveMatches
-            this.sendReceiveSocketRunner = new Thread(() -> {
-                while (!sendReceiveSocketRunner.isInterrupted()) {
-                    DatagramPacket packet = new DatagramPacket(new byte[maxMessageSize], maxMessageSize);
-                    try {
-                        sendReceiveSocket.receive(packet);
-                    } catch (IOException e) {
-                        instanceLogger.trace("Could not process UDP packet. Discard.");
-                        continue;
-                    }
-
-                    var ctxt = new CommunicationContext(
-                            new ApplicationInfo(),
-                            new TransportInfo(
-                                    DpwsConstants.URI_SCHEME_SOAP_OVER_UDP,
-                                    sendReceiveSocket.getLocalAddress().getHostAddress(),
-                                    sendReceiveSocket.getLocalPort(),
-                                    packet.getAddress().getHostAddress(),
-                                    packet.getPort(),
-                                    Collections.emptyList()
-                            )
-                    );
-
-                    UdpMessage message = new UdpMessage(packet.getData(), packet.getLength(), ctxt);
-                    this.logUdpPacket(CommunicationLog.Direction.INBOUND, packet);
-                    receiver.receive(message);
-                }
-            });
-
-            receiveSocketRunner.start();
-            sendReceiveSocketRunner.start();
+            sendReceiveSocketRunner = startThreadToReceiveFromSocket(sendReceiveSocket);
         }
 
         // wait for the sockets, the IGMP join and the worker threads to be available
@@ -178,6 +123,38 @@ public class UdpBindingServiceImpl extends AbstractIdleService implements UdpBin
         Thread.sleep(1000);
 
         instanceLogger.info("UDP binding {} is running", this);
+    }
+
+    private Thread startThreadToReceiveFromSocket(MulticastSocket socket) {
+        var thread =  new Thread(() -> {
+            while (!Thread.currentThread().isInterrupted()) {
+                DatagramPacket packet = new DatagramPacket(new byte[maxMessageSize], maxMessageSize);
+                try {
+                    socket.receive(packet);
+                } catch (IOException e) {
+                    instanceLogger.trace("Could not process UDP packet. Discard.");
+                    continue;
+                }
+
+                var ctxt = new CommunicationContext(
+                        new ApplicationInfo(),
+                        new TransportInfo(
+                                DpwsConstants.URI_SCHEME_SOAP_OVER_UDP,
+                                socket.getLocalAddress().getHostAddress(),
+                                socket.getLocalPort(),
+                                packet.getAddress().getHostAddress(),
+                                packet.getPort(),
+                                Collections.emptyList()
+                        )
+                );
+
+                UdpMessage message = new UdpMessage(packet.getData(), packet.getLength(), ctxt);
+                this.logUdpPacket(CommunicationLog.Direction.INBOUND, packet);
+                receiver.receive(message);
+            }
+        });
+        thread.start();
+        return thread;
     }
 
     @Override
@@ -271,7 +248,7 @@ public class UdpBindingServiceImpl extends AbstractIdleService implements UdpBin
 
     private String makeStringRepresentation() {
         String multicast = "w/o multicast";
-        if (receiveSocket != null) {
+        if (multicastGroup != null) {
             multicast = String.format("w/ multicast joined at %s:%s", multicastGroup.getHostAddress(), socketPort);
         }
 
