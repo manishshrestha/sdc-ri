@@ -102,6 +102,11 @@ public class DpwsConstants {
     public static final int UNICAST_UDP_REPEAT = MULTICAST_UDP_REPEAT;
 
     /**
+     * Default TTL for outgoing multicast messages.
+     */
+    public static final int DEFAULT_MULTICAST_TTL = 1;
+
+    /**
      * Defines the namespace for the DPWS ThisModel data structure.
      */
     public static final String MEX_DIALECT_THIS_MODEL = NAMESPACE + "/ThisModel";

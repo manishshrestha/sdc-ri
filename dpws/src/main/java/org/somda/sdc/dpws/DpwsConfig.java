@@ -159,4 +159,14 @@ public class DpwsConfig {
      * </ul>
      */
     public static final String ENFORCE_HTTP_CHUNKED_TRANSFER = "Dpws.EnforceHttpChunked";
+
+    /**
+     * Sets the time-to-live for outgoing multicast packets between 0-255.
+     *
+     * <ul>
+     * <li>Data type: {@linkplain char}
+     * <li>Use: optional
+     * </ul>
+     */
+    public static final String MULTICAST_TTL = "Dpws.MulticastTtl";
 }

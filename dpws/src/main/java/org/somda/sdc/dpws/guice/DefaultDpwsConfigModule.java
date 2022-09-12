@@ -85,12 +85,16 @@ public class DefaultDpwsConfigModule extends AbstractConfigurationModule {
                 true);
 
         bind(DpwsConfig.ENFORCE_HTTP_CHUNKED_TRANSFER,
-            Boolean.class,
-            false);
+                Boolean.class,
+                false);
 
         bind(DpwsConfig.HTTP_SERVER_CONNECTION_TIMEOUT,
                 Duration.class,
                 Duration.ofSeconds(30));
+
+        bind(DpwsConfig.MULTICAST_TTL,
+                Integer.class,
+                DpwsConstants.DEFAULT_MULTICAST_TTL);
     }
 
     private void configureCryptoConfig() {
