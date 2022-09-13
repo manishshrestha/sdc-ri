@@ -20,7 +20,11 @@ import org.somda.sdc.dpws.soap.exception.TransportException;
 import javax.annotation.Nullable;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.net.*;
+import java.net.DatagramPacket;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.MulticastSocket;
+import java.net.NetworkInterface;
 import java.util.Collections;
 import java.util.Random;
 
@@ -59,7 +63,7 @@ public class UdpBindingServiceImpl extends AbstractIdleService implements UdpBin
                           @Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier) {
 
         if (multicastGroup != null && !multicastGroup.isMulticastAddress()) {
-            throw new IllegalArgumentException(String.format("Given address is not a multicast address: %s", multicastGroup));
+            throw new IllegalArgumentException("Given address is not a multicast address: " + multicastGroup);
         }
 
         this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);
