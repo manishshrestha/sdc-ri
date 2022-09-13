@@ -12,7 +12,6 @@ import org.somda.sdc.dpws.CommunicationLog;
 import org.somda.sdc.dpws.DpwsConfig;
 import org.somda.sdc.dpws.DpwsConstants;
 import org.somda.sdc.dpws.factory.CommunicationLogFactory;
-import org.somda.sdc.dpws.network.NetworkInterfaceUtil;
 import org.somda.sdc.dpws.soap.ApplicationInfo;
 import org.somda.sdc.dpws.soap.CommunicationContext;
 import org.somda.sdc.dpws.soap.TransportInfo;
@@ -21,12 +20,7 @@ import org.somda.sdc.dpws.soap.exception.TransportException;
 import javax.annotation.Nullable;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.net.DatagramPacket;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.net.MulticastSocket;
-import java.net.NetworkInterface;
-import java.net.SocketException;
+import java.net.*;
 import java.util.Collections;
 import java.util.Random;
 
@@ -44,15 +38,15 @@ public class UdpBindingServiceImpl extends AbstractIdleService implements UdpBin
     private Thread receiveSocketRunner;
     private Thread sendReceiveSocketRunner;
 
-    private MulticastSocket receiveSocket;
+    // use MulticastSocket to be able to configure outgoing packet TTL
     private MulticastSocket sendReceiveSocket;
+
+    private MulticastSocket receiveSocket;
 
     private final int maxMessageSize;
     private final int multicastTtl;
-    private final NetworkInterfaceUtil networkInterfaceUtil;
     private final CommunicationLog communicationLog;
     private UdpMessageReceiverCallback receiver;
-    private InetAddress networkInterfaceAddress;
     private final InetSocketAddress multicastAddress;
 
     @AssistedInject
@@ -61,46 +55,39 @@ public class UdpBindingServiceImpl extends AbstractIdleService implements UdpBin
                           @Assisted("multicastPort") Integer multicastPort,
                           @Assisted("maxMessageSize") Integer maxMessageSize,
                           @Named(DpwsConfig.MULTICAST_TTL) Integer multicastTtl,
-                          NetworkInterfaceUtil networkInterfaceUtil,
                           CommunicationLogFactory communicationLogFactory,
                           @Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier) {
+
+        if (multicastGroup != null && !multicastGroup.isMulticastAddress()) {
+            throw new IllegalArgumentException(String.format("Given address is not a multicast address: %s", multicastGroup));
+        }
+
         this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);
         this.networkInterface = networkInterface;
         this.multicastGroup = multicastGroup;
         this.socketPort = multicastPort;
         this.maxMessageSize = maxMessageSize;
         this.multicastTtl = multicastTtl;
-        this.networkInterfaceUtil = networkInterfaceUtil;
         this.communicationLog = communicationLogFactory.createCommunicationLog();
         this.multicastAddress = new InetSocketAddress(multicastGroup, socketPort);
-        this.networkInterfaceAddress = null;
     }
 
     @Override
     protected void startUp() throws Exception {
-        instanceLogger.info("Start UDP binding on network interface {} with modified source", this);
-        // try to get first available address from network interface
-        networkInterfaceAddress = networkInterfaceUtil.getFirstIpV4Address(networkInterface).orElseThrow(() ->
-                new SocketException(String.format("Could not retrieve network interface address from: %s",
-                        networkInterface)));
-
-        instanceLogger.info("Bind to address {}", networkInterfaceAddress);
+        instanceLogger.info("Start UDP binding on network interface {}", this);
 
         sendReceiveSocket = new MulticastSocket(0);
         sendReceiveSocket.setNetworkInterface(networkInterface);
         sendReceiveSocket.setTimeToLive(multicastTtl);
+        // no need to join this socket to multicast group
+
         instanceLogger.info("Outgoing socket at {} is open", sendReceiveSocket.getLocalSocketAddress());
 
         if (multicastGroup == null) {
             receiveSocket = new MulticastSocket(0);
             receiveSocket.setNetworkInterface(networkInterface);
             instanceLogger.info("Incoming socket is open: {}", receiveSocket.getLocalSocketAddress());
-
         } else {
-            if (!multicastGroup.isMulticastAddress()) {
-                throw new Exception(String.format("Given address is not a multicast address: %s", multicastGroup));
-            }
-
             receiveSocket = new MulticastSocket(socketPort);
             instanceLogger.info("Join to UDP multicast address group {}", multicastAddress);
             receiveSocket.joinGroup(multicastAddress, networkInterface);
@@ -126,7 +113,7 @@ public class UdpBindingServiceImpl extends AbstractIdleService implements UdpBin
     }
 
     private Thread startThreadToReceiveFromSocket(MulticastSocket socket) {
-        var thread =  new Thread(() -> {
+        var thread = new Thread(() -> {
             while (!Thread.currentThread().isInterrupted()) {
                 DatagramPacket packet = new DatagramPacket(new byte[maxMessageSize], maxMessageSize);
                 try {
@@ -253,7 +240,7 @@ public class UdpBindingServiceImpl extends AbstractIdleService implements UdpBin
         }
 
         return String.format("[%s:[%s|%s] %s]",
-                networkInterfaceAddress.toString(),
+                networkInterface.toString(),
                 receiveSocket.getLocalPort(),
                 sendReceiveSocket.getLocalPort(),
                 multicast);

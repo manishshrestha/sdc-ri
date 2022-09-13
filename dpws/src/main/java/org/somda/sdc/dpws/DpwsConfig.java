@@ -164,7 +164,7 @@ public class DpwsConfig {
      * Sets the time-to-live for outgoing multicast packets between 0-255.
      *
      * <ul>
-     * <li>Data type: {@linkplain char}
+     * <li>Data type: {@linkplain Integer}
      * <li>Use: optional
      * </ul>
      */
