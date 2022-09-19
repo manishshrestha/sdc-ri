@@ -25,21 +25,21 @@ class ContextIdentificationMapperTest {
         {
             String actualUri = ContextIdentificationMapper.fromInstanceIdentifier(createInstanceIdentifier("http://root", null),
                     ContextIdentificationMapper.ContextSource.Location);
-            String expectedUri = "sdc.ctxt.loc:/http%3A%2F%2Froot/";
+            String expectedUri = "sdc.ctxt.loc:/http:%2F%2Froot/";
             assertEquals(expectedUri, actualUri);
         }
 
         {
             String actualUri = ContextIdentificationMapper.fromInstanceIdentifier(createInstanceIdentifier("http://root", "extension"),
                     ContextIdentificationMapper.ContextSource.Patient);
-            String expectedUri = "sdc.ctxt.pat:/http%3A%2F%2Froot/extension";
+            String expectedUri = "sdc.ctxt.pat:/http:%2F%2Froot/extension";
             assertEquals(expectedUri, actualUri);
         }
 
         {
             String actualUri = ContextIdentificationMapper.fromInstanceIdentifier(createInstanceIdentifier("http://root", "ext/enÖsion?"),
                     ContextIdentificationMapper.ContextSource.Ensemble);
-            String expectedUri = "sdc.ctxt.ens:/http%3A%2F%2Froot/ext%2Fen%C3%96sion%3F";
+            String expectedUri = "sdc.ctxt.ens:/http:%2F%2Froot/ext%2Fen%C3%96sion%3F";
             assertEquals(expectedUri, actualUri);
         }
     }

@@ -29,7 +29,7 @@ class SdcDiscoveryFilterBuilderTest {
             final DiscoveryFilter discoveryFilter = SdcDiscoveryFilterBuilder.create().addContext(locationContextState).get();
             assertEquals(2, discoveryFilter.getScopes().size());
             assertEquals(EXPECTED_PKP_SCOPE, Iterables.get(discoveryFilter.getScopes(), 0));
-            assertEquals("sdc.ctxt.loc:/http%3A%2F%2Fa-root/an-extension", Iterables.get(discoveryFilter.getScopes(), 1));
+            assertEquals("sdc.ctxt.loc:/http:%2F%2Fa-root/an-extension", Iterables.get(discoveryFilter.getScopes(), 1));
         }
 
         {
@@ -52,7 +52,7 @@ class SdcDiscoveryFilterBuilderTest {
 
             assertEquals(3, discoveryFilter.getScopes().size()); // +1 bc of SDC Provider PKP
             assertTrue(discoveryFilter.getScopes().contains(EXPECTED_PKP_SCOPE));
-            assertTrue(discoveryFilter.getScopes().contains("sdc.cdc.type:/http%3A%2F%2Fa-codingsystem/a-version/a-code"));
+            assertTrue(discoveryFilter.getScopes().contains("sdc.cdc.type:/http:%2F%2Fa-codingsystem/a-version/a-code"));
             assertTrue(discoveryFilter.getScopes().contains("sdc.cdc.type:///a-code"));
         }
         {
