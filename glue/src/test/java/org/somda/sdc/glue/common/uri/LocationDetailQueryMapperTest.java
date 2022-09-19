@@ -19,30 +19,24 @@ class LocationDetailQueryMapperTest {
         instanceIdentifier.setRootName("http://root");
 
         {
-            var locationDetail = createLocationDetail("facility&", null,
-                    null, null, null, null);
-            assertThrows(UriMapperGenerationArgumentException.class,
-                    () -> LocationDetailQueryMapper.createWithLocationDetailQuery(instanceIdentifier, locationDetail));
-        }
-        {
-            var locationDetail = createLocationDetail("facility1", "building1", "floor1", "poc1", "room1", "bed1");
+            var locationDetail = createLocationDetail("facility1&", "building1", "floor1", "poc1", "room1", "bed1");
             final String actualUri = LocationDetailQueryMapper.createWithLocationDetailQuery(instanceIdentifier, locationDetail);
 
-            var expectedUri = "sdc.ctxt.loc:/http%3A%2F%2Froot/?fac=facility1&bldng=building1&poc=poc1&flr=floor1&rm=room1&bed=bed1";
+            var expectedUri = "sdc.ctxt.loc:/http:%2F%2Froot/?fac=facility1%26&bldng=building1&poc=poc1&flr=floor1&rm=room1&bed=bed1";
             assertEquals(expectedUri, actualUri);
         }
         {
             var locationDetail = createLocationDetail("facility1", null, "floor1", "poc1", "room1", null);
             final String actualUri = LocationDetailQueryMapper.createWithLocationDetailQuery(instanceIdentifier, locationDetail);
 
-            var expectedUri = "sdc.ctxt.loc:/http%3A%2F%2Froot/?fac=facility1&poc=poc1&flr=floor1&rm=room1";
+            var expectedUri = "sdc.ctxt.loc:/http:%2F%2Froot/?fac=facility1&poc=poc1&flr=floor1&rm=room1";
             assertEquals(expectedUri, actualUri);
         }
         {
             var locationDetail = createLocationDetail(null, null, null, null, null, null);
             final String actualUri = LocationDetailQueryMapper.createWithLocationDetailQuery(instanceIdentifier, locationDetail);
 
-            var expectedUri = "sdc.ctxt.loc:/http%3A%2F%2Froot/";
+            var expectedUri = "sdc.ctxt.loc:/http:%2F%2Froot/";
             assertEquals(expectedUri, actualUri);
         }
         {
@@ -90,7 +84,7 @@ class LocationDetailQueryMapperTest {
                     () -> LocationDetailQueryMapper.readLocationDetailQuery("sdc.ctxt.loc:?fac=1&fac=1"));
         }
         {
-            final String uri = "sdc.ctxt.loc:/http%3A%2F%2Froot/?fac=facility1&bldng=building1&poc=poc1&flr=floor1&rm=room1&bed=bed1";
+            final String uri = "sdc.ctxt.loc:/http:%2F%2Froot/?fac=facility1&bldng=building1&poc=poc1&flr=floor1&rm=room1&bed=bed1";
             final LocationDetail locationDetail = LocationDetailQueryMapper.readLocationDetailQuery(uri);
             assertEquals("facility1", locationDetail.getFacility());
             assertEquals("building1", locationDetail.getBuilding());
@@ -100,7 +94,7 @@ class LocationDetailQueryMapperTest {
             assertEquals("bed1", locationDetail.getBed());
         }
         {
-            final String uri = "sdc.ctxt.loc:/http%3A%2F%2Froot/?bldng=building1&poc=poc1&flr=floor1&bed=bed1";
+            final String uri = "sdc.ctxt.loc:/http:%2F%2Froot/?bldng=building1&poc=poc1&flr=floor1&bed=bed1";
             final LocationDetail locationDetail = LocationDetailQueryMapper.readLocationDetailQuery(uri);
             assertNull(locationDetail.getFacility());
             assertEquals("building1", locationDetail.getBuilding());
@@ -110,7 +104,7 @@ class LocationDetailQueryMapperTest {
             assertEquals("bed1", locationDetail.getBed());
         }
         {
-            final String uri = "sdc.ctxt.loc:/http%3A%2F%2Froot/?";
+            final String uri = "sdc.ctxt.loc:/http:%2F%2Froot/?";
             final LocationDetail locationDetail = LocationDetailQueryMapper.readLocationDetailQuery(uri);
             assertNull(locationDetail.getFacility());
             assertNull(locationDetail.getBuilding());
@@ -120,7 +114,7 @@ class LocationDetailQueryMapperTest {
             assertNull(locationDetail.getBed());
         }
         {
-            final String uri = "sdc.ctxt.loc:/http%3A%2F%2Froot/?rm=%C3%BC#";
+            final String uri = "sdc.ctxt.loc:/http:%2F%2Froot/?rm=%C3%BC";
             final LocationDetail locationDetail = LocationDetailQueryMapper.readLocationDetailQuery(uri);
             assertNull(locationDetail.getFacility());
             assertNull(locationDetail.getBuilding());

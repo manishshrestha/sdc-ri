@@ -4,7 +4,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.somda.sdc.biceps.model.participant.InstanceIdentifier;
 import org.somda.sdc.biceps.model.participant.LocationDetail;
-import org.somda.sdc.glue.common.FallbackInstanceIdentifier;
 import test.org.somda.common.LoggingTestWatcher;
 
 import javax.annotation.Nullable;
@@ -59,8 +58,8 @@ class FallbackInstanceIdentifierTest {
     @Test
     void specialCharacters() {
         {
-            Optional<InstanceIdentifier> ii = create("Gebäude", "?building", "Flo%r+", "p/o/c", "room", "Bed%");
-            final String expectedExtension = "Geb%C3%A4ude/%3Fbuilding/Flo%25r%2B/p%2Fo%2Fc/room/Bed%25";
+            Optional<InstanceIdentifier> ii = create("Gebäude", "?build ing", "Flo%r+", "p/o/c", "room", "Bed%");
+            final String expectedExtension = "Geb%C3%A4ude/%3Fbuild%20ing/Flo%25r+/p%2Fo%2Fc/room/Bed%25";
             assertTrue(ii.isPresent());
             assertEquals(EXPECTED_ROOT, ii.get().getRootName());
             assertEquals(expectedExtension, ii.get().getExtensionName());

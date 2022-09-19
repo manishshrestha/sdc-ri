@@ -47,10 +47,10 @@ class ComplexDeviceComponentMapperTest {
                     createComponent("foo%2F%2F", "bar", null)));
         }
         {
-            final String actualUri = ComplexDeviceComponentMapper.fromComplexDeviceComponent(
-                    createComponent("", "@:NoPort", "1"));
-            String expectedUri = "sdc.cdc.type://%40%3ANoPort/1";
-            assertEquals(expectedUri, actualUri);
+            // throws because first segment is empty and violates regex
+            assertThrows(UriMapperGenerationArgumentException.class,
+                    () -> ComplexDeviceComponentMapper.fromComplexDeviceComponent(
+                            createComponent("", "@:NoPort", "1")));
         }
     }
 
@@ -65,7 +65,7 @@ class ComplexDeviceComponentMapperTest {
         {
             String actualUri = ComplexDeviceComponentMapper.fromCodedValue(
                     CodedValueFactory.createCodedValue(null, "@:", "1"));
-            String expectedUri = "sdc.cdc.type://%40%3A/1";
+            String expectedUri = "sdc.cdc.type://@:/1";
             assertEquals(expectedUri, actualUri);
         }
         {

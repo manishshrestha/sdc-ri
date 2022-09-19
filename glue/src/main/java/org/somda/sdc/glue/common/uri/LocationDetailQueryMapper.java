@@ -50,7 +50,7 @@ public class LocationDetailQueryMapper {
                 if (count++ > 0) {
                     queryParams.append('&');
                 }
-                queryParams.append(key).append('=').append(UrlUtf8.encode(value));
+                queryParams.append(key).append('=').append(UrlUtf8.encodePChars(value, true));
             } catch (NoSuchMethodException | IllegalAccessException |
                     InvocationTargetException | ClassCastException e) {
                 throw new UriMapperGenerationArgumentException(
@@ -103,13 +103,13 @@ public class LocationDetailQueryMapper {
                     if (values != null && !values.isEmpty()) {
                         try {
                             final Method setter = field.getSetter();
-                            setter.invoke(locationDetail, UrlUtf8.decode(values.get(0)));
+                            setter.invoke(locationDetail, values.get(0));
                         } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
 
                             throw new UriMapperParsingException(
                                     "Unexpected reflection exception occurred " +
                                             "during location detail reading of field " +
-                                            "for the mapper " + LocationDetailQueryMapper.class.toString() + " " +
+                                            "for the mapper " + LocationDetailQueryMapper.class + " " +
                                             e.toString());
                         }
                     }
