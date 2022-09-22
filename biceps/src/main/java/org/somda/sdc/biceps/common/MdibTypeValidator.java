@@ -1,11 +1,73 @@
 package org.somda.sdc.biceps.common;
 
+import com.google.common.collect.BiMap;
+import com.google.common.collect.HashBiMap;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
 import com.google.inject.Inject;
 import org.somda.sdc.biceps.model.participant.AbstractContextDescriptor;
 import org.somda.sdc.biceps.model.participant.AbstractContextState;
 import org.somda.sdc.biceps.model.participant.AbstractDescriptor;
 import org.somda.sdc.biceps.model.participant.AbstractMultiState;
 import org.somda.sdc.biceps.model.participant.AbstractState;
+import org.somda.sdc.biceps.model.participant.ActivateOperationDescriptor;
+import org.somda.sdc.biceps.model.participant.ActivateOperationState;
+import org.somda.sdc.biceps.model.participant.AlertConditionDescriptor;
+import org.somda.sdc.biceps.model.participant.AlertConditionState;
+import org.somda.sdc.biceps.model.participant.AlertSignalDescriptor;
+import org.somda.sdc.biceps.model.participant.AlertSignalState;
+import org.somda.sdc.biceps.model.participant.AlertSystemDescriptor;
+import org.somda.sdc.biceps.model.participant.AlertSystemState;
+import org.somda.sdc.biceps.model.participant.BatteryDescriptor;
+import org.somda.sdc.biceps.model.participant.BatteryState;
+import org.somda.sdc.biceps.model.participant.ChannelDescriptor;
+import org.somda.sdc.biceps.model.participant.ChannelState;
+import org.somda.sdc.biceps.model.participant.ClockDescriptor;
+import org.somda.sdc.biceps.model.participant.ClockState;
+import org.somda.sdc.biceps.model.participant.DistributionSampleArrayMetricDescriptor;
+import org.somda.sdc.biceps.model.participant.DistributionSampleArrayMetricState;
+import org.somda.sdc.biceps.model.participant.EnsembleContextDescriptor;
+import org.somda.sdc.biceps.model.participant.EnsembleContextState;
+import org.somda.sdc.biceps.model.participant.EnumStringMetricDescriptor;
+import org.somda.sdc.biceps.model.participant.EnumStringMetricState;
+import org.somda.sdc.biceps.model.participant.LimitAlertConditionDescriptor;
+import org.somda.sdc.biceps.model.participant.LimitAlertConditionState;
+import org.somda.sdc.biceps.model.participant.LocationContextDescriptor;
+import org.somda.sdc.biceps.model.participant.LocationContextState;
+import org.somda.sdc.biceps.model.participant.MdsDescriptor;
+import org.somda.sdc.biceps.model.participant.MdsState;
+import org.somda.sdc.biceps.model.participant.MeansContextDescriptor;
+import org.somda.sdc.biceps.model.participant.MeansContextState;
+import org.somda.sdc.biceps.model.participant.NumericMetricDescriptor;
+import org.somda.sdc.biceps.model.participant.NumericMetricState;
+import org.somda.sdc.biceps.model.participant.OperatorContextDescriptor;
+import org.somda.sdc.biceps.model.participant.OperatorContextState;
+import org.somda.sdc.biceps.model.participant.PatientContextDescriptor;
+import org.somda.sdc.biceps.model.participant.PatientContextState;
+import org.somda.sdc.biceps.model.participant.RealTimeSampleArrayMetricDescriptor;
+import org.somda.sdc.biceps.model.participant.RealTimeSampleArrayMetricState;
+import org.somda.sdc.biceps.model.participant.ScoDescriptor;
+import org.somda.sdc.biceps.model.participant.ScoState;
+import org.somda.sdc.biceps.model.participant.SetAlertStateOperationDescriptor;
+import org.somda.sdc.biceps.model.participant.SetAlertStateOperationState;
+import org.somda.sdc.biceps.model.participant.SetComponentStateOperationDescriptor;
+import org.somda.sdc.biceps.model.participant.SetComponentStateOperationState;
+import org.somda.sdc.biceps.model.participant.SetContextStateOperationDescriptor;
+import org.somda.sdc.biceps.model.participant.SetContextStateOperationState;
+import org.somda.sdc.biceps.model.participant.SetMetricStateOperationDescriptor;
+import org.somda.sdc.biceps.model.participant.SetMetricStateOperationState;
+import org.somda.sdc.biceps.model.participant.SetStringOperationDescriptor;
+import org.somda.sdc.biceps.model.participant.SetStringOperationState;
+import org.somda.sdc.biceps.model.participant.SetValueOperationDescriptor;
+import org.somda.sdc.biceps.model.participant.SetValueOperationState;
+import org.somda.sdc.biceps.model.participant.StringMetricDescriptor;
+import org.somda.sdc.biceps.model.participant.StringMetricState;
+import org.somda.sdc.biceps.model.participant.SystemContextDescriptor;
+import org.somda.sdc.biceps.model.participant.SystemContextState;
+import org.somda.sdc.biceps.model.participant.VmdDescriptor;
+import org.somda.sdc.biceps.model.participant.VmdState;
+import org.somda.sdc.biceps.model.participant.WorkflowContextDescriptor;
+import org.somda.sdc.biceps.model.participant.WorkflowContextState;
 
 import java.util.Collections;
 import java.util.List;
@@ -23,13 +85,49 @@ public class MdibTypeValidator {
     private static final String STATE_SUFFIX = "State";
     private static final int STATE_SUFFIX_LENGTH = STATE_SUFFIX.length();
 
+    private static final BiMap<Class<? extends AbstractDescriptor>, Class<? extends AbstractState>> descriptorClassToStateClass =
+            Maps.synchronizedBiMap(HashBiMap.create(
+                    ImmutableMap.<Class<? extends AbstractDescriptor>, Class<? extends AbstractState>>builder()
+                            .put(ActivateOperationDescriptor.class, ActivateOperationState.class)
+                            .put(AlertConditionDescriptor.class, AlertConditionState.class)
+                            .put(AlertSignalDescriptor.class, AlertSignalState.class)
+                            .put(AlertSystemDescriptor.class, AlertSystemState.class)
+                            .put(BatteryDescriptor.class, BatteryState.class)
+                            .put(ChannelDescriptor.class, ChannelState.class)
+                            .put(ClockDescriptor.class, ClockState.class)
+                            .put(DistributionSampleArrayMetricDescriptor.class, DistributionSampleArrayMetricState.class)
+                            .put(EnsembleContextDescriptor.class, EnsembleContextState.class)
+                            .put(EnumStringMetricDescriptor.class, EnumStringMetricState.class)
+                            .put(LimitAlertConditionDescriptor.class, LimitAlertConditionState.class)
+                            .put(LocationContextDescriptor.class, LocationContextState.class)
+                            .put(MdsDescriptor.class, MdsState.class)
+                            .put(MeansContextDescriptor.class, MeansContextState.class)
+                            .put(NumericMetricDescriptor.class, NumericMetricState.class)
+                            .put(OperatorContextDescriptor.class, OperatorContextState.class)
+                            .put(PatientContextDescriptor.class, PatientContextState.class)
+                            .put(RealTimeSampleArrayMetricDescriptor.class, RealTimeSampleArrayMetricState.class)
+                            .put(ScoDescriptor.class, ScoState.class)
+                            .put(SetAlertStateOperationDescriptor.class, SetAlertStateOperationState.class)
+                            .put(SetComponentStateOperationDescriptor.class, SetComponentStateOperationState.class)
+                            .put(SetContextStateOperationDescriptor.class, SetContextStateOperationState.class)
+                            .put(SetMetricStateOperationDescriptor.class, SetMetricStateOperationState.class)
+                            .put(SetStringOperationDescriptor.class, SetStringOperationState.class)
+                            .put(SetValueOperationDescriptor.class, SetValueOperationState.class)
+                            .put(StringMetricDescriptor.class, StringMetricState.class)
+                            .put(SystemContextDescriptor.class, SystemContextState.class)
+                            .put(VmdDescriptor.class, VmdState.class)
+                            .put(WorkflowContextDescriptor.class, WorkflowContextState.class).build()
+            ));
+    private static final BiMap<Class<? extends AbstractState>, Class<? extends AbstractDescriptor>> stateClassToDescriptorClass =
+            Maps.synchronizedBiMap(descriptorClassToStateClass.inverse());
+
     @Inject
     MdibTypeValidator() {
     }
 
     /**
      * Gets the base name of a descriptor class.
-     *
+     * <p>
      * The base name is the name of the class without <em>Descriptor</em> suffix.
      *
      * @param descrClass the class where to resolve the base name from.
@@ -41,7 +139,7 @@ public class MdibTypeValidator {
 
     /**
      * Gets the base name of a state class.
-     *
+     * <p>
      * The base name is the name of the class without <em>State</em> suffix.
      *
      * @param stateClass the class where to resolve the base name from.
@@ -79,9 +177,9 @@ public class MdibTypeValidator {
      * <p>
      * A match is given if
      * <ul>
-     * <li>descriptor and states match in terms of {@link #match(Class, Class)},
-     * <li>{@link AbstractState#getDescriptorHandle()} equals {@link AbstractDescriptor#getHandle()}, and
-     * <li>single state descriptors do correspond to exactly one state.
+     *   <li>descriptor and states match in terms of {@link #match(Class, Class)},
+     *   <li>{@link AbstractState#getDescriptorHandle()} equals {@link AbstractDescriptor#getHandle()}, and
+     *   <li>single state descriptors do correspond to exactly one state.
      * </ul>
      *
      * @param descriptor the descriptor to test.
@@ -208,9 +306,15 @@ public class MdibTypeValidator {
      */
     public <T extends AbstractState, V extends AbstractDescriptor> Class<V> resolveDescriptorType(Class<T> stateClass)
             throws ClassNotFoundException {
-        final String baseName = stateClass.getCanonicalName()
-                .substring(0, stateClass.getCanonicalName().length() - STATE_SUFFIX_LENGTH);
-        return (Class<V>) Class.forName(baseName + DESCRIPTOR_SUFFIX);
+        var descriptorClass = (Class<V>) stateClassToDescriptorClass.get(stateClass);
+        if (descriptorClass == null) {
+            // this should never happen, but here is a reflection based fallback anyway
+            final String baseName = stateClass.getCanonicalName()
+                    .substring(0, stateClass.getCanonicalName().length() - STATE_SUFFIX_LENGTH);
+            descriptorClass = (Class<V>) Class.forName(baseName + DESCRIPTOR_SUFFIX);
+            stateClassToDescriptorClass.put(stateClass, descriptorClass);
+        }
+        return descriptorClass;
     }
 
     /**
@@ -223,8 +327,15 @@ public class MdibTypeValidator {
      */
     public <T extends AbstractDescriptor, V extends AbstractState> Class<V> resolveStateType(Class<T> descriptorClass)
             throws ClassNotFoundException {
-        final String baseName = descriptorClass.getCanonicalName()
-                .substring(0, descriptorClass.getCanonicalName().length() - DESCRIPTOR_SUFFIX_LENGTH);
-        return (Class<V>) Class.forName(baseName + STATE_SUFFIX);
+        // as this method is called very often in normal operation, a lookup table is used instead of reflection
+        var stateClass = (Class<V>) descriptorClassToStateClass.get(descriptorClass);
+        if (stateClass == null) {
+            // this should never happen, but here is a reflection based fallback anyway
+            final String baseName = descriptorClass.getCanonicalName()
+                    .substring(0, descriptorClass.getCanonicalName().length() - DESCRIPTOR_SUFFIX_LENGTH);
+            stateClass =  (Class<V>) Class.forName(baseName + STATE_SUFFIX);
+            descriptorClassToStateClass.put(descriptorClass, stateClass);
+        }
+        return stateClass;
     }
 }
