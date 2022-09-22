@@ -2,6 +2,8 @@ package org.somda.sdc.biceps.guice;
 
 import com.google.inject.TypeLiteral;
 import org.somda.sdc.biceps.common.CommonConfig;
+import org.somda.sdc.biceps.common.MdibTypeValidator;
+import org.somda.sdc.biceps.common.access.CopyManager;
 import org.somda.sdc.biceps.common.preprocessing.DescriptorChildRemover;
 import org.somda.sdc.biceps.common.storage.DescriptionPreprocessingSegment;
 import org.somda.sdc.biceps.common.storage.StatePreprocessingSegment;
@@ -61,5 +63,8 @@ public class DefaultBicepsConfigModule extends AbstractConfigurationModule {
                 },
                 List.of(DuplicateChecker.class, TypeConsistencyChecker.class, VersionHandler.class,
                         HandleReferenceHandler.class, DescriptorChildRemover.class));
+
+        bind(CopyManager.class).asEagerSingleton();
+        bind(MdibTypeValidator.class).asEagerSingleton();
     }
 }
