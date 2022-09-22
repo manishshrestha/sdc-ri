@@ -85,8 +85,8 @@ public class MdibTypeValidator {
     private static final String STATE_SUFFIX = "State";
     private static final int STATE_SUFFIX_LENGTH = STATE_SUFFIX.length();
 
-    private static final BiMap<Class<? extends AbstractDescriptor>, Class<? extends AbstractState>> descriptorClassToStateClass =
-            Maps.synchronizedBiMap(HashBiMap.create(
+    private static final BiMap<Class<? extends AbstractDescriptor>, Class<? extends AbstractState>>
+            DESCRIPTOR_CLASS_TO_STATE_CLASS = Maps.synchronizedBiMap(HashBiMap.create(
                     ImmutableMap.<Class<? extends AbstractDescriptor>, Class<? extends AbstractState>>builder()
                             .put(ActivateOperationDescriptor.class, ActivateOperationState.class)
                             .put(AlertConditionDescriptor.class, AlertConditionState.class)
@@ -95,7 +95,8 @@ public class MdibTypeValidator {
                             .put(BatteryDescriptor.class, BatteryState.class)
                             .put(ChannelDescriptor.class, ChannelState.class)
                             .put(ClockDescriptor.class, ClockState.class)
-                            .put(DistributionSampleArrayMetricDescriptor.class, DistributionSampleArrayMetricState.class)
+                            .put(DistributionSampleArrayMetricDescriptor.class,
+                                 DistributionSampleArrayMetricState.class)
                             .put(EnsembleContextDescriptor.class, EnsembleContextState.class)
                             .put(EnumStringMetricDescriptor.class, EnumStringMetricState.class)
                             .put(LimitAlertConditionDescriptor.class, LimitAlertConditionState.class)
@@ -118,8 +119,8 @@ public class MdibTypeValidator {
                             .put(VmdDescriptor.class, VmdState.class)
                             .put(WorkflowContextDescriptor.class, WorkflowContextState.class).build()
             ));
-    private static final BiMap<Class<? extends AbstractState>, Class<? extends AbstractDescriptor>> stateClassToDescriptorClass =
-            Maps.synchronizedBiMap(descriptorClassToStateClass.inverse());
+    private static final BiMap<Class<? extends AbstractState>, Class<? extends AbstractDescriptor>>
+            STATE_CLASS_TO_DESCRIPTOR_CLASS = Maps.synchronizedBiMap(DESCRIPTOR_CLASS_TO_STATE_CLASS.inverse());
 
     @Inject
     MdibTypeValidator() {
@@ -306,13 +307,13 @@ public class MdibTypeValidator {
      */
     public <T extends AbstractState, V extends AbstractDescriptor> Class<V> resolveDescriptorType(Class<T> stateClass)
             throws ClassNotFoundException {
-        var descriptorClass = (Class<V>) stateClassToDescriptorClass.get(stateClass);
+        var descriptorClass = (Class<V>) STATE_CLASS_TO_DESCRIPTOR_CLASS.get(stateClass);
         if (descriptorClass == null) {
             // this should never happen, but here is a reflection based fallback anyway
             final String baseName = stateClass.getCanonicalName()
                     .substring(0, stateClass.getCanonicalName().length() - STATE_SUFFIX_LENGTH);
             descriptorClass = (Class<V>) Class.forName(baseName + DESCRIPTOR_SUFFIX);
-            stateClassToDescriptorClass.put(stateClass, descriptorClass);
+            STATE_CLASS_TO_DESCRIPTOR_CLASS.put(stateClass, descriptorClass);
         }
         return descriptorClass;
     }
@@ -328,13 +329,13 @@ public class MdibTypeValidator {
     public <T extends AbstractDescriptor, V extends AbstractState> Class<V> resolveStateType(Class<T> descriptorClass)
             throws ClassNotFoundException {
         // as this method is called very often in normal operation, a lookup table is used instead of reflection
-        var stateClass = (Class<V>) descriptorClassToStateClass.get(descriptorClass);
+        var stateClass = (Class<V>) DESCRIPTOR_CLASS_TO_STATE_CLASS.get(descriptorClass);
         if (stateClass == null) {
             // this should never happen, but here is a reflection based fallback anyway
             final String baseName = descriptorClass.getCanonicalName()
                     .substring(0, descriptorClass.getCanonicalName().length() - DESCRIPTOR_SUFFIX_LENGTH);
             stateClass =  (Class<V>) Class.forName(baseName + STATE_SUFFIX);
-            descriptorClassToStateClass.put(descriptorClass, stateClass);
+            DESCRIPTOR_CLASS_TO_STATE_CLASS.put(descriptorClass, stateClass);
         }
         return stateClass;
     }
