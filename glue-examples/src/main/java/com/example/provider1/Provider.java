@@ -11,9 +11,11 @@ import org.somda.sdc.biceps.common.MdibEntity;
 import org.somda.sdc.biceps.common.MdibStateModifications;
 import org.somda.sdc.biceps.common.access.ReadTransaction;
 import org.somda.sdc.biceps.common.storage.PreprocessingException;
+import org.somda.sdc.biceps.model.participant.AbstractDeviceComponentDescriptor;
 import org.somda.sdc.biceps.model.participant.AlertConditionState;
 import org.somda.sdc.biceps.model.participant.AlertSignalPresence;
 import org.somda.sdc.biceps.model.participant.AlertSignalState;
+import org.somda.sdc.biceps.model.participant.ComponentActivation;
 import org.somda.sdc.biceps.model.participant.ContextAssociation;
 import org.somda.sdc.biceps.model.participant.EnumStringMetricDescriptor;
 import org.somda.sdc.biceps.model.participant.EnumStringMetricState;
@@ -239,6 +241,20 @@ public class Provider extends AbstractIdleService {
         this.currentLocation = (LocationDetail) location.clone();
     }
 
+    public void setComponentActivation(String handle, ComponentActivation activation) {
+        // TODO: where do I find the Components?
+        final Optional<AbstractDeviceComponentDescriptor> descriptor =
+            mdibAccess.getDescriptor(handle, AbstractDeviceComponentDescriptor.class);
+        // TODO: implement properly
+        //mdibAccess.getSTa
+
+        // activate the Component
+        // - naive approach: find the AbstractDeviceComponentState and set its activationState.
+        //   NOTE that this is NOT Standard-compliant as Activation/Deactivation of Components must
+        //        also take the activationState of its parent Component into account.
+        // TODO: as Lukas is not available implement the naive approach for the time being.
+        // TODO: ask Lukas if there already is an implementation for this in SDC.ri
+    }
 
     /**
      * Adds a sine wave to the data of a waveform.
@@ -491,4 +507,5 @@ public class Provider extends AbstractIdleService {
 
         provider.stopAsync().awaitTerminated();
     }
+
 }
