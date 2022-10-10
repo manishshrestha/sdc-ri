@@ -39,13 +39,15 @@ public class UdpBindingServiceImpl extends AbstractIdleService implements UdpBin
     private final InetAddress multicastGroup;
     private final Integer socketPort;
     private final Logger instanceLogger;
-    private Thread receiveSocketRunner;
-    private Thread sendReceiveSocketRunner;
+    private Thread unicastSocketRunner;
+    private Thread multicastSocketRunner;
 
-    // use MulticastSocket to be able to configure outgoing packet TTL
-    private MulticastSocket sendReceiveSocket;
+    // Socket to send UDP messages and to receive unicast-replied messages like ProbeMatches and ResolveMatches.
+    // Using MulticastSocket only to be able to configure outgoing packet TTL.
+    private MulticastSocket unicastSocket;
 
-    private MulticastSocket receiveSocket;
+    // Socket to receive any incoming multicast traffic
+    private MulticastSocket multicastSocket;
 
     private final int maxMessageSize;
     private final int multicastTtl;
@@ -80,21 +82,21 @@ public class UdpBindingServiceImpl extends AbstractIdleService implements UdpBin
     protected void startUp() throws Exception {
         instanceLogger.info("Start UDP binding on network interface {}", this);
 
-        sendReceiveSocket = new MulticastSocket(0);
-        sendReceiveSocket.setNetworkInterface(networkInterface);
-        sendReceiveSocket.setTimeToLive(multicastTtl);
+        unicastSocket = new MulticastSocket(0);
+        unicastSocket.setNetworkInterface(networkInterface);
+        unicastSocket.setTimeToLive(multicastTtl);
         // no need to join this socket to multicast group
 
-        instanceLogger.info("Outgoing socket at {} is open", sendReceiveSocket.getLocalSocketAddress());
+        instanceLogger.info("Unicast socket at {} is open", unicastSocket.getLocalSocketAddress());
 
         if (multicastGroup == null) {
-            receiveSocket = new MulticastSocket(0);
-            receiveSocket.setNetworkInterface(networkInterface);
-            instanceLogger.info("Incoming socket is open: {}", receiveSocket.getLocalSocketAddress());
+            multicastSocket = new MulticastSocket(0);
+            multicastSocket.setNetworkInterface(networkInterface);
+            instanceLogger.info("Multicast socket is open: {}", multicastSocket.getLocalSocketAddress());
         } else {
-            receiveSocket = new MulticastSocket(socketPort);
+            multicastSocket = new MulticastSocket(socketPort);
             instanceLogger.info("Join to UDP multicast address group {}", multicastAddress);
-            receiveSocket.joinGroup(multicastAddress, networkInterface);
+            multicastSocket.joinGroup(multicastAddress, networkInterface);
         }
 
         if (receiver == null) {
@@ -102,11 +104,9 @@ public class UdpBindingServiceImpl extends AbstractIdleService implements UdpBin
         } else {
             instanceLogger.info("Data receiver configured; process incoming UDP messages");
 
-            // Socket to receive any incoming multicast traffic
-            receiveSocketRunner = startThreadToReceiveFromSocket(receiveSocket);
+            multicastSocketRunner = startThreadToReceiveFromSocket(multicastSocket);
 
-            // Socket to receive unicast-replied messages like ProbeMatches and ResolveMatches
-            sendReceiveSocketRunner = startThreadToReceiveFromSocket(sendReceiveSocket);
+            unicastSocketRunner = startThreadToReceiveFromSocket(unicastSocket);
         }
 
         // wait for the sockets, the IGMP join and the worker threads to be available
@@ -151,13 +151,13 @@ public class UdpBindingServiceImpl extends AbstractIdleService implements UdpBin
     @Override
     protected void shutDown() throws Exception {
         instanceLogger.info("Shut down UDP binding {}", this);
-        receiveSocketRunner.interrupt();
-        sendReceiveSocketRunner.interrupt();
+        multicastSocketRunner.interrupt();
+        unicastSocketRunner.interrupt();
         if (multicastGroup != null && multicastAddress != null) {
-            receiveSocket.leaveGroup(multicastAddress, networkInterface);
+            multicastSocket.leaveGroup(multicastAddress, networkInterface);
         }
-        receiveSocket.close();
-        sendReceiveSocket.close();
+        multicastSocket.close();
+        unicastSocket.close();
         instanceLogger.info("UDP binding {} shut down", this);
     }
 
@@ -201,7 +201,7 @@ public class UdpBindingServiceImpl extends AbstractIdleService implements UdpBin
     }
 
     private void sendMessageWithRetry(DatagramPacket packet) throws IOException {
-        sendReceiveSocket.send(packet);
+        unicastSocket.send(packet);
 
         // Retransmission algorithm as defined in
         // http://docs.oasis-open.org/ws-dd/soapoverudp/1.1/os/wsdd-soapoverudp-1.1-spec-os.docx
@@ -219,7 +219,7 @@ public class UdpBindingServiceImpl extends AbstractIdleService implements UdpBin
                 break;
             }
 
-            sendReceiveSocket.send(packet);
+            unicastSocket.send(packet);
 
             t *= 2;
             if (t > udpUpperDelay) {
@@ -245,8 +245,8 @@ public class UdpBindingServiceImpl extends AbstractIdleService implements UdpBin
 
         return String.format("[%s:[%s|%s] %s]",
                 networkInterface.toString(),
-                receiveSocket.getLocalPort(),
-                sendReceiveSocket.getLocalPort(),
+                multicastSocket.getLocalPort(),
+                unicastSocket.getLocalPort(),
                 multicast);
     }
 
@@ -254,8 +254,8 @@ public class UdpBindingServiceImpl extends AbstractIdleService implements UdpBin
 
         var requestTransportInfo = new TransportInfo(
                 DpwsConstants.URI_SCHEME_SOAP_OVER_UDP,
-                sendReceiveSocket.getLocalAddress().getHostName(),
-                sendReceiveSocket.getPort(),
+                unicastSocket.getLocalAddress().getHostName(),
+                unicastSocket.getPort(),
                 packet.getAddress().getHostAddress(),
                 packet.getPort(),
                 Collections.emptyList()
