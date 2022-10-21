@@ -61,6 +61,25 @@
         <bouncyCastleVersion>1.66</bouncyCastleVersion>
     </properties>
 
+    <repositories>
+        <repository>
+            <id>central</id>
+            <name>Maven Central</name>
+            <layout>default</layout>
+            <url>https://repo1.maven.org/maven2</url>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+        <repository>
+            <id>github</id>
+            <layout>default</layout>
+            <name>GitHub Packages</name>
+            <releases><enabled>true</enabled></releases>
+            <snapshots><enabled>false</enabled></snapshots>
+            <url>https://maven.pkg.github.com/Draegerwerk/t2iapi</url>
+        </repository>
+    </repositories>
     <build>
         <plugins>
 

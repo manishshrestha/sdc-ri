@@ -4,6 +4,7 @@
         <artifactId>sdc-ri</artifactId>
         <groupId>org.somda.sdc</groupId>
         <version>2.0.0-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -196,7 +197,7 @@
         <dependency>
             <groupId>com.draeger.medical</groupId>
             <artifactId>t2iapi</artifactId>
-            <version>0.6.109</version>
+            <version>1.3.0.13</version>
         </dependency>
 
     </dependencies>
