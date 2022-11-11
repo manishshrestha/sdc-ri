@@ -1,5 +1,6 @@
 package org.somda.sdc.dpws.soap;
 
+import org.somda.sdc.dpws.soap.exception.SoapFaultException;
 import org.somda.sdc.dpws.soap.interception.InterceptorHandler;
 
 /**
@@ -11,6 +12,8 @@ public interface NotificationSink extends InterceptorHandler {
      *
      * @param notification         incoming request message.
      * @param communicationContext transport and application layer information (addresses, security, etc).
+     * @throws SoapFaultException  in case a soap fault should be communicated in response
      */
-    void receiveNotification(SoapMessage notification, CommunicationContext communicationContext);
+    void receiveNotification(SoapMessage notification, CommunicationContext communicationContext)
+        throws SoapFaultException;
 }

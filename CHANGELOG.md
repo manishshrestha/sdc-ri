@@ -20,7 +20,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Replace `org.somda.sdc.common.util.ObjectUtil` using clone and copy provided by the `jaxb2-rich-contract-plugin`. (#224)
 - Reduced log level of network interface information on DPWS framework startup in `org.somda.sdc.dpws.DpwsFrameworkImpl`. (#245)
 - Avoid use of reflection in `org.somda.sdc.biceps.common.MdibTypeValidator` to improve performance. (#248)
-  
+- `org.somda.sdc.dpws.soap.NotificationSink` throws `SoapFaultException`. (#252)
+
 ### Removed
 
 ### Fixed
