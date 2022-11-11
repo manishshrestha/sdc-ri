@@ -42,12 +42,9 @@ public class NotificationSinkImpl implements NotificationSink {
     }
 
     @Override
-    public void receiveNotification(SoapMessage notification, CommunicationContext communicationContext) {
+    public void receiveNotification(SoapMessage notification, CommunicationContext communicationContext)
+        throws SoapFaultException {
         NotificationObject nObj = new NotificationObject(notification, communicationContext);
-        try {
-            serverDispatcher.invokeDispatcher(Direction.NOTIFICATION, interceptorRegistry, notification, nObj);
-        } catch (SoapFaultException e) {
-            instanceLogger.debug("Caught SoapFaultException on notification is dropped. Message: {}", e.getMessage());
-        }
+        serverDispatcher.invokeDispatcher(Direction.NOTIFICATION, interceptorRegistry, notification, nObj);
     }
 }

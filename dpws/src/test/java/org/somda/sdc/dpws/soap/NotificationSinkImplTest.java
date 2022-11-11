@@ -4,6 +4,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.somda.sdc.dpws.DpwsTest;
 import org.somda.sdc.dpws.helper.JaxbMarshalling;
+import org.somda.sdc.dpws.soap.exception.SoapFaultException;
 import org.somda.sdc.dpws.soap.factory.NotificationSinkFactory;
 import org.somda.sdc.dpws.soap.factory.SoapMessageFactory;
 import org.somda.sdc.dpws.soap.interception.Direction;
@@ -18,6 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -89,13 +91,23 @@ class NotificationSinkImplTest extends DpwsTest {
             }
         });
 
+        nSink.register(new Interceptor() {
+            @MessageInterceptor(value = "http://example.com/fabrikam/mail/Delete", direction = Direction.NOTIFICATION)
+            void onDelete(NotificationObject nInfo) throws SoapFaultException {
+                throw new SoapFaultException(nInfo.getNotification());
+            }
+        });
+
         var commMock = mock(CommunicationContext.class);
         var transportInfoMock = mock(TransportInfo.class);
         when(commMock.getTransportInfo()).thenReturn(transportInfoMock);
         when(transportInfoMock.getScheme()).thenReturn("any");
 
-        nSink.receiveNotification(notification, commMock);
 
+        // ensure the last interceptor throws a soap fault exception that is propagated properly
+        assertThrows(SoapFaultException.class, () -> nSink.receiveNotification(notification, commMock));
+
+        // but every other interceptor is still executed
         assertEquals(3, dispatchedSequence.size());
         assertEquals("NOTIFICATION(5)", dispatchedSequence.get(0));
         assertEquals("NOTIFICATION(MAX)", dispatchedSequence.get(1));
