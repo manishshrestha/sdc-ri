@@ -16,6 +16,11 @@
     </description>
     <url>http://www.somda.org</url>
 
+    <properties>
+        <!-- Java 11.0.17 no longer likes Javadoc in this module -->
+        <maven.javadoc.skip>true</maven.javadoc.skip>
+    </properties>
+
     <licenses>
         <license>
             <name>MIT License</name>
