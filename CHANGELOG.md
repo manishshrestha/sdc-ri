@@ -29,6 +29,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `org.somda.sdc.dpws.soap.wsdiscovery.WsDiscoveryClientInterceptor` correctly handles multiple concurrent Probe or Resolve operations. (#243)
 - Removed useless host name resolution in `org.somda.sdc.dpws.udp.UdpBindingServiceImpl` causing delay on every SDCri stack start. (#246)
 - `org.somda.sdc.glue.common.helper.UrlUtf8` encoding did not follow RFC2398 or RFC3986 rules, queries could contain & which must be escaped. (#247)
+- `org.somda.sdc.glue.consumer.SdcRemoteDeviceWatchdog` EventBus could be interrupted by shutdown of watchdog. (#253)
 
 ## [2.0.0] - 2022-03-17
 
