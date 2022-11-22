@@ -133,7 +133,7 @@ public class LocationDetailQueryMapper {
         final String[] keyValuePair = query.split("&");
         for (String pair : keyValuePair) {
             final int equalCharIndex = pair.indexOf("=");
-            final String key = equalCharIndex > 0 ? UrlUtf8.decode(pair.substring(0, equalCharIndex)) : pair;
+            final String key = equalCharIndex > 0 ? UrlUtf8.decodePChars(pair.substring(0, equalCharIndex)) : pair;
             if (!queryPairs.containsKey(key)) {
                 queryPairs.put(key, new LinkedList<>());
             } else {
@@ -141,7 +141,7 @@ public class LocationDetailQueryMapper {
                         "More than one query segment with the key '" + key + "'");
             }
             if (equalCharIndex > 0 && pair.length() > equalCharIndex + 1) {
-                queryPairs.get(key).add(UrlUtf8.decode(pair.substring(equalCharIndex + 1)));
+                queryPairs.get(key).add(UrlUtf8.decodePChars(pair.substring(equalCharIndex + 1)));
             }
         }
         return queryPairs;
