@@ -46,8 +46,8 @@ public class ContextIdentificationMapper {
                                                 ContextSource contextSource)
             throws UriMapperGenerationArgumentException {
         final String root = instanceIdentifier.getRootName() == null ?
-                NULL_FLAVOR_ROOT : UrlUtf8.encode(instanceIdentifier.getRootName());
-        final String extension = UrlUtf8.encode(instanceIdentifier.getExtensionName());
+                NULL_FLAVOR_ROOT : UrlUtf8.encodePChars(instanceIdentifier.getRootName());
+        final String extension = UrlUtf8.encodePChars(instanceIdentifier.getExtensionName());
 
         final String resultingUri = contextSource.getSourceString() + ":/" + root + "/" + extension;
 
@@ -101,9 +101,9 @@ public class ContextIdentificationMapper {
                 final String extension = instanceIdentifierMatcher.group("extension");
 
                 final InstanceIdentifier instanceIdentifier = new InstanceIdentifier();
-                final String decodedRoot = UrlUtf8.decode(root);
+                final String decodedRoot = UrlUtf8.decodePChars(root);
                 instanceIdentifier.setRootName(decodedRoot.equals(NULL_FLAVOR_ROOT) ? null : decodedRoot);
-                final String decodedExtension = UrlUtf8.decode(extension);
+                final String decodedExtension = UrlUtf8.decodePChars(extension);
                 instanceIdentifier.setExtensionName(decodedExtension.isEmpty() ? null : decodedExtension);
 
                 return instanceIdentifier;

@@ -24,6 +24,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
+- `org.somda.sdc.glue.common.helper.UrlUtf8` `.decode` and `.encode` methods (#247)
+
 ### Fixed
 
 - `org.somda.sdc.dpws.soap.wsdiscovery.WsDiscoveryClientInterceptor` correctly handles multiple concurrent Probe or Resolve operations. (#243)
