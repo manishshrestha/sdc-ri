@@ -35,3 +35,7 @@ SDCri is licensed under the MIT license, see [LICENSE](LICENSE) file.
 ## Changelog
 
 The changelog is available [here](CHANGELOG.md).
+
+## Contact
+
+Contact information can be found in the pom.xml.
