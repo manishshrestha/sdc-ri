@@ -38,4 +38,4 @@ The changelog is available [here](CHANGELOG.md).
 
 ## Contact
 
-Contact information can be found in the pom.xml.
+Contact information can be found in the `pom.xml`.
