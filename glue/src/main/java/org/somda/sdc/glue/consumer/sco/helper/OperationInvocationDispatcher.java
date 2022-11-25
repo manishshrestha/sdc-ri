@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.stream.Collectors;
 
 /**
  * Helper class to dispatch incoming operation invoked report parts to {@linkplain ScoTransaction} objects.
@@ -60,7 +61,7 @@ public class OperationInvocationDispatcher {
      *
      * @param report the report to process.
      */
-    public void dispatchReport(OperationInvokedReport report) {
+    public synchronized void dispatchReport(OperationInvokedReport report) {
         report.getReportPart().forEach(this::dispatchReport);
     }
 
@@ -88,7 +89,7 @@ public class OperationInvocationDispatcher {
         }
     }
 
-    private synchronized void dispatchReport(OperationInvokedReport.ReportPart reportPart) {
+    private void dispatchReport(OperationInvokedReport.ReportPart reportPart) {
 
         final long transactionId = reportPart.getInvocationInfo().getTransactionId();
 
@@ -133,12 +134,16 @@ public class OperationInvocationDispatcher {
     }
 
     private void sanitizeAwaitingTransactions() {
-        awaitingTransactions.forEach((transactionId, start) -> {
-            final Instant finish = Instant.now();
-            if (Duration.between(start, finish).compareTo(awaitingTransactionTimeout) > 0) {
-                awaitingTransactions.remove(transactionId);
-                pendingReports.remove(transactionId);
-            }
-        });
+        final Instant finish = Instant.now();
+        // find transactions that timed out
+        final var toRemove = awaitingTransactions.entrySet()
+            .stream()
+            .filter(entry -> Duration.between(entry.getValue(), finish).compareTo(awaitingTransactionTimeout) > 0)
+            .map(Map.Entry::getKey)
+            .collect(Collectors.toList());
+
+        // remove timed out operations
+        toRemove.forEach(awaitingTransactions.keySet()::remove);
+        toRemove.forEach(runningTransactions.keySet()::remove);
     }
 }
