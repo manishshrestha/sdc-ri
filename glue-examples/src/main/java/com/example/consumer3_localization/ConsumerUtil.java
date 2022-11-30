@@ -60,12 +60,7 @@ class ConsumerUtil extends BaseUtil {
                 new DefaultBicepsModule(),
                 new DefaultBicepsConfigModule(),
                 new DefaultCommonModule(),
-                Modules.override(new DefaultDpwsModule()).with(new AbstractModule() {
-                    @Override
-                    protected void configure() {
-                        bind(CommunicationLog.class).to(CommunicationLogImpl.class).asEagerSingleton();
-                    }
-                }),
+                new DefaultDpwsModule(),
                 new GlueDpwsConfigModule() {
                     @Override
                     protected void customConfigure() {
