@@ -140,16 +140,23 @@ public class HostingServiceResolver {
             RequestResponseClient rrClient = null;
             SoapMessage transferGetResponse = null;
             String activeXAddr = null;
+            ListenableFuture<SoapMessage> transferGetResponseFuture = null;
             for (String xAddr : discoveredDevice.getXAddrs()) {
                 try {
                     activeXAddr = xAddr;
                     var commLog = communicationLogFactory.createCommunicationLog(
-                            new CommunicationLogContext(discoveredDevice.getEprAddress()));
+                        new CommunicationLogContext(discoveredDevice.getEprAddress()));
                     rrClient = createRequestResponseClient(activeXAddr, commLog);
-                    transferGetResponse = transferGetClient.sendTransferGet(rrClient, xAddr)
-                            .get(maxWaitForFutures.toMillis(), TimeUnit.MILLISECONDS);
+                    transferGetResponseFuture = transferGetClient.sendTransferGet(rrClient, xAddr);
+                    transferGetResponse = transferGetResponseFuture
+                        .get(maxWaitForFutures.toMillis(), TimeUnit.MILLISECONDS);
                     break;
-                } catch (InterruptedException | ExecutionException | TimeoutException | CancellationException e) {
+                } catch (TimeoutException e) {
+                    instanceLogger.debug("TransferGet to {} failed after {}s", xAddr, maxWaitForFutures.toSeconds(), e);
+                    if (transferGetResponseFuture != null) {
+                        transferGetResponseFuture.cancel(true);
+                    }
+                } catch (InterruptedException | ExecutionException | CancellationException e) {
                     instanceLogger.debug("TransferGet to {} failed", xAddr, e);
                 }
             }
@@ -306,14 +313,19 @@ public class HostingServiceResolver {
                 new CommunicationLogContext(endpointAddress));
 
         for (EndpointReferenceType eprType : host.getEndpointReference()) {
+            ListenableFuture<SoapMessage> getMetadataResponseFuture = null;
             try {
                 activeHostedServiceEprAddress = eprType.getAddress().getValue();
                 rrClient = createRequestResponseClient(activeHostedServiceEprAddress, commLog);
-                getMetadataResponse = getMetadataClient.sendGetMetadata(rrClient)
+                getMetadataResponseFuture = getMetadataClient.sendGetMetadata(rrClient);
+                getMetadataResponse = getMetadataResponseFuture
                         .get(maxWaitForFutures.toMillis(), TimeUnit.MILLISECONDS);
                 break;
             } catch (InterruptedException | ExecutionException | TimeoutException | CancellationException e) {
                 instanceLogger.info("GetMetadata to {} failed", eprType.getAddress().getValue(), e);
+                if (getMetadataResponseFuture != null) {
+                    getMetadataResponseFuture.cancel(true);
+                }
             }
         }
 

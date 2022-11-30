@@ -358,12 +358,24 @@ public class SdcRemoteDevicesConnectorImpl extends AbstractIdleService
 
             try {
                 subscribeResults.put(serviceId, subscribeResult.get(responseWaitingTime.toSeconds(), TimeUnit.SECONDS));
-            } catch (InterruptedException | ExecutionException | TimeoutException e) {
+            } catch (TimeoutException e) {
+                subscribeResult.cancel(true);
                 throw new PrerequisitesException(
-                        String.format("Subscribe request towards service with service id %s failed. " +
-                                        "Physical target address: %s",
+                    String.format(
+                        "Subscribe request towards service with service id %s failed after %ss. " +
+                            "Physical target address: %s",
+                        serviceId,
+                        responseWaitingTime.toSeconds(),
+                        hostedServiceProxy.getActiveEprAddress()
+                    ), e);
+            } catch (InterruptedException | ExecutionException e) {
+                throw new PrerequisitesException(
+                        String.format(
+                            "Subscribe request towards service with service id %s failed. " +
+                                "Physical target address: %s",
                                 serviceId,
-                                hostedServiceProxy.getActiveEprAddress()), e);
+                                hostedServiceProxy.getActiveEprAddress()
+                        ), e);
             }
         }
 

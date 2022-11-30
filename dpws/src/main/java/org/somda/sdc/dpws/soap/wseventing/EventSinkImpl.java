@@ -323,11 +323,17 @@ public class EventSinkImpl implements EventSink {
             final ListenableFuture<Object> future = unsubscribe(subscriptionManager.getSubscriptionId());
             try {
                 future.get(maxWaitForFutures.toSeconds(), TimeUnit.SECONDS);
-            } catch (InterruptedException | ExecutionException | TimeoutException e) {
+            } catch (InterruptedException | ExecutionException e) {
                 instanceLogger.warn("Subscription {} could not be unsubscribed. Ignore.",
                         subscriptionManager.getSubscriptionId());
                 instanceLogger.trace("Subscription {} could not be unsubscribed",
                         subscriptionManager.getSubscriptionId(), e);
+            } catch (TimeoutException e) {
+                instanceLogger.warn("Subscription {} could not be unsubscribed, timeout after {}s. Ignore.",
+                    subscriptionManager.getSubscriptionId(), maxWaitForFutures.toSeconds());
+                instanceLogger.trace("Subscription {} could not be unsubscribed, timeout after {}s",
+                    subscriptionManager.getSubscriptionId(), maxWaitForFutures.toSeconds(), e);
+                future.cancel(true);
             }
         }
     }

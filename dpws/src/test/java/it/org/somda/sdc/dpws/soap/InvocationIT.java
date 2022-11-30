@@ -35,6 +35,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -72,8 +73,14 @@ class InvocationIT {
         devicePeer.startAsync().awaitRunning();
         clientPeer.startAsync().awaitRunning();
 
-        hostingServiceProxy = clientPeer.getClient().connect(devicePeer.getEprAddress())
-                .get(MAX_WAIT_TIME.getSeconds(), TimeUnit.SECONDS);
+        var hostingServiceProxyFuture = clientPeer.getClient().connect(devicePeer.getEprAddress());
+        try {
+            hostingServiceProxy = hostingServiceProxyFuture.get(MAX_WAIT_TIME.getSeconds(), TimeUnit.SECONDS);
+        } catch (TimeoutException e) {
+            // cancel task on timeout
+            hostingServiceProxyFuture.cancel(true);
+            throw e;
+        }
     }
 
     @AfterEach

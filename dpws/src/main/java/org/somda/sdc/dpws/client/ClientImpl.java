@@ -214,9 +214,21 @@ public class ClientImpl extends AbstractIdleService implements Client, Service, 
                     throw new RuntimeException(String.format("Resolve of %s failed", eprAddress));
                 }
 
+                var connectFuture = connect(discoveredDevice);
                 try {
-                    hspFuture.set(connect(discoveredDevice).get(maxWaitForFutures.toMillis(), TimeUnit.MILLISECONDS));
-                } catch (InterruptedException | ExecutionException | TimeoutException | CancellationException e) {
+                    hspFuture.set(connectFuture.get(maxWaitForFutures.toMillis(), TimeUnit.MILLISECONDS));
+                } catch (TimeoutException e) {
+                    // cancel task on timeout
+                    connectFuture.cancel(true);
+                    instanceLogger.debug(
+                        "Connecting to {} timed out after {} seconds",
+                        eprAddress, maxWaitForFutures.toSeconds(), e
+                    );
+                    throw new RuntimeException(
+                        String.format("Connect of %s timed out after %s seconds",
+                            eprAddress, maxWaitForFutures.toSeconds()
+                        ));
+                } catch (InterruptedException | ExecutionException | CancellationException e) {
                     instanceLogger.debug("Connecting to {} failed", eprAddress, e);
                     throw new RuntimeException(String.format("Connect of %s failed", eprAddress));
                 }
