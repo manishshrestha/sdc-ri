@@ -365,7 +365,11 @@ public class Consumer {
             List<String> targetXAddrs = xAddrs.get(MAX_WAIT_SEC, TimeUnit.SECONDS).getXAddrs();
             d = xAddrs.get();
             resultMap.put(1, true);
-        } catch (InterruptedException | TimeoutException | ExecutionException e) {
+        } catch (TimeoutException e) {
+            xAddrs.cancel(true);
+            LOG.error("Couldn't find target with EPR {} after {}s", targetEpr, MAX_WAIT_SEC, e);
+            System.exit(1);
+        } catch (InterruptedException | ExecutionException e) {
             LOG.error("Couldn't find target with EPR {}", targetEpr, e);
             System.exit(1);
         }
@@ -378,7 +382,11 @@ public class Consumer {
         try {
             hostingServiceProxy = hostingServiceFuture.get(MAX_WAIT_SEC, TimeUnit.SECONDS);
             resultMap.put(2, true);
-        } catch (InterruptedException | TimeoutException | ExecutionException e) {
+        } catch (TimeoutException e) {
+            xAddrs.cancel(true);
+            LOG.error("Couldn't connect to EPR {} after {}s", targetEpr, MAX_WAIT_SEC, e);
+            System.exit(1);
+        } catch (InterruptedException | ExecutionException e) {
             LOG.error("Couldn't connect to EPR {}", targetEpr, e);
             System.exit(1);
         }
@@ -397,18 +405,22 @@ public class Consumer {
         }
 
         LOG.info("Attaching to remote mdib and subscriptions for {}", targetEpr);
-        ListenableFuture<SdcRemoteDevice> remoteDeviceFuture;
+        ListenableFuture<SdcRemoteDevice> remoteDeviceFuture = null;
         SdcRemoteDevice sdcRemoteDevice = null;
         try {
             remoteDeviceFuture = consumer.getConnector()
-                    .connect(
-                            hostingServiceProxy,
-                            ConnectConfiguration.create(ConnectConfiguration.ALL_EPISODIC_AND_WAVEFORM_REPORTS)
-                    );
+                .connect(
+                    hostingServiceProxy,
+                    ConnectConfiguration.create(ConnectConfiguration.ALL_EPISODIC_AND_WAVEFORM_REPORTS)
+                );
             sdcRemoteDevice = remoteDeviceFuture.get(MAX_WAIT_SEC, TimeUnit.SECONDS);
             resultMap.put(3, true);
             resultMap.put(4, true);
-        } catch (PrerequisitesException | InterruptedException | ExecutionException | TimeoutException e) {
+        } catch (TimeoutException e) {
+            remoteDeviceFuture.cancel(true);
+            LOG.error("Couldn't attach to remote mdib and subscriptions for {} after {}s", targetEpr, MAX_WAIT_SEC, e);
+            System.exit(1);
+        } catch (PrerequisitesException | InterruptedException | ExecutionException e) {
             LOG.error("Couldn't attach to remote mdib and subscriptions for {}", targetEpr, e);
             System.exit(1);
         }

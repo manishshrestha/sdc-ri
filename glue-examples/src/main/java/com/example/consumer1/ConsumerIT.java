@@ -136,7 +136,11 @@ public class ConsumerIT {
 
         try {
             return targetEpr.get(MAX_WAIT.toSeconds(), TimeUnit.SECONDS);
-        } catch (InterruptedException | TimeoutException | ExecutionException e) {
+        } catch (TimeoutException e) {
+            targetEpr.cancel(true);
+            LOG.error("Couldn't find target with location {} after {}s", location, MAX_WAIT.toSeconds(), e);
+            fail(String.format("Couldn't find target with location %s after %s", location, MAX_WAIT.toSeconds()), e);
+        } catch (InterruptedException | ExecutionException e) {
             LOG.error("Couldn't find target with location {}", location, e);
             fail("Couldn't find target with location " + location, e);
         } finally {
@@ -153,7 +157,10 @@ public class ConsumerIT {
         HostingServiceProxy hostingServiceProxy = null;
         try {
             hostingServiceProxy = hostingServiceFuture.get(MAX_WAIT.toSeconds(), TimeUnit.SECONDS);
-        } catch (InterruptedException | TimeoutException | ExecutionException e) {
+        } catch (TimeoutException e) {
+            LOG.error("Couldn't connect to EPR {} after {}s", targetEpr, MAX_WAIT.toSeconds(), e);
+            fail(String.format("Couldn't connect to EPR %s after %ss", targetEpr, MAX_WAIT.toSeconds()), e);
+        } catch (InterruptedException | ExecutionException e) {
             LOG.error("Couldn't connect to EPR {}", targetEpr, e);
             fail("Couldn't connect to EPR " + targetEpr, e);
         }
@@ -162,16 +169,20 @@ public class ConsumerIT {
 
     SdcRemoteDevice connectMdibAndSubscribe(Consumer consumer, HostingServiceProxy hostingServiceProxy) {
         LOG.info("Attaching to remote mdib and subscriptions");
-        ListenableFuture<SdcRemoteDevice> remoteDeviceFuture;
+        ListenableFuture<SdcRemoteDevice> remoteDeviceFuture = null;
         SdcRemoteDevice sdcRemoteDevice = null;
         try {
             remoteDeviceFuture = consumer.getConnector()
-                    .connect(
-                            hostingServiceProxy,
-                            ConnectConfiguration.create(ConnectConfiguration.ALL_EPISODIC_AND_WAVEFORM_REPORTS)
-                    );
+                .connect(
+                    hostingServiceProxy,
+                    ConnectConfiguration.create(ConnectConfiguration.ALL_EPISODIC_AND_WAVEFORM_REPORTS)
+                );
             sdcRemoteDevice = remoteDeviceFuture.get(MAX_WAIT.toSeconds(), TimeUnit.SECONDS);
-        } catch (PrerequisitesException | InterruptedException | ExecutionException | TimeoutException e) {
+        } catch (TimeoutException e) {
+            remoteDeviceFuture.cancel(true);
+            LOG.error("Couldn't attach to remote mdib and subscriptions after {}s", MAX_WAIT.toSeconds(), e);
+            fail(String.format("Couldn't attach to remote mdib and subscriptions after %ss", MAX_WAIT.toSeconds()), e);
+        } catch (PrerequisitesException | InterruptedException | ExecutionException e) {
             LOG.error("Couldn't attach to remote mdib and subscriptions", e);
             fail("Couldn't attach to remote mdib and subscriptions", e);
         }

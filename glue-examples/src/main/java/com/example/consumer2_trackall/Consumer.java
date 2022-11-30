@@ -171,19 +171,25 @@ public class Consumer extends AbstractIdleService {
             var hostingServiceFuture = client.connect(consumerUtil.getEpr());
             try {
                 hostingServiceProxy = hostingServiceFuture.get(MAX_WAIT_SEC, TimeUnit.SECONDS);
-            } catch (InterruptedException | TimeoutException | ExecutionException e) {
+            } catch (TimeoutException e) {
+                LOG.warn("Explicit discovery failed after {}s. Waiting for device to join the network.", MAX_WAIT_SEC, e);
+                return;
+            } catch (InterruptedException | ExecutionException e) {
                 LOG.warn("Explicit discovery failed. Waiting for device to join the network.", e);
                 return;
             }
 
             try {
                 var remoteDeviceFuture = connector
-                        .connect(
-                                hostingServiceProxy,
-                                ConnectConfiguration.create(ConnectConfiguration.ALL_EPISODIC_AND_WAVEFORM_REPORTS)
-                        );
+                    .connect(
+                        hostingServiceProxy,
+                        ConnectConfiguration.create(ConnectConfiguration.ALL_EPISODIC_AND_WAVEFORM_REPORTS)
+                    );
                 sdcRemoteDevice = remoteDeviceFuture.get(MAX_WAIT_SEC, TimeUnit.SECONDS);
-            } catch (PrerequisitesException | InterruptedException | ExecutionException | TimeoutException e) {
+            } catch (TimeoutException e) {
+                LOG.error("Couldn't attach to remote MDIB and subscriptions for {} after {}s", consumerUtil.getEpr(), MAX_WAIT_SEC, e);
+                System.exit(1);
+            } catch (PrerequisitesException | InterruptedException | ExecutionException e) {
                 LOG.error("Couldn't attach to remote MDIB and subscriptions for {}", consumerUtil.getEpr(), e);
                 System.exit(1);
             }
