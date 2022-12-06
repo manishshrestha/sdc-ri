@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.0.0] - 2022-12-06
+
 ### Added
 
 - `org.somda.sdc.dpws.DpwsConfig#MULTICAST_TTL`: configuration parameter to set the time-to-live for outgoing multicast packets. (#240)
