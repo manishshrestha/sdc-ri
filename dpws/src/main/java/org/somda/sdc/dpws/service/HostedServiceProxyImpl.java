@@ -3,7 +3,6 @@ package org.somda.sdc.dpws.service;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
-import org.somda.sdc.common.util.ObjectUtil;
 import org.somda.sdc.dpws.guice.ClientSpecific;
 import org.somda.sdc.dpws.model.HostedServiceType;
 import org.somda.sdc.dpws.soap.NotificationSink;
@@ -29,7 +28,6 @@ import java.util.List;
 public class HostedServiceProxyImpl implements HostedServiceProxy, EventSinkAccess {
 
     private final EventSink eventSink;
-    private final ObjectUtil objectUtil;
     private final NotificationSinkFactory notificationSinkFactory;
     private final WsAddressingServerInterceptor wsAddressingServerInterceptor;
 
@@ -42,21 +40,19 @@ public class HostedServiceProxyImpl implements HostedServiceProxy, EventSinkAcce
                            @Assisted RequestResponseClient requestResponseClient,
                            @Assisted String activeEprAddress,
                            @Assisted EventSink eventSink,
-                           ObjectUtil objectUtil,
                            NotificationSinkFactory notificationSinkFactory,
                            @ClientSpecific WsAddressingServerInterceptor wsAddressingServerInterceptor) {
         this.eventSink = eventSink;
-        this.objectUtil = objectUtil;
         this.notificationSinkFactory = notificationSinkFactory;
         this.wsAddressingServerInterceptor = wsAddressingServerInterceptor;
-        this.hostedServiceType = objectUtil.deepCopy(hostedServiceType);
+        this.hostedServiceType = hostedServiceType.createCopy();
         this.requestResponseClient = requestResponseClient;
         this.activeEprAddress = activeEprAddress;
     }
 
     @Override
     public HostedServiceType getType() {
-        return objectUtil.deepCopy(hostedServiceType);
+        return hostedServiceType.createCopy();
     }
 
     @Override

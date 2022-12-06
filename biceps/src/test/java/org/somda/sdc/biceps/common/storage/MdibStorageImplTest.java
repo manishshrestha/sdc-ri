@@ -427,8 +427,8 @@ class MdibStorageImplTest {
         {
             // Check that parent MDS appears in updated list
             var modifications = MdibDescriptionModifications.create()
-                    .insert(MockModelFactory.createDescriptor(Handles.VMD_1, mock(BigInteger.class), VmdDescriptor.class),
-                            MockModelFactory.createState(Handles.VMD_1, mock(BigInteger.class), VmdState.class),
+                    .insert(MockModelFactory.createDescriptor(Handles.VMD_1, BigInteger.ZERO, VmdDescriptor.class),
+                            MockModelFactory.createState(Handles.VMD_1, BigInteger.ZERO, VmdState.class),
                             Handles.MDS_0);
             var result = mdibStorage.apply(mock(MdibVersion.class), mock(BigInteger.class), mock(BigInteger.class), modifications);
 
@@ -441,11 +441,11 @@ class MdibStorageImplTest {
         {
             // Check that parent VMD does not appear twice in updated list
             var modifications = MdibDescriptionModifications.create()
-                    .insert(MockModelFactory.createDescriptor(Handles.CHANNEL_2, mock(BigInteger.class), ChannelDescriptor.class),
-                            MockModelFactory.createState(Handles.CHANNEL_2, mock(BigInteger.class), ChannelState.class),
+                    .insert(MockModelFactory.createDescriptor(Handles.CHANNEL_2, BigInteger.ZERO, ChannelDescriptor.class),
+                            MockModelFactory.createState(Handles.CHANNEL_2, BigInteger.ZERO, ChannelState.class),
                             Handles.VMD_0)
-                    .update(MockModelFactory.createDescriptor(Handles.VMD_0, mock(BigInteger.class), MdsDescriptor.class),
-                            MockModelFactory.createState(Handles.VMD_0, mock(BigInteger.class), MdsState.class));
+                    .update(MockModelFactory.createDescriptor(Handles.VMD_0, BigInteger.ZERO, MdsDescriptor.class),
+                            MockModelFactory.createState(Handles.VMD_0, BigInteger.ZERO, MdsState.class));
             var result = mdibStorage.apply(mock(MdibVersion.class), mock(BigInteger.class), mock(BigInteger.class), modifications);
 
             assertEquals(1, result.getInsertedEntities().size());
@@ -457,11 +457,11 @@ class MdibStorageImplTest {
         {
             // Check that existing parent VMD does not appear twice in updated list
             var modifications = MdibDescriptionModifications.create()
-                    .insert(MockModelFactory.createDescriptor(Handles.CHANNEL_2, mock(BigInteger.class), ChannelDescriptor.class),
-                            MockModelFactory.createState(Handles.CHANNEL_2, mock(BigInteger.class), ChannelState.class),
+                    .insert(MockModelFactory.createDescriptor(Handles.CHANNEL_2, BigInteger.ZERO, ChannelDescriptor.class),
+                            MockModelFactory.createState(Handles.CHANNEL_2, BigInteger.ZERO, ChannelState.class),
                             Handles.VMD_0)
-                    .update(MockModelFactory.createDescriptor(Handles.VMD_0, mock(BigInteger.class), MdsDescriptor.class),
-                            MockModelFactory.createState(Handles.VMD_0, mock(BigInteger.class), MdsState.class));
+                    .update(MockModelFactory.createDescriptor(Handles.VMD_0, BigInteger.ZERO, MdsDescriptor.class),
+                            MockModelFactory.createState(Handles.VMD_0, BigInteger.ZERO, MdsState.class));
             var result = mdibStorage.apply(mock(MdibVersion.class), mock(BigInteger.class), mock(BigInteger.class), modifications);
 
             assertEquals(1, result.getInsertedEntities().size());
@@ -474,11 +474,11 @@ class MdibStorageImplTest {
             // Check that inserted parent VMD does not appear in updated list (it is sufficient to add it to the
             // insertedEntities list
             var modifications = MdibDescriptionModifications.create()
-                    .insert(MockModelFactory.createDescriptor(Handles.VMD_2, mock(BigInteger.class), VmdDescriptor.class),
-                            MockModelFactory.createState(Handles.VMD_2, mock(BigInteger.class), VmdState.class),
+                    .insert(MockModelFactory.createDescriptor(Handles.VMD_2, BigInteger.ZERO, VmdDescriptor.class),
+                            MockModelFactory.createState(Handles.VMD_2, BigInteger.ZERO, VmdState.class),
                             Handles.MDS_0)
-                    .insert(MockModelFactory.createDescriptor(Handles.CHANNEL_3, mock(BigInteger.class), ChannelDescriptor.class),
-                            MockModelFactory.createState(Handles.CHANNEL_3, mock(BigInteger.class), ChannelState.class),
+                    .insert(MockModelFactory.createDescriptor(Handles.CHANNEL_3, BigInteger.ZERO, ChannelDescriptor.class),
+                            MockModelFactory.createState(Handles.CHANNEL_3, BigInteger.ZERO, ChannelState.class),
                             Handles.VMD_2);
             var result = mdibStorage.apply(mock(MdibVersion.class), mock(BigInteger.class), mock(BigInteger.class), modifications);
 

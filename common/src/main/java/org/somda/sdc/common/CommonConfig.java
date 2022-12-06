@@ -14,5 +14,4 @@ public class CommonConfig {
      * </ul>
      */
     public static final String INSTANCE_IDENTIFIER = "Common.InstanceIdentifier";
-
 }

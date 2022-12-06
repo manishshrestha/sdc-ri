@@ -29,6 +29,11 @@ public class DuplicateContextStateHandleHandler implements StatePreprocessingSeg
 
     @Override
     public void beforeFirstModification(MdibStateModifications modifications, MdibStorage mdibStorage) {
+        // this check is only necessary for context changes
+        if (modifications.getChangeType() != MdibStateModifications.Type.CONTEXT) {
+            return;
+        }
+
         allContextStates = new HashMap<>();
         for (var state : mdibStorage.getStatesByType(AbstractMultiState.class)) {
             allContextStates.put(state.getHandle(), state);
@@ -38,6 +43,10 @@ public class DuplicateContextStateHandleHandler implements StatePreprocessingSeg
     @Override
     public void process(MdibStateModifications modifications, AbstractState modification, MdibStorage storage)
             throws DuplicateContextStateHandleException {
+        // this check is only necessary for context changes
+        if (modifications.getChangeType() != MdibStateModifications.Type.CONTEXT) {
+            return;
+        }
 
         final Optional<AbstractMultiState> multiState = typeValidator.toMultiState(modification);
         if (multiState.isPresent()) {

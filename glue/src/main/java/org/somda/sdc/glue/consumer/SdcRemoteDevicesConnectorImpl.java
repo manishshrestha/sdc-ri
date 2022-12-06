@@ -50,6 +50,8 @@ import org.somda.sdc.glue.consumer.event.WatchdogMessage;
 import org.somda.sdc.glue.consumer.factory.SdcRemoteDeviceFactory;
 import org.somda.sdc.glue.consumer.factory.SdcRemoteDeviceWatchdogFactory;
 import org.somda.sdc.glue.consumer.helper.HostingServiceLogger;
+import org.somda.sdc.glue.consumer.localization.LocalizationServiceProxy;
+import org.somda.sdc.glue.consumer.localization.factory.LocalizationServiceProxyFactory;
 import org.somda.sdc.glue.consumer.report.ReportProcessingException;
 import org.somda.sdc.glue.consumer.report.ReportProcessor;
 import org.somda.sdc.glue.consumer.sco.ScoController;
@@ -84,6 +86,7 @@ public class SdcRemoteDevicesConnectorImpl extends AbstractIdleService
     private final Logger instanceLogger;
     private final Provider<ReportProcessor> reportProcessorProvider;
     private final ScoControllerFactory scoControllerFactory;
+    private final LocalizationServiceProxyFactory localizationServiceProxyFactory;
     private final Duration requestedExpires;
     private final Duration responseWaitingTime;
     private final SoapUtil soapUtil;
@@ -101,6 +104,7 @@ public class SdcRemoteDevicesConnectorImpl extends AbstractIdleService
                                   EventBus eventBus,
                                   Provider<ReportProcessor> reportProcessorProvider,
                                   ScoControllerFactory scoControllerFactory,
+                                  LocalizationServiceProxyFactory localizationServiceProxyFactory,
                                   @Named(ConsumerConfig.REQUESTED_EXPIRES) Duration requestedExpires,
                                   @Named(DpwsConfig.MAX_WAIT_FOR_FUTURES) Duration responseWaitingTime,
                                   SoapUtil soapUtil,
@@ -118,6 +122,7 @@ public class SdcRemoteDevicesConnectorImpl extends AbstractIdleService
         this.eventBus = eventBus;
         this.reportProcessorProvider = reportProcessorProvider;
         this.scoControllerFactory = scoControllerFactory;
+        this.localizationServiceProxyFactory = localizationServiceProxyFactory;
         this.requestedExpires = requestedExpires;
         this.responseWaitingTime = responseWaitingTime;
         this.soapUtil = soapUtil;
@@ -156,7 +161,7 @@ public class SdcRemoteDevicesConnectorImpl extends AbstractIdleService
                 tempLog.info("Start connecting");
                 ReportProcessor reportProcessor = createReportProcessor();
                 Optional<ScoController> scoController = createScoController(hostingServiceProxy);
-
+                LocalizationServiceProxy localizationServiceProxy = createLocalizationServiceProxy(hostingServiceProxy);
                 // Map<ServiceId, SubscribeResult>
                 // use these later for watchdog, which is in charge of automatic renew
                 final Map<String, SubscribeResult> subscribeResults = subscribeServices(hostingServiceProxy,
@@ -188,7 +193,8 @@ public class SdcRemoteDevicesConnectorImpl extends AbstractIdleService
                         mdibAccess,
                         reportProcessor,
                         scoController.orElse(null),
-                        watchdog);
+                        watchdog,
+                        localizationServiceProxy);
                 sdcRemoteDevice.startAsync().awaitRunning();
                 tempLog.info("Remote device is running");
 
@@ -241,6 +247,20 @@ public class SdcRemoteDevicesConnectorImpl extends AbstractIdleService
 
         return Optional.of(scoControllerFactory.createScoController(
                 hostingServiceProxy, setServiceProxy, contextServiceProxy));
+    }
+
+    private LocalizationServiceProxy createLocalizationServiceProxy(HostingServiceProxy hostingServiceProxy) {
+
+        HostedServiceProxy localizationServiceProxy = null;
+        try {
+            localizationServiceProxy = findHostedServiceProxy(hostingServiceProxy,
+                    WsdlConstants.PORT_TYPE_LOCALIZATION_QNAME);
+
+        } catch (PrerequisitesException e) {
+            // ignore in case localization service is not provided
+        }
+        return localizationServiceProxyFactory.createLocalizationServiceProxy(hostingServiceProxy,
+                localizationServiceProxy);
     }
 
     @Override
@@ -338,12 +358,24 @@ public class SdcRemoteDevicesConnectorImpl extends AbstractIdleService
 
             try {
                 subscribeResults.put(serviceId, subscribeResult.get(responseWaitingTime.toSeconds(), TimeUnit.SECONDS));
-            } catch (InterruptedException | ExecutionException | TimeoutException e) {
+            } catch (TimeoutException e) {
+                subscribeResult.cancel(true);
                 throw new PrerequisitesException(
-                        String.format("Subscribe request towards service with service id %s failed. " +
-                                        "Physical target address: %s",
+                    String.format(
+                        "Subscribe request towards service with service id %s failed after %ss. " +
+                            "Physical target address: %s",
+                        serviceId,
+                        responseWaitingTime.toSeconds(),
+                        hostedServiceProxy.getActiveEprAddress()
+                    ), e);
+            } catch (InterruptedException | ExecutionException e) {
+                throw new PrerequisitesException(
+                        String.format(
+                            "Subscribe request towards service with service id %s failed. " +
+                                "Physical target address: %s",
                                 serviceId,
-                                hostedServiceProxy.getActiveEprAddress()), e);
+                                hostedServiceProxy.getActiveEprAddress()
+                        ), e);
             }
         }
 

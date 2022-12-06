@@ -3,7 +3,6 @@ package org.somda.sdc.dpws.service;
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
 import org.somda.sdc.common.util.ObjectStringifier;
-import org.somda.sdc.common.util.ObjectUtil;
 import org.somda.sdc.common.util.Stringified;
 import org.somda.sdc.dpws.model.ThisDeviceType;
 import org.somda.sdc.dpws.model.ThisModelType;
@@ -22,12 +21,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * Default implementation of {@linkplain HostingServiceProxy}.
  */
 public class HostingServiceProxyImpl implements HostingServiceProxy {
-    private final ObjectUtil objectUtil;
 
     private final RequestResponseClient requestResponseClient;
     @Stringified
@@ -48,17 +47,15 @@ public class HostingServiceProxyImpl implements HostingServiceProxy {
                             @Assisted Map<String, HostedServiceProxy> hostedServices,
                             @Assisted long metadataVersion,
                             @Assisted RequestResponseClient requestResponseClient,
-                            @Assisted("activeXAddr") String activeXAddr,
-                            ObjectUtil objectUtil) {
+                            @Assisted("activeXAddr") String activeXAddr) {
         this.metadataVersion = metadataVersion;
         this.requestResponseClient = requestResponseClient;
         this.activeXAddr = activeXAddr;
-        this.objectUtil = objectUtil;
         this.hostedServices = new HashMap<>(hostedServices);
-        this.endpointReferenceAddress = objectUtil.deepCopy(endpointReferenceAddress);
-        this.types = objectUtil.deepCopy(types);
-        this.thisDevice = objectUtil.deepCopy(thisDevice);
-        this.thisModel = objectUtil.deepCopy(thisModel);
+        this.endpointReferenceAddress = endpointReferenceAddress;
+        this.types = cloneQNames(types);
+        this.thisDevice = thisDevice != null ? thisDevice.createCopy() : null;
+        this.thisModel = thisModel != null ? thisModel.createCopy() : null;
     }
 
     @Override
@@ -68,17 +65,17 @@ public class HostingServiceProxyImpl implements HostingServiceProxy {
 
     @Override
     public List<QName> getTypes() {
-        return objectUtil.deepCopy(types);
+        return cloneQNames(types);
     }
 
     @Override
     public synchronized Optional<ThisModelType> getThisModel() {
-        return Optional.ofNullable(objectUtil.deepCopy(thisModel));
+        return Optional.ofNullable(thisModel != null ? thisModel.createCopy() : null);
     }
 
     @Override
     public synchronized Optional<ThisDeviceType> getThisDevice() {
-        return Optional.ofNullable(objectUtil.deepCopy(thisDevice));
+        return Optional.ofNullable(thisDevice != null ? thisDevice.createCopy() : null);
     }
 
     @Override
@@ -115,5 +112,11 @@ public class HostingServiceProxyImpl implements HostingServiceProxy {
     @Override
     public String toString() {
         return ObjectStringifier.stringify(this);
+    }
+
+    private List<QName> cloneQNames(List<QName> qNames) {
+        return qNames.stream()
+                .map(qName -> new QName(qName.getNamespaceURI(), qName.getLocalPart(), qName.getPrefix()))
+                .collect(Collectors.toList());
     }
 }

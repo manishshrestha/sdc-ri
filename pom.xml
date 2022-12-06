@@ -5,7 +5,7 @@
     <groupId>org.somda.sdc</groupId>
     <artifactId>sdc-ri</artifactId>
     <packaging>pom</packaging>
-    <version>2.0.0</version>
+    <version>3.0.0</version>
 
     <name>SDC Reference Implementation</name>
     <description>
@@ -38,7 +38,7 @@
         <connection>scm:git:git://gitlab.com/sdc-suite/sdc-ri.git</connection>
         <developerConnection>scm:git:git://gitlab.com/sdc-suite/sdc-ri.git</developerConnection>
         <url>https://gitlab.com/sdc-suite/sdc-ri/-/tree/develop</url>
-      <tag>sdc-ri-2.0.0</tag>
+      <tag>sdc-ri-3.0.0</tag>
   </scm>
 
     <modules>
@@ -56,11 +56,21 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <jaxbBasicsVersion>0.12.0</jaxbBasicsVersion>
-        <log4j2Version>2.17.2</log4j2Version>
-        <bouncyCastleVersion>1.66</bouncyCastleVersion>
+        <jaxbBasicsVersion>0.13.1</jaxbBasicsVersion>
+        <log4j2Version>2.19.0</log4j2Version>
+        <bouncyCastleVersion>1.70</bouncyCastleVersion>
         <junitVersion>5.8.2</junitVersion>
         <junitPlatformVersion>1.8.2</junitPlatformVersion>
+        <jaxbImplVersion>2.3.6</jaxbImplVersion>
+        <jaxbRuntimeVersion>2.3.6</jaxbRuntimeVersion>
+        <jaxbCoreVersion>2.3.0.1</jaxbCoreVersion>
+        <jaxbApiVersion>2.3.1</jaxbApiVersion>
+        <jaxb2MavenPluginVersion>0.15.1</jaxb2MavenPluginVersion>
+        <jaxbThreetenCoreVersion>1.2</jaxbThreetenCoreVersion>
+        <jaxbBuildHelperMavenPluginVersion>3.3.0</jaxbBuildHelperMavenPluginVersion>
+        <mavenJarPluginVersion>3.2.2</mavenJarPluginVersion>
+        <mavenCompilerPluginVersion>3.10.1</mavenCompilerPluginVersion>
+        <guiceVersion>5.1.0</guiceVersion>
     </properties>
 
     <build>
@@ -69,7 +79,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.8.1</version>
+                <version>${mavenCompilerPluginVersion}</version>
                 <configuration>
                     <release>11</release>
                 </configuration>
@@ -92,7 +102,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
-                <version>3.3.0</version>
+                <version>3.4.0</version>
                 <configuration>
                     <source>11</source>
                     <javadocExecutable>${java.home}/bin/javadoc</javadocExecutable>
@@ -103,6 +113,9 @@
                         <goals>
                             <goal>jar</goal>
                         </goals>
+                        <configuration>
+                            <additionalOptions>-Xdoclint:none</additionalOptions>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>
@@ -114,7 +127,7 @@
 
             <plugin>
                 <artifactId>maven-site-plugin</artifactId>
-                <version>3.8.2</version>
+                <version>3.12.0</version>
             </plugin>
 
             <plugin>
@@ -138,7 +151,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
-                <version>3.2.0</version>
+                <version>${mavenJarPluginVersion}</version>
                 <configuration>
                     <archive>
                         <manifest>
@@ -165,7 +178,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-release-plugin</artifactId>
-                <version>3.0.0-M1</version>
+                <version>3.0.0-M6</version>
                 <configuration>
                     <pushChanges>false</pushChanges>
                 </configuration>
@@ -177,13 +190,13 @@
                 <plugin>
                     <groupId>com.github.spotbugs</groupId>
                     <artifactId>spotbugs-maven-plugin</artifactId>
-                    <version>4.5.0</version>
+                    <version>4.7.0.0</version>
                     <dependencies>
                         <!-- overwrite dependency on spotbugs if you want to specify the version of spotbugs -->
                         <dependency>
                             <groupId>com.github.spotbugs</groupId>
                             <artifactId>spotbugs</artifactId>
-                            <version>4.5.1</version>
+                            <version>4.7.1</version>
                         </dependency>
                     </dependencies>
                     <configuration>
@@ -195,7 +208,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-checkstyle-plugin</artifactId>
-                    <version>3.1.1</version>
+                    <version>3.1.2</version>
                     <configuration>
                         <configLocation>checkstyle.xml</configLocation>
                         <consoleOutput>true</consoleOutput>
@@ -279,10 +292,10 @@
             <version>${log4j2Version}</version>
             <scope>test</scope>
         </dependency>
-        <!-- https://mvnrepository.com/artifact/org.apache.logging.log4j/log4j-slf4j18-impl -->
+        <!-- https://mvnrepository.com/artifact/org.apache.logging.log4j/log4j-slf4j2-impl -->
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-slf4j18-impl</artifactId>
+            <artifactId>log4j-slf4j2-impl</artifactId>
             <version>${log4j2Version}</version>
             <scope>test</scope>
         </dependency>
@@ -290,19 +303,19 @@
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
-            <version>31.0.1-jre</version>
+            <version>31.1-jre</version>
         </dependency>
         <!-- https://mvnrepository.com/artifact/com.google.inject/guice -->
         <dependency>
             <groupId>com.google.inject</groupId>
             <artifactId>guice</artifactId>
-            <version>5.0.1</version>
+            <version>${guiceVersion}</version>
         </dependency>
         <!-- https://mvnrepository.com/artifact/com.google.inject.extensions/guice-assistedinject -->
         <dependency>
             <groupId>com.google.inject.extensions</groupId>
             <artifactId>guice-assistedinject</artifactId>
-            <version>5.0.1</version>
+            <version>${guiceVersion}</version>
         </dependency>
         <!-- https://mvnrepository.com/artifact/com.google.code.findbugs/jsr305 -->
         <dependency>
@@ -335,7 +348,7 @@
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
-            <version>4.1.0</version>
+            <version>4.4.0</version>
             <scope>test</scope>
         </dependency>
         <!-- https://mvnrepository.com/artifact/org.hamcrest/hamcrest -->

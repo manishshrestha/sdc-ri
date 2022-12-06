@@ -11,6 +11,9 @@ import org.somda.sdc.biceps.common.event.ContextStateModificationMessage;
 import org.somda.sdc.biceps.common.event.MetricStateModificationMessage;
 import org.somda.sdc.biceps.common.event.OperationStateModificationMessage;
 import org.somda.sdc.biceps.common.event.WaveformStateModificationMessage;
+import org.somda.sdc.biceps.model.participant.AlertConditionState;
+
+import java.util.HashMap;
 
 /**
  * This class handles incoming reports on the provider.
@@ -21,8 +24,9 @@ import org.somda.sdc.biceps.common.event.WaveformStateModificationMessage;
 public class ConsumerReportProcessor implements MdibAccessObserver {
     private static final Logger LOG = LogManager.getLogger(ConsumerReportProcessor.class);
 
-    private long numMetricChanges = 0;
-    private long numConditionChanges = 0;
+
+    private final HashMap<String, Long> metricChanges = new HashMap<>();
+    private final HashMap<String, Long> conditionChanges = new HashMap<>();
 
     @Subscribe
     void onUpdate(AbstractMdibAccessMessage updates) {
@@ -33,13 +37,13 @@ public class ConsumerReportProcessor implements MdibAccessObserver {
     void onMetricChange(MetricStateModificationMessage modificationMessage) {
         LOG.info("onMetricChange");
         modificationMessage.getStates().forEach(
-                state -> {
-                    LOG.info(state.toString());
-                    if (state.getDescriptorHandle().equals(Constants.HANDLE_NUMERIC_DYNAMIC)) {
-                        numMetricChanges++;
-                        LOG.info("{} has changed", Constants.HANDLE_NUMERIC_DYNAMIC);
-                    }
-                }
+            state -> {
+                LOG.info(state.toString());
+                var stateHandle = state.getDescriptorHandle();
+                var current = metricChanges.getOrDefault(stateHandle, 0L);
+                metricChanges.put(stateHandle, ++current);
+                LOG.info("{} has changed", state.getDescriptorHandle());
+            }
         );
     }
 
@@ -56,12 +60,14 @@ public class ConsumerReportProcessor implements MdibAccessObserver {
     @Subscribe
     void onAlertChange(AlertStateModificationMessage modificationMessage) {
         LOG.info("onAlertChange");
-        modificationMessage.getStates().forEach(state -> {
-            if (state.getDescriptorHandle().equals(Constants.HANDLE_ALERT_CONDITION)) {
-                numConditionChanges++;
-                LOG.info("{} has changed", Constants.HANDLE_ALERT_CONDITION);
+        modificationMessage.getStates().stream().filter(it -> it instanceof AlertConditionState).forEach(
+            state -> {
+                var stateHandle = state.getDescriptorHandle();
+                var current = conditionChanges.getOrDefault(stateHandle, 0L);
+                conditionChanges.put(stateHandle, ++current);
+                LOG.info("{} has changed", state.getDescriptorHandle());
             }
-        });
+        );
     }
 
     @Subscribe
@@ -69,11 +75,11 @@ public class ConsumerReportProcessor implements MdibAccessObserver {
         LOG.info("onOperationChange");
     }
 
-    public long getNumMetricChanges() {
-        return numMetricChanges;
+    public HashMap<String, Long> getMetricChanges() {
+        return metricChanges;
     }
 
-    public long getNumConditionChanges() {
-        return numConditionChanges;
+    public HashMap<String, Long> getConditionChanges() {
+        return conditionChanges;
     }
 }

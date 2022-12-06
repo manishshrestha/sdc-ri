@@ -7,6 +7,38 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.0.0] - 2022-12-06
+
+### Added
+
+- `org.somda.sdc.dpws.DpwsConfig#MULTICAST_TTL`: configuration parameter to set the time-to-live for outgoing multicast packets. (#240)
+- `org.somda.sdc.glue.provider.localization` and `org.somda.sdc.glue.consumer.localization` packages to support Localization service. (#141)
+- Java 17 support. (#233)
+- Added `org.somda.sdc.biceps.common.CodedValueUtil` which enables comparisons of CodedValues according to BICEPS.
+- Support for `org.somda.sdc.dpws.CommunicationLogContext` to provide additional context information for communication logs on consumer side. (#221)
+
+### Changed
+
+- Replace `org.somda.sdc.common.util.ObjectUtil` using clone and copy provided by the `jaxb2-rich-contract-plugin`. (#224)
+- Reduced log level of network interface information on DPWS framework startup in `org.somda.sdc.dpws.DpwsFrameworkImpl`. (#245)
+- Avoid use of reflection in `org.somda.sdc.biceps.common.MdibTypeValidator` to improve performance. (#248)
+- `org.somda.sdc.dpws.soap.NotificationSink` throws `SoapFaultException`. (#252)
+
+### Removed
+
+- `org.somda.sdc.glue.common.helper.UrlUtf8` `.decode` and `.encode` methods (#247)
+
+### Fixed
+
+- `org.somda.sdc.dpws.soap.wsdiscovery.WsDiscoveryClientInterceptor` correctly handles multiple concurrent Probe or Resolve operations. (#243)
+- Removed useless host name resolution in `org.somda.sdc.dpws.udp.UdpBindingServiceImpl` causing delay on every SDCri stack start. (#246)
+- `org.somda.sdc.glue.common.helper.UrlUtf8` encoding did not follow RFC2398 or RFC3986 rules, queries could contain & which must be escaped. (#247)
+- `org.somda.sdc.glue.consumer.SdcRemoteDeviceWatchdog` EventBus could be interrupted by shutdown of watchdog. (#253)
+- `org.somda.sdc.glue.consumer.sco.helper.OperationInvocationDispatcher` concurrent modification in `sanitizeAwaitingTransactions` (#254)
+- Cancel futures if they raise TimeoutException. (#255)
+
+## [2.0.0] - 2022-03-17
+
 ### Added
 
 - `org.somda.sdc.common.util.AnyDateTime` and `org.somda.sdc.common.util.AnyDateTimeAdapter` to fully support XML Schema DateTime. (#151)
@@ -29,7 +61,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `org.somda.sdc.dpws.soap.TransportInfo.getRemoteNodeInfo()`  to retrieve a remote node's requested scheme, address 
   and port. (#208)
 - `org.somda.sdc.dpws.http.helper.HttpServerClientSelfTest` to perform HTTP server & client connection self-test 
-   and print certificate information during `DpwsFramework` startup. (#113) 
+   and print certificate information during `DpwsFramework` startup. (#113)
 - `org.somda.sdc.common.event.EventBus` as a replacement for `com.google.common.eventbus.EventBus` to support unregistering all observers at once. (#229)
 - `org.somda.sdc.glue.consumer.SdcRemoteDevicesConnector` method added to pass an `MdibAccessObserver` when connecting,
    to enable observing/reacting to the initial MDIB being fetched from the device. (#227)

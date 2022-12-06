@@ -126,24 +126,31 @@ public class DiscoveredDeviceResolver {
     }
 
     private Optional<ResolveMatchesType> sendResolve(EndpointReferenceType epr) {
+        ListenableFuture<ResolveMatchesType> resolveMatches = null;
         try {
-            ListenableFuture<ResolveMatchesType> resolveMatches = wsDiscoveryClient.sendResolve(epr);
-            return Optional.ofNullable(resolveMatches.get(maxWaitForResolveMatches.toMillis(), TimeUnit.MILLISECONDS));
+            resolveMatches = wsDiscoveryClient.sendResolve(epr);
         } catch (MarshallingException e) {
             instanceLogger.info("Resolve of '{}' failed due to marshalling exception", epr, e.getCause());
         } catch (TransportException e) {
             instanceLogger.info("Transmission of resolve request to '{}' failed", epr, e.getCause());
-        } catch (InterruptedException e) {
-            instanceLogger.info("Resolve of '{}' failed due to thread interruption", epr, e.getCause());
-        } catch (ExecutionException e) {
-            instanceLogger.info("Resolve of '{}' failed", epr, e.getCause());
-        } catch (TimeoutException e) {
-            instanceLogger.debug("Did not get resolve answer from '{}' within {} ms", wsaUtil.getAddressUri(epr),
-                    maxWaitForResolveMatches.toMillis());
         } catch (InterceptorException e) {
-            instanceLogger.info(e.getMessage(), e.getCause());
+            instanceLogger.info(e.getMessage(), e.getCause(), e);
         }
 
+        if (resolveMatches != null) {
+            try {
+                return Optional.ofNullable(
+                    resolveMatches.get(maxWaitForResolveMatches.toMillis(), TimeUnit.MILLISECONDS));
+            } catch (InterruptedException e) {
+                instanceLogger.info("Resolve of '{}' failed due to thread interruption", epr, e.getCause());
+            } catch (ExecutionException e) {
+                instanceLogger.info("Resolve of '{}' failed", epr, e.getCause());
+            } catch (TimeoutException e) {
+                resolveMatches.cancel(true);
+                instanceLogger.debug("Did not get resolve answer from '{}' within {} ms", wsaUtil.getAddressUri(epr),
+                    maxWaitForResolveMatches.toMillis());
+            }
+        }
         return Optional.empty();
     }
 }

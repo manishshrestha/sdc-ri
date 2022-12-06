@@ -11,9 +11,16 @@ import java.time.Duration;
  */
 public class DpwsConstants {
     /**
-     * Defines the context package for JAXB.
+     * JAXB context paths used to let JAXB recognize the DPWS model.
      */
-    public static final String JAXB_CONTEXT_PACKAGE = "org.somda.sdc.dpws.model";
+    public static final String DPWS_JAXB_CONTEXT_PATH = "org.somda.sdc.dpws.soap.model:" +
+            "org.somda.sdc.dpws.model:" +
+            "org.somda.sdc.dpws.soap.wsaddressing.model:" +
+            "org.somda.sdc.dpws.soap.wsdiscovery.model:" +
+            "org.somda.sdc.dpws.soap.wseventing.model:" +
+            "org.somda.sdc.dpws.soap.wstransfer.model:" +
+            "org.somda.sdc.dpws.soap.wsmetadataexchange.model:" +
+            "org.somda.sdc.dpws.wsdl.model";
 
     /**
      * Resource path to DPWS XML Schema.
@@ -93,6 +100,11 @@ public class DpwsConstants {
      * @see #MULTICAST_UDP_REPEAT
      */
     public static final int UNICAST_UDP_REPEAT = MULTICAST_UDP_REPEAT;
+
+    /**
+     * Default TTL for outgoing multicast messages.
+     */
+    public static final int DEFAULT_MULTICAST_TTL = 1;
 
     /**
      * Defines the namespace for the DPWS ThisModel data structure.

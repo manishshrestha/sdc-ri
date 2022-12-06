@@ -3,7 +3,7 @@
     <parent>
         <artifactId>sdc-ri</artifactId>
         <groupId>org.somda.sdc</groupId>
-        <version>2.0.0</version>
+        <version>3.0.0</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -39,7 +39,7 @@
         <connection>scm:git:git://gitlab.com/sdc-suite/sdc-ri.git</connection>
         <developerConnection>scm:git:git://gitlab.com/sdc-suite/sdc-ri.git</developerConnection>
         <url>https://gitlab.com/sdc-suite/sdc-ri/-/tree/develop</url>
-      <tag>sdc-ri-2.0.0</tag>
+      <tag>sdc-ri-3.0.0</tag>
   </scm>
 
     <properties>
@@ -53,15 +53,16 @@
         <dependency>
             <groupId>org.somda.sdc</groupId>
             <artifactId>common</artifactId>
-            <version>2.0.0</version>
+            <version>3.0.0</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/io.github.threeten-jaxb/threeten-jaxb-core -->
         <dependency>
             <groupId>io.github.threeten-jaxb</groupId>
             <artifactId>threeten-jaxb-core</artifactId>
-            <version>1.2</version>
+            <version>${jaxbThreetenCoreVersion}</version>
         </dependency>
+
 
         <dependency>
             <groupId>org.jvnet.jaxb2_commons</groupId>
@@ -72,27 +73,35 @@
         <dependency>
             <groupId>javax.xml.bind</groupId>
             <artifactId>jaxb-api</artifactId>
-            <version>2.3.1</version>
+            <version>${jaxbApiVersion}</version>
         </dependency>
         <!-- https://mvnrepository.com/artifact/com.sun.xml.bind/jaxb-core -->
         <dependency>
             <groupId>com.sun.xml.bind</groupId>
             <artifactId>jaxb-core</artifactId>
-            <version>2.3.0.1</version>
+            <version>${jaxbCoreVersion}</version>
         </dependency>
         <!-- https://mvnrepository.com/artifact/com.sun.xml.bind/jaxb-impl -->
         <dependency>
             <groupId>com.sun.xml.bind</groupId>
             <artifactId>jaxb-impl</artifactId>
-            <version>2.3.2</version>
+            <version>${jaxbImplVersion}</version>
         </dependency>
     </dependencies>
     <build>
+
         <plugins>
             <plugin>
                 <groupId>org.jvnet.jaxb2.maven2</groupId>
                 <artifactId>maven-jaxb2-plugin</artifactId>
-                <version>0.14.0</version>
+                <version>${jaxb2MavenPluginVersion}</version>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.glassfish.jaxb</groupId>
+                        <artifactId>jaxb-runtime</artifactId>
+                        <version>${jaxbRuntimeVersion}</version>
+                    </dependency>
+                </dependencies>
                 <executions>
                     <execution>
                         <id>soap-12</id>
@@ -114,12 +123,19 @@
                                 <arg>-XsimpleEquals</arg>
                                 <arg>-XsimpleHashCode</arg>
                                 <arg>-XtoString</arg>
+                                <arg>-Xclone</arg>
+                                <arg>-Xcopy</arg>
                             </args>
                             <plugins>
                                 <plugin>
                                     <groupId>org.jvnet.jaxb2_commons</groupId>
                                     <artifactId>jaxb2-basics</artifactId>
                                     <version>${jaxbBasicsVersion}</version>
+                                </plugin>
+                                <plugin>
+                                    <groupId>net.codesup.util</groupId>
+                                    <artifactId>jaxb2-rich-contract-plugin</artifactId>
+                                    <version>2.1.0</version>
                                 </plugin>
                             </plugins>
                         </configuration>
@@ -133,7 +149,7 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>build-helper-maven-plugin</artifactId>
-                <version>3.0.0</version>
+                <version>${jaxbBuildHelperMavenPluginVersion}</version>
                 <executions>
                     <execution>
                         <id>add-source</id>

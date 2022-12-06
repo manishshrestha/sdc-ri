@@ -23,12 +23,12 @@ public class FallbackInstanceIdentifier {
      * is set.
      */
     public static Optional<InstanceIdentifier> create(LocationDetail locationDetail) {
-        final String extension = UrlUtf8.encode(locationDetail.getFacility())
-                + DELIMITER + UrlUtf8.encode(locationDetail.getBuilding())
-                + DELIMITER + UrlUtf8.encode(locationDetail.getFloor())
-                + DELIMITER + UrlUtf8.encode(locationDetail.getPoC())
-                + DELIMITER + UrlUtf8.encode(locationDetail.getRoom())
-                + DELIMITER + UrlUtf8.encode(locationDetail.getBed());
+        final String extension = UrlUtf8.encodePChars(locationDetail.getFacility())
+                + DELIMITER + UrlUtf8.encodePChars(locationDetail.getBuilding())
+                + DELIMITER + UrlUtf8.encodePChars(locationDetail.getFloor())
+                + DELIMITER + UrlUtf8.encodePChars(locationDetail.getPoC())
+                + DELIMITER + UrlUtf8.encodePChars(locationDetail.getRoom())
+                + DELIMITER + UrlUtf8.encodePChars(locationDetail.getBed());
         if (!"/////".equals(extension)) {
             InstanceIdentifier instanceIdentifier = new InstanceIdentifier();
             instanceIdentifier.setRootName(LOCATION_ROOT_SEGMENT);

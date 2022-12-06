@@ -62,9 +62,9 @@ public class ComplexDeviceComponentMapper {
         }
 
         String uri = SCHEME + ":" +
-                "/" + UrlUtf8.encode(codingSystem) +
-                "/" + UrlUtf8.encode(codedValue.getCodingSystemVersion()) +
-                "/" + UrlUtf8.encode(codedValue.getCode());
+                "/" + UrlUtf8.encodePChars(codingSystem) +
+                "/" + UrlUtf8.encodePChars(codedValue.getCodingSystemVersion()) +
+                "/" + UrlUtf8.encodePChars(codedValue.getCode());
 
         try {
             fromUri(uri);
@@ -91,9 +91,9 @@ public class ComplexDeviceComponentMapper {
         Matcher matcher = PATTERN.matcher(complexDeviceComponentTypeUri);
         if (matcher.matches()) {
 
-            final String codingSystem = UrlUtf8.decode(matcher.group("codingSystem"));
-            final String codingSystemVersion = UrlUtf8.decode(matcher.group("codingSystemVersion"));
-            final String code = UrlUtf8.decode(matcher.group("code"));
+            final String codingSystem = UrlUtf8.decodePChars(matcher.group("codingSystem"));
+            final String codingSystemVersion = UrlUtf8.decodePChars(matcher.group("codingSystemVersion"));
+            final String code = UrlUtf8.decodePChars(matcher.group("code"));
 
             CodedValue codedValue = new CodedValue();
             codedValue.setCodingSystem(codingSystem.isEmpty() ? null : codingSystem);

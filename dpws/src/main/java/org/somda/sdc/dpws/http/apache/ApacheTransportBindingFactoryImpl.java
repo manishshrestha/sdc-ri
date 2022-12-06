@@ -23,6 +23,7 @@ import org.somda.sdc.dpws.TransportBinding;
 import org.somda.sdc.dpws.crypto.CryptoConfig;
 import org.somda.sdc.dpws.crypto.CryptoConfigurator;
 import org.somda.sdc.dpws.crypto.CryptoSettings;
+import org.somda.sdc.dpws.factory.CommunicationLogFactory;
 import org.somda.sdc.dpws.factory.TransportBindingFactory;
 import org.somda.sdc.dpws.http.factory.HttpClientFactory;
 import org.somda.sdc.dpws.soap.SoapMarshalling;
@@ -33,6 +34,7 @@ import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
 import java.net.URI;
 import java.time.Duration;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -57,28 +59,33 @@ public class ApacheTransportBindingFactoryImpl implements TransportBindingFactor
     private final String[] enabledCiphers;
     private final boolean enableHttps;
     private final boolean enableHttp;
+    private final CryptoConfigurator cryptoConfigurator;
+    @Nullable
+    private final CryptoSettings cryptoSettings;
     private final Logger instanceLogger;
     private final String frameworkIdentifier;
 
     private ClientTransportBindingFactory clientTransportBindingFactory;
-    private final CommunicationLog communicationLog;
 
     @Inject
-    ApacheTransportBindingFactoryImpl(SoapMarshalling marshalling, SoapUtil soapUtil,
+    ApacheTransportBindingFactoryImpl(SoapMarshalling marshalling,
+                                      SoapUtil soapUtil,
                                       CryptoConfigurator cryptoConfigurator,
                                       @Nullable @Named(CryptoConfig.CRYPTO_SETTINGS) CryptoSettings cryptoSettings,
                                       @Named(DpwsConfig.HTTP_CLIENT_CONNECT_TIMEOUT) Duration clientConnectTimeout,
                                       @Named(DpwsConfig.HTTP_CLIENT_READ_TIMEOUT) Duration clientReadTimeout,
                                       @Named(DpwsConfig.HTTP_GZIP_COMPRESSION) boolean enableGzipCompression,
                                       ClientTransportBindingFactory clientTransportBindingFactory,
+                                      CommunicationLogFactory communicationLogFactory,
                                       @Named(CryptoConfig.CRYPTO_TLS_ENABLED_VERSIONS) String[] tlsProtocols,
                                       @Named(CryptoConfig.CRYPTO_TLS_ENABLED_CIPHERS) String[] enabledCiphers,
                                       @Named(CryptoConfig.CRYPTO_CLIENT_HOSTNAME_VERIFIER)
                                               HostnameVerifier hostnameVerifier,
                                       @Named(DpwsConfig.HTTPS_SUPPORT) boolean enableHttps,
                                       @Named(DpwsConfig.HTTP_SUPPORT) boolean enableHttp,
-                                      CommunicationLog communicationLog,
                                       @Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier) {
+        this.cryptoConfigurator = cryptoConfigurator;
+        this.cryptoSettings = cryptoSettings;
         this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);
         this.frameworkIdentifier = frameworkIdentifier;
         this.marshalling = marshalling;
@@ -87,7 +94,6 @@ public class ApacheTransportBindingFactoryImpl implements TransportBindingFactor
         this.clientReadTimeout = clientReadTimeout;
         this.enableGzipCompression = enableGzipCompression;
         this.clientTransportBindingFactory = clientTransportBindingFactory;
-        this.communicationLog = communicationLog;
         this.tlsProtocols = tlsProtocols;
         this.enabledCiphers = enabledCiphers;
         this.hostnameVerifier = hostnameVerifier;
@@ -98,11 +104,12 @@ public class ApacheTransportBindingFactoryImpl implements TransportBindingFactor
             throw new RuntimeException("Http and https are disabled, cannot continue");
         }
 
-        this.client = buildClient(cryptoConfigurator, cryptoSettings);
+        this.client = buildClient(cryptoConfigurator, cryptoSettings, communicationLogFactory.createCommunicationLog());
     }
 
     private HttpClient buildClient(CryptoConfigurator cryptoConfigurator,
-                                   @Nullable CryptoSettings cryptoSettings) {
+                                   @Nullable CryptoSettings cryptoSettings,
+                                   CommunicationLog communicationLog) {
         var socketConfig = SocketConfig.custom().setTcpNoDelay(true).build();
 
         // set the timeout for all requests
@@ -139,6 +146,7 @@ public class ApacheTransportBindingFactoryImpl implements TransportBindingFactor
                 sslContext = cryptoConfigurator.createSslContextFromSystemProperties();
             }
 
+            instanceLogger.debug("Enabled protocols: {}", () -> List.of(tlsProtocols));
             SSLConnectionSocketFactory socketFactory = new SSLConnectionSocketFactory(
                     sslContext,
                     tlsProtocols,
@@ -170,7 +178,8 @@ public class ApacheTransportBindingFactoryImpl implements TransportBindingFactor
     }
 
     @Override
-    public TransportBinding createTransportBinding(String endpointUri) throws UnsupportedOperationException {
+    public TransportBinding createTransportBinding(String endpointUri, @Nullable CommunicationLog communicationLog)
+            throws UnsupportedOperationException {
         // To keep things simple, this method directly checks if there is a SOAP-UDP or
         // HTTP(S) binding
         // No plug-and-play feature is implemented that dispatches, based on the URI
@@ -182,9 +191,9 @@ public class ApacheTransportBindingFactoryImpl implements TransportBindingFactor
             throw new UnsupportedOperationException(
                     "SOAP-over-UDP is currently not supported by the TransportBindingFactory");
         } else if (scheme.equalsIgnoreCase(SCHEME_HTTP)) {
-            return createHttpBinding(endpointUri);
+            return createHttpBinding(endpointUri, communicationLog);
         } else if (scheme.equalsIgnoreCase(SCHEME_HTTPS)) {
-            return createHttpBinding(endpointUri);
+            return createHttpBinding(endpointUri, communicationLog);
         } else {
             throw new UnsupportedOperationException(
                     String.format("Unsupported transport binding requested: %s", scheme));
@@ -192,10 +201,14 @@ public class ApacheTransportBindingFactoryImpl implements TransportBindingFactor
     }
 
     @Override
-    public TransportBinding createHttpBinding(String endpointUri) throws UnsupportedOperationException {
+    public TransportBinding createHttpBinding(String endpointUri, @Nullable CommunicationLog communicationLog)
+            throws UnsupportedOperationException {
         var scheme = URI.create(endpointUri).getScheme();
-        if (client != null && scheme.toLowerCase().startsWith("http")) {
-            return this.clientTransportBindingFactory.create(client, endpointUri, marshalling, soapUtil);
+        if (scheme.toLowerCase().startsWith("http")) {
+            // recycle client if no custom commlog is passed
+            var httpClient = communicationLog == null ? this.client :
+                    buildClient(cryptoConfigurator, cryptoSettings, communicationLog);
+            return this.clientTransportBindingFactory.create(httpClient, endpointUri, marshalling, soapUtil);
         }
 
         throw new UnsupportedOperationException(

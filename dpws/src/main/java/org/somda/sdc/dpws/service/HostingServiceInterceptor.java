@@ -7,7 +7,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.somda.sdc.common.CommonConfig;
 import org.somda.sdc.common.logging.InstanceLogger;
-import org.somda.sdc.common.util.ObjectUtil;
 import org.somda.sdc.dpws.DpwsConstants;
 import org.somda.sdc.dpws.model.LocalizedStringType;
 import org.somda.sdc.dpws.model.ThisDeviceType;
@@ -41,7 +40,6 @@ public class HostingServiceInterceptor implements HostingService {
     private static final Logger LOG = LogManager.getLogger(HostingServiceInterceptor.class);
 
     private final WsDiscoveryTargetService targetService;
-    private final ObjectUtil objectUtil;
     private final WsAddressingUtil wsaUtil;
     private final MetadataSectionUtil metadataSectionUtil;
     private final List<HostedService> hostedServices;
@@ -60,13 +58,11 @@ public class HostingServiceInterceptor implements HostingService {
                               SoapFaultFactory soapFaultFactory,
                               ObjectFactory mexFactory,
                               org.somda.sdc.dpws.model.ObjectFactory dpwsFactory,
-                              ObjectUtil objectUtil,
                               WsAddressingUtil wsaUtil,
                               MetadataSectionUtil metadataSectionUtil,
                               @Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier) {
         this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);
         this.targetService = targetService;
-        this.objectUtil = objectUtil;
         this.wsaUtil = wsaUtil;
         this.metadataSectionUtil = metadataSectionUtil;
         this.hostedServices = new ArrayList<>();
@@ -140,12 +136,12 @@ public class HostingServiceInterceptor implements HostingService {
 
     @Override
     public ThisModelType getThisModel() {
-        return objectUtil.deepCopy(thisModel);
+        return thisModel.createCopy();
     }
 
     @Override
     public void setThisModel(ThisModelType thisModel) {
-        this.thisModel = objectUtil.deepCopy(thisModel);
+        this.thisModel = thisModel.createCopy();
         this.thisModel.setManufacturer(cutMaxFieldSize(thisModel.getManufacturer()));
         this.thisModel.setModelName(cutMaxFieldSize(thisModel.getModelName()));
         this.thisModel.setModelNumber(cutMaxFieldSize(thisModel.getModelNumber()));
@@ -157,12 +153,12 @@ public class HostingServiceInterceptor implements HostingService {
 
     @Override
     public ThisDeviceType getThisDevice() {
-        return objectUtil.deepCopy(thisDevice);
+        return thisDevice.createCopy();
     }
 
     @Override
     public void setThisDevice(ThisDeviceType thisDevice) {
-        this.thisDevice = objectUtil.deepCopy(thisDevice);
+        this.thisDevice = thisDevice.createCopy();
         this.thisDevice.setFriendlyName(cutMaxFieldSize(thisDevice.getFriendlyName()));
         this.thisDevice.setFirmwareVersion(cutMaxFieldSize(thisDevice.getFirmwareVersion()));
         this.thisDevice.setSerialNumber(cutMaxFieldSize(thisDevice.getSerialNumber()));
@@ -192,7 +188,7 @@ public class HostingServiceInterceptor implements HostingService {
     private List<LocalizedStringType> cutMaxFieldSize(List<LocalizedStringType> texts) {
         var newList = new ArrayList<LocalizedStringType>(texts.size());
         for (var text : texts) {
-            var localizedText = objectUtil.deepCopy(text);
+            var localizedText = text.createCopy();
             localizedText.setValue(cutMaxFieldSize(text.getValue()));
             newList.add(localizedText);
         }

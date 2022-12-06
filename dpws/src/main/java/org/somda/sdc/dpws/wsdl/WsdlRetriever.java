@@ -1,5 +1,6 @@
 package org.somda.sdc.dpws.wsdl;
 
+import com.google.common.util.concurrent.ListenableFuture;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import org.apache.commons.lang3.BooleanUtils;
@@ -106,12 +107,21 @@ public class WsdlRetriever {
             String serviceName = entry.getKey();
             HostedServiceProxy hostedServiceProxy = entry.getValue();
             SoapMessage metadataResponse;
+            ListenableFuture<SoapMessage> metadataResponseFuture = null;
             LOG.debug("Retrieving WSDL for service {}", serviceName);
             try {
-                metadataResponse = getMetadataClient.sendGetMetadata(hostedServiceProxy.getRequestResponseClient())
-                        .get(maxWait.toSeconds(), TimeUnit.SECONDS);
-            } catch (InterruptedException | ExecutionException | TimeoutException e) {
+                metadataResponseFuture = getMetadataClient.sendGetMetadata(
+                    hostedServiceProxy.getRequestResponseClient()
+                );
+                metadataResponse = metadataResponseFuture.get(maxWait.toSeconds(), TimeUnit.SECONDS);
+            } catch (InterruptedException | ExecutionException e) {
                 throw new IOException("Could not retrieve Metadata from device for service " + serviceName);
+            } catch (TimeoutException e) {
+                metadataResponseFuture.cancel(true);
+                throw new IOException(String.format(
+                        "Could not retrieve Metadata from device for service %s after %ss",
+                        serviceName, maxWait.toSeconds()
+                    ));
             }
 
             var bodyElements = metadataResponse.getOriginalEnvelope().getBody().getAny();
@@ -251,23 +261,31 @@ public class WsdlRetriever {
         var address = reference.getAddress().getValue();
         var referenceParameters = reference.getReferenceParameters();
 
-        var transportBinding = transportBindingFactory.createTransportBinding(address);
+        var transportBinding = transportBindingFactory.createTransportBinding(address, null);
         var rrClient = requestResponseClientFactory.createRequestResponseClient(transportBinding);
+        ListenableFuture<SoapMessage> getResponseFuture = null;
         SoapMessage getResponse;
         try {
             if (referenceParameters != null) {
-                getResponse = transferGetClient
-                        .sendTransferGet(rrClient, address, referenceParameters)
-                        .get(maxWait.toSeconds(), TimeUnit.SECONDS);
+                getResponseFuture = transferGetClient.sendTransferGet(rrClient, address, referenceParameters);
             } else {
-                getResponse = transferGetClient
-                        .sendTransferGet(rrClient, address)
-                        .get(maxWait.toSeconds(), TimeUnit.SECONDS);
+                getResponseFuture = transferGetClient.sendTransferGet(rrClient, address);
             }
-        } catch (InterruptedException | ExecutionException | TimeoutException e) {
+            getResponse = getResponseFuture.get(maxWait.toSeconds(), TimeUnit.SECONDS);
+        } catch (InterruptedException | ExecutionException e) {
             instanceLogger.error("Could not retrieve Metadata from device. Message: {}", e.getMessage());
             instanceLogger.trace("Could not retrieve Metadata from device", e);
             throw new TransportException("Could not retrieve Metadata from device", e);
+        } catch (TimeoutException e) {
+            getResponseFuture.cancel(true);
+            instanceLogger.error(
+                "Could not retrieve Metadata from device after {}s. Message: {}",
+                maxWait.toSeconds(), e.getMessage()
+            );
+            instanceLogger.trace("Could not retrieve Metadata from device after {}s", maxWait.toSeconds(), e);
+            throw new TransportException(String.format(
+                "Could not retrieve Metadata from device after %ss", maxWait.toSeconds()
+            ), e);
         }
 
         var bodyElements = getResponse.getOriginalEnvelope().getBody().getAny();

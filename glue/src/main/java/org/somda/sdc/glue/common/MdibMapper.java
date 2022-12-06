@@ -36,7 +36,6 @@ import org.somda.sdc.biceps.model.participant.VmdDescriptor;
 import org.somda.sdc.biceps.model.participant.WorkflowContextDescriptor;
 import org.somda.sdc.common.CommonConfig;
 import org.somda.sdc.common.logging.InstanceLogger;
-import org.somda.sdc.common.util.ObjectUtil;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -58,18 +57,15 @@ public class MdibMapper {
     private static final Logger LOG = LogManager.getLogger(MdibMapper.class);
     private final MdibAccess mdibAccess;
     private final ObjectFactory participantModelFactory;
-    private final ObjectUtil objectUtil;
     private final Logger instanceLogger;
 
     @AssistedInject
     MdibMapper(@Assisted MdibAccess mdibAccess,
                ObjectFactory participantModelFactory,
-               ObjectUtil objectUtil,
                @Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier) {
         this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);
         this.mdibAccess = mdibAccess;
         this.participantModelFactory = participantModelFactory;
-        this.objectUtil = objectUtil;
     }
 
     /**
@@ -230,7 +226,7 @@ public class MdibMapper {
             return;
         }
 
-        MdsDescriptor descriptorCopy = objectUtil.deepCopy(descriptor.get());
+        MdsDescriptor descriptorCopy = descriptor.get().createCopy();
 
         mapZeroOrMoreDescriptors(
                 descriptorCopy,
@@ -255,7 +251,7 @@ public class MdibMapper {
     private void mapVmds(MdsDescriptor parent, List<MdibEntity> vmds) {
         for (MdibEntity vmd : vmds) {
             vmd.getDescriptor(VmdDescriptor.class).ifPresent(vmdDescriptor -> {
-                VmdDescriptor vmdDescriptorCopy = objectUtil.deepCopy(vmdDescriptor);
+                VmdDescriptor vmdDescriptorCopy = vmdDescriptor.createCopy();
                 parent.getVmd().add(vmdDescriptorCopy);
                 mapAlertSystem(vmdDescriptorCopy, mdibAccess.getChildrenByType(vmdDescriptorCopy.getHandle(),
                         AlertSystemDescriptor.class));
@@ -270,7 +266,7 @@ public class MdibMapper {
     private void mapChannels(VmdDescriptor parent, List<MdibEntity> channels) {
         for (MdibEntity channel : channels) {
             channel.getDescriptor(ChannelDescriptor.class).ifPresent(channelDescriptor -> {
-                ChannelDescriptor channelDescriptorCopy = objectUtil.deepCopy(channelDescriptor);
+                ChannelDescriptor channelDescriptorCopy = channelDescriptor.createCopy();
                 parent.getChannel().add(channelDescriptorCopy);
                 mapZeroOrMoreDescriptors(
                         channelDescriptorCopy,
@@ -283,7 +279,7 @@ public class MdibMapper {
     private void mapSco(AbstractComplexDeviceComponentDescriptor parent, List<MdibEntity> scos) {
         for (MdibEntity sco : scos) {
             sco.getDescriptor(ScoDescriptor.class).ifPresent(scoDescriptor -> {
-                ScoDescriptor scoDescriptorCopy = objectUtil.deepCopy(scoDescriptor);
+                ScoDescriptor scoDescriptorCopy = scoDescriptor.createCopy();
                 parent.setSco(scoDescriptorCopy);
                 mapZeroOrMoreDescriptors(
                         scoDescriptorCopy,
@@ -297,7 +293,7 @@ public class MdibMapper {
     private void mapSystemContext(MdsDescriptor parent, List<MdibEntity> systemContexts) {
         for (MdibEntity systemContext : systemContexts) {
             systemContext.getDescriptor(SystemContextDescriptor.class).ifPresent(systemContextDescriptor -> {
-                SystemContextDescriptor systemContextDescriptorCopy = objectUtil.deepCopy(systemContextDescriptor);
+                SystemContextDescriptor systemContextDescriptorCopy = systemContextDescriptor.createCopy();
                 parent.setSystemContext(systemContextDescriptorCopy);
                 String parentHandle = systemContextDescriptorCopy.getHandle();
                 mapZeroOrOneDescriptor(
@@ -340,7 +336,7 @@ public class MdibMapper {
             return;
         }
 
-        AlertSystemDescriptor descriptorCopy = objectUtil.deepCopy(descriptor.get());
+        AlertSystemDescriptor descriptorCopy = descriptor.get().createCopy();
 
         parent.setAlertSystem(descriptorCopy);
         mapZeroOrMoreDescriptors(
@@ -359,7 +355,7 @@ public class MdibMapper {
 
         for (MdibEntity entity : entities) {
             try {
-                AbstractDescriptor childDescriptor = objectUtil.deepCopy(entity.getDescriptor());
+                AbstractDescriptor childDescriptor = entity.getDescriptor().createCopy();
                 Method getList = parentDescriptor.getClass().getMethod(getterFunctionName);
                 final List listObject = List.class.cast(getList.invoke(parentDescriptor));
                 listObject.add(childDescriptor);
@@ -388,7 +384,7 @@ public class MdibMapper {
                                         String setterFunctionName) {
         for (MdibEntity entity : entities) {
             try {
-                AbstractDescriptor childDescriptor = objectUtil.deepCopy(entity.getDescriptor());
+                AbstractDescriptor childDescriptor = entity.getDescriptor().createCopy();
                 Method setObject =
                         parentDescriptor.getClass().getMethod(setterFunctionName, childDescriptor.getClass());
                 setObject.invoke(parentDescriptor, childDescriptor);

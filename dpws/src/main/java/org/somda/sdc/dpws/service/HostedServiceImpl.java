@@ -2,7 +2,6 @@ package org.somda.sdc.dpws.service;
 
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
-import org.somda.sdc.common.util.ObjectUtil;
 import org.somda.sdc.dpws.device.WebService;
 import org.somda.sdc.dpws.model.HostedServiceType;
 import org.somda.sdc.dpws.model.ObjectFactory;
@@ -24,7 +23,6 @@ public class HostedServiceImpl implements HostedService {
     private final WebService webService;
     private final byte[] wsdlDocument;
     private final ObjectFactory dpwsFactory;
-    private final ObjectUtil objectUtil;
 
     @AssistedInject
     HostedServiceImpl(@Assisted String serviceId,
@@ -33,7 +31,6 @@ public class HostedServiceImpl implements HostedService {
                       @Assisted WebService webService,
                       @Assisted byte[] wsdlDocument,
                       ObjectFactory dpwsFactory,
-                      ObjectUtil objectUtil,
                       WsAddressingUtil wsaUtil) {
         this.serviceId = serviceId;
         this.types = types;
@@ -43,7 +40,6 @@ public class HostedServiceImpl implements HostedService {
         this.webService = webService;
         this.wsdlDocument = wsdlDocument;
         this.dpwsFactory = dpwsFactory;
-        this.objectUtil = objectUtil;
     }
 
     @AssistedInject
@@ -52,16 +48,15 @@ public class HostedServiceImpl implements HostedService {
                       @Assisted WebService webService,
                       @Assisted byte[] wsdlDocument,
                       ObjectFactory dpwsFactory,
-                      ObjectUtil objectUtil,
                       WsAddressingUtil wsaUtil) {
-        this(serviceId, types, new ArrayList<>(), webService, wsdlDocument, dpwsFactory, objectUtil, wsaUtil);
+        this(serviceId, types, new ArrayList<>(), webService, wsdlDocument, dpwsFactory, wsaUtil);
     }
 
     @Override
     public HostedServiceType getType() {
         HostedServiceType hst = dpwsFactory.createHostedServiceType();
         hst.setServiceId(serviceId);
-        hst.setEndpointReference(objectUtil.deepCopy(eprs));
+        hst.setEndpointReference(eprs.stream().map(EndpointReferenceType::createCopy).collect(Collectors.toList()));
         hst.setTypes(new ArrayList<>(types));
         return hst;
     }

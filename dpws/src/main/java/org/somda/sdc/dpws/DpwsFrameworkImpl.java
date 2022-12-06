@@ -90,7 +90,9 @@ public class DpwsFrameworkImpl extends AbstractIdleService implements DpwsFramew
             instanceLogger.info("Initializing dpws framework with loopback interface {}", networkInterface);
         }
 
-        printNetworkInterfaceInformation();
+        if (instanceLogger.isDebugEnabled()) {
+            printNetworkInterfaceInformation();
+        }
 
         configureDiscovery();
         registeredServices.addAll(List.of(
@@ -109,7 +111,7 @@ public class DpwsFrameworkImpl extends AbstractIdleService implements DpwsFramew
         Iterator<NetworkInterface> networkInterfaceIterator = NetworkInterface.getNetworkInterfaces().asIterator();
         while (networkInterfaceIterator.hasNext()) {
             NetworkInterface netInterface = networkInterfaceIterator.next();
-            instanceLogger.info("Found network interface: [{};isUp={};isLoopBack={},supportsMulticast={},MTU={}," +
+            instanceLogger.debug("Found network interface: [{};isUp={};isLoopBack={},supportsMulticast={},MTU={}," +
                             "isVirtual={}]",
                     netInterface,
                     netInterface.isUp(),
@@ -120,7 +122,7 @@ public class DpwsFrameworkImpl extends AbstractIdleService implements DpwsFramew
             Iterator<InetAddress> inetAddressIterator = netInterface.getInetAddresses().asIterator();
             int i = 0;
             while (inetAddressIterator.hasNext()) {
-                instanceLogger.info("{}.address[{}]: {}", netInterface.getName(), i++, inetAddressIterator.next());
+                instanceLogger.debug("{}.address[{}]: {}", netInterface.getName(), i++, inetAddressIterator.next());
             }
         }
     }

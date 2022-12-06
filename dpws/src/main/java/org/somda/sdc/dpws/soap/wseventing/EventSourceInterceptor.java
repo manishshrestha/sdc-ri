@@ -171,7 +171,10 @@ public class EventSourceInterceptor extends AbstractIdleService implements Event
         final var requestMsgId =
                 rrObj.getRequest().getWsAddressingHeader().getMessageId().orElse(null);
         final Supplier<SoapFaultException> soapFaultExceptionSupplier = () ->
-                new SoapFaultException(createInvalidMsg(rrObj), requestMsgId);
+                new SoapFaultException(createInvalidMsg(
+                    rrObj,
+                    String.format("Subscribe request %s was not valid", requestMsgId)
+                ));
         Subscribe subscribe = soapUtil.getBody(rrObj.getRequest(), Subscribe.class)
                 .orElseThrow(soapFaultExceptionSupplier);
 

@@ -50,7 +50,7 @@ public class LocationDetailQueryMapper {
                 if (count++ > 0) {
                     queryParams.append('&');
                 }
-                queryParams.append(key).append('=').append(UrlUtf8.encode(value));
+                queryParams.append(key).append('=').append(UrlUtf8.encodePChars(value, true));
             } catch (NoSuchMethodException | IllegalAccessException |
                     InvocationTargetException | ClassCastException e) {
                 throw new UriMapperGenerationArgumentException(
@@ -103,13 +103,13 @@ public class LocationDetailQueryMapper {
                     if (values != null && !values.isEmpty()) {
                         try {
                             final Method setter = field.getSetter();
-                            setter.invoke(locationDetail, UrlUtf8.decode(values.get(0)));
+                            setter.invoke(locationDetail, values.get(0));
                         } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
 
                             throw new UriMapperParsingException(
                                     "Unexpected reflection exception occurred " +
                                             "during location detail reading of field " +
-                                            "for the mapper " + LocationDetailQueryMapper.class.toString() + " " +
+                                            "for the mapper " + LocationDetailQueryMapper.class + " " +
                                             e.toString());
                         }
                     }
@@ -133,7 +133,7 @@ public class LocationDetailQueryMapper {
         final String[] keyValuePair = query.split("&");
         for (String pair : keyValuePair) {
             final int equalCharIndex = pair.indexOf("=");
-            final String key = equalCharIndex > 0 ? UrlUtf8.decode(pair.substring(0, equalCharIndex)) : pair;
+            final String key = equalCharIndex > 0 ? UrlUtf8.decodePChars(pair.substring(0, equalCharIndex)) : pair;
             if (!queryPairs.containsKey(key)) {
                 queryPairs.put(key, new LinkedList<>());
             } else {
@@ -141,7 +141,7 @@ public class LocationDetailQueryMapper {
                         "More than one query segment with the key '" + key + "'");
             }
             if (equalCharIndex > 0 && pair.length() > equalCharIndex + 1) {
-                queryPairs.get(key).add(UrlUtf8.decode(pair.substring(equalCharIndex + 1)));
+                queryPairs.get(key).add(UrlUtf8.decodePChars(pair.substring(equalCharIndex + 1)));
             }
         }
         return queryPairs;

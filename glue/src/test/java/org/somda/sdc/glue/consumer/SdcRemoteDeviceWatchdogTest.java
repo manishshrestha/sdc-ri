@@ -2,6 +2,8 @@ package org.somda.sdc.glue.consumer;
 
 import com.google.common.eventbus.Subscribe;
 import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.ListenableFuture;
+import com.google.common.util.concurrent.SettableFuture;
 import com.google.inject.AbstractModule;
 import com.google.inject.Injector;
 import com.google.inject.Key;
@@ -12,9 +14,9 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.somda.sdc.common.util.ExecutorWrapperService;
+import org.somda.sdc.dpws.ThisDeviceBuilder;
+import org.somda.sdc.dpws.ThisModelBuilder;
 import org.somda.sdc.dpws.client.Client;
-import org.somda.sdc.dpws.model.ThisDeviceType;
-import org.somda.sdc.dpws.model.ThisModelType;
 import org.somda.sdc.dpws.service.EventSinkAccess;
 import org.somda.sdc.dpws.service.HostedServiceProxy;
 import org.somda.sdc.dpws.service.HostingServiceProxy;
@@ -34,17 +36,15 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(LoggingTestWatcher.class)
 class SdcRemoteDeviceWatchdogTest {
@@ -66,20 +66,35 @@ class SdcRemoteDeviceWatchdogTest {
 
     @BeforeEach
     void beforeEach() {
+        beforeEachSetup(true);
+    }
+
+    void beforeEachSetup(final boolean useMockExecutor) {
         jobCaptor = ArgumentCaptor.forClass(Runnable.class);
         mockExecutor = mock(ScheduledExecutorService.class);
         mockClient = mock(Client.class);
-        injector = new UnitTestUtil().createInjectorWithOverrides(new AbstractModule() {
-            @Override
-            protected void configure() {
-                bind(new TypeLiteral<ExecutorWrapperService<ScheduledExecutorService>>() {
-                })
+
+        if (useMockExecutor) {
+            injector = new UnitTestUtil().createInjectorWithOverrides(new AbstractModule() {
+                @Override
+                protected void configure() {
+                    bind(new TypeLiteral<ExecutorWrapperService<ScheduledExecutorService>>() {
+                    })
                         .annotatedWith(WatchdogScheduledExecutor.class)
-                        .toInstance(new ExecutorWrapperService<>(() -> mockExecutor, "WatchdogScheduledExecutorMock", "abcd"));
-                bind(Client.class)
+                        .toInstance(
+                            new ExecutorWrapperService<>(() -> mockExecutor, "WatchdogScheduledExecutorMock", "abcd"));
+                    bind(Client.class)
                         .toInstance(mockClient);
-            }
-        });
+                }
+            });
+        } else {
+            injector = new UnitTestUtil().createInjectorWithOverrides(new AbstractModule() {
+                @Override
+                protected void configure() {
+                    super.configure();
+                }
+            });
+        }
 
         // start required thread pool(s)
         injector.getInstance(Key.get(
@@ -106,8 +121,8 @@ class SdcRemoteDeviceWatchdogTest {
         hostingServiceProxy = injector.getInstance(HostingServiceFactory.class).createHostingServiceProxy(
                 eprAddress,
                 Collections.emptyList(),
-                mock(ThisDeviceType.class),
-                mock(ThisModelType.class),
+                injector.getInstance(ThisDeviceBuilder.class).get(),
+                injector.getInstance(ThisModelBuilder.class).get(),
                 hostedServices,
                 0,
                 mock(RequestResponseClient.class),
@@ -118,7 +133,7 @@ class SdcRemoteDeviceWatchdogTest {
     }
 
     @Test
-    void watchdogExpiresTooShort() {
+    void watchdogExpiresTooShort() throws Exception {
         WatchdogSpy watchdogSpy = new WatchdogSpy();
         Map<String, SubscribeResult> subscribeResults = new HashMap<>();
         String subscriptionId1 = "subId1";
@@ -132,11 +147,13 @@ class SdcRemoteDeviceWatchdogTest {
         final Duration expires = watchdogPeriod.minus(Duration.ofSeconds(1));
         when(mockEventSinkAccess1.renew(eq(subscriptionId1), any(Duration.class)))
                 .thenReturn(Futures.immediateFuture(expires));
+
+        watchdogSpy.watchdogMessageFuture().get(1, TimeUnit.SECONDS);
         assertTrue(watchdogSpy.getLastWatchdogMessage().isPresent());
     }
 
     @Test
-    void watchdogRenewFails() {
+    void watchdogRenewFails() throws Exception {
         WatchdogSpy watchdogSpy = new WatchdogSpy();
         Map<String, SubscribeResult> subscribeResults = new HashMap<>();
         String subscriptionId1 = "subId1";
@@ -149,12 +166,14 @@ class SdcRemoteDeviceWatchdogTest {
                 .thenReturn(Futures.immediateCancelledFuture());
 
         jobCaptor.getValue().run();
+
+        watchdogSpy.watchdogMessageFuture().get(1, TimeUnit.SECONDS);
         assertTrue(watchdogSpy.getLastWatchdogMessage().isPresent());
     }
 
 
     @Test
-    void watchdogDirectedProbeFails() {
+    void watchdogDirectedProbeFails() throws Exception {
         WatchdogSpy watchdogSpy = new WatchdogSpy();
         Map<String, SubscribeResult> subscribeResults = new HashMap<>();
         String subscriptionId1 = "subId1";
@@ -164,9 +183,11 @@ class SdcRemoteDeviceWatchdogTest {
         watchdog.startAsync().awaitRunning();
         verify(mockExecutor).schedule(jobCaptor.capture(), any(Long.class), any(TimeUnit.class));
         when(mockEventSinkAccess1.renew(eq(subscriptionId1), any(Duration.class)))
-                .thenReturn(Futures.immediateCancelledFuture());
+            .thenReturn(Futures.immediateCancelledFuture());
+
         jobCaptor.getValue().run();
 
+        watchdogSpy.watchdogMessageFuture().get(1, TimeUnit.SECONDS);
         assertTrue(watchdogSpy.getLastWatchdogMessage().isPresent());
     }
 
@@ -194,6 +215,7 @@ class SdcRemoteDeviceWatchdogTest {
         jobCaptor.getValue().run();
         verifyNoInteractions(mockClient);
 
+        assertThrows(TimeoutException.class, () -> watchdogSpy.watchdogMessageFuture().get(1, TimeUnit.SECONDS));
         assertTrue(watchdogSpy.getLastWatchdogMessage().isEmpty());
     }
 
@@ -242,16 +264,68 @@ class SdcRemoteDeviceWatchdogTest {
         verify(mockClient).directedProbe(xAddr);
     }
 
+    @Test
+    void testEventbusContinuesAfterShutdown() throws Exception {
+        beforeEachSetup(false);
+        Map<String, SubscribeResult> subscribeResults = new HashMap<>();
+        String subscriptionId1 = "subId1";
+        subscribeResults.put(serviceId1, new SubscribeResult(subscriptionId1, Duration.ZERO));
+
+        final SdcRemoteDeviceWatchdog watchdog = watchdogFactory.createSdcRemoteDeviceWatchdog(hostingServiceProxy,
+            subscribeResults, null);
+
+        var watchdogSpy = new WatchdogObserver() {
+            final SettableFuture<WatchdogMessage> message = SettableFuture.create();
+            @Subscribe
+            void onConnectionLoss(WatchdogMessage watchdogMessage) {
+                try {
+                    Thread.sleep(100);
+                    // this is the expected branch, no interrupt should've occurred, but the sleep increases the
+                    // probability of it happening
+                    message.set(watchdogMessage);
+                } catch (InterruptedException e) {
+                    //
+                }
+            }
+        };
+
+        watchdog.registerObserver(new WatchdogObserver() {
+            @Subscribe
+            void onConnectionLoss(WatchdogMessage watchdogMessage) {
+                // do _not_ do anything else here, even waiting for 1ms afterwards changes the behavior and
+                // the next observer will not be interrupted
+                watchdog.stopAsync().awaitTerminated();
+            }
+        });
+        watchdog.registerObserver(watchdogSpy);
+
+        watchdog.startAsync().awaitRunning();
+        var mockFuture = mock(ScheduledFuture.class);
+        when(mockExecutor.schedule(any(Runnable.class), any(Long.class), any(TimeUnit.class))).thenReturn(mockFuture);
+        when(mockEventSinkAccess1.renew(eq(subscriptionId1), any(Duration.class)))
+            .thenReturn(Futures.immediateCancelledFuture());
+
+        var message = watchdogSpy.message.get(20, TimeUnit.SECONDS);
+        assertNotNull(message);
+
+    }
+
     private static class WatchdogSpy implements WatchdogObserver {
         private WatchdogMessage lastWatchdogMessage = null;
+        private SettableFuture<WatchdogMessage> lastMessageFuture = SettableFuture.create();
 
         @Subscribe
         void onConnectionLoss(WatchdogMessage watchdogMessage) {
             lastWatchdogMessage = watchdogMessage;
+            lastMessageFuture.set(watchdogMessage);
         }
 
         public Optional<WatchdogMessage> getLastWatchdogMessage() {
             return Optional.ofNullable(lastWatchdogMessage);
+        }
+
+        public ListenableFuture<WatchdogMessage> watchdogMessageFuture() {
+            return lastMessageFuture;
         }
     }
 }

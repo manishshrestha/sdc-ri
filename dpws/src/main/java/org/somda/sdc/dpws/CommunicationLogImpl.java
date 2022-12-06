@@ -1,7 +1,8 @@
 package org.somda.sdc.dpws;
 
 import com.google.common.io.ByteStreams;
-import com.google.inject.Inject;
+import com.google.inject.assistedinject.Assisted;
+import com.google.inject.assistedinject.AssistedInject;
 import com.google.inject.name.Named;
 import org.apache.commons.io.output.TeeOutputStream;
 import org.apache.logging.log4j.LogManager;
@@ -10,6 +11,7 @@ import org.somda.sdc.common.CommonConfig;
 import org.somda.sdc.common.logging.InstanceLogger;
 import org.somda.sdc.dpws.soap.CommunicationContext;
 
+import javax.annotation.Nullable;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -24,11 +26,18 @@ public class CommunicationLogImpl implements CommunicationLog {
     private final CommunicationLogSink logSink;
     private final Logger instanceLogger;
 
-    @Inject
-    public CommunicationLogImpl(CommunicationLogSink sink,
-                                @Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier) {
+    @AssistedInject
+    CommunicationLogImpl(@Assisted @Nullable CommunicationLogContext communicationLogContext,
+                         CommunicationLogSink sink,
+                         @Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier) {
         this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);
         this.logSink = sink;
+    }
+
+    @AssistedInject
+    public CommunicationLogImpl(CommunicationLogSink sink,
+                                @Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier) {
+        this(null, sink, frameworkIdentifier);
     }
 
     @Override

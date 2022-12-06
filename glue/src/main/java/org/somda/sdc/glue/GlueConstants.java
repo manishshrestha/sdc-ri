@@ -10,13 +10,6 @@ import java.util.Collections;
  */
 public class GlueConstants {
     /**
-     * JAXB context paths used to let JAXB recognize the BICEPS model.
-     */
-    public static final String JAXB_CONTEXT_PATH = "org.somda.sdc.biceps.model.extension:" +
-            "org.somda.sdc.biceps.model.participant:" +
-            "org.somda.sdc.biceps.model.message";
-
-    /**
      * Resource path to BICEPS XML Schemas.
      */
     public static final String SCHEMA_PATH = "ExtensionPoint.xsd:BICEPS_ParticipantModel.xsd:BICEPS_MessageModel.xsd";
@@ -122,11 +115,11 @@ public class GlueConstants {
     // The "&" character had to be excluded from the "pchar" definition as it already is used a delimiter.
     // This is a bug in the GLUE standard. The "&" should not be allowed, except as a delimiter.
     private static final String QUERY_ITEM_SEGMENT = "(?:(?:%[a-fA-F0-9]{2})+|(?:[a-zA-Z0-9\\-._~!$'()*+,;=:@])+)";
-    private static final String QUERY_ITEM = "((fac=" + QUERY_ITEM_SEGMENT + ")|" +
-            "(bldng=" + QUERY_ITEM_SEGMENT + ")|" +
-            "(poc=" + QUERY_ITEM_SEGMENT + ")|" +
-            "(flr=" + QUERY_ITEM_SEGMENT + ")|" +
-            "(rm=" + QUERY_ITEM_SEGMENT + ")|" +
-            "(bed=" + QUERY_ITEM_SEGMENT + "))";
+    private static final String QUERY_ITEM = "((fac=" + QUERY_ITEM_SEGMENT + "+)|" +
+            "(bldng=" + QUERY_ITEM_SEGMENT + "+)|" +
+            "(poc=" + QUERY_ITEM_SEGMENT + "+)|" +
+            "(flr=" + QUERY_ITEM_SEGMENT + "+)|" +
+            "(rm=" + QUERY_ITEM_SEGMENT + "+)|" +
+            "(bed=" + QUERY_ITEM_SEGMENT + "+))";
     public static final String LOC_CTXT_QUERY = "^(" + QUERY_ITEM + "(&" + QUERY_ITEM + ")*)?$";
 }

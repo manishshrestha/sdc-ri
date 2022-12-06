@@ -13,6 +13,7 @@ import org.somda.sdc.dpws.soap.NotificationSink;
 import org.somda.sdc.dpws.soap.SoapDebug;
 import org.somda.sdc.dpws.soap.SoapMessage;
 import org.somda.sdc.dpws.soap.exception.MarshallingException;
+import org.somda.sdc.dpws.soap.exception.SoapFaultException;
 import org.somda.sdc.dpws.udp.UdpMessage;
 import org.somda.sdc.dpws.udp.UdpMessageQueueObserver;
 import org.somda.sdc.dpws.udp.UdpMessageQueueService;
@@ -56,6 +57,10 @@ public class DiscoveryClientUdpProcessor implements UdpMessageQueueObserver {
         instanceLogger.debug("Incoming SOAP/UDP message: {}", () -> SoapDebug.get(notification));
 
         // Forward SOAP message to given notification interceptor chain
-        notificationSink.receiveNotification(notification, msg.getCommunicationContext());
+        try {
+            notificationSink.receiveNotification(notification, msg.getCommunicationContext());
+        } catch (SoapFaultException e) {
+            instanceLogger.debug("Error while processing SOAP/UDP message", e);
+        }
     }
 }

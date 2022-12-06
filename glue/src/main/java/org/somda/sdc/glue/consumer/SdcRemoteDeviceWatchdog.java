@@ -1,5 +1,6 @@
 package org.somda.sdc.glue.consumer;
 
+import com.google.common.eventbus.AsyncEventBus;
 import com.google.common.eventbus.EventBus;
 import com.google.common.util.concurrent.AbstractIdleService;
 import com.google.common.util.concurrent.ListenableFuture;
@@ -26,6 +27,7 @@ import java.time.Instant;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -69,7 +71,6 @@ public class SdcRemoteDeviceWatchdog extends AbstractIdleService {
                                     ExecutorWrapperService<ScheduledExecutorService> watchdogExecutor,
                             @Named(ConsumerConfig.WATCHDOG_PERIOD) Duration watchdogPeriod,
                             DpwsFramework dpwsFramework,
-                            EventBus eventBus,
                             Client client,
                             @Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier) {
         this.instanceLogger = HostingServiceLogger.getLogger(LOG, hostingServiceProxy, frameworkIdentifier);
@@ -78,7 +79,7 @@ public class SdcRemoteDeviceWatchdog extends AbstractIdleService {
         this.watchdogExecutor = watchdogExecutor;
         this.watchdogPeriod = watchdogPeriod;
         this.requestedExpires = watchdogPeriod.multipliedBy(3);
-        this.eventBus = eventBus;
+        this.eventBus = new AsyncEventBus(Executors.newSingleThreadExecutor());
         this.client = client;
         dpwsFramework.registerService(List.of(watchdogExecutor));
 
@@ -150,7 +151,10 @@ public class SdcRemoteDeviceWatchdog extends AbstractIdleService {
                         return;
                     }
                 } catch (Exception e) {
-                    instanceLogger.warn("Trying to renew subscription running on service {} failed", serviceId);
+                    if (renewFuture != null) {
+                        renewFuture.cancel(true);
+                    }
+                    instanceLogger.warn("Trying to renew subscription running on service {} failed", serviceId, e);
                     postWatchdogMessage(new Exception(String.format(
                             "Trying to renew subscription running on service %s failed", serviceId), e));
                     return;
