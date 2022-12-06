@@ -47,8 +47,6 @@
         <directories.sourceFiles>${project.basedir}/src/main/java</directories.sourceFiles>
         <directories.generatedSources>${project.build.directory}/generated-sources</directories.generatedSources>
         <directories.generatedResources>${project.build.directory}/generated-resources</directories.generatedResources>
-        <!-- module contains only generated code with questionable javadoc, skip -->
-        <maven.javadoc.skip>true</maven.javadoc.skip>
     </properties>
 
     <dependencies>
