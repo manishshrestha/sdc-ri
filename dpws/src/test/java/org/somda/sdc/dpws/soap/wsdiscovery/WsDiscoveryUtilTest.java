@@ -43,9 +43,10 @@ class WsDiscoveryUtilTest extends DpwsTest {
                 "http://a.de/abc/",          // match by segment, trailing slash ignored
                 "http://a.de",               // match if subset has no segments
                 "http://a.de/abc?a=x&b=y",   // query parameters are ignored during comparison
-                "http://a.de/abc#fragement1" // fragments are ignored
+                "http://a.de/abc#fragement1", // fragments are ignored
+                "http://a.de///"             // empty path segments are allowed
         );
-        matchingSubsets.forEach(subset -> assertTrue(doesMatchDefault(subset)));
+        matchingSubsets.forEach(subset -> assertTrue(doesMatchDefault(subset), String.format("%s did not match", subset)));
 
         // all subsets should NOT match default superset "http://a.de/abc/d"
         var notMatchingSubsets = List.of(
@@ -56,7 +57,7 @@ class WsDiscoveryUtilTest extends DpwsTest {
                 "http://a.de/abc/./d",         // doesn't match if subset has '.' or '..' in path
                 "http://a.de/abc/../d"         // doesn't match if subset has '.' or '..' in path
         );
-        notMatchingSubsets.forEach(subset -> assertFalse(doesMatchDefault(subset)));
+        notMatchingSubsets.forEach(subset -> assertFalse(doesMatchDefault(subset), String.format("%s matched", subset)));
     }
 
     @Test
