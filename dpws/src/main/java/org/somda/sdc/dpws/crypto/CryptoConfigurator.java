@@ -40,7 +40,8 @@ public class CryptoConfigurator {
      *
      * @return an SSlContext matching the given crypto settings.
      */
-    public SSLContext createSslContextFromCryptoConfig(CachingCryptoSettings cryptoSettings) throws KeyStoreException, UnrecoverableKeyException, CertificateException, NoSuchAlgorithmException,
+    public SSLContext createSslContextFromCryptoConfig(CachingCryptoSettings cryptoSettings)
+        throws KeyStoreException, UnrecoverableKeyException, CertificateException, NoSuchAlgorithmException,
         IOException, KeyManagementException {
         var contextOpt = cryptoSettings.getSslContext();
         if (contextOpt.isPresent()) {
