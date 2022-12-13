@@ -4,7 +4,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.somda.sdc.dpws.DpwsTest;
 
-import java.util.AbstractMap;
 import java.util.List;
 import java.util.Map;
 
@@ -14,7 +13,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class WsDiscoveryUtilTest extends DpwsTest {
     private WsDiscoveryUtil wsDiscoveryUtil;
 
-    private static final String DEFAULT_SUPERSET = "http://a.de/abc/d";
+    private static final String DEFAULT_SUPERSET = "http://a.de/abc/d//e";
 
     @Override
     @BeforeEach
@@ -34,30 +33,31 @@ class WsDiscoveryUtilTest extends DpwsTest {
 
     @Test
     void isScopesMatchingDefaultSupersetRfc3986Test() {
-        // all subsets should match default superset "http://a.de/abc/d"
+        // all subsets should match default superset DEFAULT_SUPERSET
         var matchingSubsets = List.of(
-                "http://a.de/abc/d",         // equals
-                "HTTP://a.de/abc/d",         // case-insensitive schema
-                "http://A.dE/abc/d",         // case-insensitive authority
-                "http://a.de/abc",           // match by segment
-                "http://a.de/abc/",          // match by segment, trailing slash ignored
-                "http://a.de",               // match if subset has no segments
-                "http://a.de/abc?a=x&b=y",   // query parameters are ignored during comparison
-                "http://a.de/abc#fragement1", // fragments are ignored
-                "http://a.de///"             // empty path segments are allowed
+                "http://a.de/abc/d//e",        // equals
+                "HTTP://a.de/abc/d//e",        // case-insensitive schema
+                "http://A.dE/abc/d//e",        // case-insensitive authority
+                "http://a.de/abc",             // match by segment
+                "http://a.de/abc/d",           // match by segment
+                "http://a.de/abc/d/",          // match by segment, trailing slash ignored
+                "http://a.de/abc/d//",         // match by segment, trailing slashes ignored
+                "http://a.de",                 // match if subset has no segments
+                "http://a.de/abc?a=x&b=y",     // query parameters are ignored during comparison
+                "http://a.de/abc#fragement1"   // fragments are ignored
         );
-        matchingSubsets.forEach(subset -> assertTrue(doesMatchDefault(subset), String.format("%s did not match", subset)));
+        matchingSubsets.forEach(subset -> assertTrue(doesMatchDefault(subset), String.format("%s did not match %s", subset, DEFAULT_SUPERSET)));
 
-        // all subsets should NOT match default superset "http://a.de/abc/d"
+        // all subsets should NOT match default superset DEFAULT_SUPERSET
         var notMatchingSubsets = List.of(
-                "http://a.de/Abc/d",           // case sensitive segment
-                "http%3A%2F%2Fa.de%2Fabc%2Fd", // encoded URI doesn't match
+                "http://a.de/Abc/d//e",        // case sensitive segment
+                "http%3A%2F%2Fa.de%2Fabc%2Fd%2F%2Fe", // encoded URI doesn't match
                 "http://a.de/ab",              // doesn't match if only part of segment matches
-                "http://a.de/abc/d/d",         // doesn't match if subset has more segment than superset
+                "http://a.de/abc/d//e/f",      // doesn't match if subset has more segment than superset
                 "http://a.de/abc/./d",         // doesn't match if subset has '.' or '..' in path
                 "http://a.de/abc/../d"         // doesn't match if subset has '.' or '..' in path
         );
-        notMatchingSubsets.forEach(subset -> assertFalse(doesMatchDefault(subset), String.format("%s matched", subset)));
+        notMatchingSubsets.forEach(subset -> assertFalse(doesMatchDefault(subset), String.format("%s matched %s", subset, DEFAULT_SUPERSET)));
     }
 
     @Test
