@@ -86,7 +86,7 @@ public class WsDiscoveryUtil {
         var subsetUri = URI.create(o2);
 
         // paths must not have /./ or /../ segments
-        var pattern = Pattern.compile("/\\.*/");
+        var pattern = Pattern.compile("/\\./|/\\.\\./");
         var supersetPath = supersetUri.getPath();
         var subsetPath = subsetUri.getPath();
         if ((StringUtils.isNotBlank(supersetPath) && pattern.matcher(supersetPath).find()) ||
