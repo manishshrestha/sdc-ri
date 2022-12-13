@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- `org.somda.sdc.dpws.crypto.CachingCryptoSettings` to allow caching of SSLContext instances for CryptoSettings. (#239)
+
 ### Fixed
 
 - `org.somda.sdc.dpws.soap.wsdiscovery.WsDiscoveryUtil.isScopesMatching()` did not allow for empty segments in the path. (#258)
