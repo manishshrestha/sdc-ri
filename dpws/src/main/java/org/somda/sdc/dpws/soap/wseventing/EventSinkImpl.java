@@ -352,6 +352,7 @@ public class EventSinkImpl implements EventSink {
             // CHECKSTYLE.OFF: IllegalCatch
         } catch (Exception e) {
             // CHECKSTYLE.ON: IllegalCatch
+            // TODO: when dropping the Exception e here, please at least log it!
             throw new HttpException(HttpStatus.INTERNAL_SERVER_ERROR_500, e.getMessage());
         }
     }

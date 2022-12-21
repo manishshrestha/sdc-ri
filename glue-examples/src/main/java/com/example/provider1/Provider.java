@@ -252,8 +252,8 @@ public class Provider extends AbstractIdleService {
         // - naive approach: find the AbstractDeviceComponentState and set its activationState.
         //   NOTE that this is NOT Standard-compliant as Activation/Deactivation of Components must
         //        also take the activationState of its parent Component into account.
-        // TODO: as Lukas is not available implement the naive approach for the time being.
-        // TODO: ask Lukas if there already is an implementation for this in SDC.ri
+        // NOTE: according to Lukas, there is currently no implementation for this in SDC.ri
+        // TODO: implement
     }
 
     /**
@@ -508,4 +508,11 @@ public class Provider extends AbstractIdleService {
         provider.stopAsync().awaitTerminated();
     }
 
+    public Injector getInjector() {
+        return injector;
+    }
+
+    public LocalMdibAccess getMdibAccess() {
+        return mdibAccess;
+    }
 }

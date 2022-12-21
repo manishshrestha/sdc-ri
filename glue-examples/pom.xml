@@ -196,7 +196,7 @@
         <dependency>
             <groupId>com.draeger.medical</groupId>
             <artifactId>t2iapi</artifactId>
-            <version>0.6.109</version>
+            <version>1.4.0</version>
         </dependency>
 
     </dependencies>
