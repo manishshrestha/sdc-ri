@@ -18,15 +18,21 @@ import com.draeger.medical.t2iapi.device.DeviceServiceGrpc;
 import io.grpc.Server;
 import io.grpc.netty.shaded.io.grpc.netty.NettyServerBuilder;
 import io.grpc.stub.StreamObserver;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.somda.sdc.biceps.common.MdibEntity;
 import org.somda.sdc.biceps.common.storage.PreprocessingException;
+import org.somda.sdc.biceps.model.participant.AbstractDescriptor;
 import org.somda.sdc.biceps.model.participant.AlertSignalDescriptor;
 import org.somda.sdc.biceps.model.participant.LocationDetail;
+import org.somda.sdc.biceps.model.participant.StringMetricDescriptor;
 import org.somda.sdc.biceps.provider.access.LocalMdibAccess;
 
 class GrpcServer {
 
     static Provider provider;
+    private static final Logger LOG = LogManager.getLogger(GrpcServer.class);
+    private static Server server;
 
     private static class ActivationServiceImpl extends ActivationStateServiceGrpc.ActivationStateServiceImplBase {
 
@@ -87,7 +93,7 @@ class GrpcServer {
         }
     }
 
-    private static class DeviceServiceImpl extends DeviceServiceGrpc.DeviceServiceImplBase {
+    protected static class DeviceServiceImpl extends DeviceServiceGrpc.DeviceServiceImplBase {
 
         @Override
         public void triggerReport(DeviceRequests.TriggerReportRequest request,
@@ -97,10 +103,29 @@ class GrpcServer {
                 case REPORT_TYPE_EPISODIC_ALERT_REPORT: responseObserver.onNext(
                     BasicResponses.BasicResponse.newBuilder().setResult(triggerEpisodicAlertReport()).build());
                     break;
+                case REPORT_TYPE_EPISODIC_METRIC_REPORT: responseObserver.onNext(
+                    BasicResponses.BasicResponse.newBuilder().setResult(triggerEpisodicMetricReport()).build());
+                    break;
                 default:responseObserver.onNext(
                     BasicResponses.BasicResponse.newBuilder().setResult(ResponseTypes.Result.RESULT_NOT_IMPLEMENTED).build());
             }
             responseObserver.onCompleted();
+        }
+
+        private ResponseTypes.Result triggerEpisodicMetricReport() {
+            final LocalMdibAccess mdibAccess = GrpcServer.provider.getMdibAccess();
+
+            List<MdibEntity> metrics = new ArrayList<>(
+                mdibAccess.findEntitiesByType(StringMetricDescriptor.class));
+            final AbstractDescriptor stringMetric = metrics.get(0).getDescriptor();
+
+            try {
+                GrpcServer.provider.changeStringMetric(stringMetric.getHandle());
+            } catch (PreprocessingException ppe) {
+                LOG.warn("Encountered an Exception trying to trigger an EpisodicMetricReport:", ppe);
+                return ResponseTypes.Result.RESULT_FAIL;
+            }
+            return ResponseTypes.Result.RESULT_SUCCESS;
         }
 
         private ResponseTypes.Result triggerEpisodicAlertReport() {
@@ -121,7 +146,7 @@ class GrpcServer {
 
 
     static void startGrpcServer(int port, String host, Provider provider) throws IOException {
-        Server server = NettyServerBuilder.forAddress(new InetSocketAddress(host, port))
+        server = NettyServerBuilder.forAddress(new InetSocketAddress(host, port))
             .addService(new ActivationServiceImpl())
             .addService(new ContextServiceImpl())
             .addService(new DeviceServiceImpl())
@@ -130,5 +155,12 @@ class GrpcServer {
         server.start();
 
         GrpcServer.provider = provider;
+    }
+
+    static void shutdownGrpcServer() {
+        if (server != null) {
+            server.shutdown();
+            server = null;
+        }
     }
 }
