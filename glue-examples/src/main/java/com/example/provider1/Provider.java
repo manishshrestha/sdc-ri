@@ -1,5 +1,6 @@
 package com.example.provider1;
 
+import com.draeger.medical.t2iapi.activation_state.ActivationStateTypes;
 import com.example.Constants;
 import com.google.common.collect.Iterables;
 import com.google.common.util.concurrent.AbstractIdleService;
@@ -514,5 +515,38 @@ public class Provider extends AbstractIdleService {
 
     public LocalMdibAccess getMdibAccess() {
         return mdibAccess;
+    }
+
+
+    /**
+     * Toggles an AlertSignalState and AlertConditionState between presence on and off.
+     *
+     * @param handle          alert condition handle whose presence should be set
+     * @param newPresenceValue new value for the @Presence attribute of the handle
+     */
+    public void setAlertConditionPresence(String handle, Boolean newPresenceValue) {
+        // NOTE: problem: according to Biceps:R0114, the @ActivationState and @Presence of AlertSignals,
+        //       AlertConditions and AlertSystems must conform to Table 9 in the Biceps Standard.
+        // TODO: clarify what is supposed to happen when the @Presence set by this Method causes the
+        //       combination to become invalid according to Table 9.
+        var entity = mdibAccess.getEntity(handle).get();
+
+        AlertConditionState state = (AlertConditionState) entity.getStates().get(0);
+        state.setPresence(newPresenceValue);
+
+        try {
+            mdibAccess.writeStates(MdibStateModifications
+                .create(MdibStateModifications.Type.ALERT).add(state));
+        } catch (PreprocessingException e) {
+            LOG.error("", e);
+        }
+    }
+
+    public void setAlertActivation(String handle, ActivationStateTypes.AlertActivation activation) {
+        // TODO: implement
+        // NOTE: problem: according to Biceps:R0114, the @ActivationState and @Presence of AlertSignals,
+        //       AlertConditions and AlertSystems must conform to Table 9 in the Biceps Standard.
+        // TODO: clarify what is supposed to happen when the ActivationState set by this Method causes the
+        //       combination to become invalid according to Table 9.
     }
 }

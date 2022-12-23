@@ -9,6 +9,8 @@ import com.draeger.medical.t2iapi.BasicResponses;
 import com.draeger.medical.t2iapi.ResponseTypes;
 import com.draeger.medical.t2iapi.activation_state.ActivationStateRequests;
 import com.draeger.medical.t2iapi.activation_state.ActivationStateServiceGrpc;
+import com.draeger.medical.t2iapi.alert.AlertRequests;
+import com.draeger.medical.t2iapi.alert.AlertServiceGrpc;
 import com.draeger.medical.t2iapi.context.ContextRequests;
 import com.draeger.medical.t2iapi.context.ContextServiceGrpc;
 import com.draeger.medical.t2iapi.context.ContextTypes;
@@ -56,6 +58,18 @@ class GrpcServer {
             // TODO: what is the difference between request.getActivation() and request.getActivationValue() ?
             // TODO: is request.getHandleBytes() the right way to retrieve the handle in question?
         }
+
+//        @Override
+//        public void setAlertActivation(ActivationStateRequests.SetAlertActivationRequest request,
+//                                       StreamObserver<BasicResponses.BasicResponse> responseObserver) {
+//
+//            final String handle = request.getHandle();
+//            final ActivationStateTypes.AlertActivation activation = request.getActivation();
+//            GrpcServer.provider.setAlertActivation(handle, activation);
+//
+//            responseObserver.onNext(BasicResponses.BasicResponse.newBuilder().setResult(ResponseTypes.Result.RESULT_SUCCESS).build());
+//            responseObserver.onCompleted();
+//        }
     }
 
     private static class ContextServiceImpl extends ContextServiceGrpc.ContextServiceImplBase {
@@ -144,12 +158,30 @@ class GrpcServer {
         }
     }
 
+    protected static class AlertServiceImpl extends AlertServiceGrpc.AlertServiceImplBase {
+
+        @Override
+        public void setAlertConditionPresence(AlertRequests.SetAlertConditionPresenceRequest request,
+                                              StreamObserver<BasicResponses.BasicResponse> responseObserver) {
+
+            String handle = request.getHandle();
+            Boolean newValue = request.getPresence();
+            LOG.info("Manipulation setAlertConditionPresence called with handle={} and newValue={}.",
+                handle, newValue);
+            GrpcServer.provider.setAlertConditionPresence(handle, newValue);
+
+            responseObserver.onNext(
+                BasicResponses.BasicResponse.newBuilder().setResult(ResponseTypes.Result.RESULT_SUCCESS).build());
+            responseObserver.onCompleted();
+        }
+    }
 
     static void startGrpcServer(int port, String host, Provider provider) throws IOException {
         server = NettyServerBuilder.forAddress(new InetSocketAddress(host, port))
             .addService(new ActivationServiceImpl())
             .addService(new ContextServiceImpl())
             .addService(new DeviceServiceImpl())
+            .addService(new AlertServiceImpl())
             .build();
 
         server.start();
