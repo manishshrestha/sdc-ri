@@ -16,6 +16,7 @@ import org.somda.sdc.biceps.model.participant.AbstractDeviceComponentDescriptor;
 import org.somda.sdc.biceps.model.participant.AlertConditionState;
 import org.somda.sdc.biceps.model.participant.AlertSignalPresence;
 import org.somda.sdc.biceps.model.participant.AlertSignalState;
+import org.somda.sdc.biceps.model.participant.ClockState;
 import org.somda.sdc.biceps.model.participant.ComponentActivation;
 import org.somda.sdc.biceps.model.participant.ContextAssociation;
 import org.somda.sdc.biceps.model.participant.EnumStringMetricDescriptor;
@@ -400,6 +401,25 @@ public class Provider extends AbstractIdleService {
         ProviderUtil.addMetricQualityDemo(val);
         state.setMetricValue(val);
         mdibAccess.writeStates(MdibStateModifications.create(MdibStateModifications.Type.METRIC).add(state));
+    }
+
+    /**
+     * Change the specified ClockState by updating its date and time.
+     * @param clockHandle handle of the clockState to update.
+     */
+    public void updateClockState(String clockHandle) {
+        final MdibEntity clockEntity = mdibAccess.getEntity(clockHandle).orElseThrow();
+        final ClockState clockState = (ClockState) clockEntity.getStates().get(0);
+        final Instant now = Instant.now();
+        clockState.setDateAndTime(now);
+        clockState.setLastSet(now);
+
+        try {
+            mdibAccess.writeStates(MdibStateModifications
+                .create(MdibStateModifications.Type.COMPONENT).add(clockState));
+        } catch (PreprocessingException e) {
+            LOG.error("Could not update clock state", e);
+        }
     }
 
     /**

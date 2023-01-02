@@ -12,6 +12,7 @@ import org.mockito.ArgumentCaptor;
 import org.somda.sdc.biceps.common.MdibEntity;
 import org.somda.sdc.biceps.common.storage.PreprocessingException;
 import org.somda.sdc.biceps.model.participant.AlertSignalDescriptor;
+import org.somda.sdc.biceps.model.participant.ClockDescriptor;
 import org.somda.sdc.biceps.model.participant.LocationContextDescriptor;
 import org.somda.sdc.biceps.model.participant.LocationContextState;
 import org.somda.sdc.biceps.model.participant.LocationDetail;
@@ -136,6 +137,32 @@ class GrpcServerTest {
         verify(responseObserver).onCompleted();
 
         verify(this.provider).setLocation(any());
+
+        assertEquals(ResponseTypes.Result.RESULT_SUCCESS, captor.getValue().getResult());
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    void triggerEpisodicComponentReportGood() {
+        final DeviceRequests.TriggerReportRequest request = DeviceRequests.TriggerReportRequest.newBuilder()
+            .setReport(DeviceTypes.ReportType.REPORT_TYPE_EPISODIC_COMPONENT_REPORT)
+            .build();
+        StreamObserver<BasicResponses.BasicResponse> responseObserver = mock(StreamObserver.class);
+
+        MdibEntity clockEntity = mock(MdibEntity.class);
+        when(mdibAccess.findEntitiesByType(ClockDescriptor.class))
+            .thenReturn(List.of(clockEntity));
+        final String clockHandle = "clockHandle";
+        when(clockEntity.getHandle()).thenReturn(clockHandle);
+
+        classUnderTest.triggerReport(request, responseObserver);
+
+        final ArgumentCaptor<BasicResponses.BasicResponse> captor =
+            ArgumentCaptor.forClass(BasicResponses.BasicResponse.class);
+        verify(responseObserver).onNext(captor.capture());
+        verify(responseObserver).onCompleted();
+
+        verify(this.provider).updateClockState(clockHandle);
 
         assertEquals(ResponseTypes.Result.RESULT_SUCCESS, captor.getValue().getResult());
     }

@@ -27,6 +27,7 @@ import org.somda.sdc.biceps.common.MdibEntity;
 import org.somda.sdc.biceps.common.storage.PreprocessingException;
 import org.somda.sdc.biceps.model.participant.AbstractDescriptor;
 import org.somda.sdc.biceps.model.participant.AlertSignalDescriptor;
+import org.somda.sdc.biceps.model.participant.ClockDescriptor;
 import org.somda.sdc.biceps.model.participant.LocationContextDescriptor;
 import org.somda.sdc.biceps.model.participant.LocationContextState;
 import org.somda.sdc.biceps.model.participant.LocationDetail;
@@ -126,10 +127,24 @@ class GrpcServer {
                 case REPORT_TYPE_EPISODIC_CONTEXT_REPORT: responseObserver.onNext(
                     BasicResponses.BasicResponse.newBuilder().setResult(triggerEpisodicContextReport()).build());
                     break;
+                case REPORT_TYPE_EPISODIC_COMPONENT_REPORT: responseObserver.onNext(
+                    BasicResponses.BasicResponse.newBuilder().setResult(triggerEpisodicComponentReport()).build());
+                    break;
                 default:responseObserver.onNext(
                     BasicResponses.BasicResponse.newBuilder().setResult(ResponseTypes.Result.RESULT_NOT_IMPLEMENTED).build());
             }
             responseObserver.onCompleted();
+        }
+
+        private ResponseTypes.Result triggerEpisodicComponentReport() {
+            final LocalMdibAccess mdibAccess = GrpcServer.provider.getMdibAccess();
+
+            final MdibEntity clockEntity =
+                new ArrayList<>(mdibAccess.findEntitiesByType(ClockDescriptor.class)).get(0);
+
+            GrpcServer.provider.updateClockState(clockEntity.getHandle());
+
+            return ResponseTypes.Result.RESULT_SUCCESS;
         }
 
         private ResponseTypes.Result triggerEpisodicContextReport() {
