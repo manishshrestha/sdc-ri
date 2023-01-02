@@ -12,12 +12,16 @@ import org.mockito.ArgumentCaptor;
 import org.somda.sdc.biceps.common.MdibEntity;
 import org.somda.sdc.biceps.common.storage.PreprocessingException;
 import org.somda.sdc.biceps.model.participant.AlertSignalDescriptor;
+import org.somda.sdc.biceps.model.participant.LocationContextDescriptor;
+import org.somda.sdc.biceps.model.participant.LocationContextState;
+import org.somda.sdc.biceps.model.participant.LocationDetail;
 import org.somda.sdc.biceps.model.participant.StringMetricDescriptor;
 import org.somda.sdc.biceps.provider.access.LocalMdibAccess;
 
 import java.io.IOException;
 import java.util.List;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -99,6 +103,39 @@ class GrpcServerTest {
         verify(responseObserver).onCompleted();
 
         verify(this.provider).changeStringMetric(metricHandle);
+
+        assertEquals(ResponseTypes.Result.RESULT_SUCCESS, captor.getValue().getResult());
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    void triggerEpisodicContextReportGood() throws PreprocessingException {
+        final DeviceRequests.TriggerReportRequest request = DeviceRequests.TriggerReportRequest.newBuilder()
+            .setReport(DeviceTypes.ReportType.REPORT_TYPE_EPISODIC_CONTEXT_REPORT)
+            .build();
+        StreamObserver<BasicResponses.BasicResponse> responseObserver = mock(StreamObserver.class);
+
+        MdibEntity locationContextEntity = mock(MdibEntity.class);
+        when(mdibAccess.findEntitiesByType(LocationContextDescriptor.class))
+            .thenReturn(List.of(locationContextEntity));
+        LocationContextDescriptor locationContextDescriptor = mock(LocationContextDescriptor.class);
+        when(locationContextEntity.getDescriptor()).thenReturn(locationContextDescriptor);
+        final String locationContextHandle = "locationContextHandle";
+        when(locationContextDescriptor.getHandle()).thenReturn(locationContextHandle);
+        LocationContextState locationContextState = mock(LocationContextState.class);
+        when(locationContextEntity.getStates()).thenReturn(List.of(locationContextState));
+        LocationDetail locationDetail = mock(LocationDetail.class);
+        when(locationContextState.getLocationDetail()).thenReturn(locationDetail);
+        when(locationDetail.getBuilding()).thenReturn("building");
+
+        classUnderTest.triggerReport(request, responseObserver);
+
+        final ArgumentCaptor<BasicResponses.BasicResponse> captor =
+            ArgumentCaptor.forClass(BasicResponses.BasicResponse.class);
+        verify(responseObserver).onNext(captor.capture());
+        verify(responseObserver).onCompleted();
+
+        verify(this.provider).setLocation(any());
 
         assertEquals(ResponseTypes.Result.RESULT_SUCCESS, captor.getValue().getResult());
     }

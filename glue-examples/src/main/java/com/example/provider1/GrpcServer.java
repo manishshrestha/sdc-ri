@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 import com.draeger.medical.t2iapi.BasicResponses;
 import com.draeger.medical.t2iapi.ResponseTypes;
@@ -26,6 +27,8 @@ import org.somda.sdc.biceps.common.MdibEntity;
 import org.somda.sdc.biceps.common.storage.PreprocessingException;
 import org.somda.sdc.biceps.model.participant.AbstractDescriptor;
 import org.somda.sdc.biceps.model.participant.AlertSignalDescriptor;
+import org.somda.sdc.biceps.model.participant.LocationContextDescriptor;
+import org.somda.sdc.biceps.model.participant.LocationContextState;
 import org.somda.sdc.biceps.model.participant.LocationDetail;
 import org.somda.sdc.biceps.model.participant.StringMetricDescriptor;
 import org.somda.sdc.biceps.provider.access.LocalMdibAccess;
@@ -120,10 +123,44 @@ class GrpcServer {
                 case REPORT_TYPE_EPISODIC_METRIC_REPORT: responseObserver.onNext(
                     BasicResponses.BasicResponse.newBuilder().setResult(triggerEpisodicMetricReport()).build());
                     break;
+                case REPORT_TYPE_EPISODIC_CONTEXT_REPORT: responseObserver.onNext(
+                    BasicResponses.BasicResponse.newBuilder().setResult(triggerEpisodicContextReport()).build());
+                    break;
                 default:responseObserver.onNext(
                     BasicResponses.BasicResponse.newBuilder().setResult(ResponseTypes.Result.RESULT_NOT_IMPLEMENTED).build());
             }
             responseObserver.onCompleted();
+        }
+
+        private ResponseTypes.Result triggerEpisodicContextReport() {
+            final LocalMdibAccess mdibAccess = GrpcServer.provider.getMdibAccess();
+
+            final ArrayList<MdibEntity> locationContexts =
+                new ArrayList<>(mdibAccess.findEntitiesByType(LocationContextDescriptor.class));
+            final LocationContextState locState = (LocationContextState) locationContexts.get(0).getStates().get(0);
+
+            final LocationDetail locationDetail = locState.getLocationDetail();
+            switchBuilding(locationDetail);
+            try {
+                GrpcServer.provider.setLocation(locationDetail);
+            } catch (PreprocessingException ppe) {
+                LOG.warn("Encountered an Exception trying to trigger an EpisodicContextReport:", ppe);
+                return ResponseTypes.Result.RESULT_FAIL;
+            }
+
+            return ResponseTypes.Result.RESULT_SUCCESS;
+        }
+
+        private void switchBuilding(LocationDetail locationDetail) {
+            String oldValue = locationDetail.getBuilding();
+            if (oldValue == null) {
+                oldValue = "defaultBuilding";
+            }
+            if (oldValue.toUpperCase(Locale.ROOT).equals(oldValue)) {
+                locationDetail.setBuilding(oldValue.toLowerCase(Locale.ROOT));
+            } else {
+                locationDetail.setBuilding(oldValue.toUpperCase(Locale.ROOT));
+            }
         }
 
         private ResponseTypes.Result triggerEpisodicMetricReport() {
