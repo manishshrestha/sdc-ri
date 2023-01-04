@@ -1,6 +1,8 @@
 package com.example.provider1;
 
+import com.draeger.medical.t2iapi.ResponseTypes;
 import com.draeger.medical.t2iapi.activation_state.ActivationStateTypes;
+import com.draeger.medical.t2iapi.metric.MetricTypes;
 import com.example.Constants;
 import com.google.common.collect.Iterables;
 import com.google.common.util.concurrent.AbstractIdleService;
@@ -13,6 +15,8 @@ import org.somda.sdc.biceps.common.MdibStateModifications;
 import org.somda.sdc.biceps.common.access.ReadTransaction;
 import org.somda.sdc.biceps.common.storage.PreprocessingException;
 import org.somda.sdc.biceps.model.participant.AbstractDeviceComponentDescriptor;
+import org.somda.sdc.biceps.model.participant.AbstractMetricState;
+import org.somda.sdc.biceps.model.participant.AbstractMetricValue;
 import org.somda.sdc.biceps.model.participant.AlertConditionState;
 import org.somda.sdc.biceps.model.participant.AlertSignalPresence;
 import org.somda.sdc.biceps.model.participant.AlertSignalState;
@@ -81,10 +85,10 @@ public class Provider extends AbstractIdleService {
     private static final String GRPC_HOST = "localhost";
     private static final int GRPC_PORT = 50051;
 
-    private Injector injector;
-    private LocalMdibAccess mdibAccess;
-    private DpwsFramework dpwsFramework;
-    private SdcDevice sdcDevice;
+    private final Injector injector;
+    private final LocalMdibAccess mdibAccess;
+    private final DpwsFramework dpwsFramework;
+    private final SdcDevice sdcDevice;
 
     private InstanceIdentifier instanceIdentifier;
     private LocationDetail currentLocation;
@@ -123,7 +127,7 @@ public class Provider extends AbstractIdleService {
 
         var epr = providerUtil.getEpr();
         if (epr == null) {
-            epr = "urn:uuid:" + UUID.randomUUID().toString();
+            epr = "urn:uuid:" + UUID.randomUUID();
             LOG.info("No epr address provided, generated random epr {}", epr);
         }
 
@@ -310,7 +314,7 @@ public class Provider extends AbstractIdleService {
      */
     public void changeNumericMetric(String handle) throws PreprocessingException {
         Optional<NumericMetricState> stateOpt = mdibAccess.getState(handle, NumericMetricState.class);
-        NumericMetricState state = stateOpt.get();
+        NumericMetricState state = stateOpt.orElseThrow();
         var val = state.getMetricValue();
         if (val != null && val.getValue() != null) {
             val.setValue(val.getValue().add(BigDecimal.ONE));
@@ -334,7 +338,7 @@ public class Provider extends AbstractIdleService {
      */
     public void changeStringMetric(String handle) throws PreprocessingException {
         Optional<StringMetricState> stateOpt = mdibAccess.getState(handle, StringMetricState.class);
-        StringMetricState state = stateOpt.get();
+        StringMetricState state = stateOpt.orElseThrow();
         var val = state.getMetricValue();
         if (val != null && val.getValue() != null) {
             var actVal = val.getValue();
@@ -363,7 +367,7 @@ public class Provider extends AbstractIdleService {
      */
     public void changeEnumStringMetric(String handle) throws PreprocessingException {
         Optional<MdibEntity> entityOpt = mdibAccess.getEntity(handle);
-        MdibEntity mdibEntity = entityOpt.get();
+        MdibEntity mdibEntity = entityOpt.orElseThrow();
         EnumStringMetricDescriptor descriptor = (EnumStringMetricDescriptor) mdibEntity.getDescriptor();
 
         List<String> allowedValue =
@@ -430,8 +434,8 @@ public class Provider extends AbstractIdleService {
      */
     public void changeAlertSignalAndConditionPresence(String signalHandle, String conditionHandle) {
 
-        var signalEntity = mdibAccess.getEntity(signalHandle).get();
-        var conditionEntity = mdibAccess.getEntity(conditionHandle).get();
+        var signalEntity = mdibAccess.getEntity(signalHandle).orElseThrow();
+        var conditionEntity = mdibAccess.getEntity(conditionHandle).orElseThrow();
 
         AlertSignalState signalState = (AlertSignalState) signalEntity.getStates().get(0);
         AlertConditionState conditionState = (AlertConditionState) conditionEntity.getStates().get(0);
@@ -549,7 +553,7 @@ public class Provider extends AbstractIdleService {
         //       AlertConditions and AlertSystems must conform to Table 9 in the Biceps Standard.
         // TODO: clarify what is supposed to happen when the @Presence set by this Method causes the
         //       combination to become invalid according to Table 9.
-        var entity = mdibAccess.getEntity(handle).get();
+        var entity = mdibAccess.getEntity(handle).orElseThrow();
 
         AlertConditionState state = (AlertConditionState) entity.getStates().get(0);
         state.setPresence(newPresenceValue);
@@ -568,5 +572,108 @@ public class Provider extends AbstractIdleService {
         //       AlertConditions and AlertSystems must conform to Table 9 in the Biceps Standard.
         // TODO: clarify what is supposed to happen when the ActivationState set by this Method causes the
         //       combination to become invalid according to Table 9.
+    }
+
+    public ResponseTypes.Result setMetricQualityValidity(String metricHandle, MetricTypes.MeasurementValidity validity) {
+
+        final MdibEntity entity = mdibAccess.getEntity(metricHandle).orElseThrow();
+        final List<AbstractMetricState> states = entity.getStates(AbstractMetricState.class);
+        for (AbstractMetricState state : states) {
+            if (state instanceof NumericMetricState) {
+                final NumericMetricValue metricValue = ((NumericMetricState) state).getMetricValue();
+                if (metricValue == null) {
+                    continue;
+                }
+                AbstractMetricValue.MetricQuality metricQuality = metricValue.getMetricQuality();
+                if (metricQuality == null) {
+                    metricQuality = new AbstractMetricValue.MetricQuality();
+                    metricValue.setMetricQuality(metricQuality);
+                }
+                metricQuality.setValidity(translateValidityFromT2IAPI(validity));
+
+                try {
+                    mdibAccess.writeStates(MdibStateModifications
+                        .create(MdibStateModifications.Type.METRIC).add(state));
+                } catch (PreprocessingException e) {
+                    LOG.error("Could not write state to set metric quality validity", e);
+                }
+
+                return ResponseTypes.Result.RESULT_SUCCESS;
+            } else if (state instanceof StringMetricState) {
+                final StringMetricValue metricValue = ((StringMetricState) state).getMetricValue();
+                if (metricValue == null) {
+                    continue;
+                }
+                AbstractMetricValue.MetricQuality metricQuality = metricValue.getMetricQuality();
+                if (metricQuality == null) {
+                    metricQuality = new AbstractMetricValue.MetricQuality();
+                    metricValue.setMetricQuality(metricQuality);
+                }
+                metricQuality.setValidity(translateValidityFromT2IAPI(validity));
+
+                if (   MeasurementValidity.ONG.equals(metricQuality.getValidity())
+                    || MeasurementValidity.NA.equals(metricQuality.getValidity())) {
+                    // NOTE: According to Biceps:B.61, when MeasurementValidity is ONG or NA,
+                    //       then no Value should be present.
+                    //noinspection ConstantConditions
+                    metricValue.setValue(null);
+                }
+
+                try {
+                    mdibAccess.writeStates(MdibStateModifications
+                        .create(MdibStateModifications.Type.METRIC).add(state));
+                } catch (PreprocessingException e) {
+                    LOG.error("Could not write state to set metric quality validity", e);
+                }
+
+                return ResponseTypes.Result.RESULT_SUCCESS;
+            } else if (state instanceof RealTimeSampleArrayMetricState) {
+                final SampleArrayValue metricValue = ((RealTimeSampleArrayMetricState) state).getMetricValue();
+                if (metricValue == null) {
+                    continue;
+                }
+                AbstractMetricValue.MetricQuality metricQuality = metricValue.getMetricQuality();
+                if (metricQuality == null) {
+                    metricQuality = new AbstractMetricValue.MetricQuality();
+                    metricValue.setMetricQuality(metricQuality);
+                }
+                metricQuality.setValidity(translateValidityFromT2IAPI(validity));
+
+                if (   MeasurementValidity.ONG.equals(metricQuality.getValidity())
+                    || MeasurementValidity.NA.equals(metricQuality.getValidity())) {
+                    // NOTE: According to Biceps:B.61, when MeasurementValidity is ONG or NA,
+                    //       then no Value should be present.
+                    metricValue.setSamples(List.of());
+                }
+
+                try {
+                    mdibAccess.writeStates(MdibStateModifications
+                        .create(MdibStateModifications.Type.METRIC).add(state));
+                } catch (PreprocessingException e) {
+                    LOG.error("Could not write state to set metric quality validity", e);
+                }
+
+                return ResponseTypes.Result.RESULT_SUCCESS;
+            } else {
+                // TODO: add support for DistributionSampleArrayMetricState
+                // TODO: add support for RealTimeSampleArrayMetricState
+                return ResponseTypes.Result.RESULT_NOT_IMPLEMENTED;
+            }
+        }
+        return ResponseTypes.Result.RESULT_FAIL;
+    }
+
+    private MeasurementValidity translateValidityFromT2IAPI(MetricTypes.MeasurementValidity validity) {
+        switch (validity) {
+            case MEASUREMENT_VALIDITY_VALID: return MeasurementValidity.VLD;
+            case MEASUREMENT_VALIDITY_VALIDATED_DATA: return MeasurementValidity.VLDATED;
+            case MEASUREMENT_VALIDITY_INVALID: return MeasurementValidity.INV;
+            case MEASUREMENT_VALIDITY_OVERFLOW: return MeasurementValidity.OFLW;
+            case MEASUREMENT_VALIDITY_UNDERFLOW: return MeasurementValidity.UFLW;
+            case MEASUREMENT_VALIDITY_MEASUREMENT_ONGOING: return MeasurementValidity.ONG;
+            case MEASUREMENT_VALIDITY_CALIBRATION_ONGOING: return MeasurementValidity.CALIB;
+            case MEASUREMENT_VALIDITY_QUESTIONABLE: return MeasurementValidity.QST;
+            default: return MeasurementValidity.NA;
+        }
     }
 }

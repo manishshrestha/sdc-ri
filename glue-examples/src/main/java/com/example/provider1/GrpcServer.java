@@ -18,6 +18,9 @@ import com.draeger.medical.t2iapi.context.ContextTypes;
 
 import com.draeger.medical.t2iapi.device.DeviceRequests;
 import com.draeger.medical.t2iapi.device.DeviceServiceGrpc;
+import com.draeger.medical.t2iapi.metric.MetricRequests;
+import com.draeger.medical.t2iapi.metric.MetricServiceGrpc;
+import com.draeger.medical.t2iapi.metric.MetricTypes;
 import io.grpc.Server;
 import io.grpc.netty.shaded.io.grpc.netty.NettyServerBuilder;
 import io.grpc.stub.StreamObserver;
@@ -228,12 +231,28 @@ class GrpcServer {
         }
     }
 
+    protected static class MetricServiceImpl extends MetricServiceGrpc.MetricServiceImplBase {
+
+        @Override
+        public void setMetricQualityValidity(MetricRequests.SetMetricQualityValidityRequest request,
+                                             StreamObserver<BasicResponses.BasicResponse> responseObserver) {
+            final String metricHandle = request.getHandle();
+            final MetricTypes.MeasurementValidity validity = request.getValidity();
+
+            final ResponseTypes.Result result = GrpcServer.provider.setMetricQualityValidity(metricHandle, validity);
+            responseObserver.onNext(
+                BasicResponses.BasicResponse.newBuilder().setResult(result).build());
+            responseObserver.onCompleted();
+        }
+    }
+
     static void startGrpcServer(int port, String host, Provider provider) throws IOException {
         server = NettyServerBuilder.forAddress(new InetSocketAddress(host, port))
             .addService(new ActivationServiceImpl())
             .addService(new ContextServiceImpl())
             .addService(new DeviceServiceImpl())
             .addService(new AlertServiceImpl())
+            .addService(new MetricServiceImpl())
             .build();
 
         server.start();

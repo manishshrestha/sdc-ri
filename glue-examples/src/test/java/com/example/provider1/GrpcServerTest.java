@@ -4,6 +4,8 @@ import com.draeger.medical.t2iapi.BasicResponses;
 import com.draeger.medical.t2iapi.ResponseTypes;
 import com.draeger.medical.t2iapi.device.DeviceRequests;
 import com.draeger.medical.t2iapi.device.DeviceTypes;
+import com.draeger.medical.t2iapi.metric.MetricRequests;
+import com.draeger.medical.t2iapi.metric.MetricTypes;
 import io.grpc.stub.StreamObserver;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -32,7 +34,8 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class GrpcServerTest {
 
-    private GrpcServer.DeviceServiceImpl classUnderTest;
+    private GrpcServer.DeviceServiceImpl deviceServiceUnderTest;
+    private GrpcServer.MetricServiceImpl metricServiceUnderTest;
     private Provider provider;
     private LocalMdibAccess mdibAccess;
 
@@ -42,7 +45,8 @@ class GrpcServerTest {
         this.mdibAccess = mock(LocalMdibAccess.class);
         when(provider.getMdibAccess()).thenReturn(mdibAccess);
       GrpcServer.startGrpcServer(20000, "127.0.0.1", provider);
-      classUnderTest = new GrpcServer.DeviceServiceImpl();
+      deviceServiceUnderTest = new GrpcServer.DeviceServiceImpl();
+      metricServiceUnderTest = new GrpcServer.MetricServiceImpl();
     }
 
     @AfterEach
@@ -68,7 +72,7 @@ class GrpcServerTest {
         final String conditionHandle = "conditionHandle";
         when(alertSignalDescriptor.getConditionSignaled()).thenReturn(conditionHandle);
 
-        classUnderTest.triggerReport(request, responseObserver);
+        deviceServiceUnderTest.triggerReport(request, responseObserver);
 
         final ArgumentCaptor<BasicResponses.BasicResponse> captor =
             ArgumentCaptor.forClass(BasicResponses.BasicResponse.class);
@@ -96,7 +100,7 @@ class GrpcServerTest {
         final String metricHandle = "metricHandle";
         when(alertSignalDescriptor.getHandle()).thenReturn(metricHandle);
 
-        classUnderTest.triggerReport(request, responseObserver);
+        deviceServiceUnderTest.triggerReport(request, responseObserver);
 
         final ArgumentCaptor<BasicResponses.BasicResponse> captor =
             ArgumentCaptor.forClass(BasicResponses.BasicResponse.class);
@@ -129,7 +133,7 @@ class GrpcServerTest {
         when(locationContextState.getLocationDetail()).thenReturn(locationDetail);
         when(locationDetail.getBuilding()).thenReturn("building");
 
-        classUnderTest.triggerReport(request, responseObserver);
+        deviceServiceUnderTest.triggerReport(request, responseObserver);
 
         final ArgumentCaptor<BasicResponses.BasicResponse> captor =
             ArgumentCaptor.forClass(BasicResponses.BasicResponse.class);
@@ -155,7 +159,7 @@ class GrpcServerTest {
         final String clockHandle = "clockHandle";
         when(clockEntity.getHandle()).thenReturn(clockHandle);
 
-        classUnderTest.triggerReport(request, responseObserver);
+        deviceServiceUnderTest.triggerReport(request, responseObserver);
 
         final ArgumentCaptor<BasicResponses.BasicResponse> captor =
             ArgumentCaptor.forClass(BasicResponses.BasicResponse.class);
@@ -185,7 +189,7 @@ class GrpcServerTest {
         final String conditionHandle = "conditionHandle";
         when(alertSignalDescriptor.getConditionSignaled()).thenReturn(conditionHandle);
 
-        classUnderTest.triggerReport(request, responseObserver);
+        deviceServiceUnderTest.triggerReport(request, responseObserver);
 
         final ArgumentCaptor<BasicResponses.BasicResponse> captor =
             ArgumentCaptor.forClass(BasicResponses.BasicResponse.class);
@@ -195,6 +199,31 @@ class GrpcServerTest {
         verifyNoInteractions(this.provider);
 
         assertEquals(ResponseTypes.Result.RESULT_NOT_IMPLEMENTED, captor.getValue().getResult());
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    void setMetricQualityValidityGood() {
+        String handle = "metricHandle";
+        MetricTypes.MeasurementValidity validity = MetricTypes.MeasurementValidity.MEASUREMENT_VALIDITY_VALID;
+        final MetricRequests.SetMetricQualityValidityRequest request = MetricRequests.SetMetricQualityValidityRequest.newBuilder()
+            .setHandle(handle)
+            .setValidity(validity)
+            .build();
+        StreamObserver<BasicResponses.BasicResponse> responseObserver = mock(StreamObserver.class);
+
+        when(provider.setMetricQualityValidity(any(), any())).thenReturn(ResponseTypes.Result.RESULT_SUCCESS);
+
+        metricServiceUnderTest.setMetricQualityValidity(request, responseObserver);
+
+        final ArgumentCaptor<BasicResponses.BasicResponse> captor =
+            ArgumentCaptor.forClass(BasicResponses.BasicResponse.class);
+        verify(responseObserver).onNext(captor.capture());
+        verify(responseObserver).onCompleted();
+
+        // verify(this.provider).updateClockState(clockHandle);
+
+        assertEquals(ResponseTypes.Result.RESULT_SUCCESS, captor.getValue().getResult());
     }
 
 }
