@@ -13,6 +13,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.somda.sdc.biceps.common.MdibEntity;
 import org.somda.sdc.biceps.common.storage.PreprocessingException;
+import org.somda.sdc.biceps.model.participant.AbstractOperationDescriptor;
 import org.somda.sdc.biceps.model.participant.AlertSignalDescriptor;
 import org.somda.sdc.biceps.model.participant.ClockDescriptor;
 import org.somda.sdc.biceps.model.participant.LocationContextDescriptor;
@@ -167,6 +168,32 @@ class GrpcServerTest {
         verify(responseObserver).onCompleted();
 
         verify(this.provider).updateClockState(clockHandle);
+
+        assertEquals(ResponseTypes.Result.RESULT_SUCCESS, captor.getValue().getResult());
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    void triggerEpisodicOperationalStateReportGood() {
+        final DeviceRequests.TriggerReportRequest request = DeviceRequests.TriggerReportRequest.newBuilder()
+            .setReport(DeviceTypes.ReportType.REPORT_TYPE_EPISODIC_OPERATIONAL_STATE_REPORT)
+            .build();
+        StreamObserver<BasicResponses.BasicResponse> responseObserver = mock(StreamObserver.class);
+
+        MdibEntity operationEntity = mock(MdibEntity.class);
+        when(mdibAccess.findEntitiesByType(AbstractOperationDescriptor.class))
+            .thenReturn(List.of(operationEntity));
+        final String opHandle = "opHandle";
+        when(operationEntity.getHandle()).thenReturn(opHandle);
+
+        deviceServiceUnderTest.triggerReport(request, responseObserver);
+
+        final ArgumentCaptor<BasicResponses.BasicResponse> captor =
+            ArgumentCaptor.forClass(BasicResponses.BasicResponse.class);
+        verify(responseObserver).onNext(captor.capture());
+        verify(responseObserver).onCompleted();
+
+        verify(this.provider).switchAbstractOperationStateOperatingMode(opHandle);
 
         assertEquals(ResponseTypes.Result.RESULT_SUCCESS, captor.getValue().getResult());
     }

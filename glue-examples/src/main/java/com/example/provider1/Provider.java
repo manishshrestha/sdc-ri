@@ -3,6 +3,7 @@ package com.example.provider1;
 import com.draeger.medical.t2iapi.ResponseTypes;
 import com.draeger.medical.t2iapi.activation_state.ActivationStateTypes;
 import com.draeger.medical.t2iapi.metric.MetricTypes;
+import com.draeger.medical.t2iapi.operation.OperationTypes;
 import com.example.Constants;
 import com.google.common.collect.Iterables;
 import com.google.common.util.concurrent.AbstractIdleService;
@@ -17,6 +18,7 @@ import org.somda.sdc.biceps.common.storage.PreprocessingException;
 import org.somda.sdc.biceps.model.participant.AbstractDeviceComponentDescriptor;
 import org.somda.sdc.biceps.model.participant.AbstractMetricState;
 import org.somda.sdc.biceps.model.participant.AbstractMetricValue;
+import org.somda.sdc.biceps.model.participant.AbstractOperationState;
 import org.somda.sdc.biceps.model.participant.AlertConditionState;
 import org.somda.sdc.biceps.model.participant.AlertSignalPresence;
 import org.somda.sdc.biceps.model.participant.AlertSignalState;
@@ -34,6 +36,7 @@ import org.somda.sdc.biceps.model.participant.Mdib;
 import org.somda.sdc.biceps.model.participant.MeasurementValidity;
 import org.somda.sdc.biceps.model.participant.NumericMetricState;
 import org.somda.sdc.biceps.model.participant.NumericMetricValue;
+import org.somda.sdc.biceps.model.participant.OperatingMode;
 import org.somda.sdc.biceps.model.participant.RealTimeSampleArrayMetricState;
 import org.somda.sdc.biceps.model.participant.SampleArrayValue;
 import org.somda.sdc.biceps.model.participant.StringMetricState;
@@ -661,6 +664,28 @@ public class Provider extends AbstractIdleService {
             }
         }
         return ResponseTypes.Result.RESULT_FAIL;
+    }
+
+    public ResponseTypes.Result switchAbstractOperationStateOperatingMode(String opHandle) {
+
+        var opEntity = mdibAccess.getEntity(opHandle).orElseThrow();
+
+        AbstractOperationState opState = (AbstractOperationState) opEntity.getStates().get(0);
+        final OperatingMode operatingMode = opState.getOperatingMode();
+        if (OperatingMode.DIS.equals(operatingMode)) {
+            opState.setOperatingMode(OperatingMode.EN);
+        } else {
+            opState.setOperatingMode(OperatingMode.DIS);
+        }
+
+        try {
+            mdibAccess.writeStates(MdibStateModifications
+                .create(MdibStateModifications.Type.OPERATION).add(opState));
+        } catch (PreprocessingException e) {
+            LOG.error("", e);
+        }
+
+        return ResponseTypes.Result.RESULT_SUCCESS;
     }
 
     private MeasurementValidity translateValidityFromT2IAPI(MetricTypes.MeasurementValidity validity) {

@@ -29,6 +29,7 @@ import org.apache.logging.log4j.Logger;
 import org.somda.sdc.biceps.common.MdibEntity;
 import org.somda.sdc.biceps.common.storage.PreprocessingException;
 import org.somda.sdc.biceps.model.participant.AbstractDescriptor;
+import org.somda.sdc.biceps.model.participant.AbstractOperationDescriptor;
 import org.somda.sdc.biceps.model.participant.AlertSignalDescriptor;
 import org.somda.sdc.biceps.model.participant.ClockDescriptor;
 import org.somda.sdc.biceps.model.participant.LocationContextDescriptor;
@@ -133,10 +134,25 @@ class GrpcServer {
                 case REPORT_TYPE_EPISODIC_COMPONENT_REPORT: responseObserver.onNext(
                     BasicResponses.BasicResponse.newBuilder().setResult(triggerEpisodicComponentReport()).build());
                     break;
+                case REPORT_TYPE_EPISODIC_OPERATIONAL_STATE_REPORT: responseObserver.onNext(
+                    BasicResponses.BasicResponse.newBuilder().setResult(triggerEpisodicOperationalStateReport()).build());
+                    break;
                 default:responseObserver.onNext(
                     BasicResponses.BasicResponse.newBuilder().setResult(ResponseTypes.Result.RESULT_NOT_IMPLEMENTED).build());
             }
             responseObserver.onCompleted();
+        }
+
+        private ResponseTypes.Result triggerEpisodicOperationalStateReport() {
+            final LocalMdibAccess mdibAccess = GrpcServer.provider.getMdibAccess();
+
+            final List<MdibEntity> operations =
+                new ArrayList<>(
+                    mdibAccess.findEntitiesByType(AbstractOperationDescriptor.class));
+
+            GrpcServer.provider.switchAbstractOperationStateOperatingMode(operations.get(0).getHandle());
+
+            return ResponseTypes.Result.RESULT_SUCCESS;
         }
 
         private ResponseTypes.Result triggerEpisodicComponentReport() {
