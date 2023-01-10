@@ -316,7 +316,11 @@
             <pm:State xsi:type="pm:ScoState" DescriptorVersion="0" StateVersion="0" InvocationRequested="" InvocationRequired="" DescriptorHandle="sco.vmd1.mds0"/>
             <pm:State xsi:type="pm:ChannelState" DescriptorVersion="0" StateVersion="0" DescriptorHandle="ch0.vmd0"/>
             <pm:State xsi:type="pm:VmdState" DescriptorVersion="0" StateVersion="0" DescriptorHandle="vmd0"/>
-            <pm:State xsi:type="pm:NumericMetricState" DescriptorHandle="numeric.ch0.vmd1" DescriptorVersion="0" StateVersion="0"/>
+            <pm:State xsi:type="pm:NumericMetricState" DescriptorHandle="numeric.ch0.vmd1" DescriptorVersion="0" StateVersion="0">
+                <pm:MetricValue DeterminationTime="1579170442498" Value="42" xsi:type="pm:NumericMetricValue">
+                    <pm:MetricQuality Validity="Vld"/>
+                </pm:MetricValue>
+            </pm:State>
             <pm:State xsi:type="pm:NumericMetricState" DescriptorHandle="numeric.ch0.vmd0" DescriptorVersion="0" StateVersion="37">
                 <pm:MetricValue DeterminationTime="1579170442498" Value="36" xsi:type="pm:NumericMetricValue">
                     <pm:MetricQuality Validity="Vld"/>

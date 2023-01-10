@@ -112,6 +112,10 @@ public class SdcDevice extends AbstractIdleService implements Device, EventSourc
         return state();
     }
 
+    public HighPriorityServices getHighPriorityServices() {
+        return highPriorityServices;
+    }
+
     @Override
     public <T extends AbstractState> void sendPeriodicStateReport(List<T> states, MdibVersion mdibVersion) {
         highPriorityServices.sendPeriodicStateReport(states, mdibVersion);
@@ -224,12 +228,12 @@ public class SdcDevice extends AbstractIdleService implements Device, EventSourc
     }
 
     @Override
-    public void sendNotification(String action, Object payload) throws MarshallingException, TransportException {
+    public void sendNotification(String action, Object payload) {
         highPriorityServices.sendNotification(action, payload);
     }
 
     @Override
-    public void subscriptionEndToAll(WsEventingStatus status) throws TransportException {
+    public void subscriptionEndToAll(WsEventingStatus status) {
         highPriorityServices.subscriptionEndToAll(status);
     }
 }

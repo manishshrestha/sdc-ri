@@ -15,6 +15,8 @@ import org.somda.sdc.biceps.common.MdibEntity;
 import org.somda.sdc.biceps.common.MdibStateModifications;
 import org.somda.sdc.biceps.common.access.ReadTransaction;
 import org.somda.sdc.biceps.common.storage.PreprocessingException;
+import org.somda.sdc.biceps.model.message.SetValue;
+import org.somda.sdc.biceps.model.message.SetValueResponse;
 import org.somda.sdc.biceps.model.participant.AbstractDeviceComponentDescriptor;
 import org.somda.sdc.biceps.model.participant.AbstractMetricState;
 import org.somda.sdc.biceps.model.participant.AbstractMetricValue;
@@ -46,17 +48,30 @@ import org.somda.sdc.biceps.provider.access.factory.LocalMdibAccessFactory;
 import org.somda.sdc.dpws.DpwsFramework;
 import org.somda.sdc.dpws.DpwsUtil;
 import org.somda.sdc.dpws.device.DeviceSettings;
+import org.somda.sdc.dpws.soap.ApplicationInfo;
+import org.somda.sdc.dpws.soap.CommunicationContext;
+import org.somda.sdc.dpws.soap.SoapMessage;
+import org.somda.sdc.dpws.soap.TransportInfo;
+import org.somda.sdc.dpws.soap.factory.SoapMessageFactory;
+import org.somda.sdc.dpws.soap.interception.MessageInterceptor;
+import org.somda.sdc.dpws.soap.interception.RequestResponseObject;
+import org.somda.sdc.dpws.soap.model.Body;
+import org.somda.sdc.dpws.soap.model.Envelope;
 import org.somda.sdc.dpws.soap.wsaddressing.WsAddressingUtil;
 import org.somda.sdc.dpws.soap.wsaddressing.model.EndpointReferenceType;
+import org.somda.sdc.glue.common.ActionConstants;
 import org.somda.sdc.glue.common.FallbackInstanceIdentifier;
 import org.somda.sdc.glue.common.MdibXmlIo;
 import org.somda.sdc.glue.common.factory.ModificationsBuilderFactory;
 import org.somda.sdc.glue.provider.SdcDevice;
 import org.somda.sdc.glue.provider.factory.SdcDeviceFactory;
 import org.somda.sdc.glue.provider.plugin.SdcRequiredTypesAndScopes;
+import org.somda.sdc.glue.provider.services.HighPriorityServices;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.RoundingMode;
@@ -92,6 +107,7 @@ public class Provider extends AbstractIdleService {
     private final LocalMdibAccess mdibAccess;
     private final DpwsFramework dpwsFramework;
     private final SdcDevice sdcDevice;
+    private final SoapMessageFactory soapMessageFactory;
 
     private InstanceIdentifier instanceIdentifier;
     private LocationDetail currentLocation;
@@ -127,6 +143,7 @@ public class Provider extends AbstractIdleService {
         this.dpwsFramework = injector.getInstance(DpwsFramework.class);
         this.dpwsFramework.setNetworkInterface(networkInterface);
         this.mdibAccess = injector.getInstance(LocalMdibAccessFactory.class).createLocalMdibAccess();
+        this.soapMessageFactory = injector.getInstance(SoapMessageFactory.class);
 
         var epr = providerUtil.getEpr();
         if (epr == null) {
@@ -700,5 +717,50 @@ public class Provider extends AbstractIdleService {
             case MEASUREMENT_VALIDITY_QUESTIONABLE: return MeasurementValidity.QST;
             default: return MeasurementValidity.NA;
         }
+    }
+
+    public void invokeNumericSetValueOperation(String opHandle, BigDecimal value) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+
+        // NOTE: HighPriorityServices.setValue() is not public. We hence have to call it
+        //       via Reflection, just like Guice does.
+        Method setValue = null;
+        final HighPriorityServices highPriorityServices = sdcDevice.getHighPriorityServices();
+        for (Method m : highPriorityServices.getClass().getDeclaredMethods()) {
+            final MessageInterceptor annotation = m.getAnnotation(MessageInterceptor.class);
+            if (annotation != null
+                && annotation.value().equals(ActionConstants.ACTION_SET_VALUE)
+                && m.getParameterCount() == 1
+                && m.getParameterTypes()[0] == RequestResponseObject.class) {
+                setValue = m;
+            }
+        }
+        if (setValue == null) {
+            throw new RuntimeException("could not find method setValue() in HighPriorityServices(). "
+                + "Don't know how to invoke a SetValue Operation without this method.");
+        }
+        // setValue is not public, we hence have to make it accessible first.
+        setValue.setAccessible(true);
+
+        Envelope requestEnvelope = new Envelope();
+        SetValue setValueAny = new SetValue();
+        setValueAny.setOperationHandleRef(opHandle);
+        setValueAny.setRequestedNumericValue(value);
+        final Body setValueBody = new Body();
+        setValueBody.setAny(List.of(setValueAny));
+        requestEnvelope.setBody(setValueBody);
+        final SoapMessage request = soapMessageFactory.createSoapMessage(requestEnvelope);
+        Envelope responseEnvelope = new Envelope();
+        Body responseBody = new Body();
+        SetValueResponse setValueResponse = new SetValueResponse();
+        responseBody.setAny(List.of(setValueResponse));
+        responseEnvelope.setBody(responseBody);
+        SoapMessage response = soapMessageFactory.createSoapMessage(responseEnvelope);
+        ApplicationInfo applicationInfo = new ApplicationInfo();
+        TransportInfo transportInfo = new TransportInfo("http",
+            "localhost", 8080, "localhost", 5001, List.of());
+        CommunicationContext communicationContext = new CommunicationContext(applicationInfo, transportInfo);
+        final RequestResponseObject requestResponseObject =
+            new RequestResponseObject(request, response, communicationContext);
+        setValue.invoke(highPriorityServices, requestResponseObject);
     }
 }

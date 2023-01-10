@@ -1,10 +1,12 @@
 package com.example.provider1;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
 
 import com.draeger.medical.t2iapi.BasicResponses;
 import com.draeger.medical.t2iapi.ResponseTypes;
@@ -35,6 +37,9 @@ import org.somda.sdc.biceps.model.participant.ClockDescriptor;
 import org.somda.sdc.biceps.model.participant.LocationContextDescriptor;
 import org.somda.sdc.biceps.model.participant.LocationContextState;
 import org.somda.sdc.biceps.model.participant.LocationDetail;
+import org.somda.sdc.biceps.model.participant.NumericMetricState;
+import org.somda.sdc.biceps.model.participant.NumericMetricValue;
+import org.somda.sdc.biceps.model.participant.SetValueOperationDescriptor;
 import org.somda.sdc.biceps.model.participant.StringMetricDescriptor;
 import org.somda.sdc.biceps.provider.access.LocalMdibAccess;
 
@@ -137,10 +142,48 @@ class GrpcServer {
                 case REPORT_TYPE_EPISODIC_OPERATIONAL_STATE_REPORT: responseObserver.onNext(
                     BasicResponses.BasicResponse.newBuilder().setResult(triggerEpisodicOperationalStateReport()).build());
                     break;
+                case REPORT_TYPE_OPERATION_INVOKED_REPORT: responseObserver.onNext(
+                    BasicResponses.BasicResponse.newBuilder().setResult(triggerOperationInvokedReport()).build());
+                    break;
                 default:responseObserver.onNext(
                     BasicResponses.BasicResponse.newBuilder().setResult(ResponseTypes.Result.RESULT_NOT_IMPLEMENTED).build());
             }
             responseObserver.onCompleted();
+        }
+
+        private ResponseTypes.Result triggerOperationInvokedReport() {
+            final LocalMdibAccess mdibAccess = GrpcServer.provider.getMdibAccess();
+
+            NumericMetricValue value = null;
+            String opHandle = null;
+            for (MdibEntity opEntity : new ArrayList<>(mdibAccess.findEntitiesByType(SetValueOperationDescriptor.class))) {
+                opHandle = opEntity.getHandle();
+                final SetValueOperationDescriptor descriptor = (SetValueOperationDescriptor) opEntity.getDescriptor();
+                final String targetHandle = descriptor.getOperationTarget();
+
+                final Optional<NumericMetricState> state = mdibAccess.getState(targetHandle, NumericMetricState.class);
+                if (state.isEmpty()) {
+                    continue;
+                }
+                NumericMetricValue val = state.orElseThrow().getMetricValue();
+                if (val != null) {
+                    value = val;
+                }
+            }
+            if (value == null) {
+                LOG.warn("Could not find SetValueOperation for a NumericMetricState with NumericMetricValue");
+                return ResponseTypes.Result.RESULT_FAIL;
+            }
+
+
+            try {
+                GrpcServer.provider.invokeNumericSetValueOperation(opHandle, value.getValue());
+            } catch (NoSuchMethodException| InvocationTargetException| IllegalAccessException e) {
+                LOG.warn("Encountered exception when triggering OperationInvokedReport:", e);
+                return ResponseTypes.Result.RESULT_FAIL;
+            }
+
+            return ResponseTypes.Result.RESULT_SUCCESS;
         }
 
         private ResponseTypes.Result triggerEpisodicOperationalStateReport() {

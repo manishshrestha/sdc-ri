@@ -19,11 +19,17 @@ import org.somda.sdc.biceps.model.participant.ClockDescriptor;
 import org.somda.sdc.biceps.model.participant.LocationContextDescriptor;
 import org.somda.sdc.biceps.model.participant.LocationContextState;
 import org.somda.sdc.biceps.model.participant.LocationDetail;
+import org.somda.sdc.biceps.model.participant.NumericMetricState;
+import org.somda.sdc.biceps.model.participant.NumericMetricValue;
+import org.somda.sdc.biceps.model.participant.SetValueOperationDescriptor;
 import org.somda.sdc.biceps.model.participant.StringMetricDescriptor;
 import org.somda.sdc.biceps.provider.access.LocalMdibAccess;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.math.BigDecimal;
 import java.util.List;
+import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -194,6 +200,44 @@ class GrpcServerTest {
         verify(responseObserver).onCompleted();
 
         verify(this.provider).switchAbstractOperationStateOperatingMode(opHandle);
+
+        assertEquals(ResponseTypes.Result.RESULT_SUCCESS, captor.getValue().getResult());
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    void triggerOperationInvokedReportGood()
+        throws InvocationTargetException, NoSuchMethodException, IllegalAccessException {
+        final DeviceRequests.TriggerReportRequest request = DeviceRequests.TriggerReportRequest.newBuilder()
+            .setReport(DeviceTypes.ReportType.REPORT_TYPE_OPERATION_INVOKED_REPORT)
+            .build();
+        StreamObserver<BasicResponses.BasicResponse> responseObserver = mock(StreamObserver.class);
+
+        MdibEntity operationEntity = mock(MdibEntity.class);
+        final SetValueOperationDescriptor opDescriptor = mock(SetValueOperationDescriptor.class);
+        when(mdibAccess.findEntitiesByType(SetValueOperationDescriptor.class))
+            .thenReturn(List.of(operationEntity));
+        final String opHandle = "opHandle";
+        final String metricHandle = "metricHandle";
+        final NumericMetricState state = mock(NumericMetricState.class);
+        final NumericMetricValue metricValue = mock(NumericMetricValue.class);
+        when(operationEntity.getHandle()).thenReturn(opHandle);
+        when(operationEntity.getDescriptor()).thenReturn(opDescriptor);
+        when(opDescriptor.getOperationTarget()).thenReturn(metricHandle);
+        when(mdibAccess.getState(metricHandle, NumericMetricState.class)).thenReturn(
+            Optional.of(state));
+        when(state.getMetricValue()).thenReturn(metricValue);
+        final BigDecimal value = BigDecimal.ONE;
+        when(metricValue.getValue()).thenReturn(value);
+
+        deviceServiceUnderTest.triggerReport(request, responseObserver);
+
+        final ArgumentCaptor<BasicResponses.BasicResponse> captor =
+            ArgumentCaptor.forClass(BasicResponses.BasicResponse.class);
+        verify(responseObserver).onNext(captor.capture());
+        verify(responseObserver).onCompleted();
+
+        verify(this.provider).invokeNumericSetValueOperation(opHandle, value);
 
         assertEquals(ResponseTypes.Result.RESULT_SUCCESS, captor.getValue().getResult());
     }
