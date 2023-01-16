@@ -15,6 +15,7 @@ import com.draeger.medical.t2iapi.activation_state.ActivationStateServiceGrpc;
 import com.draeger.medical.t2iapi.alert.AlertRequests;
 import com.draeger.medical.t2iapi.alert.AlertServiceGrpc;
 import com.draeger.medical.t2iapi.context.ContextRequests;
+import com.draeger.medical.t2iapi.context.ContextResponses;
 import com.draeger.medical.t2iapi.context.ContextServiceGrpc;
 import com.draeger.medical.t2iapi.context.ContextTypes;
 
@@ -85,7 +86,7 @@ class GrpcServer {
 //        }
     }
 
-    private static class ContextServiceImpl extends ContextServiceGrpc.ContextServiceImplBase {
+    protected static class ContextServiceImpl extends ContextServiceGrpc.ContextServiceImplBase {
 
         /**
          * Use the given LocationDetail in a currently associated LocationContextState or associate a new LocationContextState
@@ -117,6 +118,45 @@ class GrpcServer {
             }
             responseObserver.onNext(BasicResponses.BasicResponse.newBuilder().setResult(ResponseTypes.Result.RESULT_SUCCESS).build());
             responseObserver.onCompleted();
+        }
+
+        @Override
+        public void createContextStateWithAssociation(ContextRequests.CreateContextStateWithAssociationRequest request,
+                                                      StreamObserver<ContextResponses.CreateContextStateWithAssociationResponse> responseObserver) {
+            final String descriptorHandle = request.getDescriptorHandle();
+            final ContextTypes.ContextAssociation contextAssociation = request.getContextAssociation();
+
+            try {
+                String createdContextStateHandle = GrpcServer.provider.createContextStateWithAssociation(
+                    descriptorHandle,
+                    contextAssociation);
+                if (createdContextStateHandle != null) {
+                    final ResponseTypes.Result result = ResponseTypes.Result.RESULT_SUCCESS;
+                    final BasicResponses.BasicResponse status =
+                        BasicResponses.BasicResponse.newBuilder().setResult(result).build();
+                    responseObserver.onNext(ContextResponses.CreateContextStateWithAssociationResponse.newBuilder()
+                        .setContextStateHandle(createdContextStateHandle)
+                        .setStatus(status).build());
+                    responseObserver.onCompleted();
+                } else {
+                    final ResponseTypes.Result result = ResponseTypes.Result.RESULT_FAIL;
+                    final BasicResponses.BasicResponse status =
+                        BasicResponses.BasicResponse.newBuilder().setResult(result).build();
+                    responseObserver.onNext(ContextResponses.CreateContextStateWithAssociationResponse.newBuilder()
+                        .setStatus(status).build());
+                    responseObserver.onCompleted();
+                }
+            } catch (IllegalAccessException
+                | InvocationTargetException
+                | NoSuchMethodException
+                | InstantiationException e) {
+                final ResponseTypes.Result result = ResponseTypes.Result.RESULT_FAIL;
+                final BasicResponses.BasicResponse status =
+                    BasicResponses.BasicResponse.newBuilder().setResult(result).build();
+                responseObserver.onNext(ContextResponses.CreateContextStateWithAssociationResponse.newBuilder()
+                    .setStatus(status).build());
+                responseObserver.onCompleted();
+            }
         }
     }
 
@@ -270,6 +310,7 @@ class GrpcServer {
 
             return ResponseTypes.Result.RESULT_SUCCESS;
         }
+
     }
 
     protected static class AlertServiceImpl extends AlertServiceGrpc.AlertServiceImplBase {

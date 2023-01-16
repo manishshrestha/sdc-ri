@@ -2,8 +2,8 @@ package com.example.provider1;
 
 import com.draeger.medical.t2iapi.ResponseTypes;
 import com.draeger.medical.t2iapi.activation_state.ActivationStateTypes;
+import com.draeger.medical.t2iapi.context.ContextTypes;
 import com.draeger.medical.t2iapi.metric.MetricTypes;
-import com.draeger.medical.t2iapi.operation.OperationTypes;
 import com.example.Constants;
 import com.google.common.collect.Iterables;
 import com.google.common.util.concurrent.AbstractIdleService;
@@ -17,6 +17,8 @@ import org.somda.sdc.biceps.common.access.ReadTransaction;
 import org.somda.sdc.biceps.common.storage.PreprocessingException;
 import org.somda.sdc.biceps.model.message.SetValue;
 import org.somda.sdc.biceps.model.message.SetValueResponse;
+import org.somda.sdc.biceps.model.participant.AbstractContextDescriptor;
+import org.somda.sdc.biceps.model.participant.AbstractContextState;
 import org.somda.sdc.biceps.model.participant.AbstractDeviceComponentDescriptor;
 import org.somda.sdc.biceps.model.participant.AbstractMetricState;
 import org.somda.sdc.biceps.model.participant.AbstractMetricValue;
@@ -27,6 +29,8 @@ import org.somda.sdc.biceps.model.participant.AlertSignalState;
 import org.somda.sdc.biceps.model.participant.ClockState;
 import org.somda.sdc.biceps.model.participant.ComponentActivation;
 import org.somda.sdc.biceps.model.participant.ContextAssociation;
+import org.somda.sdc.biceps.model.participant.EnsembleContextDescriptor;
+import org.somda.sdc.biceps.model.participant.EnsembleContextState;
 import org.somda.sdc.biceps.model.participant.EnumStringMetricDescriptor;
 import org.somda.sdc.biceps.model.participant.EnumStringMetricState;
 import org.somda.sdc.biceps.model.participant.GenerationMode;
@@ -35,14 +39,22 @@ import org.somda.sdc.biceps.model.participant.LocationContextDescriptor;
 import org.somda.sdc.biceps.model.participant.LocationContextState;
 import org.somda.sdc.biceps.model.participant.LocationDetail;
 import org.somda.sdc.biceps.model.participant.Mdib;
+import org.somda.sdc.biceps.model.participant.MeansContextDescriptor;
+import org.somda.sdc.biceps.model.participant.MeansContextState;
 import org.somda.sdc.biceps.model.participant.MeasurementValidity;
 import org.somda.sdc.biceps.model.participant.NumericMetricState;
 import org.somda.sdc.biceps.model.participant.NumericMetricValue;
 import org.somda.sdc.biceps.model.participant.OperatingMode;
+import org.somda.sdc.biceps.model.participant.OperatorContextDescriptor;
+import org.somda.sdc.biceps.model.participant.OperatorContextState;
+import org.somda.sdc.biceps.model.participant.PatientContextDescriptor;
+import org.somda.sdc.biceps.model.participant.PatientContextState;
 import org.somda.sdc.biceps.model.participant.RealTimeSampleArrayMetricState;
 import org.somda.sdc.biceps.model.participant.SampleArrayValue;
 import org.somda.sdc.biceps.model.participant.StringMetricState;
 import org.somda.sdc.biceps.model.participant.StringMetricValue;
+import org.somda.sdc.biceps.model.participant.WorkflowContextDescriptor;
+import org.somda.sdc.biceps.model.participant.WorkflowContextState;
 import org.somda.sdc.biceps.provider.access.LocalMdibAccess;
 import org.somda.sdc.biceps.provider.access.factory.LocalMdibAccessFactory;
 import org.somda.sdc.dpws.DpwsFramework;
@@ -80,6 +92,7 @@ import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -762,5 +775,111 @@ public class Provider extends AbstractIdleService {
         final RequestResponseObject requestResponseObject =
             new RequestResponseObject(request, response, communicationContext);
         setValue.invoke(highPriorityServices, requestResponseObject);
+    }
+
+    public String createContextStateWithAssociation(String descriptorHandle,
+                                                    ContextTypes.ContextAssociation contextAssociation)
+        throws InstantiationException, IllegalAccessException, NoSuchMethodException, InvocationTargetException,
+        NullPointerException {
+
+        // TODO: not finished, yet. SDCcc Test Case Biceps:R0133 is still failing.
+
+        final AbstractContextDescriptor descriptor =
+            mdibAccess.getDescriptor(descriptorHandle, AbstractContextDescriptor.class).orElseThrow();
+
+        List<AbstractContextState> states = new ArrayList<>();
+        if (descriptor instanceof LocationContextDescriptor
+            && ContextTypes.ContextAssociation.CONTEXT_ASSOCIATION_ASSOCIATED.equals(contextAssociation)) {
+            // Requirement Biceps:R0124 requires us to disassociate any previously associated LocationContextState
+            //             prior to associating a new one.
+            final List<LocationContextState> locationContextStates =
+                mdibAccess.getContextStates(descriptorHandle, LocationContextState.class);
+            for (LocationContextState state : locationContextStates) {
+                if (ContextAssociation.ASSOC.equals(state.getContextAssociation())) {
+                    state.setContextAssociation(ContextAssociation.DIS);
+                    states.add(state);
+                }
+            }
+        } else if (descriptor instanceof PatientContextDescriptor
+            && ContextTypes.ContextAssociation.CONTEXT_ASSOCIATION_ASSOCIATED.equals(contextAssociation)) {
+            // disassociate any previously associated PatientContextState
+            final List<PatientContextState> patientContextStates =
+                mdibAccess.getContextStates(descriptorHandle, PatientContextState.class);
+            for (PatientContextState state : patientContextStates) {
+                if (ContextAssociation.ASSOC.equals(state.getContextAssociation())) {
+                    state.setContextAssociation(ContextAssociation.DIS);
+                    states.add(state);
+                }
+            }
+        }
+
+        final Class<? extends AbstractContextState> contextStateClassFromContextDescriptorClass =
+            findContextStateClassFromContextDescriptorClass(descriptor.getClass());
+        if (contextStateClassFromContextDescriptorClass == null) {
+            throw new IllegalArgumentException("Handle belongs to descriptor of unknown type: " + descriptor.getClass().getName());
+        }
+        final AbstractContextState newContextState
+            = contextStateClassFromContextDescriptorClass
+                .getDeclaredConstructor()
+                .newInstance();
+        newContextState.setDescriptorHandle(descriptorHandle);
+        newContextState.setHandle(createRandomHandle());
+        newContextState.setContextAssociation(translateContextAssociationFromT2IAPI(contextAssociation));
+        mdibAccess.getContextStates().add(newContextState);
+        states.add(newContextState);
+
+        // TODO: set @BindingMdibVersion
+        // TODO: set @UnbindingMdibVersion
+        // TODO: set @BindingTime
+        // TODO: set @UnbindingTime
+
+        try {
+            mdibAccess.writeStates(MdibStateModifications
+                .create(MdibStateModifications.Type.CONTEXT).addAll(states));
+        } catch (PreprocessingException e) {
+            LOG.error("", e);
+        }
+
+        return newContextState.getHandle();
+    }
+
+    private Class<? extends AbstractContextState> findContextStateClassFromContextDescriptorClass
+        (Class<? extends AbstractContextDescriptor> aClass) {
+        if (LocationContextDescriptor.class.equals(aClass)) {
+            return LocationContextState.class;
+        } else if (PatientContextDescriptor.class.equals(aClass)) {
+            return PatientContextState.class;
+        } else if (WorkflowContextDescriptor.class.equals(aClass)) {
+            return WorkflowContextState.class;
+        } else if (OperatorContextDescriptor.class.equals(aClass)) {
+            return OperatorContextState.class;
+        } else if (MeansContextDescriptor.class.equals(aClass)) {
+            return MeansContextState.class;
+        } else if (EnsembleContextDescriptor.class.equals(aClass)) {
+            return EnsembleContextState.class;
+        }
+        return null;
+    }
+
+    protected String createRandomHandle() {
+        StringBuilder res = new StringBuilder();
+        for (int i = 0; i < 32; i++) {
+            int c = (int)Math.floor(Math.random() * 36);
+            if (c < 10) {
+                res.append(Character.toString('0' + c));
+            } else {
+                res.append(Character.toString('a' + (c - 10)));
+            }
+        }
+        return res.toString();
+    }
+
+    private ContextAssociation translateContextAssociationFromT2IAPI(ContextTypes.ContextAssociation contextAssociation) {
+        switch (contextAssociation) {
+            case CONTEXT_ASSOCIATION_ASSOCIATED: return ContextAssociation.ASSOC;
+            case CONTEXT_ASSOCIATION_DISASSOCIATED: return ContextAssociation.DIS;
+            case CONTEXT_ASSOCIATION_PRE_ASSOCIATED: return ContextAssociation.PRE;
+            default: return ContextAssociation.NO;
+        }
     }
 }

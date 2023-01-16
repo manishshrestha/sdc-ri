@@ -2,6 +2,9 @@ package com.example.provider1;
 
 import com.draeger.medical.t2iapi.BasicResponses;
 import com.draeger.medical.t2iapi.ResponseTypes;
+import com.draeger.medical.t2iapi.context.ContextRequests;
+import com.draeger.medical.t2iapi.context.ContextResponses;
+import com.draeger.medical.t2iapi.context.ContextTypes;
 import com.draeger.medical.t2iapi.device.DeviceRequests;
 import com.draeger.medical.t2iapi.device.DeviceTypes;
 import com.draeger.medical.t2iapi.metric.MetricRequests;
@@ -43,6 +46,7 @@ class GrpcServerTest {
 
     private GrpcServer.DeviceServiceImpl deviceServiceUnderTest;
     private GrpcServer.MetricServiceImpl metricServiceUnderTest;
+    private GrpcServer.ContextServiceImpl contextServiceUnderTest;
     private Provider provider;
     private LocalMdibAccess mdibAccess;
 
@@ -54,6 +58,7 @@ class GrpcServerTest {
       GrpcServer.startGrpcServer(20000, "127.0.0.1", provider);
       deviceServiceUnderTest = new GrpcServer.DeviceServiceImpl();
       metricServiceUnderTest = new GrpcServer.MetricServiceImpl();
+      contextServiceUnderTest = new GrpcServer.ContextServiceImpl();
     }
 
     @AfterEach
@@ -296,5 +301,67 @@ class GrpcServerTest {
 
         assertEquals(ResponseTypes.Result.RESULT_SUCCESS, captor.getValue().getResult());
     }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    void createContextStateWithAssociationGood()
+        throws InvocationTargetException, InstantiationException, IllegalAccessException, NoSuchMethodException {
+        String contextHandle = "contextHandle";
+        final ContextTypes.ContextAssociation contextAssociation =
+            ContextTypes.ContextAssociation.CONTEXT_ASSOCIATION_ASSOCIATED;
+        final ContextRequests.CreateContextStateWithAssociationRequest request =
+            ContextRequests.CreateContextStateWithAssociationRequest.newBuilder()
+                .setContextAssociation(contextAssociation)
+                .setDescriptorHandle(contextHandle)
+                .build();
+        StreamObserver<ContextResponses.CreateContextStateWithAssociationResponse>
+            responseObserver = mock(StreamObserver.class);
+
+        String contextStateHandle = "newContextStateHandle";
+        when(provider.createContextStateWithAssociation(any(), any())).thenReturn(contextStateHandle);
+
+        contextServiceUnderTest.createContextStateWithAssociation(request, responseObserver);
+
+        final ArgumentCaptor<ContextResponses.CreateContextStateWithAssociationResponse> captor =
+            ArgumentCaptor.forClass(ContextResponses.CreateContextStateWithAssociationResponse.class);
+        verify(responseObserver).onNext(captor.capture());
+        verify(responseObserver).onCompleted();
+
+        verify(this.provider).createContextStateWithAssociation(contextHandle, contextAssociation);
+
+        assertEquals(ResponseTypes.Result.RESULT_SUCCESS, captor.getValue().getStatus().getResult());
+        assertEquals(contextStateHandle, captor.getValue().getContextStateHandle());
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    void createContextStateWithAssociationBad()
+        throws InvocationTargetException, InstantiationException, IllegalAccessException, NoSuchMethodException {
+        String contextHandle = "contextHandle";
+        final ContextTypes.ContextAssociation contextAssociation =
+            ContextTypes.ContextAssociation.CONTEXT_ASSOCIATION_ASSOCIATED;
+        final ContextRequests.CreateContextStateWithAssociationRequest request =
+            ContextRequests.CreateContextStateWithAssociationRequest.newBuilder()
+                .setContextAssociation(contextAssociation)
+                .setDescriptorHandle(contextHandle)
+                .build();
+        StreamObserver<ContextResponses.CreateContextStateWithAssociationResponse>
+            responseObserver = mock(StreamObserver.class);
+
+        when(provider.createContextStateWithAssociation(any(), any())).thenReturn(null);
+
+        contextServiceUnderTest.createContextStateWithAssociation(request, responseObserver);
+
+        final ArgumentCaptor<ContextResponses.CreateContextStateWithAssociationResponse> captor =
+            ArgumentCaptor.forClass(ContextResponses.CreateContextStateWithAssociationResponse.class);
+        verify(responseObserver).onNext(captor.capture());
+        verify(responseObserver).onCompleted();
+
+        verify(this.provider).createContextStateWithAssociation(contextHandle, contextAssociation);
+
+        assertEquals(ResponseTypes.Result.RESULT_FAIL, captor.getValue().getStatus().getResult());
+        assertEquals("", captor.getValue().getContextStateHandle());
+    }
+
 
 }
