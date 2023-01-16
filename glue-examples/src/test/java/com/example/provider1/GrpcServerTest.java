@@ -9,6 +9,7 @@ import com.draeger.medical.t2iapi.device.DeviceRequests;
 import com.draeger.medical.t2iapi.device.DeviceTypes;
 import com.draeger.medical.t2iapi.metric.MetricRequests;
 import com.draeger.medical.t2iapi.metric.MetricTypes;
+import com.google.protobuf.Empty;
 import io.grpc.stub.StreamObserver;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -363,5 +364,29 @@ class GrpcServerTest {
         assertEquals("", captor.getValue().getContextStateHandle());
     }
 
+    @SuppressWarnings("unchecked")
+    @Test
+    void sendHelloGood()
+        throws InvocationTargetException, InstantiationException, IllegalAccessException, NoSuchMethodException {
+        String contextHandle = "contextHandle";
+        final ContextTypes.ContextAssociation contextAssociation =
+            ContextTypes.ContextAssociation.CONTEXT_ASSOCIATION_ASSOCIATED;
+        final Empty request = Empty.newBuilder().build();
+        StreamObserver<BasicResponses.BasicResponse>
+            responseObserver = mock(StreamObserver.class);
+
+        when(provider.createContextStateWithAssociation(any(), any())).thenReturn(null);
+
+        deviceServiceUnderTest.sendHello(request, responseObserver);
+
+        final ArgumentCaptor<BasicResponses.BasicResponse> captor =
+            ArgumentCaptor.forClass(BasicResponses.BasicResponse.class);
+        verify(responseObserver).onNext(captor.capture());
+        verify(responseObserver).onCompleted();
+
+        verify(this.provider).sendHello();
+
+        assertEquals(ResponseTypes.Result.RESULT_SUCCESS, captor.getValue().getResult());
+    }
 
 }

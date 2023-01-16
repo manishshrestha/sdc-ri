@@ -24,6 +24,7 @@ import com.draeger.medical.t2iapi.device.DeviceServiceGrpc;
 import com.draeger.medical.t2iapi.metric.MetricRequests;
 import com.draeger.medical.t2iapi.metric.MetricServiceGrpc;
 import com.draeger.medical.t2iapi.metric.MetricTypes;
+import com.google.protobuf.Empty;
 import io.grpc.Server;
 import io.grpc.netty.shaded.io.grpc.netty.NettyServerBuilder;
 import io.grpc.stub.StreamObserver;
@@ -311,6 +312,14 @@ class GrpcServer {
             return ResponseTypes.Result.RESULT_SUCCESS;
         }
 
+        @Override
+        public void sendHello(Empty request, StreamObserver<BasicResponses.BasicResponse> responseObserver) {
+            GrpcServer.provider.sendHello();
+
+            responseObserver.onNext(
+                BasicResponses.BasicResponse.newBuilder().setResult(ResponseTypes.Result.RESULT_SUCCESS).build());
+            responseObserver.onCompleted();
+        }
     }
 
     protected static class AlertServiceImpl extends AlertServiceGrpc.AlertServiceImplBase {

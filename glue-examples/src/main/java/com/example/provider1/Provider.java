@@ -60,6 +60,7 @@ import org.somda.sdc.biceps.provider.access.factory.LocalMdibAccessFactory;
 import org.somda.sdc.dpws.DpwsFramework;
 import org.somda.sdc.dpws.DpwsUtil;
 import org.somda.sdc.dpws.device.DeviceSettings;
+import org.somda.sdc.dpws.device.DiscoveryAccess;
 import org.somda.sdc.dpws.soap.ApplicationInfo;
 import org.somda.sdc.dpws.soap.CommunicationContext;
 import org.somda.sdc.dpws.soap.SoapMessage;
@@ -71,6 +72,7 @@ import org.somda.sdc.dpws.soap.model.Body;
 import org.somda.sdc.dpws.soap.model.Envelope;
 import org.somda.sdc.dpws.soap.wsaddressing.WsAddressingUtil;
 import org.somda.sdc.dpws.soap.wsaddressing.model.EndpointReferenceType;
+import org.somda.sdc.dpws.soap.wsdiscovery.WsDiscoveryTargetService;
 import org.somda.sdc.glue.common.ActionConstants;
 import org.somda.sdc.glue.common.FallbackInstanceIdentifier;
 import org.somda.sdc.glue.common.MdibXmlIo;
@@ -841,6 +843,11 @@ public class Provider extends AbstractIdleService {
         }
 
         return newContextState.getHandle();
+    }
+
+    public void sendHello()
+    {
+        ((DiscoveryAccess)this.sdcDevice.getDevice()).sendHello();
     }
 
     private Class<? extends AbstractContextState> findContextStateClassFromContextDescriptorClass
