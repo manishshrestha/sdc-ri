@@ -124,6 +124,15 @@ public interface MdibEntity {
     Class<? extends AbstractState> getStateClass();
 
     /**
+     * Return the handle of the Mds that is the root of this entity.
+     *
+     * If the entity is an Mds, the handle of the Mds is returned.
+     *
+     * @return the handle of mds that is the root of this entity
+     */
+    String getParentMds();
+
+    /**
      * An alternative lambda to be executed.
      *
      * @param <T> the state type to accept.

@@ -43,8 +43,8 @@ class TypeConsistencyCheckerTest {
 
         MdibDescriptionModifications modifications = MdibDescriptionModifications.create();
         modifications.insert(MockModelFactory.createDescriptor(mds, MdsDescriptor.class));
-        modifications.insert(MockModelFactory.createDescriptor(vmd1, VmdDescriptor.class));
-        modifications.insert(MockModelFactory.createDescriptor(channel, ChannelDescriptor.class));
+        modifications.insert(MockModelFactory.createDescriptor(vmd1, VmdDescriptor.class), mds);
+        modifications.insert(MockModelFactory.createDescriptor(channel, ChannelDescriptor.class), vmd1);
         mdibStorage.apply(mock(MdibVersion.class), mock(BigInteger.class), mock(BigInteger.class), modifications);
     }
 

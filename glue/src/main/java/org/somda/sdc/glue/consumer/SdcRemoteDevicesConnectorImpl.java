@@ -342,9 +342,13 @@ public class SdcRemoteDevicesConnectorImpl extends AbstractIdleService
                     new Interceptor() {
                         @MessageInterceptor
                         void onNotification(NotificationObject notificationObject) {
-                            final AbstractReport report = soapUtil.getBody(notificationObject.getNotification(),
-                                    AbstractReport.class).orElseThrow(() -> new RuntimeException(
-                                    String.format("Received unexpected report message from service %s", serviceId)));
+                            final AbstractReport report = soapUtil.getBody(
+                                notificationObject.getNotification(),
+                                AbstractReport.class
+                            ).orElseThrow(
+                                () -> new RuntimeException(
+                                    String.format("Received unexpected report message from service %s", serviceId)
+                                ));
                             instanceLogger.debug("Incoming SOAP/HTTP notification: {}", report);
                             if (report instanceof OperationInvokedReport) {
                                 if (scoController != null) {

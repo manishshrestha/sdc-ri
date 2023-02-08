@@ -68,6 +68,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -162,7 +163,9 @@ class CommunicationIT {
             assertTrue(recordedMessage instanceof MetricStateModificationMessage);
             MetricStateModificationMessage metricStateMessage = (MetricStateModificationMessage) recordedMessage;
             assertEquals(1, metricStateMessage.getStates().size());
-            final AbstractMetricState abstractMetricState = metricStateMessage.getStates().get(0);
+            var metricStateChangeList = metricStateMessage.getStates().values().stream().findFirst().orElseThrow();
+            assertEquals(1, metricStateChangeList.size());
+            final AbstractMetricState abstractMetricState = metricStateChangeList.get(0);
             assertTrue(abstractMetricState instanceof EnumStringMetricState);
             EnumStringMetricState stringMetricState = (EnumStringMetricState) abstractMetricState;
             assertEquals(VentilatorMdibRunner.VentilatorMode.VENT_MODE_INSPASSIST.getModeValue(),
@@ -177,13 +180,15 @@ class CommunicationIT {
             final AbstractMdibAccessMessage recordedMessage = mdibSpy.getRecordedMessages().get(0);
             assertTrue(recordedMessage instanceof AlertStateModificationMessage);
             AlertStateModificationMessage alertStateMessage = (AlertStateModificationMessage) recordedMessage;
-            assertEquals(2, alertStateMessage.getStates().size());
-            final AbstractAlertState abstractConditionState = alertStateMessage.getStates().get(0);
+            assertEquals(1, alertStateMessage.getStates().size());
+            var alertStateChangeList = alertStateMessage.getStates().values().stream().findFirst().orElseThrow();
+            assertEquals(2, alertStateChangeList.size());
+            final AbstractAlertState abstractConditionState = alertStateChangeList.get(0);
             assertTrue(abstractConditionState instanceof AlertConditionState);
             AlertConditionState conditionState = (AlertConditionState) abstractConditionState;
             assertEquals(true, conditionState.isPresence());
 
-            final AbstractAlertState abstractSignalState = alertStateMessage.getStates().get(1);
+            final AbstractAlertState abstractSignalState = alertStateChangeList.get(1);
             assertTrue(abstractSignalState instanceof AlertSignalState);
             AlertSignalState signalState = (AlertSignalState) abstractSignalState;
             assertEquals(AlertSignalPresence.ON, signalState.getPresence());
@@ -213,7 +218,14 @@ class CommunicationIT {
             assertTrue(recordedMessage instanceof MetricStateModificationMessage);
             MetricStateModificationMessage metricStateMessage = (MetricStateModificationMessage) recordedMessage;
             assertEquals(1, metricStateMessage.getStates().size());
-            final AbstractMetricState abstractMetricState = metricStateMessage.getStates().get(0);
+            var metricStateChangeList = metricStateMessage
+                .getStates()
+                .values()
+                .stream()
+                .flatMap(it -> it.stream())
+                .collect(Collectors.toList());
+            assertEquals(1, metricStateChangeList.size());
+            final AbstractMetricState abstractMetricState = metricStateChangeList.get(0);
             assertTrue(abstractMetricState instanceof EnumStringMetricState);
             EnumStringMetricState stringMetricState = (EnumStringMetricState) abstractMetricState;
             assertEquals(VentilatorMdibRunner.VentilatorMode.VENT_MODE_SIMV.getModeValue(),
@@ -230,7 +242,9 @@ class CommunicationIT {
                 assertTrue(recordedMessage instanceof MetricStateModificationMessage);
                 MetricStateModificationMessage metricStateMessage = (MetricStateModificationMessage) recordedMessage;
                 assertEquals(1, metricStateMessage.getStates().size());
-                final AbstractMetricState abstractMetricState = metricStateMessage.getStates().get(0);
+                var metricStateChangeList = metricStateMessage.getStates().values().stream().findFirst().orElseThrow();
+                assertEquals(1, metricStateChangeList.size());
+                final AbstractMetricState abstractMetricState = metricStateChangeList.get(0);
                 assertTrue(abstractMetricState instanceof NumericMetricState);
                 NumericMetricState numericMetricState = (NumericMetricState) abstractMetricState;
                 assertEquals(BigDecimal.valueOf(i), numericMetricState.getMetricValue().getValue());
@@ -291,7 +305,9 @@ class CommunicationIT {
                     assertTrue(recordedMessage instanceof MetricStateModificationMessage);
                     MetricStateModificationMessage metricStateMessage = (MetricStateModificationMessage) recordedMessage;
                     assertEquals(1, metricStateMessage.getStates().size());
-                    final AbstractMetricState abstractMetricState = metricStateMessage.getStates().get(0);
+                    var metricStateChangeList = metricStateMessage.getStates().values().stream().findFirst().orElseThrow();
+                    assertEquals(1, metricStateChangeList.size());
+                    final AbstractMetricState abstractMetricState = metricStateChangeList.get(0);
                     assertTrue(abstractMetricState instanceof NumericMetricState);
                     NumericMetricState numericMetricState = (NumericMetricState) abstractMetricState;
                     assertEquals(BigDecimal.valueOf(j), numericMetricState.getMetricValue().getValue());
@@ -380,7 +396,9 @@ class CommunicationIT {
                     assertTrue(recordedMessage instanceof MetricStateModificationMessage);
                     MetricStateModificationMessage metricStateMessage = (MetricStateModificationMessage) recordedMessage;
                     assertEquals(1, metricStateMessage.getStates().size());
-                    final AbstractMetricState abstractMetricState = metricStateMessage.getStates().get(0);
+                    var metricStateChangeList = metricStateMessage.getStates().values().stream().findFirst().orElseThrow();
+                    assertEquals(1, metricStateChangeList.size());
+                    final AbstractMetricState abstractMetricState = metricStateChangeList.get(0);
                     assertTrue(abstractMetricState instanceof NumericMetricState);
                     NumericMetricState numericMetricState = (NumericMetricState) abstractMetricState;
                     assertEquals(BigDecimal.valueOf(j), numericMetricState.getMetricValue().getValue());
@@ -432,7 +450,13 @@ class CommunicationIT {
             assertTrue(recordedMessage instanceof MetricStateModificationMessage);
             var metricStateMessage = (MetricStateModificationMessage) recordedMessage;
             assertEquals(1, metricStateMessage.getStates().size());
-            var abstractMetricState = metricStateMessage.getStates().get(0);
+            var statesList = metricStateMessage
+                .getStates()
+                .values()
+                .stream()
+                .flatMap(it -> it.stream())
+                .collect(Collectors.toList());
+            var abstractMetricState = statesList.get(0);
             assertTrue(abstractMetricState instanceof NumericMetricState);
             var numericMetricState = (NumericMetricState) abstractMetricState;
             assertEquals(BigDecimal.valueOf(i), numericMetricState.getMetricValue().getValue());

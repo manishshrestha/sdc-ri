@@ -7,6 +7,7 @@ import org.apache.logging.log4j.Logger;
 import org.somda.sdc.biceps.common.MdibEntity;
 import org.somda.sdc.biceps.common.MdibStateModifications;
 import org.somda.sdc.biceps.common.access.MdibAccess;
+import org.somda.sdc.biceps.model.participant.AbstractState;
 import org.somda.sdc.common.CommonConfig;
 import org.somda.sdc.common.event.EventBus;
 import org.somda.sdc.common.logging.InstanceLogger;
@@ -14,6 +15,7 @@ import org.somda.sdc.common.logging.InstanceLogger;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Utility class to distribute any BICEPS MDIB events.
@@ -83,7 +85,7 @@ public class Distributor {
      */
     public void sendStateModificationEvent(
             MdibAccess mdibAccess,
-            MdibStateModifications.Type changeType, List<?> states
+            MdibStateModifications.Type changeType, Map<String, ? extends List<? extends AbstractState>> states
     ) {
         Constructor<?> ctor = null;
         for (Constructor<?> constructor : changeType.getEventMessageClass().getConstructors()) {

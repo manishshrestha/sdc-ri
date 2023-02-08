@@ -6,6 +6,7 @@ import org.somda.sdc.common.event.EventMessage;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Base class for any state modification messages.
@@ -14,20 +15,20 @@ import java.util.List;
  */
 public class StateModificationMessage<T extends AbstractState>
         extends AbstractMdibAccessMessage implements EventMessage {
-    private final List<T> states;
+    private final Map<String, List<T>> states;
 
     /**
      * Constructor.
      *
      * @param mdibAccess the MDIB access for {@link AbstractMdibAccessMessage}.
-     * @param states     the states of the message.
+     * @param states     a map containing the changed states for each parent mds.
      */
-    protected StateModificationMessage(MdibAccess mdibAccess, List<T> states) {
+    protected StateModificationMessage(MdibAccess mdibAccess, Map<String, List<T>> states) {
         super(mdibAccess);
-        this.states = Collections.unmodifiableList(states);
+        this.states = Collections.unmodifiableMap(states);
     }
 
-    public List<T> getStates() {
+    public Map<String, List<T>> getStates() {
         return states;
     }
 

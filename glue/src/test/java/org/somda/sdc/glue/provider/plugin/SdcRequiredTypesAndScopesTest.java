@@ -21,6 +21,7 @@ import org.somda.sdc.biceps.model.participant.MdsDescriptor;
 import org.somda.sdc.biceps.model.participant.factory.CodedValueFactory;
 import org.somda.sdc.biceps.model.participant.factory.InstanceIdentifierFactory;
 import org.somda.sdc.biceps.provider.access.LocalMdibAccess;
+import org.somda.sdc.biceps.testutil.Handles;
 import org.somda.sdc.dpws.device.Device;
 import org.somda.sdc.dpws.device.DiscoveryAccess;
 import org.somda.sdc.glue.GlueConstants;
@@ -36,6 +37,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -157,7 +159,9 @@ class SdcRequiredTypesAndScopesTest {
         when(mdibAccessMock.findContextStatesByType(LocationContextState.class))
                 .thenReturn(Collections.singletonList(expectedContextState));
 
-        var message = new ContextStateModificationMessage(mdibAccessMock, Collections.singletonList(expectedContextState));
+        var message = new ContextStateModificationMessage(
+            mdibAccessMock, Map.of(Handles.MDS_0, Collections.singletonList(expectedContextState))
+        );
         verify(discoveryAccessMock, times(setScopesInteractionCount)).setScopes(any());
 
         eventBus.post(message);

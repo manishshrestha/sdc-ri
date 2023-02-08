@@ -4,6 +4,7 @@ import org.somda.sdc.biceps.common.access.MdibAccess;
 import org.somda.sdc.biceps.model.participant.AbstractDeviceComponentState;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * Subscribe to this message in order to receive component state changes.
@@ -17,7 +18,10 @@ public class ComponentStateModificationMessage extends StateModificationMessage<
      * @param mdibAccess the MDIB access for {@link AbstractMdibAccessMessage}.
      * @param states the states of the message.
      */
-    public ComponentStateModificationMessage(MdibAccess mdibAccess, List<AbstractDeviceComponentState> states) {
+    public ComponentStateModificationMessage(
+        MdibAccess mdibAccess, Map<String,
+        List<AbstractDeviceComponentState>> states
+    ) {
         super(mdibAccess, states);
     }
 }
