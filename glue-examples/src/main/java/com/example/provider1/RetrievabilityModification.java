@@ -63,17 +63,15 @@ public class RetrievabilityModification implements DescriptionPreprocessingSegme
                     return it;
                 });
 
+        var infoGet = new RetrievabilityInfo();
+        infoGet.setMethod(RetrievabilityMethod.GET);
         if (modificationDescriptor instanceof RealTimeSampleArrayMetricDescriptor) {
             // set retrievability to STRM
-            var infoGet = new RetrievabilityInfo();
-            infoGet.setMethod(RetrievabilityMethod.GET);
             var infoStrm = new RetrievabilityInfo();
             infoStrm.setMethod(RetrievabilityMethod.STRM);
             retrievability.setBy(List.of(infoGet, infoStrm));
         } else if (modificationDescriptor instanceof AbstractDescriptor) {
             // set retrievability to EP
-            var infoGet = new RetrievabilityInfo();
-            infoGet.setMethod(RetrievabilityMethod.GET);
             var infoStrm = new RetrievabilityInfo();
             infoStrm.setMethod(RetrievabilityMethod.EP);
             retrievability.setBy(List.of(infoGet, infoStrm));
