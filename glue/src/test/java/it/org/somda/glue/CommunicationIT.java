@@ -163,7 +163,7 @@ class CommunicationIT {
             assertTrue(recordedMessage instanceof MetricStateModificationMessage);
             MetricStateModificationMessage metricStateMessage = (MetricStateModificationMessage) recordedMessage;
             assertEquals(1, metricStateMessage.getStates().size());
-            var metricStateChangeList = metricStateMessage.getStates().values().stream().findFirst().orElseThrow();
+            var metricStateChangeList = Optional.ofNullable(metricStateMessage.getStates().get(VentilatorMdibRunner.HANDLE_MDC_DEV_SYS_PT_VENT_MDS)).orElseThrow();
             assertEquals(1, metricStateChangeList.size());
             final AbstractMetricState abstractMetricState = metricStateChangeList.get(0);
             assertTrue(abstractMetricState instanceof EnumStringMetricState);
@@ -210,8 +210,11 @@ class CommunicationIT {
 
             assertTrue(reportListenerSpy.waitForReports(3, WAIT_DURATION));
             assertEquals(InvocationState.WAIT, reportListenerSpy.getReports().get(0).getInvocationInfo().getInvocationState());
+            assertEquals(VentilatorMdibRunner.HANDLE_MDC_DEV_SYS_PT_VENT_MDS, reportListenerSpy.getReports().get(0).getSourceMds());
             assertEquals(InvocationState.START, reportListenerSpy.getReports().get(1).getInvocationInfo().getInvocationState());
+            assertEquals(VentilatorMdibRunner.HANDLE_MDC_DEV_SYS_PT_VENT_MDS, reportListenerSpy.getReports().get(1).getSourceMds());
             assertEquals(InvocationState.FIN, reportListenerSpy.getReports().get(2).getInvocationInfo().getInvocationState());
+            assertEquals(VentilatorMdibRunner.HANDLE_MDC_DEV_SYS_PT_VENT_MDS, reportListenerSpy.getReports().get(2).getSourceMds());
 
             assertTrue(mdibSpy.waitForNumberOfRecordedMessages(1, WAIT_DURATION));
             final AbstractMdibAccessMessage recordedMessage = mdibSpy.getRecordedMessages().get(0);
