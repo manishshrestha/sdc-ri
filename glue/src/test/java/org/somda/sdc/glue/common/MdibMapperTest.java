@@ -113,6 +113,7 @@ class MdibMapperTest {
         assertEquals(Handles.OPERATION_4, mdib.getMdDescription().getMds().get(0).getSco().getOperation().get(4).getHandle());
         assertEquals(Handles.OPERATION_5, mdib.getMdDescription().getMds().get(0).getSco().getOperation().get(5).getHandle());
         assertEquals(Handles.OPERATION_6, mdib.getMdDescription().getMds().get(0).getSco().getOperation().get(6).getHandle());
+        assertEquals(Handles.OPERATION_7, mdib.getMdDescription().getMds().get(1).getSco().getOperation().get(0).getHandle());
 
         assertEquals(Handles.CONTEXTDESCRIPTOR_0, mdib.getMdDescription().getMds().get(0).getSystemContext().getPatientContext().getHandle());
         assertEquals(Handles.CONTEXTDESCRIPTOR_1, mdib.getMdDescription().getMds().get(0).getSystemContext().getLocationContext().getHandle());

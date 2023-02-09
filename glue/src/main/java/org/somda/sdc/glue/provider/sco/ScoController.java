@@ -64,14 +64,14 @@ public class ScoController {
      * @param source  the instance identifier that represents the calling client.
      * @param payload the request data.
      * @param <T>     type of the request data.
+     * @throws RuntimeException if the handle of the operation is not known and no source mds can be determined
      * @return the initial invocation info required for the response message. The initial invocation info is
      * requested by the callback that is going to be invoked. In case that no callback can be found, a fail state is
      * returned.
      */
     public <T> InvocationResponse processIncomingSetOperation(String handle, InstanceIdentifier source, T payload) {
-        final var context =
-                contextFactory.createContext(transactionCounter++, handle, source, eventSourceAccess, mdibAccess);
-
+        // can throw RuntimeException if handle is unknown
+        final Context context = contextFactory.createContext(transactionCounter++, handle, source, eventSourceAccess, mdibAccess);
         try {
             // in order to also seek a specific handle-based invocation receiver
             // prepend default receivers with handle-based receiver

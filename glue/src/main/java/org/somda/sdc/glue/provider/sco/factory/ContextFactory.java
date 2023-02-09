@@ -25,5 +25,6 @@ public interface ContextFactory {
                           @Assisted String operationHandle,
                           @Assisted InstanceIdentifier invocationSource,
                           @Assisted EventSourceAccess eventSourceAccess,
-                          @Assisted LocalMdibAccess mdibAccess);
+                          @Assisted LocalMdibAccess mdibAccess
+    );
 }
