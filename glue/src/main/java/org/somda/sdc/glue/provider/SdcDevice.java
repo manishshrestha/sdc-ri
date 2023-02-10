@@ -136,7 +136,7 @@ public class SdcDevice extends AbstractIdleService implements Device, EventSourc
     }
 
     @Override
-    public <T extends AbstractState> void sendPeriodicStateReport(List<T> states, MdibVersion mdibVersion) {
+    public <T extends AbstractState> void sendPeriodicStateReport(Map<String, List<T>> states, MdibVersion mdibVersion) {
         highPriorityServices.sendPeriodicStateReport(states, mdibVersion);
     }
 

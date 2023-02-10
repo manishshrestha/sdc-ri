@@ -6,6 +6,7 @@ import org.somda.sdc.common.util.ObjectStringifier;
 import org.somda.sdc.common.util.Stringified;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * Read-only result set of a write states call.
@@ -13,7 +14,7 @@ import java.util.List;
 public class WriteStateResult {
     @Stringified
     private final MdibVersion mdibVersion;
-    private final List<AbstractState> states;
+    private final Map<String, List<AbstractState>> states;
 
     /**
      * Constructor to initialize all values of the result set.
@@ -22,7 +23,7 @@ public class WriteStateResult {
      * @param states      all updated states.
      */
     public WriteStateResult(MdibVersion mdibVersion,
-                            List<AbstractState> states) {
+                            Map<String, List<AbstractState>> states) {
         this.mdibVersion = mdibVersion;
         this.states = states;
     }
@@ -37,11 +38,11 @@ public class WriteStateResult {
     }
 
     /**
-     * Gets all updated states.
+     * Gets all updated states with their source mds as key.
      *
      * @return the states.
      */
-    public List<AbstractState> getStates() {
+    public Map<String, List<AbstractState>> getStates() {
         return states;
     }
 

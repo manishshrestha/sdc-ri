@@ -1,7 +1,5 @@
 package org.somda.sdc.glue.provider.services.helper;
 
-import com.google.common.collect.ArrayListMultimap;
-import com.google.common.collect.Multimap;
 import com.google.common.eventbus.Subscribe;
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
@@ -18,6 +16,7 @@ import org.somda.sdc.biceps.common.event.MetricStateModificationMessage;
 import org.somda.sdc.biceps.common.event.OperationStateModificationMessage;
 import org.somda.sdc.biceps.common.event.WaveformStateModificationMessage;
 import org.somda.sdc.biceps.model.message.AbstractReport;
+import org.somda.sdc.biceps.model.message.AbstractReportPart;
 import org.somda.sdc.biceps.model.message.DescriptionModificationReport;
 import org.somda.sdc.biceps.model.message.DescriptionModificationType;
 import org.somda.sdc.biceps.model.message.EpisodicAlertReport;
@@ -41,9 +40,12 @@ import org.somda.sdc.glue.common.ReportMappings;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * Helper class to generate and send reports.
@@ -81,12 +83,17 @@ public class ReportGenerator implements MdibAccessObserver {
      * @param mdibVersion the MDIB version used for the report.
      * @param <T>         the state type.
      */
-    public <T extends AbstractState> void sendPeriodicStateReport(List<T> states, MdibVersion mdibVersion) {
+    public <T extends AbstractState> void sendPeriodicStateReport(
+        Map<String, List<T>> states,
+        MdibVersion mdibVersion
+    ) {
         if (states.isEmpty()) {
             return;
         }
 
-        var reportClass = reportMappings.getPeriodicReportClass(states.get(0).getClass());
+        var reportClass = reportMappings.getPeriodicReportClass(
+            states.values().stream().findFirst().orElseThrow().get(0).getClass()
+        );
         sendStateChange(
                 mdibVersion,
                 states,
@@ -176,8 +183,8 @@ public class ReportGenerator implements MdibAccessObserver {
         // - metric changes
         // - operation changes
         // - waveform changes
-        final Multimap<Class<? extends AbstractReport>, AbstractState> classifiedStates = ArrayListMultimap.create(6,
-                insertedEntities.size() + updatedEntities.size());
+        final Map<Class<? extends AbstractReport>, Map<String, List<AbstractState>>> classifiedStates =
+            new HashMap<>(6);
 
         collectStates(classifiedStates, insertedEntities);
         collectStates(classifiedStates, updatedEntities);
@@ -190,10 +197,15 @@ public class ReportGenerator implements MdibAccessObserver {
         }
     }
 
-    private void collectStates(Multimap<Class<?
-            extends AbstractReport>, AbstractState> classifiedStates, List<MdibEntity> entities) {
+    private void collectStates(
+        Map<Class<? extends AbstractReport>, Map<String, List<AbstractState>>> classifiedStates,
+        List<MdibEntity> entities
+    ) {
         for (MdibEntity entity : entities) {
-            classifiedStates.putAll(reportMappings.getEpisodicReportClass(entity.getStateClass()), entity.getStates());
+            var stateMap = classifiedStates.computeIfAbsent(
+                reportMappings.getEpisodicReportClass(entity.getStateClass()), s -> new HashMap<>()
+            );
+            stateMap.computeIfAbsent(entity.getParentMds(), s -> new ArrayList<>()).addAll(entity.getStates());
         }
     }
 
@@ -213,15 +225,21 @@ public class ReportGenerator implements MdibAccessObserver {
         }
     }
 
-    private void sendWaveformChange(MdibVersion mdibVersion, List<RealTimeSampleArrayMetricState> states) {
+    private void sendWaveformChange(MdibVersion mdibVersion, Map<String, List<RealTimeSampleArrayMetricState>> states) {
         if (states.isEmpty()) {
             return;
         }
 
+        // flatten states
+        List<RealTimeSampleArrayMetricState> flatStates = states.values()
+            .stream()
+            .flatMap(it -> it.stream())
+            .collect(Collectors.toList());
+
         try {
             WaveformStream waveformStream = new WaveformStream();
             mdibVersionUtil.setMdibVersion(mdibVersion, waveformStream);
-            waveformStream.setState(states);
+            waveformStream.setState(flatStates);
             eventSourceAccess.sendNotification(ActionConstants.ACTION_WAVEFORM_STREAM, waveformStream);
         } catch (MarshallingException e) {
             instanceLogger.warn("Could not marshal message for state action {} with version: {}. {}",
@@ -236,11 +254,11 @@ public class ReportGenerator implements MdibAccessObserver {
         }
     }
 
-    private <T, V extends AbstractReport> void sendStateChange(MdibVersion mdibVersion,
-                                                               Collection<T> states,
-                                                               Class<V> reportClass) {
-        // todo DGr add source MDS somewhere in this function if available
-
+    private <T, V extends AbstractReport> void sendStateChange(
+        MdibVersion mdibVersion,
+        Map<String, List<T>> states,
+        Class<V> reportClass
+    ) {
         if (states.isEmpty()) {
             return;
         }
@@ -250,20 +268,23 @@ public class ReportGenerator implements MdibAccessObserver {
             final Constructor<V> reportCtor = reportClass.getConstructor();
             report = reportCtor.newInstance();
 
-            final Class<?> reportPartClass = findReportPartClass(reportClass);
-            final Constructor<?> reportPartCtor = reportPartClass.getConstructor();
-            final Object reportPart = reportPartCtor.newInstance();
+            mdibVersionUtil.setMdibVersion(mdibVersion, report);
 
             final Object reportParts = findGetReportPartMethod(reportClass).invoke(report);
             if (!List.class.isAssignableFrom(reportParts.getClass())) {
                 throw new NoSuchMethodException(String.format("Returned report parts was not a list, it was of type %s",
-                        reportParts.getClass()));
+                    reportParts.getClass()));
             }
-            ((List) reportParts).add(reportPart);
 
-            mdibVersionUtil.setMdibVersion(mdibVersion, report);
-            findSetStateMethod(reportPartClass).invoke(reportPart, states);
+            for (var entry : states.entrySet()) {
+                final Class<?> reportPartClass = findReportPartClass(reportClass);
+                final Constructor<?> reportPartCtor = reportPartClass.getConstructor();
+                final AbstractReportPart reportPart = (AbstractReportPart) reportPartCtor.newInstance();
 
+                findSetStateMethod(reportPartClass).invoke(reportPart, entry.getValue());
+                reportPart.setSourceMds(entry.getKey());
+                ((List) reportParts).add(reportPart);
+            }
         } catch (ReflectiveOperationException e) {
             instanceLogger.warn(REFLECTION_ERROR_STRING, e);
             return;

@@ -17,6 +17,7 @@ public class Handles {
     public static final String METRIC_2 = "metric_2";
     public static final String METRIC_3 = "metric_3";
     public static final String METRIC_4 = "metric_4";
+    public static final String METRIC_5 = "metric_5";
     public static final String SCO_0 = "sco_0";
     public static final String SCO_1 = "sco_1";
     public static final String SCO_2 = "sco_2";

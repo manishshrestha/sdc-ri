@@ -28,6 +28,7 @@ import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -49,11 +50,11 @@ class ReportGeneratorTest {
     @Captor
     private ArgumentCaptor<Object> actualReport;
 
-    private List<AbstractAlertState> expectedAlertStates;
-    private List<AbstractDeviceComponentState> expectedComponentStates;
-    private List<AbstractContextState> expectedContextStates;
-    private List<AbstractMetricState> expectedMetricStates;
-    private List<AbstractOperationState> expectedOperationStates;
+    private Map<String, List<AbstractAlertState>> expectedAlertStates;
+    private Map<String, List<AbstractDeviceComponentState>> expectedComponentStates;
+    private Map<String, List<AbstractContextState>> expectedContextStates;
+    private Map<String, List<AbstractMetricState>> expectedMetricStates;
+    private Map<String, List<AbstractOperationState>> expectedOperationStates;
 
     @BeforeEach
     void beforeEach() {
@@ -71,30 +72,65 @@ class ReportGeneratorTest {
         actualAction = ArgumentCaptor.forClass(String.class);
         actualReport = ArgumentCaptor.forClass(Object.class);
 
-        expectedAlertStates = List.of(
+        expectedAlertStates = Map.of(
+            Handles.MDS_0, List.of(
                 MockModelFactory.createState(Handles.ALERTCONDITION_0, AlertConditionState.class),
                 MockModelFactory.createState(Handles.ALERTCONDITION_1, AlertConditionState.class),
                 MockModelFactory.createState(Handles.ALERTSYSTEM_0, AlertSystemState.class)
+            ),
+            Handles.MDS_1, List.of(
+                MockModelFactory.createState(Handles.ALERTCONDITION_2, AlertConditionState.class),
+                MockModelFactory.createState(Handles.ALERTCONDITION_3, AlertConditionState.class),
+                MockModelFactory.createState(Handles.ALERTSYSTEM_1, AlertSystemState.class)
+            )
         );
-        expectedComponentStates = List.of(
+        expectedComponentStates = Map.of(
+            Handles.MDS_0, List.of(
                 MockModelFactory.createState(Handles.MDS_0, MdsState.class),
                 MockModelFactory.createState(Handles.VMD_0, VmdState.class),
                 MockModelFactory.createState(Handles.BATTERY_0, BatteryState.class)
+            ),
+            Handles.MDS_1, List.of(
+                MockModelFactory.createState(Handles.MDS_1, MdsState.class),
+                MockModelFactory.createState(Handles.VMD_1, VmdState.class),
+                MockModelFactory.createState(Handles.BATTERY_1, BatteryState.class)
+            )
         );
-        expectedContextStates = List.of(
+        expectedContextStates = Map.of(
+            Handles.MDS_0, List.of(
                 MockModelFactory.createState(Handles.CONTEXT_0, PatientContextState.class),
                 MockModelFactory.createState(Handles.CONTEXT_1, LocationContextState.class),
                 MockModelFactory.createState(Handles.CONTEXT_2, EnsembleContextState.class)
+            ),
+            Handles.MDS_1, List.of(
+                MockModelFactory.createState(Handles.CONTEXT_3, PatientContextState.class),
+                MockModelFactory.createState(Handles.CONTEXT_4, LocationContextState.class),
+                MockModelFactory.createState(Handles.CONTEXT_5, EnsembleContextState.class)
+            )
         );
-        expectedMetricStates = List.of(
+        expectedMetricStates = Map.of(
+            Handles.MDS_0, List.of(
                 MockModelFactory.createState(Handles.METRIC_0, NumericMetricState.class),
                 MockModelFactory.createState(Handles.METRIC_1, StringMetricState.class),
                 MockModelFactory.createState(Handles.METRIC_2, EnumStringMetricState.class)
+            ),
+            Handles.MDS_1, List.of(
+                MockModelFactory.createState(Handles.METRIC_3, NumericMetricState.class),
+                MockModelFactory.createState(Handles.METRIC_4, StringMetricState.class),
+                MockModelFactory.createState(Handles.METRIC_5, EnumStringMetricState.class)
+            )
         );
-        expectedOperationStates = List.of(
+        expectedOperationStates = Map.of(
+            Handles.MDS_0, List.of(
                 MockModelFactory.createState(Handles.OPERATION_0, ActivateOperationState.class),
                 MockModelFactory.createState(Handles.OPERATION_1, SetStringOperationState.class),
                 MockModelFactory.createState(Handles.OPERATION_2, SetComponentStateOperationState.class)
+            ),
+            Handles.MDS_1, List.of(
+                MockModelFactory.createState(Handles.OPERATION_3, ActivateOperationState.class),
+                MockModelFactory.createState(Handles.OPERATION_4, SetStringOperationState.class),
+                MockModelFactory.createState(Handles.OPERATION_5, SetComponentStateOperationState.class)
+            )
         );
     }
 
@@ -199,13 +235,14 @@ class ReportGeneratorTest {
     @Test
     void onDescriptionChangeWithAllStateTypes() throws Exception {
         String anyParent = "any-parent";
+        String anyParentMds = "any-parent-mds";
         List<MdibEntity> insertedEntities = Arrays.asList(
-                entity(anyParent, MdsDescriptor.class),
-                entity(anyParent, VmdDescriptor.class),
-                entity(anyParent, AlertSystemDescriptor.class),
-                entity(anyParent, RealTimeSampleArrayMetricDescriptor.class),
-                entity(anyParent, ActivateOperationDescriptor.class),
-                entity(anyParent, LocationContextDescriptor.class));
+                entity(anyParent, MdsDescriptor.class, anyParentMds),
+                entity(anyParent, VmdDescriptor.class, anyParentMds),
+                entity(anyParent, AlertSystemDescriptor.class, anyParentMds),
+                entity(anyParent, RealTimeSampleArrayMetricDescriptor.class, anyParentMds),
+                entity(anyParent, ActivateOperationDescriptor.class, anyParentMds),
+                entity(anyParent, LocationContextDescriptor.class, anyParentMds));
 
         eventBus.post(new DescriptionModificationMessage(mdibAccess, insertedEntities, Collections.EMPTY_LIST, Collections.EMPTY_LIST));
 
@@ -245,11 +282,12 @@ class ReportGeneratorTest {
 
     @Test
     void onDescriptionChangeWithPartialStateTypes() throws Exception {
+        String anyParentMds = "any-parent-mds";
         List<MdibEntity> insertedEntities = Arrays.asList(
-                entity(MdsDescriptor.class),
-                entity(VmdDescriptor.class),
-                entity(RealTimeSampleArrayMetricDescriptor.class),
-                entity(ActivateOperationDescriptor.class));
+                entity(MdsDescriptor.class, anyParentMds),
+                entity(VmdDescriptor.class, anyParentMds),
+                entity(RealTimeSampleArrayMetricDescriptor.class, anyParentMds),
+                entity(ActivateOperationDescriptor.class, anyParentMds));
 
         eventBus.post(new DescriptionModificationMessage(mdibAccess, insertedEntities, Collections.EMPTY_LIST, Collections.emptyList()));
 
@@ -287,19 +325,20 @@ class ReportGeneratorTest {
 
     @Test
     void onDescriptionChangeWithInsertedUpdatedDeleted() throws Exception {
+        String anyParentMds = "any-parent-mds";
         List<MdibEntity> insertedEntities = Arrays.asList(
-                entity(MdsDescriptor.class),
-                entity(VmdDescriptor.class),
-                entity(RealTimeSampleArrayMetricDescriptor.class),
-                entity(ActivateOperationDescriptor.class));
+                entity(MdsDescriptor.class, anyParentMds),
+                entity(VmdDescriptor.class, anyParentMds),
+                entity(RealTimeSampleArrayMetricDescriptor.class, anyParentMds),
+                entity(ActivateOperationDescriptor.class, anyParentMds));
 
         List<MdibEntity> updatedEntities = Arrays.asList(
-                entity(AlertSystemDescriptor.class),
-                entity(ActivateOperationDescriptor.class));
+                entity(AlertSystemDescriptor.class, anyParentMds),
+                entity(ActivateOperationDescriptor.class, anyParentMds));
 
         List<MdibEntity> deletedEntities = Arrays.asList(
-                entity(ActivateOperationDescriptor.class),
-                entity(PatientContextDescriptor.class));
+                entity(ActivateOperationDescriptor.class, anyParentMds),
+                entity(PatientContextDescriptor.class, anyParentMds));
 
         eventBus.post(new DescriptionModificationMessage(mdibAccess, insertedEntities, updatedEntities, deletedEntities));
 
@@ -348,13 +387,13 @@ class ReportGeneratorTest {
                 MockModelFactory.createState(Handles.METRIC_0, RealTimeSampleArrayMetricState.class),
                 MockModelFactory.createState(Handles.METRIC_1, RealTimeSampleArrayMetricState.class)
         );
-        eventBus.post(new WaveformStateModificationMessage(mdibAccess, expectedStates));
+        eventBus.post(new WaveformStateModificationMessage(mdibAccess, Map.of("anyMds", expectedStates)));
         AbstractReport abstractReport = testStateReportHeader(ActionConstants.ACTION_WAVEFORM_STREAM, WaveformStream.class);
         assertEquals(expectedStates, ((WaveformStream) abstractReport).getState());
     }
 
     private void testStateReport(String expectedAction,
-                                 List<? extends AbstractState> expectedStates,
+                                 Map<String, ? extends List<? extends AbstractState>> expectedStates,
                                  Class<? extends AbstractReport> reportClass,
                                  String getStatesMethodName) throws Exception {
         testStateReportHeader(expectedAction, reportClass);
@@ -374,15 +413,23 @@ class ReportGeneratorTest {
         return actualNotification;
     }
 
-    private void testStateReportBody(List<? extends AbstractState> expectedStates,
+    private void testStateReportBody(Map<String, ? extends List<? extends AbstractState>> expectedStates,
                                      Class<? extends AbstractReport> reportClass,
                                      String getStatesMethodName) throws Exception {
         final AbstractReport actualNotification = reportClass.cast(actualReport.getValue());
         final Method getReportPart = actualNotification.getClass().getMethod("getReportPart");
-        final List<?> reportParts = ((List) getReportPart.invoke(actualNotification));
-        assertEquals(1, reportParts.size());
-        assertNull(reportParts.get(0).getClass().getMethod("getSourceMds").invoke(reportParts.get(0)));
-        assertEquals(expectedStates, reportParts.get(0).getClass().getMethod(getStatesMethodName).invoke(reportParts.get(0)));
+        final List<? extends AbstractReportPart> reportParts = ((List) getReportPart.invoke(actualNotification));
+        assertEquals(expectedStates.size(), reportParts.size());
+
+        for (var entry : expectedStates.entrySet()) {
+            var part = reportParts
+                .stream()
+                .filter(it -> entry.getKey().equals(it.getSourceMds()))
+                .findFirst()
+                .orElseThrow();
+
+            assertEquals(entry.getValue(), part.getClass().getMethod(getStatesMethodName).invoke(part));
+        }
     }
 
     private void testReportPart(DescriptionModificationReport.ReportPart reportPart,
@@ -392,18 +439,24 @@ class ReportGeneratorTest {
         assertTrue(descriptorType.isAssignableFrom(reportPart.getDescriptor().get(0).getClass()));
     }
 
-    private MdibEntity entity(Class<? extends AbstractDescriptor> theClass) throws Exception {
-        return entity(null, theClass);
+    private MdibEntity entity(Class<? extends AbstractDescriptor> theClass, String parentMds) throws Exception {
+        return entity(null, theClass, parentMds);
     }
 
-    private MdibEntity entity(@Nullable String parentHandle, Class<? extends AbstractDescriptor> theClass) throws Exception {
+    private MdibEntity entity(
+        @Nullable String parentHandle,
+        Class<? extends AbstractDescriptor> theClass,
+        String parentMds
+    ) throws Exception {
         final MdibTypeValidator typeValidator = injector.getInstance(MdibTypeValidator.class);
         final MdibEntityFactory factory = injector.getInstance(MdibEntityFactory.class);
         return factory.createMdibEntity(
-                parentHandle,
-                Collections.emptyList(),
-                theClass.getConstructor().newInstance(),
-                Collections.singletonList(typeValidator.resolveStateType(theClass).getConstructor().newInstance()),
-                MdibVersion.create());
+            parentHandle,
+            Collections.emptyList(),
+            theClass.getConstructor().newInstance(),
+            Collections.singletonList(typeValidator.resolveStateType(theClass).getConstructor().newInstance()),
+            MdibVersion.create(),
+            parentMds
+        );
     }
 }

@@ -26,6 +26,7 @@ class MdibEntityImplTest {
 
     private MdibEntityFactory mdibEntityFactory;
     private String expectedDescriptorHandle;
+    private String expectedMdsHandle;
     private List<String> expectedStateHandles;
     private MdibEntity mdibEntity;
 
@@ -34,6 +35,7 @@ class MdibEntityImplTest {
         Injector injector = UT.getInjector();
         mdibEntityFactory = injector.getInstance(MdibEntityFactory.class);
         expectedDescriptorHandle = "descrHandle";
+        expectedMdsHandle = "mdsHandle";
         expectedStateHandles = Arrays.asList("stateHandle1", "stateHandle2", "stateHandle3");
         mdibEntity = mdibEntityFactory.createMdibEntity(
                 null,
@@ -42,7 +44,9 @@ class MdibEntityImplTest {
                 expectedStateHandles.stream()
                         .map(handle -> MockModelFactory.createContextState(handle, expectedDescriptorHandle, PatientContextState.class))
                         .collect(Collectors.toList()),
-                MdibVersion.create());
+                MdibVersion.create(),
+            expectedMdsHandle
+        );
     }
 
     @Test
@@ -62,6 +66,7 @@ class MdibEntityImplTest {
             PatientContextState state = mdibEntity.getStates(PatientContextState.class).get(i);
             assertEquals(expectedStateHandles.get(i), state.getHandle());
             assertEquals(expectedDescriptorHandle, state.getDescriptorHandle());
+            assertEquals(expectedMdsHandle, mdibEntity.getParentMds());
         }
     }
 }

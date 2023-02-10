@@ -31,6 +31,7 @@ import test.org.somda.common.LoggingTestWatcher;
 import java.time.Duration;
 import java.util.Collections;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -101,16 +102,18 @@ class MdibTransferIT {
         var writeStateResult = localMdibAccess.writeStates(modifications);
         var writtenStates = writeStateResult.getStates();
         assertEquals(1, writtenStates.size());
-        assertTrue(writtenStates.get(0) instanceof LocationContextState);
-        assertEquals(Handles.CONTEXT_1, ((LocationContextState) writtenStates.get(0)).getHandle());
+        var writtenStatesList = writtenStates.values().stream().flatMap(it -> it.stream()).collect(Collectors.toList());
+        assertTrue(writtenStatesList.get(0) instanceof LocationContextState);
+        assertEquals(Handles.CONTEXT_1, ((LocationContextState) writtenStatesList.get(0)).getHandle());
         assertTrue(localMdibAccess.getState(Handles.CONTEXT_0, LocationContextState.class).isEmpty());
 
         assertTrue(mdibSpy.waitForNumberOfRecordedMessages(1, WAIT_DURATION));
         assertTrue(mdibSpy.getRecordedMessages().get(0) instanceof ContextStateModificationMessage);
         var recordedMessage = (ContextStateModificationMessage) mdibSpy.getRecordedMessages().get(0);
         assertEquals(1, recordedMessage.getStates().size());
-        assertEquals(ContextAssociation.NO, recordedMessage.getStates().get(0).getContextAssociation());
-        assertEquals(Handles.CONTEXT_1, recordedMessage.getStates().get(0).getHandle());
+        var contextStatesList = recordedMessage.getStates().get(Handles.MDS_0);
+        assertEquals(ContextAssociation.NO, contextStatesList.get(0).getContextAssociation());
+        assertEquals(Handles.CONTEXT_1, contextStatesList.get(0).getHandle());
         assertTrue(remoteMdibAccess.getState(Handles.CONTEXT_1, LocationContextState.class).isEmpty());
     }
 

@@ -9,6 +9,7 @@ import org.somda.sdc.glue.provider.sco.OperationInvocationReceiver;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Context data passed to {@linkplain SdcDevicePlugin} in order to access {@linkplain SdcDevice} data.
@@ -63,9 +64,9 @@ public interface SdcDeviceContext {
      * {@link org.somda.sdc.biceps.model.participant.AbstractDeviceComponentState})
      * </ul>
      *
-     * @param states      the states that are supposed to be notified.
+     * @param states      map with mds as key and lists of the states that are supposed to be notified as value.
      * @param mdibVersion the MDIB version the report belongs to.
      * @param <T>         the state type that.
      */
-    <T extends AbstractState> void sendPeriodicStateReport(List<T> states, MdibVersion mdibVersion);
+    <T extends AbstractState> void sendPeriodicStateReport(Map<String, List<T>> states, MdibVersion mdibVersion);
 }

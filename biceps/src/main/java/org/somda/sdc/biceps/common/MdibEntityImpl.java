@@ -26,6 +26,7 @@ public class MdibEntityImpl implements MdibEntity {
     private final MdibVersion mdibVersion;
     private final CopyManager copyManager;
     private final Class<? extends AbstractState> stateClass;
+    private final String parentMds;
 
     @AssistedInject
     MdibEntityImpl(@Assisted @Nullable String parent,
@@ -33,6 +34,7 @@ public class MdibEntityImpl implements MdibEntity {
                    @Assisted AbstractDescriptor descriptor,
                    @Assisted("states") List<AbstractState> states,
                    @Assisted MdibVersion mdibVersion,
+                   @Assisted("parentMds") String parentMds,
                    CopyManager copyManager,
                    MdibTypeValidator typeValidator) {
         this.parent = parent;
@@ -41,6 +43,7 @@ public class MdibEntityImpl implements MdibEntity {
         this.states = states;
         this.mdibVersion = mdibVersion;
         this.copyManager = copyManager;
+        this.parentMds = parentMds;
 
         try {
             this.stateClass = typeValidator.resolveStateType(descriptor.getClass());
@@ -138,6 +141,11 @@ public class MdibEntityImpl implements MdibEntity {
     @Override
     public Class<? extends AbstractDescriptor> getDescriptorClass() {
         return descriptor.getClass();
+    }
+
+    @Override
+    public String getParentMds() {
+        return parentMds;
     }
 
     @Override
