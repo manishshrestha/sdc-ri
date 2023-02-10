@@ -282,6 +282,29 @@ class JettyHttpServerRegistryIT extends DpwsTest {
         assertEquals(expectedString, resultString.get());
     }
 
+    @Test
+    void resolveUrls() throws Exception {
+        var baseUri = "http://localhost:0";
+        final String ctxtPath = "/test/mulitple/path/segments";
+        final AtomicBoolean isRequested = new AtomicBoolean(false);
+
+        httpServerRegistry.startAsync().awaitRunning();
+        var srvUri = httpServerRegistry.registerContext(baseUri, ctxtPath, new HttpHandler() {
+            @Override
+            public void handle(InputStream inStream, OutputStream outStream, CommunicationContext communicationContext) throws HttpException {
+                isRequested.set(true);
+            }
+        });
+
+        TransportBinding httpBinding = transportBindingFactory.createHttpBinding(srvUri, null);
+        httpBinding.onRequestResponse(createASoapMessage());
+        assertThat(isRequested.get(), is(true));
+
+        assertFalse(srvUri.contains("localhost"));
+        assertTrue(srvUri.contains("127.0.0.1"));
+        httpServerRegistry.stopAsync().awaitTerminated();
+    }
+
     private SoapMessage createASoapMessage() {
         return soapMessageFactory.createSoapMessage(envelopeFactory.createEnvelope());
     }

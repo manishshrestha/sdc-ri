@@ -8,11 +8,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+
 - Support for MDIBs with multiple Mds. (#35)
 
 ### Fixed
 
 - `org.somda.sdc.dpws.soap.wsdiscovery.WsDiscoveryUtil.isScopesMatching()` did not allow for empty segments in the path. (#258)
+- Jetty servers without TLS could provide a hostname instead of an ip. (#261)
 
 ## [3.0.0] - 2022-12-06
 
