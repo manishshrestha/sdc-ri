@@ -17,7 +17,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-public class CryptoConfiguratorTest {
+class CryptoConfiguratorTest {
 
     @Test
     @DisplayName("Verifies that in case a CachingCryptoSettings is provided, it is used to cache context instances.")

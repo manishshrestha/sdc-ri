@@ -12,8 +12,8 @@ import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.pkcs.PKCS8EncryptedPrivateKeyInfo;
 import org.bouncycastle.pkcs.PKCSException;
 import org.somda.sdc.dpws.crypto.CachingCryptoSettings;
-import org.somda.sdc.dpws.crypto.CryptoSettings;
 
+import javax.annotation.Nullable;
 import javax.net.ssl.SSLContext;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
@@ -48,7 +48,7 @@ public class CustomCryptoSettings implements CachingCryptoSettings {
     private String keyStorePassword = null;
     private String trustStorePassword = null;
 
-    private Optional<SSLContext> cachedContext = Optional.empty();
+    private @Nullable SSLContext cachedContext = null;
 
     public CustomCryptoSettings(
             byte[] keyStore,
@@ -210,12 +210,12 @@ public class CustomCryptoSettings implements CachingCryptoSettings {
     }
 
     @Override
-    public Optional<SSLContext> getSslContext() {
-        return cachedContext;
+    public synchronized Optional<SSLContext> getSslContext() {
+        return Optional.ofNullable(cachedContext);
     }
 
     @Override
-    public void setSslContext(final SSLContext sslContext) {
-        cachedContext = Optional.of(sslContext);
+    public synchronized void setSslContext(final SSLContext sslContext) {
+        cachedContext = sslContext;
     }
 }

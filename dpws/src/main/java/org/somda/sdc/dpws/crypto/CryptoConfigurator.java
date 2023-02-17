@@ -128,7 +128,7 @@ public class CryptoConfigurator {
                 }
             }
         } catch (CertificateException | KeyStoreException | IOException | NoSuchAlgorithmException e) {
-            LOG.error("Error retrieving certificates from keystore {}", e);
+            LOG.error("Error retrieving certificates from keystore", e);
         }
         return certificates;
     }
