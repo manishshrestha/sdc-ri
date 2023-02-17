@@ -109,7 +109,6 @@ public class CustomCryptoSettings implements CachingCryptoSettings {
         Certificate caCert;
 
         try {
-            var kf = KeyFactory.getInstance("RSA");
             var cf = CertificateFactory.getInstance("X.509");
 
             // private key
@@ -120,7 +119,7 @@ public class CustomCryptoSettings implements CachingCryptoSettings {
 
             // ca cert
             caCert = cf.generateCertificate(new ByteArrayInputStream(caCertFile));
-        } catch (NoSuchAlgorithmException | CertificateException | IOException e) {
+        } catch (CertificateException | IOException e) {
             LOG.error("Specified certificate file could not be loaded", e);
             throw new RuntimeException("Specified certificate file could not be loaded", e);
         }
