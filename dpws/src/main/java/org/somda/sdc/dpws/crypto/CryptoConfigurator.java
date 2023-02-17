@@ -81,18 +81,20 @@ public class CryptoConfigurator {
         final SSLContextBuilder sslContextBuilder = SSLContexts.custom();
 
         // key store
-        if (cryptoSettings.getKeyStoreStream().isPresent()) {
+        final var keyStoreStreamOpt = cryptoSettings.getKeyStoreStream();
+        if (keyStoreStreamOpt.isPresent()) {
             KeyStore ks = KeyStore.getInstance(KeyStore.getDefaultType());
-            ks.load(cryptoSettings.getKeyStoreStream().get(), cryptoSettings.getKeyStorePassword().toCharArray());
+            ks.load(keyStoreStreamOpt.get(), cryptoSettings.getKeyStorePassword().toCharArray());
             sslContextBuilder.loadKeyMaterial(ks, cryptoSettings.getKeyStorePassword().toCharArray());
         } else {
             throw new IOException("Expected key store, but none found");
         }
 
         // trust store
-        if (cryptoSettings.getTrustStoreStream().isPresent()) {
+        final var trustStoreStreamOpt = cryptoSettings.getTrustStoreStream();
+        if (trustStoreStreamOpt.isPresent()) {
             KeyStore ts = KeyStore.getInstance(KeyStore.getDefaultType());
-            ts.load(cryptoSettings.getTrustStoreStream().get(), cryptoSettings.getTrustStorePassword().toCharArray());
+            ts.load(trustStoreStreamOpt.get(), cryptoSettings.getTrustStorePassword().toCharArray());
             sslContextBuilder.loadTrustMaterial(ts, null);
         } else {
             throw new IOException("Expected trust store, but none found");
