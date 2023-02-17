@@ -117,8 +117,9 @@ public class CryptoConfigurator {
         if (cryptoSettings == null) return certificates;
         try {
             KeyStore ks = KeyStore.getInstance(KeyStore.getDefaultType());
-            if (cryptoSettings.getKeyStoreStream().isPresent()) {
-                ks.load(cryptoSettings.getKeyStoreStream().get(), cryptoSettings.getKeyStorePassword().toCharArray());
+            final var keyStoreStreamOpt = cryptoSettings.getKeyStoreStream();
+            if (keyStoreStreamOpt.isPresent()) {
+                ks.load(keyStoreStreamOpt.get(), cryptoSettings.getKeyStorePassword().toCharArray());
             } else {
                 return certificates;
             }
