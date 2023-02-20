@@ -273,4 +273,8 @@ public class SdcDevice extends AbstractIdleService implements Device, EventSourc
     public void subscriptionEndToAll(WsEventingStatus status) throws TransportException {
         highPriorityServices.subscriptionEndToAll(status);
     }
+
+    public HighPriorityServices getHighPriorityServices() {
+        return highPriorityServices;
+    }
 }
