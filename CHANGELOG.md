@@ -173,13 +173,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `org.somda.sdc.dpws.soap.HttpApplicationInfo(Map<String, String>)` and `org.somda.sdc.dpws.soap.HttpApplicationInfo#getHttpHeaders()`; use Multimap versions instead. (#147)
 - `org.somda.sdc.biceps.common.preprocessing.DescriptorChildRemover#removeChildren(MdsDescriptor)` as this was not intended to be public. (#149)
 
-### Changed
-
-- Report processing on consumer side, which now compares MDIB sequence IDs by using URI compare instead of string compare.
-- Extracted namespace prefixes in `biceps` and `glue` package `CommonConstants`.
-- Enable generating equals and hashcode for all models. (#140)
-- `org.somda.sdc.dpws.soap.TransportInfo` provides a  `List` of certificates instead of a `Collection`. (#147)
-
 ### Fixed
 
 - `org.somda.sdc.dpws.soap.SoapMessage#getEnvelopeWithMappedHeaders()` did not retain additional header set in the original envelope. (#131)
