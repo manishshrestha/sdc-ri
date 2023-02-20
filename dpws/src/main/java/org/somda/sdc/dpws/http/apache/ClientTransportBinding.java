@@ -175,7 +175,7 @@ public class ClientTransportBinding implements TransportBinding {
                     new String(bytes, StandardCharsets.UTF_8));
             instanceLogger.trace("Unmarshalling of a message failed. ", e);
             throw new TransportBindingException(String
-                    .format("Receiving of a response failed due to unmarshalling problem: %s", e.getMessage()),
+                    .format("Receiving of a response failed due to unmarshalling problem: %s", e.getCause()),
                     new MarshallingException(e));
         } catch (IOException e) {
             instanceLogger.debug("Error occurred while processing response: {}", e.getMessage());

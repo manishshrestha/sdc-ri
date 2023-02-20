@@ -66,6 +66,7 @@ import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 
@@ -143,11 +144,14 @@ public class HighPriorityServices extends WebService {
      * This function does not control periodicity.
      * Periodicity has to be controlled by the calling function.
      *
-     * @param states      the states that are supposed to be notified.
+     * @param states      map with mds as key and lists of the states that are supposed to be notified as value.
      * @param mdibVersion the MDIB version the report belongs to.
      * @param <T>         the state type.
      */
-    public <T extends AbstractState> void sendPeriodicStateReport(List<T> states, MdibVersion mdibVersion) {
+    public <T extends AbstractState> void sendPeriodicStateReport(
+        Map<String, List<T>> states,
+        MdibVersion mdibVersion
+    ) {
         reportGenerator.sendPeriodicStateReport(states, mdibVersion);
     }
 

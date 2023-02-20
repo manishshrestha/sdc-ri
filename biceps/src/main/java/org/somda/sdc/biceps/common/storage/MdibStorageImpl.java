@@ -21,6 +21,7 @@ import org.somda.sdc.biceps.model.participant.AbstractMultiState;
 import org.somda.sdc.biceps.model.participant.AbstractState;
 import org.somda.sdc.biceps.model.participant.ContextAssociation;
 import org.somda.sdc.biceps.model.participant.MdibVersion;
+import org.somda.sdc.biceps.model.participant.MdsDescriptor;
 import org.somda.sdc.common.CommonConfig;
 import org.somda.sdc.common.logging.InstanceLogger;
 
@@ -48,7 +49,6 @@ public class MdibStorageImpl implements MdibStorage {
     private final MdibTypeValidator typeValidator;
     private final Logger instanceLogger;
     private final Boolean storeNotAssociatedContextStates;
-    private final Boolean allowStatesWithoutDescriptors;
 
     private MdibVersion mdibVersion;
     private BigInteger mdDescriptionVersion;
@@ -65,14 +65,12 @@ public class MdibStorageImpl implements MdibStorage {
                     MdibTypeValidator typeValidator,
                     @Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier,
                     @Named(org.somda.sdc.biceps.common.CommonConfig.STORE_NOT_ASSOCIATED_CONTEXT_STATES)
-                            Boolean storeNotAssociatedContextStates,
-                    @Named(org.somda.sdc.biceps.common.CommonConfig.ALLOW_STATES_WITHOUT_DESCRIPTORS)
-                            Boolean allowStatesWithoutDescriptors) {
+                            Boolean storeNotAssociatedContextStates) {
         this(
                 MdibVersion.create(), BigInteger.valueOf(-1),
                 BigInteger.valueOf(-1), entityFactory, util,
                 typeValidator, frameworkIdentifier,
-                storeNotAssociatedContextStates, allowStatesWithoutDescriptors
+                storeNotAssociatedContextStates
         );
     }
 
@@ -83,14 +81,12 @@ public class MdibStorageImpl implements MdibStorage {
                     MdibTypeValidator typeValidator,
                     @Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier,
                     @Named(org.somda.sdc.biceps.common.CommonConfig.STORE_NOT_ASSOCIATED_CONTEXT_STATES)
-                            Boolean storeNotAssociatedContextStates,
-                    @Named(org.somda.sdc.biceps.common.CommonConfig.ALLOW_STATES_WITHOUT_DESCRIPTORS)
-                            Boolean allowStatesWithoutDescriptors) {
+                            Boolean storeNotAssociatedContextStates) {
         this(
                 initialMdibVersion, BigInteger.valueOf(-1),
                 BigInteger.valueOf(-1), entityFactory, util,
                 typeValidator, frameworkIdentifier,
-                storeNotAssociatedContextStates, allowStatesWithoutDescriptors
+                storeNotAssociatedContextStates
         );
     }
 
@@ -103,9 +99,7 @@ public class MdibStorageImpl implements MdibStorage {
                     MdibTypeValidator typeValidator,
                     @Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier,
                     @Named(org.somda.sdc.biceps.common.CommonConfig.STORE_NOT_ASSOCIATED_CONTEXT_STATES)
-                            Boolean storeNotAssociatedContextStates,
-                    @Named(org.somda.sdc.biceps.common.CommonConfig.ALLOW_STATES_WITHOUT_DESCRIPTORS)
-                            Boolean allowStatesWithoutDescriptors) {
+                            Boolean storeNotAssociatedContextStates) {
         this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);
         this.mdibVersion = initialMdibVersion;
         this.mdDescriptionVersion = mdDescriptionVersion;
@@ -114,7 +108,6 @@ public class MdibStorageImpl implements MdibStorage {
         this.util = util;
         this.typeValidator = typeValidator;
         this.storeNotAssociatedContextStates = storeNotAssociatedContextStates;
-        this.allowStatesWithoutDescriptors = allowStatesWithoutDescriptors;
 
         this.entities = new HashMap<>();
         this.rootEntities = new ArrayList<>();
@@ -378,23 +371,74 @@ public class MdibStorageImpl implements MdibStorage {
         }
     }
 
+    private String findParentMds(
+        List<MdibEntity> insertedEntities,
+        String parentHandle,
+        String newEntityHandle
+    ) {
+        // find parent entity in inserted
+        var parentEntity = insertedEntities.stream()
+            .filter(it -> parentHandle.equals(it.getHandle()))
+            .findFirst();
+
+        if (!parentEntity.isPresent()) {
+            parentEntity = Optional.ofNullable(this.entities.get(parentHandle));
+        }
+
+        var parent = parentEntity.orElseThrow(
+            () -> new RuntimeException(String.format(
+                "Could not find parent entity for %s, %s was missing", newEntityHandle, parentHandle
+            ))
+        );
+
+        if (parent.getDescriptor() instanceof MdsDescriptor) {
+            return parent.getHandle();
+        } else {
+            var grandParent = parent.getParent().orElseThrow(
+                () -> new RuntimeException(String.format("No mandatory parent found for %s", parentHandle))
+            );
+            return findParentMds(insertedEntities, grandParent, newEntityHandle);
+        }
+    }
+
     private void insertEntity(MdibDescriptionModification modification,
                               List<AbstractState> sanitizedStates,
                               List<MdibEntity> insertedEntities,
                               List<String> updatedEntityHandles) {
+        // find parent mds for entity
+        String parentMdsHandle;
+        if (modification.getDescriptor() instanceof MdsDescriptor) {
+            parentMdsHandle = modification.getDescriptor().getHandle();
+        } else {
+            parentMdsHandle = findParentMds(
+                insertedEntities,
+                modification.getParentHandle().orElseThrow(
+                    () -> new RuntimeException(
+                        String.format("Mandatory parent handle missing for %s", modification.getHandle())
+                    )
+                ),
+                modification.getHandle()
+            );
+        }
+
+
         var mdibEntityForStorage = entityFactory.createMdibEntity(
-                modification.getParentHandle().orElse(null),
-                new ArrayList<>(),
-                modification.getDescriptor(),
-                sanitizedStates,
-                mdibVersion);
+            modification.getParentHandle().orElse(null),
+            new ArrayList<>(),
+            modification.getDescriptor(),
+            sanitizedStates,
+            mdibVersion,
+            parentMdsHandle
+        );
 
         var mdibEntityForResultSet = entityFactory.createMdibEntity(
-                modification.getParentHandle().orElse(null),
-                new ArrayList<>(),
-                modification.getDescriptor(),
-                modification.getStates(),
-                mdibVersion);
+            modification.getParentHandle().orElse(null),
+            new ArrayList<>(),
+            modification.getDescriptor(),
+            modification.getStates(),
+            mdibVersion,
+            parentMdsHandle
+        );
 
         // Either add entity as child of a parent or expect it to be a root entity
         if (modification.getParentHandle().isPresent()) {
@@ -437,15 +481,15 @@ public class MdibStorageImpl implements MdibStorage {
 
         MdibDescriptionModifications descriptionModifications = null;
 
-        final List<AbstractState> modifiedStates = new ArrayList<>();
+        final Map<String, List<AbstractState>> modifiedStates = new HashMap<>();
         for (AbstractState modification : stateModifications.getStates()) {
             if (instanceLogger.isDebugEnabled()) {
                 instanceLogger.debug("[{}] Update state: {}", mdibVersion.getSequenceId(), modification);
             }
-
-            modifiedStates.add(modification);
-
             final MdibEntity mdibEntity = entities.get(modification.getDescriptorHandle());
+
+            modifiedStates.computeIfAbsent(mdibEntity.getParentMds(), s -> new ArrayList<>()).add(modification);
+
             if (mdibEntity == null) {
                 // Do not store context states when not associated
                 if (!storeNotAssociatedContextStates) {
@@ -463,18 +507,14 @@ public class MdibStorageImpl implements MdibStorage {
                 // this will insert states even if no descriptor/MDIB entity exists
                 // to be used in remote MDIBS in case
                 if (descriptionModifications == null) {
-                    if (allowStatesWithoutDescriptors) {
-                        descriptionModifications = MdibDescriptionModifications.create();
-                    } else {
-                        instanceLogger.error(
-                                "Inserting states without descriptors is disabled, descriptor handle {}",
-                                modification.getDescriptorHandle()
-                        );
-                        throw new RuntimeException(
-                                "Inserting states without descriptors is disabled,"
-                                        + " descriptor handle " + modification.getDescriptorHandle()
-                        );
-                    }
+                    instanceLogger.error(
+                            "Inserting states without descriptors is forbidden, descriptor handle {}",
+                            modification.getDescriptorHandle()
+                    );
+                    throw new RuntimeException(
+                            "Inserting states without descriptors is disabled,"
+                                    + " descriptor handle " + modification.getDescriptorHandle()
+                    );
                 }
                 AbstractDescriptor descr;
                 try {

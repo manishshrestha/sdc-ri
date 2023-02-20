@@ -39,10 +39,6 @@ public class DefaultBicepsConfigModule extends AbstractConfigurationModule {
                 Boolean.class,
                 false);
 
-        bind(CommonConfig.ALLOW_STATES_WITHOUT_DESCRIPTORS,
-                Boolean.class,
-                true);
-
         bind(CommonConfig.CONSUMER_STATE_PREPROCESSING_SEGMENTS,
                 new TypeLiteral<List<Class<? extends StatePreprocessingSegment>>>() {
                 },

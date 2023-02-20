@@ -39,6 +39,8 @@ public class Context {
     @Stringified
     private final String operationHandle;
     @Stringified
+    private final String sourceMds;
+    @Stringified
     private final InstanceIdentifier invocationSource;
 
     private final EventSourceAccess eventSource;
@@ -54,6 +56,13 @@ public class Context {
             @Assisted LocalMdibAccess mdibAccess,
             ObjectFactory messageModelFactory,
             @Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier) {
+
+        // determine the mds for the operation handle
+        var operationParentMds = mdibAccess.getEntity(operationHandle)
+            .orElseThrow(
+                () -> new RuntimeException(String.format("Operation handle %s is unknown", operationHandle))
+            ).getParentMds();
+
         this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);
         this.transactionId = transactionId;
         this.operationHandle = operationHandle;
@@ -61,6 +70,7 @@ public class Context {
         this.eventSource = eventSource;
         this.mdibAccess = mdibAccess;
         this.messageModelFactory = messageModelFactory;
+        this.sourceMds = operationParentMds;
     }
 
     public LocalMdibAccess getMdibAccess() {
@@ -73,6 +83,10 @@ public class Context {
 
     public String getOperationHandle() {
         return operationHandle;
+    }
+
+    public String getSourceMds() {
+        return sourceMds;
     }
 
     public InstanceIdentifier getInvocationSource() {
@@ -246,6 +260,7 @@ public class Context {
         reportPart.setOperationTarget(operationTarget);
         reportPart.setInvocationSource(invocationSource);
         reportPart.setInvocationInfo(invocationInfo);
+        reportPart.setSourceMds(sourceMds);
 
         final OperationInvokedReport operationInvokedReport = messageModelFactory.createOperationInvokedReport();
         operationInvokedReport.setSequenceId(mdibVersion.getSequenceId());

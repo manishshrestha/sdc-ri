@@ -5,7 +5,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.somda.sdc.biceps.UnitTestUtil;
 import org.somda.sdc.biceps.common.*;
 import org.somda.sdc.biceps.common.access.WriteDescriptionResult;
-import org.somda.sdc.biceps.common.access.WriteStateResult;
 import org.somda.sdc.biceps.common.event.DescriptionModificationMessage;
 import org.somda.sdc.biceps.common.storage.PreprocessingException;
 import org.somda.sdc.biceps.consumer.access.factory.RemoteMdibAccessFactory;
@@ -16,7 +15,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import test.org.somda.common.LoggingTestWatcher;
 
-import javax.annotation.Nullable;
 import java.math.BigInteger;
 import java.util.List;
 import java.util.Optional;
@@ -140,7 +138,7 @@ class RemoteMdibAccessImplTest {
     }
 
     @Test
-    void stateUpdateWithoutDescriptor() throws PreprocessingException {
+    void stateUpdateWithoutDescriptorFails() throws PreprocessingException {
         final BigInteger expectedStateVersion = BigInteger.TEN;
         final BigInteger expectedDescriptorVersion = BigInteger.ONE;
 
@@ -153,21 +151,10 @@ class RemoteMdibAccessImplTest {
             MdibAccessObserverSpy updatesSpy = new MdibAccessObserverSpy();
             mdibAccess.registerObserver(updatesSpy);
 
-            // When the state is written
-            WriteStateResult writeComponentResult = mdibAccess.writeStates(
-                    MdibVersion.create(),
-                    componentStateModifications);
-
-            // Then expect a default descriptor to be inserted with the handle from the state and a version -1
-            assertEquals(1, writeComponentResult.getStates().size());
-            assertEquals(vmdState, writeComponentResult.getStates().get(0));
-            assertEquals(expectedStateVersion, writeComponentResult.getStates().get(0).getStateVersion());
-            assertEquals(expectedDescriptorVersion, writeComponentResult.getStates().get(0).getDescriptorVersion());
-
-            final Optional<MdibEntity> entity = mdibAccess.getEntity(vmdState.getDescriptorHandle());
-            assertTrue(entity.isPresent());
-            assertEquals(Handles.VMD_0, entity.get().getDescriptor().getHandle());
-            assertEquals(BigInteger.valueOf(-1), entity.get().getDescriptor().getDescriptorVersion());
+            // When the state is written, no parent mds can be determined, write exits
+            assertThrows(NullPointerException.class, () -> mdibAccess.writeStates(
+                MdibVersion.create(),
+                componentStateModifications));
         }
 
         {
@@ -180,27 +167,10 @@ class RemoteMdibAccessImplTest {
             MdibAccessObserverSpy updatesSpy = new MdibAccessObserverSpy();
             mdibAccess.registerObserver(updatesSpy);
 
-            // When the state is written
-            WriteStateResult writeComponentResult = mdibAccess.writeStates(
-                    MdibVersion.create(),
-                    contextStateModifications);
-
-            // Then expect a default descriptor to be inserted with the handle from the state and a version -1
-            assertEquals(1, writeComponentResult.getStates().size());
-            assertEquals(contextState, writeComponentResult.getStates().get(0));
-            assertEquals(expectedStateVersion, writeComponentResult.getStates().get(0).getStateVersion());
-            assertEquals(expectedDescriptorVersion, writeComponentResult.getStates().get(0).getDescriptorVersion());
-
-            final Optional<MdibEntity> entity = mdibAccess.getEntity(contextState.getDescriptorHandle());
-            assertTrue(entity.isPresent());
-            assertEquals(Handles.CONTEXTDESCRIPTOR_0, entity.get().getDescriptor().getHandle());
-            entity.get().doIfMultiState(multiStates -> {
-                        assertEquals(1, multiStates.size());
-                        assertEquals(Handles.CONTEXT_0, multiStates.get(0).getHandle());
-                    }
-            ).orElse(state -> fail("expected multi-state, but single-state found"));
-
-            assertEquals(BigInteger.valueOf(-1), entity.get().getDescriptor().getDescriptorVersion());
+            // When the state is written, no parent mds can be determined, write exits
+            assertThrows(NullPointerException.class, () -> mdibAccess.writeStates(
+                MdibVersion.create(),
+                contextStateModifications));
         }
     }
 

@@ -15,6 +15,7 @@ import org.somda.sdc.biceps.common.event.AbstractMdibAccessMessage;
 import org.somda.sdc.biceps.common.event.MetricStateModificationMessage;
 import org.somda.sdc.biceps.model.participant.AbstractMetricState;
 import org.somda.sdc.biceps.model.participant.NumericMetricState;
+import org.somda.sdc.biceps.testutil.Handles;
 import org.somda.sdc.biceps.testutil.MdibAccessObserverSpy;
 import org.somda.sdc.dpws.service.HostingServiceProxy;
 import org.somda.sdc.glue.common.MdibXmlIo;
@@ -31,6 +32,7 @@ import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -126,7 +128,13 @@ class SdcRemoteDeviceWatchdogIT {
             assertTrue(recordedMessage instanceof MetricStateModificationMessage);
             MetricStateModificationMessage metricStateMessage = (MetricStateModificationMessage) recordedMessage;
             assertEquals(1, metricStateMessage.getStates().size());
-            final AbstractMetricState abstractMetricState = metricStateMessage.getStates().get(0);
+            var metricStateList = metricStateMessage
+                .getStates()
+                .values()
+                .stream()
+                .flatMap(it -> it.stream())
+                .collect(Collectors.toList());
+            final AbstractMetricState abstractMetricState = metricStateList.get(0);
             assertTrue(abstractMetricState instanceof NumericMetricState);
             NumericMetricState numericMetricState = (NumericMetricState) abstractMetricState;
             assertEquals(BigDecimal.valueOf(i), numericMetricState.getMetricValue().getValue());

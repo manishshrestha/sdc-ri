@@ -28,14 +28,16 @@ public class MdibEntityFactory {
      * @param descriptor  the descriptor of the entity.
      * @param states      the states of the entity.
      * @param mdibVersion the MDIB version of the entity.
+     * @param parentMds   the handle of the Mds that is the root of this entity.
      * @return an {@link MdibEntity} instance.
      */
     public MdibEntity createMdibEntity(@Nullable String parent,
                                        List<String> children,
                                        AbstractDescriptor descriptor,
                                        List<AbstractState> states,
-                                       MdibVersion mdibVersion) {
-        return factory.createMdibEntity(parent, children, descriptor, states, mdibVersion);
+                                       MdibVersion mdibVersion,
+                                       String parentMds) {
+        return factory.createMdibEntity(parent, children, descriptor, states, mdibVersion, parentMds);
     }
 
     /**
@@ -50,7 +52,7 @@ public class MdibEntityFactory {
                                                  AbstractDescriptor descriptor,
                                                  List<AbstractState> states) {
         return factory.createMdibEntity(mdibEntity.getParent().orElse(null), mdibEntity.getChildren(),
-                descriptor, states, mdibEntity.getLastChanged());
+                descriptor, states, mdibEntity.getLastChanged(), mdibEntity.getParentMds());
     }
 
     /**
@@ -74,6 +76,7 @@ public class MdibEntityFactory {
      */
     public MdibEntity replaceChildren(MdibEntity mdibEntity, List<String> children) {
         return factory.createMdibEntity(mdibEntity.getParent().orElse(null), children,
-                mdibEntity.getDescriptor(), mdibEntity.getStates(), mdibEntity.getLastChanged());
+                mdibEntity.getDescriptor(), mdibEntity.getStates(), mdibEntity.getLastChanged(),
+            mdibEntity.getParentMds());
     }
 }

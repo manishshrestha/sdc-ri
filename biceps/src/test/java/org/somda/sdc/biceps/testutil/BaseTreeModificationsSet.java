@@ -35,6 +35,7 @@ public class BaseTreeModificationsSet {
                         ((AlertSystemState)t).setActivationState(AlertActivation.ON);
                     }, Handles.MDS_0))
                     .insert(entry(Handles.SCO_0, ScoDescriptor.class, Handles.MDS_0))
+                    .insert(entry(Handles.SCO_2, ScoDescriptor.class, Handles.MDS_1))
                     .insert(entry(Handles.SYSTEMCONTEXT_0, SystemContextDescriptor.class, Handles.MDS_0))
 
                     .insert(entry(Handles.CHANNEL_0, ChannelDescriptor.class, Handles.VMD_0))
@@ -110,6 +111,11 @@ public class BaseTreeModificationsSet {
                     }, t -> {
                         ((AbstractOperationState)t).setOperatingMode(OperatingMode.EN);
                     },Handles.SCO_0))
+                    .insert(entry(Handles.OPERATION_7, SetContextStateOperationDescriptor.class, t -> {
+                        t.setOperationTarget(Handles.MDS_1);
+                    }, t -> {
+                        ((AbstractOperationState)t).setOperatingMode(OperatingMode.EN);
+                    },Handles.SCO_2))
 
                     .insert(contextEntry(Handles.CONTEXTDESCRIPTOR_0, Handles.CONTEXT_0, PatientContextDescriptor.class, Handles.SYSTEMCONTEXT_0))
                     .insert(contextEntry(Handles.CONTEXTDESCRIPTOR_1, Handles.CONTEXT_1, LocationContextDescriptor.class, Handles.SYSTEMCONTEXT_0))

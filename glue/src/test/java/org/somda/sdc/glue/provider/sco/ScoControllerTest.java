@@ -5,6 +5,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
+import org.somda.sdc.biceps.common.MdibTypeValidator;
 import org.somda.sdc.biceps.model.message.InvocationState;
 import org.somda.sdc.biceps.model.message.OperationInvokedReport;
 import org.somda.sdc.biceps.model.participant.AbstractContextState;
@@ -13,7 +14,10 @@ import org.somda.sdc.biceps.model.participant.LocationContextState;
 import org.somda.sdc.biceps.model.participant.MdibVersion;
 import org.somda.sdc.biceps.model.participant.PatientContextState;
 import org.somda.sdc.biceps.provider.access.LocalMdibAccess;
+import org.somda.sdc.biceps.provider.access.factory.LocalMdibAccessFactory;
+import org.somda.sdc.biceps.testutil.BaseTreeModificationsSet;
 import org.somda.sdc.biceps.testutil.Handles;
+import org.somda.sdc.biceps.testutil.MockEntryFactory;
 import org.somda.sdc.dpws.device.EventSourceAccess;
 import org.somda.sdc.glue.UnitTestUtil;
 import org.somda.sdc.glue.common.ActionConstants;
@@ -25,6 +29,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -41,15 +46,18 @@ class ScoControllerTest {
     private ArgumentCaptor<OperationInvokedReport> reportCaptor;
 
     @BeforeEach
-    void beforeEach() {
+    void beforeEach() throws Exception {
         eventSourceAccessMock = mock(EventSourceAccess.class);
         actionCaptor = ArgumentCaptor.forClass(String.class);
         reportCaptor = ArgumentCaptor.forClass(OperationInvokedReport.class);
 
-        LocalMdibAccess mdibAccessMock = mock(LocalMdibAccess.class);
-        when(mdibAccessMock.getMdibVersion()).thenReturn(new MdibVersion("ABC"));
+        var modifications = new BaseTreeModificationsSet(new MockEntryFactory(IT.getInjector().getInstance(MdibTypeValidator.class)));
+
+        var localMdibAccess = IT.getInjector().getInstance(LocalMdibAccessFactory.class).createLocalMdibAccess();
+        localMdibAccess.writeDescription(modifications.createBaseTree());
+
         receiver = new Receiver();
-        scoController = IT.getInjector().getInstance(ScoControllerFactory.class).createScoController(eventSourceAccessMock, mdibAccessMock);
+        scoController = IT.getInjector().getInstance(ScoControllerFactory.class).createScoController(eventSourceAccessMock, localMdibAccess);
         scoController.addOperationInvocationReceiver(receiver);
     }
 
@@ -123,7 +131,9 @@ class ScoControllerTest {
     void testHandleDefaultReceiver() {
         final var instanceIdentifier = new InstanceIdentifier();
 
-        final var operation = "<any handle>";
+        // set to a handle that has no specific handler but exists
+        final var operation = Handles.OPERATION_7;
+        final var sourceMds = Handles.MDS_1;
         var callbackId = Receiver.ID_SET_STRING_ALL;
         var itemSize = 1;
         var itemIndex = 0;
@@ -138,6 +148,7 @@ class ScoControllerTest {
             assertEquals(transactionId, receiver.getItems().get(itemIndex).getContext().getTransactionId());
             assertTrue(receiver.getItems().get(itemIndex).getData() instanceof String);
             assertEquals(expectedPayload, receiver.getItems().get(itemIndex).getData());
+            assertEquals(sourceMds, receiver.getItems().get(itemIndex).getContext().getSourceMds());
         }
 
         callbackId = Receiver.ID_LIST_ALL;
@@ -159,6 +170,7 @@ class ScoControllerTest {
             assertEquals(transactionId, receiver.getItems().get(itemIndex).getContext().getTransactionId());
             assertTrue(receiver.getItems().get(itemIndex).getData() instanceof List);
             assertEquals(expectedPayload, receiver.getItems().get(itemIndex).getData());
+            assertEquals(sourceMds, receiver.getItems().get(itemIndex).getContext().getSourceMds());
         }
 
         callbackId = Receiver.ID_LIST_ALL;
@@ -178,6 +190,7 @@ class ScoControllerTest {
             assertEquals(transactionId, receiver.getItems().get(itemIndex).getContext().getTransactionId());
             assertTrue(receiver.getItems().get(itemIndex).getData() instanceof List);
             assertEquals(expectedPayload, receiver.getItems().get(itemIndex).getData());
+            assertEquals(sourceMds, receiver.getItems().get(itemIndex).getContext().getSourceMds());
         }
     }
 
@@ -227,13 +240,14 @@ class ScoControllerTest {
     }
 
     @Test
-    @DisplayName("Test that unknown receivers result in a failed invocation result")
+    @DisplayName("Test that unknown receivers result in an exception")
     void testInvocationForUnknownReceiver() {
         final var instanceIdentifier = new InstanceIdentifier();
         final var operation = "<any handle>";
         final var expectedPayload = Integer.valueOf(100);
-        final var response = scoController.processIncomingSetOperation(operation, instanceIdentifier, expectedPayload);
-        assertEquals(InvocationState.FAIL, response.getInvocationState());
+
+        var ex = assertThrows(RuntimeException.class, () -> scoController.processIncomingSetOperation(operation, instanceIdentifier, expectedPayload));
+        assertTrue(ex.getMessage().contains(operation));
     }
 
     @Test
@@ -241,14 +255,13 @@ class ScoControllerTest {
     void testImplicitOperationInvokedReportOnErrorGeneratedInScoController() throws Exception {
         final var expectedInstanceIdentifier = new InstanceIdentifier();
         final var expectedInvocationState = InvocationState.FAIL;
-        final var operationHandle = "<unknown operation handle>";
+        final var operationHandle = Handles.OPERATION_0;
 
         // pass a big decimal to make sure no receiver will be found
         final var response = scoController.processIncomingSetOperation(
-                operationHandle,
-                expectedInstanceIdentifier,
-                BigDecimal.ZERO);
-        assertEquals(expectedInvocationState, response.getInvocationState());
+            operationHandle,
+            expectedInstanceIdentifier,
+            BigDecimal.ZERO);
 
         // make sure the error result is also sent as report
         verify(eventSourceAccessMock).sendNotification(actionCaptor.capture(), reportCaptor.capture());
