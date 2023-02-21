@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Support for MDIBs with multiple Mds. (#35)
+- `org.somda.sdc.dpws.crypto.CachingCryptoSettings` to allow caching of SSLContext instances for CryptoSettings. (#239)
 
 ### Fixed
 
