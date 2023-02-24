@@ -55,6 +55,7 @@ public class ClientTransportBinding implements TransportBinding {
     private HttpClient client;
     private final String clientUri;
     private final boolean chunkedTransfer;
+    private final String contentTypeString;
 
     @Inject
     ClientTransportBinding(@Assisted HttpClient client,
@@ -62,7 +63,8 @@ public class ClientTransportBinding implements TransportBinding {
                            @Assisted SoapMarshalling marshalling,
                            @Assisted SoapUtil soapUtil,
                            @Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier,
-                           @Named(DpwsConfig.ENFORCE_HTTP_CHUNKED_TRANSFER) boolean chunkedTransfer) {
+                           @Named(DpwsConfig.ENFORCE_HTTP_CHUNKED_TRANSFER) boolean chunkedTransfer,
+                           @Named(DpwsConfig.HTTP_CONTENT_TYPE_CHARSET) String charset) {
         this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);
         instanceLogger.debug("Creating ClientTransportBinding for {}", clientUri);
         this.client = client;
@@ -70,6 +72,8 @@ public class ClientTransportBinding implements TransportBinding {
         this.marshalling = marshalling;
         this.soapUtil = soapUtil;
         this.chunkedTransfer = chunkedTransfer;
+        this.contentTypeString = org.apache.http.entity.ContentType.create(SoapConstants.MEDIA_TYPE_SOAP,
+                charset).toString();
     }
 
     @Override
@@ -91,7 +95,7 @@ public class ClientTransportBinding implements TransportBinding {
         // create post request and set content type to SOAP
         HttpPost post = new HttpPost(this.clientUri);
         post.setHeader(HttpHeaders.ACCEPT, SoapConstants.MEDIA_TYPE_SOAP);
-        post.setHeader(HttpHeaders.CONTENT_TYPE, SoapConstants.MEDIA_TYPE_SOAP);
+        post.setHeader(HttpHeaders.CONTENT_TYPE, contentTypeString);
         post.setHeader(USER_AGENT_KEY, USER_AGENT_VALUE);
 
         try {
