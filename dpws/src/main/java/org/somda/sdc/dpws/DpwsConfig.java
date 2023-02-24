@@ -169,4 +169,14 @@ public class DpwsConfig {
      * </ul>
      */
     public static final String MULTICAST_TTL = "Dpws.MulticastTtl";
+
+    /**
+     * Sets the charset in the http content-type header.
+     *
+     * <ul>
+     * <li>Data type: {@linkplain String}
+     * <li>Use: optional
+     * </ul>
+     */
+    public static final String HTTP_CONTENT_TYPE_CHARSET = "Dpws.HttpCharset";
 }

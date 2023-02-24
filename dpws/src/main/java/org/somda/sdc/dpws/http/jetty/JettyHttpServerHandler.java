@@ -43,16 +43,19 @@ public class JettyHttpServerHandler extends AbstractHandler {
     private final HttpHandler handler;
     private final Logger instanceLogger;
     private final boolean chunkedTransfer;
+    private final String charset;
 
     @AssistedInject
     JettyHttpServerHandler(@Assisted String mediaType,
                            @Assisted HttpHandler handler,
                            @Named(CommonConfig.INSTANCE_IDENTIFIER) String frameworkIdentifier,
-                           @Named(DpwsConfig.ENFORCE_HTTP_CHUNKED_TRANSFER) boolean chunkedTransfer) {
+                           @Named(DpwsConfig.ENFORCE_HTTP_CHUNKED_TRANSFER) boolean chunkedTransfer,
+                           @Named(DpwsConfig.HTTP_CONTENT_TYPE_CHARSET) String charset) {
         this.instanceLogger = InstanceLogger.wrapLogger(LOG, frameworkIdentifier);
         this.mediaType = mediaType;
         this.handler = handler;
         this.chunkedTransfer = chunkedTransfer;
+        this.charset = charset;
     }
 
     @Override
@@ -66,6 +69,7 @@ public class JettyHttpServerHandler extends AbstractHandler {
         instanceLogger.debug("{}: Request to {}", remoteNodeInfo::get, request::getRequestURL);
         response.setStatus(HttpStatus.OK_200);
         response.setContentType(mediaType);
+        response.setCharacterEncoding(charset);
         response.setHeader(SERVER_HEADER_KEY, SERVER_HEADER_VALUE);
 
         var input = request.getInputStream();
