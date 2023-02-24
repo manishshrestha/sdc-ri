@@ -211,12 +211,6 @@ public class HighPriorityServices extends WebService {
      * does match a context state HANDLE,
      * then the corresponding context state SHALL be included in the result list.
      * </ul>
-     * <p>
-     * The following rule is currently not supported:
-     * If a HANDLE reference from the msg:GetContextStates/msg:HandleRef list does match an MDS descriptor,
-     * then all context states that are part of this MDS SHALL be included in the result list.
-     * <p>
-     * todo DGr Implement missing rule
      *
      * @param requestResponseObject the request response object that contains the request data
      * @throws SoapFaultException if something went wrong during processing.
@@ -237,7 +231,7 @@ public class HighPriorityServices extends WebService {
             } else {
                 Set<String> filterSet = new HashSet<>(getContextStates.getHandleRef());
                 for (AbstractContextState contextState : contextStates) {
-                    var entity = mdibAccess.getEntity(contextState.getDescriptorHandle()).orElseThrow(() ->
+                    var entity = transaction.getEntity(contextState.getDescriptorHandle()).orElseThrow(() ->
                             new SoapFaultException(faultFactory.createReceiverFault(
                                     String.format("Unexpected MDIB inconsistency: context descriptor with handle %s" +
                                                     " not found for context state with handle %s",
