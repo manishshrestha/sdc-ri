@@ -43,12 +43,21 @@ public class Handles {
     public static final String CONTEXTDESCRIPTOR_3 = "contextdescriptor_3";
     public static final String CONTEXTDESCRIPTOR_4 = "contextdescriptor_4";
     public static final String CONTEXTDESCRIPTOR_5 = "contextdescriptor_5";
+    public static final String CONTEXTDESCRIPTOR_6 = "contextdescriptor_6";
+    public static final String CONTEXTDESCRIPTOR_7 = "contextdescriptor_7";
+    public static final String CONTEXTDESCRIPTOR_8 = "contextdescriptor_8";
+    public static final String CONTEXTDESCRIPTOR_9 = "contextdescriptor_9";
     public static final String CONTEXT_0 = "context_0";
     public static final String CONTEXT_1 = "context_1";
     public static final String CONTEXT_2 = "context_2";
     public static final String CONTEXT_3 = "context_3";
     public static final String CONTEXT_4 = "context_4";
     public static final String CONTEXT_5 = "context_5";
+
+    public static final String CONTEXT_6 = "context_6";
+    public static final String CONTEXT_7 = "context_7";
+    public static final String CONTEXT_8 = "context_8";
+    public static final String CONTEXT_9 = "context_9";
     public static final String ALERTSYSTEM_0 = "alertsystem_0";
     public static final String ALERTSYSTEM_1 = "alertsystem_1";
     public static final String ALERTSYSTEM_2 = "alertsystem_2";

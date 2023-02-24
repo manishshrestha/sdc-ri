@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Support for MDIBs with multiple Mds. (#35)
 - `org.somda.sdc.dpws.crypto.CachingCryptoSettings` to allow caching of SSLContext instances for CryptoSettings. (#239)
 - `org.somda.sdc.dpws.DpwsConfig#HTTP_CONTENT_TYPE_CHARSET`: configuration parameter to set the charset in the http content-type header. (#256)
+- Support for MDS filtering in GetContextStates. (#139)
 
 ### Fixed
 

@@ -84,7 +84,6 @@ import java.util.function.Function;
  * <li>Containment tree service
  * </ul>
  * <p>
- * todo DGr tests are missing
  */
 public class HighPriorityServices extends WebService {
     private final LocalMdibAccess mdibAccess;
@@ -149,8 +148,8 @@ public class HighPriorityServices extends WebService {
      * @param <T>         the state type.
      */
     public <T extends AbstractState> void sendPeriodicStateReport(
-        Map<String, List<T>> states,
-        MdibVersion mdibVersion
+            Map<String, List<T>> states,
+            MdibVersion mdibVersion
     ) {
         reportGenerator.sendPeriodicStateReport(states, mdibVersion);
     }
@@ -201,7 +200,7 @@ public class HighPriorityServices extends WebService {
     /**
      * Answers the incoming GetContextStates request.
      * <p>
-     * Filters context states according to the followind rules:
+     * Filters context states according to the following rules:
      * <ul>
      * <li>If the msg:GetContextStates/msg:HandleRef list is empty,
      * all context states in the MDIB SHALL be included in the result list.
@@ -211,13 +210,9 @@ public class HighPriorityServices extends WebService {
      * <li>If a HANDLE reference from the msg:GetContextStates/msg:HandleRef list
      * does match a context state HANDLE,
      * then the corresponding context state SHALL be included in the result list.
-     * </ul>
-     * <p>
-     * The following rule is currently not supported:
-     * If a HANDLE reference from the msg:GetContextStates/msg:HandleRef list does match an MDS descriptor,
+     * <li>If a HANDLE reference from the msg:GetContextStates/msg:HandleRef list does match an MDS descriptor,
      * then all context states that are part of this MDS SHALL be included in the result list.
-     * <p>
-     * todo DGr Implement missing rule
+     * </ul>
      *
      * @param requestResponseObject the request response object that contains the request data
      * @throws SoapFaultException if something went wrong during processing.
@@ -232,12 +227,35 @@ public class HighPriorityServices extends WebService {
             final List<AbstractContextState> contextStates = transaction.getContextStates();
             List<AbstractContextState> filteredContextStates = new ArrayList<>();
             if (getContextStates.getHandleRef().isEmpty()) {
+                // R5039: If the msg:GetContextStates/msg:HandleRef list is empty, all context states in the MDIB
+                // SHALL be included in the result list.
                 filteredContextStates = contextStates;
             } else {
                 Set<String> filterSet = new HashSet<>(getContextStates.getHandleRef());
                 for (AbstractContextState contextState : contextStates) {
-                    if (filterSet.contains(contextState.getHandle()) ||
-                            filterSet.contains(contextState.getDescriptorHandle())) {
+                    var entity = transaction.getEntity(contextState.getDescriptorHandle()).orElseThrow(() ->
+                            new SoapFaultException(faultFactory.createReceiverFault(
+                                    String.format("Unexpected MDIB inconsistency: context descriptor with handle %s" +
+                                                    " not found for context state with handle %s",
+                                            contextState.getDescriptorHandle(), contextState.getHandle())))
+                    );
+
+                    // R5041: If a HANDLE reference from the msg:GetContextStates/msg:HandleRef list does match
+                    // a context state HANDLE, then the corresponding context state SHALL be included in the
+                    // result list.
+                    var containsStateHandle = filterSet.contains(contextState.getHandle());
+
+                    // R5040: If a HANDLE reference from the msg:GetContextStates/msg:HandleRef list does match
+                    // a context descriptor HANDLE, then all context states that belong to the corresponding
+                    // context descriptor SHALL be included in the result list.
+                    var containsDescrHandle = filterSet.contains(contextState.getDescriptorHandle());
+
+                    // R5042: If a HANDLE reference from the msg:GetContextStates/msg:HandleRef list does match an
+                    // MDS descriptor, then all context states that are part of this MDS SHALL be included in the result
+                    // list.
+                    var containsMdsHandle = filterSet.contains(entity.getParentMds());
+
+                    if (containsStateHandle || containsDescrHandle || containsMdsHandle) {
                         filteredContextStates.add(contextState);
                     }
                 }
