@@ -237,7 +237,7 @@ public class HighPriorityServices extends WebService {
             } else {
                 Set<String> filterSet = new HashSet<>(getContextStates.getHandleRef());
                 for (AbstractContextState contextState : contextStates) {
-                    var descr = mdibAccess.getEntity(contextState.getDescriptorHandle()).orElseThrow(() ->
+                    var entity = mdibAccess.getEntity(contextState.getDescriptorHandle()).orElseThrow(() ->
                             new SoapFaultException(faultFactory.createReceiverFault(
                                     String.format("Unexpected MDIB inconsistency: context descriptor with handle %s" +
                                                     " not found for context state with handle %s",
@@ -257,7 +257,7 @@ public class HighPriorityServices extends WebService {
                     // R5042: If a HANDLE reference from the msg:GetContextStates/msg:HandleRef list does match an
                     // MDS descriptor, then all context states that are part of this MDS SHALL be included in the result
                     // list.
-                    var containsMdsHandle = filterSet.contains(descr.getParentMds());
+                    var containsMdsHandle = filterSet.contains(entity.getParentMds());
 
                     if (containsStateHandle || containsDescrHandle || containsMdsHandle) {
                         filteredContextStates.add(contextState);
