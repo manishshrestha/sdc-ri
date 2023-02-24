@@ -22,6 +22,7 @@ import org.somda.sdc.glue.common.ActionConstants;
 import org.somda.sdc.glue.provider.services.factory.ServicesFactory;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
@@ -101,7 +102,7 @@ class HighPriorityServicesTest {
         // exemplary check if result contains the right context states
         assertEquals(someContextStateHandles.size(), response.getContextState().stream().filter(state ->
                 someContextStateHandles.contains(state.getHandle())
-        ).count());
+        ).collect(Collectors.toSet()).size());
 
         response = invokeGetContextStates(List.of(Handles.CONTEXT_2));
         assertEquals(1, response.getContextState().size());
