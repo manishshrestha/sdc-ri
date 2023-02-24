@@ -200,7 +200,7 @@ public class HighPriorityServices extends WebService {
     /**
      * Answers the incoming GetContextStates request.
      * <p>
-     * Filters context states according to the followind rules:
+     * Filters context states according to the following rules:
      * <ul>
      * <li>If the msg:GetContextStates/msg:HandleRef list is empty,
      * all context states in the MDIB SHALL be included in the result list.
@@ -210,7 +210,11 @@ public class HighPriorityServices extends WebService {
      * <li>If a HANDLE reference from the msg:GetContextStates/msg:HandleRef list
      * does match a context state HANDLE,
      * then the corresponding context state SHALL be included in the result list.
+     * <li>If a HANDLE reference from the msg:GetContextStates/msg:HandleRef list does match an MDS descriptor,
+     * then all context states that are part of this MDS SHALL be included in the result list.
      * </ul>
+     * <p>
+     * todo DGr Implement missing rule
      *
      * @param requestResponseObject the request response object that contains the request data
      * @throws SoapFaultException if something went wrong during processing.
