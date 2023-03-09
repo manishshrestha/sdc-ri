@@ -44,7 +44,6 @@ import org.somda.sdc.glue.consumer.SdcRemoteDevicesConnector;
 import org.somda.sdc.glue.consumer.SetServiceAccess;
 import org.somda.sdc.glue.consumer.sco.ScoTransaction;
 
-import javax.annotation.Nullable;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.net.InetAddress;
@@ -57,7 +56,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;

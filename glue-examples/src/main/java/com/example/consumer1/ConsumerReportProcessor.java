@@ -1,6 +1,5 @@
 package com.example.consumer1;
 
-import com.example.Constants;
 import com.google.common.eventbus.Subscribe;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;

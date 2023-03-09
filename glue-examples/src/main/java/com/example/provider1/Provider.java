@@ -75,10 +75,10 @@ public class Provider extends AbstractIdleService {
 
     private static final int MAX_ENUM_ITERATIONS = 17;
 
-    private Injector injector;
-    private LocalMdibAccess mdibAccess;
-    private DpwsFramework dpwsFramework;
-    private SdcDevice sdcDevice;
+    private final Injector injector;
+    private final LocalMdibAccess mdibAccess;
+    private final DpwsFramework dpwsFramework;
+    private final SdcDevice sdcDevice;
 
     private InstanceIdentifier instanceIdentifier;
     private LocationDetail currentLocation;
@@ -117,7 +117,7 @@ public class Provider extends AbstractIdleService {
 
         var epr = providerUtil.getEpr();
         if (epr == null) {
-            epr = "urn:uuid:" + UUID.randomUUID().toString();
+            epr = "urn:uuid:" + UUID.randomUUID();
             LOG.info("No epr address provided, generated random epr {}", epr);
         }
 
@@ -232,7 +232,7 @@ public class Provider extends AbstractIdleService {
             }
             mdibAccess.writeStates(locMod);
         }
-        this.currentLocation = (LocationDetail) location.clone();
+        this.currentLocation = location.clone();
     }
 
 

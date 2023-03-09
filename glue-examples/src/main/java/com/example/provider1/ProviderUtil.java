@@ -12,7 +12,6 @@ import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 import org.somda.sdc.biceps.common.CommonConfig;
 import org.somda.sdc.biceps.common.preprocessing.DescriptorChildRemover;
-import org.somda.sdc.biceps.common.storage.DescriptionPreprocessingSegment;
 import org.somda.sdc.biceps.guice.DefaultBicepsConfigModule;
 import org.somda.sdc.biceps.guice.DefaultBicepsModule;
 import org.somda.sdc.biceps.model.participant.AbstractMetricValue;
@@ -80,7 +79,7 @@ public class ProviderUtil extends BaseUtil {
                     @Override
                     protected void customConfigure() {
                         bind(CommonConfig.PROVIDER_DESCRIPTION_PREPROCESSING_SEGMENTS,
-                                new TypeLiteral<List<Class<? extends DescriptionPreprocessingSegment>>>() {
+                                new TypeLiteral<>() {
                                 },
                                 List.of(DuplicateChecker.class, TypeConsistencyChecker.class,
                                         VersionHandler.class,
