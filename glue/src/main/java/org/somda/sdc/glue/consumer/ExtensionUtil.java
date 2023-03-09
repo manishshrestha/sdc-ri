@@ -14,6 +14,7 @@ import java.util.stream.Stream;
  * Utility class to seek extensions.
  */
 public class ExtensionUtil {
+    private static final String METHOD_NAME = "getExtension";
 
     /**
      * Takes an element and searches extensions for the given type.
@@ -61,16 +62,19 @@ public class ExtensionUtil {
 
     private static ExtensionType findExtensionElement(Object extensionElement) {
         try {
-            var getExtensionMethod = extensionElement.getClass().getMethod("getExtension");
+
+            var getExtensionMethod = extensionElement.getClass().getMethod(METHOD_NAME);
             if (!getExtensionMethod.getReturnType().equals(ExtensionType.class)) {
                 throw new NoSuchMethodException(String.format(
-                        "Given enclosing extension element %s has no extension accessor",
-                        extensionElement.getClass().getName()));
+                        "Given enclosing extension element %s has no extension accessor function named %s that" +
+                                " returns the extension element",
+                        extensionElement,
+                        METHOD_NAME));
             }
 
             return (ExtensionType) getExtensionMethod.invoke(extensionElement);
         } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
-            throw new IllegalArgumentException("Given enclosing extension element %s has no extension accessor", e);
+            throw new IllegalArgumentException(e);
         }
     }
 
