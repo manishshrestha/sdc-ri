@@ -21,6 +21,7 @@ import org.somda.sdc.dpws.soap.wsaddressing.WsAddressingUtil;
 import org.somda.sdc.dpws.soap.wsaddressing.model.EndpointReferenceType;
 import org.somda.sdc.glue.common.MdibXmlIo;
 import org.somda.sdc.glue.common.factory.ModificationsBuilderFactory;
+import org.somda.sdc.glue.examples.extension.CompiledExtension;
 import org.somda.sdc.glue.provider.SdcDevice;
 import org.somda.sdc.glue.provider.factory.SdcDeviceFactory;
 import org.somda.sdc.glue.provider.plugin.SdcRequiredTypesAndScopes;
@@ -29,6 +30,7 @@ import javax.xml.bind.JAXBElement;
 import javax.xml.namespace.QName;
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
@@ -43,8 +45,8 @@ public class Provider extends AbstractIdleService {
     private static final Logger LOG = LogManager.getLogger(Provider.class);
 
     private static final String NUMERIC_METRIC_HANDLE = "numeric.ch0.vmd0";
-    private static final String EXTENSION_NAMESPACE = "http://biceps.extension";
-    private static final String EXTENSION_STATE_NAME = "MyStateExtension";
+    private static final String MY_EXTENSION_NAMESPACE = "http://biceps.extension";
+    private static final String MY_EXTENSION_STATE_NAME = "MyStateExtension";
 
     private final DpwsFramework dpwsFramework;
     private final LocalMdibAccess mdibAccess;
@@ -165,19 +167,24 @@ public class Provider extends AbstractIdleService {
         }
         state.setMetricValue(val);
 
-        var extValue = new JAXBElement<>(new QName(EXTENSION_NAMESPACE, EXTENSION_STATE_NAME), String.class, "");
+        var myExtension = new JAXBElement<>(new QName(MY_EXTENSION_NAMESPACE, MY_EXTENSION_STATE_NAME), String.class, "");
 
         // Change extension value
         if (state.getExtension() != null) {
             if (!state.getExtension().getAny().isEmpty()) {
-                extValue = (JAXBElement<String>) state.getExtension().getAny().get(0);
+                myExtension = (JAXBElement<String>) state.getExtension().getAny().get(0);
             }
         } else {
             state.setExtension(new ExtensionType());
         }
-        extValue.setValue("Extension value " + val.getValue().toString());
+        myExtension.setValue("Extension value " + val.getValue().toString());
         state.getExtension().getAny().clear();
-        state.getExtension().getAny().add(extValue);
+        state.getExtension().getAny().add(myExtension);
+
+        var compiledExtension = new CompiledExtension();
+        compiledExtension.setField1("Foo");
+        compiledExtension.setField2(BigInteger.TEN);
+        state.getExtension().getAny().add(compiledExtension);
 
         mdibAccess.writeStates(MdibStateModifications.create(MdibStateModifications.Type.METRIC).add(state));
         LOG.info("Changed numeric metric value to {}", val.getValue());
