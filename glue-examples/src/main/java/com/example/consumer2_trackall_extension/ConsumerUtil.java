@@ -83,7 +83,7 @@ class ConsumerUtil extends BaseUtil {
                                         ":org.somda.sdc.glue.examples.extension");
                         bind(SoapConfig.JAXB_SCHEMA_PATH,
                                 String.class,
-                                GlueConstants.SCHEMA_PATH);
+                                GlueConstants.SCHEMA_PATH + ":provider2_extension/JaxbCompiledExtension.xsd");
                         bind(SoapConfig.NAMESPACE_MAPPINGS,
                                 String.class,
                                 NAMESPACE_PREFIX_MAPPINGS_MDPWS +
