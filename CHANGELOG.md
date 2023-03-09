@@ -41,7 +41,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - `org.somda.sdc.glue.common.helper.UrlUtf8` `.decode` and `.encode` methods (#247)
 - `setMatchBy` and `getMatchBy` from `org.somda.sdc.dpws.soap.wsdiscovery.WsDiscoveryTargetService`. (#263)
-- Setting matched-by for Hello and Bye messages. (#263)
+- Setting MatchBy for Hello and Bye messages. (#263)
 
 ### Fixed
 
