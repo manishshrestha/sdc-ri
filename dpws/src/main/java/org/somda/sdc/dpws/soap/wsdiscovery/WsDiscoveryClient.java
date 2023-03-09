@@ -32,8 +32,6 @@ public interface WsDiscoveryClient extends Interceptor {
      * @param matchBy the scopes matching rule, or null to use the default
      *                <code>http://docs.oasis-open.org/ws-dd/ns/discovery/2009/01/rfc3986</code>.
      * @return future providing probe matches response
-     * <p>
-     * TODO LDe: This is inconsistent with the rest, why does it not throw any exceptions?
      */
     ListenableFuture<ProbeMatchesType> sendDirectedProbe(RequestResponseClient rrClient,
                                                          List<QName> types,
