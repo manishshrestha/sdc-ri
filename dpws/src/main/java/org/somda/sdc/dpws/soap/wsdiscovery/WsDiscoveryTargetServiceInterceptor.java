@@ -69,7 +69,6 @@ public class WsDiscoveryTargetServiceInterceptor implements WsDiscoveryTargetSer
     private List<String> xAddrs;
     private final AtomicBoolean metadataModified;
     private UnsignedInteger metadataVersion;
-    private MatchBy matchBy;
 
     private final Lock lock;
 
@@ -96,8 +95,6 @@ public class WsDiscoveryTargetServiceInterceptor implements WsDiscoveryTargetSer
         lock = new ReentrantLock();
         metadataModified = new AtomicBoolean(false);
         metadataVersion = getNewMetadataVersion(null);
-
-        matchBy = MatchBy.RFC3986;
 
         types = new ArrayList<>();
         scopes = new ArrayList<>();
@@ -268,26 +265,6 @@ public class WsDiscoveryTargetServiceInterceptor implements WsDiscoveryTargetSer
     }
 
     @Override
-    public void setMatchBy(MatchBy matchBy) {
-        try {
-            lock.lock();
-            this.matchBy = matchBy;
-        } finally {
-            lock.unlock();
-        }
-    }
-
-    @Override
-    public MatchBy getMatchBy() {
-        try {
-            lock.lock();
-            return matchBy;
-        } finally {
-            lock.unlock();
-        }
-    }
-
-    @Override
     public void setMetadataModified() {
         metadataModified.set(true);
     }
@@ -320,7 +297,6 @@ public class WsDiscoveryTargetServiceInterceptor implements WsDiscoveryTargetSer
         HelloType helloType = wsdFactory.createHelloType();
         helloType.setXAddrs(getXAddrs());
         ScopesType scopesType = wsdFactory.createScopesType();
-        scopesType.setMatchBy(getMatchBy().getUri());
         scopesType.setValue(getScopes());
         helloType.setScopes(scopesType);
         helloType.setTypes(getTypes());
@@ -338,7 +314,6 @@ public class WsDiscoveryTargetServiceInterceptor implements WsDiscoveryTargetSer
         ByeType byeType = wsdFactory.createByeType();
         byeType.setXAddrs(getXAddrs());
         ScopesType scopesType = wsdFactory.createScopesType();
-        scopesType.setMatchBy(getMatchBy().getUri());
         scopesType.setValue(getScopes());
         byeType.setScopes(scopesType);
         byeType.setTypes(getTypes());
