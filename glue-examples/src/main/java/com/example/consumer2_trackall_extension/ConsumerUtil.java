@@ -10,6 +10,7 @@ import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.config.Configurator;
+import org.somda.sdc.biceps.common.CommonConstants;
 import org.somda.sdc.biceps.guice.DefaultBicepsConfigModule;
 import org.somda.sdc.biceps.guice.DefaultBicepsModule;
 import org.somda.sdc.common.guice.DefaultCommonConfigModule;
@@ -21,6 +22,7 @@ import org.somda.sdc.dpws.crypto.CryptoConfig;
 import org.somda.sdc.dpws.crypto.CryptoSettings;
 import org.somda.sdc.dpws.factory.CommunicationLogFactory;
 import org.somda.sdc.dpws.guice.DefaultDpwsModule;
+import org.somda.sdc.dpws.soap.SoapConfig;
 import org.somda.sdc.glue.GlueConstants;
 import org.somda.sdc.glue.consumer.ConsumerConfig;
 import org.somda.sdc.glue.guice.DefaultGlueConfigModule;
@@ -32,6 +34,8 @@ import java.net.URI;
 import java.security.cert.X509Certificate;
 import java.time.Duration;
 import java.util.List;
+
+import static org.somda.sdc.glue.common.CommonConstants.*;
 
 /**
  * This class provides the configuration used for the consumer instance.
@@ -73,7 +77,19 @@ class ConsumerUtil extends BaseUtil {
                 new GlueDpwsConfigModule() {
                     @Override
                     protected void customConfigure() {
-                        super.customConfigure();
+                        bind(SoapConfig.JAXB_CONTEXT_PATH,
+                                String.class,
+                                CommonConstants.BICEPS_JAXB_CONTEXT_PATH +
+                                        ":org.somda.sdc.glue.examples.extension");
+                        bind(SoapConfig.JAXB_SCHEMA_PATH,
+                                String.class,
+                                GlueConstants.SCHEMA_PATH);
+                        bind(SoapConfig.NAMESPACE_MAPPINGS,
+                                String.class,
+                                NAMESPACE_PREFIX_MAPPINGS_MDPWS +
+                                        NAMESPACE_PREFIX_MAPPINGS_BICEPS +
+                                        NAMESPACE_PREFIX_MAPPINGS_GLUE);
+
                         bind(CryptoConfig.CRYPTO_SETTINGS,
                                 CryptoSettings.class,
                                 createCustomCryptoSettings()

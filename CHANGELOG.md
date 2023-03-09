@@ -28,6 +28,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Java 17 support. (#233)
 - Added `org.somda.sdc.biceps.common.CodedValueUtil` which enables comparisons of CodedValues according to BICEPS.
 - Support for `org.somda.sdc.dpws.CommunicationLogContext` to provide additional context information for communication logs on consumer side. (#221)
+- `org.somda.sdc.glue.consumer.ExtensionUtil` to conveniently retrieve extensions from BICEPS model elements. (#262)
 
 ### Changed
 

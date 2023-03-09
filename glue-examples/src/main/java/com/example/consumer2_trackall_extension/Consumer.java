@@ -7,7 +7,6 @@ import org.apache.logging.log4j.Logger;
 import org.somda.sdc.biceps.common.access.MdibAccessObserver;
 import org.somda.sdc.biceps.common.event.AbstractMdibAccessMessage;
 import org.somda.sdc.biceps.common.event.MetricStateModificationMessage;
-import org.somda.sdc.biceps.model.participant.AbstractMetricState;
 import org.somda.sdc.common.util.AutoLock;
 import org.somda.sdc.dpws.DpwsFramework;
 import org.somda.sdc.dpws.client.Client;
@@ -16,11 +15,14 @@ import org.somda.sdc.dpws.client.event.DeviceEnteredMessage;
 import org.somda.sdc.dpws.service.HostingServiceProxy;
 import org.somda.sdc.dpws.soap.interception.InterceptorException;
 import org.somda.sdc.glue.consumer.ConnectConfiguration;
+import org.somda.sdc.glue.consumer.ExtensionUtil;
 import org.somda.sdc.glue.consumer.PrerequisitesException;
 import org.somda.sdc.glue.consumer.SdcRemoteDevice;
 import org.somda.sdc.glue.consumer.SdcRemoteDevicesConnector;
+import org.somda.sdc.glue.examples.extension.CompiledExtension;
 import org.w3c.dom.Node;
 
+import javax.xml.namespace.QName;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
@@ -36,7 +38,6 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * This is an example consumer that connects to a device based on a configured UUID, tracks all changes,
@@ -214,34 +215,35 @@ public class Consumer extends AbstractIdleService {
 
                 private void lookForExtensionFromProvider2Example(AbstractMdibAccessMessage updates) {
                     if (updates instanceof MetricStateModificationMessage) {
-                        var expectedExtensions = extractExtensionNodesFromMessage((MetricStateModificationMessage) updates);
-                        expectedExtensions.forEach(extensionNode ->
-                                LOG.info("Received expected extension [{}]{}: '{}'",
+                        var anonymousExtensions = extractAnonymousExtensionNodesFromMessage((MetricStateModificationMessage) updates);
+                        anonymousExtensions.forEach(extensionNode ->
+                                LOG.info("Received anonymous extension [{}]{}: '{}'",
                                         EXTENSION_NAMESPACE,
                                         EXTENSION_STATE_NAME,
                                         extensionNode.getTextContent())
                         );
+
+                        var compiledExtensions = extractCompiledExtensionNodesFromMessage((MetricStateModificationMessage) updates);
+                        compiledExtensions.forEach(extension ->
+                                LOG.info("Received compiled extension {}: '{}'", extension.getClass(), extension)
+                        );
                     }
                 }
 
-                private List<Node> extractExtensionNodesFromMessage(MetricStateModificationMessage message) {
+                private List<Node> extractAnonymousExtensionNodesFromMessage(MetricStateModificationMessage message) {
                     return message.getStates().values().stream()
                             // compile stream of extension nodes
                             .flatMap(Collection::stream)
-                            .flatMap(this::extractExtensionsFromState)
-                            // find expected extension
-                            .filter(node -> EXTENSION_NAMESPACE.equals(node.getNamespaceURI()))
-                            .filter(node -> EXTENSION_STATE_NAME.equals(node.getLocalName()))
+                            .flatMap(e -> ExtensionUtil.getExtensionsOfQName(e, new QName(EXTENSION_NAMESPACE, EXTENSION_STATE_NAME)).stream())
                             .collect(Collectors.toList());
                 }
 
-                private Stream<Node> extractExtensionsFromState(AbstractMetricState state) {
-                    if (state.getExtension() == null) {
-                        return Stream.empty();
-                    }
-                    return state.getExtension().getAny().stream()
-                            .filter(Node.class::isInstance)
-                            .map(Node.class::cast);
+                private List<CompiledExtension> extractCompiledExtensionNodesFromMessage(MetricStateModificationMessage message) {
+                    return message.getStates().values().stream()
+                            // compile stream of extension nodes
+                            .flatMap(Collection::stream)
+                            .flatMap(e -> ExtensionUtil.getExtensionsOfType(e, CompiledExtension.class).stream())
+                            .collect(Collectors.toList());
                 }
             });
         }

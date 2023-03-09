@@ -10,8 +10,7 @@
     <artifactId>test</artifactId>
 
     <properties>
-        <it.somda.sdc.dpws.xmlSchemaDirectory>${project.basedir}/src/main/resources/it/org/somda/sdc/dpws
-        </it.somda.sdc.dpws.xmlSchemaDirectory>
+        <it.somda.sdc.dpws.xmlSchemaDirectory>${project.basedir}/src/main/resources/it/org/somda/sdc/dpws</it.somda.sdc.dpws.xmlSchemaDirectory>
         <directories.generatedSources>${project.build.directory}/generated-sources</directories.generatedSources>
         <it.somda.sdc.dpws.serviceSchema>TestServiceSchema.xsd</it.somda.sdc.dpws.serviceSchema>
         <maven.deploy.skip>true</maven.deploy.skip>
