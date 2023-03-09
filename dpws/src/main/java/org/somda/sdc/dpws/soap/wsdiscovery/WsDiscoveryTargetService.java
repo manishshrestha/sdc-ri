@@ -62,20 +62,6 @@ public interface WsDiscoveryTargetService extends Interceptor {
     List<String> getXAddrs();
 
     /**
-     * Thread-safe function to set the MatchBy rule.
-     *
-     * @param matchBy the MatchBy rule to set.
-     */
-    void setMatchBy(MatchBy matchBy);
-
-    /**
-     * Thread-safe function to get the MatchBy rule.
-     *
-     * @return the MatchBy rule.
-     */
-    MatchBy getMatchBy();
-
-    /**
      * Thread-safe function to explicitly set the target service metadata to be modified (thread-safe).
      * <p>
      * This is useful if the metadata change does not belong to, e.g., Types and Scopes.
