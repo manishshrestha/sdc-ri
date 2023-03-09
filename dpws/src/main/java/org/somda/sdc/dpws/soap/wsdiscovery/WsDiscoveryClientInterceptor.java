@@ -233,7 +233,10 @@ public class WsDiscoveryClientInterceptor implements WsDiscoveryClient {
         return future;
     }
 
-    private SoapMessage createProbeMessage(Collection<QName> types, Collection<String> scopes, @Nullable MatchBy matchBy) {
+    private SoapMessage createProbeMessage(
+            Collection<QName> types,
+            Collection<String> scopes,
+            @Nullable MatchBy matchBy) {
         ProbeType probeType = wsdFactory.createProbeType();
         probeType.setTypes(new ArrayList<>(types));
         ScopesType scopesType = wsdFactory.createScopesType();
