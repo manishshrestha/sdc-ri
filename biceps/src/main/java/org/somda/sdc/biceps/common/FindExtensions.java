@@ -1,4 +1,4 @@
-package org.somda.sdc.glue.consumer;
+package org.somda.sdc.biceps.common;
 
 import org.somda.sdc.biceps.model.extension.ExtensionType;
 import org.w3c.dom.Node;
@@ -11,13 +11,13 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
- * Utility class to seek extensions.
+ * Utility class to extract extensions from BICEPS model elements.
  */
-public class ExtensionUtil {
+public class FindExtensions {
     private static final String METHOD_NAME = "getExtension";
 
     /**
-     * Takes an element and searches extensions for the given type.
+     * Takes an element and searches extensions for the given qualified name.
      *
      * @param enclosingExtensionElement the element that contains an ext:Extension element.
      * @param qName                     the expected qualified name to match.
@@ -26,7 +26,7 @@ public class ExtensionUtil {
      * @throws IllegalArgumentException if the given enclosingExtensionElement does not contain exactly one
      *                                  accessor function to retrieve the extension.
      */
-    public static <T> List<Node> getExtensionsOfQName(T enclosingExtensionElement, QName qName) {
+    public static <T> List<Node> forQName(T enclosingExtensionElement, QName qName) {
         var extensionContainer = findExtensionElement(enclosingExtensionElement);
         if (extensionContainer == null) {
             return Collections.emptyList();
@@ -49,7 +49,7 @@ public class ExtensionUtil {
      *                                  accessor function to retrieve the extension.
      */
     @SuppressWarnings("unchecked")
-    public static <T, V> List<V> getExtensionsOfType(T enclosingExtensionElement, Class<V> extensionType) {
+    public static <T, V> List<V> forClass(T enclosingExtensionElement, Class<V> extensionType) {
         var extensionContainer = findExtensionElement(enclosingExtensionElement);
         if (extensionContainer == null) {
             return Collections.emptyList();

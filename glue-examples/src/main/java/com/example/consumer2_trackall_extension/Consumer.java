@@ -4,6 +4,7 @@ import com.google.common.eventbus.Subscribe;
 import com.google.common.util.concurrent.AbstractIdleService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.somda.sdc.biceps.common.FindExtensions;
 import org.somda.sdc.biceps.common.access.MdibAccessObserver;
 import org.somda.sdc.biceps.common.event.AbstractMdibAccessMessage;
 import org.somda.sdc.biceps.common.event.MetricStateModificationMessage;
@@ -15,7 +16,6 @@ import org.somda.sdc.dpws.client.event.DeviceEnteredMessage;
 import org.somda.sdc.dpws.service.HostingServiceProxy;
 import org.somda.sdc.dpws.soap.interception.InterceptorException;
 import org.somda.sdc.glue.consumer.ConnectConfiguration;
-import org.somda.sdc.glue.consumer.ExtensionUtil;
 import org.somda.sdc.glue.consumer.PrerequisitesException;
 import org.somda.sdc.glue.consumer.SdcRemoteDevice;
 import org.somda.sdc.glue.consumer.SdcRemoteDevicesConnector;
@@ -234,7 +234,7 @@ public class Consumer extends AbstractIdleService {
                     return message.getStates().values().stream()
                             // compile stream of extension nodes
                             .flatMap(Collection::stream)
-                            .flatMap(e -> ExtensionUtil.getExtensionsOfQName(e, new QName(EXTENSION_NAMESPACE, EXTENSION_STATE_NAME)).stream())
+                            .flatMap(e -> FindExtensions.forQName(e, new QName(EXTENSION_NAMESPACE, EXTENSION_STATE_NAME)).stream())
                             .collect(Collectors.toList());
                 }
 
@@ -242,7 +242,7 @@ public class Consumer extends AbstractIdleService {
                     return message.getStates().values().stream()
                             // compile stream of extension nodes
                             .flatMap(Collection::stream)
-                            .flatMap(e -> ExtensionUtil.getExtensionsOfType(e, CompiledExtension.class).stream())
+                            .flatMap(e -> FindExtensions.forClass(e, CompiledExtension.class).stream())
                             .collect(Collectors.toList());
                 }
             });
