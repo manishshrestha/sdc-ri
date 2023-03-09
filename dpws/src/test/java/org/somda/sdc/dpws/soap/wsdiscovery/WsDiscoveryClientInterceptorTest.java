@@ -19,6 +19,7 @@ import org.somda.sdc.dpws.soap.NotificationSource;
 import org.somda.sdc.dpws.soap.SoapMessage;
 import org.somda.sdc.dpws.soap.SoapUtil;
 import org.somda.sdc.dpws.soap.TransportInfo;
+import org.somda.sdc.dpws.soap.exception.SoapFaultException;
 import org.somda.sdc.dpws.soap.factory.EnvelopeFactory;
 import org.somda.sdc.dpws.soap.factory.NotificationSinkFactory;
 import org.somda.sdc.dpws.soap.factory.NotificationSourceFactory;
@@ -34,6 +35,7 @@ import org.somda.sdc.dpws.soap.wsdiscovery.event.ProbeMatchesMessage;
 import org.somda.sdc.dpws.soap.wsdiscovery.factory.WsDiscoveryClientFactory;
 import org.somda.sdc.dpws.soap.wsdiscovery.model.ProbeMatchType;
 import org.somda.sdc.dpws.soap.wsdiscovery.model.ProbeMatchesType;
+import org.somda.sdc.dpws.soap.wsdiscovery.model.ProbeType;
 import org.somda.sdc.dpws.soap.wsdiscovery.model.ResolveMatchType;
 import org.somda.sdc.dpws.soap.wsdiscovery.model.ResolveMatchesType;
 
@@ -43,10 +45,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -64,6 +63,7 @@ class WsDiscoveryClientInterceptorTest extends DpwsTest {
     private NotificationSink notificationSink;
     private CommunicationContext communicationContextMock;
     private WsAddressingUtil wsaUtil;
+    private SoapUtil soapUtil;
 
     @Override
     @BeforeEach
@@ -92,6 +92,8 @@ class WsDiscoveryClientInterceptorTest extends DpwsTest {
 
         wsaUtil = getInjector().getInstance(WsAddressingUtil.class);
 
+        soapUtil = getInjector().getInstance(SoapUtil.class);
+
         WsDiscoveryClientFactory wsdClientFactory = getInjector().getInstance(WsDiscoveryClientFactory.class);
         wsDiscoveryClient = wsdClientFactory.createWsDiscoveryClient(notificationSource);
         //notificationSink.registerOrUpdate(wsDiscoveryClient);
@@ -115,7 +117,7 @@ class WsDiscoveryClientInterceptorTest extends DpwsTest {
     void processProbe() {
         processProbeOrResolveRequestWithCallback(() -> {
             try {
-                wsDiscoveryClient.sendProbe(UUID.randomUUID().toString(), expectedTypes, expectedScopes);
+                wsDiscoveryClient.sendProbe(UUID.randomUUID().toString(), expectedTypes, expectedScopes, null);
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
@@ -161,13 +163,28 @@ class WsDiscoveryClientInterceptorTest extends DpwsTest {
             }
         });
 
-        ListenableFuture<Integer> future = wsDiscoveryClient.sendProbe(searchId, expectedTypes,
-                expectedScopes, 1);
-        assertEquals(1, sentSoapMessages.size());
+        // Check non-existing matchBy
+        {
+            ListenableFuture<Integer> future = wsDiscoveryClient.sendProbe(searchId, expectedTypes,
+                    expectedScopes, null, 1);
+            assertEquals(1, sentSoapMessages.size());
 
-        notificationSink.receiveNotification(createProbeMatches(sentSoapMessages.get(0)), communicationContextMock);
+            var probe = soapUtil.getBody(sentSoapMessages.get(0), ProbeType.class).orElseThrow();
+            assertNull(probe.getScopes().getMatchBy());
 
-        assertEquals(Integer.valueOf(1), future.get());
+            notificationSink.receiveNotification(createProbeMatches(sentSoapMessages.get(0)), communicationContextMock);
+
+            assertEquals(Integer.valueOf(1), future.get());
+        }
+
+        // Check existing matchBy
+        {
+            sentSoapMessages.clear();
+            wsDiscoveryClient.sendProbe(searchId, expectedTypes, expectedScopes, MatchBy.STRCMP0, 1);
+            assertEquals(1, sentSoapMessages.size());
+            var probe = soapUtil.getBody(sentSoapMessages.get(0), ProbeType.class).orElseThrow();
+            assertEquals(MatchBy.STRCMP0.getUri(), probe.getScopes().getMatchBy());
+        }
     }
 
     /**
@@ -190,11 +207,11 @@ class WsDiscoveryClientInterceptorTest extends DpwsTest {
         });
 
         ListenableFuture<Integer> future1 = wsDiscoveryClient.sendProbe(searchIds.get(0), expectedTypes,
-                                                                       expectedScopes, 1);
+                                                                       expectedScopes, null, 1);
         ListenableFuture<Integer> future2 = wsDiscoveryClient.sendProbe(searchIds.get(1), expectedTypes,
-                                                                        expectedScopes, 1);
+                                                                        expectedScopes, null, 1);
         ListenableFuture<Integer> future3 = wsDiscoveryClient.sendProbe(searchIds.get(2), expectedTypes,
-                                                                        expectedScopes, 1);
+                                                                        expectedScopes, null, 1);
         assertEquals(3, sentSoapMessages.size());
 
         // mock receiving probe matches in arbitrary order that doesn't match the order of sending the probes
