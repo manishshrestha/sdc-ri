@@ -20,6 +20,7 @@ import org.somda.sdc.dpws.guice.NetworkJobThreadPool;
 import org.somda.sdc.dpws.http.HttpException;
 import org.somda.sdc.dpws.http.HttpHandler;
 import org.somda.sdc.dpws.http.HttpServerRegistry;
+import org.somda.sdc.dpws.http.HttpUriBuilder;
 import org.somda.sdc.dpws.soap.CommunicationContext;
 import org.somda.sdc.dpws.soap.NotificationSink;
 import org.somda.sdc.dpws.soap.RequestResponseClient;
@@ -47,6 +48,7 @@ import org.somda.sdc.dpws.soap.wseventing.model.Unsubscribe;
 import javax.annotation.Nullable;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.URI;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -88,6 +90,7 @@ public class EventSinkImpl implements EventSink {
     @Nullable
     private final CommunicationLog communicationLog;
     private final Logger instanceLogger;
+    private final HttpUriBuilder httpUriBuilder;
 
     @AssistedInject
     EventSinkImpl(@Assisted RequestResponseClient requestResponseClient,
@@ -121,6 +124,7 @@ public class EventSinkImpl implements EventSink {
         this.subscriptionManagers = new ConcurrentHashMap<>();
         this.subscriptionClients = new ConcurrentHashMap<>();
         this.subscriptionsLock = new ReentrantLock();
+        this.httpUriBuilder = new HttpUriBuilder();
     }
 
     @Override
@@ -180,13 +184,6 @@ public class EventSinkImpl implements EventSink {
 
             SoapMessage subscribeRequest = soapUtil.createMessage(WsEventingConstants.WSA_ACTION_SUBSCRIBE,
                     subscribeBody);
-
-            // Create client to send request
-            // // TODO: 19.01.2017
-            //HostedServiceTransportBinding hsTb = hostedServiceTransportBindingFactory
-            // .createHostedServiceTransportBinding(hostedServiceProxy);
-            //hostedServiceProxy.registerMetadataChangeObserver(hsTb);
-            //RequestResponseClient hostedServiceClient = resReqClientFactory.createRequestResponseClient(hsTb);
 
             SoapMessage soapResponse = requestResponseClient.sendRequestResponse(subscribeRequest);
             SubscribeResponse responseBody = soapUtil.getBody(soapResponse, SubscribeResponse.class).orElseThrow(() ->
@@ -297,6 +294,17 @@ public class EventSinkImpl implements EventSink {
         removeSubscriptionManager(subscriptionId);
         removeSubscriptionRequestResponseClient(subscriptionId);
 
+        var endToUri = subMan.getEndTo()
+            .map(it -> it.getAddress().getValue())
+            .map(it -> URI.create(it));
+
+        var notifyToUri = URI.create(
+            subMan
+            .getNotifyTo()
+            .getAddress()
+            .getValue()
+        );
+
         return executorService.get().submit(() -> {
             Unsubscribe unsubscribe = wseFactory.createUnsubscribe();
             String subManAddress = wsaUtil.getAddressUri(subMan.getSubscriptionManagerEpr()).orElseThrow(() ->
@@ -311,7 +319,13 @@ public class EventSinkImpl implements EventSink {
             );
 
             // Invoke request-response and ignore result
-            subscriptionRequestResponseClient.sendRequestResponse(unsubscribeMsg);
+            try {
+                subscriptionRequestResponseClient.sendRequestResponse(unsubscribeMsg);
+            } finally {
+                // remove context paths after unsubscribe is done (or failed)
+                endToUri.ifPresent(this::unregisterUri);
+                unregisterUri(notifyToUri);
+            }
 
             return new Object();
         });
@@ -337,6 +351,12 @@ public class EventSinkImpl implements EventSink {
             }
         }
     }
+
+    private void unregisterUri(URI fullUri) {
+        var uriWithoutPath = httpUriBuilder.buildUri(fullUri.getScheme(), fullUri.getHost(), fullUri.getPort());
+        httpServerRegistry.unregisterContext(uriWithoutPath, fullUri.getPath());
+    }
+
 
     private String implodeUriList(List<String> actionUris) {
         StringBuilder sb = new StringBuilder();
