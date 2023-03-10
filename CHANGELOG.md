@@ -13,6 +13,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `org.somda.sdc.dpws.crypto.CachingCryptoSettings` to allow caching of SSLContext instances for CryptoSettings. (#239)
 - `org.somda.sdc.dpws.DpwsConfig#HTTP_CONTENT_TYPE_CHARSET`: configuration parameter to set the charset in the http content-type header. (#256)
 - Support for MDS filtering in GetContextStates. (#139)
+- `org.somda.sdc.biceps.common.FindExtensions` to conveniently retrieve extensions from BICEPS model elements. (#262)
+
+### Changed
+- `org.somda.sdc.dpws.soap.wsdiscovery.WsDiscoveryClient` and `org.somda.sdc.dpws.client.DiscoveryFilter` to support manual configuration of MatchBy. (#263)
+
+### Removed
+- `setMatchBy` and `getMatchBy` from `org.somda.sdc.dpws.soap.wsdiscovery.WsDiscoveryTargetService`. (#263)
+- Setting MatchBy for Hello and Bye messages. (#263)
 
 ### Fixed
 
@@ -28,7 +36,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Java 17 support. (#233)
 - Added `org.somda.sdc.biceps.common.CodedValueUtil` which enables comparisons of CodedValues according to BICEPS.
 - Support for `org.somda.sdc.dpws.CommunicationLogContext` to provide additional context information for communication logs on consumer side. (#221)
-- `org.somda.sdc.biceps.common.FindExtensions` to conveniently retrieve extensions from BICEPS model elements. (#262)
 
 ### Changed
 
@@ -36,13 +43,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Reduced log level of network interface information on DPWS framework startup in `org.somda.sdc.dpws.DpwsFrameworkImpl`. (#245)
 - Avoid use of reflection in `org.somda.sdc.biceps.common.MdibTypeValidator` to improve performance. (#248)
 - `org.somda.sdc.dpws.soap.NotificationSink` throws `SoapFaultException`. (#252)
-- `org.somda.sdc.dpws.soap.wsdiscovery.WsDiscoveryClient` and `org.somda.sdc.dpws.client.DiscoveryFilter` to support manual configuration of MatchBy. (#263)
 
 ### Removed
 
 - `org.somda.sdc.glue.common.helper.UrlUtf8` `.decode` and `.encode` methods (#247)
-- `setMatchBy` and `getMatchBy` from `org.somda.sdc.dpws.soap.wsdiscovery.WsDiscoveryTargetService`. (#263)
-- Setting MatchBy for Hello and Bye messages. (#263)
 
 ### Fixed
 
