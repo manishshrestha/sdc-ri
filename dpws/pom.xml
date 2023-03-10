@@ -3,7 +3,7 @@
     <parent>
         <artifactId>sdc-ri</artifactId>
         <groupId>org.somda.sdc</groupId>
-        <version>3.0.0</version>
+        <version>4.0.0</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -39,7 +39,7 @@
         <connection>scm:git:git://gitlab.com/sdc-suite/sdc-ri.git</connection>
         <developerConnection>scm:git:git://gitlab.com/sdc-suite/sdc-ri.git</developerConnection>
         <url>https://gitlab.com/sdc-suite/sdc-ri/-/tree/develop</url>
-      <tag>sdc-ri-3.0.0</tag>
+      <tag>sdc-ri-4.0.0</tag>
   </scm>
 
     <properties>
@@ -55,17 +55,17 @@
         <dependency>
             <groupId>org.somda.sdc</groupId>
             <artifactId>dpws-model</artifactId>
-            <version>3.0.0</version>
+            <version>4.0.0</version>
         </dependency>
         <dependency>
             <groupId>org.somda.sdc</groupId>
             <artifactId>common</artifactId>
-            <version>3.0.0</version>
+            <version>4.0.0</version>
         </dependency>
         <dependency>
             <groupId>org.somda.sdc</groupId>
             <artifactId>test</artifactId>
-            <version>3.0.0</version>
+            <version>4.0.0</version>
             <scope>test</scope>
         </dependency>
 
@@ -73,7 +73,7 @@
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>
             <artifactId>httpclient</artifactId>
-            <version>4.5.13</version>
+            <version>4.5.14</version>
         </dependency>
         <!-- https://mvnrepository.com/artifact/commons-io/commons-io -->
         <dependency>
@@ -86,13 +86,13 @@
         <dependency>
             <groupId>org.eclipse.jetty</groupId>
             <artifactId>jetty-server</artifactId>
-            <version>11.0.11</version>
+            <version>11.0.14</version>
         </dependency>
         <!-- https://mvnrepository.com/artifact/org.eclipse.jetty/jetty-servlet -->
         <dependency>
             <groupId>org.eclipse.jetty</groupId>
             <artifactId>jetty-servlet</artifactId>
-            <version>11.0.11</version>
+            <version>11.0.14</version>
         </dependency>
         <!-- https://mvnrepository.com/artifact/net.sourceforge.jregex/jregex -->
         <dependency>

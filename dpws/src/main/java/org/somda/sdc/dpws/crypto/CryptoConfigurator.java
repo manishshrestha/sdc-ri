@@ -32,6 +32,31 @@ public class CryptoConfigurator {
     }
 
     /**
+     * Accepts a {@link CachingCryptoSettings} object and creates an {@linkplain SSLContext} object or retrieves
+     * it from the cache.
+     * <p>
+     *
+     * @param cryptoSettings the crypto settings.
+     *
+     * @return an SSlContext matching the given crypto settings.
+     */
+    public SSLContext createSslContextFromCryptoConfig(CachingCryptoSettings cryptoSettings)
+        throws KeyStoreException, UnrecoverableKeyException, CertificateException, NoSuchAlgorithmException,
+        IOException, KeyManagementException {
+        var contextOpt = cryptoSettings.getSslContext();
+        if (contextOpt.isPresent()) {
+            LOG.debug("Retrieved cached SSLContext");
+            return contextOpt.orElseThrow();
+        } else {
+            LOG.debug("Creating new SSLContext");
+            var context = createSslContextFromCryptoConfigInternal(cryptoSettings);
+            cryptoSettings.setSslContext(context);
+            return context;
+        }
+    }
+
+
+    /**
      * Accepts a {@link CryptoSettings} object and creates an {@linkplain SSLContext} object.
      * <p>
      *
@@ -42,27 +67,41 @@ public class CryptoConfigurator {
     public SSLContext createSslContextFromCryptoConfig(CryptoSettings cryptoSettings)
             throws KeyStoreException, UnrecoverableKeyException, CertificateException, NoSuchAlgorithmException,
             IOException, KeyManagementException {
+
+        if (cryptoSettings instanceof CachingCryptoSettings) {
+            return createSslContextFromCryptoConfig((CachingCryptoSettings) cryptoSettings);
+        }
+        return createSslContextFromCryptoConfigInternal(cryptoSettings);
+
+    }
+
+    private SSLContext createSslContextFromCryptoConfigInternal(CryptoSettings cryptoSettings)
+        throws KeyStoreException, UnrecoverableKeyException, CertificateException, NoSuchAlgorithmException,
+        IOException, KeyManagementException {
         final SSLContextBuilder sslContextBuilder = SSLContexts.custom();
 
         // key store
-        if (cryptoSettings.getKeyStoreStream().isPresent()) {
+        final var keyStoreStreamOpt = cryptoSettings.getKeyStoreStream();
+        if (keyStoreStreamOpt.isPresent()) {
             KeyStore ks = KeyStore.getInstance(KeyStore.getDefaultType());
-            ks.load(cryptoSettings.getKeyStoreStream().get(), cryptoSettings.getKeyStorePassword().toCharArray());
+            ks.load(keyStoreStreamOpt.get(), cryptoSettings.getKeyStorePassword().toCharArray());
             sslContextBuilder.loadKeyMaterial(ks, cryptoSettings.getKeyStorePassword().toCharArray());
         } else {
             throw new IOException("Expected key store, but none found");
         }
 
         // trust store
-        if (cryptoSettings.getTrustStoreStream().isPresent()) {
+        final var trustStoreStreamOpt = cryptoSettings.getTrustStoreStream();
+        if (trustStoreStreamOpt.isPresent()) {
             KeyStore ts = KeyStore.getInstance(KeyStore.getDefaultType());
-            ts.load(cryptoSettings.getTrustStoreStream().get(), cryptoSettings.getTrustStorePassword().toCharArray());
+            ts.load(trustStoreStreamOpt.get(), cryptoSettings.getTrustStorePassword().toCharArray());
             sslContextBuilder.loadTrustMaterial(ts, null);
         } else {
             throw new IOException("Expected trust store, but none found");
         }
 
         return sslContextBuilder.build();
+
     }
 
     /**
@@ -78,8 +117,9 @@ public class CryptoConfigurator {
         if (cryptoSettings == null) return certificates;
         try {
             KeyStore ks = KeyStore.getInstance(KeyStore.getDefaultType());
-            if (cryptoSettings.getKeyStoreStream().isPresent()) {
-                ks.load(cryptoSettings.getKeyStoreStream().get(), cryptoSettings.getKeyStorePassword().toCharArray());
+            final var keyStoreStreamOpt = cryptoSettings.getKeyStoreStream();
+            if (keyStoreStreamOpt.isPresent()) {
+                ks.load(keyStoreStreamOpt.get(), cryptoSettings.getKeyStorePassword().toCharArray());
             } else {
                 return certificates;
             }
@@ -91,7 +131,7 @@ public class CryptoConfigurator {
                 }
             }
         } catch (CertificateException | KeyStoreException | IOException | NoSuchAlgorithmException e) {
-            LOG.error(String.format("Error retrieving certificates from keystore %s", e));
+            LOG.error("Error retrieving certificates from keystore", e);
         }
         return certificates;
     }

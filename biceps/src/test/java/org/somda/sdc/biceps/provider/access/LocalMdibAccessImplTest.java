@@ -323,7 +323,9 @@ class LocalMdibAccessImplTest {
 
             // Then expect the element to be requestable and versioned according to the last seen version
             assertEquals(1, writeStateResult.getStates().size());
-            AbstractState state = writeStateResult.getStates().get(0);
+            var statesMap = writeStateResult.getStates();
+            assertEquals(1, statesMap.size());
+            AbstractState state = statesMap.values().stream().flatMap(it -> it.stream()).findFirst().orElseThrow();
             assertEquals(ChannelState.class, state.getClass());
             assertEquals(BigInteger.TWO, state.getDescriptorVersion());
             assertEquals(BigInteger.valueOf(3), state.getStateVersion());

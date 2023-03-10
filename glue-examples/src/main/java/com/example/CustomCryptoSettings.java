@@ -11,8 +11,10 @@ import org.bouncycastle.operator.InputDecryptorProvider;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.pkcs.PKCS8EncryptedPrivateKeyInfo;
 import org.bouncycastle.pkcs.PKCSException;
-import org.somda.sdc.dpws.crypto.CryptoSettings;
+import org.somda.sdc.dpws.crypto.CachingCryptoSettings;
 
+import javax.annotation.Nullable;
+import javax.net.ssl.SSLContext;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -21,7 +23,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.security.KeyFactory;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
@@ -33,7 +34,7 @@ import java.security.cert.CertificateFactory;
 import java.util.Objects;
 import java.util.Optional;
 
-public class CustomCryptoSettings implements CryptoSettings {
+public class CustomCryptoSettings implements CachingCryptoSettings {
     private static final Logger LOG = LogManager.getLogger(CustomCryptoSettings.class);
 
     private static final String DEFAULT_KEYSTORE = "crypto/sdcparticipant.jks";
@@ -45,6 +46,8 @@ public class CustomCryptoSettings implements CryptoSettings {
     private byte[] trustStore = null;
     private String keyStorePassword = null;
     private String trustStorePassword = null;
+
+    private @Nullable SSLContext cachedContext = null;
 
     public CustomCryptoSettings(
             byte[] keyStore,
@@ -105,7 +108,6 @@ public class CustomCryptoSettings implements CryptoSettings {
         Certificate caCert;
 
         try {
-            var kf = KeyFactory.getInstance("RSA");
             var cf = CertificateFactory.getInstance("X.509");
 
             // private key
@@ -116,7 +118,7 @@ public class CustomCryptoSettings implements CryptoSettings {
 
             // ca cert
             caCert = cf.generateCertificate(new ByteArrayInputStream(caCertFile));
-        } catch (NoSuchAlgorithmException | CertificateException | IOException e) {
+        } catch (CertificateException | IOException e) {
             LOG.error("Specified certificate file could not be loaded", e);
             throw new RuntimeException("Specified certificate file could not be loaded", e);
         }
@@ -203,5 +205,15 @@ public class CustomCryptoSettings implements CryptoSettings {
     @Override
     public String getTrustStorePassword() {
         return Objects.requireNonNullElse(trustStorePassword, DEFAULT_TRUSTSTORE_PASSWORD);
+    }
+
+    @Override
+    public synchronized Optional<SSLContext> getSslContext() {
+        return Optional.ofNullable(cachedContext);
+    }
+
+    @Override
+    public synchronized void setSslContext(final SSLContext sslContext) {
+        cachedContext = sslContext;
     }
 }

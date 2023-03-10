@@ -3,7 +3,7 @@
     <parent>
         <artifactId>sdc-ri</artifactId>
         <groupId>org.somda.sdc</groupId>
-        <version>3.0.0</version>
+        <version>4.0.0</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -40,8 +40,14 @@
         <connection>scm:git:git://gitlab.com/sdc-suite/sdc-ri.git</connection>
         <developerConnection>scm:git:git://gitlab.com/sdc-suite/sdc-ri.git</developerConnection>
         <url>https://gitlab.com/sdc-suite/sdc-ri/-/tree/develop</url>
-        <tag>sdc-ri-3.0.0</tag>
+        <tag>sdc-ri-4.0.0</tag>
     </scm>
+
+    <properties>
+        <directories.xmlSchemaDirectory>${project.basedir}/src/main/resources/provider2_extension</directories.xmlSchemaDirectory>
+        <directories.generatedSources>${project.build.directory}/generated-sources</directories.generatedSources>
+        <schemas.JaxbCompiledSchema>JaxbCompiledExtension.xsd</schemas.JaxbCompiledSchema>
+    </properties>
 
     <build>
         <plugins>
@@ -54,6 +60,71 @@
                     <target>11</target>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>build-helper-maven-plugin</artifactId>
+                <version>3.3.0</version>
+                <executions>
+                    <execution>
+                        <id>add-source</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>add-source</goal>
+                        </goals>
+                        <configuration>
+                            <sources>
+                                <source>${directories.generatedSources}/java</source>
+                            </sources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.jvnet.jaxb2.maven2</groupId>
+                <artifactId>maven-jaxb2-plugin</artifactId>
+                <version>${jaxb2MavenPluginVersion}</version>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.glassfish.jaxb</groupId>
+                        <artifactId>jaxb-runtime</artifactId>
+                        <version>${jaxbRuntimeVersion}</version>
+                    </dependency>
+                </dependencies>
+                <executions>
+                    <execution>
+                        <id>test-schemas</id>
+                        <phase>generate-sources</phase>
+                        <configuration>
+                            <readOnly>true</readOnly>
+                            <episode>true</episode>
+                            <schemaDirectory>${directories.xmlSchemaDirectory}</schemaDirectory>
+                            <schemaIncludes>
+                                <include>${schemas.JaxbCompiledSchema}</include>
+                            </schemaIncludes>
+                            <generateDirectory>${directories.generatedSources}/java</generateDirectory>
+                            <args>
+                                <arg>-npa</arg>
+                                <arg>-no-header</arg>
+                                <arg>-Xsetters</arg>
+                                <arg>-Xsetters-mode=accessor</arg>
+                                <!--<arg>-Xcopyable</arg>
+                                <arg>-Xequals</arg>-->
+                                <arg>-XtoString</arg>
+                            </args>
+                            <plugins>
+                                <plugin>
+                                    <groupId>org.jvnet.jaxb2_commons</groupId>
+                                    <artifactId>jaxb2-basics</artifactId>
+                                    <version>${jaxbBasicsVersion}</version>
+                                </plugin>
+                            </plugins>
+                        </configuration>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
 
@@ -62,22 +133,46 @@
         <dependency>
             <groupId>org.somda.sdc</groupId>
             <artifactId>glue</artifactId>
-            <version>3.0.0</version>
+            <version>4.0.0</version>
         </dependency>
         <dependency>
             <groupId>org.somda.sdc</groupId>
             <artifactId>mdpws</artifactId>
-            <version>3.0.0</version>
+            <version>4.0.0</version>
         </dependency>
         <dependency>
             <groupId>org.somda.sdc</groupId>
             <artifactId>dpws</artifactId>
-            <version>3.0.0</version>
+            <version>4.0.0</version>
         </dependency>
         <dependency>
             <groupId>org.somda.sdc</groupId>
             <artifactId>biceps</artifactId>
-            <version>3.0.0</version>
+            <version>4.0.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jvnet.jaxb2_commons</groupId>
+            <artifactId>jaxb2-basics</artifactId>
+            <version>${jaxbBasicsVersion}</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/javax.xml.bind/jaxb-api -->
+        <dependency>
+            <groupId>javax.xml.bind</groupId>
+            <artifactId>jaxb-api</artifactId>
+            <version>${jaxbApiVersion}</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/com.sun.xml.bind/jaxb-core -->
+        <dependency>
+            <groupId>com.sun.xml.bind</groupId>
+            <artifactId>jaxb-core</artifactId>
+            <version>${jaxbCoreVersion}</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/com.sun.xml.bind/jaxb-impl -->
+        <dependency>
+            <groupId>com.sun.xml.bind</groupId>
+            <artifactId>jaxb-impl</artifactId>
+            <version>${jaxbImplVersion}</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/org.apache.logging.log4j/log4j-core -->
@@ -143,4 +238,5 @@
         </dependency>
 
     </dependencies>
+
 </project>

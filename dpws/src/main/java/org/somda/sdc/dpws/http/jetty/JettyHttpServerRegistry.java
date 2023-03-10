@@ -515,6 +515,15 @@ public class JettyHttpServerRegistry extends AbstractIdleService implements Http
             httpsConnector.setPort(uri.getPort());
 
             server.setConnectors(new Connector[]{httpsConnector});
+        } else {
+            HttpConnectionFactory httpConnectionFactory = new HttpConnectionFactory();
+            ServerConnector httpConnector;
+            httpConnector = new ServerConnector(server, httpConnectionFactory);
+            httpConnector.setIdleTimeout(connectionTimeout.toMillis());
+            httpConnector.setHost(uri.getHost());
+            httpConnector.setPort(uri.getPort());
+
+            server.setConnectors(new Connector[]{httpConnector});
         }
 
         return server;

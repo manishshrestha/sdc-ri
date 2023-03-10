@@ -40,6 +40,7 @@ import org.somda.sdc.dpws.soap.wsdiscovery.model.ResolveType;
 import org.somda.sdc.dpws.soap.wsdiscovery.model.ScopesType;
 
 
+import javax.annotation.Nullable;
 import javax.xml.namespace.QName;
 import java.time.Duration;
 
@@ -170,19 +171,32 @@ public class WsDiscoveryClientInterceptor implements WsDiscoveryClient {
     @Override
     public ListenableFuture<ProbeMatchesType> sendDirectedProbe(RequestResponseClient rrClient,
                                                                 List<QName> types,
-                                                                List<String> scopes) {
+                                                                List<String> scopes,
+                                                                @Nullable MatchBy matchBy) {
         return executorService.get().submit(() -> {
-            SoapMessage response = rrClient.sendRequestResponse(createProbeMessage(types, scopes));
+            SoapMessage response = rrClient.sendRequestResponse(createProbeMessage(types, scopes, matchBy));
             return soapUtil.getBody(response, ProbeMatchesType.class)
                     .orElseThrow(SoapMessageBodyMalformedException::new);
         });
     }
 
     @Override
-    public ListenableFuture<Integer> sendProbe(String probeId, Collection<QName> types,
-                                               Collection<String> scopes, Integer maxResults)
+    public ListenableFuture<Integer> sendProbe(String probeId,
+                                               Collection<QName> types,
+                                               Collection<String> scopes,
+                                               @Nullable MatchBy matchBy)
             throws MarshallingException, TransportException, InterceptorException {
-        SoapMessage probeMsg = createProbeMessage(types, scopes);
+        return sendProbe(probeId, types, scopes, matchBy, Integer.MAX_VALUE);
+    }
+
+    @Override
+    public ListenableFuture<Integer> sendProbe(String probeId,
+                                               Collection<QName> types,
+                                               Collection<String> scopes,
+                                               @Nullable MatchBy matchBy,
+                                               Integer maxResults)
+            throws MarshallingException, TransportException, InterceptorException {
+        SoapMessage probeMsg = createProbeMessage(types, scopes, matchBy);
 
         var msgIdUri = soapUtil.createUriFromUuid(UUID.randomUUID());
         AttributedURIType msgId = wsaUtil.createAttributedURIType(msgIdUri);
@@ -195,12 +209,6 @@ public class WsDiscoveryClientInterceptor implements WsDiscoveryClient {
         notificationSource.sendNotification(probeMsg);
 
         return future;
-    }
-
-    @Override
-    public ListenableFuture<Integer> sendProbe(String probeId, Collection<QName> types, Collection<String> scopes)
-            throws MarshallingException, TransportException, InterceptorException {
-        return sendProbe(probeId, types, scopes, Integer.MAX_VALUE);
     }
 
     @Override
@@ -225,13 +233,16 @@ public class WsDiscoveryClientInterceptor implements WsDiscoveryClient {
         return future;
     }
 
-    private SoapMessage createProbeMessage(Collection<QName> types, Collection<String> scopes) {
+    private SoapMessage createProbeMessage(
+            Collection<QName> types,
+            Collection<String> scopes,
+            @Nullable MatchBy matchBy) {
         ProbeType probeType = wsdFactory.createProbeType();
         probeType.setTypes(new ArrayList<>(types));
         ScopesType scopesType = wsdFactory.createScopesType();
-        // Always create RFC3986 by default
-        // See http://docs.oasis-open.org/ws-dd/discovery/1.1/os/wsdd-discovery-1.1-spec-os.html#_Toc234231831
-        scopesType.setMatchBy(MatchBy.RFC3986.getUri());
+        if (matchBy != null) {
+            scopesType.setMatchBy(matchBy.getUri());
+        }
         scopesType.setValue(new ArrayList<>(scopes));
         probeType.setScopes(scopesType);
 

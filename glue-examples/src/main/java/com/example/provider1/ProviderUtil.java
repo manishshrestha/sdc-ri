@@ -3,17 +3,24 @@ package com.example.provider1;
 import com.example.BaseUtil;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
+import com.google.inject.TypeLiteral;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.core.config.Configurator;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
+import org.somda.sdc.biceps.common.CommonConfig;
+import org.somda.sdc.biceps.common.preprocessing.DescriptorChildRemover;
 import org.somda.sdc.biceps.guice.DefaultBicepsConfigModule;
 import org.somda.sdc.biceps.guice.DefaultBicepsModule;
 import org.somda.sdc.biceps.model.participant.AbstractMetricValue;
 import org.somda.sdc.biceps.model.participant.GenerationMode;
 import org.somda.sdc.biceps.model.participant.MeasurementValidity;
+import org.somda.sdc.biceps.provider.preprocessing.DuplicateChecker;
+import org.somda.sdc.biceps.provider.preprocessing.HandleReferenceHandler;
+import org.somda.sdc.biceps.provider.preprocessing.TypeConsistencyChecker;
+import org.somda.sdc.biceps.provider.preprocessing.VersionHandler;
 import org.somda.sdc.common.guice.DefaultCommonConfigModule;
 import org.somda.sdc.common.guice.DefaultCommonModule;
 import org.somda.sdc.dpws.DpwsConfig;
@@ -68,7 +75,19 @@ public class ProviderUtil extends BaseUtil {
                 new DefaultGlueModule(),
                 new DefaultGlueConfigModule(),
                 new DefaultBicepsModule(),
-                new DefaultBicepsConfigModule(),
+                new DefaultBicepsConfigModule() {
+                    @Override
+                    protected void customConfigure() {
+                        bind(CommonConfig.PROVIDER_DESCRIPTION_PREPROCESSING_SEGMENTS,
+                                new TypeLiteral<>() {
+                                },
+                                List.of(DuplicateChecker.class, TypeConsistencyChecker.class,
+                                        VersionHandler.class,
+                                        HandleReferenceHandler.class, DescriptorChildRemover.class,
+                                        RetrievabilityModification.class));
+
+                    }
+                },
                 new DefaultCommonModule(),
                 new DefaultDpwsModule(),
                 new GlueDpwsConfigModule() {

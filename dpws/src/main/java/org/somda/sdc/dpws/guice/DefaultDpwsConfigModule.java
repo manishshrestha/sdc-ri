@@ -16,6 +16,7 @@ import org.somda.sdc.dpws.wsdl.WsdlProvisioningMode;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLSession;
 import java.io.File;
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 
 /**
@@ -95,6 +96,10 @@ public class DefaultDpwsConfigModule extends AbstractConfigurationModule {
         bind(DpwsConfig.MULTICAST_TTL,
                 Integer.class,
                 DpwsConstants.DEFAULT_MULTICAST_TTL);
+
+        bind(DpwsConfig.HTTP_CONTENT_TYPE_CHARSET,
+                String.class,
+                StandardCharsets.UTF_8.name());
     }
 
     private void configureCryptoConfig() {

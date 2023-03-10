@@ -23,11 +23,14 @@ public interface MdibEntityGuiceAssistedFactory {
      * @param descriptor the descriptor of the entity.
      * @param states the states of the entity.
      * @param mdibVersion the MDIB version of the entity.
+     * @param parentMds the handle of the Mds that is the root of this entity.
      * @return an {@link MdibEntity} instance.
      */
     MdibEntity createMdibEntity(@Assisted @Nullable String parent,
                                 @Assisted("children") List<String> children,
                                 @Assisted AbstractDescriptor descriptor,
                                 @Assisted("states") List<AbstractState> states,
-                                @Assisted MdibVersion mdibVersion);
+                                @Assisted MdibVersion mdibVersion,
+                                @Assisted("parentMds") String parentMds
+    );
 }

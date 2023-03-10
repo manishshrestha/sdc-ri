@@ -7,6 +7,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [4.0.0] - 2023-03-10
+
+### Added
+
+- Support for MDIBs with multiple Mds. (#35)
+- `org.somda.sdc.dpws.crypto.CachingCryptoSettings` to allow caching of SSLContext instances for CryptoSettings. (#239)
+- `org.somda.sdc.dpws.DpwsConfig#HTTP_CONTENT_TYPE_CHARSET`: configuration parameter to set the charset in the http content-type header. (#256)
+- Support for MDS filtering in GetContextStates. (#139)
+- `org.somda.sdc.biceps.common.FindExtensions` to conveniently retrieve extensions from BICEPS model elements. (#262)
+
+### Changed
+- `org.somda.sdc.dpws.soap.wsdiscovery.WsDiscoveryClient` and `org.somda.sdc.dpws.client.DiscoveryFilter` to support manual configuration of MatchBy. (#263)
+
+### Removed
+- `setMatchBy` and `getMatchBy` from `org.somda.sdc.dpws.soap.wsdiscovery.WsDiscoveryTargetService`. (#263)
+- Setting MatchBy for Hello and Bye messages. (#263)
+
+### Fixed
+
+- `org.somda.sdc.dpws.soap.wsdiscovery.WsDiscoveryUtil.isScopesMatching()` did not allow for empty segments in the path. (#258)
+- Jetty servers without TLS could provide a hostname instead of an ip. (#261)
+- `org.somda.sdc.dpws.soap.wseventing.EventSinkImpl` did not unregister http handlers after ending subscriptions. (#257)
+
 ## [3.0.0] - 2022-12-06
 
 ### Added

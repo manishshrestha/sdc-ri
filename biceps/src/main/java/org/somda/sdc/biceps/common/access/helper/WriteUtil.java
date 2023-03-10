@@ -146,7 +146,7 @@ public class WriteUtil {
 
             // Return just here in order to apply MDIB version on remote MDIB writes
             if (stateModifications.getStates().isEmpty()) {
-                return new WriteStateResult(mdibAccess.getMdibVersion(), Collections.emptyList());
+                return new WriteStateResult(mdibAccess.getMdibVersion(), Collections.emptyMap());
             }
 
             readWriteLock.readLock().lock();

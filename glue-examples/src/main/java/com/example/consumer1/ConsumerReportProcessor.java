@@ -1,6 +1,5 @@
 package com.example.consumer1;
 
-import com.example.Constants;
 import com.google.common.eventbus.Subscribe;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
@@ -37,12 +36,14 @@ public class ConsumerReportProcessor implements MdibAccessObserver {
     void onMetricChange(MetricStateModificationMessage modificationMessage) {
         LOG.info("onMetricChange");
         modificationMessage.getStates().forEach(
-            state -> {
-                LOG.info(state.toString());
-                var stateHandle = state.getDescriptorHandle();
-                var current = metricChanges.getOrDefault(stateHandle, 0L);
-                metricChanges.put(stateHandle, ++current);
-                LOG.info("{} has changed", state.getDescriptorHandle());
+            (mdsHandle, states) -> {
+                for (var state : states) {
+                    LOG.info(state.toString());
+                    var stateHandle = state.getDescriptorHandle();
+                    var current = metricChanges.getOrDefault(stateHandle, 0L);
+                    metricChanges.put(stateHandle, ++current);
+                    LOG.info("{} has changed", state.getDescriptorHandle());
+                }
             }
         );
     }
@@ -60,7 +61,11 @@ public class ConsumerReportProcessor implements MdibAccessObserver {
     @Subscribe
     void onAlertChange(AlertStateModificationMessage modificationMessage) {
         LOG.info("onAlertChange");
-        modificationMessage.getStates().stream().filter(it -> it instanceof AlertConditionState).forEach(
+        modificationMessage.getStates()
+            .values()
+            .stream()
+            .flatMap(it -> it.stream())
+            .filter(it -> it instanceof AlertConditionState).forEach(
             state -> {
                 var stateHandle = state.getDescriptorHandle();
                 var current = conditionChanges.getOrDefault(stateHandle, 0L);

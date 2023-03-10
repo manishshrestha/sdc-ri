@@ -130,7 +130,7 @@ public class ClientImpl extends AbstractIdleService implements Client, Service, 
 
         try {
             wsDiscoveryClient.sendProbe(discoveryFilter.getDiscoveryId(), discoveryFilter.getTypes(),
-                    discoveryFilter.getScopes());
+                    discoveryFilter.getScopes(), discoveryFilter.getMatchBy());
         } catch (MarshallingException e) {
             instanceLogger.error("Marshalling failed while probing for devices", e.getCause());
         }
@@ -142,7 +142,7 @@ public class ClientImpl extends AbstractIdleService implements Client, Service, 
 
         TransportBinding tBinding = transportBindingFactory.createTransportBinding(xAddr, null);
         RequestResponseClient rrc = requestResponseClientFactory.createRequestResponseClient(tBinding);
-        return wsDiscoveryClient.sendDirectedProbe(rrc, new ArrayList<>(), new ArrayList<>());
+        return wsDiscoveryClient.sendDirectedProbe(rrc, new ArrayList<>(), new ArrayList<>(), null);
     }
 
     @Override

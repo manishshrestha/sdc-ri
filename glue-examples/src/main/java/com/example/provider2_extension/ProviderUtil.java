@@ -9,6 +9,7 @@ import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.config.Configurator;
+import org.somda.sdc.biceps.common.CommonConstants;
 import org.somda.sdc.biceps.guice.DefaultBicepsConfigModule;
 import org.somda.sdc.biceps.guice.DefaultBicepsModule;
 import org.somda.sdc.common.guice.DefaultCommonConfigModule;
@@ -17,6 +18,7 @@ import org.somda.sdc.dpws.DpwsConfig;
 import org.somda.sdc.dpws.crypto.CryptoConfig;
 import org.somda.sdc.dpws.crypto.CryptoSettings;
 import org.somda.sdc.dpws.guice.DefaultDpwsModule;
+import org.somda.sdc.dpws.soap.SoapConfig;
 import org.somda.sdc.glue.GlueConstants;
 import org.somda.sdc.glue.guice.DefaultGlueConfigModule;
 import org.somda.sdc.glue.guice.DefaultGlueModule;
@@ -27,6 +29,8 @@ import java.net.URI;
 import java.security.cert.X509Certificate;
 import java.time.Duration;
 import java.util.List;
+
+import static org.somda.sdc.glue.common.CommonConstants.*;
 
 class ProviderUtil extends BaseUtil {
     public static final String OPT_REPORT_INTERVAL = "report_interval";
@@ -56,16 +60,33 @@ class ProviderUtil extends BaseUtil {
                 new GlueDpwsConfigModule() {
                     @Override
                     protected void customConfigure() {
-                        super.customConfigure();
+                        bind(SoapConfig.JAXB_CONTEXT_PATH,
+                                String.class,
+                                CommonConstants.BICEPS_JAXB_CONTEXT_PATH +
+                                ":org.somda.sdc.glue.examples.extension");
+                        bind(SoapConfig.JAXB_SCHEMA_PATH,
+                                String.class,
+                                GlueConstants.SCHEMA_PATH + ":provider2_extension/JaxbCompiledExtension.xsd");
+                        bind(SoapConfig.NAMESPACE_MAPPINGS,
+                                String.class,
+                                NAMESPACE_PREFIX_MAPPINGS_MDPWS +
+                                        NAMESPACE_PREFIX_MAPPINGS_BICEPS +
+                                        NAMESPACE_PREFIX_MAPPINGS_GLUE);
+
                         bind(CryptoConfig.CRYPTO_SETTINGS,
                                 CryptoSettings.class,
                                 createCustomCryptoSettings()
                         );
+
                         bind(DpwsConfig.HTTPS_SUPPORT, Boolean.class, isUseTls());
+
                         bind(DpwsConfig.HTTP_SUPPORT, Boolean.class, !isUseTls());
+
                         bind(CryptoConfig.CRYPTO_DEVICE_HOSTNAME_VERIFIER,
                                 HostnameVerifier.class,
-                                (hostname, session) -> {
+                                (hostname, session) ->
+
+                                {
                                     try {
                                         // since this is not a real implementation, we still want to allow all peers
                                         // which is why this doesn't really filter anything

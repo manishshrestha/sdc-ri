@@ -4,6 +4,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
+import org.somda.sdc.biceps.common.MdibTypeValidator;
 import org.somda.sdc.biceps.model.message.InvocationError;
 import org.somda.sdc.biceps.model.message.InvocationState;
 import org.somda.sdc.biceps.model.message.OperationInvokedReport;
@@ -11,6 +12,10 @@ import org.somda.sdc.biceps.model.participant.InstanceIdentifier;
 import org.somda.sdc.biceps.model.participant.LocalizedText;
 import org.somda.sdc.biceps.model.participant.MdibVersion;
 import org.somda.sdc.biceps.provider.access.LocalMdibAccess;
+import org.somda.sdc.biceps.provider.access.factory.LocalMdibAccessFactory;
+import org.somda.sdc.biceps.testutil.BaseTreeModificationsSet;
+import org.somda.sdc.biceps.testutil.Handles;
+import org.somda.sdc.biceps.testutil.MockEntryFactory;
 import org.somda.sdc.dpws.device.EventSourceAccess;
 import org.somda.sdc.dpws.soap.exception.MarshallingException;
 import org.somda.sdc.dpws.soap.exception.TransportException;
@@ -30,19 +35,25 @@ import static org.mockito.Mockito.verify;
 class ContextTest {
     private static final UnitTestUtil UT = new UnitTestUtil();
 
+    private LocalMdibAccess localMdibAccess;
     private Context context;
     private EventSourceAccess eventSourceAccess;
     private ArgumentCaptor<String> actionCaptor;
     private ArgumentCaptor<OperationInvokedReport> reportCaptor;
 
     @BeforeEach
-    void beforeEach() {
+    void beforeEach() throws Exception {
         eventSourceAccess = mock(EventSourceAccess.class);
         actionCaptor = ArgumentCaptor.forClass(String.class);
         reportCaptor = ArgumentCaptor.forClass(OperationInvokedReport.class);
 
-        context = UT.getInjector().getInstance(ContextFactory.class).createContext(0, "handle",
-                new InstanceIdentifier(), eventSourceAccess, mock(LocalMdibAccess.class));
+        var modifications = new BaseTreeModificationsSet(new MockEntryFactory(UT.getInjector().getInstance(MdibTypeValidator.class)));
+
+        localMdibAccess = UT.getInjector().getInstance(LocalMdibAccessFactory.class).createLocalMdibAccess();
+        localMdibAccess.writeDescription(modifications.createBaseTree());
+
+        context = UT.getInjector().getInstance(ContextFactory.class).createContext(0, Handles.OPERATION_0,
+                new InstanceIdentifier(), eventSourceAccess, localMdibAccess);
     }
 
     @Test
