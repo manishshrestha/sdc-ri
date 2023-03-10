@@ -72,6 +72,9 @@ class WsEventingTest extends DpwsTest {
         overrideBindings(new DpwsModuleReplacements());
         super.setUp();
 
+        // reset registry
+        HttpServerRegistryMock.getRegistry().clear();
+
         // start required thread pool(s)
         getInjector().getInstance(Key.get(
                 new TypeLiteral<ExecutorWrapperService<ListeningExecutorService>>() {
@@ -159,14 +162,42 @@ class WsEventingTest extends DpwsTest {
 
     @Test
     void unsubscribe() throws Exception {
+        assertEquals(0,
+            HttpServerRegistryMock
+                .getRegistry()
+                .keySet()
+                .stream()
+                .filter(it -> it.contains("/EventSink/"))
+                .count()
+        );
+
         Duration expectedExpires = Duration.ofHours(1);
         ListenableFuture<SubscribeResult> resInfo = wseSink.subscribe(Collections.singletonList(ACTION),
                 expectedExpires, notificationSink);
         assertThat("Granted expires duration", resInfo.get().getGrantedExpires(), is(expectedExpires));
 
-        wseSink.getStatus(resInfo.get().getSubscriptionId()).get();
+        // NotifyTo and EndTo sinks
+        assertEquals(2,
+            HttpServerRegistryMock
+                .getRegistry()
+                .keySet()
+                .stream()
+                .filter(it -> it.contains("/EventSink/"))
+                .count()
+        );
 
+        wseSink.getStatus(resInfo.get().getSubscriptionId()).get();
         wseSink.unsubscribe(resInfo.get().getSubscriptionId()).get();
+
+        // no more sinks
+        assertEquals(0,
+            HttpServerRegistryMock
+                .getRegistry()
+                .keySet()
+                .stream()
+                .filter(it -> it.contains("/EventSink/"))
+                .count()
+        );
 
         try {
             wseSink.getStatus(resInfo.get().getSubscriptionId()).get();
